@@ -10,10 +10,10 @@
    <Setter Property="CornerRadius" Value="2"/><Setter Property="BorderThickness" Value="1"/>
    <Setter Property="BorderBrush" Value="Transparent"/><Setter Property="Background" Value="Transparent"/>
    <Setter Property="Cursor" Value="SizeAll"/><Setter Property="Focusable" Value="True"/>
-   <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemHoverBrush}}"/><Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}"/></Trigger></Style.Triggers>
+   <Style.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemHoverBrush}}"/><Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}"/></Trigger></Style.Triggers>
   </Style>
   <DataTemplate x:Key="ToolTile">
-   <Border Style="{StaticResource Tile}" Tag="{Binding}" ToolTip="{Binding Name}"
+   <Border Style="{StaticResource Tile}" Tag="{Binding}" ToolTip="{Binding ToolTip}" IsEnabled="{Binding IsAvailable}" ToolTipService.ShowOnDisabled="True"
     PreviewMouseLeftButtonDown="ToolDown" PreviewMouseLeftButtonUp="ToolUp" PreviewMouseMove="ToolMove" LostMouseCapture="ToolLostCapture">
     <StackPanel Margin="1,7,1,0"><Image Source="{Binding IconSource}" Width="36" Height="36" Margin="0,5,0,4"/>
      <TextBlock Text="{Binding Name}" Height="35" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" TextAlignment="Center" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
@@ -23,7 +23,7 @@
   <Style x:Key="Category" TargetType="Border">
    <Setter Property="Width" Value="52"/><Setter Property="Height" Value="50"/><Setter Property="Background" Value="Transparent"/>
    <Setter Property="Focusable" Value="True"/>
-   <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryHoverBrush}}"/></Trigger>
+   <Style.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryHoverBrush}}"/></Trigger>
     <DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryBgBrush}}"/></DataTrigger>
    </Style.Triggers>
   </Style>
@@ -41,7 +41,7 @@
    <ScrollViewer x:Name="Compact" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <ScrollViewer.Style><Style TargetType="ScrollViewer"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></ScrollViewer.Style>
     <ItemsControl ItemsSource="{Binding Categories}"><ItemsControl.ItemTemplate><DataTemplate>
-     <Border Style="{StaticResource Category}" Tag="{Binding}" ToolTip="{Binding Name}" MouseEnter="CategoryEnter" MouseLeave="CategoryLeave" GotKeyboardFocus="CategoryFocus">
+     <Border Style="{StaticResource Category}" Tag="{Binding}" ToolTip="{Binding ToolTip}" IsEnabled="{Binding IsAvailable}" ToolTipService.ShowOnDisabled="True" MouseEnter="CategoryEnter" MouseLeave="CategoryLeave" GotKeyboardFocus="CategoryFocus">
       <Image Source="{Binding IconSource}" Width="52" Height="50" Stretch="Uniform"/>
      </Border>
     </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
@@ -56,23 +56,31 @@
      </Expander>
     </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
    </ScrollViewer>
-      <Button Grid.Row="1" Command="{Binding ToggleDisplayModeCommand}" ToolTip="{Binding DisplayModeTooltip}" Height="22" HorizontalContentAlignment="Right" Padding="0,0,8,0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBgBrush}}" BorderThickness="0">
-    <Image Stretch="None" RenderTransformOrigin="0.5,0.5"><Image.Style><Style TargetType="Image">
-     <Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-expand-normal.png"/>
-     <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-expand-hover.png"/></Trigger>
-      <DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="-1"/></Setter.Value></Setter></DataTrigger>
-     </Style.Triggers>
-    </Style></Image.Style></Image>
+   <Button Grid.Row="1" Command="{Binding ToggleDisplayModeCommand}" ToolTip="{Binding DisplayModeTooltip}" Height="22" Cursor="Hand" Padding="0" BorderThickness="0">
+    <Button.Template><ControlTemplate TargetType="Button"><Grid Background="Black">
+     <Image x:Name="FoldImage" HorizontalAlignment="Right" Stretch="None" Source="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-expand-normal.png" RenderTransformOrigin="0.5,0.5"/>
+    </Grid><ControlTemplate.Triggers>
+     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="FoldImage" Property="Source" Value="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-expand-hover.png"/></Trigger>
+     <DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter TargetName="FoldImage" Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="-1"/></Setter.Value></Setter></DataTrigger>
+    </ControlTemplate.Triggers></ControlTemplate></Button.Template>
    </Button>
    <Popup x:Name="ToolPopup" IsOpen="{Binding IsCompactModePopupOpen,Mode=TwoWay}" Placement="Right" StaysOpen="True" AllowsTransparency="True">
     <Grid x:Name="PopupHitArea" Width="235" Background="#02FFFFFF" MouseEnter="PopupEnter" MouseLeave="PopupLeave">
-     <Border Margin="6,8,8,8" CornerRadius="4" BorderThickness="2" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxBackgroundBrush}}">
-      <DockPanel Margin="0,10,0,10"><Grid DockPanel.Dock="Top" Margin="12,0,0,8"><Border Width="2" Height="15" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}" HorizontalAlignment="Left"/><TextBlock Text="{Binding SelectedCategory}" FontSize="16" Margin="10,0,0,0" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/></Grid>
-       <ScrollViewer x:Name="PopupScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel><TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="12" Margin="8" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
-        <ItemsControl ItemsSource="{Binding SelectedCategoryTools}" ItemTemplate="{StaticResource ToolTile}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-        <TextBlock Text="当前部署目录无工具" Margin="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedCategoryTools.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
-       </StackPanel></ScrollViewer>
-      </DockPanel>
+     <Border Margin="6,8,8,8" CornerRadius="4" BorderThickness="2" BorderBrush="#171716">
+      <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#252525" Offset="0"/><GradientStop Color="#323232" Offset="1"/></LinearGradientBrush></Border.Background>
+      <Border.Effect><DropShadowEffect BlurRadius="7" Direction="305" ShadowDepth="3" Opacity="0.39"/></Border.Effect>
+      <Grid Margin="0,10,0,10">
+       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <Grid Margin="12,0,0,0" Height="22">
+        <Border Width="2" Height="15" Background="LightGray" HorizontalAlignment="Left" Margin="0,2,0,0"/>
+        <TextBlock x:Name="PopupTitle" Text="{Binding SelectedCategory}" FontSize="16" Foreground="LightGray" Margin="10,0,0,0" VerticalAlignment="Center"/>
+       </Grid>
+       <ScrollViewer Grid.Row="1" x:Name="PopupScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Top">
+        <ItemsControl ItemsSource="{Binding SelectedCategoryTools}" ItemTemplate="{StaticResource ToolTile}">
+         <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3" Margin="5,2,5,0"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        </ItemsControl>
+       </ScrollViewer>
+      </Grid>
      </Border>
     </Grid>
    </Popup>

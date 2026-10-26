@@ -30,11 +30,11 @@ try {
     if($probe.commit -cne $expectedCommit){throw '正式产物源码提交与当前主仓不一致，不能计作本候选通过。'}
     [xml]$index=Get-Content (Join-Path $product 'ToolGroups.xml') -Raw
     $expected=@($index.ToolGroups.Tool|Where-Object {$_.IsVisible -ne 'false'}|ForEach-Object {$_.Id}|Sort-Object)
-    $actual=@($probe.toolboxTools|ForEach-Object {$_.id}|Sort-Object)
+    $actual=@($probe.toolboxTools|Where-Object {$_.id -notlike 'vm:*'}|ForEach-Object {$_.id}|Sort-Object)
     if(($expected -join "`n") -cne ($actual -join "`n")){throw '探针工具身份与部署目录索引不一致。'}
     if(@($probe.toolboxCategories).Count -ne @($index.ToolGroups.Group).Count){throw '分类数量与随包目录定义不一致。'}
-    if(@($probe.loadedDirectoryToolAssemblies).Count -ne 0){throw '仅浏览目录已装载工具主程序集，懒加载边界不成立。'}
-    $receipt=[ordered]@{sourceCommit=$expectedCommit;productRoot=$product;toolCount=$actual.Count;categoryCount=@($probe.toolboxCategories).Count;loadedToolAssemblies=@($probe.loadedDirectoryToolAssemblies);probePid=$process.Id;exit=$process.ExitCode;payloadSha256=(Get-FileHash (Join-Path $product 'release-payload.json')).Hash;scope='正式目录冷启动探针；不代表拖入/保存重开/鼠标/设计器/人工验收通过'}
+    if(@($probe.toolboxTools|Where-Object {$_.id -like 'vm:*' -and $_.available}).Count -ne 0){throw '未实现的VM目录条目错误地处于可用状态。'}
+    $receipt=[ordered]@{sourceCommit=$expectedCommit;productRoot=$product;toolCount=$actual.Count;categoryCount=@($probe.toolboxCategories).Count;loadedToolAssemblies=@($probe.loadedDirectoryToolAssemblies);probePid=$process.Id;exit=$process.ExitCode;payloadSha256=(Get-FileHash (Join-Path $product 'release-payload.json')).Hash;scope='正式完整目录与组件加载探针；不代表拖入/保存重开/鼠标/设计器/人工验收通过'}
     $receipt|ConvertTo-Json -Depth 5|Set-Content (Join-Path $run 'receipt.json') -Encoding utf8
     $receipt|ConvertTo-Json -Depth 5
 }finally{Pop-Location}

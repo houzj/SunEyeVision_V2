@@ -11,9 +11,13 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         public string Name { get; set; }
         public string Category { get; set; }
         public string Icon { get; set; }
-        public string IconSource => "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/tool-" + Icon + ".png";
+        public string? CatalogIcon { get; init; }
+        public string IconSource => CatalogIcon != null ? "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + CatalogIcon : "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/tool-" + Icon + ".png";
         public string Description { get; set; }
         public string ToolId { get; set; }
+        public bool IsAvailable { get; init; } = true;
+        public string? LoadError { get; init; }
+        public string ToolTip => IsAvailable ? Name : Name + "：" + LoadError;
 
         public ToolItem(string name, string category, string icon, string description, string toolId)
         {
@@ -37,7 +41,8 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         public string Name { get; set; }
         public string Icon { get; set; }
         public string HoverIcon { get; set; } = string.Empty;
-        public string IconSource => "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + (IsSelected ? HoverIcon : Icon);
+        public string? CatalogIcon { get; init; }
+        public string IconSource => CatalogIcon != null ? "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + CatalogIcon : "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + (IsSelected ? HoverIcon : Icon);
         public string Description { get; set; }
         public int ToolCount { get; set; }
 

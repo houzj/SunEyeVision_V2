@@ -59,7 +59,7 @@
             </Grid.RowDefinitions>
 
             <!-- ========== 左侧工具箱 - 使用双模ToolboxControl ========== -->
-            <Border Grid.Column="0" Background="{DynamicResource ThemeWorkspaceBackgroundBrush}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource ThemeWorkspaceBackgroundBrush}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}" BorderThickness="0,0,1,0">
                 <toolbox:ToolboxControl DataContext="{Binding Toolbox}" x:Name="ToolboxContent"/>
             </Border>
 
@@ -167,7 +167,7 @@
             </Border>
 
             <!-- ========== 状态栏 (24px) ========== -->
-            <shell:StatusBarControl Grid.ColumnSpan="4" Grid.Row="1" DataContext="{Binding StatusBar}"/>
+            <shell:StatusBarControl Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" DataContext="{Binding StatusBar}"/>
         </Grid>
     </DockPanel>
 

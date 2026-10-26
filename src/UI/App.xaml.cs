@@ -130,7 +130,7 @@ public partial class App : Application
                     defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
                     toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),
-                    toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon }).ToArray(),
+                    toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon, iconSource=t.IconSource, available=t.IsAvailable }).ToArray(),
                     loadedDirectoryToolAssemblies = inspectToolbox ? AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().Name).Intersect(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog!.Tools.Select(t=>Path.GetFileNameWithoutExtension(t.AssemblyPath))).ToArray() : null,
                     toolComponents = inspectToolbox ? SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetComponentMetadata() : null
                 };

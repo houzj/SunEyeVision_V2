@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,7 +39,9 @@ public sealed class ToolboxPresentationTests
         var model=new ToolboxViewModel(directory);
         Assert.Null(Assert.Single(model.Categories).Tools);
         model.SelectedCategory="通信";
-        Assert.Equal(new[]{"first","second"},model.SelectedCategoryTools.Select(t=>t.ToolId));
+        Assert.Equal(new[]{"first","second"},model.SelectedCategoryTools.Where(t=>!t.ToolId.StartsWith("vm:")).Select(t=>t.ToolId));
+        Assert.Equal(5,model.SelectedCategoryTools.Count(t=>t.ToolId.StartsWith("vm:")&&!t.IsAvailable));
+        Assert.All(model.SelectedCategoryTools,t=>Assert.False(t.IsAvailable));
         Assert.True(model.IsCompactModePopupOpen);
         model.IsCompactMode=false;
         Assert.False(model.IsCompactModePopupOpen);

@@ -91,6 +91,7 @@
 
   <ItemGroup>
     <Resource Include="Resources\Toolbox\*.png" />
+    <EmbeddedResource Include="Resources\Toolbox\VmToolCatalog.json" LogicalName="SunEyeVision.UI.VmToolCatalog.json" />
     <Resource Include="..\Plugin.SDK\Metadata\ToolGroups.xml" Link="Resources\Toolbox\ToolGroups.xml" />
     <Content Include="..\Plugin.SDK\Metadata\ToolGroups.xml" Link="ToolGroups.xml" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

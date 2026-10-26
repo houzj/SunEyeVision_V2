@@ -1,0 +1,722 @@
+{
+  "sourceCatalog": "D:/MyWork/REA逆向测试/src/VisionEditor/tool-catalog.json",
+  "sourceSha256": "8146C56011492DC13D38D73AAA45A3717866818D5F5C78481223F5055B387B34",
+  "entries": 143,
+  "resources": [
+    {
+      "file": "AndModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/AndModuleImageEnable.png",
+      "sha256": "2844A7382EFED6044D2F11A994DC7D649984A744D1A76D6EF37528331D698AD8"
+    },
+    {
+      "file": "BranchModule_STDImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/BranchModule_STDImageEnable.png",
+      "sha256": "F2BAAAC75BF95625E4933C0B781EB197EE4795D6790B48CE5443B916963848F0"
+    },
+    {
+      "file": "BranchStringCpmLImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/BranchStringCpmLImageEnable.png",
+      "sha256": "1158C08DDB5F30F66BCB4CE1052A153ED0D288711C1E38B20DFBEFE15097623D"
+    },
+    {
+      "file": "CalculatorModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/CalculatorModuleImageEnable.png",
+      "sha256": "C631B865131E2C583FE8525BD21AC17F6BE3933610ADE8D319FD71E57503B50B"
+    },
+    {
+      "file": "CameraIOModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/CameraIOModuleImageEnable.png",
+      "sha256": "36E08836DDD4AAB4206D47DC3521451F3CEA22E9FF95CC8C884F70608E4870F4"
+    },
+    {
+      "file": "CoordinateModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/CoordinateModuleImageEnable.png",
+      "sha256": "9DFFDBB9FE3343935089A8FFF9DE9187462DCF5204507A7629E1BDA928DAF4D8"
+    },
+    {
+      "file": "CoordinateTransformImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/CoordinateTransformImageEnable.png",
+      "sha256": "036BFDA7B8D813C5D866408305A775F7198599FA8CA2DD0DB133A6F94181D7B6"
+    },
+    {
+      "file": "DataAnalysisModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataAnalysisModuleImageEnable.png",
+      "sha256": "E20DE6E634A1079F29D1F84FCB917B663DCFAD4B21D5C98EA17E6253000D7D3D"
+    },
+    {
+      "file": "DataAssembleModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataAssembleModuleImageEnable.png",
+      "sha256": "0AA8E9F19DE77C65ADB2FF4D77435FB19E8AC3B02E144E9B7E74BF854382EC6C"
+    },
+    {
+      "file": "DataClassificationModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataClassificationModuleImageEnable.png",
+      "sha256": "4FFD7D3E027EDCC7685778D8094CE179CCD13889BF2382454EC42EE0AE6D4275"
+    },
+    {
+      "file": "DataFilterModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataFilterModuleImageEnable.png",
+      "sha256": "22A1BCC663A0E7FC895AE73FADD20317EB542A4DA19746375BB9BFF1AA314F4F"
+    },
+    {
+      "file": "DataRecordModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataRecordModuleImageEnable.png",
+      "sha256": "86CEB2E6131B3B14893D8A7D8999E319D317401DC2A5551E0D1B4C0DCA263CAE"
+    },
+    {
+      "file": "DataSetModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataSetModuleImageEnable.png",
+      "sha256": "8AD0826FB4A992E5972DB7FBCE21B53C61C4206C14C3CAF1DEA4A125CADC5B74"
+    },
+    {
+      "file": "DataSortModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/DataSortModuleImageEnable.png",
+      "sha256": "A88E6FC968470DE25CAF50BA71039E49FDB80C15C0E6EC74FA3BCF25DA972014"
+    },
+    {
+      "file": "FormatModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/FormatModuleImageEnable.png",
+      "sha256": "72382F3777CC7911DD4E4ED532D6273050B043BEECF30D2411F3D19B56AE9927"
+    },
+    {
+      "file": "GeometryCreateImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/GeometryCreateImageEnable.png",
+      "sha256": "7E231F24AD27AB51649A65C7B92C6C7B8E1DEC5535F35A7DA5A895AA8E3B0F6C"
+    },
+    {
+      "file": "GraphicsSetModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/GraphicsSetModuleImageEnable.png",
+      "sha256": "E3809C3FA9BF0E16A20070F9ED0E1ECAEEE0A0C1C97756815FD966CCFA7D9C45"
+    },
+    {
+      "file": "IfBranchModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IfBranchModuleImageEnable.png",
+      "sha256": "9053B6D5AD1B5497BB46F76E47BCF54E48F6B92997C09AFABE37F875E05F1511"
+    },
+    {
+      "file": "IfModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IfModuleImageEnable.png",
+      "sha256": "97FA488A337DE00B6227378E5A945CB69AEA117C89FF80A11A182B18A62A9A9B"
+    },
+    {
+      "file": "ImageAcquisitionModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/ImageAcquisitionModuleImageEnable.png",
+      "sha256": "8DC9ADF826CC9B2222999FB10028736D19B1B94702CB0EC2C516BAE66FA43F4D"
+    },
+    {
+      "file": "ImageBufferModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/ImageBufferModuleImageEnable.png",
+      "sha256": "BA442BADE6F608B4111FC3396AF362640539374421A3AE1F30BC36B84B96DE89"
+    },
+    {
+      "file": "ImageSourceModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/ImageSourceModuleImageEnable.png",
+      "sha256": "536F1A81DF9FCF6EEB5F4338E2F328805A0C7EEA04507401511384ABB79C6B5E"
+    },
+    {
+      "file": "IMVS2dArrayCorrectModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVS2dArrayCorrectModuImageEnable.png",
+      "sha256": "27B5A6E8B88839D3B7075670F37C5D7AC7B00FF0CCC63C0883B56DF3C0A1D447"
+    },
+    {
+      "file": "IMVS2dBcrModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVS2dBcrModuImageEnable.png",
+      "sha256": "684288DF786BB2281E88C948B69212D25771FE590628A409D93D8CC594D0ADEC"
+    },
+    {
+      "file": "IMVSAffineTransformModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSAffineTransformModuImageEnable.png",
+      "sha256": "A8E57CB7D30B06127E8BEF87E371E5D47F7528169222395E8FB781FA94B43E9C"
+    },
+    {
+      "file": "IMVSAngleBisectorFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSAngleBisectorFindModuImageEnable.png",
+      "sha256": "05C9D7AF2043C10B7839D4805DB047A0C6C47C6CAE47B6866A665FA7938982E8"
+    },
+    {
+      "file": "IMVSBcrModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBcrModuImageEnable.png",
+      "sha256": "64FCDADD3604ADCAAD63615EAFB96AE1C9AD975FCFE88963AE429DA83A0A7438"
+    },
+    {
+      "file": "IMVSBinaryModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBinaryModuImageEnable.png",
+      "sha256": "2ACD1252C8CDC4D8CF640F33EB5ABD24A69E439A0635F5CFA93DA29AEFD3A291"
+    },
+    {
+      "file": "IMVSBlobFindLabelsModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBlobFindLabelsModuImageEnable.png",
+      "sha256": "DD188CB803AC03E2AABB134A34776978D1C53549E9D5A354D723C6C730CEE866"
+    },
+    {
+      "file": "IMVSBlobFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBlobFindModuImageEnable.png",
+      "sha256": "DD188CB803AC03E2AABB134A34776978D1C53549E9D5A354D723C6C730CEE866"
+    },
+    {
+      "file": "IMVSBoxFilterModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBoxFilterModuleImageEnable.png",
+      "sha256": "55F2817882245AA59BE0DE91CE0D2B57487F0DDDB7D7445CD240A9D9893ABD0A"
+    },
+    {
+      "file": "IMVSBoxMergeModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBoxMergeModuImageEnable.png",
+      "sha256": "775088E9095D9E62142F3DA9251BA0CEEDDB0A5CFC23A4D9309878BB513F20F9"
+    },
+    {
+      "file": "IMVSBoxOverlapCalculationModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSBoxOverlapCalculationModuImageEnable.png",
+      "sha256": "5B25C371C311A0D7DD9483096FDBBEA133F0310D2A6755BF27397157137DE6F5"
+    },
+    {
+      "file": "IMVSC2CMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSC2CMeasureModuImageEnable.png",
+      "sha256": "4DCCEFCF473EC26F843416A08D9731229F7EA67F79601A0814181036FF3EFD45"
+    },
+    {
+      "file": "IMVSCalibBoardCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCalibBoardCalibModuImageEnable.png",
+      "sha256": "4D2C4E5F5CD02CB1AE4341E85CE9C709ED06759F99BD73AFD4B7D1D740B6997B"
+    },
+    {
+      "file": "IMVSCalibTransformModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCalibTransformModuImageEnable.png",
+      "sha256": "F2585AAD8A3289319BF477F044B4DCDE7071B30E1780B62BFFC8E53FE98FF132"
+    },
+    {
+      "file": "IMVSCaliperCornerModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCaliperCornerModuImageEnable.png",
+      "sha256": "D3D5A0804DAF3A85785119DD6E6A161AFA744DD30D0D06AB4E3BF733F3C965A7"
+    },
+    {
+      "file": "IMVSCaliperEdgeModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCaliperEdgeModuImageEnable.png",
+      "sha256": "B722E7C64049CA5FD4C80EEB31C36DA6FE01F83A654D9E13C680F2411F00C8FC"
+    },
+    {
+      "file": "IMVSCaliperModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCaliperModuImageEnable.png",
+      "sha256": "0913496871309E435E310B18D5B5142DF35B05FFACB5086C3D83164297136E63"
+    },
+    {
+      "file": "IMVSCameraMapModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCameraMapModuImageEnable.png",
+      "sha256": "1089BEBE917C565EE3CADD78FB79DB175DFF8BCD3764710E11F0894F0C7536C8"
+    },
+    {
+      "file": "IMVSCircleEdgeInspModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCircleEdgeInspModuImageEnable.png",
+      "sha256": "0EE0B2A48FFA1BF73637CACE55F2CA24C7BF13B4437B1BC20934B9A78152A39C"
+    },
+    {
+      "file": "IMVSCircleEdgePairInspModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCircleEdgePairInspModuImageEnable.png",
+      "sha256": "77FC09D1229383E1376830150BF5CB61EDD9A49BCBD9F7A277E149A2C66AEF6C"
+    },
+    {
+      "file": "IMVSCircleFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCircleFindModuImageEnable.png",
+      "sha256": "02A6161A845C47F90A7C1D36B8CA09FBBD5C2FA6705E2D57D155BE554A234122"
+    },
+    {
+      "file": "IMVSCircleFitModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSCircleFitModuImageEnable.png",
+      "sha256": "0FE66A010CBCDFA87F5FFF094AA09BAD86A4F6721343811D653D2862085416F4"
+    },
+    {
+      "file": "IMVSColorExtractModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSColorExtractModuImageEnable.png",
+      "sha256": "A942BCF65FD33A1320DA265133D416177E197CCB0830C9B2A429F0067D154F71"
+    },
+    {
+      "file": "IMVSColorImageGenerationModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSColorImageGenerationModuImageEnable.png",
+      "sha256": "8EBB59B115FBC49E30FEA648407CF37BD50E443F81F239FB09E29B65D2AA8C81"
+    },
+    {
+      "file": "IMVSColorMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSColorMeasureModuImageEnable.png",
+      "sha256": "352FD3483F1E462D6C3B1EED11793DF29690282247E22A1108357E1CC2C07EAD"
+    },
+    {
+      "file": "IMVSColorRecognitionModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSColorRecognitionModuImageEnable.png",
+      "sha256": "678B2205120B572786DC61FF76C6066DC3CA862606E23B421649FC7D71ABE6AD"
+    },
+    {
+      "file": "IMVSColorSegmentModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSColorSegmentModuImageEnable.png",
+      "sha256": "2C998961078F9327B529A722B83A52D27EAB1BCAD7A0CC3C0B102226E076FE92"
+    },
+    {
+      "file": "IMVSColorTransformModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSColorTransformModuImageEnable.png",
+      "sha256": "A8D5C3DEE30EC891A8296464F8945E528FE4AD18AD77800B0F4A61636B9B6E47"
+    },
+    {
+      "file": "IMVSContourMatchModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSContourMatchModuImageEnable.png",
+      "sha256": "DAB1344F095E7240296EE60AF2BBEF3D4C08A5ADA3870F89057DFC0BCD5F0296"
+    },
+    {
+      "file": "IMVSDivideImageModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSDivideImageModuImageEnable.png",
+      "sha256": "640F26823C904D21E1B0C1704950863B64B9201501C75D9B6773E925C0F22171"
+    },
+    {
+      "file": "IMVSEdgeFlawInspModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgeFlawInspModuImageEnable.png",
+      "sha256": "502CBD9EF25E3B0FBA217466D60B9D20F26AD676E3D56723E344059ED4828C0F"
+    },
+    {
+      "file": "IMVSEdgeInspGroupModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgeInspGroupModuImageEnable.png",
+      "sha256": "0461DCCF078F8CC12878BC10D956F2883C083330D10401A01E680C255729A92E"
+    },
+    {
+      "file": "IMVSEdgePairFlawInspModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgePairFlawInspModuImageEnable.png",
+      "sha256": "55CD2476A1AAC9C1FB36D0910C4A8DE872421853D3B7A4E96526F59564906509"
+    },
+    {
+      "file": "IMVSEdgePairInspGroupModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgePairInspGroupModuImageEnable.png",
+      "sha256": "0C9A9DBB39883E164073E529B301756933A8D165B7F19EBBA61D846E2E7556B7"
+    },
+    {
+      "file": "IMVSEdgePairPosTrendAnalyModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgePairPosTrendAnalyModuImageEnable.png",
+      "sha256": "89154B5187FDA423837F8E835C15CD3C524783FAC5001E1342E9730EE0D8255E"
+    },
+    {
+      "file": "IMVSEdgePosTrendAnalyModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgePosTrendAnalyModuImageEnable.png",
+      "sha256": "65E0A51A04A99478B9E6F21705B4520696F44E736EDC95C32C0EFB6E01E71B41"
+    },
+    {
+      "file": "IMVSEdgeWidthFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEdgeWidthFindModuImageEnable.png",
+      "sha256": "FCBA6D4A2C6777E079F5D49C3F78A499B7AB7C5CDB8A3604341F29610DD217F6"
+    },
+    {
+      "file": "IMVSEllipseFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEllipseFindModuImageEnable.png",
+      "sha256": "8928D9AF029C2EA98840B664F3759F8E8FCAABAFFCF917391D6337ABAEC25712"
+    },
+    {
+      "file": "IMVSEllipseFitModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSEllipseFitModuImageEnable.png",
+      "sha256": "27F985B69298D00C4D2C65F60DC044EB2CBFC36A977E0D00171714152417B336"
+    },
+    {
+      "file": "IMVSFastFeatureMatchModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSFastFeatureMatchModuImageEnable.png",
+      "sha256": "DAB1344F095E7240296EE60AF2BBEF3D4C08A5ADA3870F89057DFC0BCD5F0296"
+    },
+    {
+      "file": "IMVSFixtureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSFixtureModuImageEnable.png",
+      "sha256": "B5A6648770206022322D1EB32E12E6E9AF288E02EAEF5721933366B58E8886FC"
+    },
+    {
+      "file": "IMVSFrameMeanModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSFrameMeanModuImageEnable.png",
+      "sha256": "8E2CE4FA7CA98D49F74BB5D4D89909E84E5A4B3892B92AC1EC5A8D707051AA6F"
+    },
+    {
+      "file": "IMVSGeometricTransformModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSGeometricTransformModuImageEnable.png",
+      "sha256": "A8E57CB7D30B06127E8BEF87E371E5D47F7528169222395E8FB781FA94B43E9C"
+    },
+    {
+      "file": "IMVSGluePathConductModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSGluePathConductModuImageEnable.png",
+      "sha256": "BDB06F27473F8008FC19A74281EC0A1DD74E3DBAC35E5C5F8B1D563A6754DF38"
+    },
+    {
+      "file": "IMVSGrayMatchModuVAImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSGrayMatchModuVAImageEnable.png",
+      "sha256": "199EAE2B8F81ED53AF8CF072BC9A22DEFA75024C5B6BA486212BB9AFBAAD2CD6"
+    },
+    {
+      "file": "IMVSGroupImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSGroupImageEnable.png",
+      "sha256": "E34FD83FA05360306994D32055A65CE6EF3EC7A702DC29E34C91F4128F773EE3"
+    },
+    {
+      "file": "IMVSHistToolModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSHistToolModuImageEnable.png",
+      "sha256": "AC85EB42DFEF4322CAAAD1BF77E4C55DD62371F968AAF59B38B8EB97FE304F6E"
+    },
+    {
+      "file": "IMVSHPFeatureMatchModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSHPFeatureMatchModuImageEnable.png",
+      "sha256": "DAB1344F095E7240296EE60AF2BBEF3D4C08A5ADA3870F89057DFC0BCD5F0296"
+    },
+    {
+      "file": "IMVSImageCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageCalibModuImageEnable.png",
+      "sha256": "12691A8EBCCB0E67A4A8C45975734BD80C93EB9ECF0E0EFBE8A9999BFC4325A4"
+    },
+    {
+      "file": "IMVSImageCombineProcessModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageCombineProcessModuImageEnable.png",
+      "sha256": "78584C4EE5208E68C8A587D5C6626E31EE9110F84BB41B798911A6C06A536857"
+    },
+    {
+      "file": "IMVSImageCorrectCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageCorrectCalibModuImageEnable.png",
+      "sha256": "FA80E7B37E1CC15494CFE1AE94D02EFF143B7C51048542012092FA0E7154A69D"
+    },
+    {
+      "file": "IMVSImageCorrectManualModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageCorrectManualModuImageEnable.png",
+      "sha256": "D637C4DE2973880CF14F4B1A2974A108D0A461A49994507718191D9E4660E24F"
+    },
+    {
+      "file": "IMVSImageEnhanceModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageEnhanceModuImageEnable.png",
+      "sha256": "F354F4CE2C912C2A918270AAE4D01DE324AA573E3EE8C9A8C95D0BB3CC66A5F9"
+    },
+    {
+      "file": "IMVSImageFilterModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageFilterModuImageEnable.png",
+      "sha256": "03065ACCC26A6F91B52A39F6507EAB2D2FF4E264527DB048EA130EE026048010"
+    },
+    {
+      "file": "IMVSImageFixtureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageFixtureModuImageEnable.png",
+      "sha256": "788B37982A429FB031B8EE4B46FA9452D5FE3A3D19397EE22D34767CC36EA15E"
+    },
+    {
+      "file": "IMVSImageMathModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageMathModuImageEnable.png",
+      "sha256": "A05564B2E905D89092896ED6870F37AD4AFE0145BCC1E74F3AD2823117045B86"
+    },
+    {
+      "file": "IMVSImageMorphModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageMorphModuImageEnable.png",
+      "sha256": "DD7779E641C2FEF6B85FB1A181BB1FFE2BED9EA650BD5C77588D3B15206FBA28"
+    },
+    {
+      "file": "IMVSImageNormlizeModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageNormlizeModuImageEnable.png",
+      "sha256": "60912937C41E9328B46BE2E6291EFE48DA85271B9971FAC869635E36BB275487"
+    },
+    {
+      "file": "IMVSImageResizeModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageResizeModuImageEnable.png",
+      "sha256": "90D7B7BB3B6D10BF79A1DAF00E08F996A871B48577B0AE25AFCBC1E31E6CADFE"
+    },
+    {
+      "file": "IMVSImageSharpnessModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImageSharpnessModuImageEnable.png",
+      "sha256": "85302A827931703AADF56A3B644CCAAA83C2257283FF89533D0DCCC6AF812E13"
+    },
+    {
+      "file": "IMVSImgStitchCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSImgStitchCalibModuImageEnable.png",
+      "sha256": "840519C6235C7A2E5A4540E4A5CAF56BA986F6CEBEA8C8C05E9AF5D111614358"
+    },
+    {
+      "file": "IMVSInspectModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSInspectModuImageEnable.png",
+      "sha256": "FD3F3EB8DBE3D5368941967666C684F01D3332ABE063F726A50CCDEB9A386C6F"
+    },
+    {
+      "file": "IMVSIntensityMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSIntensityMeasureModuImageEnable.png",
+      "sha256": "024CB76190F9FB14D0D9EBB3EA55268284B6525E721F0C16628C9B1A7C7B123D"
+    },
+    {
+      "file": "IMVSInverseAffineTransformModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSInverseAffineTransformModuImageEnable.png",
+      "sha256": "A8E57CB7D30B06127E8BEF87E371E5D47F7528169222395E8FB781FA94B43E9C"
+    },
+    {
+      "file": "IMVSL2CMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSL2CMeasureModuImageEnable.png",
+      "sha256": "CA356652533E7A91A7915BFA6BA2E7A810E18E56CBA9325A544B70D3ADFC409D"
+    },
+    {
+      "file": "IMVSL2LMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSL2LMeasureModuImageEnable.png",
+      "sha256": "5DEAB6D7EC3D2EE4B0F8EDBDD578CDFE72A22C66B0777E2F74042A92AB1D76B7"
+    },
+    {
+      "file": "IMVSLineAlignModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSLineAlignModuImageEnable.png",
+      "sha256": "F172A0BC1F061E86F63BFF21C3B4FDA6B7BEC9C0220ED6BC78BBE96FCE515B90"
+    },
+    {
+      "file": "IMVSLineEdgeInspModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSLineEdgeInspModuImageEnable.png",
+      "sha256": "186BBA86C57FF5409B0E8D787D0F339738B7C33E55A9BF6FE10453EC211BD4E7"
+    },
+    {
+      "file": "IMVSLineEdgePairInspModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSLineEdgePairInspModuImageEnable.png",
+      "sha256": "6164226ABC7001C9BBACDBCDBBDAD3247D8270191E619F57E83C1403744B82A5"
+    },
+    {
+      "file": "IMVSLineFindGroupModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSLineFindGroupModuImageEnable.png",
+      "sha256": "A8A64D9E58AFD9B2BA3A07DA7E8C99013DBFDF55B06BF1CB5BD7C9CF82ACD8E4"
+    },
+    {
+      "file": "IMVSLineFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSLineFindModuImageEnable.png",
+      "sha256": "F7FAE400E91369D5FFA7E4BCE11A7425F2C00D8E45B95B9BA51FFD16F0DE5126"
+    },
+    {
+      "file": "IMVSLineFitModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSLineFitModuImageEnable.png",
+      "sha256": "EFEBA43F6692B4FA3299DCE455EF11D716149946A3A01CDD4D2AFDFA7C38900B"
+    },
+    {
+      "file": "IMVSMachineLearningClassifierModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMachineLearningClassifierModuImageEnable.png",
+      "sha256": "35A6B774966491C8BE761C7841F4AB5F409D331A9E905C0831367E9EDA325FD4"
+    },
+    {
+      "file": "IMVSMapCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMapCalibModuImageEnable.png",
+      "sha256": "67F8DA2EC928BD550B7C3CECF8E3E6E46E65A0DF6977AEA6107F66890F6D382B"
+    },
+    {
+      "file": "IMVSMarkFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMarkFindModuImageEnable.png",
+      "sha256": "866ED38788DA33AB6B040B8E6B10267D1B39420B66A24E63BBCED3F277EEE4F2"
+    },
+    {
+      "file": "IMVSMarkInspModuVAImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMarkInspModuVAImageEnable.png",
+      "sha256": "AD89B3D160E991BDE943186A0E2A9EA69FC15A5761487DA2636DF9F746027374"
+    },
+    {
+      "file": "IMVSMatrixCircleFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMatrixCircleFindModuImageEnable.png",
+      "sha256": "DAAA0D5BF97B4039C522DCFC5E3830FB67A1B60CC1438CD67C6C0A3037AA55BE"
+    },
+    {
+      "file": "IMVSMedianLineFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMedianLineFindModuImageEnable.png",
+      "sha256": "8176A5AF130630DE56A783E0E2593CD860E3E4F65B44A99B8EE1E1ABB9D0E090"
+    },
+    {
+      "file": "IMVSMultiImageFusionModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMultiImageFusionModuImageEnable.png",
+      "sha256": "132EE1C78AD48088A37A02D3B39EBBAC4EBAA9F3F4969741284B4A34782F27C7"
+    },
+    {
+      "file": "IMVSMultiLabelFilterModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMultiLabelFilterModuImageEnable.png",
+      "sha256": "771D71C5922330C80DECF7B0280D2A13712246BE50042FD172517F1BC09AB953"
+    },
+    {
+      "file": "IMVSMultiLineFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMultiLineFindModuImageEnable.png",
+      "sha256": "359163051DBE1B621BFC01C6667839A6C16DEF13DEB71294B69B8ACA0700021D"
+    },
+    {
+      "file": "IMVSMultiPointAlignModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSMultiPointAlignModuImageEnable.png",
+      "sha256": "02CBB96CED69122737FB07398494BF80AF84C67C8707A360187FEDA6BC3487FD"
+    },
+    {
+      "file": "IMVSNImageCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSNImageCalibModuImageEnable.png",
+      "sha256": "200EA289104F75712C5B5652256A2150C1E45B3A1A9D4E58B357AECD5DA3649B"
+    },
+    {
+      "file": "IMVSNPointCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSNPointCalibModuImageEnable.png",
+      "sha256": "2D55773174D8FFBE470044E1F3A08A4FE4CC26861F9CAC5A37FC934E69DCFD68"
+    },
+    {
+      "file": "IMVSOcrModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSOcrModuImageEnable.png",
+      "sha256": "0D035089A2320C6973482997E9809943D499753C74EE8DAD1F722850EE8B28B9"
+    },
+    {
+      "file": "IMVSP2CMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSP2CMeasureModuImageEnable.png",
+      "sha256": "DC157855CE521878F7AFCEFDC8F578088E0F28B27AAB6DDCAEB66F78CA0A32D7"
+    },
+    {
+      "file": "IMVSP2LMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSP2LMeasureModuImageEnable.png",
+      "sha256": "2468EC43200FFAA2D88444E47A7FE2A63249A71742AD485F36D5921F46240CFB"
+    },
+    {
+      "file": "IMVSP2PMeasureModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSP2PMeasureModuImageEnable.png",
+      "sha256": "8B8F1F19195148814370BF0457C28FAF57C30F639A657180417C8C0766BCF430"
+    },
+    {
+      "file": "IMVSPairLineModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSPairLineModuImageEnable.png",
+      "sha256": "D7EAF6825DC6BE90BC5C55C32A167C5EC473E45688F30E3FEC2BEEF5662C9766"
+    },
+    {
+      "file": "IMVSParallelCalculateModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSParallelCalculateModuImageEnable.png",
+      "sha256": "AB7E16B4A544E663A9942F567314CA12F5D17771AACDB93752C287A6CBD27686"
+    },
+    {
+      "file": "IMVSPeakFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSPeakFindModuImageEnable.png",
+      "sha256": "10D1B5DE8A540494484922A3EE353120EC744C1FF613BEB04807BC01CE0B1264"
+    },
+    {
+      "file": "IMVSPixelCountModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSPixelCountModuImageEnable.png",
+      "sha256": "715222B7867030191F35741F6C7C88E5D0A93890379CBDB1EE11D87CD4F5E9B8"
+    },
+    {
+      "file": "IMVSPixelCountModuVAImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSPixelCountModuVAImageEnable.png",
+      "sha256": "715222B7867030191F35741F6C7C88E5D0A93890379CBDB1EE11D87CD4F5E9B8"
+    },
+    {
+      "file": "IMVSPolarUnwarpModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSPolarUnwarpModuImageEnable.png",
+      "sha256": "0D1B3CE4C1DEDBFC7F6E52194BB596B92416AF90D3A698A14B7C64B2F9F5BEEC"
+    },
+    {
+      "file": "IMVSQuadrangleFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSQuadrangleFindModuImageEnable.png",
+      "sha256": "3E3419DDC3C10B12124BF20C5EF211E4E957D7D2618A7FE9A0A7D11260F94D2D"
+    },
+    {
+      "file": "IMVSRectFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSRectFindModuImageEnable.png",
+      "sha256": "0E91F7F17E594B6E78FDF03350E1DAD04B20A74305F55A2B86E6FCA4598FD363"
+    },
+    {
+      "file": "IMVSRegionCopyModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSRegionCopyModuImageEnable.png",
+      "sha256": "71ED87A4E97E4874EA0E0AA818AABB844A9EDD910DA7E7F018C5C197E8927500"
+    },
+    {
+      "file": "IMVSRotateCalculateModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSRotateCalculateModuImageEnable.png",
+      "sha256": "AA1CAB2BEB5DBFF2CCEBD67BA0021AD02391C88BEE9DE1E5B06A645F7B52750F"
+    },
+    {
+      "file": "IMVSScaleTransformModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSScaleTransformModuImageEnable.png",
+      "sha256": "4BBF4DB5DE696CC512BF04264A31FEB85B333EE985789B93BAF2974721270AA8"
+    },
+    {
+      "file": "IMVSShadeCorrectModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSShadeCorrectModuImageEnable.png",
+      "sha256": "B89500197BAFB155A1C64E660158DDCA6F3DE7E0D6CA3092491972C885BA467D"
+    },
+    {
+      "file": "IMVSSinglePointAlignModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSSinglePointAlignModuImageEnable.png",
+      "sha256": "A2151AF9F9D611E210CD6E6253B3D33D8E058BE82B8659D7E9D0425E48623E16"
+    },
+    {
+      "file": "IMVSSurfaceDefectFilterModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSSurfaceDefectFilterModuImageEnable.png",
+      "sha256": "CEF4D067DD5F244CA3959DA7008EAC877E9AB0AB5A42CBFC507ACC161D608E52"
+    },
+    {
+      "file": "IMVSTargetTrackModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSTargetTrackModuImageEnable.png",
+      "sha256": "69616D15C1671ABA58B54DDC8282B8F2EB515E950A1F3A46BE6447E3C1488B1C"
+    },
+    {
+      "file": "IMVSVerticalLineFindModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/IMVSVerticalLineFindModuImageEnable.png",
+      "sha256": "95A633B0F3E69B11168BB8CC71528AC0FC417BA35DFFE1ECBC036E854B5ADC34"
+    },
+    {
+      "file": "LightModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/LightModuleImageEnable.png",
+      "sha256": "7B1FF2E802FA8E866FB92BE2D192745C87718137D767457E7AD846808A6FF45E"
+    },
+    {
+      "file": "PointSetMODU_STDImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/PointSetMODU_STDImageEnable.png",
+      "sha256": "8AD0826FB4A992E5972DB7FBCE21B53C61C4206C14C3CAF1DEA4A125CADC5B74"
+    },
+    {
+      "file": "PyShellModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/PyShellModuleImageEnable.png",
+      "sha256": "D8EDE92ED1F98A1518CE30E881ED71335424E45BAE9DFDE40E866C0A621D84CF"
+    },
+    {
+      "file": "ReadCalibFileModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/ReadCalibFileModuImageEnable.png",
+      "sha256": "D5930C05F6AC6375F2A630BDB5386A9B48E8E8288D858813239D3D3010B9D8FC"
+    },
+    {
+      "file": "ReadDatasModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/ReadDatasModuleImageEnable.png",
+      "sha256": "70DA9506D52050960AA06F7E08D2CA74D59DFFD9A170D083E0C99A0F83248FF0"
+    },
+    {
+      "file": "RotateCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/RotateCalibModuImageEnable.png",
+      "sha256": "0E91F7F17E594B6E78FDF03350E1DAD04B20A74305F55A2B86E6FCA4598FD363"
+    },
+    {
+      "file": "SaveImageImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/SaveImageImageEnable.png",
+      "sha256": "557FD20A9CB321DE3FEFEF810D441156EEB82DBCFD1E8FF28A1BAD9C8C447B37"
+    },
+    {
+      "file": "SaveTextModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/SaveTextModuleImageEnable.png",
+      "sha256": "E136407008C775B63067A4343D65B9E4C58BCD42EBD348351F3E4AA248EDD362"
+    },
+    {
+      "file": "SendDatasModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/SendDatasModuleImageEnable.png",
+      "sha256": "C4641E359017E4B78B1090DE858D20DBEB8A26876DADCD809E891990A2DFA79E"
+    },
+    {
+      "file": "ShellModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/ShellModuleImageEnable.png",
+      "sha256": "D8EDE92ED1F98A1518CE30E881ED71335424E45BAE9DFDE40E866C0A621D84CF"
+    },
+    {
+      "file": "SinglePointGrabModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/SinglePointGrabModuImageEnable.png",
+      "sha256": "A2151AF9F9D611E210CD6E6253B3D33D8E058BE82B8659D7E9D0425E48623E16"
+    },
+    {
+      "file": "SinglePointMapAlignModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/SinglePointMapAlignModuImageEnable.png",
+      "sha256": "A2151AF9F9D611E210CD6E6253B3D33D8E058BE82B8659D7E9D0425E48623E16"
+    },
+    {
+      "file": "SinglePointRectifyModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/SinglePointRectifyModuImageEnable.png",
+      "sha256": "A2151AF9F9D611E210CD6E6253B3D33D8E058BE82B8659D7E9D0425E48623E16"
+    },
+    {
+      "file": "StringCompareModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/StringCompareModuleImageEnable.png",
+      "sha256": "F51535497F9AF29A569BD447A5E1BEF182BFCA04F2100E27D6A3B32819D0EC7E"
+    },
+    {
+      "file": "TimeStatisticModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/TimeStatisticModuleImageEnable.png",
+      "sha256": "23733548B839513A85933EFB03C93C1207F9F2876FF370AFF397D19364E6DFF7"
+    },
+    {
+      "file": "TranslationCalibModuImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/TranslationCalibModuImageEnable.png",
+      "sha256": "2D55773174D8FFBE470044E1F3A08A4FE4CC26861F9CAC5A37FC934E69DCFD68"
+    },
+    {
+      "file": "TriggerModuleImageEnable.png",
+      "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/catalog/TriggerModuleImageEnable.png",
+      "sha256": "4D05C8084B089D81AD5A94CB8B93C8D0604F7B29A524D8EAE225B025557167E7"
+    }
+  ]
+}

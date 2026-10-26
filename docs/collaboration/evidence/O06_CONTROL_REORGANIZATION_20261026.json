@@ -1,0 +1,1426 @@
+{
+  "date": "2026-10-26",
+  "status": "方案供整体审核，尚未产品实施",
+  "baseline": "101bb36a3fad4e0f2096a47469989db610083cdc",
+  "scope": "原31类逐项重新划职责与文件组织；不是31个新类，也不按旧继承树搬迁",
+  "counts": {
+    "提取复用": 8,
+    "重组": 15,
+    "删除": 8
+  },
+  "groups": [
+    "基础输入",
+    "字段模板",
+    "ROI交互",
+    "宿主装配",
+    "工具视图",
+    "图标资源"
+  ],
+  "sourceKinds": "控件/模板/组合链描述证据形态；新职责分组另列，不混为层次。全部有具体子职责源，确认无源为0；删除旧类依职责退出，不虚构VM全局不存在。",
+  "rows": [
+    {
+      "id": "labeledcontrol",
+      "name": "LabeledControl",
+      "group": "基础输入",
+      "evidenceKind": "控件/模板",
+      "sourceRefs": [
+        "layout"
+      ],
+      "responsibility": "只负责标签、输入列、帮助与错误位置",
+      "action": "重组",
+      "reuse": "标签/对齐规则",
+      "retire": "旧类业务布局分支",
+      "target": "Fields/Templates/FieldRow.xaml",
+      "interaction": "I01",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/LabeledControl.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\AssemblyInfo.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\GraphicsDisplayEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\JudgmentEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\TextDisplayEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "numericupdown",
+      "name": "NumericUpDown",
+      "group": "基础输入",
+      "evidenceKind": "控件",
+      "sourceRefs": [
+        "number",
+        "slider"
+      ],
+      "responsibility": "值、精度、步进、数值校验与单滑条",
+      "action": "提取复用",
+      "reuse": "步进/精度/焦点/滑条逻辑，逐态修模板",
+      "retire": "旧SDK日志/常量与主题依赖",
+      "target": "Controls/NumericUpDown.cs + Themes/Numeric.xaml",
+      "interaction": "I02",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/NumericUpDown.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ConfigSetting.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureGuideParameterPanel.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureGuideParameterPanel.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\RangeInputControl.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\DrawingParameterPanel.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolEditorCommit.cs",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml",
+        "src\\UI\\Features\\Camera\\CameraDetailViewModel.cs",
+        "src\\UI\\Features\\Camera\\CameraParameterPanel.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationDeviceDialog.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationHeartbeatsView.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationManagerDialog.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationManagerDialog.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationResponsesView.xaml",
+        "src\\UI\\Shared\\Controls\\PropertyGrid\\PropertyItemPanel.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\NumericUpDownBindingTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProductionEditorBoundaryTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProductionEditorContextTests.cs",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointSampleEditor.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "rangeslider",
+      "name": "RangeSlider",
+      "group": "基础输入",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "slider",
+        "range"
+      ],
+      "responsibility": "仅双端拖动，不存来源或业务判定",
+      "action": "提取复用",
+      "reuse": "双端夹限与拖动",
+      "retire": "参数/订阅和作用域职责不得下沉",
+      "target": "Controls/RangeSlider.cs",
+      "interaction": "I03",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/RangeSlider.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\RangeInputControl.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "rangeinputcontrol",
+      "name": "RangeInputControl",
+      "group": "基础输入",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "number",
+        "range",
+        "float"
+      ],
+      "responsibility": "上下界数值与双滑条组合",
+      "action": "提取复用",
+      "reuse": "上下界同步、焦点与弹层生命周期",
+      "retire": "订阅归字段组合，不塞基础范围控件",
+      "target": "Controls/RangeInputControl.cs + Themes/Range.xaml",
+      "interaction": "I03",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/RangeInputControl.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\AssemblyInfo.cs",
+        "src\\Plugin.SDK\\Execution\\Parameters\\MeasureThreshold.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\NumericUpDown.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\JudgmentEditorControl.xaml",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "toggleswitch",
+      "name": "ToggleSwitch",
+      "group": "基础输入",
+      "evidenceKind": "控件/模板",
+      "sourceRefs": [
+        "bool"
+      ],
+      "responsibility": "布尔输入；不自作业务显隐",
+      "action": "提取复用",
+      "reuse": "布尔绑定/事件",
+      "retire": "旧圆角和尺寸不默认保留，按VM图修资源",
+      "target": "Controls/ToggleSwitch.cs + Themes/Boolean.xaml",
+      "interaction": "I04",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ToggleSwitch.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\AssemblyInfo.cs",
+        "src\\Plugin.SDK\\Execution\\Parameters\\MeasureThreshold.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\JudgmentEditorControl.xaml",
+        "src\\UI\\Features\\Camera\\CameraDetailViewModel.cs",
+        "src\\UI\\Features\\Camera\\CameraManagerDialog.xaml",
+        "src\\UI\\Features\\Camera\\CameraManagerDialog.xaml.cs",
+        "src\\UI\\Features\\Camera\\CameraParameterPanel.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationDeviceDialog.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationHeartbeatsView.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationHeartbeatsView.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationManagerDialog.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationManagerDialog.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationResponsesView.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationResponsesView.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\ModbusAddressPointDialog.xaml",
+        "src\\UI\\Shell\\Controls\\Panels\\LogPanelControl.xaml",
+        "src\\UI\\Templates\\Camera\\GenericParamsTemplate.xaml",
+        "tests\\SunEyeVision.UI.Tests\\CommunicationAutomationUiTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\CommunicationHeartbeatTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "colorpicker",
+      "name": "ColorPicker",
+      "group": "基础输入",
+      "evidenceKind": "控件",
+      "sourceRefs": [
+        "colorinner"
+      ],
+      "responsibility": "纯取色值与颜色转换",
+      "action": "提取复用",
+      "reuse": "取色/颜色转换及确定取消",
+      "retire": "工具语义与旧主题管理依赖",
+      "target": "Controls/ColorPicker.cs + Themes/Color.xaml",
+      "interaction": "I05",
+      "limits": "VM有具体取色控件；本方HSV算法/完整弹层未逐态同义验证。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ColorPicker/ColorPicker.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ColorPicker\\ColorPickerPalette.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ColorPicker\\ColorSelector.cs",
+        "src\\Plugin.SDK\\UI\\Converters\\UIntToColorConverter.cs",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "colorselector",
+      "name": "ColorSelector",
+      "group": "基础输入",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "color",
+        "colorinner"
+      ],
+      "responsibility": "色块/RGB文本与取色弹层",
+      "action": "重组",
+      "reuse": "ColorPicker取色基础",
+      "retire": "旧选择器类与显示专用颜色类不得重复存颜色",
+      "target": "Fields/Templates/ColorField.xaml",
+      "interaction": "I05",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ColorPicker/ColorSelector.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "configsetting",
+      "name": "ConfigSetting",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "dispatch",
+        "dual",
+        "range",
+        "bool",
+        "color"
+      ],
+      "responsibility": "按类型/模式选择字段模板",
+      "action": "重组",
+      "reuse": "DeclaredFieldEditor新草稿/校验/非法原文",
+      "retire": "旧BindingType/BindingSource万能参数壳",
+      "target": "Fields/DeclaredFieldEditor.cs + Templates/ScalarField.xaml/RangeField.xaml",
+      "interaction": "I02",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ConfigSetting.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\AvailableDataSource.cs",
+        "src\\Plugin.SDK\\Models\\Visualization\\TextStyle.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\DispTextColorControl.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\NumericUpDown.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ParamBindingBase.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ParamGroup.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.BindingIssues.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.cs",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml",
+        "src\\UI\\App.xaml.cs",
+        "src\\UI\\Features\\ParameterSetting\\ParamSettingViewModel.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProductionEditorBoundaryTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProductionEditorContextTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ToolEditorCommitTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\CircleCircleMeasureParameters.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\LineCircleMeasureParameters.cs",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\LineLineMeasureParameters.cs",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "parambinding",
+      "name": "ParamBinding",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "bind",
+        "dual"
+      ],
+      "responsibility": "展示来源关系并请求宿主选择",
+      "action": "重组",
+      "reuse": "树展示、候选投影与选中反馈",
+      "retire": "旧字符串解释、全局变量枚举和执行解析",
+      "target": "Fields/ReferenceSelectionControl.cs + Templates/ReferenceField.xaml",
+      "interaction": "I06",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ParamBinding.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\AvailableDataSource.cs",
+        "src\\Plugin.SDK\\Execution\\Parameters\\MeasureGuideParameters.cs",
+        "src\\Plugin.SDK\\Models\\Communication\\ProtocolBindingInput.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\BindingIssueAdorner.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Communication\\ProtocolEditorResources.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ConfigSetting.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ParamBindingBase.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Models\\ParamSettingItem.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\ViewModels\\ParameterPanelViewModel.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.BindingIssues.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.cs",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml",
+        "src\\UI\\App.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationManagerDialog.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationManagerDialog.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationSendEventsView.xaml",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationSendEventsView.xaml.cs",
+        "src\\UI\\Features\\CommunicationManager\\CommunicationTriggersView.xaml",
+        "src\\UI\\Features\\GlobalVariableManager\\GlobalVariableSelectViewModel.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\ParamBindingDisplayContractTests.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\BindingUiRegressionTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\CommunicationAutomationUiTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProtocolAssembleLayoutTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ToolEditorCommitTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionTypeConverter.cs",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ProtocolAssemble\\Views\\ProtocolAssembleEditor.xaml",
+        "tools\\SunEyeVision.Tool.ProtocolParse\\Views\\ProtocolParseEditor.xaml",
+        "tools\\SunEyeVision.Tool.Script\\Models\\ScriptInputConfig.cs",
+        "tools\\SunEyeVision.Tool.Script\\Models\\ScriptOutputConfig.cs",
+        "tools\\SunEyeVision.Tool.Script\\ScriptEngine\\ScriptBindingResolver.cs",
+        "tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.Script\\Views\\ScriptVariableTab.xaml",
+        "tools\\SunEyeVision.Tool.Script\\Views\\ScriptVariableTab.xaml.cs",
+        "tools\\SunEyeVision.Tool.SendData\\Views\\SendDataEditor.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "parambindingbase",
+      "name": "ParamBindingBase",
+      "group": "字段模板",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "bind",
+        "dispatch"
+      ],
+      "responsibility": "旧来源/错误基类拆成宿主服务和局部提示",
+      "action": "删除",
+      "reuse": "有用错误提示由FieldRow承接；类型/数量/索引按新合同验证",
+      "retire": "删除旧万能基类设计，不新建同形继承树",
+      "target": "Fields/Templates/FieldRow.xaml；UI宿主来源服务",
+      "interaction": "I06",
+      "limits": "VM未证同职责万能基类；删除依据是职责拆分与新合同承接，不冒称VM全局确认无源。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ParamBindingBase.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\ShapeTypeVocabulary.cs",
+        "src\\Plugin.SDK\\Models\\NumericTypes.cs",
+        "src\\Plugin.SDK\\Models\\SubroutineDisplayItem.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ConfigSetting.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ParamBinding.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.BindingIssues.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\FilterDataSourcesByTypeTests.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\GeometryFieldSchemaContractTests.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\RoiDesignTimeGroupsContractTests.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SubroutineDisplayItemTypeContractTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\BindingUiRegressionTests.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "imagesourceselector",
+      "name": "ImageSourceSelector",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "imageSource",
+        "imageTemplate"
+      ],
+      "responsibility": "IMAGE输入源整行下拉",
+      "action": "重组",
+      "reuse": "宿主候选/当前引用；本地还原ComboBox模板与三角图",
+      "retire": "原链形订阅框替代图像下拉的误配",
+      "target": "Fields/SourceSelectionField.cs + Templates/ImageSourceField.xaml",
+      "interaction": "I01",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ImageSourceSelector.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\DataSourceQueryService.cs",
+        "src\\Plugin.SDK\\Execution\\Parameters\\ImageSourceReference.cs",
+        "src\\Plugin.SDK\\Execution\\Parameters\\ToolParameters.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ImageControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ImageControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml",
+        "src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+        "tests\\SunEyeVision.UI.Tests\\ToolEditorCommitTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "graphicsdisplayeditorcontrol",
+      "name": "GraphicsDisplayEditorControl",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "display"
+      ],
+      "responsibility": "对象可见性、可编辑能力和局部样式",
+      "action": "重组",
+      "reuse": "已有显示设置草稿与有限输出能力",
+      "retire": "独立图形Tab和每项统一编辑按钮",
+      "target": "Fields/Templates/DisplayObjectField.xaml",
+      "interaction": "I07",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/GraphicsDisplayEditorControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\GraphicsDisplayEditorControl.xaml",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
+        "tests\\SunEyeVision.Tool.PointLineMeasure.Tests\\PointLineMeasureContractTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "textdisplayeditorcontrol",
+      "name": "TextDisplayEditorControl",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "text",
+        "color",
+        "dual"
+      ],
+      "responsibility": "内容、OK/NG颜色、字号、透明度和位置字段组合",
+      "action": "重组",
+      "reuse": "文本配置值与校验",
+      "retire": "独立整页类/重复参数存储",
+      "target": "Fields/Templates/TextDisplayGroup.xaml",
+      "interaction": "I05/I07",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/TextDisplayEditorControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\TextDisplayEditorControl.xaml",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
+        "tests\\SunEyeVision.Tool.PointLineMeasure.Tests\\PointLineMeasureContractTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "dispitemcolorcontrol",
+      "name": "DispItemColorControl",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "display",
+        "colorinner"
+      ],
+      "responsibility": "图形颜色字段",
+      "action": "删除",
+      "reuse": "颜色值由统一ColorField承接",
+      "retire": "删除图形专用颜色壳，保留业务显示值",
+      "target": "Fields/Templates/ColorField.xaml（共用）",
+      "interaction": "I05",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/DispItemColorControl.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\RoiParameters.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\GraphicsDisplayEditorControl.xaml",
+        "src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "disptextcolorcontrol",
+      "name": "DispTextColorControl",
+      "group": "字段模板",
+      "evidenceKind": "模板",
+      "sourceRefs": [
+        "color",
+        "text"
+      ],
+      "responsibility": "文本OK/NG颜色字段",
+      "action": "删除",
+      "reuse": "两种业务颜色值和规则仍保留",
+      "retire": "删除文字专用颜色壳",
+      "target": "Fields/Templates/ColorField.xaml（共用）",
+      "interaction": "I05",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/DispTextColorControl.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Models\\Visualization\\TextStyle.cs",
+        "src\\Plugin.SDK\\Themes\\Generic.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ConfigSetting.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\TextDisplayEditorControl.xaml",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "judgmenteditorcontrol",
+      "name": "JudgmentEditorControl",
+      "group": "字段模板",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "judgment",
+        "bool",
+        "range",
+        "float"
+      ],
+      "responsibility": "判定开关及条件范围；不计算判定",
+      "action": "重组",
+      "reuse": "Enabled/Min/Max与顺序组别投影",
+      "retire": "独立判定编辑器类由字段组替代",
+      "target": "Fields/Templates/JudgmentGroup.xaml；Blob.Runtime保留判定",
+      "interaction": "I04",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ResultPresentation/JudgmentEditorControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\ResultPresentation\\JudgmentEditorControl.xaml",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
+        "tests\\SunEyeVision.Tool.PointLineMeasure.Tests\\PointLineMeasureContractTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "roieditorcontrol",
+      "name": "RoiEditorControl",
+      "group": "ROI交互",
+      "evidenceKind": "控件/模板/组合链",
+      "sourceRefs": [
+        "roi",
+        "roiParams"
+      ],
+      "responsibility": "局部形状、几何参数和编辑意图",
+      "action": "重组",
+      "reuse": "现RegionGeometryEditor/RoiGeometryEditing几何",
+      "retire": "旧控件持画布与手势总控职责",
+      "target": "Regions/RegionGeometryEditor.cs + Templates/RoiField.xaml",
+      "interaction": "I08",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Models\\MeasureInteractionModel.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureEditorControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasurementEditorManagerControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasurementEditorManagerControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorManagerControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorManagerControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml.cs",
+        "src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "roieditormanagercontrol",
+      "name": "RoiEditorManagerControl",
+      "group": "ROI交互",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "roi",
+        "paramRoot",
+        "viewport"
+      ],
+      "responsibility": "旧检测/屏蔽协调器拆给宿主独占交互范围",
+      "action": "删除",
+      "reuse": "现RoiViewportEditScope/受限IRoiEditViewport承接",
+      "retire": "旧Manager持全局Canvas/清主结果/接窗口全生命周期",
+      "target": "UI/Services/Editing/Regions/RoiViewportEditScope.cs",
+      "interaction": "I08/I10",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasurementEditorManagerControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorManagerControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "roisubscribepanel",
+      "name": "RoiSubscribePanel",
+      "group": "ROI交互",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "roi",
+        "bind"
+      ],
+      "responsibility": "绘制/继承、几何对象/成员及像素区域分开",
+      "action": "重组",
+      "reuse": "本地底稿、模式和稳定引用",
+      "retire": "独立面板第二存储和旧字符串选择链",
+      "target": "Regions/Templates/RoiSourceField.xaml；UI/RegionSources适配",
+      "interaction": "I08/I06",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiSubscribePanel.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\ConfigSetting.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Models\\PointInputMode.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\ViewModels\\ParameterPanelViewModel.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\ViewModels\\RoiEditorViewModel.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "shapetoolbar",
+      "name": "ShapeToolBar",
+      "group": "ROI交互",
+      "evidenceKind": "控件/模板组合",
+      "sourceRefs": [
+        "roi"
+      ],
+      "responsibility": "形状命令选择，不拥有执行",
+      "action": "重组",
+      "reuse": "形状素材与已核命令意图",
+      "retire": "旧ToolBar/ToolItem双份选中状态",
+      "target": "Regions/Templates/RoiShapeSelector.xaml",
+      "interaction": "I08",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/ShapeToolBar.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\ShapeToolBar.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "drawingparameterpanel",
+      "name": "DrawingParameterPanel",
+      "group": "ROI交互",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "roiParams",
+        "roi"
+      ],
+      "responsibility": "按形状显示几何参数并回填同一草稿",
+      "action": "重组",
+      "reuse": "几何数值投影与字段校验",
+      "retire": "旧形状各页重复状态和对画布直写",
+      "target": "Regions/Templates/GeometryFields.xaml",
+      "interaction": "I08",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/DrawingParameterPanel.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureGuideParameterPanel.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\DrawingParameterPanel.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "toolbarcontrol",
+      "name": "ToolBarControl",
+      "group": "ROI交互",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "roi",
+        "dispatch"
+      ],
+      "responsibility": "局部工具选择；不是主窗口工具栏",
+      "action": "删除",
+      "reuse": "必要图标与选择意图由RoiShapeSelector承接",
+      "retire": "旧通用ToolItem/SelectedValue状态模型和薄封装链",
+      "target": "Regions/Templates/RoiShapeSelector.xaml（共用）",
+      "interaction": "I08",
+      "limits": "VM已证ROI选择子职责；测量工具路由未证，迁移其消费者前须单独回归，不能强套Blob。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Common/Views/ToolBarControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\Common\\Models\\ToolItem.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Common\\Views\\ToolBarControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureToolBar.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureToolBar.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\ShapeToolBar.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\ShapeToolBar.xaml.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\ToolItemContractTests.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "imagecontrol",
+      "name": "ImageControl",
+      "group": "宿主装配",
+      "evidenceKind": "控件/组合链",
+      "sourceRefs": [
+        "paramRoot",
+        "viewport",
+        "preview"
+      ],
+      "responsibility": "图像视口、坐标变换及局部交互承载",
+      "action": "提取复用",
+      "reuse": "已核图像显示/坐标投影；宿主受限交互接口",
+      "retire": "从工具侧直接持有全局画布或调度",
+      "target": "UI宿主图像视口；Plugin.Wpf仅消费受限viewport",
+      "interaction": "I08/I09",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\DataSourceQueryService.cs",
+        "src\\Plugin.SDK\\Execution\\Results\\ToolResults.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\IToolControlInitializer.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ImageControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ResultRenderLayer.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Rendering\\MeasureBandOverlay.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureEditorControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasureElementsEditorControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Measure\\Views\\MeasurementEditorManagerControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorManagerControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.cs",
+        "src\\Plugin.SDK\\UI\\Windows\\CustomDebugWindow.cs",
+        "src\\Plugin.SDK\\UI\\Windows\\DefaultDebugWindow.xaml.cs",
+        "src\\UI\\Features\\Camera\\CameraPreviewHost.xaml",
+        "src\\UI\\Features\\WorkflowUI\\ToolDebugWindowFactory.cs",
+        "src\\UI\\Resources\\Styles\\CanvasStyleResources.xaml",
+        "src\\UI\\Services\\Editing\\Nodes\\DeclaredToolConfigurationControl.Regions.cs",
+        "src\\UI\\Services\\Editing\\Nodes\\NodeOpenContext.cs",
+        "src\\UI\\Services\\Editing\\Regions\\RoiViewportEditScope.cs",
+        "src\\UI\\Services\\ThemeManager.cs",
+        "src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml",
+        "src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml.cs",
+        "src\\UI\\Shell\\Controls\\Shell\\ShellTopBarControl.xaml",
+        "src\\UI\\Shell\\Windows\\MainWindow.xaml.cs",
+        "src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\ThemeResourceResolutionTests.cs",
+        "tests\\SunEyeVision.Tool.CircleCircleMeasure.Tests\\CorrectionEditingTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "resultrenderlayer",
+      "name": "ResultRenderLayer",
+      "group": "宿主装配",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "display",
+        "viewport",
+        "render"
+      ],
+      "responsibility": "按结果投影绘制并区分作用域",
+      "action": "提取复用",
+      "reuse": "结果图形绘制与选择高亮投影",
+      "retire": "工具窗口清共享结果/替其他节点释放",
+      "target": "UI宿主结果绘制；结果对象由Runtime产出",
+      "interaction": "I07/I09",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ImageControl.xaml",
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ImageControl.xaml.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ViewportScaling.cs",
+        "src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+        "src\\UI\\Shell\\Windows\\MainWindow.xaml.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "imagepreviewcontrol",
+      "name": "ImagePreviewControl",
+      "group": "宿主装配",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "preview",
+        "imageInjection",
+        "imageScope",
+        "imageList",
+        "imageItems",
+        "previewItems"
+      ],
+      "responsibility": "主界面图像源列表、缩略图、当前/全部和自动切换",
+      "action": "重组",
+      "reuse": "现输入目录/缩略图服务和运行请求入口",
+      "retire": "按Blob窗口私有字段或无源删除的误判",
+      "target": "src/UI/Shell/Controls/Panels/ImagePreviewControl.*；宿主输入服务",
+      "interaction": "I09",
+      "limits": "VM静态整链有据；缓存尺寸/执行时序不宣称相同，新增缩略图业务不塞共享SDK。",
+      "currentFiles": [
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\UI\\Shared\\ImageInputSource.cs",
+        "src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.FileImport.cs",
+        "src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml",
+        "src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml",
+        "src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+        "tests\\SunEyeVision.UI.Tests\\FallbackEffectivenessTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImagePreviewGeneratedDecodeTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImagePreviewInteractionTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImagePreviewLoadTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImageSourceSavePersistenceTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\SolutionManagerUiTests.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "tooldebugcontrolbase",
+      "name": "ToolDebugControlBase",
+      "group": "宿主装配",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "window",
+        "paramRoot"
+      ],
+      "responsibility": "旧内容基类的执行/配置/生命周期拆分",
+      "action": "删除",
+      "reuse": "草稿/错误视图交Fields；会话与执行由现宿主接线",
+      "retire": "旧万能调试基类及工具直接运行旁路",
+      "target": "UI/Services/Editing/Nodes；Plugin.Wpf局部字段",
+      "interaction": "I10",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Controls\\ImageSourceSelector.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ParamBinding.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ParamBindingBase.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolDebugControlBase.BindingIssues.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\ToolEditorCommit.cs",
+        "src\\Plugin.SDK\\UI\\Windows\\CustomDebugWindow.cs",
+        "src\\Plugin.SDK\\UI\\Windows\\DefaultDebugWindow.xaml.cs",
+        "src\\UI\\App.xaml.cs",
+        "src\\UI\\Services\\Editing\\Nodes\\DeclaredToolConfigurationControl.cs",
+        "src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
+        "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\BindingUiRegressionTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProductionEditorBoundaryTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProductionEditorContextTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ToolEditorCommitTests.cs",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleCircleMeasure\\Views\\CircleCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.CircleDetect\\Views\\CircleDetectToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.ImageFilter\\Views\\ImageFilterToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.ImageThreshold\\Views\\ImageThresholdToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineCircleMeasure\\Views\\LineCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineDetect\\Views\\LineDetectToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.LineLineMeasure\\Views\\LineLineMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.Morphology\\Views\\MorphologyToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointCalibrationDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointLineMeasure\\Views\\PointLineMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml.cs",
+        "tools\\SunEyeVision.Tool.ProtocolAssemble\\Views\\ProtocolAssembleEditor.xaml",
+        "tools\\SunEyeVision.Tool.ProtocolAssemble\\Views\\ProtocolAssembleEditor.xaml.cs",
+        "tools\\SunEyeVision.Tool.ProtocolParse\\Views\\ProtocolParseEditor.xaml",
+        "tools\\SunEyeVision.Tool.ProtocolParse\\Views\\ProtocolParseEditor.xaml.cs",
+        "tools\\SunEyeVision.Tool.ReceiveData\\Views\\ReceiveDataEditor.xaml",
+        "tools\\SunEyeVision.Tool.ReceiveData\\Views\\ReceiveDataEditor.xaml.cs",
+        "tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.SendData\\Views\\SendDataEditor.xaml",
+        "tools\\SunEyeVision.Tool.SendData\\Views\\SendDataEditor.xaml.cs",
+        "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Subroutine\\SubroutineTool.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "defaultdebugwindow",
+      "name": "DefaultDebugWindow",
+      "group": "宿主装配",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "window",
+        "paramRoot"
+      ],
+      "responsibility": "通用窗口壳、页装配、按钮意图与关闭",
+      "action": "重组",
+      "reuse": "现窗口/Owner/会话/唯一执行/释放链",
+      "retire": "旧SDK窗口直接持工具算法/字段业务",
+      "target": "UI/Services/Editing/Nodes + SDK/UI/Windows现壳过渡；最终宿主窗口资源",
+      "interaction": "I10",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\Execution\\Parameters\\ISubroutineDebugService.cs",
+        "src\\Plugin.SDK\\UI\\Controls\\IToolControlInitializer.cs",
+        "src\\Plugin.SDK\\UI\\Windows\\CustomDebugWindow.cs",
+        "src\\Plugin.SDK\\UI\\Windows\\DefaultDebugWindow.xaml",
+        "src\\UI\\Features\\WorkflowUI\\ToolDebugWindowFactory.cs",
+        "src\\UI\\Services\\Editing\\Nodes\\NodeOpenDecisionChain.cs",
+        "src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs",
+        "src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+        "tests\\SunEyeVision.Tool.Script.Tests\\ScriptS2ContractTests.cs",
+        "tests\\SunEyeVision.Tool.Script.Tests\\ScriptS3WindowLifetimeTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\NodeEditorRoutingTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ProtocolAssembleLayoutTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\ToolboxPresentationTests.cs",
+        "tools\\SunEyeVision.Tool.Script\\ScriptPlugin.cs",
+        "tools\\SunEyeVision.Tool.Script\\Views\\ScriptDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Subroutine\\SubroutineTool.cs",
+        "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml",
+        "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "customdebugwindow",
+      "name": "CustomDebugWindow",
+      "group": "宿主装配",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "window"
+      ],
+      "responsibility": "确需专业呈现时的可选扩展壳",
+      "action": "重组",
+      "reuse": "现可选编辑器注册与受限上下文",
+      "retire": "专业窗口拥有第二执行/保存/发布链",
+      "target": "UI宿主专业页装配；工具.Wpf只提供专业视图",
+      "interaction": "I10",
+      "limits": "VM扩展优先/通用回退静态路线已证；Blob运行实例具体窗口CLR尚未实机确认。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Windows\\DefaultDebugWindow.xaml.cs",
+        "src\\UI\\Services\\Editing\\Nodes\\NodeOpenDecisionChain.cs",
+        "src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs",
+        "tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs",
+        "tests\\SunEyeVision.UI.Tests\\NodeEditorRoutingTests.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "blobanalysistooldebugcontrol",
+      "name": "BlobAnalysisToolDebugControl",
+      "group": "工具视图",
+      "evidenceKind": "组合链",
+      "sourceRefs": [
+        "paramRoot",
+        "dispatch"
+      ],
+      "responsibility": "旧Blob完整配置页退出",
+      "action": "删除",
+      "reuse": "新声明页、宿主草稿、ROI与执行接线承接",
+      "retire": "已删整页/转换器不恢复，也不换名字重建",
+      "target": "tools/.../Wpf/Views旧文件已删；UI/DeclaredToolConfigurationControl承接",
+      "interaction": "I01–I10",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [],
+      "staticMentions": [],
+      "currentState": "旧Blob专用页已在S4删除；本轮不恢复"
+    },
+    {
+      "id": "blobdataanalysiscontrol",
+      "name": "BlobDataAnalysisControl",
+      "group": "工具视图",
+      "evidenceKind": "模板/组合链",
+      "sourceRefs": [
+        "render"
+      ],
+      "responsibility": "当前结果表/摘要/逐对象选择高亮",
+      "action": "提取复用",
+      "reuse": "当前专用只读表、BlobAnalysisRow和结果选择",
+      "retire": "本轮不冒称已做S5跨工具声明结果生成",
+      "target": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDataAnalysisControl.xaml + Presentation/BlobAnalysisRow.cs",
+      "interaction": "I09",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDataAnalysisControl.xaml.cs"
+      ],
+      "staticMentions": [
+        "tools\\SunEyeVision.BlobAnalysis\\Wpf\\BlobEditorFactory.cs",
+        "tools\\SunEyeVision.BlobAnalysis\\Wpf\\Views\\BlobDataAnalysisControl.xaml"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    },
+    {
+      "id": "toolicon",
+      "name": "ToolIcon",
+      "group": "图标资源",
+      "evidenceKind": "资源/模板组合",
+      "sourceRefs": [
+        "icons"
+      ],
+      "responsibility": "工具元数据到图标资源投影",
+      "action": "删除",
+      "reuse": "可用Geometry素材变资源，元数据Key仍保留",
+      "retire": "删除硬编码工具目录和专用绘制类型",
+      "target": "Plugin.Wpf/Themes/Icons.xaml + 标准Image/DataTemplate；宿主映射",
+      "interaction": "I01/I08",
+      "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
+      "currentFiles": [
+        "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs"
+      ],
+      "staticMentions": [
+        "src\\Plugin.SDK\\UI\\Windows\\DefaultDebugWindow.xaml",
+        "src\\UI\\Features\\WorkflowUI\\Canvas\\WorkflowCanvasControl.xaml",
+        "src\\UI\\Shell\\Controls\\Toolbox\\ToolboxControl.xaml",
+        "tests\\SunEyeVision.UI.Tests\\ToolboxPresentationTests.cs"
+      ],
+      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    }
+  ],
+  "sources": {
+    "layout": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml",
+      "line": 12,
+      "key": "ChildLeftWidth",
+      "sha256": "e8c7c8ccb10faf3691e7ef786920c3a2cee49522aafe2053e1b6bce11c4190b3"
+    },
+    "dispatch": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml.cs",
+      "line": 12,
+      "key": "DisplayType",
+      "sha256": "bc8443f696d7c0fd41e38ddcd5df950c78d8f87485b348cd507b99b8565bfc0a"
+    },
+    "number": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
+      "line": 2,
+      "key": "x:Class=",
+      "sha256": "6d0a82850fdd0e98f4182fda7c6aacd08f135bd20fc37068729bf3075af72f63"
+    },
+    "slider": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+      "line": 156,
+      "key": "Name=\"SL_Bat1\"",
+      "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+    },
+    "dual": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 550,
+      "key": "x:Key=\"Integer_Sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "range": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 576,
+      "key": "x:Key=\"IntegerBettween_Sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "float": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 822,
+      "key": "PCListView:SliderArrangeFloat SliderType=\"between\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "bind": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 255,
+      "key": "x:Key=\"ButtonSelecter_sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "bool": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 63,
+      "key": "x:Key=\"Boolean_sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "color": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 2608,
+      "key": "x:Key=\"ColorConfig\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "colorinner": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerControlView.xaml",
+      "line": 2,
+      "key": "x:Class=",
+      "sha256": "17de0c19bf01ce0fc14f51c398029e2d847769bb657817bd509d143d52a4f9aa"
+    },
+    "imageSource": {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "line": 9,
+      "key": "EnumerationG Name=\"ImageSource\"",
+      "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+    },
+    "imageTemplate": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 846,
+      "key": "x:Key=\"EnumerationG\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "roi": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
+      "line": 2,
+      "key": "x:Class=",
+      "sha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb"
+    },
+    "roiParams": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+      "line": 2,
+      "key": "x:Class=",
+      "sha256": "2c55fe06bb710704155c77f0f0ae1eb0f7eb8a01a9cdb3c667ee54d9da93d893"
+    },
+    "display": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 2544,
+      "key": "x:Key=\"ImageViewConfig\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "text": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 2601,
+      "key": "x:Key=\"StringConfig\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    "render": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml",
+      "line": 292,
+      "key": "CurResultTabItem",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff"
+    },
+    "preview": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml",
+      "line": 269,
+      "key": "LocalImageListView",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff"
+    },
+    "previewItems": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+      "line": 35,
+      "key": "class ImageListPanelBase",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79"
+    },
+    "window": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "line": 661,
+      "key": "OpenParamsTabControl",
+      "sha256": "a1c233068db35667f7dd49b05839701364cc2ebe9ca699f5f413317abbe4dfb4"
+    },
+    "paramRoot": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsConfigControlBase.cs",
+      "line": 164,
+      "key": "AlgorithmTabRoot",
+      "sha256": "c5c43aa489ff393a4f1810ad3157f90ac903245321529e8d32038bba426f1a5b"
+    },
+    "icons": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ToolBox.xaml",
+      "line": 122,
+      "key": "ImageEnablePath",
+      "sha256": "998e9fce93666d53ba8e4905ee851504a525a614745cbd503588e7fad138bbb5"
+    },
+    "judgment": {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "line": 1488,
+      "key": "OKWhenNumIsZero",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec"
+    },
+    "viewport": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ParamsConfigWithRenderControlBase.xaml",
+      "line": 2,
+      "key": "RenderControlBase",
+      "sha256": "9550399e8f410ca02fd9337fd7d98acb14464a5cb0e24134c5a3d1e241fbecad"
+    },
+    "imageScope": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\ModuleDisplayDecorator.cs",
+      "line": 38,
+      "key": "class ModuleDisplayDecorator",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e"
+    },
+    "imageList": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml",
+      "line": 2,
+      "key": "x:Class=",
+      "sha256": "d22c8a3f7fce0d94e966a22fce9865c91de629471d4f1ad0f93baa2cf6b19883"
+    },
+    "imageItems": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml",
+      "line": 2,
+      "key": "x:Class=",
+      "sha256": "a5ac5a8101e7cccb036a2430e6c1766ec3b4caec18010580db178ec88937c7cf"
+    },
+    "imageInjection": {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "line": 461,
+      "key": "localImageGrid.DataContext = m_CurrentInfo",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+    }
+  },
+  "interactions": [
+    [
+      "I01",
+      "输入源/布局",
+      "整行下拉、空候选、选择、关闭、失效提示；标签同行，开关参数分行",
+      "imageTemplate/imageSource/layout"
+    ],
+    [
+      "I02",
+      "数值与模式",
+      "输入、微调、单滑条、聚焦/失焦、数值/订阅切换、原文错误、切回底稿",
+      "number/dual"
+    ],
+    [
+      "I03",
+      "范围",
+      "左右端点独立模式，双端拖动/边界，失焦/Esc收起；不可绑定字段不造按钮",
+      "range/float/slider"
+    ],
+    [
+      "I04",
+      "开关/判定",
+      "开关独立一行，范围下一行；关闭保留底稿但不参与判定；不执行算法",
+      "bool/judgment"
+    ],
+    [
+      "I05",
+      "颜色/文本",
+      "颜色弹层选择、RGB校验、确定取消；显示内容/字体/位置改同一草稿",
+      "color/colorinner/text"
+    ],
+    [
+      "I06",
+      "来源关系",
+      "选来源/清除关系与切模式分开；空候选/失效明确失败，无本地值静默回退",
+      "bind/dual"
+    ],
+    [
+      "I07",
+      "显示对象",
+      "眼睛与编辑按对象能力提供；样式弹层确定/取消，配置与结果表分开",
+      "display"
+    ],
+    [
+      "I08",
+      "ROI",
+      "形状/参数同草稿，绘制/继承四种方式，遮罩独立；拖动取消不覆盖已确定状态",
+      "roi/roiParams"
+    ],
+    [
+      "I09",
+      "图像与结果",
+      "图像源缩略图/当前全部/自动切换；只读表/摘要/选择高亮及失败清理",
+      "preview/previewItems/render"
+    ],
+    [
+      "I10",
+      "窗口生命周期",
+      "三页切换、运行参数重置、执行/连续停止、确定/取消、关闭只退自身作用域",
+      "window/paramRoot"
+    ]
+  ],
+  "deletionGate": "先迁消费者/资源与新合同适配，再核无生产调用、构建发布与释放回归，最后删旧文件；本轮只在方案列删除，产品不删。",
+  "notApprovedByProxy": "原版运行身份、完整活动主题与未观察交互仍未证；不把HTML或功能PASS算WPF外观验收。",
+  "history": "docs/collaboration/history/O06_CONTROL_RECORDS_BEFORE_REORGANIZATION_20261026.json",
+  "engineeringNote": "Definition为职责，不新增Blob.Definition工程。现入口是Runtime/BlobDefinition.cs；当前门面BlobConfigurationFields.cs含WPF Color和旧SDK槽位投影。拟在Runtime增加纯中立BlobPresentation.cs，以Contracts有限页/组/显隐描述供Wpf选择模板；保留门面槽位适配隔离，不搬进中立控件。",
+  "buildAndVerification": "实施顺序：中立显示描述→基础资源/控件→字段模式/范围/来源→ROI组合→宿主三页与显示配置→实际消费者迁移→全量Release/设计时与运行时回归→删除旧类。保持工具不依赖UI宿主；迁移未实施前不改发布身份。"
+}

@@ -1,0 +1,20 @@
+{
+  "scope": "源码和生成结构核查，不是浏览器或WPF运行验收",
+  "controlRecords": 31,
+  "counts": {
+    "提取复用": 8,
+    "重组": 15,
+    "删除": 8
+  },
+  "vmSourceLocators": 29,
+  "vmSourceFiles": 20,
+  "sourceHashesMatch": true,
+  "originalRowAnchorsPreserved": true,
+  "newBrokenInternalAnchors": 0,
+  "previewRecords": 31,
+  "previewIdsCheckedSeparately": true,
+  "jsSyntax": "node --check已通过",
+  "sourceGeneration": "三页、四继承方式、订阅字段生成检查通过",
+  "rendering": "NOT_VERIFIED",
+  "productChangesThisTask": false
+}

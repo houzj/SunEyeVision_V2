@@ -260,6 +260,7 @@ def render_s4_stage(page):
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
              + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　原型未实施；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链对照。自动渲染受本机file协议策略限制，尚未视觉核收。</p>' if review and 'preview' in s4['uiReview'] else '')
+             + ('<p><a href="#o06-current-control-mapping"><b>直接审核31类新职责、VM源、去留与文件组织</b></a> · 8项提取复用 / 15项重组 / 8项旧类退出；完整交互见同段下方。</p>' if (ROOT/'docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json').exists() else '')
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
              + (('<h4>S4哪些重做，哪些复用（推荐，待整体审核）</h4>'
                   + ('<p><b>'+escape(s4['uiReview']['uiArchitectureDecision']['principle'])+'</b></p>'+table(['层次','现有基础','明确处理'],s4['uiReview']['uiArchitectureDecision']['rows']) if s4['uiReview'].get('uiArchitectureDecision') else '')
@@ -412,8 +413,106 @@ def render_s4_stage(page):
     return page
 
 
+
+def render_control_architecture(page):
+    path=ROOT / 'docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json'
+    if not path.exists():
+        return page
+    data=json.loads(path.read_text(encoding='utf-8-sig'))
+    rows=data['rows']
+    if len(rows)!=31 or len({row['id'] for row in rows})!=31:
+        raise ValueError('31 control records must be unique')
+    from urllib.parse import quote
+    def vm_ref(key):
+        item=data['sources'][key]
+        return '<a href="file:///'+quote(item['path'].replace('\\','/'),safe='/:')+'">'+escape(item['path'].replace('\\','/').split('/')[-1])+':'+str(item['line'])+'</a> · '+escape(item['key'])
+    body=[]
+    for group in data['groups']:
+        group_rows=[r for r in rows if r['group']==group]
+        body.append('<tr class="br-group"><th colspan="5">'+escape(group)+'（'+str(len(group_rows))+'项）</th></tr>')
+        for row in group_rows:
+            paths='<br>'.join('<code>'+escape(p)+'</code>' for p in row['currentFiles']) or '旧文件已删除；原路径见历史记录。'
+            mentions=row['staticMentions']
+            consumers='<details><summary>静态提及/消费者候选 '+str(len(mentions))+'处</summary><p>'+ '<br>'.join(escape(p) for p in mentions)+'</p><small>含声明/类型提及，不等于每处均为实际运行调用；迁移时逐处核收。</small></details>'
+            cells=[
+                '<code>'+escape(row['name'])+'</code><p>'+escape(row['responsibility'])+'</p>',
+                paths+'<p>'+escape(row['currentState'])+'</p>'+consumers,
+                '<b>'+escape(row['evidenceKind'])+'</b><p>'+'<br>'.join(vm_ref(k) for k in row['sourceRefs'])+'</p><small>'+escape(row['limits'])+'</small>',
+                '<b>'+escape(row['action'])+'</b><p>提取/承接：'+escape(row['reuse'])+'</p><p>退出/剥离：'+escape(row['retire'])+'</p><p>目标文件（拟）：<code>'+escape(row['target'])+'</code></p>',
+                '<a href="#o06-control-interactions">'+escape(row['interaction'])+' 交互与验收</a><p>先迁消费者，再核资源、发布与关闭释放，最后退出旧文件。本轮不执行产品迁移。</p>'
+            ]
+            body.append('<tr id="o06-control-'+row['id']+'" data-control-name="'+escape(row['name'])+'" data-control-group="'+escape(row['group'])+'">'+''.join('<td>'+v+'</td>' for v in cells)+'</tr>')
+    first=page.index('id="o06-control-labeledcontrol"')
+    start=page.rfind('<table',0,first)
+    end=page.index('</table>',page.index('id="o06-control-toolicon"',first))+len('</table>')
+    # Old and new group ordering end on different records: include the last row of the table.
+    end=page.index('</table>',first)+len('</table>')
+    new='<table><thead><tr><th>对象与新职责</th><th>当前文件与消费者</th><th>VM对应控件/模板/组合链</th><th>去留、功能承接与文件组织</th><th>交互与退出门</th></tr></thead><tbody>'+''.join(body)+'</tbody></table>'
+    page=page[:start]+new+page[end:]
+    page=page.replace('31类对象唯一主记录：按证据形态分组','31类控件唯一主记录：按新架构职责分组')
+    a=page.index('id="o06-current-control-mapping"');b=page.index('<div id="o06-control-migration-gate"',a)
+    intro_end=page.index('</h5>',a)+len('</h5>')
+    intro=('<p><b>8项提取复用、15项重组、8项旧类退出。</b>不是重新写31个控件，也不是将旧SDK目录整体搬到Wpf。按基础输入、字段模板、ROI交互、宿主装配、工具视图、图标资源分六组；每行单列VM来源形态。删除旧类后原功能由本行目标承接，不因无同名CLR就判功能无源。确认全局无源0项。</p>'
+           '<p>当前产品已跑通的草稿/执行/关闭链作为基础；基础数值/范围等提取复用，旧绑定和画布职责按新合同拆分。完整历史不丢：<a href="../../../../../../../collaboration/history/O06_CONTROL_RECORDS_BEFORE_REORGANIZATION_20261026.json">原31行来源、候选与历史记录</a>；<a href="../../../../../../../collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json">当前逐行来源与完整文件清单</a>。以下为本轮设计供审核，尚未实施迁移/删除。</p>')
+    page=page[:intro_end]+intro+page[b:]
+    page=page.replace('最终31项分组为4控件/8模板/19组合链/0待核/0确认无源；四项归类以v2为准，局部未知留在对应行。','当前31项按六组职责组织，VM证据形态单列；旧4控件/8模板/19组合链为历史分组，不能当工程分层。局部运行未知不冒充已确认。')
+    page=re.sub(r'<div id="o06-control-migration-gate".*?</div>', '<div id="o06-control-migration-gate" class="br-note"><b>工程与迁移边界：</b>旧Plugin.SDK仍含WPF与运行依赖，不能视为中立合同。Plugin.Wpf当前仅依赖Contracts且已进入主构建；拟提取基础输入、字段模板与主题，UI宿主保留候选、窗口、ROI作用域与调度，工具Definition/Runtime不得依赖UI宿主。资源需统一Generic.xaml/ThemeInfo及构建发布注册，不能只复制cs。<p>'+escape(data['deletionGate'])+'</p><p>迁移/产品删除未实施；当前文件、全部静态提及与VM源码行号逐行列出。旧工程候选与取证路径保存在本表历史记录，当前决策以本表为准。</p></div>',page,count=1,flags=re.S)
+    # Original disposition location becomes navigation to the same authoritative rows.
+    a=page.index('id="o06-shared-control-disposition"');start=page.index('</h6>',a)+len('</h6>');end=page.index('<p class="br-note"><b>工程结论',start)
+    nav=[]
+    for group in data['groups']:
+        rr=[r for r in rows if r['group']==group]
+        nav.append([group,'；'.join(r['name']+'：'+r['action'] for r in rr),'功能和目标逐行核收；不恢复旧类体系'])
+    page=page[:start]+table(['职责组','当前去留','承接要求'],nav)+'<p><a href="#o06-current-control-mapping">直接查看31类完整记录与对应源</a>。旧十项候选不再作为独立当前方案；旧记录已归档到原31行历史。</p>'+page[end:]
+    page=page.replace('原十项处置映射到类和调用方','去留总览：与31类主记录一致')
+    if '<!-- O06-CONTROL-INTERACTIONS:BEGIN -->' in page:
+        page=re.sub(r'<!-- O06-CONTROL-INTERACTIONS:BEGIN -->.*?<!-- O06-CONTROL-INTERACTIONS:END -->','',page,flags=re.S)
+    interaction=('<!-- O06-CONTROL-INTERACTIONS:BEGIN --><section id="o06-control-interactions"><h5>完整交互怎样核收</h5><p>以下10条覆盖31类的实际用户路径，不为每个旧类复制一套交互。HTML能演示界面状态与草稿；绑定解析、HALCON、真实保存与资源释放仍由产品回归核收，不能由预览代签。</p>'+table(['路径','界面','必须覆盖的交互','VM定位键'],data['interactions'])+'<p>'+escape(data['deletionGate'])+'</p><p>'+escape(data.get('engineeringNote',''))+'</p><p>'+escape(data.get('buildAndVerification',''))+'</p></section><!-- O06-CONTROL-INTERACTIONS:END -->')
+    last=page.index('</table>',page.index('id="o06-control-labeledcontrol"'))+len('</table>')
+    page=page[:last]+interaction+page[last:]
+    # Keep the original engineering location as the single before/after design.
+    marker='<!-- O06-ENGINEERING-CLASS-MAP:END -->';end=page.index(marker);start=page.rfind('<pre',0,end)
+    tree='''现在（真实文件；旧SDK与新字段层并存）
+src/Plugin.SDK/UI/Controls/          旧31类中的基础控件、绑定组合、ROI协调及主题依赖
+src/Plugin.Wpf/Fields/              新DeclaredFieldEditor/DeclaredFieldsView/SourceSelectionField/ReferenceSelectionControl
+src/Plugin.Wpf/Regions/             RegionGeometryEditor、RoiGeometryEditing与受限交互合同
+src/UI/Services/Editing/Nodes/      正常开窗、来源、ROI与私有草稿装配
+src/UI/Services/Editing/Regions/    独占RoiViewportEditScope
+src/UI/Shell/Controls/Panels/       主界面ImagePreviewControl
+Blob.Runtime/                      唯一HALCON执行、测量与输出；当前预处理/形态学尚未移出
+Blob.Wpf/Views/                     现只读BlobDataAnalysisControl；旧BlobAnalysisToolDebugControl已删
+
+调整后（拟组织，未实施，不新建31个类）
+src/Plugin.Contracts/              中立字段、几何、结果与稳定引用；不含WPF/控件/主题
+src/Plugin.Wpf/
+  Controls/                        提取NumericUpDown、RangeSlider、RangeInputControl、ToggleSwitch、ColorPicker
+  Fields/
+    DeclaredFieldEditor.cs          复用新草稿/校验；改按声明选择模板
+    SourceSelectionField.cs         宿主给IMAGE候选，整行ComboBox
+    ReferenceSelectionControl.cs    宿主给类型化引用，控件只展示选择
+    Templates/                     FieldRow / ScalarField / RangeField / ReferenceField / ImageSourceField
+                                   ColorField / JudgmentGroup / DisplayObjectField / TextDisplayGroup
+  Regions/                         复用现几何，按RoiField / RoiSourceField / RoiShapeSelector / GeometryFields组装
+  Themes/                          Numeric / Range / Boolean / Color / Combo / Icons / Generic.xaml及资源注册
+src/UI/Services/Editing/            窗口、草稿、候选、ROI scope、唯一运行与释放；不给基础控件调度权限
+src/UI/Shell/Controls/Panels/       主界面图像源组合，不塞入Blob或共享SDK
+tools/SunEyeVision.BlobAnalysis/Runtime/
+  BlobDefinition.cs                 现中立入口；不另建Definition工程
+  BlobPresentation.cs（拟新增）      用Contracts有限页/组/显隐描述声明界面，不引WPF
+BlobConfigurationFields.cs（门面）   当前含WPF Color/旧SDK槽位，只作隔离适配，不搬入中立控件
+Blob.Runtime/                       HALCON唯一算法；分割与预处理/形态学调整另按原方案审核
+Blob.Wpf/Views + Presentation/      当前只读表/标量投影继续使用；S5通用结果尚未实施
+
+依赖：工具Definition/Runtime → Contracts/算法基础；Plugin.Wpf → Contracts；UI宿主 → Plugin.Wpf+运行服务。
+退出旧SDK类：先迁实际消费者和资源，再完整Release与设计时/运行时回归，最后删除；本轮不改产品。'''
+    page=page[:start]+'<pre>'+escape(tree)+'</pre>'+page[end:]
+    page=page.replace('现有41类逐件映射','本轮31类按新职责逐件映射（早期41类范围为历史）')
+    page=page.replace('<span id="shared-control-design-inventory"></span>','')
+    page=page.replace('<h5 id="o06-current-control-mapping">','<span id="shared-control-design-inventory"></span><h5 id="o06-current-control-mapping">')
+    return page
+
 def render_document(page):
-    return render_s4_stage(render_s1_stage(page))
+    return render_control_architecture(render_s4_stage(render_s1_stage(page)))
 
 
 def main():

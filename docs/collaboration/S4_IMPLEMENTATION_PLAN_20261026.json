@@ -767,7 +767,7 @@
       "status": "SOURCE_CHECK_ONLY_RENDER_UNVERIFIED",
       "scope": "HTML/SVG呈现推荐与浏览器内矩形示意，不运行HALCON，不修改Release，不证明WPF外观/交互。",
       "browserBlock": "CUA不允许file://协议，自动视觉检查被拒绝；未使用本地服务器/其他浏览器/原始CDP绕过。",
-      "sha256": "c352d57ba4f0ba23fde90ddfbc387ac437a653a67916ec5044c72bd09a25b81a",
+      "sha256": "eb5aa0963a7dc535df844f1f743211a757339d134cd5ce7789148af78cc17c09",
       "checks": {
         "javascriptSyntax": "node --check通过",
         "sourceGeneration": "三页/四种继承分支/编辑按钮能力的字符串生成检查通过；非浏览器执行",
@@ -1108,6 +1108,21 @@
         }
       ],
       "acceptance": "使用相同字段和相同状态对照VM：输入源、数值/订阅、范围、焦点、开关显隐；再验证新草稿/执行/释放链。HTML效果和功能PASS都不能单独代UI通过。"
+    },
+    "controlReorganization": {
+      "path": "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json",
+      "sha256": "17da73821fec6ac2dbf2622b6a624dae140b5ffff40693ad3f92b46b9c598a93",
+      "controls": 31,
+      "counts": {
+        "提取复用": 8,
+        "重组": 15,
+        "删除": 8
+      },
+      "scope": "按六组职责原位更新主清单、去留总览、工程前后结构；删除为方案退出，未改产品。",
+      "check": {
+        "path": "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_CHECK_20261026.json",
+        "sha256": "5741c4df2480566f1e93a9f92fa2bf3d1ef89cca0cbcadeb7182297bbf37925b"
+      }
     }
   }
 }

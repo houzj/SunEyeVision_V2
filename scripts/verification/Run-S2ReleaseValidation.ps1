@@ -1,9 +1,9 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','Components','Consumption','InputBoundaries') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('FieldEditing','BindingEditing','RoiEditing','FullChain') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链检查仅用于S4正式产物验证'}
+if($Track -in @('FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -31,6 +31,7 @@ if($Stage -eq 'S4' -and $Track -eq 'FieldEditing'){$source='S4FieldEditingCases.
 if($Stage -eq 'S4' -and $Track -eq 'BindingEditing'){$source='S4BindingEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'RoiEditing'){$source='S4RoiEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'FullChain'){$source='S4FullChainCases.cs'}
+if($Stage -eq 'S4' -and $Track -eq 'WindowPresentation'){$source='O06WindowPresentationCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash
@@ -45,6 +46,7 @@ internal static class SafeEntry {
    Console.OutputEncoding=new System.Text.UTF8Encoding(false);
    Console.Error.Write("");
    var root=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
+   AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",root+Path.DirectorySeparatorChar);
    Environment.SetEnvironmentVariable("PATH",root+";"+Path.Combine(root,"runtimes","win-x64","native")+";"+Environment.GetEnvironmentVariable("PATH"));
    AssemblyLoadContext.Default.Resolving+=(_,n)=> {
     foreach(var p in new[]{Path.Combine(root,n.Name+".dll"),Path.Combine(root,"plugins",n.Name!,n.Name+".dll")})
@@ -74,10 +76,21 @@ $env:S2_PRODUCT_ROOT=$product;$env:S2_CASE_ROOT=$logDir
 $env:S2_TEST_HELPERS=Join-Path $root 'tests/bin/Release'
 $env:TEMP=Join-Path $logDir 'data';$env:TMP=$env:TEMP
 New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
-$launch=@{FilePath='dotnet';WorkingDirectory=$product;WindowStyle='Hidden';PassThru=$true;RedirectStandardOutput=(Join-Path $logDir 'run.log');RedirectStandardError=(Join-Path $logDir 'run-error.log')}
-$launch.ArgumentList=@('exec','--depsfile',(Join-Path $product 'SunEyeVision.UI.deps.json'),'--runtimeconfig',(Join-Path $product 'SunEyeVision.UI.runtimeconfig.json'),(Join-Path $dir 'out/Check.dll')) | ForEach-Object {'"'+$_+'"'}
-$process=Start-Process @launch
-if(-not $process.WaitForExit(90000)){$process.Kill();throw 'S2自有检查进程超时，已停止该自有进程'}
+$launch=New-Object System.Diagnostics.ProcessStartInfo
+$launch.FileName='dotnet';$launch.WorkingDirectory=$product
+$launch.UseShellExecute=$false;$launch.CreateNoWindow=$true
+$launch.RedirectStandardOutput=$true;$launch.RedirectStandardError=$true
+$launch.Arguments=(@('exec','--depsfile',(Join-Path $product 'SunEyeVision.UI.deps.json'),'--runtimeconfig',(Join-Path $product 'SunEyeVision.UI.runtimeconfig.json'),(Join-Path $dir 'out/Check.dll')) | ForEach-Object {'"'+$_+'"'}) -join ' '
+# Own the process handle through exit; Windows PowerShell Start-Process can otherwise return a null ExitCode.
+$process=New-Object System.Diagnostics.Process
+$process.StartInfo=$launch
+if(-not $process.Start()){throw 'S2自有检查进程启动失败'}
+$stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync()
+$finished=$process.WaitForExit(90000)
+if(-not $finished){$process.Kill();$process.WaitForExit()}
+[IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
+[IO.File]::WriteAllText((Join-Path $logDir 'run-error.log'),$stderr.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
+if(-not $finished){throw 'S2自有检查进程超时，已停止该自有进程'}
 [ordered]@{stage=$Stage;attempt=$attempt;pid=$process.Id;exit=$process.ExitCode;productRoot=$product;caseSource=$source;caseSourceSha256=$caseSourceSha;scope='当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收';logDir=$logDir} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8
 Get-Content (Join-Path $logDir 'run.log') -Encoding utf8
 if($process.ExitCode -ne 0){Get-Content (Join-Path $logDir 'run-error.log');throw 'S2检查失败，保留原日志'}

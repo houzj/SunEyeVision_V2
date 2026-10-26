@@ -99,7 +99,19 @@ internal static class S2DocumentEditingCases
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
         ToolResults Result(WorkflowNodeBase node)=>Context().GetNodeResult(node.Id)?.Result??throw new Exception("没有正式节点结果："+node.Id);
         int Count(ToolResults result)=>Convert.ToInt32(result.GetType().GetProperty("FilteredBlobCount")!.GetValue(result));
+        void VerifyResourceFrame(ToolResults result)
+        {
+            var outputs=result.GetOutputVariables();
+            var gray=outputs.Single(output=>output.Name=="GrayImage");
+            var region=outputs.Single(output=>output.Name=="Region");
+            Require(gray.RuntimeValue is SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage,"SDK图像来源失去现行IVisionImage消费合同");
+            using var snapshot=result.DeclaredOutput!.AcquireReader();
+            var frozenImage=snapshot.Values!.Get<SunEyeVision.Plugin.Contracts.IReadOnlyImage>(BindingClrAdapter.OutputPortId(gray));
+            var frozenRegion=snapshot.Values.Get<SunEyeVision.Plugin.Contracts.IReadOnlyRegion>(BindingClrAdapter.OutputPortId(region));
+            Require(frozenImage.Frame==frozenRegion.SourceFrame,"正式冻结图像和区域丢失共同来源帧身份");
+        }
         Require(Count(Result(blob))==2&&Count(Result(downstream))==2,"正式图像载入→Blob→下游没有产生两个对象");
+        VerifyResourceFrame(Result(blob));
         Require(image.SourceImage is not null,"生产执行没有刷新主图像");
         Console.WriteLine("通过：MainWindow正式执行入口读取PNG，真实HALCON及下游链运行，主图像同步更新");
         // GrayImage intentionally remains the original gray input. To consume the filtered
@@ -155,6 +167,7 @@ internal static class S2DocumentEditingCases
         Require(window.TryConfirm(out var confirmError),confirmError);Pump();
         Require(!context.IsValid&&((RoiParameters)blob.Parameters).InspectionRois.Rois.Count==1,"确定未发布ROI或关闭未退出范围");
         Await(vm.RunSelectedImageAsync());Pump();Require(Count(Result(blob))==1&&Count(Result(downstream))==1,"确认后的生产与下游没有采用新ROI");
+        VerifyResourceFrame(Result(blob));
         var solutionFile=Path.Combine(folder,"full-chain.solution");var save=new SunEyeVision.UI.Services.Solutions.SolutionApplicationService(solutions);
         Require(save.Save(solutionFile,()=>solutions.Session!.Editing.AcceptAll()).FileWritten,"实际保存失败："+solutions.LastError);
         var reopened=solutions.LoadSolutionOnly(solutionFile)??throw new Exception(solutions.LastError);solutions.SetCurrentSolution(reopened);Pump();

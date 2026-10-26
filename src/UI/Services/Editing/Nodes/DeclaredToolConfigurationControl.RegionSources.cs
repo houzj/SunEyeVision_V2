@@ -20,8 +20,8 @@ public sealed partial class DeclaredToolConfigurationControl
         {
             var collection=group.Role switch {"inspection"=>parameters.InspectionRois,"mask"=>parameters.MaskRois,_=>throw new ArgumentException("未知区域角色。")};
             var title=group.Role=="mask"?"屏蔽区域":"检测区域";
-            var rows=new StackPanel();rows.Children.Add(new TextBlock{Text=title+" · 继承来源（对应模式下生效，本地底稿保留）",TextWrapping=TextWrapping.Wrap});
-            _fields.AddToGroup("基本参数",rows);
+            var rows=new StackPanel{Margin=new Thickness(0,4,0,8)};
+            _fields.AddAfterField(group.ModeFieldId,rows,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedGeometry)));
             foreach(var item in collection.Rois.Where(item=>item.IsSubscribed).ToArray())AddGeometry(item);
             if(!collection.Rois.Any(item=>item.IsSubscribed))AddGeometry(null);
             var add=new Button{Content="增加几何订阅",HorizontalAlignment=HorizontalAlignment.Left,Margin=new Thickness(0,4,0,8)};
@@ -38,7 +38,7 @@ public sealed partial class DeclaredToolConfigurationControl
                         return Change(()=>{if(candidate is null)node.ParamSettings.RemoveSetting(slot);else node.ParamSettings.SetSetting(Setting(slot,candidate));},
                             ()=>{if(previous is null)node.ParamSettings.RemoveSetting(slot);else node.ParamSettings.SetSetting(previous);},choice is not null);
                     }){Tag=group.RegionSourceFieldId};
-                rows.Children.Add(view);_sourceFields.Add(view);
+                _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedRegion)));_sourceFields.Add(view);
             }
             void AddGeometry(Roi? existing)
             {

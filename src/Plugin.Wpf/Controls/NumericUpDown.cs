@@ -225,6 +225,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             {
                 _slider.GotFocus -= OnSliderGotFocus;
                 _slider.LostFocus -= OnSliderLostFocus;
+                _slider.PreviewKeyDown -= OnSliderKeyDown;
             }
             if (_increaseButton != null)
                 _increaseButton.Click -= OnIncreaseButtonClick;
@@ -255,6 +256,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             {
                 _slider.GotFocus += OnSliderGotFocus;
                 _slider.LostFocus += OnSliderLostFocus;
+                _slider.PreviewKeyDown += OnSliderKeyDown;
             }
             if (_increaseButton != null)
                 _increaseButton.Click += OnIncreaseButtonClick;
@@ -325,6 +327,10 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             {
                 switch (e.Key)
                 {
+                    case Key.Escape:
+                        if(_sliderPopup is not null)_sliderPopup.IsOpen=false;
+                        e.Handled=true;
+                        break;
                     case Key.Up:
                         ChangeValue(SmallChange);
                         e.Handled = true;
@@ -376,8 +382,9 @@ namespace SunEyeVision.Plugin.Wpf.Controls
                 _isUpdatingText = true;
                 try
                 {
-                    string format = DecimalPlaces > 0 ? $"F{DecimalPlaces}" : "F0";
-                    _textBox.Text = Value.ToString(format);
+                    // DecimalPlaces controls the preferred display, never the stored precision.
+                    string format = Math.Round(Value,DecimalPlaces)==Value ? $"F{DecimalPlaces}" : "R";
+                    _textBox.Text = Value.ToString(format,System.Globalization.CultureInfo.InvariantCulture);
                     _hasPendingText = false;
                 }
                 finally
@@ -433,8 +440,8 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             {
                 // Parse the integer before any double conversion: 2^53+1 must never round into 2^53.
                 if (!System.Numerics.BigInteger.TryParse(_textBox.Text,
-                    System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands,
-                    System.Globalization.CultureInfo.CurrentCulture, out var exact))
+                    System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture, out var exact))
                 { error = "此参数需要格式正确的精确整数。"; return false; }
                 var (minimum, maximum) = integerType switch
                 {
@@ -453,11 +460,11 @@ namespace SunEyeVision.Plugin.Wpf.Controls
                 if (!double.IsFinite(entered) || new System.Numerics.BigInteger(entered) != exact)
                 { error = "此整数无法无损通过当前数值控件，请保留精确输入并使用支持该范围的编辑器。"; return false; }
             }
-            else if (!double.TryParse(_textBox.Text, out entered) || !double.IsFinite(entered))
+            else if (!double.TryParse(_textBox.Text,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture, out entered) || !double.IsFinite(entered))
             { error = "数值输入无效，请输入有限数值。"; return false; }
             if (entered < Minimum || entered > Maximum)
             { error = "数值超出允许范围。"; return false; }
-            value = Math.Round(entered, DecimalPlaces);
+            value = entered;
             if (!double.IsFinite(value) || value < Minimum || value > Maximum)
             { error = "数值精度或范围无效。"; return false; }
             return true;
@@ -599,7 +606,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls
                 
                 
                 // 检查焦点是否在控件内部（包括 TextBox 和 Slider）
-                if (IsKeyboardFocusWithin)
+                if (IsKeyboardFocusWithin || _slider?.IsKeyboardFocusWithin==true)
                 {
                     
                     return;
@@ -629,7 +636,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 // 检查焦点是否在控件内部（包括 TextBox 和 Slider）
-                if (IsKeyboardFocusWithin)
+                if (IsKeyboardFocusWithin || _slider?.IsKeyboardFocusWithin==true)
                 {
                     
                     return;
@@ -644,6 +651,8 @@ namespace SunEyeVision.Plugin.Wpf.Controls
             }), System.Windows.Threading.DispatcherPriority.Input);
         }
 
+        private void OnSliderKeyDown(object sender,KeyEventArgs e)
+        {if(e.Key==Key.Escape){if(_sliderPopup is not null)_sliderPopup.IsOpen=false;e.Handled=true;}}
         private void OnIncreaseButtonClick(object sender, RoutedEventArgs e)
         {
             if (!IsReadOnly)

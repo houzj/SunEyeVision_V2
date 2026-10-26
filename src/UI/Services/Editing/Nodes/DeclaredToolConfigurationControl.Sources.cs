@@ -28,8 +28,8 @@ public sealed partial class DeclaredToolConfigurationControl
         var image=schema.Inputs.SingleOrDefault(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image));
         var pose=schema.Inputs.SingleOrDefault(port=>port.Type==SpatialDeclarations.Affine2D);
         var leading=0;
-        if(image is not null)Add(image,"输入图像来源",false);
-        if(pose is not null)Add(pose,"位置修正来源（集合需指定序号）",true);
+        if(image is not null)Add(image,"输入源",false);
+        if(pose is not null)Add(pose,"修正来源",true);
         BuildRegionSourceEditors(provider);
         void Add(Port port,string title,bool correction)
         {
@@ -40,7 +40,11 @@ public sealed partial class DeclaredToolConfigurationControl
             }
             var view=new SourceSelectionField(title,()=>SdkSources(correction).Select(source=>new SourceChoice(source.Identity,
                 source.Source.DropdownDisplayText,source.Many)).ToArray(),Read,choice=>ApplySdkSource(correction,choice)){Tag=port.Id};
-            _sourceFields.Add(view);_fields.AddToGroup("基本参数",view,leading++);
+            view.ToolTip=correction?"位置修正来源；集合必须明确选择序号。":"输入图像来源，仅列出当前作用域的声明输出。";
+            _sourceFields.Add(view);
+            if(correction&&_accessors.SingleOrDefault(field=>field.StoragePath==nameof(guide.IsPositionCorrectionEnabled)) is {} enabled)
+                _fields.AddAfterField(enabled.Port.Id,view,new(enabled.Port.Id,true));
+            else _fields.AddToGroup("基本参数",view,leading++);
         }
     }
     private IReadOnlyList<SdkSource> SdkSources(bool correction)=>SdkSources(correction?SourceKind.Pose:SourceKind.Image);

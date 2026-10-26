@@ -27,6 +27,7 @@ public sealed class SourceSelectionField : UserControl
     {
         (_catalog,_read,_write)=(catalog,read,write);
         Resources.MergedDictionaries.Add(EditorResources.Create());
+        _error.Style=EditorResources.ErrorStyle();
         var panel=new StackPanel{Margin=new Thickness(0,3,0,3)};
         var row=new Grid();row.ColumnDefinitions.Add(new(){Width=new GridLength(89)});row.ColumnDefinitions.Add(new());
         row.Children.Add(new TextBlock{Text=title,FontSize=14,VerticalAlignment=VerticalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis,ToolTip=title});

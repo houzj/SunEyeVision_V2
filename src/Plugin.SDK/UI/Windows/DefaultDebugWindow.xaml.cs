@@ -133,6 +133,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
         #region 路由事件订阅
 
+        /// <summary>Compact parameter pages keep the existing host command and close lifecycle.</summary>
+        public void ApplyCompactParameterLayout()
+        {
+            MinWidth=360;Width=420;MinHeight=450;Height=500;
+            TitleToolIcon.Visibility=Visibility.Collapsed;
+            MaximizeButton.Visibility=Visibility.Collapsed;
+            TitleTextBlock.FontSize=14;TitleTextBlock.FontWeight=FontWeights.SemiBold;
+            FooterBar.Padding=new Thickness(10,4,16,4);
+            FooterBar.Background=new SolidColorBrush(Color.FromRgb(229,229,229));
+            // SDK-generated template text resolves these semantic keys at the window boundary.
+            Resources[UI.Themes.SdkThemeKeys.TextPrimaryBrush]=new SolidColorBrush(Color.FromRgb(102,102,102));
+            Resources[UI.Themes.SdkThemeKeys.TextSecondaryBrush]=new SolidColorBrush(Color.FromRgb(102,102,102));
+            Resources[UI.Themes.SdkThemeKeys.ButtonBackgroundBrush]=new SolidColorBrush(Color.FromRgb(225,223,223));
+            Resources[UI.Themes.SdkThemeKeys.ButtonTextBrush]=new SolidColorBrush(Color.FromRgb(102,102,102));
+            Resources[UI.Themes.SdkThemeKeys.ButtonBorderBrush]=new SolidColorBrush(Color.FromRgb(191,191,191));
+            Resources[UI.Themes.SdkThemeKeys.ButtonHoverBackgroundBrush]=new SolidColorBrush(Color.FromRgb(239,239,239));
+            foreach(var button in new[]{ContinuousRunButton,RunButton,ConfirmButton})
+            {button.Width=64;button.Height=24;button.Padding=new Thickness(2);button.FontSize=12;}
+        }
+
         /// <summary>
         /// 订阅路由事件
         /// </summary>

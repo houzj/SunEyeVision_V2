@@ -4,7 +4,8 @@ namespace SunEyeVision.Plugin.Contracts;
 public sealed record FieldCondition(string FieldId, object? Value);
 public sealed record FieldLayout(string Page, string Section, FieldCondition? VisibleWhen=null,
     string? PairWith=null, bool Advanced=false, double? Minimum=null, double? Maximum=null,
-    int DecimalPlaces=2, bool AllowReference=true);
+    int DecimalPlaces=2, bool AllowReference=true,
+    string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false);
 
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8 }
@@ -86,8 +87,17 @@ public sealed class ToolPresentation
                     throw new ArgumentException("A range requires two distinct declared numeric fields of the same type.");
                 if(layout.Minimum is {} minimum&&!double.IsFinite(minimum)||layout.Maximum is {} maximum&&!double.IsFinite(maximum)||layout.Minimum>layout.Maximum)
                     throw new ArgumentException("Invalid visual numeric bounds.");
+                if(layout.DialogPrimary&&layout.DialogGroup is null||layout.DialogGroup is not null&&(string.IsNullOrWhiteSpace(layout.DialogGroup)||string.IsNullOrWhiteSpace(layout.DialogTitle)))
+                    throw new ArgumentException("A grouped style requires an explicit group and title.");
             }
 
+        }
+        foreach(var group in Fields.Where(field=>field.Layout?.DialogGroup is not null).GroupBy(field=>field.Layout!.DialogGroup))
+        {
+            var primary=group.Where(field=>field.Layout!.DialogPrimary).ToArray();
+            if(primary.Length!=1||ports[primary[0].FieldId].Type!=TypeRef.ScalarOf(ScalarKind.Boolean)
+                ||group.Select(field=>(field.Layout!.Page,field.Layout.Section,field.Layout.Advanced,field.Layout.DialogTitle)).Distinct().Count()!=1)
+                throw new ArgumentException("A grouped style requires one Boolean primary and a consistent page, section and title.");
         }
         var roles=new HashSet<string>(StringComparer.Ordinal);
         foreach(var region in Regions)

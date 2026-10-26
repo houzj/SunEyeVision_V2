@@ -21,9 +21,7 @@ internal static class BlobConfigurationFields
                 "input.inspection.mode"=>nameof(parameters.InspectionMode),
                 "input.mask.mode"=>nameof(parameters.MaskMode), _=>field.LegacyPath};
             var (owner,property)=FindSlot(parameters,path);
-            var descriptor=new FieldPresentation(field.Port.Id,Label(field,parameters),Group(field),field.Presentation.Order,
-                field.Presentation.Editor,field.Presentation.ChoiceKeys,field.Presentation.ChoiceKeys.ToDictionary(key=>key,ChoiceLabel))
-                {Layout=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobPresentation.Layout(field.LogicalKey,BlobInputContract.Fields.ToDictionary(item=>item.LogicalKey,item=>item.Port.Id))};
+            var descriptor=BlobInputContract.Presentation(field,Label(field,parameters),Group(field),field.Presentation.ChoiceKeys.ToDictionary(key=>key,ChoiceLabel));
             return new ConfigurationFieldAccessor(field.Port,descriptor,path,()=>field.ReadStored(parameters),value=>
             {
                 var frozen=ValueRules.Freeze(field.Port,value);
@@ -61,11 +59,15 @@ internal static class BlobConfigurationFields
         field.LogicalKey.StartsWith("input.")||field.LogicalKey=="setting.pose-enabled"?"基本参数":"运行参数";
     private static string Label(BlobInputField field,BlobAnalysisParameters parameters)
     {
+        if(field.LogicalKey=="setting.FilterAreaMin")return "面积下限";
+        if(field.LogicalKey=="setting.FilterCircularityMin")return "圆度下限";
+        if(field.LogicalKey=="setting.FilterRectangularityMin")return "矩形度下限";
         if(parameters.GetRuntimeParameters().FirstOrDefault(slot=>slot.PropertyName==field.LegacyPath) is { } runtime)return runtime.DisplayName;
         if(field.LogicalKey=="setting.pose-enabled")return "启用位置修正";
         if(field.LogicalKey=="input.inspection.mode")return "检测区域来源";
         if(field.LogicalKey=="input.mask.mode")return "屏蔽区域来源";
         var parts=field.LogicalKey.Split('.');
+        if(field.LogicalKey.StartsWith("presentation.judgments.")&&parts[^1]=="Enabled")return Name(parts[2]);
         return parts[0]=="presentation"?Name(parts[2])+" · "+Name(parts[^1]):field.Presentation.DisplayName;
     }
     private static string Name(string key)=>key switch {

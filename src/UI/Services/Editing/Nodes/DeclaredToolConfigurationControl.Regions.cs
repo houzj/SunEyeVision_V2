@@ -30,7 +30,8 @@ public sealed partial class DeclaredToolConfigurationControl
         {
             var model=new RoiParameterEditingAdapter(parameters,group.Role,()=>RegionScopeCurrent()&&_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry));
             var view=new RegionGeometryEditor(group.Role,group.Role=="mask"?"屏蔽区域 · 本地几何":"检测区域 · 本地几何",model.Read,model.Write,model.Enable);
-            view.ModelChanged+=RefreshRegionScene;view.SetViewport(_roiViewport);_fields.AddToGroup("基本参数",view);
+            view.ModelChanged+=RefreshRegionScene;view.SetViewport(_roiViewport);
+            _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.LocalGeometry)));
             _regionParts.Add(new(group,model,view));
         }
         RefreshRegionScene();AttachRegionLifetime();

@@ -192,8 +192,13 @@ public static class BlobInputContract
         new("inspection","field:0017b68a0fff5e73bdd8dae3d4530396","field:945c62434a4f5b99a4f40201b9ff98c8","field:bf91897b1f5e549da2549a2bacf5a64c","field:f1e8ae97e64c52d4ac519696107b820a"),
         new("mask","field:799d4dc194af5bab824d2a1555967ff4","field:37d5d958f3e2566e843a87bc424fa053","field:fafe9d65445d55aaaea811c2916cf058","field:4ff1aa26d3f1517a9a2ffba7dab097df"),
     };
+    internal static FieldPresentation Presentation(BlobInputField field,string? label=null,string? group=null,IReadOnlyDictionary<string,string>? labels=null)
+        =>new(field.Port.Id,label??field.Presentation.DisplayName,group??field.Presentation.Group,field.Presentation.Order,
+            field.Presentation.Editor,field.Presentation.ChoiceKeys,labels??field.Presentation.ChoiceLabels)
+            {Layout=Runtime.BlobPresentation.Layout(field.LogicalKey,FieldIds)};
+    private static readonly IReadOnlyDictionary<string,string> FieldIds=Entries.ToDictionary(field=>field.LogicalKey,field=>field.Port.Id,StringComparer.Ordinal);
     public static ToolSchema Describe()=>new(Entries.Select(field=>field.Port),BlobOutputContract.Describe().Select(SunEyeVision.Plugin.SDK.Execution.Parameters.BindingClrAdapter.DescribeOutput),
-        new ToolPresentation(Entries.Select(field=>field.Presentation),false,Regions));
+        new ToolPresentation(Entries.Select(field=>Presentation(field)),false,Regions));
     public static IReadOnlyDictionary<string,ParameterSetting> CreateDefaults()
     {
         var defaults=new BlobAnalysisParameters();

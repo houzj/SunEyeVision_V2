@@ -24,7 +24,16 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
     private DeclaredFieldsView? _fields;
     private IReadOnlyList<ConfigurationFieldAccessor> _accessors=Array.Empty<ConfigurationFieldAccessor>();
     public bool HasPendingEdits=>_fields?.Fields.Any(editor=>editor.HasInvalidText)==true||HasPendingRegions||HasPendingSources;
-    public DeclaredToolConfigurationControl(IToolPlugin tool){_tool=tool;Loaded+=(_,_)=>AttachRegionLifetime();}
+    public override Size PreferredDebugWindowSize=>new(420,500);
+    public DeclaredToolConfigurationControl(IToolPlugin tool)
+    {
+        _tool=tool;Loaded+=(_,_)=>
+        {
+            AttachRegionLifetime();
+            if(_parameters is IConfigurationFieldProvider&&Window.GetWindow(this) is SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow window)
+                window.ApplyCompactParameterLayout();
+        };
+    }
     public override void SetParameters(ToolParameters parameters)
     {
         base.SetParameters(parameters);_parameters=parameters;

@@ -29,9 +29,12 @@ public sealed class DeclaredFieldEditor : UserControl
     private readonly TextBlock _label = new();
     private NumericUpDown? _numeric;
     private bool _updatingInput;
+    private bool _pairedSlider;
     public UIElement EditorBody => _row;
     public void SetLabel(string text)=>_label.Text=text;
-    public void UsePairedSlider(){if(_numeric is not null)_numeric.ShowSlider=false;}
+    internal DeclaredFieldEditor CreateStagedCopy(string label)=>new(_port,label,_setting,_=>{},_selectReference,_constant,_formatReference,_choiceLabels,_presentation);
+    internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;_referenceMode=setting is ReferenceSetting;Render();return true;}
+    public void UsePairedSlider(){_pairedSlider=true;if(_numeric is not null){_numeric.ShowSlider=false;_numeric.Padding=new Thickness(2,0,2,0);}}
     public bool TrySetConstant(object value)
     {
         if(HasInvalidText||!Set(new ConstantSetting(value)))return false;
@@ -61,6 +64,7 @@ public sealed class DeclaredFieldEditor : UserControl
         _formatReference=formatReference;_choiceLabels=choiceLabels;
         _presentation=presentation;_referenceMode=initial is ReferenceSetting;
         Resources.MergedDictionaries.Add(EditorResources.Create());
+        _error.Style=EditorResources.ErrorStyle();
         Tag=port.Id;Margin=new Thickness(0,1,0,1);MinHeight=32;
         _row.ColumnDefinitions.Add(new(){Width=new GridLength(89)});_row.ColumnDefinitions.Add(new());_row.ColumnDefinitions.Add(new(){Width=GridLength.Auto});
         _label.Text=label;_label.VerticalAlignment=VerticalAlignment.Center;_label.TextTrimming=TextTrimming.CharacterEllipsis;_label.ToolTip=label;_label.FontSize=14;
@@ -104,7 +108,7 @@ public sealed class DeclaredFieldEditor : UserControl
         }
         if(_referenceMode||_setting is ReferenceSetting)
         {
-            var dock=new DockPanel();var pick=new Button{Content="🔗",Width=29,Height=30,ToolTip="选择订阅来源"};DockPanel.SetDock(pick,Dock.Right);dock.Children.Add(pick);
+            var dock=new DockPanel();var pick=new Button{Content=EditorIcons.Link(),Width=29,Height=30,ToolTip="选择订阅来源"};DockPanel.SetDock(pick,Dock.Right);dock.Children.Add(pick);
             var label=new TextBox {IsReadOnly=true,Height=30,VerticalContentAlignment=VerticalAlignment.Center,Text=_setting is ReferenceSetting reference?(_formatReference?.Invoke(reference.Reference)??reference.Reference.NodeId+" · "+reference.Reference.PortId):""};dock.Children.Add(label);
             pick.Click+=(_,_)=>{var selected=_selectReference?.Invoke(_port);if(selected is not null&&Set(selected)){_referenceMode=true;Render();}};
             _body.Children.Add(dock);return;
@@ -125,15 +129,22 @@ public sealed class DeclaredFieldEditor : UserControl
         {
             if (_port.Type.Scalar == ScalarKind.Boolean)
             {
+                if(_presentation?.Layout?.DialogPrimary==true)
+                {
+                    var eye=new Button{Content=EditorIcons.Eye(value as bool?==true),ToolTip="显示 / 隐藏",Width=29,Height=29,Background=Brushes.Transparent,BorderThickness=new Thickness(0)};
+                    eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.Content=EditorIcons.Eye(visible);};
+                    InputElement=eye;_body.Children.Add(eye);return;
+                }
                 var input = new ToggleSwitch { IsChecked = value as bool? == true, SwitchWidth=40,SwitchHeight=22,CornerRadius=2 }; input.CheckedChanged += (_, _) => Set(new ConstantSetting(input.IsChecked)); InputElement = input; _body.Children.Add(input);
             }
             else if (_port.Choices is { } choices)
             {
                 var input = new ComboBox { ItemsSource = choices.Keys, SelectedItem = value };
-                if(_choiceLabels is {Count:>0})
                 {
                     var label=new FrameworkElementFactory(typeof(TextBlock));
-                    label.SetBinding(TextBlock.TextProperty,new Binding{Converter=new ChoiceLabelConverter(_choiceLabels)});
+                    label.SetValue(TextBlock.ForegroundProperty,new SolidColorBrush(Color.FromRgb(102,102,102)));
+                    label.SetValue(TextBlock.FontWeightProperty,FontWeights.Normal);
+                    label.SetBinding(TextBlock.TextProperty,_choiceLabels is {Count:>0}?new Binding{Converter=new ChoiceLabelConverter(_choiceLabels)}:new Binding());
                     input.ItemTemplate=new DataTemplate{VisualTree=label};
                 }
                 input.SelectionChanged += (_, _) => { if (input.SelectedItem is string key) Set(new ConstantSetting(key)); }; InputElement = input; _body.Children.Add(input);
@@ -173,6 +184,7 @@ public sealed class DeclaredFieldEditor : UserControl
                         DecimalPlaces=_port.Type.Scalar==ScalarKind.Int64?0:layout?.DecimalPlaces??2,
                         ShowSlider=layout?.Minimum is not null&&layout.Maximum is not null,
                         IntegerType=_port.Type.Scalar==ScalarKind.Int64?TypeCode.Int32:TypeCode.Empty};
+                    if(_pairedSlider){input.ShowSlider=false;input.Padding=new Thickness(2,0,2,0);}
                     TextBox? attached=null;
                     input.Loaded+=(_,_)=>{input.ApplyTemplate();if(input.TextEditor is {} box&&!ReferenceEquals(box,attached)){attached=box;Attach(box);}};
                     _numeric=input;InputElement=input;_body.Children.Add(input);

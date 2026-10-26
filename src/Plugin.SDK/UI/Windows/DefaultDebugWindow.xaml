@@ -131,7 +131,6 @@
 
                     <!-- 关闭按钮（WindowChrome.IsHitTestVisibleInChrome=True：Caption 区域内可点击） -->
                     <Button Grid.Column="2"
-                            Content="✕"
                             Width="32"
                             Height="32"
                             Background="Transparent"
@@ -141,6 +140,7 @@
                             Cursor="Hand"
                             WindowChrome.IsHitTestVisibleInChrome="True"
                             Click="OnCloseButtonClick">
+                        <Button.Content><TextBlock Text="✕" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TitleBarTextBrush}}" FontSize="14"/></Button.Content>
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="Transparent"/>
@@ -165,6 +165,7 @@
 
             <!-- 底部按钮栏 -->
             <Border Grid.Row="2"
+                    x:Name="FooterBar"
                     Background="{DynamicResource {x:Static themes:SdkThemeKeys.StatusBarBackgroundBrush}}"
                     BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}"
                     BorderThickness="0,1,0,0"

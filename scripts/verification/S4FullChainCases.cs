@@ -32,6 +32,7 @@ internal static class S2DocumentEditingCases
     }
     private static int Run()
     {
+        bool expectEditor=Environment.GetEnvironmentVariable("S3_EXPECT_EDITOR")!="0";
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         System.Threading.SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
         app.DispatcherUnhandledException+=(_,args)=>Console.Error.WriteLine("未处理UI异常："+args.Exception);
@@ -144,7 +145,21 @@ internal static class S2DocumentEditingCases
         Require(execution!.Results is ToolResults debug&&debug.IsSuccess&&Count(debug)==1,"窗口调试未产生一颗Blob："+execution.ErrorMessage);
         Require(context.DebugResults.GetNodeResult(blob.Id)?.Result is { } draftResult&&Count(draftResult)==1&&Count(Result(blob))==2,"调试结果没有正确隔离于生产结果");
         var analysis=vm.SelectedNodeDataAnalysisControl??throw new Exception("没有数据分析视图");
-        var table=Logicals(analysis).OfType<DataGrid>().Single();Require(table.Items.Count==1,"真实事件链没有刷新Blob结果表");
+        Require(analysis is SunEyeVision.Plugin.Wpf.Presenters.Results.IToolResultView,"生产结果页未接中立结果视图合同");
+        Require(expectEditor?analysis.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf"
+            :analysis is SunEyeVision.Plugin.Wpf.Presenters.Results.DeclaredResultTable,"有/无Wpf的生产结果视图选择错误");
+        var table=Logicals(analysis).OfType<DataGrid>().Single();
+        ((FrameworkElement)analysis).UpdateLayout();Pump();
+        Console.WriteLine("结果视图状态：Loaded="+((FrameworkElement)analysis).IsLoaded+",DataContext="+((FrameworkElement)analysis).DataContext?.GetType().FullName
+            +",ProjectedRows="+(analysis.GetType().GetProperty("FilteredBlobs")?.GetValue(analysis) as System.Collections.ICollection)?.Count+",GridRows="+table.Items.Count);
+        if(table.Items.Count==0)
+        {
+            var updater=typeof(MainWindowViewModel).Assembly.GetType("SunEyeVision.UI.Services.Monitoring.ToolResultViews",true)!.GetMethod("Update")!;
+            try{updater.Invoke(null,new object?[]{analysis,execution.Results});Console.WriteLine("诊断：再次直接投影后的行数="+table.Items.Count);}
+            catch(Exception diagnostic){Console.Error.WriteLine("诊断投影失败："+(diagnostic.InnerException??diagnostic));}
+            throw new Exception("真实事件链没有刷新Blob结果表；直接投影仅诊断，不作为通过。");
+        }
+        Require(table.Items.Count==1,$"真实事件链没有刷新Blob结果表：Rows={table.Items.Count},Type={analysis.GetType().FullName}");
         var displayDefinition=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobDisplayDefinition.Instance;
         Require(table.Columns.Select(column=>column.Header?.ToString()).SequenceEqual(displayDefinition.Table.Columns.Select(column=>column.DisplayName)),
             "生产结果表未使用BlobDisplay.xml的列声明");
@@ -159,9 +174,13 @@ internal static class S2DocumentEditingCases
             return Convert.ToDouble(BindingClrAdapter.NormalizeValue(BindingClrAdapter.DescribeOutput(variable),variable.RuntimeValue),
                 System.Globalization.CultureInfo.InvariantCulture);
         }
-        foreach(var (property,id) in new[]{("FilteredBlobCount",11),("FilteredTotalArea",12),("AverageArea",13),("MinArea",30),("MaxArea",31)})
+        if(expectEditor)foreach(var (property,id) in new[]{("FilteredBlobCount",11),("FilteredTotalArea",12),("AverageArea",13),("MinArea",30),("MaxArea",31)})
             Require(Convert.ToDouble(analysis.GetType().GetProperty(property)!.GetValue(analysis),System.Globalization.CultureInfo.InvariantCulture)==Published(id),
                 "结果摘要未显示算法发布值："+property);
+        ((FrameworkElement)analysis).UpdateLayout();Pump();
+        var areaCell=((DataGridTextColumn)table.Columns[1]).GetCellContent(table.Items[0]) as TextBlock;
+        Require(areaCell is not null&&double.TryParse(areaCell.Text,out var shownArea)&&shownArea==Published(12),
+            "真实结果单元格未绑定到已发布面积，不能仅以行数证明结果表可用");
         table.SelectedItem=table.Items[0];Pump();
         var highlight=typeof(ResultRenderLayer).GetField("_highlightItems",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(image.ResultRenderLayerControl) as System.Collections.IEnumerable;
         Require(highlight?.Cast<object>().Count()==1,"结果行选择未通过真实主窗口订阅形成图像高亮");
@@ -175,7 +194,7 @@ internal static class S2DocumentEditingCases
         Require(completed==failureCount&&!execution!.IsSuccess&&!string.IsNullOrEmpty(execution.ErrorMessage)
             &&((TextBlock)window.FindName("ExecutionMessage")).Visibility==Visibility.Visible,"失败被报成成功、错误不可见或连续运行仍反复失败");
         Require(execution!.Results is ToolResults failed&&!failed.IsSuccess&&table.Items.Count==0
-            &&Convert.ToDouble(analysis.GetType().GetProperty("FilteredTotalArea")!.GetValue(analysis))==0,"运行失败后结果表或统计残留旧值");
+            &&(!expectEditor||Convert.ToDouble(analysis.GetType().GetProperty("FilteredTotalArea")!.GetValue(analysis))==0),"运行失败后结果表或统计残留旧值");
         var dormant=typeof(ResultRenderLayer).GetField("_regionItems",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(image.ResultRenderLayerControl) as System.Collections.IEnumerable;
         Require(dormant is null||!dormant.Cast<object>().Any(),"像素区域模式仍显示本地底稿");
         inspectionMode.Write("LocalGeometry");editor.OnExternalResultArrived();execution=null;
@@ -207,8 +226,16 @@ internal static class S2DocumentEditingCases
         custom.CreatedWindow!.Left=-10000;custom.CreatedWindow.ShowActivated=false;custom.CreatedWindow.ShowInTaskbar=false;
         Await((Task)typeof(MainWindowViewModel).GetMethod("InitializeToolControlAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,new object[]{custom.CreatedWindow,restored})!);Pump();custom.CreatedWindow.Close();Pump();
         Console.WriteLine("通过：声明编辑器即使请求Custom布局也使用完整通用壳，执行与结果转发不依赖已删除的专用页");
+        var closingView=vm.SelectedNodeDataAnalysisControl as SunEyeVision.Plugin.Wpf.Presenters.Results.IToolResultView
+            ??throw new Exception("关闭前没有声明结果视图");
+        vm.CloseResultPresentation();
+        var disposed=false;try{closingView.Update(null);}catch(ObjectDisposedException){disposed=true;}
+        Require(disposed&&vm.SelectedNodeDataAnalysisControl is null,"宿主关闭未释放并移除结果视图");
+        var closedHighlights=typeof(ResultRenderLayer).GetField("_highlightItems",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(image.ResultRenderLayerControl) as System.Collections.IEnumerable;
+        Require(closedHighlights is null||!closedHighlights.Cast<object>().Any(),"关闭结果区后高亮残留");
+        Console.WriteLine("通过：宿主退出结果区时退订并释放中立视图，后续更新明确拒绝");
         shell.Close();Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
-        Console.WriteLine("S4真实宿主连续链：8组通过；管理事件与命令路径，不冒充物理鼠标拖拽或用户人工验收。");return 0;
+        Console.WriteLine("S4真实宿主连续链：9组通过；管理事件与命令路径，不冒充物理鼠标拖拽或用户人工验收。");return 0;
     }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
     private static IEnumerable<DependencyObject> Logicals(DependencyObject root){yield return root;foreach(var item in LogicalTreeHelper.GetChildren(root))if(item is DependencyObject child)foreach(var next in Logicals(child))yield return next;}

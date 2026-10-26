@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
@@ -51,16 +51,23 @@ internal static class S2DocumentEditingCases
             var node=new WorkflowNodeBase("blob","blob","Blob","BlobAnalysis"){Parameters=parameters};
             var tool=node.CreateInstance()??throw new Exception("节点无法创建工具");
             var editor=ToolRegistry.CreateEditorFactory(tool);
-            Require((editor is not null)==expectEditor,"实际节点编辑器解析错误");
-            if(editor is not null)
+            Require(editor is null,"Blob结果页仍依赖旧SDK视图工厂");
+            EnsurePresentationApplication();
+            using var resultView=ToolRegistry.CreateResultView("BlobAnalysis")??throw new Exception("Runtime声明没有结果视图");
+            if(expectEditor)
             {
-                EnsurePresentationApplication();
-                var debug=SunEyeVision.UI.Services.Editing.ToolConfigurationEditors.CreateControl(tool);var data=editor.CreateDataAnalysisControl();
-                Require(debug is SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl&&data is not null&&data.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","默认配置或独立Wpf结果视图装配错误");
-                Require(editor.CreateDebugControl(tool) is null,"已删除的Blob专业页仍被工厂创建");
-                Console.WriteLine("通过：默认声明配置由宿主组装，可选Wpf只提供现行结果BAML；无第二套Blob专业编辑器");
+                var debug=SunEyeVision.UI.Services.Editing.ToolConfigurationEditors.CreateControl(tool);
+                Require(debug is SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl
+                    &&resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","默认配置或独立Wpf结果视图装配错误");
+                var refs=resultView.View.GetType().Assembly.GetReferencedAssemblies().Select(reference=>reference.Name).ToArray();
+                Require(!refs.Contains("SunEyeVision.Plugin.SDK")&&!refs.Contains("SunEyeVision.UI"),"Blob.Wpf直接依赖SDK或UI宿主");
+                Console.WriteLine("通过：Runtime提供结果声明、可选Wpf中立工厂供应结果页且不引用SDK；配置仍由宿主声明页组装");
             }
-            else Console.WriteLine("通过：缺少Wpf时节点明确无专用编辑器，保留算法入口");
+            else
+            {
+                Require(resultView is SunEyeVision.Plugin.Wpf.Presenters.Results.DeclaredResultTable,"缺少Wpf时没有通用声明结果表");
+                Console.WriteLine("通过：缺少Wpf时保留算法与通用声明结果表");
+            }
             if(!expectEditor)
             {
                 void Progress(string step){Console.WriteLine("降级窗口进度："+step);File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"fallback-editor-progress.log"),step+Environment.NewLine);}
@@ -139,6 +146,27 @@ internal static class S2DocumentEditingCases
             Require(result.IsSuccess&&Convert.ToInt32(result.GetType().GetProperty("FilteredBlobCount")!.GetValue(result))==1&&Convert.ToDouble(result.GetType().GetProperty("FilteredTotalArea")!.GetValue(result))==64,"真实节点结果不符");
             Require(execution.DeclaredOutputs.Count==1,"正式执行未发布声明结果");
             Console.WriteLine("通过：正式节点与WorkflowExecutionEngine真实HALCON执行、声明结果发布，Blob面积64");
+            {
+                var grid=Find<System.Windows.Controls.DataGrid>(resultView.View).Single();
+                IReadOnlyList<GeometryValue>? selectedGeometry=null;
+                resultView.SelectionHighlightChanged+=(_,geometry)=>selectedGeometry=geometry;
+                using(var published=result.DeclaredOutput?.AcquireReader()??throw new Exception("真实运行没有发布声明值"))
+                    resultView.Update(published.Values??throw new Exception("真实运行没有发布值"));
+                execution.Dispose();
+                var resultWindow=new Window{Content=resultView.View,Width=700,Height=350,Left=-10000,ShowActivated=false,ShowInTaskbar=false};
+                resultWindow.Show();resultWindow.UpdateLayout();
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                Require(grid.Items.Count==1&&grid.Columns.Count==8,$"中立结果视图未显示声明行和列：Rows={grid.Items.Count},Columns={grid.Columns.Count}");
+                grid.SelectedItem=grid.Items[0];
+                Require(selectedGeometry is {Count:1}&&selectedGeometry[0] is PolygonGeometry polygon&&polygon.Vertices.Count==4,
+                    "结果资源释放后视图未保留独立的不可变选中几何");
+                resultView.Update(null);Require(grid.Items.Count==0&&selectedGeometry is null,"失败清空后行或高亮残留");
+                resultView.Dispose();
+                resultWindow.Close();
+                var rejected=false;try{resultView.Update(null);}catch(ObjectDisposedException){rejected=true;}
+                Require(rejected,"已释放结果视图继续更新");
+                Console.WriteLine("通过：中立视图只复制显示值/几何，资源scope关闭后仍可选择；空更新清空行和高亮，释放后拒绝更新");
+            }
             Require(executor.CurrentState==WorkflowExecutionState.Idle&&executor.CurrentContext is null,"运行请求返回后会话未清理");
             foreach(var start in new Func<Task<ExecutionResult>>[]{()=>executor.ExecuteWorkflowAsync(flow.Id,image),()=>executor.ExecuteWorkflow(flow.Id,image)})
             {
@@ -158,7 +186,7 @@ internal static class S2DocumentEditingCases
             using(var recovered=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image))))
                 Require(recovered.Success,"取消清理后无法开始下一次运行");
             Console.WriteLine("通过：已取消请求在无UI消息泵时返回Cancelled并清理，下一次真实运行成功");
-            Console.WriteLine($"S3组件消费：{(expectEditor?5:6)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
+            Console.WriteLine($"S3组件消费：{(expectEditor?6:7)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
     }

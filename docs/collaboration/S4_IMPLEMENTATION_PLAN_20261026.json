@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27已实施BlobInput及Runtime目录重组、参数XML严格校验、显示XML默认样式/表格列实际消费，UI/全量Release及正式目录定向回归通过。旧SDK入口、双模型与桥接尚在，最终两工程/新宿主合同/全部VM控件仍未完成。",
-  "summaryStatus": "XML基础检查点：UI/全量0错误，Runtime11/整链8/窗口11/字段8/组件5/发布11通过；非最终架构/视觉/人工验收。",
+  "current": "2026-10-27已接通Runtime结果声明→宿主中立结果视图→可选Blob.Wpf/无Wpf通用表的真实生产链；Blob.Wpf已移除SDK引用，旧BlobDataAnalysisControl已删除。根SDK工具发现/参数持久化/执行入口和双模型仍在，G1/G2/M1未完成。",
+  "summaryStatus": "结果视图增量：UI/全量0错误；有/无Wpf整链各9、Runtime11、组件6/7、发布12通过；非最终VM视觉/人工验收。",
   "rows": [
+    [
+      "中立结果视图生产链",
+      "Runtime提供ResultSchema/ResultProjection；公共Plugin.Wpf提供结果视图合同、字段Sources和通用表；BlobResultView/Factory不引用SDK。宿主只借用视图所需发布值，不在UI捕获图像或登记算法资源；关闭/切换退订并释放。",
+      "正式有/无Wpf整链均9组，组件6/7组、Runtime11及发布12项通过。实际单元格、资源释放后选择、高亮、错误清空、确认取消和重开已验；原VM结果模板与其他SDK消费者未退出。"
+    ],
     [
       "Blob输入与XML基础检查点",
       "BlobInput从冻结输入借用图像/ROI/掩膜/位置；参数XML唯一新建默认值，加载时拒绝类型/字段/范围/重复/缺定义/DTD；显示XML实际供给图形/文本样式和8列表格，摘要读取发布字段。",
@@ -148,9 +153,18 @@
     "本轮RoiBindings001五PASS三FAIL：标量来源集合准入失败连带缺字段判因及保存；修后002八组通过，后补正式计划核帧/休眠草稿/正尺寸与mask覆盖至005十二组。旧失败不删。",
     "WindowPresentation004三PASS一FAIL为旧fixture强转ComboBox不适配新RegionSourceModeSelector；根仅适配fixture入口并保留原断言，005四PASS exit0，未将其记成产品修复。",
     "原资源首轮运行ResourceDictionary相对URI找不到vmfieldstyles.xaml（roi-native-resources.log/window-native-resources.log）保留；importer与Generic改绝对组件pack URI后native资源002构建及018/007/030回归通过，未用旧006成绩替代。",
-    "FullChain036新增摘要断言误将SDK单元素数组当标量，InvalidCastException；改测试用正式NormalizeValue后037通过，未改产品校验。"
+    "FullChain036新增摘要断言误将SDK单元素数组当标量，InvalidCastException；改测试用正式NormalizeValue后037通过，未改产品校验。",
+    "FullChain038/039/041：新UI入口全量转换SDK输出，误捕获未需图像被帧/登记门拒绝；改Sources限定投影后042及缺Wpf044通过。",
+    "FullChain040诊断版启动无首条输出90秒超时，具体等待原因未证实；删除动态日志写入器后可启动，不记通过。",
+    "ComponentDeployment029有/无Wpf整链已过，缺Runtime负向检查宿主因新加Runtime编译依赖失败；用真实工作流发布值替代直接内核测试引用，030完整12项通过。",
+    "还原001空离线源不匹配包源映射、002在线SSL失败；恢复锁文件后003用原包缓存完整还原，原第三方包版本不变。"
   ],
   "checks": [
+    {
+      "name": "2026-10-27 中立结果视图与可选Wpf生产消费",
+      "result": "Runtime结果声明实际驱动工厂；Blob.Wpf无SDK引用。正式有/无Wpf整链各9、组件6/7、Runtime11、发布12项通过；768发布项和147加载记录核对一致。",
+      "path": "docs/collaboration/evidence/O06_NEUTRAL_RESULT_VIEW_20261027.json"
+    },
     {
       "name": "2026-10-27 Blob XML基础检查点",
       "result": "UI0错误/6610警告，全量0错误/6626警告；Runtime11、整链8、窗口11、字段8、组件5、发布11通过。正式EXE工具箱22项准入，3个文件与清单原SHA恢复。",
@@ -240,8 +254,8 @@
     }
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
-  "productIdentity": "正式Release Core与发布清单为f1d42c80，另含O06_BLOB_XML_CHECKPOINT_20261027.json列明的30份Blob源码增量；768项发布SHA核对、144条实际程序集加载记录匹配。不把历史cd8c6402成绩套入新产物。",
-  "next": "优先改公共宿主直接发现/消费Runtime新合同，连同配置持久化和结果生命周期替换，删除Blob根SDK入口/双模型/桥接；随后落实最终两工程命名与Wpf Views/Factories，继续VM原件控件接线。",
+  "productIdentity": "正式Release Core及清单为dc5112e4加O06_NEUTRAL_RESULT_VIEW_20261027.json列明的源码增量；768项发布SHA和147条实际加载记录匹配。不同候选按各自身份保存，不将后续检查点号直接改入清单。",
+  "next": "继续替换公共Runtime直接发现、配置/方案持久化和执行入口，删除Blob根SDK工程及双模型/转换桥接；落实最终两工程命名、参数Views/Factory及全部所需VM原模板。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -4600,7 +4614,7 @@
   "blobFileStructure": {
     "status": "已纳入正式执行目标G2：以本处文件树为唯一结构定义，按G2Acceptance硬性验收；实现尚未完成。",
     "decision": "Runtime必需、Wpf可选；XML为新工具默认值及编辑/显示元数据唯一来源，C#属性保存当前值，用户值随方案保存。新建读取XML，恢复方案不覆盖用户值；不保留旧项目兼容链。",
-    "currentFacts": "当前仍3个工程：Runtime目录已分Parameters/Results/Algorithms/Resources，有BlobTool、BlobInput、BlobSettings和BlobOutput，两份XML已嵌入。工程名仍待按目标调整；根SDK入口、双套参数/结果、转换桥接和原Wpf结果页仍在，未达最终目标结构。",
+    "currentFacts": "仍3个工程。Runtime有BlobTool/Input/Settings/Output及两份XML；Wpf已用BlobResultViewFactory和Views/BlobResultView.xaml替换旧SDK结果页，引用Runtime与公共Plugin.Wpf，不再引用Plugin.SDK。根SDK入口、双套参数/结果和转换桥接尚在，工程最终命名/参数Views仍未闭合。",
     "tree": "tools/SunEyeVision.BlobAnalysis/\n├─ Runtime/\n│  ├─ SunEyeVision.BlobAnalysis.Runtime.csproj\n│  ├─ BlobTool.cs                 # 本工具单次执行入口，不调度工作流\n│  ├─ Parameters/\n│  │  ├─ BlobSettings.cs          # 当前运行参数及判定配置\n│  │  └─ BlobInput.cs             # 冻结的图像/ROI/位置输入\n│  ├─ Results/\n│  │  └─ BlobOutput.cs            # 唯一结果及资源所有权\n│  ├─ Algorithms/                 # 分割/连通域/特征/筛选/判定\n│  └─ Resources/\n│     ├─ BlobParameters.xml       # 默认值、参数分组、编辑元数据\n│     └─ BlobDisplay.xml          # 图形/文本/表格定义与结果字段映射\n└─ Wpf/\n   ├─ SunEyeVision.BlobAnalysis.Wpf.csproj\n   ├─ BlobEditorFactory.cs\n   ├─ BlobResultViewFactory.cs\n   └─ Views/\n      ├─ BlobParameterEditor.xaml\n      └─ BlobResultView.xaml",
     "fileRows": [
       [
@@ -4718,14 +4732,14 @@
       [
         "G1",
         "公共架构与宿主新合同",
-        "待实施",
+        "结果声明/视图合同及生产链已接；发现/配置/持久化/执行入口仍待替换",
         "按Blob实际需求收敛工程职责，调整发现、工具箱、配置、方案、执行及结果消费者；取消旧项目兼容。",
         "生产链直接接新合同；受影响其他工具同步回归，不增加无实际边界中间工程。"
       ],
       [
         "G2",
         "Blob目标结构",
-        "目录/Input已推进，最终两工程与旧入口删除未完成",
+        "Runtime目录/Input及Wpf结果工厂/Views已推进；最终两工程/旧入口删除未完成",
         "严格落实本页唯一Runtime/Wpf目标树、唯一Settings/Input/Output、两份XML和G2Acceptance。",
         "两工程依赖、指定路径、旧入口/模型/桥接删除及真实加载运行全部成立，不以搬目录算完成。"
       ],
@@ -4760,7 +4774,7 @@
       [
         "G7",
         "正式Release构建与回归",
-        "本轮增量UI/全量及定向回归通过；最终架构交付仍待复验",
+        "本轮UI/全量、有无Wpf整链和发布回归通过；最终完整架构待复验",
         "串行UI与全量Release构建；正式目录运行真实Blob整链、组件/发布、有无Wpf、缺Runtime拒绝及受影响工具回归；记录VS设计时和运行时。",
         "两项构建0错误；源码/程序集/发布清单同源；创建/编辑/ROI/订阅/执行/保存/取消/资源与关联回归通过。"
       ],
@@ -5010,5 +5024,15 @@
       "图形/文本几何生成尚非完整XML映射消费；默认样式沿用当前产品值，不冒充全部VM原始默认值。",
       "最终两工程命名、Wpf工厂/Views、全部所需VM原件及视觉交互、VS设计时和真实用户验收仍待落实。"
     ]
+  },
+  "neutralResultViewCheckpoint": {
+    "date": "2026-10-27",
+    "status": "结果视图边界增量通过，非G1/M1整体完成",
+    "evidence": "docs/collaboration/evidence/O06_NEUTRAL_RESULT_VIEW_20261027.json",
+    "runtime": "IToolResultPresentationProvider只依赖现有Contracts；BlobTool提供由显示XML生成的声明。",
+    "wpf": "IToolResultView/IToolPresentationFactory在现有Plugin.Wpf/Presenters/Results，Blob.Wpf只读投影；无Wpf用DeclaredResultTable。",
+    "host": "ToolRegistry选择实际工厂/通用视图；MainWindow消费相同中立接口，借用已发布值并按Sources限制读取；UI不发明图像帧或新资源。",
+    "verified": "UI005：0错误/6612警告84.28秒，全量003：0错误/6525警告53.71秒；FullChain042/044各9、Components093/091为6/7、RuntimeKernel019为11、ComponentDeployment030为12通过。",
+    "remaining": "根SDK入口及双模型、配置/持久化/执行消费者、最终两工程/参数Views、VM原结果模板及全部控件/交互、VS设计时和用户真实验收仍未完。"
   }
 }

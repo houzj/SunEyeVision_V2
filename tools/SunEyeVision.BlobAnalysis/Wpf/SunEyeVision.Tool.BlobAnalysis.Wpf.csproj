@@ -15,6 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Runtime/SunEyeVision.Tool.BlobAnalysis.Runtime.csproj"><Private>false</Private></ProjectReference>
-    <ProjectReference Include="../../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
   </ItemGroup>
 </Project>

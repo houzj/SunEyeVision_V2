@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
@@ -18,7 +20,28 @@ public static partial class ToolRegistry
         var id=tool.GetType().GetCustomAttribute<ToolAttribute>()?.Id;
         ToolComponentRegistration? component;
         lock(_lock)component=id is not null&&_editorComponents.TryGetValue(id,out var value)?value:null;
-        return component is null?tool as IToolEditorFactory:(IToolEditorFactory)Activator.CreateInstance(component.EntryType)!;
+        return component is null?tool as IToolEditorFactory:Activator.CreateInstance(component.EntryType) as IToolEditorFactory;
+    }
+
+    public static IToolResultView? CreateResultView(string toolId)
+    {
+        ToolComponentRegistration? runtime, editor;
+        lock(_lock)
+        {
+            _runtimeComponents.TryGetValue(toolId,out runtime);
+            _editorComponents.TryGetValue(toolId,out editor);
+        }
+        if(runtime is null||Activator.CreateInstance(runtime.EntryType) is not IToolResultPresentationProvider provider)return null;
+        var schema=provider.ResultSchema;var projection=provider.ResultProjection;
+        var errors=projection.Validate(schema);
+        if(errors.Count!=0)throw new InvalidOperationException("Invalid runtime result presentation: "+string.Join("; ",errors.Select(e=>e.Message)));
+        if(editor is not null)
+        {
+            var factory=Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory
+                ??throw new InvalidOperationException("A runtime result declaration requires a neutral WPF presentation factory.");
+            return factory.CreateResultView(schema,projection)??throw new InvalidOperationException("Result view factory returned null.");
+        }
+        return new DeclaredResultTable(schema,projection);
     }
 
     public static IReadOnlyList<ToolComponentMetadata> GetComponentMetadata()
@@ -33,7 +56,7 @@ public static partial class ToolRegistry
         if(type.Assembly.GetReferencedAssemblies().Any(a=>a.Name=="SunEyeVision.UI"))throw new InvalidOperationException("Tool components cannot reference the UI host.");
         if(component.Metadata.Role==ToolComponentRole.Editor)
         {
-            if(!typeof(IToolEditorFactory).IsAssignableFrom(type)||typeof(IToolPlugin).IsAssignableFrom(type))
+            if((!typeof(IToolEditorFactory).IsAssignableFrom(type)&&!typeof(IToolPresentationFactory).IsAssignableFrom(type))||typeof(IToolPlugin).IsAssignableFrom(type))
                 throw new InvalidOperationException("Editor must be a factory, never an algorithm producer.");
         }
         else

@@ -1790,7 +1790,8 @@
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.runtime": {

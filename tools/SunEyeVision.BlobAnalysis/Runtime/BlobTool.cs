@@ -1,9 +1,10 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
@@ -11,6 +12,8 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>
     public const string MaskInput = "input.mask.region";
     public const string PoseInput = "input.pose";
     public string ToolId => Id;
+    public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs);
+    public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema Describe(BlobSettings committedSettings) => new(new[] {
         new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image)),
         new Port(InspectionInput, TypeRef.ResourceOf(ResourceKind.Region), false),

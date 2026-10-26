@@ -99,3 +99,17 @@
 - 未完成：旧SDK根入口、双套模型和转换桥接仍存在；工程最终命名、Wpf参数/结果Views与工厂、宿主直接Runtime发现/编辑/持久化/结果链均需改造。显示XML已供默认样式与表格列，几何/文本生成尚有旧入口硬编码，不能称完整映射消费。当前样式XML沿用产品值，不冒充全部VM默认或VM外观达标。
 - 下一步优先G1公共新合同与生产消费链，连同受影响宿主与测试直接替换，删除旧入口/双模型/桥接；然后完成两工程与全部所需VM原件。原31只历史核对，本轮不要求全194清单迁完。
 - VS设计时未验证；保留用户此前视觉未通过，新候选未人工验收。目标继续active，不把本检查点计M1或整体完成。
+
+## 2026-10-27 中立结果视图与可选Wpf生产链（最新）
+
+- 当前执行者Codex/main，基线dc5112e41526b32089e69ddf92bf0c8f3923d5a7，单产品写者，无新增工作树/副本/智能体。本轮先完成G1结果视图边界，未把整个G1降为仅视图。
+- Runtime BlobTool实现现有Contracts内IToolResultPresentationProvider；结果Schema/Projection从Runtime和BlobDisplay XML取得。现有Plugin.Wpf/Presenters/Results新增中立IToolResultView/IToolPresentationFactory与DeclaredResultTable，未新增工程。
+- Blob.Wpf移除SDK工程引用，旧Views/BlobDataAnalysisControl.xaml/.cs删除，实际用BlobResultView.xaml/.cs及BlobResultViewFactory；BlobEditorFactory为中立Wpf工厂入口，视图只读InputValues并投影不可变几何。宿主ToolRegistry选择专属或无Wpf通用表，MainWindow三处真实结果刷新及缓存装配都消费新接口；选择切换/结果区退出退订释放并清高亮。
+- 跨模块影响：调整Runtime结果声明/Editor准入/Wpf依赖、UI发布及生命周期；未改工作流调度、输入/全局快照或算法。原其他工具保现有消费路径，Blob结果页不回退旧SDK接口。根SDK工具发现/参数/序列化/执行仍待整体替换，尚不是M1。
+- 实际修复：FullChain038/039/041发现新UI入口转换全部SDK输出、误把不需要的图像作新资源捕获，被正式帧/登记门拒绝。新增视图Sources并只读所需已有值；UI不捕获图像、不生成帧、不登记算法资源。有/无Wpf整链042/044均通过9组，实际面积单元格、选中高亮、失败清空、确认取消、保存重开、关闭释放成立。
+- RuntimeKernel019十一组通过，实际无SDK/WPF；Components093六组与无Wpf091七组通过，读取真实工作流发布值后释放执行scope仍可选择几何，空更新清空，Dispose后拒绝。ComponentDeployment030十二项通过，新增缺Wpf真实MainWindow完整结果表链；缺Runtime/错误元数据明确拒绝，正式EXE准入22工具，临时3文件与清单原SHA恢复。
+- 最终UI005构建0错误/6612警告84.28秒，全量003构建0错误/6525警告53.71秒，日志前缀blob-neutral-result。刷新依赖时还原001映射失败/002在线SSL失败，已恢复受影响锁文件并以现有原包缓存完成003还原；原第三方版本不变，未改nuget.config。相关依赖锁文件因Infrastructure显式引用公共Wpf而更新。
+- 保留Components084未Loaded读取行列失败（改真实加载布局）；FullChain040诊断启动90秒超时且无首条输出，原因未证实，移除动态日志写入器后正常；Deployment029缺Runtime负向检查因新测试编译引用Runtime失败（改读真实工作流发布值后030通过）。不覆盖失败。
+- 证据docs/collaboration/evidence/O06_NEUTRAL_RESULT_VIEW_20261027.json，含源码/锁文件、构建/测试源码、147实际加载记录和768发布项SHA。有/无Wpf最终产物同源。Core/清单仍为dc5112e4加记录增量，不可只改清单冒充后续提交构建。
+- 已查看FullChain042真实截图：数据、摘要和高亮可见；表头紧凑，未按VM原模板核收，不计VM视觉通过。VS设计时未验证；用户此前未通过反馈保留，新候选无人工验收。
+- 下一步直接替换公共Runtime发现、配置编辑/持久化和执行消费，删除Blob根SDK工程/双模型/转换桥接；之后完成最终两工程命名、参数Views/Factory和全部所需VM原件及交互。G1/G2/M1及整体目标均保持未完成/active。

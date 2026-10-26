@@ -1,12 +1,13 @@
-using System.Windows;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Tool.BlobAnalysis.Views;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf;
 
-public sealed class BlobEditorFactory : IToolEditorFactory
+public sealed class BlobEditorFactory : IToolPresentationFactory
 {
     // Configuration is provided completely by the host's declaration/ROI editor.
     // This optional companion currently supplies the specialized read-only result view only.
-    public FrameworkElement CreateDataAnalysisControl() => new BlobDataAnalysisControl();
+    public IToolResultView CreateResultView(ToolSchema schema,ResultProjectionDescriptor projection)
+        =>new BlobResultViewFactory().CreateResultView(schema,projection);
 }

@@ -15,6 +15,8 @@ using AppCommands = SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.UI.Services.Editing;
+using SunEyeVision.UI.Services.Monitoring;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
 
 
 using SunEyeVision.Plugin.SDK;
@@ -3547,10 +3549,20 @@ SplitterPosition = position;
         /// 更新数据分析控件 - 根据选中节点是否提供数据分析控件来显示/隐藏
         /// </summary>
         /// <param name="selectedNode">当前选中的节点</param>
+        private IToolResultView? _activeResultView;
+        private void ReleaseActiveResultView()
+        {
+            if(_activeResultView is not {} view)return;
+            _activeResultView=null;
+            view.SelectionHighlightChanged-=OnDeclaredSelectionHighlightChanged;
+            view.Dispose();
+        }
+
         private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
         {
             try
             {
+                ReleaseActiveResultView();
                 // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）
                 if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)
                 {
@@ -3578,6 +3590,18 @@ SplitterPosition = position;
                 var toolType = selectedNode.ToolType;
                 if (string.IsNullOrEmpty(toolType))
                     return System.Threading.Tasks.Task.CompletedTask;
+
+                var declaredView=ToolRegistry.CreateResultView(toolType);
+                if(declaredView is not null)
+                {
+                    _activeResultView=declaredView;
+                    declaredView.SelectionHighlightChanged+=OnDeclaredSelectionHighlightChanged;
+                    DataAnalysisControlTitle=$"{selectedNode.Name} - 数据分析";
+                    SelectedNodeDataAnalysisControl=declaredView.View;
+                    HasDataAnalysisControl=true;
+                    ToolResultViews.Update(declaredView,CurrentWorkflowContext?.GetNodeResult(selectedNode.Id)?.Result);
+                    return System.Threading.Tasks.Task.CompletedTask;
+                }
 
                 // 创建工具实例
                 var tool = ToolRegistry.CreateToolInstance(toolType);
@@ -3627,6 +3651,7 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
+                ReleaseActiveResultView();
                 AddLog($"❌ 更新数据分析控件失败: {ex.Message}");
                 SelectedNodeDataAnalysisControl = null;
                 HasDataAnalysisControl = false;
@@ -3643,6 +3668,30 @@ SplitterPosition = position;
                 _nodeResultManager.ClearHighlight();
             else
                 _nodeResultManager.SetHighlightItems(highlightItems);
+        }
+
+        private void OnDeclaredSelectionHighlightChanged(object? sender,IReadOnlyList<SunEyeVision.Plugin.Contracts.GeometryValue>? geometries)
+        {
+            if(!ReferenceEquals(sender,_activeResultView))return;
+            if(geometries is null||geometries.Count==0){_nodeResultManager.ClearHighlight();return;}
+            var display=new Plugin.SDK.Models.Visualization.DisplayCollector();
+            var style=new Plugin.SDK.Models.Visualization.GraphicsStyle{OkColor=Colors.Yellow,LineWidth=3};
+            foreach(var geometry in geometries)
+            {
+                if(geometry.Frame!=SunEyeVision.Plugin.Contracts.RoiDeclarations.ImageFrame)
+                    throw new InvalidOperationException("Result highlight is not in the current image coordinate frame.");
+                switch(geometry)
+                {
+                    case SunEyeVision.Plugin.Contracts.PolygonGeometry polygon:
+                        display.AddContour(style,polygon.Vertices.Select(point=>new Point(point.X,point.Y)).ToArray());break;
+                    case SunEyeVision.Plugin.Contracts.PointGeometry point:
+                        display.AddCross(style,new Point(point.Point.X,point.Point.Y));break;
+                    case SunEyeVision.Plugin.Contracts.LineGeometry line:
+                        display.AddLine(style,new Point(line.Start.X,line.Start.Y),new Point(line.End.X,line.End.Y));break;
+                    default:throw new NotSupportedException("Unsupported result highlight geometry: "+geometry.Kind);
+                }
+            }
+            _nodeResultManager.SetHighlightItems(display.Items);
         }
 
 
@@ -4107,7 +4156,12 @@ SplitterPosition = position;
                                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     if (toolResult.ExecutionIdentity?.IsCurrent == false || !ReferenceEquals(resultContext, CurrentWorkflowContext) || !ReferenceEquals(SelectedNode, node)) return;
-                                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
+                                    if(_activeResultView is {} declaredView)
+                                    {
+                                        try{ToolResultViews.Update(declaredView,toolResult);}
+                                        catch(Exception updateEx){declaredView.Update(null);AddLog($"⚠️ 声明结果视图更新失败: {updateEx.Message}");}
+                                    }
+                                    else if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
                                     {
                                         try
                                         {
@@ -4577,7 +4631,12 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
+                        if(_activeResultView is {} declaredView)
+                        {
+                            try{ToolResultViews.Update(declaredView,e.Result);}
+                            catch(Exception updateEx){declaredView.Update(null);AddLog($"⚠️ 声明结果视图更新失败: {updateEx.Message}");}
+                        }
+                        else if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
                             && e.Result != null && e.Result.IsSuccess)
                         {
                             try
@@ -4868,6 +4927,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
         public void CloseResultPresentation()
         {
+            ReleaseActiveResultView();
+            _nodeResultManager.ClearHighlight();
+            SelectedNodeDataAnalysisControl=null;HasDataAnalysisControl=false;
             _declaredResultPresenter?.Dispose();_declaredResultPresenter=null;
             _declaredResultActive=false;_declaredHistoricalResult=false;
         }

@@ -74,6 +74,9 @@ try {
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track Components
     if($LASTEXITCODE -ne 0){throw '缺编辑器的正式节点执行失败'}
     $results.Add([ordered]@{name='without-editor-real-workflow';passed=$true;scope='正式发现/注册/参数创建/节点/WorkflowExecutionEngine/HALCON/声明输出'})
+    & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track FullChain
+    if($LASTEXITCODE -ne 0){throw '缺少Wpf时生产结果表/高亮/保存重开整链失败'}
+    $results.Add([ordered]@{name='without-editor-result-host-chain';passed=$true;scope='真实MainWindow选择通用结果表、HALCON事件刷新/高亮、失败清空、确认取消、保存重开'})
     Restore-Held
 
     $runtime=@($baseline.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0})

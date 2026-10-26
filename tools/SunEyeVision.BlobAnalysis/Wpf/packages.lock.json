@@ -2,17 +2,22 @@
   "version": 1,
   "dependencies": {
     "net9.0-windows7.0": {
-      "Microsoft.Win32.SystemEvents": {
+      "Microsoft.Xaml.Behaviors.Wpf": {
         "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
+        "resolved": "1.1.31",
+        "contentHash": "LZpuf82ACZWldmfMuv3CTUMDh3o0xo0uHUaybR5HgqVLDBJJ9RZLykplQ/bTJd0/VDt3EhD4iDgUgbdIUAM+Kg=="
       },
-      "System.Drawing.Common": {
+      "System.CodeDom": {
         "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "uoozjI3+dlgKh2onFJcz8aNLh6TRCPlLSh8Dbuljc8CdvqXrxHOVysJlrHvlsOCqceqGBR1wrMPxlnzzhynktw==",
+        "resolved": "7.0.0",
+        "contentHash": "GLltyqEsE5/3IE+zYRP5sNa1l44qKl9v+bfdMcwg+M9qnQf47wK3H0SUR/T+3N4JEQXF3vV4CSuuo0rsg+nq2A=="
+      },
+      "System.Management": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "A4jed4QUviDOm7fJNKAJObEAEkEUXmkGL/w0iyCYTzrl1rezTj8LGFHfsVst4Vb9JwFcTpboiDrvdST48avBpw==",
         "dependencies": {
-          "Microsoft.Win32.SystemEvents": "9.0.0"
+          "System.CodeDom": "7.0.0"
         }
       },
       "suneyevision.haladapter.runtime": {
@@ -31,12 +36,12 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
-      "suneyevision.plugin.sdk": {
+      "suneyevision.plugin.wpf": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )",
-          "System.Drawing.Common": "[9.0.0, )"
+          "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "System.Management": "[7.0.0, )"
         }
       },
       "suneyevision.tool.blobanalysis.runtime": {
@@ -45,16 +50,16 @@
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
-      },
-      "suneyevision.tool.kernels": {
-        "type": "Project"
       }
     },
     "net9.0-windows7.0/win-x64": {
-      "Microsoft.Win32.SystemEvents": {
+      "System.Management": {
         "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "z8FfGIaoeALdD+KF44A2uP8PZIQQtDGiXsOLuN8nohbKhkyKt7zGaZb+fKiCxTuBqG22Q7myIAioSWaIcOOrOw=="
+        "resolved": "7.0.0",
+        "contentHash": "A4jed4QUviDOm7fJNKAJObEAEkEUXmkGL/w0iyCYTzrl1rezTj8LGFHfsVst4Vb9JwFcTpboiDrvdST48avBpw==",
+        "dependencies": {
+          "System.CodeDom": "7.0.0"
+        }
       }
     }
   }

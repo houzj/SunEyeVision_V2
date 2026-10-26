@@ -56,6 +56,7 @@ internal sealed class WorkflowBindingContext : IDisposable
         if(setting.BindingType!=BindingType.Binding)return null;
         if(node.RuntimeConfiguration is { } runtime)
         {
+            if(!string.IsNullOrEmpty(setting.RebindingReason))return Unavailable("rebind-required",setting.RebindingReason);
             var target=runtime.BindingTargets.SingleOrDefault(port=>port.Id==setting.ParameterName);
             if(target is null)return Unavailable("target-declaration","Unknown Runtime input port.");
             if((target.EditModes&FieldEditModes.Reference)==0)return Unavailable("target-mode","Runtime input does not allow a reference.");

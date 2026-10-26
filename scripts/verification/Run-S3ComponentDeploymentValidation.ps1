@@ -97,6 +97,9 @@ try {
         & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track RuntimeEditor
         if($LASTEXITCODE -ne 0){throw 'SDK入口及Wpf缺席时真实Runtime参数窗口/文档保存/确认取消失败'}
         $results.Add([ordered]@{name='runtime-window-without-sdk-frontend-and-editor';passed=$true;scope='实际MainWindow打开→通用Runtime设置视图→来源弹窗→私有输入/隐藏保存→非法阻断→确定取消/释放'})
+        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track FullChain
+        if($LASTEXITCODE -ne 0){throw 'SDK入口及Wpf缺席时默认工具箱拖放/连线/Runtime运行及保存重开失败'}
+        $results.Add([ordered]@{name='runtime-default-ui-without-sdk-frontend-and-editor';passed=$true;scope='实际工具箱Drop默认Runtime→语义图像自动绑定→HALCON及下游Region→私有调试→强类型保存重开'})
     } finally {[IO.File]::WriteAllBytes($manifest,$original)}
     Restore-Held
 

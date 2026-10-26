@@ -28,7 +28,7 @@ internal static class SolutionBindingExpressionPolicy
             foreach (var property in parameter)
                 if (property.Key is not ("SourceWorkflowId" or "SourceFieldId" or "ReferenceExpression" or "Conversion"
                     or "ParameterName" or "BindingType" or "ConstantValue" or "SourceNodeId" or "SourceProperty"
-                    or "SourceNodeName" or "SourceDisplayName" or "IsValid"))
+                    or "SourceNodeName" or "SourceDisplayName" or "IsValid" or "AutomaticConnectionId" or "RebindingReason"))
                     throw new JsonException("Unknown parameter setting member.", path + ".Settings[" + i + "]." + property.Key, null, null);
             var binding = parameter["BindingType"];
             var dynamicBinding = false;
@@ -41,6 +41,11 @@ internal static class SolutionBindingExpressionPolicy
                     dynamicBinding = bindingName != "Constant";
                 else throw new JsonException("Unknown binding kind.", path + ".Settings[" + i + "].BindingType", null, null);
             }
+            foreach(var key in new[]{"AutomaticConnectionId","RebindingReason"})
+                if(parameter[key] is { } metadata&&(!dynamicBinding||metadata is not JsonValue value||!value.TryGetValue<string>(out var text)||string.IsNullOrWhiteSpace(text)))
+                    throw new JsonException("Binding ownership and rebind metadata require nonempty strings on a reference.",path+".Settings["+i+"]."+key,null,null);
+            if(parameter["AutomaticConnectionId"] is not null&&parameter["RebindingReason"] is not null)
+                throw new JsonException("An invalidated automatic binding cannot still own an edge.",path+".Settings["+i+"]",null,null);
             if (parameter["ReferenceExpression"] is null)
             {
                 if (dynamicBinding) throw new JsonException("Dynamic bindings require a typed reference or an explicit approved legacy mapping.", path + ".Settings[" + i + "].ReferenceExpression", null, null);

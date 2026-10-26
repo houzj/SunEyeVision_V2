@@ -36,6 +36,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>Versioned semantic reference. When present it is authoritative; name/path fields are display projections.</summary>
         public string? ReferenceExpression { get; set; }
         public SunEyeVision.Plugin.Contracts.BindingConversion Conversion { get; set; }
+        /// <summary>Design-time ownership of a source chosen automatically for a canvas edge.</summary>
+        public string? AutomaticConnectionId {get;set;}
+        public string? RebindingReason {get;set;}
         /// <summary>
         /// 参数名称
         /// </summary>
@@ -158,6 +161,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public SettingValidationResult Validate()
         {
             var result = new SettingValidationResult { IsValid = true };
+            if(!string.IsNullOrEmpty(RebindingReason)){result.IsValid=false;result.Errors.Add(RebindingReason);}
 
             if (string.IsNullOrWhiteSpace(ParameterName))
             {
@@ -212,6 +216,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 SourceNodeId = SourceNodeId,
                 SourceWorkflowId = SourceWorkflowId, SourceFieldId = SourceFieldId,
                 ReferenceExpression = ReferenceExpression, Conversion = Conversion,
+                AutomaticConnectionId=AutomaticConnectionId,RebindingReason=RebindingReason,
                 SourceProperty = SourceProperty,
                 SourceNodeName = SourceNodeName,
                 SourceDisplayName = SourceDisplayName,
@@ -247,6 +252,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             };
             if(ReferenceExpression!=null)dict["ReferenceExpression"]=ReferenceExpression;
             dict["Conversion"]=(int)Conversion;
+            if(AutomaticConnectionId is not null)dict["AutomaticConnectionId"]=AutomaticConnectionId;
+            if(RebindingReason is not null)dict["RebindingReason"]=RebindingReason;
 
             if (ConstantValue != null)
             {
@@ -283,6 +290,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             };
             if(dict.TryGetValue("ReferenceExpression",out var reference))setting.ReferenceExpression=reference?.ToString();
             if(dict.TryGetValue("Conversion",out var conversion)&&int.TryParse(conversion?.ToString(),out var operation))setting.Conversion=(SunEyeVision.Plugin.Contracts.BindingConversion)operation;
+            if(dict.TryGetValue("AutomaticConnectionId",out var edge))setting.AutomaticConnectionId=edge?.ToString();
+            if(dict.TryGetValue("RebindingReason",out var reason))setting.RebindingReason=reason?.ToString();
 
             // ✅ 修复：BindingType 可能是 JsonElement，需要先转换为字符串
             if (dict.TryGetValue("BindingType", out var type))

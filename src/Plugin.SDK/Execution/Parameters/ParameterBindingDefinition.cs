@@ -15,6 +15,8 @@ public sealed record ParameterBindingDefinition
     public Guid? SourceFieldId { get; init; }
     public string? ReferenceExpression { get; init; }
     public SunEyeVision.Plugin.Contracts.BindingConversion Conversion { get; init; }
+    public string? AutomaticConnectionId {get;init;}
+    public string? RebindingReason {get;init;}
     public string? SourceProperty { get; init; }
     public string? SourceNodeName { get; init; }
     public string? SourceDisplayName { get; init; }
@@ -31,6 +33,7 @@ public sealed record ParameterBindingDefinition
             SourceNodeId = setting.SourceNodeId,
             SourceWorkflowId = setting.SourceWorkflowId, SourceFieldId = setting.SourceFieldId,
             ReferenceExpression = setting.ReferenceExpression, Conversion = setting.Conversion,
+            AutomaticConnectionId=setting.AutomaticConnectionId,RebindingReason=setting.RebindingReason,
             SourceProperty = setting.SourceProperty,
             SourceNodeName = setting.SourceNodeName,
             SourceDisplayName = setting.SourceDisplayName,
@@ -47,6 +50,7 @@ public sealed record ParameterBindingDefinition
             SourceNodeId = SourceNodeId,
             SourceWorkflowId = SourceWorkflowId, SourceFieldId = SourceFieldId,
             ReferenceExpression = ReferenceExpression, Conversion = Conversion,
+            AutomaticConnectionId=AutomaticConnectionId,RebindingReason=RebindingReason,
             SourceProperty = SourceProperty,
             SourceNodeName = SourceNodeName,
             SourceDisplayName = SourceDisplayName,

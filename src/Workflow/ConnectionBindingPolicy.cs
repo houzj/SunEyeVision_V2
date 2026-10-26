@@ -7,6 +7,14 @@ public static class ConnectionBindingPolicy
 {
     public static bool RemoveAutomaticImageBinding(WorkflowNodeBase node, string connectionId)
     {
+        if(node.RuntimeConfiguration?.Schema.WorkflowImageInputId is { } port)
+        {
+            var setting=node.ParamSettings.GetSetting(port);
+            if(setting?.AutomaticConnectionId!=connectionId)return false;
+            var invalid=setting.Clone();invalid.AutomaticConnectionId=null;
+            invalid.RebindingReason="自动图像来源对应的连线已删除，请重新选择图像来源。";
+            node.ParamSettings.SetSetting(invalid);node.LastResult=null;node.OutputCache=null;return true;
+        }
         var property = node.Parameters.GetType().GetProperty("ImageSource");
         var savedProperty = node.Parameters.GetType().GetProperty("ImageSourceRef");
         var source = property?.GetValue(node.Parameters) as AvailableDataSource;

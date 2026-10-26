@@ -103,8 +103,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 return;
             }
 
-            var defaultParams = ToolRegistry.CreateParameters(algorithmType);
-            node.Parameters = defaultParams;
+            if(ToolRegistry.HasRuntime(algorithmType))
+                node.RuntimeConfiguration=SunEyeVision.Workflow.RuntimeToolConfiguration.Create(algorithmType);
+            else node.Parameters=ToolRegistry.CreateParameters(algorithmType);
         }
     }
 }

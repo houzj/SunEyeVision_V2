@@ -2046,7 +2046,7 @@ SplitterPosition = position;
 
             var allNodes = solution.Workflows.SelectMany(w => w.Nodes).ToList();
             _logger?.LogInfo($"[预编译] 遍历到节点总数={allNodes.Count}, Workflows={solution.Workflows.Count}", nameof(MainWindowViewModel));
-            foreach (var n in allNodes)
+            foreach (var n in allNodes.Where(n=>n.RuntimeConfiguration is null))
             {
                 var tool = ToolRegistry.CreateToolInstance(n.ToolType);
                 _logger?.LogInfo(
@@ -2055,7 +2055,7 @@ SplitterPosition = position;
             }
 
             var precompilableNodes = allNodes
-                .Where(n => n.Parameters != null)
+                .Where(n => n.RuntimeConfiguration is null&&n.Parameters != null)
                 .Select(n => new
                 {
                     Node = n,
@@ -2340,6 +2340,7 @@ SplitterPosition = position;
         /// <param name="node">新添加的工作流节点</param>
         private void PrecompileNodeIfNeeded(WorkflowNodeBase node)
         {
+            if(node.RuntimeConfiguration is not null)return;
             try
             {
                 if (node.Parameters == null)
@@ -2504,6 +2505,8 @@ SplitterPosition = position;
         /// </summary>
         private void TryAutoBindImageSource(WorkflowNodeBase node, WorkflowConnection? connection = null)
         {
+            if(node?.RuntimeConfiguration is not null)
+            {TryAutoBindRuntimeImageSource(node,connection);return;}
             if (node?.Parameters == null) return;
 
             var imageSourceProp = node.Parameters.GetType().GetProperty("ImageSource");

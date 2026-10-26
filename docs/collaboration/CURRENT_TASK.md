@@ -240,3 +240,20 @@
 - 当前清单buildId=o06-runtime-debug-20261027-003；Core/清单编译身份仍caf26581加列明增量，不用随后提交号改写已编译身份。原O06/目标JSON同步，目标树和完整s4GoalPlan保持一致，697锚点且幂等。真实WPF运行图已核运行按钮及当前状态，不作全部VM视觉通过。
 - 下一步直接切UI自身默认节点工厂及语义图像自动绑定，再移除根SDK Blob工程/旧模型/转换并改消费者/测试，不保留兼容包装。新UI目前只调试已发布来源；缺省工作流图像仍需非推进的真实输入快照合同，未绑定来源会明确提示选择图像，不能拿显示位图伪装像素/Domain。
 - 本地ROI/位置常量、新Runtime全局变量、全部所需VM原件/完整交互、显示XML完整图形文本、VS设计时及真实人工验收仍未完成。原视觉未通过反馈保留，M1/M2/M3未完成，目标active。
+
+## 2026-10-27 默认UI工厂及实际拖放Runtime整链（最新）
+
+- Codex/main，基线d4c7342f，单工作树单产品写者。上一轮已实现并验证私有调试，本轮从真实工具箱默认入口继续推进，未另建目标或改变硬性两工程树。以下状态取代“UI自身默认工厂仍SDK”，旧检查点成绩不改写。
+- 跨模块影响已核：UI节点工厂/预编译扫描/连线自动绑定、SDK通用绑定元数据及快照、Workflow绑定准入与严格持久化。Runtime Blob本身仍无SDK/WPF/UI依赖，无新增工程或Blob参数转换。
+- UI.Services.Workflow.WorkflowNodeFactory优先已登记Runtime，实际工具箱WPF Drop直接创建XML默认的BlobSettings/RuntimeConfiguration；Runtime节点跳过SDK工具预编译实例创建。新窗口已是默认创建节点入口，不再仅通过手工后端API进入；RuntimeEditor轨道也改用UI自身工厂。
+- Runtime图像自动绑定读取正式输出端口及实际入边，保存稳定语义引用和AutomaticConnectionId。没有入边不抢先猜源，已有绑定不覆盖。删除所属连线时保留RebindingReason并清除自动所有权；运行/调试拒绝静默回退，显式用户来源不受旧自动连线删除影响。
+- 新元数据在ParamSetting.Clone/字典及ParameterBindingDefinition快照往返保留；IsValid和实际Runtime准入均识别重选状态。持久化只放行这两个明确字段，限制引用上的非空字符串并拒绝冲突状态；实际保存重开保留所有权，错型/未知字段负向检查核对具体拒绝原因，没有关闭未知字段检查。
+- S4 FullChain按新合同重写：真实工具箱Drop三个节点→实际连线自动源→ImageLoad/两个Runtime Blob HALCON→窗口数量上限确认→下游实际来源弹窗选最终Region→私有调试/取消→唯一模型保存重开再执行。新七组与历史SDK九组是不同范围，不能套旧分数；本地ROI及完整显示仍未验。
+- 最终串行UI blob-runtime-default-ui-003：0错误/1258警告77.63秒；全量release-001：0错误/6527警告77.42秒。早期UI001/002及chain004为前序源码检查，最终证据用冻结产物与当前检查源SHA，不挪用成绩。
+- 正式FullChain073/075有Wpf及无SDK入口/Wpf各七组；RuntimeEditor018/019默认UI窗口各八组；RuntimeDebug007/006各七组；RuntimeKernel031十六组、RuntimeWorkflow021十组、RuntimeCatalog013四组、Components156九组/154无Wpf十组、Algorithm017九组、DocumentEditing039二十八组、FieldEditing018八组通过。后几项仍含旧SDK API的关联回归，不称它们证明Runtime到现行SDK图像消费者已接通。
+- ComponentDeployment044扩为十八项通过，新增旧SDK Blob DLL与Wpf同时缺席时的实际默认工具箱拖放整链。正式EXE仍22工具，真实加载无旧Blob；临时4文件及清单按原SHA恢复。12份源码增量、768发布项、433加载记录同源；证据docs/collaboration/evidence/O06_RUNTIME_DEFAULT_UI_CHECKPOINT_20261027.json。
+- 失败保留：chain001自动选源早于入边、无所有权；改为实际入边驱动后通过。chain002保存失败，003展开得到Unknown parameter setting member；补齐严格持久化定义后最终保存/加载通过。未将失败日志删除或改为PASS。
+- 清单buildId=o06-runtime-default-ui-20261027-001，Core/清单编译身份仍d4c7342f加列明源码增量，不用随后提交号改写已编译身份。原O06/目标JSON同步，完整s4GoalPlan及目标树不变，697锚点且幂等；目标/M1/M2/M3仍active/未完成。
+- 根SDK Blob工程及旧参数/结果/转换本轮尚未删除，不把缺件试验称源码已仅两工程。待迁消费者包括src/UI/Services/Editing/EditorDraftAdapter.cs、三个Blob单元测试文件及BlobFieldSchemaCases/BlobWorkflowResourceCases/O06AlgorithmCases/S2DocumentEditingCases/S3BlobRuntimeCases/S3ComponentCases等验证源码；按新合同改写，不做旧模型包装或兼容别名，然后删除根工程/类/锁文件及发布残留，更新两份slnx/引用和测试加载器。
+- 下一步需实际验证并接通Runtime→现行SDK图像消费边界：RuntimeToolResults发布IReadOnlyImage，SDK ToolExecutionPreparation.ResolveInputImage目前要求IVisionImage；不得把该混合方向当已通过，也不得用旧Blob结果模型包装。此项属于仍在使用的其他工具消费调整，不是旧项目兼容。同步补主图像/显示XML消费，再推进本地ROI/位置常量、全局变量和完整VM原件交互。
+- VS设计时未验证，无新人工验收，保留原视觉未通过反馈；缺省输入非推进快照、本地ROI、完整图形文本及其他未完成项继续在完整目标内。没有代签或宣告整体完成。

@@ -34,6 +34,7 @@ internal static class RuntimeInputBindings
         {
             try
             {
+                if(!string.IsNullOrEmpty(setting.RebindingReason))throw new ArgumentException(setting.RebindingReason);
                 if(!ports.TryGetValue(setting.ParameterName,out var port))throw new ArgumentException("Unknown Runtime input port.");
                 if(setting.BindingType==BindingType.Constant)
                 {

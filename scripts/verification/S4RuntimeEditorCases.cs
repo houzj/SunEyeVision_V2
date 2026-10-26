@@ -43,8 +43,7 @@ internal static class S2DocumentEditingCases
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var resultHost=new ContentControl();resultHost.SetBinding(ContentControl.ContentProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=vm});
         var shell=new Window{Width=620,Height=400,Content=resultHost,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();
-        var baseNode=SunEyeVision.Workflow.WorkflowNodeFactory.CreateAlgorithmNode(BlobTool.Id,"runtime-editor-node","Runtime Blob","Blob")??throw new Exception("Runtime节点创建失败");
-        var node=SunEyeVision.UI.Shared.WorkflowNode.FromBase(baseNode);vm.AddNodeToWorkflow(node);
+        var node=vm.WorkflowTabViewModel.SelectedTab!.CreateNode(BlobTool.Id);vm.AddNodeToWorkflow(node);
         node.DebugWindowStyle=DebugWindowStyle.Custom;
         var threshold=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName=="阈值").FieldId;
         DefaultDebugWindow Open()
@@ -66,7 +65,7 @@ internal static class S2DocumentEditingCases
         DeclaredFieldEditor? oldInput=null;
         string? sourceNodeId=null;
         var first=Open();
-        Case("真实MainWindow命令打开中立Runtime窗口，UI投影保留实际设置与58个XML字段",()=>
+        Case("默认UI工厂创建Runtime节点，真实MainWindow打开中立窗口与58个XML字段",()=>
         {
             Require(node.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)&&first.EditorControl is null
                 &&Control(first).GetType()==typeof(RuntimeNodeConfigurationControl),"窗口借用SDK Blob参数或未保留Runtime配置");

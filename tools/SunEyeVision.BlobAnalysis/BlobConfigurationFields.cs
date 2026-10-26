@@ -21,7 +21,7 @@ internal static class BlobConfigurationFields
                 "input.inspection.mode"=>nameof(parameters.InspectionMode),
                 "input.mask.mode"=>nameof(parameters.MaskMode), _=>field.LegacyPath};
             var (owner,property)=FindSlot(parameters,path);
-            var descriptor=BlobInputContract.Presentation(field,Label(field,parameters),Group(field),field.Presentation.ChoiceKeys.ToDictionary(key=>key,ChoiceLabel));
+            var descriptor=BlobInputContract.Presentation(field,Label(field,parameters),Group(field),field.Presentation.ChoiceKeys.ToDictionary(key=>key,key=>field.LogicalKey=="setting.SegmentationMode"&&key=="None"?"不二值化（严格0/255）":ChoiceLabel(key)));
             return new ConfigurationFieldAccessor(field.Port,descriptor,path,()=>field.ReadStored(parameters),value=>
             {
                 var frozen=ValueRules.Freeze(field.Port,value);
@@ -81,7 +81,7 @@ internal static class BlobConfigurationFields
         "IsBold"=>"加粗","PositionX"=>"位置X","PositionY"=>"位置Y",_=>key};
     private static string ChoiceLabel(string key)=>key switch {
         "LocalGeometry"=>"本地绘制 / 数值编辑","InheritedGeometry"=>"继承上游几何","InheritedRegion"=>"继承上游像素区域",
-        "None"=>"无","Binary"=>"正向阈值","BinaryInv"=>"反向阈值","Mean"=>"均值滤波","Gaussian"=>"高斯滤波",
+        "SingleThreshold"=>"单阈值","DoubleThreshold"=>"双阈值","None"=>"无","Binary"=>"区间内为白","BinaryInv"=>"区间外为白","Mean"=>"均值滤波","Gaussian"=>"高斯滤波",
         "Median"=>"中值滤波","HistogramEqualization"=>"直方图均衡","Erosion"=>"腐蚀","Dilation"=>"膨胀",
         "Opening"=>"开运算","Closing"=>"闭运算","TopHat"=>"顶帽","BottomHat"=>"底帽","Rectangle"=>"矩形","Circle"=>"圆形",
         "AreaAsc"=>"面积升序","AreaDesc"=>"面积降序","CircularityAsc"=>"圆度升序","CircularityDesc"=>"圆度降序",

@@ -1,7 +1,7 @@
 namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>Finite UI-neutral layout; conditions address declared stable field IDs, never CLR paths.</summary>
-public sealed record FieldCondition(string FieldId, object? Value);
+public sealed record FieldCondition(string FieldId, object? Value, bool Negate = false);
 public sealed record FieldLayout(string Page, string Section, FieldCondition? VisibleWhen=null,
     string? PairWith=null, bool Advanced=false, double? Minimum=null, double? Maximum=null,
     int DecimalPlaces=2, bool AllowReference=true,

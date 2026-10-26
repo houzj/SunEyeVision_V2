@@ -21,7 +21,7 @@ namespace SunEyeVision.Tool.Morphology
     /// 算法流程：
     ///   1. rgb1_to_gray   → 灰度转换
     ///   2. reduce_domain  → ROI掩码限制
-    ///   3. threshold      → 固定阈值二值化 (128)
+    ///   3. threshold      → 严格Gray8 0/255输入准入
     ///   4. 形态学操作     → Erosion1/Dilation1/Opening/Closing/TopHat/BottomHat
     ///   5. 区域统计       → Blob计数/面积统计
     ///   6. 结果判断       → OK/NG判定
@@ -98,17 +98,9 @@ namespace SunEyeVision.Tool.Morphology
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
-                HImage grayImage;
-                int channels = hImage.CountChannels();
-                if (channels == 3 || channels == 4)
-                {
-                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
-                    grayImage = new HImage(grayObj);
-                }
-                else
-                {
-                    grayImage = hImage.Clone();
-                }
+                HalconImageAdmission.RequireBinary(hImage);
+                int channels = 1;
+                var grayImage = hImage.Clone();
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
@@ -142,10 +134,10 @@ namespace SunEyeVision.Tool.Morphology
 
                     try
                     {
-                            // ===== Step 4: 固定阈值二值化 =====
+                            // ===== Step 4: 提取已验证的白像素（不再隐式二值化） =====
                             stepSw.Restart();
                             HOperatorSet.Threshold(reducedImage, out var binRegion,
-                                128, "max");
+                                255, 255);
                             stepSw.Stop();
                             stepTimings.Add(("二值化", stepSw.ElapsedMilliseconds));
 
@@ -173,8 +165,11 @@ namespace SunEyeVision.Tool.Morphology
                                     // 输出图像：RegionToBin
                                     HOperatorSet.RegionToBin(morphRegion, out var binObj,
                                         255, 0, imgWidth, imgHeight);
-                                    result.OutputImage = new HalImage(new HImage(binObj.Clone()));
-                                    result.BinaryMask = new HalImage(new HImage(binObj));
+                                    using (binObj) using (var nativeBinary = new HImage(binObj))
+                                    {
+                                        result.OutputImage = new HalImage(nativeBinary.Clone());
+                                        result.BinaryMask = new HalImage(nativeBinary.Clone());
+                                    }
 
                                     // 参数回写
                                     result.OperationUsed = operation.ToString();
@@ -311,6 +306,11 @@ namespace SunEyeVision.Tool.Morphology
             int rx = width / 2, ry = height / 2;
             switch (shape)
             {
+                case MorphKernelShape.Circle:
+                    // Explicit circle: max(width,height)/2 matches the migrated Blob contract; Ellipse remains two-axis.
+                    int radius = Math.Max(width, height) / 2;
+                    HOperatorSet.GenCircle(out var circle, radius, radius, radius);
+                    using (circle) return new HRegion(circle);
                 case MorphKernelShape.Rect:
                     // HALCON centers the structuring element by its centroid; keep coordinates nonnegative.
                     HOperatorSet.GenRectangle1(out var rect, 0, 0, height - 1, width - 1);

@@ -76,6 +76,14 @@ public partial class ToolExecutor
             identity.CompleteCallbacks();request.ExecutionLeaseHeld=false;active.Dispose();
         }
     }
+    // Rejected late results never reach a caller. Close both ownership contracts, preserving cleanup failures.
+    private static void ReleaseRejectedResult(ToolResults result)
+    {
+        var failures=new List<Exception>();
+        try{result.Resources?.Dispose();}catch(Exception error){failures.Add(error);}
+        try{(result as IDisposable)?.Dispose();}catch(Exception error){failures.Add(error);}
+        if(failures.Count>0)throw new AggregateException("Rejected tool result cleanup failed.",failures);
+    }
     private ToolResults RunSynchronousCore(IToolPlugin tool,ToolExecutionRequest request)
     {
         var parameters=request.Parameters;var watch=Stopwatch.StartNew();
@@ -88,7 +96,7 @@ public partial class ToolExecutor
             var result=tool.Run(parameters);request.AttachResultMetadata(result);
             if(request.CancellationToken.IsCancellationRequested||request.ExecutionIdentity?.IsCurrent==false)
             {
-                (result as IDisposable)?.Dispose();
+                ReleaseRejectedResult(result);
                 return Terminal(ExecutionStatus.Cancelled,"Execution was cancelled or admission expired.");
             }
             ImageFrameProvenance.RecordResult(result,input,(tool as IImageFramePolicyProvider)?.ImageFramePolicy??ImageFramePolicy.Unknown);

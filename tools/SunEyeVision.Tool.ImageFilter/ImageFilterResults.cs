@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
@@ -13,6 +14,15 @@ namespace SunEyeVision.Tool.ImageFilter
         | ToolCapabilities.RoiInput)]
     public class ImageFilterResults : ToolResults
     {
+        public ImageFilterResults()=>Resources=new ResultResourceOwner(ReleaseOwnedImages);
+        private void ReleaseOwnedImages()
+        {
+            var failures=new List<Exception>();
+            foreach(var image in new IDisposable?[]{OutputImage,GrayImage}.Where(image=>image is not null).Distinct(ReferenceEqualityComparer.Instance).Cast<IDisposable>())
+                try{image.Dispose();}catch(Exception error){failures.Add(error);}
+            if(failures.Count>0)throw new AggregateException("ImageFilter输出图像释放失败。",failures);
+        }
+
         #region 输出图像
 
         /// <summary>

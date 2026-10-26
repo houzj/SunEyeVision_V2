@@ -16,7 +16,8 @@ namespace SunEyeVision.Tool.ImageFilter
         Gaussian = 1,
         MedianBlur = 2,
         Bilateral = 3,
-        Filter2D = 4
+        Filter2D = 4,
+        HistogramEqualization = 5
     }
 
     /// <summary>
@@ -309,7 +310,7 @@ namespace SunEyeVision.Tool.ImageFilter
 
             // Custom Filter2D derives its dimensions from the matrix; preserve the
             // legacy width/height fields and bindings without letting inactive values resize it.
-            if (!(FilterTypeValue == FilterType.Filter2D && UseCustomKernel))
+            if (FilterTypeValue != FilterType.HistogramEqualization && !(FilterTypeValue == FilterType.Filter2D && UseCustomKernel))
             {
                 // 内核大小必须为奇数
                 if (KernelWidth % 2 == 0)
@@ -360,7 +361,7 @@ namespace SunEyeVision.Tool.ImageFilter
         /// </summary>
         public static IReadOnlyList<string> GetFilterTypeOptions()
         {
-            return new List<string> { "Blur", "Gaussian", "MedianBlur", "Bilateral", "Filter2D" };
+            return new List<string> { "Blur", "Gaussian", "MedianBlur", "Bilateral", "Filter2D", "HistogramEqualization" };
         }
 
         /// <summary>

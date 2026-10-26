@@ -29,7 +29,8 @@ namespace SunEyeVision.Tool.Morphology
     {
         Rect = 0,
         Cross = 1,
-        Ellipse = 2
+        Ellipse = 2,
+        Circle = 3
     }
 
     /// <summary>
@@ -71,7 +72,7 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 核宽度最大值
         /// </summary>
-        public const int KernelMax = 51;
+        public const int KernelMax = 101;
 
         /// <summary>
         /// 迭代次数最小值
@@ -211,15 +212,7 @@ namespace SunEyeVision.Tool.Morphology
                 result.AddError($"核高度必须在 {KernelMin}-{KernelMax} 范围内，当前值: {KernelHeight}");
             }
 
-            // 核尺寸必须为奇数
-            if (KernelWidth % 2 == 0)
-            {
-                result.AddError($"核宽度必须为奇数，当前值: {KernelWidth}");
-            }
-            if (KernelHeight % 2 == 0)
-            {
-                result.AddError($"核高度必须为奇数，当前值: {KernelHeight}");
-            }
+            // Native structuring elements support integer sizes including even axes; do not round a migrated Blob setting.
 
             // 迭代次数范围检查
             if (Iterations < IterationsMin || Iterations > IterationsMax)
@@ -271,7 +264,7 @@ namespace SunEyeVision.Tool.Morphology
         /// </summary>
         public static IReadOnlyList<string> GetShapeOptions()
         {
-            return new List<string> { "矩形", "十字形", "椭圆形" };
+            return new List<string> { "矩形", "十字形", "椭圆形", "圆形" };
         }
     }
 }

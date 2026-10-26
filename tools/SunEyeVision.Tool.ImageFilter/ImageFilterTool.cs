@@ -98,17 +98,8 @@ namespace SunEyeVision.Tool.ImageFilter
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
-                HImage grayImage;
                 int channels = hImage.CountChannels();
-                if (channels == 3 || channels == 4)
-                {
-                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
-                    grayImage = new HImage(grayObj);
-                }
-                else
-                {
-                    grayImage = hImage.Clone();
-                }
+                var grayImage = HalconImageAdmission.Gray(hImage);
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
@@ -165,7 +156,7 @@ namespace SunEyeVision.Tool.ImageFilter
                                     break;
                                 case FilterType.MedianBlur:
                                     HOperatorSet.MedianRect(filterInput, out var medianImg, kernelWidth, kernelHeight);
-                                    filteredImage = new HImage(medianImg);
+                                    using (medianImg) filteredImage = new HImage(medianImg);
                                     break;
                                 case FilterType.Bilateral:
                                     if (parameters.BorderTypeValue != BorderType.Reflect)
@@ -175,9 +166,15 @@ namespace SunEyeVision.Tool.ImageFilter
                                     HOperatorSet.BilateralFilter(filterInput, filterInput,
                                         out var bilateralImg, sigmaSpace, sigmaColor,
                                         new HTuple(), new HTuple());
-                                    filteredImage = new HImage(bilateralImg);
+                                    using (bilateralImg) filteredImage = new HImage(bilateralImg);
                                     kernelWidth = kernelHeight = 0; // Native support is sigma-driven, not the old ignored diameter.
                                     parameters.LogInfo("双边滤波使用原生Sigma控制邻域，核宽高结果0表示自动邻域；旧直径字段保留但不参与计算");
+                                    break;
+                                case FilterType.HistogramEqualization:
+                                    // Histogram population is the effective ROI-minus-mask, as the migrated Blob setting used.
+                                    HOperatorSet.EquHistoImage(reducedImage, out var equalized);
+                                    using (equalized) filteredImage = new HImage(equalized);
+                                    kernelWidth = kernelHeight = 0;
                                     break;
                                 case FilterType.Filter2D:
                                     if (parameters.UseCustomKernel)

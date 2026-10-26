@@ -24,7 +24,7 @@ public static class BlobSchema
         new Port(Field(4), DataType.Boolean),
         new Port(Field(5), TypeRef.ResourceOf(ResourceKind.Image), Nullable:true),
         new Port(Field(6), TypeRef.ResourceOf(ResourceKind.Image), Nullable:true),
-        new Port(Field(8), DataType.Integer), new Port(Field(9), DataType.Integer), new Port(Field(10), DataType.Text),
+        new Port(Field(8), DataType.Integer, Nullable:true), new Port(Field(9), DataType.Integer, Nullable:true), new Port(Field(10), DataType.Text), new Port(Field(102), DataType.Text),
         new Port(Field(11), DataType.Integer), new Port(Field(12), DataType.Number), new Port(Field(13), DataType.Number),
         new Port(Field(14), DataType.Number), new Port(Field(15), DataType.Number), new Port(Field(16), DataType.Number),
         new Port(Field(17), DataType.NumberArray), new Port(Field(18), DataType.NumberArray),

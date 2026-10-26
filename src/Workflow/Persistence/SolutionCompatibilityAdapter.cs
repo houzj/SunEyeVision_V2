@@ -91,6 +91,17 @@ internal static class SolutionCompatibilityAdapter
             {
                 var node = nodes[n] ?? throw new JsonException("Null node.", path + ".Nodes[" + n + "]", null, null);
                 RequireId(node, path + ".Nodes[" + n + "]");
+                if(node["Parameters"] is JsonObject blob && (node["ToolType"]?.GetValue<string>()=="BlobAnalysis" || blob["$type"]?.GetValue<string>()=="BlobAnalysis"))
+                {
+                    var removed = new[]{"MaxValue","IsPreprocessingEnabled","PreprocessMethodValue","PreprocessKernelSize","IsMorphologyEnabled","MorphOperationValue","MorphElementShapeValue","MorphElementWidth","MorphElementHeight","MorphIterations"};
+                    foreach(var field in removed)
+                        if(blob.Any(property=>string.Equals(property.Key,field,StringComparison.OrdinalIgnoreCase)))throw new JsonException("Blob旧分割/预处理/形态学字段已退出；请重新配置分割方式，并将滤波/形态学连接为上游工具。",path+".Nodes["+n+"].Parameters."+field,null,null);
+                    // Only consumer slot identities are retired. Source property names remain legal.
+                    if(node["ParamSettings"] is JsonObject settingsContainer && settingsContainer["Settings"] is JsonArray bindings)
+                        foreach(var setting in bindings.OfType<JsonObject>())
+                            if(setting["ParameterName"] is JsonValue value && value.TryGetValue<string>(out var target) && removed.Contains(target,StringComparer.OrdinalIgnoreCase))
+                                throw new JsonException("Blob旧字段绑定已退出，请重新配置。",path+".Nodes["+n+"].ParamSettings."+target,null,null);
+                }
                 RejectUnknownMembers(node, path + ".Nodes[" + n + "]", SerializableFields(typeof(WorkflowNodeBase)));
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
                 SolutionBindingExpressionPolicy.Validate(node["ParamSettings"], path + ".Nodes[" + n + "].ParamSettings", legacy && deferLegacyBindingOwner);

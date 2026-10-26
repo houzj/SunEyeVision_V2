@@ -18,7 +18,7 @@ internal static class WorkflowCases
    using var input=HalImage.CreateFromBytes(pixels,32,32,1);
    ToolRegistry.RegisterTool(typeof(BlobAnalysisTool));
    var logger=new FixtureLogger();var engine=new WorkflowEngine(logger);var flow=engine.CreateWorkflow("s1-fixed-native-chain","Blob actual native chain");
-   var parameters=new BlobAnalysisParameters{IsPreprocessingEnabled=false,IsMorphologyEnabled=false,IsAreaFilterEnabled=false,IsCircularityFilterEnabled=false,IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,Threshold=128,MaxValue=255,OutputBlobImage=true,OutputBinaryImage=true,OutputContours=true};
+   var parameters=new BlobAnalysisParameters{IsAreaFilterEnabled=false,IsCircularityFilterEnabled=false,IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,Threshold=128,UpperThreshold=255,OutputBlobImage=true,OutputBinaryImage=true,OutputContours=true};
    flow.AddNode(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});
    var runner=new WorkflowExecutionEngine(engine,new UnusedPluginManager(),logger);
    using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,inputImage:input)).WaitAsync(TimeSpan.FromSeconds(30));

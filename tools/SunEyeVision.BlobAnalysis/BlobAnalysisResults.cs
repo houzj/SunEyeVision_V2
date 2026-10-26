@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -77,17 +77,18 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 阈值分割实际使用的下限。
         /// </summary>
-        public int ThresholdMinUsed { get; set; }
+        public int? ThresholdMinUsed { get; set; }
 
         /// <summary>
         /// 阈值分割实际使用的上限。
         /// </summary>
-        public int ThresholdMaxUsed { get; set; }
+        public int? ThresholdMaxUsed { get; set; }
 
         /// <summary>
-        /// 使用的阈值类型（如 "Binary", "Truncate"...）
+        /// 实际阈值极性；不二值化时为NotApplied
         /// </summary>
         public string TypeUsed { get; set; } = string.Empty;
+        public string SegmentationModeUsed { get; set; } = string.Empty;
 
         /// <summary>
         /// 灰度直方图数据（256个bin）
@@ -223,9 +224,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("GrayImage",                "灰度图像",               null),
                 new("BinaryMask",               "二值掩码",               null),
                 new("OverlayImage",             "合成显示图像",           null),
-                new("ThresholdMinUsed",         "实际阈值下限",           "预处理"),
-                new("ThresholdMaxUsed",         "实际阈值上限",           "预处理"),
-                new("TypeUsed",                 "阈值类型",               "预处理"),
+                new("SegmentationModeUsed",      "实际分割方式",           "分割"),
+                new("TypeUsed",                 "实际极性",               "分割"),
                 new("FilteredBlobCount",        "Blob数量",               "统计"),
                 new("FilteredTotalArea",        "总面积",                 "统计"),
                 new("AverageArea",              "平均面积",               "统计"),
@@ -233,7 +233,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("MaximumArea",              "最大面积",               "统计"),
                 new("AverageCircularity",       "平均圆度",               "统计"),
                 new("AverageRectangularity",    "平均矩形度",             "统计"),
-                new("WhitePixelRatio",          "分割白像素占全图比例",   "统计"),
+                new("WhitePixelRatio",          "白色像素比例",           "统计"),
                 new("HistogramData",            "直方图数据",             "统计"),
                 new("ChannelMeans",             "通道均值",               "统计"),
                 // Blob详细数据（支持 / 分隔的层级分组）

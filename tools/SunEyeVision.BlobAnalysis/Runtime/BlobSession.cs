@@ -57,6 +57,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             throw new ArgumentException("Unknown Blob output request.", nameof(requested));
         cancellation.ThrowIfCancellationRequested();
         using var execution = new HalconBlobExecutionScope();
+        if (settings.SegmentationMode == BlobSegmentationMode.None) HalconImageAdmission.RequireBinary(input, cancellation);
         using var image = HalconResourceBridge.CopyImage(input);
         HOperatorSet.GetImageSize(image, out var widthValue, out var heightValue);
         using var widthTuple = widthValue; using var heightTuple = heightValue;
@@ -71,7 +72,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             if (inspection is not null && mask is not null && inspection.Frame != mask.Frame)
                 throw new ArgumentException("Inspection and mask must share the pose source coordinate frame.");
         }
-        using var gray = Gray(image);
+        using var gray = HalconImageAdmission.Gray(image);
         using var domain = gray.GetDomain();
         using var inspectionRegion = inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
         using var maskRegion = mask is null ? EmptyRegion() : HalconResourceBridge.CopyRegion(mask, frame, width, height);
@@ -80,11 +81,10 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var difference = correctedInspection.Difference(correctedMask);
         using var effectiveDomain = domain.Intersection(difference);
         using var cropped = gray.ReduceDomain(effectiveDomain);
-        using var processed = settings.IsPreprocessingEnabled && settings.PreprocessMethod != BlobPreprocess.None ? ApplyPreprocessing(cropped, settings) : cropped.Clone();
-        using var threshold = processed.Threshold((double)settings.Threshold, (double)settings.MaxValue);
-        using var initial = settings.Type == BlobThresholdMode.BinaryInv ? effectiveDomain.Difference(threshold) : threshold.Clone();
-        using var morphed = settings.IsMorphologyEnabled ? ApplyMorphology(initial, settings) : initial.Clone();
-        using var binary = effectiveDomain.Intersection(morphed);
+        using var threshold = cropped.Threshold(settings.SegmentationMode == BlobSegmentationMode.None ? 255.0 : settings.Threshold,
+            settings.SegmentationMode == BlobSegmentationMode.DoubleThreshold ? settings.UpperThreshold : 255.0);
+        using var binary = settings.SegmentationMode != BlobSegmentationMode.None && settings.Type == BlobThresholdMode.BinaryInv
+            ? effectiveDomain.Difference(threshold) : threshold.Clone();
         cancellation.ThrowIfCancellationRequested();
         HalconBlobExecutionScope.RequireUnlimitedConnection();
         using var connected = binary.Connection();
@@ -127,9 +127,9 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var histogram = new double[256]; var means = new double[] { 0 };
             if (whiteCount.D > 0)
             {
-                HOperatorSet.GrayHisto(binary, processed, out var absolute, out var relative);
+                HOperatorSet.GrayHisto(binary, gray, out var absolute, out var relative);
                 using (absolute) using (relative) histogram = absolute.LArr.Select(x => (double)x).ToArray();
-                HOperatorSet.Intensity(binary, processed, out var mean, out var deviation);
+                HOperatorSet.Intensity(binary, gray, out var mean, out var deviation);
                 using (mean) using (deviation) means = new[] { mean.D };
             }
             var messages = new List<string>();
@@ -158,17 +158,6 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             try { outputResources.Dispose(); } catch (Exception cleanup) { throw new AggregateException(failure, cleanup); }
             throw;
         }
-    }
-
-    private static HImage Gray(HImage source)
-    {
-        using var count = source.CountChannels();
-        if (count.I == 1) return source.Clone();
-        if (count.I == 3) return source.Rgb1ToGray();
-        if (count.I != 4) throw new NotSupportedException("Blob supports Gray8/Bgr24/Bgra32 only.");
-        using var r = source.AccessChannel(1); using var g = source.AccessChannel(2); using var b = source.AccessChannel(3);
-        HOperatorSet.Compose3(r, g, b, out var composed);
-        using (composed) using (var rgb = new HImage(composed)) return rgb.Rgb1ToGray();
     }
 
     private static HRegion SelectFeatures(HRegion regions, BlobSettings s)

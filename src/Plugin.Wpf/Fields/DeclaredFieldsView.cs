@@ -10,6 +10,8 @@ public sealed class DeclaredFieldsView : UserControl
  private readonly List<DeclaredFieldEditor> _fields=new();
  private readonly Dictionary<string,StackPanel> _groups=new(StringComparer.Ordinal);
  private readonly List<(FrameworkElement View,FieldCondition Condition)> _conditions=new();
+ private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
+ public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText);
  public IReadOnlyList<DeclaredFieldEditor> Fields=>_fields.AsReadOnly();
  public void AddToGroup(string group,UIElement content,int? index=null)
  {if(!_groups.TryGetValue(group,out var panel))throw new ArgumentException("Unknown declared presentation group.");if(index.HasValue)panel.Children.Insert(index.Value,content);else panel.Children.Add(content);}
@@ -21,7 +23,7 @@ public sealed class DeclaredFieldsView : UserControl
   if(condition is not null)_conditions.Add((content,condition));UpdateVisibility();
  }
  public bool TryValidate(out string error)
- {error=_fields.FirstOrDefault(field=>field.HasInvalidText)?.Error??"";return error.Length==0;}
+ {error=_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error??"";return error.Length==0;}
  public DeclaredFieldsView(IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> fields,
   Action<string,ParameterSetting> writeDraft,Func<Port,ReferenceSetting?>? selectReference=null,
   Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null)
@@ -30,6 +32,7 @@ public sealed class DeclaredFieldsView : UserControl
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();var editors=new Dictionary<string,DeclaredFieldEditor>();
   foreach(var field in all)
   {
+   if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
    var editor=new DeclaredFieldEditor(field.Port,field.Presentation.DisplayName,field.Value,value=>writeDraft(field.Port.Id,value),selectReference,constantBackup?.Invoke(field.Port.Id),formatReference,field.Presentation.ChoiceLabels,field.Presentation);
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
@@ -66,13 +69,16 @@ public sealed class DeclaredFieldsView : UserControl
   }
   Content=tabs;UpdateVisibility();
  }
+ // Logical declaration activity is independent of selected tabs, collapsed Advanced sections, or attachment state.
+ private bool IsFieldActive(string fieldId)=>!_fieldConditions.TryGetValue(fieldId,out var condition)||Meets(condition);
+ private bool Meets(FieldCondition condition)
+ {
+  var source=_fields.SingleOrDefault(field=>field.FieldId==condition.FieldId);
+  // UI never resolves a reference: its dependents remain explicitly visible and active for review.
+  return source?.Setting is ReferenceSetting||source?.Setting is ConstantSetting literal&&(Equals(literal.Value,condition.Value)!=condition.Negate);
+ }
  private void UpdateVisibility()
  {
-  foreach(var (view,condition) in _conditions)
-  {
-   var source=_fields.SingleOrDefault(f=>f.FieldId==condition.FieldId);
-   // A reference cannot be resolved by UI; keep the dependent editor visible for explicit review.
-   view.Visibility=source?.Setting is ReferenceSetting||source?.Setting is ConstantSetting literal&&Equals(literal.Value,condition.Value)?Visibility.Visible:Visibility.Collapsed;
-  }
+  foreach(var (view,condition) in _conditions)view.Visibility=Meets(condition)?Visibility.Visible:Visibility.Collapsed;
  }
 }

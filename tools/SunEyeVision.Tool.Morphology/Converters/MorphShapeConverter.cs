@@ -18,6 +18,7 @@ namespace SunEyeVision.Tool.Morphology.Converters
                     MorphKernelShape.Rect => "矩形",
                     MorphKernelShape.Cross => "十字形",
                     MorphKernelShape.Ellipse => "椭圆形",
+                    MorphKernelShape.Circle => "圆形",
                     _ => "矩形"
                 };
             }
@@ -33,6 +34,7 @@ namespace SunEyeVision.Tool.Morphology.Converters
                     "矩形" => MorphKernelShape.Rect,
                     "十字形" => MorphKernelShape.Cross,
                     "椭圆形" => MorphKernelShape.Ellipse,
+                    "圆形" => MorphKernelShape.Circle,
                     _ => MorphKernelShape.Rect
                 };
             }

@@ -89,6 +89,7 @@
                 <sys:String>中值滤波</sys:String>
                 <sys:String>双边滤波</sys:String>
                 <sys:String>自定义卷积</sys:String>
+                <sys:String>直方图均衡化</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 

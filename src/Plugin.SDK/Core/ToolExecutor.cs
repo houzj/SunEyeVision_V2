@@ -141,7 +141,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.AttachResultMetadata(result);
                 if (request.CancellationToken.IsCancellationRequested || request.ExecutionIdentity?.IsCurrent == false)
                 {
-                    (result as IDisposable)?.Dispose();
+                    ReleaseRejectedResult(result);
                     var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, "运行已取消或身份失效");
                     request.AttachResultMetadata(cancelled);
                     return cancelled;
@@ -206,7 +206,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             result.Status = status;
             result.IsPass = false;
             result.ErrorMessage = message;
-            result.ErrorStackTrace = exception?.StackTrace;
+            result.ErrorStackTrace = exception?.ToString();
             result.Timestamp = DateTime.Now;
             return result;
         }

@@ -20,6 +20,7 @@ namespace SunEyeVision.Tool.ImageFilter.Converters
                     FilterType.MedianBlur => "中值滤波",
                     FilterType.Bilateral => "双边滤波",
                     FilterType.Filter2D => "自定义卷积",
+                    FilterType.HistogramEqualization => "直方图均衡化",
                     _ => "高斯滤波"
                 };
             }
@@ -37,6 +38,7 @@ namespace SunEyeVision.Tool.ImageFilter.Converters
                     "中值滤波" => FilterType.MedianBlur,
                     "双边滤波" => FilterType.Bilateral,
                     "自定义卷积" => FilterType.Filter2D,
+                    "直方图均衡化" => FilterType.HistogramEqualization,
                     _ => FilterType.Gaussian
                 };
             }

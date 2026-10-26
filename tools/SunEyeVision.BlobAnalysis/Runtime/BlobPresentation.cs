@@ -13,10 +13,12 @@ public static class BlobPresentation
   FieldCondition? condition=null;string? paired=null;
   var minimum=default(double?);var maximum=default(double?);var decimals=2;
   var advanced=false;var allowReference=!key.EndsWith("Enabled")&&!key.EndsWith("IsVisible")&&!key.EndsWith("IsBold");
-  if(key=="setting.pose-enabled")allowReference=false;
+  if(key is "setting.pose-enabled" or "setting.SegmentationMode")allowReference=false;
   string? Id(string logical)=>ids.TryGetValue(logical,out var id)?id:null;
   void When(string logical,object value){if(Id(logical) is {} id)condition=new(id,value);}
-  if(key is "setting.Threshold" or "setting.MaxValue"){minimum=0;maximum=255;decimals=0;}
+  if(key is "setting.Threshold" or "setting.UpperThreshold"){minimum=0;maximum=255;decimals=0;}
+  if(key is "setting.Threshold" or "setting.Type")condition=new(ids["setting.SegmentationMode"],"None",true);
+  if(key=="setting.UpperThreshold")When("setting.SegmentationMode", "DoubleThreshold");
   if(key.StartsWith("setting.Filter"))
   {
    section="Blob筛选";
@@ -35,7 +37,6 @@ public static class BlobPresentation
    if(key.EndsWith(".Min")||key.EndsWith(".Max")){When(prefix+".Enabled",true);if(key.EndsWith(".Min"))paired=Id(prefix+".Max");}
    advanced=!key.Contains("output-not-empty")&&!key.Contains("blob-count")&&!key.Contains("total-area");
   }
-  if(key.Contains("Preprocess")||key.Contains("Morph")){section=key.Contains("Preprocess")?"图像预处理（现行能力）":"形态学（现行能力）";advanced=true;}
   string? dialog=null,title=null;var primary=false;
   if(key.StartsWith("presentation.graphics."))
   {

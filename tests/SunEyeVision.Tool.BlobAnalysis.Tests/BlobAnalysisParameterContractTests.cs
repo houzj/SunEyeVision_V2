@@ -15,7 +15,7 @@ public sealed class BlobAnalysisParameterContractTests
 
         Assert.Empty(violations);
         Assert.Equal(
-            new[] { "InspectionRois", "MaskRois" },
+            new[] { "InspectionRois", "MaskRois", "InspectionRegionInput", "MaskRegionInput" },
             ((IInputSlotContract)parameters).GetInputSlots().Select(slot => slot.PropertyName));
         Assert.Contains(
             ((IRuntimeParameterContract)parameters).GetRuntimeParameters(),
@@ -29,12 +29,13 @@ public sealed class BlobAnalysisParameterContractTests
         var parameters = new BlobAnalysisParameters
         {
             Threshold = 100,
-            MaxValue = 30
+            SegmentationMode = BlobSegmentationMode.DoubleThreshold,
+            UpperThreshold = 30
         };
 
         var validation = parameters.Validate();
 
         Assert.False(validation.IsValid);
-        Assert.Contains(validation.Errors, error => error.Contains("阈值下限"));
+        Assert.Contains(validation.Errors, error => error.Contains("双阈值"));
     }
 }

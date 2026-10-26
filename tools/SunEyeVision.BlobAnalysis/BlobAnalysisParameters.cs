@@ -10,7 +10,7 @@ using SunEyeVision.Plugin.SDK.Validation;
 namespace SunEyeVision.Tool.BlobAnalysis
 {
     /// <summary>
-    /// 阈值类型枚举（Blob分析预处理用）
+    /// 阈值极性枚举（与分割方式独立）
     /// </summary>
     public enum ThresholdType
     {
@@ -47,39 +47,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         YDesc = 10
     }
 
-    /// <summary>
-    /// 图像预处理方法枚举
-    /// </summary>
-    public enum PreprocessMethod
-    {
-        None = 0,
-        Mean = 1,
-        Gaussian = 2,
-        Median = 3,
-        HistogramEqualization = 4
-    }
-
-    /// <summary>
-    /// 形态学操作类型枚举
-    /// </summary>
-    public enum MorphOperationType
-    {
-        Erosion = 0,
-        Dilation = 1,
-        Opening = 2,
-        Closing = 3,
-        TopHat = 4,
-        BottomHat = 5
-    }
-
-    /// <summary>
-    /// 形态学结构元素形状枚举
-    /// </summary>
-    public enum MorphElementShapeType
-    {
-        Rectangle = 0,
-        Circle = 1
-    }
+    public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None }
 
     /// <summary>
     /// Blob分析工具参数
@@ -100,6 +68,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
         [JsonIgnore] public SunEyeVision.Plugin.Contracts.IReadOnlyRegion? MaskRegionInput { get; set; }
         public bool IsBindingInputActive(string key)
         {
+            if(key==nameof(Threshold)||key==nameof(Type))return SegmentationMode!=BlobSegmentationMode.None;
+            if(key==nameof(UpperThreshold))return SegmentationMode==BlobSegmentationMode.DoubleThreshold;
             if(key==nameof(InspectionRegionInput))return InspectionMode==SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion;
             if(key==nameof(MaskRegionInput))return MaskMode==SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion;
             return ActiveGeometry(key,nameof(InspectionRois),InspectionRois,InspectionMode)
@@ -140,17 +110,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
         {
             new RuntimeParameterDescriptor(nameof(Threshold), "阈值", "Integer", typeof(int)),
-            new RuntimeParameterDescriptor(nameof(MaxValue), "最大值", "Integer", typeof(int)),
-            new RuntimeParameterDescriptor(nameof(Type), "二值化方法", ValueType: typeof(ThresholdType)),
-            new RuntimeParameterDescriptor(nameof(IsPreprocessingEnabled), "启用预处理", "Boolean", typeof(bool)),
-            new RuntimeParameterDescriptor(nameof(PreprocessMethodValue), "预处理方法", ValueType: typeof(PreprocessMethod)),
-            new RuntimeParameterDescriptor(nameof(PreprocessKernelSize), "滤波核大小", "Integer", typeof(int)),
-            new RuntimeParameterDescriptor(nameof(IsMorphologyEnabled), "启用形态学", "Boolean", typeof(bool)),
-            new RuntimeParameterDescriptor(nameof(MorphOperationValue), "形态学操作", ValueType: typeof(MorphOperationType)),
-            new RuntimeParameterDescriptor(nameof(MorphElementShapeValue), "结构元素形状", ValueType: typeof(MorphElementShapeType)),
-            new RuntimeParameterDescriptor(nameof(MorphElementWidth), "结构元素宽度", "Integer", typeof(int)),
-            new RuntimeParameterDescriptor(nameof(MorphElementHeight), "结构元素高度", "Integer", typeof(int)),
-            new RuntimeParameterDescriptor(nameof(MorphIterations), "迭代次数", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(UpperThreshold), "阈值上限", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(Type), "极性", ValueType: typeof(ThresholdType)),
             new RuntimeParameterDescriptor(nameof(IsAreaFilterEnabled), "启用面积筛选", "Boolean", typeof(bool)),
             new RuntimeParameterDescriptor(nameof(FilterAreaMin), "面积最小值", "Double", typeof(double)),
             new RuntimeParameterDescriptor(nameof(FilterAreaMax), "面积最大值", "Double", typeof(double)),
@@ -191,86 +152,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public int Threshold { get; set; } = 128;
 
         /// <summary>
-        /// 超过阈值时使用的最大值(0-255)
+        /// 双阈值选取区间上限(0-255)
         /// </summary>
-        [DisplayName("最大值")]
-        public int MaxValue { get; set; } = 255;
+        [DisplayName("阈值上限")]
+        public int UpperThreshold { get; set; } = 255;
+
+        [DisplayName("分割方式")]
+        public BlobSegmentationMode SegmentationMode { get; set; }
 
         /// <summary>
-        /// 二值化方法（仅支持 Binary/BinaryInv）
+        /// 阈值极性（Binary为区间内，BinaryInv为有效域内补集）
         /// </summary>
-        [DisplayName("二值化方法")]
+        [DisplayName("极性")]
         public ThresholdType Type { get; set; } = ThresholdType.Binary;
-
-        #endregion
-
-        #region 图像预处理参数
-
-        /// <summary>
-        /// 是否启用图像预处理
-        /// </summary>
-        [DisplayName("启用预处理")]
-        public bool IsPreprocessingEnabled
-        {
-            get => _isPreprocessingEnabled;
-            set => SetProperty(ref _isPreprocessingEnabled, value, "启用预处理");
-        }
-
-        /// <summary>
-        /// 预处理方法
-        /// </summary>
-        [DisplayName("预处理方法")]
-        public PreprocessMethod PreprocessMethodValue { get; set; } = PreprocessMethod.None;
-
-        /// <summary>
-        /// 预处理滤波核大小（均值/高斯/中值滤波，奇数3~31）
-        /// </summary>
-        [DisplayName("滤波核大小")]
-        public int PreprocessKernelSize { get; set; } = 5;
-
-        #endregion
-
-        #region 形态学处理参数
-
-        /// <summary>
-        /// 是否启用形态学处理
-        /// </summary>
-        [DisplayName("启用形态学")]
-        public bool IsMorphologyEnabled
-        {
-            get => _isMorphologyEnabled;
-            set => SetProperty(ref _isMorphologyEnabled, value, "启用形态学");
-        }
-
-        /// <summary>
-        /// 形态学操作类型
-        /// </summary>
-        [DisplayName("形态学操作")]
-        public MorphOperationType MorphOperationValue { get; set; } = MorphOperationType.Erosion;
-
-        /// <summary>
-        /// 结构元素形状
-        /// </summary>
-        [DisplayName("结构元素形状")]
-        public MorphElementShapeType MorphElementShapeValue { get; set; } = MorphElementShapeType.Rectangle;
-
-        /// <summary>
-        /// 结构元素宽度(1~101)
-        /// </summary>
-        [DisplayName("结构元素宽度")]
-        public int MorphElementWidth { get; set; } = 5;
-
-        /// <summary>
-        /// 结构元素高度(1~101)
-        /// </summary>
-        [DisplayName("结构元素高度")]
-        public int MorphElementHeight { get; set; } = 5;
-
-        /// <summary>
-        /// 形态学迭代次数(1~10)
-        /// </summary>
-        [DisplayName("迭代次数")]
-        public int MorphIterations { get; set; } = 1;
 
         #endregion
 
@@ -433,8 +327,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #region 字段（预处理/形态学/滤波，位置修正字段已上提基类 RoiParameters）
 
-        private bool _isPreprocessingEnabled;
-        private bool _isMorphologyEnabled;
         private double _filterAreaMin = 10;
         private double _filterAreaMax = 999999;
         private double _filterCircularityMin;
@@ -455,55 +347,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
             var result = base.Validate();
             foreach(var issue in ValidateStoredConfiguration())result.AddError(issue.Message);
 
-            // 阈值范围检查
-            if (Threshold < ThresholdMin || Threshold > ThresholdMax)
-            {
-                result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold}");
-            }
-
-            // 最大值范围检查
-            if (MaxValue < ThresholdMin || MaxValue > ThresholdMax)
-            {
-                result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue}");
-            }
-
-            // Halcon threshold 的上下限必须构成有效区间。此前只校验了两个端点的取值范围，
-            // 允许 Threshold > MaxValue，运行时会得到与界面配置不一致的分割结果。
-            if (Threshold > MaxValue)
-            {
-                result.AddError($"阈值下限({Threshold})不能大于阈值上限({MaxValue})");
-            }
+            if (!System.Enum.IsDefined(SegmentationMode) || !System.Enum.IsDefined(Type)) result.AddError("分割方式或极性无效。");
+            if (SegmentationMode != BlobSegmentationMode.None && (Threshold < 0 || Threshold > 255)) result.AddError("阈值必须在0至255之间。");
+            if (SegmentationMode == BlobSegmentationMode.DoubleThreshold && (UpperThreshold < Threshold || UpperThreshold > 255)) result.AddError("双阈值必须满足0≤下限≤上限≤255。");
 
             if (BlobCountLimit < BlobCountLimitMin || BlobCountLimit > BlobCountLimitMax)
             {
                 result.AddError($"查找数量必须在 {BlobCountLimitMin}~{BlobCountLimitMax} 范围内，当前值: {BlobCountLimit}");
-            }
-
-            // 预处理参数验证
-            if (IsPreprocessingEnabled && PreprocessMethodValue != PreprocessMethod.None)
-            {
-                int kernelSize = PreprocessKernelSize;
-                if (kernelSize < 3 || kernelSize > 31 || kernelSize % 2 == 0)
-                {
-                    result.AddError($"滤波核大小必须为 3~31 之间的奇数，当前值: {kernelSize}");
-                }
-            }
-
-            // 形态学参数验证
-            if (IsMorphologyEnabled)
-            {
-                if (MorphElementWidth < 1 || MorphElementWidth > 101)
-                {
-                    result.AddError($"结构元素宽度必须在 1~101 范围内，当前值: {MorphElementWidth}");
-                }
-                if (MorphElementHeight < 1 || MorphElementHeight > 101)
-                {
-                    result.AddError($"结构元素高度必须在 1~101 范围内，当前值: {MorphElementHeight}");
-                }
-                if (MorphIterations < 1 || MorphIterations > 10)
-                {
-                    result.AddError($"迭代次数必须在 1~10 范围内，当前值: {MorphIterations}");
-                }
             }
 
             // 结果配置验证
@@ -561,28 +411,5 @@ namespace SunEyeVision.Tool.BlobAnalysis
             return new List<string> { "不排序", "面积 ↑", "面积 ↓", "圆度 ↑", "圆度 ↓", "矩形度 ↑", "矩形度 ↓", "X坐标 ↑", "X坐标 ↓", "Y坐标 ↑", "Y坐标 ↓" };
         }
 
-        /// <summary>
-        /// 获取预处理方法选项（中文）
-        /// </summary>
-        public static IReadOnlyList<string> GetPreprocessMethodOptions()
-        {
-            return new List<string> { "无", "均值滤波", "高斯滤波", "中值滤波", "直方图均衡化" };
-        }
-
-        /// <summary>
-        /// 获取形态学操作选项（中文）
-        /// </summary>
-        public static IReadOnlyList<string> GetMorphOperationOptions()
-        {
-            return new List<string> { "腐蚀", "膨胀", "开运算", "闭运算", "顶帽", "黑帽" };
-        }
-
-        /// <summary>
-        /// 获取结构元素形状选项（中文）
-        /// </summary>
-        public static IReadOnlyList<string> GetMorphElementShapeOptions()
-        {
-            return new List<string> { "矩形", "圆形" };
-        }
     }
 }

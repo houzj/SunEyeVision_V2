@@ -99,11 +99,12 @@
               <ComboBox x:Name="shapeComboBox"
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      ToolTip="结构元素形状：矩形(通用)、十字形(线状特征)、椭圆形(圆形特征)"
+                      ToolTip="结构元素形状：矩形(通用)、十字形(线状特征)、椭圆形(独立双轴)、圆形(取较大尺寸)"
                       SelectedItem="{Binding KernelShape, Mode=TwoWay, Converter={StaticResource MorphShapeConverter}}">
                 <sys:String>矩形</sys:String>
                 <sys:String>十字形</sys:String>
                 <sys:String>椭圆形</sys:String>
+                <sys:String>圆形</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 
@@ -114,11 +115,11 @@
                                 DataType="{x:Type sys:Int32}"
                                 Value="{Binding KernelWidth, Mode=TwoWay}"
                                 Minimum="1"
-                                Maximum="51"
-                                SmallChange="2"
+                                Maximum="101"
+                                SmallChange="1"
                                 LargeChange="10"
                                 ShowSlider="True" Width="250"
-                                ToolTip="核宽度(奇数, 1-51)：结构元素的水平尺寸，决定操作强度"
+                                ToolTip="核宽度(1-101，允许偶数，不自动取整为奇数)：结构元素的水平尺寸，决定操作强度"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
 
@@ -129,11 +130,11 @@
                                 DataType="{x:Type sys:Int32}"
                                 Value="{Binding KernelHeight, Mode=TwoWay}"
                                 Minimum="1"
-                                Maximum="51"
-                                SmallChange="2"
+                                Maximum="101"
+                                SmallChange="1"
                                 LargeChange="10"
                                 ShowSlider="True" Width="250"
-                                ToolTip="核高度(奇数, 1-51)：结构元素的垂直尺寸，决定操作强度"
+                                ToolTip="核高度(1-101，允许偶数，不自动取整为奇数)：结构元素的垂直尺寸，决定操作强度"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
 
@@ -173,7 +174,7 @@
 
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" Text="参数详解"/>
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"
-                               Text="结构形状: Rect矩形(通用)、Cross十字形(线状)、Ellipse椭圆形(圆形)"/>
+                               Text="结构形状: Rect矩形(通用)、Cross十字形(线状)、Ellipse双轴椭圆、Circle圆形(较大尺寸/2为半径)"/>
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="核宽高: 结构元素的尺寸，必须为奇数，越大操作越强"/>
                     <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"

@@ -18,16 +18,20 @@ public sealed class BlobOutput : IToolOutput, IDisposable
         IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,
         double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned)
     {
-        ThresholdMinUsed=settings.Threshold; ThresholdMaxUsed=settings.MaxValue; TypeUsed=settings.Type.ToString();
+        ThresholdMinUsed=settings.SegmentationMode == BlobSegmentationMode.None ? null : settings.Threshold;
+        ThresholdMaxUsed=settings.SegmentationMode == BlobSegmentationMode.None ? null : settings.SegmentationMode == BlobSegmentationMode.SingleThreshold ? 255 : settings.UpperThreshold;
+        TypeUsed=settings.SegmentationMode == BlobSegmentationMode.None ? "NotApplied" : settings.Type.ToString();
+        SegmentationModeUsed=settings.SegmentationMode.ToString();
         Measurements = Array.AsReadOnly(measurements.ToArray()); GrayImage = gray; BinaryImage = binary;
         Region = region; OkRegion = ok; NgRegion = ng; WhitePixelRatio = whiteRatio;
         Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());
         IsPass = isPass; JudgmentMessages = Array.AsReadOnly(messages.ToArray()); _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
     }
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
-    public int ThresholdMinUsed { get; }
-    public int ThresholdMaxUsed { get; }
+    public int? ThresholdMinUsed { get; }
+    public int? ThresholdMaxUsed { get; }
     public string TypeUsed { get; }
+    public string SegmentationModeUsed { get; }
     public IReadOnlyImage? GrayImage { get; }
     public IReadOnlyImage? BinaryImage { get; }
     public IReadOnlyRegion Region { get; }
@@ -50,7 +54,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable
             [BlobSchema.BlobsPort] = new SequenceValue(BlobSchema.BlobsType, Measurements.Select(x => (object?)BlobSchema.Freeze(x))),
             [BlobSchema.Field(5)] = GrayImage, [BlobSchema.Field(6)] = BinaryImage,
             [BlobSchema.Field(4)] = IsPass,
-            [BlobSchema.Field(8)] = (long)ThresholdMinUsed, [BlobSchema.Field(9)] = (long)ThresholdMaxUsed, [BlobSchema.Field(10)] = TypeUsed,
+            [BlobSchema.Field(8)] = ThresholdMinUsed is int lower ? (object)(long)lower : null, [BlobSchema.Field(9)] = ThresholdMaxUsed is int upper ? (object)(long)upper : null, [BlobSchema.Field(10)] = TypeUsed, [BlobSchema.Field(102)] = SegmentationModeUsed,
             [BlobSchema.Field(11)] = (long)Count, [BlobSchema.Field(12)] = TotalArea,
             [BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,
             [BlobSchema.Field(30)] = MinimumArea, [BlobSchema.Field(31)] = MaximumArea,

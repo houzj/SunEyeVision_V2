@@ -21,7 +21,7 @@ internal static class S2DocumentEditingCases
             var pixels = new byte[8 * 8]; pixels[2 * 8 + 2] = pixels[3 * 8 + 3] = 200;
             using var image = HalImage.CreateFromBytes(pixels, 8, 8, 1);
             BlobAnalysisParameters Settings() => new() {
-                ResolvedInputImage = image, Threshold = 100, MaxValue = 255,
+                ResolvedInputImage = image, Threshold = 100, UpperThreshold = 255,
                 IsAreaFilterEnabled = false, IsCircularityFilterEnabled = false,
                 IsRectangularityFilterEnabled = false, IsBlobCountFilterEnabled = false, OutputContours = false
             };

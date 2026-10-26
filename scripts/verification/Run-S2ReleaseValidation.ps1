@@ -1,8 +1,8 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
-if($Track -in @('RuntimeKernel','Components','Consumption','InputBoundaries') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
+if($Track -in @('RuntimeKernel','Components','Consumption','InputBoundaries','Algorithm','Resources') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
@@ -23,6 +23,8 @@ $project='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirect
 $source=if($Track -eq 'Related'){'S2RelatedCases.cs'}else{'S2DocumentEditingCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'DocumentEditing'){$source='S3BlobRuntimeCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Related'){$source='S3NeutralBridgeCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'Resources'){$source='O06ResourceCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'Algorithm'){$source='O06AlgorithmCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeKernel'){$source='S3RuntimeKernelCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Components'){$source='S3ComponentCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Consumption'){$source='S3ConsumptionCases.cs'}

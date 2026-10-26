@@ -1807,6 +1807,12 @@
           "System.Drawing.Common": "[9.0.0, )"
         }
       },
+      "suneyevision.plugin.wpf": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.tool.kernels": {
         "type": "Project"
       },
@@ -1871,6 +1877,7 @@
           "SunEyeVision.HalAdapter": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Workflow": "[2.0.0-alpha.8, )",
           "Vortice.DXGI": "[3.8.2, )",
           "Vortice.Direct2D1": "[3.8.2, )",

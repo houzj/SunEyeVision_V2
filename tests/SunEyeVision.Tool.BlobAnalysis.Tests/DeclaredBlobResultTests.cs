@@ -22,10 +22,10 @@ public sealed class DeclaredBlobResultTests
         ToolRegistry.RegisterTool(typeof(BlobAnalysisTool));
         var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger);
         var flow=workflows.CreateWorkflow("blob-address-"+Guid.NewGuid().ToString("N"),"blob");
-        var parameters=new BlobAnalysisParameters{IsPreprocessingEnabled=false,IsMorphologyEnabled=false,
+        var parameters=new BlobAnalysisParameters{
             IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,IsCircularityFilterEnabled=false,
             IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,SortMode=BlobSortMode.AreaDesc,
-            Threshold=128,MaxValue=255,OutputContours=true};
+            Threshold=128,UpperThreshold=255,OutputContours=true};
         flow.AddNode(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});
         var runner=new WorkflowExecutionEngine(workflows,Substitute.For<IPluginManager>(),logger);
         using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,inputImage:input)).WaitAsync(TimeSpan.FromSeconds(30));
@@ -84,9 +84,9 @@ public sealed class DeclaredBlobResultTests
         ToolRegistry.RegisterTool(typeof(BlobAnalysisTool));
         var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger);
         var flow=workflows.CreateWorkflow("blob-declared-"+Guid.NewGuid().ToString("N"),"blob");
-        var parameters=new BlobAnalysisParameters{IsPreprocessingEnabled=false,IsMorphologyEnabled=false,IsAreaFilterEnabled=false,
+        var parameters=new BlobAnalysisParameters{IsAreaFilterEnabled=false,
             IsCircularityFilterEnabled=false,IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,
-            Threshold=128,MaxValue=255,OutputBlobImage=true,OutputBinaryImage=true,OutputContours=true};
+            Threshold=128,UpperThreshold=255,OutputBlobImage=true,OutputBinaryImage=true,OutputContours=true};
         flow.AddNode(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});
         var runner=new WorkflowExecutionEngine(workflows,Substitute.For<IPluginManager>(),logger);
         using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,inputImage:input)).WaitAsync(TimeSpan.FromSeconds(30));

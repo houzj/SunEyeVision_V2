@@ -53,11 +53,8 @@ internal static class BlobSdkAdapter
     }
 
     internal static BlobRuntime.BlobSettings Settings(BlobAnalysisParameters p) => new() {
-        Threshold=p.Threshold, MaxValue=p.MaxValue, Type=(BlobRuntime.BlobThresholdMode)p.Type,
-        IsPreprocessingEnabled=p.IsPreprocessingEnabled, PreprocessMethod=(BlobRuntime.BlobPreprocess)p.PreprocessMethodValue,
-        PreprocessKernelSize=p.PreprocessKernelSize, IsMorphologyEnabled=p.IsMorphologyEnabled,
-        MorphOperation=(BlobRuntime.BlobMorphology)p.MorphOperationValue, MorphElementShape=(BlobRuntime.BlobElementShape)p.MorphElementShapeValue,
-        MorphElementWidth=p.MorphElementWidth, MorphElementHeight=p.MorphElementHeight, MorphIterations=p.MorphIterations,
+        Threshold=p.Threshold, UpperThreshold=p.UpperThreshold, Type=(BlobRuntime.BlobThresholdMode)p.Type,
+        SegmentationMode=(BlobRuntime.BlobSegmentationMode)p.SegmentationMode,
         IsAreaFilterEnabled=p.IsAreaFilterEnabled, FilterAreaMin=p.FilterAreaMin, FilterAreaMax=p.FilterAreaMax,
         IsCircularityFilterEnabled=p.IsCircularityFilterEnabled, FilterCircularityMin=p.FilterCircularityMin, FilterCircularityMax=p.FilterCircularityMax,
         IsRectangularityFilterEnabled=p.IsRectangularityFilterEnabled, FilterRectangularityMin=p.FilterRectangularityMin, FilterRectangularityMax=p.FilterRectangularityMax,
@@ -82,7 +79,7 @@ internal static class BlobSdkAdapter
             // Current single-contour display projection is explicitly lossy: one outer path, no smoothing. Full topology stays in RuntimeOutput.
             Contour=b.Boundary.FirstOrDefault(p=>p.Role=="outer"&&p.ParentId is null)?.Points.Select(p=>new Point(p.X,p.Y)).ToArray()
         }).ToList();
-        target.ThresholdMinUsed=settings.Threshold;target.ThresholdMaxUsed=settings.MaxValue;target.TypeUsed=settings.Type.ToString();
+        target.ThresholdMinUsed=source.ThresholdMinUsed;target.ThresholdMaxUsed=source.ThresholdMaxUsed;target.TypeUsed=source.TypeUsed;target.SegmentationModeUsed=source.SegmentationModeUsed;
         target.HistogramData=source.Histogram.ToArray();target.ChannelMeans=source.ChannelMeans.ToArray();
         target.WhitePixelRatio=source.WhitePixelRatio;target.IsPass=source.IsPass;target.JudgmentMessages=source.JudgmentMessages.ToList();target.ProcessedAt=DateTime.Now;
     }

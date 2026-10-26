@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using SunEyeVision.Workflow;
 using SunEyeVision.Tool.BlobAnalysis;
@@ -265,7 +265,7 @@ internal static class S2DocumentEditingCases
         });
         Case("真实HALCON调试使用冻结草稿，和生产执行身份隔离", () => {
             var f = Create(); var formal = (BlobAnalysisParameters)f.A.Parameters;
-            formal.IsPreprocessingEnabled = false; formal.IsMorphologyEnabled = false;
+
             formal.IsAreaFilterEnabled = false; formal.IsCircularityFilterEnabled = false;
             formal.IsRectangularityFilterEnabled = false; formal.IsBlobCountFilterEnabled = false;
             using var editor = new SunEyeVision.UI.Services.Editing.ProductionEditorContext(

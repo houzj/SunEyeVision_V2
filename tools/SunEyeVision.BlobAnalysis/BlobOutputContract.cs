@@ -33,10 +33,14 @@ public static class BlobOutputContract
         foreach(var variable in variables)
         {
             variable.FieldId=FieldId(variable.Name);
+            if(variable.Name=="SegmentationModeUsed")variable.ValueDeclaration=DataType.Text;
             if(variable.VariableType=="Image")
             {variable.ValueDeclaration=TypeRef.ResourceOf(ResourceKind.Image);variable.AllowsNull=true;}
             if(variable.DeclaredType==typeof(RoiShape[]))variable.ValueDeclaration=RoiShapeValueAdapter.SequenceDeclaration;
         }
+        foreach(var (name, value, number) in new[]{("ThresholdMinUsed",result.ThresholdMinUsed,8),("ThresholdMaxUsed",result.ThresholdMaxUsed,9)})
+            variables.Add(new(){FieldId=FieldId(name),Name=name,DisplayName=number==8?"实际阈值下限":"实际阈值上限",Group="分割",
+                DeclaredType=typeof(int?),VariableType="Integer",IsCollection=false,FixedCount=1,AllowsNull=true,ValueDeclaration=DataType.Integer,RuntimeValue=value});
         variables.Add(new(){FieldId=BlobsFieldId,Name=nameof(result.FilteredBlobs),DisplayName="Blob记录",Group="Blob详细",
             DeclaredType=typeof(SequenceValue),ValueDeclaration=BlobsType,VariableType="Record",IsCollection=true,
             RuntimeValue=result.RuntimeOutput is { } runtime?runtime.ToValues()[Runtime.BlobSchema.BlobsPort]
@@ -67,7 +71,7 @@ public static class BlobOutputContract
             "WhitePixelRatio"=>16,"HistogramData"=>17,"ChannelMeans"=>18,"BlobAreas"=>19,"BlobPerimeters"=>20,
             "BlobCentroidXs"=>21,"BlobCentroidYs"=>22,"BlobCircularities"=>23,"BlobRectangularities"=>24,
             "BlobBoundingWidths"=>25,"BlobBoundingHeights"=>26,"BlobBoundingRects"=>27,"InspectionGeometries"=>28,"MaskGeometries"=>29,
-            "MinimumArea"=>30,"MaximumArea"=>31,
+            "SegmentationModeUsed"=>102,"MinimumArea"=>30,"MaximumArea"=>31,
             _=>throw new InvalidOperationException("Blob output requires an explicit stable field identity: "+name)};
         return Guid.Parse("8ca10000-0000-4000-8000-"+number.ToString("D12",System.Globalization.CultureInfo.InvariantCulture));
     }

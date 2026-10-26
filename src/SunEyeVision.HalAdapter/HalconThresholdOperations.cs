@@ -53,7 +53,7 @@ public static class HalconThresholdOperations
         if (mode is not (2 or 3 or 4))
         {
             HOperatorSet.RegionToBin(selection, out var binary, maxValue, 0, width, height);
-            return new HImage(binary);
+            using (binary) return new HImage(binary);
         }
 
         using var domain = image.GetDomain();
@@ -63,21 +63,22 @@ public static class HalconThresholdOperations
         if (mode == 2)
         {
             HOperatorSet.PaintRegion(selection, image, out var clipped, threshold, "fill");
-            source = new HImage(clipped);
+            using (clipped) source = new HImage(clipped);
         }
         else source = image.Clone();
         using (source)
         using (var retained = source.ReduceDomain(mode == 2 ? domain : selection))
         {
             HOperatorSet.PaintGray(retained, zero, out var pixels);
-            var output = new HImage(pixels);
+            HImage output;
+            using (pixels) output = new HImage(pixels);
             if (!invertGray) return output;
             using (output)
             using (var inverse = output.InvertImage())
             using (var limited = inverse.ReduceDomain(domain))
             {
                 HOperatorSet.PaintGray(limited, zero, out var inverted);
-                return new HImage(inverted);
+                using (inverted) return new HImage(inverted);
             }
         }
     }

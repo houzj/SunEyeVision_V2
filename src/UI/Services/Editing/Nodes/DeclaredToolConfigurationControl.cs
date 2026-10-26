@@ -23,7 +23,7 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
     private ToolParameters? _parameters;
     private DeclaredFieldsView? _fields;
     private IReadOnlyList<ConfigurationFieldAccessor> _accessors=Array.Empty<ConfigurationFieldAccessor>();
-    public bool HasPendingEdits=>_fields?.Fields.Any(editor=>editor.HasInvalidText)==true||HasPendingRegions||HasPendingSources;
+    public bool HasPendingEdits=>_fields?.HasInvalidActiveFields==true||HasPendingRegions||HasPendingSources;
     public override Size PreferredDebugWindowSize=>new(420,500);
     public DeclaredToolConfigurationControl(IToolPlugin tool)
     {

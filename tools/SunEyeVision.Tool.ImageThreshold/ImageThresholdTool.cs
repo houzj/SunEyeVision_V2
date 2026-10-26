@@ -105,17 +105,8 @@ namespace SunEyeVision.Tool.ImageThreshold
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
-                HImage grayImage;
                 int channels = hImage.CountChannels();
-                if (channels == 3 || channels == 4)
-                {
-                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
-                    grayImage = new HImage(grayObj);
-                }
-                else
-                {
-                    grayImage = hImage.Clone();
-                }
+                var grayImage = HalconImageAdmission.Gray(hImage);
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
@@ -209,6 +200,7 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 // 二值掩码输出
                                 HOperatorSet.RegionToBin(binaryRegion, out var binObj,
                                     255, 0, imgWidth, imgHeight);
+                                using var binaryObject = binObj;
                                 result.OutputImage = new HalImage(HalconThresholdOperations.Render(reducedImage, binaryRegion,
                                     (int)method, threshold, maxValue, imgWidth, imgHeight, invert));
                                 result.BinaryMask = new HalImage(new HImage(binObj));

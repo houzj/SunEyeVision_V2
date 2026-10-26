@@ -159,6 +159,13 @@ public sealed class GroupRunParameterConfigTests
             window.UpdateLayout();var binding=Assert.Single(Visual<SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding>(control));binding.BindingSource=replacement.GetBindingPath();binding.RaiseEvent(new SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent,replacement));
             Assert.Equal("second",input.Source!.SourceNodeId);Assert.Equal(replacement.GetBindingPath(),input.BindingSource);
             binding.BindingSource="";binding.RaiseEvent(new RoutedEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent));Assert.Null(input.Source);Assert.Empty(input.BindingSource);
+            var display=new SubroutineDisplayItem{DisplayName="文本",DisplayType=SubroutineDisplayType.Text,TextStyle=new()};p.DisplayConfigs.Add(display);
+            Visual<TabControl>(control).First().SelectedIndex=3;window.UpdateLayout();
+            var displayBinding=Visual<SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding>(control).Single(b=>ReferenceEquals(b.DataContext,display));
+            displayBinding.BindingSource=replacement.GetBindingPath();displayBinding.RaiseEvent(new SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent,replacement));
+            Assert.Equal("second",display.BoundDataSource!.SourceNodeId);Assert.NotSame(replacement,display.BoundDataSource);Assert.Equal("parent",display.BoundDataSource.SourceWorkflowId);
+            displayBinding.BindingSource="";displayBinding.RaiseEvent(new RoutedEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent));Assert.Null(display.BoundDataSource);Assert.Empty(display.BindingSource);Assert.Empty(display.BindingDisplayText);
+
         }
         finally{window.Close();((ISubroutineParameterEditor)control).Dispose();}
     });

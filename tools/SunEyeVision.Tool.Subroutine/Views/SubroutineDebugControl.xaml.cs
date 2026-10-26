@@ -70,6 +70,15 @@ namespace SunEyeVision.Tool.Subroutine.Views
             if(RunParameterContent.Content is IDisposable previous)previous.Dispose();
             RunParameterContent.Content=editor;
         }
+        private void OnDisplayBindingChanged(object sender,RoutedEventArgs e)
+        {
+            if(sender is not SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding binding || binding.DataContext is not SubroutineDisplayItem item)return;
+            binding.GetBindingExpression(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceProperty)?.UpdateSource();
+            var selected=e is SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs picked?picked.DataSource:binding.ResolveSelectedDataSource();
+            item.BoundDataSource=selected is null?null:SubroutineParameterDialogViewModel.CopySource(selected);
+            item.BindingSource=binding.BindingSource;
+            item.BindingDisplayText=selected?.DropdownDisplayText??"";
+        }
         private void OnIoBindingChanged(object sender,RoutedEventArgs e)
         {
             if(sender is not SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding binding)return;

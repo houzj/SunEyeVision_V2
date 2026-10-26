@@ -24,13 +24,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public static object? Resolve(
             IDictionary<string, ToolResults> nodeResults,
             string nodeId,
-            string propertyPath)
+            string propertyPath, Guid? sourceFieldId = null)
         {
             if (!nodeResults.TryGetValue(nodeId, out var result) || result is null)
                 throw new InvalidOperationException(
                     $"绑定源节点 '{nodeId}' 不在执行结果中。可用节点: [{string.Join(", ", nodeResults.Keys)}]");
 
-            return Resolve(result, propertyPath, nodeId);
+            return Resolve(result, propertyPath, nodeId, sourceFieldId);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="propertyPath">属性路径</param>
         /// <param name="nodeId">节点 ID（仅用于错误信息）</param>
         /// <returns>解析到的值</returns>
-        public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null)
+        public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null, Guid? sourceFieldId = null)
         {
             var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
             if (parsedPath.Count == 0)
@@ -48,8 +48,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             var (firstName, firstIndex, firstTypeFilter) = parsedPath[0];
             var variables = result.GetOutputVariables();
-            var variable = variables.FirstOrDefault(v =>
-                string.Equals(v.Name, firstName, StringComparison.OrdinalIgnoreCase));
+            var matches = sourceFieldId.HasValue
+                ? variables.Where(v => v.FieldId == sourceFieldId.Value).ToArray()
+                : variables.Where(v => string.Equals(v.Name, firstName, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (matches.Length > 1)
+                throw new InvalidOperationException($"节点 '{nodeId}' 输出字段身份或名称不唯一。");
+            var variable = matches.SingleOrDefault();
+            if (sourceFieldId.HasValue && variable is null)
+                throw new InvalidOperationException($"节点 '{nodeId}' 无输出字段身份 '{sourceFieldId}'，请重新绑定。");
 
             if (variable == null)
             {

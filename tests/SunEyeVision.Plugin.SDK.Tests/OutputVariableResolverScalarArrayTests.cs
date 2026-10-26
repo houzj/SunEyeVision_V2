@@ -13,6 +13,16 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class OutputVariableResolverScalarArrayTests
 {
+    [Fact]
+    public void Stable_field_identity_preserves_suffix_and_never_falls_back_to_a_reused_name()
+    {
+        var result=new IdentifiedDisplayResults{Status=ExecutionStatus.Success};result.AddResultItem("Renamed",new long[]{3,9});
+        var field=result.GetOutputVariables().Single(v=>v.Name=="Renamed");
+        Assert.Equal(9L,OutputVariableResolver.Resolve(result,"OldName[1]","node",field.FieldId));
+        Assert.Equal(new long[]{3,9},Assert.IsType<long[]>(OutputVariableResolver.Resolve(result,"OldName[]","node",field.FieldId)));
+        Assert.Throws<InvalidOperationException>(()=>OutputVariableResolver.Resolve(result,"Renamed","node",Guid.NewGuid()));
+    }
+
     #region 标量：经 GetOutputVariables 真实提升
 
     private class ScalarResults : ToolResults
@@ -147,4 +157,15 @@ public class OutputVariableResolverScalarArrayTests
     }
 
     #endregion
+    private sealed class IdentifiedDisplayResults : GenericToolResults
+    {
+        private readonly Guid _fieldId=Guid.NewGuid();
+        public override System.Collections.Generic.IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables=base.GetOutputVariables();
+            foreach(var variable in variables.Where(v=>v.Name=="Renamed"))variable.FieldId=_fieldId;
+            return variables;
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -241,7 +241,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 nameof(ParameterResolver));
 
             // 通过输出变量契约解析（唯一路径，无反射、无 GetResultItems 兜底）
-            var value = OutputVariableResolver.Resolve(nodeResults, binding.SourceNodeId!, binding.SourceProperty!);
+            var value = OutputVariableResolver.Resolve(nodeResults, binding.SourceNodeId!, binding.SourceProperty!, binding.SourceFieldId);
 
             var result = ParameterResolveResult.Success(value, binding.TargetType);
             result.SourceNodeId = binding.SourceNodeId;

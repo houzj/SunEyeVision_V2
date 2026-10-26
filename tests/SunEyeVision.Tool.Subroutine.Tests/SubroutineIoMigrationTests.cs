@@ -135,4 +135,28 @@ public sealed class SubroutineIoMigrationTests
         finally{vm.Dispose();values.Resources?.Dispose();}
     }
 
+    [Fact]
+    public void Display_resolves_renamed_output_by_stable_field_identity()
+    {
+        var values=new IdentifiedDisplayResults{Status=ExecutionStatus.Success};values.AddResultItem("Renamed",7L);
+        var field=values.GetOutputVariables().Single(v=>v.Name=="Renamed");
+        var source=new AvailableDataSource{SourceNodeId="inside",PropertyName="OldName",PropertyType=typeof(long),SourceWorkflowId="child",SourceFieldId=field.FieldId};
+        var p=new SubroutineParameters{SubroutineId="child",ExecuteSubWorkflowAsync=(_,_,_)=>Task.FromResult(new ExecutionResult{Success=true,NodeResults=new System.Collections.Generic.Dictionary<string,NodeExecutionResult>{["inside"]=new(){Result=values}}})};
+        p.DisplayConfigs.Add(new(){DisplayName="计数",DisplayType=SubroutineDisplayType.Text,BoundDataSource=source,TextStyle=new()});
+        var result=new SubroutineTool().Run(p);
+        try{Assert.True(result.IsSuccess,result.ErrorMessage);var text=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.TextDisplayItem>(Assert.Single(result.Display.Items));Assert.Equal("7",Assert.Single(text.Texts).Content);}
+        finally{result.Resources?.Dispose();values.Resources?.Dispose();}
+    }
+
+    private sealed class IdentifiedDisplayResults : GenericToolResults
+    {
+        private readonly Guid _fieldId=Guid.NewGuid();
+        public override System.Collections.Generic.IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables=base.GetOutputVariables();
+            foreach(var variable in variables.Where(v=>v.Name=="Renamed"))variable.FieldId=_fieldId;
+            return variables;
+        }
+    }
+
 }

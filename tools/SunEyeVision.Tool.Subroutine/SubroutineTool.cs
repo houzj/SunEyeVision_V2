@@ -468,6 +468,8 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = displayItem.DisplayName,
+                    SourceWorkflowId = displayItem.BoundDataSource?.SourceWorkflowId,
+                    SourceFieldId = displayItem.BoundDataSource?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -801,6 +803,8 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = displayItem.DisplayName,
+                    SourceWorkflowId = displayItem.BoundDataSource?.SourceWorkflowId,
+                    SourceFieldId = displayItem.BoundDataSource?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,

@@ -358,6 +358,7 @@
                                             <controls:ParamBinding
                                                 AvailableDataSources="{Binding DataContext.SubroutineInternalSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
+                                                BindingSourceSelected="OnDisplayBindingChanged"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Height="26"/>

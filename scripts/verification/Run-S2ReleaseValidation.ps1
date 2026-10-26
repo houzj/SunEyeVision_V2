@@ -1,8 +1,8 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
-if($Track -in @('RuntimeKernel','RuntimeWorkflow','Components','Consumption','InputBoundaries','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
+if($Track -in @('RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','Components','Consumption','InputBoundaries','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
 if($Track -in @('FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
@@ -12,7 +12,8 @@ $attempt=1;while(Test-Path -LiteralPath (Join-Path $dir ('attempt-{0:d3}' -f $at
 $logDir=Join-Path $dir ('attempt-{0:d3}' -f $attempt)
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $references=@(Get-ChildItem -LiteralPath $product -File -Filter 'SunEyeVision*.dll')
-$references+=Get-Item (Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll')
+$sdkBlob=Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll'
+if(Test-Path -LiteralPath $sdkBlob){$references+=Get-Item -LiteralPath $sdkBlob}
 $references+=Get-Item (Join-Path $product 'halcondotnetxl.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Json.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Encodings.Web.dll')
@@ -29,6 +30,7 @@ if($Stage -eq 'S3' -and $Track -eq 'RoiBindings'){$source='O06RoiBindingCases.cs
 if($Stage -eq 'S3' -and $Track -eq 'Algorithm'){$source='O06AlgorithmCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeKernel'){$source='S3RuntimeKernelCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeWorkflow'){$source='S3RuntimeWorkflowCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'RuntimeCatalog'){$source='S3RuntimeCatalogCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Components'){$source='S3ComponentCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Consumption'){$source='S3ConsumptionCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'InputBoundaries'){$source='S3InputBoundaryCases.cs'}

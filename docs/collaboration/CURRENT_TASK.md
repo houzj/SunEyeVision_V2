@@ -195,3 +195,17 @@
 - 证据docs/collaboration/evidence/O06_RUNTIME_SETTING_BINDINGS_CHECKPOINT_20261027.json：8份源码增量、768发布项、192加载记录SHA核对一致。清单/Core编译身份082454c7加所列增量，不用随后提交号改写本次产物。原O06/目标JSON同步，硬性目标树未改，生成器697锚点且幂等。
 - 默认工具箱/参数窗口仍SDK入口，公共新编辑视图尚未进入真实窗口文档/调试生命周期；UI来源选择、本地ROI和新Runtime全局变量绑定仍未实现。ToolRegistry当前工具箱元数据只从SDK工具候选登记、Runtime登记也在其循环中，是移除根SDK工程前必须改掉的明确缺口；后续同时接中立工具目录及窗口/文档入口，不能只删除根工程或复制另一套Blob参数。
 - 根SDK Blob工程、旧模型与转换尚未全部退出；全部所需VM原件、显示XML完整图形文本消费、VS设计时和真实用户验收仍待完成。原视觉未通过反馈保留；本批功能/旧窗口回归不等于新窗口或VM视觉验收，M1/M2/M3均未完成，目标保持active。
+
+## 2026-10-27 Runtime独立工具目录与公共节点创建（最新）
+
+- Codex/main，基线b249e7f0ca8c2d4a6187e10c5aad869884ba0544，单工作树单产品写者。本轮实际解开Runtime登记必须位于SDK候选循环、发布声明必须有SDK工具消费方的缺口；不是只加一个未消费的描述接口。
+- 跨模块影响覆盖Contracts、SDK宿主元数据、Infrastructure目录事务/实际PluginManager/发布准入、公共Workflow节点工厂及构建清单生成规则。Runtime仍不引用SDK/WPF；目录声明只有名称、描述、语义图标键、分类和排序，不持有视觉资源或算法状态。未新增工程。
+- BlobTool通过IToolCatalogProvider/ToolCatalogDescriptor成为工具箱目录来源。ToolRegistry在SDK扫描前准备、校验并原子发布Runtime/Editor；公开存在/数量按完整目录计算，失败提案不污染已发布状态，重复登记幂等。现有SDK前端类型仍供尚未切换的旧UI，已不再是Runtime目录来源；它们仍须删除，不作为兼容设计保留。
+- ReleasePayloadAuthority分别校验SDK主程序集声明与Runtime生产者，将二者的实际ToolId集合供完整准入核对；Runtime无需旧SDK消费声明。存在同ToolId SDK前端时必须明确依赖同一Runtime，独立生产者冲突拒绝。清单生成也拒绝冲突；PE/文件SHA/组件角色/所需Runtime及可选Wpf门保留。
+- 公共src/Workflow/WorkflowNodeFactory无参数创建时默认已登记Runtime并初始化真实BlobSettings；当前UI自己的src/UI/Services/Workflow/WorkflowNodeFactory仍调用SDK CreateParameters，实际参数窗口/文档和调试入口尚未切换，不混称已完成用户窗口。
+- 新RuntimeCatalog轨道：正式发现/目录信息及来源、公共工厂创建→HALCON、修改实际设置→保存重开→HALCON、冲突拒绝/幂等共四组。部署额外同时移除旧SDK Blob DLL及Wpf，并显式删除候选清单中的SDK主程序集声明；正式EXE仍发现22工具，该四组通过，实际加载列表无SunEyeVision.Tool.BlobAnalysis及Blob.Wpf。证明生产目录/后端独立能力，不是最终源码仅两工程或清洁发布完成。
+- 串行UI blob-runtime-catalog-ui-001：0错误/6613警告124.19秒；全量blob-runtime-catalog-release-001：0错误/6491警告88.49秒。正式RuntimeCatalog001/002有SDK及无SDK/Wpf各四组，RuntimeKernel026十六组，RuntimeWorkflow010/009有无Wpf各十组，Components131九组/129无Wpf十组，Algorithm013九组，DocumentEditing034二十八组，原窗口FullChain059/058有无Wpf各九组通过。
+- ComponentDeployment038扩为十五项全通过；实际EXE准入/缺件拒绝/恢复正常，临时四文件及清单按原SHA还原。本批没有非预期验证失败；负向缺件/元数据拒绝仍有真实日志，不改写先前失败记录。
+- 证据docs/collaboration/evidence/O06_RUNTIME_CATALOG_CHECKPOINT_20261027.json：12份源码增量（包含installer/Release.Common.ps1）、768发布项、293加载记录SHA核对一致。Core/清单编译身份仍b249e7f0加列明增量，不用随后提交号改写产物。原O06/目标JSON同步、硬性树未改，697锚点与幂等成立。
+- 下一步直接接UI自己的节点创建、NodeOpenDecisionChain与真实窗口的文档/调试生命周期。现有ProductionEditorContext已经基于NodeConfigurationEditDraft/DocumentEditSession并携带Runtime配置，可评估直接复用事务能力；不要将BlobSettings转成SDK ToolParameters。同步来源选择/本地ROI/全局变量后删除根SDK工程与旧模型/转换，不能把独立目录作为M1完成。
+- 全部所需VM原件、显示XML完整图形文本消费、VS设计时和真实人工验收仍未完成；本轮没有视觉控件修改。保留原视觉未通过反馈，不将旧窗口回归或目录语义图标键等同于VM图标/外观验收。M1/M2/M3均未完成，目标active。

@@ -80,6 +80,18 @@ try {
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeWorkflow
     if($LASTEXITCODE -ne 0){throw '缺少Wpf时中立Runtime调度/引用/保存重开失败'}
     $results.Add([ordered]@{name='without-editor-runtime-workflow';passed=$true;scope='中立配置→实际调度器→HALCON→输入引用与同帧ROI→保存重开→取消与资源租约'})
+    $sdkBlob='plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll'
+    Move-IntoHold $sdkBlob
+    $runtimeOnly=[Text.Encoding]::UTF8.GetString($original)|ConvertFrom-Json -AsHashtable -Depth 100
+    $runtimeOnly.entries=@($runtimeOnly.entries|Where-Object path -ne $sdkBlob)
+    $runtimeOnly.expectedPluginAssemblies=@($runtimeOnly.expectedPluginAssemblies|Where-Object {$_ -ne 'SunEyeVision.Tool.BlobAnalysis'})
+    $runtimeOnly|ConvertTo-Json -Depth 100|Set-Content -LiteralPath $manifest -Encoding utf8
+    try {
+        Invoke-Probe 'without-sdk-frontend-and-editor-toolbox' $false
+        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeCatalog
+        if($LASTEXITCODE -ne 0){throw '移除SDK入口及Wpf后中立目录/默认节点创建/运行/保存失败'}
+        $results.Add([ordered]@{name='runtime-without-sdk-frontend-and-editor';passed=$true;scope='正式EXE工具箱→Runtime目录→公共节点工厂→强类型设置→HALCON→保存重开；SDK入口/Wpf均缺席'})
+    } finally {[IO.File]::WriteAllBytes($manifest,$original)}
     Restore-Held
 
     $runtime=@($baseline.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0})

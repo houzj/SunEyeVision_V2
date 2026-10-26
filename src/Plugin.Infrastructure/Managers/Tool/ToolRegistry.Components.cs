@@ -8,6 +8,7 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.SDK.Metadata;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
@@ -59,6 +60,39 @@ public static partial class ToolRegistry
         return (IToolDefinition)Activator.CreateInstance(component.EntryType)!;
     }
 
+    public static bool HasRuntime(string toolId)
+    {lock(_lock)return _runtimeComponents.ContainsKey(toolId);}
+
+    private static bool PrepareComponents(IReadOnlyList<ToolComponentRegistration>? components,
+        Dictionary<string,ToolComponentRegistration> runtimes,Dictionary<string,ToolComponentRegistration> editors,
+        Dictionary<string,ToolMetadata> metadata,Dictionary<string,Type> sdkTypes)
+    {
+        if(components is null||components.Count==0)return false;
+        _=ToolComponentCatalog.Prepare(components.Select(c=>c.Metadata));
+        var changed=false;
+        foreach(var component in components)
+        {
+            var target=component.Metadata.Role==ToolComponentRole.Runtime?runtimes:editors;
+            if(target.TryGetValue(component.Metadata.ToolId,out var existing))
+            {
+                if(existing!=component)throw new InvalidOperationException("Tool component identity is already owned: "+component.Metadata.ToolId);
+                continue;
+            }
+            ValidateComponentEntry(component);
+            if(component.Metadata.Role==ToolComponentRole.Runtime)
+            {
+                if(sdkTypes.TryGetValue(component.Metadata.ToolId,out var sdk)
+                    &&sdk.GetCustomAttribute<ToolAttribute>()?.RuntimeComponentId!=component.Metadata.ComponentId)
+                    throw new InvalidOperationException("Runtime ToolId conflicts with an independent SDK producer.");
+                var catalog=((IToolCatalogProvider)Activator.CreateInstance(component.EntryType)!).Catalog;
+                metadata[component.Metadata.ToolId]=new ToolMetadata{Id=component.Metadata.ToolId,DisplayName=catalog.DisplayName,
+                    Description=catalog.Description,Icon=catalog.IconKey,Category=catalog.Category,ToolType=component.EntryType,RuntimeCatalog=catalog};
+            }
+            target.Add(component.Metadata.ToolId,component);changed=true;
+        }
+        return changed;
+    }
+
     public static IToolSettingsView CreateSettingsView(string toolId,object settings,ToolSettingsViewOptions? options=null)
     {
         var draft=new ToolSettingsEditSession(CreateRuntime(toolId),settings);
@@ -88,6 +122,8 @@ public static partial class ToolRegistry
             if(!typeof(IToolDefinition).IsAssignableFrom(type))
                 throw new InvalidOperationException("Runtime must implement the neutral tool definition.");
             var definition=(IToolDefinition)Activator.CreateInstance(type)!;
+            if(definition is not IToolCatalogProvider catalog||catalog.Catalog is null)
+                throw new InvalidOperationException("Runtime must supply its own neutral catalog information.");
             if(definition.ToolId!=component.Metadata.ToolId)
                 throw new InvalidOperationException("Runtime entry ToolId differs from its component declaration.");
             var settings=definition.CreateSettings();

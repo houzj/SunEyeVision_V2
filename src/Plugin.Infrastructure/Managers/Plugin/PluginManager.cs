@@ -88,7 +88,12 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
             _logger.LogInfo($"开始从目录加载插件: {pluginDirectory}");
             LastAdmissionError=null;_lastRejectedCount=0;_releaseAuthority=null;_admissionFailures.Clear();
-            try{_releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);_components=_releaseAuthority.LoadToolComponents();}
+            try
+            {
+                _releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);_components=_releaseAuthority.LoadToolComponents();
+                var registration=_toolCatalog.PrepareRegistration(Array.Empty<Type>(),_components);
+                using var commit=registration.EnterCommit();commit.Publish();
+            }
             catch(Exception ex)
             {
                 LastAdmissionError=ex.GetType().Name+": "+ex.Message;

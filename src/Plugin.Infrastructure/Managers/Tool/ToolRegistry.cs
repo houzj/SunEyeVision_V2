@@ -76,6 +76,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 types=new(_toolTypes);metadata=new(_metadataCache);
                 properties=_typeCache.ToDictionary(item=>item.Key,item=>item.Value.ToDictionary(field=>field.Key,field=>field.Value.ToList()));
             }
+            var componentChanged=PrepareComponents(components,runtimes,editors,metadata,types);
             var candidates=new List<(Type Type,ToolAttribute Attribute)>();
             var ids=new HashSet<string>(StringComparer.Ordinal);
             foreach(var type in toolTypes)
@@ -83,6 +84,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 if(type is null||type.IsAbstract||!typeof(IToolPlugin).IsAssignableFrom(type))throw new ArgumentException("A concrete tool plugin type is required.");
                 var attribute=type.GetCustomAttribute<ToolAttribute>()??throw new ArgumentException("The candidate has no Tool attribute.");
                 if(string.IsNullOrWhiteSpace(attribute.Id)||!ids.Add(attribute.Id))throw new InvalidOperationException("Plugin assembly contains a missing or duplicate ToolId.");
+                if(runtimes.TryGetValue(attribute.Id,out var owner)&&attribute.RuntimeComponentId!=owner.Metadata.ComponentId)
+                    throw new InvalidOperationException("SDK ToolId conflicts with the Runtime producer: "+attribute.Id);
+                if(attribute.RuntimeComponentId is { } required&&(!runtimes.TryGetValue(attribute.Id,out var runtime)||runtime.Metadata.ComponentId!=required))
+                    throw new InvalidOperationException("Required runtime is missing or differs: "+attribute.Id);
                 if(types.TryGetValue(attribute.Id,out var current))
                 {
                     if(current!=type)throw new InvalidOperationException("ToolId is already owned by another type: "+attribute.Id);
@@ -103,15 +108,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 var discriminator=parameterType==typeof(GenericToolParameters)?"Generic":parameterType.GetCustomAttribute<JsonDerivedTypeAttribute>()?.TypeDiscriminator?.ToString()??parameterType.Name;
                 parameters.Add(new(parameterType,discriminator));
                 var id=candidate.Attribute.Id;
-                if(components is not null&&candidate.Attribute.RuntimeComponentId is { } required)
-                {
-                    var runtime=components.SingleOrDefault(c=>c.Metadata.ToolId==id&&c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime)
-                        ?? throw new InvalidOperationException("Required runtime is missing: "+id);
-                    if(runtime.Metadata.ComponentId!=required)throw new InvalidOperationException("Runtime component identity differs from the tool requirement.");
-                    ValidateComponentEntry(runtime);runtimes.Add(id,runtime);
-                    var editor=components.SingleOrDefault(c=>c.Metadata.ToolId==id&&c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Editor);
-                    if(editor is not null){ValidateComponentEntry(editor);editors.Add(id,editor);}
-                }
                 var fields=BuildPropertyMetadata(id,plugin);
                 foreach(var field in fields)
                 {
@@ -120,10 +116,11 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 }
                 var info=ToolMetadata.FromToolType(candidate.Type,id,candidate.Attribute.DisplayName,candidate.Attribute.Description,candidate.Attribute.Icon,candidate.Attribute.Category);
                 info.DebugWindowStyle=candidate.Attribute.DebugWindowStyle;
-                types.Add(id,candidate.Type);metadata.Add(id,info);
+                types.Add(id,candidate.Type);
+                if(!runtimes.ContainsKey(id))metadata.Add(id,info);
             }
             var parameterRegistration=ParameterTypeRegistry.PrepareRegistration(parameters);
-            return new PreparedRegistration(generation,types,metadata,properties,parameterRegistration,candidates.Count>0,runtimes,editors);
+            return new PreparedRegistration(generation,types,metadata,properties,parameterRegistration,candidates.Count>0||componentChanged,runtimes,editors);
         }
 
         private sealed class PreparedRegistration(long generation,Dictionary<string,Type> types,Dictionary<string,ToolMetadata> metadata,
@@ -249,7 +246,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             lock (_lock)
             {
-                return _toolTypes.ContainsKey(toolId);
+                return _metadataCache.ContainsKey(toolId);
             }
         }
 
@@ -262,7 +259,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             lock (_lock)
             {
-                var removed = _toolTypes.Remove(toolId);
+                var removed = _metadataCache.ContainsKey(toolId);
+                _toolTypes.Remove(toolId);
                 _runtimeComponents.Remove(toolId);_editorComponents.Remove(toolId);
                 _registrationGeneration++;
                 _metadataCache.Remove(toolId);
@@ -397,7 +395,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             lock (_lock)
             {
-                return _toolTypes.Count;
+                return _metadataCache.Count;
             }
         }
 

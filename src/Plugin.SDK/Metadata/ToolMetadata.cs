@@ -43,7 +43,10 @@ namespace SunEyeVision.Plugin.SDK.Metadata
 
         /// <summary>Read ordering from the same tool attribute as the rest of metadata.</summary>
         [JsonIgnore]
-        public int Order => ToolType == null ? 1000 : ((ToolAttribute?)Attribute.GetCustomAttribute(ToolType, typeof(ToolAttribute)))?.Order ?? 1000;
+        public int Order => RuntimeCatalog?.Order??(ToolType == null ? 1000 : ((ToolAttribute?)Attribute.GetCustomAttribute(ToolType, typeof(ToolAttribute)))?.Order ?? 1000);
+
+        [JsonIgnore]
+        public SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor? RuntimeCatalog {get;init;}
 
         /// <summary>
         /// 工具分类
@@ -147,6 +150,7 @@ namespace SunEyeVision.Plugin.SDK.Metadata
                 Icon = Icon,
                 Category = Category,
                 ToolType = ToolType,
+                RuntimeCatalog=RuntimeCatalog,
                 DebugWindowType = DebugWindowType,
                 NodeStyleType = NodeStyleType
             };

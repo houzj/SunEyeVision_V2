@@ -22,11 +22,12 @@ internal sealed class ReleasePayloadAuthority
     private readonly string _root;
     private readonly Dictionary<string,Entry> _entries=new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string,string> _tools=new(StringComparer.Ordinal);
+    private readonly Dictionary<string,string> _expectedTools=new(StringComparer.Ordinal);
     private readonly HashSet<string> _pluginPaths=new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _frameworkPayloadPaths=new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _frameworkNames=new(StringComparer.Ordinal);
     private readonly string _mode;
-    internal IReadOnlyDictionary<string,string> ExpectedTools=>_tools;
+    internal IReadOnlyDictionary<string,string> ExpectedTools=>_expectedTools;
 
     internal ReleasePayloadAuthority(string appRoot)
     {
@@ -72,6 +73,7 @@ internal sealed class ReleasePayloadAuthority
             if(!optional||File.Exists(path))VerifyFile(path,_entries[relative]);
         }
         VerifyHostProductIdentity(payload);
+        var runtimeRequirements=new Dictionary<string,string?>(StringComparer.Ordinal);
         foreach(var name in payload.GetProperty("expectedPluginAssemblies").EnumerateArray())
         {
             var simpleName=name.GetString();
@@ -86,10 +88,20 @@ internal sealed class ReleasePayloadAuthority
                 var id=tool.GetProperty("id").GetString();var type=tool.GetProperty("typeName").GetString();
                 if(string.IsNullOrWhiteSpace(id)||string.IsNullOrWhiteSpace(type)||!_tools.TryAdd(id,relative+":"+type))
                     throw new InvalidDataException("Invalid or duplicate declared ToolId: "+id);
+                runtimeRequirements.Add(id,tool.TryGetProperty("runtimeComponentId",out var required)?required.GetString():null);
             }
         }
         if(_pluginPaths.Count==0)throw new InvalidDataException("Release payload has no expected plugins.");
-        if(_components.Any(c=>!_tools.ContainsKey(c.Metadata.ToolId)))throw new InvalidDataException("Tool component has no published tool consumer.");
+        foreach(var tool in _tools)_expectedTools.Add(tool.Key,tool.Value);
+        foreach(var runtime in _components.Where(c=>c.Metadata.Role==ToolComponentRole.Runtime))
+        {
+            if(runtimeRequirements.TryGetValue(runtime.Metadata.ToolId,out var required)&&required!=runtime.Metadata.ComponentId)
+                throw new InvalidDataException("SDK producer conflicts with the required Runtime ToolId.");
+            _expectedTools[runtime.Metadata.ToolId]=runtime.Path+":"+runtime.EntryType;
+        }
+        foreach(var requirement in runtimeRequirements.Where(pair=>pair.Value is not null))
+            if(!_components.Any(c=>c.Metadata.Role==ToolComponentRole.Runtime&&c.Metadata.ToolId==requirement.Key&&c.Metadata.ComponentId==requirement.Value))
+                throw new InvalidDataException("Required Runtime declaration is missing.");
         var frameworks=payload.GetProperty("runtimeFrameworks");
         _mode=frameworks.GetProperty("deploymentMode").GetString()??"";
         if(_mode is not ("frameworkDependent" or "selfContained"))throw new InvalidDataException("Unknown framework deployment mode.");

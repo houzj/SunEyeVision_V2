@@ -305,6 +305,12 @@ function New-ReleasePayload {
     }
     $toolIds=@($entries|Where-Object{$ExpectedPluginAssemblies -contains [IO.Path]::GetFileNameWithoutExtension($_.path) -and $_.path -eq ('plugins/'+[IO.Path]::GetFileNameWithoutExtension($_.path)+'/'+[IO.Path]::GetFileName($_.path))}|ForEach-Object{$_.tools}|ForEach-Object{$_.id})
     if(@($toolIds|Sort-Object -Unique).Count -ne $toolIds.Count){throw 'Release contains duplicate declared ToolIds.'}
+    foreach($runtime in @($components|Where-Object role -eq 'Runtime')) {
+        $sdk=@($entries|ForEach-Object{if($_.Contains('tools')){$_.tools}}|Where-Object id -CEQ $runtime.toolId)
+        if($sdk.Count -gt 1 -or ($sdk.Count -eq 1 -and $sdk[0].runtimeComponentId -cne $runtime.componentId)) {
+            throw 'SDK producer conflicts with the required Runtime ToolId.'
+        }
+    }
     $frameworks=Get-ReleaseRuntimeFrameworks -AppPath $appRoot -Entries $entries -FrameworkOriginPath $FrameworkOriginPath
     [ordered]@{payloadSchemaVersion=1;buildId=$BuildId;sourceCommit=$SourceCommit;artifactVersion=$ArtifactVersion;expectedPluginAssemblies=@($ExpectedPluginAssemblies);runtimeFrameworks=$frameworks;entries=$entries}
 }

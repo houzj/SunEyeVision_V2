@@ -1,5 +1,8 @@
 ﻿# 独立工作区当前任务：节点样式、交互与连线移植
 
+2026-10-27 Group组合上下文批：基线37096aa0。ProductionEditorContext真正支持根+关联内部节点候选，统一Pending/校验/ForNodes/提交/发布重绑/丢弃；内部修改晚于冻结时保留新输入，任一对象失效注销整组。MainWindowGroupEditing按实际Group向内/完整对象身份授权，拒父与祖先回链。114全量0错误/1346警告/70.46秒；115最终产品全量0错误/755警告/23.27秒；116专项28通过，117扩大276通过，UI同版本SHA 9C79EFCE00FDE49C720963A38032F30204EF26C19667025C1E4F1075912992D6。根窗口已接Context，但GetRelatedDraft尚由回归消费，运行参数页无实际选择器调用，不称第五页已迁；原主方案集中同步这一限制。下一步必须实际R01-R11目录/曝光分组/关系持久化/型别编辑及装配，不能继续只打磨底座。现有IRuntimeParameterContract是可绑定参数目录而非全部可曝光字段（如Method缺失），需明确元数据承接；092两失败、实机/设计器/整窗人工验收仍待，整体active，不同步主仓。
+
+
 2026-10-27 Group运行参数取证/组合事务批：基线5a64cda3。复用指定原件沿GroupRunParam→ConfigData→ParamConfigDataBase→RunParamConfigDecorate确认动态参数克隆/分组/排序/嵌套与多关联；原主方案新增R01-R12逐项清单和文本SHA。DocumentEditProposal统一冻结多节点列表，文档宿主一次校验/发布，单节点只是同协议便利构造。110全量0错误/1346警告/56.95秒；111旧结构断言3失败的证据保留，按现行正式RebaseStructure协议拆分后112为77通过；113最终扩大271通过，Workflow同版本哈希1BD71DC067093929A02F6AC9E3FBAFF0CCA6F3DF98AAF0C269BFFA6998783BFE。真实第五页及组合编辑参与者尚未接入，不能称运行参数页完成；下一步按R清单继续。全目标active，不同步主仓，092旧图像两失败/原厂实机/设计器/人工验收仍待。
 
 

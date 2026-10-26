@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Workflow;
@@ -28,7 +28,7 @@ public partial class MainWindowViewModel
                 RefreshProductionPublication(session,publication,query);
                 if(node.Parameters is IOutputContractProvider outputs)
                     UpdateModuleResults(new ContractToolResults(outputs.GetOutputContract()),node.Name,node.ToolType,node.Id,node.Parameters);
-            },session.Editing);
+            },session.Editing,allowRelated:(workflowId,related)=>IsGroupInternalNode(session.Document,child,parentId,workflowId,related));
         // 绑定选择器确认只校验当前候选，确定/保存由文档宿主统一发布。
         query.CommitOutputConfiguration=id=>
         {
@@ -36,6 +36,34 @@ public partial class MainWindowViewModel
             if(!context.TryValidateEditor(out var error))throw new InvalidOperationException(error);
         };
         return context;
+    }
+    internal static bool IsGroupInternalNode(Solution document,SunEyeVision.Workflow.Workflow child,string parentId,string workflowId,WorkflowNodeBase node)
+    {
+        if(!document.Workflows.Contains(child))return false;
+        // A malformed back-link must never expose the owning flow or its ancestors.
+        var ancestors=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal){parentId};
+        var ancestry=new System.Collections.Generic.Queue<string>();ancestry.Enqueue(parentId);
+        while(ancestry.Count!=0)
+        {
+            var id=ancestry.Dequeue();
+            foreach(var ownerFlow in document.Workflows.Where(w=>w.Nodes.Any(n=>n.Parameters is SubroutineParameters && n.SubroutineId==id)))
+                if(ancestors.Add(ownerFlow.Id))ancestry.Enqueue(ownerFlow.Id);
+        }
+        var pending=new System.Collections.Generic.Queue<SunEyeVision.Workflow.Workflow>();
+        var visited=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+        pending.Enqueue(child);
+        while(pending.Count!=0)
+        {
+            var current=pending.Dequeue();
+            if(ancestors.Contains(current.Id)||!visited.Add(current.Id))continue;
+            if(current.Id==workflowId)return current.Nodes.Contains(node);
+            foreach(var owner in current.Nodes.Where(n=>n.Parameters is SubroutineParameters && !string.IsNullOrEmpty(n.SubroutineId)))
+            {
+                var nested=document.Workflows.SingleOrDefault(w=>w.Id==owner.SubroutineId);
+                if(nested!=null)pending.Enqueue(nested);
+            }
+        }
+        return false;
     }
     internal void AttachGroupEditor(DefaultDebugWindow window,ProductionEditorContext context)
     {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -41,7 +41,19 @@ namespace SunEyeVision.Tool.Subroutine.Views
             ViewModel?.Dispose();
             ViewModel=new SubroutineParameterDialogViewModel(_subroutineId,_subroutineName,_nodeId,queryService,_internalSources,parameters,_onOutputsChanged);
             DataContext=ViewModel;
+            if(RunParameterContent.Content is ISubroutineRunParameterEditor run)run.BindParameters(parameters);
         }
-        public void Dispose()=>ViewModel?.Dispose();
+        public void SetRunParameterEditor(UserControl editor)
+        {
+            Dispatcher.VerifyAccess();
+            if(RunParameterContent.Content is IDisposable previous)previous.Dispose();
+            RunParameterContent.Content=editor;
+        }
+        public void Dispose()
+        {
+            ViewModel?.Dispose();
+            if(RunParameterContent.Content is IDisposable run)run.Dispose();
+            RunParameterContent.Content=null;
+        }
     }
 }

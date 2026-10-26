@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
@@ -44,7 +44,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// 自定义无边框窗口 Chrome：CaptionHeight 覆盖标题栏（可拖动），边缘可缩放，圆角。
         /// 用 WindowChrome 而非 AllowsTransparency，保证 Owner 层叠正常（不被主窗口遮挡）。
         /// </summary>
-        public static System.Windows.Shell.WindowChrome DebugWindowChrome { get; } = new System.Windows.Shell.WindowChrome
+        // WindowChrome拥有Dispatcher；每个窗口取独立实例，不能静态共享跨STA对象。
+        public static System.Windows.Shell.WindowChrome DebugWindowChrome => new System.Windows.Shell.WindowChrome
         {
             CaptionHeight = 32,
             ResizeBorderThickness = new Thickness(6),

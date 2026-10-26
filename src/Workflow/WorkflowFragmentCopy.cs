@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -136,6 +136,12 @@ public static class WorkflowFragmentCopy
                 if (mapped.Name != null) json[nameof(data.SourceNodeName)] = mapped.Name;
                 return json.Deserialize<AvailableDataSource>(WorkflowSerializationOptions.Compact)!;
             }
+            if (value is SunEyeVision.Plugin.SDK.Models.SubroutineParameterTarget target)
+            {
+                var mapped = Remap(target.NodeId, target.WorkflowId, scope);
+                target.NodeId = mapped.Node; target.WorkflowId = mapped.Scope;
+                return target;
+            }
             if (value is BindingSourceIdentity identity)
             {
                 var mapped = Remap(identity.SourceNodeId, identity.WorkflowId, scope);
@@ -175,7 +181,7 @@ public static class WorkflowFragmentCopy
             foreach (var property in value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanRead && p.GetIndexParameters().Length == 0 && p.GetCustomAttribute<JsonIgnoreAttribute>() == null))
             {
-                var childScope = value is SubroutineParameters sub && property.Name is nameof(sub.Outputs) or nameof(sub.DisplayConfigs)
+                var childScope = value is SubroutineParameters sub && property.Name is nameof(sub.Outputs) or nameof(sub.DisplayConfigs) or nameof(sub.RunParameterGroups)
                     ? scope.Children.SingleOrDefault(c => c.TargetId == sub.SubroutineId) ?? scope : scope;
                 var old = property.GetValue(value); var mapped = Visit(old, childScope, seen);
                 if (!ReferenceEquals(old, mapped) && property.CanWrite) property.SetValue(value, mapped);

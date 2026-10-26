@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -33,8 +33,18 @@ namespace SunEyeVision.Tool.ImageThreshold
     /// 多态序列化（rule-010）：使用 [JsonDerivedType] 标识参数类型。
     /// </remarks>
     [JsonDerivedType(typeof(ImageThresholdParameters), "ImageThreshold")]
-    public class ImageThresholdParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract
+    public class ImageThresholdParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IGroupParameterContract
     {
+        public IReadOnlyList<GroupParameterDescriptor> GetGroupParameters() => new[]
+        { new GroupParameterDescriptor(nameof(Method), "阈值方法", typeof(ThresholdMethod), new[]
+            {
+                new GroupParameterChoice(ThresholdMethod.Binary,"固定阈值"),new GroupParameterChoice(ThresholdMethod.BinaryInv,"反二值化"),
+                new GroupParameterChoice(ThresholdMethod.Trunc,"截断"),new GroupParameterChoice(ThresholdMethod.ToZero,"取零"),
+                new GroupParameterChoice(ThresholdMethod.ToZeroInv,"反取零"),new GroupParameterChoice(ThresholdMethod.Otsu,"大津法(Otsu)"),
+                new GroupParameterChoice(ThresholdMethod.Triangle,"三角形法(Triangle)"),new GroupParameterChoice(ThresholdMethod.AdaptiveMean,"自适应均值"),
+                new GroupParameterChoice(ThresholdMethod.AdaptiveGaussian,"自适应高斯"),new GroupParameterChoice(ThresholdMethod.InRange,"范围阈值")
+            }) };
+
         public IReadOnlyList<InputSlotDescriptor> GetInputSlots() => new[]
         {
             new InputSlotDescriptor(nameof(InspectionRois), "检测区域", InputSlotKind.Collection,

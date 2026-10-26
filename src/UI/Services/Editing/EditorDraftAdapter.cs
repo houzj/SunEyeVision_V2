@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -73,6 +73,8 @@ public sealed class EditorDraftAdapter
                 throw new InvalidOperationException("Group输入身份或类型无效。");
             if(parameters.Outputs.Any(o=>o.FieldId==Guid.Empty||o.ParamType==null)||parameters.Outputs.Select(o=>o.FieldId).Distinct().Count()!=parameters.Outputs.Count)
                 throw new InvalidOperationException("Group输出身份或类型无效。");
+            var result=parameters.Validate();
+            if(!result.IsValid)throw new InvalidOperationException(result.Errors.First());
             if(parameters.LoopConfig.LoopInterval<0)throw new InvalidOperationException("循环间隔不能为负数。");
         };
         return adapter;

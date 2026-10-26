@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
@@ -10,8 +10,17 @@ using SunEyeVision.Plugin.SDK.Models.Communication;
 namespace SunEyeVision.Tool.ProtocolParse;
 
 [JsonDerivedType(typeof(ProtocolParseParameters), "ProtocolParseParameters")]
-public class ProtocolParseParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, IBindingInputProvider
+public class ProtocolParseParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged, IBindingInputProvider, IGroupParameterContract
 {
+    public IReadOnlyList<GroupParameterDescriptor> GetGroupParameters() => new[]
+    {
+        new GroupParameterDescriptor(nameof(Mode), "解析模式", typeof(string), new[]{new GroupParameterChoice("Text","文本解析"),new GroupParameterChoice("Bytes","字节解析")}),
+        new GroupParameterDescriptor(nameof(Separator), "分隔符", typeof(string)),
+        new GroupParameterDescriptor(nameof(InputFormat), "输入格式", typeof(string), new[]{new GroupParameterChoice("Hex","HEX文本"),new GroupParameterChoice("Text","字符文本")}),
+        new GroupParameterDescriptor(nameof(StringEncoding), "字符串编码", typeof(string), new[]{new GroupParameterChoice("UTF8","UTF-8"),new GroupParameterChoice("ASCII","ASCII")}),
+        new GroupParameterDescriptor(nameof(AsciiData), "ASCII数据", typeof(bool))
+    };
+
     public IReadOnlyList<BindingInputReference> GetBindingInputs() => new[] { new BindingInputReference("InputText", "解析内容", () => InputText, value => InputText = value, SunEyeVision.Plugin.SDK.UI.Controls.Communication.CommunicationBindingTypes.Parse,
         InterpretationKey: Mode == "Bytes" ? $"Bytes/{InputFormat}/{AsciiData}/{StringEncoding}" : "Text/UTF8", ValidateLiteral: ValidateLiteral) { Owner = this, MemberPath = nameof(InputText) } };
     private string? ValidateLiteral(string text)

@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System;
 using System.Linq;
 using System.Threading;
@@ -259,7 +259,10 @@ public sealed class ProductionEditorContextTests
     public void Invalid_numeric_blocks_save_without_rewrite_and_keeps_pending_text() => Sta(() =>
     {
         var f = NumericFixture();
-        var directory = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "../../fixtures/numeric-save"));
+        var validationRoot = Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? System.IO.Path.GetFullPath(System.IO.Path.Combine(
+            typeof(ProductionEditorContextTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a => a.Key == "HostDebugRoot").Value!,
+            "..", "..", "_validation", "NodeEditing"));
+        var directory = System.IO.Path.Combine(validationRoot, "numeric-save");
         System.IO.Directory.CreateDirectory(directory);
         var path = System.IO.Path.Combine(directory, Guid.NewGuid().ToString("N") + ".solution");
         System.IO.File.WriteAllText(path, "original");

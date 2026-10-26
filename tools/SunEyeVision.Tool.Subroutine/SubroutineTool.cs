@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -1055,11 +1055,11 @@ namespace SunEyeVision.Tool.Subroutine
                 queryService, subroutineInternalSources,
                 parameters, onOutputsChanged);
 
-            // 子程序为多 Tab 参数面板（输入/输出/显示/循环），列较多，需比默认 400x550 更宽。
+            // Group五页参数面板按原件中文窗口尺寸组装。
             // 子程序控件不继承 ToolDebugControlBase，DefaultDebugWindow 不会自动读取首选尺寸，此处显式指定。
             try
             {
-                var window=new DefaultDebugWindow(control){Owner=owner,Width=520,Height=600};
+                var window=new DefaultDebugWindow(control){Owner=owner,Width=1100,Height=680};
                 window.Closed+=(_,_)=>control.Dispose();
                 return window;
             }

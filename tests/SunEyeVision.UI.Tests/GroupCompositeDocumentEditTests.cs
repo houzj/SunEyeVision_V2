@@ -5,7 +5,6 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Tool.ProtocolParse;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services.Editing;
-using SunEyeVision.UI.Shell.Windows;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -52,7 +51,7 @@ public sealed class GroupCompositeDocumentEditTests
         var rebinds = 0;
         using var context = new ProductionEditorContext(f.Session.Host, "parent", formal, () => true,
             _ => rebinds++, documentEdits: f.Session,
-            allowRelated: (flow, node) => MainWindowViewModel.IsGroupInternalNode(f.Model, internalFlow, "parent", flow, node));
+            allowRelated: (flow, node) => WorkflowOwnership.IsInternalNode(f.Model, internalFlow, "parent", flow, node));
         var first = context.GetRelatedDraft("child", internalFlow.Nodes[0], p => EditorDraftAdapter.ForProduction(p).Validate());
         var second = context.GetRelatedDraft("child", internalFlow.Nodes[1], p => EditorDraftAdapter.ForProduction(p).Validate());
         Assert.Same(first, context.GetRelatedDraft("child", internalFlow.Nodes[0], _ => throw new Exception("must reuse registered validator")));
@@ -78,7 +77,7 @@ public sealed class GroupCompositeDocumentEditTests
         var flow = f.Model.Workflows[1]; var group = f.Model.Workflows[0].Nodes[0];
         using var context = new ProductionEditorContext(f.Session.Host, "parent", group, () => true, _ => { },
             documentEdits: f.Session,
-            allowRelated: (id, node) => MainWindowViewModel.IsGroupInternalNode(f.Model, flow, "parent", id, node));
+            allowRelated: (id, node) => WorkflowOwnership.IsInternalNode(f.Model, flow, "parent", id, node));
         Assert.Throws<InvalidOperationException>(() => context.GetRelatedDraft("parent", group, _ => { }));
         var imposter = new WorkflowNodeBase("same", "fake", "fake", "ProtocolParse");
         Assert.Throws<InvalidOperationException>(() => context.GetRelatedDraft("child", imposter, _ => { }));
@@ -95,7 +94,7 @@ public sealed class GroupCompositeDocumentEditTests
         var f = Fixture(); f.Session.Unregister(f.Editor.ScopeId);
         var flow = f.Model.Workflows[1];
         using var context = new ProductionEditorContext(f.Session.Host, "parent", f.Model.Workflows[0].Nodes[0], () => true, _ => { },
-            documentEdits: f.Session, allowRelated: (id, node) => MainWindowViewModel.IsGroupInternalNode(f.Model, flow, "parent", id, node));
+            documentEdits: f.Session, allowRelated: (id, node) => WorkflowOwnership.IsInternalNode(f.Model, flow, "parent", id, node));
         var candidate = context.GetRelatedDraft("child", flow.Nodes[0], _ => throw new InvalidOperationException("invalid internal editor"));
         ((SubroutineParameters)context.DraftNode.Parameters).LoopConfig.LoopInterval = 17;
         ((ProtocolParseParameters)candidate.Parameters).Separator = ";";
@@ -111,13 +110,13 @@ public sealed class GroupCompositeDocumentEditTests
         var nested = new SunEyeVision.Workflow.Workflow("nested", "nested") { IsSubroutine = true };
         nested.Nodes.Add(new("same", "nested item", "nested item", "ProtocolParse"));
         child.Nodes[0].SubroutineId = nested.Id; child.Nodes[0].Parameters = new SubroutineParameters { SubroutineId = nested.Id }; f.Model.Workflows.Add(nested);
-        Assert.True(MainWindowViewModel.IsGroupInternalNode(f.Model, child, "parent", nested.Id, nested.Nodes[0]));
-        Assert.False(MainWindowViewModel.IsGroupInternalNode(f.Model, child, "parent", "child", nested.Nodes[0]));
-        Assert.False(MainWindowViewModel.IsGroupInternalNode(f.Model, child, "parent", "parent", f.Model.Workflows[0].Nodes[0]));
+        Assert.True(WorkflowOwnership.IsInternalNode(f.Model, child, "parent", nested.Id, nested.Nodes[0]));
+        Assert.False(WorkflowOwnership.IsInternalNode(f.Model, child, "parent", "child", nested.Nodes[0]));
+        Assert.False(WorkflowOwnership.IsInternalNode(f.Model, child, "parent", "parent", f.Model.Workflows[0].Nodes[0]));
         nested.Nodes[0].SubroutineId = "parent"; nested.Nodes[0].Parameters = new SubroutineParameters { SubroutineId = "parent" };
-        Assert.False(MainWindowViewModel.IsGroupInternalNode(f.Model, child, "parent", "parent", f.Model.Workflows[0].Nodes[0]));
+        Assert.False(WorkflowOwnership.IsInternalNode(f.Model, child, "parent", "parent", f.Model.Workflows[0].Nodes[0]));
         nested.Nodes[0].SubroutineId = child.Id;
-        Assert.False(MainWindowViewModel.IsGroupInternalNode(f.Model, child, "parent", "missing", nested.Nodes[0]));
+        Assert.False(WorkflowOwnership.IsInternalNode(f.Model, child, "parent", "missing", nested.Nodes[0]));
     }
 
     private sealed class PreparationCallback(Action callback) : IDocumentEditParticipant
@@ -136,7 +135,7 @@ public sealed class GroupCompositeDocumentEditTests
         var f = Fixture(); f.Session.Unregister(f.Editor.ScopeId); var flow = f.Model.Workflows[1];
         var rebinds = 0;
         using var context = new ProductionEditorContext(f.Session.Host, "parent", f.Model.Workflows[0].Nodes[0], () => true, _ => rebinds++,
-            documentEdits: f.Session, allowRelated: (id, node) => MainWindowViewModel.IsGroupInternalNode(f.Model, flow, "parent", id, node));
+            documentEdits: f.Session, allowRelated: (id, node) => WorkflowOwnership.IsInternalNode(f.Model, flow, "parent", id, node));
         var candidate = context.GetRelatedDraft("child", flow.Nodes[0], p => EditorDraftAdapter.ForProduction(p).Validate());
         ((ProtocolParseParameters)candidate.Parameters).Separator = "saved";
         var callback = new PreparationCallback(() => ((ProtocolParseParameters)candidate.Parameters).Separator = "newer");

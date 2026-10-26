@@ -28,7 +28,7 @@ public partial class MainWindowViewModel
                 RefreshProductionPublication(session,publication,query);
                 if(node.Parameters is IOutputContractProvider outputs)
                     UpdateModuleResults(new ContractToolResults(outputs.GetOutputContract()),node.Name,node.ToolType,node.Id,node.Parameters);
-            },session.Editing,allowRelated:(workflowId,related)=>IsGroupInternalNode(session.Document,child,parentId,workflowId,related));
+            },session.Editing,allowRelated:(workflowId,related)=>WorkflowOwnership.IsInternalNode(session.Document,child,parentId,workflowId,related));
         // 绑定选择器确认只校验当前候选，确定/保存由文档宿主统一发布。
         query.CommitOutputConfiguration=id=>
         {
@@ -37,38 +37,15 @@ public partial class MainWindowViewModel
         };
         return context;
     }
-    internal static bool IsGroupInternalNode(Solution document,SunEyeVision.Workflow.Workflow child,string parentId,string workflowId,WorkflowNodeBase node)
-    {
-        if(!document.Workflows.Contains(child))return false;
-        // A malformed back-link must never expose the owning flow or its ancestors.
-        var ancestors=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal){parentId};
-        var ancestry=new System.Collections.Generic.Queue<string>();ancestry.Enqueue(parentId);
-        while(ancestry.Count!=0)
-        {
-            var id=ancestry.Dequeue();
-            foreach(var ownerFlow in document.Workflows.Where(w=>w.Nodes.Any(n=>n.Parameters is SubroutineParameters && n.SubroutineId==id)))
-                if(ancestors.Add(ownerFlow.Id))ancestry.Enqueue(ownerFlow.Id);
-        }
-        var pending=new System.Collections.Generic.Queue<SunEyeVision.Workflow.Workflow>();
-        var visited=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
-        pending.Enqueue(child);
-        while(pending.Count!=0)
-        {
-            var current=pending.Dequeue();
-            if(ancestors.Contains(current.Id)||!visited.Add(current.Id))continue;
-            if(current.Id==workflowId)return current.Nodes.Contains(node);
-            foreach(var owner in current.Nodes.Where(n=>n.Parameters is SubroutineParameters && !string.IsNullOrEmpty(n.SubroutineId)))
-            {
-                var nested=document.Workflows.SingleOrDefault(w=>w.Id==owner.SubroutineId);
-                if(nested!=null)pending.Enqueue(nested);
-            }
-        }
-        return false;
-    }
     internal void AttachGroupEditor(DefaultDebugWindow window,ProductionEditorContext context)
     {
         var control=window.ParameterControl;
-        if(control is not ISubroutineParameterEditor)throw new InvalidOperationException("Group控件未实现候选参数重绑定合同。");
+        if(control is not ISubroutineParameterEditor groupEditor)throw new InvalidOperationException("Group控件未实现候选参数重绑定合同。");
+        var session=DocumentManager.Session??throw new InvalidOperationException("Group编辑文档已经关闭。");
+        var child=session.Document.Workflows.Single(w=>w.Id==((WorkflowNodeBase)context.FormalNode).SubroutineId);
+        var page=new GroupRunParametersControl(new GroupRunParameterSession(context,session.Document,
+            (id,node)=>WorkflowOwnership.IsInternalNode(session.Document,child,context.Identity.WorkflowId,id,node)));
+        groupEditor.SetRunParameterEditor(page);
         ToolEditorCommit.AttachDraftContext(control,context);
         context.PrepareView=()=>ToolEditorCommit.TryPrepare(control,out var error)?null:error;
         context.HasPendingViewEdits=()=>ToolEditorCommit.HasPendingEdits(control);

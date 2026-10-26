@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.UI.Windows;
@@ -9,6 +9,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     public interface ISubroutineParameterEditor : IDisposable
     {
         void BindParameters(SubroutineParameters parameters,IDataSourceQueryService? queryService);
+        void SetRunParameterEditor(System.Windows.Controls.UserControl editor);
+    }
+
+    public interface ISubroutineRunParameterEditor
+    {
+        void BindParameters(SubroutineParameters parameters);
     }
 
     public interface ISubroutineDebugService

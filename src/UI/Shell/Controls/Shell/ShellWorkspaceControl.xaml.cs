@@ -662,13 +662,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             string nodeDispName)
         {
             var identity=(parentWorkflowId,subroutineId,nodeId);
-            if (_openSubroutineDebugWindow?.IsLoaded == true)
+            if (_openSubroutineDebugWindow is not null)
             {
                 if (_openSubroutineDebugIdentity == identity)
                 { _openSubroutineDebugWindow.Activate(); _openSubroutineDebugWindow.Focus(); return; }
                 var previous=_openSubroutineDebugWindow;
                 previous.Close();
-                if (previous.IsLoaded) { previous.Activate();return; }
+                if (ReferenceEquals(_openSubroutineDebugWindow,previous)) { previous.Activate();return; }
             }
             if (_viewModel?.CanEditWorkflowCanvas != true) return;
             ISubroutineParameterEditor? editor=null;

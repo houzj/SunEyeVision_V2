@@ -28,11 +28,11 @@ public sealed class GroupRunParameterPageTests
         public readonly NodeConfigurationEditHost Host;
         public readonly ProductionEditorContext Context;
         public readonly GroupRunParameterSession Session;
-        public Fixture(Action<SubroutineParameters>? bind=null)
+        public Fixture(Action<SubroutineParameters>? bind=null,string secondMode="Text")
         {
             Parent.Nodes.Add(Owner);
             Child.Nodes.Add(new("first","解析1","解析1","ProtocolParse"){Parameters=new ProtocolParseParameters()});
-            Child.Nodes.Add(new("second","解析2","解析2","ProtocolParse"){Parameters=new ProtocolParseParameters()});
+            Child.Nodes.Add(new("second","解析2","解析2","ProtocolParse"){Parameters=new ProtocolParseParameters{Mode=secondMode,InputText=secondMode=="Bytes"?"01":""}});
             Model.Workflows.Add(Parent);Model.Workflows.Add(Child);Host=new(Model);
             bool Allowed(string id,WorkflowNodeBase node)=>WorkflowOwnership.IsInternalNode(Model,Child,Parent.Id,id,node);
             Context=new(Host,Parent.Id,Owner,()=>true,n=>bind?.Invoke((SubroutineParameters)n.Parameters),allowRelated:Allowed);
@@ -139,10 +139,10 @@ public sealed class GroupRunParameterPageTests
         var hostRoot=typeof(GroupRunParameterPageTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
         var assembly=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(hostRoot,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
         ISubroutineParameterEditor? editor=null;
-        using var f=new Fixture(p=>editor!.BindParameters(p,null));
+        using var f=new Fixture(p=>editor!.BindParameters(p,null),secondMode:"Bytes");
         var group=f.Session.AddGroup();group.Name="通信设置";var item=f.Session.Add(group,f.Source("first",nameof(ProtocolParseParameters.Separator)));item.Name="协议分隔符";
         var mode=f.Session.Add(group,f.Source("first",nameof(ProtocolParseParameters.Mode)));
-        f.Session.AddTarget(mode,f.Source("second",nameof(ProtocolParseParameters.InputFormat)));
+        f.Session.AddTarget(mode,f.Source("second",nameof(ProtocolParseParameters.Mode)));
         var control=(UserControl)Activator.CreateInstance(assembly.GetType("SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl",true)!,new object?[]{"child","Group1","group",null,null,f.Context.DraftNode.Parameters,null})!;
         editor=(ISubroutineParameterEditor)control;using var page=new GroupRunParametersControl(f.Session);editor.SetRunParameterEditor(page);
         try
@@ -159,7 +159,7 @@ public sealed class GroupRunParameterPageTests
                 control.Resources.MergedDictionaries.Add(new(){Source=new Uri($"/SunEyeVision.UI;component/Themes/{theme}/{theme}Theme.xaml",UriKind.Relative)});
                 control.UpdateLayout();control.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);control.UpdateLayout();
                 var tree=Descendants<TreeView>(page).Single();var groupRow=(TreeViewItem)tree.Items[0];groupRow.IsExpanded=true;((TreeViewItem)groupRow.Items[0]).IsSelected=true;
-                var edit=Descendants<ToggleButton>(page).Single(b=>Equals(b.Content,"编辑"));edit.IsChecked=true;control.UpdateLayout();
+                Assert.Single(Descendants<Button>(page),b=>Equals(b.Content,"编辑"));control.UpdateLayout();
                 Assert.True(page.ActualWidth>900);Assert.True(page.ActualHeight>450);
                 var image=new RenderTargetBitmap(1080,580,96,96,PixelFormats.Pbgra32);image.Render(control);
                 var root=Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing validation output root");Directory.CreateDirectory(root);
@@ -169,10 +169,10 @@ public sealed class GroupRunParameterPageTests
             ((TreeViewItem)parameterGroup.Items[1]).IsSelected=true;control.UpdateLayout();
             var optionEditor=Descendants<ComboBox>(page).Single(c=>c.ItemsSource is System.Collections.Generic.IReadOnlyList<GroupParameterChoice>);
             Assert.Null(optionEditor.SelectedValue);
-            Assert.Equal("Hex",((ProtocolParseParameters)f.Session.Resolve(mode)[1].Node.Parameters).InputFormat);
-            Assert.Single(optionEditor.Items);optionEditor.SelectedValue="Text";
+            Assert.Equal("Bytes",((ProtocolParseParameters)f.Session.Resolve(mode)[1].Node.Parameters).Mode);
+            Assert.Equal(2,optionEditor.Items.Count);optionEditor.SelectedValue="Text";
             control.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.DataBind);
-            Assert.Equal("Text",((ProtocolParseParameters)f.Session.Resolve(mode)[1].Node.Parameters).InputFormat);
+            Assert.Equal("Text",((ProtocolParseParameters)f.Session.Resolve(mode)[1].Node.Parameters).Mode);
             ((TreeViewItem)parameterGroup.Items[0]).IsSelected=true;
             f.Session.Write(item,";");Assert.True(ToolEditorCommit.TryCommit(control,out var message),message);
             Assert.Equal(";",((ProtocolParseParameters)f.Child.Nodes[0].Parameters).Separator);

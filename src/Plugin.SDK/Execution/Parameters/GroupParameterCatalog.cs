@@ -6,10 +6,11 @@ using System.Text.Json.Serialization;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 
+public enum GroupParameterEditorKind { Auto, Numeric, Enumeration, Boolean, SingleChoice, Region, FilePath, Model, Text, Composite }
 public sealed record GroupParameterChoice(object Value,string DisplayName)
 { public override string ToString()=>DisplayName; }
 public sealed record GroupParameterDescriptor(string PropertyName, string DisplayName, Type ValueType,
-    IReadOnlyList<GroupParameterChoice>? Choices = null);
+    IReadOnlyList<GroupParameterChoice>? Choices = null, GroupParameterEditorKind EditorKind = GroupParameterEditorKind.Auto);
 /// <summary>Additional exposure declarations owned by a tool, including enum and complex editor parameters.</summary>
 public interface IGroupParameterContract
 {
@@ -28,15 +29,26 @@ public static class GroupParameterCatalog
         var result = new List<GroupParameterDescriptor>();
         foreach (var item in declared)
         {
-            var verified = DescribeProperty(parameters, item.PropertyName, item.DisplayName, item.ValueType) with { Choices=item.Choices };
+            var verified = DescribeProperty(parameters, item.PropertyName, item.DisplayName, item.ValueType) with { Choices=item.Choices, EditorKind=item.EditorKind };
             if(item.Choices is { } choices && (choices.Count==0 || choices.Any(c=>c is null || c.Value is null || !item.ValueType.IsInstanceOfType(c.Value) || string.IsNullOrWhiteSpace(c.DisplayName)) ||
                 choices.Select(c=>c.Value).Distinct().Count()!=choices.Count))throw new InvalidOperationException("Group参数选项声明无效。");
             var old = result.SingleOrDefault(d => d.PropertyName == verified.PropertyName);
             if (old is not null && old.ValueType != verified.ValueType) throw new InvalidOperationException("Group参数声明类型冲突。");
             if (old is null) result.Add(verified);
-            else if(item.Choices is not null)result[result.IndexOf(old)]=verified;
+            else if(item.Choices is not null||item.EditorKind!=GroupParameterEditorKind.Auto)result[result.IndexOf(old)]=verified;
         }
         return result;
+    }
+    public static GroupParameterEditorKind Classify(GroupParameterDescriptor descriptor)
+    {
+        if(descriptor.EditorKind!=GroupParameterEditorKind.Auto)return descriptor.EditorKind;
+        var type=descriptor.ValueType;
+        if(descriptor.Choices is not null||type.IsEnum)return GroupParameterEditorKind.Enumeration;
+        if(type==typeof(bool))return GroupParameterEditorKind.Boolean;
+        if(type==typeof(int)||type==typeof(long)||type==typeof(float)||type==typeof(double)||type==typeof(decimal))return GroupParameterEditorKind.Numeric;
+        if(type==typeof(RoiCollection))return GroupParameterEditorKind.Region;
+        if(type==typeof(string))return GroupParameterEditorKind.Text;
+        return GroupParameterEditorKind.Composite;
     }
     public static void ValidateDeclaredChoices(ToolParameters parameters)
     {

@@ -18,17 +18,19 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             var result = base.Validate();
             if (RunParameterGroups is null) { result.AddError("运行参数分组缺失。"); return result; }
             var groups = RunParameterGroups.ToArray();
-            if (groups.Any(g => g is null || g.Id == Guid.Empty || string.IsNullOrWhiteSpace(g.Name) || g.Parameters is null))
+            if (groups.Any(g => g is null || g.Id == Guid.Empty || string.IsNullOrWhiteSpace(g.Name) || g.Name.Length > SubroutineRunParameterGroup.MaximumNameLength || g.Parameters is null))
             { result.AddError("运行参数分组身份或名称无效。"); return result; }
             if (groups.Select(g => g.Id).Distinct().Count() != groups.Length || groups.Select(g => g.Name).Distinct(StringComparer.Ordinal).Count() != groups.Length)
                 result.AddError("运行参数分组身份或名称重复。");
             var items = groups.SelectMany(g => g.Parameters).ToArray();
-            if (items.Any(i => i is null || i.Id == Guid.Empty || string.IsNullOrWhiteSpace(i.Name) || i.Targets is null))
+            if (items.Any(i => i is null || i.Id == Guid.Empty || string.IsNullOrWhiteSpace(i.Name) || i.Name.Length > SubroutineRunParameterGroup.MaximumNameLength || i.Targets is null))
             { result.AddError("运行参数身份或名称无效。"); return result; }
             if (items.Select(i => i.Id).Distinct().Count() != items.Length || items.Select(i => i.Name).Distinct(StringComparer.Ordinal).Count() != items.Length)
                 result.AddError("运行参数身份或名称重复。");
             foreach (var item in items)
             {
+                if(item.SourceToolType is null||item.SourceParameterName is null||string.IsNullOrEmpty(item.SourceToolType)!=string.IsNullOrEmpty(item.SourceParameterName)||!Enum.IsDefined(item.SourceEditorKind))
+                    result.AddError("运行参数原模块声明无效。");
                 if (item.Targets.Any(t => t is null || string.IsNullOrWhiteSpace(t.WorkflowId) || string.IsNullOrWhiteSpace(t.NodeId) ||
                     (t.ExposedParameterId is { } id ? id == Guid.Empty || !string.IsNullOrEmpty(t.PropertyName) : string.IsNullOrWhiteSpace(t.PropertyName))))
                 { result.AddError("运行参数关联身份无效。"); continue; }

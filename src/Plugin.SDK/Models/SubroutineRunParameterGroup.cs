@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Plugin.SDK.Models;
 
 /// <summary>Ordered Group parameter presentation. Values remain in the related module configuration.</summary>
 public sealed class SubroutineRunParameterGroup : ObservableObject
 {
+    public const int MaximumNameLength = 31;
     public Guid Id { get; set; } = Guid.NewGuid();
     private string _name = "分组0";
     public string Name { get => _name; set => SetProperty(ref _name, value); }
     public ObservableCollection<SubroutineRunParameter> Parameters { get; set; } = new();
+    public override string ToString()=>Name;
 }
 public sealed class SubroutineRunParameter : ObservableObject
 {
@@ -17,6 +20,9 @@ public sealed class SubroutineRunParameter : ObservableObject
     private string _name = string.Empty, _description = string.Empty;
     public string Name { get => _name; set => SetProperty(ref _name, value); }
     public string Description { get => _description; set => SetProperty(ref _description, value); }
+    public string SourceToolType { get; set; } = string.Empty;
+    public string SourceParameterName { get; set; } = string.Empty;
+    public GroupParameterEditorKind SourceEditorKind { get; set; }
     public ObservableCollection<SubroutineParameterTarget> Targets { get; set; } = new();
 }
 /// <summary>Stable typed relation, never a display-name path. Nested Group relations use ExposedParameterId.</summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -44,15 +44,39 @@ public sealed class EditorDraftAdapter
     }
     internal static bool Supports(ToolParameters? parameters) => parameters?.GetType().FullName is
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" or "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" or
-        "SunEyeVision.Tool.BlobAnalysis.BlobAnalysisParameters";
+        "SunEyeVision.Tool.BlobAnalysis.BlobAnalysisParameters" or "SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters";
 
     public static EditorDraftAdapter ForProduction(ToolParameters parameters) => parameters.GetType().FullName switch
     {
         "SunEyeVision.Tool.BlobAnalysis.BlobAnalysisParameters" => ForBlob(parameters),
+        "SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters" => ForSubroutine((SubroutineParameters)parameters),
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" => ForProtocolParse(parameters),
         "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" => ForImageThreshold(parameters),
         _ => throw new ArgumentException("此工具尚未接入生产草稿适配器。", nameof(parameters))
     };
+
+    private static EditorDraftAdapter ForSubroutine(SubroutineParameters parameters)
+    {
+        var adapter=new EditorDraftAdapter(parameters,new Dictionary<string,Type>());
+        adapter._validateConfiguration=()=>
+        {
+            if(parameters.Inputs==null||parameters.Outputs==null||parameters.DisplayConfigs==null||parameters.LoopConfig==null)
+                throw new InvalidOperationException("Group配置集合或循环配置缺失。");
+            void Names(IEnumerable<string> names,string role)
+            {
+                var values=names.ToArray();
+                if(values.Any(string.IsNullOrWhiteSpace)||values.Distinct(StringComparer.Ordinal).Count()!=values.Length)
+                    throw new InvalidOperationException(role+"名称不能为空或重复。");
+            }
+            Names(parameters.Inputs.Select(i=>i.Name),"输入");Names(parameters.Outputs.Select(o=>o.Name),"输出");
+            if(parameters.Inputs.Any(i=>i.FieldId==Guid.Empty||i.ParamType==null)||parameters.Inputs.Select(i=>i.FieldId).Distinct().Count()!=parameters.Inputs.Count)
+                throw new InvalidOperationException("Group输入身份或类型无效。");
+            if(parameters.Outputs.Any(o=>o.FieldId==Guid.Empty||o.ParamType==null)||parameters.Outputs.Select(o=>o.FieldId).Distinct().Count()!=parameters.Outputs.Count)
+                throw new InvalidOperationException("Group输出身份或类型无效。");
+            if(parameters.LoopConfig.LoopInterval<0)throw new InvalidOperationException("循环间隔不能为负数。");
+        };
+        return adapter;
+    }
 
     private static EditorDraftAdapter ForBlob(ToolParameters parameters)
     {

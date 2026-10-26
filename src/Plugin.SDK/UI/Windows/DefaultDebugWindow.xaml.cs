@@ -51,6 +51,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private readonly UserControl _control;
         private readonly ToolDebugControlBase? _toolControl;
         public ToolDebugControlBase? EditorControl => _toolControl;
+        /// <summary>参数提交内容，包括不承担单工具执行的自定义Group控件。</summary>
+        public UserControl ParameterControl => _control;
         
         // 状态
         private bool _isContinuousRunning;

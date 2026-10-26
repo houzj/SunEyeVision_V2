@@ -1,10 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
+    /// <summary>自定义Group参数控件接收宿主的独立候选；发布后重新绑定，不能写正式节点。</summary>
+    public interface ISubroutineParameterEditor : IDisposable
+    {
+        void BindParameters(SubroutineParameters parameters,IDataSourceQueryService? queryService);
+    }
+
     public interface ISubroutineDebugService
     {
         DefaultDebugWindow CreateDebugWindow(

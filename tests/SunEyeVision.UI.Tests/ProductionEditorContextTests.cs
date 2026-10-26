@@ -1,3 +1,4 @@
+using System.Reflection;
 using System;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,96 @@ namespace SunEyeVision.UI.Tests;
 [Collection("Editor commit UI")]
 public sealed class ProductionEditorContextTests
 {
+    [Fact]
+    public void Group_candidate_is_private_and_document_acceptance_rebinds_then_discard_unregisters()
+    {
+        var flow = new SunEyeVision.Workflow.Workflow("flow", "flow");
+        var child = new SunEyeVision.Workflow.Workflow("child", "child") { IsSubroutine = true };
+        var node = new WorkflowNodeBase("group", "group", "group", "Subroutine")
+        { SubroutineId = child.Id, Parameters = new SubroutineParameters { SubroutineId = child.Id } };
+        flow.Nodes.Add(node);
+        var model = new Solution(); model.Workflows.Add(flow); model.Workflows.Add(child);
+        var editing = (DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new object[] { model }, null)!;
+        WorkflowNodeBase? rebound = null;
+        using var context = new ProductionEditorContext(editing.Host, flow.Id, node, () => true,
+            draft => rebound = draft, documentEdits: editing);
+        var original = (SubroutineParameters)node.Parameters;
+        var pending = (SubroutineParameters)context.DraftNode.Parameters;
+        pending.Inputs.Add(new() { Name = "input", TypeName = "Integer" });
+        pending.LoopConfig.LoopInterval = 25;
+        Assert.Empty(original.Inputs); Assert.Equal(0, original.LoopConfig.LoopInterval);
+        Assert.True(editing.HasPendingChanges); Assert.Equal(1, editing.RegisteredScopeCount);
+        editing.ValidateAll();
+        Assert.Same(original, node.Parameters); Assert.Null(rebound);
+        editing.AcceptAll();
+        var accepted = (SubroutineParameters)node.Parameters;
+        Assert.Single(accepted.Inputs); Assert.Equal(25, accepted.LoopConfig.LoopInterval);
+        Assert.Same(context.DraftNode, rebound); Assert.NotSame(accepted, rebound!.Parameters);
+        ((SubroutineParameters)rebound.Parameters).LoopConfig.LoopInterval = 99;
+        context.Discard();
+        Assert.Equal(25, accepted.LoopConfig.LoopInterval); Assert.Equal(0, editing.RegisteredScopeCount);
+    }
+
+    [Theory]
+    [InlineData("name")]
+    [InlineData("identity")]
+    [InlineData("type")]
+    [InlineData("interval")]
+    public void Invalid_Group_candidate_never_publishes(string fault)
+    {
+        var flow = new SunEyeVision.Workflow.Workflow("flow", "flow");
+        var node = new WorkflowNodeBase("group", "group", "group", "Subroutine") { Parameters = new SubroutineParameters() };
+        flow.Nodes.Add(node); var model = new Solution(); model.Workflows.Add(flow);
+        var host = new NodeConfigurationEditHost(model);
+        using var context = new ProductionEditorContext(host, flow.Id, node, () => true, _ => { });
+        var candidate = (SubroutineParameters)context.DraftNode.Parameters;
+        candidate.Inputs.Add(new() { Name = "one", TypeName = "Integer" });
+        candidate.Inputs.Add(new() { Name = "two", TypeName = "Integer" });
+        if (fault == "name") candidate.Inputs[1].Name = "one";
+        if (fault == "identity") candidate.Inputs[1].FieldId = candidate.Inputs[0].FieldId;
+        if (fault == "type") candidate.Inputs[1].TypeName = "not-a-type";
+        if (fault == "interval") candidate.LoopConfig.LoopInterval = -1;
+        Assert.False(context.TryCommitEditor(out var error)); Assert.False(string.IsNullOrWhiteSpace(error));
+        Assert.Empty(((SubroutineParameters)node.Parameters).Inputs);
+        Assert.Same(candidate, context.DraftNode.Parameters); Assert.False(host.CanUndo);
+    }
+
+    [Fact]
+    public void Real_Group_control_rebinds_private_draft_and_standard_confirm_publishes() => Sta(() =>
+    {
+        var root = typeof(ProductionEditorContextTests).Assembly.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
+            .Single(a => a.Key == "HostDebugRoot").Value!;
+        var assembly = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(System.IO.Path.Combine(root,
+            "plugins", "SunEyeVision.Tool.Subroutine", "SunEyeVision.Tool.Subroutine.dll"));
+        var flow = new SunEyeVision.Workflow.Workflow("flow", "flow");
+        var node = new WorkflowNodeBase("group", "group", "group", "Subroutine") { Parameters = new SubroutineParameters() };
+        flow.Nodes.Add(node); var model = new Solution(); model.Workflows.Add(flow);
+        var host = new NodeConfigurationEditHost(model);
+        ISubroutineParameterEditor? parameterEditor = null;
+        using var context = new ProductionEditorContext(host, flow.Id, node, () => true,
+            draft => parameterEditor!.BindParameters((SubroutineParameters)draft.Parameters, null));
+        var control = (UserControl)Activator.CreateInstance(assembly.GetType("SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl", true)!,
+            new object?[] { "child", "Group", "group", null, null, context.DraftNode.Parameters, null })!;
+        parameterEditor = Assert.IsAssignableFrom<ISubroutineParameterEditor>(control);
+        var window = new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(control);
+        try
+        {
+            Assert.Same(control, window.ParameterControl); Assert.Null(window.EditorControl);
+            ToolEditorCommit.AttachDraftContext(control, context);
+            var oldViewModel = control.DataContext;
+            ((SubroutineParameters)context.DraftNode.Parameters).LoopConfig.LoopInterval = 12;
+            Assert.Equal(0, ((SubroutineParameters)node.Parameters).LoopConfig.LoopInterval);
+            Assert.True(ToolEditorCommit.TryCommit(control, out var error), error);
+            Assert.Equal(12, ((SubroutineParameters)node.Parameters).LoopConfig.LoopInterval);
+            Assert.NotSame(oldViewModel, control.DataContext);
+            ((SubroutineParameters)context.DraftNode.Parameters).LoopConfig.LoopInterval = 88;
+            ToolEditorCommit.DiscardPendingEdits(control);
+            Assert.Equal(12, ((SubroutineParameters)node.Parameters).LoopConfig.LoopInterval);
+        }
+        finally { parameterEditor.Dispose(); window.Close(); }
+    });
+
     private static (Solution Model, NodeConfigurationEditHost Host, WorkflowNodeBase Node) Model()
     {
         var flow = new SunEyeVision.Workflow.Workflow("flow", "flow");

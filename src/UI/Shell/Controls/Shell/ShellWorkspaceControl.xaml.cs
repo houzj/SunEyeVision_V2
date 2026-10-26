@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -659,8 +659,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             string parentWorkflowId,
             string subroutineId,
             string nodeId,
-            string nodeDispName,
-            SubroutineParameters parameters)
+            string nodeDispName)
         {
             var identity=(parentWorkflowId,subroutineId,nodeId);
             if (_openSubroutineDebugWindow?.IsLoaded == true)
@@ -672,55 +671,40 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 if (previous.IsLoaded) { previous.Activate();return; }
             }
             if (_viewModel?.CanEditWorkflowCanvas != true) return;
-            // 1. 父作用域由实际节点/导航帧传入，不在全仓选择第一个拥有者。
-            // 2. 父工作流作用域查询服务 → 输入绑定
-            var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
-            // 3. 子工作流内部数据源 → 输出/显示绑定
-            var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
-            var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
-            // 4. 创建增量刷新回调：Outputs 变更时按变更类型局部更新模块结果树 + 主界面图像源下拉
-            Action<SubroutineOutputChange>? onOutputsChanged = (change) =>
+            ISubroutineParameterEditor? editor=null;
+            DataSourceQueryService? draftQuery=null;
+            var context=_viewModel.CreateGroupEditorContext(parentWorkflowId,nodeId,subroutineId,
+                draft=>editor?.BindParameters(draft,draftQuery),out var queryService);
+            draftQuery=queryService;
+            SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow? debugWindow=null;
+            IDisposable? registration=null;
+            try
             {
-                if (parameters == null || change == null) return;
-                _viewModel?.ApplySubroutineOutputChange(change, nodeDispName, nodeId);
-            };
-            // 5. 绑定路径校验：输入绑定的源节点必须在父工作流中存在（Fail-Fast）
-            if (queryService != null && parameters.Inputs.Count > 0)
-            {
-                var sources = queryService.GetAvailableDataSources(nodeId);
-                var registeredNodeIds = new HashSet<string>(sources
-                    .Where(s => !string.IsNullOrEmpty(s.SourceNodeId))
-                    .Select(s => s.SourceNodeId!));
-                foreach (var input in parameters.Inputs)
+                var internalQuery=_viewModel.CreateDataSourceQueryService(subroutineId);
+                var internalSources=internalQuery.GetWorkflowNodeDataSources();
+                debugWindow=SubroutineDebugServiceProvider.GetService().CreateDebugWindow(
+                    Window.GetWindow(this)!,subroutineId,nodeDispName,nodeId,queryService,
+                    (SubroutineParameters)context.DraftNode.Parameters,internalSources,onOutputsChanged:null);
+                editor=debugWindow.ParameterControl as ISubroutineParameterEditor
+                    ??throw new InvalidOperationException("Group编辑器没有候选参数接缝。");
+                _viewModel.AttachGroupEditor(debugWindow,context);
+                debugWindow.Title=nodeDispName;
+                var created=debugWindow;
+                created.Closed+=(_,_)=>
                 {
-                    if (string.IsNullOrEmpty(input.BindingSource)) continue;
-                    var parts = input.BindingSource.Split('.');
-                    if (parts.Length < 1) continue;
-                    if (!registeredNodeIds.Contains(parts[0]))
-                    {
-                        var msg = $"子程序输入 '{input.Name}' 绑定的源节点 '{parts[0]}' 在父工作流中不存在。\n" +
-                                  $"请检查是否删除了上游节点或绑定的节点 ID 已变更。\n" +
-                                  $"(子程序: {nodeDispName})";
-                        ThemeMessageDialog.Show(msg, "绑定路径错误",
-                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
-                        return; // 不打开调试窗口
-                    }
-                }
+                    if(ReferenceEquals(_openSubroutineDebugWindow,created))
+                    { _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null; }
+                };
+                _openSubroutineDebugWindow=created;_openSubroutineDebugIdentity=identity;
+                registration=_viewModel.TrackParameterWindow(created);
+                created.Show();
             }
-            var debugWindow = SubroutineDebugServiceProvider.GetService().CreateDebugWindow(
-                Window.GetWindow(this)!, subroutineId, nodeDispName,
-                nodeId, queryService, parameters, internalSources, onOutputsChanged);
-            debugWindow.Title = nodeDispName;
-            // 单例跟踪：关闭时清理引用
-            debugWindow.Closed += (s, e) =>
+            catch
             {
-                if(ReferenceEquals(_openSubroutineDebugWindow,debugWindow))
-                { _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null; }
-            };
-            _openSubroutineDebugWindow = debugWindow;_openSubroutineDebugIdentity=identity;
-            var registration=_viewModel.TrackParameterWindow(debugWindow);
-            try { debugWindow.Show(); }
-            catch { registration.Dispose();_openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null;throw; }
+                context.Discard();registration?.Dispose();debugWindow?.Close();
+                _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null;
+                throw;
+            }
         }
 
         /// <summary>
@@ -734,9 +718,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 var ownerId=tab.CurrentOwnerNodeId;
                 var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
                 var node=parent?.Nodes.SingleOrDefault(n=>n.Id==ownerId&&n.SubroutineId==tab.CurrentWorkflowId);
-                if(node?.Parameters is not SubroutineParameters parameters)
+                if(node?.Parameters is not SubroutineParameters)
                     throw new InvalidOperationException("当前Group导航拥有者已经失效。");
-                OpenSubroutineDebugWindowCore(parentId!,tab.CurrentWorkflowId,node.Id,node.DispName,parameters);
+                OpenSubroutineDebugWindowCore(parentId!,tab.CurrentWorkflowId,node.Id,node.DispName);
             }
             catch (Exception ex)
             {
@@ -761,8 +745,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 if(parent==null||!parent.Nodes.Contains(node))throw new InvalidOperationException("Group节点不属于当前父流程。");
                 if(string.IsNullOrEmpty(node.SubroutineId)||_viewModel?.WorkflowEngine.GetWorkflowById(node.SubroutineId)==null)
                     throw new InvalidOperationException("Group独占定义缺失。");
-                if(node.Parameters is not SubroutineParameters parameters)throw new InvalidOperationException("Group参数未加载。");
-                OpenSubroutineDebugWindowCore(parentId!,node.SubroutineId,node.Id,node.DispName,parameters);
+                if(node.Parameters is not SubroutineParameters)throw new InvalidOperationException("Group参数未加载。");
+                OpenSubroutineDebugWindowCore(parentId!,node.SubroutineId,node.Id,node.DispName);
             }
             catch (Exception ex)
             {

@@ -17,6 +17,11 @@ public partial class MainWindowViewModel
         OnPropertyChanged(nameof(IsDebugWindowOpen));OnPropertyChanged(nameof(CanEditWorkflowCanvas));
         System.Windows.Input.CommandManager.InvalidateRequerySuggested();
     }
+    private bool TryCloseParameterWindowsForTransition()
+    {
+        if(_auxiliaryParameterWindows.TryCloseAll())return true;
+        EndSolutionTransition();return false;
+    }
     /// <summary>实际编辑入口共用：运行、参数窗口和方案切换/关闭准备均阻止图修改。</summary>
     public bool CanEditWorkflowCanvas
     {

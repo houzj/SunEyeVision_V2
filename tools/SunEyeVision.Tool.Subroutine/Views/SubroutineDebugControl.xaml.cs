@@ -12,10 +12,13 @@ namespace SunEyeVision.Tool.Subroutine.Views
     /// 子程序调试控件 — 包装参数设置的 TabControl 内容，由 DefaultDebugWindow 包裹弹出。
     /// 点击设置按钮时创建此控件 + DefaultDebugWindow，替代旧的独立对话框。
     /// </summary>
-    public partial class SubroutineDebugControl : UserControl
+    public partial class SubroutineDebugControl : UserControl, ISubroutineParameterEditor
     {
         /// <summary>ViewModel 引用（保持对象存活）</summary>
-        public SubroutineParameterDialogViewModel ViewModel { get; }
+        public SubroutineParameterDialogViewModel ViewModel { get; private set; } = null!;
+        private readonly string _subroutineId,_subroutineName,_nodeId;
+        private readonly List<AvailableDataSource>? _internalSources;
+        private readonly Action<SubroutineOutputChange>? _onOutputsChanged;
 
         public SubroutineDebugControl(
             string subroutineId,
@@ -28,12 +31,17 @@ namespace SunEyeVision.Tool.Subroutine.Views
         {
             InitializeComponent();
 
-            ViewModel = new SubroutineParameterDialogViewModel(
-                subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters, onOutputsChanged);
-            DataContext = ViewModel;
-
-            // 窗口关闭必然触发控件 Unloaded → 清理 ViewModel 的事件订阅，杜绝幽灵订阅累积
-            Unloaded += (s, e) => ViewModel.Dispose();
+            _subroutineId=subroutineId;_subroutineName=subroutineName;_nodeId=nodeId;
+            _internalSources=subroutineInternalSources;_onOutputsChanged=onOutputsChanged;
+            BindParameters(parameters,dataSourceQueryService);
         }
+        public void BindParameters(SubroutineParameters parameters,IDataSourceQueryService? queryService)
+        {
+            Dispatcher.VerifyAccess();
+            ViewModel?.Dispose();
+            ViewModel=new SubroutineParameterDialogViewModel(_subroutineId,_subroutineName,_nodeId,queryService,_internalSources,parameters,_onOutputsChanged);
+            DataContext=ViewModel;
+        }
+        public void Dispose()=>ViewModel?.Dispose();
     }
 }

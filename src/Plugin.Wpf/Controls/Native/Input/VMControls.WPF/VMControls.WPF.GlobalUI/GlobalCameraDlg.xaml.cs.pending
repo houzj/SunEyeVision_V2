@@ -4,10 +4,14 @@ using System.Windows;
 using System.Windows.Markup;
 using Apps.Data;
 using Apps.XmlParser.ParamTab;
-using VM.Controls;
-using VM.Controls.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Utility;
 using VM.Core;
-using VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 using VM.Utility.SingleInstance;
 using VMControls.BaseInterface;
 

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelectControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:paramtabcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/RadioButtonStyle/RadioButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/ToggleButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.PcUI;component/Styles/PcUIStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/ParamTabControl/ListView/RoiSelectDataTemplate.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <local:ROIDefaultValueToVisibilityConvert x:Key="ROIDefaultValueToVisibilityConvert" />
+      <BaseData:NumCompareConverter x:Key="NumCompareConverter" />
+      <sys:Int32 x:Key="CompareNum">0</sys:Int32>
+      <DataTemplate x:Key="FullScreenDataTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.FullScreen}" ToolTip="{DynamicResource 全屏}" Background="#00FFFFFF" Style="{StaticResource fullscreenRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding FullScreenA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SectorRingTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SectorRing}" ToolTip="{DynamicResource SectorRing}" Background="#00FFFFFF" Style="{StaticResource RingRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorRingA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SectorTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Sector}" ToolTip="{DynamicResource Sector}" Background="#00FFFFFF" Style="{StaticResource SectorRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="OverSectorTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.OverSector}" ToolTip="{DynamicResource OverSector}" Background="#00FFFFFF" Style="{StaticResource OverSectorRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding OverSectorA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="BoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Box}" ToolTip="{DynamicResource Box}" Background="#00FFFFFF" Style="{StaticResource BoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="UroBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.UroBox}" ToolTip="{DynamicResource UroBox}" Background="#00FFFFFF" Style="{StaticResource UroBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.LineBox}" ToolTip="{DynamicResource LineBox}" Background="#00FFFFFF" Style="{StaticResource LineBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SeqBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SeqBox}" ToolTip="{DynamicResource SeqBox}" Background="#00FFFFFF" Style="{StaticResource LineBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="DoubleBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.DoubleBox}" ToolTip="{DynamicResource DoubleBox}" Background="#00FFFFFF" Style="{StaticResource DoubleBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding DoubleBoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="QuadraBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.QuadraBox}" ToolTip="{DynamicResource QuadraBox}" Background="#00FFFFFF" Style="{StaticResource QuadraBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding QuadraBoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="PolygonTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Polygon}" ToolTip="{DynamicResource Polygon}" Background="#00FFFFFF" Style="{StaticResource PolygonRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PolygonA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.LineCaliper}" ToolTip="{DynamicResource LineCaliper}" Background="#00FFFFFF" Style="{StaticResource LineCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding LineCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="CircleCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.CircleCaliper}" ToolTip="{DynamicResource CircleCaliper}" Background="#00FFFFFF" Style="{StaticResource CircleCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding CircleCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SectorCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SectorCaliper}" ToolTip="{DynamicResource SectorCaliper}" Background="#00FFFFFF" Style="{StaticResource SectorCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="PolygonCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.PolygonCaliper}" ToolTip="{DynamicResource PolygonCaliper}" Background="#00FFFFFF" Style="{StaticResource PolygonCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PolygonCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="PointTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Point}" ToolTip="{DynamicResource Point}" Background="#00FFFFFF" Style="{StaticResource PointRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PointA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Line}" ToolTip="{DynamicResource Line}" Background="#00FFFFFF" Style="{StaticResource LineRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding LineA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="CircleMesTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.CircleMes}" ToolTip="{DynamicResource CircleMes}" Background="#00FFFFFF" Style="{StaticResource CircleMesRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding CircleMesA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="MatrixCircleTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.MatrixCircle}" ToolTip="{DynamicResource MatrixCircle}" Background="#00FFFFFF" Style="{StaticResource MatrixCircleRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding MatrixCircleA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="CoordinateTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Coordinate}" ToolTip="{DynamicResource CoordinateModule}" Background="#00FFFFFF" Style="{StaticResource CoordinateRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding CoordinateA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="Box3DTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Box3D}" Background="#00FFFFFF" Style="{StaticResource BoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <localParamTab:LeftRightControl>
+          <localParamTab:LeftRightControl.LeftContent>
+            <Control Template="{StaticResource TextLeft}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <WrapPanel Orientation="Horizontal">
+              <ContentPresenter ContentTemplate="{StaticResource FullScreenDataTemplate}" Content="{Binding}" Visibility="{Binding FullScreenEnableA, Converter={StaticResource bool2VisibilityConverter}}" />
+              <ContentPresenter ContentTemplate="{StaticResource SectorRingTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.SectorRing}}" />
+              <ContentPresenter ContentTemplate="{StaticResource SectorTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Sector}}" />
+              <ContentPresenter ContentTemplate="{StaticResource OverSectorTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.OverSector}}" />
+              <ContentPresenter ContentTemplate="{StaticResource BoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Box}}" />
+              <ContentPresenter ContentTemplate="{StaticResource UroBoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.UroBox}}" />
+              <ContentPresenter ContentTemplate="{StaticResource LineBoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.LineBox}}" />
+              <ContentPresenter ContentTemplate="{StaticResource SeqBoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.SeqBox}}" />
+              <ContentPresenter ContentTemplate="{StaticResource DoubleBoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.DoubleBox}}" />
+              <ContentPresenter ContentTemplate="{StaticResource QuadraBoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.QuadraBox}}" />
+              <ContentPresenter ContentTemplate="{StaticResource PolygonTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Polygon}}" />
+              <ContentPresenter ContentTemplate="{StaticResource LineCaliperTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.LineCaliper}}" />
+              <ContentPresenter ContentTemplate="{StaticResource CircleCaliperTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.CircleCaliper}}" />
+              <ContentPresenter ContentTemplate="{StaticResource SectorCaliperTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.SectorCaliper}}" />
+              <ContentPresenter ContentTemplate="{StaticResource PolygonCaliperTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.PolygonCaliper}}" />
+              <ContentPresenter ContentTemplate="{StaticResource PointTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Point}}" />
+              <ContentPresenter ContentTemplate="{StaticResource LineTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Line}}" />
+              <ContentPresenter ContentTemplate="{StaticResource CircleMesTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.CircleMes}}" />
+              <ContentPresenter ContentTemplate="{StaticResource MatrixCircleTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.MatrixCircle}}" />
+              <ContentPresenter ContentTemplate="{StaticResource CoordinateTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Coordinate}}" />
+              <ContentPresenter ContentTemplate="{StaticResource Box3DTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Box3D}}" />
+            </WrapPanel>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <ToggleButton Name="expand" Grid.Row="1" Height="30" Margin="0,0,40,0" HorizontalAlignment="Right" Padding="6,0,0,0" VerticalContentAlignment="Center" Content="{DynamicResource ROI参数}">
+          <FrameworkElement.Style>
+            <Style BasedOn="{StaticResource ExpandButtonStyle}" TargetType="{x:Type ToggleButton}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Setter Property="ToggleButton.IsChecked" Value="False" />
+              <Style.Triggers>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Value="True" Binding="{Binding IsHaveData}" />
+                    <Condition Value="1" Binding="{Binding ImageWidth, Converter={StaticResource NumCompareConverter}, ConverterParameter={StaticResource CompareNum}, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                    <Condition Value="1" Binding="{Binding ImageHeight, Converter={StaticResource NumCompareConverter}, ConverterParameter={StaticResource CompareNum}, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding CurROIData}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Value="True" Binding="{Binding Is3DROI}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </ToggleButton>
+        <Grid Row="2">
+          <StackPanel>
+            <ContentControl Style="{StaticResource ROIListStyle}" Content="{Binding}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -154,10 +156,4 @@ public partial class IPTextBox : UserControl, INotifyPropertyChanged, IComponent
 		}
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

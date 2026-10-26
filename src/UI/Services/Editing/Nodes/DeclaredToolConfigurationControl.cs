@@ -31,7 +31,16 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
         {
             AttachRegionLifetime();
             if(_parameters is IConfigurationFieldProvider&&Window.GetWindow(this) is SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow window)
+            {
                 window.ApplyCompactParameterLayout();
+                if(!window.Resources.Contains("O06.NativeResourcesInstalled"))
+                {
+                    window.Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Create());
+                    window.Resources["O06.NativeResourcesInstalled"]=true;
+                }
+                foreach(var name in new[]{"ContinuousRunButton","RunButton","ConfirmButton"})
+                    if(window.FindName(name) is Button button)button.SetResourceReference(StyleProperty,"Orange_ButtonStyle");
+            }
         };
     }
     public override void SetParameters(ToolParameters parameters)

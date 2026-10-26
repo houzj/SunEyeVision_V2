@@ -6,7 +6,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VMControls.BaseInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
@@ -53,10 +56,4 @@ public partial class ParamsTabControlBase : TabWinBase, IComponentConnector
 		});
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

@@ -1,0 +1,160 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Interop;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
+{
+	public static readonly DependencyProperty IsSubscribeIndexProperty = DependencyProperty.Register("IsSubscribeIndex", typeof(bool), typeof(ParamSubscribeWindow), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty MyWindowStateProperty = DependencyProperty.Register("MyWindowState", typeof(WindowState), typeof(ParamSubscribeWindow), new PropertyMetadata(WindowState.Normal, OnMyWindowStateChanged));
+
+	private bool isMovingByOwner = false;
+
+	private bool isMovingBySelf = false;
+
+	public bool IsSubscribeIndex
+	{
+		get
+		{
+			return (bool)GetValue(IsSubscribeIndexProperty);
+		}
+		set
+		{
+			SetValue(IsSubscribeIndexProperty, value);
+		}
+	}
+
+	public WindowState MyWindowState
+	{
+		get
+		{
+			return (WindowState)GetValue(MyWindowStateProperty);
+		}
+		set
+		{
+			SetValue(MyWindowStateProperty, value);
+		}
+	}
+
+	public ParamSubscribeWindow()
+	{
+		InitializeComponent();
+		SetBinding(IsSubscribeIndexProperty, new Binding("IsSubscribeIndex"));
+	}
+
+	private static void OnMyWindowStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ParamSubscribeWindow { MyWindowState: not WindowState.Maximized } paramSubscribeWindow)
+		{
+			paramSubscribeWindow.WindowState = paramSubscribeWindow.MyWindowState;
+		}
+	}
+
+	public ParamSubscribeWindow(Window owner, IntPtr intPtr)
+	{
+		InitializeComponent();
+		SetBinding(IsSubscribeIndexProperty, new Binding("IsSubscribeIndex"));
+		if (owner != null)
+		{
+			Owner = owner;
+			if (owner is BaseWindow || !CVmObjectBase.GetIsSDKMode())
+			{
+				owner.LocationChanged += Owner_LocationOrSizeChanged;
+				owner.SizeChanged += Owner_LocationOrSizeChanged;
+				Loaded += ParamSubscribeWindow_Loaded;
+				Closed += ParamSubscribeWindow_Closed;
+			}
+			if (Application.Current?.MainWindow != null)
+			{
+				SetBinding(MyWindowStateProperty, new Binding("WindowState")
+				{
+					Source = Application.Current.MainWindow
+				});
+			}
+		}
+		else if (intPtr != IntPtr.Zero)
+		{
+			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this)
+			{
+				Owner = intPtr
+			};
+		}
+	}
+
+	private void ParamSubscribeWindow_Closed(object sender, EventArgs e)
+	{
+		if (Owner != null)
+		{
+			Owner.LocationChanged -= Owner_LocationOrSizeChanged;
+			Owner.SizeChanged -= Owner_LocationOrSizeChanged;
+		}
+	}
+
+	private void ParamSubscribeWindow_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (Owner != null)
+		{
+			ChangeLocationAndSizeByOwner();
+			LocationChanged += ParamSubscribeWindow_LocationChanged;
+		}
+	}
+
+	private void Owner_LocationOrSizeChanged(object sender, EventArgs e)
+	{
+		if (!isMovingBySelf)
+		{
+			isMovingByOwner = true;
+			ChangeLocationAndSizeByOwner();
+			isMovingByOwner = false;
+		}
+	}
+
+	private void ParamSubscribeWindow_LocationChanged(object sender, EventArgs e)
+	{
+		if (!isMovingByOwner)
+		{
+			isMovingBySelf = true;
+			ChangeOwnerLocation();
+			isMovingBySelf = false;
+		}
+	}
+
+	private void ChangeLocationAndSizeByOwner()
+	{
+		if (Owner != null)
+		{
+			Top = Owner.Top;
+			Left = Owner.Left + Owner.ActualWidth;
+			Height = Owner.ActualHeight;
+		}
+	}
+
+	private void ChangeOwnerLocation()
+	{
+		if (Owner != null)
+		{
+			Owner.Top = Top;
+			Owner.Left = Left - Owner.ActualWidth;
+		}
+	}
+
+	private void Grid_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.NewValue != null)
+		{
+			Focus();
+		}
+	}
+
+}

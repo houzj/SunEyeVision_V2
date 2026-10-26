@@ -1,0 +1,260 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using Apps.Localization;
+using Apps.Log;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm;
+
+internal static class ExportAlgorithmUtil
+{
+	private static string GetError()
+	{
+		int nUserLan = ((AppLocalizationService.GetLangType() == "zh-cn") ? 1 : 2);
+		IntPtr intPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
+		IntPtr source = ExportMVDCode.EXP_GetErrorMsg(nUserLan, intPtr);
+		int num = (int)Marshal.PtrToStructure(intPtr, typeof(int));
+		Marshal.FreeHGlobal(intPtr);
+		intPtr = IntPtr.Zero;
+		byte[] array = new byte[num];
+		Marshal.Copy(source, array, 0, array.Length);
+		string text = Encoding.UTF8.GetString(array, 0, array.Length);
+		int num2 = text.IndexOf("\0");
+		if (num2 > 0)
+		{
+			text = text.Substring(0, num2);
+		}
+		LogHelper.objLog.Info(text);
+		return text;
+	}
+
+	private static bool GetEnableSetInputROI(IVmModule vmModule)
+	{
+		if (vmModule != null)
+		{
+			string path = $"{vmModule.ModuleDir}\\{vmModule.ModuleTypeName}.xml";
+			if (File.Exists(path))
+			{
+				string text = File.ReadAllText(path);
+				if (text.Contains("\"InputROI\""))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static bool IsEnableByVmModule(this EaVmModuleTreeNode node)
+	{
+		if (node.ModuleType == 2 && !node.IsEnableSetInputROI)
+		{
+			return false;
+		}
+		ObservableCollection<EaVmModuleTreeNode> childrenNodes = node.ChildrenNodes;
+		if (childrenNodes != null && childrenNodes.Count() > 0)
+		{
+			return node.ChildrenNodes.Where((EaVmModuleTreeNode n) => n.ModuleType == 2 && !n.IsEnableSetInputROI)?.Count() != node.ChildrenNodes.Count;
+		}
+		return true;
+	}
+
+	private static ObservableCollection<EaVmModuleTreeNode> GetGroupModules(VmModule subModule, EaVmModuleTreeNode moduleTreeNode)
+	{
+		if (subModule is IMVSGroup { Modules: { Count: >0 } } iMVSGroup)
+		{
+			moduleTreeNode.ModuleType = 1;
+			ObservableCollection<EaVmModuleTreeNode> observableCollection = new ObservableCollection<EaVmModuleTreeNode>();
+			foreach (VmModule module in iMVSGroup.Modules)
+			{
+				EaVmModuleTreeNode eaVmModuleTreeNode = new EaVmModuleTreeNode
+				{
+					ModuleID = module.ID,
+					ModuleName = module.Name,
+					ProcedureID = moduleTreeNode.ProcedureID,
+					ParentNode = moduleTreeNode,
+					IsEnableSetInputROI = GetEnableSetInputROI(module),
+					ModuleType = 2
+				};
+				observableCollection.Add(eaVmModuleTreeNode);
+				ObservableCollection<EaVmModuleTreeNode> groupModules = GetGroupModules(module, eaVmModuleTreeNode);
+				eaVmModuleTreeNode.ChildrenNodes = groupModules;
+			}
+			return observableCollection;
+		}
+		return null;
+	}
+
+	public static List<EaVmModuleTreeNode> LoadVmProcessTreeNode(bool isSolution, uint anModuleId = 0u)
+	{
+		List<EaVmModuleTreeNode> list = new List<EaVmModuleTreeNode>();
+		IEnumerable<VmProcedure> enumerable = VmSolution.Instance.Modules.Where((VmModule p) => p is VmProcedure).Cast<VmProcedure>();
+		foreach (VmProcedure item2 in enumerable)
+		{
+			if (isSolution || (!isSolution && anModuleId == item2.ID))
+			{
+				ObservableCollection<EaVmModuleTreeNode> childrenNodes = new ObservableCollection<EaVmModuleTreeNode>();
+				EaVmModuleTreeNode item = new EaVmModuleTreeNode
+				{
+					ModuleID = item2.ID,
+					ModuleName = item2.Name,
+					ChildrenNodes = childrenNodes,
+					ModuleType = 0
+				};
+				list.Add(item);
+			}
+		}
+		return list;
+	}
+
+	public static List<EaVmModuleTreeNode> LoadVmModuleTreeNode(uint anModuleId)
+	{
+		List<EaVmModuleTreeNode> list = new List<EaVmModuleTreeNode>();
+		VmProcedure vmProcedure = VmSolution.Instance.Modules.FirstOrDefault((VmModule p) => p is VmProcedure vmProcedure2 && vmProcedure2.ID == anModuleId) as VmProcedure;
+		ObservableCollection<EaVmModuleTreeNode> observableCollection = new ObservableCollection<EaVmModuleTreeNode>();
+		EaVmModuleTreeNode eaVmModuleTreeNode = new EaVmModuleTreeNode
+		{
+			ModuleID = vmProcedure.ID,
+			ModuleName = vmProcedure.Name,
+			ChildrenNodes = observableCollection,
+			ModuleType = 0
+		};
+		list.Add(eaVmModuleTreeNode);
+		VmModuleCollection<VmModule> modules = vmProcedure.Modules;
+		if (modules != null && modules.Count() > 0)
+		{
+			foreach (VmModule item in modules)
+			{
+				EaVmModuleTreeNode eaVmModuleTreeNode2 = new EaVmModuleTreeNode
+				{
+					ModuleID = item.ID,
+					ModuleName = item.Name,
+					ProcedureID = vmProcedure.ID,
+					ParentNode = eaVmModuleTreeNode,
+					ModuleType = 2,
+					IsEnableSetInputROI = GetEnableSetInputROI(item)
+				};
+				eaVmModuleTreeNode2.ChildrenNodes = GetGroupModules(item, eaVmModuleTreeNode2);
+				if (eaVmModuleTreeNode2.IsEnableByVmModule())
+				{
+					observableCollection.Add(eaVmModuleTreeNode2);
+				}
+			}
+		}
+		return list;
+	}
+
+	public static List<EaVmModuleTreeNode> GetAllVmModuleTreeNode(this IList<EaVmModuleTreeNode> vmNodes)
+	{
+		List<EaVmModuleTreeNode> list = new List<EaVmModuleTreeNode>();
+		if (vmNodes != null && vmNodes.Count > 0)
+		{
+			foreach (EaVmModuleTreeNode vmNode in vmNodes)
+			{
+				list.Add(vmNode);
+				List<EaVmModuleTreeNode> allVmModuleTreeNode = vmNode.ChildrenNodes.GetAllVmModuleTreeNode();
+				if (allVmModuleTreeNode != null && allVmModuleTreeNode.Count > 0)
+				{
+					list.AddRange(allVmModuleTreeNode);
+				}
+			}
+		}
+		return list;
+	}
+
+	public static bool ExportCodeFromData(int nIDEVersion, int nProgLan, string pszPrjName, string pszPrjDir, IEnumerable<EaVmModuleTreeNode> allVmModuleTreeNode, out string errorInfo)
+	{
+		errorInfo = null;
+		uint[] moduleIds = allVmModuleTreeNode.Select((EaVmModuleTreeNode m) => m.ModuleID)?.ToArray();
+		uint num = 10485760u;
+		uint nDataLen = 0u;
+		IntPtr intPtr = Marshal.AllocHGlobal((int)num);
+		ImvsSdkDefine.IMVS_MODULE_ID_LIST pastModuleId = new ImvsSdkDefine.IMVS_MODULE_ID_LIST
+		{
+			nNum = 0,
+			anModuleId = new uint[2064]
+		};
+		uint[] array = moduleIds;
+		if (array != null && array.Count() > 0)
+		{
+			pastModuleId.nNum = moduleIds.Count();
+		}
+		for (int num2 = 0; num2 < pastModuleId.nNum; num2++)
+		{
+			pastModuleId.anModuleId[num2] = moduleIds[num2];
+		}
+		int num3 = ServerSDKAPI.IMVS_GetDataForExportOperator(CVmObjectBase.mhandle, ref pastModuleId, intPtr, num, ref nDataLen);
+		if (num3 == -536870894)
+		{
+			Marshal.FreeHGlobal(intPtr);
+			num = nDataLen;
+			intPtr = Marshal.AllocHGlobal((int)num);
+			num3 = ServerSDKAPI.IMVS_GetDataForExportOperator(CVmObjectBase.mhandle, ref pastModuleId, intPtr, num, ref nDataLen);
+		}
+		if (num3 != 0)
+		{
+			VmException ex = new VmException(num3);
+			throw ex;
+		}
+		num3 = ExportMVDCode.EXP_Initialize();
+		if (num3 == 0)
+		{
+			IEnumerable<EaVmModuleTreeNode> enumerable = allVmModuleTreeNode?.Where((EaVmModuleTreeNode v) =>
+			{
+				int result;
+				if (v.IsSelected == true)
+				{
+					uint[] array2 = moduleIds;
+					if (array2 != null && array2.Count() > 0)
+					{
+						result = (moduleIds.Contains(v.ModuleID) ? 1 : 0);
+						goto IL_004a;
+					}
+				}
+				result = 0;
+				goto IL_004a;
+				IL_004a:
+				return (byte)result != 0;
+			});
+			if (enumerable != null && enumerable.Count() > 0)
+			{
+				foreach (EaVmModuleTreeNode item in enumerable)
+				{
+					int moduleID = (int)item.ModuleID;
+					ExportMVDCode.ModuleConfig structure = new ExportMVDCode.ModuleConfig
+					{
+						byROIConfig = 1,
+						byReserved = new byte[63]
+					};
+					IntPtr intPtr2 = Marshal.AllocHGlobal(Marshal.SizeOf(structure));
+					Marshal.StructureToPtr(structure, intPtr2, fDeleteOld: true);
+					num3 = ExportMVDCode.EXP_SetModuleConfig(moduleID, intPtr2);
+					Marshal.FreeHGlobal(intPtr2);
+					if (num3 != 0)
+					{
+						errorInfo = GetError();
+						break;
+					}
+				}
+			}
+			if (num3 == 0)
+			{
+				num3 = ExportMVDCode.EXP_ExportCodeFromData(nIDEVersion, nProgLan, pszPrjName, pszPrjDir, intPtr, (int)num);
+			}
+		}
+		if (num3 != 0)
+		{
+			errorInfo = GetError();
+		}
+		Marshal.FreeHGlobal(intPtr);
+		ExportMVDCode.EXP_UnInitialize();
+		return num3 == 0;
+	}
+}

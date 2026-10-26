@@ -1,0 +1,117 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Apps.XmlParser.UIData;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm;
+
+public class EaVmModuleTreeNode : VmModuleTreeNode
+{
+	private bool isEnableSetInputROI = true;
+
+	private bool isEnableExport;
+
+	private int moduleType;
+
+	private EaVmModuleTreeNode parentNode;
+
+	private ObservableCollection<EaVmModuleTreeNode> childrenNodes;
+
+	public new EaVmModuleTreeNode ParentNode
+	{
+		get
+		{
+			return parentNode;
+		}
+		set
+		{
+			SetProperty(ref parentNode, value, "ParentNode");
+		}
+	}
+
+	public new ObservableCollection<EaVmModuleTreeNode> ChildrenNodes
+	{
+		get
+		{
+			return childrenNodes;
+		}
+		set
+		{
+			SetProperty(ref childrenNodes, value, "ChildrenNodes");
+		}
+	}
+
+	public int ModuleType
+	{
+		get
+		{
+			return moduleType;
+		}
+		set
+		{
+			SetProperty(ref moduleType, value, "ModuleType");
+		}
+	}
+
+	public bool IsEnableSetInputROI
+	{
+		get
+		{
+			return isEnableSetInputROI;
+		}
+		set
+		{
+			SetProperty(ref isEnableSetInputROI, value, "IsEnableSetInputROI");
+		}
+	}
+
+	public bool IsEnableExport
+	{
+		get
+		{
+			return isEnableExport;
+		}
+		set
+		{
+			SetProperty(ref isEnableExport, value, "IsEnableExport");
+		}
+	}
+
+	protected override void SetIsChecked(bool? value, bool checkedChildren, bool checkedParent)
+	{
+		if (isSelected == value)
+		{
+			return;
+		}
+		isSelected = value;
+		if (checkedChildren && value.HasValue && childrenNodes != null)
+		{
+			foreach (EaVmModuleTreeNode childrenNode in childrenNodes)
+			{
+				if (childrenNode.IsEnableByVmModule())
+				{
+					childrenNode.SetIsChecked(value, checkedChildren: true, checkedParent: false);
+				}
+			}
+		}
+		if (checkedParent && ParentNode != null)
+		{
+			bool? flag = null;
+			List<EaVmModuleTreeNode> list = ParentNode.ChildrenNodes.Where((EaVmModuleTreeNode c) => c.IsEnableByVmModule()).ToList();
+			for (int num = 0; num < list.Count(); num++)
+			{
+				bool? flag2 = list[num].IsSelected;
+				if (num == 0)
+				{
+					flag = flag2;
+				}
+				else if (flag != flag2)
+				{
+					flag = null;
+				}
+			}
+			ParentNode.SetIsChecked(flag, checkedChildren: false, checkedParent: true);
+		}
+		OnPropertyChanged("IsSelected");
+	}
+}

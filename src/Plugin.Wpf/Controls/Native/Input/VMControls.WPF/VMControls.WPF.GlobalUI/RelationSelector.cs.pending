@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Apps.Data;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.XmlParser.ParamTab;
 using Mvvm.Commands;
 using VMControls.Interface;

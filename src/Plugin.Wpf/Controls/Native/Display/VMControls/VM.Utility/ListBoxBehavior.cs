@@ -1,8 +1,12 @@
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System.Collections.Specialized;
 using System.Windows.Controls;
-using System.Windows.Interactivity;
+using Microsoft.Xaml.Behaviors;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 

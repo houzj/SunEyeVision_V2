@@ -5,7 +5,7 @@ using System.Windows.Input;
 using Apps.Data;
 using Apps.Log;
 using Apps.XmlParser.ParamTab;
-using Apps.XmlUI.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
 using Mvvm.Commands;
 using VM.Core;
 using VMControls.Interface;

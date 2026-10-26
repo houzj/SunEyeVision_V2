@@ -1,0 +1,35 @@
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using VM.Core;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public class MeasurestrNameConverter : IValueConverter
+{
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (!(value is VmModule vmModule))
+		{
+			return Visibility.Collapsed;
+		}
+		switch (vmModule.StrModuleName)
+		{
+		case "IMVSC2CMeasureModu":
+		case "IMVSL2CMeasureModu":
+		case "IMVSL2LMeasureModu":
+		case "IMVSP2CMeasureModu":
+		case "IMVSP2LMeasureModu":
+		case "IMVSP2PMeasureModu":
+			return Visibility.Visible;
+		default:
+			return Visibility.Collapsed;
+		}
+	}
+
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		return null;
+	}
+}

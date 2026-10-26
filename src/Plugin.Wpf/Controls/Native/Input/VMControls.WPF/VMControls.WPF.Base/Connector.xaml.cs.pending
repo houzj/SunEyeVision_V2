@@ -7,9 +7,9 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Apps.ColorFun;
+using SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
 using Apps.Log;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.UIHelper.Service;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;

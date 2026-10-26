@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using Apps.Localization;
 using Mvvm.Commands;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
 

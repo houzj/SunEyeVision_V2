@@ -16,6 +16,9 @@
   <Folder Name="/Src/Plugin.Runtime/">
     <Project Path="Src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
   </Folder>
+  <Folder Name="/Src/Tool.Kernels/">
+    <Project Path="Src/Tool.Kernels/SunEyeVision.Tool.Kernels.csproj" />
+  </Folder>
   <Folder Name="/Src/Plugin.Wpf/">
     <Project Path="Src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj" />
   </Folder>

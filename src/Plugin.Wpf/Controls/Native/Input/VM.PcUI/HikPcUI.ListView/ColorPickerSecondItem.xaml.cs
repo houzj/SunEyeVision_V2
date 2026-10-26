@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
@@ -13,10 +15,4 @@ public partial class ColorPickerSecondItem : UserControl, IComponentConnector
 		InitializeComponent();
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

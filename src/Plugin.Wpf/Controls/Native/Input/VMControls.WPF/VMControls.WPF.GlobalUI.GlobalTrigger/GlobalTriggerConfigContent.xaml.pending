@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger.GlobalTriggerConfigContent" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:control="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:localInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore" xmlns:tools="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:localXmlParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:behavior="clr-namespace:VM.Utility;assembly=VM.Controls" xmlns:globaltrigger="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger" xmlns:globalUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="source" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger.GlobalTriggerConfigContent" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:control="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:localInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore" xmlns:tools="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:localXmlParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:behavior="clr-namespace:VM.Utility;assembly=VM.Controls" xmlns:globaltrigger="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger" xmlns:globalUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="source" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMUtility" xmlns:vm_port_3="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -11,7 +11,7 @@
         <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/TabControlStyle/TabControlStyle.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/PasswordBoxStyle/PasswordBoxStyle.xaml" />
-        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_3:ColorThemesResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
       <globalUI:BoolToBackVisiableConverter x:Key="BoolBackToEnable" />
       <globaltrigger:LocalModuleToFullNameConverter x:Key="LocalToFullName" />
@@ -52,7 +52,7 @@
       </Style>
       <DataTemplate x:Key="ComboboxTree">
         <Border Name="Border" BorderThickness="1" BorderBrush="{DynamicResource ListViewComboBoxBordBrush}" CornerRadius="2" Background="{DynamicResource ListViewComboBoxBackground}">
-          <localParamTab:TreeViewCombobox Height="30" TextBlock.Foreground="{DynamicResource TextBox.Normal.Forground}" ToggleButtonStyle="{StaticResource ComboxStyleBtn}" ItemsSource="{Binding EnumEntrysA}" ExternSelectedItem="{Binding TriggerSelectedObject, Mode=TwoWay}">
+          <vm_port_0:TreeViewCombobox Height="30" TextBlock.Foreground="{DynamicResource TextBox.Normal.Forground}" ToggleButtonStyle="{StaticResource ComboxStyleBtn}" ItemsSource="{Binding EnumEntrysA}" ExternSelectedItem="{Binding TriggerSelectedObject, Mode=TwoWay}">
             <FrameworkElement.Resources>
               <ResourceDictionary>
                 <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type localInterface:IVmModule}}" DataType="{x:Type localInterface:IVmModule}" ItemsSource="{Binding EnumEntrysA}">
@@ -63,12 +63,12 @@
                 </HierarchicalDataTemplate>
               </ResourceDictionary>
             </FrameworkElement.Resources>
-            <localParamTab:TreeViewCombobox.ExternSelectedItemTemplate>
+            <vm_port_0:TreeViewCombobox.ExternSelectedItemTemplate>
               <DataTemplate>
                 <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" FontSize="14" Text="{Binding ReservedProperty.FullName, Converter={StaticResource LocalToFullName}}" />
               </DataTemplate>
-            </localParamTab:TreeViewCombobox.ExternSelectedItemTemplate>
-          </localParamTab:TreeViewCombobox>
+            </vm_port_0:TreeViewCombobox.ExternSelectedItemTemplate>
+          </vm_port_0:TreeViewCombobox>
         </Border>
       </DataTemplate>
       <DataTemplate x:Key="GlobalTriggerItem">
@@ -109,7 +109,7 @@
               <TextBox Width="340" Height="32" Padding="3,0,16,0" BorderBrush="#CCCCCC" Tag="{DynamicResource Lang_SolutionPath}" IsReadOnly="True" Style="{StaticResource NormalInput}" Text="{Binding SolutionPath}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
               <Button Height="32" Margin="-32,0,0,0" VerticalAlignment="Top" Style="{StaticResource OpenFileButton}" Command="{Binding PathSelectCommand}" />
             </StackPanel>
-            <PasswordBox BorderBrush="#CCCCCC" Width="116" Height="32" Margin="5,0,0,0" IsEnabled="True" tools:PasswordBoxBindingHelper.Attach="True" input:InputMethod.IsInputMethodEnabled="False" Tag="{DynamicResource SubWindowPassword}" Background="#FFFFFFFF" Style="{StaticResource passwordBoxStyle}" tools:PasswordBoxBindingHelper.Password="{Binding Path=SolutionPasswd, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown" />
+            <PasswordBox BorderBrush="#CCCCCC" Width="116" Height="32" Margin="5,0,0,0" IsEnabled="True" vm_port_1:PasswordBoxBindingHelper.Attach="True" input:InputMethod.IsInputMethodEnabled="False" Tag="{DynamicResource SubWindowPassword}" Background="#FFFFFFFF" Style="{StaticResource passwordBoxStyle}" vm_port_1:PasswordBoxBindingHelper.Password="{Binding Path=SolutionPasswd, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown" />
           </StackPanel>
           <Button Grid.Column="4" Margin="-30,0,0,0" HorizontalAlignment="Center" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteCommand}" IsEnabled="{Binding IsAllowOperat, ElementName=source}">
             <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
@@ -237,7 +237,7 @@
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <i:Interaction.Behaviors>
-              <behavior:ListBoxBehavior />
+              <vm_port_2:ListBoxBehavior />
             </i:Interaction.Behaviors>
           </ListBox>
           <Button Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Margin="20,10,0,20" Height="32" Style="{StaticResource addButton}" FontSize="14px" CommandParameter="0" Command="{Binding AddCommand}" IsEnabled="{Binding IsAllowOperat, ElementName=source}" />
@@ -278,7 +278,7 @@
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <i:Interaction.Behaviors>
-              <behavior:ListBoxBehavior />
+              <vm_port_2:ListBoxBehavior />
             </i:Interaction.Behaviors>
           </ListBox>
           <Button Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Margin="20,10,0,20" Height="32" Style="{StaticResource addButton}" FontSize="14px" CommandParameter="1" Command="{Binding AddCommand}" IsEnabled="{Binding IsAllowOperat, ElementName=source}" />

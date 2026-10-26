@@ -1,0 +1,110 @@
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.PcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class DeleteTextBox : HikTextBox, IComponentConnector
+{
+	public delegate void TBFoucsChanged(object sender, TextBoxFocusEventArgs e);
+
+	public new static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(DeleteTextBox), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsNumberOnlyProperty = DependencyProperty.Register("IsNumberOnly", typeof(bool), typeof(DeleteTextBox), new PropertyMetadata(false, IsNumberOnlyPropertyChanged));
+
+	public new bool IsReadOnly
+	{
+		get
+		{
+			return (bool)GetValue(IsReadOnlyProperty);
+		}
+		set
+		{
+			SetValue(IsReadOnlyProperty, value);
+		}
+	}
+
+	public bool IsNumberOnly
+	{
+		get
+		{
+			return (bool)GetValue(IsNumberOnlyProperty);
+		}
+		set
+		{
+			SetValue(IsNumberOnlyProperty, value);
+		}
+	}
+
+	public event TBFoucsChanged OnTBFoucsChanged;
+
+	private static void IsNumberOnlyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as DeleteTextBox).OnIsNumberOnlyPropertyChanged();
+	}
+
+	private void OnIsNumberOnlyPropertyChanged()
+	{
+		SetValue(InputMethod.IsInputMethodEnabledProperty, !IsNumberOnly);
+	}
+
+	public DeleteTextBox()
+	{
+		InitializeComponent();
+		KeyUp += (object s, KeyEventArgs e) =>
+		{
+			if (e.Key == Key.Delete)
+			{
+				Text = null;
+			}
+		};
+	}
+
+	private void DoFocusChange()
+	{
+		if (OnTBFoucsChanged != null)
+		{
+			TextBoxFocusEventArgs e = new TextBoxFocusEventArgs
+			{
+				Text = Text,
+				IsFocus = IsFocused,
+				SelectionStart = SelectionStart
+			};
+			OnTBFoucsChanged(null, e);
+		}
+	}
+
+	private void tb_SelectionChanged(object sender, RoutedEventArgs e)
+	{
+		if (SelectedText.Length == 0 || SelectedText.Length == Text.Length)
+		{
+			DoFocusChange();
+		}
+	}
+
+	private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		e.Handled = true;
+	}
+
+	private void tb_PreviewTextInput(object sender, TextCompositionEventArgs e)
+	{
+		if (IsNumberOnly)
+		{
+			Regex regex = new Regex("[^0-9.-]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
+	}
+
+	private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+	{
+		if (IsNumberOnly)
+		{
+			e.CanExecute = false;
+			e.Handled = true;
+		}
+	}
+}

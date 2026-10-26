@@ -1,4 +1,6 @@
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
 using System.CodeDom.Compiler;
@@ -13,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media.Imaging;
 using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
@@ -858,10 +861,4 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 		}
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

@@ -1,0 +1,383 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.Localization;
+using Apps.Log;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public partial class UILogManager : BaseWindow, ILogManager, IComponentConnector
+{
+	public delegate void LogEventHandler(object logInfos);
+
+	public enum PageShowType
+	{
+		ShowFirstPage,
+		NoChange,
+		ImmediateChange
+	}
+
+	public static ObservableConcurrentQueue<LogContect> logInfoShow = LogUIBridge.GetInstance().GetShowLogList();
+
+	private const int MAXLOGITEM = 20;
+
+	private List<LogContect> tempLogList = new List<LogContect>();
+
+	private List<LogContect> sysytemLogList = new List<LogContect>();
+
+	public static readonly DependencyProperty BindItemsProperty = DependencyProperty.Register("BindItems", typeof(ObservableCollection<LogContect>), typeof(UILogManager), new PropertyMetadata((object)null));
+
+	public static readonly DependencyProperty ItemsTotalCountProperty = DependencyProperty.Register("ItemsTotalCount", typeof(int), typeof(UILogManager), new PropertyMetadata(0));
+
+	private int _CurrentPageNum = 0;
+
+	private int totalPageNum = 0;
+
+	public string _PageNumShowStatus = "Visible";
+
+	private const string Visiable = "Visible";
+
+	private const string Collapsed = "Collapsed";
+
+	private int _pageCount = 12;
+
+	private object _lock = new object();
+
+	public ObservableCollection<LogContect> BindItems
+	{
+		get
+		{
+			return (ObservableCollection<LogContect>)GetValue(BindItemsProperty);
+		}
+		set
+		{
+			SetValue(BindItemsProperty, value);
+		}
+	}
+
+	public int ItemsTotalCount
+	{
+		get
+		{
+			return (int)GetValue(ItemsTotalCountProperty);
+		}
+		set
+		{
+			SetValue(ItemsTotalCountProperty, value);
+		}
+	}
+
+	public int CurrentPageNum
+	{
+		get
+		{
+			return _CurrentPageNum;
+		}
+		set
+		{
+			if (_CurrentPageNum != value)
+			{
+				_CurrentPageNum = value;
+				OnPropertyChanged("CurrentPageNum");
+				SetBindData(tempLogList);
+			}
+		}
+	}
+
+	public string PageNumShowStatus
+	{
+		get
+		{
+			return _PageNumShowStatus;
+		}
+		set
+		{
+			if (_PageNumShowStatus != value)
+			{
+				_PageNumShowStatus = value;
+				OnPropertyChanged("PageNumShowStatus");
+			}
+		}
+	}
+
+	public int PageCount
+	{
+		get
+		{
+			return _pageCount;
+		}
+		set
+		{
+			if (_pageCount != value)
+			{
+				_pageCount = value;
+				OnPropertyChanged("PageCount");
+				CurrentPageNum = 0;
+				ItemsTotalCount = 0;
+				UpdatePageData(tempLogList);
+			}
+		}
+	}
+
+	public static event LogEventHandler LogChangedEvent;
+
+	public UILogManager(bool IsLoadLog = true)
+	{
+		LogHelper.Info("UILogManager构造----begin");
+		InitializeComponent();
+		LogHelper.Info("UILogManager构造----xaml初始化----end");
+		DataGridType.Header = AppLocalizationService.GetLang("类别");
+		DataGridTime.Header = AppLocalizationService.GetLang("Lang_Time");
+		DataGridEvent.Header = AppLocalizationService.GetLang("事件");
+		BindItems = new ObservableCollection<LogContect>();
+		if (IsLoadLog)
+		{
+			GetLogFromFile();
+		}
+		LogHelper.Info("UILogManager构造----end");
+	}
+
+	public static int logCreate(string logtype, string logevent, bool ifLang = true, bool ifPersistence = true)
+	{
+		if (ifLang)
+		{
+			logevent = AppLocalizationService.GetLang(logevent);
+		}
+		if (ifPersistence)
+		{
+			switch (logtype)
+			{
+			case "信息":
+				LogHelper.pageCreateLog.Info(logevent);
+				break;
+			case "错误":
+				LogHelper.pageCreateLog.Error(logevent);
+				break;
+			case "警告":
+				LogHelper.pageCreateLog.Warn(logevent);
+				break;
+			default:
+				LogHelper.pageCreateLog.Debug(logevent);
+				break;
+			}
+		}
+		LogContect logContect = new LogContect();
+		logContect.LogInfoTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+		logContect.LogType = logtype;
+		logContect.LogEvent = logevent;
+		logInfoShow.Enqueue(logContect);
+		if (logInfoShow.Count > 20)
+		{
+			int num = logInfoShow.Count - 20;
+			for (int i = 0; i < num; i++)
+			{
+				logInfoShow.TryDequeue(out var _);
+			}
+		}
+		return 0;
+	}
+
+	private void RadioButton_Checked(object sender, RoutedEventArgs e)
+	{
+		string text = sender.ToString();
+		if (logshow == null)
+		{
+			return;
+		}
+		switch ((sender as FrameworkElement).Name)
+		{
+		case "radio_allinfo":
+			tempLogList = sysytemLogList;
+			break;
+		case "radio_err":
+			tempLogList = sysytemLogList.Where((LogContect p) => p.LogType == "ERROR").ToList();
+			break;
+		case "radio_warning":
+			tempLogList = sysytemLogList.Where((LogContect p) => p.LogType == "WARN").ToList();
+			break;
+		case "radio_info":
+			tempLogList = sysytemLogList.Where((LogContect p) => p.LogType == "INFO").ToList();
+			break;
+		default:
+			tempLogList = sysytemLogList;
+			break;
+		}
+		if (BindItems != null)
+		{
+			UpdatePageData(tempLogList);
+			SetBindData(tempLogList);
+		}
+	}
+
+	public void GetLogFromFile()
+	{
+		try
+		{
+			string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log/UI/SystemLog.log");
+			if (!File.Exists(path))
+			{
+				return;
+			}
+			sysytemLogList.Clear();
+			using (StreamReader streamReader = new StreamReader(path))
+			{
+				string text;
+				while ((text = streamReader.ReadLine()) != null)
+				{
+					LogContect logContect = new LogContect();
+					if (!Regex.IsMatch(text, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"))
+					{
+						continue;
+					}
+					logContect.LogInfoTime = text.Substring(0, 19);
+					string[] array = text.Substring(20).Replace("  ", " ").Split(' ');
+					if (array.Count() > 1)
+					{
+						logContect.LogType = array[0];
+						List<string> list = new List<string>();
+						for (int i = 1; i < array.Count(); i++)
+						{
+							list.Add(array[i]);
+						}
+						logContect.LogEvent = string.Join(" ", list);
+					}
+					sysytemLogList.Add(logContect);
+				}
+			}
+			UpdatePageData(sysytemLogList);
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("读取Systemlog失败," + ex.Message);
+		}
+	}
+
+	private ICollectionView GetFamilyView()
+	{
+		if (!(TryFindResource("LogType") is LogContect source))
+		{
+			return null;
+		}
+		return CollectionViewSource.GetDefaultView(source);
+	}
+
+	public int LogCreate(string logtype, string logevent, bool ifLang = true)
+	{
+		return logCreate(logtype, logevent, ifLang);
+	}
+
+	private void UpdatePageData(List<LogContect> logContects, PageShowType type = PageShowType.ImmediateChange)
+	{
+		lock (_lock)
+		{
+			int count = logContects.Count;
+			if (count > 0)
+			{
+				PageNumShowStatus = "Visible";
+			}
+			else if (count == 0)
+			{
+				PageNumShowStatus = "Collapsed";
+				BindItems.Clear();
+			}
+			if (ItemsTotalCount == count)
+			{
+				return;
+			}
+			int num = 0;
+			ItemsTotalCount = count;
+			if (PageCount > 0)
+			{
+				num = ((ItemsTotalCount % PageCount <= 0) ? (ItemsTotalCount / PageCount) : (ItemsTotalCount / PageCount + 1));
+			}
+			totalPageNum = num;
+			if (type == PageShowType.ShowFirstPage && num > 0)
+			{
+				CurrentPageNum = 1;
+			}
+			else if (type == PageShowType.NoChange)
+			{
+				if (CurrentPageNum > num)
+				{
+					CurrentPageNum = num;
+				}
+			}
+			else
+			{
+				CurrentPageNum = num;
+			}
+		}
+	}
+
+	private void SetBindData(List<LogContect> logContects)
+	{
+		if (CurrentPageNum <= 0)
+		{
+			return;
+		}
+		int num = (CurrentPageNum - 1) * PageCount;
+		int num2 = ((CurrentPageNum < totalPageNum) ? (num + PageCount) : logContects.Count);
+		BindItems.Clear();
+		for (int i = num; i < num2; i++)
+		{
+			if (i < logContects.Count)
+			{
+				BindItems.Add(logContects[i]);
+			}
+		}
+	}
+
+	private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		bool exit = false;
+		UIElement uIElement = sender as UIElement;
+		VisualTreeHelper.HitTest(uIElement, (DependencyObject potentialHitTestTarget) =>
+		{
+			if (potentialHitTestTarget is AdornerLayer)
+			{
+				return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+			}
+			if (potentialHitTestTarget is ComboBox)
+			{
+				exit = true;
+				return HitTestFilterBehavior.Stop;
+			}
+			return HitTestFilterBehavior.Continue;
+		}, (HitTestResult result) => HitTestResultBehavior.Stop, new PointHitTestParameters(e.GetPosition(uIElement)));
+		if (exit)
+		{
+			return;
+		}
+		ScrollViewer scrollViewer = this.scrollViewer;
+		if (scrollViewer != null)
+		{
+			double num = Math.Abs(e.Delta / 2);
+			double num2 = 0.0;
+			num2 = ((e.Delta <= 0) ? Math.Min(scrollViewer.ScrollableHeight, scrollViewer.VerticalOffset + num) : Math.Max(0.0, scrollViewer.VerticalOffset - num));
+			if (num2 != scrollViewer.VerticalOffset)
+			{
+				scrollViewer.ScrollToVerticalOffset(num2);
+				e.Handled = true;
+			}
+		}
+	}
+
+}

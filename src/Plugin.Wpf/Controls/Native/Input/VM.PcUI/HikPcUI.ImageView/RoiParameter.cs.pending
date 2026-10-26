@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Xml;
 using Apps.Interface;
 using Hik.Xml;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 

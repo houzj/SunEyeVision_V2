@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
 using System;
 using System.Drawing;
 using System.Windows;

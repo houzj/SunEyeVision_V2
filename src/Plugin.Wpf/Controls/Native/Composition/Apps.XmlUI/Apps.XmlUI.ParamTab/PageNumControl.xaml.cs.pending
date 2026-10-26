@@ -1,0 +1,564 @@
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.Localization;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class PageNumControl : UserControl, IComponentConnector
+{
+	public static readonly DependencyProperty PageDataCountProperty = DependencyProperty.Register("PageDataCount", typeof(int), typeof(PageNumControl), new PropertyMetadata(12, PageDataCountChanged));
+
+	public static readonly DependencyProperty ShowingPageNumberCollectionProperty = DependencyProperty.Register("ShowingPageNumberCollection", typeof(ObservableCollection<NumInfo>), typeof(PageNumControl), new PropertyMetadata(null, null));
+
+	public static readonly DependencyProperty CurrentPageNumberProperty = DependencyProperty.Register("CurrentPageNumber", typeof(int), typeof(PageNumControl), new PropertyMetadata(0, OnCurrentPageNumberChanged));
+
+	public static readonly DependencyProperty MaxShownPageCountProperty = DependencyProperty.Register("MaxShownPageCount", typeof(int), typeof(PageNumControl), new PropertyMetadata(7, null));
+
+	public static readonly DependencyProperty TotalDataCountProperty = DependencyProperty.Register("TotalDataCount", typeof(int), typeof(PageNumControl), new PropertyMetadata(0, OnTotalDataCountChanged));
+
+	public static readonly DependencyProperty TotalPageCountProperty = DependencyProperty.Register("TotalPageCount", typeof(int), typeof(PageNumControl), new PropertyMetadata(0, null));
+
+	public static readonly DependencyProperty SelectedPageBackgroundProperty = DependencyProperty.Register("SelectedPageBackground", typeof(Brush), typeof(PageNumControl), new PropertyMetadata(new SolidColorBrush(Colors.Orange), null));
+
+	public static readonly DependencyProperty BtnCollapsedProperty = DependencyProperty.Register("BtnCollapsed", typeof(string), typeof(PageNumControl), new PropertyMetadata("Visible", null));
+
+	public static readonly DependencyProperty DisplayTotalCountProperty = DependencyProperty.Register("DisplayTotalCount", typeof(string), typeof(PageNumControl), new PropertyMetadata("0", null));
+
+	public static readonly DependencyProperty pageCountInfosProperty = DependencyProperty.Register("pageCountInfos", typeof(ObservableCollection<PageCountInfo>), typeof(PageNumControl), new PropertyMetadata(null, null));
+
+	public static readonly DependencyProperty PageCountVisibleProperty = DependencyProperty.Register("PageCountVisible", typeof(string), typeof(PageNumControl), new PropertyMetadata("Collapsed", null));
+
+	private object _lock = new object();
+
+	private bool isIgnoreListBoxSelectionChanged = false;
+
+	public string PageCountVisible
+	{
+		get
+		{
+			return (string)GetValue(PageCountVisibleProperty);
+		}
+		set
+		{
+			SetValue(PageCountVisibleProperty, value);
+		}
+	}
+
+	public int PageDataCount
+	{
+		get
+		{
+			return (int)GetValue(PageDataCountProperty);
+		}
+		set
+		{
+			SetValue(PageDataCountProperty, value);
+		}
+	}
+
+	public ObservableCollection<NumInfo> ShowingPageNumberCollection
+	{
+		get
+		{
+			return (ObservableCollection<NumInfo>)GetValue(ShowingPageNumberCollectionProperty);
+		}
+		set
+		{
+			SetValue(ShowingPageNumberCollectionProperty, value);
+		}
+	}
+
+	public ObservableCollection<PageCountInfo> pageCountInfos
+	{
+		get
+		{
+			return (ObservableCollection<PageCountInfo>)GetValue(pageCountInfosProperty);
+		}
+		set
+		{
+			SetValue(pageCountInfosProperty, value);
+		}
+	}
+
+	public int CurrentPageNumber
+	{
+		get
+		{
+			return (int)GetValue(CurrentPageNumberProperty);
+		}
+		set
+		{
+			SetValue(CurrentPageNumberProperty, value);
+		}
+	}
+
+	public int MaxShownPageCount
+	{
+		get
+		{
+			return (int)GetValue(MaxShownPageCountProperty);
+		}
+		set
+		{
+			SetValue(MaxShownPageCountProperty, value);
+		}
+	}
+
+	public int TotalDataCount
+	{
+		get
+		{
+			return (int)GetValue(TotalDataCountProperty);
+		}
+		set
+		{
+			SetValue(TotalDataCountProperty, value);
+		}
+	}
+
+	public int TotalPageCount
+	{
+		get
+		{
+			return (int)GetValue(TotalPageCountProperty);
+		}
+		set
+		{
+			SetValue(TotalPageCountProperty, value);
+		}
+	}
+
+	public Brush SelectedPageBackground
+	{
+		get
+		{
+			return (Brush)GetValue(SelectedPageBackgroundProperty);
+		}
+		set
+		{
+			SetValue(SelectedPageBackgroundProperty, value);
+		}
+	}
+
+	public string BtnCollapsed
+	{
+		get
+		{
+			return (string)GetValue(BtnCollapsedProperty);
+		}
+		set
+		{
+			SetValue(BtnCollapsedProperty, value);
+		}
+	}
+
+	public string DisplayTotalCount
+	{
+		get
+		{
+			return (string)GetValue(DisplayTotalCountProperty);
+		}
+		set
+		{
+			SetValue(DisplayTotalCountProperty, value);
+		}
+	}
+
+	public int NumWidth
+	{
+		get
+		{
+			if (AppLocalizationService.GetLang("Lang_ItemPage") == "Item/Page")
+			{
+				return 105;
+			}
+			return 80;
+		}
+	}
+
+	public PageNumControl()
+	{
+		InitializeComponent();
+		pageCountInfos = new ObservableCollection<PageCountInfo>
+		{
+			new PageCountInfo
+			{
+				PageNum = 12
+			},
+			new PageCountInfo
+			{
+				PageNum = 30
+			},
+			new PageCountInfo
+			{
+				PageNum = 50
+			},
+			new PageCountInfo
+			{
+				PageNum = 70
+			}
+		};
+	}
+
+	public void UpdatePageNum()
+	{
+		if (ShowingPageNumberCollection == null)
+		{
+			ShowingPageNumberCollection = new ObservableCollection<NumInfo>();
+		}
+		try
+		{
+			isIgnoreListBoxSelectionChanged = true;
+			if (PageDataCount <= 0)
+			{
+				return;
+			}
+			int num = 0;
+			num = ((TotalDataCount % PageDataCount <= 0) ? (TotalDataCount / PageDataCount) : (TotalDataCount / PageDataCount + 1));
+			if (TotalPageCount == num)
+			{
+				return;
+			}
+			TotalPageCount = num;
+			if (TotalPageCount == 1)
+			{
+				BtnCollapsed = "Collapsed";
+			}
+			else
+			{
+				BtnCollapsed = "Visible";
+			}
+			if (ShowingPageNumberCollection != null)
+			{
+				lock (_lock)
+				{
+					ShowingPageNumberCollection.Clear();
+					int maxShownPageCount = MaxShownPageCount;
+					if (TotalPageCount < MaxShownPageCount)
+					{
+						maxShownPageCount = TotalPageCount;
+					}
+					if (TotalPageCount > MaxShownPageCount)
+					{
+						for (int i = 1; i <= MaxShownPageCount - 2; i++)
+						{
+							ShowingPageNumberCollection.Add(new NumInfo
+							{
+								StrNum = i.ToString(),
+								IsNum = true
+							});
+						}
+						ShowingPageNumberCollection.Add(new NumInfo
+						{
+							StrNum = "...",
+							IsNum = false
+						});
+						ShowingPageNumberCollection.Add(new NumInfo
+						{
+							StrNum = TotalPageCount.ToString(),
+							IsNum = true
+						});
+					}
+					else
+					{
+						for (int j = 1; j <= TotalPageCount; j++)
+						{
+							ShowingPageNumberCollection.Add(new NumInfo
+							{
+								StrNum = j.ToString(),
+								IsNum = true
+							});
+						}
+					}
+				}
+				int num2 = ShowingPageNumberCollection.ToList().FindIndex((NumInfo x) => x.StrNum == CurrentPageNumber.ToString());
+				if (num2 > -1)
+				{
+					PART_ListBoxPages.SelectedIndex = num2;
+				}
+			}
+			setButton();
+		}
+		finally
+		{
+			isIgnoreListBoxSelectionChanged = false;
+		}
+	}
+
+	private static void OnTotalDataCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is PageNumControl pageNumControl)
+		{
+			pageNumControl.UpdatePageNum();
+			pageNumControl.UpdateTotalDataCount();
+		}
+	}
+
+	public void UpdateTotalDataCount()
+	{
+		DisplayTotalCount = string.Format(AppLocalizationService.GetLang("Lang_TotalCount"), TotalDataCount.ToString());
+	}
+
+	private static void OnCurrentPageNumberChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is PageNumControl pageNumControl)
+		{
+			pageNumControl.OutChangePageNum();
+		}
+	}
+
+	private static void PageDataCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is PageNumControl pageNumControl)
+		{
+			pageNumControl.UpdatePageNum();
+		}
+	}
+
+	public void OutChangePageNum()
+	{
+		if (!isIgnoreListBoxSelectionChanged && ShowingPageNumberCollection != null && ShowingPageNumberCollection.Count != 0)
+		{
+			isIgnoreListBoxSelectionChanged = true;
+			ChangePageNum();
+			int num = ShowingPageNumberCollection.ToList().FindIndex((NumInfo x) => x.StrNum == CurrentPageNumber.ToString());
+			if (num > -1)
+			{
+				PART_ListBoxPages.SelectedIndex = num;
+				setButton();
+			}
+			isIgnoreListBoxSelectionChanged = false;
+		}
+	}
+
+	private void PART_ButtonPrePage_Click(object sender, RoutedEventArgs e)
+	{
+		if (isIgnoreListBoxSelectionChanged || ShowingPageNumberCollection == null || ShowingPageNumberCollection.Count == 0)
+		{
+			return;
+		}
+		try
+		{
+			isIgnoreListBoxSelectionChanged = true;
+			if (CurrentPageNumber > 1)
+			{
+				CurrentPageNumber--;
+				ChangePageNum();
+				int num = ShowingPageNumberCollection.ToList().FindIndex((NumInfo x) => x.StrNum == CurrentPageNumber.ToString());
+				if (num > -1)
+				{
+					PART_ListBoxPages.SelectedIndex = num;
+					setButton();
+				}
+			}
+		}
+		finally
+		{
+			isIgnoreListBoxSelectionChanged = false;
+		}
+	}
+
+	private void setButton()
+	{
+		if (CurrentPageNumber == 1)
+		{
+			PART_ButtonPrePage.IsEnabled = false;
+			PART_ButtonNextPage.IsEnabled = true;
+		}
+		else if (CurrentPageNumber == TotalPageCount)
+		{
+			PART_ButtonPrePage.IsEnabled = true;
+			PART_ButtonNextPage.IsEnabled = false;
+		}
+		else
+		{
+			PART_ButtonPrePage.IsEnabled = true;
+			PART_ButtonNextPage.IsEnabled = true;
+		}
+	}
+
+	private void PART_ButtonNextPage_Click(object sender, RoutedEventArgs e)
+	{
+		if (isIgnoreListBoxSelectionChanged || ShowingPageNumberCollection == null || ShowingPageNumberCollection.Count == 0)
+		{
+			return;
+		}
+		try
+		{
+			isIgnoreListBoxSelectionChanged = true;
+			if (CurrentPageNumber < TotalPageCount)
+			{
+				CurrentPageNumber++;
+				ChangePageNum();
+				int selectedIndex = ShowingPageNumberCollection.ToList().FindIndex((NumInfo x) => x.StrNum == CurrentPageNumber.ToString());
+				PART_ListBoxPages.SelectedIndex = selectedIndex;
+				setButton();
+			}
+		}
+		finally
+		{
+			isIgnoreListBoxSelectionChanged = false;
+		}
+	}
+
+	private void PART_ListBoxPages_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (isIgnoreListBoxSelectionChanged)
+		{
+			return;
+		}
+		try
+		{
+			isIgnoreListBoxSelectionChanged = true;
+			if (!(sender is ListBox { SelectedItem: not null } listBox))
+			{
+				return;
+			}
+			NumInfo numInfo = listBox.SelectedItem as NumInfo;
+			string s = numInfo.StrNum.ToString();
+			if (!int.TryParse(s, out var selectedPageNumber))
+			{
+				int selectedIndex = ShowingPageNumberCollection.ToList().FindIndex((NumInfo x) => x.StrNum == CurrentPageNumber.ToString());
+				PART_ListBoxPages.SelectedIndex = selectedIndex;
+				return;
+			}
+			CurrentPageNumber = selectedPageNumber;
+			ChangePageNum();
+			int selectedIndex2 = ShowingPageNumberCollection.ToList().FindIndex((NumInfo x) => x.StrNum == selectedPageNumber.ToString());
+			PART_ListBoxPages.SelectedIndex = selectedIndex2;
+			setButton();
+		}
+		finally
+		{
+			isIgnoreListBoxSelectionChanged = false;
+		}
+	}
+
+	private void ChangePageNum()
+	{
+		if (TotalPageCount <= MaxShownPageCount)
+		{
+			return;
+		}
+		if (CurrentPageNumber <= 5)
+		{
+			for (int i = 0; i <= MaxShownPageCount - 1; i++)
+			{
+				if (i == MaxShownPageCount - 2)
+				{
+					ShowingPageNumberCollection[i].StrNum = "...";
+					ShowingPageNumberCollection[i].IsNum = false;
+				}
+				else if (i == MaxShownPageCount - 1)
+				{
+					ShowingPageNumberCollection[i].StrNum = TotalPageCount.ToString();
+					ShowingPageNumberCollection[i].IsNum = true;
+				}
+				else
+				{
+					ShowingPageNumberCollection[i].StrNum = (i + 1).ToString();
+					ShowingPageNumberCollection[i].IsNum = true;
+				}
+			}
+			return;
+		}
+		if (CurrentPageNumber > TotalPageCount - 5)
+		{
+			for (int num = MaxShownPageCount - 1; num >= 0; num--)
+			{
+				switch (num)
+				{
+				case 1:
+					ShowingPageNumberCollection[num].StrNum = "...";
+					ShowingPageNumberCollection[num].IsNum = false;
+					break;
+				case 0:
+					ShowingPageNumberCollection[num].StrNum = (num + 1).ToString();
+					ShowingPageNumberCollection[num].IsNum = true;
+					break;
+				default:
+					ShowingPageNumberCollection[num].StrNum = (TotalPageCount + num - MaxShownPageCount + 1).ToString();
+					ShowingPageNumberCollection[num].IsNum = true;
+					break;
+				}
+			}
+			return;
+		}
+		for (int j = 0; j <= MaxShownPageCount - 1; j++)
+		{
+			switch (j)
+			{
+			case 0:
+				ShowingPageNumberCollection[j].StrNum = (j + 1).ToString();
+				ShowingPageNumberCollection[j].IsNum = true;
+				continue;
+			case 1:
+			case 5:
+				ShowingPageNumberCollection[j].StrNum = "...";
+				ShowingPageNumberCollection[j].IsNum = false;
+				continue;
+			}
+			if (j == MaxShownPageCount - 1)
+			{
+				ShowingPageNumberCollection[j].StrNum = (TotalPageCount + j - MaxShownPageCount + 1).ToString();
+				ShowingPageNumberCollection[j].IsNum = true;
+			}
+			else
+			{
+				ShowingPageNumberCollection[j].StrNum = (CurrentPageNumber + j - 3).ToString();
+				ShowingPageNumberCollection[j].IsNum = true;
+			}
+		}
+	}
+
+	private void BtnOk_Click(object sender, RoutedEventArgs e)
+	{
+		string text = txtJumpNum.Text;
+		jumpPage(text);
+	}
+
+	private void jumpPage(string jnmnum)
+	{
+		if (!string.IsNullOrEmpty(jnmnum) && int.TryParse(jnmnum, out var result) && result > 0 && result <= TotalPageCount)
+		{
+			CurrentPageNumber = result;
+		}
+	}
+
+	private void TxtJumpNum_PreviewKeyDown(object sender, KeyEventArgs e)
+	{
+		if (e.Key == Key.Back || e.Key == Key.Delete || e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Home || e.Key == Key.End)
+		{
+			return;
+		}
+		if (e.Key == Key.Return)
+		{
+			string text = txtJumpNum.Text;
+			jumpPage(text);
+		}
+		try
+		{
+			bool flag = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+			if ((e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9) || (e.Key >= Key.D0 && e.Key <= Key.D9 && !flag))
+			{
+				e.Handled = false;
+			}
+			else
+			{
+				e.Handled = true;
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	private void SearchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+	}
+}

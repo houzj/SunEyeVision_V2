@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.TextEditingControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" x:Name="textEditingControl" xmlns:xmlui="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/TextBoxStyle/TextBoxStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <TextBox Name="ExpressBox" Grid.Column="0" TextWrapping="Wrap" Padding="6,5,0,0" Height="NaN" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Style="{StaticResource NormalTextBoxStyle}" Text="{Binding ExpressionA, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+    <StackPanel Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding Path=LocalParamObj.ParamValue}">
+      <ToggleButton Name="PopupBtn" HorizontalAlignment="Right" Margin="8,0,0,0" VerticalAlignment="Top" Style="{StaticResource LinkToggleButton}" Command="{Binding DropDownCommand}" />
+      <Popup Name="Popup" AllowsTransparency="True" StaysOpen="False" IsOpen="{Binding IsChecked, ElementName=PopupBtn}">
+        <StackPanel Orientation="Vertical">
+          <StackPanel Height="4" />
+          <Border BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6">
+            <Border.Background>
+              <LinearGradientBrush>
+                <GradientStop Offset="0.0" Color="#FCFCFC" />
+                <GradientStop Offset="0.15" Color="#FCFCFC" />
+                <GradientStop Offset="1" Color="#F7F7F7" />
+              </LinearGradientBrush>
+            </Border.Background>
+            <local:SubTreeView x:Name="SubTreeView" OnTreeNodeDoubleClick="SubTreeView_OnOnTreeNodeDoubleClick" Width="Auto" MinWidth="180" Height="180" />
+          </Border>
+        </StackPanel>
+      </Popup>
+    </StackPanel>
+  </Grid>
+</UserControl>

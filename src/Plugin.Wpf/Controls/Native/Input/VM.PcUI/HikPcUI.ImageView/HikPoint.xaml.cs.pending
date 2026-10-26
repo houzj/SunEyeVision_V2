@@ -300,10 +300,4 @@ public partial class HikPoint : HikROIBase, RectangleRoi, IDisposable, INotifyPr
 		}
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

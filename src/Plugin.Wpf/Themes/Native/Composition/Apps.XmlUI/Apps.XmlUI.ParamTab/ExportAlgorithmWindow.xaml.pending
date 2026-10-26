@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vm_port_0:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.ExportAlgorithmWindow" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:uiData="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm" x:Name="exportAlgorithmWindow" Title="{DynamicResource Lang_ExportAlgorithmCode}" Height="480" Width="680" xmlns:paramtab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="vm_port_0_:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ComboBoxStyle/ComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/TextBoxStyle/TextBoxStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/CheckBoxStyle/CheckBoxStyle.xaml" />
+        <ResourceDictionary Source="/VM.Controls;component/Styles/ScrollViewStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="BoolToVisibilityCvt" />
+      <Style x:Key="{x:Type ScrollViewer}" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource RecScrollViewer}" />
+      <Style x:Key="DisplayTextBlock" TargetType="{x:Type TextBlock}">
+        <Setter Property="Margin" Value="5,0,0,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FrameworkElement.ToolTip" Value="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+      </Style>
+      <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Grid Width="15" Height="13" Background="#00FFFFFF">
+                <VisualStateManager.VisualStateGroups>
+                  <VisualStateGroup x:Name="CheckStates">
+                    <VisualState x:Name="Checked">
+                      <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="Collapsed">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Hidden}" />
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="Expanded">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                        </ObjectAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Unchecked" />
+                    <VisualState x:Name="Indeterminate" />
+                  </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Path Name="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1,1,1,1" StrokeThickness="2" Data="M0,0 L5,5 L0,10">
+                  <Shape.Stroke>
+                    <SolidColorBrush Color="#444444" />
+                  </Shape.Stroke>
+                </Path>
+                <Path Name="Expanded" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1,1,1,1" StrokeThickness="2" Data="M0,0 L5,5 L10,0" Visibility="Hidden">
+                  <Shape.Stroke>
+                    <SolidColorBrush Color="#444444" />
+                  </Shape.Stroke>
+                </Path>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="TreeViewItem.IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TreeViewItem}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition MinWidth="19" Width="Auto" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <VisualStateManager.VisualStateGroups>
+                  <VisualStateGroup x:Name="SelectionStates">
+                    <VisualState x:Name="Selected">
+                      <Storyboard>
+                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="Bd" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
+                          <EasingColorKeyFrame KeyTime="0" Value="Transparent" />
+                        </ColorAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Unselected" />
+                    <VisualState x:Name="SelectedInactive">
+                      <Storyboard>
+                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="Bd" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
+                          <EasingColorKeyFrame KeyTime="0" Value="Transparent" />
+                        </ColorAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                  </VisualStateGroup>
+                  <VisualStateGroup x:Name="ExpansionStates">
+                    <VisualState x:Name="Expanded">
+                      <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="ItemsHost">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                        </ObjectAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Collapsed" />
+                  </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <ToggleButton Name="Expander" ClickMode="Press" Style="{StaticResource ExpandCollapseToggleStyle}" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Border Name="Bd" Grid.Column="1" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Padding="{TemplateBinding Control.Padding}">
+                  <ContentPresenter Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" />
+                </Border>
+                <ItemsPresenter Name="ItemsHost" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Visibility="Collapsed" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="ItemsControl.HasItems" Value="False">
+                  <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+                </Trigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="HasHeader" Value="False" />
+                    <Condition Property="Width" Value="Auto" />
+                  </MultiTrigger.Conditions>
+                  <Setter TargetName="PART_Header" Property="MinWidth" Value="75" />
+                </MultiTrigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="HasHeader" Value="False" />
+                    <Condition Property="Height" Value="Auto" />
+                  </MultiTrigger.Conditions>
+                  <Setter TargetName="PART_Header" Property="MinHeight" Value="19" />
+                </MultiTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="OpenFileTextBoxStyle1" TargetType="{x:Type TextBox}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="#FCFCFC" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="BorderBrush" Value="#CCCCCD" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TextBox}">
+              <Border Name="Bd" CornerRadius="2" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="True">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="32" />
+                  </Grid.ColumnDefinitions>
+                  <ScrollViewer Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalContentAlignment="{TemplateBinding Control.VerticalContentAlignment}" VerticalAlignment="{TemplateBinding FrameworkElement.VerticalAlignment}" />
+                  <TextBlock Name="Message" FontSize="14" VerticalAlignment="Center" Foreground="#FFD3D3D3" Padding="3,0,0,0" Text="{TemplateBinding FrameworkElement.Tag}" Visibility="Hidden" />
+                  <Button Grid.Column="1" Style="{StaticResource FileBtnStyle}" Command="{Binding FilePathCommand}" />
+                </Grid>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="Text" Value="">
+                  <Setter TargetName="Message" Property="Visibility" Value="Visible" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Border.Background" />
+                  <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type ListBoxItem}" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+              <Border Name="Bd" BorderBrush="#00FFFFFF" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type CheckBox}">
+              <StackPanel Orientation="Horizontal">
+                <Image Name="Image" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/swith_off.png" />
+                <TextBlock VerticalAlignment="Center" Width="500" TextTrimming="CharacterEllipsis" Margin="3,0" Text="{Binding Path=Content, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=CheckBox}}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+              </StackPanel>
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="Image" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/swith_on.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Margin="10,10,0,0">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="48" />
+      <RowDefinition Height="48" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="48" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="42" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="100" />
+      <ColumnDefinition Width="240" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="240" />
+    </Grid.ColumnDefinitions>
+    <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource Lang_Programming_Language}" Style="{StaticResource DisplayTextBlock}" />
+    <ComboBox Name="LangComboBox" Grid.Row="0" Grid.Column="1" Margin="0,5,15,5" Style="{StaticResource ComboBoxStyle}" />
+    <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Text="{DynamicResource Lang_Compilation_Platform}" Style="{StaticResource DisplayTextBlock}" />
+    <ComboBox Name="PlatComboBox" Grid.Row="0" Grid.Column="3" Margin="15,5,15,5" Style="{StaticResource ComboBoxStyle}" />
+    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource Lang_Project_Name}" Style="{StaticResource DisplayTextBlock}" />
+    <TextBox Name="NameTextBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource NormalInput}" HorizontalAlignment="Stretch" Margin="0,5,15,5" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+    <TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" Text="{DynamicResource Lang_Export_Directory}" Style="{StaticResource DisplayTextBlock}" />
+    <TextBox Name="FileTextBox" Grid.Row="1" Grid.Column="3" Style="{StaticResource OpenFileTextBoxStyle1}" Padding="8,0,0,0" HorizontalAlignment="Stretch" Margin="15,8,15,8" IsReadOnly="True" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+    <TextBlock Grid.Row="2" Grid.Column="0" Margin="5,10,0,0" Text="{DynamicResource Lang_ExportProcess}" Style="{StaticResource DisplayTextBlock}" Height="{Binding ElementName=processListBox, Path=ActualHeight}" Visibility="{Binding ElementName=processListBox, Path=Visibility}" />
+    <ListBox Name="processListBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,15,15,5" Height="96" BorderThickness="1" BorderBrush="#CCCCCD" ScrollViewer.CanContentScroll="True" ItemsSource="{Binding ElementName=exportAlgorithmWindow, Path=ProcessTreeNodeList}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate DataType="{x:Type uiData:EaVmModuleTreeNode}">
+          <StackPanel Name="stackPanelVmNode" Orientation="Horizontal" ToolTipService.ShowOnDisabled="True" IsEnabled="{Binding Path=., Converter={x:Static uiData:EaVmModuleTreeNodeCvt.Cvt}}">
+            <CheckBox VerticalAlignment="Center" Style="{StaticResource CheckBoxStyle1}" IsChecked="{Binding IsSelected}" />
+            <TextBlock Name="moduleNameTextBlock" FontSize="13" VerticalAlignment="Center" Text="{Binding ModuleName}" />
+          </StackPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ListBox>
+    <TextBlock Grid.Row="3" Grid.Column="0" Margin="10,5,15,5" Text="{DynamicResource Lang_ExportROISetting}" Style="{StaticResource DisplayTextBlock}" />
+    <CheckBox Name="ChkOpenAllModules" Grid.Row="3" Grid.Column="1" Margin="-5,8" Grid.ColumnSpan="3" VerticalAlignment="Center" VerticalContentAlignment="Center" Content="{DynamicResource Lang_ExportROISettingTips}" Foreground="#666666" HorizontalAlignment="Left" Checked="ChkOpenAllModules_Checked" Unchecked="ChkOpenAllModules_Unchecked" />
+    <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Top" Margin="10,5,10,5" Text="{DynamicResource Lang_SelectedROITips}" Style="{StaticResource DisplayTextBlock}" Visibility="{Binding ElementName=tvAllModules, Path=Visibility}" />
+    <TreeView Name="tvAllModules" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,5,15,5" BorderThickness="1" BorderBrush="#CCCCCD" Padding="5,0" ScrollViewer.CanContentScroll="True" ItemsSource="{Binding ElementName=exportAlgorithmWindow, Path=VmModuleTreeNodeList}" Visibility="{Binding ElementName=ChkOpenAllModules, Path=IsChecked, Converter={StaticResource BoolToVisibilityCvt}}">
+      <ItemsControl.ItemTemplate>
+        <HierarchicalDataTemplate DataType="{x:Type uiData:EaVmModuleTreeNode}" ItemsSource="{Binding ChildrenNodes}">
+          <StackPanel Name="stackPanelVmNode" Orientation="Horizontal" ToolTipService.ShowOnDisabled="True" IsEnabled="{Binding Path=., Converter={x:Static uiData:EaVmModuleTreeNodeCvt.Cvt}}">
+            <CheckBox VerticalAlignment="Center" Style="{StaticResource CheckBoxStyle1}" IsChecked="{Binding IsSelected}" />
+            <TextBlock Name="moduleIDTextBlock" Margin="4,0" FontSize="13" VerticalAlignment="Center" Text="{Binding ModuleID}" />
+            <TextBlock Name="moduleNameTextBlock" FontSize="13" VerticalAlignment="Center" Text="{Binding ModuleName}" />
+          </StackPanel>
+          <DataTemplate.Triggers>
+            <DataTrigger Value="False" Binding="{Binding ElementName=stackPanelVmNode, Path=IsEnabled}">
+              <Setter TargetName="stackPanelVmNode" Property="UIElement.Opacity" Value="0.5" />
+              <Setter TargetName="stackPanelVmNode" Property="FrameworkElement.ToolTip" Value="{Lang:LangResource 模块不支持配置ROI}" />
+            </DataTrigger>
+          </DataTemplate.Triggers>
+        </HierarchicalDataTemplate>
+      </ItemsControl.ItemTemplate>
+    </TreeView>
+    <Border Grid.Row="5" Grid.ColumnSpan="5" Background="#E4E4E4" Margin="-10,0,-10,0">
+      <Button Name="btnExport" HorizontalAlignment="Right" Content="{DynamicResource 导出}" Style="{StaticResource OrangeEdit_ButtonStyle}" Width="80" Margin="10,8,15,8" Click="Button_Click" />
+    </Border>
+    <Border Grid.RowSpan="6" Grid.ColumnSpan="4" Opacity="0.5" Background="#FF000000" Margin="-10,-10,-10,0" Visibility="{Binding ElementName=progressBar, Path=Visibility}">
+      <ProgressBar Name="progressBar" IsIndeterminate="True" Height="2" VerticalAlignment="Bottom" Visibility="Hidden" />
+    </Border>
+  </Grid>
+</vm_port_0:BaseWindow>

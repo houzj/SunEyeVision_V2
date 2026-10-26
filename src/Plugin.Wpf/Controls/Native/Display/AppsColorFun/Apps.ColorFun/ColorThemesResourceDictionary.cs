@@ -1,114 +1,56 @@
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
-using System.Collections;
 using System.Diagnostics;
 using System.Windows;
-using System.Xml;
-using Apps.BaseData;
-using Apps.Log;
-using VM.Utility.SingleInstance;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
 
+/// <summary>迁入原颜色资源的窗口级宿主适配；不依赖VM安装目录或注入Application资源。</summary>
 public class ColorThemesResourceDictionary : DynamicResourceDictionary
 {
-	private static object syncObj = new object();
+    private const string ResourceRoot = "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/";
+    private static readonly object Sync = new();
+    private static ColorThemesResourceDictionary? instance;
 
-	private static ColorThemesResourceDictionary instance = null;
+    public static ColorThemesResourceDictionary Instance => GetInstance();
 
-	public static ColorThemesResourceDictionary Instance => GetInstance();
+    public static ColorThemesResourceDictionary GetInstance(FrameworkElement? framework = null)
+    {
+        lock (Sync)
+        {
+            instance ??= new ColorThemesResourceDictionary();
+            if (framework != null)
+            {
+                framework.Dispatcher.VerifyAccess();
+                if (!framework.Resources.MergedDictionaries.Contains(instance))
+                    framework.Resources.MergedDictionaries.Add(instance);
+            }
+            return instance;
+        }
+    }
 
-	public static ColorThemesResourceDictionary GetInstance(FrameworkElement framework = null)
-	{
-		if (instance == null)
-		{
-			lock (syncObj)
-			{
-				if (instance == null)
-				{
-					instance = new ColorThemesResourceDictionary();
-					if (Application.Current != null && !Application.Current.Resources.MergedDictionaries.Contains(instance))
-					{
-						Application.Current.Resources.MergedDictionaries.Add(instance);
-					}
-				}
-			}
-		}
-		if (framework != null)
-		{
-			lock (syncObj)
-			{
-				if (!framework.Resources.MergedDictionaries.Contains(instance))
-				{
-					framework.Resources.MergedDictionaries.Add(instance);
-				}
-			}
-		}
-		return instance;
-	}
+    public ColorThemesResourceDictionary() => LoadTheme("colorstyle1");
 
-	private Uri LoadColorStyle(string rootPath)
-	{
-		string text = $"{rootPath}\\ColorCFG\\ColorStyleSet.cfg";
-		XmlDocument xmlDocument = new XmlDocument();
-		xmlDocument.Load(text);
-		LogHelper.objLog.Info(text);
-		string innerText = xmlDocument.SelectSingleNode("VisionMasterCfgRoot/ColorSet").InnerText;
-		return new Uri($"{rootPath}/ColorStyle/{innerText}.xaml", UriKind.RelativeOrAbsolute);
-	}
+    private void LoadTheme(string colorStyle)
+    {
+        var name = colorStyle.ToLowerInvariant();
+        if (name is not ("colorstyle1" or "colorstyle2" or "colorstyle3"))
+            throw new ArgumentOutOfRangeException(nameof(colorStyle), colorStyle, "仅支持已迁入的三个主题资源。");
 
-	public ColorThemesResourceDictionary()
-	{
-		try
-		{
-			if (CurrentPathHelper.Instance.IsSDKMode)
-			{
-				string currentPath = CurrentPathHelper.Instance.GetCurrentPath();
-				Source = LoadColorStyle(currentPath);
-			}
-			else
-			{
-				string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-				Source = LoadColorStyle(baseDirectory);
-			}
-			foreach (DictionaryEntry item in new ResourceDictionary
-			{
-				Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle.xaml", UriKind.RelativeOrAbsolute)
-			})
-			{
-				Add(item.Key, item.Value);
-			}
-			LogHelper.Info("color resource loaded successfully");
-		}
-		catch (Exception ex)
-		{
-			LogHelper.Error($"set color is error：{ex.Message},{ex.StackTrace.ToString()}");
-		}
-	}
+        // 先完整加载，失败时保留已显示主题；基础色键覆盖主题中的同名键，沿用原合并顺序。
+        var theme = new ResourceDictionary { Source = new Uri(ResourceRoot + name + ".xaml", UriKind.Relative) };
+        var common = new ResourceDictionary { Source = new Uri(ResourceRoot + "colorstyle.xaml", UriKind.Relative) };
+        MergedDictionaries.Clear();
+        MergedDictionaries.Add(theme);
+        MergedDictionaries.Add(common);
+    }
 
-	public static void SetColorResource(string colorStyle)
-	{
-		lock (syncObj)
-		{
-			try
-			{
-				string currentPath = CurrentPathHelper.Instance.GetCurrentPath();
-				Uri source = new Uri($"{currentPath}/ColorStyle/{colorStyle}.xaml", UriKind.RelativeOrAbsolute);
-				instance.Source = source;
-				foreach (DictionaryEntry item in new ResourceDictionary
-				{
-					Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle.xaml", UriKind.RelativeOrAbsolute)
-				})
-				{
-					instance.Add(item.Key, item.Value);
-				}
-				LogHelper.Info("color resource loaded successfully");
-			}
-			catch (Exception ex)
-			{
-				Debugger.Log(0, null, "set color resource is error:" + ex.ToString());
-			}
-		}
-	}
+    public static void SetColorResource(string colorStyle)
+    {
+        lock (Sync)
+        {
+            try { GetInstance().LoadTheme(colorStyle); }
+            catch (Exception ex) { Trace.TraceError("加载迁入颜色资源失败：{0}", ex); }
+        }
+    }
 }

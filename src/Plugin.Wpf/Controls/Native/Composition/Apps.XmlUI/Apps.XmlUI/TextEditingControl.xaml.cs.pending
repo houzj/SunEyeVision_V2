@@ -1,0 +1,165 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Text;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using Apps.Data.Common;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public partial class TextEditingControl : UserControl, IComponentConnector
+{
+	public TextEditingControl()
+	{
+		InitializeComponent();
+	}
+
+	private void SubTreeView_OnOnTreeNodeDoubleClick(object sender, ObjectEventArgs e)
+	{
+		if (!(e.Param is SubTreeNode { DisplayNameA: var displayNameA } subTreeNode))
+		{
+			return;
+		}
+		int startIndex = 0;
+		int includedStringInfo;
+		if (Popup.PlacementTarget == ExpressBox && Popup.IsOpen)
+		{
+			includedStringInfo = GetIncludedStringInfo(ExpressBox.Text, ExpressBox.CaretIndex, "[", "]", ref startIndex);
+			if (includedStringInfo > 0)
+			{
+				ExpressBox.Select(startIndex, includedStringInfo);
+				RemoveText();
+			}
+			InsertText($"<{displayNameA}>");
+			return;
+		}
+		includedStringInfo = GetIncludedStringInfo(ExpressBox.Text, ExpressBox.CaretIndex, "<", ">", ref startIndex);
+		if (includedStringInfo >= 0)
+		{
+			if (includedStringInfo > 0)
+			{
+				ExpressBox.Select(startIndex, includedStringInfo);
+				RemoveText();
+			}
+			InsertText(displayNameA);
+		}
+		else
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			object parentNode = subTreeNode.ParentNode;
+			stringBuilder.Append($"{displayNameA}");
+			while (parentNode is SubTreeNode subTreeNode2)
+			{
+				stringBuilder.Insert(0, $"{subTreeNode2.DisplayNameA}.");
+				parentNode = subTreeNode2.ParentNode;
+			}
+			InsertText($"<{stringBuilder}>");
+		}
+		Popup.IsOpen = false;
+	}
+
+	public static int GetIncludedStringInfo(string input, int currentIndex, string left, string right, ref int startIndex)
+	{
+		try
+		{
+			if (currentIndex <= 0)
+			{
+				return -1;
+			}
+			if (string.IsNullOrEmpty(input))
+			{
+				return -1;
+			}
+			if (currentIndex > input.Length - 1)
+			{
+				return -1;
+			}
+			int num = input.LastIndexOf(left, currentIndex - 1, currentIndex, StringComparison.Ordinal);
+			if (num < 0)
+			{
+				return -1;
+			}
+			startIndex += num + left.Length;
+			int num2 = input.IndexOf(right, startIndex, StringComparison.Ordinal);
+			if (num2 < 0)
+			{
+				return -1;
+			}
+			if (num2 < currentIndex)
+			{
+				return -1;
+			}
+			return num2 - startIndex;
+		}
+		catch (Exception)
+		{
+			return -1;
+		}
+	}
+
+	public void InsertTextToEnd(string input)
+	{
+		if (string.IsNullOrEmpty(ExpressBox.Text))
+		{
+			ExpressBox.Text = input;
+		}
+		else
+		{
+			ExpressBox.Text += input;
+		}
+		ExpressBox.CaretIndex = ExpressBox.Text.Length;
+		ExpressBox.Focus();
+	}
+
+	public void InsertText(int index, string input)
+	{
+		if (string.IsNullOrEmpty(input) || index > ExpressBox.Text.Length - 1)
+		{
+			InsertTextToEnd(input);
+			return;
+		}
+		ExpressBox.Text = ExpressBox.Text.Insert(index, input);
+		ExpressBox.CaretIndex = index + input.Length;
+		ExpressBox.Focus();
+	}
+
+	public void InsertText(string input)
+	{
+		InsertText(ExpressBox.CaretIndex, input);
+	}
+
+	public void RemoveText(int index)
+	{
+		if (!string.IsNullOrEmpty(ExpressBox.Text) && index >= 0)
+		{
+			if (index > ExpressBox.Text.Length - 1)
+			{
+				index = ExpressBox.Text.Length - 1;
+			}
+			ExpressBox.Text = ExpressBox.Text.Remove(index, 1);
+			ExpressBox.CaretIndex = index;
+			ExpressBox.Focus();
+		}
+	}
+
+	public void RemoveText()
+	{
+		if (!string.IsNullOrEmpty(ExpressBox.Text))
+		{
+			if (ExpressBox.SelectedText.Length > 0)
+			{
+				int selectionStart = ExpressBox.SelectionStart;
+				ExpressBox.Text = ExpressBox.Text.Remove(ExpressBox.SelectionStart, ExpressBox.SelectionLength);
+				ExpressBox.CaretIndex = selectionStart;
+				ExpressBox.Focus();
+			}
+			else
+			{
+				RemoveText(ExpressBox.CaretIndex - 1);
+			}
+		}
+	}
+
+}

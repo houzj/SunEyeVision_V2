@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikCoverHollow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:sysw="clr-namespace:System.Windows;assembly=PresentationFramework" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Name="coverHollowControl" MouseEnter="CoverHollowControl_MouseEnter" MouseLeftButtonDown="CoverHollowControl_MouseLeftButtonDown" MouseLeave="CoverHollowControl_MouseLeave" Loaded="CoverHollowControl_Loaded" MouseUp="CoverHollowControl_MouseUp">
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikCoverHollow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:sysw="clr-namespace:System.Windows;assembly=PresentationFramework" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Name="coverHollowControl" MouseEnter="CoverHollowControl_MouseEnter" MouseLeftButtonDown="CoverHollowControl_MouseLeftButtonDown" MouseLeave="CoverHollowControl_MouseLeave" Loaded="CoverHollowControl_Loaded" MouseUp="CoverHollowControl_MouseUp" xmlns:core="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors" xmlns:p14="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors">
   <sysw:FrameworkElement.Resources>
     <sysw:ResourceDictionary>
       <sysw:ResourceDictionary.MergedDictionaries>
@@ -20,14 +20,14 @@
     <Canvas Name="WorkView" Width="Auto" Height="Auto">
       <Polygon Name="polygon" StrokeThickness="1" Style="{sysw:StaticResource TransparentPath}" Cursor="SizeAll">
         <i:Interaction.Triggers>
-          <core:DataTrigger xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" Comparison="Equal" Value="{x:Static local:CustomROITypeUIEnum.Avoid}" core:PropertyChangedTrigger.Binding="{Binding Tag}">
+          <core:DataTrigger Comparison="Equal" Value="{x:Static local:CustomROITypeUIEnum.Avoid}" core:PropertyChangedTrigger.Binding="{Binding Tag}">
             <core:ChangePropertyAction PropertyName="Style" Value="{sysw:StaticResource AvoidPath}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=polygon}" />
           </core:DataTrigger>
         </i:Interaction.Triggers>
       </Polygon>
       <Polygon Name="polygonInside" StrokeThickness="1" Style="{sysw:StaticResource TransparentPath}" Cursor="SizeAll">
         <i:Interaction.Triggers>
-          <DataTrigger Comparison="Equal" Value="{x:Static local:CustomROITypeUIEnum.Avoid}" p14:PropertyChangedTrigger.Binding="{Binding Tag}" xmlns:p14="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions">
+          <DataTrigger Comparison="Equal" Value="{x:Static local:CustomROITypeUIEnum.Avoid}" p14:PropertyChangedTrigger.Binding="{Binding Tag}" xmlns="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors">
             <p14:ChangePropertyAction PropertyName="Style" Value="{sysw:StaticResource AvoidPath}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=polygon}" />
           </DataTrigger>
         </i:Interaction.Triggers>

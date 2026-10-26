@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<localBase:ServiceProvideControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ProcedureConfigControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:appUi="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:appUiCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:xmlUi="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:controlls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;assembly=SunEyeVision.Plugin.Wpf" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI">
+<localBase:ServiceProvideControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ProcedureConfigControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:appUi="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:appUiCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:xmlUi="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:controlls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:core="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors" xmlns:p30="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -7,7 +7,7 @@
         <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/commonstyle.xaml" />
         <ResourceDictionary Source="/VM.Controls;component/Styles/MenuItemStyle.xaml" />
         <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
-        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_1:ColorThemesResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
       <commomcontrol:NegateConverter x:Key="negate" />
       <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
@@ -144,11 +144,11 @@
                     </StackPanel>
                   </Grid>
                   <i:Interaction.Triggers>
-                    <core:DataTrigger xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" Comparison="LessThan" core:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}">
+                    <core:DataTrigger Comparison="LessThan" core:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}">
                       <core:ChangePropertyAction PropertyName="Content" i:TargetedTriggerAction.TargetObject="{Binding ElementName=ComContent}" Value="{x:Null}" />
                       <core:ChangePropertyAction PropertyName="Content" Value="{DynamicResource Com}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=subComContent}" />
                     </core:DataTrigger>
-                    <DataTrigger Comparison="GreaterThanOrEqual" p30:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}" xmlns:p30="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions">
+                    <DataTrigger Comparison="GreaterThanOrEqual" p30:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}" xmlns="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors">
                       <p30:ChangePropertyAction PropertyName="Content" i:TargetedTriggerAction.TargetObject="{Binding ElementName=subComContent}" Value="{x:Null}" />
                       <p30:ChangePropertyAction PropertyName="Content" Value="{DynamicResource Com}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=ComContent}" />
                     </DataTrigger>
@@ -225,7 +225,7 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <controlls:HikContextMenu x:Key="OperateMenu">
+      <vm_port_0:HikContextMenu x:Key="OperateMenu">
         <MenuItem Name="exportItem" Header="{DynamicResource Lang_PrcExport}" Command="{Binding ProcessExportCommand}">
           <FrameworkElement.Style>
             <Style TargetType="{x:Type MenuItem}">
@@ -269,14 +269,14 @@
         <MenuItem Header="{DynamicResource Lang_StopProcessNG}" Style="{StaticResource CheckMenuItemStyle}" />
         <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding DisplayModuleSet.RenameCommand}" />
         <MenuItem Header="{DynamicResource Lang_ProcessTimeOut}" Command="{Binding SetTimeOutCommand}" />
-      </controlls:HikContextMenu>
-      <controlls:HikContextMenu x:Key="GroupOperateMenu">
+      </vm_port_0:HikContextMenu>
+      <vm_port_0:HikContextMenu x:Key="GroupOperateMenu">
         <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding DisplayModuleSet.CopyItemCommand}" />
         <MenuItem Header="{DynamicResource Lang_ExportGroup}" Command="{Binding DisplayModuleSet.ExportGroupCommand}" />
         <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding DisplayModuleSet.RenameCommand}" />
         <MenuItem Header="{DynamicResource Lang_AddToToolbox}" Command="{Binding DisplayModuleSet.AddToToolboxCommand}" />
-      </controlls:HikContextMenu>
-      <controlls:HikContextMenu x:Key="IndependentGroupOperateMenu">
+      </vm_port_0:HikContextMenu>
+      <vm_port_0:HikContextMenu x:Key="IndependentGroupOperateMenu">
         <MenuItem Header="{DynamicResource Lang_ExportGroup}" Command="{Binding DisplayModuleSet.ExportGroupCommand}" />
         <MenuItem Header="{DynamicResource Lang_Save_Group}" Command="{Binding DisplayModuleSet.SaveGroupCommand}">
           <FrameworkElement.Style>
@@ -290,7 +290,7 @@
             </Style>
           </FrameworkElement.Style>
         </MenuItem>
-      </controlls:HikContextMenu>
+      </vm_port_0:HikContextMenu>
       <DataTemplate x:Key="RunStopButton">
         <appUiCommon:PerSuperImageButton Margin="4,0,0,0" Command="{Binding RunContinuousCommand}">
           <FrameworkElement.Style>

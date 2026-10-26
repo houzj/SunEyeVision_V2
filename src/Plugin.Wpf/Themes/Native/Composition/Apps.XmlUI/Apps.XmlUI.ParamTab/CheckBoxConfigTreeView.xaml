@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.CheckBoxConfigTreeView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:convert="clr-namespace:VM.Utility.Convert;assembly=VM.Controls" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" x:Name="UserControl" Background="#00FFFFFF" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/VM.Controls;component/Styles/ScrollbarStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/CheckBoxStyle/CheckBoxStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/TreeViewStyle/TreeViewStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <vm_port_0:LeftMarginMultiplierConverter x:Key="lengthConverter" Length="14" />
+      <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
+      <Style x:Key="TreeViewItemFocusVisual">
+        <Setter Property="Control.Template">
+          <Setter.Value>
+            <ControlTemplate>
+              <Rectangle />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="12" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Image Name="icon" Height="12" Width="12" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/btn_高级参数_uparrow.png" VerticalAlignment="Center" HorizontalAlignment="Center" />
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/btn_高级参数_downarrow.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="TreeViewItemStyle1" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+        <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+        <Setter Property="Padding" Value="1,0,0,0" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource TreeViewItemFocusVisual}" />
+        <Setter Property="TreeViewItem.IsExpanded" Value="{Binding IsExpanded, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CheckBoxConfigTreeView}}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TreeViewItem}">
+              <StackPanel HorizontalAlignment="Stretch">
+                <Border Name="Bd" CornerRadius="3,3,3,3" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Padding="{TemplateBinding Control.Padding}">
+                  <Grid Height="30" Margin="{Binding Converter={StaticResource lengthConverter}, RelativeSource={RelativeSource TemplatedParent}}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition MinWidth="14" Width="14" />
+                      <ColumnDefinition MinWidth="12" Width="12" />
+                      <ColumnDefinition Width="4" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ToggleButton Name="Expander" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center" ClickMode="Press" Style="{StaticResource ExpandCollapseToggleStyle}" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" />
+                    <Grid Column="3" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <CheckBox VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource CheckBoxStyle1}" Visibility="{Binding IsDisplayCheckBox, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CheckBoxConfigTreeView}, Converter={StaticResource booleanToVisibilityConverter}}" Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}}" IsChecked="{Binding CheckEnabled}" />
+                      <ContentPresenter Name="PART_Header" Grid.Column="1" ContentSource="Header" />
+                    </Grid>
+                    <Rectangle Name="Rect" Grid.ColumnSpan="5" Margin="-100,0,0,0" Height="0" StrokeThickness="1" Stroke="{DynamicResource Col_Theme}" VerticalAlignment="Bottom" Opacity="0.7" />
+                  </Grid>
+                </Border>
+                <ItemsPresenter Name="ItemsHost" />
+              </StackPanel>
+              <ControlTemplate.Triggers>
+                <Trigger Property="TreeViewItem.IsExpanded" Value="False">
+                  <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+                </Trigger>
+                <Trigger Property="ItemsControl.HasItems" Value="False">
+                  <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+                </Trigger>
+                <Trigger Property="TreeViewItem.IsSelected" Value="True">
+                  <Setter TargetName="Bd" Property="Border.Background" Value="#E7E5E4" />
+                  <Setter Property="Foreground" Value="#4D4D4D" />
+                  <Setter TargetName="Rect" Property="Height" Value="1" />
+                </Trigger>
+                <Trigger SourceName="Bd" Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="Bd" Property="Border.Background" Value="#E7E5E4" />
+                </Trigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="TreeViewItem.IsSelected" Value="True" />
+                    <Condition Property="TreeViewItem.IsSelectionActive" Value="False" />
+                  </MultiTrigger.Conditions>
+                  <Setter TargetName="Bd" Property="Border.Background" Value="#E7E5E4" />
+                  <Setter Property="Foreground" Value="#4D4D4D" />
+                </MultiTrigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+          <Trigger Property="VirtualizingPanel.IsVirtualizing" Value="True">
+            <Setter Property="ItemsPanel">
+              <Setter.Value>
+                <ItemsPanelTemplate>
+                  <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+              </Setter.Value>
+            </Setter>
+          </Trigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <TreeView Name="treeView" Style="{StaticResource NormalTreeViewStyle}" BorderThickness="0" Background="#00FFFFFF" FontSize="14" Foreground="#808080" ItemContainerStyle="{StaticResource TreeViewItemStyle1}" ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    </ControlTemplate>
+  </Control.Template>
+</Control>

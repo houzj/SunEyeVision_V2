@@ -1,0 +1,254 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.Log;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using VM.Core;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class SubTreeView : UserControl, IComponentConnector, IStyleConnector
+{
+	public delegate void TreeNodeDoubleClick(object sender, ObjectEventArgs e);
+
+	public static readonly DependencyProperty TForegroundProperty;
+
+	public static readonly DependencyProperty TBackgroundProperty;
+
+	public static readonly DependencyProperty IsMultiCheckProperty;
+
+	public static readonly DependencyProperty ItemSourceProperty;
+
+	public Brush TForeground
+	{
+		get
+		{
+			return (Brush)GetValue(TForegroundProperty);
+		}
+		set
+		{
+			SetValue(TForegroundProperty, value);
+		}
+	}
+
+	public Brush TBackground
+	{
+		get
+		{
+			return (Brush)GetValue(TBackgroundProperty);
+		}
+		set
+		{
+			SetValue(TBackgroundProperty, value);
+		}
+	}
+
+	public bool IsMultiCheck
+	{
+		get
+		{
+			return (bool)GetValue(IsMultiCheckProperty);
+		}
+		set
+		{
+			SetValue(IsMultiCheckProperty, value);
+		}
+	}
+
+	public object ItemSource
+	{
+		get
+		{
+			return GetValue(ItemSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemSourceProperty, value);
+		}
+	}
+
+	private static Dictionary<string, string> LastItemName { get; set; }
+
+	private bool NeedSetSelectedItem { get; set; } = true;
+
+	public event TreeNodeDoubleClick OnTreeNodeDoubleClick;
+
+	private static void OnItemSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is SubTreeView subTreeView && e.NewValue != null)
+		{
+			subTreeView.NeedSetSelectedItem = true;
+			subTreeView.SetSelectedItem();
+		}
+	}
+
+	static SubTreeView()
+	{
+		TForegroundProperty = DependencyProperty.Register("TForeground", typeof(Brush), typeof(SubTreeView), new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#808080"))));
+		TBackgroundProperty = DependencyProperty.Register("TBackground", typeof(Brush), typeof(SubTreeView), new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E7E5E4"))));
+		IsMultiCheckProperty = DependencyProperty.Register("IsMultiCheck", typeof(bool), typeof(SubTreeView), new PropertyMetadata(false));
+		ItemSourceProperty = DependencyProperty.Register("ItemSource", typeof(object), typeof(SubTreeView), new PropertyMetadata(null, OnItemSourceChanged));
+		LastItemName = new Dictionary<string, string>();
+	}
+
+	public SubTreeView()
+	{
+		InitializeComponent();
+	}
+
+	private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is TreeViewItem treeViewItem && treeViewItem.Items.Count == 0 && OnTreeNodeDoubleClick != null)
+		{
+			ObjectEventArgs e2 = new ObjectEventArgs();
+			e2.Param = (sender as FrameworkElement).DataContext;
+			ObjectEventArgs e3 = e2;
+			OnTreeNodeDoubleClick(sender, e3);
+		}
+	}
+
+	private VmIO GetVmIOByCurValueA(Holder hoder, string currentModulePathName)
+	{
+		ObservableCollection<object> enumEntrysA = hoder.EnumEntrysA;
+		if (enumEntrysA != null && enumEntrysA.Count == 0)
+		{
+			return null;
+		}
+		List<object> list = new List<object>(hoder.EnumEntrysA);
+		IEnumerable<VmIO> source = hoder.EnumEntrysA.Where((object h) => h is VmIO).Cast<VmIO>();
+		IEnumerable<Holder> enumerable = hoder.EnumEntrysA.Where((object h) => h is Holder).Cast<Holder>();
+		VmIO vmIO = source.FirstOrDefault((VmIO v) =>
+		{
+			if (string.IsNullOrWhiteSpace(currentModulePathName))
+			{
+				if (LastItemName.ContainsKey(v.TypeName) && v.ModulePathName == LastItemName[v.TypeName])
+				{
+					return true;
+				}
+			}
+			else if (v.ModulePathName == currentModulePathName.Replace("[]", ""))
+			{
+				return true;
+			}
+			return false;
+		});
+		if (vmIO != null)
+		{
+			return vmIO;
+		}
+		if (enumerable != null && enumerable.Count() > 0)
+		{
+			foreach (Holder item in enumerable)
+			{
+				VmIO vmIOByCurValueA = GetVmIOByCurValueA(item, currentModulePathName);
+				if (vmIOByCurValueA != null)
+				{
+					return vmIOByCurValueA;
+				}
+			}
+		}
+		return null;
+	}
+
+	private static TreeViewItem FindTreeViewItem(ItemsControl item, object data)
+	{
+		TreeViewItem treeViewItem = null;
+		for (int i = 0; i < item.Items.Count; i++)
+		{
+			if (!(item.ItemContainerGenerator.ContainerFromIndex(i) is TreeViewItem treeViewItem2) || treeViewItem2 == null)
+			{
+				continue;
+			}
+			if (treeViewItem2.DataContext == data)
+			{
+				treeViewItem = treeViewItem2;
+				break;
+			}
+			if (treeViewItem2.Items.Count > 0)
+			{
+				if (!treeViewItem2.IsExpanded)
+				{
+					treeViewItem2.SetValue(TreeViewItem.IsExpandedProperty, true);
+					treeViewItem2.UpdateLayout();
+				}
+				treeViewItem = FindTreeViewItem(treeViewItem2, data);
+				if (treeViewItem != null)
+				{
+					break;
+				}
+				treeViewItem2.SetValue(TreeViewItem.IsExpandedProperty, false);
+				treeViewItem2.UpdateLayout();
+			}
+		}
+		return treeViewItem;
+	}
+
+	private void TreeView_Loaded(object sender, RoutedEventArgs e)
+	{
+		BindingOperations.ClearBinding(this, ItemSourceProperty);
+		SetBinding(ItemSourceProperty, new Binding("EnumEntrysA"));
+	}
+
+	private void SetSelectedItem()
+	{
+		try
+		{
+			if (!NeedSetSelectedItem || !(treeView.DataContext is ButtonSelecter buttonSelecter))
+			{
+				return;
+			}
+			foreach (object item in treeView.ItemsSource)
+			{
+				if (!(item is Holder hoder))
+				{
+					continue;
+				}
+				VmIO vmIOByCurValueA = GetVmIOByCurValueA(hoder, buttonSelecter.CurValueA);
+				if (vmIOByCurValueA != null)
+				{
+					TreeViewItem treeViewItem = FindTreeViewItem(treeView, vmIOByCurValueA);
+					if (treeViewItem != null)
+					{
+						treeViewItem.IsSelected = true;
+						treeViewItem.Focus();
+						NeedSetSelectedItem = false;
+					}
+				}
+			}
+		}
+		catch (Exception message)
+		{
+			LogHelper.Error(message);
+		}
+	}
+
+	private void TreeView_Selected(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			if (e.OriginalSource is TreeViewItem { DataContext: VmIO { TypeName: var typeName } dataContext })
+			{
+				if (LastItemName.ContainsKey(typeName))
+				{
+					LastItemName[typeName] = dataContext.ModulePathName;
+				}
+				else
+				{
+					LastItemName.Add(typeName, dataContext.ModulePathName);
+				}
+			}
+		}
+		catch (Exception message)
+		{
+			LogHelper.Error(message);
+		}
+	}
+}

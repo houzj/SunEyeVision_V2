@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<localBase:ServiceProvideControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.SingleModuleSetControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface">
+<localBase:ServiceProvideControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.SingleModuleSetControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </FrameworkElement.Resources>

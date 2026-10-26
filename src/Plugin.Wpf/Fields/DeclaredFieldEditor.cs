@@ -139,7 +139,13 @@ public sealed class DeclaredFieldEditor : UserControl
                     eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
-                var input = new ToggleSwitch { IsChecked = value as bool? == true, SwitchWidth=40,SwitchHeight=22,CornerRadius=2 }; input.CheckedChanged += (_, _) => Set(new ConstantSetting(input.IsChecked)); InputElement = input; _body.Children.Add(input);
+                var input = new SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle { IsChecked = value as bool? == true };
+                input.OnCheckedChange += (_, _) =>
+                {
+                    if(_updatingInput||Set(new ConstantSetting(input.IsChecked==true)))return;
+                    _updatingInput=true;try{input.IsChecked=((ConstantSetting)_setting).Value as bool?==true;}finally{_updatingInput=false;}
+                };
+                InputElement = input; _body.Children.Add(input);
             }
             else if (_port.Choices is { } choices)
             {

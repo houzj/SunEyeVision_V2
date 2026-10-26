@@ -1,0 +1,108 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using Apps.Localization;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public partial class ParamsTabUserControl : Control, IComponentConnector, IStyleConnector
+{
+	private Thickness CustomParamCHMargin = new Thickness(32.0, 1.0, 32.0, 0.0);
+
+	private Thickness CustomParamENMargin = new Thickness(24.0, 1.0, 24.0, 0.0);
+
+	private Thickness CustomHeaderCHMargin = new Thickness(32.0, 0.0, 0.0, 8.0);
+
+	private Thickness CustomHeaderENMargin = new Thickness(24.0, 0.0, 0.0, 8.0);
+
+	public static readonly DependencyProperty ROIPartUIProperty = DependencyProperty.Register("ROIPartUI", typeof(object), typeof(ParamsTabUserControl), new PropertyMetadata(null, OnROIPartUIChanged));
+
+	public static readonly DependencyProperty IsEditStateProperty = DependencyProperty.Register("IsEditState", typeof(bool), typeof(ParamsTabUserControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty ChildMarginProperty = DependencyProperty.Register("ChildMargin", typeof(Thickness), typeof(ParamsTabUserControl), new PropertyMetadata(new Thickness(32.0, 1.0, 32.0, 0.0)));
+
+	public static readonly DependencyProperty ChildHeaderMarginProperty = DependencyProperty.Register("ChildHeaderMargin", typeof(Thickness), typeof(ParamsTabUserControl), new PropertyMetadata(new Thickness(32.0, 0.0, 0.0, 8.0)));
+
+	private Grid myGrid;
+
+	private TabControlEx tab;
+
+	private Grid imageRec;
+
+	public object ImageRec => imageRec;
+
+	public object ROIPartUI
+	{
+		get
+		{
+			return GetValue(ROIPartUIProperty);
+		}
+		set
+		{
+			SetValue(ROIPartUIProperty, value);
+		}
+	}
+
+	public bool IsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsEditStateProperty, value);
+		}
+	}
+
+	public Thickness ChildMargin
+	{
+		get
+		{
+			return (Thickness)GetValue(ChildMarginProperty);
+		}
+		set
+		{
+			SetValue(ChildMarginProperty, value);
+		}
+	}
+
+	public Thickness ChildHeaderMargin
+	{
+		get
+		{
+			return (Thickness)GetValue(ChildHeaderMarginProperty);
+		}
+		set
+		{
+			SetValue(ChildHeaderMarginProperty, value);
+		}
+	}
+
+	private static void OnROIPartUIChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	public ParamsTabUserControl()
+	{
+		InitializeComponent();
+		ChildMargin = ((AppLocalizationService.GetLang("Language") == "English") ? CustomParamENMargin : CustomParamCHMargin);
+		ChildHeaderMargin = ((AppLocalizationService.GetLang("Language") == "English") ? CustomHeaderENMargin : CustomHeaderCHMargin);
+	}
+
+	private void Grid_Loaded(object sender, RoutedEventArgs e)
+	{
+	}
+
+	private void CloseParamsTabControl_Click(object sender, RoutedEventArgs e)
+	{
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		myGrid = Template.FindName("myGrid", this) as Grid;
+		tab = Template.FindName("tab", this) as TabControlEx;
+		imageRec = Template.FindName("imageRec", this) as Grid;
+	}
+}

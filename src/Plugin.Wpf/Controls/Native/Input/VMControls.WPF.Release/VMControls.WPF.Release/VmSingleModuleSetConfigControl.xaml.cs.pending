@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Markup;
-using Apps.ColorFun;
+using SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
 using VM.Core;
 using VM.PlatformSDKCS;
 using VMControls.Interface;

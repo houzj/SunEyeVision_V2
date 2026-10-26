@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<win:ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:win="clr-namespace:System.Windows;assembly=PresentationFramework" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <win:ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+    <win:ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ScrollBarStyle/RecScrollBarStyle.xaml" />
+  </win:ResourceDictionary.MergedDictionaries>
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.Static.Checked.Fill" Color="#FF595959" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.Static.Checked.Stroke" Color="#FF262626" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.MouseOver.Stroke" Color="#FF27C7F7" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.MouseOver.Fill" Color="#FFCCEEFB" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.MouseOver.Checked.Stroke" Color="#FF1CC4F7" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.MouseOver.Checked.Fill" Color="#FF82DFFB" />
+  <PathGeometry x:Key="TreeArrow" Figures="M0,0 L0,6 L6,0 z" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.Static.Fill" Color="#FFFFFFFF" />
+  <SolidColorBrush x:Key="TreeViewItem.TreeArrow.Static.Stroke" Color="#FF818181" />
+  <win:Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+    <win:Setter Property="Focusable" Value="False" />
+    <win:Setter Property="Width" Value="16" />
+    <win:Setter Property="Height" Value="16" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ToggleButton}">
+          <Border Background="#00FFFFFF" Height="16" Padding="5,5,5,5" Width="16">
+            <Path Name="ExpandPath" Data="{win:StaticResource TreeArrow}" Fill="{win:StaticResource TreeViewItem.TreeArrow.Static.Fill}" Stroke="{win:StaticResource TreeViewItem.TreeArrow.Static.Stroke}">
+              <UIElement.RenderTransform>
+                <RotateTransform Angle="135" CenterY="3" CenterX="3" />
+              </UIElement.RenderTransform>
+            </Path>
+          </Border>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="ToggleButton.IsChecked" Value="True">
+              <win:Setter TargetName="ExpandPath" Property="RenderTransform">
+                <win:Setter.Value>
+                  <RotateTransform Angle="180" CenterY="3" CenterX="3" />
+                </win:Setter.Value>
+              </win:Setter>
+              <win:Setter TargetName="ExpandPath" Property="Shape.Fill" Value="{win:StaticResource TreeViewItem.TreeArrow.Static.Checked.Fill}" />
+              <win:Setter TargetName="ExpandPath" Property="Shape.Stroke" Value="{win:StaticResource TreeViewItem.TreeArrow.Static.Checked.Stroke}" />
+            </win:Trigger>
+            <win:Trigger Property="UIElement.IsMouseOver" Value="True">
+              <win:Setter TargetName="ExpandPath" Property="Shape.Stroke" Value="{win:StaticResource TreeViewItem.TreeArrow.MouseOver.Stroke}" />
+              <win:Setter TargetName="ExpandPath" Property="Shape.Fill" Value="{win:StaticResource TreeViewItem.TreeArrow.MouseOver.Fill}" />
+            </win:Trigger>
+            <win:MultiTrigger>
+              <win:MultiTrigger.Conditions>
+                <win:Condition Property="UIElement.IsMouseOver" Value="True" />
+                <win:Condition Property="ToggleButton.IsChecked" Value="True" />
+              </win:MultiTrigger.Conditions>
+              <win:Setter TargetName="ExpandPath" Property="Shape.Stroke" Value="{win:StaticResource TreeViewItem.TreeArrow.MouseOver.Checked.Stroke}" />
+              <win:Setter TargetName="ExpandPath" Property="Shape.Fill" Value="{win:StaticResource TreeViewItem.TreeArrow.MouseOver.Checked.Fill}" />
+            </win:MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <win:Style x:Key="FocusVisual">
+    <win:Setter Property="Control.Template">
+      <win:Setter.Value>
+        <ControlTemplate>
+          <Rectangle Margin="2" SnapsToDevicePixels="True" Stroke="{win:DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <SolidColorBrush x:Key="Item.MouseOver.Background" Color="#1F26A0DA" />
+  <SolidColorBrush x:Key="Item.MouseOver.Border" Color="#a826A0Da" />
+  <SolidColorBrush x:Key="Item.SelectedInactive.Background" Color="#3DDADADA" />
+  <SolidColorBrush x:Key="Item.SelectedInactive.Border" Color="#FFDADADA" />
+  <SolidColorBrush x:Key="Item.SelectedActive.Background" Color="#3D26A0DA" />
+  <SolidColorBrush x:Key="Item.SelectedActive.Border" Color="#FF26A0DA" />
+  <win:Style x:Key="SlideListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+    <win:Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+    <win:Setter Property="Padding" Value="4,1" />
+    <win:Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="Background" Value="#00FFFFFF" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="win:FrameworkElement.FocusVisualStyle" Value="{win:StaticResource FocusVisual}" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+          <Border Name="Bd" BorderBrush="{win:TemplateBinding Control.BorderBrush}" BorderThickness="{win:TemplateBinding Control.BorderThickness}" Background="{win:TemplateBinding Control.Background}" Padding="{win:TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="{win:TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{win:TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{win:TemplateBinding Control.VerticalContentAlignment}" />
+          </Border>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <win:Style x:Key="SubSlideListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+    <win:Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+    <win:Setter Property="Padding" Value="4,1" />
+    <win:Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="Background" Value="#00FFFFFF" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="win:FrameworkElement.FocusVisualStyle" Value="{win:StaticResource FocusVisual}" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+          <Border Name="Bd" BorderBrush="{win:DynamicResource TabItemNormalBack}" BorderThickness="{win:TemplateBinding Control.BorderThickness}" Background="{win:TemplateBinding Control.Background}" Padding="{win:TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="{win:TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{win:TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{win:TemplateBinding Control.VerticalContentAlignment}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="UIElement.IsMouseOver" Value="True">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource TabItemHoverBack}" Property="Border.Background" />
+            </win:Trigger>
+            <win:Trigger Property="ListBoxItem.IsSelected" Value="True">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource TabItemSelectedBack}" Property="Border.Background" />
+            </win:Trigger>
+            <win:Trigger Property="IsEnabled" Value="False">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="TextElement.Foreground" />
+            </win:Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <win:Style x:Key="CheckBoxListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+    <win:Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+    <win:Setter Property="Padding" Value="4,1" />
+    <win:Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="Background" Value="#00FFFFFF" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="win:FrameworkElement.FocusVisualStyle" Value="{win:StaticResource FocusVisual}" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+          <Border Name="Bd" BorderBrush="{win:DynamicResource TabItemNormalBack}" BorderThickness="{win:TemplateBinding Control.BorderThickness}" Background="{win:TemplateBinding Control.Background}" Padding="{win:TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="{win:TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{win:TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{win:TemplateBinding Control.VerticalContentAlignment}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="UIElement.IsMouseOver" Value="True">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource NormalBorderBrush}" Property="Border.Background" />
+            </win:Trigger>
+            <win:Trigger Property="IsEnabled" Value="False">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="TextElement.Foreground" />
+            </win:Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <win:Style x:Key="NormalBoxListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+    <win:Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+    <win:Setter Property="Padding" Value="5,1" />
+    <win:Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <win:Setter Property="Background" Value="#00FFFFFF" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+          <Border Name="Bd" TextElement.Foreground="{win:DynamicResource NormalTextBlockColor}" BorderBrush="{win:DynamicResource TabItemNormalBack}" BorderThickness="{win:TemplateBinding Control.BorderThickness}" Background="{win:TemplateBinding Control.Background}" Padding="{win:TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="{win:TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{win:TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{win:TemplateBinding Control.VerticalContentAlignment}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="UIElement.IsMouseOver" Value="True">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource DeepBlackTextBlcokBackgroundColor}" Property="Border.Background" />
+            </win:Trigger>
+            <win:Trigger Property="ListBoxItem.IsSelected" Value="True">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource DeepBlackTextBlcokBackgroundColor}" Property="Border.Background" />
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource NormalTextBlockColor}" Property="TextElement.Foreground" />
+            </win:Trigger>
+            <win:Trigger Property="IsEnabled" Value="False">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource NormalTextBlockColor}" Property="TextElement.Foreground" />
+            </win:Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+</win:ResourceDictionary>

@@ -12,8 +12,8 @@
     <Setter Property="HorizontalContentAlignment" Value="Right" />
     <Setter Property="IsTabStop" Value="False" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="prim:InputBase.TextAlignment" Value="Right" />
-    <Setter Property="prim:InputBase.WatermarkTemplate" Value="{StaticResource DefaultWatermarkTemplate}" />
+    <Setter Property="TextAlignment" Value="Right" />
+    <Setter Property="WatermarkTemplate" Value="{StaticResource DefaultWatermarkTemplate}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type Control}">

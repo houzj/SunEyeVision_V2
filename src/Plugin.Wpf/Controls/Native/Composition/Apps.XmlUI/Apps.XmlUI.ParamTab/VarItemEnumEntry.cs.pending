@@ -1,0 +1,40 @@
+using System.Collections.ObjectModel;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlParser.Variable;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public class VarItemEnumEntry : EnumEntry, IParent
+{
+	protected ObservableCollection<VarItem> VarItems = new ObservableCollection<VarItem>();
+
+	public virtual ObservableCollection<VarItem> VarItemsA
+	{
+		get
+		{
+			return VarItems;
+		}
+		set
+		{
+			if (VarItems != value)
+			{
+				VarItems = value;
+			}
+		}
+	}
+
+	public object Parent { get; set; }
+
+	public new string FullName
+	{
+		get
+		{
+			if (Parent == null)
+			{
+				return DisplayNameA;
+			}
+			return (Parent as VarItemEnumEntry).FullName + "." + DisplayNameA;
+		}
+	}
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="sp" TargetType="{x:Type Separator}">
+    <Setter Property="Background" Value="{DynamicResource SeparatorStroke}" />
+    <Setter Property="Margin" Value="0,6,0,6" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Separator}">
+          <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Height="1" SnapsToDevicePixels="True" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="sp1" TargetType="{x:Type Separator}">
+    <Setter Property="Background" Value="{DynamicResource LogForeground}" />
+    <Setter Property="Margin" Value="45,0,0,0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Separator}">
+          <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Height="1" SnapsToDevicePixels="True" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="sp2" TargetType="{x:Type Separator}">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Width" Value="1" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Margin" Value="7,0,7,0" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Separator}">
+          <Grid Height="18" Width="1">
+            <Line VerticalAlignment="Center" HorizontalAlignment="Center" X1="0" Y1="0" X2="0" Y2="18" Stroke="{DynamicResource TextButtonBB}" StrokeDashArray="0.75,0.5" StrokeThickness="4" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

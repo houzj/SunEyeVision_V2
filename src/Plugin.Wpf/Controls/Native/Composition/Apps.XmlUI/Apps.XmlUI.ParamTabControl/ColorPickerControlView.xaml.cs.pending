@@ -1,0 +1,110 @@
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.PcUI.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+
+public partial class ColorPickerControlView : UserControl, IComponentConnector
+{
+	public static DependencyProperty CurrentColorProperty = DependencyProperty.Register("CurrentColor", typeof(SolidColorBrush), typeof(ColorPickerControlView), new PropertyMetadata(Brushes.Black));
+
+	public static readonly DependencyProperty IsTextReadOnlyProperty = DependencyProperty.Register("IsTextReadOnly", typeof(bool), typeof(ColorPickerControlView), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsShowTextProperty = DependencyProperty.Register("IsShowText", typeof(bool), typeof(ColorPickerControlView), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty CaretBrushProperty = DependencyProperty.Register("CaretBrush", typeof(Brush), typeof(ColorPickerControlView), new PropertyMetadata(Brushes.Black));
+
+	public static RoutedUICommand SelectColorCommand = new RoutedUICommand("SelectColorCommand", "SelectColorCommand", typeof(ColorPickerControlView));
+
+	public static readonly RoutedEvent ClosedEvent = EventManager.RegisterRoutedEvent("ClosedEvent", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ColorPickerControlView));
+
+	public SolidColorBrush CurrentColor
+	{
+		get
+		{
+			return (SolidColorBrush)GetValue(CurrentColorProperty);
+		}
+		set
+		{
+			SetValue(CurrentColorProperty, value);
+		}
+	}
+
+	public bool IsTextReadOnly
+	{
+		get
+		{
+			return (bool)GetValue(IsTextReadOnlyProperty);
+		}
+		set
+		{
+			SetValue(IsTextReadOnlyProperty, value);
+		}
+	}
+
+	public bool IsShowText
+	{
+		get
+		{
+			return (bool)GetValue(IsShowTextProperty);
+		}
+		set
+		{
+			SetValue(IsShowTextProperty, value);
+		}
+	}
+
+	public Brush CaretBrush
+	{
+		get
+		{
+			return (Brush)GetValue(CaretBrushProperty);
+		}
+		set
+		{
+			SetValue(CaretBrushProperty, value);
+		}
+	}
+
+	public Style ButtonStyle
+	{
+		get
+		{
+			return (Style)GetValue(PopupButton.ButtonStyleProperty);
+		}
+		set
+		{
+			SetValue(PopupButton.ButtonStyleProperty, value);
+		}
+	}
+
+	public event RoutedEventHandler Closed
+	{
+		add
+		{
+			AddHandler(ClosedEvent, value);
+		}
+		remove
+		{
+			RemoveHandler(ClosedEvent, value);
+		}
+	}
+
+	public ColorPickerControlView()
+	{
+		InitializeComponent();
+		CommandBindings.Add(new CommandBinding(SelectColorCommand, SelectColorCommandExecute));
+	}
+
+	private void SelectColorCommandExecute(object sender, ExecutedRoutedEventArgs e)
+	{
+		CurrentColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString(e.Parameter.ToString()));
+		RoutedEventArgs e2 = new RoutedEventArgs(ClosedEvent, this);
+		RaiseEvent(e2);
+	}
+}

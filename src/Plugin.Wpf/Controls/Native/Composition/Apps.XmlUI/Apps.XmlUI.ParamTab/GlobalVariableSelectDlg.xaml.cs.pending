@@ -1,0 +1,634 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlParser.Variable;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VM.Core;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class GlobalVariableSelectDlg : BaseWindow, IComponentConnector, IStyleConnector
+{
+	private const string Visiable = "Visible";
+
+	private const string Collapsed = "Collapsed";
+
+	private VmModule _varGlobalModule = null;
+
+	private bool _isAllowRepeatedSelection = false;
+
+	public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register("Items", typeof(ObservableCollection<VarItem>), typeof(GlobalVariableSelectDlg), new PropertyMetadata((object)null));
+
+	public static readonly DependencyProperty BindItemsProperty = DependencyProperty.Register("BindItems", typeof(ObservableCollection<VarItem>), typeof(GlobalVariableSelectDlg), new PropertyMetadata((object)null));
+
+	public static readonly DependencyProperty ItemsTotalCountProperty = DependencyProperty.Register("ItemsTotalCount", typeof(int), typeof(GlobalVariableSelectDlg), new PropertyMetadata(0));
+
+	public static readonly DependencyProperty PageCountProperty = DependencyProperty.Register("PageCount", typeof(int), typeof(GlobalVariableSelectDlg), new PropertyMetadata(10));
+
+	private int _CurrentPageNum = 0;
+
+	private int totalPageNum = 0;
+
+	private string _EmptyStatus = "Collapsed";
+
+	public string _PageNumShowStatus = "Visible";
+
+	private bool IsSearchState = false;
+
+	public static readonly DependencyProperty SelectedGlobalVarProperty = DependencyProperty.Register("SelectedGlobalVar", typeof(string), typeof(GlobalVariableSelectDlg), new PropertyMetadata(null));
+
+	private List<int> iSearchCount = new List<int>();
+
+	public static string LastSelectedEnumEntry = null;
+
+	private IList _EnumEntrys = null;
+
+	private EnumEntry _triggerSelectedObject;
+
+	public object DecorateSource { get; set; }
+
+	public bool IsEnumAllVarModule { get; set; } = false;
+
+	public bool IsEnumGlobalVarModule { get; set; } = true;
+
+	private VmModule varLocalModule => DecorateSource as VmModule;
+
+	private VmModule varGlobalModule
+	{
+		get
+		{
+			if (_varGlobalModule == null)
+			{
+				_varGlobalModule = VmModuleExtern.GetGlobalVarModule();
+			}
+			return _varGlobalModule;
+		}
+	}
+
+	public ObservableCollection<VarItem> Items
+	{
+		get
+		{
+			return (ObservableCollection<VarItem>)GetValue(ItemsProperty);
+		}
+		set
+		{
+			SetValue(ItemsProperty, value);
+		}
+	}
+
+	public ObservableCollection<VarItem> BindItems
+	{
+		get
+		{
+			return (ObservableCollection<VarItem>)GetValue(BindItemsProperty);
+		}
+		set
+		{
+			SetValue(BindItemsProperty, value);
+		}
+	}
+
+	public int ItemsTotalCount
+	{
+		get
+		{
+			return (int)GetValue(ItemsTotalCountProperty);
+		}
+		set
+		{
+			SetValue(ItemsTotalCountProperty, value);
+		}
+	}
+
+	public int PageCount
+	{
+		get
+		{
+			return (int)GetValue(PageCountProperty);
+		}
+		set
+		{
+			SetValue(PageCountProperty, value);
+		}
+	}
+
+	public int CurrentPageNum
+	{
+		get
+		{
+			return _CurrentPageNum;
+		}
+		set
+		{
+			if (_CurrentPageNum != value)
+			{
+				_CurrentPageNum = value;
+				OnPropertyChanged("CurrentPageNum");
+				if (!IsSearchState)
+				{
+					SetBindData();
+				}
+				else
+				{
+					SetBindSearchData();
+				}
+			}
+		}
+	}
+
+	public string EmptyStatus
+	{
+		get
+		{
+			return _EmptyStatus;
+		}
+		set
+		{
+			if (_EmptyStatus != value)
+			{
+				_EmptyStatus = value;
+				OnPropertyChanged("EmptyStatus");
+			}
+		}
+	}
+
+	public string PageNumShowStatus
+	{
+		get
+		{
+			return _PageNumShowStatus;
+		}
+		set
+		{
+			if (_PageNumShowStatus != value)
+			{
+				_PageNumShowStatus = value;
+				OnPropertyChanged("PageNumShowStatus");
+			}
+		}
+	}
+
+	public bool IsConfirm { get; set; }
+
+	public string[] Type { get; set; }
+
+	public string SelectedGlobalVar
+	{
+		get
+		{
+			return (string)GetValue(SelectedGlobalVarProperty);
+		}
+		set
+		{
+			SetValue(SelectedGlobalVarProperty, value);
+		}
+	}
+
+	public object SelectedVarItem { get; set; }
+
+	public virtual IList EnumEntrysA
+	{
+		get
+		{
+			if (_EnumEntrys == null)
+			{
+				_EnumEntrys = GetEnumEntrysList();
+			}
+			return _EnumEntrys;
+		}
+	}
+
+	public EnumEntry TriggerSelectedObject
+	{
+		get
+		{
+			if (_triggerSelectedObject == null)
+			{
+			}
+			return _triggerSelectedObject;
+		}
+		set
+		{
+			if (_triggerSelectedObject != value)
+			{
+				_triggerSelectedObject = value;
+				InitItems(_triggerSelectedObject as VarItemEnumEntry);
+				LastSelectedEnumEntry = _triggerSelectedObject.FullName;
+				OnPropertyChanged("TriggerSelectedObject");
+			}
+		}
+	}
+
+	private string strDefaultGroupName => AppLocalizationService.GetLang("Lang_VarGroup") + "0";
+
+	public GlobalVariableSelectDlg()
+	{
+		InitializeComponent();
+	}
+
+	public GlobalVariableSelectDlg(bool isAllowRepeatedSelection)
+	{
+		InitializeComponent();
+		_isAllowRepeatedSelection = isAllowRepeatedSelection;
+	}
+
+	private void SearchItem_OnClick(object sender, RoutedEventArgs e)
+	{
+		string text = SearchText.Text;
+		SeearchItem(text);
+	}
+
+	private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		string text = SearchText.Text;
+		SeearchItem(text);
+	}
+
+	private void SetBindData()
+	{
+		if (CurrentPageNum > 0)
+		{
+			int num = (CurrentPageNum - 1) * PageCount;
+			int num2 = ((CurrentPageNum < totalPageNum) ? (num + PageCount) : Items.Count);
+			BindItems.Clear();
+			for (int i = num; i < num2; i++)
+			{
+				BindItems.Add(Items[i]);
+			}
+		}
+	}
+
+	private void SetBindSearchData()
+	{
+		if (CurrentPageNum > 0)
+		{
+			int num = (CurrentPageNum - 1) * PageCount;
+			int num2 = ((CurrentPageNum < totalPageNum) ? (num + PageCount) : iSearchCount.Count());
+			BindItems.Clear();
+			for (int i = num; i < num2; i++)
+			{
+				BindItems.Add(Items[iSearchCount[i]]);
+			}
+		}
+	}
+
+	private void InitPageData()
+	{
+		if (Items != null)
+		{
+			int num = (IsSearchState ? iSearchCount.Count : Items.Count);
+			if (num == 0)
+			{
+				EmptyStatus = "Visible";
+				PageNumShowStatus = "Collapsed";
+			}
+			else
+			{
+				EmptyStatus = "Collapsed";
+				PageNumShowStatus = "Visible";
+			}
+			int num2 = 0;
+			ItemsTotalCount = num;
+			if (PageCount > 0)
+			{
+				num2 = ((ItemsTotalCount % PageCount <= 0) ? (ItemsTotalCount / PageCount) : (ItemsTotalCount / PageCount + 1));
+			}
+			totalPageNum = num2;
+			CurrentPageNum = 1;
+		}
+	}
+
+	private void SeearchItem(string searchName)
+	{
+		if (Items == null)
+		{
+			return;
+		}
+		if (string.IsNullOrEmpty(searchName))
+		{
+			if (IsSearchState)
+			{
+				IsSearchState = false;
+			}
+			CurrentPageNum = 0;
+			InitPageData();
+			return;
+		}
+		IsSearchState = true;
+		List<int> list = (from x in Items
+			where x.Name.Contains(searchName)
+			select Items.IndexOf(x)).ToList();
+		if (list.Count > 0)
+		{
+			CurrentPageNum = 0;
+			ItemsTotalCount = 0;
+			iSearchCount = list;
+			InitPageData();
+			EmptyStatus = "Collapsed";
+		}
+		else
+		{
+			BindItems.Clear();
+			iSearchCount.Clear();
+			ItemsTotalCount = 0;
+			EmptyStatus = "Visible";
+			PageNumShowStatus = "Collapsed";
+		}
+	}
+
+	private void Confirm_Click(object sender, RoutedEventArgs e)
+	{
+		if (globalVarList.SelectedItem is VarItem varItem)
+		{
+			SelectedGlobalVar = varItem.Name;
+			SelectedVarItem = varItem;
+			IsConfirm = true;
+		}
+		Close();
+	}
+
+	private void globalVarList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+	{
+		if (globalVarList.SelectedItem is VarItem varItem)
+		{
+			SelectedGlobalVar = varItem.Name;
+			SelectedVarItem = varItem;
+			IsConfirm = true;
+			Close();
+		}
+	}
+
+	private void InitItems(VarItemEnumEntry enumentry)
+	{
+		Items = enumentry.VarItemsA;
+		BindItems = new ObservableCollection<VarItem>();
+		_CurrentPageNum = 0;
+		InitPageData();
+	}
+
+	private IList GetEnumEntrysList()
+	{
+		List<EnumEntry> list = new List<EnumEntry>();
+		if (IsEnumGlobalVarModule)
+		{
+			VarItemEnumEntry varItemEnumEntry = new VarItemEnumEntry();
+			if (GetVarModuleItem(varGlobalModule, varItemEnumEntry))
+			{
+				list.Add(varItemEnumEntry);
+			}
+		}
+		if (IsEnumAllVarModule)
+		{
+			List<EnumEntry> enumEntries = new List<EnumEntry>();
+			if (GetAllLocalVar(ref enumEntries))
+			{
+				list.AddRange(enumEntries);
+			}
+		}
+		else
+		{
+			VarItemEnumEntry varItemEnumEntry2 = new VarItemEnumEntry();
+			if (GetVarModuleItem(varLocalModule, varItemEnumEntry2))
+			{
+				list.Add(varItemEnumEntry2);
+			}
+		}
+		return list;
+	}
+
+	private bool GetAllLocalVar(ref List<EnumEntry> enumEntries)
+	{
+		if (enumEntries == null)
+		{
+			enumEntries = new List<EnumEntry>();
+		}
+		IEnumerable<VmProcedure> enumerable = VmSolution.Instance.Modules.OfType<VmProcedure>();
+		foreach (VmProcedure item in enumerable)
+		{
+			EnumEntry enumPro = null;
+			VarItemEnumEntry varItemEnumEntry = new VarItemEnumEntry();
+			bool varModuleItem = GetVarModuleItem((((IVmModuleSet)item).LocalVariablModule as VmModule) ?? null, varItemEnumEntry);
+			if (varModuleItem)
+			{
+				enumPro = new EnumEntry();
+				enumPro.EnumEntrysA = new ObservableCollection<object>();
+				enumPro.DisplayNameA = item.Name;
+				enumPro.Value = (int)item.ID;
+				varItemEnumEntry.SetParentNode(enumPro);
+				enumPro.EnumEntrysA.Add(varItemEnumEntry);
+			}
+			bool groLocalVar = GetGroLocalVar(item, ref enumPro);
+			if (varModuleItem | groLocalVar)
+			{
+				enumEntries.Add(enumPro);
+			}
+		}
+		return enumEntries.Count > 0;
+	}
+
+	private bool GetGroLocalVar(VmModuleSet moduSet, ref EnumEntry enumPro)
+	{
+		IEnumerable<IMVSGroup> enumerable = moduSet.Modules.OfType<IMVSGroup>();
+		bool flag = false;
+		foreach (IMVSGroup item in enumerable)
+		{
+			EnumEntry enumPro2 = null;
+			VarItemEnumEntry varItemEnumEntry = new VarItemEnumEntry();
+			flag = GetVarModuleItem((((IVmModuleSet)item).LocalVariablModule as VmModule) ?? null, varItemEnumEntry);
+			if (flag)
+			{
+				enumPro2 = new EnumEntry();
+				enumPro2.EnumEntrysA = new ObservableCollection<object>();
+				enumPro2.DisplayNameA = item.Name;
+				enumPro2.Value = (int)item.ID;
+				varItemEnumEntry.SetParentNode(enumPro2);
+				enumPro2.EnumEntrysA.Add(varItemEnumEntry);
+			}
+			bool groLocalVar = GetGroLocalVar(item, ref enumPro2);
+			flag |= groLocalVar;
+			if (!flag)
+			{
+				continue;
+			}
+			if (enumPro == null)
+			{
+				enumPro = new EnumEntry();
+				enumPro.EnumEntrysA = new ObservableCollection<object>();
+				enumPro.DisplayNameA = moduSet.Name;
+				enumPro.Value = (int)moduSet.ID;
+				continue;
+			}
+			if (enumPro.EnumEntrysA == null)
+			{
+				enumPro.EnumEntrysA = new ObservableCollection<object>();
+			}
+			enumPro2.SetParentNode(enumPro);
+			enumPro.EnumEntrysA.Add(enumPro2);
+		}
+		return flag;
+	}
+
+	private bool GetVarModuleItem(VmModule module, VarItemEnumEntry enumentry)
+	{
+		if (module == null)
+		{
+			return false;
+		}
+		VariableManager variableManager = new VariableManager(module);
+		enumentry.EnumEntrysA = new ObservableCollection<object>();
+		enumentry.DisplayName = AppLocalizationService.GetLang(module.StrModuleName);
+		enumentry.ValueA = (int)module.ID;
+		enumentry.VarItemsA = new ObservableCollection<VarItem>();
+		if (module.Outputs == null || module.Outputs.Count <= 4 || module.Outputs.Where((VmIO p) => !VmModule.fTimeStamp.Contains(p.Name)).Count((VmIO m) => m.Index == 0) > 1)
+		{
+			module.InitGlobalIo();
+		}
+		try
+		{
+			List<VarItem> list = new List<VarItem>();
+			List<VarItem> varList = new List<VarItem>();
+			variableManager.GetAllVar(ref varList);
+			if (varList.Count != module.Outputs.Count((VmIO p) => !VmModule.fTimeStamp.Contains(p.Name)))
+			{
+				module.InitGlobalIo();
+			}
+			if (varList.Count((VarItem x) => string.IsNullOrEmpty(x.GroupInfo)) == varList.Count && varList.Count > 0)
+			{
+				foreach (VarItem item2 in varList)
+				{
+					item2.GroupInfo = strDefaultGroupName;
+				}
+				variableManager.SetDefaultGroupInfo(strDefaultGroupName);
+			}
+			foreach (VarItem item3 in varList)
+			{
+				if (Type.Contains(item3.Type) && !VmModule.fTimeStamp.Contains(item3.Name))
+				{
+					item3.Owner = module;
+					list.Add(item3);
+				}
+			}
+			if (list.Count == 0)
+			{
+				return false;
+			}
+			List<string> list2 = new List<string>();
+			variableManager.GetGroupInfo(list2);
+			IEnumerable<IGrouping<string, VarItem>> source = from x in list
+				group x by x.GroupInfo;
+			foreach (string item in list2)
+			{
+				IGrouping<string, VarItem> grouping = source.FirstOrDefault((IGrouping<string, VarItem> p) => p.Key == item);
+				if (grouping == null)
+				{
+					continue;
+				}
+				string key = grouping.Key;
+				VarItemEnumEntry varItemEnumEntry = new VarItemEnumEntry();
+				varItemEnumEntry.DisplayName = key;
+				varItemEnumEntry.ValueA = (int)module.ID;
+				List<VarItem> list3 = new List<VarItem>();
+				foreach (VarItem item4 in grouping)
+				{
+					list3.Add(item4);
+				}
+				varItemEnumEntry.SetParentNode(enumentry);
+				varItemEnumEntry.Parent = enumentry;
+				varItemEnumEntry.VarItemsA = new ObservableCollection<VarItem>(list3.OrderBy((VarItem x) => x.Index));
+				enumentry.EnumEntrysA.Add(varItemEnumEntry);
+			}
+			return true;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.ToString());
+			return false;
+		}
+	}
+
+	private void globalVariableSelectDlg_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (AppLocalizationService.GetLang("Language") == "English")
+		{
+		}
+		try
+		{
+			if (EnumEntrysA.Count <= 0)
+			{
+				return;
+			}
+			EnumEntry findEnumEntry = null;
+			if (!string.IsNullOrEmpty(LastSelectedEnumEntry))
+			{
+				string lastSelectedEnumEntry = LastSelectedEnumEntry;
+				foreach (object item in EnumEntrysA)
+				{
+					if (findEnumEntry != null)
+					{
+						break;
+					}
+					FindEnumEntry(item as EnumEntry, lastSelectedEnumEntry, ref findEnumEntry);
+				}
+			}
+			if (findEnumEntry != null)
+			{
+				TriggerSelectedObject = findEnumEntry;
+				return;
+			}
+			EnumEntry enumEntry = EnumEntrysA[0] as EnumEntry;
+			if (enumEntry.EnumEntrysA != null)
+			{
+				TriggerSelectedObject = ((enumEntry.EnumEntrysA.Count > 0) ? (enumEntry.EnumEntrysA[0] as EnumEntry) : enumEntry);
+			}
+			LastSelectedEnumEntry = null;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.ToString());
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GlobalVariableGetModuleListERR"), MessageIcons.Error);
+		}
+	}
+
+	private void FindEnumEntry(EnumEntry enumEntry, string fullName, ref EnumEntry findEnumEntry)
+	{
+		if (findEnumEntry != null || enumEntry.EnumEntrysA == null)
+		{
+			return;
+		}
+		foreach (object item in enumEntry.EnumEntrysA)
+		{
+			EnumEntry enumEntry2 = item as EnumEntry;
+			if (enumEntry2.FullName == fullName)
+			{
+				findEnumEntry = enumEntry2;
+				break;
+			}
+			FindEnumEntry(enumEntry2, fullName, ref findEnumEntry);
+		}
+	}
+
+	public override void Close()
+	{
+		Items?.Clear();
+		BindItems?.Clear();
+		iSearchCount?.Clear();
+		base.Close();
+	}
+
+}

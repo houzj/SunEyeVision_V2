@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<localcontrol:ROIStackControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.SectorCaliperStack" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:baseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:PCImage="clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI" xmlns:com="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0__="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0_:ColorThemesResourceDictionary.Instance" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/RadioButtonStyle/RadioButtonStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <vm_port_2:NegateConverter x:Key="negateConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <StackPanel>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource StartX}" ToolTip="{DynamicResource StartX}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="-30000" Maximum="30000" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.StartPointX" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource StartY}" ToolTip="{DynamicResource StartY}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="-30000" Maximum="30000" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.StartPointY" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource EndX}" ToolTip="{DynamicResource EndX}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="-30000" Maximum="30000" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.EndPointX" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource EndY}" ToolTip="{DynamicResource EndY}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="-30000" Maximum="30000" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.EndPointY" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource radius}" ToolTip="{DynamicResource radius}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="0" Maximum="{x:Static vm_port_1:HikCoverCircle2.MaxRadius}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.Radius" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource Caliper Number}" ToolTip="{DynamicResource Caliper Number}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrange SliderTickFrequency="1" Minimum="2" Maximum="1000" StartValue="{Binding ROIData.CaliperNum, Mode=TwoWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrange>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource 卡尺高}" ToolTip="{DynamicResource 卡尺高}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="1" Maximum="30000" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.CaliperHeight" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource 卡尺宽}" ToolTip="{DynamicResource 卡尺宽}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <vm_port_0:SliderArrangeFloat SliderTickFrequency="1" Minimum="1" Maximum="500" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <vm_port_0:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <vm_port_0__:RightFixdMultiplicationForCaliperConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.CaliperWidth" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </vm_port_0:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </vm_port_0:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource Direction}" ToolTip="{DynamicResource Direction}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <RadioButton Content="{DynamicResource Clockwise}" Style="{StaticResource NormalRadioButton}" IsChecked="{Binding ROIData.IsClockwise, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                <i:Interaction.Triggers>
+                  <i:EventTrigger EventName="Checked">
+                    <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                  </i:EventTrigger>
+                </i:Interaction.Triggers>
+              </RadioButton>
+              <RadioButton Content="{DynamicResource Anticlockwise}" Style="{StaticResource NormalRadioButton}" IsChecked="{Binding ROIData.IsClockwise, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                <i:Interaction.Triggers>
+                  <i:EventTrigger EventName="Checked">
+                    <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                  </i:EventTrigger>
+                </i:Interaction.Triggers>
+              </RadioButton>
+            </StackPanel>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource 圆弧大小}" ToolTip="{DynamicResource 圆弧大小}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <RadioButton Content="{DynamicResource 小圆弧}" Style="{StaticResource NormalRadioButton}" IsChecked="{Binding ROIData.IsLargeArc, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                <i:Interaction.Triggers>
+                  <i:EventTrigger EventName="Checked">
+                    <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                  </i:EventTrigger>
+                </i:Interaction.Triggers>
+              </RadioButton>
+              <RadioButton Content="{DynamicResource 大圆弧}" Style="{StaticResource NormalRadioButton}" IsChecked="{Binding ROIData.IsLargeArc, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                <i:Interaction.Triggers>
+                  <i:EventTrigger EventName="Checked">
+                    <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                  </i:EventTrigger>
+                </i:Interaction.Triggers>
+              </RadioButton>
+            </StackPanel>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+      </StackPanel>
+    </ControlTemplate>
+  </Control.Template>
+</localcontrol:ROIStackControl>

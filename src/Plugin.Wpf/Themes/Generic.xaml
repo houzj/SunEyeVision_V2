@@ -45,33 +45,6 @@
 <SolidColorBrush x:Key="O06.ToggleOffBackgroundBrush" Color="#B8B8B8"/>
 <SolidColorBrush x:Key="O06.TextOnDarkBrush" Color="White"/>
 <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-<Style x:Key="SliderStyle" TargetType="{x:Type Slider}">
-        <Setter Property="SnapsToDevicePixels" Value="True" />
-        <Setter Property="UseLayoutRounding" Value="True" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Slider}">
-                    <Grid Height="22" VerticalAlignment="Center">
-                        <Border x:Name="TrackBackground" Height="4" Background="{DynamicResource O06.SliderTrackBackgroundBrush}" CornerRadius="2" VerticalAlignment="Center" />
-                        <Border x:Name="TrackSelection" Height="4" Background="{DynamicResource O06.AccentBrush}" CornerRadius="2" VerticalAlignment="Center" />
-                        <Track x:Name="PART_Track" VerticalAlignment="Center">
-                            <Track.Thumb>
-                                <Thumb Width="14" Height="20" Background="{DynamicResource O06.ControlBackgroundBrush}" BorderBrush="{DynamicResource O06.AccentBrush}" BorderThickness="2" Cursor="Hand">
-                                    <Thumb.Template>
-                                        <ControlTemplate TargetType="Thumb">
-                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2" />
-                                        </ControlTemplate>
-                                    </Thumb.Template>
-                                </Thumb>
-                            </Track.Thumb>
-                        </Track>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    
 <Style TargetType="{x:Type controls:NumericUpDown}">
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Padding" Value="8,0" />
@@ -142,7 +115,7 @@
                         
                         <Popup x:Name="PART_SliderPopup" Placement="Bottom" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Slide">
                             <Border Background="{DynamicResource O06.ContextMenuBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,2,0,0">
-                                <Slider x:Name="PART_Slider" Style="{StaticResource SliderStyle}" Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Minimum="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Maximum="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" SmallChange="{TemplateBinding SmallChange}" LargeChange="{TemplateBinding LargeChange}" Width="220" />
+                                <Slider x:Name="PART_Slider" Style="{StaticResource SliderStyle1}" Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Minimum="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Maximum="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" SmallChange="{TemplateBinding SmallChange}" LargeChange="{TemplateBinding LargeChange}" Width="220" />
                             </Border>
                         </Popup>
                     </Grid>

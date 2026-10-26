@@ -6,7 +6,10 @@ using System.Windows.Forms.Integration;
 using Apps.Localization;
 using Hik.Util;
 using UIVersionControlManager;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;

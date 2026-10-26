@@ -1,0 +1,375 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.Localization;
+using Apps.Log;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm;
+using Microsoft.Win32;
+using Mvvm.Commands;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class ExportAlgorithmWindow : BaseWindow, IComponentConnector
+{
+	private static string LastDirectoryPath;
+
+	public static readonly DependencyProperty VmModuleTreeNodeListProperty;
+
+	public static readonly DependencyProperty ProcessTreeNodeListProperty;
+
+	private bool IsSolution { get; set; }
+
+	private uint AnModuleId { get; set; } = 0u;
+
+	public ObservableCollection<EaVmModuleTreeNode> ProcessTreeNodeList
+	{
+		get
+		{
+			return (ObservableCollection<EaVmModuleTreeNode>)GetValue(ProcessTreeNodeListProperty);
+		}
+		set
+		{
+			SetValue(ProcessTreeNodeListProperty, value);
+		}
+	}
+
+	public ObservableCollection<EaVmModuleTreeNode> VmModuleTreeNodeList
+	{
+		get
+		{
+			return (ObservableCollection<EaVmModuleTreeNode>)GetValue(VmModuleTreeNodeListProperty);
+		}
+		set
+		{
+			SetValue(VmModuleTreeNodeListProperty, value);
+		}
+	}
+
+	public ICommand FilePathCommand { get; set; }
+
+	private static string GetVauleByKey(RegistryKey type, string path, string key)
+	{
+		try
+		{
+			using RegistryKey registryKey = type.OpenSubKey(path);
+			return registryKey?.GetValue(key)?.ToString();
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
+	private static string GetLocalMachineVauleByKey(string path, string key)
+	{
+		RegistryKey localMachine = Registry.LocalMachine;
+		return GetVauleByKey(localMachine, path, key);
+	}
+
+	private static string GetVMDefaultVersion()
+	{
+		string result = null;
+		string path = "SOFTWARE\\WOW6432Node\\Microsoft\\.NETFramework\\v4.0.30319\\AssemblyFoldersEx\\VisionMaster";
+		string text = GetLocalMachineVauleByKey(path, "")?.ToString();
+		if (!string.IsNullOrEmpty(text))
+		{
+			result = new DirectoryInfo($"{text}..\\..\\..\\..\\..\\")?.FullName;
+		}
+		return result;
+	}
+
+	private static Dictionary<string, string> GetMVDAlgorithmSDKVersionInfos(out string mvdDefaultId)
+	{
+		mvdDefaultId = null;
+		Dictionary<string, string> dictionary = new Dictionary<string, string>();
+		string name = "SOFTWARE\\WOW6432Node\\MVDAlgorithmSDK_4";
+		using (RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(name))
+		{
+			if (registryKey == null)
+			{
+				name = "SOFTWARE\\WOW6432Node\\MVDAlgorithmSDK";
+				using (RegistryKey registryKey2 = Registry.LocalMachine.OpenSubKey(name))
+				{
+					string value = registryKey2.GetValue("Path")?.ToString();
+					mvdDefaultId = "0";
+					dictionary.Add(mvdDefaultId, value);
+				}
+				return dictionary;
+			}
+			string text = registryKey.GetValue("ID")?.ToString();
+			if (!string.IsNullOrEmpty(text))
+			{
+				mvdDefaultId = text;
+			}
+			string[] subKeyNames = registryKey.GetSubKeyNames();
+			string[] array = subKeyNames;
+			foreach (string name2 in array)
+			{
+				using RegistryKey registryKey3 = registryKey.OpenSubKey(name2);
+				if (registryKey3 == null)
+				{
+					continue;
+				}
+				string[] subKeyNames2 = registryKey3.GetSubKeyNames();
+				string[] array2 = subKeyNames2;
+				foreach (string text2 in array2)
+				{
+					using RegistryKey registryKey4 = registryKey3.OpenSubKey(text2);
+					if (registryKey4 != null)
+					{
+						string value2 = registryKey4.GetValue("Path")?.ToString();
+						if (!string.IsNullOrEmpty(value2) && !dictionary.ContainsKey(text2))
+						{
+							dictionary.Add(text2, value2);
+						}
+					}
+				}
+			}
+		}
+		return dictionary;
+	}
+
+	static ExportAlgorithmWindow()
+	{
+		VmModuleTreeNodeListProperty = DependencyProperty.Register("VmModuleTreeNodeList", typeof(ObservableCollection<EaVmModuleTreeNode>), typeof(ExportAlgorithmWindow), new PropertyMetadata(null));
+		ProcessTreeNodeListProperty = DependencyProperty.Register("ProcessTreeNodeList", typeof(ObservableCollection<EaVmModuleTreeNode>), typeof(ExportAlgorithmWindow), new PropertyMetadata(null));
+		string text = "..\\MVDAlgorithmSDK\\MVDTools\\ExportMVDCode";
+		if (!Directory.Exists(text))
+		{
+			using (RegistryKey registryKey = Registry.LocalMachine)
+			{
+				if (registryKey != null)
+				{
+					string vMDefaultVersion = GetVMDefaultVersion();
+					if (!string.IsNullOrEmpty(vMDefaultVersion))
+					{
+						text = new DirectoryInfo($"{vMDefaultVersion}\\MVDAlgorithmSDK\\MVDTools\\ExportMVDCode").FullName;
+					}
+					if (!Directory.Exists(text))
+					{
+						Dictionary<string, string> mVDAlgorithmSDKVersionInfos = GetMVDAlgorithmSDKVersionInfos(out var mvdDefaultId);
+						if (mVDAlgorithmSDKVersionInfos != null && mVDAlgorithmSDKVersionInfos.Count() > 0 && !string.IsNullOrEmpty(mvdDefaultId) && mVDAlgorithmSDKVersionInfos.ContainsKey(mvdDefaultId))
+						{
+							text = new DirectoryInfo($"{mVDAlgorithmSDKVersionInfos[mvdDefaultId]}\\MVDTools\\ExportMVDCode").FullName;
+						}
+					}
+				}
+			}
+			if (!Directory.Exists(text))
+			{
+				LogHelper.objLog.Error(AppLocalizationService.GetLang("Lang_Export_operator"));
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_Export_operator"), MessageIcons.Warning);
+				return;
+			}
+		}
+		string environmentVariable = Environment.GetEnvironmentVariable("PATH");
+		string[] array = environmentVariable?.Split(';');
+		if (array != null && !array.Contains(text))
+		{
+			string value = $"{environmentVariable};{text}";
+			Environment.SetEnvironmentVariable("PATH", value);
+		}
+	}
+
+	private void ExecuteFilePathCommand()
+	{
+		FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+		if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+		{
+			string lastDirectoryPath = (FileTextBox.Text = folderBrowserDialog.SelectedPath);
+			LastDirectoryPath = lastDirectoryPath;
+		}
+		folderBrowserDialog.Dispose();
+	}
+
+	private void LoadData()
+	{
+		//IL_000e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0018: Expected Obj, but got Unknown
+		FilePathCommand = (ICommand)new DelegateCommand((Action)ExecuteFilePathCommand);
+		DataContext = this;
+		LangComboBox.Items.Add("C++");
+		LangComboBox.Items.Add("C#");
+		LangComboBox.SelectedIndex = 0;
+		PlatComboBox.Items.Add("VS2013");
+		PlatComboBox.SelectedIndex = 0;
+		NameTextBox.Text = "AlgorithmCode";
+		if (string.IsNullOrEmpty(LastDirectoryPath))
+		{
+			FileTextBox.Text = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+		}
+		else
+		{
+			FileTextBox.Text = LastDirectoryPath;
+		}
+	}
+
+	public ExportAlgorithmWindow()
+	{
+		InitializeComponent();
+		Loaded += ExportAlgorithmWindow_Loaded;
+	}
+
+	private void ExportAlgorithmWindow_Loaded(object sender, RoutedEventArgs e)
+	{
+		LoadData();
+		VmModuleTreeNodeList = new ObservableCollection<EaVmModuleTreeNode>();
+		List<EaVmModuleTreeNode> list = ExportAlgorithmUtil.LoadVmProcessTreeNode(IsSolution, AnModuleId);
+		if (!IsSolution)
+		{
+			processListBox.Visibility = Visibility.Collapsed;
+		}
+		ProcessTreeNodeList = new ObservableCollection<EaVmModuleTreeNode>(list);
+		foreach (EaVmModuleTreeNode processTreeNode in ProcessTreeNodeList)
+		{
+			processTreeNode.PropertyChanged -= Process_PropertyChanged;
+			processTreeNode.PropertyChanged += Process_PropertyChanged;
+			processTreeNode.IsSelected = true;
+		}
+	}
+
+	private void Process_PropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		EaVmModuleTreeNode vmProcedure;
+		if ((vmProcedure = sender as EaVmModuleTreeNode) == null)
+		{
+			return;
+		}
+		List<uint> list = (from p in ProcessTreeNodeList
+			where p.IsSelected == true
+			select p.ModuleID).ToList();
+		btnExport.IsEnabled = list.Count != 0;
+		if (vmProcedure.IsSelected == true)
+		{
+			List<EaVmModuleTreeNode> list2 = ExportAlgorithmUtil.LoadVmModuleTreeNode(vmProcedure.ModuleID);
+			foreach (EaVmModuleTreeNode item2 in list2)
+			{
+				VmModuleTreeNodeList.Add(item2);
+			}
+			VmModuleTreeNodeList = new ObservableCollection<EaVmModuleTreeNode>(VmModuleTreeNodeList.OrderBy((EaVmModuleTreeNode d) => d.ModuleID));
+		}
+		else
+		{
+			EaVmModuleTreeNode item = VmModuleTreeNodeList.FirstOrDefault((EaVmModuleTreeNode d) => d.ModuleID == vmProcedure.ModuleID);
+			VmModuleTreeNodeList.Remove(item);
+		}
+	}
+
+	public static void ShowDialog(uint anModuleId, bool isSolution = false)
+	{
+		ExportAlgorithmWindow exportAlgorithmWindow = new ExportAlgorithmWindow
+		{
+			IsSolution = isSolution,
+			AnModuleId = anModuleId
+		};
+		exportAlgorithmWindow.ShowDialog();
+	}
+
+	private async void Button_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			int nIDEVersion = PlatComboBox.SelectedIndex + 1;
+			int nProgLan = LangComboBox.SelectedIndex + 1;
+			string pszPrjName = NameTextBox.Text.Trim();
+			string pszPrjDir = FileTextBox.Text.Trim();
+			string errorInfo = null;
+			string fileName = Path.Combine(pszPrjDir, pszPrjName);
+			DirectoryInfo directory = new DirectoryInfo(fileName);
+			char[] invalidChars = Path.GetInvalidFileNameChars();
+			if (pszPrjName.Any((char c) => invalidChars.Contains(c)))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("FileNameInvalidCharacters"), MessageIcons.Warning);
+				return;
+			}
+			if (string.IsNullOrEmpty(pszPrjName))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_NameEmpty"), MessageIcons.Warning);
+				return;
+			}
+			new FileInfo(fileName);
+			if (Directory.Exists(directory.FullName))
+			{
+				if (HikMessageBox.Show(AppLocalizationService.GetLang("Lang_InfoTips"), AppLocalizationService.GetLang("Lang_PathExists"), MessageButtons.YesOrNo, MessageIcons.Question) != SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DialogResult.Yes)
+				{
+					return;
+				}
+				Directory.Delete(directory.FullName, recursive: true);
+			}
+			progressBar.Visibility = Visibility.Visible;
+			List<EaVmModuleTreeNode> allVmModuleTreeNode = VmModuleTreeNodeList.GetAllVmModuleTreeNode();
+			if (await Task.Run(() => ExportAlgorithmUtil.ExportCodeFromData(nIDEVersion, nProgLan, pszPrjName, pszPrjDir, allVmModuleTreeNode, out errorInfo)))
+			{
+				progressBar.Visibility = Visibility.Hidden;
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportSuccess"), MessageIcons.Ok);
+				if (Directory.Exists(directory.FullName))
+				{
+					Process.Start("explorer", "/select,\"" + directory.FullName + "\"");
+					Close();
+				}
+				else
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"), MessageIcons.Warning);
+				}
+			}
+			else
+			{
+				progressBar.Visibility = Visibility.Hidden;
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"), errorInfo, MessageIcons.Warning);
+			}
+		}
+		catch (VmException ex)
+		{
+			VmException vmException = ex;
+			progressBar.Visibility = Visibility.Hidden;
+			LogHelper.objLog.Info(vmException);
+			ShowMessage.ShowVmExceptionMessage(vmException);
+		}
+		catch (Exception ex2)
+		{
+			Exception ex3 = ex2;
+			progressBar.Visibility = Visibility.Hidden;
+			LogHelper.objLog.Info(ex3);
+			HikMessageBox.Show(ex3.Message, MessageIcons.Error);
+		}
+	}
+
+	private void Button_Click_Expanded(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			VmModuleTreeNodeList.GetAllVmModuleTreeNode()?.ToList()?.ForEach((EaVmModuleTreeNode item) =>
+			{
+				item.IsExpanded = false;
+			});
+		}
+		catch (Exception ex)
+		{
+			LogHelper.objLog.Info(ex);
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+		}
+	}
+
+	private void ChkOpenAllModules_Checked(object sender, RoutedEventArgs e)
+	{
+	}
+
+	private void ChkOpenAllModules_Unchecked(object sender, RoutedEventArgs e)
+	{
+	}
+}

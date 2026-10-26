@@ -38,6 +38,7 @@ public sealed class DeclaredFieldsView : UserControl
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
   var tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
+  tabs.SetResourceReference(StyleProperty,"TabControlStyle");
   tabs.SelectionChanged+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,tabs))PageChanged?.Invoke();};
   foreach(var page in all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group))
   {
@@ -67,7 +68,8 @@ public sealed class DeclaredFieldsView : UserControl
      if(field.Presentation.Layout?.VisibleWhen is {} condition)_conditions.Add((view,condition));
     }
    }
-   tabs.Items.Add(new TabItem{Header=page.Key,Content=new ScrollViewer{Style=(Style)FindResource("O06.PageScrollViewerStyle"),Content=body,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled}});
+   var tab=new TabItem{Header=page.Key,Content=new ScrollViewer{Style=(Style)FindResource("O06.PageScrollViewerStyle"),Content=body,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled}};
+   tab.SetResourceReference(StyleProperty,"TopTabItemStyle");tabs.Items.Add(tab);
   }
   Content=tabs;UpdateVisibility();
  }

@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<controls:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.AddLightSourceDeviceDlg" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:AppParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="paramWindow" Height="420" Width="370" xmlns:globalui="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;assembly=SunEyeVision.Plugin.Wpf" Loaded="paramWindow_Loaded">
+<vm_port_0:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.AddLightSourceDeviceDlg" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:AppParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="paramWindow" Height="420" Width="370" xmlns:globalui="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" Loaded="paramWindow_Loaded" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Apps.XmlUI;component/ResourceDictionaries/GlobalResources.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/TextBoxStyle/TextBoxStyle.xaml" />
         <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
-        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_2:ColorThemesResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
       <DataTemplate x:Key="MyInteger">
-        <AppParamTab:LeftRightControl Height="32" ChildLeftWidth="{Binding LeftTextWidth, ElementName=paramWindow}">
-          <AppParamTab:LeftRightControl.LeftContent>
+        <vm_port_1:LeftRightControl Height="32" ChildLeftWidth="{Binding LeftTextWidth, ElementName=paramWindow}">
+          <vm_port_1:LeftRightControl.LeftContent>
             <Control Template="{StaticResource TextLeft}" />
-          </AppParamTab:LeftRightControl.LeftContent>
-          <AppParamTab:LeftRightControl.RightContent>
+          </vm_port_1:LeftRightControl.LeftContent>
+          <vm_port_1:LeftRightControl.RightContent>
             <ContentControl ContentTemplate="{StaticResource Integer_Sub}" Content="{Binding}" />
-          </AppParamTab:LeftRightControl.RightContent>
-        </AppParamTab:LeftRightControl>
+          </vm_port_1:LeftRightControl.RightContent>
+        </vm_port_1:LeftRightControl>
       </DataTemplate>
       <DataTemplate x:Key="MyEnumeration">
-        <AppParamTab:LeftRightControl Height="32" ChildLeftWidth="{Binding LeftTextWidth, ElementName=paramWindow}">
-          <AppParamTab:LeftRightControl.LeftContent>
+        <vm_port_1:LeftRightControl Height="32" ChildLeftWidth="{Binding LeftTextWidth, ElementName=paramWindow}">
+          <vm_port_1:LeftRightControl.LeftContent>
             <Control Template="{StaticResource TextLeft}" />
-          </AppParamTab:LeftRightControl.LeftContent>
-          <AppParamTab:LeftRightControl.RightContent>
+          </vm_port_1:LeftRightControl.LeftContent>
+          <vm_port_1:LeftRightControl.RightContent>
             <ContentControl ContentTemplate="{StaticResource Enumeration_Sub}" Content="{Binding}" />
-          </AppParamTab:LeftRightControl.RightContent>
-        </AppParamTab:LeftRightControl>
+          </vm_port_1:LeftRightControl.RightContent>
+        </vm_port_1:LeftRightControl>
       </DataTemplate>
     </ResourceDictionary>
   </FrameworkElement.Resources>
@@ -87,4 +87,4 @@
       <Button Style="{StaticResource BottomButtonStyle}" Content="{DynamicResource Confirm}" Margin="0,0,15,0" HorizontalAlignment="Right" VerticalAlignment="Center" Click="Confirm_Click" />
     </Border>
   </Grid>
-</controls:BaseWindow>
+</vm_port_0:BaseWindow>

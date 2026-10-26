@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-using Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
 using Apps.Data;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;

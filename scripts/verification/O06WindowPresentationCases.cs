@@ -18,7 +18,7 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using ColorPicker=SunEyeVision.Plugin.Wpf.Controls.ColorPicker;
-using ToggleSwitch=SunEyeVision.Plugin.Wpf.Controls.ToggleSwitch;
+using ToggleSwitch=SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Workflow;
 

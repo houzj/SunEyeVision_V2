@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Markup;
-using Apps.ColorFun;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using VM.Core;
 using VM.PlatformSDKCS;
 

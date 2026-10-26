@@ -26,10 +26,14 @@ using Apps.Data.ShapeDefine;
 using Apps.Interface;
 using Apps.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using Microsoft.Win32;
 using Mvvm.Commands;
-using VM.Controls;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<VMControl:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalCommunication" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:test="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:gw="clr-namespace:GateWayFramework;assembly=GateWayFrameworkMain" xmlns:VMControl="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:AppsxmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:PControl="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI" xmlns:localParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" x:Name="globalCommunication" CloseButtonVisibility="Collapsed" AllowsTransparency="False" FontSize="13" FontFamily="Microsoft YaHei" BorderThickness="1" ShowInTaskbar="False" Tag="CommSet" Height="680" Width="1130" Title="{Lang:LangResource Lang_CommSet}">
+<vm_port_0:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalCommunication" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:test="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:gw="clr-namespace:GateWayFramework;assembly=GateWayFrameworkMain" xmlns:VMControl="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:AppsxmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:PControl="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI" xmlns:localParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" x:Name="globalCommunication" CloseButtonVisibility="Collapsed" AllowsTransparency="False" FontSize="13" FontFamily="Microsoft YaHei" BorderThickness="1" ShowInTaskbar="False" Tag="CommSet" Height="680" Width="1130" Title="{Lang:LangResource Lang_CommSet}" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/VM.Controls;component/Styles/BaseWindowStyle.xaml" />
         <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
-        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_1:ColorThemesResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
       <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
       <localUI:BoolToBackVisiableConverter x:Key="BoolBackToEnable" />
@@ -17,16 +17,16 @@
         <Setter Property="Foreground" Value="#666666" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FrameworkElement.ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}" />
-        <Setter Property="Width" Value="{Binding CustomLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+        <Setter Property="Width" Value="{Binding CustomLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
       </Style>
       <Style x:Key="normalText" TargetType="{x:Type TextBlock}">
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="#666666" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Width" Value="{Binding CustomLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+        <Setter Property="Width" Value="{Binding CustomLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
       </Style>
       <Style x:Key="leftStack" TargetType="{x:Type StackPanel}">
-        <Setter Property="Width" Value="{Binding CustomParamsWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+        <Setter Property="Width" Value="{Binding CustomParamsWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
         <Setter Property="Margin" Value="34,5,40,5" />
         <Setter Property="StackPanel.Orientation" Value="Horizontal" />
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -72,7 +72,7 @@
       </Style>
       <DataTemplate x:Key="EnumeraionComDevice_Sub">
         <Border BorderThickness="1" BorderBrush="{DynamicResource ListViewComboBoxBordBrush}" CornerRadius="2">
-          <localParamTab:TreeViewCombobox Height="30" TextBlock.Foreground="{DynamicResource TextBox.Normal.Forground}" ToggleButtonStyle="{StaticResource ComboxStyleBtnA}" ItemsSource="{Binding Path=EnumEntrysA, Converter={x:Static localParserTab:EnumeraionComDeviceCvt.Cvt}, ConverterParameter=0}" ExternSelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+          <vm_port_2:TreeViewCombobox Height="30" TextBlock.Foreground="{DynamicResource TextBox.Normal.Forground}" ToggleButtonStyle="{StaticResource ComboxStyleBtnA}" ItemsSource="{Binding Path=EnumEntrysA, Converter={x:Static localParserTab:EnumeraionComDeviceCvt.Cvt}, ConverterParameter=0}" ExternSelectedItem="{Binding SelectedItem, Mode=TwoWay}">
             <FrameworkElement.Resources>
               <ResourceDictionary>
                 <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type localParserTab:EnumEntry}}" DataType="{x:Type localParserTab:EnumEntry}" ItemsSource="{Binding EnumEntrysA}">
@@ -80,17 +80,17 @@
                 </HierarchicalDataTemplate>
               </ResourceDictionary>
             </FrameworkElement.Resources>
-            <localParamTab:TreeViewCombobox.ExternSelectedItemTemplate>
+            <vm_port_2:TreeViewCombobox.ExternSelectedItemTemplate>
               <DataTemplate>
                 <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" FontSize="14" Text="{Lang:PathResourceBinding FullName}" />
               </DataTemplate>
-            </localParamTab:TreeViewCombobox.ExternSelectedItemTemplate>
+            </vm_port_2:TreeViewCombobox.ExternSelectedItemTemplate>
             <i:Interaction.Triggers>
               <i:EventTrigger EventName="OnTreeNodeSingleClick">
                 <PCommon:ParamsEventCommand Command="{Binding ClickCommand}" />
               </i:EventTrigger>
             </i:Interaction.Triggers>
-          </localParamTab:TreeViewCombobox>
+          </vm_port_2:TreeViewCombobox>
         </Border>
       </DataTemplate>
     </ResourceDictionary>
@@ -103,7 +103,7 @@
     <KeyBinding Gesture="Ctrl+L" Key="R" CommandParameter="LevelC" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
     <KeyBinding Gesture="Ctrl+L" Key="O" CommandParameter="LevelO" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
   </UIElement.InputBindings>
-  <VMControl:BaseWindow.TitleBar>
+  <vm_port_0:BaseWindow.TitleBar>
     <Border Margin="-1" Height="32" BorderThickness="0,0,0,0" BorderBrush="{DynamicResource Col_Theme}" Background="{DynamicResource Col_FrontendUI_Background}">
       <Grid>
         <Grid.ColumnDefinitions>
@@ -111,7 +111,7 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Column="0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" Margin="18,0,8,0" Foreground="{Color:ColorResourceBinding Col_SubForm_HeaderBrush_Foreground}" Text="{Binding Path=Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=VMControl:BaseWindow}}" />
+        <TextBlock Grid.Column="0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" Margin="18,0,8,0" Foreground="{vm_port_1:ColorResourceBinding Col_SubForm_HeaderBrush_Foreground}" Text="{Binding Path=Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=vm_port_0:BaseWindow}}" />
         <Button Grid.Column="1" Margin="0,0,8,0" ToolTip="{DynamicResource Lang_Help}" WindowChrome.IsHitTestVisibleInChrome="True" Command="{Binding ElementName=globalCommunication, Path=ParamsConfig.OpenHelpCommand}">
           <ContentControl.Content>
             <Image Name="img" Width="14" Height="14" Stretch="Uniform" Source="/Apps.Style;component/Resources/btn_help.png" />
@@ -144,7 +144,7 @@
         </StackPanel>
       </Grid>
     </Border>
-  </VMControl:BaseWindow.TitleBar>
+  </vm_port_0:BaseWindow.TitleBar>
   <Grid Name="rootElement">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="290*" />
@@ -159,17 +159,17 @@
             <StackPanel Orientation="Vertical" Margin="0,0,0,0">
               <StackPanel Style="{StaticResource leftStack}">
                 <TextBlock Text="{DynamicResource Lang_SolLoad}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding LoadSolution, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding LoadSolution, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Communication Device}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding SolCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding SolCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_SolutionTimeOut}" Style="{StaticResource normalText}" ToolTip="{DynamicResource Set communicate time out}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource Integer_Sub}" Width="233" Background="#00FFFFFF" Content="{Binding SolutionTimeout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Integer_Sub}" Width="233" Background="#00FFFFFF" Content="{Binding SolutionTimeout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Width="920" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Width="920" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <UIElement.Visibility>
                   <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
                     <Binding Path="LoadSolution.CurValueA" />
@@ -178,9 +178,9 @@
                   </MultiBinding>
                 </UIElement.Visibility>
                 <TextBlock Text="{DynamicResource LabelValueType}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding SolValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding SolValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <UIElement.Visibility>
                   <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
                     <Binding Path="LoadSolution.CurValueA" />
@@ -190,23 +190,23 @@
                   </MultiBinding>
                 </UIElement.Visibility>
                 <TextBlock Text="{DynamicResource End Char}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsSolEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding SolEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Visibility="{Binding Path=IsSolEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsSolEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding SolEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" Visibility="{Binding Path=IsSolEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource TriggerString}" Style="{StaticResource leftText}" />
                 <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding Path=SolutionTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType=localUI:GlobalCommunication}}" />
-                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=SolCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=SolCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{vm_port_1:ColorResourceBinding Col_Theme}" />
               </StackPanel>
               <StackPanel Style="{StaticResource leftStack}">
                 <TextBlock Text="{DynamicResource IMVSProcessControl}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding ProcessControl, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding ProcessControl, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Communication Device}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding ProcCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding ProcCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <UIElement.Visibility>
                   <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
                     <Binding Path="ProcessControl.CurValueA" />
@@ -215,9 +215,9 @@
                   </MultiBinding>
                 </UIElement.Visibility>
                 <TextBlock Text="{DynamicResource LabelValueType}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding PrcValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding PrcValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <UIElement.Visibility>
                   <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
                     <Binding Path="ProcessControl.CurValueA" />
@@ -227,33 +227,33 @@
                   </MultiBinding>
                 </UIElement.Visibility>
                 <TextBlock Text="{DynamicResource End Char}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsPrcEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding PrcEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Visibility="{Binding Path=IsPrcEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsPrcEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding PrcEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" Visibility="{Binding Path=IsPrcEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Split Symbol}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="100" Content="{Binding ProSeparator, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="100" Content="{Binding ProSeparator, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Free Trigger}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ProcessFreeTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=ProcCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ProcessFreeTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=ProcCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{vm_port_1:ColorResourceBinding Col_Theme}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Busy Trigger}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ProcessBusyTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=ProcCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ProcessBusyTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=ProcCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{vm_port_1:ColorResourceBinding Col_Theme}" />
               </StackPanel>
-              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource TextNormal}" Width="Auto" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Content="{Binding SampleSeparatorTip, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource TextNormal}" Width="Auto" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" Content="{Binding SampleSeparatorTip, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               <StackPanel Style="{StaticResource leftStack}">
                 <TextBlock Text="{DynamicResource RunParam_Camera Control}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding CameraRespnseControl, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding CameraRespnseControl, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Communication Device}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding CamCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding CamCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <UIElement.Visibility>
                   <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
                     <Binding Path="CameraRespnseControl.CurValueA" />
@@ -262,9 +262,9 @@
                   </MultiBinding>
                 </UIElement.Visibility>
                 <TextBlock Text="{DynamicResource LabelValueType}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding CameraValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding CameraValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <UIElement.Visibility>
                   <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
                     <Binding Path="CameraRespnseControl.CurValueA" />
@@ -274,24 +274,24 @@
                   </MultiBinding>
                 </UIElement.Visibility>
                 <TextBlock Text="{DynamicResource End Char}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsCameraEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding CameraEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Visibility="{Binding Path=IsCameraEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsCameraEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding CameraEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" Visibility="{Binding Path=IsCameraEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Split Symbol}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="100" Content="{Binding CameraSeparator, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="100" Content="{Binding CameraSeparator, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Connect Trigger}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ConnectTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=CamCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ConnectTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=CamCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{vm_port_1:ColorResourceBinding Col_Theme}" />
               </StackPanel>
-              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}">
                 <TextBlock Text="{DynamicResource RunParam_Disconnect Trigger}" Style="{StaticResource leftText}" />
-                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding DisConnectTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
-                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=CamCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding DisConnectTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=CamCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{vm_port_1:ColorResourceBinding Col_Theme}" />
               </StackPanel>
-              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource TextNormal}" Width="Auto" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Content="{Binding CameraSeparatorTip, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource TextNormal}" Width="Auto" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" Content="{Binding CameraSeparatorTip, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type vm_port_0:BaseWindow}}}" />
             </StackPanel>
           </ScrollViewer>
         </DataTemplate>
@@ -336,4 +336,4 @@
       <!--Unknown connection ID: 7-->
     </gw:MainArea>
   </Grid>
-</VMControl:BaseWindow>
+</vm_port_0:BaseWindow>

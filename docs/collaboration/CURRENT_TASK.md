@@ -1,50 +1,48 @@
-# 当前任务：算法与释放修复已核收，继续完整ROI和界面承接
+# 当前任务：VM 控件代码统一，随后集中测试修复
 
-## 当前未提交实施（接续时先核此段）
+用户最新顺序：四路先完成代码、模板、原图和组装引用的移植，再统一构建、测试和修复；功能通过不能代替 VM 界面达标。
 
-用户最新范围：VM控件库有哪些控件就整套移植其源码/模板/样式/原图及依赖，不限Blob可见控件，不用手画近似品替代。现已找到7导出目录，blob_algorithm_scope正在唯一写evidence/VM_CONTROL_LIBRARY_INVENTORY_20261026.json，保两版WPF差异，未完成真实控件去重数量前不报全库迁完。根已实导入5原模板与17原图，VmFieldStyles.xaml/provenance、Assets和可复现import_vm_field_resources.py；正常/点击/禁用订阅切换、原眼Toggle、链接/笔与Radio已接入，原EditorIcons手画及近似Radio模板已退出。初轮资源相对URI运行失败保留，修packURI后build-vm-native-resources-002为0错/881警告/30.25秒；RoiEditing018九组、WindowPresentation007四组exit0，最新FullChain-vm-native-resources正在实跑。尚不称VM整体外观达标（布局/弹窗等仍差）。
+## 现在完成了什么
 
-006候选独评已结束并释放冻结，7组PASS/exit0；回执Release/_validation/O06-Window-20261026/roi-ui-frozen-independent/receipt-roi-ui-006-independent.json，SHA8787CF73D16513F883F7ADC3A312D91A18CD501ABDFB9194AEB73465613C82D1。2295source侧/766payload前后一致、34正式装载；不包含native执行/保存/物理键鼠/人工，也不适用于其后原资源替换候选。文档路仅原三文件集中补正本段事实，根继续唯一产品写者。以上为最新接续，下面保留前一冻结核收历程，不把其未完成/进行中套到现在。
+- 已提交并推送的可运行检查点：`b87fb685`，含四类 ROI 继承及首组 VM 原模板。该检查点的正式 Release 运行记录见历史，不适用于后续新移植代码。
+- 主仓已合入数值、输入、显示三路源码迁移与追加资源补齐，最新提交 `244f69a0`。公共样式、组合层、字段接入和跨组归一仍在未提交区。
+- 新源码有精确来源、类型与资源映射。缺厂商依赖、缺原函数体的项明确保留；源码文件数量不作为控件数量，也不作为迁移验收结果。
 
-最新接入：DeclaredToolConfigurationControl.RoiInheritance.cs已接四面板，原Roi.Binding/ParameterBindings承接、正式声明/索引选择、完整性与活动校验；支持多同类旧项及禁用项恢复，非活动坏存储不会炸窗口，弹窗确定重查当前声明。最新build-roi-inheritance-ui-006.log为0错误/881警告/33.46秒。typed后台12组（含mask真实扣面积/切回）、RoiEditing attempt016九组、FullChain attempt029八组、WindowPresentation attempt005四组实际通过，均exit0。窗口004旧fixture硬转Combo失败已保留，仅fixture更新为新模式组合入口后复跑通过；RoiEditing早期两次模板InputElement假设及来源Arc未适配阻塞也保留失败记录。
+## 四路分工和下一检查点
 
-当前产品冻结供blob_ui_independent_review独立边界实跑，根暂不修改产品；该独评尚无结果。文档路仅授权S4_PLAN、31类证据JSON和生成原HTML三个文件集中更新。最新用户明确现成VM控件/模板/样式/图标应直接复用，不再手画近似；现Radio橙色模板仅临时改善，不认VM外观通过。已找到原resources/ic_edit2_normal/click、list_ic_eye-open/close_gray及VisionUi/SourceAssets/combo_ic_关联_*等，资源路正在核精确模板/依赖，根随后替换手画EditorIcons。完整typed调试同run、完整视觉、旧SDK消费者迁移、VS/人工仍未完成。下面早期段落是接续历程，最新数值以上段为准。
+| 路线 | 本轮负责 | 写入位置 |
+| --- | --- | --- |
+| 当前主对话 | 公共样式、组合链、跨组引用、共享工程与最后整合 | 主仓 |
+| 数值路 | 数值/区间/滑条原控件及完整焦点弹出链 | 隔离 numeric worktree |
+| 输入路 | 输入源 ComboBox、订阅输入、原模板与原图闭包 | 隔离 input worktree |
+| 显示路 | 颜色、属性表、显示控件及原资源闭包 | 隔离 display worktree |
 
-根仍为唯一产品写者，HEAD/origin为a6f58334。未提交ROI真实typed执行接缝已接入：严格组合、本次缓存、动态ROI计划、物理帧、CircleDetect nullable声明；当前不代表完整四继承窗口已交付。纯组合6组通过；真实Workflow RoiBindings由attempt001的5通过/3失败修至attempt002的8组通过，再补三项实质漏洞及四种新模式后台执行，attempt003为11组全通过、进程exit0。涵盖矩形/圆整对象及参数、标量广播/明确索引、缺字段、错帧、重复显示来源不能误导正式计划核帧、非活动非法草稿、非正尺寸record拒绝、本run身份、保存重开、Circle可空冻结（未做原生拟合）。
+各路不单独构建或宣布验收通过；根按中文提交逐一核收合并。只迁源码和必要资源，不复制正式 Release 或大体积运行库。
 
-最新全量build-roi-review-fixes-002.log：0错误/884警告/61.19秒；首轮缺System引用的3错误原日志保留。根已补来源/本地编辑器逻辑活动性、显式SDK几何目录、窗口Esc及切页取消绘制、Radio键盘同组；这些已编译，但完整四模式面板和同页同态UI仍未接入/未验收。日志在Release/_validation/O06-RoiCore-20261026；最新窗口FullChain八组实际通过、进程exit0（管理事件与命令路径，不是物理鼠标或VM外观验收）。早期Resources22通过属于旧backend候选，未在本次重新运行。
+已合齐三路追加修正并统一工程资源入口。首次全量 Release 构建日志 `Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-001.log`：44错误、519警告、2分09秒；主要是跨组类型/XAML映射/外部依赖，尚未进入新候选运行测试。
 
-独评计划在Release/_validation/O06-Window-20261026。三路已按新分工完成本轮只读复核；发现的非正尺寸、非活动草稿和帧检查双字段漏洞已修并纳入11组回归。完整独立UI运行等候选冻结；根下一步接真正的四模式编辑面板/绑定选择与调试同run，不把新增但无调用的RegionSourceModeSelector当成落地。
+用户补充澄清：本轮界面接入以 Blob 实际使用的控件及完整依赖为边界，不默认将 VM 所有业务页面并入共享层；扩大迁入的原源码需继续按实际职责区分，不能直接认定可复用或全部完成。
 
-用户另开独立任务“工作流、工具箱与数据流优化”，正式threadId为01a176b8-278f-77f3-8093-20a80f11403b，worktree为C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2，基线a6f58334，不包含本段ROI。已在初始提示明确SDK/WorkflowBindingContext接口冲突、不复制Release和统一集成测试边界。此任务不替代本对话Blob目标。
+原 `optimization-o06-ui-preview.html` 已按迁入资源更新：23张原图、7组部件的对应文件与交互边界，原截图和31类清单保留；新增可复现脚本 `scripts/documentation/update_vm_migrated_preview.py`。资源路径/原图哈希/JS语法已检查，浏览器安全策略拒绝本地file协议自动打开，未做浏览器实看，不称视觉验收通过。
 
-以下为上次已提交核收状态，不能与当前未验证ROI混为同一候选。
+用户要求单/双端交互直接遵循VM原实现。已读取NumericControl、SliderArrange及RangeRule源码：预览独立脚本 `blob-vm-numeric-interaction.js` 替换原浏览器即时跳值逻辑，落实轨道按字段步长增减、双端中点分区/限界、拖动保持指针偏移、文本失焦/关闭提交、拖动松手通知与仅聚焦滚轮。7项边界/拖动计算断言和JS语法通过；尚未浏览器实看或WPF运行验收。原源码路径与哈希记录在预览provenance，不把HTML改动当作产品控件已经接入。
 
-2026-10-26。持续目标保持active，未交付整体UI或代用户验收。以[原O06方案](../04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html#s4-implementation-status)为主入口。
+后续用户实测补正已落实到预览：输入数值即时更新滑块但不发已提交change；数量上限按现行BlobPresentation的1—1000000补齐聚焦滑条；有效Enter确认后失焦并收起，无效值保留编辑提示。Release下preview-numeric-sync-check.cjs覆盖输入/两端同步/非法交叉/Enter/失焦/键盘步进，使用DOM替身，不能作浏览器或WPF验收。
 
-## 当前写权与版本
+用户补齐VM颜色弹层4张实图后，原预览已新增就地ImageViewConfig四行面板（OK/NG、透明度、粗细）及Default/More二层颜色弹层；默认70色从迁入SourceColorPalette提取，More取原colorchart像素和SourceAdvancedColorPicker的linear-scRGB亮度公式。文本颜色直接共用色板；图形面板两个数值复用同一预览数值控制器。取消前先处理弹层数值，再恢复窗口草稿，防止延迟change把取消值写回。源码/原图哈希、边界记录在provenance，尚无浏览器实看或用户通过结论；新JS有版本hash防旧缓存。
 
-- 算法路已明确释放产品、测试和构建写权；根接回唯一写权。独评最后冻结已释放，其他路只读审查或集中编辑文档，不新增副本或管理岗位。
-- 产品检查点：`c2a3d6c8200e06070aa9c424481c90871e8b3aa4`，中文产品提交已保存；阶段文档和22项持久回归由本次核收提交保存，远程身份以origin/main为准。
-- 正式产物：`Release/SunEyeVision_v1.0.0/SunEyeVision`。候选清单`frozen-resource-diagnostics-candidate.json` SHA `F28E361C85EB7BF15130E3CE1ACF995A832AE066F315757E541786B1A9F4E0A2`；清单形成于未提交状态，现其产品源码已固化为上述提交，不能称另有一次重建。
+第二次全量构建为42错误/19警告/55.98秒（build-vm-library-integration-002.log）；引用归一脚本中OutputConfigTreeView无Style.Setters的分支异常已修，仍需完整再生后重建，不能按局部错误下降认定构建修复。
 
-## 已落地并实际验证
+下一检查点：集中修复构建错误，随后运行控件交互、VM实图对照与Blob完整链回归。不据旧PASS报新候选达标。
 
-- Blob单阈值/双阈值/不二值化、nullable实际阈值与模式输出；内置预处理/形态学移出，由上游滤波/均衡化、严格二值形态学和Circle承接。
-- 隐藏Upper按声明的逻辑活动性校验，保留待编辑草稿；其他Tab和收起Advanced仍按活动字段验证。
-- 三上游native图像结果所有权、部分失败释放、迟到取消/失效结果双合同清理及完整异常链；保留原始调用者输入和已取得像素租约。
-- 最终全量Release构建：0错误、1087警告、47.52秒。实际宿主FullChain attempt024八组通过，覆盖窗口草稿、HALCON、确认、下游、保存重开与关闭；不冒充物理鼠标或人工验收。
-- 独评同22项最终全通过，回执`receipt-resource-diagnostics-independent.json` SHA `2980A7D220F8330D103197F041680017DE1ECA479524670D989EABDCE4451787`；41源码/666产物前后一致，33装载记录均正式目录。之前原生12项失败、诊断18通过/4失败都保留，未覆盖历史。
-- 根将独立22项纳入原Resources持久入口，正式attempt004与最终源码attempt005均实跑同22项全通过、exit0。仅适配入口类名/结果文件名，没有改弱断言或改产品DLL，不因此重复产品构建。
+## 仍需注意
 
-完整事实与必要小归档见[阶段检查点](evidence/O06_ALGORITHM_IMPLEMENTATION_CHECKPOINT_20261026.json)。归档179518字节，仅清单/回执/日志/fixture与原外部diff，不含产品副本。两lock的原改动已核准仅Plugin.Wpf项目依赖，min/max原删除经审查恢复以对齐Runtime正式输出，原diff已保存。
+用户最新焦点边框反馈已处理到原HTML预览：去掉全页及开关旧的外侧2px橙色outline，含窗口外的颜色/样式弹层；数值、下拉等沿用1px原边框变橙色，键盘焦点为内侧1px细虚线，不增加尺寸和间距。生成脚本同步修正并验证幂等、CSS版本哈希；只作静态检查，未新增浏览器或WPF视觉通过结论。
 
-## 下一步和未完成
+构建状态补记：007通过XAML阶段后，008暴露191个C#错误；009因Forms全局导入增加到834。已保留平台引用并移除Drawing/Forms隐式全局using；010为153错误。按5个实际安装原件SHA迁入114个依赖源码文件/类型映射（含接口/事件/转换器，不是控件数），015现为121错误/233警告14.01秒。原日志均保留，新候选仍未编译通过，不使用历史PASS冒充本轮验收。
 
-1. 文档路已统一更新原31行、去留表与工程树，根已核对693唯一锚点/幂等及本次阶段记录，按检查点提交推送；31行真实文件均存在，旧消费者状态逐项保留，不能据词法0提及删除。
-2. 根继续完整ROI四继承的真实typed来源、参数拼装、同帧/本run身份、确定取消与保存执行链；实现输入见[ROI审查](evidence/O06_ROI_IMPLEMENTATION_INPUT_20261026.md)。不要只补四个按钮，像素Region保持独立合同。
-3. 按原方案VM实图同页同态核布局、滑条、订阅图标、长文本和标题，继续实际消费者/资源迁移后旧类退出，再做最终关联回归与集中试用。
+发布工程修正：Plugin.Contracts/Plugin.Runtime/Tool.Kernels不再覆盖全局输出到早期artifacts验证目录，Tool.Kernels补入解决方案；013/015实际日志确认三者均输出正式Release且无旧Debug路径或复制失败。主题跨模块影响已评估，Native ColorFun仅向调用窗口合并项目内原主题，不读VM安装配置、不修改Application全局资源；visual-host-adaptations.json保留原源码及适配哈希，显示导入脚本保护适配不被覆盖。运行、三主题与设计时尚待本候选构建闭合。
 
-VM实图是外观验收依据；现有18张状态图仍有已知视觉差异，功能PASS不能代替整体UI达标。实际VS设计器和用户人工验收未执行，不能清零。HALCON沿用加密狗，不单独查许可；不恢复旧变量收口。检查点不是停工点。
+完整 typed 调试同 run、旧 SDK 消费者退出、整体 VM 视觉、VS 设计时及用户人工验收仍未完成。用户验收等待实际反馈。HALCON 沿用加密狗，不单独检查许可；不恢复旧变量收口。
 
-较早检查点与完整接续记录已原样保存在[历史记录](history/CURRENT_TASK_before_algorithm_resource_20261026.md)，旧候选数字和写权均不能当作当前状态。
+必要的此前记录完整保留在 [前期记录](history/CURRENT_TASK_before_four_lane_import_20261026.md)，其中旧写权、版本和进行中状态均只作历史。

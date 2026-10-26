@@ -1,8 +1,13 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
 

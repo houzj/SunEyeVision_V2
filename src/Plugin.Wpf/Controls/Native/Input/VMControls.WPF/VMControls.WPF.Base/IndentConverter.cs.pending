@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
 

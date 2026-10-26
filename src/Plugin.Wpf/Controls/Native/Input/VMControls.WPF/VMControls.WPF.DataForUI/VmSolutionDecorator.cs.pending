@@ -6,10 +6,13 @@ using System.Windows;
 using System.Windows.Input;
 using Apps.ErrorCode;
 using Apps.Localization;
-using Apps.UIHelper.Extern;
-using Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
 using Mvvm.Commands;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.PlatformSDKCS;
 using VMControls.Interface;
 

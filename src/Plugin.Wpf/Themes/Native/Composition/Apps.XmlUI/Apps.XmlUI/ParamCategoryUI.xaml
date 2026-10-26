@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListView x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamCategoryUI" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:paramTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" x:Name="Control" Background="#FFF2F3F5" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Style="{DynamicResource ListViewStyle1}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/ResourceDictionaries/GlobalResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <DataTemplate x:Key="DisplayTypeTemplate">
+        <Grid Width="{Binding ActualWidth, ElementName=ValueColumn}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="18" />
+          </Grid.ColumnDefinitions>
+          <paramTab:ParamUserControl Grid.Column="0" />
+        </Grid>
+      </DataTemplate>
+      <Style x:Key="ListViewStyle1" TargetType="{x:Type ListView}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ListBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource ListViewFg}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListView}">
+              <themes:ListBoxChrome Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" RenderMouseOver="{TemplateBinding UIElement.IsMouseOver}" RenderFocused="{TemplateBinding UIElement.IsKeyboardFocusWithin}" UIElement.SnapsToDevicePixels="True">
+                <ScrollViewer Tag="1" Style="{StaticResource RecScrollViewer}">
+                  <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </ScrollViewer>
+              </themes:ListBoxChrome>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="themes:ListBoxChrome.Background" />
+                </Trigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="ItemsControl.IsGrouping" Value="True" />
+                    <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+                  </MultiTrigger.Conditions>
+                  <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                </MultiTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}">
+        <Setter Property="Visibility" Value="Collapsed" />
+      </Style>
+      <Style x:Key="{x:Type ListViewItem}" TargetType="{x:Type ListViewItem}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListViewItem}">
+              <Border Name="bd" BorderThickness="1" Background="#00FFFFFF" SnapsToDevicePixels="True" BorderBrush="{Binding MyItemState, Converter={StaticResource CheckConverter}}">
+                <GridViewRowPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <DataTrigger Value="false" Binding="{Binding CustomVisibleA}">
+                  <Setter TargetName="bd" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Value="false" Binding="{Binding EnableA}">
+                  <Setter TargetName="bd" Property="IsEnabled" Value="False" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <ItemsControl.ItemsPanel>
+    <ItemsPanelTemplate>
+      <WrapPanel IsItemsHost="True" />
+    </ItemsPanelTemplate>
+  </ItemsControl.ItemsPanel>
+  <ListView.View>
+    <GridView>
+      <GridViewColumn Header="值" x:Name="ValueColumn" CellTemplate="{StaticResource DisplayTypeTemplate}" Width="{Binding ActualWidth, ElementName=Control}" />
+    </GridView>
+  </ListView.View>
+</ListView>

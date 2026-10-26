@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:PCImage="clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI" xmlns:com="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:baseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0__="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+    <x:StaticExtension Member="vm_port_0_:ColorThemesResourceDictionary.Instance" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/BottomButtonStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/NormalButtonStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ScrollBarStyle/RecScrollBarStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/RadioButtonStyle/RadioButtonStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/ToggleButtonStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ItemsControlStyle/ItemsControlStyle.xaml" />
+    <ResourceDictionary Source="/Apps.PcUI;component/Styles/PcUIStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+  <vm_port_0:IndexConverter x:Key="indexConverter" />
+  <vm_port_0:NegateConverter x:Key="negateConverter" />
+  <vm_port_0__:NormalMultiplicationConverter x:Key="normalMultiplicationConverter" />
+  <Style x:Key="StackPanelStyle" TargetType="{x:Type StackPanel}">
+    <Setter Property="Visibility" Value="Collapsed" />
+    <Style.Triggers>
+      <DataTrigger Value="True" Binding="{Binding IsChecked, ElementName=expand}">
+        <Setter Property="Visibility" Value="Visible" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="ROIStackStyle" TargetType="{x:Type localcontrol:ROIStackControl}">
+    <Setter Property="localcontrol:ROIStackControl.ROIData" Value="{Binding CurROIData}" />
+    <Setter Property="localcontrol:ROIStackControl.IsDraging" Value="{Binding CanUpDateROI, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelectControl}, Converter={StaticResource negateConverter}}" />
+  </Style>
+  <DataTemplate x:Key="BoxROI">
+    <localcontrol:BoxROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="UroBoxROI">
+    <localcontrol:BoxROIStack IsRotatable="False" Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="SectorRingROI">
+    <localcontrol:SectorRingROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="SectorROI">
+    <localcontrol:SectorROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="OverSectorROI">
+    <localcontrol:SectorROIStack MaxAngleRange="720.0" Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="PolygonROI">
+    <localcontrol:PolygonROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="LineCaliperROI">
+    <localcontrol:LineCaliperROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="SectorCaliperROI">
+    <localcontrol:SectorCaliperStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="CircleCaliperROI">
+    <localcontrol:CircleCaliperROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="PointROI">
+    <localcontrol:PointROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="LineROI">
+    <localcontrol:LineROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="CircleMesROI">
+    <localcontrol:CircleMesROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="MatrixCircleROI">
+    <localcontrol:MatrixCircleROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="CoordinateROI">
+    <localcontrol:CoordinateROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <DataTemplate x:Key="Box3DROI">
+    <localcontrol:Box3DROIStack Style="{StaticResource ROIStackStyle}" />
+  </DataTemplate>
+  <Style x:Key="ROIListStyle" TargetType="{x:Type ContentControl}">
+    <Setter Property="ContentTemplate" Value="{x:Null}" />
+    <Setter Property="Visibility" Value="Collapsed" />
+    <Style.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+          <Condition Value="Visible" Binding="{Binding Visibility, ElementName=expand}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Visibility" Value="Visible" />
+      </MultiDataTrigger>
+      <DataTrigger Value="True" Binding="{Binding BoxEnable_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource BoxROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding UroBoxEnable_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource UroBoxROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding SectorRingEnable_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource SectorRingROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding SectorEnable_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource SectorROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding OverSector_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource OverSectorROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding PolygonEnable_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource PolygonROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding LineCaliper_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource LineCaliperROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding SectorCaliper_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource SectorCaliperROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding CircleCaliper_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource CircleCaliperROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding Point_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource PointROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding Line_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource LineROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding CircleMes_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource CircleMesROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding MatrixCircle_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource MatrixCircleROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding Coordinate_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource CoordinateROI}" />
+      </DataTrigger>
+      <DataTrigger Value="True" Binding="{Binding Box3DROI_ModuleEnableA}">
+        <Setter Property="ContentTemplate" Value="{StaticResource Box3DROI}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+</ResourceDictionary>

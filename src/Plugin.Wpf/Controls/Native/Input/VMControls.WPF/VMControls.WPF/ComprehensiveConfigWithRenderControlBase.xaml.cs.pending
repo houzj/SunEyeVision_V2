@@ -8,14 +8,14 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Threading;
 using Apps.Log;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.XmlParser.ParamTab;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
 using VM.Core;
 using VM.PlatformSDKCS;
 using VMControls.BaseInterface;
 using VMControls.Interface;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
 
@@ -330,10 +330,4 @@ public partial class ComprehensiveConfigWithRenderControlBase : UserControl, ICo
 		}), DispatcherPriority.Loaded);
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

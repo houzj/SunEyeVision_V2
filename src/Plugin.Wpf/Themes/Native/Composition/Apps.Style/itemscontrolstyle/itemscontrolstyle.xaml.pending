@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:AppCommon="clr-namespace:Apps.Data.Common;assembly=Apps.Data" xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/NormalButtonStyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ScrollBarStyle/RecScrollBarStyle.xaml" />
+    <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <AppCommon:GroupIndexConverter x:Key="groupIndexConverter" />
+  <ItemsPanelTemplate x:Key="HorizontalItemsPanelTemplate">
+    <StackPanel IsItemsHost="True" Orientation="Horizontal" />
+  </ItemsPanelTemplate>
+  <DataTemplate x:Key="ToolButtonDataTemplate">
+    <Button Margin="4,0,4,0" Height="36" Width="36" Style="{StaticResource ToolBarButtonStyle}" Command="{Binding ItemClickCommand}">
+      <FrameworkElement.ToolTip>
+        <Lang:ResourceBinding>
+          <Ctor xmlns="https://github.com/icsharpcode/ILSpy">Name</Ctor>
+        </Lang:ResourceBinding>
+      </FrameworkElement.ToolTip>
+    </Button>
+  </DataTemplate>
+  <Style x:Key="ToolButtonGroupItemStyle" TargetType="{x:Type GroupItem}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type GroupItem}">
+          <StackPanel Orientation="Horizontal">
+            <Line Name="line" Margin="4,5,0,0" Width="1" X1="0" Y1="7" X2="0" Y2="25" StrokeThickness="1" Stroke="{DynamicResource Col_Menubar_ShortcutsSplitLine}" StrokeDashArray="3,2,3,2" Opacity="0.5" />
+            <ItemsPresenter />
+          </StackPanel>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="0">
+              <DataTrigger.Binding>
+                <MultiBinding Converter="{StaticResource groupIndexConverter}">
+                  <Binding />
+                  <Binding Path="ItemsSource" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}" />
+                </MultiBinding>
+              </DataTrigger.Binding>
+              <Setter TargetName="line" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="TopTabItemStyle" TargetType="{x:Type TabItem}">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{DynamicResource Col_ModuleConfig_Title_Foreground}" />
+    <Setter Property="TabItem.IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type TabItem}">
+          <Grid>
+            <Border Name="bd" HorizontalAlignment="Center" VerticalAlignment="Center" Height="35" Background="#00FFFFFF" Width="{Binding ParamWidth}">
+              <ContentControl Name="Content" Foreground="{TemplateBinding Control.Foreground}" Tag="{TemplateBinding HeaderedContentControl.Header}" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                <ContentControl.Content>
+                  <Lang:ResourceBinding Binding.Path="Tag" RelativeSource="{RelativeSource Mode=Self}" />
+                </ContentControl.Content>
+              </ContentControl>
+            </Border>
+            <Rectangle Name="line" Height="2" Fill="{DynamicResource Col_Theme}" Visibility="Hidden" VerticalAlignment="Bottom" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="TabItem.IsSelected" Value="True">
+              <Setter TargetName="bd" Value="{DynamicResource Col_Theme_Light}" Property="Border.Background" />
+              <Setter TargetName="Content" Property="FontWeight" Value="Bold" />
+              <Setter TargetName="Content" Value="{DynamicResource Col_ModuleConfig_Title_Selected_Foreground}" Property="Foreground" />
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="TabControlStyle" TargetType="{x:Type TabControl}">
+    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource LogoForground}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type TabControl}">
+          <Grid ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" SnapsToDevicePixels="True">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Name="ColumnDefinition0" />
+              <ColumnDefinition Name="ColumnDefinition1" Width="0" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Name="RowDefinition0" Height="Auto" />
+              <RowDefinition Name="RowDefinition1" Height="*" />
+            </Grid.RowDefinitions>
+            <Border Name="head" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Col_ModuleConfig_Title_BorderBrush}" Margin="4,2,0,2">
+              <TabPanel Name="HeaderPanel" Grid.Column="0" Grid.Row="0" Margin="0" ZIndex="1" IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+              <UIElement.Effect>
+                <DropShadowEffect Color="White" Direction="270" ShadowDepth="1" Opacity="0.66" BlurRadius="2" />
+              </UIElement.Effect>
+            </Border>
+            <ContentPresenter Name="PART_SelectedContentHost" Grid.Row="1" ContentSource="SelectedContent" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+            </Trigger>
+            <DataTrigger Value="1" Binding="{Binding ItemsSource.Count, RelativeSource={RelativeSource Self}}">
+              <Setter TargetName="head" Property="Visibility" Value="Hidden" />
+              <Setter TargetName="head" Property="Margin" Value="0" />
+              <Setter TargetName="head" Property="Height" Value="0" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="ListViewStyle1" TargetType="{x:Type ListView}">
+    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource btnEditTemplateEnableFG}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+    <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListView}">
+          <Themes:ListBoxChrome Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" UIElement.SnapsToDevicePixels="True">
+            <ScrollViewer Tag="1" Style="{StaticResource RecScrollViewer}">
+              <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+            </ScrollViewer>
+          </Themes:ListBoxChrome>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Themes:ListBoxChrome.Background" />
+            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ItemsControl.IsGrouping" Value="True" />
+                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+              </MultiTrigger.Conditions>
+              <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+            </MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="ScrollItemsControlStyle" TargetType="{x:Type ItemsControl}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ItemsControl}">
+          <ScrollViewer Tag="1" Style="{StaticResource RecScrollViewer}">
+            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+          </ScrollViewer>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

@@ -1,0 +1,76 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.Log;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class TimeOutSet : BaseWindow, INotifyPropertyChanged, IComponentConnector
+{
+	private uint ProcessID = 0u;
+
+	public new event PropertyChangedEventHandler PropertyChanged;
+
+	public TimeOutSet(uint processID)
+	{
+		InitializeComponent();
+		ProcessID = processID;
+		Loaded += TimeOutSet_Loaded;
+	}
+
+	protected new virtual void OnPropertyChanged(string proName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(proName));
+		}
+	}
+
+	private void TimeOutSet_Loaded(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			uint num = 0u;
+			try
+			{
+				num = ServerSDKManager.serverSDKManager.mProcessManager.GetProcedureWaitTime(ProcessID);
+				timeSpan.StartValue = num;
+			}
+			catch
+			{
+				HikMessageBox.Show("Lang_SetCnfg", "Lang_GetParamError", MessageIcons.Error, isTranslate: true);
+			}
+		}
+		catch
+		{
+			timeSpan.StartValue = 100.0;
+			Close();
+		}
+	}
+
+	private void ButtonApply_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			ServerSDKManager.serverSDKManager.mProcessManager.SetProcedureWaitTime(ProcessID, (uint)timeSpan.StartValue);
+			DialogResult = true;
+		}
+		catch (VmException ex)
+		{
+			string text = "IMVS_GetProcContinousRunInterval Failed!：" + ex.errorCode + ",:" + ex.errorMessage;
+			LogHelper.objLog.Error(text);
+			HikMessageBox.Show(text, MessageIcons.Error);
+			DialogResult = false;
+		}
+	}
+
+	private void ButtonClose_Click(object sender, RoutedEventArgs e)
+	{
+		Close();
+	}
+}

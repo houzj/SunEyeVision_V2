@@ -1,6 +1,9 @@
 using System.Windows.Markup;
 using Apps.XmlParser.ParamTab;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 using VMControls.Interface;
 

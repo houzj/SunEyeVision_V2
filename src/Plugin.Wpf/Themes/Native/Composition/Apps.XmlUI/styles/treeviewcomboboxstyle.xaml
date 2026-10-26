@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab">
+  <ResourceDictionary.MergedDictionaries />
+  <Style x:Key="{x:Type local:TreeViewCombobox}" TargetType="{x:Type local:TreeViewCombobox}">
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FrameworkElement.ToolTip" Value="{Binding ExternSelectedItem, RelativeSource={RelativeSource Mode=Self}}" />
+  </Style>
+</ResourceDictionary>

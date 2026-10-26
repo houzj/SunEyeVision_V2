@@ -608,10 +608,4 @@ public partial class ZoomArea : UserControl, INotifyPropertyChanged, IComponentC
 		OnChangeZoom(e, new Point(e.GetPosition(GridEagleEye).X * grid.ActualWidth / GridEagleEye.ActualWidth, e.GetPosition(GridEagleEye).Y * grid.ActualHeight / GridEagleEye.ActualHeight));
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

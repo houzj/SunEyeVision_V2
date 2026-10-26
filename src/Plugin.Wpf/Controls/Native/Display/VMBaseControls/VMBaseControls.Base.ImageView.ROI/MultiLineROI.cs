@@ -1,4 +1,6 @@
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
 using System.Collections;
@@ -15,10 +17,11 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using Apps.Localization;
 using Apps.Log;
-using Apps.UIHelper.Extern;
-using HikPcUI.ImageView;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI;
 

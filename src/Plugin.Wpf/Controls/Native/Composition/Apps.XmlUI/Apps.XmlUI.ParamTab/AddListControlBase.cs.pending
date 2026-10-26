@@ -1,0 +1,98 @@
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public class AddListControlBase : UserControl
+{
+	private readonly double CHWidth = 55.0;
+
+	private readonly double ENWidth = 65.0;
+
+	public static readonly DependencyProperty ColumnHeadsProperty = DependencyProperty.Register("ColumnHeads", typeof(ObservableCollection<HeadItem>), typeof(AddListControlBase), new PropertyMetadata(null, OnColumnHeadsChange));
+
+	protected DataGrid DG { get; set; }
+
+	public virtual bool IsCanDelete => true;
+
+	public ObservableCollection<HeadItem> ColumnHeads
+	{
+		get
+		{
+			return (ObservableCollection<HeadItem>)GetValue(ColumnHeadsProperty);
+		}
+		set
+		{
+			SetValue(ColumnHeadsProperty, value);
+		}
+	}
+
+	private static void OnColumnHeadsChange(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if ((d as AddListControlBase).DG != null)
+		{
+			(d as AddListControlBase).DG.Columns.Clear();
+		}
+		(d as AddListControlBase).DoColumnHeadsChange();
+	}
+
+	private void DoColumnHeadsChange()
+	{
+		if (DG == null || ColumnHeads == null)
+		{
+			return;
+		}
+		DataGridTemplateColumn dataGridTemplateColumn = new DataGridTemplateColumn();
+		dataGridTemplateColumn.Header = AppLocalizationService.GetLang("Number");
+		DataTemplate cellTemplate = Resources["RowNumTemplate"] as DataTemplate;
+		dataGridTemplateColumn.CellTemplate = cellTemplate;
+		dataGridTemplateColumn.Width = ((AppLocalizationService.GetLang("Language") == "English") ? ENWidth : CHWidth);
+		DG.Columns.Add(dataGridTemplateColumn);
+		int num = 0;
+		foreach (HeadItem columnHead in ColumnHeads)
+		{
+			DataGridTemplateColumn dataGridTemplateColumn2 = new DataGridTemplateColumn();
+			dataGridTemplateColumn2.Header = AppLocalizationService.GetLang(columnHead.DisplayName);
+			DataTemplate dataTemplate = new DataTemplate();
+			FrameworkElementFactory frameworkElementFactory = new FrameworkElementFactory(typeof(ParamUserControl));
+			frameworkElementFactory.SetValue(FrameworkElement.DataContextProperty, new Binding("EnumEntrysA[" + num + "]"));
+			dataTemplate.VisualTree = frameworkElementFactory;
+			num++;
+			dataGridTemplateColumn2.CellTemplate = dataTemplate;
+			dataGridTemplateColumn2.Width = ((columnHead.Width == 0.0) ? 100.0 : columnHead.Width);
+			DG.Columns.Add(dataGridTemplateColumn2);
+		}
+		if (IsCanDelete)
+		{
+			DataGridTemplateColumn dataGridTemplateColumn3 = new DataGridTemplateColumn();
+			DataTemplate cellTemplate2 = Resources["DeleteButtonTemplate"] as DataTemplate;
+			dataGridTemplateColumn3.CellTemplate = cellTemplate2;
+			dataGridTemplateColumn3.Width = 30.0;
+			DG.Columns.Add(dataGridTemplateColumn3);
+		}
+	}
+
+	protected void dg_LoadingRow(object sender, DataGridRowEventArgs e)
+	{
+		e.Row.Header = e.Row.GetIndex() + 1;
+	}
+
+	protected void dg_UnloadingRow(object sender, DataGridRowEventArgs e)
+	{
+		if (!(sender is DataGrid dataGrid))
+		{
+			return;
+		}
+		for (int i = 0; i < dataGrid.Items.Count; i++)
+		{
+			if (dataGrid.ItemContainerGenerator.ContainerFromIndex(i) is DataGridRow { Header: var header } dataGridRow && header is int)
+			{
+				dataGridRow.Header = dataGridRow.GetIndex() + 1;
+			}
+		}
+	}
+}

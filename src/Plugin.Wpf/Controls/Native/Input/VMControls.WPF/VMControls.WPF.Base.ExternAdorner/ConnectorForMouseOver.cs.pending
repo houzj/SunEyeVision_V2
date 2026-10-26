@@ -1,6 +1,7 @@
 using System.Windows;
 using Apps.UIHelper.Service;
-using VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ExternAdorner;
 

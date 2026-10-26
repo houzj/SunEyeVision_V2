@@ -1,0 +1,24 @@
+{
+  "scope": "原颜色字典宿主适配；不代表运行或视觉验收",
+  "changes": [
+    "资源固定使用项目内原colorstyle1/2/3及colorstyle.xaml，默认light colorstyle1是本方选择，不推断VM运行主题",
+    "不再读取厂商CurrentPathHelper、外置ColorCFG；不将插件字典注入Application.Current",
+    "窗口按GetInstance(framework)显式合并；原ColorResourceBinding取值语义保留，日志用Trace",
+    "先加载新主题完整字典后再切换，失败保留当前主题并输出真实错误；不部署VM DLL"
+  ],
+  "files": [
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorThemesResourceDictionary.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\Apps.ColorFun\\ColorThemesResourceDictionary.cs",
+      "original_source_sha256": "cdce993856644808919089ed910837b450043b8678ac069ed3678bb33a9d53ff",
+      "adapted_sha256": "dbbe9f3983d999d5b86a388bdb14547c6b7b302806dba99279991bb336621591"
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorResourceBinding.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\Apps.ColorFun\\ColorResourceBinding.cs",
+      "original_source_sha256": "6962a8de01b376780a2ac905ae20c99c063e583209cd7564dd85d111b8a4767f",
+      "adapted_sha256": "7f26fa841ab64755698608c4101b1b07562dc65aa05c00b998165d3616e9efcf"
+    }
+  ],
+  "cross_module_impact": "限制在Native颜色与调用GetInstance的窗口；不修改宿主全局主题、工作流、算法或SDK契约。运行、设计时和三主题资源加载待构建通过后验证。"
+}

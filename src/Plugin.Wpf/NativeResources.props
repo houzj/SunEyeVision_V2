@@ -1,0 +1,25 @@
+<Project>
+  <ItemGroup>
+    <Page Remove="Themes/Native/Display/AppsColorFun/colorstyle1.xaml" />
+    <Resource Include="Themes/Native/Display/AppsColorFun/colorstyle1.xaml" />
+    <Page Remove="Themes/Native/Display/AppsColorFun/colorstyle2.xaml" />
+    <Resource Include="Themes/Native/Display/AppsColorFun/colorstyle2.xaml" />
+    <Page Remove="Themes/Native/Display/AppsColorFun/colorstyle3.xaml" />
+    <Resource Include="Themes/Native/Display/AppsColorFun/colorstyle3.xaml" />
+    <EmbeddedResource Update="Controls/Native/Display/VMControls/VM.Controls.Core.ErrorMessages.resx">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.ErrorMessages.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Controls/Native/Display/VMControls/VM.Controls.Properties.Resources.resx">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Properties.Resources.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.旋转光标.png">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.旋转光标.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标双向箭头.png">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.鼠标双向箭头.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标旋转箭头.png">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.鼠标旋转箭头.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

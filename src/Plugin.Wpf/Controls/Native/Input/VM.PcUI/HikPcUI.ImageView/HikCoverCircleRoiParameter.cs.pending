@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 

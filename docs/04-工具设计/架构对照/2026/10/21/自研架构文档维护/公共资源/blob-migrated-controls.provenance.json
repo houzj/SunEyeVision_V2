@@ -1,0 +1,219 @@
+{
+  "date": "2026-10-26",
+  "preview": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06-ui-preview.html",
+  "kind": "browser translation of migrated WPF resources, not WPF rendering",
+  "assets": {
+    "ic_btn_link切换_disable.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_disable.png",
+      "sha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803"
+    },
+    "ic_btn_edit切换_disable.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_disable.png",
+      "sha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904"
+    },
+    "not-_see_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/not-_see_click.png",
+      "sha256": "0f3c941dfd11a5f8f66a5079ee6b5fc20e62994ecceee89e3784112426e3000a"
+    },
+    "ic_btn_link切换_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_click.png",
+      "sha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984"
+    },
+    "ic_btn_edit切换_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",
+      "sha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+    },
+    "combo_ic_triangle_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/combo_ic_triangle_normal.png",
+      "sha256": "397439a8e64d1f24566e479439b31447f508b567e7afe5e7a0d759d0d46b1209"
+    },
+    "see_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/see_click.png",
+      "sha256": "904629a4350dc526e576e4de88768fcdd8dff722fb1ad4950c950a234d4f46e3"
+    },
+    "combo_ic_triangle_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/combo_ic_triangle_click.png",
+      "sha256": "be2c6c437df328fb1aa8efaf6361b9f851f218045c277d57c165aae019566fa0"
+    },
+    "滑块_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/滑块_normal.png",
+      "sha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2"
+    },
+    "combo_ic_关联_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/combo_ic_关联_normal.png",
+      "sha256": "cc7b05a48dba2b4e08abda4b8d3c30afd0b27ddc25b5993082f8cb24220de953"
+    },
+    "edit_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/edit_normal.png",
+      "sha256": "1dbf4f14abf519f7c04332802bfaea70fa1b063d7c433a628e420e7ce38334c2"
+    },
+    "滑块_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/滑块_click.png",
+      "sha256": "3f197d0f354f0fb1ea8ee7c336626366baa6345bb2efbc4f9181ed42d31e56d2"
+    },
+    "swith_off.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/swith_off.png",
+      "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+    },
+    "combo_ic_关联_hover.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/combo_ic_关联_hover.png",
+      "sha256": "071249f8f391fb02deb36c49cdbcfd9e4acf595365bc00314eda95595dafc3e2"
+    },
+    "combo_ic_关联_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/combo_ic_关联_click.png",
+      "sha256": "c1c062a0866b15a7b741519e4a863a96082c788f31f4ca94e71fa11e5068c8bd"
+    },
+    "edit_click.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/edit_click.png",
+      "sha256": "a7b3fe62930d3a17fbd5029c5950b324a089b07212c0b00954ca226ed1ef7315"
+    },
+    "not-see_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/not-see_normal.png",
+      "sha256": "35f372f7d09c0f46f69b1f9ecae0a9df953e5b5960c9ed1c68bb6661bc746aa5"
+    },
+    "swith_on.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/swith_on.png",
+      "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
+    },
+    "check-box_off.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/check-box_off.png",
+      "sha256": "cb3ee5d0093a0ef7a38ecabe6e71be305319b4b32d4d6c3c9e6b8324a6ec55de"
+    },
+    "ic_btn_link切换_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_normal.png",
+      "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
+    },
+    "ic_btn_edit切换_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_normal.png",
+      "sha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf"
+    },
+    "check-box_on.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/check-box_on.png",
+      "sha256": "e9693e37c209b37ff9473ae816ad31bc1331dd831f3616519e30d883ae812655"
+    },
+    "see_normal.png": {
+      "path": "src/Plugin.Wpf/Themes/Assets/see_normal.png",
+      "sha256": "c27b13b2cf090268b01a1e48f2c7748253fea5f6f8deb56bf37396422d9078c7"
+    }
+  },
+  "components": [
+    {
+      "label": "输入源下拉",
+      "type": "SourceComboBoxes.xaml / ComboBox样式",
+      "source": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "scope": "原三角图、选项行、鼠标/选中态；候选仍是演示数据"
+    },
+    {
+      "label": "开关与单选",
+      "type": "SourceBooleanToggle / NormalRadioButton",
+      "source": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+      "scope": "原开关及单选图片；开关一行、参数下一行"
+    },
+    {
+      "label": "常量 / 订阅",
+      "type": "EditLinkButton / NativeLinkButton",
+      "source": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+      "scope": "原关联/编辑切换图片；本地值与来源两态、取消保留草稿"
+    },
+    {
+      "label": "数值与范围",
+      "type": "NumericControl / SliderArrange / SliderArrangeFloat",
+      "source": "src/Plugin.Wpf/Controls/Native/Numeric/numeric-migration-manifest.json",
+      "scope": "步进、聚焦弹滑条、失焦或Esc收起、双端不交叉"
+    },
+    {
+      "label": "眼睛与编辑",
+      "type": "eyeToggleButton / NativeDisplayPopupButton",
+      "source": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+      "scope": "原显隐/编辑图标，控制示意叠加层及样式弹窗"
+    },
+    {
+      "label": "页签与底部按钮",
+      "type": "TopTabItemStyle / Orange_ButtonStyle",
+      "source": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+      "scope": "按原模板对应规则呈现选中、悬停与三按钮布局"
+    },
+    {
+      "label": "ROI及颜色组合",
+      "type": "RoiSelectControl / ROIStack / ColorPickerControlView / ImageViewConfig_subContent",
+      "source": "src/Plugin.Wpf/Controls/Native/Composition/composition-migration-manifest.json",
+      "scope": "颜色已按原模板重组为就地样式面板、默认/更多色板及原像素色谱；复杂ROI工具图标仍为示意"
+    }
+  ],
+  "remaining": [
+    "complex ROI toolbar remains illustrative",
+    "WPF unified build still failing; latest run 003 has 40 errors",
+    "no production or manual acceptance claimed"
+  ],
+  "color_popup_evidence": {
+    "style": "ImageViewConfig_subContent: width260; four rows32; OK/NG, opacity0..1 step0.01, width1..10 step1",
+    "palette": "ColorPickerControlView: Default/More tabs; SourceColorPalette: exact70 colors; SourceAdvancedColorPicker: actual colorchart pixels and linear-scRGB brightness",
+    "draft": "palette selection updates private browser draft; outside click closes; window cancel restores capture; no generic HEX modal",
+    "files": [
+      {
+        "path": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceColorPalette.xaml",
+        "sha256": "a5803e4f9e05289031ada655f1ebff440d18e94ef940d1b8e83e5f10f8230655"
+      },
+      {
+        "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VisionUi/SourceAssets/colorchart.png",
+        "sha256": "866ca8200dfc6ab593845fb81f0a1734e3c1ddb9178b475534144f5c6d4aa423"
+      },
+      {
+        "path": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml",
+        "sha256": "dc3b6478eeb5555f26bef45d71b1dca245a6dee58ccc793107de3fd8fa7a56bb"
+      },
+      {
+        "path": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs",
+        "sha256": "84dc67e1c9956a80ae014a17067acc5a51faa7f23379fc71dc550a4cec34a7c9"
+      },
+      {
+        "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.pending",
+        "sha256": "ecfc316ca32898b28728f11600ab363088946ccfa97d87a5cf6bc6e25189f1af"
+      },
+      {
+        "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
+        "sha256": "009d05f0dfd17f50bf7dc3ebff372249b4e3c8426485c5c65d1ffc0607be0683"
+      }
+    ]
+  },
+  "numeric_interaction_evidence": {
+    "NumericControl.xaml": "ValueText Text binding UpdateSourceTrigger=LostFocus",
+    "NumericControl.xaml.cs": "TextBox_GotFocus; ForceUpdateSource; ValueText_MouseWheel; UpButton_Click/DownButton_Click",
+    "SliderArrange.xaml": "PART_Popup/CBox.IsDropDownOpen; LargeChange=SliderTickFrequency; RepeatButton Slider.IncreaseLarge/DecreaseLarge",
+    "SliderArrange.xaml.cs": "PART_Popup_Closed forces both Text bindings before notifications",
+    "SliderArrangeBase.cs": "ClipSilder midpoint hit regions; SL_Bat1/2_ValueChanged bounds; Thumb_MouseLeftButtonUp notifications",
+    "preview_translation": "blob-vm-numeric-interaction.js; not WPF runtime equivalence"
+  },
+  "numeric_source_files": [
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml",
+      "sha256": "cbbc988726de1afe5ec095d81113747bdc941778f2ac3f7d60ceb4215d2a87ac"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml.cs",
+      "sha256": "38f5ce70411e0cdd7802adadb86d1f0f066ef8e5b1fec4de4ed9394eba74c62c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrange.xaml",
+      "sha256": "63537090dd6e72505581bc9bb26973db73716183214262bb009d0b3a39fda8bc"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrange.xaml.cs",
+      "sha256": "96657a227b50bd085e5343648a031ae67d034b21a63b39f2f64df916a4fdd0bc"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeBase.cs",
+      "sha256": "9cfdf444863e45f25c9ec9a51e0b750b28fc7eacaf80b9ac1b567e937ea783c7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/RangeRule.cs",
+      "sha256": "bc06d7bd096d29cc70c09052103c315e29c80ad4f4bb12ea3906f0c83169b7a6"
+    }
+  ],
+  "quantity_slider_range": {
+    "minimum": 1,
+    "maximum": 1000000,
+    "source": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+  },
+  "user_requested_keyboard_behavior": "Valid Enter validates numeric draft, closes its popup and releases focus; invalid Enter retains focus and reports error. Never executes or confirms whole window. Arrow keys use declared step."
+}

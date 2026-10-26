@@ -6,10 +6,13 @@ using System.Windows.Input;
 using Apps.Localization;
 using Apps.Log;
 using Apps.XmlParser.ParamTab;
-using Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 using Mvvm.Commands;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.User;
 using VMControls.Interface;
 

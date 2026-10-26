@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ComboBox x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.TreeViewCombobox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:PCommon="clr-namespace:Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/ResourceDictionaries/GlobalResources.xaml" />
+        <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate TargetType="{x:Type ComboBox}">
+      <Grid Name="templateRoot" SnapsToDevicePixels="True">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" Width="0" />
+        </Grid.ColumnDefinitions>
+        <Popup Name="PART_Popup" AllowsTransparency="True" Grid.ColumnSpan="2" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom" IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+          <Border Margin="0,4,0,0" BorderBrush="{DynamicResource TextBox.Static.Border}" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6" Background="{DynamicResource ComboBoxBorderS}">
+            <local:ComboboxTreeView Width="180" Height="180" ItemsSource="{TemplateBinding ItemsControl.ItemsSource}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnTreeNodeDoubleClick">
+                  <PCommon:ParamsEventCommand Command="{Binding ClickCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </local:ComboboxTreeView>
+          </Border>
+        </Popup>
+        <ToggleButton Name="toggleButton" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Grid.ColumnSpan="2" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Style="{Binding ToggleButtonStyle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+        <ContentPresenter Name="contentPresenter" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" IsHitTestVisible="False" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" Content="{Binding ExternSelectedItem, RelativeSource={RelativeSource Mode=TemplatedParent}}" ContentTemplate="{Binding ExternSelectedItemTemplate, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+      </Grid>
+      <ControlTemplate.Triggers>
+        <MultiTrigger>
+          <MultiTrigger.Conditions>
+            <Condition Property="ItemsControl.IsGrouping" Value="True" />
+            <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+          </MultiTrigger.Conditions>
+          <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+        </MultiTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
+  </Control.Template>
+</ComboBox>

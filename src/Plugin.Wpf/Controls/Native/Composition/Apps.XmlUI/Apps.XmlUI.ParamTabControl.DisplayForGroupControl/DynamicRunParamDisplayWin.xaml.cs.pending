@@ -1,0 +1,12 @@
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.DisplayForGroupControl;
+
+public partial class DynamicRunParamDisplayWin : ConfirmBaseWindow, IComponentConnector
+{
+	public DynamicRunParamDisplayWin()
+	{
+		InitializeComponent();
+	}
+}

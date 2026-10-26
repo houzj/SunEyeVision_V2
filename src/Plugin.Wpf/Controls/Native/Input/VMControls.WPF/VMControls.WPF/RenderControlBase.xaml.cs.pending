@@ -15,7 +15,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-using Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
 using Apps.Data;
 using Apps.Data.Common;
 using Apps.Data.ShapeDefine;
@@ -27,14 +27,18 @@ using Apps.XmlParser.ParamTab;
 using HikExternalCall.Common;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 using VM.PlatformSDKCS;
-using VMBaseControls;
-using VMBaseControls.Base.ImageView.Shape;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
 using VMControls.BaseInterface;
 using VMControls.Interface;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
@@ -1216,19 +1220,19 @@ public partial class RenderControlBase : UserControl, INotifyPropertyChanged, IC
 			case "path":
 			{
 				ArrowPath arrowPath = Path.GetArrowPath(shapes);
-				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { arrowPath }, ShapeList, imageView);
-				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
+				SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { arrowPath }, ShapeList, imageView);
+				SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
 				break;
 			}
 			case "polyline":
 			{
 				Polyline polyline = Polyline.GetPolyline(shapes);
-				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { polyline }, ShapeList, imageView);
-				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
+				SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { polyline }, ShapeList, imageView);
+				SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
 				break;
 			}
 			default:
-				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
+				SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
 				break;
 			}
 		}
@@ -1331,7 +1335,7 @@ public partial class RenderControlBase : UserControl, INotifyPropertyChanged, IC
 			text2.StrokeThickness = strokeThickness4;
 			List<object> list = new List<object>();
 			list.Add(text2);
-			object item = VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.PretreatTexts(list);
+			object item = SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.PretreatTexts(list);
 			shapeList.Add(item);
 		}
 		else if (shape is ILine { Stroke: var color5, Opacity: var opacity5, StrokeThickness: var strokeThickness5 } line)

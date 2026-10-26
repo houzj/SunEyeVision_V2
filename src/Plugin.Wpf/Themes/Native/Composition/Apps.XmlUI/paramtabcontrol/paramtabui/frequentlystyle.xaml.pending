@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localcontrol="clr-namespace:HikPcUI.ListView;assembly=VM.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView">
+  <DataTemplate x:Key="Boolean_sub">
+    <vm_port_0:BooleanControl Margin="5,4,0,0" IsChecked="{Binding CurValueA, Mode=TwoWay}">
+      <vm_port_0:BooleanControl.OffContent>
+        <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.XmlUI/Resources/swith_off_dark.png" />
+      </vm_port_0:BooleanControl.OffContent>
+      <vm_port_0:BooleanControl.OnContent>
+        <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.XmlUI/Resources/swith_on_dark.png" />
+      </vm_port_0:BooleanControl.OnContent>
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="OnCheckedChange">
+          <i:InvokeCommandAction Command="{Binding ValueChangedCommand}" />
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
+    </vm_port_0:BooleanControl>
+  </DataTemplate>
+  <DataTemplate x:Key="Boolean">
+    <local:LeftRightControl Height="40" Width="285" HorizontalAlignment="Right" Margin="{Binding MarginA}">
+      <local:LeftRightControl.LeftContent>
+        <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="#ccBEBEBE" FontWeight="Bold" Margin="5,1,-5,0" Text="{Lang:ResourceBinding DisplayNameA}" ToolTip="{Lang:ResourceBinding DescriptionA}" />
+      </local:LeftRightControl.LeftContent>
+      <local:LeftRightControl.RightContent>
+        <ContentControl ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding}" />
+      </local:LeftRightControl.RightContent>
+    </local:LeftRightControl>
+  </DataTemplate>
+  <DataTemplate x:Key="Default">
+    <TextBox Text="默认控件显示" />
+  </DataTemplate>
+</ResourceDictionary>

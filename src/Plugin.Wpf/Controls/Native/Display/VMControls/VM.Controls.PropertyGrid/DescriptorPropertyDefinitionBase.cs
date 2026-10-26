@@ -1,4 +1,6 @@
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
 using System.Collections.Generic;
@@ -13,6 +15,7 @@ using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Commands;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid;
 

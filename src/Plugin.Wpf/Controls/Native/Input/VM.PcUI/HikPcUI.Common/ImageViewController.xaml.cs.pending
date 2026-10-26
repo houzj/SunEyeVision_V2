@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
@@ -289,10 +290,4 @@ public partial class ImageViewController : Grid, INotifyPropertyChanged, ICompon
 		IsReName = false;
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

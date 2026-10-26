@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.ColorPickerSecondItem" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:CustomWPFColorPicker="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl">
+  <CustomWPFColorPicker:AdvancedColorPickerDialog Focusable="False" ColorChangedCommand="{x:Static CustomWPFColorPicker:ColorPickerControlView.SelectColorCommand}" SelectedCurrentColor="{Binding CurrentColor, Mode=TwoWay}" DataContext="{Binding}" />
+</UserControl>

@@ -1,0 +1,225 @@
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+
+public class DataGridControl : DataGrid
+{
+	public static readonly DependencyProperty IsDelEnableProperty = DependencyProperty.Register("IsDelEnable", typeof(bool), typeof(DataGridControl), new UIPropertyMetadata(true, null));
+
+	public static readonly DependencyProperty DataNameProperty = DependencyProperty.Register("DataName", typeof(string), typeof(DataGridControl), new UIPropertyMetadata(null, OnDataNamePropertyChanged));
+
+	public static readonly DependencyProperty ViewsProperty = DependencyProperty.Register("Views", typeof(ObservableCollection<object>), typeof(DataGridControl), new UIPropertyMetadata(null, OnDataGridColumnsPropertyChanged));
+
+	public bool IsDelEnable
+	{
+		get
+		{
+			return (bool)GetValue(IsDelEnableProperty);
+		}
+		set
+		{
+			SetValue(IsDelEnableProperty, value);
+		}
+	}
+
+	public string DataName
+	{
+		get
+		{
+			return (string)GetValue(DataNameProperty);
+		}
+		set
+		{
+			SetValue(DataNameProperty, value);
+		}
+	}
+
+	public ObservableCollection<object> Views
+	{
+		get
+		{
+			return (ObservableCollection<object>)GetValue(ViewsProperty);
+		}
+		set
+		{
+			SetValue(ViewsProperty, value);
+		}
+	}
+
+	public DataGridControl()
+	{
+		LoadingRow += DataGridControl_LoadingRow;
+	}
+
+	private void DataGridControl_LoadingRow(object sender, DataGridRowEventArgs e)
+	{
+		e.Row.Header = e.Row.GetIndex() + 1;
+	}
+
+	private static void OnDataNamePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DataGridControl dataGridControl = d as DataGridControl;
+		Binding binding = new Binding();
+		binding.RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(BaseWindow), 1);
+		binding.Path = new PropertyPath("DataContext." + e.NewValue.ToString());
+		dataGridControl.SetBinding(ItemsControl.ItemsSourceProperty, binding);
+	}
+
+	private static void OnDataGridColumnsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DataGridControl myGrid = d as DataGridControl;
+		ObservableCollection<object> observableCollection = (ObservableCollection<object>)e.NewValue;
+		if (observableCollection == null || observableCollection.Count < 1)
+		{
+			return;
+		}
+		ObservableCollection<DataGridColumn> columnsData = GetColumnsData(observableCollection, myGrid);
+		if (columnsData == null)
+		{
+			return;
+		}
+		myGrid.Columns.Clear();
+		if (columnsData != null && columnsData.Count > 0)
+		{
+			foreach (DataGridColumn item in columnsData)
+			{
+				myGrid.Columns.Add(item);
+			}
+		}
+		columnsData.CollectionChanged += (object sender, NotifyCollectionChangedEventArgs args) =>
+		{
+			if (args.OldItems != null)
+			{
+				foreach (DataGridColumn item2 in args.OldItems.Cast<DataGridColumn>())
+				{
+					myGrid.Columns.Remove(item2);
+				}
+			}
+			if (args.NewItems != null)
+			{
+				foreach (DataGridColumn item3 in args.NewItems.Cast<DataGridColumn>())
+				{
+					myGrid.Columns.Add(item3);
+				}
+			}
+		};
+	}
+
+	private static ObservableCollection<DataGridColumn> GetColumnsData(ObservableCollection<object> list, DataGridControl myGrid)
+	{
+		ObservableCollection<DataGridColumn> observableCollection = new ObservableCollection<DataGridColumn>();
+		foreach (dynamic item in list)
+		{
+			object obj = item.ElementTypeA.ToLower();
+			object obj2 = obj;
+			if (obj2 == null)
+			{
+				continue;
+			}
+			switch (obj2 as string)
+			{
+			case "text":
+			{
+				DataGridTextColumn dataGridTextColumn2 = new DataGridTextColumn();
+				DataGridControl.SetWidth(item.WidthA, dataGridTextColumn2);
+				dataGridTextColumn2.IsReadOnly = true;
+				dataGridTextColumn2.Header = (object)AppLocalizationService.GetLang(item.DisplayNameA);
+				dataGridTextColumn2.Binding = new Binding(item.BindNameA);
+				observableCollection.Add(dataGridTextColumn2);
+				break;
+			}
+			case "textbox":
+			{
+				DataGridTextColumn dataGridTextColumn = new DataGridTextColumn();
+				DataGridControl.SetWidth(item.WidthA, dataGridTextColumn);
+				dataGridTextColumn.Header = (object)AppLocalizationService.GetLang(item.DisplayNameA);
+				dataGridTextColumn.Binding = new Binding(item.BindNameA);
+				observableCollection.Add(dataGridTextColumn);
+				break;
+			}
+			case "checkbox":
+			{
+				DataGridCheckBoxColumn dataGridCheckBoxColumn = new DataGridCheckBoxColumn();
+				DataGridControl.SetWidth(item.WidthA, dataGridCheckBoxColumn);
+				dataGridCheckBoxColumn.Header = (object)AppLocalizationService.GetLang(item.DisplayNameA);
+				dataGridCheckBoxColumn.Binding = new Binding(item.BindNameA);
+				observableCollection.Add(dataGridCheckBoxColumn);
+				break;
+			}
+			case "combox":
+			{
+				DataGridComboBoxColumn dataGridComboBoxColumn = new DataGridComboBoxColumn();
+				DataGridControl.SetWidth(item.WidthA, dataGridComboBoxColumn);
+				dataGridComboBoxColumn.Header = (object)AppLocalizationService.GetLang(item.DisplayNameA);
+				List<string> list2 = new List<string>();
+				foreach (dynamic item2 in item.EnumEntrysA)
+				{
+					list2.Add(item2.Name);
+				}
+				dataGridComboBoxColumn.ItemsSource = list2;
+				dataGridComboBoxColumn.SelectedValueBinding = new Binding(item.BindNameA);
+				observableCollection.Add(dataGridComboBoxColumn);
+				break;
+			}
+			}
+		}
+		if (observableCollection.Count > 0)
+		{
+			DataGridTextColumn dataGridTextColumn3 = new DataGridTextColumn();
+			dataGridTextColumn3.Width = 55.0;
+			dataGridTextColumn3.IsReadOnly = true;
+			dataGridTextColumn3.Header = AppLocalizationService.GetLang("Number");
+			Binding binding = new Binding("Header");
+			binding.RelativeSource = new RelativeSource
+			{
+				Mode = RelativeSourceMode.FindAncestor,
+				AncestorType = typeof(DataGridRow)
+			};
+			dataGridTextColumn3.Binding = binding;
+			observableCollection.Insert(0, dataGridTextColumn3);
+			if (myGrid.IsDelEnable)
+			{
+				SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.UserTempConverter userTempConverter = new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.UserTempConverter();
+				DataGridTemplateColumn dataGridTemplateColumn = new DataGridTemplateColumn();
+				dataGridTemplateColumn.Width = 55.0;
+				dataGridTemplateColumn.Header = AppLocalizationService.GetLang("Lang_Delet");
+				dataGridTemplateColumn.CellTemplate = userTempConverter.ResourceDictionary["delDataTemplate"] as DataTemplate;
+				observableCollection.Add(dataGridTemplateColumn);
+			}
+		}
+		return observableCollection;
+	}
+
+	private static void SetWidth(string width, DataGridColumn control)
+	{
+		double result = 0.0;
+		if (double.TryParse(width, out result))
+		{
+			control.Width = result;
+		}
+		else if (!(width == "*"))
+		{
+			if (width == "auto")
+			{
+				control.Width = DataGridLength.Auto;
+			}
+		}
+		else
+		{
+			control.Width = new DataGridLength(1.0, DataGridLengthUnitType.Star);
+		}
+	}
+}

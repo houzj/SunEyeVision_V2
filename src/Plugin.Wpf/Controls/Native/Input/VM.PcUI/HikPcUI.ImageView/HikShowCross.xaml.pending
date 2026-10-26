@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikShowCross" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" x:Name="myControl" Width="30" Height="30" xmlns:imageview="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;assembly=SunEyeVision.Plugin.Wpf">
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikShowCross" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" x:Name="myControl" Width="30" Height="30" xmlns:imageview="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView">
   <Border IsHitTestVisible="False">
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
       <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Center" Fill="{Binding ElementName=myControl, Path=FillBrush}" Width="{Binding ElementName=myControl, Path=PhysicsThick, Mode=TwoWay}" />

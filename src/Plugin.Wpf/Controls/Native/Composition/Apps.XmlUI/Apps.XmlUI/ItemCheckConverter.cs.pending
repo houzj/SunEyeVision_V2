@@ -1,0 +1,29 @@
+using System;
+using System.Globalization;
+using System.Windows.Data;
+using System.Windows.Media;
+using Apps.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public class ItemCheckConverter : IValueConverter
+{
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (value is ItemState itemState)
+		{
+			return itemState switch
+			{
+				ItemState.GetParamErro => (object)Brushes.Yellow, 
+				ItemState.SetParamErro => Brushes.Red, 
+				_ => Brushes.Transparent, 
+			};
+		}
+		return Brushes.Transparent;
+	}
+
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}

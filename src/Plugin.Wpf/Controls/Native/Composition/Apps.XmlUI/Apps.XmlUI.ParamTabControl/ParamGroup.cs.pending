@@ -1,0 +1,692 @@
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using System;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Apps.Localization;
+using Apps.PcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+
+public class ParamGroup : ListBox
+{
+	public static readonly DependencyProperty ViewsProperty = DependencyProperty.Register("Views", typeof(ObservableCollection<object>), typeof(ParamGroup), new UIPropertyMetadata(null, OnDataGridColumnsPropertyChanged));
+
+	public ObservableCollection<object> Views
+	{
+		get
+		{
+			return (ObservableCollection<object>)GetValue(ViewsProperty);
+		}
+		set
+		{
+			SetValue(ViewsProperty, value);
+		}
+	}
+
+	private static void OnDataGridColumnsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		try
+		{
+			ParamGroup paramGroup = d as ParamGroup;
+			ObservableCollection<object> observableCollection = (ObservableCollection<object>)e.NewValue;
+			if (observableCollection != null)
+			{
+				paramGroup.SetTemple(observableCollection);
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageButtons.Normal, MessageIcons.Error);
+		}
+	}
+
+	private void SetTemple(ObservableCollection<object> list)
+	{
+		BooleanToVisibilityConverter converter = new BooleanToVisibilityConverter();
+		SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.UserTempConverter userTempConverter = new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.UserTempConverter();
+		FrameworkElementFactory frameworkElementFactory = new FrameworkElementFactory(typeof(Grid));
+		FrameworkElementFactory frameworkElementFactory2 = new FrameworkElementFactory(typeof(ColumnDefinition));
+		FrameworkElementFactory frameworkElementFactory3 = new FrameworkElementFactory(typeof(ColumnDefinition));
+		frameworkElementFactory2.SetValue(ColumnDefinition.WidthProperty, new GridLength(110.0, GridUnitType.Pixel));
+		frameworkElementFactory3.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+		frameworkElementFactory.AppendChild(frameworkElementFactory2);
+		frameworkElementFactory.AppendChild(frameworkElementFactory3);
+		for (int i = 0; i < list.Count; i++)
+		{
+			dynamic val = list[i];
+			FrameworkElementFactory frameworkElementFactory4 = new FrameworkElementFactory(typeof(RowDefinition));
+			frameworkElementFactory4.SetValue(RowDefinition.HeightProperty, new GridLength(1.0, GridUnitType.Auto));
+			frameworkElementFactory.AppendChild(frameworkElementFactory4);
+			if (val.DisplayType != "Table" && val.DisplayType != "NineBox")
+			{
+				FrameworkElementFactory frameworkElementFactory5 = new FrameworkElementFactory(typeof(TextBlock));
+				frameworkElementFactory5.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+				frameworkElementFactory5.SetValue(TextBlock.TextProperty, AppLocalizationService.GetLang(val.DisplayNameA));
+				frameworkElementFactory5.SetValue(FrameworkElement.ToolTipProperty, AppLocalizationService.GetLang(val.DescriptionA));
+				frameworkElementFactory5.SetValue(Grid.ColumnProperty, 0);
+				frameworkElementFactory5.SetValue(Grid.RowProperty, i);
+				if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+				{
+					DependencyProperty visibilityProperty = UIElement.VisibilityProperty;
+					Binding binding = new Binding(val.VisibilityA);
+					binding.Converter = converter;
+					frameworkElementFactory5.SetBinding(visibilityProperty, binding);
+				}
+				frameworkElementFactory.AppendChild(frameworkElementFactory5);
+			}
+			object obj = val.DisplayType;
+			object obj2 = obj;
+			if (obj2 != null && obj2 is string text)
+			{
+				switch (text)
+				{
+				case "Table":
+				{
+					FrameworkElementFactory frameworkElementFactory9 = new FrameworkElementFactory(typeof(StackPanel));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty4 = UIElement.VisibilityProperty;
+						Binding binding5 = new Binding(val.VisibilityA);
+						binding5.Converter = converter;
+						frameworkElementFactory9.SetBinding(visibilityProperty4, binding5);
+					}
+					frameworkElementFactory9.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 3.0, 0.0, 3.0));
+					FrameworkElementFactory frameworkElementFactory10 = new FrameworkElementFactory(typeof(DataGridControl));
+					frameworkElementFactory10.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["dataGridStyle"]);
+					frameworkElementFactory10.SetValue(DataGrid.ColumnHeaderStyleProperty, (Style)userTempConverter.ResourceDictionary["dataGridColumnHeaderStyle"]);
+					frameworkElementFactory10.SetValue(DataGrid.RowStyleProperty, (Style)userTempConverter.ResourceDictionary["dataGridRowStyle"]);
+					frameworkElementFactory10.SetValue(DataGrid.CellStyleProperty, (Style)userTempConverter.ResourceDictionary["dataGridCellStyle"]);
+					frameworkElementFactory10.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 0.0, 0.0, 3.0));
+					frameworkElementFactory10.SetValue(DataGridControl.IsDelEnableProperty, (bool)val.IsAddDelEnableA);
+					frameworkElementFactory10.SetValue(DataGridControl.ViewsProperty, val.ColumnsA);
+					frameworkElementFactory10.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(val.DataNameA));
+					FrameworkElementFactory frameworkElementFactory11 = new FrameworkElementFactory(typeof(Button));
+					frameworkElementFactory11.SetBinding(ButtonBase.CommandProperty, new Binding(val.CommandNameA));
+					frameworkElementFactory11.SetValue(UIElement.VisibilityProperty, (!(bool)val.IsAddDelEnableA) ? Visibility.Collapsed : Visibility.Visible);
+					frameworkElementFactory11.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["addBtnCross"]);
+					frameworkElementFactory9.AppendChild(frameworkElementFactory10);
+					frameworkElementFactory9.AppendChild(frameworkElementFactory11);
+					frameworkElementFactory9.SetValue(Grid.ColumnProperty, 0);
+					frameworkElementFactory9.SetValue(Grid.ColumnSpanProperty, 2);
+					frameworkElementFactory9.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory9);
+					continue;
+				}
+				case "NineBox":
+				{
+					FrameworkElementFactory frameworkElementFactory17 = new FrameworkElementFactory(typeof(ListBox));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty7 = UIElement.VisibilityProperty;
+						Binding binding12 = new Binding(val.VisibilityA);
+						binding12.Converter = converter;
+						frameworkElementFactory17.SetBinding(visibilityProperty7, binding12);
+					}
+					frameworkElementFactory17.SetValue(ItemsControl.ItemContainerStyleProperty, (Style)userTempConverter.ResourceDictionary["NineBoxStyle"]);
+					frameworkElementFactory17.SetValue(ItemsControl.ItemsPanelProperty, (ItemsPanelTemplate)userTempConverter.ResourceDictionary["NineBoxItemsPanelStyle"]);
+					frameworkElementFactory17.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 3.0, 0.0, 3.0));
+					frameworkElementFactory17.SetValue(Control.BackgroundProperty, Brushes.Transparent);
+					frameworkElementFactory17.SetValue(Control.BorderThicknessProperty, new Thickness(1.0));
+					frameworkElementFactory17.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
+					frameworkElementFactory17.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(val.NameA));
+					frameworkElementFactory17.SetValue(ItemsControlExtension.DataSourceProperty, val);
+					frameworkElementFactory17.SetValue(Grid.ColumnProperty, 0);
+					frameworkElementFactory17.SetValue(Grid.ColumnSpanProperty, 2);
+					frameworkElementFactory17.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory17);
+					continue;
+				}
+				case "OpenFileDialog":
+				{
+					FrameworkElementFactory frameworkElementFactory30 = new FrameworkElementFactory(typeof(Grid));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty15 = UIElement.VisibilityProperty;
+						Binding binding29 = new Binding(val.VisibilityA);
+						binding29.Converter = converter;
+						frameworkElementFactory30.SetBinding(visibilityProperty15, binding29);
+					}
+					FrameworkElementFactory frameworkElementFactory31 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					FrameworkElementFactory frameworkElementFactory32 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					frameworkElementFactory31.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory32.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Auto));
+					frameworkElementFactory30.AppendChild(frameworkElementFactory31);
+					frameworkElementFactory30.AppendChild(frameworkElementFactory32);
+					FrameworkElementFactory frameworkElementFactory33 = new FrameworkElementFactory(typeof(TextBox));
+					frameworkElementFactory33.SetValue(Control.ForegroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#808080")));
+					frameworkElementFactory33.SetValue(Control.BackgroundProperty, Brushes.Transparent);
+					frameworkElementFactory33.SetValue(Control.FontSizeProperty, 14.0);
+					frameworkElementFactory33.SetValue(Control.BorderThicknessProperty, new Thickness(0.0));
+					frameworkElementFactory33.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+					frameworkElementFactory33.SetValue(TextBoxBase.IsReadOnlyProperty, val.IsReadOnlyFlagA);
+					DependencyProperty textProperty2 = TextBox.TextProperty;
+					Binding binding30 = new Binding(val.NameA);
+					binding30.Mode = BindingMode.TwoWay;
+					binding30.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory33.SetBinding(textProperty2, binding30);
+					frameworkElementFactory33.SetBinding(FrameworkElement.ToolTipProperty, new Binding(val.NameA));
+					frameworkElementFactory33.SetValue(Grid.ColumnProperty, 0);
+					FrameworkElementFactory frameworkElementFactory34 = new FrameworkElementFactory(typeof(Button));
+					frameworkElementFactory34.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["BtnFolderStyle"]);
+					frameworkElementFactory34.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, -1.0, 0.0, 1.0));
+					frameworkElementFactory34.SetBinding(ButtonBase.CommandProperty, new Binding(val.CommandNameA));
+					frameworkElementFactory34.SetValue(Grid.ColumnProperty, 1);
+					FrameworkElementFactory frameworkElementFactory35 = new FrameworkElementFactory(typeof(Border));
+					frameworkElementFactory35.SetValue(Border.BorderThicknessProperty, new Thickness(1.0));
+					frameworkElementFactory35.SetValue(Border.BorderBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCCCCD")));
+					frameworkElementFactory35.SetValue(Border.CornerRadiusProperty, new CornerRadius(4.0));
+					frameworkElementFactory35.SetValue(Grid.ColumnProperty, 0);
+					frameworkElementFactory35.SetValue(Grid.ColumnSpanProperty, 2);
+					frameworkElementFactory30.AppendChild(frameworkElementFactory33);
+					frameworkElementFactory30.AppendChild(frameworkElementFactory34);
+					frameworkElementFactory30.AppendChild(frameworkElementFactory35);
+					frameworkElementFactory30.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory30.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory30);
+					continue;
+				}
+				case "Enumeration":
+				{
+					FrameworkElementFactory frameworkElementFactory8 = new FrameworkElementFactory(typeof(ComboBox));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty3 = UIElement.VisibilityProperty;
+						Binding binding3 = new Binding(val.VisibilityA);
+						binding3.Converter = converter;
+						frameworkElementFactory8.SetBinding(visibilityProperty3, binding3);
+					}
+					frameworkElementFactory8.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 0.0, 0.0, 3.0));
+					frameworkElementFactory8.SetValue(ItemsControl.DisplayMemberPathProperty, "DisplayNameALang");
+					frameworkElementFactory8.SetValue(Selector.SelectedValuePathProperty, "ValueA");
+					DependencyProperty selectedValueProperty = Selector.SelectedValueProperty;
+					Binding binding4 = new Binding(val.NameA);
+					binding4.Mode = BindingMode.TwoWay;
+					frameworkElementFactory8.SetBinding(selectedValueProperty, binding4);
+					frameworkElementFactory8.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("EnumEntrysA")
+					{
+						Source = val
+					});
+					frameworkElementFactory8.SetBinding(FrameworkElement.ToolTipProperty, new Binding("Text")
+					{
+						RelativeSource = RelativeSource.Self
+					});
+					frameworkElementFactory8.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["ListViewComboBoxStyle"]);
+					frameworkElementFactory8.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory8.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory8);
+					continue;
+				}
+				case "EnumerationNew":
+				{
+					FrameworkElementFactory frameworkElementFactory23 = new FrameworkElementFactory(typeof(Grid));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty12 = UIElement.VisibilityProperty;
+						Binding binding20 = new Binding(val.VisibilityA);
+						binding20.Converter = converter;
+						frameworkElementFactory23.SetBinding(visibilityProperty12, binding20);
+					}
+					FrameworkElementFactory frameworkElementFactory24 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					FrameworkElementFactory frameworkElementFactory25 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					frameworkElementFactory24.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory25.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Auto));
+					frameworkElementFactory23.AppendChild(frameworkElementFactory24);
+					frameworkElementFactory23.AppendChild(frameworkElementFactory25);
+					FrameworkElementFactory frameworkElementFactory26 = new FrameworkElementFactory(typeof(ComboBox));
+					frameworkElementFactory26.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 2.0, 0.0, 3.0));
+					frameworkElementFactory26.SetValue(ItemsControl.DisplayMemberPathProperty, "DisplayNameALang");
+					frameworkElementFactory26.SetValue(Selector.SelectedValuePathProperty, "ValueA");
+					DependencyProperty selectedValueProperty3 = Selector.SelectedValueProperty;
+					Binding binding21 = new Binding(val.NameA);
+					binding21.Mode = BindingMode.TwoWay;
+					frameworkElementFactory26.SetBinding(selectedValueProperty3, binding21);
+					frameworkElementFactory26.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("EnumEntrysA")
+					{
+						Source = val
+					});
+					frameworkElementFactory26.SetBinding(FrameworkElement.ToolTipProperty, new Binding("Text")
+					{
+						RelativeSource = RelativeSource.Self
+					});
+					frameworkElementFactory26.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["ListViewComboBoxStyle"]);
+					frameworkElementFactory26.SetValue(Grid.ColumnProperty, 0);
+					FrameworkElementFactory frameworkElementFactory27 = new FrameworkElementFactory(typeof(Button));
+					frameworkElementFactory27.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["showCalibInfoButton"]);
+					DependencyProperty toolTipProperty = FrameworkElement.ToolTipProperty;
+					Binding binding22 = new Binding(val.ButttonDescriptioA);
+					binding22.Mode = BindingMode.TwoWay;
+					frameworkElementFactory27.SetBinding(toolTipProperty, binding22);
+					frameworkElementFactory27.SetValue(FrameworkElement.MarginProperty, new Thickness(2.0, 2.0, 0.0, 3.0));
+					frameworkElementFactory27.SetBinding(ButtonBase.CommandProperty, new Binding(val.CommandNameA));
+					frameworkElementFactory27.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory23.AppendChild(frameworkElementFactory26);
+					frameworkElementFactory23.AppendChild(frameworkElementFactory27);
+					frameworkElementFactory23.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory23.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory23);
+					continue;
+				}
+				case "EnumerationStr":
+				{
+					FrameworkElementFactory frameworkElementFactory18 = new FrameworkElementFactory(typeof(ComboBox));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty8 = UIElement.VisibilityProperty;
+						Binding binding13 = new Binding(val.VisibilityA);
+						binding13.Converter = converter;
+						frameworkElementFactory18.SetBinding(visibilityProperty8, binding13);
+					}
+					frameworkElementFactory18.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 0.0, 0.0, 3.0));
+					frameworkElementFactory18.SetValue(ItemsControl.DisplayMemberPathProperty, "DisplayNameALang");
+					frameworkElementFactory18.SetValue(Selector.SelectedValuePathProperty, "ValueA");
+					DependencyProperty selectedValueProperty2 = Selector.SelectedValueProperty;
+					Binding binding14 = new Binding(val.NameA);
+					binding14.Mode = BindingMode.TwoWay;
+					frameworkElementFactory18.SetBinding(selectedValueProperty2, binding14);
+					frameworkElementFactory18.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("EnumEntrysA")
+					{
+						Source = val
+					});
+					frameworkElementFactory18.SetBinding(FrameworkElement.ToolTipProperty, new Binding("Text")
+					{
+						RelativeSource = RelativeSource.Self
+					});
+					frameworkElementFactory18.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["ListViewComboBoxStyle"]);
+					frameworkElementFactory18.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory18.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory18);
+					continue;
+				}
+				case "String":
+				{
+					FrameworkElementFactory frameworkElementFactory21 = new FrameworkElementFactory(typeof(HikTextBox));
+					frameworkElementFactory21.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["TextBox1"]);
+					frameworkElementFactory21.SetValue(Control.ForegroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#777777")));
+					frameworkElementFactory21.SetValue(Control.BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#fcfcfc")));
+					frameworkElementFactory21.SetValue(Control.FontSizeProperty, 14.0);
+					frameworkElementFactory21.SetValue(Control.BorderBrushProperty, null);
+					frameworkElementFactory21.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
+					frameworkElementFactory21.SetValue(Control.VerticalContentAlignmentProperty, VerticalAlignment.Center);
+					DependencyProperty textProperty = TextBox.TextProperty;
+					Binding binding18 = new Binding(val.NameA);
+					binding18.Mode = BindingMode.TwoWay;
+					binding18.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory21.SetBinding(textProperty, binding18);
+					FrameworkElementFactory frameworkElementFactory22 = new FrameworkElementFactory(typeof(Border));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty11 = UIElement.VisibilityProperty;
+						Binding binding19 = new Binding(val.VisibilityA);
+						binding19.Converter = converter;
+						frameworkElementFactory22.SetBinding(visibilityProperty11, binding19);
+					}
+					frameworkElementFactory22.SetValue(Border.BorderThicknessProperty, new Thickness(1.0));
+					frameworkElementFactory22.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 4.0, 0.0, 1.0));
+					frameworkElementFactory22.SetValue(Border.BorderBrushProperty, Brushes.DarkGray);
+					frameworkElementFactory22.SetValue(Border.CornerRadiusProperty, new CornerRadius(2.0));
+					frameworkElementFactory22.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory22.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory22.AppendChild(frameworkElementFactory21);
+					frameworkElementFactory.AppendChild(frameworkElementFactory22);
+					continue;
+				}
+				case "Integer":
+				{
+					FrameworkElementFactory frameworkElementFactory12 = new FrameworkElementFactory(typeof(SliderArrange));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty5 = UIElement.VisibilityProperty;
+						Binding binding6 = new Binding(val.VisibilityA);
+						binding6.Converter = converter;
+						frameworkElementFactory12.SetBinding(visibilityProperty5, binding6);
+					}
+					frameworkElementFactory12.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, (double)val.IncValueA);
+					frameworkElementFactory12.SetValue(SliderArrangeBase.MinimumProperty, (double)val.MinValueA);
+					frameworkElementFactory12.SetValue(SliderArrangeBase.MaximumProperty, (double)val.MaxValueA);
+					DependencyProperty startValueProperty = SliderArrangeBase.StartValueProperty;
+					Binding binding7 = new Binding(val.NameA);
+					binding7.Mode = BindingMode.TwoWay;
+					binding7.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory12.SetBinding(startValueProperty, binding7);
+					frameworkElementFactory12.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory12.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory12);
+					continue;
+				}
+				case "Boolean":
+				{
+					FrameworkElementFactory frameworkElementFactory40 = new FrameworkElementFactory(typeof(ToggleButton));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty17 = UIElement.VisibilityProperty;
+						Binding binding32 = new Binding(val.VisibilityA);
+						binding32.Converter = converter;
+						frameworkElementFactory40.SetBinding(visibilityProperty17, binding32);
+					}
+					frameworkElementFactory40.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+					frameworkElementFactory40.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["switchbutton"]);
+					DependencyProperty isCheckedProperty = ToggleButton.IsCheckedProperty;
+					Binding binding33 = new Binding(val.NameA);
+					binding33.Mode = BindingMode.TwoWay;
+					frameworkElementFactory40.SetBinding(isCheckedProperty, binding33);
+					frameworkElementFactory40.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory40.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory40);
+					continue;
+				}
+				case "Float":
+				{
+					FrameworkElementFactory frameworkElementFactory20 = new FrameworkElementFactory(typeof(SliderArrangeFloat));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty10 = UIElement.VisibilityProperty;
+						Binding binding16 = new Binding(val.VisibilityA);
+						binding16.Converter = converter;
+						frameworkElementFactory20.SetBinding(visibilityProperty10, binding16);
+					}
+					frameworkElementFactory20.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, val.IncValueA);
+					frameworkElementFactory20.SetValue(SliderArrangeBase.MinimumProperty, val.MinValueA);
+					frameworkElementFactory20.SetValue(SliderArrangeBase.MaximumProperty, val.MaxValueA);
+					frameworkElementFactory20.SetValue(SliderArrangeFloat.DecimalDigitsProperty, (int)val.DecimalDigitsA);
+					DependencyProperty startValueProperty5 = SliderArrangeBase.StartValueProperty;
+					Binding binding17 = new Binding(val.NameA);
+					binding17.Mode = BindingMode.TwoWay;
+					binding17.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory20.SetBinding(startValueProperty5, binding17);
+					frameworkElementFactory20.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory20.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory20);
+					continue;
+				}
+				case "IntegerBettween":
+				{
+					FrameworkElementFactory frameworkElementFactory29 = new FrameworkElementFactory(typeof(SliderArrange));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty14 = UIElement.VisibilityProperty;
+						Binding binding26 = new Binding(val.VisibilityA);
+						binding26.Converter = converter;
+						frameworkElementFactory29.SetBinding(visibilityProperty14, binding26);
+					}
+					frameworkElementFactory29.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, (double)val.IncValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.MinimumProperty, (double)val.MinValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.MaximumProperty, (double)val.MaxValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.MinimumLeftProperty, (double)val.IntegersA[0].MinValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.MinimumRightProperty, (double)val.IntegersA[1].MinValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.MaximumLeftProperty, (double)val.IntegersA[0].MaxValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.MaximumRightProperty, (double)val.IntegersA[1].MaxValueA);
+					frameworkElementFactory29.SetValue(SliderArrangeBase.SilderArrangeTypeProperty, SliderArrangeType.between);
+					DependencyProperty startValueProperty7 = SliderArrangeBase.StartValueProperty;
+					Binding binding27 = new Binding(val.IntegersA[0].NameA);
+					binding27.Mode = BindingMode.TwoWay;
+					binding27.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory29.SetBinding(startValueProperty7, binding27);
+					DependencyProperty endValueProperty2 = SliderArrangeBase.EndValueProperty;
+					Binding binding28 = new Binding(val.IntegersA[1].NameA);
+					binding28.Mode = BindingMode.TwoWay;
+					binding28.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory29.SetBinding(endValueProperty2, binding28);
+					frameworkElementFactory29.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory29.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory29);
+					continue;
+				}
+				case "FloatBettween":
+				{
+					FrameworkElementFactory frameworkElementFactory28 = new FrameworkElementFactory(typeof(SliderArrangeFloat));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty13 = UIElement.VisibilityProperty;
+						Binding binding23 = new Binding(val.VisibilityA);
+						binding23.Converter = converter;
+						frameworkElementFactory28.SetBinding(visibilityProperty13, binding23);
+					}
+					frameworkElementFactory28.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, (double)val.IncValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.MinimumProperty, (double)val.MinValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.MaximumProperty, (double)val.MaxValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeFloat.DecimalDigitsProperty, (int)val.DecimalDigitsA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.MinimumLeftProperty, (double)val.FloatsA[0].MinValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.MinimumRightProperty, (double)val.FloatsA[1].MinValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.MaximumLeftProperty, (double)val.FloatsA[0].MaxValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.MaximumRightProperty, (double)val.FloatsA[1].MaxValueA);
+					frameworkElementFactory28.SetValue(SliderArrangeBase.SilderArrangeTypeProperty, SliderArrangeType.between);
+					DependencyProperty startValueProperty6 = SliderArrangeBase.StartValueProperty;
+					Binding binding24 = new Binding(val.FloatsA[0].NameA);
+					binding24.Mode = BindingMode.TwoWay;
+					binding24.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory28.SetBinding(startValueProperty6, binding24);
+					DependencyProperty endValueProperty = SliderArrangeBase.EndValueProperty;
+					Binding binding25 = new Binding(val.FloatsA[1].NameA);
+					binding25.Mode = BindingMode.TwoWay;
+					binding25.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory28.SetBinding(endValueProperty, binding25);
+					frameworkElementFactory28.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory28.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory28);
+					continue;
+				}
+				case "BottomButton":
+				{
+					FrameworkElementFactory frameworkElementFactory19 = new FrameworkElementFactory(typeof(Button));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty9 = UIElement.VisibilityProperty;
+						Binding binding15 = new Binding(val.VisibilityA);
+						binding15.Converter = converter;
+						frameworkElementFactory19.SetBinding(visibilityProperty9, binding15);
+					}
+					frameworkElementFactory19.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+					frameworkElementFactory19.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+					frameworkElementFactory19.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["BottomButtonStyle"]);
+					frameworkElementFactory19.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory19.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory19.SetValue(ContentControl.ContentProperty, (string)val.DisplayNameA);
+					frameworkElementFactory19.SetBinding(ButtonBase.CommandProperty, new Binding((string)val.NameA));
+					frameworkElementFactory.AppendChild(frameworkElementFactory19);
+					continue;
+				}
+				case "PointF":
+				{
+					FrameworkElementFactory frameworkElementFactory13 = new FrameworkElementFactory(typeof(Grid));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty6 = UIElement.VisibilityProperty;
+						Binding binding8 = new Binding(val.VisibilityA);
+						binding8.Converter = converter;
+						frameworkElementFactory13.SetBinding(visibilityProperty6, binding8);
+					}
+					FrameworkElementFactory child = new FrameworkElementFactory(typeof(ColumnDefinition));
+					FrameworkElementFactory child2 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					FrameworkElementFactory child3 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					frameworkElementFactory13.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory13.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory13.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory13.AppendChild(child);
+					frameworkElementFactory13.AppendChild(child2);
+					frameworkElementFactory13.AppendChild(child3);
+					FrameworkElementFactory frameworkElementFactory14 = new FrameworkElementFactory(typeof(SliderArrangeFloat));
+					frameworkElementFactory14.SetValue(FrameworkElement.MarginProperty, new Thickness(5.0, 0.0, 0.0, 0.0));
+					frameworkElementFactory14.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, val.FloatsA[0].IncValueA);
+					frameworkElementFactory14.SetValue(SliderArrangeBase.MinimumProperty, (double)val.FloatsA[0].MinValueA);
+					frameworkElementFactory14.SetValue(SliderArrangeBase.MaximumProperty, (double)val.FloatsA[0].MaxValueA);
+					frameworkElementFactory14.SetValue(SliderArrangeFloat.DecimalDigitsProperty, (int)val.FloatsA[0].DecimalDigitsA);
+					DependencyProperty startValueProperty2 = SliderArrangeBase.StartValueProperty;
+					Binding binding9 = new Binding(val.FloatsA[0].NameA);
+					binding9.Mode = BindingMode.TwoWay;
+					binding9.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory14.SetBinding(startValueProperty2, binding9);
+					frameworkElementFactory14.SetValue(Grid.ColumnProperty, 0);
+					FrameworkElementFactory frameworkElementFactory15 = new FrameworkElementFactory(typeof(SliderArrangeFloat));
+					frameworkElementFactory15.SetValue(FrameworkElement.MarginProperty, new Thickness(5.0, 0.0, 0.0, 0.0));
+					frameworkElementFactory15.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, val.FloatsA[1].IncValueA);
+					frameworkElementFactory15.SetValue(SliderArrangeBase.MinimumProperty, (double)val.FloatsA[1].MinValueA);
+					frameworkElementFactory15.SetValue(SliderArrangeBase.MaximumProperty, (double)val.FloatsA[1].MaxValueA);
+					frameworkElementFactory15.SetValue(SliderArrangeFloat.DecimalDigitsProperty, (int)val.FloatsA[1].DecimalDigitsA);
+					DependencyProperty startValueProperty3 = SliderArrangeBase.StartValueProperty;
+					Binding binding10 = new Binding(val.FloatsA[1].NameA);
+					binding10.Mode = BindingMode.TwoWay;
+					binding10.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory15.SetBinding(startValueProperty3, binding10);
+					frameworkElementFactory15.SetValue(Grid.ColumnProperty, 1);
+					FrameworkElementFactory frameworkElementFactory16 = new FrameworkElementFactory(typeof(SliderArrangeFloat));
+					frameworkElementFactory16.SetValue(FrameworkElement.MarginProperty, new Thickness(5.0, 0.0, 0.0, 0.0));
+					frameworkElementFactory16.SetValue(SliderArrangeBase.SliderTickFrequencyProperty, val.FloatsA[2].IncValueA);
+					frameworkElementFactory16.SetValue(SliderArrangeBase.MinimumProperty, (double)val.FloatsA[2].MinValueA);
+					frameworkElementFactory16.SetValue(SliderArrangeBase.MaximumProperty, (double)val.FloatsA[2].MaxValueA);
+					frameworkElementFactory16.SetValue(SliderArrangeFloat.DecimalDigitsProperty, (int)val.FloatsA[2].DecimalDigitsA);
+					DependencyProperty startValueProperty4 = SliderArrangeBase.StartValueProperty;
+					Binding binding11 = new Binding(val.FloatsA[2].NameA);
+					binding11.Mode = BindingMode.TwoWay;
+					binding11.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+					frameworkElementFactory16.SetBinding(startValueProperty4, binding11);
+					frameworkElementFactory16.SetValue(Grid.ColumnProperty, 2);
+					frameworkElementFactory13.AppendChild(frameworkElementFactory14);
+					frameworkElementFactory13.AppendChild(frameworkElementFactory15);
+					frameworkElementFactory13.AppendChild(frameworkElementFactory16);
+					frameworkElementFactory13.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory13.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory13);
+					continue;
+				}
+				case "PointS":
+				{
+					FrameworkElementFactory frameworkElementFactory36 = new FrameworkElementFactory(typeof(Grid));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty16 = UIElement.VisibilityProperty;
+						Binding binding31 = new Binding(val.VisibilityA);
+						binding31.Converter = converter;
+						frameworkElementFactory36.SetBinding(visibilityProperty16, binding31);
+					}
+					FrameworkElementFactory child4 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					FrameworkElementFactory child5 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					FrameworkElementFactory child6 = new FrameworkElementFactory(typeof(ColumnDefinition));
+					frameworkElementFactory36.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory36.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory36.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+					frameworkElementFactory36.AppendChild(child4);
+					frameworkElementFactory36.AppendChild(child5);
+					frameworkElementFactory36.AppendChild(child6);
+					FrameworkElementFactory frameworkElementFactory37 = new FrameworkElementFactory(typeof(TextBlock));
+					frameworkElementFactory37.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
+					frameworkElementFactory37.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+					frameworkElementFactory37.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+					frameworkElementFactory37.SetValue(TextBlock.TextProperty, val.Strings[0].NameA);
+					frameworkElementFactory37.SetValue(Grid.ColumnProperty, 0);
+					FrameworkElementFactory frameworkElementFactory38 = new FrameworkElementFactory(typeof(TextBlock));
+					frameworkElementFactory38.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
+					frameworkElementFactory38.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+					frameworkElementFactory38.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+					frameworkElementFactory38.SetValue(TextBlock.TextProperty, val.Strings[1].NameA);
+					frameworkElementFactory38.SetValue(Grid.ColumnProperty, 1);
+					FrameworkElementFactory frameworkElementFactory39 = new FrameworkElementFactory(typeof(TextBlock));
+					frameworkElementFactory39.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
+					frameworkElementFactory39.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+					frameworkElementFactory39.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+					frameworkElementFactory39.SetValue(TextBlock.TextProperty, val.Strings[2].NameA);
+					frameworkElementFactory39.SetValue(Grid.ColumnProperty, 2);
+					frameworkElementFactory36.AppendChild(frameworkElementFactory37);
+					frameworkElementFactory36.AppendChild(frameworkElementFactory38);
+					frameworkElementFactory36.AppendChild(frameworkElementFactory39);
+					frameworkElementFactory36.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory36.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory.AppendChild(frameworkElementFactory36);
+					continue;
+				}
+				case "Image":
+				{
+					FrameworkElementFactory frameworkElementFactory6 = new FrameworkElementFactory(typeof(Image));
+					frameworkElementFactory6.SetValue(FrameworkElement.WidthProperty, (double)val.Width);
+					frameworkElementFactory6.SetValue(FrameworkElement.HeightProperty, (double)val.Height);
+					frameworkElementFactory6.SetValue(Image.SourceProperty, new BitmapImage(new Uri((string)val.ImagePath, UriKind.Relative)));
+					FrameworkElementFactory frameworkElementFactory7 = new FrameworkElementFactory(typeof(Border));
+					if (!string.IsNullOrEmpty(val.VisibilityA as string) && val.VisibilityA as string != "Beginner")
+					{
+						DependencyProperty visibilityProperty2 = UIElement.VisibilityProperty;
+						Binding binding2 = new Binding(val.VisibilityA);
+						binding2.Converter = converter;
+						frameworkElementFactory7.SetBinding(visibilityProperty2, binding2);
+					}
+					frameworkElementFactory7.SetValue(Border.BorderThicknessProperty, new Thickness(1.0));
+					frameworkElementFactory7.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 4.0, 0.0, 1.0));
+					frameworkElementFactory7.SetValue(Border.BorderBrushProperty, Brushes.DarkGray);
+					frameworkElementFactory7.SetValue(Border.CornerRadiusProperty, new CornerRadius(2.0));
+					frameworkElementFactory7.SetValue(Grid.ColumnProperty, 1);
+					frameworkElementFactory7.SetValue(Grid.RowProperty, i);
+					frameworkElementFactory7.AppendChild(frameworkElementFactory6);
+					frameworkElementFactory.AppendChild(frameworkElementFactory7);
+					continue;
+				}
+				}
+			}
+			HikMessageBox.Show("no support the type:" + val.DisplayType, MessageButtons.Normal, MessageIcons.Warning);
+		}
+		FrameworkElementFactory frameworkElementFactory41 = new FrameworkElementFactory(typeof(Border));
+		frameworkElementFactory41.SetValue(Border.BorderThicknessProperty, new Thickness(1.0));
+		frameworkElementFactory41.SetValue(Border.PaddingProperty, new Thickness(10.0));
+		frameworkElementFactory41.SetValue(Border.BorderBrushProperty, Brushes.DarkGray);
+		frameworkElementFactory41.SetValue(Border.CornerRadiusProperty, new CornerRadius(2.0));
+		frameworkElementFactory41.SetValue(Grid.ColumnProperty, 1);
+		frameworkElementFactory41.AppendChild(frameworkElementFactory);
+		FrameworkElementFactory frameworkElementFactory42 = new FrameworkElementFactory(typeof(Button));
+		frameworkElementFactory42.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+		frameworkElementFactory42.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Bottom);
+		frameworkElementFactory42.SetValue(FrameworkElement.StyleProperty, (Style)userTempConverter.ResourceDictionary["IcDeleteBtnStyle"]);
+		frameworkElementFactory42.SetBinding(ButtonBase.CommandProperty, new Binding("DelParamCommand"));
+		frameworkElementFactory42.SetValue(Grid.ColumnProperty, 2);
+		try
+		{
+			dynamic val2 = Views[0];
+			if ((bool)val2.GetParentNode().AddEnable)
+			{
+				frameworkElementFactory42.SetValue(UIElement.VisibilityProperty, Visibility.Visible);
+			}
+			else
+			{
+				frameworkElementFactory42.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
+			}
+		}
+		catch (Exception)
+		{
+		}
+		FrameworkElementFactory frameworkElementFactory43 = new FrameworkElementFactory(typeof(TextBlock));
+		frameworkElementFactory43.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
+		frameworkElementFactory43.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+		frameworkElementFactory43.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+		frameworkElementFactory43.SetBinding(TextBlock.TextProperty, new Binding("Seq"));
+		frameworkElementFactory43.SetValue(Grid.ColumnProperty, 2);
+		FrameworkElementFactory frameworkElementFactory44 = new FrameworkElementFactory(typeof(Grid));
+		FrameworkElementFactory frameworkElementFactory45 = new FrameworkElementFactory(typeof(ColumnDefinition));
+		FrameworkElementFactory frameworkElementFactory46 = new FrameworkElementFactory(typeof(ColumnDefinition));
+		FrameworkElementFactory frameworkElementFactory47 = new FrameworkElementFactory(typeof(ColumnDefinition));
+		frameworkElementFactory45.SetValue(ColumnDefinition.WidthProperty, new GridLength(24.0, GridUnitType.Pixel));
+		frameworkElementFactory46.SetValue(ColumnDefinition.WidthProperty, new GridLength(1.0, GridUnitType.Star));
+		frameworkElementFactory47.SetValue(ColumnDefinition.WidthProperty, new GridLength(30.0, GridUnitType.Pixel));
+		frameworkElementFactory44.SetValue(FrameworkElement.MarginProperty, new Thickness(0.0, 0.0, 0.0, 5.0));
+		frameworkElementFactory44.AppendChild(frameworkElementFactory45);
+		frameworkElementFactory44.AppendChild(frameworkElementFactory46);
+		frameworkElementFactory44.AppendChild(frameworkElementFactory47);
+		frameworkElementFactory44.AppendChild(frameworkElementFactory41);
+		frameworkElementFactory44.AppendChild(frameworkElementFactory42);
+		frameworkElementFactory44.AppendChild(frameworkElementFactory43);
+		ControlTemplate controlTemplate = new ControlTemplate(typeof(ListBoxItem));
+		controlTemplate.VisualTree = frameworkElementFactory44;
+		controlTemplate.Seal();
+		Setter setter = new Setter();
+		setter.Property = Control.TemplateProperty;
+		setter.Value = controlTemplate;
+		Style style = new Style(typeof(ListBoxItem));
+		style.Setters.Add(setter);
+		ItemContainerStyle = style;
+	}
+}

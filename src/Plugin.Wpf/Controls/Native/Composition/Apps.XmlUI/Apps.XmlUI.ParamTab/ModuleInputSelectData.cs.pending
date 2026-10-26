@@ -1,0 +1,148 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VM.Core;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public class ModuleInputSelectData : RunParamsSelectData
+{
+	private string[] IoallType = new string[3] { "int", "float", "string" };
+
+	private string[] ExceptType = new string[5] { "IMAGE", "ROIBOX", "ROIANNULUS", "ANNULUS", "FIXTURE" };
+
+	public override int MaxCheckedCount => 32;
+
+	public override string[] GetValueType(int index)
+	{
+		return (searchType)index switch
+		{
+			searchType.AllType => IoallType, 
+			searchType.IntType => new string[1] { "int" }, 
+			searchType.FloatType => new string[1] { "float" }, 
+			searchType.StringType => new string[1] { "string" }, 
+			_ => IoallType, 
+		};
+	}
+
+	public override void GetSelectRunParams(int index)
+	{
+		string[] valueType = GetValueType(index);
+		bool isAllType = false;
+		if (valueType == IoallType)
+		{
+			isAllType = true;
+		}
+		EnumEntrysA = GetRunParamsTree(valueType, ref AllModuleRunParams, SelectRunParams, SelectedVarType, isAllType);
+		if (RunParamsA == null)
+		{
+			RunParamsA = GetRunParams();
+		}
+	}
+
+	public override void GetSubRunParamsTree(Holder module, string[] valueType, ref Dictionary<int, IList<RunParamsBaseNode>> allrunParams, List<RunParamsBaseNode> selectrunParams, List<RunParamsBaseNode> otherSelectedParams, string varType, bool isAllType = true, string searchModuleFilter = "")
+	{
+		if (module.HolderTarget is IVmModule || module.HolderTarget is IVmModuleSet)
+		{
+			int moduleid = (int)(module.HolderTarget as VmModule).ID;
+			IList<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+			if (!allrunParams.ContainsKey(moduleid))
+			{
+				IList inputTreeNode = (module.HolderTarget as VmModule).GetInputTreeNode(valueType, ExceptType);
+				if (inputTreeNode != null && isAllType)
+				{
+					foreach (Holder item2 in inputTreeNode)
+					{
+						list.Add(new RunParamsBaseNode
+						{
+							OutputEnabled = item2.OutputEnabled,
+							TargetObject = (item2.HolderTarget as DynamicIO),
+							ParentTree = module
+						});
+					}
+					if (selectrunParams != null)
+					{
+						foreach (RunParamsBaseNode item in selectrunParams.Where((RunParamsBaseNode x) => x.ModuleID == moduleid))
+						{
+							RunParamsBaseNode runParamsBaseNode = list.FirstOrDefault((RunParamsBaseNode x) => x.Name == item.Name);
+							if (runParamsBaseNode != null)
+							{
+								runParamsBaseNode.OutputEnabled = item.OutputEnabled;
+							}
+						}
+					}
+					allrunParams.Add(moduleid, list);
+				}
+			}
+			else
+			{
+				IList<RunParamsBaseNode> list3;
+				if (!isAllType)
+				{
+					IList<RunParamsBaseNode> list2 = allrunParams[moduleid].Where((RunParamsBaseNode x) => valueType.Contains(x.DisplayType?.ToLower())).ToList();
+					list3 = list2;
+				}
+				else
+				{
+					list3 = allrunParams[moduleid];
+				}
+				list = list3;
+				foreach (RunParamsBaseNode item3 in list)
+				{
+					item3.ParentTree = module;
+				}
+			}
+			if (list != null && list.Count > 0)
+			{
+				module.EnumEntrysA = new ObservableCollection<object>(list);
+			}
+		}
+		if (!(module.HolderTarget is IVmModuleSet))
+		{
+			return;
+		}
+		IEnumerable<Holder> moduleHolderTree = GetModuleHolderTree(module.HolderTarget as VmModuleSet, module, searchModuleFilter);
+		foreach (Holder item4 in moduleHolderTree)
+		{
+			GetSubRunParamsTree(item4, valueType, ref allrunParams, selectrunParams, otherSelectedParams, varType, isAllType, searchModuleFilter);
+			if (item4.EnumEntrysA != null && item4.EnumEntrysA.Count > 0)
+			{
+				module.EnumEntrysA.Add(item4);
+			}
+		}
+	}
+
+	public override bool GetSelectedRunParams()
+	{
+		List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+		if (AllModuleRunParams != null)
+		{
+			foreach (KeyValuePair<int, IList<RunParamsBaseNode>> allModuleRunParam in AllModuleRunParams)
+			{
+				if (allModuleRunParam.Value != null)
+				{
+					list.AddRange(allModuleRunParam.Value.Where((RunParamsBaseNode x) => x.OutputEnabled).ToList());
+				}
+			}
+		}
+		if (list != null && list.Count > MaxCheckedCount)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("最多添加") + ":" + MaxCheckedCount);
+			return false;
+		}
+		if (SelectRunParams != null)
+		{
+			SelectRunParams.Clear();
+		}
+		SelectRunParams = list;
+		return true;
+	}
+}

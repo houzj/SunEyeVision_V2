@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using System;
 using System.CodeDom.Compiler;
 using System.ComponentModel;
@@ -9,7 +11,8 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
-using VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
 
@@ -286,10 +289,4 @@ public partial class HikHistogramSingle : UserControl, RectangleRoi, INotifyProp
 	{
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

@@ -45,10 +45,4 @@ public partial class AssistCrossRadioButton : ImageViewControlButton, IComponent
 		ImageView.IsShowAssistCross = false;
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

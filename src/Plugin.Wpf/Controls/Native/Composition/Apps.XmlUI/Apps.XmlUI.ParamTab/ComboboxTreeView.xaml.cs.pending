@@ -1,0 +1,83 @@
+using System.Collections;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class ComboboxTreeView : Control, IComponentConnector, IStyleConnector
+{
+	public delegate void TreeNodeSingleClick(object sender, ObjectEventArgs e);
+
+	private TreeViewCombobox viewParent;
+
+	public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IList), typeof(ComboboxTreeView), new PropertyMetadata(null));
+
+	private TreeView treeView;
+
+	public TreeViewCombobox ViewParent
+	{
+		get
+		{
+			if (viewParent == null)
+			{
+				viewParent = this.GetParent<TreeViewCombobox>();
+			}
+			return viewParent;
+		}
+	}
+
+	public IList ItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemsSourceProperty, value);
+		}
+	}
+
+	public event TreeNodeSingleClick OnTreeNodeSingleClick;
+
+	public event ObjectEventHandler OnTreeNodeDoubleClick;
+
+	public ComboboxTreeView()
+	{
+		InitializeComponent();
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		treeView = Template.FindName("PART_View", this) as TreeView;
+	}
+
+	private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is TreeViewItem treeViewItem && treeViewItem.Items.Count == 0)
+		{
+			object dataContext = treeViewItem.DataContext;
+			if (OnTreeNodeDoubleClick != null)
+			{
+				ObjectEventArgs args = new ObjectEventArgs
+				{
+					Param = dataContext
+				};
+				OnTreeNodeDoubleClick(sender, args);
+			}
+			ViewParent.NotifyComboBoxItemMouseDown(treeView, treeViewItem);
+		}
+	}
+
+	private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is TreeViewItem treeViewItem && treeViewItem.Items.Count == 0)
+		{
+			ViewParent.SingleClickCommand(treeView, treeViewItem, sender);
+		}
+	}
+}

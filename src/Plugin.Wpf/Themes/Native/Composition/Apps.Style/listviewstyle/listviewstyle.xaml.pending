@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<win:ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:win="clr-namespace:System.Windows;assembly=PresentationFramework" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+  <win:ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+    <win:ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ScrollBarStyle/RecScrollBarStyle.xaml" />
+  </win:ResourceDictionary.MergedDictionaries>
+  <LinearGradientBrush x:Key="GridViewColumnHeaderBorderBackground" EndPoint="0,1" StartPoint="0,0">
+    <GradientStop Color="#FFF2F2F2" Offset="0" />
+    <GradientStop Color="#FFD5D5D5" Offset="1" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="GridViewColumnHeaderHoverBackground" EndPoint="0,1" StartPoint="0,0">
+    <GradientStop Color="#FFBDEDFF" Offset="0" />
+    <GradientStop Color="#FFB7E7FB" Offset="1" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="GridViewColumnHeaderPressBackground" EndPoint="0,1" StartPoint="0,0">
+    <GradientStop Color="#FF8DD6F7" Offset="0" />
+    <GradientStop Color="#FF8AD1F5" Offset="1" />
+  </LinearGradientBrush>
+  <win:Style x:Key="NormalGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+    <win:Setter Property="HorizontalContentAlignment" Value="Left" />
+    <win:Setter Property="VerticalContentAlignment" Value="Center" />
+    <win:Setter Property="Background" Value="#00FFFFFF" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="Padding" Value="12,0,2,0" />
+    <win:Setter Property="Foreground" Value="{win:DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+          <Grid SnapsToDevicePixels="True">
+            <Border Name="HeaderBorder" BorderBrush="{win:TemplateBinding Control.BorderBrush}" BorderThickness="0,1,0,1" Background="{win:TemplateBinding Control.Background}">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition MaxHeight="7" />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <Border Padding="{win:TemplateBinding Control.Padding}" Grid.RowSpan="2">
+                  <ContentPresenter Name="HeaderContent" HorizontalAlignment="{win:TemplateBinding Control.HorizontalContentAlignment}" Margin="0,0,0,1" RecognizesAccessKey="True" SnapsToDevicePixels="{win:TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{win:TemplateBinding Control.VerticalContentAlignment}" />
+                </Border>
+              </Grid>
+            </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="Height" Value="Auto">
+              <win:Setter Property="MinHeight" Value="35" />
+            </win:Trigger>
+            <win:Trigger Property="IsEnabled" Value="False">
+              <win:Setter Value="{win:DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+            </win:Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+    <win:Style.Triggers>
+      <win:Trigger Property="GridViewColumnHeader.Role" Value="Floating">
+        <win:Setter Property="UIElement.Opacity" Value="0.4082" />
+        <win:Setter Property="Template">
+          <win:Setter.Value>
+            <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+              <Canvas Name="PART_FloatingHeaderCanvas">
+                <Rectangle Fill="#FF000000" Height="{win:TemplateBinding win:FrameworkElement.ActualHeight}" Opacity="0.4697" Width="{win:TemplateBinding win:FrameworkElement.ActualWidth}" />
+              </Canvas>
+            </ControlTemplate>
+          </win:Setter.Value>
+        </win:Setter>
+      </win:Trigger>
+      <win:Trigger Property="GridViewColumnHeader.Role" Value="Padding">
+        <win:Setter Property="Template">
+          <win:Setter.Value>
+            <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+              <Border Name="HeaderBorder" BorderBrush="{win:TemplateBinding Control.BorderBrush}" BorderThickness="0,1,0,1" Background="{win:TemplateBinding Control.Background}" />
+              <ControlTemplate.Triggers>
+                <win:Trigger Property="Height" Value="Auto">
+                  <win:Setter Property="MinHeight" Value="20" />
+                </win:Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </win:Setter.Value>
+        </win:Setter>
+      </win:Trigger>
+    </win:Style.Triggers>
+  </win:Style>
+  <win:Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+    <win:Setter Property="HorizontalContentAlignment" Value="Left" />
+    <win:Setter Property="VerticalContentAlignment" Value="Center" />
+    <win:Setter Property="Background" Value="#00FFFFFF" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="Padding" Value="12,0,2,0" />
+    <win:Setter Property="Foreground" Value="{win:DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+          <Grid SnapsToDevicePixels="True" Height="8" />
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <win:Style x:Key="ListViewItemWithHeadStyle" TargetType="{x:Type ListViewItem}">
+    <win:Style.Setters>
+      <win:Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+      <win:Setter Property="Template">
+        <win:Setter.Value>
+          <ControlTemplate TargetType="{x:Type ListViewItem}">
+            <Border Name="bd" Background="#00FFFFFF" Padding="{win:TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+              <GridViewRowPresenter Margin="3" Columns="{win:TemplateBinding GridView.ColumnCollection}" Content="{win:TemplateBinding ContentControl.Content}" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <win:DataTrigger Value="True" Binding="{Binding IsForGroup}">
+                <win:Setter Property="Visibility" Value="Collapsed" />
+              </win:DataTrigger>
+              <win:Trigger Property="ListBoxItem.IsSelected" Value="True">
+                <win:Trigger.Setters>
+                  <win:Setter TargetName="bd" Value="{win:DynamicResource ListViewComboBoxIsSelected}" Property="Border.Background" />
+                </win:Trigger.Setters>
+              </win:Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </win:Setter.Value>
+      </win:Setter>
+    </win:Style.Setters>
+  </win:Style>
+  <win:Style x:Key="ListViewWithHeadStyle" TargetType="{x:Type ListView}">
+    <win:Setter Property="BorderThickness" Value="0" />
+    <win:Setter Property="Foreground" Value="{win:DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+    <win:Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <win:Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <win:Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+    <win:Setter Property="ScrollViewer.PanningMode" Value="Both" />
+    <win:Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <win:Setter Property="VerticalContentAlignment" Value="Center" />
+    <win:Setter Property="ItemContainerStyle" Value="{win:StaticResource ListViewItemWithHeadStyle}" />
+  </win:Style>
+  <win:Style x:Key="ImageListViewItemStyle" TargetType="{x:Type ListViewItem}">
+    <win:Setter Property="Padding" Value="1" />
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListViewItem}">
+          <Grid SnapsToDevicePixels="True" Margin="5,2">
+            <Border Name="Border" Background="#00FFFFFF" CornerRadius="2" BorderBrush="{win:DynamicResource GlobalRectFill}" BorderThickness="1" />
+            <ContentPresenter />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="ListBoxItem.IsSelected" Value="True">
+              <win:Setter TargetName="Border" Value="{win:DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+              <win:Setter TargetName="Border" Property="Border.BorderThickness" Value="2" />
+            </win:Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+  <win:Style x:Key="ImageListViewStyle" TargetType="{x:Type ListView}">
+    <win:Setter Property="Background" Value="#F1F1F1" />
+    <win:Setter Property="Foreground" Value="#FF042271" />
+    <win:Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <win:Setter Property="Height" Value="100" />
+    <win:Setter Property="ListBox.SelectionMode" Value="Single" />
+    <win:Setter Property="Margin" Value="0,0,0,12" />
+    <win:Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <win:Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <win:Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+    <win:Setter Property="ScrollViewer.PanningMode" Value="Both" />
+    <win:Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <win:Setter Property="VerticalContentAlignment" Value="Center" />
+    <win:Setter Property="ItemContainerStyle" Value="{win:StaticResource ImageListViewItemStyle}" />
+    <win:Setter Property="ItemsPanel">
+      <win:Setter.Value>
+        <ItemsPanelTemplate>
+          <VirtualizingStackPanel IsItemsHost="True" VerticalAlignment="Top" Height="88" Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+    <win:Setter Property="Template">
+      <win:Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListView}">
+          <Themes:ListBoxChrome Name="Bd" BorderBrush="{win:TemplateBinding Control.BorderBrush}" BorderThickness="{win:TemplateBinding Control.BorderThickness}" Background="{win:TemplateBinding Control.Background}" UIElement.SnapsToDevicePixels="True">
+            <ScrollViewer Tag="1" Style="{win:StaticResource RecScrollViewer}">
+              <ItemsPresenter SnapsToDevicePixels="{win:TemplateBinding UIElement.SnapsToDevicePixels}" />
+            </ScrollViewer>
+          </Themes:ListBoxChrome>
+          <ControlTemplate.Triggers>
+            <win:Trigger Property="IsEnabled" Value="False">
+              <win:Setter TargetName="Bd" Value="{win:DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Themes:ListBoxChrome.Background" />
+            </win:Trigger>
+            <win:MultiTrigger>
+              <win:MultiTrigger.Conditions>
+                <win:Condition Property="ItemsControl.IsGrouping" Value="True" />
+                <win:Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+              </win:MultiTrigger.Conditions>
+              <win:Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+            </win:MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </win:Setter.Value>
+    </win:Setter>
+  </win:Style>
+</win:ResourceDictionary>

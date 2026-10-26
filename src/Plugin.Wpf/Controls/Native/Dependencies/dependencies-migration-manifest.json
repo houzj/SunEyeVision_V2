@@ -1,0 +1,1412 @@
+{
+  "phase": "static_reconstruction_not_runtime_acceptance",
+  "artifacts": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "sha256": "67d5988152401745e160f0e6a0dd257a3451c519f7740334887bacd202622ac2",
+      "rea_evidence": "ev_18c3872c6efc942f0bf47b30062a476770eabaf60d2bd4ff0af675265516a8df",
+      "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "sha256": "435628fd494d33dbd4c242d98939162e0406101b1e77287556b1a04c7a4e1d6a",
+      "rea_evidence": "ev_8c68ba52e71fbaedc0819c39a328f1c8525bb9db7f3589089f7b7d59123a57b5",
+      "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIData.dll",
+      "sha256": "d063decd9f6a5bf6992b37b26416b46e0a76e715973b077f0cc281eaf36f2b24",
+      "rea_evidence": "ev_0ca6f0a7a59062067334e0c7e4346690cbe017465b65fb95a5c76ade33f34d42",
+      "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIHelper.dll",
+      "sha256": "be53f11087a4bcd338530edc283ca49a37d595bfd1a64c6f67232c007cfa189c",
+      "rea_evidence": "ev_9b0a9ef9796730075b30bb07123f5ad5f184a3f55490968bf266c5602d2d321b",
+      "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Utility.dll",
+      "sha256": "65ebb5edabf77465fa01f8c6d70efdcbd4b6a87f510911249cd93d73649d1cdf",
+      "rea_evidence": "ev_ff90a25ff7174a267deac758048e4cc18f99ed9a1b9aa7d73434aad58f4ed551",
+      "executed": false
+    }
+  ],
+  "entries": [
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\GlobalRenderVariable.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0a8ec30f3c4298f8aa20e843e674e92ef7d99533e99db469090da0dc3047fef8",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/GlobalRenderVariable.cs",
+      "target_sha256": "64947eb44dfea7933a8ea397761fc0b963fa3ccf9bda3fbcb4f2b825558af1e9",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\I3DBoxROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "a0d0261632fa9fdd0a85f5871aeb665913fa9a16ea02d3a666985c77f82ef2ff",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/I3DBoxROI.cs",
+      "target_sha256": "fee339ffaa3f932ad418b2197fb32a6d5a03879c5d584d2b62f236daf54d7e54",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\I3DROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "d3336c718015a7822eea53d06d2bb366e1374cc3ecf18c8457603d2421bb983a",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/I3DROI.cs",
+      "target_sha256": "9b555303f45f6e90fdb8c944bc3cdb24042297c06fd971a5fda1a858bce85266",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IAddROIWidthImageCommand.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "d6c22160b99bbcb1c05571c97c4a891c60c42a0595c432e97b425b72b97eef10",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IAddROIWidthImageCommand.cs",
+      "target_sha256": "a4e9af348f8c77f7584f414639de36a5bfa546ee2adabcb36fc8e4408d9f0229",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IAngleEnable.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "66d728af6d614d037266665e7ddd7680814a606a2024dac2ae4cdd9c7a262efa",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IAngleEnable.cs",
+      "target_sha256": "2d9b30fc03d56ff27fd3fc116daed44afb1693df47c2d03af2f55360fdbd5612",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IAngleShape.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "5a7b7dbd0245cd0a580711dc89b7fc4df9b227300961feae5a5ccf0461be0175",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IAngleShape.cs",
+      "target_sha256": "59ea49ea258579874626eabd52da5bfc0076d915cd3de45a973de32feae60b4f",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IAnnularSector.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "222eebf22b5a2a225d026ac3fa466ed9fbf8859a53c347ee98e7c0407914c1fb",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IAnnularSector.cs",
+      "target_sha256": "3e764cfc0c84a3227481a96e8ba1021a46f773960d5c00f966c52240856144d5",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IArrowPath.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "4f893a804d183705df754564248d462940f046e48656357caf16bf3240f3d32f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IArrowPath.cs",
+      "target_sha256": "4128a955bea325718d5c46c899db73245a8168ac9ddfb0f785048ee09a12b814",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICaliper.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "e85eda1913472daf59cd91679125b9b000e143b085ada1e4678777c36affa01f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICaliper.cs",
+      "target_sha256": "4b712b509fe77808da4e89c2b70acd4649c494283f2f840c63f19cd18b26c489",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICircle.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "1f5b453d4f4ac37690f3cbbde597a04f2daf950b6d8d8a89441477006b42e8b0",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICircle.cs",
+      "target_sha256": "340c6dce7329dde5594fdde37c20781067097296ebfded96ed9e0674780610a4",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICircleCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "40d89be82f323372e1a0638ef2c68a909c3d8c06daf9df5d3d54ec7ff7e568af",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICircleCaliperROI.cs",
+      "target_sha256": "5bba57954520c674acab768722a73251cbf046ce5e8deae00cf3df96b8b55ae6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICircleMesROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "aa3862ca69b315db58b466a41495505dd41179583e94ad5b6a3e9683ffc3d505",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICircleMesROI.cs",
+      "target_sha256": "70bfa45ba7b2c280a868dd026d211f8583e0998076a0afce1a90c7a76616747d",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICircleROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "3df34340bf645faac59c92e9090706ef1fcd0cc3e64230e3478e98d6acd7c9b8",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICircleROI.cs",
+      "target_sha256": "fbe06fb315f4b133d934dc70aba56f3b48b06adf0fa72bfb4272ee40c1d1196b",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICoordinateROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "47f9bb0c35f216092d64e4d89bdcae4f109c54ff1d1e6eb0609d5d5cddaf005b",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICoordinateROI.cs",
+      "target_sha256": "054569442a049033f7107a4aedee0cfdc1d371b20e82f4d8952029882ed97fc6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICoordinateShape.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "d72301fa68f358c297c653028caa932702c9fab283db0b0866103dd06de44c7d",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICoordinateShape.cs",
+      "target_sha256": "97f193fc23292a7061f7007dab9f0878a9fb4f3a3d6b4ee70e61a0af4c12dcc6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICross.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7b6bdc035416b5e7c0c93e02330b0ed42715d3d191fb08935b1bb708df84bdb7",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICross.cs",
+      "target_sha256": "07047f1a9d2b6a674136785cd5a82ce56e7e872472a298e4aac11c4a3a4abd03",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ICrossROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0b6e5b408e56832fa8c063d1898afd4ee81d2c19c814043c9d8cd6f108ac5cb4",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ICrossROI.cs",
+      "target_sha256": "82fc3ade339859cfaab9fc0a449a68d74ecbbc06dcf668e6ee0b6c91527feb46",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IEllipse.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "365a642c555f07c67283dfbe7b89edcb5f53ff72db513dea1c49bbca1b914114",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IEllipse.cs",
+      "target_sha256": "45aa2e08f6a54538e1bf3328f964a6114fec6bd39f16886930b7217a1bf41251",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IEllipseROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7d9fb4495ce6b2dbb3b69f48021fbaa60d8b9c75879058ac8dcb2b2393a2c417",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IEllipseROI.cs",
+      "target_sha256": "ca87637bf7d97aeb5e3fc8909c51b7799f5fb44567bde06beaa56ded46be289e",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IFullROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "c7271226792d6c28f0a322c95980673696872badd81aae32c9837af7866690c2",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IFullROI.cs",
+      "target_sha256": "a01787facfc0ea5cf56bcda4d54da745511323435686912329ba20c6db29d936",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IGetROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "8288051b1e6db161312ab8d783845c1473c544d50da50f7db681898ddad0e43f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IGetROI.cs",
+      "target_sha256": "037a0ce611803c9fe0c3cd38e9e77b0e4b53bc27a2fdd57971a28e5087d93141",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IImageData.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "fdd4631e13fc50cac527c4a32d5f286bfc67f510085198c9fcf18e44d8133a02",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IImageData.cs",
+      "target_sha256": "d88c7c3444bdefd2e71abf3c98f782b66579367b85967b6770ae32e7cc09ea47",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IImageDataExtern.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "f067b63eb1885b34ffa037eb28b4a5b47815b7309d828990f1fbcabb9c39ff82",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IImageDataExtern.cs",
+      "target_sha256": "286495635a47e194c867377bbfb81115f8e159b5a8bcd6ebcf6a1fc75a19a101",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IIndex.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "4b29c33c8b67b70b45ef60d17b76f18153c6542b1030b47aaa0aae91b0e81665",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IIndex.cs",
+      "target_sha256": "63d45e377486bae54929df7e0cbf0b2f76a35c6ad276ee45611fb71c67b4acf4",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IIsVisible.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "59419edbb74a46e84bf79135f369d3760a3106a46169e9099a3f6e5f3d8588b7",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IIsVisible.cs",
+      "target_sha256": "514a88d4de001aec1d619bdef216291e655fc167ef09d8fd0d144716298fe467",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ILine.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "cc3050b05b7e5d50fef176e4ea780eafb30d8103141bc703eb33a2277be5d271",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ILine.cs",
+      "target_sha256": "ea2a33598b8c8e8fb8e88b6e8aab326ce47aef3cd8f777e4c63bc01c6a6165ed",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ILineCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "dd3ff8b6359bf4f18f4eaac95212fe8dfd26ade4afa60827c06391337299c4aa",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ILineCaliperROI.cs",
+      "target_sha256": "54485bef6e768a7a8a99559a832b2ae2825e1e5917bd7e5030f466c2e9b70d9f",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ILineRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "ca6368c01458b4594e1b1a3963f7e08bd49fc593fe97c237e17aac6d40110ae7",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ILineRectROI.cs",
+      "target_sha256": "e9ce2f17e36549e84b7bcdd4957a7a991aebc5ed67f8c636588f078b8a8f5c06",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ILineROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "e49a3abc1de39064afeea85d573de1e91172426ce674492cacdc5e97cc25e079",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ILineROI.cs",
+      "target_sha256": "a0a5f83a7c873369b0c44f50f932284f74b030357b288e2d991f54cf0ea9e1d2",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMatrix.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0b64493fb45d65132bce762e1b2af871956eed2d7dba1f4be63b86696f57b039",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMatrix.cs",
+      "target_sha256": "f82e86264a9b59b9437a5bc32c73a27788813b7437c400010ec1372bc62097e3",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMatrixCircleROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "5a4fcf0e7c11aa22bbeadb8441d0ea0b38e4deffe57cb71fb75c45747ddb7e14",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMatrixCircleROI.cs",
+      "target_sha256": "b913ae0d3c3b00d6d2338f3b1e3fdeae46680a1ad0ad1998ffa3f6985ca5e5f9",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMatrixEnable.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "5ddfadcbe2e904b5c17f76d63de77458f3a59702de894c77d5fd4b29e03dfbbb",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMatrixEnable.cs",
+      "target_sha256": "6bd47897695c56f222cff2411fd3535df95126dd7b10a51d51c9127dc632a91c",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMicroPoint.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "09d62053543a3e486a7e204cffa66a21de82241bf57ccb29b08d4f09a0411ccb",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMicroPoint.cs",
+      "target_sha256": "f5b41a77eb201f0dcce3ef2800d3a2db4c0346aaace3b3e9d70acf0f9d86644c",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IModuleResultView.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "63040eeb3a127c1ef7a8e8610a1cb5a84cd527b9123c41baf71c13a453d1c464",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IModuleResultView.cs",
+      "target_sha256": "fecb65b64960a25abee81ad018edc33cf3732772363a08aff864fc940be27f27",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMultiLineROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "27f184d360b8c503b2746f2ae20d41874e68192fc73c3d91ca4ba62aba24ca44",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMultiLineROI.cs",
+      "target_sha256": "aabe3e9781dfc3107853d873dbe6070be7b432b4046c195b1fe4d43e3c4e8097",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMultiPoint.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "10a168f5094be751195f4ce5bf0790601a5c86cdcc624e5dfd117a7a587b8d84",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMultiPoint.cs",
+      "target_sha256": "335423095df534e4db4d3c098607d7420a94273adb9aa1c985b3ce7053136036",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IMultiText.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "dc05314104be8fbadd5cb58ad18e92652865e71209c9715634062cd0e6a1c081",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IMultiText.cs",
+      "target_sha256": "d4933e4b927e969535c9d2a41bc0ddd36b25070405b31e42f5aca0f1c1429b11",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedCircleCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "231cfb3cc886385e8b71217bbcebbdeb7f536d1807f3e194264a1ff2822ae4f0",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedCircleCaliperROI.cs",
+      "target_sha256": "78d37928484440ce4656c4752cd084a18588da46e132e788ca690c74c68fb981",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedCircleMesROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "f23ab1aae2262523a866fe01e6934a0e79de6d28e5f4620c2645be072b39b857",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedCircleMesROI.cs",
+      "target_sha256": "761ff8d7896e99960ab4cc908b81f19a1847becf3252bb47af9a5208027b4075",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedCircleROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "bc15078b97f231ed4f44f6f312a3d27289b7fd606798e7d963a7a98c259e91cc",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedCircleROI.cs",
+      "target_sha256": "5bae34b72e937f5f36854dc53ae15bded13eaaa82dadcb1c95ccdf6f807bfa0a",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedLineCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "e2b815079253535f3e24827899d49cf7626ebae2a0f5cc3ef28235de88058cdc",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedLineCaliperROI.cs",
+      "target_sha256": "7f83d7e81ef4669d95ca7728c60e739d8153d458fd2bb411719232a35664ea9c",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedLineRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "9a285e4f4bf07faaa9d55c7023c844ed5145b41ec9de931da986a9b78829a477",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedLineRectROI.cs",
+      "target_sha256": "eb3c151dfc3609b7ae7f459d17c313184085f8e16a7e022c3c620e4f668aa585",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedLineROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "fecacd892b5cb3f3e3208c0dbc67236c75fc4c3a1ba9836b25cc89fa35e17132",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedLineROI.cs",
+      "target_sha256": "5980725e7613da60562fff55aa8d45708ae8163459a45e1a666072b377cc3c12",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedMatrixCircleROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "bd90e69954fa35ecd890cd4bee9941431eeb3fc829901f80af89340ad9916438",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedMatrixCircleROI.cs",
+      "target_sha256": "7ed3b33bc04293be3b9b697735e04f91670bba07bb9a2e787bc92ec92fc9d171",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedOverSectorROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "e07318fe8f708f5d4303f3985289d03de8fa0db343409c834a5391355bab8dc3",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedOverSectorROI.cs",
+      "target_sha256": "cbd58d2150fb71d0135665283d5db55368dafbe7a77a97ce0eb8cd6b18e01cb9",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedPointROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7d351c4e2502ee3e2df22549c3771594689ba3a4b29b9c1aefee08bbd0108f53",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedPointROI.cs",
+      "target_sha256": "f15f3bf1a9089f1d080d076eaf1ba55105604a196ba20b1516542701a3ae12aa",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedPolygonCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "b7b2bbd9b7f217d1837de05c4027eb1cb101ef6d0897c8a43f30a0bbf15c68db",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedPolygonCaliperROI.cs",
+      "target_sha256": "4ccfaaeef378e68758e526526980b8ea81ef57bec4cf20b4605d430828950292",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedPolygonMaskROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "875bc412b397586682f765453663358a6d62bc8a89ce88fef2f8f44a04c65daf",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedPolygonMaskROI.cs",
+      "target_sha256": "23da373d1b2bada7ed56a3cb705e68a237cdbd8328bcc832d0977e453f8a8713",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedPolygonROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "1b5ac9397c962dac646faf2b4428538cd467d1401b49df4c10af8de63d8caad4",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedPolygonROI.cs",
+      "target_sha256": "b228f5d5bbab02afbcc33841f2a6f457ec7ae3d105bc01a77ecb93dbfcfcae93",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "aebc5a126892fbcf555a21eb3f643cc1769642a09791464ab8b092953b892b73",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedRectROI.cs",
+      "target_sha256": "b1709a8d8a5b9cc27e3790513462c427afc15fb422477468a5bfcc8179debafd",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "9af9d78889861420452a1cbaacdb3b6c92d5746966741be34707346a2c5c3a28",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedROI.cs",
+      "target_sha256": "e2e098f6fd311a84a62238daaf0982c50d6ad916af92d9232534f27c8e904b18",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedSectorCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7690bcaba49f137441baa922089182354349ff4d6bfa1c60b92f2503ec4a6f9c",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedSectorCaliperROI.cs",
+      "target_sha256": "862ae192404e95f573c3792fdfe52b0786071717345aae6e7955163fe32f49dd",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedSectorROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "c34e1a0c455fd05ba9211881bfdd232e5fd05d56710ce4a27c9cf6ee78153d97",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedSectorROI.cs",
+      "target_sha256": "de309a3fa1b5102d7c0e017d0059fb47368780f5f9285e448caa8674f88909f4",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedSeqRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "ef15e49602bc9ee2fad1710778f9094df4c86f201bac5088c1ffe7ac8c57be33",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedSeqRectROI.cs",
+      "target_sha256": "b5ba16601da204eeb8b26edfcd24ce086a64efed94e61d0393ae8fff4922b52d",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\INormalizedUroRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0dc615dd93848b9dbae050a09e1bb23a8c07de215227eac51a6d26bcc27148f8",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/INormalizedUroRectROI.cs",
+      "target_sha256": "b689f78a9cee7903a12e7f2ed6dacb70e4f7cab732c30fc18ee633817479d314",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IOutlinePoint.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "8b23125c18ba6f9ee71205693b34c8045e493c488b85510985618f4e1980f847",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IOutlinePoint.cs",
+      "target_sha256": "a9f6e35479c860c18969f2c829c61b6279e2e2ce675c286ddc52db2d8e8da40a",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IOverSectorROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "45e7216f26059e820b5d45528dc3c9b929e657a394d26a5096d9767ff7386e9d",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IOverSectorROI.cs",
+      "target_sha256": "5315451413c8dc32c26fd9dc064a96a07a71641b0a7d307f7cf07194b71dae4f",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPoint.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7a9b64892216b60dabc7c51ebc94bd4a8061d32ac36c7b4dd76ad8bbf2aa2fea",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPoint.cs",
+      "target_sha256": "efd685d9c1dc88a1075adf61ae4c63642eacb4ac6047d14e01519773e08f4a49",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPointROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "2860313520ead4800928a9f32472986c9e87fa011e255b2cdef2f92342c18eb1",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPointROI.cs",
+      "target_sha256": "ae1d81735ed59390ec8c086dccc211128bb9d017f95b8266866ffea2fc1cff11",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPointSet.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "1b254cd34c61fdf55833245c9afb84aed8bd6692277749c8b3a06ed1741b8c6e",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPointSet.cs",
+      "target_sha256": "182694df049676756e3419cffd0ad5a3522c419018d9fa05a17c9b314187abb3",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPolygon.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "969f3f79a06985e2b4d32dfc50711872cab0089496cfbba0f68f01eebcbfd500",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPolygon.cs",
+      "target_sha256": "81719a950d32affcd55f6fc07f6f0ad6e5c0e340a005b7796bd97eae69b813f6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPolygonCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7d4e6a53cd0412948764bd9003b6547291edce14f7957f77980a58abab1aa334",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPolygonCaliperROI.cs",
+      "target_sha256": "99214a885293fa1a526940295777112a4c526c210547cec1a2cb886d688cee24",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPolygonMaskROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "fe8893c8ce4996fffd91dc17501c099a0a44756f561226f564414ddb655c2362",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPolygonMaskROI.cs",
+      "target_sha256": "a6f611b86d5ea3ddefc54ed978e2762e7af84408ed4fcd195799861f102ad061",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPolygonROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "2bacdb21b90c0fd74de34831f08f4771dcb1ad00b5ceafc62be34d1235c2cc43",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPolygonROI.cs",
+      "target_sha256": "14cbe6c5689ec75c407e0709a72f083ea2d03e0c88ec48acaa01ec4b2422f991",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPolyline.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "c7a4189d6571cb6c23810c56ae30007e3da62816d6912425e4c0795f5a9df861",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPolyline.cs",
+      "target_sha256": "950373c0906635077ebfaf060c83952a97a6687e615057a555296826e8e8d388",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPolylineROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "ec9f6d5d4d65058f24bd7d3b849fb219d4bc1f9cde27b66895f500f196f98691",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPolylineROI.cs",
+      "target_sha256": "2a5b8b4b03f127eec02b40c3403689b7ebfbe365eec2e95e8f772a64e826059b",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IPorfileImageData.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0d97c69de2d2843049060065bd04bf49596dcaf1d5a475341684184c70763878",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IPorfileImageData.cs",
+      "target_sha256": "8d57785a6f7f6dfa69f92f2f5fef8a6727bc3151fbf486d781254016eaafdfa4",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IProfileROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "d1d3af3f1ea9e155e46f1a9982e6f08e2f1e339f992294f886761a002937cf22",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IProfileROI.cs",
+      "target_sha256": "4e8d8cb3e0bfaaf9cff984a5aea96f00d630f361073e611bf89f76c3c6d2afe6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IRangeImageData.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "54550fd67ee9ac70df2296edc41eb9d59e289fbd4b243efbf474379c1c8bded5",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IRangeImageData.cs",
+      "target_sha256": "c99847fde97d54117278a9b388e22abcd739a3bb730d4bcbab2662a0d8588c1d",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IRectangle.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "04a6563c3979acc9ccf57c01734464cfac52c2843e991a05661f03e17c6e6ada",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IRectangle.cs",
+      "target_sha256": "d83c987edcc48fb29faf5ca4efb632e3184a9d68cdaa60f1474cb341b73ef05c",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7314588b12ef1aea00d16be7bb385fd774450e7b267ed6b9d6ac007390dff7ad",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IRectROI.cs",
+      "target_sha256": "b6db1878d4d731b284ab95ba0da0a3e1b26e622d0878036cbc70ff2283b5a3ff",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "e091c8d24ae8ad8bca3335f569a71008117d043a067795d1f567ede4d211a99b",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROI.cs",
+      "target_sha256": "abdd58fab26c441f7e83f8b561b0017de6abca48f3ca3b84a4a1181285b04da3",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROICheck.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "2cd8ea78baba6530546c0a67a0ae977ca215427c4d87bbc56d3676e11b3dd09b",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROICheck.cs",
+      "target_sha256": "e4d93644af7d0ac7840c9826b670fcdf8b98d0dc85dd072c974de8c187b8efef",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIClone.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "5cd792e5559956ca0f56abb81cd8255f4a0fe80aaa2e383ac8be97c61a1182a2",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIClone.cs",
+      "target_sha256": "ab995fe81a95e5b7eaff401a4c6a9ce42aec36664e6f3467b9c6cc30a3e97b18",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIColor.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "c45d3b0659f583d14fefb2b0d38760201047deca80bf95adef98b80aef930447",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIColor.cs",
+      "target_sha256": "9dc927441ec606bb016ae399357cbf46bb5f1be83a518313aae0c683e3726ab9",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIExternParam.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "db78f8aecf1419610f54d8fff2639ddd41c03e80dff1006ac7abd7d08ebc05fd",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIExternParam.cs",
+      "target_sha256": "f46625e8781f9c515f4d83d0ec9497b38474b77817f750645bb697539331c703",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROILabel.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "ddd7931abea5cd062e503c643365a6f8c7a5d913219d3c1e2f22034c12dbffbe",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROILabel.cs",
+      "target_sha256": "060a56bb40bfd0efb179e1de87698424080743be29f3177506a220e2f8faf7dc",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIPaste.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "91980e98b7f632a7d373d129d566b48c4efc8b7b9349bd1a00f391e6f5d2e9b7",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIPaste.cs",
+      "target_sha256": "e5e69c6e6d0aaa7b6bf92eebc98c24b666a9f7482d49d48c6813015d508242b4",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIRegister.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "afedbf0082a0d7f38cf1b5750dc5295873bf453f750eb252cc44558749d1936f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIRegister.cs",
+      "target_sha256": "3047d6be1ca4f64ceea258d5a96696a4eae9a980c2d300b93eb9cf42b1ad21e1",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROISelectable.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0953a2daae71e6e7ea42e198615d18503e3d3efcc3a904a3a013c26d8c9da13d",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROISelectable.cs",
+      "target_sha256": "01113f53e56ee090901e56b09081c3ef66a32e8ce4497c3b132d9c5c00fa6a47",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROISign.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "6fa89e31aa068bdb39e8260aa92faa85c4bf0602a79bd8edd1470a9cf8d2c09b",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROISign.cs",
+      "target_sha256": "db75838625d4add8a9205cb55896238763b4b6205452bc6b66b0fae56fc591db",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIType.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "841d8cd5738c24629baa7b74ee682739fc54bb1bae06b9fde080fcdfec22e918",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIType.cs",
+      "target_sha256": "bb860e66749166e91d365b82c579c4ac6d4627182949b58cf51d12a01bc21764",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIUIType.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "9ab72c337551804275096ff51cd9ff858fca72a56b28bacbaaccab0c051e6abb",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIUIType.cs",
+      "target_sha256": "d3f44f0a5069199daf01145e007c58f5e46c696c985521add3bca80a2d7308f9",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIUserType.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "82f86b37a3515ef48e991e9321e8bf1324343b419e4a146b966e3e71af1e6866",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIUserType.cs",
+      "target_sha256": "78c754b612a0ab06c130d9f556aca3714ca1469333b49e393176573204aabb8e",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IROIVisible.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "a9375ddb4000809c64daa4fa5e71766b7f75936405913d4ec76e673dd4b1d210",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IROIVisible.cs",
+      "target_sha256": "dc5a8b81e89ad273ec154a9d2882f3da8034724cfdb9dffdcf8c9395cc85b90b",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IRoundedRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "4be8de0313524a3d7034be94ddb7f6c8029ad765f5ad5b0d2e5ef9e19c7ed886",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IRoundedRectROI.cs",
+      "target_sha256": "f47f3bb5cc29ebd6d3d5bbf05be5c8ff30111789f4ccd282e4de319f059b3768",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ISectorCaliperROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "af4850c8d8e5848df948b4cfb56a55b4cfa306b37ece8f12644505972e363b62",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ISectorCaliperROI.cs",
+      "target_sha256": "1b5043176aa2692403929bdd870efad43b7f9897496ed7da70953f18a58049aa",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ISectorROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "05d0178aad50829436ac27a7a46746fc71a06fcbec0642a3269bd90067f0102d",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ISectorROI.cs",
+      "target_sha256": "1709ebe8ca17dba41a7bf58209277ee60489649651b3079bd28a66f4039674af",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ISeqRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "2a93fcccdaf9400cc126e93dad3395f98a90da4e82db2827ebdbd8089615bc32",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ISeqRectROI.cs",
+      "target_sha256": "041a24aa36d8d39307ab9ba37802501df5538944d128b8042def6e9ada5c35cc",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IShape.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "f8c17c58f6f3d0cffa3e16f42fa8a7feaa197bfd6058655afb7b82f5b07d8a67",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IShape.cs",
+      "target_sha256": "56d2a71c762f602cca29c59ed11b0b418c0c241cac718dd351af3e83e6aab2fa",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IShapeBase.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "b204991070895a18465b07923fb894a7dcfd88f4a24477554dd7c7cefe34b673",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IShapeBase.cs",
+      "target_sha256": "8d0189e8d7f839e6010f6e1a7c31aecde3bad8083da69973a69a087eab063d0c",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ISize.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "07cbfd368b1a3ef01d4f2b2064b5551e8b91c060c21d7f915ec50d2c2154ed02",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ISize.cs",
+      "target_sha256": "9813577350223a0c483a3766916fdd2bc5a83c3b3516b734f344177dd1b9b580",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IText.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7da2c5e68a9ed31f946c6f0b7e6ee258b9d6eed67be37762db9784175ec8fcd4",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IText.cs",
+      "target_sha256": "279bac905046566cd0aace2df33ce1c7449c3d2dd0aee79723ca4ae93daf928f",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IToolROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "b2667acb09a800f9a0d46dd0b4f8906bf11c554444e6d5df2397ebc8c48cf0c5",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IToolROI.cs",
+      "target_sha256": "cbfabebf8664080dd70592a077b4f8280b3ac924aaf8e7d2466188085843a1f6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\IUroRectROI.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "9997412206a32ec688ff005ae9b780eea4507fefb203c18d8d9003a90f18503f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/IUroRectROI.cs",
+      "target_sha256": "178c20882d41c132d8da52d73f2f198b3e1fd42e28fa7b4dc7763afe221532fe",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\RenderSatus.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "0264eb10e4017baf556a51de503cfbdb2de139a01ae88d2f7741d670d23a0c8d",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/RenderSatus.cs",
+      "target_sha256": "9ab9a35f8cdcf5f29d9420aaa25980ffe45b45b061acd3b31020d759b2b78ce0",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\RoiEventArgs.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "a0ed66e80d3ca6ceadb8f9d574669d68a915a91bebe1bafa4035ddfb425196fa",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/RoiEventArgs.cs",
+      "target_sha256": "4ad2fcb2c70cc49dc66ca62dc9e9d993da6d5d4dc3adae3063b927423808576d",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ROIFillType.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "f2560dd9f460ad137b3ec336ee5125a387de3bc426ac0ea432d88259c20e2c8f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ROIFillType.cs",
+      "target_sha256": "6c12e63b51111e6df153ab5f14c1d6f02801f0a9aeaa223d125a354f04730932",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\ROIUseType.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "d3c4ea23ddb5cf865852f75c1c2aaa73027de1300d5996e14a369a538e824d4a",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/ROIUseType.cs",
+      "target_sha256": "3e0922e015210239ff466c26f19d5af27054949cafc40b70fb5ed627872d4326",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\RoiWithTagEventArgs.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "070036643e4c92e0e2894c4035733f27650601e15e1656534614298ccf734bda",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/RoiWithTagEventArgs.cs",
+      "target_sha256": "9c305e3be3007b2445a876845f079ebf76f5f175588c5c358698325f318e247a",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.RenderInterface\\VMControls.RenderInterface\\VMColors.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+      "source_sha256": "7398316d050a82cbdbd6e6cccabc2a6c417f97f3242e92fe7aa467a7f4f1e0e0",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.RenderInterface/VMControls.RenderInterface/VMColors.cs",
+      "target_sha256": "fcde9b427a2971c42422e42dca8c806b508dc5396293bc2caefb614d850ddb37",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\NormalMultiplicationConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "65d4c713c7dfb2047ead1539346bcf1a5e2bb6b266b32dbedb6c0046797fb534",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/NormalMultiplicationConverter.cs",
+      "target_sha256": "25a403ea27bfa92a56c779c590d940ccc88bbb81e1f4b5a742fee8906892d016",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\RightFixdMultiplicationConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "0c74adb3f2cb855866d8ab0a0daf5f6e342033ab0247a93a9abfc6c6c44e66ac",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/RightFixdMultiplicationConverter.cs",
+      "target_sha256": "95189fa717d74729f91b03ae8db1ab9ea1e74e4886d852d95bffc2c53257c90c",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\RightFixdMultiplicationForCaliperConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "f5728523bf3237e0df6def9d0c804c092d36406fb14eb6fcc2a6eab8325fac7c",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/RightFixdMultiplicationForCaliperConverter.cs",
+      "target_sha256": "942a0b5d4672554f7b6466c2aa253e535afd247ef9028d3cec6c9a7151733c39",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\PointRightFixdMultiplicationConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "979a9b01071a22edb73c7feae019d8403bb9117317cdaf1e1873f09800b30e42",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointRightFixdMultiplicationConverter.cs",
+      "target_sha256": "de4268069c04c21f5747ba545778d19d93c53fa773e51d5f50e0415055f3c41f",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\PointListRightFixdMultiplicationConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "84dda1ea17e4fd452dd256be6235258bb5b8fe85f5a29c0e858b91d4663a5caf",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs",
+      "target_sha256": "be08dd9cb9773192ab2b501eedc1b65fb208153d9d6a255f5b5fbd7e5ad8a0ab",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\TypeFilterConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "6b725050f39157e84eb536f16a2bb4599a2f8bc232f3fd8f420384eca4dff42a",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/TypeFilterConverter.cs",
+      "target_sha256": "51bbcb4b80ae88bffb04a62e116a2c07f86f7a6d85cf19ef846dab0362f42ab9",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\MulParamsMultiplicationConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "5fbc51acc189fc781b539d9b48b463306d2030ec4745c25c5d8ae1f69324907c",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/MulParamsMultiplicationConverter.cs",
+      "target_sha256": "503057a4bb85597884c81bfd9644488ce1c8cd796feb8ebb12e7cc29b7e4ff79",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\NULLJudgeConverter.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "19f0fb0d7c3b2c4ddd725af552055f661be56a4b179a545567cb5ad656063e98",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/NULLJudgeConverter.cs",
+      "target_sha256": "476e6a56c3b40dbb896f405e77ff34adeda382f063ea1385ca28421f32b41d51",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIData\\DynamicResourceDictionary.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIData.dll",
+      "source_sha256": "fd19fd31377d338e431770add9822d5e7ee06f3c6d867a0023a9d2969c1a4955",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIData/DynamicResourceDictionary.cs",
+      "target_sha256": "2d43286e1d94c6603a6f43e51ee9e3ea403d477ba76a99e67881cbbc0ab12dbc",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIHelper\\UIExtern.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIHelper.dll",
+      "source_sha256": "327204731c9f5f0e4f2bfac03d40b4cf53e004b062f6cf2a81dbb12435c7a664",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIExtern.cs",
+      "target_sha256": "0bb75de43f766175c77503dcb3a64e798374c02ae4eba1e0d0e03e3003cc6192",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIHelper\\ObjectEventArgs.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIHelper.dll",
+      "source_sha256": "26b6370e89fa6c237e965f19ecac6016f692acfbbd0bf413556b16b401cb151f",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+      "target_sha256": "e93b86ba21a8bd8fc883deb5167615e528c2c499bad1612eda543dd994ab1d89",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIHelper\\ObjectEventHandler.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIHelper.dll",
+      "source_sha256": "ca5eb92058209310a475ba2bb4e08610470b71aa2e670ed4e77b28ca4a62c8ba",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventHandler.cs",
+      "target_sha256": "7baeee67b24a1d3427dd1d75df1a150d7940b53e3bd910e96d5cfffb89b7ca67",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VM.Utility\\DelegateCommand.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Utility.dll",
+      "source_sha256": "2d7ab1ee08ba56dda0806225eac0f4cdcd9e0951b0aed2e7b631e373a88d0074",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/DelegateCommand.cs",
+      "target_sha256": "2da3fc649319a2253301c3428c754dc5256168a4941236e63640c71d3793315d",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    }
+  ],
+  "type_map": {
+    "VMControls.RenderInterface.GlobalRenderVariable": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable",
+    "VMControls.RenderInterface.I3DBoxROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.I3DBoxROI",
+    "VMControls.RenderInterface.I3DROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.I3DROI",
+    "VMControls.RenderInterface.IAddROIWidthImageCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAddROIWidthImageCommand",
+    "VMControls.RenderInterface.IAngleEnable": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAngleEnable",
+    "VMControls.RenderInterface.IAngleShape": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAngleShape",
+    "VMControls.RenderInterface.IAnnularSector": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAnnularSector",
+    "VMControls.RenderInterface.IArrowPath": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IArrowPath",
+    "VMControls.RenderInterface.ICaliper": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICaliper",
+    "VMControls.RenderInterface.ICircle": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICircle",
+    "VMControls.RenderInterface.ICircleCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICircleCaliperROI",
+    "VMControls.RenderInterface.ICircleMesROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICircleMesROI",
+    "VMControls.RenderInterface.ICircleROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICircleROI",
+    "VMControls.RenderInterface.ICoordinateROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICoordinateROI",
+    "VMControls.RenderInterface.ICoordinateShape": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICoordinateShape",
+    "VMControls.RenderInterface.ICross": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICross",
+    "VMControls.RenderInterface.ICrossROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ICrossROI",
+    "VMControls.RenderInterface.IEllipse": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IEllipse",
+    "VMControls.RenderInterface.IEllipseROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IEllipseROI",
+    "VMControls.RenderInterface.IFullROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IFullROI",
+    "VMControls.RenderInterface.IGetROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IGetROI",
+    "VMControls.RenderInterface.IImageData": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IImageData",
+    "VMControls.RenderInterface.IImageDataExtern": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IImageDataExtern",
+    "VMControls.RenderInterface.IIndex": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IIndex",
+    "VMControls.RenderInterface.IIsVisible": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IIsVisible",
+    "VMControls.RenderInterface.ILine": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ILine",
+    "VMControls.RenderInterface.ILineCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ILineCaliperROI",
+    "VMControls.RenderInterface.ILineRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ILineRectROI",
+    "VMControls.RenderInterface.ILineROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ILineROI",
+    "VMControls.RenderInterface.IMatrix": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMatrix",
+    "VMControls.RenderInterface.IMatrixCircleROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMatrixCircleROI",
+    "VMControls.RenderInterface.IMatrixEnable": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMatrixEnable",
+    "VMControls.RenderInterface.IMicroPoint": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMicroPoint",
+    "VMControls.RenderInterface.IModuleResultView": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IModuleResultView",
+    "VMControls.RenderInterface.IMultiLineROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMultiLineROI",
+    "VMControls.RenderInterface.IMultiPoint": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMultiPoint",
+    "VMControls.RenderInterface.IMultiText": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IMultiText",
+    "VMControls.RenderInterface.INormalizedCircleCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedCircleCaliperROI",
+    "VMControls.RenderInterface.INormalizedCircleMesROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedCircleMesROI",
+    "VMControls.RenderInterface.INormalizedCircleROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedCircleROI",
+    "VMControls.RenderInterface.INormalizedLineCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedLineCaliperROI",
+    "VMControls.RenderInterface.INormalizedLineRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedLineRectROI",
+    "VMControls.RenderInterface.INormalizedLineROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedLineROI",
+    "VMControls.RenderInterface.INormalizedMatrixCircleROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedMatrixCircleROI",
+    "VMControls.RenderInterface.INormalizedOverSectorROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedOverSectorROI",
+    "VMControls.RenderInterface.INormalizedPointROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedPointROI",
+    "VMControls.RenderInterface.INormalizedPolygonCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedPolygonCaliperROI",
+    "VMControls.RenderInterface.INormalizedPolygonMaskROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedPolygonMaskROI",
+    "VMControls.RenderInterface.INormalizedPolygonROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedPolygonROI",
+    "VMControls.RenderInterface.INormalizedRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedRectROI",
+    "VMControls.RenderInterface.INormalizedROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedROI",
+    "VMControls.RenderInterface.INormalizedSectorCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedSectorCaliperROI",
+    "VMControls.RenderInterface.INormalizedSectorROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedSectorROI",
+    "VMControls.RenderInterface.INormalizedSeqRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedSeqRectROI",
+    "VMControls.RenderInterface.INormalizedUroRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.INormalizedUroRectROI",
+    "VMControls.RenderInterface.IOutlinePoint": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IOutlinePoint",
+    "VMControls.RenderInterface.IOverSectorROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IOverSectorROI",
+    "VMControls.RenderInterface.IPoint": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPoint",
+    "VMControls.RenderInterface.IPointROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPointROI",
+    "VMControls.RenderInterface.IPointSet": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPointSet",
+    "VMControls.RenderInterface.IPolygon": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolygon",
+    "VMControls.RenderInterface.IPolygonCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolygonCaliperROI",
+    "VMControls.RenderInterface.IPolygonMaskROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolygonMaskROI",
+    "VMControls.RenderInterface.IPolygonROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolygonROI",
+    "VMControls.RenderInterface.IPolyline": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolyline",
+    "VMControls.RenderInterface.IPolylineROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPolylineROI",
+    "VMControls.RenderInterface.IPorfileImageData": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IPorfileImageData",
+    "VMControls.RenderInterface.IProfileROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IProfileROI",
+    "VMControls.RenderInterface.IRangeImageData": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRangeImageData",
+    "VMControls.RenderInterface.IRectangle": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectangle",
+    "VMControls.RenderInterface.IRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRectROI",
+    "VMControls.RenderInterface.IROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROI",
+    "VMControls.RenderInterface.IROICheck": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROICheck",
+    "VMControls.RenderInterface.IROIClone": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIClone",
+    "VMControls.RenderInterface.IROIColor": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIColor",
+    "VMControls.RenderInterface.IROIExternParam": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIExternParam",
+    "VMControls.RenderInterface.IROILabel": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROILabel",
+    "VMControls.RenderInterface.IROIPaste": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIPaste",
+    "VMControls.RenderInterface.IROIRegister": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIRegister",
+    "VMControls.RenderInterface.IROISelectable": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROISelectable",
+    "VMControls.RenderInterface.IROISign": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROISign",
+    "VMControls.RenderInterface.IROIType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIType",
+    "VMControls.RenderInterface.IROIUIType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIUIType",
+    "VMControls.RenderInterface.IROIUserType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIUserType",
+    "VMControls.RenderInterface.IROIVisible": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IROIVisible",
+    "VMControls.RenderInterface.IRoundedRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IRoundedRectROI",
+    "VMControls.RenderInterface.ISectorCaliperROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ISectorCaliperROI",
+    "VMControls.RenderInterface.ISectorROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ISectorROI",
+    "VMControls.RenderInterface.ISeqRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ISeqRectROI",
+    "VMControls.RenderInterface.IShape": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IShape",
+    "VMControls.RenderInterface.IShapeBase": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IShapeBase",
+    "VMControls.RenderInterface.ISize": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ISize",
+    "VMControls.RenderInterface.IText": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IText",
+    "VMControls.RenderInterface.IToolROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IToolROI",
+    "VMControls.RenderInterface.IUroRectROI": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IUroRectROI",
+    "VMControls.RenderInterface.RenderSatus": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.RenderSatus",
+    "VMControls.RenderInterface.RoiEventArgs": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.RoiEventArgs",
+    "VMControls.RenderInterface.ROIFillType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ROIFillType",
+    "VMControls.RenderInterface.ROIUseType": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.ROIUseType",
+    "VMControls.RenderInterface.RoiWithTagEventArgs": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.RoiWithTagEventArgs",
+    "VMControls.RenderInterface.VMColors": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.VMColors",
+    "Apps.BaseData.NormalMultiplicationConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.NormalMultiplicationConverter",
+    "Apps.BaseData.RightFixdMultiplicationConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.RightFixdMultiplicationConverter",
+    "Apps.BaseData.RightFixdMultiplicationForCaliperConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.RightFixdMultiplicationForCaliperConverter",
+    "Apps.BaseData.PointRightFixdMultiplicationConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.PointRightFixdMultiplicationConverter",
+    "Apps.BaseData.PointListRightFixdMultiplicationConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.PointListRightFixdMultiplicationConverter",
+    "Apps.BaseData.TypeFilterConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.TypeFilterConverter",
+    "Apps.BaseData.MulParamsMultiplicationConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.MulParamsMultiplicationConverter",
+    "Apps.BaseData.NULLJudgeConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.NULLJudgeConverter",
+    "Apps.BaseData.DynamicResourceDictionary": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.DynamicResourceDictionary",
+    "Apps.UIHelper.Extern.UIExtern": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIExtern",
+    "Apps.UIHelper.Extern.ObjectEventArgs": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventArgs",
+    "Apps.UIHelper.Extern.ObjectEventHandler": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventHandler",
+    "VM.Utility.DelegateCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility.DelegateCommand"
+  },
+  "not_claimed": [
+    "Not a second workflow or algorithm model",
+    "No vendor DLL deployed",
+    "Compilation and host consumption still require verification"
+  ]
+}

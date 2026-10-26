@@ -8,7 +8,10 @@ using System.Windows.Input;
 using Apps.Localization;
 using Apps.XmlParser.ParamTab;
 using Mvvm.Commands;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 using VM.PlatformSDKCS;
 

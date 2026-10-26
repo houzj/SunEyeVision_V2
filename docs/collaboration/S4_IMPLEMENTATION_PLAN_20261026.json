@@ -2,8 +2,8 @@
   "stage": "S4",
   "status": "UI_REVIEW_REQUIRED",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "四继承后台与真实面板已接，typed调试新run仍待闭合。用户范围已明确为整套VM控件库全部移植，不限Blob或31类；资源路定位7目录、正式去重控件数待inventory。本轮已直接导入5个原style和17张原PNG，替换Radio/眼睛/笔链/数值模式动作的手画或近似实现；仅作资源加载及两态绑定适配。当前native资源候选9组ROI、4组窗口和8组宿主链实跑通过；006独评7组另保旧身份，整体布局/弹窗、全库迁移、VS/人工及旧消费者未完成。",
-  "summaryStatus": "首批原style/PNG已移植并回归；整套VM库与Blob原样组装继续，整体UI未完成",
+  "current": "主仓已合入数值、输入和显示三路原源码，基线244f69a0；公共样式、组合层和依赖归一仍为未提交候选。真实视觉依赖按5个安装原件SHA迁入114个源码文件/类型映射（含接口、事件、转换器，并非113种控件）。007通过XAML阶段，015全量Release仍有121错误/233警告，主要为厂商依赖及源码/XAML配对，尚未进入本候选运行验收。原预览已补数值双向同步、Enter确认失焦、数量滑条、图形四行配置/二层默认更多色板及内侧焦点提示；仅静态和DOM替身检查通过。历史可运行检查点b87fb685的成绩不代表当前候选。 本轮另修复基础三工程Release输出路径、补齐Tool.Kernels解决方案项；主题颜色改为窗口级加载原资源，移除厂商路径与全局注入。",
+  "summaryStatus": "三路源码已合并；全量Release构建修复中，当前候选未可试用，整体UI未验收",
   "rows": [
     [
       "整套库范围",
@@ -136,49 +136,55 @@
   ],
   "checks": [
     {
-      "name": "当前原资源全量Release",
+      "name": "当前源码候选全量Release（未通过）",
+      "result": "015：121错误/233警告14.01秒；真实原件依赖、已映射using的追加分组与窗口级主题适配已接，基础三工程正式Release路径已在日志确认；缺厂商模型/本地化和XAML配对仍未闭合，未作当前候选运行验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-015.log",
+      "sha256": "33c76eb0ff58506767a1cd08244766fe9526c04f46caa088e9136afb57b779c9"
+    },
+    {
+      "name": "历史检查点：当前原资源全量Release",
       "result": "build-vm-native-resources-002：0错误/881警告30.25秒，a6f58334+当前未提交原资源/ROI增量。",
       "path": "Release/_validation/O06-RoiCore-20261026/build-vm-native-resources-002.log",
       "sha256": "df1611265ba4c4e4917692989bbb20badfd8e8e73ac981b72ba4df3eaf1b91fc"
     },
     {
-      "name": "原资源导入身份",
+      "name": "历史检查点：原资源导入身份",
       "result": "5原style/17原PNG；provenance记录原路径及SHA，17目标PNG逐项与记录一致。import_vm_field_resources.py可复现，适配范围仅pack URI与两态bool绑定；并非整库控件计数。",
       "path": "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json",
       "sha256": "e801dc2803f36f188e7f129db932b4f54c4de21735550f65a2f174e929c2c124"
     },
     {
-      "name": "本轮ROI9组与窗口4组",
+      "name": "历史检查点：本轮ROI9组与窗口4组",
       "result": "RoiEditing018 exit0九组、WindowPresentation007 exit0四组；含当前原style加载的四面板/草稿/模态来源、范围宽度/对比/滚动等定向回归，不是整体UI或人工验收。",
       "path": "Release/_validation/S4-20261025/RoiEditing/attempt-018/receipt.json",
       "sha256": "d1286029587cf98bb1f37d926128abbdd64d103b0fabd6ff657cb6fe34d8612e"
     },
     {
-      "name": "本轮原资源后宿主链8组",
+      "name": "历史检查点：本轮原资源后宿主链8组",
       "result": "FullChain030 exit0八组，使用本轮native资源候选实际复跑；不沿用006/029成绩，不因此声称新四继承typed调试run已接通。",
       "path": "Release/_validation/S4-20261025/FullChain/attempt-030/receipt.json",
       "sha256": "8a157d949e8a20011bc547f61ccea39579d709bff5f38b53ae9ac94ebb83d95e"
     },
     {
-      "name": "006候选独评7组（历史身份）",
+      "name": "历史检查点：006候选独评7组（历史身份）",
       "result": "7PASS/0FAIL exit0，2295源侧文件/766payload前后无变化、34正式装载；核多槽/禁用恢复、坏存储活动性、同项写回/外层取消、弹窗删源/改声明、Radio键盘和Esc切页。无current-run native执行、无新增save roundtrip；非当前原资源候选。",
       "path": "Release/_validation/O06-Window-20261026/roi-ui-frozen-independent/receipt-roi-ui-006-independent.json",
       "sha256": "8787cf73d16513f883f7adc3a312d91a18cd501abdfb9194aeb73465613c82d1"
     },
     {
-      "name": "首轮pack URI失败与旧fixture失败",
+      "name": "历史检查点：首轮pack URI失败与旧fixture失败",
       "result": "原资源首轮运行找不到vmfieldstyles.xaml，原日志保留；改绝对组件pack URI后回归。旧Window004 Combo强转失败及006前Radio近似状态仍保历史，不抹成直接通过。",
       "path": "Release/_validation/O06-RoiCore-20261026/roi-native-resources.log",
       "sha256": "b33b0f1762a1fb65fddb00040c66cafd3537ac7eee2cb517f093406c52d41a04"
     },
     {
-      "name": "范围与验收边界",
+      "name": "历史检查点：范围与验收边界",
       "result": "四继承backend12/面板9等原成绩保各候选；当前5style/17PNG不等于全库完成，typed调试新run、布局/弹窗、旧消费者、VS和人工仍未闭合。"
     }
   ],
-  "sourceBaseline": "a6f58334ac9eb4bd67cdfd74896798681d0f1ed5",
+  "sourceBaseline": "244f69a0 + 当前未提交归一与依赖适配；不能复用历史PASS",
   "productIdentity": "当前为HEAD a6f58334+未提交ROI与原资源增量；本轮native资源002全量0/881/30.25秒，RoiEditing018/Window007/FullChain030实跑通过。006独评7组只对应006旧候选，F28算法资源成绩仅保历史；不是最终已提交交付版本。",
-  "next": "按7目录正式inventory确认去重控件清单与VMControls.WPF双版边界，移植整套库并用原控件/模板原样组装Blob；同时接通typed继承调试新run，逐项完成资源依赖/旧消费者/同态外观核收，再作VS与集中用户验证。",
+  "next": "先闭合跨组类型、真实依赖及成对XAML编译；接通Blob实际字段/ROI/显示组合和typed调试同run；全量Release成功后，在正式发布目录执行控件、完整链及关联回归，再集中收集用户实测，按31项完成消费者退出。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",

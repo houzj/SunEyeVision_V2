@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front" xmlns:controls="clr-namespace:FrontendUI.Design.Controls;assembly=FrontendUI.Design">
   <Style x:Key="DockControl" TargetType="{x:Type local:DockControl}">
     <Setter Property="Template">
       <Setter.Value>
@@ -15,7 +15,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="auto" />
               </Grid.ColumnDefinitions>
-              <ContentPresenter xmlns:controls="clr-namespace:FrontendUI.Design.Controls;assembly=FrontendUI.Design" Content="{TemplateBinding controls:DockControl.LeftBar}" />
+              <ContentPresenter Content="{TemplateBinding controls:DockControl.LeftBar}" />
               <ContentPresenter Grid.Column="1" Content="{TemplateBinding DockControl.Content}" />
               <ContentPresenter Grid.Column="2" Content="{TemplateBinding DockControl.RightBar}" />
             </Grid>

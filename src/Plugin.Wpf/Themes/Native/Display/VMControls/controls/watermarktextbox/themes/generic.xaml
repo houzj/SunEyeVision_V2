@@ -30,7 +30,7 @@
     <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
     <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-    <Setter Property="local:WatermarkTextBox.WatermarkTemplate" Value="{StaticResource DefaultWatermarkTemplate}" />
+    <Setter Property="{x:Static local:WatermarkTextBox.WatermarkTemplateProperty}" Value="{StaticResource DefaultWatermarkTemplate}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type local:WatermarkTextBox}">

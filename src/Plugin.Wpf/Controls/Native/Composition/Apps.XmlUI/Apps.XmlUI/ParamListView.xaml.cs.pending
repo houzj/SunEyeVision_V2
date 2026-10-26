@@ -1,0 +1,87 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using Apps.Localization;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public partial class ParamListView : ItemsControl, IComponentConnector
+{
+	private double CustomParamCHWidth = 89.0;
+
+	public static readonly DependencyProperty CustomParamENWidthProperty = DependencyProperty.Register("CustomParamENWidth", typeof(double), typeof(ParamListView), new PropertyMetadata(170.0, CustomParamENWidthChanged));
+
+	public static readonly DependencyProperty ChildLeftWidthProperty = DependencyProperty.Register("ChildLeftWidth", typeof(double), typeof(ParamListView), new PropertyMetadata(89.0));
+
+	public static readonly DependencyProperty ChildMarginProperty = DependencyProperty.Register("ChildMargin", typeof(Thickness), typeof(ParamListView), new PropertyMetadata(new Thickness(32.0, 1.0, 32.0, 0.0)));
+
+	public static readonly DependencyProperty ChildHeaderMarginProperty = DependencyProperty.Register("ChildHeaderMargin", typeof(Thickness), typeof(ParamListView), new PropertyMetadata(new Thickness(32.0, 0.0, 0.0, 8.0)));
+
+	public object Instance => this;
+
+	public double CustomParamENWidth
+	{
+		get
+		{
+			return (double)GetValue(CustomParamENWidthProperty);
+		}
+		set
+		{
+			SetValue(CustomParamENWidthProperty, value);
+		}
+	}
+
+	public double ChildLeftWidth
+	{
+		get
+		{
+			return (double)GetValue(ChildLeftWidthProperty);
+		}
+		set
+		{
+			SetValue(ChildLeftWidthProperty, value);
+		}
+	}
+
+	public Thickness ChildMargin
+	{
+		get
+		{
+			return (Thickness)GetValue(ChildMarginProperty);
+		}
+		set
+		{
+			SetValue(ChildMarginProperty, value);
+		}
+	}
+
+	public Thickness ChildHeaderMargin
+	{
+		get
+		{
+			return (Thickness)GetValue(ChildHeaderMarginProperty);
+		}
+		set
+		{
+			SetValue(ChildHeaderMarginProperty, value);
+		}
+	}
+
+	private static void CustomParamENWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ParamListView paramListView)
+		{
+			double num = ((AppLocalizationService.GetLang("Language") == "English") ? paramListView.CustomParamENWidth : paramListView.CustomParamCHWidth);
+			if (paramListView.ChildLeftWidth != num)
+			{
+				paramListView.ChildLeftWidth = num;
+			}
+		}
+	}
+
+	public ParamListView()
+	{
+		InitializeComponent();
+		ChildLeftWidth = ((AppLocalizationService.GetLang("Language") == "English") ? CustomParamENWidth : CustomParamCHWidth);
+	}
+}

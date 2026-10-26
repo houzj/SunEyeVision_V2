@@ -1707,7 +1707,9 @@
       "suneyevision.plugin.wpf": {
         "type": "Project",
         "dependencies": {
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+          "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "System.Management": "[7.0.0, )"
         }
       },
       "suneyevision.tool.kernels": {

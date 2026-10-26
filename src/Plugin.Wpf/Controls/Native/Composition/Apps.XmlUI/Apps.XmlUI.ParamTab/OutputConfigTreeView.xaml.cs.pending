@@ -1,0 +1,62 @@
+using System;
+using System.Collections;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public partial class OutputConfigTreeView : UserControl, IComponentConnector, IStyleConnector
+{
+	public delegate void TreeNodeDoubleClick(object sender, ObjectEventArgs e);
+
+	public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IList), typeof(OutputConfigTreeView), new PropertyMetadata(null));
+
+	public IList ItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemsSourceProperty, value);
+		}
+	}
+
+	public event TreeNodeDoubleClick OnTreeNodeDoubleClick;
+
+	public OutputConfigTreeView()
+	{
+		InitializeComponent();
+	}
+
+	private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		if (sender is ScrollViewer scrollViewer)
+		{
+			scrollViewer.Focus();
+			double num = Math.Abs(e.Delta / 2);
+			double num2 = 0.0;
+			num2 = ((e.Delta <= 0) ? Math.Min(scrollViewer.ScrollableHeight, scrollViewer.VerticalOffset + num) : Math.Max(0.0, scrollViewer.VerticalOffset - num));
+			if (num2 != scrollViewer.VerticalOffset)
+			{
+				scrollViewer.ScrollToVerticalOffset(num2);
+				e.Handled = true;
+			}
+		}
+	}
+
+	private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is TreeViewItem treeViewItem && treeViewItem.Items.Count == 0 && OnTreeNodeDoubleClick != null)
+		{
+			ObjectEventArgs e2 = new ObjectEventArgs();
+			e2.Param = (sender as FrameworkElement).DataContext;
+			ObjectEventArgs e3 = e2;
+			OnTreeNodeDoubleClick(sender, e3);
+		}
+	}
+}

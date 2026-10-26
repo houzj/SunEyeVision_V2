@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UserControl xmlns:nativeNumeric0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;assembly=SunEyeVision.Plugin.Wpf" x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.IPTextBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView">
+<UserControl xmlns:nativeNumeric0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView" x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.IPTextBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Style x:Key="{x:Type nativeNumeric0:NumbericTextBox}" TargetType="{x:Type nativeNumeric0:NumbericTextBox}">

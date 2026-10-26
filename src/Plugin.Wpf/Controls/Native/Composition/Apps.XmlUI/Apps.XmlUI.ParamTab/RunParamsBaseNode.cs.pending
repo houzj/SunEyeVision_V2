@@ -1,0 +1,223 @@
+using System.ComponentModel;
+using System.Linq;
+using Apps.Interface;
+using Apps.XmlParser.ParamTab;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public class RunParamsBaseNode : IOutputTree, IPropertyChanged, INotifyPropertyChanged
+{
+	private bool _outputEnabled = false;
+
+	private IOutputTree _parentTree;
+
+	public object TargetObject = null;
+
+	private bool? checkEnabled = null;
+
+	public bool OutputEnabled
+	{
+		get
+		{
+			return _outputEnabled;
+		}
+		set
+		{
+			if (value != _outputEnabled)
+			{
+				_outputEnabled = value;
+				OnPropertyChanged("OutputEnabled");
+				OnPropertyChangedParentTree("OutputEnabled");
+			}
+		}
+	}
+
+	public IOutputTree ParentTree
+	{
+		get
+		{
+			return _parentTree;
+		}
+		set
+		{
+			_parentTree = value;
+		}
+	}
+
+	public string DisplayNameA
+	{
+		get
+		{
+			if (!(TargetObject is NameValueItem { MultiLanguageDisplayNameA: var multiLanguageDisplayNameA }))
+			{
+				if (TargetObject is DynamicIO dynamicIO)
+				{
+					if (dynamicIO.NameA.First() == '%' && dynamicIO.NameA.Last() == '%' && dynamicIO.NameA.Length > 1)
+					{
+						return dynamicIO.NameA.Substring(1, dynamicIO.NameA.Length - 2);
+					}
+					return dynamicIO.NameA;
+				}
+				return null;
+			}
+			return multiLanguageDisplayNameA;
+		}
+	}
+
+	public string FunllParamsNameA
+	{
+		get
+		{
+			if (!(TargetObject is NameValueItem { FullDisplayName: var fullDisplayName }))
+			{
+				if (TargetObject is DynamicIO dynamicIO)
+				{
+					return dynamicIO.IoDataSource.Root.FullName + "." + DisplayIoName(dynamicIO.NameA);
+				}
+				return null;
+			}
+			return fullDisplayName;
+		}
+	}
+
+	public string DisplayType
+	{
+		get
+		{
+			if (TargetObject is NameValueItem { DisplayType: var displayType })
+			{
+				return displayType;
+			}
+			if (!(TargetObject is DynamicIO { ValueTypeA: var valueTypeA }))
+			{
+				return null;
+			}
+			return valueTypeA;
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			if (TargetObject is NameValueItem { NameA: var nameA })
+			{
+				return nameA;
+			}
+			if (!(TargetObject is DynamicIO { NameA: var nameA2 }))
+			{
+				return null;
+			}
+			return nameA2;
+		}
+	}
+
+	public uint? ModuleID
+	{
+		get
+		{
+			if (TargetObject is NameValueItem nameValueItem)
+			{
+				return nameValueItem.GetVmModule()?.ID;
+			}
+			if (TargetObject is DynamicIO { IoDataSource: var ioDataSource })
+			{
+				return ioDataSource?.Root.ID;
+			}
+			return null;
+		}
+	}
+
+	public bool IsSupportSub
+	{
+		get
+		{
+			if (TargetObject == null)
+			{
+				return false;
+			}
+			if (TargetObject is NameValueItem)
+			{
+				return TargetObject is ISubInfo && (TargetObject as NameValueItem).SubscribeVisibleA;
+			}
+			return false;
+		}
+	}
+
+	public bool? CheckEnabled
+	{
+		get
+		{
+			return checkEnabled;
+		}
+		set
+		{
+			if (checkEnabled != value)
+			{
+				checkEnabled = value;
+				OnPropertyChanged("CheckEnabled");
+				OnPropertyChangedParentTree("CheckEnabled");
+			}
+		}
+	}
+
+	public string RunParamIoType
+	{
+		get
+		{
+			if (TargetObject == null)
+			{
+				return "";
+			}
+			if (!(TargetObject is ISubInfo { ComType: var comType }))
+			{
+				return "";
+			}
+			return comType;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	public string DisplayIoName(string name)
+	{
+		if (name.First() == '%' && name.Last() == '%' && name.Length > 1)
+		{
+			return name.Substring(1, name.Length - 2);
+		}
+		return name;
+	}
+
+	public void OnPropertyChangedParentTree(string name)
+	{
+		ParentTree?.OnPropertyChanged(name);
+		ParentTree?.OnPropertyChangedParentTree(name);
+	}
+
+	private string RunParmTypeConvertToType()
+	{
+		string text = DisplayType;
+		if (string.IsNullOrEmpty(text))
+		{
+			return "";
+		}
+		switch (text)
+		{
+		case "Integer":
+			text = "int";
+			break;
+		case "Float":
+			text = "float";
+			break;
+		case "String":
+			text = "string";
+			break;
+		}
+		return text;
+	}
+}

@@ -1,6 +1,21 @@
 {
-  "adaptation": "pack URI and direct two-state Boolean bindings only",
+  "adaptation": "namespace/pack URI, direct two-state Boolean binding, host-localized tab header/selection",
   "sources": [
+    {
+      "dictionary": "VmSliderDictionary.xaml",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceSliderDictionary.xaml",
+      "sha256": "c119dfbd74285c6d350ba8a9f56e5b6983f8f651e6c5fefb94e8df016332b5d0"
+    },
+    {
+      "asset": "滑块_click.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resources\\滑块_click.png",
+      "sha256": "3f197d0f354f0fb1ea8ee7c336626366baa6345bb2efbc4f9181ed42d31e56d2"
+    },
+    {
+      "asset": "滑块_normal.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resources\\滑块_normal.png",
+      "sha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2"
+    },
     {
       "key": "NormalRadioButton",
       "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
@@ -27,6 +42,11 @@
       "sha256": "35f372f7d09c0f46f69b1f9ecae0a9df953e5b5960c9ed1c68bb6661bc746aa5"
     },
     {
+      "asset": "not-_see_click.png",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\not-_see_click.png",
+      "sha256": "0f3c941dfd11a5f8f66a5079ee6b5fc20e62994ecceee89e3784112426e3000a"
+    },
+    {
       "asset": "see_normal.png",
       "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\see_normal.png",
       "sha256": "c27b13b2cf090268b01a1e48f2c7748253fea5f6f8deb56bf37396422d9078c7"
@@ -37,14 +57,14 @@
       "sha256": "904629a4350dc526e576e4de88768fcdd8dff722fb1ad4950c950a234d4f46e3"
     },
     {
-      "asset": "not-_see_click.png",
-      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\not-_see_click.png",
-      "sha256": "0f3c941dfd11a5f8f66a5079ee6b5fc20e62994ecceee89e3784112426e3000a"
-    },
-    {
       "key": "NativeLinkButton",
       "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
       "sha256": "05a35c93f09f66d11584261b5558d8ad47fc0467b0fa4fb040f42510f883f16f"
+    },
+    {
+      "asset": "combo_ic_关联_click.png",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_click.png",
+      "sha256": "c1c062a0866b15a7b741519e4a863a96082c788f31f4ca94e71fa11e5068c8bd"
     },
     {
       "asset": "combo_ic_关联_normal.png",
@@ -57,24 +77,19 @@
       "sha256": "071249f8f391fb02deb36c49cdbcfd9e4acf595365bc00314eda95595dafc3e2"
     },
     {
-      "asset": "combo_ic_关联_click.png",
-      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_click.png",
-      "sha256": "c1c062a0866b15a7b741519e4a863a96082c788f31f4ca94e71fa11e5068c8bd"
-    },
-    {
       "key": "NativeDisplayPopupButton",
       "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
       "sha256": "05a35c93f09f66d11584261b5558d8ad47fc0467b0fa4fb040f42510f883f16f"
     },
     {
-      "asset": "edit_normal.png",
-      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_normal.png",
-      "sha256": "1dbf4f14abf519f7c04332802bfaea70fa1b063d7c433a628e420e7ce38334c2"
-    },
-    {
       "asset": "edit_click.png",
       "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_click.png",
       "sha256": "a7b3fe62930d3a17fbd5029c5950b324a089b07212c0b00954ca226ed1ef7315"
+    },
+    {
+      "asset": "edit_normal.png",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_normal.png",
+      "sha256": "1dbf4f14abf519f7c04332802bfaea70fa1b063d7c433a628e420e7ce38334c2"
     },
     {
       "key": "EditLinkButton",
@@ -87,11 +102,6 @@
       "sha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984"
     },
     {
-      "asset": "ic_btn_link切换_normal.png",
-      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_link切换_normal.png",
-      "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
-    },
-    {
       "asset": "ic_btn_edit切换_disable.png",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_disable.png",
       "sha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904"
@@ -102,14 +112,59 @@
       "sha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803"
     },
     {
+      "asset": "ic_btn_edit切换_click.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_click.png",
+      "sha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+    },
+    {
       "asset": "ic_btn_edit切换_normal.png",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_normal.png",
       "sha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf"
     },
     {
-      "asset": "ic_btn_edit切换_click.png",
-      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_click.png",
-      "sha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+      "asset": "ic_btn_link切换_normal.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_link切换_normal.png",
+      "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
+    },
+    {
+      "key": "SliderStyle1",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
+      "sha256": "05a35c93f09f66d11584261b5558d8ad47fc0467b0fa4fb040f42510f883f16f"
+    },
+    {
+      "key": "Orange_ButtonStyle",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceBottomButtons.xaml",
+      "sha256": "2d617c585407e400f260aa4fa9ad9b8f5a405db54b1b447fba39c391f026c196"
+    },
+    {
+      "key": "TopTabItemStyle",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\itemscontrolstyle\\itemscontrolstyle.xaml",
+      "sha256": "fb05637d2c3bc8b556d8c0c095d852dda97fb18d9414fbc2fafe987932913027"
+    },
+    {
+      "key": "TabControlStyle",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\itemscontrolstyle\\itemscontrolstyle.xaml",
+      "sha256": "fb05637d2c3bc8b556d8c0c095d852dda97fb18d9414fbc2fafe987932913027"
+    },
+    {
+      "control": "SourceBooleanToggle.xaml",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceBooleanToggle.xaml",
+      "sha256": "36bf2567b426bb0a8b14564f8df6286da91f1687ca1ce63bf72fe3462c30026e"
+    },
+    {
+      "control": "SourceBooleanToggle.xaml.cs",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceBooleanToggle.xaml.cs",
+      "sha256": "d7e887926e481cc0602a951f14155ba1921c0ce31df5b9ef0ec3883e77619563"
+    },
+    {
+      "asset": "swith_off.png",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\swith_off.png",
+      "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+    },
+    {
+      "asset": "swith_on.png",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\swith_on.png",
+      "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
     }
   ]
 }

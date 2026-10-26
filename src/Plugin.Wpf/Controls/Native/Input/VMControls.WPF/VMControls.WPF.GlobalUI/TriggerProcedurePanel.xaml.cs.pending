@@ -12,7 +12,10 @@ using System.Windows.Markup;
 using Apps.ErrorCode;
 using Apps.Localization;
 using Apps.Log;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.PlatformSDKCS;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;

@@ -17,28 +17,32 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
 using Apps.Data;
 using Apps.Data.ShapeDefine;
 using Apps.ErrorCode;
 using Apps.Interface;
 using Apps.Localization;
 using Apps.Log;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.XmlParser;
 using Apps.XmlParser.ParamTab;
 using Hik.Util;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using Mvvm.Commands;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 using VM.PlatformSDKCS;
-using VMBaseControls;
-using VMBaseControls.Base.ImageView.Shape;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
 using VMControls.BaseInterface;
 using VMControls.Interface;
-using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
 using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
 
@@ -1751,8 +1755,8 @@ public partial class ModuleResultView : System.Windows.Controls.UserControl, INo
 				ArrowPath arrowPath = Apps.Data.ShapeDefine.Path.GetArrowPath(shapes);
 				if (arrowPath != null)
 				{
-					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { arrowPath }, m_CurrentInfo.ShapeList, imageView);
-					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView);
+					SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { arrowPath }, m_CurrentInfo.ShapeList, imageView);
+					SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView);
 				}
 				break;
 			}
@@ -1761,15 +1765,15 @@ public partial class ModuleResultView : System.Windows.Controls.UserControl, INo
 				Polyline polyline = Polyline.GetPolyline(shapes);
 				if (polyline != null)
 				{
-					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { polyline }, m_CurrentInfo.ShapeList, imageView);
-					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView);
+					SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { polyline }, m_CurrentInfo.ShapeList, imageView);
+					SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView);
 				}
 				break;
 			}
 			case "shepematrix":
 				break;
 			default:
-				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView, displayobj.IsLowQuality);
+				SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView, displayobj.IsLowQuality);
 				break;
 			}
 		}
@@ -2572,10 +2576,4 @@ public partial class ModuleResultView : System.Windows.Controls.UserControl, INo
 		return imageView;
 	}
 
-	[DebuggerNonUserCode]
-	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-	internal Delegate _CreateDelegate(Type delegateType, string handler)
-	{
-		return Delegate.CreateDelegate(delegateType, this, handler);
-	}
 }

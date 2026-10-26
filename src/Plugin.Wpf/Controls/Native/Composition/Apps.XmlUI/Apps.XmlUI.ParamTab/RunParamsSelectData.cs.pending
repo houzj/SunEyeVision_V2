@@ -1,0 +1,385 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+
+public class RunParamsSelectData : INotifyPropertyChanged, IDecorate
+{
+	public static readonly string[] allType = null;
+
+	public static readonly string[] intType = new string[2] { "integer", "integerbettween" };
+
+	public static readonly string[] floatType = new string[2] { "float", "floatbettween" };
+
+	public static readonly string[] stringType = new string[3] { "string", "stringcompare", "stringex" };
+
+	public Dictionary<int, IList<RunParamsBaseNode>> AllModuleRunParams = new Dictionary<int, IList<RunParamsBaseNode>>();
+
+	private IEnumerable EnumEntrys;
+
+	private List<RunParamsBaseNode> RunParams = null;
+
+	public List<RunParamsBaseNode> SelectRunParams = null;
+
+	public List<RunParamsBaseNode> OtherSelectedRunParmas = null;
+
+	public string SelectedVarType = "";
+
+	public bool IsFromVarBind = false;
+
+	public virtual int MaxCheckedCount
+	{
+		get
+		{
+			if (IsFromVarBind)
+			{
+				return int.MaxValue;
+			}
+			return 32;
+		}
+	}
+
+	public List<string> SelectedType => new List<string>
+	{
+		AppLocalizationService.GetLang("All_Type"),
+		AppLocalizationService.GetLang("Lang_Integer"),
+		AppLocalizationService.GetLang("Lang_Float"),
+		AppLocalizationService.GetLang("Lang_String")
+	};
+
+	public IEnumerable EnumEntrysA
+	{
+		get
+		{
+			return EnumEntrys;
+		}
+		set
+		{
+			EnumEntrys = value;
+			OnPropertyChanged("EnumEntrysA");
+		}
+	}
+
+	public string WindowTitle { get; set; }
+
+	public List<RunParamsBaseNode> RunParamsA
+	{
+		get
+		{
+			return RunParams;
+		}
+		set
+		{
+			RunParams = value;
+			OnPropertyChanged("RunParamsA");
+		}
+	}
+
+	public object DecorateSource { get; set; }
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string proName)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(proName));
+	}
+
+	public virtual void GetSelectRunParams(int index)
+	{
+		string[] valueType = GetValueType(index);
+		bool isAllType = false;
+		if (valueType == null)
+		{
+			isAllType = true;
+		}
+		EnumEntrysA = GetRunParamsTree(valueType, ref AllModuleRunParams, SelectRunParams, SelectedVarType, isAllType);
+		if (RunParamsA == null)
+		{
+			RunParamsA = GetRunParams();
+		}
+	}
+
+	public List<RunParamsBaseNode> GetRunParams()
+	{
+		List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+		if (AllModuleRunParams != null)
+		{
+			foreach (KeyValuePair<int, IList<RunParamsBaseNode>> allModuleRunParam in AllModuleRunParams)
+			{
+				if (allModuleRunParam.Value != null)
+				{
+					list.AddRange(allModuleRunParam.Value);
+				}
+			}
+		}
+		return list;
+	}
+
+	public virtual bool GetSelectedRunParams()
+	{
+		List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+		if (AllModuleRunParams != null)
+		{
+			foreach (KeyValuePair<int, IList<RunParamsBaseNode>> allModuleRunParam in AllModuleRunParams)
+			{
+				if (allModuleRunParam.Value != null)
+				{
+					list.AddRange(allModuleRunParam.Value.Where((RunParamsBaseNode x) => x.OutputEnabled).ToList());
+				}
+			}
+		}
+		if (list != null && list.Count > MaxCheckedCount)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("最多添加") + ":" + MaxCheckedCount);
+			return false;
+		}
+		if (list != null && IsFromVarBind)
+		{
+			if (OtherSelectedRunParmas != null)
+			{
+				List<RunParamsBaseNode> list2 = list.Where((RunParamsBaseNode m) => OtherSelectedRunParmas.Exists((RunParamsBaseNode n) => n.ModuleID == m.ModuleID && n.Name == m.Name)).ToList();
+				if (list2.Count() > 0)
+				{
+					string msg = "";
+					list2.ForEach((RunParamsBaseNode x) =>
+					{
+						msg = msg + x.FunllParamsNameA + "\r";
+					});
+					HikMessageBox.Show(string.Format("{0}:\r{1}", AppLocalizationService.GetLang("Lang_ExitDuplicateBindParam"), msg.Substring(0, msg.Length - 1)), MessageIcons.Warning);
+					return false;
+				}
+			}
+			List<RunParamsBaseNode> list3 = list.Where((RunParamsBaseNode m) => m.IsSupportSub && m.RunParamIoType != SelectedVarType).ToList();
+			if (list3.Count() > 0)
+			{
+				string msg2 = "";
+				list3.ForEach((RunParamsBaseNode x) =>
+				{
+					msg2 = msg2 + x.FunllParamsNameA + "\r";
+				});
+				HikMessageBox.Show(string.Format("{0}:\r{1}", AppLocalizationService.GetLang("Land_ExitCannotSubscribe"), msg2.Substring(0, msg2.Length - 1)), MessageIcons.Warning);
+				return false;
+			}
+		}
+		if (SelectRunParams != null)
+		{
+			SelectRunParams.Clear();
+		}
+		SelectRunParams = list;
+		return true;
+	}
+
+	public virtual string[] GetValueType(int index)
+	{
+		return (searchType)index switch
+		{
+			searchType.AllType => allType, 
+			searchType.IntType => intType, 
+			searchType.FloatType => floatType, 
+			searchType.StringType => stringType, 
+			_ => allType, 
+		};
+	}
+
+	public virtual void GetSubRunParamsTree(Holder module, string[] valueType, ref Dictionary<int, IList<RunParamsBaseNode>> allrunParams, List<RunParamsBaseNode> selectrunParams, List<RunParamsBaseNode> otherSelectedParams, string varType, bool isAllType = true, string searchModuleFilter = "")
+	{
+		if (module.HolderTarget is IVmModuleSet)
+		{
+			IEnumerable<Holder> moduleHolderTree = GetModuleHolderTree(module.HolderTarget as VmModuleSet, module, searchModuleFilter);
+			{
+				foreach (Holder item2 in moduleHolderTree)
+				{
+					GetSubRunParamsTree(item2, valueType, ref allrunParams, selectrunParams, otherSelectedParams, varType, isAllType, searchModuleFilter);
+					if (item2.EnumEntrysA != null && item2.EnumEntrysA.Count > 0)
+					{
+						module.EnumEntrysA.Add(item2);
+					}
+				}
+				return;
+			}
+		}
+		if (!(module.HolderTarget is IVmModule))
+		{
+			return;
+		}
+		int moduleid = (int)(module.HolderTarget as VmModule).ID;
+		IList<RunParamsBaseNode> list = null;
+		if (!allrunParams.ContainsKey(moduleid))
+		{
+			AlgorithmTabRoot algorithmTabRoot = (module.HolderTarget as VmModule)?.Params?.GetParamRoot();
+			if (algorithmTabRoot == null)
+			{
+				return;
+			}
+			IList<Holder> runParamsTree = algorithmTabRoot.GetRunParamsTree();
+			if (runParamsTree != null && isAllType)
+			{
+				list = runParamsTree.Select((Holder p) => new RunParamsBaseNode
+				{
+					OutputEnabled = p.OutputEnabled,
+					TargetObject = (p.HolderTarget as NameValueItem),
+					ParentTree = module
+				}).ToList();
+				if (otherSelectedParams != null && IsFromVarBind)
+				{
+					if (selectrunParams != null)
+					{
+						otherSelectedParams = otherSelectedParams.Where((RunParamsBaseNode p) => !selectrunParams.Exists((RunParamsBaseNode n) => n.ModuleID == moduleid && n.Name == p.Name)).ToList();
+					}
+					list = list?.Where((RunParamsBaseNode m) => !otherSelectedParams.Exists((RunParamsBaseNode n) => n.ModuleID == moduleid && n.Name == m.Name)).ToList();
+				}
+				if (selectrunParams != null)
+				{
+					foreach (RunParamsBaseNode item in selectrunParams.Where((RunParamsBaseNode x) => x.ModuleID == moduleid))
+					{
+						RunParamsBaseNode runParamsBaseNode = list.FirstOrDefault((RunParamsBaseNode x) => x.Name == item.Name);
+						if (runParamsBaseNode != null)
+						{
+							runParamsBaseNode.OutputEnabled = item.OutputEnabled;
+						}
+					}
+				}
+				if (IsFromVarBind && !string.IsNullOrEmpty(varType))
+				{
+					list = list.Where((RunParamsBaseNode m) =>
+					{
+						if (otherSelectedParams != null && otherSelectedParams.Exists((RunParamsBaseNode n) => n.ModuleID == moduleid && n.Name == m.Name))
+						{
+							return true;
+						}
+						if (selectrunParams != null && selectrunParams.Exists((RunParamsBaseNode n) => n.ModuleID == moduleid && n.Name == m.Name))
+						{
+							return true;
+						}
+						return (!m.IsSupportSub || !(m.RunParamIoType != varType)) ? true : false;
+					}).ToList();
+				}
+				allrunParams.Add(moduleid, list);
+			}
+		}
+		else
+		{
+			IList<RunParamsBaseNode> list3;
+			if (!isAllType)
+			{
+				IList<RunParamsBaseNode> list2 = allrunParams[moduleid].Where((RunParamsBaseNode x) => valueType.Contains(x.DisplayType?.ToLower())).ToList();
+				list3 = list2;
+			}
+			else
+			{
+				list3 = allrunParams[moduleid];
+			}
+			list = list3;
+			foreach (RunParamsBaseNode item3 in list)
+			{
+				item3.ParentTree = module;
+			}
+		}
+		if (list != null && list.Count > 0)
+		{
+			module.EnumEntrysA = new ObservableCollection<object>(list);
+		}
+	}
+
+	public virtual IList<Holder> GetRunParamsTree(string[] valueType, ref Dictionary<int, IList<RunParamsBaseNode>> allrunParams, List<RunParamsBaseNode> selectrunParams, string varType, bool isAllType = true, string searchModuleFilter = "")
+	{
+		bool isLocalModule = CheckLocalModule();
+		IList<Holder> processHolderTree = GetProcessHolderTree(isLocalModule);
+		if (processHolderTree == null)
+		{
+			return null;
+		}
+		foreach (Holder item in processHolderTree)
+		{
+			IEnumerable<Holder> moduleHolderTree = GetModuleHolderTree(item.HolderTarget as VmModuleSet, item, searchModuleFilter, isLocalModule);
+			foreach (Holder item2 in moduleHolderTree)
+			{
+				GetSubRunParamsTree(item2, valueType, ref allrunParams, selectrunParams, OtherSelectedRunParmas, varType, isAllType, searchModuleFilter);
+				if (item2.EnumEntrysA != null && item2.EnumEntrysA.Count > 0)
+				{
+					item.EnumEntrysA.Add(item2);
+				}
+			}
+		}
+		return processHolderTree;
+	}
+
+	private bool CheckLocalModule()
+	{
+		if (DecorateSource == null)
+		{
+			return false;
+		}
+		return ServerSDKManager.serverSDKManager.mModuleManager.CheckLocalVariableModule((int)(DecorateSource as IVmModule).ID);
+	}
+
+	public IList<Holder> GetProcessHolderTree(bool isLocalModule = false)
+	{
+		if (DecorateSource == null)
+		{
+			return null;
+		}
+		if (DecorateSource is IVmModule vmModule)
+		{
+			if (isLocalModule && vmModule.Parent is IVmModuleSet vmModuleSet)
+			{
+				Holder item = new Holder
+				{
+					DisplayNameA = vmModuleSet.Name,
+					HolderTarget = vmModuleSet
+				};
+				return new List<Holder> { item };
+			}
+			if (vmModule.Parent is IVmSolution vmSolution)
+			{
+				return (from p in (vmSolution as VmSolution).Modules.OfType<VmProcedure>()
+					select new Holder
+					{
+						DisplayNameA = p.Name,
+						HolderTarget = p
+					}).ToList();
+			}
+			if (vmModule.Parent is IVmModuleSet vmModuleSet2)
+			{
+				Holder item2 = new Holder
+				{
+					DisplayNameA = vmModuleSet2.Name,
+					HolderTarget = vmModuleSet2
+				};
+				return new List<Holder> { item2 };
+			}
+		}
+		return null;
+	}
+
+	public IList<Holder> GetModuleHolderTree(VmModuleSet proc, Holder parent, string filter, bool isLocalModule = false)
+	{
+		return (from p in proc.Modules.Where((VmModule p) =>
+			{
+				bool flag = p.Name.Contains(filter);
+				if (isLocalModule)
+				{
+					flag = flag && !(p is IVmModuleSet);
+				}
+				return flag;
+			})
+			select new Holder
+			{
+				DisplayNameA = p.Name,
+				HolderTarget = p,
+				ParentTree = parent
+			}).ToList();
+	}
+}

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ListViewItem x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ContainerItem" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseDate="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" x:Name="us" RenderTransformOrigin="0.5,0.5" Focusable="True" Padding="0" BorderThickness="0">
+<ListViewItem x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ContainerItem" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseDate="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" x:Name="us" RenderTransformOrigin="0.5,0.5" Focusable="True" Padding="0" BorderThickness="0" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData">
   <FrameworkElement.Resources>
     <ResourceDictionary>
-      <BaseDate:MulParamsMultiplicationConverter x:Key="MC" />
+      <vm_port_1:MulParamsMultiplicationConverter x:Key="MC" />
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <UIElement.InputBindings>
@@ -33,13 +33,13 @@
     <ControlTemplate TargetType="{x:Type ListBoxItem}">
       <FrameworkTemplate.Resources>
         <ResourceDictionary>
-          <BaseDate:TypeFilterConverter x:Key="typeFilterConverter" />
+          <vm_port_1:TypeFilterConverter x:Key="typeFilterConverter" />
         </ResourceDictionary>
       </FrameworkTemplate.Resources>
       <ContentPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
       <ControlTemplate.Triggers>
-        <DataTrigger Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IROISelectable}}">
-          <Setter Property="ListBoxItem.IsSelected" Value="{Binding Path=(Interface:IROISelectable.IsSelected), Mode=TwoWay}" />
+        <DataTrigger Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type vm_port_0:IROISelectable}}">
+          <Setter Property="ListBoxItem.IsSelected" Value="{Binding Path=(vm_port_0:IROISelectable.IsSelected), Mode=TwoWay}" />
         </DataTrigger>
       </ControlTemplate.Triggers>
     </ControlTemplate>

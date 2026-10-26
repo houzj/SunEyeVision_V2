@@ -1,0 +1,74 @@
+using System;
+using Apps.Localization;
+using Apps.Log;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+
+public class LogUIBridge : ILogManager
+{
+	private const int MAXLOGITEM = 20;
+
+	private static LogUIBridge _logBridgeInstance = new LogUIBridge();
+
+	private LogBindingModel model;
+
+	private LogUIBridge()
+	{
+		model = new LogBindingModel();
+	}
+
+	public static LogUIBridge GetInstance()
+	{
+		return _logBridgeInstance;
+	}
+
+	public int LogCreate(string logtype, string logevent, bool ifLang = true)
+	{
+		return logCreate(logtype, logevent, ifLang);
+	}
+
+	public ObservableConcurrentQueue<LogContect> GetShowLogList()
+	{
+		return model.LogInfoShow;
+	}
+
+	public int logCreate(string logtype, string logevent, bool ifLang = true)
+	{
+		if (ifLang)
+		{
+			logevent = AppLocalizationService.GetLang(logevent);
+		}
+		switch (logtype)
+		{
+		case "信息":
+			LogHelper.pageCreateLog.Info(logevent);
+			break;
+		case "错误":
+			LogHelper.pageCreateLog.Error(logevent);
+			break;
+		case "警告":
+			LogHelper.pageCreateLog.Warn(logevent);
+			break;
+		default:
+			LogHelper.pageCreateLog.Debug(logevent);
+			break;
+		}
+		LogContect result = new LogContect();
+		DateTime dateTime = default;
+		dateTime = DateTime.Now;
+		result.LogInfoTime = dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+		result.LogType = logtype;
+		result.LogEvent = logevent;
+		model.LogInfoShow.Enqueue(result);
+		if (model.LogInfoShow.Count > 20)
+		{
+			int num = model.LogInfoShow.Count - 20;
+			for (int i = 0; i < num; i++)
+			{
+				model.LogInfoShow.TryDequeue(out result);
+			}
+		}
+		return 0;
+	}
+}

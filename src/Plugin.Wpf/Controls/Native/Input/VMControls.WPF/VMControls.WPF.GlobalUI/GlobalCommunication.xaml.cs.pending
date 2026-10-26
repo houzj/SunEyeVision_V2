@@ -18,10 +18,14 @@ using GateWayFramework;
 using GateWayServer;
 using Hik.Xml;
 using Mvvm.Commands;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 using VM.PlatformSDKCS;
-using VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 using VM.Utility.SingleInstance;
 using VMControls.BaseInterface;
 using VMControls.Interface;
@@ -1296,7 +1300,7 @@ public partial class GlobalCommunication : BaseWindow, IDecorate, IComponentConn
 	private void btnImport_Click(object sender, RoutedEventArgs e)
 	{
 		DialogResult dialogResult = HikMessageBox.Show(AppLocalizationService.GetLang("导入"), AppLocalizationService.GetLang("Lang_ImportConfirmInfo"), MessageButtons.OkOrCancel, MessageIcons.Question);
-		if (dialogResult != VM.Controls.DialogResult.Ok)
+		if (dialogResult != SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DialogResult.Ok)
 		{
 			return;
 		}

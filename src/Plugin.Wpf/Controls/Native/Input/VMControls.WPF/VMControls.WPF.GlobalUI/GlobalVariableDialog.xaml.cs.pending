@@ -16,7 +16,10 @@ using Apps.XmlParser.ParamTab;
 using Apps.XmlParser.Variable;
 using DirectoryBrowser;
 using Microsoft.Win32;
-using VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
 using VM.PlatformSDKCS;
 using VM.User;
@@ -1591,7 +1594,7 @@ public partial class GlobalVariableDialog : BaseWindow, IDecorate, IVarGroup, IC
 				openFileDialog.Filter = "*.gvar|*.gvar";
 				bool? flag = openFileDialog.ShowDialog();
 				string fileName = openFileDialog.FileName;
-				if (flag.Value && (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes))
+				if (flag.Value && (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DialogResult.Yes))
 				{
 					long length = new FileInfo(fileName).Length;
 					ProcessbarMessage = AppLocalizationService.GetLang("Lang_Import");
@@ -1810,7 +1813,7 @@ public partial class GlobalVariableDialog : BaseWindow, IDecorate, IVarGroup, IC
 
 	private void DelVarGroup_Click(object sender, RoutedEventArgs e)
 	{
-		if (HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ConfirmDelete"), "", MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes)
+		if (HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ConfirmDelete"), "", MessageButtons.YesOrNo, MessageIcons.Question) == SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DialogResult.Yes)
 		{
 			object dataContext = (sender as MenuItem).DataContext;
 			if (dataContext is VarGroupItem varGroup)
@@ -2002,7 +2005,7 @@ public partial class GlobalVariableDialog : BaseWindow, IDecorate, IVarGroup, IC
 					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadFail"));
 					LogHelper.objLog.Error("Upload local file " + openFileDialog.FileName + " to remote path /root/vmtempfiles/ftp/ModelFiles/temp.gvar fail");
 				}
-				else if (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes)
+				else if (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DialogResult.Yes)
 				{
 					ImportGlobalVar(filePath);
 				}
@@ -2024,7 +2027,7 @@ public partial class GlobalVariableDialog : BaseWindow, IDecorate, IVarGroup, IC
 			openFileDialog.CheckFileExists = true;
 			bool? flag = openFileDialog.ShowDialog();
 			string filePath = (flag.Value ? openFileDialog.FileNames[0] : "");
-			if (flag.Value && (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes))
+			if (flag.Value && (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == SunEyeVision.Plugin.Wpf.Native.Display.VMControls.DialogResult.Yes))
 			{
 				ImportGlobalVar(filePath);
 			}

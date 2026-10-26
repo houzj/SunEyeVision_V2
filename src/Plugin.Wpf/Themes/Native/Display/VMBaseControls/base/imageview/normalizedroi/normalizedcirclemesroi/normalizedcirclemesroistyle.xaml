@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData">
   <MultiBinding x:Key="RadiusBinding" Mode="TwoWay">
     <MultiBinding.Converter>
-      <baseData:RightFixdMultiplicationConverter />
+      <vm_port_1:RightFixdMultiplicationConverter />
     </MultiBinding.Converter>
-    <Binding Path="(Interface:ICircleMesROI.Radius)" Mode="TwoWay" />
+    <Binding Path="(vm_port_0:ICircleMesROI.Radius)" Mode="TwoWay" />
     <Binding Path="ImageSourceWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localBase:ImageViewBox}" />
   </MultiBinding>
   <MultiBinding x:Key="CenterPointBinding" Mode="TwoWay">
     <MultiBinding.Converter>
-      <baseData:PointRightFixdMultiplicationConverter />
+      <vm_port_1:PointRightFixdMultiplicationConverter />
     </MultiBinding.Converter>
-    <Binding Path="(Interface:ICircleMesROI.CenterPoint)" Mode="TwoWay" />
+    <Binding Path="(vm_port_0:ICircleMesROI.CenterPoint)" Mode="TwoWay" />
     <Binding Path="ImageSourceWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localBase:ImageViewBox}" />
     <Binding Path="ImageSourceHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localBase:ImageViewBox}" />
   </MultiBinding>

@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using System.Windows;
 using System.Windows.Data;
 

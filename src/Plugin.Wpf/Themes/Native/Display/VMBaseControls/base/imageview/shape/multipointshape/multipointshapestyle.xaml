@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:imageControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:imageControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface">
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml" />
   </ResourceDictionary.MergedDictionaries>
@@ -7,8 +7,8 @@
   <Style x:Key="{x:Type local:MultiPointShape}" TargetType="{x:Type local:MultiPointShape}" BasedOn="{StaticResource ShapeContainerStyle}">
     <Setter Property="local:MultiPointShape.NeedRefresh" Value="{Binding NeedRefreshShapes, Mode=OneWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=imageControl:ImageViewBox}}" />
     <Setter Property="FrameworkElement.Tag" Value="{Binding Mode=OneWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=imageControl:ImageViewBox}}" />
-    <Setter Property="local:MultiPointShape.OutlinePoints" Value="{Binding Path=(Interface:IMultiPoint.OutlinePoints), Mode=OneWay}" />
-    <Setter Property="local:MultiPointShape.MicroPoints" Value="{Binding Path=(Interface:IMultiPoint.MicroPoints), Mode=OneWay}" />
-    <Setter Property="local:MultiPointShape.Rectangles" Value="{Binding Path=(Interface:IMultiPoint.Rectangles), Mode=OneWay}" />
+    <Setter Property="local:MultiPointShape.OutlinePoints" Value="{Binding Path=(vm_port_0:IMultiPoint.OutlinePoints), Mode=OneWay}" />
+    <Setter Property="local:MultiPointShape.MicroPoints" Value="{Binding Path=(vm_port_0:IMultiPoint.MicroPoints), Mode=OneWay}" />
+    <Setter Property="local:MultiPointShape.Rectangles" Value="{Binding Path=(vm_port_0:IMultiPoint.Rectangles), Mode=OneWay}" />
   </Style>
 </ResourceDictionary>

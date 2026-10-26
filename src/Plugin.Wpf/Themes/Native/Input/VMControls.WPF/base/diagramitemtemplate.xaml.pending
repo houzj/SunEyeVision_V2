@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;assembly=SunEyeVision.Plugin.Wpf" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:UIHelperConvert="clr-namespace:Apps.UIHelper.Converter;assembly=Apps.UIHelper" xmlns:Attached="clr-namespace:Apps.UIHelper.Attach;assembly=Apps.UIHelper" xmlns:localwpf="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:appUi="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:UIHelperConvert="clr-namespace:Apps.UIHelper.Converter;assembly=Apps.UIHelper" xmlns:Attached="clr-namespace:Apps.UIHelper.Attach;assembly=Apps.UIHelper" xmlns:localwpf="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:appUi="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:core="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors">
   <ResourceDictionary.MergedDictionaries>
-    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+    <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
     <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/commonstyle.xaml" />
     <ResourceDictionary Source="/VM.Controls;component/Styles/MenuItemStyle.xaml" />
     <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
@@ -191,9 +191,9 @@
   <Geometry x:Key="ic_play_____hoverGeometry2">F1 M36,36z M0,0z M22.8,17.5L15.8,13A0.5,0.5,0,0,0,15.1,13.5L15.1,22.4A0.5,0.5,0,0,0,15.8,22.9L22.8,18.4A0.6,0.6,0,0,0,22.8,17.5z</Geometry>
   <DrawingGroup x:Key="ic_play_____hoverDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
     <DrawingGroup>
-      <GeometryDrawing Geometry="{StaticResource ic_play_____hoverGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic_play_____hoverGeometry1}" Brush="{vm_port_0:ColorResourceBinding Col_Theme_Mouse}" />
     </DrawingGroup>
-    <GeometryDrawing Geometry="{StaticResource ic_play_____hoverGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+    <GeometryDrawing Geometry="{StaticResource ic_play_____hoverGeometry2}" Brush="{vm_port_0:ColorResourceBinding Col_Theme_Mouse}" />
   </DrawingGroup>
   <DrawingImage x:Key="ic_play_____hoverDrawingImage" Drawing="{StaticResource ic_play_____hoverDrawingGroup}" />
   <Geometry x:Key="ic_play_____disableGeometry1">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z</Geometry>
@@ -213,9 +213,9 @@
   <Geometry x:Key="ic_play_____clickGeometry2">F1 M36,36z M0,0z M22.8,17.5L15.8,13A0.5,0.5,0,0,0,15.1,13.5L15.1,22.4A0.5,0.5,0,0,0,15.8,22.9L22.8,18.4A0.6,0.6,0,0,0,22.8,17.5z</Geometry>
   <DrawingGroup x:Key="ic_play_____clickDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
     <DrawingGroup>
-      <GeometryDrawing Geometry="{StaticResource ic_play_____clickGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic_play_____clickGeometry1}" Brush="{vm_port_0:ColorResourceBinding Col_Theme}" />
     </DrawingGroup>
-    <GeometryDrawing Geometry="{StaticResource ic_play_____clickGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+    <GeometryDrawing Geometry="{StaticResource ic_play_____clickGeometry2}" Brush="{vm_port_0:ColorResourceBinding Col_Theme}" />
   </DrawingGroup>
   <DrawingImage x:Key="ic_play_____clickDrawingImage" Drawing="{StaticResource ic_play_____clickDrawingGroup}" />
   <Geometry x:Key="ic_play_____normalGeometry1">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z</Geometry>
@@ -260,9 +260,9 @@
   <Geometry x:Key="ic______hoverGeometry3">F1 M36,36z M0,0z M18,27A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L24,29 18,24z</Geometry>
   <DrawingGroup x:Key="ic______hoverDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
     <DrawingGroup>
-      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
-      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
-      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry3}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry1}" Brush="{vm_port_0:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry2}" Brush="{vm_port_0:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry3}" Brush="{vm_port_0:ColorResourceBinding Col_Theme_Mouse}" />
     </DrawingGroup>
     <DrawingGroup>
       <DrawingGroup.ClipGeometry>
@@ -436,9 +436,9 @@
   <Geometry x:Key="ic______clickGeometry3">F1 M36,36z M0,0z M18,27A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L24,29 18,24z</Geometry>
   <DrawingGroup x:Key="ic______clickDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
     <DrawingGroup>
-      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme}" />
-      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme}" />
-      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry3}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry1}" Brush="{vm_port_0:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry2}" Brush="{vm_port_0:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry3}" Brush="{vm_port_0:ColorResourceBinding Col_Theme}" />
     </DrawingGroup>
     <DrawingGroup>
       <DrawingGroup.ClipGeometry>
@@ -622,26 +622,26 @@
   <Geometry x:Key="ic_stop_hoverGeometry">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z M21,14L15,14A1,1,0,0,0,14,15L14,21A1,1,0,0,0,15,22L21,22A1,1,0,0,0,22,21L22,15A1,1,0,0,0,21,14z</Geometry>
   <DrawingGroup x:Key="ic_stop_hoverDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
     <DrawingGroup>
-      <GeometryDrawing Geometry="{StaticResource ic_stop_hoverGeometry}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic_stop_hoverGeometry}" Brush="{vm_port_0:ColorResourceBinding Col_Theme_Mouse}" />
     </DrawingGroup>
   </DrawingGroup>
   <DrawingImage x:Key="ic_stop_hoverDrawingImage" Drawing="{StaticResource ic_stop_hoverDrawingGroup}" />
   <Geometry x:Key="ic_stop_clickGeometry">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z M21,14L15,14A1,1,0,0,0,14,15L14,21A1,1,0,0,0,15,22L21,22A1,1,0,0,0,22,21L22,15A1,1,0,0,0,21,14z</Geometry>
   <DrawingGroup x:Key="ic_stop_clickDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
     <DrawingGroup>
-      <GeometryDrawing Geometry="{StaticResource ic_stop_clickGeometry}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic_stop_clickGeometry}" Brush="{vm_port_0:ColorResourceBinding Col_Theme}" />
     </DrawingGroup>
   </DrawingGroup>
   <DrawingImage x:Key="ic_stop_clickDrawingImage" Drawing="{StaticResource ic_stop_clickDrawingGroup}" />
   <DrawingGroup x:Key="switch_on____DrawingGroup" ClipGeometry="M0,0 L0,28 L42,28 L42,0 L0,0">
     <DrawingGroup>
       <DrawingGroup>
-        <GeometryDrawing Brush="{Color:ColorResourceBinding Col_Theme}">
+        <GeometryDrawing Brush="{vm_port_0:ColorResourceBinding Col_Theme}">
           <GeometryDrawing.Geometry>
             <RectangleGeometry RadiusX="3" RadiusY="3" Rect="6,6,30,16" />
           </GeometryDrawing.Geometry>
         </GeometryDrawing>
-        <GeometryDrawing Brush="{Color:ColorResourceBinding Col_Theme}">
+        <GeometryDrawing Brush="{vm_port_0:ColorResourceBinding Col_Theme}">
           <GeometryDrawing.Geometry>
             <RectangleGeometry RadiusX="2" RadiusY="2" Rect="7,7,28,14" />
           </GeometryDrawing.Geometry>
@@ -818,7 +818,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <controls:HikContextMenu x:Key="NormalOperateMenu">
+  <vm_port_1:HikContextMenu x:Key="NormalOperateMenu">
     <MenuItem Header="{DynamicResource Lang_Disconnect}" ItemContainerStyle="{Binding Source={StaticResource MenuItemDisLinkTo}}" ItemsSource="{Binding DisLinkTo}">
       <FrameworkElement.Style>
         <Style TargetType="{x:Type MenuItem}">
@@ -922,7 +922,7 @@
         </Style>
       </FrameworkElement.Style>
     </MenuItem>
-  </controls:HikContextMenu>
+  </vm_port_1:HikContextMenu>
   <ControlTemplate x:Key="Square" TargetType="{x:Type local:DiagramItem}">
     <Grid Name="PART_View" Width="40" Height="40">
       <Rectangle Name="Rec" Fill="#00FFFFFF" Margin="-10" />
@@ -935,7 +935,7 @@
       <Image Name="LogoIm" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0" Source="{Binding StateImagePath}" />
       <Path Name="errorBorder" Visibility="Collapsed" Stroke="#FF636468" StrokeThickness="2" Stretch="Fill" Data="{Binding Data, ElementName=itemBorder}" />
       <Grid Margin="0,18,0,0">
-        <Grid HorizontalAlignment="Center" TextBlock.FontWeight="Bold" TextBlock.FontSize="12" TextBlock.Foreground="{Color:ColorResourceBinding Col_EditProcess_Foreground}">
+        <Grid HorizontalAlignment="Center" TextBlock.FontWeight="Bold" TextBlock.FontSize="12" TextBlock.Foreground="{vm_port_0:ColorResourceBinding Col_EditProcess_Foreground}">
           <TextBlock Name="Id" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding DecorateSource.ID}" />
         </Grid>
       </Grid>
@@ -968,10 +968,10 @@
         <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding NormalImagePath}" />
       </Trigger>
       <Trigger Property="local:DiagramItem.RunState" Value="True">
-        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_OK_Status}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_OK_Status}" />
       </Trigger>
       <Trigger Property="local:DiagramItem.RunState" Value="False">
-        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
       </Trigger>
       <Trigger Property="local:DiagramItem.IsModuleConfigCorrect" Value="False">
         <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
@@ -1009,16 +1009,16 @@
           </Setter.Value>
         </Setter>
         <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding StateImagePath}" />
-        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
         <Setter TargetName="Id" Property="UIElement.Opacity" Value="0.4" />
       </Trigger>
       <Trigger Property="ListBoxItem.IsSelected" Value="True">
         <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="errorBorder" Property="Shape.Stroke" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_BorderBrush}" />
+        <Setter TargetName="errorBorder" Property="Shape.Stroke" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_BorderBrush}" />
       </Trigger>
     </ControlTemplate.Triggers>
   </ControlTemplate>
-  <controls:HikContextMenu x:Key="SquareOperateMenu">
+  <vm_port_1:HikContextMenu x:Key="SquareOperateMenu">
     <MenuItem Header="{DynamicResource Lang_Disconnect}" ItemContainerStyle="{Binding Source={StaticResource MenuItemDisLinkTo}}" ItemsSource="{Binding DisLinkTo}">
       <FrameworkElement.Style>
         <Style TargetType="{x:Type MenuItem}">
@@ -1121,7 +1121,7 @@
         </Style>
       </FrameworkElement.Style>
     </MenuItem>
-  </controls:HikContextMenu>
+  </vm_port_1:HikContextMenu>
   <ControlTemplate x:Key="NORMAL" TargetType="{x:Type local:DiagramItem}">
     <Grid Name="PART_View" Width="110" Height="30">
       <Rectangle Name="Rec" Fill="#00FFFFFF" Margin="-10" />
@@ -1134,13 +1134,13 @@
       <Image Name="LogoIm" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0" Source="{Binding StateImagePath}" />
       <Path Name="errorBorder" Visibility="Collapsed" Stroke="#FF636468" StrokeThickness="2" Stretch="Fill" Data="{Binding Data, ElementName=itemBorder}" />
       <Grid Margin="26,0,0,0">
-        <Grid HorizontalAlignment="Center" TextBlock.FontWeight="Bold" TextBlock.FontSize="12" TextBlock.Foreground="{Color:ColorResourceBinding Col_EditProcess_Foreground}">
+        <Grid HorizontalAlignment="Center" TextBlock.FontWeight="Bold" TextBlock.FontSize="12" TextBlock.Foreground="{vm_port_0:ColorResourceBinding Col_EditProcess_Foreground}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <TextBlock Name="Id" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding DecorateSource.ID}" />
-          <appUi:HeadReNameTextBox Name="itemName" Grid.Column="1" Background="#00FFFFFF" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" BorderThickness="0" MaxLength="{x:Static local:DiagramItem.MaxNameLenth}" Foreground="{Color:ColorResourceBinding Col_EditProcess_Foreground}" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" IsReName="{Binding IsReName, Mode=TwoWay}" />
+          <appUi:HeadReNameTextBox Name="itemName" Grid.Column="1" Background="#00FFFFFF" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" BorderThickness="0" MaxLength="{x:Static local:DiagramItem.MaxNameLenth}" Foreground="{vm_port_0:ColorResourceBinding Col_EditProcess_Foreground}" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" IsReName="{Binding IsReName, Mode=TwoWay}" />
         </Grid>
       </Grid>
       <ContentPresenter Name="leftConnector" Content="{x:Null}" />
@@ -1183,10 +1183,10 @@
         <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding NormalImagePath}" />
       </Trigger>
       <Trigger Property="local:DiagramItem.RunState" Value="True">
-        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_OK_Status}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_OK_Status}" />
       </Trigger>
       <Trigger Property="local:DiagramItem.RunState" Value="False">
-        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
       </Trigger>
       <Trigger Property="local:DiagramItem.IsModuleConfigCorrect" Value="False">
         <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
@@ -1224,13 +1224,13 @@
           </Setter.Value>
         </Setter>
         <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding StateImagePath}" />
-        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
         <Setter TargetName="itemName" Property="UIElement.Opacity" Value="0.4" />
         <Setter TargetName="Id" Property="UIElement.Opacity" Value="0.4" />
       </Trigger>
       <Trigger Property="ListBoxItem.IsSelected" Value="True">
         <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
-        <Setter TargetName="errorBorder" Property="Shape.Stroke" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_BorderBrush}" />
+        <Setter TargetName="errorBorder" Property="Shape.Stroke" Value="{vm_port_0:ColorResourceBinding Col_EditProcess_Modular_BorderBrush}" />
       </Trigger>
     </ControlTemplate.Triggers>
   </ControlTemplate>
@@ -1278,14 +1278,14 @@
             </Trigger>
             <Trigger Property="UIElement.IsMouseOver" Value="True">
               <Setter Value="{DynamicResource ListViewComboBoxIsSelected}" Property="Background" />
-              <Setter Property="BorderBrush" Value="{Color:ColorResourceBinding Col_Theme}" />
+              <Setter Property="BorderBrush" Value="{vm_port_0:ColorResourceBinding Col_Theme}" />
             </Trigger>
             <Trigger Property="MenuItem.IsChecked" Value="True">
-              <Setter Property="Background" Value="{Color:ColorResourceBinding Col_Theme}" />
+              <Setter Property="Background" Value="{vm_port_0:ColorResourceBinding Col_Theme}" />
               <Setter Property="Foreground" Value="#FFFFFFFF" />
             </Trigger>
             <Trigger Property="MenuItem.IsPressed" Value="True">
-              <Setter Property="Background" Value="{Color:ColorResourceBinding Col_Theme}" />
+              <Setter Property="Background" Value="{vm_port_0:ColorResourceBinding Col_Theme}" />
               <Setter Property="Foreground" Value="#FFFFFFFF" />
             </Trigger>
           </ControlTemplate.Triggers>
@@ -1293,7 +1293,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <controls:HikContextMenu x:Key="ProcessOperateMenu">
+  <vm_port_1:HikContextMenu x:Key="ProcessOperateMenu">
     <MenuItem Header="{DynamicResource Lang_Disconnect}" ItemContainerStyle="{Binding Source={StaticResource MenuItemDisLinkTo}}" ItemsSource="{Binding DisLinkTo}">
       <FrameworkElement.Style>
         <Style TargetType="{x:Type MenuItem}">
@@ -1342,7 +1342,7 @@
     <MenuItem Header="{DynamicResource Lang_StopProcessNG}" Style="{StaticResource CheckMenuItemStyle}" />
     <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding RenameCommand}" />
     <MenuItem Header="{DynamicResource Lang_ProcessTimeOut}" Command="{Binding SetTimeOutCommand}" />
-  </controls:HikContextMenu>
+  </vm_port_1:HikContextMenu>
   <ControlTemplate x:Key="PROCESS" TargetType="{x:Type local:DiagramItem}">
     <Grid Name="PART_View" Width="140" Height="120">
       <Grid.RowDefinitions>
@@ -1424,7 +1424,7 @@
           </ToggleButton>
         </Grid>
       </Grid>
-      <Border Name="Drag_View" Cursor="SizeAll" CornerRadius="4,4,0,0" Attached:EventOfMouseDownToDoubleClick.Event="MouseDown" Background="{Color:ColorResourceBinding Col_EditProcess_AllProcess_Title_Background}" Attached:AttachedRoutedEventBase.Command="{Binding OpenProcedureCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localwpf:ProcedureConfigControl}}">
+      <Border Name="Drag_View" Cursor="SizeAll" CornerRadius="4,4,0,0" Attached:EventOfMouseDownToDoubleClick.Event="MouseDown" Background="{vm_port_0:ColorResourceBinding Col_EditProcess_AllProcess_Title_Background}" Attached:AttachedRoutedEventBase.Command="{Binding OpenProcedureCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localwpf:ProcedureConfigControl}}">
         <Grid>
           <StackPanel Orientation="Horizontal">
             <Ellipse Name="light" Width="8" Height="8" Fill="#FFEC0000" Margin="10,0,0,0" />
@@ -1452,7 +1452,7 @@
             </FrameworkElement.Style>
             <i:Interaction.Triggers>
               <i:EventTrigger EventName="Click">
-                <core:ChangePropertyAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" PropertyName="IsSelected" Value="True" i:TargetedTriggerAction.TargetObject="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                <core:ChangePropertyAction PropertyName="IsSelected" Value="True" i:TargetedTriggerAction.TargetObject="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" />
               </i:EventTrigger>
             </i:Interaction.Triggers>
           </Button>
@@ -1486,7 +1486,7 @@
         <Setter TargetName="ContansFail" Property="UIElement.Visibility" Value="Visible" />
       </Trigger>
       <Trigger Property="ListBoxItem.IsSelected" Value="True">
-        <Setter TargetName="itemBorder" Property="Border.BorderBrush" Value="{Color:ColorResourceBinding Col_Theme}" />
+        <Setter TargetName="itemBorder" Property="Border.BorderBrush" Value="{vm_port_0:ColorResourceBinding Col_Theme}" />
         <Setter TargetName="itemBorder" Property="Border.BorderThickness" Value="2,0,2,2" />
       </Trigger>
       <DataTrigger Value="{x:Static DataForUI:StatusBarSymbol.Ready}" Binding="{Binding WorkState}">
@@ -1494,7 +1494,7 @@
       </DataTrigger>
     </ControlTemplate.Triggers>
   </ControlTemplate>
-  <controls:HikContextMenu x:Key="GroupOperateMenu">
+  <vm_port_1:HikContextMenu x:Key="GroupOperateMenu">
     <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding DeleteItemCommand}" />
     <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding CopyItemCommand}">
       <FrameworkElement.Style>
@@ -1631,7 +1631,7 @@
         </Style>
       </FrameworkElement.Style>
     </MenuItem>
-  </controls:HikContextMenu>
+  </vm_port_1:HikContextMenu>
   <ControlTemplate x:Key="GROUP" TargetType="{x:Type local:DiagramItem}">
     <Grid Name="PART_View" Width="110" Height="40">
       <ContentPresenter Name="cp" ContentTemplate="{x:Null}" Content="{x:Null}" />
@@ -1678,7 +1678,7 @@
           </Control.Template>
           <i:Interaction.Triggers>
             <i:EventTrigger EventName="Click">
-              <ChangePropertyAction PropertyName="IsSelected" Value="True" i:TargetedTriggerAction.TargetObject="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+              <ChangePropertyAction PropertyName="IsSelected" Value="True" i:TargetedTriggerAction.TargetObject="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" xmlns="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors" />
             </i:EventTrigger>
           </i:Interaction.Triggers>
         </Button>

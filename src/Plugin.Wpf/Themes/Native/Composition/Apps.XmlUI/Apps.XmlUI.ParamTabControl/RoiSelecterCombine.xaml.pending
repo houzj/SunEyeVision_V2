@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelecterCombine" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:PCImage="clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI" xmlns:com="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" x:Name="us" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/RadioButtonStyle/RadioButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ButtonStyle/ToggleButtonStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.PcUI;component/Styles/PcUIStyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <local:ROIDefaultValueToVisibilityConvert x:Key="ROIDefaultValueToVisibilityConvert" />
+      <local:ROIComDefaultValueToVisibilityConvert x:Key="ROIComDefaultValueToVisibilityConvert" />
+      <local:ROITypeValueToBoolConvert x:Key="equalConvert" />
+      <vm_port_0:IndexConverter x:Key="indexConverter" />
+      <vm_port_0:NegateConverter x:Key="negateConverter" />
+      <Style x:Key="NoScrollListBoxStyle1" TargetType="{x:Type ListBox}">
+        <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListBox}">
+              <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="1" SnapsToDevicePixels="True">
+                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="NoScrollListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+        <Setter Property="Padding" Value="0,1" />
+        <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+        <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderBrush" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+              <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <DataTemplate x:Key="FullScreenDataTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.FullScreen}" Background="#00FFFFFF" Style="{StaticResource fullscreenRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding FullScreenA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SectorRingTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SectorRing}" Background="#00FFFFFF" Style="{StaticResource RingRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorRingA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SectorTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Sector}" Background="#00FFFFFF" Style="{StaticResource SectorRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="OverSectorTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.OverSector}" Background="#00FFFFFF" Style="{StaticResource OverSectorRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding OverSectorA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="BoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Box}" Background="#00FFFFFF" Style="{StaticResource BoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="UroBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.UroBox}" Background="#00FFFFFF" Style="{StaticResource UroBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.LineBox}" Background="#00FFFFFF" Style="{StaticResource LineBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SeqBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SeqBox}" Background="#00FFFFFF" Style="{StaticResource LineBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="DoubleBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.DoubleBox}" Background="#00FFFFFF" Style="{StaticResource DoubleBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding DoubleBoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="QuadraBoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.QuadraBox}" Background="#00FFFFFF" Style="{StaticResource QuadraBoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding QuadraBoxA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="PolygonTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Polygon}" Background="#00FFFFFF" Style="{StaticResource PolygonRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PolygonA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.LineCaliper}" Background="#00FFFFFF" Style="{StaticResource LineCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding LineCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineCaliperComTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.LineCaliper}" Background="#00FFFFFF" Style="{StaticResource LineCaliperComRoiBtnStyle}" Tag="{Binding IsShowIndexA, RelativeSource={RelativeSource Mode=TemplatedParent}}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding LineCaliperComA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineCaliperComTemplate2">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.LineCaliper}" Background="#00FFFFFF" Style="{StaticResource LineCaliperComRoiBtnStyle2}" Tag="{Binding IsShowIndexA, RelativeSource={RelativeSource Mode=TemplatedParent}}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding LineCaliperComA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="CircleCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.CircleCaliper}" Background="#00FFFFFF" Style="{StaticResource CircleCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding CircleCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="CircleCaliperComTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.CircleCaliper}" Background="#00FFFFFF" Style="{StaticResource CircleCaliperComRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding CircleCaliperComA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="SectorCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SectorCaliper}" Background="#00FFFFFF" Style="{StaticResource SectorCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="PolygonCaliperTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.PolygonCaliper}" ToolTip="{DynamicResource PolygonCaliper}" Background="#00FFFFFF" Style="{StaticResource PolygonCaliperRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PolygonCaliperA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="PointTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Point}" Background="#00FFFFFF" Style="{StaticResource PointRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PointA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="LineTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Line}" Background="#00FFFFFF" Style="{StaticResource LineRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding LineA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="CircleMesTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.CircleMes}" Background="#00FFFFFF" Style="{StaticResource CircleMesRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding CircleMesA, Mode=TwoWay}" />
+      </DataTemplate>
+      <DataTemplate x:Key="MatrixCircleTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.MatrixCircle}" Background="#00FFFFFF" Style="{StaticResource MatrixCircleRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding MatrixCircleA, Mode=TwoWay}" />
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto" />
+      <RowDefinition Height="auto" />
+    </Grid.RowDefinitions>
+    <localParamTab:LeftRightControl>
+      <localParamTab:LeftRightControl.LeftContent>
+        <Control Template="{StaticResource TextLeft}" />
+      </localParamTab:LeftRightControl.LeftContent>
+      <localParamTab:LeftRightControl.RightContent>
+        <WrapPanel Orientation="Horizontal">
+          <ListBox Style="{StaticResource NoScrollListBoxStyle1}" ItemContainerStyle="{StaticResource NoScrollListBoxItemStyle1}" ItemsSource="{Binding RoiList_ComList}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid>
+                  <ContentPresenter Content="{Binding}" Visibility="{Binding RoiTypeCom, Converter={StaticResource ROIComDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.LineCaliper}}">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type ContentPresenter}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource LineCaliperComTemplate}" />
+                        <Style.Triggers>
+                          <DataTrigger Value="True" Binding="{Binding IsShowIndexA}">
+                            <Setter Property="ContentTemplate" Value="{StaticResource LineCaliperComTemplate2}" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </ContentPresenter>
+                  <ContentPresenter ContentTemplate="{StaticResource CircleCaliperComTemplate}" Content="{Binding}" Visibility="{Binding RoiTypeCom, Converter={StaticResource ROIComDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.CircleCaliper}}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ListBox>
+        </WrapPanel>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+    <ListBox Grid.Row="1" Style="{StaticResource NoScrollListBoxStyle1}" ItemContainerStyle="{StaticResource NoScrollListBoxItemStyle1}" HorizontalContentAlignment="Stretch" ItemsSource="{Binding ROIList}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel IsItemsHost="True" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="32" />
+              <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <Grid Row="0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Margin="34,0,0,0" HorizontalAlignment="Left" FontSize="14" Foreground="#FF666666" VerticalAlignment="Center" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource AncestorType=ListBoxItem}}">
+                <TextBlock.Text>
+                  <MultiBinding StringFormat="{}{0}{1}">
+                    <Lang:ResourceBinding Path="RoiType" />
+                    <Binding Path="Label" />
+                  </MultiBinding>
+                </TextBlock.Text>
+              </TextBlock>
+              <ToggleButton Name="expand" Grid.Column="1" Margin="0,0,40,0" HorizontalAlignment="Right" Padding="6,0,0,0" VerticalContentAlignment="Center" Content="{DynamicResource ROI参数}">
+                <FrameworkElement.Style>
+                  <Style BasedOn="{StaticResource ExpandButtonStyle}" TargetType="{x:Type ToggleButton}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="1" Binding="{Binding ImageWidth, Converter={StaticResource NumCompareConverter}, ConverterParameter={StaticResource CompareNum}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localcontrol:RoiSelecterCombine}}" />
+                          <Condition Value="1" Binding="{Binding ImageHeight, Converter={StaticResource NumCompareConverter}, ConverterParameter={StaticResource CompareNum}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localcontrol:RoiSelecterCombine}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </ToggleButton>
+            </Grid>
+            <Grid Row="1">
+              <localcontrol:BoxROIStack ROIData="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" DataContext="{Binding DataContext, ElementName=us}" IsDraging="{Binding CanUpDateROI, Mode=OneWayToSource, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelecterCombine}}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Control}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+                          <Condition Value="True" Binding="{Binding DataContext.RoiType, Converter={StaticResource equalConvert}, ConverterParameter=Rect, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </localcontrol:BoxROIStack>
+              <localcontrol:SectorRingROIStack ROIData="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" DataContext="{Binding DataContext, ElementName=us}" IsDraging="{Binding CanUpDateROI, Mode=OneWayToSource, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelecterCombine}}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Control}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+                          <Condition Value="True" Binding="{Binding DataContext.RoiType, Converter={StaticResource equalConvert}, ConverterParameter=Circle, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </localcontrol:SectorRingROIStack>
+              <localcontrol:PolygonROIStack ROIData="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" DataContext="{Binding DataContext, ElementName=us}" IsDraging="{Binding CanUpDateROI, Mode=OneWayToSource, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelecterCombine}}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Control}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+                          <Condition Value="True" Binding="{Binding DataContext.RoiType, Converter={StaticResource equalConvert}, ConverterParameter=Polygon, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </localcontrol:PolygonROIStack>
+              <localcontrol:LineCaliperROIStack ROIData="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" DataContext="{Binding DataContext, ElementName=us}" IsDraging="{Binding CanUpDateROI, Mode=OneWayToSource, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelecterCombine}}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Control}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+                          <Condition Value="True" Binding="{Binding DataContext.RoiType, Converter={StaticResource equalConvert}, ConverterParameter=LineCaliper, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </localcontrol:LineCaliperROIStack>
+              <localcontrol:CircleCaliperROIStack ROIData="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" DataContext="{Binding DataContext, ElementName=us}" IsDraging="{Binding CanUpDateROI, Mode=OneWayToSource, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelecterCombine}}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Control}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+                          <Condition Value="True" Binding="{Binding DataContext.RoiType, Converter={StaticResource equalConvert}, ConverterParameter=CircleCaliper, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </localcontrol:CircleCaliperROIStack>
+              <localcontrol:CoordinateROIStack ROIData="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" DataContext="{Binding DataContext, ElementName=us}" IsDraging="{Binding CanUpDateROI, Mode=OneWayToSource, Converter={StaticResource negateConverter}, RelativeSource={RelativeSource AncestorType=localcontrol:RoiSelecterCombine}}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Control}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Value="True" Binding="{Binding IsChecked, ElementName=expand}" />
+                          <Condition Value="True" Binding="{Binding DataContext.RoiType, Converter={StaticResource equalConvert}, ConverterParameter=Coordinate, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </localcontrol:CoordinateROIStack>
+            </Grid>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ListBox>
+  </Grid>
+</UserControl>

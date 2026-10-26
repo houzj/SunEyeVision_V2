@@ -8,7 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Apps.Localization;
-using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using VM.Core;
 using VMControls.Interface;
 using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;

@@ -103,6 +103,9 @@ def main():
     logical_pages = {}
     original_build_items = []
     resource_xaml_targets = set()
+    # 经审核的宿主边界适配有独立来源和输出哈希；重复导入不得恢复厂商全局依赖。
+    host_receipt = ROOT / 'src/Plugin.Wpf/Controls/Native/Display/visual-host-adaptations.json'
+    host_adaptations = {row['target']: row for row in json.loads(host_receipt.read_text(encoding='utf-8'))['files']} if host_receipt.exists() else {}
     for library in LIBRARIES:
         source = exports / library
         for path in sorted(source.rglob('*')):
@@ -231,6 +234,13 @@ def main():
             output = text.encode('utf-8')
         else:
             output = data
+        if target.as_posix() in host_adaptations:
+            adapted = host_adaptations[target.as_posix()]
+            assert digest(data).lower() == adapted['original_source_sha256'].lower(), '宿主适配的原源码身份已变化：' + str(source)
+            current = (ROOT / target).read_bytes()
+            assert digest(current).lower() == adapted['adapted_sha256'].lower(), '宿主适配已修改，先核对差异并更新适配记录：' + str(target)
+            output = current
+            changes.append('verified host adaptation retained; see visual-host-adaptations.json')
         (ROOT / target).parent.mkdir(parents=True, exist_ok=True)
         (ROOT / target).write_bytes(output)
         record = {'library': library, 'source': str(source), 'sourceRelative': relative.as_posix(),

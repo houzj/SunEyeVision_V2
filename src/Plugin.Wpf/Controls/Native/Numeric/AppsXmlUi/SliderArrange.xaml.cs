@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
 using System;
 using System.Windows.Input;
 using System.Windows.Markup;

@@ -16,6 +16,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public override SunEyeVision.Plugin.SDK.Validation.ValidationResult Validate()
         {
             var result = base.Validate();
+            if(Inputs is null||Outputs is null||DisplayConfigs is null){result.AddError("Group输入、输出或显示集合缺失。");return result;}
+            if(Inputs.Any(i=>i is null)||Outputs.Any(o=>o is null)){result.AddError("Group输入输出项缺失。");return result;}
+            if(Inputs.Count>SubroutineIoRules.MaximumItems||Outputs.Count>SubroutineIoRules.MaximumItems)result.AddError("Group输入或输出最多1024项。");
+            var ioNames=Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name)).ToArray();
+            if(ioNames.Any(n=>!SubroutineIoRules.IsValidName(n)))result.AddError("Group输入输出名称不能为空、超过31字符或包含非法字符。");
+            if(ioNames.Distinct(StringComparer.Ordinal).Count()!=ioNames.Length)result.AddError("Group输入和输出名称不能重复。");
+            var fieldIds=Inputs.Select(i=>i.FieldId).Concat(Outputs.Select(o=>o.FieldId)).ToArray();
+            if(fieldIds.Any(id=>id==Guid.Empty)||fieldIds.Distinct().Count()!=fieldIds.Length)result.AddError("Group输入输出字段身份无效或重复。");
+            if(Inputs.Any(i=>i.ParamType is null)||Outputs.Any(o=>o.ParamType is null))result.AddError("Group输入输出类型无效。");
+
             if(LoopConfig is null)result.AddError("循环配置缺失。");
             else
             {

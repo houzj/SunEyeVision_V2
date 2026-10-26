@@ -24,7 +24,6 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private string _selectedOutputTypeName = "Double";
         private SubroutineDisplayType _selectedDisplayType = SubroutineDisplayType.Circle;
         private bool _isDisposed;
-        private bool _suppressNotifications;
         public string DialogTitle => $"{_subroutineName} - 子程序参数设置";
 
         /// <summary>直接暴露源参数的集合（共享引用，实时同步到 node.Parameters）</summary>
@@ -95,8 +94,8 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             LoopConfig.PropertyChanged+=LoopChanged;
             _onOutputsChanged = onOutputsChanged;
 
-            AddInputCommand = new RelayCommand(AddInput);
-            AddOutputCommand = new RelayCommand(AddOutput);
+            AddInputCommand = new RelayCommand(AddInput,()=>!_isDisposed&&Inputs.Count<SubroutineIoRules.MaximumItems);
+            AddOutputCommand = new RelayCommand(AddOutput,()=>!_isDisposed&&Outputs.Count<SubroutineIoRules.MaximumItems);
             AddDisplayItemCommand = new RelayCommand(AddDisplayItem);
             RemoveItemCommand = new RelayCommand<object>(ExecuteRemoveItem);
             RemoveDisplayItemCommand = new RelayCommand<SubroutineDisplayItem>(ExecuteRemoveDisplayItem);
@@ -104,18 +103,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             // ★ 订阅 Outputs 变更 → 通知主窗口增量更新模块结果树
             _parameters.Outputs.CollectionChanged += OnOutputsCollectionChanged;
 
-            // ★ 子程序至少需要一个输入和一个输出（幂等补齐，补齐不应触发增量通知）
-            _suppressNotifications = true;
-            try
-            {
-                EnsureMinimumInputsOutputs();
-            }
-            finally
-            {
-                _suppressNotifications = false;
-            }
-
-            // ★ 补齐后统一订阅全部输出项的 PropertyChanged（名称/类型/分组修改时增量刷新）
+            // Opening a Group observes its configured IO; it must not create rows.
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged += OnOutputPropertyChanged;
 
@@ -134,31 +122,6 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             LoopConfig.PropertyChanged-=LoopChanged;
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged -= OnOutputPropertyChanged;
-        }
-
-        /// <summary>
-        /// 子程序至少保留一个输入/输出：集合为空时自动补齐默认项（幂等，重复打开不重复添加）。
-        /// </summary>
-        private void EnsureMinimumInputsOutputs()
-        {
-            if (Inputs.Count == 0)
-            {
-                Inputs.Add(new SubroutineInputConfig
-                {
-                    Name = "in_1",
-                    BindingKey = "in_1",
-                    TypeName = "Image"
-                });
-            }
-
-            if (Outputs.Count == 0)
-            {
-                Outputs.Add(new SubroutineOutputConfig
-                {
-                    Name = "out_1",
-                    TypeName = "Double"
-                });
-            }
         }
 
         private void LoadAvailableSources()
@@ -187,7 +150,8 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddInput()
         {
-            var initialName = $"in_{Inputs.Count + 1}";
+            if(!AddInputCommand.CanExecute(null))return;
+            var initialName = SubroutineIoRules.UniqueName("in",Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name)));
             Inputs.Add(new SubroutineInputConfig
             {
                 Name = initialName,
@@ -198,9 +162,10 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddOutput()
         {
+            if(!AddOutputCommand.CanExecute(null))return;
             Outputs.Add(new SubroutineOutputConfig
             {
-                Name = $"out_{Outputs.Count + 1}",
+                Name = SubroutineIoRules.UniqueName("out",Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name))),
                 TypeName = SelectedOutputTypeName
             });
         }
@@ -240,24 +205,10 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             if (item == null) return;
             if (item is SubroutineInputConfig input)
             {
-                // 子程序至少保留一个输入
-                if (Inputs.Count <= 1)
-                {
-                    MessageBox.Show("子程序至少需要保留一个输入参数。",
-                        "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
                 Inputs.Remove(input);
             }
             else if (item is SubroutineOutputConfig output)
             {
-                // 子程序至少保留一个输出
-                if (Outputs.Count <= 1)
-                {
-                    MessageBox.Show("子程序至少需要保留一个输出参数。",
-                        "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
                 Outputs.Remove(output);
             }
         }
@@ -274,7 +225,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private void OnOutputsCollectionChanged(object? sender,
             System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (_isDisposed || _suppressNotifications) return;
+            if (_isDisposed) return;
 
             // 新加项 → 订阅 PropertyChanged，并通知 Added
             if (e.NewItems != null)

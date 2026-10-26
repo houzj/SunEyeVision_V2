@@ -5,6 +5,7 @@
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:local="clr-namespace:SunEyeVision.Tool.Subroutine.Views"
+        xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.Models;assembly=SunEyeVision.Plugin.SDK"
         Background="{DynamicResource ThemePanelBackgroundBrush}">
 
     <UserControl.Resources>
@@ -32,6 +33,27 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+            </Style>
+
+            <Style x:Key="VmIoAddButton" TargetType="Button">
+                <Setter Property="Width" Value="24"/><Setter Property="Height" Value="32"/>
+                <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                    <Image x:Name="icon" Stretch="None" Source="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/add_normal.png"/>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/add_click.png"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="icon" Property="Opacity" Value="0.4"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate></Setter.Value></Setter>
+            </Style>
+            <Style x:Key="VmIoDeleteButton" TargetType="Button">
+                <Setter Property="Width" Value="28"/><Setter Property="Height" Value="32"/>
+                <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                    <Image x:Name="icon" Stretch="None" Source="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/delete_normal.png"/>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/delete_click.png"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="icon" Property="Opacity" Value="0.4"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate></Setter.Value></Setter>
             </Style>
 
             <!-- 添加按钮样式 -->
@@ -93,7 +115,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <DataGrid ItemsSource="{Binding Inputs}"
+                        <DataGrid Margin="18,0,2,0" ItemsSource="{Binding Inputs}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   CanUserAddRows="False"
@@ -104,17 +126,17 @@
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*">
+                                <DataGridTemplateColumn Header="参数名称" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox MaxLength="{x:Static models:SubroutineIoRules.MaximumNameLength}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
                                                      BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="类型" Width="60">
+                                <DataGridTemplateColumn Header="类型" Width="68">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
@@ -138,10 +160,10 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="操作" Width="Auto">
+                                <DataGridTemplateColumn Header="" Width="42">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="✕" Style="{StaticResource TabHeaderButton}"
+                                            <Button Style="{StaticResource VmIoDeleteButton}"
                                                     Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" ToolTip="删除此项"/>
                                         </DataTemplate>
@@ -151,20 +173,20 @@
                         </DataGrid>
 
                         <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
-                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="18,4,2,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableTypes}"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedInputTypeName}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                          Height="32" Width="68" VerticalAlignment="Center">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Content="+" Height="26" Margin="4,0,0,0"
-                                        Style="{StaticResource AddButton}"
+                                <Button Margin="7,0,0,0"
+                                        Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddInputCommand}"
                                         ToolTip="添加输入参数"/>
                             </StackPanel>
@@ -182,7 +204,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <DataGrid ItemsSource="{Binding Outputs}"
+                        <DataGrid Margin="18,0,2,0" ItemsSource="{Binding Outputs}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   CanUserAddRows="False"
@@ -193,17 +215,17 @@
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*" MinWidth="100">
+                                <DataGridTemplateColumn Header="参数名称" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox MaxLength="{x:Static models:SubroutineIoRules.MaximumNameLength}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
                                                      BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="类型" Width="60">
+                                <DataGridTemplateColumn Header="类型" Width="68">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
@@ -227,17 +249,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="操作" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="✕" Style="{StaticResource TabHeaderButton}"
-                                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}" ToolTip="删除此项"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="累计输出" Width="70">
+
+                                <DataGridTemplateColumn Header="累积输出" Width="95">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <controls:ToggleSwitch
@@ -247,24 +261,34 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="" Width="42">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource VmIoDeleteButton}"
+                                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" ToolTip="删除此项"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
 
                         <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
-                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="18,4,2,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableTypes}"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedOutputTypeName}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                          Height="32" Width="68" VerticalAlignment="Center">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Content="+" Height="26" Margin="4,0,0,0"
-                                        Style="{StaticResource AddButton}"
+                                <Button Margin="7,0,0,0"
+                                        Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddOutputCommand}"
                                         ToolTip="添加输出项"/>
                             </StackPanel>

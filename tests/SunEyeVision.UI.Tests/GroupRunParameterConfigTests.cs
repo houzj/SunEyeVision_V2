@@ -95,6 +95,36 @@ public sealed class GroupRunParameterConfigTests
         finally{window.Close();((ISubroutineParameterEditor)control).Dispose();}
     });
     [Fact]
+    public void Actual_Group_IO_pages_do_not_add_hidden_rows_and_bind_name_limits_and_last_row_deletion()=>Sta(()=>
+    {
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
+        var p=new SubroutineParameters{SubroutineId="child"};
+        var control=(UserControl)Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl",true)!,new object?[]{"child","Group","owner",null,null,p,null})!;
+        Assert.Empty(p.Inputs);Assert.Empty(p.Outputs);
+        var window=new Window{Content=control,Width=1100,Height=680,Left=-10000,ShowActivated=false};
+        try
+        {
+            foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})window.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+            window.Show();var tabs=Visual<TabControl>(control).First();
+            for(var tab=0;tab<2;tab++)
+            {
+                tabs.SelectedIndex=tab;window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);window.UpdateLayout();
+                var command=(System.Windows.Input.ICommand)control.DataContext.GetType().GetProperty(tab==0?"AddInputCommand":"AddOutputCommand")!.GetValue(control.DataContext)!;
+                var add=Assert.Single(Visual<Button>(control),b=>ReferenceEquals(b.Command,command));Assert.True(add.Command.CanExecute(add.CommandParameter));add.Command.Execute(add.CommandParameter);
+                window.UpdateLayout();Assert.Single(Visual<TextBox>(control),t=>t.MaxLength==SubroutineIoRules.MaximumNameLength);
+                Assert.True(p.Validate().IsValid);
+                if(tab==1)
+                {
+                    var bitmap=new RenderTargetBitmap(1100,680,96,96,PixelFormats.Pbgra32);bitmap.Render(control);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"group-output-Dark.png")))encoder.Save(file);
+                }
+                var remove=Assert.Single(Visual<Button>(control),b=>Equals(b.ToolTip,"删除此项"));remove.Command.Execute(remove.CommandParameter);window.UpdateLayout();
+                Assert.Empty(p.Inputs);Assert.Empty(p.Outputs);
+            }
+        }
+        finally{window.Close();((ISubroutineParameterEditor)control).Dispose();}
+    });
+    [Fact]
     public void Native_relation_policy_matches_module_kind_and_parameter_key_instead_of_only_CLR_type()
     {
         using var f=new Fixture();var group=f.Editor.AddGroup();var item=f.Editor.Add(group,f.Source("a",nameof(ProtocolParseParameters.Mode)));

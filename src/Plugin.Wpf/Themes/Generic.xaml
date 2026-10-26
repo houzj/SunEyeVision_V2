@@ -1,0 +1,428 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Controls" xmlns:fields="clr-namespace:SunEyeVision.Plugin.Wpf.Fields"><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Combo.xaml" /></ResourceDictionary.MergedDictionaries>
+<SolidColorBrush x:Key="Col_ModuleConfig_ComboBox_Foreground" Color="#666666"/>
+<SolidColorBrush x:Key="Col_ModuleConfig_ComboBox_BorderBrush" Color="#CCC7C6"/>
+<SolidColorBrush x:Key="Col_ModuleConfig_ComboBox_Background" Color="White"/>
+<SolidColorBrush x:Key="Col_ModuleConfig_ComboBox_Selected_Background" Color="#E6E6E6"/>
+<SolidColorBrush x:Key="Col_Theme" Color="#F77C00"/>
+<Style TargetType="ComboBox" BasedOn="{StaticResource ListViewComboBoxStyle}"/>
+<Style TargetType="TabItem">
+ <Setter Property="FontSize" Value="14"/><Setter Property="Foreground" Value="#666666"/><Setter Property="Padding" Value="14,8"/>
+ <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabItem"><Border x:Name="Surface" Background="White" BorderBrush="Transparent" BorderThickness="0,0,0,2"><ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}"/></Border><ControlTemplate.Triggers><Trigger Property="IsSelected" Value="True"><Setter TargetName="Surface" Property="Background" Value="#FFF0E3"/><Setter TargetName="Surface" Property="BorderBrush" Value="#F77C00"/><Setter Property="FontWeight" Value="SemiBold"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="#F77C00"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+</Style>
+
+<SolidColorBrush x:Key="O06.AccentBrush" Color="#F77C00"/>
+<SolidColorBrush x:Key="O06.ContextMenuBackgroundBrush" Color="White"/>
+<SolidColorBrush x:Key="O06.ControlHoverBackgroundBrush" Color="#FFEBD9"/>
+<SolidColorBrush x:Key="O06.InputBackgroundBrush" Color="White"/>
+<SolidColorBrush x:Key="O06.TextSecondaryBrush" Color="#666666"/>
+<SolidColorBrush x:Key="O06.BorderBrush" Color="#CCC7C6"/>
+<SolidColorBrush x:Key="O06.ControlSelectedBackgroundBrush" Color="#FFEBD9"/>
+<SolidColorBrush x:Key="O06.PanelBackgroundBrush" Color="#F2F3F5"/>
+<SolidColorBrush x:Key="O06.SliderTrackBackgroundBrush" Color="#CCCCCC"/>
+<SolidColorBrush x:Key="O06.ControlBackgroundBrush" Color="#EEEEEE"/>
+<SolidColorBrush x:Key="O06.ToggleOffBackgroundBrush" Color="#B8B8B8"/>
+<SolidColorBrush x:Key="O06.TextOnDarkBrush" Color="White"/>
+<BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+<Style x:Key="SliderStyle" TargetType="{x:Type Slider}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Slider}">
+                    <Grid Height="22" VerticalAlignment="Center">
+                        <Border x:Name="TrackBackground" Height="4" Background="{DynamicResource O06.SliderTrackBackgroundBrush}" CornerRadius="2" VerticalAlignment="Center" />
+                        <Border x:Name="TrackSelection" Height="4" Background="{DynamicResource O06.AccentBrush}" CornerRadius="2" VerticalAlignment="Center" />
+                        <Track x:Name="PART_Track" VerticalAlignment="Center">
+                            <Track.Thumb>
+                                <Thumb Width="14" Height="20" Background="{DynamicResource O06.ControlBackgroundBrush}" BorderBrush="{DynamicResource O06.AccentBrush}" BorderThickness="2" Cursor="Hand">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+<Style TargetType="{x:Type controls:NumericUpDown}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="BorderBrush" Value="{DynamicResource O06.BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource O06.InputBackgroundBrush}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:NumericUpDown}">
+                    <Grid>
+                        
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                
+                                <TextBox x:Name="PART_TextBox" Grid.Column="0" BorderThickness="0" Padding="8,0" FontSize="{TemplateBinding FontSize}" VerticalAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Left" IsReadOnly="{TemplateBinding IsReadOnly}" Background="Transparent" />
+
+                                
+                                <Border Grid.Column="1" Background="{DynamicResource O06.PanelBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1,0,1,1" CornerRadius="0,4,4,0" Visibility="{TemplateBinding ShowUpDownButtons, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Vertical">
+                                        
+                                        <RepeatButton x:Name="PART_IncreaseButton" Content="▲" Width="18" Height="13" FontSize="8" Foreground="{DynamicResource O06.TextSecondaryBrush}" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="RepeatButton">
+                                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="0">
+                                                        
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding Content}" TextElement.Foreground="{TemplateBinding Foreground}" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource O06.ControlHoverBackgroundBrush}" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource O06.ControlSelectedBackgroundBrush}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                        <RepeatButton x:Name="PART_DecreaseButton" Content="▼" Width="18" Height="13" FontSize="8" Foreground="{DynamicResource O06.TextSecondaryBrush}" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="RepeatButton">
+                                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="0">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding Content}" TextElement.Foreground="{TemplateBinding Foreground}" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource O06.ControlHoverBackgroundBrush}" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource O06.ControlSelectedBackgroundBrush}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                        
+                        
+                        <Popup x:Name="PART_SliderPopup" Placement="Bottom" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Slide">
+                            <Border Background="{DynamicResource O06.ContextMenuBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,2,0,0">
+                                <Slider x:Name="PART_Slider" Style="{StaticResource SliderStyle}" Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Minimum="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Maximum="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" SmallChange="{TemplateBinding SmallChange}" LargeChange="{TemplateBinding LargeChange}" Width="220" />
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsReadOnly" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource O06.PanelBackgroundBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource O06.AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource O06.ControlHoverBackgroundBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+<Style TargetType="{x:Type controls:ToggleSwitch}">
+        <Setter Property="SwitchWidth" Value="42" />
+        <Setter Property="SwitchHeight" Value="22" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="OnBackground" Value="{DynamicResource O06.AccentBrush}" />
+        <Setter Property="OffBackground" Value="{DynamicResource O06.ToggleOffBackgroundBrush}" />
+        <Setter Property="ThumbColor" Value="{DynamicResource O06.TextOnDarkBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:ToggleSwitch}">
+                    <Border x:Name="SwitchBorder" Background="{TemplateBinding OffBackground}" BorderBrush="{TemplateBinding OffBackground}" BorderThickness="1" CornerRadius="{TemplateBinding CornerRadius}" Width="{TemplateBinding SwitchWidth}" Height="{TemplateBinding SwitchHeight}">
+                        <Grid>
+                            
+                            <Border x:Name="ThumbBorder" Background="{TemplateBinding ThumbColor}" CornerRadius="{TemplateBinding CornerRadius}" Width="{Binding SwitchHeight, RelativeSource={RelativeSource TemplatedParent}}" Height="{Binding SwitchHeight, RelativeSource={RelativeSource TemplatedParent}}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1,0" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="SwitchBorder" Property="Background" Value="{Binding OnBackground, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="SwitchBorder" Property="BorderBrush" Value="{Binding OnBackground, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="ThumbBorder" Property="HorizontalAlignment" Value="Right" />
+                        </Trigger>
+                        
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="SwitchBorder" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+<Style TargetType="{x:Type controls:RangeSlider}">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:RangeSlider}">
+                    
+                    <Canvas x:Name="PART_Canvas" Height="22" VerticalAlignment="Center">
+                        
+                        
+                        <Border x:Name="PART_Track" Canvas.Top="9" Height="4" Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" Background="{DynamicResource O06.SliderTrackBackgroundBrush}" CornerRadius="2" />
+
+                        
+                        <Border x:Name="PART_RangeFill" Canvas.Top="9" Height="4" Background="{DynamicResource O06.AccentBrush}" CornerRadius="2" />
+
+                        
+                        <Thumb x:Name="PART_MinThumb" Canvas.Top="1" Width="14" Height="20" Background="{DynamicResource O06.ControlBackgroundBrush}" BorderBrush="{DynamicResource O06.AccentBrush}" BorderThickness="2" Cursor="Hand">
+                            <Thumb.Style>
+                                <Style TargetType="Thumb">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Thumb.Style>
+                        </Thumb>
+
+                        
+                        <Thumb x:Name="PART_MaxThumb" Canvas.Top="1" Width="14" Height="20" Background="{DynamicResource O06.ControlBackgroundBrush}" BorderBrush="{DynamicResource O06.AccentBrush}" BorderThickness="2" Cursor="Hand">
+                            <Thumb.Style>
+                                <Style TargetType="Thumb">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Thumb.Style>
+                        </Thumb>
+                    </Canvas>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+<Style TargetType="{x:Type controls:RangeInputControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:RangeInputControl}">
+                    <Grid>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            
+                            <controls:NumericUpDown x:Name="PART_MinNumeric" Grid.Column="0" Width="{TemplateBinding NumericWidth}" Value="{Binding MinValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" SmallChange="{TemplateBinding SmallChange}" LargeChange="{TemplateBinding LargeChange}" DecimalPlaces="{TemplateBinding DecimalPlaces}" ShowSlider="False" ShowUpDownButtons="True" />
+
+                            
+                            <TextBlock Grid.Column="1" Text="-" Margin="2,0" VerticalAlignment="Center" Foreground="{DynamicResource O06.TextSecondaryBrush}" />
+
+                            
+                            <controls:NumericUpDown x:Name="PART_MaxNumeric" Grid.Column="2" Width="{TemplateBinding NumericWidth}" Value="{Binding MaxValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" SmallChange="{TemplateBinding SmallChange}" LargeChange="{TemplateBinding LargeChange}" DecimalPlaces="{TemplateBinding DecimalPlaces}" ShowSlider="False" ShowUpDownButtons="True" />
+
+                            
+                            <TextBlock Grid.Column="3" Text="{TemplateBinding Unit}" Margin="4,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource O06.TextSecondaryBrush}" Visibility="Visible" />
+                        </Grid>
+                        
+                        
+                        <Popup x:Name="PART_SliderPopup" Placement="Bottom" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Slide">
+                            <Border Background="{DynamicResource O06.ContextMenuBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,2,0,0">
+                                <controls:RangeSlider x:Name="PART_RangeSlider" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" MinValue="{Binding MinValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" MaxValue="{Binding MaxValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" SmallChange="{TemplateBinding SmallChange}" LargeChange="{TemplateBinding LargeChange}" MinGap="{TemplateBinding MinGap}" Width="220" />
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+<SolidColorBrush x:Key="O06.TextPrimaryBrush" Color="#333333"/><DropShadowEffect x:Key="PopupShadowEffect" Color="Black" BlurRadius="6" ShadowDepth="2" Opacity="0.15"/><Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="{x:Type controls:ColorPicker}">
+        <Setter Property="Width" Value="220" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:ColorPicker}">
+                    <Border Background="{DynamicResource O06.InputBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="0">
+                        <Grid>
+                            
+                            <TabControl x:Name="PART_TabControl">
+                                
+                                <TabItem Header="默认">
+                                    <StackPanel Margin="10,12,10,0" HorizontalAlignment="Center">
+                                        
+                                        <TextBlock Text="主题颜色" FontSize="12" Foreground="{DynamicResource O06.TextSecondaryBrush}" Margin="0,0,0,8" TextAlignment="Center" Width="198" />
+                                        <UniformGrid x:Name="PART_ThemeColorsPanel" Columns="10" Rows="6" Width="198" Height="112" />
+                                        
+                                        
+                                        <TextBlock Text="标准颜色" FontSize="12" Foreground="{DynamicResource O06.TextSecondaryBrush}" Margin="0,12,0,8" TextAlignment="Center" Width="198" />
+                                        <UniformGrid x:Name="PART_StandardColorsPanel" Columns="10" Rows="1" Width="198" Height="18" />
+                                    </StackPanel>
+                                </TabItem>
+
+                                
+                                <TabItem Header="更多">
+                                    <Grid Margin="10,12,10,0" HorizontalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        
+                                        <Canvas x:Name="PART_HsvCanvas" Grid.Column="0" Width="140" Height="140" Cursor="Cross" Margin="0,0,8,0" VerticalAlignment="Top">
+                                            
+                                            <Canvas.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                    <GradientStop Color="Red" Offset="0.0" />
+                                                    <GradientStop Color="Yellow" Offset="0.166" />
+                                                    <GradientStop Color="Lime" Offset="0.333" />
+                                                    <GradientStop Color="Cyan" Offset="0.5" />
+                                                    <GradientStop Color="Blue" Offset="0.666" />
+                                                    <GradientStop Color="Magenta" Offset="0.833" />
+                                                    <GradientStop Color="Red" Offset="1.0" />
+                                                </LinearGradientBrush>
+                                            </Canvas.Background>
+                                            
+                                            
+                                            <Rectangle Width="140" Height="140">
+                                                <Rectangle.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="White" Offset="0.0" />
+                                                        <GradientStop Color="Transparent" Offset="0.5" />
+                                                        <GradientStop Color="Black" Offset="1.0" />
+                                                    </LinearGradientBrush>
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                            
+                                            
+                                            <Ellipse x:Name="PART_HsvSelector" Width="14" Height="14" Stroke="White" StrokeThickness="2" Fill="Transparent" />
+                                        </Canvas>
+                                        
+                                        
+                                        <Grid Grid.Column="1" Width="36" Height="140" VerticalAlignment="Top">
+                                            <Slider x:Name="PART_ValueSlider" Orientation="Vertical" Minimum="0" Maximum="1" Value="1" SmallChange="0.01" LargeChange="0.1" HorizontalAlignment="Center" />
+                                            
+                                            
+                                            <TextBlock x:Name="PART_ValueText" Text="1.00" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0" VerticalAlignment="Bottom" />
+                                        </Grid>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="{x:Type fields:ColorField}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type fields:ColorField}">
+                    
+                    <Grid>
+                        
+                        <Border x:Name="PART_SelectorBorder" Height="28" Background="Transparent" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="2" Focusable="True" Cursor="Hand">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    
+                                    <Border x:Name="PART_ColorPreview" Grid.Column="0" Width="24" Height="24" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="2" Margin="4,0,8,0" />
+                                    
+                                    
+                                    <TextBlock x:Name="PART_RgbText" Grid.Column="1" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource O06.TextPrimaryBrush}" Padding="0,0,4,0" />
+                                </Grid>
+                            </Border>
+
+                            
+                            <Popup x:Name="PART_ColorPickerPopup" PlacementTarget="{Binding ElementName=PART_SelectorBorder}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+                                <Border Background="{DynamicResource O06.ContextMenuBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="1" CornerRadius="4" Margin="0,6,0,0" Padding="0" Effect="{StaticResource PopupShadowEffect}">
+                                    <StackPanel><controls:ColorPicker x:Name="PART_ColorPicker"/><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="6"><Button x:Name="PART_Apply" Content="确定" Padding="12,3"/><Button x:Name="PART_Cancel" Content="取消" Margin="6,0,0,0" Padding="12,3"/></StackPanel></StackPanel>
+                                </Border>
+                            </Popup>
+                    </Grid>
+
+                    
+                    <ControlTemplate.Triggers>
+                        
+                        <Trigger SourceName="PART_SelectorBorder" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_SelectorBorder" Property="BorderBrush" Value="{DynamicResource O06.AccentBrush}" />
+                        </Trigger>
+                        
+                        
+                        <Trigger SourceName="PART_SelectorBorder" Property="IsFocused" Value="True">
+                            <Setter TargetName="PART_SelectorBorder" Property="BorderBrush" Value="{DynamicResource O06.AccentBrush}" />
+                            <Setter TargetName="PART_SelectorBorder" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="ColorPickerButtonStyle" TargetType="Button">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" SnapsToDevicePixels="True" />
+                    <ControlTemplate.Triggers>
+                        
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource O06.AccentBrush}" />
+                            <Setter TargetName="Border" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="Border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" Direction="315" Opacity="0.3" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="1" />
+        <Setter Property="Focusable" Value="False" />
+    </Style>
+
+    
+    </ResourceDictionary>

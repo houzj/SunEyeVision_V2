@@ -22,7 +22,8 @@ internal static class BlobConfigurationFields
                 "input.mask.mode"=>nameof(parameters.MaskMode), _=>field.LegacyPath};
             var (owner,property)=FindSlot(parameters,path);
             var descriptor=new FieldPresentation(field.Port.Id,Label(field,parameters),Group(field),field.Presentation.Order,
-                field.Presentation.Editor,field.Presentation.ChoiceKeys,field.Presentation.ChoiceKeys.ToDictionary(key=>key,ChoiceLabel));
+                field.Presentation.Editor,field.Presentation.ChoiceKeys,field.Presentation.ChoiceKeys.ToDictionary(key=>key,ChoiceLabel))
+                {Layout=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobPresentation.Layout(field.LogicalKey,BlobInputContract.Fields.ToDictionary(item=>item.LogicalKey,item=>item.Port.Id))};
             return new ConfigurationFieldAccessor(field.Port,descriptor,path,()=>field.ReadStored(parameters),value=>
             {
                 var frozen=ValueRules.Freeze(field.Port,value);

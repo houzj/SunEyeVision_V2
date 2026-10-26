@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Data;
+using System.Windows.Controls.Primitives;
+using SunEyeVision.Plugin.Wpf.Controls;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
@@ -20,39 +22,50 @@ public sealed class DeclaredFieldEditor : UserControl
     private readonly List<DeclaredFieldEditor> _children = new();
     private ParameterSetting _setting;
     private ConstantSetting? _constant;
-    private Button? _constantAction;
+    private readonly FieldPresentation? _presentation;
+    private bool _referenceMode;
+    private readonly Grid _row = new();
+    private readonly StackPanel _actions = new() { Orientation=Orientation.Horizontal };
+    private readonly TextBlock _label = new();
+    private NumericUpDown? _numeric;
+    private bool _updatingInput;
+    public UIElement EditorBody => _row;
+    public void SetLabel(string text)=>_label.Text=text;
+    public void UsePairedSlider(){if(_numeric is not null)_numeric.ShowSlider=false;}
+    public bool TrySetConstant(object value)
+    {
+        if(HasInvalidText||!Set(new ConstantSetting(value)))return false;
+        _updatingInput=true;
+        try
+        {
+            if(_numeric is not null)_numeric.Value=Convert.ToDouble(value,CultureInfo.InvariantCulture);
+            else if(InputElement is TextBox text)text.Text=Convert.ToString(value,CultureInfo.InvariantCulture)??"";
+            else Render();
+        }
+        finally{_updatingInput=false;}
+        return true;
+    }
+    public void HideLabel() { _label.Visibility=Visibility.Collapsed;_row.ColumnDefinitions[0].Width=new GridLength(0); }
     public string FieldId => _port.Id;
     public ParameterSetting Setting => _setting;
     public FrameworkElement? InputElement { get; private set; }
-    public bool HasInvalidText => _error.Text.Length != 0 || _children.Any(child => child.HasInvalidText);
-    public string Error => _error.Text.Length != 0 ? _error.Text : _children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    public bool HasInvalidText => (_referenceMode && _setting is not ReferenceSetting) || _error.Text.Length != 0 || _children.Any(child => child.HasInvalidText);
+    public string Error => _referenceMode && _setting is not ReferenceSetting ? "请选择订阅来源，或切回数值模式。" : _error.Text.Length != 0 ? _error.Text : _children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     public event Action? Changed;
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
         Func<Port, ReferenceSetting?>? selectReference = null, ConstantSetting? constantBackup = null,
-        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null)
+        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null)
     {
         _port = port; _setting = initial; _constant = initial as ConstantSetting ?? constantBackup; _write = write; _selectReference = selectReference;
         _formatReference=formatReference;_choiceLabels=choiceLabels;
-        Tag = port.Id; Margin = new Thickness(0, 3, 0, 5);
-        var panel = new StackPanel();
-        var header = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
-        var actions = new StackPanel { Orientation = Orientation.Horizontal };
-        DockPanel.SetDock(actions, Dock.Right); header.Children.Add(actions);
-        Button Action(string text, string tooltip, Action action)
-        {
-            var button = new Button { Content = text, ToolTip = tooltip, Padding = new Thickness(6, 1, 6, 1), Margin = new Thickness(3, 0, 0, 0) };
-            button.Click += (_, _) => action(); actions.Children.Add(button);
-            return button;
-        }
-        if (selectReference is not null && (port.EditModes & FieldEditModes.Reference) != 0)
-            Action("绑定", "从声明的输出中选择来源", () => { var value = _selectReference!(port); if (value is not null && Set(value)) Render(); });
-        if (port.Type.Shape != ValueShape.Resource && (port.EditModes == FieldEditModes.None || (port.EditModes & FieldEditModes.Constant) != 0))
-            _constantAction = Action("常量", "恢复此字段最近的常量草稿", () => { try { if (Set(_constant ?? new ConstantSetting(Default(port.Type)))) Render(); }
-                catch(ArgumentException exception) { _error.Text=exception.Message;Changed?.Invoke(); } });
-        if (!port.Required) Action("清除", "移除此可选设置；不等同于空集合或空区域", () => { if (Set(new UnsetSetting())) Render(); });
-        header.Children.Add(new TextBlock { Text = label, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap });
-        panel.Children.Add(header); panel.Children.Add(_body); panel.Children.Add(_error); Content = panel;
+        _presentation=presentation;_referenceMode=initial is ReferenceSetting;
+        Resources.MergedDictionaries.Add(EditorResources.Create());
+        Tag=port.Id;Margin=new Thickness(0,1,0,1);MinHeight=32;
+        _row.ColumnDefinitions.Add(new(){Width=new GridLength(89)});_row.ColumnDefinitions.Add(new());_row.ColumnDefinitions.Add(new(){Width=GridLength.Auto});
+        _label.Text=label;_label.VerticalAlignment=VerticalAlignment.Center;_label.TextTrimming=TextTrimming.CharacterEllipsis;_label.ToolTip=label;_label.FontSize=14;
+        _row.Children.Add(_label);Grid.SetColumn(_body,1);_row.Children.Add(_body);Grid.SetColumn(_actions,2);_row.Children.Add(_actions);
+        var panel=new StackPanel();panel.Children.Add(_row);_error.Margin=new Thickness(89,2,0,0);panel.Children.Add(_error);Content=panel;
         Render();
     }
 
@@ -77,20 +90,42 @@ public sealed class DeclaredFieldEditor : UserControl
 
     private void Render()
     {
-        _body.Children.Clear(); _children.Clear(); InputElement = null;
-        if(_constantAction is not null)_constantAction.Visibility=_setting is ConstantSetting?Visibility.Collapsed:Visibility.Visible;
-        if (_setting is ReferenceSetting reference)
+        _body.Children.Clear();_children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
+        var canReference=_selectReference is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
+        if(canReference)
         {
-            _body.Children.Add(new TextBlock { Text = _formatReference?.Invoke(reference.Reference)??$"{reference.Reference.NodeId} · {reference.Reference.PortId}", TextWrapping = TextWrapping.Wrap }); return;
+            var mode=new ToggleButton {Content=_referenceMode?"✎":"⇄",IsChecked=_referenceMode,Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip=_referenceMode?"切换为数值编辑":"切换为订阅"};
+            mode.Click+=(_,_)=>{if(_referenceMode){if(_port.Type.Shape!=ValueShape.Resource&&Set(_constant??new ConstantSetting(Default(_port.Type))))_referenceMode=false;}else _referenceMode=true;Render();Changed?.Invoke();};_actions.Children.Add(mode);
         }
-        if (_setting is UnsetSetting) { _body.Children.Add(new TextBlock { Text = "未设置", Opacity = .6 }); return; }
+        if(!_port.Required&&_setting is not UnsetSetting)
+        {
+            var clear=new Button {Content="×",Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip="清除可选项"};
+            clear.Click+=(_,_)=>{if(Set(new UnsetSetting())){_referenceMode=false;Render();}};_actions.Children.Add(clear);
+        }
+        if(_referenceMode||_setting is ReferenceSetting)
+        {
+            var dock=new DockPanel();var pick=new Button{Content="🔗",Width=29,Height=30,ToolTip="选择订阅来源"};DockPanel.SetDock(pick,Dock.Right);dock.Children.Add(pick);
+            var label=new TextBox {IsReadOnly=true,Height=30,VerticalContentAlignment=VerticalAlignment.Center,Text=_setting is ReferenceSetting reference?(_formatReference?.Invoke(reference.Reference)??reference.Reference.NodeId+" · "+reference.Reference.PortId):""};dock.Children.Add(label);
+            pick.Click+=(_,_)=>{var selected=_selectReference?.Invoke(_port);if(selected is not null&&Set(selected)){_referenceMode=true;Render();}};
+            _body.Children.Add(dock);return;
+        }
+        if(_setting is UnsetSetting)
+        {
+            _body.Children.Add(new TextBlock{Text="未设置",Opacity=.6});
+            if(_port.Type.Shape!=ValueShape.Resource&&(_port.EditModes==FieldEditModes.None||(_port.EditModes&FieldEditModes.Constant)!=0))
+            {
+                var create=new Button{Content="设置",Height=26,ToolTip="设置此可选项"};
+                create.Click+=(_,_)=>{if(Set(_constant??new ConstantSetting(Default(_port.Type))))Render();};_actions.Children.Add(create);
+            }
+            return;
+        }
         var value = ((ConstantSetting)_setting).Value;
         if (_port.Type.Shape == ValueShape.Resource) { _body.Children.Add(new TextBlock { Text = "运行时资源，请选择来源" }); return; }
         if (_port.Type.Shape == ValueShape.Scalar)
         {
             if (_port.Type.Scalar == ScalarKind.Boolean)
             {
-                var input = new CheckBox { IsChecked = value as bool? }; input.Click += (_, _) => Set(new ConstantSetting(input.IsChecked == true)); InputElement = input; _body.Children.Add(input);
+                var input = new ToggleSwitch { IsChecked = value as bool? == true, SwitchWidth=40,SwitchHeight=22,CornerRadius=2 }; input.CheckedChanged += (_, _) => Set(new ConstantSetting(input.IsChecked)); InputElement = input; _body.Children.Add(input);
             }
             else if (_port.Choices is { } choices)
             {
@@ -105,9 +140,13 @@ public sealed class DeclaredFieldEditor : UserControl
             }
             else
             {
-                var input = new TextBox { Text = Convert.ToString(value, CultureInfo.InvariantCulture) ?? "", MinWidth = 90 };
+                void Attach(TextBox input)
+                {
+                    input.Text=Convert.ToString(value,CultureInfo.InvariantCulture)??"";
+                    InputElement=input;
                 input.TextChanged += (_, _) =>
                 {
+                    if(_updatingInput)return;
                     try
                     {
                         object parsed = _port.Type.Scalar switch
@@ -121,11 +160,37 @@ public sealed class DeclaredFieldEditor : UserControl
                     catch (Exception exception) when (exception is FormatException or OverflowException)
                     { _error.Text = "请输入有效的" + (_port.Type.Scalar == ScalarKind.Int64 ? "整数。" : "数字。"); Changed?.Invoke(); }
                 };
-                InputElement = input; _body.Children.Add(input);
+
+                }
+                var numeric=_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
+                // Int64 must never travel through a double-valued visual; retain the exact text editor.
+                if(numeric&&_port.Storage!=NumericStorage.Int64&&(_port.Type.Scalar!=ScalarKind.Int64||_port.Storage is not null))
+                {
+                    var layout=_presentation?.Layout;
+                    var input=new NumericUpDown{Height=32,FontSize=14,
+                        Minimum=layout?.Minimum??-double.MaxValue,Maximum=layout?.Maximum??double.MaxValue,
+                        Value=Convert.ToDouble(value,CultureInfo.InvariantCulture),
+                        DecimalPlaces=_port.Type.Scalar==ScalarKind.Int64?0:layout?.DecimalPlaces??2,
+                        ShowSlider=layout?.Minimum is not null&&layout.Maximum is not null,
+                        IntegerType=_port.Type.Scalar==ScalarKind.Int64?TypeCode.Int32:TypeCode.Empty};
+                    TextBox? attached=null;
+                    input.Loaded+=(_,_)=>{input.ApplyTemplate();if(input.TextEditor is {} box&&!ReferenceEquals(box,attached)){attached=box;Attach(box);}};
+                    _numeric=input;InputElement=input;_body.Children.Add(input);
+                }
+                else {var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center};Attach(input);_body.Children.Add(input);}
+
             }
         }
         else if (_port.Type.Shape == ValueShape.Record && value is RecordValue record)
         {
+            if (_port.Type.Equals(PresentationDeclarations.Rgba))
+            {
+                var input=new ColorField {Height=32,SelectedColor=Color.FromArgb(
+                    checked((byte)record.Get<long>("a")),checked((byte)record.Get<long>("r")),
+                    checked((byte)record.Get<long>("g")),checked((byte)record.Get<long>("b")))};
+                input.SelectedColorChanged+=(_,e)=>Set(new ConstantSetting(PresentationDeclarations.Color(e.NewValue.R,e.NewValue.G,e.NewValue.B,e.NewValue.A)));
+                InputElement=input;_body.Children.Add(input);return;
+            }
             foreach (var field in _port.Type.Fields)
             {
                 var child = new DeclaredFieldEditor(field, field.Id,

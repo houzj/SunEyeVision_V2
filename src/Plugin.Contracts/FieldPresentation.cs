@@ -1,5 +1,11 @@
 namespace SunEyeVision.Plugin.Contracts;
 
+/// <summary>Finite UI-neutral layout; conditions address declared stable field IDs, never CLR paths.</summary>
+public sealed record FieldCondition(string FieldId, object? Value);
+public sealed record FieldLayout(string Page, string Section, FieldCondition? VisibleWhen=null,
+    string? PairWith=null, bool Advanced=false, double? Minimum=null, double? Maximum=null,
+    int DecimalPlaces=2, bool AllowReference=true);
+
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8 }
 public enum FieldDefaultPresence { Unset, ExplicitValueRequired }
@@ -37,6 +43,7 @@ public sealed class FieldPresentation
             throw new ArgumentException("Choice display labels must address declared keys.");
         ChoiceLabels=new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(labels);
     }
+    public FieldLayout? Layout { get; init; }
     public string FieldId{get;} public string DisplayName{get;} public string Group{get;} public int Order{get;}
     public IReadOnlyDictionary<string,string> ChoiceLabels{get;}
     public FieldEditorKind Editor{get;} public IReadOnlyList<string> ChoiceKeys{get;}
@@ -69,6 +76,18 @@ public sealed class ToolPresentation
                 FieldEditorKind.Image=>port.Type==TypeRef.ResourceOf(ResourceKind.Image),
                 _=>false};
             if(!compatible)throw new ArgumentException("Editor kind disagrees with its declared field type.");
+            if(field.Layout is {} layout)
+            {
+                if(string.IsNullOrWhiteSpace(layout.Page)||string.IsNullOrWhiteSpace(layout.Section)||layout.DecimalPlaces is <0 or >15)
+                    throw new ArgumentException("Invalid field layout.");
+                if(layout.VisibleWhen is {} condition)
+                {if(!ports.TryGetValue(condition.FieldId,out var controller))throw new ArgumentException("Visibility references an undeclared field.");ValueRules.Freeze(controller,condition.Value);}
+                if(layout.PairWith is {} paired&&(paired==port.Id||!ports.TryGetValue(paired,out var other)||other.Type!=port.Type||port.Type.Shape!=ValueShape.Scalar||port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)))
+                    throw new ArgumentException("A range requires two distinct declared numeric fields of the same type.");
+                if(layout.Minimum is {} minimum&&!double.IsFinite(minimum)||layout.Maximum is {} maximum&&!double.IsFinite(maximum)||layout.Minimum>layout.Maximum)
+                    throw new ArgumentException("Invalid visual numeric bounds.");
+            }
+
         }
         var roles=new HashSet<string>(StringComparer.Ordinal);
         foreach(var region in Regions)

@@ -1,0 +1,36 @@
+{
+  "status": "FOUNDATION_INTERACTION_PASS_NOT_FULL_BLOB",
+  "baseline": "0d8a416b",
+  "userApproval": "按照方案开始实施优化；制定目标推动落地",
+  "actualChecks": 26,
+  "fixtureRoot": "Release\\_validation\\O06-Controls-20261026",
+  "fixtureFiles": {
+    "Release\\_validation\\O06-Controls-20261026\\build.log": "66FF9AA9AC0FFD88C513E69288CBE66FFB564EC6C3C345B542204ECF2F3B9385",
+    "Release\\_validation\\O06-Controls-20261026\\Cases.cs": "009E35CC76B397EACDB498F862D29D6BDF5F7BCC82E9FE734E034C6ED663B162",
+    "Release\\_validation\\O06-Controls-20261026\\Check.csproj": "B427E510CB9697E7849678BBF3454989237F47949E133C31F28112A4C364A4A0",
+    "Release\\_validation\\O06-Controls-20261026\\color-field.png": "ED282314592A0C82F168648562C9BAF74AD70D76654A986E09BC1AB6AD3137C7",
+    "Release\\_validation\\O06-Controls-20261026\\loaded-product.tsv": "A75F19A04EEA73B29307539C3C98238561502045F929A8BF9B86110E72B1C63B",
+    "Release\\_validation\\O06-Controls-20261026\\NuGet.Config": "E55025A896F8FBE147F99D8F85AFE2377F9DC0E65CD4527BE17BB2850AC85FDC",
+    "Release\\_validation\\O06-Controls-20261026\\run.log": "AC12D5E9624D2B097CBDD4925301DF27AA3C913B6CB3A179C33CB8F0084C25F0",
+    "Release\\_validation\\O06-Controls-20261026\\SafeEntry.cs": "3486808581B67A670C64AB0E65CB0B60A324958F2D9CB314DB27D12CAB0F82BF"
+  },
+  "loadedProduct": "SunEyeVision.Plugin.Wpf\tD:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll\t91BACDA5D80F5316A7702150EA04E540B357DF056EF46B11DD2FAB36591C623B\nSunEyeVision.Plugin.Contracts\tD:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll\t29E42C65D2B70D62F3CEF82F9607771E52712059B53C09FCDC7AC4C9C320FF9F\n",
+  "remaining": [
+    "ROI和完整窗口/显示组合",
+    "算法职责/参数输出和关联工具适配",
+    "同一提交Release完整链和关联回归",
+    "实际VS设计器与用户人工验收"
+  ],
+  "limits": [
+    "工作区候选不是最终交付提交",
+    "不把功能局部PASS或RenderTargetBitmap代作VM实机/UI人工验收",
+    "原有Results与锁文件修改保留，不归本轮实现"
+  ],
+  "fullBuild": {
+    "path": "Release\\_validation\\o06-controls-full-release.log",
+    "sha256": "802DE9F0F0EED2301B6B4A19EEB074C47AF7EA6D822CA2BA5DBFE29CDBFE33E6",
+    "errors": 0,
+    "warnings": 1378,
+    "elapsed": "00:01:07.70"
+  }
+}

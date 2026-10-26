@@ -1,1 +1,1 @@
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF></PropertyGroup><ItemGroup><ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" /></ItemGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF></PropertyGroup><ItemGroup><ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" /></ItemGroup><ItemGroup><Resource Include="Themes/Assets/*.png" /></ItemGroup></Project>

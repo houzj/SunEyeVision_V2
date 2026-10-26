@@ -1,3 +1,33 @@
+## 实施检查点：基础控件真实WPF 26项通过，持续目标active（2026-10-26）
+
+已按批准方案提取NumericUpDown、RangeSlider、RangeInputControl、ToggleSwitch、ColorPicker/HSV/调色板至独立Plugin.Wpf，重组ColorField为确定/取消草稿；资源闭合到本程序集。三页中立布局、条件展开、配对范围、常量/订阅和输入源Combo已接线。修复实际装载发现的Combo相对路径和ColorPickerButtonStyle遗漏；补回可选字段清除/重设，配对滑条不会同时弹单值滑条。
+
+正式目录Release/_validation/O06-Controls-20261026实际WPF 26项通过：数值初值/边界/重复装载、焦点、颜色RGBA私有草稿、来源序号/清空、订阅切换、三页条件/双滑条/切页，以及无SDK/UI/HALCON依赖。全量Release构建o06-controls-full-release.log 0错误/1378警告，1分07秒；随后同目录重跑26项通过。不是完整Blob链或人工UI验收。证据evidence/O06_IMPLEMENTATION_CHECKPOINT_20261026.json。
+
+仍需：ROI/显示对象/紧凑窗口完整组合、批准算法职责迁移与关联工具适配、同一提交正式Release完整链和关联回归、实际VS设计器/用户反馈。旧SDK类型消费者尚未迁完，不删除。当前单写者，不恢复旧岗位或变量收口。基础检查点产品提交后仍继续，不宣布整体完成。
+
+原O06现已集中显示已批准/实施中与当前真实成果；旧S4方案保存在history/S4_PLAN_BEFORE_APPROVED_IMPLEMENTATION_20261026.json，无信息丢弃。原有Results/两锁文件改动保留且不混入本轮提交。收到逆向三岗更正索引作为补充线索，不自动采信作者归属或原厂运行身份，后续核SHA后并入证据；不影响当前产品基础交互验证。
+
+---
+
+## 实施检查点：持续目标已active，继续产品接线（2026-10-26）
+
+基础交互已从旧SDK提取4类至Plugin.Wpf/Controls，闭合主题资源至Themes/Generic+Combo与独立图标；不依赖SDK。已增加中立FieldLayout、BlobPresentation、数值/订阅字段组合、配对范围和三页/条件分组。SourceSelectionField改用已还原整行ComboBox；还需实际WPF验证与完整源/颜色/ROI/显示对象接线，不能宣称界面达标。
+
+Plugin.Wpf独立Release组件编译0错误；第一轮UI Release构建o06-first-ui-build.log：0错误/1324警告，用时2分27秒。这是增量候选构建，尚未全量最终验证、整链或UI视觉核收，尚无最终产品提交身份。构建包含原有Results/锁文件工作区改动，不将其算成本轮实现。临时WPF项目资源恢复路径已修正为固定本工程obj，避免新增XAML后找不到assets。
+
+目标已真实创建为active，内容见ACTIVE_GOAL.md。下一检查点预计30分钟内：来源/颜色/ROI组合完成接线并开始正式目录独立验证；检查点不停止后续实施。未恢复旧岗位/变量批次，无人工验收结论。
+
+---
+
+## 当前实施：用户批准按31类与Blob UI方案落地（2026-10-26）
+
+批准基线0d8a416b。当前对话单产品写者；先基础控件与资源、中立显示声明、三页/条件组合与来源/ROI/显示配置，再真实Release及关联回归。旧类按消费者迁移门退出，不为图省事整包引用旧SDK；不恢复旧变量批次。HALCON沿用加密狗，无单独许可检查。检查点持续推进，不代人工验收。
+
+工作区原有BlobAnalysisResults.cs及两个packages.lock.json外部改动保留，不擅自回退或混作本轮更改。构建身份与实际测试将明确是否含这些原有改动。后续状态以下方新记录为准，之前“不改产品”已被本次实施授权取代。
+
+---
+
 ## 当前交付：31类新职责、去留与交互方案统一，待用户整体审核（2026-10-26）
 
 本轮只改方案/HTML。31类按六组职责重排：8提取复用、15重组、8旧类退出；每行给VM控件/模板/组合链源码与本方文件、静态提及、功能承接及拟目标文件。删除旧类型不等于删除功能，也不因无同名类型称VM全局无源。原31主清单、原去留总览、原工程结构同源；旧行/十项候选/工程门完整归档。证据O06_CONTROL_REORGANIZATION_20261026.json。

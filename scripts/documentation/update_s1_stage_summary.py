@@ -262,7 +262,7 @@ def render_s4_stage(page):
              + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　原型未实施；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链对照。自动渲染受本机file协议策略限制，尚未视觉核收。</p>' if review and 'preview' in s4['uiReview'] else '')
              + ('<p><a href="#o06-current-control-mapping"><b>直接审核31类新职责、VM源、去留与文件组织</b></a> · 8项提取复用 / 15项重组 / 8项旧类退出；完整交互见同段下方。</p>' if (ROOT/'docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json').exists() else '')
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
-             + (('<h4>S4哪些重做，哪些复用（推荐，待整体审核）</h4>'
+             + (('<h4>S4哪些重做，哪些复用（' + ('已批准，实施中' if s4.get('implementationApproved') else '推荐，待整体审核') + '）</h4>'
                   + ('<p><b>'+escape(s4['uiReview']['uiArchitectureDecision']['principle'])+'</b></p>'+table(['层次','现有基础','明确处理'],s4['uiReview']['uiArchitectureDecision']['rows']) if s4['uiReview'].get('uiArchitectureDecision') else '')
                   + table(['处理','本方对象','VM依据与本方差距','功能承接及工程调整'],s4['uiReview']['decisions'])
                   + ('<h4 id="o06-algorithm-ui-differences">算法职责、参数与输出怎样对应三页</h4>'

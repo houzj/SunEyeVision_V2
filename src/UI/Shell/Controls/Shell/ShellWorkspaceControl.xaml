@@ -405,7 +405,7 @@
                         <Grid x:Name="CanvasSizingGrid">
                           <canvas:WorkflowCanvasControl
                                                     x:Name="WorkflowCanvasHost"
-                                                    Width="6000" Height="6000"
+                                                    Width="5000" Height="5000"
                                                     HorizontalAlignment="Left" VerticalAlignment="Top"
                                                     DataContext="{Binding}"
                                                     Loaded="WorkflowCanvasControl_Loaded"/>
@@ -424,21 +424,21 @@
     <!-- ========== 右下角小地图（整画布快照 + 黑框标记画布边界，支持最小化/还原） ========== -->
     <Grid HorizontalAlignment="Right"
           VerticalAlignment="Bottom"
-          Margin="0,0,35,35"
+          Margin="0,0,11,11"
           Panel.ZIndex="100">
       <!-- 状态 A：小地图展开（含右下角收起按钮） -->
       <Border x:Name="MiniMapBorder"
-                  Width="220" Height="220"
+                  Width="187" Height="150"
                   Background="Transparent"
                   BorderBrush="Black" BorderThickness="1"
                   IsHitTestVisible="True"
                   MouseLeftButtonDown="MiniMapBorder_MouseLeftButtonDown"
                   MouseLeftButtonUp="MiniMapBorder_MouseLeftButtonUp"
                   MouseMove="MiniMapBorder_MouseMove"
-                  LostMouseCapture="MiniMapBorder_LostMouseCapture">
+                  LostMouseCapture="MiniMapBorder_LostMouseCapture" PreviewMouseWheel="MiniMap_PreviewMouseWheel">
         <Grid>
           <Canvas x:Name="MiniMapCanvas"
-                        Width="220" Height="220"
+                        Width="187" Height="150"
                         Background="Transparent"
                         ClipToBounds="True"/>
 
@@ -461,11 +461,7 @@
                 </Style.Triggers>
               </Style>
             </Button.Style>
-            <Path Data="M 3,7 L 7,7 L 7,3 M 5,7 L 7,7 L 7,5"
-                  Stroke="#FF8800" StrokeThickness="1.6"
-                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
-                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                  Width="10" Height="10"/>
+            <Image Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_retract_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_retract_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
           </Button>
         </Grid>
       </Border>
@@ -489,11 +485,7 @@
             </Style.Triggers>
           </Style>
         </Button.Style>
-        <Path Data="M 9,3 L 3,3 L 3,9 M 4.5,3 L 3,3 L 3,4.5"
-              Stroke="#FF8800" StrokeThickness="1.6"
-              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
-              HorizontalAlignment="Center" VerticalAlignment="Center"
-              Width="10" Height="10"/>
+        <Image Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
       </Button>
     </Grid>
   </Grid>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -26,8 +26,8 @@ namespace SunEyeVision.UI.Shared
             {
                 // 降级到硬编码默认值
                 _resources = new ResourceDictionary();
-                _resources["NodeWidth"] = 140.0;
-                _resources["NodeHeight"] = 36.0;
+                _resources["NodeWidth"] = 110.0;
+                _resources["NodeHeight"] = 30.0;
                 _resources["PortSize"] = 10.0;
                 _resources["PortMargin"] = 10.0;
                 _resources["NodeCornerRadius"] = 6.0;

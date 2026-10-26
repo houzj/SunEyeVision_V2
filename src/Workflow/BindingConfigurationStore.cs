@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -320,7 +320,7 @@ public sealed class BindingConfigurationStore
                 });
             foreach (var connection in workflow.Connections)
                 flow.Connections.Add(new WorkflowConnection { Id = connection.Id, SourceNodeId = connection.SourceNodeId,
-                    TargetNodeId = connection.TargetNodeId, SourcePort = connection.SourcePort, TargetPort = connection.TargetPort });
+                    TargetNodeId = connection.TargetNodeId, SourcePort = connection.SourcePort, TargetPort = connection.TargetPort, ManualPathPoints = connection.ManualPathPoints?.ToArray() });
             copy.Workflows.Add(flow);
         }
         foreach (var variable in source.GlobalVariables)

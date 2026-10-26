@@ -17,11 +17,14 @@
              d:DesignHeight="800" d:DesignWidth="1000">
 
     <UserControl.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Styles/NodeStyleResources.xaml"/></ResourceDictionary.MergedDictionaries>
         <convertersPath:SmartPathConverter x:Key="SmartPathConverter"/>
         <convertersPath:SmartPathMultiConverter x:Key="SmartPathMultiConverter"/>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <convertersPath:PointOffsetConverter x:Key="PointOffsetConverter"/>
         <converters:PointCenterToOffsetConverter x:Key="PointCenterToOffsetConverter"/>
+        <convertersNode:VmNodeIconConverter x:Key="VmNodeIcon"/>
 
         <!-- 使用缓存的节点转换器（性能优化） -->
         <rendering:CachedNodeBackgroundConverter x:Key="NodeBackgroundColorConverter"/>
@@ -30,13 +33,7 @@
 
         <!-- 箭头标记 - 尖端指向右侧（度的方向），方便旋转 -->
         <!-- 箭头长度与 BezierPathCalculator.ArrowLength 保持一致（15px） -->
-        <PathGeometry x:Key="ArrowGeometry">
-            <PathFigure StartPoint="0,0">
-                <LineSegment Point="-15,-8" />
-                <LineSegment Point="-15,8" />
-                <LineSegment Point="0,0" />
-            </PathFigure>
-        </PathGeometry>
+        <PathGeometry x:Key="ArrowGeometry" Figures="M -6,-5 L 2,0 L -6,5 Z"/>
 
         <!-- 箭头填充颜色 -->
         <SolidColorBrush x:Key="ArrowBrush" Color="#666666"/>
@@ -51,6 +48,7 @@
         <SolidColorBrush x:Key="NodeTimeForeground" Color="#666666"/>
         <SolidColorBrush x:Key="NodeBorderBrush" Color="#CCCCCC"/>
         <SolidColorBrush x:Key="NodeBorderBrushSelected" Color="#0066CC"/>
+      </ResourceDictionary>
     </UserControl.Resources>
 
     <!-- 主容器 -->
@@ -100,28 +98,29 @@
                             </Path.Data>
                             <Path.Style>
                                 <Style TargetType="Path">
-                                    <Setter Property="Stroke" Value="{Binding StatusColor}"/>
+                                    <Setter Property="Stroke" Value="#FFA70F"/>
                                     <Setter Property="StrokeThickness" Value="2"/>
                                     <Setter Property="StrokeLineJoin" Value="Round"/>
                                     <Setter Property="StrokeStartLineCap" Value="Round"/>
                                     <Setter Property="StrokeEndLineCap" Value="Round"/>
                                     <Setter Property="Effect" Value="{x:Null}"/>
+
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsHovered}" Value="True">
-                                            <Setter Property="Stroke" Value="#0066CC"/>
-                                            <Setter Property="StrokeThickness" Value="2.5"/>
+                                            <Setter Property="Stroke" Value="#E76900"/>
+                                            <Setter Property="StrokeThickness" Value="2"/>
                                             <Setter Property="Effect">
                                                 <Setter.Value>
-                                                    <DropShadowEffect Color="#0066CC" BlurRadius="4" ShadowDepth="0" Opacity="0.6"/>
+                                                    <DropShadowEffect BlurRadius="0" ShadowDepth="0" Opacity="0"/>
                                                 </Setter.Value>
                                             </Setter>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Stroke" Value="#FF6600"/>
-                                            <Setter Property="StrokeThickness" Value="3"/>
+                                            <Setter Property="Stroke" Value="#E76900"/>
+                                            <Setter Property="StrokeThickness" Value="2"/>
                                             <Setter Property="Effect">
                                                 <Setter.Value>
-                                                    <DropShadowEffect Color="#FF6600" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
+                                                    <DropShadowEffect BlurRadius="0" ShadowDepth="0" Opacity="0"/>
                                                 </Setter.Value>
                                             </Setter>
                                         </DataTrigger>
@@ -131,11 +130,11 @@
                         </Path>
 
                         <!-- 透明宽命中线 - 始终透明，仅负责点击选中交互 -->
-                        <Path Stroke="Transparent" StrokeThickness="14" Fill="Transparent"
+                        <Path Stroke="Transparent" StrokeThickness="2"
                               Cursor="Hand"
                               MouseEnter="ConnectionHitArea_MouseEnter"
                               MouseLeave="ConnectionHitArea_MouseLeave"
-                              MouseLeftButtonDown="ConnectionHitArea_MouseLeftButtonDown">
+                              Focusable="True" MouseLeftButtonDown="ConnectionHitArea_MouseLeftButtonDown">
                             <Path.Data>
                                 <MultiBinding Converter="{StaticResource SmartPathMultiConverter}">
                                     <Binding Path="."/>
@@ -172,17 +171,17 @@
                               Canvas.Left="{Binding ArrowX}"
                               Canvas.Top="{Binding ArrowY}"
                               RenderTransformOrigin="0,0"
-                              Loaded="ArrowPath_Loaded"
                               x:Name="ArrowPath">
+                            <Path.RenderTransform><RotateTransform Angle="{Binding ArrowAngle}"/></Path.RenderTransform>
                             <Path.Style>
                                 <Style TargetType="Path">
-                                    <Setter Property="Fill" Value="{Binding StatusColor}"/>
+                                    <Setter Property="Fill" Value="#FFA70F"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsHovered}" Value="True">
-                                            <Setter Property="Fill" Value="#0066CC"/>
+                                            <Setter Property="Fill" Value="#E76900"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Fill" Value="#FF6600"/>
+                                            <Setter Property="Fill" Value="#E76900"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -204,8 +203,8 @@
                 <Style>
         <!-- Position表示HitArea中心点，Canvas.Left/Top需要左上角坐标 -->
         <!-- 左上角 = 中心点 - (HitAreaWidth/2, HitAreaHeight/2) -->
-        <Setter Property="Canvas.Left" Value="{Binding Position.X, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-80, Mode=OneWay}"/>
-        <Setter Property="Canvas.Top" Value="{Binding Position.Y, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-28, Mode=OneWay}"/>
+        <Setter Property="Canvas.Left" Value="{Binding Position.X, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-65, Mode=OneWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Position.Y, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-25, Mode=OneWay}"/>
                 </Style>
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
@@ -223,42 +222,9 @@
                             </ContextMenu>
                         </Border.ContextMenu>
                         <Grid>
-                            <!-- NodeGlowBorder: 状态辉光装饰层。Effect 只挂在无内容层上，
-                                 避免 NodeBorder 挂 DropShadowEffect 时把图标/文字子树位图化重绘导致模糊 -->
-                            <Border x:Name="NodeGlowBorder"
-                                    Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
-                                    CornerRadius="{DynamicResource NodeCornerRadius}"
-                                    Background="Transparent"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsHitTestVisible="False">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Effect" Value="{x:Null}"/>
-                                        <Style.Triggers>
-                                            <!-- 选中：橙色发光（原挂在 NodeBorder 上，效果层含文字/图标 → 模糊；移至独立装饰层） -->
-                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect Color="#FF6600" BlurRadius="6" ShadowDepth="0" Opacity="0.4"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <!-- 悬停：轻柔阴影提升（NodeGlow 不拦截命中，跟随 NodeBorder 的真实 IsMouseOver） -->
-                                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=NodeBorder}" Value="True">
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="2" Opacity="0.1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                            </Border>
                             <!-- NodeBorder: 视觉显示元素，居中于HitArea -->
                             <Border Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
-                                    CornerRadius="{DynamicResource NodeCornerRadius}"
-                                    BorderThickness="1.5"
+
                                     BorderBrush="{Binding IsSelected, Converter={StaticResource NodeBorderColorConverter}}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -268,16 +234,9 @@
                                     Tag="{Binding}"
                                     x:Name="NodeBorder">
                                 <Border.Background>
-                                    <Binding Converter="{StaticResource NodeBackgroundColorConverter}"/>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FAF7F5" Offset="0"/><GradientStop Color="#EBE6E2" Offset="1"/></LinearGradientBrush>
                                 </Border.Background>
                                 <Grid>
-                                    <!-- 虚线选中装饰层：与 Border 同尺寸，仅选中时可见 -->
-                                    <Rectangle RadiusX="{DynamicResource NodeCornerRadiusDouble}" RadiusY="{DynamicResource NodeCornerRadiusDouble}"
-                                               Stroke="{DynamicResource NodeSelectedDashBrush}" StrokeThickness="1.5"
-                                               StrokeDashArray="6,3"
-                                               Fill="Transparent"
-                                               IsHitTestVisible="False"
-                                               Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <!-- 节点内容 -->
                             <Grid Margin="{DynamicResource NodeContentMargin}">
                                 <Grid.ColumnDefinitions>
@@ -287,27 +246,9 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- 节点类型图标（非子程序）/ 子程序设置按钮；方案 §6 五态：状态色块 + 图标重叠 -->
-                                <Grid Grid.Column="0" Width="30">
-                                    <!-- 状态色块：撑满第一列全高，左圆角对齐节点外框（Margin 负值盖过 1.5px 边框实现无缝贴合） -->
-                                    <Border CornerRadius="6,0,0,6"
-                                            Margin="-1.5,0,0,0"
-                                            Background="{Binding Status, Converter={StaticResource NodeIconStatusBackgroundConverter}}"/>
-
+                                <Grid Grid.Column="0" Width="24">
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
-                                    <icons:ToolIcon Key="{Binding Icon}" Width="20" Height="20"
-                                               Foreground="{Binding Status, Converter={StaticResource NodeIconStatusForegroundConverter}}"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Margin="0">
-                                        <icons:ToolIcon.Style>
-                                            <Style TargetType="icons:ToolIcon">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </icons:ToolIcon.Style>
-                                    </icons:ToolIcon>
+                                    <Image Source="{Binding ToolType, Converter={StaticResource VmNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center"/>
 
                                     <!-- 子程序沿用同一语义矢量图标，保留参数设置点击入口。 -->
                                     <Button Background="Transparent"
@@ -331,7 +272,7 @@
                                                待运行→#333333(浅卡片可见)；运行中/成功/失败/跳过→白色(on实色状态色块)。
                                              ★ 悬停变主题蓝提示可点(按钮语义)。Style Trigger 优先级>Style Setter，
                                                且悬停 Trigger 放最后 → 悬停时覆盖状态色。 -->
-                                        <icons:ToolIcon Key="{Binding Icon}" Width="20" Height="20"
+                                        <icons:ToolIcon Key="{Binding Icon}" Width="16" Height="16"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center">
                                             <icons:ToolIcon.Style>
                                                 <Style TargetType="icons:ToolIcon">
@@ -381,12 +322,12 @@
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding GlobalIndex, StringFormat='{}{0}'}"
                                            Style="{DynamicResource NodeGlobalIndexStyle}"
-                                           Margin="4,0,8,0"
+                                           Margin="0"
                                            Visibility="Visible"/>
 
                                 <!-- 节点显示名称（重命名时切换到编辑框） -->
                                 <Grid Grid.Column="2">
-                                    <TextBlock Text="{Binding DispName}"
+                                    <TextBlock Text="{Binding DispName}" FontWeight="Bold" Foreground="#373A3C" HorizontalAlignment="Center"
                                                x:Name="NodeNameText">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource NodeTextStyle}">
@@ -405,7 +346,7 @@
                                              Padding="2,0"
                                              MinWidth="40"
                                              FontSize="{DynamicResource NodeFontSize}"
-                                             FontWeight="Medium"
+                                             FontWeight="Bold"
                                              VerticalAlignment="Center"
                                              x:Name="NodeNameEditor"
                                              KeyDown="NodeRenameTextBox_KeyDown"
@@ -424,9 +365,23 @@
                                 </Grid>
                             </Grid>
 
+
+
+
+                        </Grid>
+
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BorderThickness" Value="0.7"/><Setter Property="CornerRadius" Value="4"/>
+                                <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
+                                <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45"/></Setter.Value></Setter>
+
+                            <Style.Triggers><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding ToolType}" Value="ImageLoad"><Setter Property="CornerRadius" Value="15"/></DataTrigger></Style.Triggers></Style>
+                        </Border.Style>
+                    </Border>
                             <!-- 连接点 - 上 -->
-                            <Ellipse Name="TopPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}"
+                            <rendering:VmExecutionPort Name="TopPortEllipse"
+                                     Style="{DynamicResource PortEllipseStyle}" Width="30" Height="20"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Top"
                                      Margin="0,-10,0,0"
@@ -439,8 +394,8 @@
                                      Visibility="Collapsed"/>
 
                             <!-- 连接点 - 下 -->
-                            <Ellipse Name="BottomPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}"
+                            <rendering:VmExecutionPort Name="BottomPortEllipse"
+                                     Style="{DynamicResource PortEllipseStyle}" Width="30" Height="20"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Bottom"
                                      Margin="0,0,0,-10"
@@ -453,8 +408,8 @@
                                      Visibility="Collapsed"/>
 
                             <!-- 连接点 - 左 -->
-                            <Ellipse Name="LeftPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}"
+                            <rendering:VmExecutionPort Name="LeftPortEllipse"
+                                     Style="{DynamicResource PortEllipseStyle}" Width="20" Height="30"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center"
                                      Margin="-10,0,0,0"
@@ -467,8 +422,8 @@
                                      Visibility="Collapsed"/>
 
                             <!-- 连接点 - 右 -->
-                            <Ellipse Name="RightPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}"
+                            <rendering:VmExecutionPort Name="RightPortEllipse"
+                                     Style="{DynamicResource PortEllipseStyle}" Width="20" Height="30"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Center"
                                      Margin="0,0,-10,0"
@@ -479,17 +434,6 @@
                                      MouseLeave="Port_MouseLeave"
                                      Tag="RightPort"
                                      Visibility="Collapsed"/>
-
-
-                        </Grid>
-
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
-                                <Setter Property="Effect" Value="{x:Null}"/>
-                            </Style>
-                        </Border.Style>
-                    </Border>
                         </Grid>
                     </Border>
                 </DataTemplate>

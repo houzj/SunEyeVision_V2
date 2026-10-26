@@ -46,7 +46,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
                 // 3. 在Border中查找端口Ellipse（通过Name匹配）
                 var ellipseName = $"{portName}Ellipse";
-                var portEllipse = WorkflowVisualHelper.FindAllVisualChildren<Ellipse>(nodeBorder)
+                var portEllipse = WorkflowVisualHelper.FindAllVisualChildren<VmExecutionPort>(nodeBorder)
                     .FirstOrDefault(e => e.Name == ellipseName);
 
                 if (portEllipse == null)
@@ -55,11 +55,11 @@ namespace SunEyeVision.UI.Services.Interaction
                     return null;
                 }
 
-                // 4. 计算端口中心点（相对于Ellipse）
-                var portCenterInEllipse = new Point(
-                    portEllipse.Width / 2,
-                    portEllipse.Height / 2
-                );
+                if(portEllipse.Visibility==Visibility.Collapsed&&nodeBorder.Tag is WorkflowNode owner)
+                    return GetDefaultPortPosition(owner,portName);
+
+                // 4. 使用热区边缘的实际执行锚点。
+                var portCenterInEllipse = portEllipse.Anchor;
 
                 // 5. 将端口中心点转换为Canvas坐标
                 var canvasPosition = portEllipse.PointToCanvas(portCenterInEllipse);

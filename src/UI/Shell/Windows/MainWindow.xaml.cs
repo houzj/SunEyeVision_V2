@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -163,7 +163,7 @@ namespace SunEyeVision.UI.Shell.Windows
             }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
         /// <summary>
-        /// 切换到默认配置：WorkflowCanvasControl画布 + BezierPathCalculator路径计算器
+        /// 切换到默认配置：WorkflowCanvasControl画布 + VmPathCalculator路径计算器
         /// </summary>
         private void SwitchToDefaultConfiguration()
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -124,7 +124,8 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
                 SourceNodeId = connection.SourceNodeId,
                 SourcePort = connection.SourcePort,
                 TargetNodeId = connection.TargetNodeId,
-                TargetPort = connection.TargetPort
+                TargetPort = connection.TargetPort,
+                ManualPathPoints = connection.ManualPathPoints?.ToArray()
             });
         }
 
@@ -840,6 +841,13 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
 
         [JsonIgnore]
         public ObservableCollection<Point> PathPoints { get; set; } = new();
+
+        /// <summary>用户编辑的连线路径；自动计算路径仍只存于渲染缓存。</summary>
+        public Point[]? ManualPathPoints { get; set; }
+
+        [JsonIgnore]
+        public Point[]? PreviewPathPoints { get; set; }
+
 
         [JsonIgnore]
         public bool IsSelected

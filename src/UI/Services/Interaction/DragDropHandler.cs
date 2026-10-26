@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -43,8 +43,8 @@ namespace SunEyeVision.UI.Services.Interaction
 
         // 临时拖拽节点（拖拽工具箱工具时跟随鼠标的视觉元素，完全复刻真实节点外观）
         private Border? _tempDragNode;
-        private const double _tempNodeWidth = 140;   // 匹配 NodeWidth
-        private const double _tempNodeHeight = 36;   // 匹配 NodeHeight
+        private const double _tempNodeWidth = 110;   // 匹配 NodeWidth
+        private const double _tempNodeHeight = 30;   // 匹配 NodeHeight
 
         /// <summary>
         /// 工作流标签页管理器（属性注入，在 Canvas Loaded 后设置）
@@ -115,82 +115,26 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 显示临时节点（完全复刻真实节点的胶囊外观，半透明 + 蓝色虚线边框）
         /// </summary>
-        private void ShowTempNode(ToolItem item, Point position, ControlsCanvas canvas)
+        internal static Point SnapVmPoint(Point point)=>new(Math.Round(point.X/5)*5,Math.Round(point.Y/5)*5);
+        private void ShowTempNode(ToolItem item,Point position,ControlsCanvas canvas)
         {
-            if (_tempDragNode != null)
-            {
-                _tempDragNode.Visibility = Visibility.Visible;
-                ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
-                ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempNodeHeight / 2);
-
-                // 更新图标和名称（重用已有节点）
-                if (_tempDragNode.Child is StackPanel panel && panel.Children.Count >= 2)
-                {
-                    if (panel.Children[0] is TextBlock iconBlock)
-                        iconBlock.Text = item.Icon;
-                    if (panel.Children[1] is TextBlock nameBlock)
-                        nameBlock.Text = item.Name;
-                }
-                return;
-            }
-
-            // 内容面板：图标 + 名称
-            var contentPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(12, 0, 12, 0),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            contentPanel.Children.Add(new TextBlock
-            {
-                Text = item.Icon,
-                FontSize = 18,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 8, 0)
-            });
-
-            contentPanel.Children.Add(new TextBlock
-            {
-                Text = item.Name,
-                FontSize = 13,
-                FontWeight = FontWeights.Medium,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)),
-                TextTrimming = TextTrimming.CharacterEllipsis
-            });
-
-            // 创建节点外观的 Border（完全复刻真实节点的胶囊外形）
-            _tempDragNode = new Border
-            {
-                Width = _tempNodeWidth,
-                Height = _tempNodeHeight,
-                CornerRadius = new CornerRadius(20),
-                Background = new SolidColorBrush(Color.FromArgb(191, 255, 255, 255)),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(128, 0x00, 0x66, 0xCC)),
-                BorderThickness = new Thickness(1),
-                Opacity = 0.75,
-                Effect = new DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 8,
-                    Opacity = 0.3,
-                    ShadowDepth = 2
-                },
-                Child = contentPanel
-            };
-
-            ControlsCanvas.SetZIndex(_tempDragNode, 10000);
-            ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
-            ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempNodeHeight / 2);
-            canvas.Children.Add(_tempDragNode);
+            if(_tempDragNode?.Tag is string id&&id==item.ToolId)
+            {_tempDragNode.Visibility=Visibility.Visible;UpdateTempNodePosition(position);return;}
+            if(_tempDragNode?.Parent is ControlsCanvas previous)previous.Children.Remove(_tempDragNode);
+            var content=new Grid();content.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(24)});content.ColumnDefinitions.Add(new ColumnDefinition());
+            content.Children.Add(new Image{Source=new System.Windows.Media.Imaging.BitmapImage(new Uri(item.IconSource)),Width=16,Height=16,Margin=new Thickness(4,0,0,0),VerticalAlignment=VerticalAlignment.Center});
+            var title=new TextBlock{Text=item.Name,FontSize=12,FontWeight=FontWeights.Bold,Foreground=new SolidColorBrush(Color.FromRgb(55,58,60)),VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=HorizontalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis};Grid.SetColumn(title,1);content.Children.Add(title);
+            _tempDragNode=new Border{Width=_tempNodeWidth,Height=_tempNodeHeight,CornerRadius=new CornerRadius(item.ToolId=="ImageLoad"?15:4),
+                Background=new LinearGradientBrush(Color.FromRgb(250,247,245),Color.FromRgb(235,230,226),90),BorderBrush=Brushes.Gray,BorderThickness=new Thickness(.7),Opacity=.7,
+                Effect=new DropShadowEffect{BlurRadius=3,ShadowDepth=3,Opacity=.45},Child=content,Tag=item.ToolId,IsHitTestVisible=false};
+            ControlsCanvas.SetZIndex(_tempDragNode,10000);canvas.Children.Add(_tempDragNode);UpdateTempNodePosition(position);
         }
-
         /// <summary>
         /// 更新临时节点位置（跟随鼠标）
         /// </summary>
         private void UpdateTempNodePosition(Point position)
         {
+            position=SnapVmPoint(position);
             if (_tempDragNode != null)
             {
                 ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
@@ -214,7 +158,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent("ToolItem"))
+            if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true})
             {
                 e.Effects = DragDropEffects.Copy;
 
@@ -237,7 +181,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Canvas_DragOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent("ToolItem"))
+            if (e.Data.GetData("ToolItem") is ToolItem {IsAvailable:true})
             {
                 e.Effects = DragDropEffects.Copy;
 
@@ -299,7 +243,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 LogTimestamp("Drop", $"GetData(\"ToolItem\") 类型: {toolItemData?.GetType().Name ?? "null"}");
 #endif
 
-                if (toolItemData is not ToolItem item)
+                if (toolItemData is not ToolItem {IsAvailable:true} item)
                 {
 #if DEBUG
                     LogTimestamp("Drop", "✗ 数据不是 ToolItem 类型");
@@ -353,7 +297,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #endif
 
                 // 应用边界限制（使用新的统一方法，默认策略为 Both - 画布和视口都限制）
-                newNode.Position = CanvasHelper.ClampNodeToBounds(newNode, dropPosition, canvas);
+                newNode.Position = CanvasHelper.ClampNodeToBounds(newNode, SnapVmPoint(dropPosition), canvas);
 #if DEBUG
                 LogTimestamp("Drop", "✓ 节点属性设置完成");
 #endif

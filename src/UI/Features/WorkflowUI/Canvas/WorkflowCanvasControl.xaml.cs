@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.Collections.Generic;
 
@@ -120,7 +120,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
     private Border? _highlightedTargetBorder = null; // 高亮的目标节点Border（用于恢复原始样式）
 
-    private Ellipse? _highlightedTargetPort = null; // 高亮的目标端口（Ellipse）
+    private VmExecutionPort? _highlightedTargetPort = null; // 高亮的目标端口（VmExecutionPort）
 
     private string? _lastHighlightedPort = null; // 上次高亮的端口名称
 
@@ -979,6 +979,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         {
 
             InitializeComponent();
+            InitializeVmWireEditing();
 
 
 
@@ -1176,7 +1177,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             // 使用 WorkflowPathCalculator 刷新所有连接路径
 
-            WorkflowPathCalculator.RefreshAllConnectionPaths(CurrentWorkflowTab.WorkflowConnections);
+            foreach(var connection in CurrentWorkflowTab.WorkflowConnections)connection.InvalidatePath();
 
         }
 
@@ -1472,7 +1473,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             {
 
-                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<Ellipse>(border);
+                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<VmExecutionPort>(border);
 
                 foreach (var ellipse in ellipses)
 
@@ -1712,6 +1713,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 // 计算从拖动开始到现在的总偏移量
 
                 var totalOffset = currentPosition - _startDragPosition;
+                totalOffset=new Vector(Math.Round((_initialNodePosition.X+totalOffset.X)/5)*5-_initialNodePosition.X,Math.Round((_initialNodePosition.Y+totalOffset.Y)/5)*5-_initialNodePosition.Y);
 
 
 
@@ -1947,7 +1949,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-            if (sender is not Ellipse ellipse || ellipse.Tag is not string portName)
+            if (sender is not VmExecutionPort ellipse || ellipse.Tag is not string portName)
             {
                 return;
             }
@@ -2178,7 +2180,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             // 释放鼠标捕获
 
-            if (sender is Ellipse ellipse)
+            if (sender is VmExecutionPort ellipse)
 
             {
 
@@ -2190,14 +2192,14 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             // 使用回调式 HitTest 查找目标端口（修复间歇性命中失败问题）
             // Preview 处理器中的回调式 HitTest 能找到所有层级的元素，
-            // 而简单式 HitTest 只返回最顶层元素，端口 Ellipse 可能被上层元素遮挡
+            // 而简单式 HitTest 只返回最顶层元素，端口 VmExecutionPort 可能被上层元素遮挡
             var mousePos = e.GetPosition(WorkflowCanvas);
-            var hitPorts = new List<(Ellipse port, string portName, double distance)>();
+            var hitPorts = new List<(VmExecutionPort port, string portName, double distance)>();
 
             VisualTreeHelper.HitTest(WorkflowCanvas, null,
                 result =>
                 {
-                    if (result.VisualHit is Ellipse hitEllipse)
+                    if (result.VisualHit is VmExecutionPort hitEllipse)
                     {
                         var ellipseName = hitEllipse.Name;
                         if (!string.IsNullOrEmpty(ellipseName) &&
@@ -2208,8 +2210,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                         {
                             string portName = ellipseName.Replace("Ellipse", "");
 
-                            var portCenterX = hitEllipse.RenderSize.Width / 2;
-                            var portCenterY = hitEllipse.RenderSize.Height / 2;
+                            var portCenterX = hitEllipse.Anchor.X;
+                            var portCenterY = hitEllipse.Anchor.Y;
                             var portPos = hitEllipse.PointToScreen(new Point(portCenterX, portCenterY));
                             var canvasPos = WorkflowCanvas.PointFromScreen(portPos);
                             double portDistance = Math.Sqrt(
@@ -2674,7 +2676,7 @@ _viewModel.SelectedNode = targetNode;
 
         {
 
-            // 获取节点对象（支持 Border 或 Ellipse 作为 sender）
+            // 获取节点对象（支持 Border 或 VmExecutionPort 作为 sender）
 
             WorkflowNode? targetNode = null;
 
@@ -2688,7 +2690,7 @@ _viewModel.SelectedNode = targetNode;
 
             }
 
-            else if (sender is Ellipse ellipse && ellipse.Tag is WorkflowNode clickedNodeFromEllipse)
+            else if (sender is VmExecutionPort ellipse && ellipse.Tag is WorkflowNode clickedNodeFromEllipse)
 
             {
 
@@ -2926,7 +2928,7 @@ _viewModel.SelectedNode = targetNode;
 
 
 
-            // 手动查找带 WorkflowNode Tag 的 Border 或端口 Ellipse
+            // 手动查找带 WorkflowNode Tag 的 Border 或端口 VmExecutionPort
 
             WorkflowNode? clickedNode = null;
 
@@ -2952,9 +2954,9 @@ _viewModel.SelectedNode = targetNode;
 
                 }
 
-                // 检查是否点击了端口 Ellipse
+                // 检查是否点击了端口 VmExecutionPort
 
-                if (current is Ellipse ellipse)
+                if (current is VmExecutionPort ellipse)
 
                 {
 
@@ -2995,7 +2997,7 @@ _viewModel.SelectedNode = targetNode;
 
 
 
-            // 如果点击的是有 WorkflowNode Tag 的 Border 或端口 Ellipse 或连接线命中区域，则由节点/连线的事件处理，不触发框选
+            // 如果点击的是有 WorkflowNode Tag 的 Border 或端口 VmExecutionPort 或连接线命中区域，则由节点/连线的事件处理，不触发框选
 
             if (clickedNode != null || clickedPort || clickedConnection)
 
@@ -3160,7 +3162,7 @@ _viewModel.SelectedNode = targetNode;
 
                     // 动态高亮目标端口
 
-                    var hitPorts = new List<(Ellipse port, string portName)>();
+                    var hitPorts = new List<(VmExecutionPort port, string portName)>();
 
                     int hitTestCount = 0;
 
@@ -3182,7 +3184,7 @@ _viewModel.SelectedNode = targetNode;
 
                             // 检查是否命中端口
 
-                            if (result.VisualHit is Ellipse hitEllipse)
+                            if (result.VisualHit is VmExecutionPort hitEllipse)
 
                             {
 
@@ -3605,7 +3607,7 @@ _viewModel.SelectedNode = targetNode;
 
                 var hitNodes = new List<(WorkflowNode node, Border border, double distance)>();
 
-                var hitPorts = new List<(Ellipse port, string portName, double distance)>(); // 新增：命中的端口列表
+                var hitPorts = new List<(VmExecutionPort port, string portName, double distance)>(); // 新增：命中的端口列表
 
                 int hitTestCount = 0;
 
@@ -3679,7 +3681,7 @@ _viewModel.SelectedNode = targetNode;
 
                         // 检查是否命中了端口
 
-                        if (result.VisualHit is Ellipse hitEllipse)
+                        if (result.VisualHit is VmExecutionPort hitEllipse)
 
                         {
 
@@ -3703,9 +3705,9 @@ _viewModel.SelectedNode = targetNode;
 
                                 string portName = ellipseName.Replace("Ellipse", "");
 
-                                var portCenterX = hitEllipse.RenderSize.Width / 2;
+                                var portCenterX = hitEllipse.Anchor.X;
 
-                                var portCenterY = hitEllipse.RenderSize.Height / 2;
+                                var portCenterY = hitEllipse.Anchor.Y;
 
                                 var portPos = hitEllipse.PointToScreen(new Point(portCenterX, portCenterY));
 
@@ -4668,7 +4670,7 @@ _viewModel.SelectedNode = targetNode;
 
         /// </summary>
 
-        private Ellipse? GetPortElement(Border nodeBorder, string portName)
+        private VmExecutionPort? GetPortElement(Border nodeBorder, string portName)
 
         {
 
@@ -4698,7 +4700,7 @@ _viewModel.SelectedNode = targetNode;
 
                 {
 
-                    return element as Ellipse;
+                    return element as VmExecutionPort;
 
                 }
 
@@ -4834,66 +4836,11 @@ _viewModel.SelectedNode = targetNode;
                 _viewModel.SelectedConnection = connection.IsSelected ? connection : null;
             }
 
+            SelectVmWire(connection,hitPath);
+
             // 阻止事件冒泡，避免触发框选
             e.Handled = true;
         }
-
-
-
-
-
-        /// <summary>
-
-        /// 箭头Path加载事件 - 设置箭头旋转角度
-
-        /// </summary>
-
-        private void ArrowPath_Loaded(object sender, RoutedEventArgs e)
-
-        {
-
-            if (sender is Path arrowPath && arrowPath.DataContext is WorkflowConnection connection)
-
-            {
-
-                // 设置箭头旋转角度
-
-                var rotateTransform = new RotateTransform(connection.ArrowAngle);
-
-                arrowPath.RenderTransform = rotateTransform;
-
-
-
-                // 关键日志：记录箭头渲染
-
-
-
-                // 监听ArrowAngle变化，动态更新旋转角度
-
-                connection.PropertyChanged += (s, args) =>
-
-                {
-
-                    if (args.PropertyName == nameof(WorkflowConnection.ArrowAngle))
-
-                    {
-
-                        if (arrowPath.RenderTransform is RotateTransform rt)
-
-                        {
-
-                            rt.Angle = connection.ArrowAngle;
-
-                        }
-
-                    }
-
-                };
-
-            }
-
-        }
-
 
 
 

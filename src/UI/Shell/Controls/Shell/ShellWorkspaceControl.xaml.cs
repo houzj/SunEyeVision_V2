@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -995,10 +995,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         #region 小地图
 
         // 小地图画布尺寸（与 XAML MiniMapCanvas 保持一致，正方形与画布等比）
-        private const double MiniMapWidth = 220;
-        private const double MiniMapHeight = 220;
+        private const double MiniMapWidth = 187;
+        private const double MiniMapHeight = 150;
 
-        private const double CanvasSize = 6000;
+        private const double CanvasSize = 5000;
 
         // 节点缩略图配色（按 ToolType 分类，与主画布节点配色一致）
         private static readonly Color MiniMapAlgorithmColor = Color.FromRgb(0x00, 0x66, 0xCC);   // 算法-蓝
@@ -1186,95 +1186,19 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 return;
 
             MiniMapCanvas.Children.Clear();
-
-            // 小地图绘制需 WorkflowNode 特有成员（NodeRect/着色），运行时元素均为 WorkflowNode，安全转型
-            IEnumerable<WorkflowNode> nodes = selectedTab.WorkflowNodes.OfType<WorkflowNode>().ToList();
-            if (!nodes.Any())
-                return;
-
-            // 恒定画布全景比例尺：等比例（保持正方形不拉伸），画布在小地图内居中
-            double scale = Math.Min(MiniMapWidth / CanvasSize, MiniMapHeight / CanvasSize);
-            double originX = (MiniMapWidth - CanvasSize * scale) / 2;
-            double originY = (MiniMapHeight - CanvasSize * scale) / 2;
-
-            // 画布边界：透明填充 + 黑色边框（只框不填，透出底下工作区）
-            var canvasRect = new System.Windows.Shapes.Rectangle
+            if(_currentWorkflowCanvas==null)return;
+            var preview=new System.Windows.Shapes.Rectangle
             {
-                Width = CanvasSize * scale,
-                Height = CanvasSize * scale,
-                Fill = Brushes.Transparent,
-                Stroke = new SolidColorBrush(Colors.Black),
-                StrokeThickness = 1
-            };
-            Canvas.SetLeft(canvasRect, originX);
-            Canvas.SetTop(canvasRect, originY);
-            MiniMapCanvas.Children.Add(canvasRect);
-
-            // 节点 ID → 中心点 映射（用于连线绘制；过滤 NaN/∞ 异常坐标，防止污染布局）
-            var centerMap = new Dictionary<string, Point>();
-            foreach (var node in nodes)
-            {
-                double px = node.Position.X;
-                double py = node.Position.Y;
-                if (!double.IsFinite(px) || !double.IsFinite(py))
-                    continue;
-                centerMap[node.Id] = new Point(
-                    originX + px * scale,
-                    originY + py * scale);
-            }
-
-            // 先画连线（在节点下层；细线 0.75px 浅灰，全局视图下看清走向又不抢节点）
-            if (selectedTab.WorkflowConnections != null)
-            {
-                foreach (var conn in selectedTab.WorkflowConnections)
+                Width=MiniMapWidth,Height=MiniMapHeight,Stroke=Brushes.Black,IsHitTestVisible=false,
+                Fill=new VisualBrush(_currentWorkflowCanvas)
                 {
-                    if (!centerMap.TryGetValue(conn.SourceNodeId, out var sp) ||
-                        !centerMap.TryGetValue(conn.TargetNodeId, out var tp))
-                        continue;
-                    var line = new System.Windows.Shapes.Line
-                    {
-                        X1 = sp.X, Y1 = sp.Y,
-                        X2 = tp.X, Y2 = tp.Y,
-                        Stroke = new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99)),
-                        StrokeThickness = 0.75
-                    };
-                    MiniMapCanvas.Children.Add(line);
+                    Stretch=Stretch.Fill,ViewboxUnits=BrushMappingMode.Absolute,
+                    Viewbox=new Rect(0,0,CanvasSize*selectedTab.CurrentScale,CanvasSize*selectedTab.CurrentScale),AlignmentX=AlignmentX.Left,AlignmentY=AlignmentY.Top
                 }
-            }
-
-            // 再画节点（覆盖在连线上层）：真实宽高比严格 1:1，位置按真实坐标映射。
-            // 宽度不钳制（160×0.022≈3.5px 可渲染）；高度不足 1px 时取 1px 作为物理渲染底线
-            // （WPF 画不出亚像素，1px 是像素最小单位，非失真放大，中心位置不偏移）。
-            foreach (var node in nodes)
-            {
-                var r = node.NodeRect;
-                double x = originX + r.Left * scale;
-                double y = originY + r.Top * scale;
-                if (!double.IsFinite(x) || !double.IsFinite(y))
-                    continue;
-                double w = r.Width * scale;
-                double h = Math.Max(1, r.Height * scale);
-                var color = GetMiniMapNodeColor(node);
-
-                var rect = new System.Windows.Shapes.Rectangle
-                {
-                    Width = w,
-                    Height = h,
-                    RadiusX = 1,
-                    RadiusY = 1,
-                    Fill = new SolidColorBrush(color),
-                    Stroke = new SolidColorBrush(Colors.White),
-                    StrokeThickness = 0.5
-                };
-                Canvas.SetLeft(rect, x);
-                Canvas.SetTop(rect, y);
-                MiniMapCanvas.Children.Add(rect);
-            }
-
-            // 最后画视口框（最上层）：与主画布可视区域严格 1:1
-            DrawMiniMapViewport(scale, originX, originY);
+            };
+            MiniMapCanvas.Children.Add(preview);
+            DrawMiniMapViewport(1,0,0);
         }
-
         /// <summary>
         /// 在主画布可视区域对应的画布坐标矩形映射到小地图上，绘制半透明视口框。
         /// 与节点/连线共用同一比例尺（scale/origin），故与真实视口严格 1:1。
@@ -1285,39 +1209,19 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (scrollViewer == null || selectedTab == null)
                 return;
-            double currentScale = selectedTab.CurrentScale;
-            if (currentScale <= 0 || !double.IsFinite(currentScale))
-                return;
-
-            // 主画布可视区域在"画布原始坐标"（未缩放）中的矩形。
-            // ScrollViewer 滚动偏移与视口尺寸的单位是缩放后像素，除以缩放比例还原到画布原始坐标。
-            double viewLeft = scrollViewer.HorizontalOffset / currentScale;
-            double viewTop = scrollViewer.VerticalOffset / currentScale;
-            double viewWidth = scrollViewer.ViewportWidth / currentScale;
-            double viewHeight = scrollViewer.ViewportHeight / currentScale;
-
-            double mmLeft = originX + viewLeft * scale;
-            double mmTop = originY + viewTop * scale;
-            double mmWidth = viewWidth * scale;
-            double mmHeight = viewHeight * scale;
-
-            // 视口框必须裁剪在画布边界内显示（不超出小地图画布可视范围）
-            var canvasMmRect = new Rect(originX, originY, CanvasSize * scale, CanvasSize * scale);
-            var viewMmRect = new Rect(mmLeft, mmTop, mmWidth, mmHeight);
-            viewMmRect.Intersect(canvasMmRect);
-
-            // 求交后若为空矩形（Rect.Empty 的 Width/Height = -∞），说明视口完全在
-            // 小地图画布边界之外（如布局未就绪/滚动到边界外），此时无可绘制内容，跳过
-            if (viewMmRect.IsEmpty)
-                return;
-
+            if(scrollViewer.ExtentWidth<=0||scrollViewer.ExtentHeight<=0)return;
+            var viewMmRect=new Rect(
+                scrollViewer.HorizontalOffset/scrollViewer.ExtentWidth*MiniMapWidth,
+                scrollViewer.VerticalOffset/scrollViewer.ExtentHeight*MiniMapHeight,
+                Math.Min(scrollViewer.ActualWidth/scrollViewer.ExtentWidth*MiniMapWidth,MiniMapWidth),
+                Math.Min(scrollViewer.ActualHeight/scrollViewer.ExtentHeight*MiniMapHeight,MiniMapHeight));
             var viewRect = new System.Windows.Shapes.Rectangle
             {
                 Width = viewMmRect.Width,
                 Height = viewMmRect.Height,
-                Fill = new SolidColorBrush(Color.FromArgb(0x28, 0x00, 0x66, 0xCC)),
-                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0x66, 0xCC)),
-                StrokeThickness = 1
+                Fill = Brushes.Transparent,
+                Stroke = new SolidColorBrush(Color.FromRgb(250, 98, 18)),
+                StrokeThickness = 2
             };
             Canvas.SetLeft(viewRect, viewMmRect.X);
             Canvas.SetTop(viewRect, viewMmRect.Y);
@@ -1338,73 +1242,59 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 小地图鼠标按下：若点在视口框内则开始拖动；否则把主画布中心跳到点击处。
         /// </summary>
-        private void MiniMapBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void MiniMap_PreviewMouseWheel(object sender,MouseWheelEventArgs e)
         {
-            if (!TryGetMiniMapProjection(out var scale, out var originX, out var originY))
-                return;
-
-            var click = e.GetPosition(MiniMapCanvas);
-            var scrollViewer = _canvasScrollViewer;
-            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
-            if (scrollViewer == null || selectedTab == null || selectedTab.CurrentScale <= 0)
-                return;
-
-            // 当前视口框在小地图上的矩形
-            double viewLeft = scrollViewer.HorizontalOffset / selectedTab.CurrentScale;
-            double viewTop = scrollViewer.VerticalOffset / selectedTab.CurrentScale;
-            double viewWidth = scrollViewer.ViewportWidth / selectedTab.CurrentScale;
-            double viewHeight = scrollViewer.ViewportHeight / selectedTab.CurrentScale;
-            var viewMmRect = new Rect(
-                originX + viewLeft * scale,
-                originY + viewTop * scale,
-                viewWidth * scale,
-                viewHeight * scale);
-
-            // 点击点在视口框内 → 进入拖动模式，记录偏移以便视口框跟手
-            if (viewMmRect.Contains(click))
+            var viewer=_canvasScrollViewer;
+            var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if(viewer==null||tab==null)return;
+            if((Keyboard.Modifiers&ModifierKeys.Shift)!=0)
+            {if(e.Delta<0)viewer.LineRight();else if(e.Delta>0)viewer.LineLeft();e.Handled=true;}
+            if((Keyboard.Modifiers&ModifierKeys.Control)!=0)
             {
-                _isDraggingMiniMapView = true;
-                _miniMapDragOffset = new Point(click.X - viewMmRect.X, click.Y - viewMmRect.Y);
-                MiniMapCanvas.CaptureMouse();
-                e.Handled = true;
-                return;
+                var point=e.GetPosition(MiniMapCanvas);
+                var center=new Point(point.X/MiniMapWidth*CanvasSize*tab.CurrentScale-viewer.HorizontalOffset,
+                    point.Y/MiniMapHeight*CanvasSize*tab.CurrentScale-viewer.VerticalOffset);
+                ApplyZoom(tab.CurrentScale,Math.Clamp(tab.CurrentScale+(e.Delta>0?.1:e.Delta<0?-.1:0),MinScale,MaxScale),center,viewer);
+                e.Handled=true;
             }
-
-            // 点击点在视口框外 → 主画布中心跳到点击处对应的画布坐标
-            CenterMainCanvasOnMiniMapPoint(click, scale, originX, originY);
         }
-
+        private Point _miniMapPointerStart,_miniMapRegionStart;
+        private void NavigateVmMiniMap(Point topLeft)
+        {
+            var viewer=_canvasScrollViewer;
+            if(viewer==null||viewer.ExtentWidth<=0||viewer.ExtentHeight<=0)return;
+            viewer.ScrollToHorizontalOffset(topLeft.X/MiniMapWidth*viewer.ExtentWidth);
+            viewer.ScrollToVerticalOffset(topLeft.Y/MiniMapHeight*viewer.ExtentHeight);
+            viewer.UpdateLayout();DrawMiniMap();
+        }
+        private void MiniMapBorder_MouseLeftButtonDown(object sender,MouseButtonEventArgs e)
+        {
+            if(e.OriginalSource is System.Windows.Controls.Primitives.ButtonBase)return;
+            var viewer=_canvasScrollViewer;
+            if(viewer==null||viewer.ExtentWidth<=0||viewer.ExtentHeight<=0)return;
+            var point=e.GetPosition(MiniMapCanvas);
+            var region=new Rect(viewer.HorizontalOffset/viewer.ExtentWidth*MiniMapWidth,
+                viewer.VerticalOffset/viewer.ExtentHeight*MiniMapHeight,
+                Math.Min(viewer.ActualWidth/viewer.ExtentWidth*MiniMapWidth,MiniMapWidth),
+                Math.Min(viewer.ActualHeight/viewer.ExtentHeight*MiniMapHeight,MiniMapHeight));
+            _isDraggingMiniMapView=true;
+            var requested=region.Contains(point)?region.Location:new Point(point.X-region.Width/2,point.Y-region.Height/2);
+            if(!region.Contains(point))NavigateVmMiniMap(requested);
+            _miniMapPointerStart=point;_miniMapRegionStart=requested;
+            e.Handled=true;
+        }
         /// <summary>
         /// 小地图鼠标移动（拖动视口框）：主画布滚动跟随，保持视口框 1:1。
         /// </summary>
-        private void MiniMapBorder_MouseMove(object sender, MouseEventArgs e)
+        private void MiniMapBorder_MouseMove(object sender,MouseEventArgs e)
         {
-            if (!_isDraggingMiniMapView)
-                return;
-            if (!TryGetMiniMapProjection(out var scale, out var originX, out var originY))
-                return;
-
-            var click = e.GetPosition(MiniMapCanvas);
-            // 视口框左上角应落在 click - dragOffset，据此推算主画布滚动偏移
-            var viewRectLeft = click.X - _miniMapDragOffset.X;
-            var viewRectTop = click.Y - _miniMapDragOffset.Y;
-            var canvasMmLeft = originX;
-            var canvasMmTop = originY;
-            // 转成画布原始坐标
-            double canvasViewLeft = (viewRectLeft - originX) / scale;
-            double canvasViewTop = (viewRectTop - originY) / scale;
-            double canvasViewWidth = _canvasScrollViewer?.ViewportWidth / (_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0) ?? 0;
-            double canvasViewHeight = _canvasScrollViewer?.ViewportHeight / (_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0) ?? 0;
-
-            // 视口框不能拖出画布边界（避免跳转越界）
-            var maxCanvas = CanvasSize - canvasViewWidth;
-            canvasViewLeft = Math.Max(0, Math.Min(canvasViewLeft, maxCanvas));
-            canvasViewTop = Math.Max(0, Math.Min(canvasViewTop, CanvasSize - canvasViewHeight));
-
-            ScrollToCanvasPosition(canvasViewLeft, canvasViewTop);
-            e.Handled = true;
+            if(!_isDraggingMiniMapView||e.LeftButton!=MouseButtonState.Pressed)return;
+            var point=e.GetPosition(MiniMapCanvas);
+            if(point==_miniMapPointerStart)return;
+            if(!MiniMapCanvas.IsMouseCaptured)MiniMapCanvas.CaptureMouse();
+            NavigateVmMiniMap(_miniMapRegionStart+(point-_miniMapPointerStart));
+            e.Handled=true;
         }
-
         /// <summary>
         /// 小地图鼠标释放 / 失去鼠标捕获 - 结束拖动
         /// </summary>

@@ -27,7 +27,7 @@ namespace SunEyeVision.UI.Services.Interaction
         private readonly MainWindowViewModel? _viewModel;
 
         private Border? _highlightedTargetBorder;
-        private Ellipse? _highlightedTargetPort;
+        private VmExecutionPort? _highlightedTargetPort;
         private Brush? _originalPortFill;
         private Brush? _originalPortStroke;
         private double _originalPortStrokeThickness;
@@ -55,7 +55,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 当前高亮的目标端口
         /// </summary>
-        public Ellipse? HighlightedTargetPort => _highlightedTargetPort;
+        public VmExecutionPort? HighlightedTargetPort => _highlightedTargetPort;
 
         #endregion
 
@@ -161,7 +161,7 @@ namespace SunEyeVision.UI.Services.Interaction
                 targetPortName = deltaY > 0 ? "TopPort" : "BottomPort";
             }
 
-            var portElement = FindVisualChild<Ellipse>(targetBorder);
+            var portElement = FindVisualChild<VmExecutionPort>(targetBorder);
             if (portElement != null && portElement.Name == targetPortName + "Ellipse")
             {
                 if (_highlightedTargetPort == null)

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
@@ -87,7 +87,7 @@ namespace SunEyeVision.UI.Services.Connection
                     if (_dirtyFlags.TryGetValue(connection.Id, out bool isDirty) && isDirty)
                     {
                         var path = CalculatePath(connection);
-                        UpdateCache(connection.Id, path);
+                        UpdateCache(connection, path);
                         CacheMisses++;
                         return path;
                     }
@@ -115,7 +115,7 @@ namespace SunEyeVision.UI.Services.Connection
                     return cachedPath.Geometry;
                 }
                 var newPath = CalculatePath(connection);
-                UpdateCache(connection.Id, newPath);
+                UpdateCache(connection, newPath);
                 CacheMisses++;
                 return newPath;
             }
@@ -295,7 +295,7 @@ namespace SunEyeVision.UI.Services.Connection
                     if (!_pathCache.ContainsKey(connection.Id))
                     {
                         var path = CalculatePath(connection);
-                        UpdateCache(connection.Id, path);
+                        UpdateCache(connection, path);
                         warmedCount++;
                     }
                 }
@@ -377,56 +377,51 @@ namespace SunEyeVision.UI.Services.Connection
 
             // 计算节点边界矩形
             var sourceNodeRect = new Rect(
-                sourceNode.Position.X,
-                sourceNode.Position.Y,
+                sourceNode.Position.X - sourceNode.StyleConfigTyped.NodeWidth / 2,
+                sourceNode.Position.Y - sourceNode.StyleConfigTyped.NodeHeight / 2,
                 sourceNode.StyleConfigTyped.NodeWidth,
                 sourceNode.StyleConfigTyped.NodeHeight);
 
             var targetNodeRect = new Rect(
-                targetNode.Position.X,
-                targetNode.Position.Y,
+                targetNode.Position.X - targetNode.StyleConfigTyped.NodeWidth / 2,
+                targetNode.Position.Y - targetNode.StyleConfigTyped.NodeHeight / 2,
                 targetNode.StyleConfigTyped.NodeWidth,
                 targetNode.StyleConfigTyped.NodeHeight);
 
             // 计算所有节点边界（用于碰撞检测）— 需要 WorkflowNode 特有成员，安全转型
             var allNodeRects = _nodes.OfType<WorkflowNode>().Select(n => new Rect(
-                n.Position.X,
-                n.Position.Y,
+                n.Position.X - n.StyleConfigTyped.NodeWidth / 2,
+                n.Position.Y - n.StyleConfigTyped.NodeHeight / 2,
                 n.StyleConfigTyped.NodeWidth,
                 n.StyleConfigTyped.NodeHeight)).ToArray();
 
-            // 根据端口方向计算箭头尾部位置（路径终点）
-            var arrowTailPos = CalculateArrowTailPosition(targetPos, targetDirection);
-
-
-
-            // 使用箭头尾部作为路径终点，传递所有节点边界信息用于碰撞检测
-            var pathPoints = _pathCalculator.CalculateOrthogonalPath(
-                sourcePos,
-                arrowTailPos,  // 路径终点 = 箭头尾部
-                sourceDirection,
-                targetDirection,
-                sourceNodeRect,  // 源节点边界
-                targetNodeRect,  // 目标节点边界
-                allNodeRects);   // 所有节点边界（用于碰撞检测）
-
-            // 创建路径几何
-            var pathGeometry = _pathCalculator.CreatePathGeometry(pathPoints);
-
-            // 更新连线路径点集合（用于调试和显示）
-            UpdateConnectionPathPoints(connection, pathPoints);
-
-            // 计算箭头位置和角度
-            var (arrowPosition, arrowAngle) = _pathCalculator.CalculateArrow(pathPoints, targetPos, targetDirection);
-            connection.ArrowPosition = arrowPosition;
-            connection.ArrowAngle = arrowAngle;
-
+            var manual=connection.PreviewPathPoints??connection.ManualPathPoints;
+            var pathPoints=manual is {Length:>1}
+                ? AttachManualEndpoints(manual,sourcePos,targetPos,sourceDirection,targetDirection)
+                : _pathCalculator.CalculateOrthogonalPath(sourcePos,targetPos,sourceDirection,targetDirection,sourceNodeRect,targetNodeRect,allNodeRects);
+            var displayPoints=manual is {Length:>1}
+                ? SunEyeVision.UI.Services.PathCalculators.VmRouting.VmOrthogonalRouter.Passivate(pathPoints.Select(p=>new SunEyeVision.UI.Services.PathCalculators.VmRouting.RoutePoint(p.X,p.Y)).ToArray()).Select(p=>new Point(p.X,p.Y)).ToArray()
+                : pathPoints;
+            var pathGeometry=_pathCalculator.CreatePathGeometry(displayPoints);
+            UpdateConnectionPathPoints(connection,pathPoints);
+            var (arrowPosition,arrowAngle)=_pathCalculator.CalculateArrow(displayPoints,targetPos,targetDirection);
+            connection.ArrowPosition=arrowPosition;connection.ArrowAngle=arrowAngle;
             return pathGeometry;
         }
 
         /// <summary>
         /// 根据端口名称获取端口位置
         /// </summary>
+        private static Point[] AttachManualEndpoints(Point[] saved,Point source,Point target,PortDirection from,PortDirection to)
+        {
+            var points=saved.ToArray();
+            if(points.Any(p=>!double.IsFinite(p.X)||!double.IsFinite(p.Y)))throw new InvalidOperationException("连线路径包含非有限坐标。");
+            if(points.Length<3)return new[]{source,target};
+            points[0]=source;points[^1]=target;
+            points[1]=from is PortDirection.Top or PortDirection.Bottom?new Point(source.X,points[1].Y):new Point(points[1].X,source.Y);
+            points[^2]=to is PortDirection.Top or PortDirection.Bottom?new Point(target.X,points[^2].Y):new Point(points[^2].X,target.Y);
+            return points;
+        }
         private static Point GetPortPosition(WorkflowNode node, string portName)
         {
             return portName?.ToLower() switch
@@ -436,25 +431,6 @@ namespace SunEyeVision.UI.Services.Connection
                 "left" or "leftport" => node.LeftPortPosition,
                 "right" or "rightport" => node.RightPortPosition,
                 _ => node.RightPortPosition // 默认为右侧端口
-            };
-        }
-
-        /// <summary>
-        /// 计算箭头尾部位置（路径终点）
-        /// 箭头尖端在目标端口中心，箭头尾部向外偏移箭头长度
-        /// </summary>
-        private static Point CalculateArrowTailPosition(Point arrowTipPosition, PortDirection targetDirection)
-        {
-            const double arrowLength = 15.0; // 箭头长度
-
-            // 根据端口方向，将箭头尖端向后偏移箭头长度
-            return targetDirection switch
-            {
-                PortDirection.Top => new Point(arrowTipPosition.X, arrowTipPosition.Y - arrowLength),
-                PortDirection.Bottom => new Point(arrowTipPosition.X, arrowTipPosition.Y + arrowLength),
-                PortDirection.Left => new Point(arrowTipPosition.X - arrowLength, arrowTipPosition.Y),
-                PortDirection.Right => new Point(arrowTipPosition.X + arrowLength, arrowTipPosition.Y),
-                _ => arrowTipPosition
             };
         }
 
@@ -470,26 +446,16 @@ namespace SunEyeVision.UI.Services.Connection
             }
         }
 
-        private void UpdateCache(string connectionId, PathGeometry path)
+        private void UpdateCache(WorkflowConnection connection, PathGeometry path)
         {
-            _pathCache[connectionId] = new CachedPath
+            _pathCache[connection.Id] = new CachedPath
             {
                 Geometry = path,
                 Timestamp = DateTime.Now,
-                SourceNodeId = ExtractSourceNodeId(connectionId),
-                TargetNodeId = ExtractTargetNodeId(connectionId)
+                SourceNodeId = connection.SourceNodeId,
+                TargetNodeId = connection.TargetNodeId
             };
-            _dirtyFlags[connectionId] = false;
-        }
-
-        private static string ExtractSourceNodeId(string connectionId)
-        {
-            return connectionId.Split('_')[0];
-        }
-
-        private static string ExtractTargetNodeId(string connectionId)
-        {
-            return connectionId.Split('_')[1];
+            _dirtyFlags[connection.Id] = false;
         }
 
         private void SubscribeToNodes()

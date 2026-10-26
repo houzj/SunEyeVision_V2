@@ -303,6 +303,18 @@ public sealed class VmGestureTests
         tab.WorkflowNodes[0]=replacement;Assert.NotEqual(before,Call(control,"VmGraphStamp",tab));control.DataContext=null;
     });
 
+    [Fact] public void Wire_right_click_preserves_node_selection_and_installs_its_own_delete_binding_and_menu() => Sta(() =>
+    {
+        var control=Create(out var node);var tab=(WorkflowTabViewModel)control.DataContext;node.IsSelected=true;
+        var hit=Children<System.Windows.Shapes.Path>(control).First(p=>p.StrokeThickness==2&&p.Stroke is SolidColorBrush b&&b.Color.A==0&&p.DataContext is Connection);
+        Call(control,"ConnectionHitArea_MouseRightButtonDown",hit,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Right){RoutedEvent=UIElement.MouseRightButtonDownEvent});
+        Assert.True(node.IsSelected);Assert.True(tab.WorkflowConnections.Single().IsSelected);
+        var binding=Assert.IsType<KeyBinding>(Assert.Single(hit.InputBindings.Cast<InputBinding>()));Assert.Equal(Key.Delete,binding.Key);Assert.Equal(ModifierKeys.None,binding.Modifiers);
+        var item=Assert.IsType<MenuItem>(Assert.Single(hit.ContextMenu.Items.Cast<object>()));Assert.Equal("删除",item.Header);Assert.Same(binding.Command,item.Command);
+        Assert.False(binding.Command.CanExecute(null)); // 独立控件无正式宿主，不得修改定义。
+        control.DataContext=null;Assert.Null(Field(control,"_vmSelectedWirePath"));Assert.False(tab.WorkflowConnections.Single().IsSelected);
+    });
+
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
 public sealed class VmCanvasUiCollection { }

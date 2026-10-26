@@ -223,7 +223,7 @@ namespace SunEyeVision.UI.Shell.Windows
             // 编辑快捷键
             InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.UndoCommand), Key.Z, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.RedoCommand), Key.Y, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.DeleteSelectedNodesCommand), Key.Delete, ModifierKeys.None));
+            InputBindings.Add(new KeyBinding(new CanvasEditCommandWrapper(_viewModel.DeleteSelectedNodesCommand, deferToWire: true), Key.Delete, ModifierKeys.None));
         }
         #region 窗口事件
         /// <summary>
@@ -572,7 +572,8 @@ if (DataContext is MainWindowViewModel viewModel)
         private sealed class CanvasEditCommandWrapper : ICommand
         {
             private readonly ICommand? _command;
-            public CanvasEditCommandWrapper(ICommand? command) => _command = command;
+            private readonly bool _deferToWire;
+            public CanvasEditCommandWrapper(ICommand? command, bool deferToWire=false) { _command=command;_deferToWire=deferToWire; }
             public event EventHandler? CanExecuteChanged
             {
                 add { if (_command != null) _command.CanExecuteChanged += value; }
@@ -583,11 +584,12 @@ if (DataContext is MainWindowViewModel viewModel)
                 var focus = Keyboard.FocusedElement as DependencyObject;
                 while (focus != null)
                 {
+                    if (_deferToWire && focus is System.Windows.Shapes.Path { DataContext: SunEyeVision.Workflow.WorkflowConnection }) return false;
                     if (focus is System.Windows.Controls.Primitives.TextBoxBase || focus is ComboBox || focus is PasswordBox) return false;
                     if (focus is SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl canvas)
                     {
                         var vm = Window.GetWindow(canvas)?.DataContext as MainWindowViewModel;
-                        return canvas.IsEnabled && vm?.IsRunning != true && vm?.IsDebugWindowOpen != true && _command?.CanExecute(parameter) == true;
+                        return canvas.IsEnabled && vm?.CanEditWorkflowCanvas != false && _command?.CanExecute(parameter) == true;
                     }
                     focus = focus is Visual || focus is System.Windows.Media.Media3D.Visual3D
                         ? VisualTreeHelper.GetParent(focus) : LogicalTreeHelper.GetParent(focus);

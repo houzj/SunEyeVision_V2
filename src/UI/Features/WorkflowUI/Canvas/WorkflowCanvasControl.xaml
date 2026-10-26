@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -135,7 +135,7 @@
                               Cursor="Hand"
                               MouseEnter="ConnectionHitArea_MouseEnter"
                               MouseLeave="ConnectionHitArea_MouseLeave"
-                              Focusable="True" MouseLeftButtonDown="ConnectionHitArea_MouseLeftButtonDown">
+                              Focusable="True" MouseLeftButtonDown="ConnectionHitArea_MouseLeftButtonDown" MouseRightButtonDown="ConnectionHitArea_MouseRightButtonDown">
                             <Path.Data>
                                 <MultiBinding Converter="{StaticResource SmartPathMultiConverter}">
                                     <Binding Path="."/>

@@ -11,6 +11,7 @@ public partial class WorkflowCanvasControl
 {
     private readonly List<Rectangle> _vmWireHandles=new();
     private WorkflowConnection? _vmSelectedWire,_vmEditingWire;
+    private System.Windows.Shapes.Path? _vmSelectedWirePath;
     private RecoveredConnectionDrag? _vmWireDrag;
     private Point[]? _vmBeforePath,_vmOriginalRendered;
     private Window? _vmWireWindow;
@@ -33,8 +34,14 @@ public partial class WorkflowCanvasControl
     private void VmWireWindowDeactivated(object? sender,EventArgs e)=>FinishVmWireDrag(false);
     private void ClearVmWireSelection()
     {
-        if(_vmSelectedWire!=null)_vmSelectedWire.PropertyChanged-=VmWireSelectionChanged;
-        _vmSelectedWire=null;ClearVmWireHandles();
+        if(_vmSelectedWire!=null)
+        {
+            _vmSelectedWire.PropertyChanged-=VmWireSelectionChanged;
+            _vmSelectedWire.IsSelected=false;
+            if(_viewModel!=null&&ReferenceEquals(_viewModel.SelectedConnection,_vmSelectedWire))_viewModel.SelectedConnection=null;
+        }
+        if(_vmSelectedWirePath!=null)_vmSelectedWirePath.LostKeyboardFocus-=VmWireLostFocus;
+        _vmSelectedWirePath=null;_vmSelectedWire=null;ClearVmWireHandles();
     }
     private void VmWireSelectionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -48,8 +55,26 @@ public partial class WorkflowCanvasControl
     }
     private void SelectVmWire(WorkflowConnection connection,System.Windows.Shapes.Path hit)
     {
-        hit.Focus();ClearVmWireSelection();_vmSelectedWire=connection;connection.PropertyChanged+=VmWireSelectionChanged;DrawVmWireHandles();
+        hit.Focus();ClearVmWireSelection();connection.IsSelected=true;
+        if(_viewModel!=null)_viewModel.SelectedConnection=connection;
+        _vmSelectedWirePath=hit;_vmSelectedWire=connection;connection.PropertyChanged+=VmWireSelectionChanged;DrawVmWireHandles();
+        var delete=new SunEyeVision.UI.Core.RelayCommand(()=>DeleteVmWire(connection),()=>CanEditVmWire&&_viewModel?.CanDeleteCanvasConnection(connection)==true);
+        hit.InputBindings.Clear();hit.InputBindings.Add(new KeyBinding(delete,Key.Delete,ModifierKeys.None));
+        var menu=new ContextMenu();menu.Items.Add(new MenuItem{Header="删除",Command=delete});hit.ContextMenu=menu;
         hit.LostKeyboardFocus-=VmWireLostFocus;hit.LostKeyboardFocus+=VmWireLostFocus;
+    }
+    private void DeleteVmWire(WorkflowConnection connection)
+    {
+        if(!CanEditVmWire||_viewModel?.DeleteCanvasConnection(connection)!=true)return;
+        FinishVmWireDrag(false);ClearVmWireSelection();
+    }
+    private void ConnectionHitArea_MouseRightButtonDown(object sender,MouseButtonEventArgs e)
+    {
+        if(sender is not System.Windows.Shapes.Path path||path.DataContext is not WorkflowConnection connection||!CanEditVmWire)return;
+        var tab=CurrentWorkflowTab;if(tab==null||!tab.WorkflowConnections.Contains(connection))return;
+        foreach(var edge in tab.WorkflowConnections)edge.IsSelected=ReferenceEquals(edge,connection);
+        if(_viewModel!=null)_viewModel.SelectedConnection=connection;
+        SelectVmWire(connection,path);e.Handled=true;
     }
     private void VmWireLostFocus(object sender,KeyboardFocusChangedEventArgs e)
     {

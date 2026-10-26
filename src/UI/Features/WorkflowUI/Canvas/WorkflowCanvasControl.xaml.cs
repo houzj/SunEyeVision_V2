@@ -2639,23 +2639,9 @@ _viewModel.SelectedNode = targetNode;
             var tab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (tab == null) return;
 
-            bool isMultiSelect = (Keyboard.Modifiers & ModifierKeys.Shift) != 0 ||
-                                 (Keyboard.Modifiers & ModifierKeys.Control) != 0;
-
-            if (!isMultiSelect)
-            {
-                // 单选模式：清除所有节点和连接线选中
-                ClearAllSelections();
-                // 设置当前连接线选中
-                connection.IsSelected = true;
-                _viewModel.SelectedConnection = connection;
-            }
-            else
-            {
-                // 多选模式：切换当前连接线选中状态
-                connection.IsSelected = !connection.IsSelected;
-                _viewModel.SelectedConnection = connection.IsSelected ? connection : null;
-            }
+            // 原件连接由焦点决定，不按Ctrl/Shift切换成多条连接选择；节点组选可保留。
+            foreach (var edge in tab.WorkflowConnections) edge.IsSelected = ReferenceEquals(edge, connection);
+            _viewModel.SelectedConnection = connection;
 
             SelectVmWire(connection,hitPath);
 

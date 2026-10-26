@@ -57,4 +57,15 @@ public sealed class VmDeleteTransactionTests
         command.Execute(null);Assert.Empty(((SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters)consumer.Parameters).InputText);Assert.NotEmpty(consumer.Parameters.RebindingRequired);
     }
 
+    [Fact]
+    public void Focused_edge_delete_does_not_consume_retained_node_selection_and_undo_restores_only_edge()
+    {
+        var root=new Flow("root","root");var a=Node("a");var b=Node("b");a.IsSelected=true;b.IsSelected=true;root.Nodes.Add(a);root.Nodes.Add(b);
+        var edge=new WorkflowConnection{Id="edge",SourceNodeId=a.Id,TargetNodeId=b.Id,IsSelected=true};root.Connections.Add(edge);
+        var engine=Engine(root);var solution=new Solution{Workflows=new(){root}};
+        var command=new DeleteWorkflowItemsCommand(root,Array.Empty<WorkflowNodeBase>(),new[]{edge},engine,solution,()=>{},()=>{});
+        command.Execute(null);Assert.Equal(new[]{a,b},root.Nodes);Assert.All(root.Nodes,n=>Assert.True(n.IsSelected));Assert.Empty(root.Connections);
+        command.Undo();Assert.Same(edge,Assert.Single(root.Connections));Assert.Equal(new[]{a,b},root.Nodes);
+    }
+
 }

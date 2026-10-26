@@ -1,0 +1,110 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// CalculatorParamControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// CalculatorParamControl
+/// </summary>
+public partial class CalculatorParamControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public object DataSource
+	{
+		get
+		{
+			return PART_Control.DataSource;
+		}
+		set
+		{
+			if (value is IVmIO dataSource)
+			{
+				PART_Control.DataSource = dataSource;
+				return;
+			}
+			throw new ArgumentException("DataSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public CalculatorParamControl()
+	{
+		InitializeComponent();
+	}
+
+	/// <summary>
+	///             高永远为自动
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+	{
+		base.OnRenderSizeChanged(sizeInfo);
+		Height = double.NaN;
+	}
+}

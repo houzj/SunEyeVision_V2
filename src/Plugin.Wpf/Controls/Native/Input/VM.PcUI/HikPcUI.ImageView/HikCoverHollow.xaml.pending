@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikCoverHollow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:sysw="clr-namespace:System.Windows;assembly=PresentationFramework" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Name="coverHollowControl" MouseEnter="CoverHollowControl_MouseEnter" MouseLeftButtonDown="CoverHollowControl_MouseLeftButtonDown" MouseLeave="CoverHollowControl_MouseLeave" Loaded="CoverHollowControl_Loaded" MouseUp="CoverHollowControl_MouseUp">
+  <sysw:FrameworkElement.Resources>
+    <sysw:ResourceDictionary>
+      <sysw:ResourceDictionary.MergedDictionaries>
+        <sysw:ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </sysw:ResourceDictionary.MergedDictionaries>
+      <sys:Double x:Key="dwidth">8</sys:Double>
+      <sys:Double x:Key="mwidth">16</sys:Double>
+      <sys:Double x:Key="angleWidth">8</sys:Double>
+      <sys:Double x:Key="angleHeight">8</sys:Double>
+      <sys:Double x:Key="arrowWidth">12</sys:Double>
+      <sys:Double x:Key="arrowHalfWidth">6</sys:Double>
+      <sys:Double x:Key="TextForeSize">14</sys:Double>
+      <sysw:Thickness x:Key="TextThick">3,3,0,0</sysw:Thickness>
+      <local:HikCoverCircleStyleConverter x:Key="hccStyleConverter" />
+    </sysw:ResourceDictionary>
+  </sysw:FrameworkElement.Resources>
+  <Grid Name="mainGrid" Cursor="SizeAll">
+    <Canvas Name="WorkView" Width="Auto" Height="Auto">
+      <Polygon Name="polygon" StrokeThickness="1" Style="{sysw:StaticResource TransparentPath}" Cursor="SizeAll">
+        <i:Interaction.Triggers>
+          <core:DataTrigger xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" Comparison="Equal" Value="{x:Static local:CustomROITypeUIEnum.Avoid}" core:PropertyChangedTrigger.Binding="{Binding Tag}">
+            <core:ChangePropertyAction PropertyName="Style" Value="{sysw:StaticResource AvoidPath}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=polygon}" />
+          </core:DataTrigger>
+        </i:Interaction.Triggers>
+      </Polygon>
+      <Polygon Name="polygonInside" StrokeThickness="1" Style="{sysw:StaticResource TransparentPath}" Cursor="SizeAll">
+        <i:Interaction.Triggers>
+          <DataTrigger Comparison="Equal" Value="{x:Static local:CustomROITypeUIEnum.Avoid}" p14:PropertyChangedTrigger.Binding="{Binding Tag}" xmlns:p14="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions">
+            <p14:ChangePropertyAction PropertyName="Style" Value="{sysw:StaticResource AvoidPath}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=polygon}" />
+          </DataTrigger>
+        </i:Interaction.Triggers>
+      </Polygon>
+      <Polygon Name="polygonAll" StrokeThickness="0" Stroke="#00FFFFFF" Fill="{sysw:StaticResource ROIBaseBackgroundColor}" Cursor="SizeAll" />
+      <Path Name="TarrowView0" Height="10" Width="10" Stroke="{sysw:DynamicResource ROIBaseColor}" StrokeThickness="2" Fill="#00FFFFFF" Stretch="Uniform">
+        <Path.Data>
+          <GeometryGroup>
+            <PathGeometry>
+              <PathFigure StartPoint="0,0">
+                <LineSegment Point="-6,6" />
+                <LineSegment Point="-12,0" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+      <Path Name="TarrowView1" Height="10" Width="10" Stroke="{sysw:DynamicResource ROIBaseColor}" StrokeThickness="2" Fill="#00FFFFFF" Stretch="Uniform">
+        <Path.Data>
+          <GeometryGroup>
+            <PathGeometry>
+              <PathFigure StartPoint="0,0">
+                <LineSegment Point="-6,6" />
+                <LineSegment Point="-12,0" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+      <local:SpinArea x:Name="angle" Width="{sysw:StaticResource angleWidth}" Height="{sysw:StaticResource angleHeight}" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+    </Canvas>
+    <local:MoveArea x:Name="move" Opacity="0" Height="{sysw:DynamicResource mwidth}" Width="{sysw:DynamicResource mwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" />
+    <sysw:UIElement.RenderTransform>
+      <TransformGroup x:Name="TG">
+        <RotateTransform x:Name="tlt" />
+      </TransformGroup>
+    </sysw:UIElement.RenderTransform>
+  </Grid>
+</local:HikROIBase>

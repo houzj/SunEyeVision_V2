@@ -1,0 +1,238 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikDoubleCover : Canvas, IDisposable, RectangleRoi, IComponentConnector
+{
+	public delegate void SizeChange(object Param);
+
+	public delegate void FremeMouseLeftButtonDown(MouseButtonEventArgs e);
+
+	public static readonly DependencyProperty WidthFirstProperty = DependencyProperty.Register("WidthFirst", typeof(double), typeof(HikDoubleCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty HeightFirstProperty = DependencyProperty.Register("HeightFirst", typeof(double), typeof(HikDoubleCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty OriginPointFirstProperty = DependencyProperty.Register("OriginPointFirst", typeof(Point), typeof(HikDoubleCover), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty AngleFirstProperty = DependencyProperty.Register("AngleFirst", typeof(double), typeof(HikDoubleCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty WidthSecondProperty = DependencyProperty.Register("WidthSecond", typeof(double), typeof(HikDoubleCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty HeightSecondProperty = DependencyProperty.Register("HeightSecond", typeof(double), typeof(HikDoubleCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty OriginPointSecondProperty = DependencyProperty.Register("OriginPointSecond", typeof(Point), typeof(HikDoubleCover), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty AngleSecondProperty = DependencyProperty.Register("AngleSecond", typeof(double), typeof(HikDoubleCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty SignProperty = DependencyProperty.Register("Sign", typeof(bool?), typeof(HikDoubleCover), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty TIsVisibleProperty = DependencyProperty.Register("TIsVisible", typeof(bool), typeof(HikDoubleCover), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register("IsSelected", typeof(bool), typeof(HikDoubleCover), new PropertyMetadata(false));
+
+	public SizeChange OnTheSizeChange;
+
+	public FremeMouseLeftButtonDown OnFremeMouseLeftButtonDown;
+
+	public double WidthFirst
+	{
+		get
+		{
+			return (double)GetValue(WidthFirstProperty);
+		}
+		set
+		{
+			SetValue(WidthFirstProperty, value);
+		}
+	}
+
+	public double HeightFirst
+	{
+		get
+		{
+			return (double)GetValue(HeightFirstProperty);
+		}
+		set
+		{
+			SetValue(HeightFirstProperty, value);
+		}
+	}
+
+	public Point OriginPointFirst
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointFirstProperty);
+		}
+		set
+		{
+			SetValue(OriginPointFirstProperty, value);
+		}
+	}
+
+	public double AngleFirst
+	{
+		get
+		{
+			return (double)GetValue(AngleFirstProperty);
+		}
+		set
+		{
+			SetValue(AngleFirstProperty, value);
+		}
+	}
+
+	public double WidthSecond
+	{
+		get
+		{
+			return (double)GetValue(WidthSecondProperty);
+		}
+		set
+		{
+			SetValue(WidthSecondProperty, value);
+		}
+	}
+
+	public double HeightSecond
+	{
+		get
+		{
+			return (double)GetValue(HeightSecondProperty);
+		}
+		set
+		{
+			SetValue(HeightSecondProperty, value);
+		}
+	}
+
+	public Point OriginPointSecond
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointSecondProperty);
+		}
+		set
+		{
+			SetValue(OriginPointSecondProperty, value);
+		}
+	}
+
+	public double AngleSecond
+	{
+		get
+		{
+			return (double)GetValue(AngleSecondProperty);
+		}
+		set
+		{
+			SetValue(AngleSecondProperty, value);
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return (bool?)GetValue(SignProperty);
+		}
+		set
+		{
+			SetValue(SignProperty, value);
+		}
+	}
+
+	public bool TIsVisible
+	{
+		get
+		{
+			return (bool)GetValue(TIsVisibleProperty);
+		}
+		set
+		{
+			SetValue(TIsVisibleProperty, value);
+		}
+	}
+
+	public bool IsSelected
+	{
+		get
+		{
+			return (bool)GetValue(IsSelectedProperty);
+		}
+		set
+		{
+			SetValue(IsSelectedProperty, value);
+		}
+	}
+
+	public HikImageView owner
+	{
+		get
+		{
+			return box1.owner;
+		}
+		set
+		{
+			box1.owner = value;
+			box2.owner = value;
+		}
+	}
+
+	public void Dispose()
+	{
+		box1.Dispose();
+		box2.Dispose();
+	}
+
+	public HikDoubleCover()
+	{
+		InitializeComponent();
+		HikCover hikCover = box1;
+		hikCover.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(hikCover.OnTheSizeChange, new HikCover.SizeChange(OnBoxSizeChange));
+		HikCover hikCover2 = box2;
+		hikCover2.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(hikCover2.OnTheSizeChange, new HikCover.SizeChange(OnBoxSizeChange));
+	}
+
+	private void OnBoxSizeChange(object Param)
+	{
+		OnTheSizeChange(DataContext);
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	public void Init()
+	{
+		box1.Init();
+		box2.Init();
+	}
+
+	internal void SetROITypeUI(ROITypeUIEnum ROITypeUI)
+	{
+		box1.SetROITypeUI(ROITypeUI);
+		box2.SetROITypeUI(ROITypeUI);
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

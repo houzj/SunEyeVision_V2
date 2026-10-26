@@ -1,0 +1,30 @@
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using Hik.Util;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public struct Set_Module_Input
+{
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 260)]
+	public byte[] szEventParamName;
+
+	public int nListNum;
+
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+	public Module_Input[] stModuleInputList;
+
+	public static implicit operator List<BindParams>(Set_Module_Input value)
+	{
+		List<BindParams> list = new List<BindParams>();
+		for (int i = 0; i < value.nListNum; i++)
+		{
+			list.Add(new BindParams
+			{
+				ModuleID = value.stModuleInputList[i].nModuleId,
+				ParamName = StringUtil.UTF8GetString(value.stModuleInputList[i].szModuleInputName)
+			});
+		}
+		return list;
+	}
+}

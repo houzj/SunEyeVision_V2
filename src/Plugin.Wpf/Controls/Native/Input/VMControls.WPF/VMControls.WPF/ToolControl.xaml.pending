@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ToolControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="us" AllowDrop="True">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="btv" />
+      <CollectionViewSource x:Key="src" IsLiveGroupingRequested="True" Source="{Binding ItemsSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ToolControl}}">
+        <CollectionViewSource.GroupDescriptions>
+          <PropertyGroupDescription PropertyName="ToolGroupItemInfo.GroupName" />
+        </CollectionViewSource.GroupDescriptions>
+      </CollectionViewSource>
+      <DataTemplate x:Key="customDataTemplate">
+        <ContentPresenter Name="cp" Content="{Binding}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type ContentPresenter}">
+              <Setter Property="ContentTemplate" Value="{StaticResource ToolButtonDataTemplate}" />
+            </Style>
+          </FrameworkElement.Style>
+        </ContentPresenter>
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <ItemsControl Background="{DynamicResource Col_Menubar_Background}" ItemsPanel="{StaticResource HorizontalItemsPanelTemplate}" ItemTemplate="{StaticResource customDataTemplate}" ItemsSource="{Binding Source={StaticResource src}}">
+    <ItemsControl.GroupStyle>
+      <GroupStyle ContainerStyle="{StaticResource ResourceKey=ToolButtonGroupItemStyle}" Panel="{StaticResource ResourceKey=HorizontalItemsPanelTemplate}" />
+    </ItemsControl.GroupStyle>
+  </ItemsControl>
+</UserControl>

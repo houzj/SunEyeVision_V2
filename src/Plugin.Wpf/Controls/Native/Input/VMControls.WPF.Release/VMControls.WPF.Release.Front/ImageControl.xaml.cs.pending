@@ -1,0 +1,290 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// FrontImageControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ImageControl
+/// </summary>
+public partial class ImageControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public bool ShowCross
+	{
+		get
+		{
+			return PART_Control.ShowCross;
+		}
+		set
+		{
+			PART_Control.ShowCross = value;
+		}
+	}
+
+	public Brush CrossBrush
+	{
+		get
+		{
+			return PART_Control.CrossBrush;
+		}
+		set
+		{
+			PART_Control.CrossBrush = value;
+		}
+	}
+
+	public double CrossThickness
+	{
+		get
+		{
+			return PART_Control.CrossThickness;
+		}
+		set
+		{
+			PART_Control.CrossThickness = value;
+		}
+	}
+
+	public double HorizontalOffset
+	{
+		get
+		{
+			return PART_Control.HorizontalOffset;
+		}
+		set
+		{
+			PART_Control.HorizontalOffset = value;
+		}
+	}
+
+	public double VerticalOffset
+	{
+		get
+		{
+			return PART_Control.VerticalOffset;
+		}
+		set
+		{
+			PART_Control.VerticalOffset = value;
+		}
+	}
+
+	public bool IsNeedLoadOrUnLoad
+	{
+		get
+		{
+			return PART_Control.IsNeedLoadOrUnLoad;
+		}
+		set
+		{
+			PART_Control.IsNeedLoadOrUnLoad = value;
+		}
+	}
+
+	public object ImageSource
+	{
+		get
+		{
+			return PART_Control.ImageSource;
+		}
+		set
+		{
+			if (value is IVmDisplayObject imageSource)
+			{
+				PART_Control.ImageSource = imageSource;
+				return;
+			}
+			throw new ArgumentException("ImageSource Type Error!");
+		}
+	}
+
+	public object ShapeObjectPathSource
+	{
+		get
+		{
+			return PART_Control.ShapeObjectPathSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ShapeObjectPathSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ShapeObjectPathSource Type Error!");
+		}
+	}
+
+	public object LayerOverlayInfo1Source
+	{
+		get
+		{
+			return PART_Control.LayerOverlayInfo1Source;
+		}
+		set
+		{
+			if (value is IVmDisplayObject layerOverlayInfo1Source)
+			{
+				PART_Control.LayerOverlayInfo1Source = layerOverlayInfo1Source;
+				return;
+			}
+			throw new ArgumentException("LayerOverlayInfo1Source Type Error!");
+		}
+	}
+
+	public object LayerOverlayInfo2Source
+	{
+		get
+		{
+			return PART_Control.LayerOverlayInfo2Source;
+		}
+		set
+		{
+			if (value is IVmDisplayObject layerOverlayInfo2Source)
+			{
+				PART_Control.LayerOverlayInfo2Source = layerOverlayInfo2Source;
+				return;
+			}
+			throw new ArgumentException("LayerOverlayInfo2Source Type Error!");
+		}
+	}
+
+	public object LayerOverlayInfo3Source
+	{
+		get
+		{
+			return PART_Control.LayerOverlayInfo3Source;
+		}
+		set
+		{
+			if (value is IVmDisplayObject layerOverlayInfo3Source)
+			{
+				PART_Control.LayerOverlayInfo3Source = layerOverlayInfo3Source;
+				return;
+			}
+			throw new ArgumentException("LayerOverlayInfo3Source Type Error!");
+		}
+	}
+
+	public bool KeepLastResult
+	{
+		get
+		{
+			return PART_Control.KeepLastResult;
+		}
+		set
+		{
+			PART_Control.KeepLastResult = value;
+		}
+	}
+
+	public bool ShowToolsBar
+	{
+		get
+		{
+			return PART_Control.ShowToolsBar;
+		}
+		set
+		{
+			PART_Control.ShowToolsBar = value;
+		}
+	}
+
+	public bool ShowStatusBar
+	{
+		get
+		{
+			return PART_Control.ShowStatusBar;
+		}
+		set
+		{
+			PART_Control.ShowStatusBar = value;
+		}
+	}
+
+	public bool ShowHistoricalImageList
+	{
+		get
+		{
+			return PART_Control.ShowHistoricalImageList;
+		}
+		set
+		{
+			PART_Control.ShowHistoricalImageList = value;
+		}
+	}
+
+	public int HistoricalImagesNumber
+	{
+		get
+		{
+			return PART_Control.HistoricalImagesNumber;
+		}
+		set
+		{
+			PART_Control.HistoricalImagesNumber = value;
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public ImageControl()
+	{
+		InitializeComponent();
+	}
+}

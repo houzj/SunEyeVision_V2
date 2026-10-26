@@ -1,0 +1,91 @@
+using GateWayFramework;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class GlobalCommunicationMgr
+{
+	public static GlobalCommunication globalCommunication;
+
+	/// <summary>
+	/// 对象锁
+	/// </summary>
+	private object _lock = new object();
+
+	private static readonly GlobalCommunicationMgr instance;
+
+	private bool isGet = false;
+
+	private bool isOpen = false;
+
+	/// <summary>
+	/// 模块ID
+	/// </summary>
+	public int ModuleID { get; set; }
+
+	public bool IsGet
+	{
+		get
+		{
+			return isGet;
+		}
+		set
+		{
+			isGet = value;
+		}
+	}
+
+	public bool IsOpen
+	{
+		get
+		{
+			return isOpen;
+		}
+		set
+		{
+			isOpen = value;
+			TitleMenueItemData.Instance.SetMsgShow(value);
+		}
+	}
+
+	public static GlobalCommunicationMgr Instance => instance;
+
+	static GlobalCommunicationMgr()
+	{
+		globalCommunication = null;
+		instance = new GlobalCommunicationMgr();
+	}
+
+	/// <summary>
+	/// 获取底层模块的数据
+	/// </summary>
+	public void GetData()
+	{
+		TitleMenueItemData.Instance.GetAllParams();
+		ResetParamStateFlag();
+	}
+
+	/// <summary>
+	/// 关闭通信网关，关闭方案，清空设备，网关sdk反初始化
+	/// </summary>
+	public int CloseComm()
+	{
+		int num = 0;
+		return TitleMenueItemData.Instance.CloseComm();
+	}
+
+	/// <summary>
+	/// 清空界面设备,仅限于清楚界面的数据
+	/// </summary>
+	public void ClearAll()
+	{
+		TitleMenueItemData.Instance.ClearAll();
+	}
+
+	/// <summary>
+	/// 复位参数修改状态标志
+	/// </summary>
+	public void ResetParamStateFlag()
+	{
+		TitleMenueItemData.Instance.ResetParamFlag();
+	}
+}

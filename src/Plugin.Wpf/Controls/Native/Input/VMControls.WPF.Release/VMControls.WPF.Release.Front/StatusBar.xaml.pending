@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front.StatusBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front" xmlns:frontend="clr-namespace:FrontendUI.Design;assembly=FrontendUI.Design">
+  <frontend:StatusBar Name="PART_Control" />
+</ContentControl>

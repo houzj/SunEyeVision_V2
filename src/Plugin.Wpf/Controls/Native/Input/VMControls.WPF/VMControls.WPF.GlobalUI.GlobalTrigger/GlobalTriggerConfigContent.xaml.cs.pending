@@ -1,0 +1,176 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.User;
+using VM.Utility.SingleInstance;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger;
+
+/// <summary>
+/// GlobalTriggerConfigContent.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// GlobalTriggerConfigContent
+/// </summary>
+public partial class GlobalTriggerConfigContent : UserControl, IComponentConnector, IStyleConnector
+{
+	public static readonly DependencyProperty IsAllowOperatProperty = DependencyProperty.Register("IsAllowOperat", typeof(bool), typeof(GloablTriggleConfigUI), new PropertyMetadata(true));
+
+	/// <summary>
+	/// 允许操作
+	/// </summary>
+	public bool IsAllowOperat
+	{
+		get
+		{
+			return (bool)GetValue(IsAllowOperatProperty);
+		}
+		set
+		{
+			SetValue(IsAllowOperatProperty, value);
+		}
+	}
+
+	public object SolutionData => VmSolution.Instance;
+
+	/// <summary>
+	/// 初始化
+	/// </summary>
+	public GlobalTriggerConfigContent()
+	{
+		InitializeComponent();
+		GetAuthority();
+	}
+
+	private bool CheckConfigAvailable(VmModule module)
+	{
+		AccessUser loginUser = CodeManager.Instance.GetLoginUser();
+		if (CodeManager.Instance.GetLoginUser() == AccessUser.Operator)
+		{
+			return true;
+		}
+		return loginUser == AccessUser.Tech && (module == null || !module.ConfigAvailable);
+	}
+
+	/// <summary>
+	/// 加载全局触发数据
+	/// </summary>
+	public void LoadGlobalTriggerData()
+	{
+		try
+		{
+			GlobalTriggerConfig.CacheTabRoot.Clear();
+			VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == 14200);
+			if (CheckConfigAvailable(vmModule))
+			{
+				return;
+			}
+			if (vmModule == null)
+			{
+				string path = CurrentPathHelper.Instance.GetCurrentPath() + "module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleCs.dll";
+				Assembly assembly = Assembly.LoadFile(path);
+				Type type = assembly.GetTypes().FirstOrDefault((Type p) => typeof(IVmModule).IsAssignableFrom(p));
+				Activator.CreateInstance(type, VmSolution.Instance);
+				vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == 14200);
+			}
+			if (vmModule != null)
+			{
+				GlobalTriggerConfig globalTriggerConfig = new GlobalTriggerConfig();
+				globalTriggerConfig.DecorateSource = vmModule;
+				DataContext = globalTriggerConfig;
+			}
+		}
+		catch (Exception ex)
+		{
+			VmException ex2 = null;
+			if (ex is VmException || ex.InnerException is VmException)
+			{
+				ex2 = ex as VmException;
+				if (ex2 == null)
+				{
+					ex2 = ex.InnerException as VmException;
+				}
+				ShowMessage.ShowVmExceptionMessage(ex2);
+				LogHelper.Error(ex2.errorMessage);
+			}
+			else
+			{
+				HikMessageBox.Show(ex.Message, MessageIcons.Error);
+				LogHelper.Error(ex.Message);
+			}
+		}
+	}
+
+	public void ResetPagaDisplay()
+	{
+		VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == 14200);
+		if (vmModule != null)
+		{
+			GlobalTriggerConfig globalTriggerConfig = new GlobalTriggerConfig();
+			globalTriggerConfig.DecorateSource = vmModule;
+			DataContext = globalTriggerConfig;
+		}
+	}
+
+	private void GetAuthority()
+	{
+		AccessUser loginUser = CodeManager.GetInstance().GetLoginUser();
+		if (loginUser == AccessUser.Tech)
+		{
+			IsAllowOperat = false;
+		}
+		else
+		{
+			IsAllowOperat = true;
+		}
+	}
+
+	private void TxtTrigger_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		TextBox textBox = sender as TextBox;
+		TextChange[] array = new TextChange[e.Changes.Count];
+		e.Changes.CopyTo(array, 0);
+		int offset = array[0].Offset;
+		if (array[0].AddedLength > 0)
+		{
+			double num = 0.0;
+			string text = textBox.Text;
+			if (Encoding.Default.GetByteCount(text) != text.Length)
+			{
+				textBox.Text = textBox.Text.Remove(offset, array[0].AddedLength);
+				textBox.Select(offset, 0);
+			}
+		}
+	}
+
+	private void text_PreviewKeyDown(object sender, KeyEventArgs e)
+	{
+		if (e.Key == Key.Space)
+		{
+			e.Handled = true;
+		}
+	}
+
+	private void tb_PreviewTextInput(object sender, TextCompositionEventArgs e)
+	{
+		Regex regex = new Regex("^[0-9a-zA-Z]*$");
+		e.Handled = !regex.IsMatch(e.Text);
+	}
+
+	private void TabControl_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		(sender as TabControl).Focus();
+	}
+}

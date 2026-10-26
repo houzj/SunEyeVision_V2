@@ -1,0 +1,312 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmProcedureConfigControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmProcedureConfigControl
+/// </summary>
+public partial class VmProcedureConfigControl : VMWpfUserControl, IDisposable, IBindSomeProcedures, IComponentConnector
+{
+	/// <summary>
+	/// Winform窗口句柄
+	/// </summary>
+	public IntPtr WinformHandle
+	{
+		get
+		{
+			return procedureConfigControl?.WinformHandle ?? IntPtr.Zero;
+		}
+		set
+		{
+			if (procedureConfigControl != null)
+			{
+				procedureConfigControl.WinformHandle = value;
+			}
+		}
+	}
+
+	public VmProcedureConfigControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			InitControl();
+			VmSolution.RestoreDefaultDisplay += VmSolution_RestoreDefaultDisplay;
+			Loaded += VmProcedureConfigControl_Loaded;
+			Unloaded += VmProcedureConfigControl_Unloaded;
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	private void VmProcedureConfigControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		VmProcedureConfigControl_Unloaded(sender, e);
+		VmSolution.OnSolutionLoadBeginCallBack += VmSolution_OnSolutionLoadBeginCallBack;
+		VmSolution.OnSolutionLoadEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionLoadProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnSolutionSaveBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnSolutionSaveEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionSaveProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnModelLoadWarn += VmSolution_OnModelLoadWarn;
+		VmSolution.OnProcessImportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessImportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnProcessImportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessExportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnProcedureUnRegister += VmSolution_OnProcedureUnRegister;
+		VmSolution.OnGroupImportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupImportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnGroupImportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnGroupExportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupExportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnGroupExportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		if (procedureConfigControl != null)
+		{
+			procedureConfigControl.Solution = VmSolution.Instance;
+		}
+	}
+
+	private void VmSolution_RestoreDefaultDisplay(object sender, EventArgs e)
+	{
+		Init();
+	}
+
+	private void VmProcedureConfigControl_Unloaded(object sender, RoutedEventArgs e)
+	{
+		VmSolution.OnSolutionLoadBeginCallBack -= VmSolution_OnSolutionLoadBeginCallBack;
+		VmSolution.OnSolutionLoadEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionLoadProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnSolutionSaveBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnSolutionSaveEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionSaveProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnModelLoadWarn -= VmSolution_OnModelLoadWarn;
+		VmSolution.OnProcessImportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessImportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnProcessImportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessExportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnProcedureUnRegister -= VmSolution_OnProcedureUnRegister;
+		VmSolution.OnGroupImportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupImportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnGroupImportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnGroupExportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupExportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnGroupExportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		VmProcedureConfigControl_Unloaded(null, null);
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDefaultDisplay;
+		if (procedureConfigControl != null)
+		{
+			procedureConfigControl.Solution = null;
+		}
+		Content = null;
+	}
+
+	/// <summary>
+	/// 控件初始化操作（内部使用）
+	/// </summary>
+	private void InitControl()
+	{
+		if (!this.IsInDesignMode())
+		{
+			TempVmSolution.Init();
+			Init();
+		}
+	}
+
+	private void Instance_InstanceChanged(object sender, EventArgs e)
+	{
+		Init();
+	}
+
+	private void VmSolution_OnSolutionLoadProgressCallBack(object sender, ObjectEventArgs args)
+	{
+		uint progress = (uint)args.Param;
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			procedureConfigControl.Progress = progress;
+		}));
+	}
+
+	private void VmSolution_OnSolutionLoadBeginCallBack(object sender, ObjectEventArgs args)
+	{
+		string message = (string)args.Param;
+		if (CVmObjectBase.GetIsSDKMode())
+		{
+			Dispatcher.Invoke(() =>
+			{
+				BindMultiProcedure();
+			});
+		}
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			procedureConfigControl.MaskMessage = message;
+			procedureConfigControl.IsShowProgressMask = true;
+			procedureConfigControl.LoadingFlag = true;
+		}));
+	}
+
+	/// <summary>
+	/// 开始保存、导入、导出等（内部使用）
+	/// </summary>
+	private void VmSolution_OnProgressBeginCallBack(object sender, ObjectEventArgs args)
+	{
+		string message = (string)args.Param;
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			procedureConfigControl.MaskMessage = message;
+			procedureConfigControl.IsShowProgressMask = true;
+			procedureConfigControl.LoadingFlag = true;
+		}));
+	}
+
+	/// <summary>
+	/// 结束回调（内部使用）
+	/// </summary>
+	private void VmSolution_OnEndCallBack(object sender, EndEventArgs e)
+	{
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			procedureConfigControl.MaskMessage = null;
+			procedureConfigControl.IsShowProgressMask = false;
+			procedureConfigControl.LoadingFlag = false;
+			if (e != null && e.ErrorCode != 0 && e.ErrorCode != -536870093)
+			{
+				string text = AppLocalizationService.GetLang("errCode:") + $"{e.ErrorCode:X}" + "\r\n";
+				text = text + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(e.ErrorCode);
+				HikMessageBox.Show(e.BoxTitle, text, MessageIcons.Error);
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 警告回调（内部使用）
+	/// </summary>
+	private void VmSolution_OnModelLoadWarn(object sender, ObjectEventArgs args)
+	{
+		string message = (string)args.Param;
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			HikMessageBox.Show(message, MessageIcons.Warning, MessageButtons.Normal, 1000u);
+		}));
+	}
+
+	/// <summary>
+	/// 流程解注册（内部使用）
+	/// </summary>
+	private void VmSolution_OnProcedureUnRegister(object sender, ObjectEventArgs args)
+	{
+		uint id = (uint)args.Param;
+		Dispatcher.Invoke(() =>
+		{
+			((IVmProcedure)(VmProcedure)VmSolution.Instance.Modules.FirstOrDefault((VmModule p) => p.ID == id))?.DeleteSelf();
+		});
+	}
+
+	private void Init()
+	{
+		Dispatcher.Invoke(() =>
+		{
+			procedureConfigControl.Solution = VmSolution.Instance;
+		});
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (procedureConfigControl == null)
+		{
+			return 0L;
+		}
+		return procedureConfigControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 根据流程名称绑定单流程
+	/// </summary>
+	public void BindSingleProcedure(string name)
+	{
+		procedureConfigControl?.ShowSingleProcedure(name);
+	}
+
+	/// <summary>
+	/// 绑定多流程
+	/// </summary>
+	public void BindMultiProcedure()
+	{
+		procedureConfigControl?.ShowMultiProcedure();
+	}
+
+	/// <summary>
+	/// 绑定部分流程
+	/// </summary>
+	/// <param name="nameList"></param>
+	void IBindSomeProcedures.BindSomeProcedures(List<string> nameList)
+	{
+		procedureConfigControl?.ShowSomeProcedure(nameList);
+	}
+
+	/// <summary>
+	/// 锁定工作区
+	/// </summary>
+	public void LockWorkArea()
+	{
+		if (procedureConfigControl != null)
+		{
+			procedureConfigControl.IsLockWorkArea = true;
+		}
+	}
+
+	/// <summary>
+	/// 解除锁定工作区
+	/// </summary>
+	public void UnlockWorkArea()
+	{
+		if (procedureConfigControl != null)
+		{
+			procedureConfigControl.IsLockWorkArea = false;
+		}
+	}
+
+	/// <summary>
+	/// 流程、Group运行参数页中的添加、删除、编辑按钮是否可见
+	/// </summary>
+	/// <param name="isEditable">是否可见 true:按钮可见,false:按钮不可见</param>
+	public void SetParamTabEditable(bool isEditable)
+	{
+		if (procedureConfigControl != null)
+		{
+			procedureConfigControl.IsParamsEditState = isEditable;
+		}
+	}
+}

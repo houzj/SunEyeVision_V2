@@ -1,0 +1,124 @@
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// SingleModuleSetControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// SingleModuleSetControl
+/// </summary>
+public partial class SingleModuleSetControl : ServiceProvideControl, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModuleSet), typeof(SingleModuleSetControl), new PropertyMetadata(null, OnModuleSourceChanged));
+
+	public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(object), typeof(SingleModuleSetControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(SingleModuleSetControl), new PropertyMetadata(false));
+
+	/// <summary>
+	/// 参数列表编辑状态属性
+	/// </summary>
+	public static readonly DependencyProperty IsParamsEditStateProperty = DependencyProperty.Register("IsParamsEditState", typeof(bool), typeof(SingleModuleSetControl), new PropertyMetadata(true));
+
+	public ObservableCollection<object> SingleCollection { get; } = new ObservableCollection<object>();
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModuleSet ModuleSource
+	{
+		get
+		{
+			return (IVmModuleSet)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public object SelectedItem
+	{
+		get
+		{
+			return GetValue(SelectedItemProperty);
+		}
+		set
+		{
+			SetValue(SelectedItemProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数列表编辑状态
+	/// </summary>
+	public bool IsParamsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsParamsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsParamsEditStateProperty, value);
+		}
+	}
+
+	private static void OnModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		SingleModuleSetControl singleModuleSetControl = d as SingleModuleSetControl;
+		IVmModuleSet vmModuleSet = e.OldValue as IVmModuleSet;
+		IVmModuleSet vmModuleSet2 = e.NewValue as IVmModuleSet;
+		if (singleModuleSetControl != null)
+		{
+			if (vmModuleSet != null)
+			{
+				singleModuleSetControl.SingleCollection.Clear();
+			}
+			if (vmModuleSet2 != null)
+			{
+				singleModuleSetControl.SingleCollection.Clear();
+				singleModuleSetControl.SingleCollection.Add(vmModuleSet2.GetParent<IVmProcedure>());
+			}
+		}
+	}
+
+	public SingleModuleSetControl()
+	{
+		InitializeComponent();
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+	}
+
+	private void GridSplitter_DragStarted(object sender, DragStartedEventArgs e)
+	{
+	}
+}

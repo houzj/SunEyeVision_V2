@@ -1,0 +1,75 @@
+using System.Collections.Generic;
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 多边形
+/// </summary>
+public struct PolygonEx : IPolygon, IShape, IShapeBase
+{
+	/// <summary>
+	/// 点数
+	/// </summary>
+	public int PolygonPointNum { get; set; }
+
+	/// <summary>
+	/// 点列表
+	/// </summary>
+	public List<Point> PolygonPointList { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 边框颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 边框粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	/// <summary>
+	/// 点列表（同PolygonPointList）
+	/// </summary>
+	public List<Point> Points
+	{
+		get
+		{
+			return PolygonPointList;
+		}
+		set
+		{
+			PolygonPointList = value;
+		}
+	}
+
+	/// <summary>
+	/// 提示语
+	/// </summary>
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public PolygonEx(List<Point> polygonPointList, double opacity = 1.0, string stroke = "#66FF00", string fill = null, double strokeThickness = 1.0, string toolTip = null)
+	{
+		PolygonPointNum = polygonPointList?.Count ?? 0;
+		PolygonPointList = polygonPointList;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = fill;
+		StrokeThickness = strokeThickness;
+		ToolTip = toolTip;
+	}
+}

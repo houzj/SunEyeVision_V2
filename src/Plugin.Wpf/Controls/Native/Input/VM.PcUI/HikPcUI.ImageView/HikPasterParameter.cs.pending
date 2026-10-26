@@ -1,0 +1,164 @@
+using System.Windows;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikPasterParameter : RoiParameter
+{
+	public Point _OriginPoint = new Point(0.0, 0.0);
+
+	public double _width = 0.0;
+
+	public double _height = 0.0;
+
+	private string _Name = "贴片";
+
+	public double _Angle = 0.0;
+
+	public double _SkewAngleX = 0.0;
+
+	private string _GroupName = "";
+
+	private ROIState _State;
+
+	protected string _SubContent;
+
+	public Point OriginPoint
+	{
+		get
+		{
+			return _OriginPoint;
+		}
+		set
+		{
+			if (_OriginPoint != value)
+			{
+				_OriginPoint = value;
+				NotifyPropertyChanged("OriginPoint");
+			}
+		}
+	}
+
+	public double Width
+	{
+		get
+		{
+			return _width;
+		}
+		set
+		{
+			if (_width != value)
+			{
+				_width = value;
+				NotifyPropertyChanged("Width");
+			}
+		}
+	}
+
+	public double Height
+	{
+		get
+		{
+			return _height;
+		}
+		set
+		{
+			if (_height != value)
+			{
+				_height = value;
+				NotifyPropertyChanged("Height");
+			}
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return _Angle;
+		}
+		set
+		{
+			if (_Angle != value)
+			{
+				_Angle = value;
+				NotifyPropertyChanged("Angle");
+			}
+		}
+	}
+
+	public double SkewAngleX
+	{
+		get
+		{
+			return _SkewAngleX;
+		}
+		set
+		{
+			if (_SkewAngleX != value)
+			{
+				_SkewAngleX = value;
+				NotifyPropertyChanged("SkewAngleX");
+			}
+		}
+	}
+
+	public string GroupName
+	{
+		get
+		{
+			return _GroupName;
+		}
+		set
+		{
+			if (_GroupName != value)
+			{
+				_GroupName = value;
+				NotifyPropertyChanged("GroupName");
+			}
+		}
+	}
+
+	public ROIState State
+	{
+		get
+		{
+			return _State;
+		}
+		set
+		{
+			if (_State != value)
+			{
+				_State = value;
+				NotifyPropertyChanged("State");
+			}
+		}
+	}
+
+	public virtual string SubContent
+	{
+		get
+		{
+			return _SubContent;
+		}
+		set
+		{
+			if (_SubContent != value)
+			{
+				_SubContent = value;
+				NotifyPropertyChanged("SubContent");
+			}
+		}
+	}
+}

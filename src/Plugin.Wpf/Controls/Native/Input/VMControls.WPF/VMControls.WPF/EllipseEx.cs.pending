@@ -1,0 +1,71 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 椭圆
+/// </summary>
+public struct EllipseEx : IEllipse, IShape, IShapeBase
+{
+	/// <summary>
+	/// 中心点
+	/// </summary>
+	public Point CenterPoint { get; set; }
+
+	/// <summary>
+	/// 长半轴
+	/// </summary>
+	public double MajorRadius { get; set; }
+
+	/// <summary>
+	/// 短半轴
+	/// </summary>
+	public double MinorRadius { get; set; }
+
+	/// <summary>
+	/// 角度
+	/// </summary>
+	public double Angle { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 边框颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 边框粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	/// <summary>
+	/// 提示语
+	/// </summary>
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public EllipseEx(Point centerPoint, double majorRadius, double minorRadius, double angle, double opacity = 1.0, string stroke = "#66FF00", string fill = null, double strokeThickness = 1.0, string toolTip = null)
+	{
+		CenterPoint = centerPoint;
+		MajorRadius = majorRadius;
+		MinorRadius = minorRadius;
+		Angle = angle;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = fill;
+		StrokeThickness = strokeThickness;
+		ToolTip = toolTip;
+	}
+}

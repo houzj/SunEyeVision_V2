@@ -1,0 +1,135 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.BaseData;
+using Apps.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ImageView.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ImageView
+/// </summary>
+public partial class ImageView : UserControl, IComponentConnector
+{
+	private Byte2ImageSource _byte2Image = new Byte2ImageSource();
+
+	public static readonly DependencyProperty DisplayImageWidthProperty = DependencyProperty.Register("DisplayImageWidth", typeof(int), typeof(ImageView), new PropertyMetadata(72));
+
+	public static readonly DependencyProperty DisplayImageHeightProperty = DependencyProperty.Register("DisplayImageHeight", typeof(int), typeof(ImageView), new PropertyMetadata(52));
+
+	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(ImageSource), typeof(ImageView), new PropertyMetadata(null, SourceChanged));
+
+	public static readonly DependencyProperty ImageDataSourceProperty = DependencyProperty.Register("ImageDataSource", typeof(ImageData), typeof(ImageView), new PropertyMetadata(null, ImageSourceChanged));
+
+	public int DisplayImageWidth
+	{
+		get
+		{
+			return (int)GetValue(DisplayImageWidthProperty);
+		}
+		set
+		{
+			SetValue(DisplayImageWidthProperty, value);
+		}
+	}
+
+	public int DisplayImageHeight
+	{
+		get
+		{
+			return (int)GetValue(DisplayImageHeightProperty);
+		}
+		set
+		{
+			SetValue(DisplayImageHeightProperty, value);
+		}
+	}
+
+	public ImageSource Source
+	{
+		get
+		{
+			return (ImageSource)GetValue(SourceProperty);
+		}
+		set
+		{
+			SetValue(SourceProperty, value);
+		}
+	}
+
+	public ImageData ImageDataSource
+	{
+		get
+		{
+			return (ImageData)GetValue(ImageDataSourceProperty);
+		}
+		set
+		{
+			SetValue(ImageDataSourceProperty, value);
+		}
+	}
+
+	public ImageView()
+	{
+		InitializeComponent();
+	}
+
+	private static void SourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ImageView imageView = d as ImageView;
+		ImageSource source = e.NewValue as ImageSource;
+		imageView.ImageItem.Source = source;
+	}
+
+	private static void ImageSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ImageView imageView = d as ImageView;
+		imageView.DoImageSourceChanged();
+	}
+
+	private void DoImageSourceChanged()
+	{
+		try
+		{
+			if (ImageDataSource == null)
+			{
+				Source = null;
+				return;
+			}
+			Size size = default;
+			double num = (double)ImageDataSource.Width / (double)ImageDataSource.Height;
+			double num2 = (double)DisplayImageWidth / (double)DisplayImageHeight;
+			if (num > num2)
+			{
+				int displayImageWidth = DisplayImageWidth;
+				double height = (double)displayImageWidth / num;
+				size = new Size(displayImageWidth, height);
+			}
+			else
+			{
+				int displayImageHeight = DisplayImageHeight;
+				double width = num * (double)displayImageHeight;
+				size = new Size(width, displayImageHeight);
+			}
+			bool status = true;
+			Source = _byte2Image.BuiltImageSourceA(ImageDataSource, (int)size.Width, (int)size.Height, ref status);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	private void Image_MouseLeave(object sender, MouseEventArgs e)
+	{
+	}
+
+	private void Image_MouseEnter(object sender, MouseEventArgs e)
+	{
+	}
+}

@@ -1,0 +1,685 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlUI;
+using Apps.XmlUI.ParamTab;
+using DirectoryBrowser;
+using HikExternalCall.Common;
+using Mvvm.Commands;
+using PasswordWindowUI;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmProcedureDecorator : VmModuleSetDecorator
+{
+	private IDecorate displayModuleSet;
+
+	private bool isSelected;
+
+	private object selectedModule;
+
+	private bool isShowAtSingleProcedureMode;
+
+	private DelegateCommand<ObjectEventArgs> dropItemsCommand = null;
+
+	private DelegateCommand selectionChangedCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> importGroupCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> importGroupRemoteCommand = null;
+
+	private DelegateCommand _ProcessExportCommand = null;
+
+	private DelegateCommand _ProcessExportRemoteCommand = null;
+
+	private DelegateCommand _CopyCommand = null;
+
+	private DelegateCommand _SetIntervalCommand = null;
+
+	private DelegateCommand _SetTimeOutCommand = null;
+
+	private DelegateCommand _RunOnceCommand = null;
+
+	private DelegateCommand _RunContinuousCommand = null;
+
+	private DelegateCommand<IList> deleteItemsCommand = null;
+
+	private DelegateCommand<IList> forbiddenItemsCommand = null;
+
+	private DelegateCommand<IList> activateItemsCommand = null;
+
+	private DelegateCommand<IDecorate> openGroupCommand = null;
+
+	private DelegateCommand upCommand = null;
+
+	public IVmProcedure VMProcedure => DecorateSource as IVmProcedure;
+
+	public string ShowName => (DecorateSource as IVmModule).ID + " " + Name;
+
+	public bool UpEnable => false;
+
+	/// <summary>
+	/// 当前显示的数据
+	/// </summary>
+	public IDecorate DisplayModuleSet
+	{
+		get
+		{
+			return displayModuleSet;
+		}
+		set
+		{
+			IsSelected = true;
+			if (value != displayModuleSet)
+			{
+				displayModuleSet = value;
+				OnPropertyChanged("DisplayModuleSet");
+				OnPropertyChanged("IsProcedure");
+				OnPropertyChanged("IsDependentGroup");
+			}
+		}
+	}
+
+	public bool IsProcedure => DisplayModuleSet.DecorateSource is IVmProcedure;
+
+	public bool IsDependentGroup => (VMProcedure as IVmModule).ID == 100000 && (DisplayModuleSet.DecorateSource as IVmModule).Parent == VMProcedure;
+
+	/// <summary>
+	/// 是否选中
+	/// </summary>
+	public bool IsSelected
+	{
+		get
+		{
+			return isSelected;
+		}
+		set
+		{
+			if (isSelected != value)
+			{
+				isSelected = value;
+				OnPropertyChanged("IsSelected");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前选中模块
+	/// </summary>
+	public object SelectedModule
+	{
+		get
+		{
+			return selectedModule;
+		}
+		set
+		{
+			if (selectedModule != value)
+			{
+				selectedModule = value;
+				OnPropertyChanged("SelectedModule");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否在单流程模式下显示
+	/// </summary>
+	public bool IsShowAtSingleProcedureMode
+	{
+		get
+		{
+			return isShowAtSingleProcedureMode;
+		}
+		set
+		{
+			if (isShowAtSingleProcedureMode != value)
+			{
+				isShowAtSingleProcedureMode = value;
+				OnPropertyChanged("IsShowAtSingleProcedureMode");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否受全局按钮控制
+	/// </summary>
+	public bool IsEnabled
+	{
+		get
+		{
+			return !VMProcedure.IsForbidden;
+		}
+		set
+		{
+			if (VMProcedure.IsForbidden != !value)
+			{
+				VMProcedure.IsForbidden = !value;
+				OnPropertyChanged("IsEnable");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 模块显示方式
+	/// </summary>
+	public override ModuleDisplayType DisplayType => ModuleDisplayType.PROCESS;
+
+	public ICommand DropItemsCommand => (ICommand)(dropItemsCommand ?? (dropItemsCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)DropItemsCommandExecute)));
+
+	public ICommand SelectionChangedCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = selectionChangedCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)SelectionChangedCommandExecute);
+				DelegateCommand val3 = val2;
+				selectionChangedCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ImportGroupCommand => (ICommand)(importGroupCommand ?? (importGroupCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)ImportGroupCommandExecute)));
+
+	public ICommand ImportGroupRemoteCommand => (ICommand)(importGroupRemoteCommand ?? (importGroupRemoteCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)ImportGroupRemoteCommandExecute)));
+
+	public ICommand ProcessExportCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _ProcessExportCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ProcessExportCommandExe);
+				DelegateCommand val3 = val2;
+				_ProcessExportCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ProcessExportRemoteCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _ProcessExportRemoteCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ProcessExportRemoteCommandExe);
+				DelegateCommand val3 = val2;
+				_ProcessExportRemoteCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand CopyCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _CopyCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)CopyCommandExe);
+				DelegateCommand val3 = val2;
+				_CopyCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand SetIntervalCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _SetIntervalCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)SetIntervalCommandExe);
+				DelegateCommand val3 = val2;
+				_SetIntervalCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand SetTimeOutCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _SetTimeOutCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)SetTimeOutCommandExe);
+				DelegateCommand val3 = val2;
+				_SetTimeOutCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand RunOnceCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _RunOnceCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)RunOnceCommandExe);
+				DelegateCommand val3 = val2;
+				_RunOnceCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand RunContinuousCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _RunContinuousCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)RunContinuousCommandExe);
+				DelegateCommand val3 = val2;
+				_RunContinuousCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DeleteItemsCommand => (ICommand)(deleteItemsCommand ?? (deleteItemsCommand = new DelegateCommand<IList>((Action<IList>)DeleteItemsCommandExecute)));
+
+	public ICommand ForbiddenItemsCommand => (ICommand)(forbiddenItemsCommand ?? (forbiddenItemsCommand = new DelegateCommand<IList>((Action<IList>)ForbiddenItemsExecute)));
+
+	public ICommand ActivateItemsCommand => (ICommand)(activateItemsCommand ?? (activateItemsCommand = new DelegateCommand<IList>((Action<IList>)ActivateItemsExecute)));
+
+	public ICommand OpenGroupCommand => (ICommand)(openGroupCommand ?? (openGroupCommand = new DelegateCommand<IDecorate>((Action<IDecorate>)OpenGroupCommandExecute)));
+
+	public ICommand UpCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = upCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)UpCommandExecute);
+				DelegateCommand val3 = val2;
+				upCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public VmProcedureDecorator()
+	{
+		displayModuleSet = this;
+	}
+
+	private void SelectionChangedCommandExecute()
+	{
+	}
+
+	private void ImportGroupCommandExecute(DiagramEventArgs args)
+	{
+		DecoratorBase.ImportGroup(DecorateSource as IVmProcedure, args.Point);
+	}
+
+	private void ImportGroupRemoteCommandExecute(DiagramEventArgs args)
+	{
+		DecoratorBase.ImportGroup(DecorateSource as IVmProcedure, args.Point, isRemoteMode: true);
+	}
+
+	private void ProcessExportCommandExe()
+	{
+		if (!DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			return;
+		}
+		LogHelper.Info("Export procedure.");
+		string initDir = ConfigurationHelper.INIGetStringValue("OpenProcess");
+		IVmProcedure vmProcedure = DecorateSource as IVmProcedure;
+		try
+		{
+			string path = vmProcedure.ExportFile(null, null, isExportAs: true, initDir);
+			if (File.Exists(path))
+			{
+				ConfigurationHelper.INISetStringValue("OpenProcess", Path.GetDirectoryName(path));
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportSuccess"), MessageIcons.Ok);
+			}
+		}
+		catch (VmException ex)
+		{
+			string text = AppLocalizationService.GetLang("errCode:") + $"{ex.errorCode:X}" + "\r\n";
+			text = text + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+			HikMessageBox.Show(text, MessageIcons.Error);
+		}
+	}
+
+	private void ProcessExportRemoteCommandExe()
+	{
+		if (DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			LogHelper.Info("Export procedure.");
+			string text = ConfigurationHelper.INIGetStringValue("OpenProcessRemote");
+			IVmProcedure vmProcedure = DecorateSource as IVmProcedure;
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Filter = AppLocalizationService.GetLang("Lang_ProcessFile") + "|*.prcx"
+			};
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				vmProcedure.ExportFile(saveFileDialog.FilePath, null, isExportAs: true);
+				string directoryName = saveFileDialog.GetDirectoryName();
+				ConfigurationHelper.INISetStringValue("OpenProcessRemote", directoryName);
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportSuccess"), MessageIcons.Ok);
+			}
+		}
+	}
+
+	private void CopyCommandExe()
+	{
+		IVmProcedure vmProcedure = DecorateSource as IVmProcedure;
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("复制流程") ?? "");
+		vmProcedure.CopyProcedure();
+	}
+
+	private void SetIntervalCommandExe()
+	{
+		SysParamSet sysParamSet = new SysParamSet((DecorateSource as IVmModule).ID);
+		sysParamSet.ShowDialog();
+	}
+
+	private void SetTimeOutCommandExe()
+	{
+		TimeOutSet timeOutSet = new TimeOutSet((DecorateSource as IVmModule).ID);
+		timeOutSet.ShowDialog();
+	}
+
+	private void RunOnceCommandExe()
+	{
+		if (!RunCheck())
+		{
+			return;
+		}
+		VmProcedure vmProcedure = DecorateSource as VmProcedure;
+		try
+		{
+			vmProcedure.Run(null, bIsWait: false);
+		}
+		catch (VmException ex)
+		{
+			string strMsg = (DecorateSource as IVmProcedure).FullName + ":" + ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+		}
+	}
+
+	/// <summary>
+	/// 是否可执行检查
+	/// </summary>
+	/// <returns></returns>
+	private bool RunCheck()
+	{
+		if (WorkState != StatusBarSymbol.Ready)
+		{
+			string strMsg = VMProcedure.Name + ":" + WorkStateInfo;
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+			return false;
+		}
+		return true;
+	}
+
+	private void RunContinuousCommandExe()
+	{
+		IVMRun iVMRun = DecorateSource as IVMRun;
+		if (!iVMRun.ContinuousRunEnable && !RunCheck())
+		{
+			return;
+		}
+		try
+		{
+			iVMRun.ContinuousRunEnable = !iVMRun.ContinuousRunEnable;
+		}
+		catch (Exception ex)
+		{
+			if (ex is VmException ex2)
+			{
+				string strMsg = (DecorateSource as IVmProcedure).FullName + ":" + ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+				HikMessageBox.Show(strMsg, MessageIcons.Error);
+			}
+		}
+	}
+
+	private void ForbiddenItemsExecute(IList obj)
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("多模块禁用") + AppLocalizationService.GetPunctuation("：") + string.Join(AppLocalizationService.GetPunctuation("，"), from x in obj.OfType<VmModuleBaseDecorator>().ToList()
+			where !x.IsForbidden
+			select x.VMModule?.FullName));
+		obj.OfType<VmModuleBaseDecorator>().ToList().ForEach((VmModuleBaseDecorator p) =>
+		{
+			p.IsForbidden = true;
+		});
+	}
+
+	private void ActivateItemsExecute(IList obj)
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("多模块启用") + AppLocalizationService.GetPunctuation("：") + string.Join(AppLocalizationService.GetPunctuation("，"), from x in obj.OfType<VmModuleBaseDecorator>().ToList()
+			where x.IsForbidden
+			select x.VMModule?.FullName));
+		obj.OfType<VmModuleBaseDecorator>().ToList().ForEach((VmModuleBaseDecorator p) =>
+		{
+			p.IsForbidden = false;
+		});
+	}
+
+	internal void OpenGroupCommandExecute(IDecorate obj)
+	{
+		if (obj is VmGroupDecorator vmGroupDecorator)
+		{
+			if (vmGroupDecorator.IsForbidden || !((!vmGroupDecorator.IsLoadFailed) ?? true))
+			{
+				return;
+			}
+			if (vmGroupDecorator.IsPasswordEnabledA)
+			{
+				PasswordCheckWindow passwordCheckWindow = new PasswordCheckWindow();
+				passwordCheckWindow.OriginalPassword = vmGroupDecorator.PasswordA;
+				passwordCheckWindow.ShowInTaskbar = false;
+				passwordCheckWindow.ShowDialog();
+				if (passwordCheckWindow.IsPasswordOK)
+				{
+					DisplayModuleSet = obj;
+				}
+			}
+			else
+			{
+				DisplayModuleSet = obj;
+			}
+		}
+		else
+		{
+			DisplayModuleSet = obj;
+		}
+	}
+
+	internal void SearchModulePopupCommand(SearchPopupModel ts)
+	{
+		IList<string> list = ts.FullPath.Split('.');
+		if (list.Count() > 1)
+		{
+			DisplayModuleSet = GetTargetDisplay(this, list, 1) as IDecorate;
+		}
+		else
+		{
+			DisplayModuleSet = this;
+		}
+		VmModule vmModule = (DisplayModuleSet.DecorateSource as VmModuleSet).Modules.FirstOrDefault((VmModule x) => x.ID.ToString() == ts.Id);
+		IVmModule vmModule2;
+		if ((vmModule2 = vmModule) != null)
+		{
+			SearchModel searchModel = new SearchModel();
+			searchModel.Source = vmModule2;
+			searchModel.targetPosition = ((vmModule2.Position is Point point) ? point : GetTargetPoint(vmModule2));
+			SearchModel searchModel2 = searchModel;
+			SelectedModule = searchModel2;
+			searchModel2 = null;
+			SelectedModule = null;
+		}
+	}
+
+	private object GetTargetDisplay(VmModuleBaseDecorator decorator, IList<string> currentPath, int i)
+	{
+		object targetCurrentDisplay = GetTargetCurrentDisplay(decorator, currentPath[i]);
+		if (i == currentPath.Count() - 1 || targetCurrentDisplay == null)
+		{
+			return targetCurrentDisplay;
+		}
+		return GetTargetDisplay(targetCurrentDisplay as VmModuleBaseDecorator, currentPath, ++i);
+	}
+
+	private object GetTargetCurrentDisplay(VmModuleBaseDecorator decorator, string path)
+	{
+		foreach (object decorateChild in decorator.DecorateChildren)
+		{
+			if (((decorateChild as VmModuleBaseDecorator)?.DecorateSource as IVmModule)?.Name == path)
+			{
+				return decorateChild;
+			}
+		}
+		return null;
+	}
+
+	internal void SearchModuleCommandExecute(DiagramEventArgs ts)
+	{
+		IList<SearchPathInfo> currentPath = (ts.Param as IList<SearchPathInfo>).Reverse().ToList();
+		if (currentPath.Count() > 2)
+		{
+			DisplayModuleSet = GetTargetDecorator(this, currentPath, currentPath.Count() - 1) as IDecorate;
+		}
+		else
+		{
+			DisplayModuleSet = this;
+		}
+		VmModule vmModule = (DisplayModuleSet.DecorateSource as VmModuleSet).Modules.FirstOrDefault((VmModule x) => x.ID == currentPath[currentPath.Count() - 1].nodeID);
+		IVmModule vmModule2;
+		if ((vmModule2 = vmModule) != null)
+		{
+			SearchModel searchModel = new SearchModel();
+			searchModel.Source = vmModule2;
+			searchModel.targetPosition = ((vmModule2.Position is Point point) ? point : GetTargetPoint(vmModule2));
+			SearchModel searchModel2 = searchModel;
+			SelectedModule = searchModel2;
+			searchModel2 = null;
+			SelectedModule = null;
+		}
+	}
+
+	private Point GetTargetPoint(IVmModule module)
+	{
+		byte[] array = module.UserData["Position"];
+		if (array != null)
+		{
+			return ExternalCallHelper.BytesToStruct<Point>(array, 0, array.Length);
+		}
+		return new Point(0.0, 0.0);
+	}
+
+	private object GetTargetDecorator(VmModuleBaseDecorator decorator, IList<SearchPathInfo> currentPath, int i)
+	{
+		object targetObject = GetTargetObject(decorator, currentPath[currentPath.Count() - i].nodeID);
+		if (targetObject == null || i == 2)
+		{
+			return targetObject;
+		}
+		return GetTargetDecorator(targetObject as VmModuleBaseDecorator, currentPath, --i);
+	}
+
+	private object GetTargetObject(VmModuleBaseDecorator decorator, uint targetID)
+	{
+		foreach (object decorateChild in decorator.DecorateChildren)
+		{
+			IVmModule obj = (decorateChild as VmModuleBaseDecorator)?.DecorateSource as IVmModule;
+			if (obj != null && obj.ID == targetID)
+			{
+				return decorateChild;
+			}
+		}
+		return null;
+	}
+
+	private void UpCommandExecute()
+	{
+		object parent = (displayModuleSet.DecorateSource as IVmFrameBase).Parent;
+		if (parent == DecorateSource)
+		{
+			DisplayModuleSet = this;
+			return;
+		}
+		DisplayModuleSet = new VmGroupDecorator
+		{
+			DecorateSource = parent
+		};
+	}
+}

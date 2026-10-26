@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ComprehensiveConfigWithRenderControlBase" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" x:Name="us">
+  <Grid>
+    <local:ComprehensiveConfigControlBase x:Name="ParamsConfig" ParamsConfig="{Binding ParamsConfigSource, ElementName=us}" IsEditState="{Binding IsParamsEditState, ElementName=us}" />
+  </Grid>
+</UserControl>

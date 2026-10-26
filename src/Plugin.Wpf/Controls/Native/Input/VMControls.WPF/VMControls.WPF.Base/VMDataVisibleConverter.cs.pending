@@ -1,0 +1,27 @@
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// TreeViewItem只在数据是组合时显示
+/// </summary>
+internal class VMDataVisibleConverter : IValueConverter
+{
+	public object Convert(object o, Type type, object parameter, CultureInfo culture)
+	{
+		if (o is IDecorate decorate)
+		{
+			o = decorate.DecorateSource;
+		}
+		return (!(o is IVmModuleSet)) ? Visibility.Collapsed : Visibility.Visible;
+	}
+
+	public object ConvertBack(object o, Type type, object parameter, CultureInfo culture)
+	{
+		throw new NotSupportedException();
+	}
+}

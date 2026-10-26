@@ -1,0 +1,172 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class CircleArea : UserControl, IArea, INotifyPropertyChanged, IComponentConnector
+{
+	private bool _IsPressed;
+
+	private double ScaleX = 1.0;
+
+	public static readonly DependencyProperty AngleProperty = DependencyProperty.Register("Angle", typeof(double), typeof(CircleArea), new PropertyMetadata(0.0, OnAngleChanged));
+
+	public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CircleArea), new PropertyMetadata(double.MinValue, OnXChanged));
+
+	public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CircleArea), new PropertyMetadata(double.MinValue, OnYChanged));
+
+	private double InitWidth;
+
+	public bool IsPressed
+	{
+		get
+		{
+			return _IsPressed;
+		}
+		set
+		{
+			_IsPressed = value;
+			NotifyPropertyChanged("IsPressed");
+		}
+	}
+
+	public int Index { get; set; }
+
+	public Point OldPoint { get; set; }
+
+	public double OldRateX { get; set; }
+
+	public double OldRateY { get; set; }
+
+	public double Angle
+	{
+		get
+		{
+			return (double)GetValue(AngleProperty);
+		}
+		set
+		{
+			SetValue(AngleProperty, value);
+		}
+	}
+
+	public double X
+	{
+		get
+		{
+			return (double)GetValue(XProperty);
+		}
+		set
+		{
+			SetValue(XProperty, value);
+		}
+	}
+
+	public double Y
+	{
+		get
+		{
+			return (double)GetValue(YProperty);
+		}
+		set
+		{
+			SetValue(YProperty, value);
+		}
+	}
+
+	public Point CurPoint { get; set; }
+
+	public Control Container { get; set; }
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public CircleArea()
+	{
+		InitializeComponent();
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		ScaleX = (sender as ScaleTransform).ScaleX * num;
+		SetScaleUI();
+	}
+
+	private void SetScaleUI()
+	{
+		SetScaleUI(ScaleX);
+	}
+
+	public void SetScaleUI(double Scale)
+	{
+		ScaleX = Scale;
+		cview.StrokeThickness = 2.0 / Scale;
+		view.Width = InitWidth / Scale;
+		view.Height = view.Width;
+	}
+
+	private static void OnAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as CircleArea).ChangeAngle();
+	}
+
+	private void ChangeAngle()
+	{
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		tlt.Angle = Angle;
+	}
+
+	private static void OnXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as CircleArea).ChangeX();
+	}
+
+	private void ChangeX()
+	{
+		SetValue(Canvas.LeftProperty, X - Width / 2.0);
+	}
+
+	private static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as CircleArea).ChangeY();
+	}
+
+	private void ChangeY()
+	{
+		SetValue(Canvas.TopProperty, Y - Height / 2.0);
+	}
+
+	private void view_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (Container is RectangleRoi)
+		{
+			IsPressed = true;
+			CurPoint = e.GetPosition(this);
+			(Container as RectangleRoi).Doth(this, e);
+		}
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		InitWidth = Width;
+		view.Width = Width / ScaleX;
+		view.Height = Height / ScaleX;
+	}
+}

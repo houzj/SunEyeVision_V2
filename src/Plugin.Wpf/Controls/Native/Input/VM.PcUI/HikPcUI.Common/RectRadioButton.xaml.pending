@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:ImageViewControlButton x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common.RectRadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common" xmlns:appData="clr-namespace:Apps.Data;assembly=Apps.Data" Style="{DynamicResource showCrossToggleButtonStyle}" ToolTip="{appData:ResourceBinding ToolTipString, RelativeSource={RelativeSource Self}}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Image Stretch="None" Source="/Apps.Style;component/Resources/ic_绘制矩形_normal.png" />
+  <FrameworkElement.Tag>
+    <Image Stretch="None" Source="/Apps.Style;component/Resources/ic_绘制矩形_click.png" />
+  </FrameworkElement.Tag>
+</local:ImageViewControlButton>

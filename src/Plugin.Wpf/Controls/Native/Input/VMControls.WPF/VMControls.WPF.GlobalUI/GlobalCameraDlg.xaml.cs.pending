@@ -1,0 +1,85 @@
+using System;
+using System.Linq;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.Data;
+using Apps.XmlParser.ParamTab;
+using VM.Controls;
+using VM.Controls.Utility;
+using VM.Core;
+using VM.Utility;
+using VM.Utility.SingleInstance;
+using VMControls.BaseInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// GlobalCameraDialog.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// GlobalCameraDlg
+/// </summary>
+public partial class GlobalCameraDlg : BaseWindow, IComponentConnector
+{
+	private DelegateCommand _openHelpCommand;
+
+	/// <summary>
+	/// 打开对应模块的帮助文档网页
+	/// </summary>
+	public DelegateCommand OpenHelpCommand
+	{
+		get
+		{
+			if (_openHelpCommand == null)
+			{
+				_openHelpCommand = new DelegateCommand(ExecuteOpenHelp);
+			}
+			return _openHelpCommand;
+		}
+	}
+
+	private void ExecuteOpenHelp()
+	{
+		string toolItemInfoPath = CurrentPathHelper.Instance.GetCurrentPath() + "\\\\Resources\\GlobalCamera\\\\ToolItemInfo.xml";
+		HelpDocumentUtil.OpenHelpDocument(toolItemInfoPath);
+	}
+
+	public GlobalCameraDlg()
+	{
+		InitializeComponent();
+		DataContext = GlobalCameraManager.Instance;
+		if (GlobalCameraManager.Instance.CurDeviceA == null)
+		{
+			return;
+		}
+		IData data;
+		if ((data = GlobalCameraManager.Instance.CurDeviceA?.Params) != null)
+		{
+			if (data is ModuleParam param)
+			{
+				GlobalCameraManager.Instance.Root = param.GetParamRoot();
+			}
+		}
+		else
+		{
+			GlobalCameraManager.Instance.Root = new AlgorithmTabRoot(GlobalCameraManager.Instance.CurDeviceA?.Params);
+		}
+		GlobalCameraManager.Instance.Root?.GetItemsValueUnit();
+	}
+
+	private void tbName_GotFocus(object sender, RoutedEventArgs e)
+	{
+		DevList.SelectedItem = DevList.Items.OfType<object>().FirstOrDefault((object p) => p == (sender as FrameworkElement).DataContext);
+	}
+
+	private void Confirm_Click(object sender, RoutedEventArgs e)
+	{
+		Close();
+	}
+
+	private void GlobalModuleWindow_Closed(object sender, EventArgs e)
+	{
+		FunctionCameraManager.Execute("GetCamera");
+		FunctionCameraManager.GetCamerXml(0u, "Release");
+	}
+}

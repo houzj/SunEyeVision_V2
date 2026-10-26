@@ -1,0 +1,664 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows;
+using System.Windows.Input;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using Hik.Util;
+using HikExternalCall.Common;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class GlobalTriggerConfig : NameValueItem, ITriggerConfig, IDecorate
+{
+	public const int UnionMaxLen = 1352;
+
+	public const int ParamsLen = 260;
+
+	/// <summary>
+	/// 事件类型最大个数
+	/// </summary>
+	private int MaxTriEventItemCount = 32;
+
+	/// <summary>
+	/// 字符类型最大个数
+	/// </summary>
+	private int MaxTriStrItemCount = 32;
+
+	public static Dictionary<int, AlgorithmTabRoot> CacheTabRoot = new Dictionary<int, AlgorithmTabRoot>();
+
+	private ObservableCollection<object> CommEventTrigger = new ObservableCollection<object>();
+
+	private ObservableCollection<object> CommStrTrigger = new ObservableCollection<object>();
+
+	private int _eventSelected = 0;
+
+	private DelegateCommand<object> _AddCommand = null;
+
+	private object decorateSource = null;
+
+	private bool _isLoading = false;
+
+	private bool isSetChange = false;
+
+	private IList AllReceiveList = null;
+
+	public ObservableCollection<object> CommEventTriggerA
+	{
+		get
+		{
+			return CommEventTrigger;
+		}
+		set
+		{
+			if (CommEventTrigger != value)
+			{
+				CommEventTrigger = value;
+				OnPropertyChanged("CommEventTriggerA");
+			}
+		}
+	}
+
+	public ObservableCollection<object> CommStrTriggerA
+	{
+		get
+		{
+			return CommStrTrigger;
+		}
+		set
+		{
+			if (CommStrTrigger != value)
+			{
+				CommStrTrigger = value;
+				OnPropertyChanged("CommStrTriggerA");
+			}
+		}
+	}
+
+	public int EventSelected
+	{
+		get
+		{
+			byte[] array = (DecorateSource as IVmModule)?.UserData["eventSelect"];
+			if (array != null)
+			{
+				string s = VM.PlatformSDKCS.StringUtil.UTF8GetString(array);
+				_eventSelected = int.Parse(s);
+			}
+			return _eventSelected;
+		}
+		set
+		{
+			if (_eventSelected != value)
+			{
+				_eventSelected = value;
+				if (DecorateSource is IVmModule vmModule && vmModule != null)
+				{
+					vmModule.UserData["eventSelect"] = VM.PlatformSDKCS.StringUtil.UTF8GetBytesPadZero(_eventSelected.ToString());
+				}
+			}
+		}
+	}
+
+	public ICommand AddCommand
+	{
+		get
+		{
+			if (_AddCommand == null)
+			{
+				_AddCommand = new DelegateCommand<object>((Action<object>)AddCommandCmdExecute);
+			}
+			return (ICommand)_AddCommand;
+		}
+	}
+
+	public object DecorateSource
+	{
+		get
+		{
+			return decorateSource;
+		}
+		set
+		{
+			if (decorateSource != value)
+			{
+				decorateSource = value;
+				GetParamUnit();
+			}
+		}
+	}
+
+	public bool IsLoading => _isLoading;
+
+	private void AddCommandCmdExecute(object obj)
+	{
+		AddTrigger(obj);
+	}
+
+	public void AddTrigger(object obj)
+	{
+		bool flag = obj.ToString() == "0";
+		ComTriggerItem comTriggerItem;
+		if (flag)
+		{
+			if (CommEventTriggerA.Count >= MaxTriEventItemCount)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("最多添加") + " :" + MaxTriEventItemCount, MessageButtons.Normal, MessageIcons.Warning);
+				return;
+			}
+			comTriggerItem = new GlobalTriggerEventItem(this);
+			comTriggerItem.Index = CommEventTriggerA.Count + 1;
+			WeakEventManager<GlobalTriggerEventItem, PropertyChangedEventArgs>.AddHandler((GlobalTriggerEventItem)comTriggerItem, "PropertyChanged", ValueChanged);
+		}
+		else
+		{
+			if (CommStrTriggerA.Count >= MaxTriStrItemCount)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("最多添加") + " :" + MaxTriStrItemCount, MessageButtons.Normal, MessageIcons.Warning);
+				return;
+			}
+			comTriggerItem = new GlobalTriggerStrItem(this);
+			comTriggerItem.Index = CommStrTriggerA.Count + 1;
+			WeakEventManager<GlobalTriggerStrItem, PropertyChangedEventArgs>.AddHandler((GlobalTriggerStrItem)comTriggerItem, "PropertyChanged", ValueChanged);
+		}
+		comTriggerItem.IsEventTrigger = flag;
+		if (SetTriggerItem(comTriggerItem, ActionType.Add) == 0)
+		{
+			if (flag)
+			{
+				CommEventTriggerA.Add(comTriggerItem);
+			}
+			else
+			{
+				CommStrTriggerA.Add(comTriggerItem);
+			}
+		}
+	}
+
+	private void ValueChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (!e.PropertyName.Equals("IsEventTrigger") && !e.PropertyName.Equals("IsStrTrigger") && !isSetChange && !e.PropertyName.Equals("EnumEntrysA"))
+		{
+			if (e.PropertyName.Equals("Command"))
+			{
+				isSetChange = true;
+				(sender as ComTriggerItem).ClearConfig();
+			}
+			if (sender != null && sender is ComTriggerItem comTriggerItem && CheckPassword(comTriggerItem))
+			{
+				SetTriggerItem(comTriggerItem, ActionType.Modify);
+			}
+			isSetChange = false;
+		}
+	}
+
+	private bool CheckPassword(ComTriggerItem tiggerItem)
+	{
+		try
+		{
+			if (string.IsNullOrEmpty(tiggerItem.SolutionPath))
+			{
+				return true;
+			}
+			uint nHasPwd = 0u;
+			uint nValidFormat = 0u;
+			ServerSDKManager.serverSDKManager.mSolutionManager.CheckSolution(tiggerItem.SolutionPath, ref nHasPwd, ref nValidFormat);
+			if (nValidFormat == 1 && nHasPwd == 1)
+			{
+				if (string.IsNullOrEmpty(tiggerItem.SolutionPasswd))
+				{
+					return true;
+				}
+				int nIsCorrect = -1;
+				ServerSDKManager.serverSDKManager.mSolutionManager.CheckPassword(tiggerItem.SolutionPath, tiggerItem.SolutionPasswd, ref nIsCorrect);
+				if (nIsCorrect == 0)
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("方案密码错误"), MessageButtons.Normal, MessageIcons.Error);
+					isSetChange = true;
+					tiggerItem.SolutionPasswd = "";
+					return true;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("CheckPassword is error." + ex.ToString());
+			return false;
+		}
+		return true;
+	}
+
+	public void RemoveItem(object item)
+	{
+		if (item is GlobalTriggerEventItem)
+		{
+			WeakEventManager<GlobalTriggerEventItem, PropertyChangedEventArgs>.RemoveHandler((GlobalTriggerEventItem)item, "PropertyChanged", ValueChanged);
+		}
+		else if (item is GlobalTriggerStrItem)
+		{
+			WeakEventManager<GlobalTriggerStrItem, PropertyChangedEventArgs>.RemoveHandler((GlobalTriggerStrItem)item, "PropertyChanged", ValueChanged);
+		}
+		if (SetTriggerItem(item as ComTriggerItem, ActionType.Delete) != 0)
+		{
+			return;
+		}
+		int num = 1;
+		if ((item as ComTriggerItem).IsEventTrigger)
+		{
+			CommEventTriggerA.Remove(item);
+			{
+				foreach (object item2 in CommEventTriggerA)
+				{
+					(item2 as ComTriggerItem).Index = num;
+					num++;
+				}
+				return;
+			}
+		}
+		CommStrTriggerA.Remove(item);
+		foreach (object item3 in CommStrTriggerA)
+		{
+			(item3 as ComTriggerItem).Index = num;
+			num++;
+		}
+	}
+
+	/// <summary>
+	/// 获取所有接收事件列表
+	/// </summary>
+	/// <returns></returns>
+	public IList GetAllReceiveList()
+	{
+		if (AllReceiveList == null)
+		{
+			VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == 11000);
+			if (vmModule == null)
+			{
+				return null;
+			}
+			AllReceiveList = CommunicationMgrHelper.GetAllReceiveEvents();
+		}
+		return AllReceiveList;
+	}
+
+	public void GetParams()
+	{
+		GetParamUnit();
+	}
+
+	/// <summary>
+	/// 获取所有参数
+	/// </summary>
+	public override int GetParamUnit()
+	{
+		if (DecorateSource == null)
+		{
+			return -1;
+		}
+		try
+		{
+			_isLoading = true;
+			string s = (DecorateSource as VmModule).Params["TriggerEventSize"];
+			int result = -1;
+			int.TryParse(s, out result);
+			for (int i = 0; i < result; i++)
+			{
+				byte[] valueByte = ((IUserBytesData)(DecorateSource as VmModule).Params)["TriggerEventInfo-" + i];
+				ComTriggerItem triggerItem = GetTriggerItem(valueByte, isEventTri: true);
+				if (triggerItem != null)
+				{
+					triggerItem.Index = i + 1;
+					triggerItem.IsEventTrigger = true;
+					CommEventTriggerA.Add(triggerItem);
+					WeakEventManager<GlobalTriggerEventItem, PropertyChangedEventArgs>.AddHandler((GlobalTriggerEventItem)triggerItem, "PropertyChanged", ValueChanged);
+				}
+			}
+			s = (DecorateSource as VmModule).Params["TriggerStringSize"];
+			int result2 = -1;
+			int.TryParse(s, out result2);
+			for (int i = 0; i < result2; i++)
+			{
+				byte[] valueByte2 = ((IUserBytesData)(DecorateSource as VmModule).Params)["TriggerStringInfo-" + i];
+				ComTriggerItem triggerItem2 = GetTriggerItem(valueByte2, isEventTri: false);
+				if (triggerItem2 != null)
+				{
+					triggerItem2.Index = i + 1;
+					triggerItem2.IsEventTrigger = false;
+					CommStrTriggerA.Add(triggerItem2);
+					WeakEventManager<GlobalTriggerStrItem, PropertyChangedEventArgs>.AddHandler((GlobalTriggerStrItem)triggerItem2, "PropertyChanged", ValueChanged);
+				}
+			}
+			string s2 = ((IUserStringData)(DecorateSource as VmModule).Params)["TriggerEventMaxNum"];
+			int result3 = 0;
+			if (int.TryParse(s2, out result3))
+			{
+				MaxTriEventItemCount = result3;
+			}
+			s2 = ((IUserStringData)(DecorateSource as VmModule).Params)["TriggerStringMaxNum"];
+			result3 = 0;
+			if (int.TryParse(s2, out result3))
+			{
+				MaxTriStrItemCount = result3;
+			}
+		}
+		catch (Exception)
+		{
+			return -1;
+		}
+		_isLoading = false;
+		return 0;
+	}
+
+	private IVmModule getModuleById(int id)
+	{
+		VmModule moduleByID = VmSolution.Instance.GetModuleByID((uint)id);
+		if (moduleByID != null)
+		{
+			return moduleByID;
+		}
+		return null;
+	}
+
+	private ComTriggerItem GetTriggerItem(byte[] valueByte, bool isEventTri)
+	{
+		if (valueByte == null || valueByte.Length == 0)
+		{
+			return null;
+		}
+		try
+		{
+			GlobalTriggerData globalTriggerData = default;
+			IntPtr zero = IntPtr.Zero;
+			ComTriggerItem comTriggerItem;
+			if (isEventTri)
+			{
+				comTriggerItem = new GlobalTriggerEventItem(this);
+				int num = Marshal.SizeOf(typeof(GlobalEventTriggerData));
+				if (num > valueByte.Length)
+				{
+					return null;
+				}
+				zero = Marshal.AllocHGlobal(num);
+				Marshal.Copy(valueByte, 0, zero, valueByte.Length);
+				GlobalEventTriggerData globalEventTriggerData = (GlobalEventTriggerData)Marshal.PtrToStructure(zero, typeof(GlobalEventTriggerData));
+				globalTriggerData = globalEventTriggerData.tiggerData;
+				if (globalEventTriggerData.seSetModuleParamList != null)
+				{
+					for (int i = 0; i < globalEventTriggerData.seSetModuleParamList.Length; i++)
+					{
+						string text = Hik.Util.StringUtil.UTF8GetString(globalEventTriggerData.seSetModuleParamList[i].szEventParamName);
+						if (!string.IsNullOrEmpty(text))
+						{
+							(comTriggerItem as GlobalTriggerEventItem).EventRunParamsDict.Add(text, globalEventTriggerData.seSetModuleParamList[i]);
+						}
+					}
+				}
+				if (globalEventTriggerData.seSetModuleInputList != null)
+				{
+					for (int j = 0; j < globalEventTriggerData.seSetModuleInputList.Length; j++)
+					{
+						string text2 = Hik.Util.StringUtil.UTF8GetString(globalEventTriggerData.seSetModuleInputList[j].szEventParamName);
+						if (!string.IsNullOrEmpty(text2))
+						{
+							(comTriggerItem as GlobalTriggerEventItem).EventInputParamsDict.Add(text2, globalEventTriggerData.seSetModuleInputList[j]);
+						}
+					}
+				}
+				(comTriggerItem as GlobalTriggerEventItem).CurEventIndex = globalEventTriggerData.nRecvEventId;
+				(comTriggerItem as GlobalTriggerEventItem).EventRunParamsDict.Clear();
+				(comTriggerItem as GlobalTriggerEventItem).EventInputParamsDict.Clear();
+			}
+			else
+			{
+				comTriggerItem = new GlobalTriggerStrItem(this);
+				int num2 = Marshal.SizeOf(typeof(GlobalStrTriggerData));
+				if (num2 > valueByte.Length)
+				{
+					return null;
+				}
+				zero = Marshal.AllocHGlobal(num2);
+				Marshal.Copy(valueByte, 0, zero, valueByte.Length);
+				GlobalStrTriggerData globalStrTriggerData = (GlobalStrTriggerData)Marshal.PtrToStructure(zero, typeof(GlobalStrTriggerData));
+				globalTriggerData = globalStrTriggerData.tiggerData;
+				(comTriggerItem as GlobalTriggerStrItem).TriggerString = Hik.Util.StringUtil.UTF8GetString(globalStrTriggerData.szTriggerString);
+				(comTriggerItem as GlobalTriggerStrItem).MatchMode = (int)globalStrTriggerData.matchMode;
+			}
+			if (zero != IntPtr.Zero)
+			{
+				Marshal.FreeHGlobal(zero);
+				zero = IntPtr.Zero;
+			}
+			comTriggerItem.Command = (int)globalTriggerData.eCommandType;
+			switch (globalTriggerData.eCommandType)
+			{
+			case GLOBAL_COMMAND_TYPE.ExecuteProcedure:
+			{
+				Execute_Procedure execute_Procedure = ExternalCallHelper.BytesToStruct<Execute_Procedure>(globalTriggerData.uTriggerParam, 0, globalTriggerData.uTriggerParam.Length);
+				comTriggerItem.IsProTriggerSub = execute_Procedure.stTriggerStr.eDataOrigin == eDATA_ORIGIN.DATA_ORIGIN_SUB;
+				comTriggerItem.ProTriggerString = Hik.Util.StringUtil.UTF8GetString(execute_Procedure.stTriggerStr.szValue);
+				int result = -1;
+				if (int.TryParse(Encoding.UTF8.GetString(execute_Procedure.stProcedureId.szValue), out result))
+				{
+					comTriggerItem.TriggerPeocessID = result;
+				}
+				break;
+			}
+			case GLOBAL_COMMAND_TYPE.ChangeSolution:
+			{
+				Load_Solution load_Solution = ExternalCallHelper.BytesToStruct<Load_Solution>(globalTriggerData.uTriggerParam, 0, globalTriggerData.uTriggerParam.Length);
+				comTriggerItem.SolutionPath = Hik.Util.StringUtil.UTF8GetString(load_Solution.stFilePath.szValue);
+				comTriggerItem.SolutionPasswd = Hik.Util.StringUtil.UTF8GetString(load_Solution.stPassward.szValue);
+				break;
+			}
+			case GLOBAL_COMMAND_TYPE.SetModuleParam:
+			{
+				Execute_Module_Action execute_Module_Action = ExternalCallHelper.BytesToStruct<Execute_Module_Action>(globalTriggerData.uTriggerParam, 0, globalTriggerData.uTriggerParam.Length);
+				if (execute_Module_Action.nModuleId > -1)
+				{
+					comTriggerItem.TriggerModule = execute_Module_Action.nModuleId;
+					comTriggerItem.TriggerSelectedModule = getModuleById(execute_Module_Action.nModuleId);
+					comTriggerItem.ParamName = Hik.Util.StringUtil.UTF8GetString(execute_Module_Action.szParamName);
+				}
+				break;
+			}
+			case GLOBAL_COMMAND_TYPE.ExecuteModule:
+			{
+				Execute_Module execute_Module = ExternalCallHelper.BytesToStruct<Execute_Module>(globalTriggerData.uTriggerParam, 0, globalTriggerData.uTriggerParam.Length);
+				int result = -1;
+				if (int.TryParse(Hik.Util.StringUtil.UTF8GetString(execute_Module.stModuleId.szValue), out result))
+				{
+					comTriggerItem.TriggerModule = result;
+					comTriggerItem.TriggerSelectedModule = getModuleById(result);
+				}
+				break;
+			}
+			}
+			return comTriggerItem;
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
+	private DATA_CONFIG GetConfig(string paramValue, eDATA_ORIGIN eDATA)
+	{
+		return new DATA_CONFIG
+		{
+			eDataOrigin = eDATA,
+			szValue = Hik.Util.StringUtil.UTF8GetFixLenBytes(paramValue, 512)
+		};
+	}
+
+	private byte[] SetTriggerBytes(ComTriggerItem item, bool isEventTri)
+	{
+		try
+		{
+			GlobalTriggerData tiggerData = new GlobalTriggerData
+			{
+				eCommandType = (GLOBAL_COMMAND_TYPE)item.Command,
+				uTriggerParam = new byte[1352]
+			};
+			byte[] array = null;
+			switch (tiggerData.eCommandType)
+			{
+			case GLOBAL_COMMAND_TYPE.ChangeSolution:
+				array = ExternalCallHelper.StructToBytes(new Load_Solution
+				{
+					stFilePath = GetConfig(item.SolutionPath, eDATA_ORIGIN.DATA_ORIGIN_INPUT),
+					stPassward = GetConfig(item.SolutionPasswd, eDATA_ORIGIN.DATA_ORIGIN_INPUT)
+				});
+				break;
+			case GLOBAL_COMMAND_TYPE.ExecuteProcedure:
+				array = ExternalCallHelper.StructToBytes(new Execute_Procedure
+				{
+					stProcedureId = GetConfig(item.TriggerPeocessID.ToString(), eDATA_ORIGIN.DATA_ORIGIN_INPUT),
+					stTriggerStr = GetConfig(item.ProTriggerString, (!item.IsProTriggerSub) ? eDATA_ORIGIN.DATA_ORIGIN_INPUT : eDATA_ORIGIN.DATA_ORIGIN_SUB)
+				});
+				break;
+			case GLOBAL_COMMAND_TYPE.ExecuteModule:
+				array = ExternalCallHelper.StructToBytes(new Execute_Module
+				{
+					stModuleId = GetConfig(item.TriggerModule.ToString(), eDATA_ORIGIN.DATA_ORIGIN_INPUT)
+				});
+				break;
+			case GLOBAL_COMMAND_TYPE.SetModuleParam:
+				array = ExternalCallHelper.StructToBytes(new Execute_Module_Action
+				{
+					nModuleId = item.TriggerModule,
+					szParamName = Hik.Util.StringUtil.UTF8GetFixLenBytes(item.ParamName, 260)
+				});
+				break;
+			}
+			if (array == null)
+			{
+				return null;
+			}
+			Array.Copy(array, tiggerData.uTriggerParam, array.Length);
+			byte[] array2 = null;
+			if (isEventTri)
+			{
+				GlobalEventTriggerData globalEventTriggerData = new GlobalEventTriggerData
+				{
+					nRecvEventId = (item as GlobalTriggerEventItem).CurEventIndex,
+					tiggerData = tiggerData,
+					seSetModuleParamList = new Set_Module_Param[16],
+					seSetModuleInputList = new Set_Module_Input[16]
+				};
+				GlobalTriggerEventItem globalTriggerEventItem = item as GlobalTriggerEventItem;
+				if (globalTriggerEventItem.ItemsA != null)
+				{
+					for (int i = 0; i < globalTriggerEventItem.ItemsA.Count; i++)
+					{
+						if (globalTriggerEventItem.ItemsA[i].RunParamsDict != null)
+						{
+							globalEventTriggerData.seSetModuleParamList[i].stModuleParamList = new Module_Param[32];
+							globalEventTriggerData.seSetModuleParamList[i].szEventParamName = Hik.Util.StringUtil.UTF8GetFixLenBytes(globalTriggerEventItem.ItemsA[i].ItemName, 260);
+							globalEventTriggerData.seSetModuleParamList[i].nListNum = globalTriggerEventItem.ItemsA[i].RunParamsDict.Count;
+							for (int j = 0; j < globalTriggerEventItem.ItemsA[i].RunParamsDict.Count; j++)
+							{
+								globalEventTriggerData.seSetModuleParamList[i].stModuleParamList[j].nModuleId = globalTriggerEventItem.ItemsA[i].RunParamsDict[j].ModuleID;
+								globalEventTriggerData.seSetModuleParamList[i].stModuleParamList[j].szModuleParamName = Hik.Util.StringUtil.UTF8GetFixLenBytes(globalTriggerEventItem.ItemsA[i].RunParamsDict[j].ParamName, 260);
+							}
+						}
+						if (globalTriggerEventItem.ItemsA[i].InputParamsDict != null)
+						{
+							globalEventTriggerData.seSetModuleInputList[i].stModuleInputList = new Module_Input[32];
+							globalEventTriggerData.seSetModuleInputList[i].szEventParamName = Hik.Util.StringUtil.UTF8GetFixLenBytes(globalTriggerEventItem.ItemsA[i].ItemName, 260);
+							globalEventTriggerData.seSetModuleInputList[i].nListNum = globalTriggerEventItem.ItemsA[i].InputParamsDict.Count;
+							for (int k = 0; k < globalTriggerEventItem.ItemsA[i].InputParamsDict.Count; k++)
+							{
+								globalEventTriggerData.seSetModuleInputList[i].stModuleInputList[k].nModuleId = globalTriggerEventItem.ItemsA[i].InputParamsDict[k].ModuleID;
+								globalEventTriggerData.seSetModuleInputList[i].stModuleInputList[k].szModuleInputName = Hik.Util.StringUtil.UTF8GetFixLenBytes(globalTriggerEventItem.ItemsA[i].InputParamsDict[k].ParamName, 260);
+							}
+						}
+					}
+				}
+				array2 = ExternalCallHelper.StructToBytes(globalEventTriggerData);
+			}
+			else
+			{
+				array2 = ExternalCallHelper.StructToBytes(new GlobalStrTriggerData
+				{
+					szTriggerString = Hik.Util.StringUtil.UTF8GetFixLenBytes((item as GlobalTriggerStrItem).TriggerString, 256),
+					tiggerData = tiggerData,
+					matchMode = (MATCH_MODE)(item as GlobalTriggerStrItem).MatchMode
+				});
+			}
+			return array2;
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
+	private int SetTriggerItem(ComTriggerItem item, ActionType action)
+	{
+		try
+		{
+			if (DecorateSource == null)
+			{
+				return -1;
+			}
+			bool flag = item is GlobalTriggerEventItem;
+			switch (action)
+			{
+			case ActionType.Add:
+				(DecorateSource as VmModule).Params[flag ? "AddTriggerEvent" : "AddTriggerString"] = "true";
+				break;
+			case ActionType.Delete:
+				(DecorateSource as VmModule).Params[flag ? "DeleteTriggerEvent" : "DeleteTriggerString"] = (item.Index - 1).ToString();
+				break;
+			case ActionType.Modify:
+			{
+				byte[] array = SetTriggerBytes(item, flag);
+				if (array != null)
+				{
+					string key = (flag ? "ModifyTriggerEvent-" : "ModifyTriggerString-") + (item.Index - 1);
+					try
+					{
+						((IUserBytesData)(DecorateSource as VmModule).Params)[key] = array;
+					}
+					catch (Exception ex)
+					{
+						LogHelper.Error("下发数据错误," + ex.ToString());
+					}
+				}
+				break;
+			}
+			}
+			return 0;
+		}
+		catch (Exception ex2)
+		{
+			if (ex2 is VmException ex3)
+			{
+				LogHelper.Error("下发数据错误," + ex3.errorMessage);
+			}
+			else
+			{
+				LogHelper.Error("下发数据错误," + ex2.ToString());
+			}
+			return -1;
+		}
+	}
+
+	public override int SetParamUnit()
+	{
+		return base.SetParamUnit();
+	}
+}

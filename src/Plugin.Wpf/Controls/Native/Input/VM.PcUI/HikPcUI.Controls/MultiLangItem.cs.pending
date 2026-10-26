@@ -1,0 +1,47 @@
+using Apps.Localization;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+
+public class MultiLangItem
+{
+	private string key;
+
+	private string displayValue;
+
+	public string Key
+	{
+		get
+		{
+			return key;
+		}
+		set
+		{
+			key = value;
+		}
+	}
+
+	public string DisplayValue
+	{
+		get
+		{
+			displayValue = AppLocalizationService.GetLang(key);
+			if (string.IsNullOrWhiteSpace(displayValue))
+			{
+				return key;
+			}
+			return displayValue;
+		}
+	}
+
+	public string Name => key;
+
+	public MultiLangItem(string key)
+	{
+		this.key = key;
+	}
+
+	public override string ToString()
+	{
+		return key;
+	}
+}

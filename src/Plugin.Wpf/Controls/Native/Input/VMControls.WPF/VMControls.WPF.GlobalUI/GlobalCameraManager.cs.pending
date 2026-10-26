@@ -1,0 +1,513 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using Hik.Util;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.User;
+using VM.Utility.SingleInstance;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class GlobalCameraManager : INotifyPropertyChanged
+{
+	private static readonly GlobalCameraManager instance;
+
+	private ObservableCollection<VmModule> items = new ObservableCollection<VmModule>();
+
+	private VmModule curDevice = null;
+
+	private AlgorithmTabRoot root = null;
+
+	private bool _IsAllowOperate = true;
+
+	/// <summary>
+	/// 重命名设备
+	/// </summary>
+	private DelegateCommand reNameDevCommand = null;
+
+	private DelegateCommand deleteItemCommand = null;
+
+	public static ObservableCollection<CameraInfo> CameraList;
+
+	/// <summary>
+	/// 打开下拉框
+	/// </summary>
+	private DelegateCommand addDevCommand = null;
+
+	/// <summary>
+	/// 添加设备
+	/// </summary>
+	private DelegateCommand<object> clickCommand = null;
+
+	public static GlobalCameraManager Instance => instance;
+
+	/// <summary>
+	/// 全局设备列表(每个item对应一个module)
+	/// </summary>
+	public ObservableCollection<VmModule> ItemsA
+	{
+		get
+		{
+			return items;
+		}
+		set
+		{
+			if (items != value)
+			{
+				items = value;
+				OnPropertyChanged("ItemsA");
+			}
+		}
+	}
+
+	public VmModule CurDeviceA
+	{
+		get
+		{
+			return curDevice;
+		}
+		set
+		{
+			if (curDevice == value)
+			{
+				return;
+			}
+			curDevice = value;
+			if (curDevice == null)
+			{
+				Root = null;
+			}
+			else
+			{
+				IData data;
+				if ((data = CurDeviceA?.Params) != null)
+				{
+					if (data is ModuleParam param)
+					{
+						Root = param.GetParamRoot();
+					}
+				}
+				else
+				{
+					Root = new AlgorithmTabRoot(CurDeviceA?.Params);
+				}
+				Root?.GetItemsValueUnit();
+			}
+			OnPropertyChanged("Root");
+			OnPropertyChanged("CurDeviceA");
+			OnPropertyChanged("IsMaskVisible");
+		}
+	}
+
+	public AlgorithmTabRoot Root
+	{
+		get
+		{
+			return root;
+		}
+		set
+		{
+			if (root != value)
+			{
+				root = value;
+				OnPropertyChanged("Root");
+			}
+		}
+	}
+
+	public bool IsAllowOperate
+	{
+		get
+		{
+			return _IsAllowOperate;
+		}
+		set
+		{
+			if (_IsAllowOperate != value)
+			{
+				_IsAllowOperate = value;
+				OnPropertyChanged("IsAllowOperate");
+			}
+		}
+	}
+
+	public bool IsMaskVisible
+	{
+		get
+		{
+			VmModule curDeviceA = CurDeviceA;
+			if (curDeviceA != null && !curDeviceA.ConfigAvailable && CodeManager.GetInstance().GetLoginUser() == AccessUser.Tech)
+			{
+				return true;
+			}
+			return false;
+		}
+	}
+
+	public ICommand ReNameDevCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = reNameDevCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ReNameDevCommandExecute);
+				DelegateCommand val3 = val2;
+				reNameDevCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DeleteItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = deleteItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)DeleteItemCommandExecute);
+				DelegateCommand val3 = val2;
+				deleteItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ObservableCollection<CameraInfo> CameraListA => CameraList;
+
+	public ICommand AddDevCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = addDevCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)AddDevCommandExecute);
+				DelegateCommand val3 = val2;
+				addDevCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ClickCommand => (ICommand)(clickCommand ?? (clickCommand = new DelegateCommand<object>((Action<object>)ClickCommandExecute)));
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	/// <summary>
+	/// 通知属性变化
+	/// </summary>
+	/// <param name="name"></param>
+	public virtual void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	static GlobalCameraManager()
+	{
+		CameraList = new ObservableCollection<CameraInfo>();
+		instance = new GlobalCameraManager();
+	}
+
+	public void ModuleRegister(VmModule module)
+	{
+		foreach (CameraInfo camera in CameraList)
+		{
+			if (module.StrModuleName == camera.Type)
+			{
+				CurDeviceA = module;
+				break;
+			}
+		}
+	}
+
+	public void GetAuthority()
+	{
+		AccessUser loginUser = CodeManager.GetInstance().GetLoginUser();
+		if (loginUser == AccessUser.Tech || loginUser == AccessUser.Operator || ((IVMRun)VmSolution.Instance).ContinuousRunEnable || ((IVMRun)VmSolution.Instance).IsRunning)
+		{
+			IsAllowOperate = false;
+		}
+		else
+		{
+			IsAllowOperate = true;
+		}
+	}
+
+	/// <summary>
+	/// 清空界面相机设备
+	/// </summary>
+	public void CloseCamera()
+	{
+		Dispatcher dispatcher = null;
+		dispatcher = ((Application.Current != null) ? Application.Current.Dispatcher : CurrentUIHelper.Instance.Dispatcher);
+		dispatcher.Invoke(() =>
+		{
+			ItemsA?.Clear();
+			CurDeviceA = null;
+		});
+	}
+
+	private void ReNameDevCommandExecute()
+	{
+		string name = CurDeviceA.Name;
+		AddLightSourceDeviceDlg addLightSourceDeviceDlg = new AddLightSourceDeviceDlg
+		{
+			Title = AppLocalizationService.GetLang("Lang_Rename"),
+			IsReName = true,
+			ConfigName = CurDeviceA.Name
+		};
+		addLightSourceDeviceDlg.tbName.MaxLength = 16;
+		addLightSourceDeviceDlg.ShowDialog();
+		if (!addLightSourceDeviceDlg.IsConfirm)
+		{
+			return;
+		}
+		try
+		{
+			if (addLightSourceDeviceDlg.ConfigName.Contains('?') || addLightSourceDeviceDlg.ConfigName.Contains(';') || addLightSourceDeviceDlg.ConfigName.Contains('.'))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ModuleNameErrorInclude") + Environment.NewLine + "                             ? ; .", MessageIcons.Error);
+			}
+			else
+			{
+				CurDeviceA.Name = addLightSourceDeviceDlg.ConfigName;
+			}
+		}
+		catch (VmException vmException)
+		{
+			ShowMessage.ShowVmExceptionMessage(vmException);
+		}
+	}
+
+	private void DeleteItemCommandExecute()
+	{
+		if (CurDeviceA != null)
+		{
+			CurDeviceA.Dispose();
+		}
+		ItemsA.Remove(CurDeviceA);
+		OnPropertyChanged("ItemsA");
+	}
+
+	public void ListFile(string path)
+	{
+		DirectoryInfo directoryInfo = new DirectoryInfo(path);
+		FileInfo[] files = directoryInfo.GetFiles();
+		foreach (FileInfo fileInfo in files)
+		{
+			if (fileInfo.Name == directoryInfo.Name + ".xml")
+			{
+				string path2 = path + "\\" + fileInfo.Name;
+				CameraDeviceTypeHelper.GetModuleType(path2, CameraList);
+			}
+		}
+	}
+
+	private void AddDevCommandExecute()
+	{
+		CameraList.Clear();
+		if (CameraList.Count == 0)
+		{
+			string path = CurrentPathHelper.Instance.GetCurrentPath() + "Module(sp)\\x64\\Global\\";
+			string[] directories = Directory.GetDirectories(path);
+			string[] array = directories;
+			foreach (string path2 in array)
+			{
+				ListFile(path2);
+			}
+		}
+		if (CameraList.Count >= 4)
+		{
+			CameraInfo cameraInfo = CameraList.FirstOrDefault((CameraInfo c) => c.Type == "ImageCollectHikModu");
+			if (cameraInfo != null)
+			{
+				CameraList.Remove(cameraInfo);
+				CameraList.Insert(1, cameraInfo);
+			}
+		}
+	}
+
+	private void ClickCommandExecute(object obj)
+	{
+		Assembly assembly = null;
+		string content = (obj as CameraInfo).Type;
+		CameraInfo cameraInfo = CameraList.FirstOrDefault((CameraInfo p) => p.Type == content);
+		if (cameraInfo != null)
+		{
+			string path = CurrentPathHelper.Instance.GetCurrentPath() + "module(sp)\\x64\\Global\\" + cameraInfo.Type + "\\" + cameraInfo.Type + "Cs.dll";
+			assembly = Assembly.LoadFile(path);
+			string text = CurrentPathHelper.Instance.GetCurrentPath() + "module(sp)\\x64\\Global\\" + cameraInfo.Type + "\\" + cameraInfo.Type + "Control.dll";
+			string dirPath = CurrentPathHelper.Instance.GetCurrentPath() + "module(sp)\\x64\\Global\\" + cameraInfo.Type;
+			string text2 = dirPath + "\\Librarys.Config";
+			if (File.Exists(text2))
+			{
+				string[] libs = ActivatorWrap.GetLibs(text2);
+				libs.ToList().ForEach((string p) =>
+				{
+					string text3 = dirPath + "\\" + p;
+					if (File.Exists(text3))
+					{
+						ActivatorWrap.LoadAssembly(text3);
+					}
+				});
+			}
+			if (File.Exists(text))
+			{
+				ActivatorWrap.LoadAssembly(text);
+			}
+		}
+		if (assembly == null)
+		{
+			return;
+		}
+		Type type = assembly.GetTypes().FirstOrDefault((Type p) => typeof(IVmModule).IsAssignableFrom(p));
+		try
+		{
+			if (Activator.CreateInstance(type, VmSolution.Instance) is VmModule vmModule)
+			{
+				ItemsA.Add(vmModule);
+				ModuleRegister(vmModule);
+				vmModule.Parent = VmSolution.Instance;
+				List<VmModuleBaseDecorator> decorates = (from p in VmSolution.Instance.Modules.OfType<IVmModule>()
+					select new VmModuleBaseDecorator
+					{
+						DecorateSource = p
+					}).ToList();
+				SetDefaultPosition(vmModule, decorates);
+			}
+		}
+		catch (Exception ex)
+		{
+			VmException ex2 = null;
+			if (ex is VmException || ex.InnerException is VmException)
+			{
+				ex2 = ex as VmException;
+				if (ex2 == null)
+				{
+					ex2 = ex.InnerException as VmException;
+				}
+				ShowMessage.ShowVmExceptionMessage(ex2);
+				LogHelper.Error(ex2.errorMessage);
+			}
+			else
+			{
+				HikMessageBox.Show(ex.Message, MessageIcons.Error);
+				LogHelper.Error(ex.Message);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 设置默认位置
+	/// </summary>
+	private void SetDefaultPosition(IVmModule module, List<VmModuleBaseDecorator> decorates)
+	{
+		int distance = 300;
+		Rect rect = new Rect(300.0, 0.0, distance, distance);
+		for (int i = 0; i < decorates.Count + 1; i++)
+		{
+			if (decorates.Exists((VmModuleBaseDecorator p) => rect.Contains(new Rect(p.Position, p.Position + new Vector(distance / 2, distance / 2)))))
+			{
+				rect.Offset(new Vector(VmSolution.Instance.Modules.Count, VmSolution.Instance.Modules.Count));
+				continue;
+			}
+			new VmModuleBaseDecorator
+			{
+				DecorateSource = module,
+				Position = rect.Location
+			};
+		}
+	}
+
+	/// <summary>
+	///             界面中已添加的相机放入全局相机列表
+	/// </summary>
+	public void InitItems()
+	{
+		ItemsA.Clear();
+		List<VmModule> list = VmSolution.Instance.Modules.ToList();
+		foreach (VmModule item in list)
+		{
+			if (FilterCameraModule(item.StrModuleName) && !ItemsA.Contains(item))
+			{
+				ItemsA.Add(item);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 过滤出相机模块
+	/// </summary>
+	/// <param name="strModuleName"></param>
+	/// <returns></returns>
+	public bool FilterCameraModule(string strModuleName)
+	{
+		int result;
+		switch (strModuleName)
+		{
+		default:
+			result = ((strModuleName == "DynamicParamCameraModule") ? 1 : 0);
+			break;
+		case "GlobalCameraModule":
+		case "ImageCollectModu":
+		case "ImageCollectDalsaModu":
+		case "ImageCollectIKModu":
+		case "ImageCollectHikModu":
+		case "ImageCollect3DModu":
+		case "RGBDImageCollect3DModu":
+		case "SCGlobalCameraModule":
+			result = 1;
+			break;
+		}
+		return (byte)result != 0;
+	}
+
+	/// <summary>
+	/// 查看相机连接状态
+	/// </summary>
+	/// <param name="vmModule"></param>
+	/// <returns></returns>
+	public bool GetCameraState(VmModule vmModule)
+	{
+		string text = vmModule.Params["CameraName"];
+		return text.Length > 0 && text[0] != '0';
+	}
+}

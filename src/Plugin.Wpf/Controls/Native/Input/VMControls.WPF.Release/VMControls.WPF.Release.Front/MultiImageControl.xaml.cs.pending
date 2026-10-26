@@ -1,0 +1,133 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// MultiImageControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// MultiImageControl
+/// </summary>
+public partial class MultiImageControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public Brush CrossBrush
+	{
+		get
+		{
+			return PART_Control.CrossBrush;
+		}
+		set
+		{
+			PART_Control.CrossBrush = value;
+		}
+	}
+
+	public bool IsNeedLoadOrUnLoad
+	{
+		get
+		{
+			return PART_Control.IsNeedLoadOrUnLoad;
+		}
+		set
+		{
+			PART_Control.IsNeedLoadOrUnLoad = value;
+		}
+	}
+
+	public object MultiImageDataSource
+	{
+		get
+		{
+			return PART_Control.MultiImageDataSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.MultiImageDataSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("MultiImageDataSource Type Error!");
+		}
+	}
+
+	public object NumberOfScreensSource
+	{
+		get
+		{
+			return PART_Control.NumberOfScreensSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.NumberOfScreensSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("NumberOfScreensSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public MultiImageControl()
+	{
+		InitializeComponent();
+	}
+}

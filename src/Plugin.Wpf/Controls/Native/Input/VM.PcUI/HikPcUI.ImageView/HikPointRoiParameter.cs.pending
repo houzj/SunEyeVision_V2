@@ -1,0 +1,66 @@
+using System.Windows;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikPointRoiParameter : RoiParameter
+{
+	public string _Name = "点";
+
+	public Point _centerpoint = new Point(0.0, 0.0);
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return _centerpoint;
+		}
+		set
+		{
+			if (_centerpoint != value)
+			{
+				_centerpoint = value;
+				NotifyPropertyChanged("CenterPoint");
+				NotifyPropertyChanged("CenterX");
+				NotifyPropertyChanged("CenterY");
+			}
+		}
+	}
+
+	public double CenterX
+	{
+		get
+		{
+			return CenterPoint.X;
+		}
+		set
+		{
+			CenterPoint = new Point(value, CenterPoint.Y);
+			NotifyPropertyChanged("CenterX");
+		}
+	}
+
+	public double CenterY
+	{
+		get
+		{
+			return CenterPoint.Y;
+		}
+		set
+		{
+			CenterPoint = new Point(CenterPoint.X, value);
+			NotifyPropertyChanged("CenterY");
+		}
+	}
+}

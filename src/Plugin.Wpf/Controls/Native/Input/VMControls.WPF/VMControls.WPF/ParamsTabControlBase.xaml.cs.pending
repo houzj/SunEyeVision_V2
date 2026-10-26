@@ -1,0 +1,62 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using VM.Controls;
+using VMControls.BaseInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ParamsTabControlBase.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ParamsTabControlBase
+/// </summary>
+public partial class ParamsTabControlBase : TabWinBase, IComponentConnector
+{
+	public override IParamsConfig ParamsConfig
+	{
+		get
+		{
+			return paramstab.ParamsConfig;
+		}
+		set
+		{
+			paramstab.ParamsConfig = value;
+		}
+	}
+
+	public ParamsTabControlBase()
+	{
+		InitializeComponent();
+		SetBinding(FrameworkElement.WidthProperty, new Binding("DataContext.ConfigWindowWidth")
+		{
+			Source = paramstab
+		});
+		SetBinding(FrameworkElement.HeightProperty, new Binding("DataContext.ConfigWindowHeight")
+		{
+			Source = paramstab
+		});
+		Binding binding = new Binding("DataContext.ConfigMaxButtonVisibility")
+		{
+			Converter = new BooleanToVisibilityConverter(),
+			Source = paramstab
+		};
+		SetBinding(BaseWindow.MaxButtonVisibilityProperty, binding);
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

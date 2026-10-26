@@ -1,0 +1,263 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using VM.Core;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 触发流程类
+/// </summary>
+public class TriggerProcessItem : INotifyPropertyChanged
+{
+	private int index = 0;
+
+	private int _inputIONum = -1;
+
+	private int _triggerSignal = 0;
+
+	private int _triggerProcessId = -1;
+
+	private ObservableCollection<EnumEntry> inputIOList = null;
+
+	private ObservableCollection<EnumEntry> triggerSignalList = null;
+
+	internal int ioTotalCount = 0;
+
+	internal bool needUpdateInputIOList = false;
+
+	internal List<int> usedIONum = new List<int>();
+
+	/// <summary>
+	/// 流程列表
+	/// </summary>
+	public IList ProcessList => GetAllProcess();
+
+	/// <summary>
+	/// 输入IO列表
+	/// </summary>
+	public IList InputIOList
+	{
+		get
+		{
+			if (inputIOList == null)
+			{
+				inputIOList = new ObservableCollection<EnumEntry>();
+				for (int i = 1; i <= ioTotalCount; i++)
+				{
+					if (!usedIONum.Contains(i) || i == _inputIONum)
+					{
+						inputIOList.Add(new EnumEntry
+						{
+							DisplayNameA = i.ToString(),
+							Value = i
+						});
+					}
+				}
+			}
+			return inputIOList;
+		}
+	}
+
+	/// <summary>
+	/// 触发信号列表
+	/// </summary>
+	public IList TriggerSignalList
+	{
+		get
+		{
+			if (triggerSignalList == null)
+			{
+				triggerSignalList = new ObservableCollection<EnumEntry>();
+				triggerSignalList.Add(new EnumEntry
+				{
+					DisplayNameA = AppLocalizationService.GetLang("RunParam_EdgeTypeRising"),
+					Value = 1
+				});
+				triggerSignalList.Add(new EnumEntry
+				{
+					DisplayNameA = AppLocalizationService.GetLang("RunParam_EdgeTypeFalling"),
+					Value = 2
+				});
+			}
+			return triggerSignalList;
+		}
+	}
+
+	/// <summary>
+	/// 序号
+	/// </summary>
+	public int Index
+	{
+		get
+		{
+			return index;
+		}
+		set
+		{
+			if (index != value)
+			{
+				index = value;
+				OnPropertyChanged("Index");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 输入IO编号
+	/// </summary>
+	public int InputIONum
+	{
+		get
+		{
+			return _inputIONum;
+		}
+		set
+		{
+			if (_inputIONum != value)
+			{
+				_inputIONum = value;
+				OnPropertyChanged("InputIONum");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 触发信号
+	/// </summary>
+	public int TriggerSignal
+	{
+		get
+		{
+			return _triggerSignal;
+		}
+		set
+		{
+			if (_triggerSignal != value)
+			{
+				_triggerSignal = value;
+				OnPropertyChanged("TriggerSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 触发流程ID
+	/// </summary>
+	public int TriggerProcessID
+	{
+		get
+		{
+			return _triggerProcessId;
+		}
+		set
+		{
+			if (_triggerProcessId != value)
+			{
+				_triggerProcessId = value;
+				OnPropertyChanged("TriggerProcessID");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 触发流程数据
+	/// </summary>
+	public string TriggerProcessData => Index + "#" + InputIONum + "#" + TriggerSignal + "#" + TriggerProcessID;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	/// <summary>
+	/// 属性变化
+	/// </summary>
+	/// <param name="name"></param>
+	internal void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	/// <summary>
+	/// 获取所有流程
+	/// </summary>
+	private ObservableCollection<EnumEntry> GetAllProcess()
+	{
+		ObservableCollection<EnumEntry> observableCollection = new ObservableCollection<EnumEntry>();
+		List<IVmModule> allModule = ((IVmSolution)VmSolution.Instance).GetAllModule();
+		foreach (VmProcedure item in allModule.OfType<VmProcedure>())
+		{
+			observableCollection.Add(new EnumEntry
+			{
+				DisplayNameA = item.FullName,
+				Value = (int)item.ID
+			});
+		}
+		return observableCollection;
+	}
+
+	/// <summary>
+	/// 更新可选择IO端口列表
+	/// </summary>
+	internal void UpdateInputIOList(int oldTotalCount)
+	{
+		if (!needUpdateInputIOList)
+		{
+			return;
+		}
+		if (oldTotalCount < ioTotalCount)
+		{
+			int num = oldTotalCount + 1;
+			for (int i = num; i <= ioTotalCount; i++)
+			{
+				inputIOList.Add(new EnumEntry
+				{
+					DisplayNameA = i.ToString(),
+					Value = i
+				});
+			}
+		}
+		else if (oldTotalCount > ioTotalCount)
+		{
+			List<EnumEntry> list = inputIOList.ToList();
+			foreach (EnumEntry item in list)
+			{
+				if (item.Value > ioTotalCount)
+				{
+					inputIOList.Remove(item);
+				}
+			}
+		}
+		else
+		{
+			int j;
+			for (j = 1; j <= ioTotalCount; j++)
+			{
+				if (!usedIONum.Contains(j) && !inputIOList.Any((EnumEntry p) => p.Value == j))
+				{
+					inputIOList.Add(new EnumEntry
+					{
+						DisplayNameA = j.ToString(),
+						Value = j
+					});
+				}
+			}
+			inputIOList.OrderBy((EnumEntry p) => p.Value);
+		}
+		List<EnumEntry> list2 = inputIOList.ToList();
+		foreach (EnumEntry item2 in list2)
+		{
+			if (usedIONum.Contains(item2.Value) && item2.Value != _inputIONum)
+			{
+				inputIOList.Remove(item2);
+			}
+		}
+		needUpdateInputIOList = false;
+	}
+}

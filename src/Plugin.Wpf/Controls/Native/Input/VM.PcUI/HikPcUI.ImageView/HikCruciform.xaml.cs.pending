@@ -1,0 +1,1748 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikCruciform : HikROIBase, RectangleRoi, IDisposable, IComponentConnector
+{
+	public delegate void SizeChange(object Param);
+
+	private List<Control> childControlList = new List<Control>();
+
+	private List<SquareArea> squareAreas = new List<SquareArea>();
+
+	private List<SquareArea> squareAreasInside = new List<SquareArea>();
+
+	private List<RectangleArea> rectangleAreas = new List<RectangleArea>();
+
+	private List<RectangleArea> rectangleAreaInside = new List<RectangleArea>();
+
+	private string curType = "";
+
+	private IArea curControl = null;
+
+	private double scaleRect = 1.0;
+
+	private double oldHeight = 0.0;
+
+	private double oldWeight = 0.0;
+
+	public static Polygon substitute = new Polygon();
+
+	public static Polygon substituteInside = new Polygon();
+
+	private double _recWidth = 0.0;
+
+	private double _angleWidth = 0.0;
+
+	private double _angleHeight = 0.0;
+
+	private double _arrowWidth = 0.0;
+
+	public static Rect outRect;
+
+	private static double outInDistancePx = 15.0;
+
+	private double outInDistancePxArray = 5.0;
+
+	private double minSideDistancePx = 1.0;
+
+	private double min_x = double.MaxValue;
+
+	private double max_x = 0.0;
+
+	private double min_y = double.MaxValue;
+
+	private double max_y = 0.0;
+
+	public static readonly DependencyProperty PolygonPointsProperty = DependencyProperty.Register("PolygonPoints", typeof(ObservableCollection<PolygonPoint>), typeof(HikCruciform), new PropertyMetadata(null, OnPolygonPointsChanged));
+
+	public static readonly DependencyProperty TAngleProperty = DependencyProperty.Register("TAngle", typeof(double), typeof(HikCruciform), new PropertyMetadata(0.0, OnTAngleChanged));
+
+	public static readonly DependencyProperty TWidthProperty = DependencyProperty.Register("TWidth", typeof(double), typeof(HikCruciform), new PropertyMetadata(0.0, OnTWidthChanged));
+
+	public static readonly DependencyProperty THeightProperty = DependencyProperty.Register("THeight", typeof(double), typeof(HikCruciform), new PropertyMetadata(0.0, OnTHeightChanged));
+
+	public static readonly DependencyProperty TOriginPointProperty = DependencyProperty.Register("TOriginPoint", typeof(System.Windows.Point), typeof(HikCruciform), new PropertyMetadata(new System.Windows.Point(0.0, 0.0), OnTOriginPointChanged));
+
+	public SizeChange OnTheSizeChange;
+
+	private System.Windows.Point CPoint = new System.Windows.Point(0.0, 0.0);
+
+	private RotateTransform hu = new RotateTransform();
+
+	private RotateTransform hu2 = new RotateTransform();
+
+	private double theTemp1;
+
+	private double theTemp2;
+
+	private const double _Min = 0.0001;
+
+	private int[] inPointIndex = new int[4] { 2, 5, 8, 11 };
+
+	private Dictionary<int, int[][]> sideMove = new Dictionary<int, int[][]>
+	{
+		{
+			0,
+			new int[2][]
+			{
+				new int[2] { 0, 1 },
+				new int[2] { 6, 7 }
+			}
+		},
+		{
+			1,
+			new int[4][]
+			{
+				new int[2] { 1, 2 },
+				new int[2] { 5, 6 },
+				new int[2] { 7, 8 },
+				new int[2] { 11, 0 }
+			}
+		},
+		{
+			2,
+			new int[4][]
+			{
+				new int[2] { 2, 3 },
+				new int[2] { 10, 11 },
+				new int[2] { 4, 5 },
+				new int[2] { 8, 9 }
+			}
+		},
+		{
+			3,
+			new int[2][]
+			{
+				new int[2] { 3, 4 },
+				new int[2] { 9, 10 }
+			}
+		},
+		{
+			4,
+			new int[4][]
+			{
+				new int[2] { 4, 5 },
+				new int[2] { 8, 9 },
+				new int[2] { 10, 11 },
+				new int[2] { 2, 3 }
+			}
+		},
+		{
+			5,
+			new int[4][]
+			{
+				new int[2] { 5, 6 },
+				new int[2] { 1, 2 },
+				new int[2] { 7, 8 },
+				new int[2] { 11, 0 }
+			}
+		},
+		{
+			6,
+			new int[2][]
+			{
+				new int[2] { 6, 7 },
+				new int[2] { 0, 1 }
+			}
+		},
+		{
+			7,
+			new int[4][]
+			{
+				new int[2] { 7, 8 },
+				new int[2] { 11, 0 },
+				new int[2] { 1, 2 },
+				new int[2] { 5, 6 }
+			}
+		},
+		{
+			8,
+			new int[4][]
+			{
+				new int[2] { 8, 9 },
+				new int[2] { 4, 5 },
+				new int[2] { 2, 3 },
+				new int[2] { 10, 11 }
+			}
+		},
+		{
+			9,
+			new int[2][]
+			{
+				new int[2] { 9, 10 },
+				new int[2] { 3, 4 }
+			}
+		},
+		{
+			10,
+			new int[4][]
+			{
+				new int[2] { 10, 11 },
+				new int[2] { 2, 3 },
+				new int[2] { 4, 5 },
+				new int[2] { 8, 9 }
+			}
+		},
+		{
+			11,
+			new int[4][]
+			{
+				new int[2] { 11, 0 },
+				new int[2] { 7, 8 },
+				new int[2] { 1, 2 },
+				new int[2] { 5, 6 }
+			}
+		}
+	};
+
+	private static Bitmap image;
+
+	public static HikImageView Owner { get; set; }
+
+	private static System.Windows.Point MouseDownPoint { get; set; }
+
+	private static bool IsMoved { get; set; }
+
+	public double recWidth
+	{
+		get
+		{
+			if (_recWidth == 0.0)
+			{
+				_recWidth = (double)FindResource("dwidth");
+			}
+			return _recWidth;
+		}
+	}
+
+	public double angleWidth
+	{
+		get
+		{
+			if (_angleWidth == 0.0)
+			{
+				_angleWidth = (double)FindResource("angleWidth");
+			}
+			return _angleWidth;
+		}
+	}
+
+	public double angleHeight
+	{
+		get
+		{
+			if (_angleHeight == 0.0)
+			{
+				_angleHeight = (double)FindResource("angleHeight");
+			}
+			return _angleHeight;
+		}
+	}
+
+	public double arrowWidth
+	{
+		get
+		{
+			if (_arrowWidth == 0.0)
+			{
+				_arrowWidth = (double)FindResource("arrowHalfWidth");
+			}
+			return _arrowWidth;
+		}
+	}
+
+	public ObservableCollection<PolygonPoint> PolygonPoints
+	{
+		get
+		{
+			return (ObservableCollection<PolygonPoint>)GetValue(PolygonPointsProperty);
+		}
+		set
+		{
+			SetValue(PolygonPointsProperty, value);
+		}
+	}
+
+	public double TAngle
+	{
+		get
+		{
+			return (double)GetValue(TAngleProperty);
+		}
+		set
+		{
+			SetValue(TAngleProperty, value);
+		}
+	}
+
+	public double TWidth
+	{
+		get
+		{
+			return (double)GetValue(TWidthProperty);
+		}
+		set
+		{
+			SetValue(TWidthProperty, value);
+		}
+	}
+
+	public double THeight
+	{
+		get
+		{
+			return (double)GetValue(THeightProperty);
+		}
+		set
+		{
+			SetValue(THeightProperty, value);
+		}
+	}
+
+	public System.Windows.Point TOriginPoint
+	{
+		get
+		{
+			return (System.Windows.Point)GetValue(TOriginPointProperty);
+		}
+		set
+		{
+			SetValue(TOriginPointProperty, value);
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return tlt.Angle;
+		}
+		set
+		{
+			if (value >= -180.0 && value <= 180.0)
+			{
+				tlt.CenterX = Width / 2.0;
+				tlt.CenterY = Height / 2.0;
+				tlt.Angle = value;
+			}
+		}
+	}
+
+	public System.Windows.Point OriginPoint
+	{
+		get
+		{
+			return new System.Windows.Point((double)GetValue(Canvas.LeftProperty), (double)GetValue(Canvas.TopProperty));
+		}
+		set
+		{
+			SetValue(Canvas.LeftProperty, value.X);
+			SetValue(Canvas.TopProperty, value.Y);
+		}
+	}
+
+	public System.Windows.Point CurPoint { get; set; }
+
+	public HikCruciform()
+	{
+		InitializeComponent();
+		foreach (IArea childControl in childControlList)
+		{
+			childControl.Container = this;
+		}
+		SetValue(Canvas.LeftProperty, 10.0);
+		SetValue(Canvas.TopProperty, 10.0);
+	}
+
+	public void Dispose()
+	{
+		DeInit();
+		if (parent != null)
+		{
+			parent.MouseMove -= zparent_MouseMove;
+		}
+		if (squareAreas != null && owner != null)
+		{
+			foreach (SquareArea squareArea in squareAreas)
+			{
+				HikImageView hikImageView = owner;
+				hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(squareArea.OnScaleChange));
+			}
+		}
+		if (polygon.ContextMenu != null)
+		{
+			polygon.ContextMenu.IsOpen = false;
+		}
+		if (polygonInside.ContextMenu != null)
+		{
+			polygonInside.ContextMenu.IsOpen = false;
+		}
+	}
+
+	public static void InitSubstitute(HikImageView view, System.Windows.Point mouseDownPoint)
+	{
+		Owner = view;
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Combine(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Combine(hikImageView3.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+		substitute.Stroke = HikROIBase.SubstituteBrush;
+		substitute.StrokeThickness = 1.0 / (Owner.ScaleTransform.ScaleX * Owner.ViewScale);
+		substitute.Opacity = 1.0;
+		substituteInside.Stroke = HikROIBase.SubstituteBrush;
+		substituteInside.StrokeThickness = 1.0 / (Owner.ScaleTransform.ScaleX * Owner.ViewScale);
+		substituteInside.Opacity = 1.0;
+		IsMoved = false;
+		Owner.AddROIChild(substitute);
+		Owner.AddROIChild(substituteInside);
+		MouseDownPoint = mouseDownPoint;
+	}
+
+	public static HikCruciformRoiParameter InitROI(HikImageView view)
+	{
+		if (view == null)
+		{
+			return null;
+		}
+		Owner = view;
+		double num = ((Owner.ImageSourceWidth > 0) ? ((double)Owner.ImageSourceWidth * Owner.Radio) : 200.0);
+		double num2 = ((Owner.ImageSourceHeight > 0) ? ((double)Owner.ImageSourceHeight * Owner.Radio) : 200.0);
+		outInDistancePx = 15.0;
+		double num3 = 150.0;
+		if (outInDistancePx < 5.0 * Owner.Radio)
+		{
+			outInDistancePx = 6.0 * Owner.Radio;
+			num3 = 48.0 * Owner.Radio;
+		}
+		Rect rect = new Rect
+		{
+			X = num / 2.0 - num3 / 2.0,
+			Y = num2 / 2.0 - num3 / 2.0,
+			Width = num3,
+			Height = num3
+		};
+		PointCollection pointCollection = new PointCollection
+		{
+			new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y),
+			new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y),
+			new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y + rect.Height / 3.0),
+			new System.Windows.Point(rect.X + rect.Width, rect.Y + rect.Height / 3.0),
+			new System.Windows.Point(rect.X + rect.Width, rect.Y + rect.Height / 3.0 * 2.0),
+			new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y + rect.Height / 3.0 * 2.0),
+			new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y + rect.Height),
+			new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y + rect.Height),
+			new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y + rect.Height / 3.0 * 2.0),
+			new System.Windows.Point(rect.X, rect.Y + rect.Height / 3.0 * 2.0),
+			new System.Windows.Point(rect.X, rect.Y + rect.Height / 3.0),
+			new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y + rect.Height / 3.0)
+		};
+		PointCollection pointCollection2 = new PointCollection
+		{
+			new System.Windows.Point(pointCollection[0].X + outInDistancePx, pointCollection[0].Y + outInDistancePx),
+			new System.Windows.Point(pointCollection[1].X - outInDistancePx, pointCollection[1].Y + outInDistancePx),
+			new System.Windows.Point(pointCollection[2].X - outInDistancePx, pointCollection[2].Y + outInDistancePx),
+			new System.Windows.Point(pointCollection[3].X - outInDistancePx, pointCollection[3].Y + outInDistancePx),
+			new System.Windows.Point(pointCollection[4].X - outInDistancePx, pointCollection[4].Y - outInDistancePx),
+			new System.Windows.Point(pointCollection[5].X - outInDistancePx, pointCollection[5].Y - outInDistancePx),
+			new System.Windows.Point(pointCollection[6].X - outInDistancePx, pointCollection[6].Y - outInDistancePx),
+			new System.Windows.Point(pointCollection[7].X + outInDistancePx, pointCollection[7].Y - outInDistancePx),
+			new System.Windows.Point(pointCollection[8].X + outInDistancePx, pointCollection[8].Y - outInDistancePx),
+			new System.Windows.Point(pointCollection[9].X + outInDistancePx, pointCollection[9].Y - outInDistancePx),
+			new System.Windows.Point(pointCollection[10].X + outInDistancePx, pointCollection[10].Y + outInDistancePx),
+			new System.Windows.Point(pointCollection[11].X + outInDistancePx, pointCollection[11].Y + outInDistancePx)
+		};
+		HikCruciformRoiParameter hikCruciformRoiParameter = new HikCruciformRoiParameter();
+		foreach (System.Windows.Point item3 in pointCollection)
+		{
+			PolygonPoint item = new PolygonPoint
+			{
+				x = (float)(item3.X / Owner.Radio - 0.5),
+				y = (float)(item3.Y / Owner.Radio - 0.5)
+			};
+			hikCruciformRoiParameter.PolygonPoints.Add(item);
+		}
+		foreach (System.Windows.Point item4 in pointCollection2)
+		{
+			PolygonPoint item2 = new PolygonPoint
+			{
+				x = (float)(item4.X / Owner.Radio - 0.5),
+				y = (float)(item4.Y / Owner.Radio - 0.5)
+			};
+			hikCruciformRoiParameter.PolygonPoints.Add(item2);
+		}
+		DoFinishSubstitute();
+		return hikCruciformRoiParameter;
+	}
+
+	public void Init()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public void DeInit()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+		substitute.StrokeThickness = num2;
+		substituteInside.StrokeThickness = num2;
+		polygon.StrokeThickness = num2;
+		polygonInside.StrokeThickness = num2;
+		scaleRect = (sender as ScaleTransform).ScaleX * num;
+		TarrowView0.StrokeThickness = num2 * 2.0;
+		TarrowView0.Height = arrowWidth / ((sender as ScaleTransform).ScaleX * num);
+		TarrowView0.Width = TarrowView0.Height * 2.0;
+		TarrowView1.StrokeThickness = num2 * 2.0;
+		TarrowView1.Height = arrowWidth / ((sender as ScaleTransform).ScaleX * num);
+		TarrowView1.Width = TarrowView1.Height * 2.0;
+		changeRect();
+		changeArrowPosition();
+	}
+
+	public static void OnDrawROISubstitute_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (Owner != null && Owner.SourceImage.Source != null)
+		{
+			if (!IsMoved)
+			{
+				IsMoved = true;
+			}
+			System.Windows.Point position = e.GetPosition(Owner.SourceImage);
+			if (position.X < 0.0)
+			{
+				position.X = 0.0;
+			}
+			if (position.Y < 0.0)
+			{
+				position.Y = 0.0;
+			}
+			if (position.X > Owner.SourceImage.Width)
+			{
+				position.X = Owner.SourceImage.Width;
+			}
+			if (position.Y > Owner.SourceImage.ActualHeight)
+			{
+				position.Y = Owner.SourceImage.ActualHeight;
+			}
+			double num = 0.0;
+			double num2 = 0.0;
+			num = ((!(position.X < MouseDownPoint.X)) ? MouseDownPoint.X : position.X);
+			num2 = ((!(position.Y < MouseDownPoint.Y)) ? MouseDownPoint.Y : position.Y);
+			Rect rect = new Rect
+			{
+				X = num,
+				Y = num2,
+				Width = Math.Abs(position.X - MouseDownPoint.X),
+				Height = Math.Abs(position.Y - MouseDownPoint.Y)
+			};
+			substitute.Points = new PointCollection
+			{
+				new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y),
+				new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y),
+				new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y + rect.Height / 3.0),
+				new System.Windows.Point(rect.X + rect.Width, rect.Y + rect.Height / 3.0),
+				new System.Windows.Point(rect.X + rect.Width, rect.Y + rect.Height / 3.0 * 2.0),
+				new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y + rect.Height / 3.0 * 2.0),
+				new System.Windows.Point(rect.X + rect.Width / 3.0 * 2.0, rect.Y + rect.Height),
+				new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y + rect.Height),
+				new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y + rect.Height / 3.0 * 2.0),
+				new System.Windows.Point(rect.X, rect.Y + rect.Height / 3.0 * 2.0),
+				new System.Windows.Point(rect.X, rect.Y + rect.Height / 3.0),
+				new System.Windows.Point(rect.X + rect.Width / 3.0, rect.Y + rect.Height / 3.0)
+			};
+			substituteInside.Points = new PointCollection
+			{
+				new System.Windows.Point(substitute.Points[0].X + 15.0, substitute.Points[0].Y + 15.0),
+				new System.Windows.Point(substitute.Points[1].X - 15.0, substitute.Points[1].Y + 15.0),
+				new System.Windows.Point(substitute.Points[2].X - 15.0, substitute.Points[2].Y + 15.0),
+				new System.Windows.Point(substitute.Points[3].X - 15.0, substitute.Points[3].Y + 15.0),
+				new System.Windows.Point(substitute.Points[4].X - 15.0, substitute.Points[4].Y - 15.0),
+				new System.Windows.Point(substitute.Points[5].X - 15.0, substitute.Points[5].Y - 15.0),
+				new System.Windows.Point(substitute.Points[6].X - 15.0, substitute.Points[6].Y - 15.0),
+				new System.Windows.Point(substitute.Points[7].X + 15.0, substitute.Points[7].Y - 15.0),
+				new System.Windows.Point(substitute.Points[8].X + 15.0, substitute.Points[8].Y - 15.0),
+				new System.Windows.Point(substitute.Points[9].X + 15.0, substitute.Points[9].Y - 15.0),
+				new System.Windows.Point(substitute.Points[10].X + 15.0, substitute.Points[10].Y + 15.0),
+				new System.Windows.Point(substitute.Points[11].X + 15.0, substitute.Points[11].Y + 15.0)
+			};
+		}
+	}
+
+	public static void OnDrawROISubstitute_MouseUp(object sender, MouseEventArgs e)
+	{
+		if (Owner == null || !(e is MouseButtonEventArgs))
+		{
+			return;
+		}
+		HikCruciformRoiParameter hikCruciformRoiParameter = new HikCruciformRoiParameter();
+		foreach (System.Windows.Point point in substitute.Points)
+		{
+			PolygonPoint item = new PolygonPoint
+			{
+				x = (float)(point.X / Owner.Radio - 0.5),
+				y = (float)(point.Y / Owner.Radio - 0.5)
+			};
+			hikCruciformRoiParameter.PolygonPoints.Add(item);
+		}
+		foreach (System.Windows.Point point2 in substituteInside.Points)
+		{
+			PolygonPoint item2 = new PolygonPoint
+			{
+				x = (float)(point2.X / Owner.Radio - 0.5),
+				y = (float)(point2.Y / Owner.Radio - 0.5)
+			};
+			hikCruciformRoiParameter.PolygonPoints.Add(item2);
+		}
+		Owner.RoiList.Add(hikCruciformRoiParameter);
+		DoFinishSubstitute();
+	}
+
+	public static void DoFinishSubstitute()
+	{
+		if (Owner != null)
+		{
+			Owner.IsDrawRoi = false;
+			Owner.RemoveROIChild(substitute);
+			Owner.RemoveROIChild(substituteInside);
+			Owner.SourceImage.ReleaseMouseCapture();
+			HikImageView hikImageView = Owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+			HikImageView hikImageView2 = Owner;
+			hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+			HikImageView hikImageView3 = Owner;
+			hikImageView3.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+			Owner = null;
+		}
+	}
+
+	public static void OnScaleChangeSubstitute(object sender, object e)
+	{
+		substitute.StrokeThickness = 1.0 / (sender as ScaleTransform).ScaleX;
+		substituteInside.StrokeThickness = 1.0 / (sender as ScaleTransform).ScaleX;
+	}
+
+	private static void OnPolygonPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCruciform).PointsDataDrawT((d as HikCruciform).PolygonPoints);
+	}
+
+	private void PointsDataDrawE(IList list, bool IsChangeStructure)
+	{
+		tlt.Angle = 0.0;
+		foreach (PolygonPoint item in list)
+		{
+			if (min_x > ((double)item.x + 0.5) * owner.Radio)
+			{
+				min_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (max_x < ((double)item.x + 0.5) * owner.Radio)
+			{
+				max_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (min_y > ((double)item.y + 0.5) * owner.Radio)
+			{
+				min_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+			if (max_y < ((double)item.y + 0.5) * owner.Radio)
+			{
+				max_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+		}
+		OriginPoint = new System.Windows.Point(min_x, min_y);
+		for (int i = 0; i < list.Count; i++)
+		{
+			PolygonPoint polygonPoint2 = (PolygonPoint)list[i];
+			if (i <= 11)
+			{
+				squareAreas[i].X = ((double)polygonPoint2.X + 0.5) * owner.Radio - OriginPoint.X;
+				squareAreas[i].Y = ((double)polygonPoint2.Y + 0.5) * owner.Radio - OriginPoint.Y;
+				System.Windows.Point value = new System.Windows.Point
+				{
+					X = ((double)polygonPoint2.x + 0.5) * owner.Radio - min_x,
+					Y = ((double)polygonPoint2.y + 0.5) * owner.Radio - min_y
+				};
+				polygon.Points[i] = value;
+				polygonAll.Points[i] = value;
+				if (i == 11)
+				{
+					polygonAll.Points[i + 1] = polygon.Points[0];
+				}
+				if (IsChangeStructure)
+				{
+					squareAreas[i].OldRateX = value.X / (max_x - min_x);
+					squareAreas[i].OldRateY = value.Y / (max_y - min_y);
+				}
+			}
+			else
+			{
+				squareAreasInside[i - 12].X = ((double)polygonPoint2.X + 0.5) * owner.Radio - OriginPoint.X;
+				squareAreasInside[i - 12].Y = ((double)polygonPoint2.Y + 0.5) * owner.Radio - OriginPoint.Y;
+				System.Windows.Point value2 = new System.Windows.Point
+				{
+					X = ((double)polygonPoint2.x + 0.5) * owner.Radio - min_x,
+					Y = ((double)polygonPoint2.y + 0.5) * owner.Radio - min_y
+				};
+				polygonInside.Points[i - 12] = value2;
+				polygonAll.Points[i + 1] = value2;
+				if (i == 23)
+				{
+					polygonAll.Points[i + 2] = polygonInside.Points[0];
+				}
+				if (IsChangeStructure)
+				{
+					squareAreasInside[i - 12].OldRateX = value2.X / (max_x - min_x);
+					squareAreasInside[i - 12].OldRateY = value2.Y / (max_y - min_y);
+				}
+			}
+		}
+		changeRect();
+		changeArrowPosition();
+		outRect = new Rect(new System.Windows.Point(polygon.Points[10].X, polygon.Points[0].Y), new System.Windows.Point(polygon.Points[4].X, polygon.Points[6].Y));
+		Width = max_x - min_x;
+		Height = max_y - min_y;
+		angle.X = outRect.X + Width / 2.0;
+		angle.Y = outRect.Y - angle.Height / 2.0;
+		angle.Container = this;
+		tlt.CenterY = Height / 2.0;
+		tlt.CenterX = Width / 2.0;
+	}
+
+	private void PointsDataDrawT(IList list)
+	{
+		tlt.Angle = 0.0;
+		polygon.Points.Clear();
+		foreach (SquareArea squareArea in squareAreas)
+		{
+			WorkView.Children.Remove(squareArea);
+		}
+		squareAreas.Clear();
+		polygonInside.Points.Clear();
+		foreach (SquareArea item in squareAreasInside)
+		{
+			WorkView.Children.Remove(item);
+		}
+		PointsDataDraw(list);
+	}
+
+	private void PointsDataDraw(IList list)
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (PolygonPoint item in list)
+		{
+			if (min_x > ((double)item.x + 0.5) * owner.Radio)
+			{
+				min_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (max_x < ((double)item.x + 0.5) * owner.Radio)
+			{
+				max_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (min_y > ((double)item.y + 0.5) * owner.Radio)
+			{
+				min_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+			if (max_y < ((double)item.y + 0.5) * owner.Radio)
+			{
+				max_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+		}
+		foreach (PolygonPoint item2 in list)
+		{
+			if (list.IndexOf(item2) <= 11)
+			{
+				System.Windows.Point value = new System.Windows.Point
+				{
+					X = ((double)item2.x + 0.5) * owner.Radio - min_x,
+					Y = ((double)item2.y + 0.5) * owner.Radio - min_y
+				};
+				polygon.Points.Add(value);
+				polygonAll.Points.Add(value);
+				if (list.IndexOf(item2) == 11)
+				{
+					polygonAll.Points.Add(polygon.Points[0]);
+				}
+				SquareArea squareArea = new SquareArea();
+				squareArea.Width = recWidth;
+				squareArea.Height = recWidth;
+				squareArea.Opacity = 0.0;
+				squareArea.SetBinding(SquareArea.TXProperty, new Binding("X")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				squareArea.SetBinding(SquareArea.TYProperty, new Binding("Y")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				squareArea.Container = this;
+				squareArea.DataContext = item2;
+				squareArea.Index = polygon.Points.Count - 1;
+				squareArea.Name = "out_" + polygon.Points.Count;
+				squareArea.Tag = null;
+				squareArea.OldRateX = value.X / (max_x - min_x);
+				squareArea.OldRateY = value.Y / (max_y - min_y);
+				HikImageView hikImageView = owner;
+				hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(squareArea.OnScaleChange));
+				if (owner != null)
+				{
+					squareArea.SetScaleUI(owner.ScaleTransform.ScaleX * owner.viewScal);
+				}
+				else
+				{
+					squareArea.SetScaleUI(owner.ScaleTransform.ScaleX);
+				}
+				squareArea.MouseMove += Child_MouseMove;
+				WorkView.Children.Add(squareArea);
+				squareAreas.Add(squareArea);
+				RectangleArea rectangleArea = new RectangleArea();
+				rectangleArea.Width = recWidth;
+				rectangleArea.Height = recWidth;
+				rectangleArea.Opacity = 0.0;
+				rectangleArea.Container = this;
+				rectangleArea.Name = "outrect_" + polygon.Points.Count;
+				rectangleArea.Tag = null;
+				rectangleArea.Index = polygon.Points.Count - 1;
+				HikImageView hikImageView2 = owner;
+				hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(rectangleArea.OnScaleChange));
+				rectangleArea.MouseMove += Child_MouseMove;
+				WorkView.Children.Add(rectangleArea);
+				rectangleAreas.Add(rectangleArea);
+			}
+			else
+			{
+				System.Windows.Point value2 = new System.Windows.Point
+				{
+					X = ((double)item2.x + 0.5) * owner.Radio - min_x,
+					Y = ((double)item2.y + 0.5) * owner.Radio - min_y
+				};
+				polygonInside.Points.Add(value2);
+				polygonAll.Points.Add(value2);
+				if (list.IndexOf(item2) == 23)
+				{
+					polygonAll.Points.Add(polygonInside.Points[0]);
+				}
+				SquareArea squareArea2 = new SquareArea();
+				squareArea2.Width = recWidth;
+				squareArea2.Height = recWidth;
+				squareArea2.Opacity = 0.0;
+				squareArea2.SetBinding(SquareArea.TXProperty, new Binding("X")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				squareArea2.SetBinding(SquareArea.TYProperty, new Binding("Y")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				squareArea2.Container = this;
+				squareArea2.DataContext = item2;
+				squareArea2.Index = polygonInside.Points.Count - 1;
+				squareArea2.Name = "in_" + polygonInside.Points.Count;
+				squareArea2.Tag = null;
+				squareArea2.OldRateX = value2.X / (max_x - min_x);
+				squareArea2.OldRateY = value2.Y / (max_y - min_y);
+				HikImageView hikImageView3 = owner;
+				hikImageView3.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView3.OnScaleChange, new HikImageView.ScaleChanged(squareArea2.OnScaleChange));
+				if (owner != null)
+				{
+					squareArea2.SetScaleUI(owner.ScaleTransform.ScaleX * owner.viewScal);
+				}
+				else
+				{
+					squareArea2.SetScaleUI(owner.ScaleTransform.ScaleX);
+				}
+				squareArea2.MouseMove += Child_MouseMove;
+				WorkView.Children.Add(squareArea2);
+				squareAreasInside.Add(squareArea2);
+				RectangleArea rectangleArea2 = new RectangleArea();
+				rectangleArea2.Width = recWidth;
+				rectangleArea2.Height = recWidth;
+				rectangleArea2.Opacity = 0.0;
+				rectangleArea2.Container = this;
+				rectangleArea2.Name = "inrect_" + polygonInside.Points.Count;
+				rectangleArea2.Tag = null;
+				rectangleArea2.Index = polygonInside.Points.Count - 1;
+				HikImageView hikImageView4 = owner;
+				hikImageView4.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView4.OnScaleChange, new HikImageView.ScaleChanged(rectangleArea2.OnScaleChange));
+				rectangleArea2.MouseMove += Child_MouseMove;
+				WorkView.Children.Add(rectangleArea2);
+				rectangleAreaInside.Add(rectangleArea2);
+			}
+		}
+		outInDistancePxArray *= owner.Radio;
+		minSideDistancePx *= owner.Radio;
+		PointsDataDrawE(PolygonPoints, IsChangeStructure: true);
+	}
+
+	private static void OnTAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCruciform).OnChangeAngle();
+	}
+
+	private void OnChangeAngle()
+	{
+		tlt.Angle = TAngle;
+	}
+
+	private static void OnTWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCruciform).OnChangeWidth();
+	}
+
+	private void OnChangeWidth()
+	{
+		if (TWidth >= 0.0)
+		{
+			Width = TWidth * owner.Radio + recWidth;
+			tlt.CenterX = Width / 2.0;
+		}
+	}
+
+	private static void OnTHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCruciform).OnChangHeight();
+	}
+
+	private void OnChangHeight()
+	{
+		if (THeight >= 0.0)
+		{
+			Height = THeight * owner.Radio + recWidth;
+			tlt.CenterY = Height / 2.0;
+		}
+	}
+
+	private static void OnTOriginPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCruciform).OnChangOriginPoint();
+	}
+
+	private void OnChangOriginPoint()
+	{
+		double num = TOriginPoint.X - recWidth;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+		num = TOriginPoint.Y - recWidth;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+	}
+
+	private void curciformControl_MouseEnter(object sender, MouseEventArgs e)
+	{
+		angle.Opacity = 1.0;
+		move.Opacity = 1.0;
+		foreach (SquareArea squareArea in squareAreas)
+		{
+			squareArea.Opacity = 1.0;
+		}
+		foreach (SquareArea item in squareAreasInside)
+		{
+			item.Opacity = 1.0;
+		}
+	}
+
+	private void curciformControl_MouseLeave(object sender, MouseEventArgs e)
+	{
+		angle.Opacity = 0.0;
+		move.Opacity = 0.0;
+		foreach (SquareArea squareArea in squareAreas)
+		{
+			squareArea.Opacity = 0.0;
+		}
+		foreach (SquareArea item in squareAreasInside)
+		{
+			item.Opacity = 0.0;
+		}
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		IsParamChanged = false;
+		isDragging = true;
+		curType = rectangleArea.Name;
+		if (rectangleArea is IArea)
+		{
+			curControl = rectangleArea as IArea;
+		}
+		oldHeight = Height;
+		oldWeight = Width;
+		CaptureMouse();
+	}
+
+	private void curciformControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (parent == null)
+		{
+			DependencyObject dependencyObject = VisualTreeHelper.GetParent(this);
+			while (!(dependencyObject is Canvas))
+			{
+				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+			}
+			parent = dependencyObject as Canvas;
+			parent.MouseMove += zparent_MouseMove;
+		}
+	}
+
+	private double GetTwoPointDistance(System.Windows.Point p1, System.Windows.Point p2)
+	{
+		return Math.Sqrt((p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p1.Y));
+	}
+
+	private void zparent_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (!isDragging)
+		{
+			return;
+		}
+		if (curControl is SquareArea)
+		{
+			System.Windows.Point position = e.GetPosition(WorkView);
+			SquareArea squareArea = curControl as SquareArea;
+			double x = squareArea.X;
+			double y = squareArea.Y;
+			double num = position.X - curControl.CurPoint.X + recWidth / 2.0;
+			double num2 = position.Y - curControl.CurPoint.Y + recWidth / 2.0;
+			if (!(Math.Abs(x - num) > 0.0001) && !(Math.Abs(y - num2) > 0.0001))
+			{
+				return;
+			}
+			System.Windows.Point point = new System.Windows.Point((polygon.Points[0].X + polygon.Points[6].X) / 2.0, (polygon.Points[0].Y + polygon.Points[6].Y) / 2.0);
+			System.Windows.Point point2 = new System.Windows.Point(num, num2);
+			IsParamChanged = true;
+			ScaleTransform scaleTransform = new ScaleTransform((num - point.X) / (x - point.X), (num2 - point.Y) / (y - point.Y), point.X, point.Y);
+			if (squareAreas.Contains(squareArea))
+			{
+				int index = squareArea.Index;
+				if (index == 2 || index == 5 || index == 8 || index == 11)
+				{
+					double xadd = point2.X - x;
+					double yadd = point2.Y - y;
+					System.Windows.Point[] addDistance = getAddDistance(index, xadd, yadd);
+					System.Windows.Point point3 = new System.Windows.Point(polygon.Points[inPointIndex[0]].X + addDistance[0].X, polygon.Points[inPointIndex[0]].Y + addDistance[0].Y);
+					if (point3.Y - polygon.Points[1].Y < minSideDistancePx || polygon.Points[3].X - point3.X < minSideDistancePx || point3.X - squareAreasInside[2].X < outInDistancePxArray || squareAreasInside[2].Y - point3.Y < outInDistancePxArray)
+					{
+						return;
+					}
+					squareArea.X = point2.X;
+					squareArea.Y = point2.Y;
+					polygon.Points[squareArea.Index] = new System.Windows.Point(point2.X, point2.Y);
+					for (int i = 0; i < 4; i++)
+					{
+						if (index != inPointIndex[i])
+						{
+							polygon.Points[inPointIndex[i]] = new System.Windows.Point(polygon.Points[inPointIndex[i]].X + addDistance[i].X, polygon.Points[inPointIndex[i]].Y + addDistance[i].Y);
+						}
+					}
+					for (int j = 0; j < polygon.Points.Count; j++)
+					{
+						if (j == 2 || j == 8)
+						{
+							polygon.Points[j - 1] = new System.Windows.Point(polygon.Points[j].X, polygon.Points[j - 1].Y);
+							polygon.Points[j + 1] = new System.Windows.Point(polygon.Points[j + 1].X, polygon.Points[j].Y);
+						}
+						else if (j == 5 || j == 11)
+						{
+							polygon.Points[j - 1] = new System.Windows.Point(polygon.Points[j - 1].X, polygon.Points[j].Y);
+							int index2 = ((j + 1 <= 11) ? (j + 1) : 0);
+							polygon.Points[index2] = new System.Windows.Point(polygon.Points[j].X, polygon.Points[index2].Y);
+						}
+					}
+					for (int k = 0; k < squareAreas.Count; k++)
+					{
+						if (squareAreas[k] != squareArea)
+						{
+							squareAreas[k].X = polygon.Points[k].X;
+							squareAreas[k].Y = polygon.Points[k].Y;
+						}
+					}
+				}
+				else
+				{
+					System.Windows.Point point4 = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[2].X, polygonInside.Points[2].Y));
+					System.Windows.Point point5 = scaleTransform.Transform(new System.Windows.Point(polygon.Points[2].X, polygon.Points[2].Y));
+					if (point5.X - point4.X < outInDistancePxArray || point4.Y - point5.Y < outInDistancePxArray)
+					{
+						return;
+					}
+					squareArea.X = point2.X;
+					squareArea.Y = point2.Y;
+					polygon.Points[squareArea.Index] = new System.Windows.Point(point2.X, point2.Y);
+					for (int l = 0; l < polygon.Points.Count; l++)
+					{
+						if (l != squareArea.Index)
+						{
+							polygon.Points[l] = scaleTransform.Transform(new System.Windows.Point(polygon.Points[l].X, polygon.Points[l].Y));
+						}
+					}
+					for (int m = 0; m < squareAreas.Count; m++)
+					{
+						if (squareAreas[m] != squareArea)
+						{
+							squareAreas[m].X = polygon.Points[m].X;
+							squareAreas[m].Y = polygon.Points[m].Y;
+						}
+					}
+					for (int n = 0; n < polygonInside.Points.Count; n++)
+					{
+						polygonInside.Points[n] = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[n].X, polygonInside.Points[n].Y));
+					}
+					for (int num3 = 0; num3 < squareAreasInside.Count; num3++)
+					{
+						squareAreasInside[num3].X = polygonInside.Points[num3].X;
+						squareAreasInside[num3].Y = polygonInside.Points[num3].Y;
+					}
+					System.Windows.Point point6 = scaleTransform.Transform(new System.Windows.Point(angle.X, angle.Y));
+					angle.X = point6.X;
+					angle.Y = point6.Y;
+					outRect = new Rect(new System.Windows.Point(polygon.Points[10].X, polygon.Points[0].Y), new System.Windows.Point(polygon.Points[4].X, polygon.Points[6].Y));
+				}
+			}
+			else if (squareAreasInside.Contains(squareArea))
+			{
+				int index3 = squareArea.Index;
+				if (index3 == 2 || index3 == 5 || index3 == 8 || index3 == 11)
+				{
+					double xadd2 = point2.X - x;
+					double yadd2 = point2.Y - y;
+					System.Windows.Point[] addDistance2 = getAddDistance(index3, xadd2, yadd2);
+					System.Windows.Point[] array = new System.Windows.Point[4];
+					for (int num4 = 0; num4 < 4; num4++)
+					{
+						array[num4] = new System.Windows.Point(polygonInside.Points[inPointIndex[num4]].X + addDistance2[num4].X, polygonInside.Points[inPointIndex[num4]].Y + addDistance2[num4].Y);
+					}
+					if (array[0].X - array[3].X < outInDistancePxArray || array[1].Y - array[0].Y < outInDistancePxArray || polygon.Points[2].X - array[0].X < outInDistancePxArray || array[0].Y - polygon.Points[2].Y < outInDistancePxArray)
+					{
+						return;
+					}
+					squareArea.X = point2.X;
+					squareArea.Y = point2.Y;
+					for (int num5 = 0; num5 < 4; num5++)
+					{
+						polygonInside.Points[inPointIndex[num5]] = new System.Windows.Point(polygonInside.Points[inPointIndex[num5]].X + addDistance2[num5].X, polygonInside.Points[inPointIndex[num5]].Y + addDistance2[num5].Y);
+					}
+					for (int num6 = 0; num6 < polygonInside.Points.Count; num6++)
+					{
+						if (num6 == 2 || num6 == 8)
+						{
+							polygonInside.Points[num6 - 1] = new System.Windows.Point(polygonInside.Points[num6].X, polygonInside.Points[num6 - 1].Y);
+							polygonInside.Points[num6 + 1] = new System.Windows.Point(polygonInside.Points[num6 + 1].X, polygonInside.Points[num6].Y);
+						}
+						else if (num6 == 5 || num6 == 11)
+						{
+							polygonInside.Points[num6 - 1] = new System.Windows.Point(polygonInside.Points[num6 - 1].X, polygonInside.Points[num6].Y);
+							int index4 = ((num6 + 1 <= 11) ? (num6 + 1) : 0);
+							polygonInside.Points[index4] = new System.Windows.Point(polygonInside.Points[num6].X, polygonInside.Points[index4].Y);
+						}
+					}
+				}
+				else
+				{
+					System.Windows.Point point7 = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[2].X, polygonInside.Points[2].Y));
+					double x2 = polygon.Points[2].X;
+					double y2 = polygon.Points[2].Y;
+					if (x2 - point7.X < outInDistancePxArray || point7.Y - y2 < outInDistancePxArray)
+					{
+						return;
+					}
+					System.Windows.Point point8 = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[1].X, polygonInside.Points[1].Y));
+					System.Windows.Point point9 = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[3].X, polygonInside.Points[3].Y));
+					if (polygon.Points[1].X - point8.X < outInDistancePxArray || point8.Y - polygon.Points[1].Y < outInDistancePxArray || polygon.Points[3].X - point9.X < outInDistancePxArray || point9.Y - polygon.Points[3].Y < outInDistancePxArray || scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[5].X, polygonInside.Points[5].Y)).Y - point7.Y < minSideDistancePx)
+					{
+						return;
+					}
+					System.Windows.Point point10 = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[11].X, polygonInside.Points[11].Y));
+					if (point7.X - point10.X < minSideDistancePx)
+					{
+						return;
+					}
+					squareArea.X = point2.X;
+					squareArea.Y = point2.Y;
+					polygonInside.Points[squareArea.Index] = new System.Windows.Point(point2.X, point2.Y);
+					for (int num7 = 0; num7 < polygonInside.Points.Count; num7++)
+					{
+						if (num7 != squareArea.Index)
+						{
+							polygonInside.Points[num7] = scaleTransform.Transform(new System.Windows.Point(polygonInside.Points[num7].X, polygonInside.Points[num7].Y));
+						}
+					}
+				}
+				for (int num8 = 0; num8 < squareAreasInside.Count; num8++)
+				{
+					if (squareAreasInside[num8] != squareArea)
+					{
+						squareAreasInside[num8].X = polygonInside.Points[num8].X;
+						squareAreasInside[num8].Y = polygonInside.Points[num8].Y;
+					}
+				}
+			}
+			for (int num9 = 0; num9 < polygonAll.Points.Count; num9++)
+			{
+				if (num9 < 12)
+				{
+					polygonAll.Points[num9] = polygon.Points[num9];
+					continue;
+				}
+				switch (num9)
+				{
+				case 12:
+					polygonAll.Points[num9] = polygon.Points[0];
+					break;
+				case 25:
+					polygonAll.Points[num9] = polygonInside.Points[0];
+					break;
+				default:
+					polygonAll.Points[num9] = polygonInside.Points[num9 - 13];
+					break;
+				}
+			}
+			changeArrowPosition();
+			return;
+		}
+		if (curControl is RectangleArea)
+		{
+			System.Windows.Point position2 = e.GetPosition(WorkView);
+			RectangleArea rectangleArea = curControl as RectangleArea;
+			double x3 = rectangleArea.X;
+			double y3 = rectangleArea.Y;
+			double num10 = position2.X - curControl.CurPoint.X + rectangleArea.Width / 2.0;
+			double num11 = position2.Y - curControl.CurPoint.Y + rectangleArea.Height / 2.0;
+			double num12 = 0.0;
+			double num13 = 0.0;
+			System.Windows.Point p = new System.Windows.Point(num10, num11);
+			if (!(Math.Abs(x3 - num10) > 0.0001) && !(Math.Abs(y3 - num11) > 0.0001))
+			{
+				return;
+			}
+			IsParamChanged = true;
+			int index5 = rectangleArea.Index;
+			if (index5 % 2 == 0)
+			{
+				num13 = num11 - y3;
+			}
+			else
+			{
+				num12 = num10 - x3;
+			}
+			int[][] array2 = sideMove[index5];
+			bool flag = rectangleAreas.Contains(rectangleArea);
+			int num14 = index5 / 3;
+			if (index5 % 3 == 0)
+			{
+				System.Windows.Point p2 = new System.Windows.Point((polygon.Points[0].X + polygon.Points[6].X) / 2.0, (polygon.Points[0].Y + polygon.Points[6].Y) / 2.0);
+				System.Windows.Point p3 = (flag ? new System.Windows.Point(rectangleAreaInside[index5].X, rectangleAreaInside[index5].Y) : new System.Windows.Point(rectangleAreas[index5].X, rectangleAreas[index5].Y));
+				int num15 = (flag ? 1 : (-1));
+				switch (index5)
+				{
+				case 0:
+					if ((double)num15 * (p3.Y - num11) < outInDistancePxArray)
+					{
+						return;
+					}
+					break;
+				case 6:
+					if ((double)num15 * (num11 - p3.Y) < outInDistancePxArray)
+					{
+						return;
+					}
+					break;
+				case 3:
+					if ((double)num15 * (num10 - p3.X) < outInDistancePxArray)
+					{
+						return;
+					}
+					break;
+				case 9:
+					if ((double)num15 * (p3.X - num10) < outInDistancePxArray)
+					{
+						return;
+					}
+					break;
+				}
+				if (flag)
+				{
+					if (GetTwoPointDistance(p, p2) <= GetTwoPointDistance(p3, p2))
+					{
+						return;
+					}
+				}
+				else
+				{
+					if (GetTwoPointDistance(p, p2) >= GetTwoPointDistance(p3, p2))
+					{
+						return;
+					}
+					System.Windows.Point point11 = new System.Windows.Point(polygonInside.Points[index5].X + num12, polygonInside.Points[index5].Y + num13);
+					int index6 = ((index5 - 1 < 0) ? 11 : (index5 - 1));
+					if ((index5 == 3 && point11.X - polygonInside.Points[index6].X < minSideDistancePx) || (index5 == 9 && polygonInside.Points[index6].X - point11.X < minSideDistancePx) || (index5 == 0 && polygonInside.Points[index6].Y - point11.Y < minSideDistancePx) || (index5 == 6 && point11.Y - polygonInside.Points[index6].Y < minSideDistancePx))
+					{
+						return;
+					}
+				}
+			}
+			else
+			{
+				int index7 = (num14 + 1) * 3 - 1;
+				System.Windows.Point[] addDistance3 = getAddDistance(index7, num12, num13);
+				if (flag)
+				{
+					System.Windows.Point point12 = new System.Windows.Point(polygon.Points[inPointIndex[0]].X + addDistance3[0].X, polygon.Points[inPointIndex[0]].Y + addDistance3[0].Y);
+					double x4 = polygonInside.Points[2].X;
+					double y4 = polygonInside.Points[2].Y;
+					if (point12.X - x4 < outInDistancePxArray || y4 - point12.Y < outInDistancePxArray || point12.X <= x4 || point12.Y >= y4 || point12.Y - polygon.Points[1].Y < minSideDistancePx || polygon.Points[3].X - point12.X < minSideDistancePx)
+					{
+						return;
+					}
+				}
+				else
+				{
+					System.Windows.Point[] array3 = new System.Windows.Point[4];
+					for (int num16 = 0; num16 < 4; num16++)
+					{
+						array3[num16] = new System.Windows.Point(polygonInside.Points[inPointIndex[num16]].X + addDistance3[num16].X, polygonInside.Points[inPointIndex[num16]].Y + addDistance3[num16].Y);
+					}
+					if (array3[0].X - array3[3].X < minSideDistancePx || array3[1].Y - array3[0].Y < minSideDistancePx)
+					{
+						return;
+					}
+					System.Windows.Point point13 = new System.Windows.Point(polygonInside.Points[inPointIndex[0]].X + addDistance3[0].X, polygonInside.Points[inPointIndex[0]].Y + addDistance3[0].Y);
+					double x5 = polygon.Points[2].X;
+					double y5 = polygon.Points[2].Y;
+					if (x5 - point13.X < outInDistancePxArray || point13.Y - y5 < outInDistancePxArray)
+					{
+						return;
+					}
+				}
+			}
+			int num17 = array2.Length / 2;
+			for (int num18 = 0; num18 < array2.Length; num18++)
+			{
+				double num19 = ((num18 < num17) ? num13 : (0.0 - num13));
+				double num20 = ((num18 < num17) ? num12 : (0.0 - num12));
+				for (int num21 = 0; num21 < array2[num18].Length; num21++)
+				{
+					if (flag)
+					{
+						polygon.Points[array2[num18][num21]] = new System.Windows.Point(polygon.Points[array2[num18][num21]].X + num20, polygon.Points[array2[num18][num21]].Y + num19);
+						squareAreas[array2[num18][num21]].X = polygon.Points[array2[num18][num21]].X;
+						squareAreas[array2[num18][num21]].Y = polygon.Points[array2[num18][num21]].Y;
+						rectangleAreas[array2[num18][num21]].X = rectangleAreas[array2[num18][num21]].X + num20;
+						rectangleAreas[array2[num18][num21]].Y = rectangleAreas[array2[num18][num21]].Y + num19;
+					}
+					else
+					{
+						polygonInside.Points[array2[num18][num21]] = new System.Windows.Point(polygonInside.Points[array2[num18][num21]].X + num20, polygonInside.Points[array2[num18][num21]].Y + num19);
+						squareAreasInside[array2[num18][num21]].X = polygonInside.Points[array2[num18][num21]].X;
+						squareAreasInside[array2[num18][num21]].Y = polygonInside.Points[array2[num18][num21]].Y;
+						rectangleAreaInside[array2[num18][num21]].X = rectangleAreaInside[array2[num18][num21]].X + num20;
+						rectangleAreaInside[array2[num18][num21]].Y = rectangleAreaInside[array2[num18][num21]].Y + num19;
+					}
+				}
+			}
+			for (int num22 = 0; num22 < polygonAll.Points.Count; num22++)
+			{
+				if (num22 < 12)
+				{
+					polygonAll.Points[num22] = polygon.Points[num22];
+					continue;
+				}
+				switch (num22)
+				{
+				case 12:
+					polygonAll.Points[num22] = polygon.Points[0];
+					break;
+				case 25:
+					polygonAll.Points[num22] = polygonInside.Points[0];
+					break;
+				default:
+					polygonAll.Points[num22] = polygonInside.Points[num22 - 13];
+					break;
+				}
+			}
+			outRect = new Rect(new System.Windows.Point(polygon.Points[10].X, polygon.Points[0].Y), new System.Windows.Point(polygon.Points[4].X, polygon.Points[6].Y));
+			angle.X = outRect.X + outRect.Width / 2.0;
+			angle.Y = outRect.Y - angle.Height / 2.0;
+			changeArrowPosition();
+			return;
+		}
+		double num23 = 0.0;
+		double num24 = 0.0;
+		double num25 = 0.0;
+		double num26 = 0.0;
+		double num27 = 0.0;
+		double num28 = 0.0;
+		double num29 = 0.0;
+		System.Windows.Point position3 = e.GetPosition(parent);
+		System.Windows.Point point14 = new System.Windows.Point((double)GetValue(Canvas.LeftProperty), (double)GetValue(Canvas.TopProperty));
+		double num30 = Math.Sin(tlt.Angle * Math.PI / 180.0);
+		double num31 = Math.Cos(tlt.Angle * Math.PI / 180.0);
+		hu.Angle = tlt.Angle;
+		hu.CenterX = point14.X + Width / 2.0;
+		hu.CenterY = point14.Y + Height / 2.0;
+		position3 = hu.Inverse.Transform(position3);
+		num25 = Width;
+		num26 = Height;
+		num27 = tlt.Angle;
+		hu2.Angle = tlt.Angle;
+		hu2.CenterX = 0.0;
+		hu2.CenterY = 0.0;
+		theTemp1 = 0.0;
+		theTemp2 = 0.0;
+		if (curType == "curciformControl")
+		{
+			num23 = position3.X - point14.X - CurPoint.X;
+			num24 = position3.Y - point14.Y - CurPoint.Y;
+			if (Math.Abs(num23) > 0.0001 || Math.Abs(num24) > 0.0001)
+			{
+				CPoint = hu2.Transform(new System.Windows.Point(num23, num24));
+				theTemp1 += CPoint.X;
+				theTemp2 += CPoint.Y;
+				IsParamChanged = true;
+			}
+		}
+		else if (curType == "angle")
+		{
+			IsParamChanged = true;
+			CPoint = new System.Windows.Point(point14.X + Width / 2.0, point14.Y + Height / 2.0);
+			System.Windows.Point point15 = new System.Windows.Point(position3.X - curControl.CurPoint.X + angleWidth / 2.0, position3.Y - curControl.CurPoint.Y + angleHeight / 2.0);
+			point15 = hu.Transform(point15);
+			double num32 = Math.Atan2(point15.Y - CPoint.Y, point15.X - CPoint.X);
+			num27 = num32 * 180.0 / Math.PI + 90.0;
+			if (num27 > 180.0)
+			{
+				num27 -= 360.0;
+			}
+			if (num27 < -180.0)
+			{
+				num27 += 360.0;
+			}
+		}
+		num28 = point14.X + (Width + theTemp1 - num25) / 2.0;
+		num29 = point14.Y + (Height + theTemp2 - num26) / 2.0;
+		if (num25 != Width)
+		{
+			Width = num25;
+		}
+		if (num26 != Height)
+		{
+			Height = num26;
+		}
+		if (num27 != tlt.Angle)
+		{
+			tlt.Angle = num27;
+		}
+		if (num28 != (double)GetValue(Canvas.LeftProperty))
+		{
+			SetValue(Canvas.LeftProperty, num28);
+		}
+		if (num29 != (double)GetValue(Canvas.TopProperty))
+		{
+			SetValue(Canvas.TopProperty, num29);
+		}
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		outRect = new Rect(new System.Windows.Point(polygon.Points[10].X, polygon.Points[0].Y), new System.Windows.Point(polygon.Points[4].X, polygon.Points[6].Y));
+	}
+
+	private System.Windows.Point[] getAddDistance(int index, double xadd, double yadd)
+	{
+		System.Windows.Point[] array = new System.Windows.Point[4];
+		switch (index)
+		{
+		case 2:
+			array[0] = new System.Windows.Point(xadd, yadd);
+			array[1] = new System.Windows.Point(xadd, 0.0 - yadd);
+			array[2] = new System.Windows.Point(0.0 - xadd, 0.0 - yadd);
+			array[3] = new System.Windows.Point(0.0 - xadd, yadd);
+			break;
+		case 5:
+			array[0] = new System.Windows.Point(xadd, 0.0 - yadd);
+			array[1] = new System.Windows.Point(xadd, yadd);
+			array[2] = new System.Windows.Point(0.0 - xadd, yadd);
+			array[3] = new System.Windows.Point(0.0 - xadd, 0.0 - yadd);
+			break;
+		case 8:
+			array[0] = new System.Windows.Point(0.0 - xadd, 0.0 - yadd);
+			array[1] = new System.Windows.Point(0.0 - xadd, yadd);
+			array[2] = new System.Windows.Point(xadd, yadd);
+			array[3] = new System.Windows.Point(xadd, 0.0 - yadd);
+			break;
+		case 11:
+			array[0] = new System.Windows.Point(0.0 - xadd, yadd);
+			array[1] = new System.Windows.Point(0.0 - xadd, 0.0 - yadd);
+			array[2] = new System.Windows.Point(xadd, 0.0 - yadd);
+			array[3] = new System.Windows.Point(xadd, yadd);
+			break;
+		}
+		return array;
+	}
+
+	private void Child_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (sender is SquareArea)
+		{
+			SquareArea squareArea = sender as SquareArea;
+			string name = squareArea.Name;
+			if (squareArea.Tag != null && (double)squareArea.Tag == tlt.Angle)
+			{
+				return;
+			}
+			squareArea.Tag = tlt.Angle;
+			Bitmap bitmap = null;
+			switch (name)
+			{
+			case "in_1":
+			case "in_11":
+			case "in_12":
+			case "out_1":
+			case "out_11":
+			case "out_12":
+				bitmap = GetRotateImage(GetBiArrowImage(), (int)Angle + 45);
+				break;
+			case "in_2":
+			case "in_3":
+			case "in_4":
+			case "out_2":
+			case "out_3":
+			case "out_4":
+				bitmap = GetRotateImage(GetBiArrowImage(), (int)Angle - 45);
+				break;
+			case "in_5":
+			case "in_6":
+			case "in_7":
+			case "out_5":
+			case "out_6":
+			case "out_7":
+				bitmap = GetRotateImage(GetBiArrowImage(), (int)Angle + 45);
+				break;
+			case "in_8":
+			case "in_9":
+			case "in_10":
+			case "out_8":
+			case "out_9":
+			case "out_10":
+				bitmap = GetRotateImage(GetBiArrowImage(), (int)Angle - 45);
+				break;
+			}
+			if (bitmap != null)
+			{
+				if (squareArea.Cursor != null)
+				{
+					squareArea.Cursor.Dispose();
+				}
+				squareArea.Cursor = BitmapCursor.CreateBmpCursor(bitmap);
+			}
+		}
+		else
+		{
+			if (!(sender is RectangleArea))
+			{
+				return;
+			}
+			RectangleArea rectangleArea = sender as RectangleArea;
+			string name2 = rectangleArea.Name;
+			if (rectangleArea.Tag != null && (double)rectangleArea.Tag == tlt.Angle)
+			{
+				return;
+			}
+			rectangleArea.Tag = tlt.Angle;
+			Bitmap bitmap2 = null;
+			bitmap2 = ((rectangleArea.Index % 2 != 0) ? GetRotateImage(GetBiArrowImage(), (int)Angle) : GetRotateImage(GetBiArrowImage(), (int)Angle + 90));
+			if (bitmap2 != null)
+			{
+				if (rectangleArea.Cursor != null)
+				{
+					rectangleArea.Cursor.Dispose();
+				}
+				rectangleArea.Cursor = BitmapCursor.CreateBmpCursor(bitmap2);
+			}
+		}
+	}
+
+	public static Bitmap GetBiArrowImage()
+	{
+		if (image == null)
+		{
+			Stream manifestResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VM.PcUI.Resources.鼠标双向箭头.png");
+			image = (Bitmap)System.Drawing.Image.FromStream(manifestResourceStream);
+			manifestResourceStream.Dispose();
+		}
+		return image;
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	private void curciformControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (!DoDragROI(e))
+		{
+			if (ownerCanvas != null && ownerCanvas is ROIContainer rOIContainer)
+			{
+				rOIContainer.SelectionService.RoiSelected(DataContext);
+			}
+			else
+			{
+				owner.SelectionService.RoiSelected(DataContext);
+			}
+			Focus();
+			if (!isDragging)
+			{
+				CurPoint = e.GetPosition(mainGrid);
+				Doth(this, e);
+				owner.DoRoiClick(this, e);
+			}
+		}
+	}
+
+	private void changeRect()
+	{
+		for (int i = 0; i < squareAreas.Count; i++)
+		{
+			int index = ((i != squareAreas.Count - 1) ? (i + 1) : 0);
+			bool flag = i % 2 == 0;
+			double num = 0.0;
+			double num2 = 0.0;
+			num = (flag ? (Math.Abs(squareAreas[index].X - squareAreas[i].X) - recWidth / scaleRect) : (Math.Abs(squareAreas[index].X - squareAreas[i].X) + recWidth / scaleRect));
+			num2 = ((!flag) ? (Math.Abs(squareAreas[index].Y - squareAreas[i].Y) - recWidth / scaleRect) : (Math.Abs(squareAreas[index].Y - squareAreas[i].Y) + recWidth / scaleRect));
+			rectangleAreas[i].Width = ((num <= 0.0) ? (recWidth / scaleRect) : num);
+			rectangleAreas[i].Height = ((num2 <= 0.0) ? (recWidth / scaleRect) : num2);
+			rectangleAreas[i].ChangeSize();
+			rectangleAreas[i].X = squareAreas[i].X + (squareAreas[index].X - squareAreas[i].X) / 2.0;
+			rectangleAreas[i].Y = squareAreas[i].Y + (squareAreas[index].Y - squareAreas[i].Y) / 2.0;
+			num = (flag ? (Math.Abs(squareAreasInside[index].X - squareAreasInside[i].X) - recWidth / scaleRect) : (Math.Abs(squareAreasInside[index].X - squareAreasInside[i].X) + recWidth / scaleRect));
+			num2 = ((!flag) ? (Math.Abs(squareAreasInside[index].Y - squareAreasInside[i].Y) - recWidth / scaleRect) : (Math.Abs(squareAreasInside[index].Y - squareAreasInside[i].Y) + recWidth / scaleRect));
+			rectangleAreaInside[i].Width = ((num <= 0.0) ? (recWidth / scaleRect) : num);
+			rectangleAreaInside[i].Height = ((num2 <= 0.0) ? (recWidth / scaleRect) : num2);
+			rectangleAreaInside[i].ChangeSize();
+			rectangleAreaInside[i].X = squareAreasInside[i].X + (squareAreasInside[index].X - squareAreasInside[i].X) / 2.0;
+			rectangleAreaInside[i].Y = squareAreasInside[i].Y + (squareAreasInside[index].Y - squareAreasInside[i].Y) / 2.0;
+		}
+	}
+
+	private void changeArrowPosition()
+	{
+		if (squareAreas != null && squareAreas.Count > 9)
+		{
+			int num = 3;
+			int num2 = 9;
+			double num3 = squareAreas[num].X + (squareAreas[num + 1].X - squareAreas[num].X) / 2.0;
+			double num4 = squareAreas[num].Y + (squareAreas[num + 1].Y - squareAreas[num].Y) / 2.0;
+			TarrowView0.SetValue(Canvas.LeftProperty, num3 - TarrowView0.Width / 2.0);
+			TarrowView0.SetValue(Canvas.TopProperty, num4 - TarrowView0.Height / 2.0);
+			num3 = squareAreas[num2].X + (squareAreas[num2 + 1].X - squareAreas[num2].X) / 2.0;
+			num4 = squareAreas[num2].Y + (squareAreas[num2 + 1].Y - squareAreas[num2].Y) / 2.0;
+			TarrowView1.SetValue(Canvas.LeftProperty, num3 - TarrowView1.Width / 2.0);
+			TarrowView1.SetValue(Canvas.TopProperty, num4 - TarrowView1.Height / 2.0);
+		}
+	}
+
+	private void curciformControl_MouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (!isDragging)
+		{
+			return;
+		}
+		double num = 1.0;
+		if (owner != null)
+		{
+			num = owner.Radio;
+		}
+		isDragging = false;
+		double num2 = (double)GetValue(Canvas.LeftProperty);
+		double num3 = (double)GetValue(Canvas.TopProperty);
+		TAngle = tlt.Angle;
+		if (curControl != null)
+		{
+			curControl.IsPressed = false;
+		}
+		curControl = null;
+		ReleaseMouseCapture();
+		changeRect();
+		PolygonPoints.Clear();
+		foreach (System.Windows.Point point in polygon.Points)
+		{
+			PolygonPoint item = new PolygonPoint
+			{
+				X = (float)((num2 + point.X) / owner.Radio),
+				Y = (float)((num3 + point.Y) / owner.Radio)
+			};
+			PolygonPoints.Add(item);
+		}
+		foreach (System.Windows.Point point2 in polygonInside.Points)
+		{
+			PolygonPoint item2 = new PolygonPoint
+			{
+				X = (float)((num2 + point2.X) / owner.Radio),
+				Y = (float)((num3 + point2.Y) / owner.Radio)
+			};
+			PolygonPoints.Add(item2);
+		}
+		if (IsParamChanged)
+		{
+			DoCallBack();
+		}
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

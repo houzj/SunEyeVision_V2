@@ -1,0 +1,98 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using Apps.UIHelper.Extern;
+using VM.Core;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+public class ResizeThumb : Thumb
+{
+	public ResizeThumb()
+	{
+		DragDelta += ResizeThumb_DragDelta;
+		DragCompleted += ResizeThumb_DragCompleted;
+	}
+
+	private void ResizeThumb_DragCompleted(object sender, DragCompletedEventArgs e)
+	{
+		CommentBox parent = this.GetParent<CommentBox>();
+		if (parent != null)
+		{
+			VMCommentInfo vMCommentInfo = new VMCommentInfo();
+			vMCommentInfo.Name = parent.Name;
+			vMCommentInfo.Text = parent.CommentText;
+			vMCommentInfo.Width = parent.Width;
+			vMCommentInfo.Height = parent.Height;
+			vMCommentInfo.ZIndex = parent.UpIndexStatus;
+			vMCommentInfo.OriginPoint = new Point(Canvas.GetLeft(parent), Canvas.GetTop(parent));
+			((DataContext as DecoratorBase)?.DecorateSource as IVmModuleSet)?.UpdateCommentSource(vMCommentInfo);
+		}
+	}
+
+	private void ResizeThumb_DragDelta(object sender, DragDeltaEventArgs e)
+	{
+		FrameworkElement parent = this.GetParent<DiagramPage>();
+		if (parent == null || (parent as ItemsPage).IsLockWorkArea)
+		{
+			return;
+		}
+		CommentBox parent2 = this.GetParent<CommentBox>();
+		if (parent2 == null)
+		{
+			return;
+		}
+		switch (VerticalAlignment)
+		{
+		case VerticalAlignment.Bottom:
+			if (parent2.Height + e.VerticalChange > CommentBox.MinHeight)
+			{
+				parent2.Height += e.VerticalChange;
+			}
+			else
+			{
+				parent2.Height = CommentBox.MinHeight;
+			}
+			break;
+		case VerticalAlignment.Top:
+			if (parent2.Height - e.VerticalChange > CommentBox.MinHeight)
+			{
+				Canvas.SetTop(parent2, Canvas.GetTop(parent2) + e.VerticalChange);
+				parent2.Height -= e.VerticalChange;
+			}
+			else
+			{
+				Canvas.SetTop(parent2, Canvas.GetTop(parent2) + (parent2.Height - CommentBox.MinHeight));
+				parent2.Height = CommentBox.MinHeight;
+			}
+			break;
+		}
+		switch (HorizontalAlignment)
+		{
+		case HorizontalAlignment.Left:
+			if (parent2.Width - e.HorizontalChange > CommentBox.MinWidth)
+			{
+				Canvas.SetLeft(parent2, Canvas.GetLeft(parent2) + e.HorizontalChange);
+				parent2.Width -= e.HorizontalChange;
+			}
+			else
+			{
+				Canvas.SetLeft(parent2, Canvas.GetLeft(parent2) + (parent2.Width - CommentBox.MinWidth));
+				parent2.Width = CommentBox.MinWidth;
+			}
+			break;
+		case HorizontalAlignment.Right:
+			if (parent2.Width + e.HorizontalChange > CommentBox.MinWidth)
+			{
+				parent2.Width += e.HorizontalChange;
+			}
+			else
+			{
+				parent2.Width = CommentBox.MinWidth;
+			}
+			break;
+		}
+	}
+}

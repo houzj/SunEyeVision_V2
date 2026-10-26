@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.Connector" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" Width="20" Height="30" Cursor="Cross" SnapsToDevicePixels="False">
+  <Control.Template>
+    <ControlTemplate TargetType="{x:Type Control}">
+      <Grid Background="#00FFFFFF">
+        <Grid Name="r1" VerticalAlignment="Center" HorizontalAlignment="Left" Background="#FFFFA719" Margin="-5,0,0,0" Width="5" Height="8">
+          <Border Name="r2" BorderThickness="1,1,0,1" BorderBrush="#FF444444" />
+        </Grid>
+      </Grid>
+      <ControlTemplate.Triggers>
+        <DataTrigger Value="True" Binding="{Binding IsHited, RelativeSource={RelativeSource Mode=Self}}">
+          <Setter TargetName="r2" Property="Border.BorderThickness" Value="2,2,0,2" />
+          <Setter TargetName="r1" Property="FrameworkElement.Margin" Value="-8.5,0,0,0" />
+          <Setter TargetName="r1" Property="FrameworkElement.Width" Value="8.5" />
+          <Setter TargetName="r1" Property="FrameworkElement.Height" Value="12" />
+        </DataTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

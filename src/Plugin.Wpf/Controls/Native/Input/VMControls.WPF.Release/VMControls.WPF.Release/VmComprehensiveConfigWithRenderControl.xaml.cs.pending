@@ -1,0 +1,232 @@
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmComprehensiveConfigWithRenderControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmComprehensiveConfigWithRenderControl
+/// </summary>
+public partial class VmComprehensiveConfigWithRenderControl : VMWpfUserControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty SolutionSourceProperty = DependencyProperty.Register("SolutionSource", typeof(IVmModule), typeof(VmComprehensiveConfigWithRenderControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfig", typeof(IParamsConfig), typeof(VmComprehensiveConfigWithRenderControl), new PropertyMetadata(null));
+
+	/// <summary>
+	/// 绑定方案
+	/// </summary>
+	public IVmModule SolutionSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(SolutionSourceProperty);
+		}
+		set
+		{
+			SetValue(SolutionSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 绑定模块参数（内部使用）
+	/// </summary>
+	public IParamsConfig ParamsConfig
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	public VmComprehensiveConfigWithRenderControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			VmSolution.OnSolutionLoadEndCallBack -= VmSolution_OnSolutionLoadEndCallBack;
+			VmSolution.OnSolutionLoadEndCallBack += VmSolution_OnSolutionLoadEndCallBack;
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	/// <summary>
+	/// 控制图层选择控件显示隐藏
+	/// </summary>
+	/// <param name="flag"></param>
+	public void ChangeImageComboBoxVisibility(bool flag)
+	{
+		prControl?.ChangeImageComboBoxVisibility(flag);
+	}
+
+	/// <summary>
+	/// 获取所有Tab名称
+	/// </summary>
+	public List<string> GetParamTabNames()
+	{
+		if (prControl != null)
+		{
+			return prControl.GetParamTabNames();
+		}
+		return new List<string>();
+	}
+
+	/// <summary>
+	/// Tab页是否可见，如果绑定同一个数据源，调用此接口会同步更新与tabName对应的参数配置tab页的显示或者隐藏
+	/// </summary>
+	/// <param name="tabName">tab页名称</param>
+	/// <param name="isVisible">是否可见</param>
+	public void SetParamTabVisible(string tabName, bool isVisible)
+	{
+		if (prControl != null)
+		{
+			prControl.SetParamTabVisible(tabName, isVisible);
+		}
+	}
+
+	/// <summary>
+	/// 工具栏是否可见
+	/// </summary>
+	/// <param name="isVisible">是否可见</param>
+	public void SetRenderToolbarVisible(bool isVisible)
+	{
+		if (prControl != null)
+		{
+			prControl.SetRenderToolbarVisible(isVisible);
+		}
+	}
+
+	/// <summary>
+	/// 获取可显示的图像名称列表
+	/// </summary>
+	public List<string> GetDisplayableImageNameList()
+	{
+		List<string> result = new List<string>();
+		if (prControl != null)
+		{
+			result = prControl.GetDisplayableImageNameList();
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 设置图像显示
+	/// </summary>
+	/// <param name="displayImageName">显示的图像名称</param>
+	public void SetSelectedImage(string displayImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.SetSelectedImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 当图像堆叠时，切换背景图像
+	/// </summary>
+	/// <param name="backgroundImageName">背景图像名称</param>
+	public void SwitchBackgroundImage(string backgroundImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.SwitchBackgroundImage(backgroundImageName);
+		}
+	}
+
+	/// <summary>
+	/// 设置堆叠显示的图像(单张)
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void AddStackImage(string displayImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.AddStackImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 移除堆叠显示的图像
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void RemoveStackImage(string displayImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.RemoveStackImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 绑定综合配置（内部使用）
+	/// </summary>
+	public void BindingComprehensiveConfig()
+	{
+		if (prControl != null)
+		{
+			SolutionSource = VmSolution.Instance;
+		}
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (prControl == null)
+		{
+			return 0L;
+		}
+		return prControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		try
+		{
+			if (prControl != null)
+			{
+				SolutionSource = null;
+				prControl.SolutionSource = null;
+			}
+			VmSolution.OnSolutionLoadEndCallBack -= VmSolution_OnSolutionLoadEndCallBack;
+			Content = null;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message ?? "");
+		}
+	}
+
+	private void VmSolution_OnSolutionLoadEndCallBack(object sender, EndEventArgs args)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			SolutionSource = null;
+			LogHelper.Info("OnSolutionLoadEndCallBackM, Set SolutionSource = null");
+		});
+	}
+}

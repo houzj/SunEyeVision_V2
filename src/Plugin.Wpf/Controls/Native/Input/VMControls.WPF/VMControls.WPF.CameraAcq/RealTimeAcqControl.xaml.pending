@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CameraAcq.RealTimeAcqControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CameraAcq" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;assembly=SunEyeVision.Plugin.Wpf" xmlns:imagecontrol="clr-namespace:VMBaseControls;assembly=VMBaseControls" x:Name="realTimeAcqControl">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="40" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="40" />
+    </Grid.RowDefinitions>
+    <Grid Row="0">
+      <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right">
+        <Button Width="50" Height="34" Content="{DynamicResource 开始采集}" Style="{StaticResource BottomButtonStyle}" Margin="5" Visibility="{Binding IsShowButton, ElementName=realTimeAcqControl, Converter={StaticResource bool2VisibilityConverter}}" Click="bnStartGrab_Click" />
+        <Button Width="50" Height="34" Content="{DynamicResource 停止采集}" Style="{StaticResource BottomButtonStyle}" Margin="5" Visibility="{Binding IsShowButton, ElementName=realTimeAcqControl, Converter={StaticResource bool2VisibilityConverter}}" Click="bnStopGrab_Click" />
+        <Rectangle Width="1" Height="18" Margin="4,0" Fill="{DynamicResource DashedLineStroke}" />
+        <UniformGrid Columns="4" Width="150">
+          <controls:ZoomOutButton Name="BtnToolZoomOut" Width="34" Height="34" ToolTip="{DynamicResource 放大}" Click="BtnToolZoomOut_Click" />
+          <controls:ZoomInButton Name="BtnToolZoomIn" Width="34" Height="34" ToolTip="{DynamicResource 缩小}" Click="BtnToolZoomIn_Click" />
+          <Button Name="BtnToolRegionScale" Width="34" Height="34" Style="{StaticResource ClientOriginScaleBtn}" Content="1:1" Click="BtnToolRegionScale_Click" />
+          <Button Name="BtnToolFullScreen" Width="34" Height="34" Style="{StaticResource ClientFullScreenBtn}" Content="全屏" Click="m_btnFullScreen_Click" />
+        </UniformGrid>
+      </StackPanel>
+    </Grid>
+    <Grid Name="viewbox" Row="1">
+      <imagecontrol:ImageViewBox Name="imageView" ROIVisible="False" IsDisplayPixelAuto="True" ImageDataSource="{Binding ImageSource, ElementName=realTimeAcqControl}" />
+    </Grid>
+    <Grid Row="2">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Microsoft YaHei" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="FontSize" Value="14px" />
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <StackPanel Margin="18,1,1,1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBlock Text="{DynamicResource lostpacketcount:}" Margin="0,0,2,0" />
+        <TextBlock Margin="5,0,0,0" Text="{Binding Path=LostPackgeNum, ElementName=realTimeAcqControl, Mode=OneWay, StringFormat=D}" />
+        <TextBlock Text="{DynamicResource ImageNum:}" Margin="10,0,2,0" />
+        <TextBlock Margin="5,0,0,0" Text="{Binding Path=ImageNum, ElementName=realTimeAcqControl, Mode=OneWay, StringFormat=D}" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

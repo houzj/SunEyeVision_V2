@@ -1,0 +1,66 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+
+public class ZoomOutButton : Button
+{
+	public static readonly DependencyProperty HookHikImageViewProperty;
+
+	public static readonly DependencyProperty HookImageViewBoxProperty;
+
+	public HikImageView HookHikImageView
+	{
+		get
+		{
+			return (HikImageView)GetValue(HookHikImageViewProperty);
+		}
+		set
+		{
+			SetValue(HookHikImageViewProperty, value);
+		}
+	}
+
+	public FrameworkElement HookImageViewBox
+	{
+		get
+		{
+			return (FrameworkElement)GetValue(HookImageViewBoxProperty);
+		}
+		set
+		{
+			SetValue(HookImageViewBoxProperty, value);
+		}
+	}
+
+	static ZoomOutButton()
+	{
+		HookHikImageViewProperty = DependencyProperty.Register("HookHikImageView", typeof(HikImageView), typeof(ZoomOutButton), new PropertyMetadata(null, CallBack));
+		HookImageViewBoxProperty = DependencyProperty.Register("HookImageViewBox", typeof(FrameworkElement), typeof(ZoomOutButton), new PropertyMetadata(null, CallBack));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(ZoomOutButton), new FrameworkPropertyMetadata(typeof(ZoomOutButton)));
+	}
+
+	private static void CallBack(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		Button targetElement = d as Button;
+		if (e.NewValue != null)
+		{
+			BindingHelper.BindingPath("EnableZoomOut", "IsEnabled", e.NewValue, BindingMode.TwoWay, targetElement);
+		}
+	}
+
+	protected override void OnClick()
+	{
+		base.OnClick();
+		if (HookHikImageView != null)
+		{
+			HookHikImageView.Enlarge();
+		}
+		if (HookImageViewBox != null)
+		{
+			HookImageViewBox.GetType().GetMethod("Enlarge")?.Invoke(HookImageViewBox, null);
+		}
+	}
+}

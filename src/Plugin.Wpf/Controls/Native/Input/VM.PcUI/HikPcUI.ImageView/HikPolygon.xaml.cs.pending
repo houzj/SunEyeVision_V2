@@ -1,0 +1,1461 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.Localization;
+using Apps.Log;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikPolygon : HikROIBase, RectangleRoi, IDisposable, IComponentConnector
+{
+	public delegate void SizeChange(object Param);
+
+	private List<Control> childControlList = new List<Control>();
+
+	private List<SquareArea> squareAreas = new List<SquareArea>();
+
+	private string curType = "";
+
+	private IArea curControl = null;
+
+	private double oldHeight = 0.0;
+
+	private double oldWeight = 0.0;
+
+	public static Polygon substitute = new Polygon();
+
+	public static double EdgeWidth = 30.0;
+
+	private static int PointNum = 0;
+
+	private double _recWidth = 0.0;
+
+	private double _angleWidth = 0.0;
+
+	private double _angleHeight = 0.0;
+
+	private double _textSize = 0.0;
+
+	private Thickness _textThick;
+
+	public static int maxPolygonPointNum = 1000;
+
+	public static int doubleClickTime = 0;
+
+	private static bool IsDoubleClick = false;
+
+	private static object obj = new object();
+
+	private double min_x = double.MaxValue;
+
+	private double max_x = 0.0;
+
+	private double min_y = double.MaxValue;
+
+	private double max_y = 0.0;
+
+	public static readonly DependencyProperty PolygonPointsProperty = DependencyProperty.Register("PolygonPoints", typeof(ObservableCollection<PolygonPoint>), typeof(HikPolygon), new PropertyMetadata(null, OnPolygonPointsChanged));
+
+	public static readonly DependencyProperty TAngleProperty = DependencyProperty.Register("TAngle", typeof(double), typeof(HikPolygon), new PropertyMetadata(0.0, OnTAngleChanged));
+
+	public static readonly DependencyProperty TWidthProperty = DependencyProperty.Register("TWidth", typeof(double), typeof(HikPolygon), new PropertyMetadata(0.0, OnTWidthChanged));
+
+	public static readonly DependencyProperty THeightProperty = DependencyProperty.Register("THeight", typeof(double), typeof(HikPolygon), new PropertyMetadata(0.0, OnTHeightChanged));
+
+	public static readonly DependencyProperty TOriginPointProperty = DependencyProperty.Register("TOriginPoint", typeof(Point), typeof(HikPolygon), new PropertyMetadata(new Point(0.0, 0.0), OnTOriginPointChanged));
+
+	public SizeChange OnTheSizeChange;
+
+	private Point CPoint = new Point(0.0, 0.0);
+
+	private RotateTransform hu = new RotateTransform();
+
+	private RotateTransform hu2 = new RotateTransform();
+
+	private double theTemp1;
+
+	private double theTemp2;
+
+	private const double _Min = 0.0001;
+
+	public static HikImageView Owner { get; set; }
+
+	private static Point MouseDownPoint { get; set; }
+
+	private static bool IsMoved { get; set; }
+
+	public double recWidth
+	{
+		get
+		{
+			if (_recWidth == 0.0)
+			{
+				_recWidth = (double)FindResource("dwidth");
+			}
+			return _recWidth;
+		}
+	}
+
+	public double angleWidth
+	{
+		get
+		{
+			if (_angleWidth == 0.0)
+			{
+				_angleWidth = (double)FindResource("angleWidth");
+			}
+			return _angleWidth;
+		}
+	}
+
+	public double angleHeight
+	{
+		get
+		{
+			if (_angleHeight == 0.0)
+			{
+				_angleHeight = (double)FindResource("angleHeight");
+			}
+			return _angleHeight;
+		}
+	}
+
+	public double textSize
+	{
+		get
+		{
+			if (_textSize == 0.0)
+			{
+				_textSize = (double)FindResource("TextForeSize");
+			}
+			return _textSize;
+		}
+	}
+
+	public Thickness textThick
+	{
+		get
+		{
+			if (_textThick.Left == 0.0)
+			{
+				_textThick = (Thickness)FindResource("TextThick");
+			}
+			return _textThick;
+		}
+	}
+
+	public ObservableCollection<PolygonPoint> PolygonPoints
+	{
+		get
+		{
+			return (ObservableCollection<PolygonPoint>)GetValue(PolygonPointsProperty);
+		}
+		set
+		{
+			SetValue(PolygonPointsProperty, value);
+		}
+	}
+
+	public double TAngle
+	{
+		get
+		{
+			return (double)GetValue(TAngleProperty);
+		}
+		set
+		{
+			SetValue(TAngleProperty, value);
+		}
+	}
+
+	public double TWidth
+	{
+		get
+		{
+			return (double)GetValue(TWidthProperty);
+		}
+		set
+		{
+			SetValue(TWidthProperty, value);
+		}
+	}
+
+	public double THeight
+	{
+		get
+		{
+			return (double)GetValue(THeightProperty);
+		}
+		set
+		{
+			SetValue(THeightProperty, value);
+		}
+	}
+
+	public Point TOriginPoint
+	{
+		get
+		{
+			return (Point)GetValue(TOriginPointProperty);
+		}
+		set
+		{
+			SetValue(TOriginPointProperty, value);
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return tlt.Angle;
+		}
+		set
+		{
+			if (value >= -180.0 && value <= 180.0)
+			{
+				tlt.CenterX = Width / 2.0;
+				tlt.CenterY = Height / 2.0;
+				tlt.Angle = value;
+			}
+		}
+	}
+
+	public Point VirtualPoint { get; set; }
+
+	public Point OriginPoint
+	{
+		get
+		{
+			return new Point((double)GetValue(Canvas.LeftProperty) + recWidth, (double)GetValue(Canvas.TopProperty) + recWidth);
+		}
+		set
+		{
+			SetValue(Canvas.LeftProperty, value.X - recWidth);
+			SetValue(Canvas.TopProperty, value.Y - recWidth);
+		}
+	}
+
+	public double ZWidth
+	{
+		get
+		{
+			return Width - recWidth * 2.0;
+		}
+		set
+		{
+			if (value + recWidth * 2.0 >= 0.0)
+			{
+				Width = value + recWidth * 2.0;
+			}
+		}
+	}
+
+	public double ZHeight
+	{
+		get
+		{
+			return Height - recWidth * 2.0;
+		}
+		set
+		{
+			if (value + recWidth * 2.0 >= 0.0)
+			{
+				Height = value + recWidth * 2.0;
+			}
+		}
+	}
+
+	public Point CurPoint { get; set; }
+
+	public void Dispose()
+	{
+		DeInit();
+		if (parent != null)
+		{
+			parent.MouseMove -= zparent_MouseMove;
+		}
+		if (squareAreas != null && owner != null)
+		{
+			foreach (SquareArea squareArea in squareAreas)
+			{
+				HikImageView hikImageView = owner;
+				hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(squareArea.OnScaleChange));
+			}
+		}
+		if (polygon.ContextMenu != null)
+		{
+			polygon.ContextMenu.IsOpen = false;
+		}
+	}
+
+	[DllImport("user32.dll")]
+	public static extern int GetDoubleClickTime();
+
+	public static void InitSubstitute(HikImageView view, Point mouseDownPoint)
+	{
+		doubleClickTime = GetDoubleClickTime();
+		Owner = view;
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Combine(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseDownChange = (HikImageView.DrawRoi_MouseDownChange)Delegate.Combine(hikImageView3.OnDrawRoi_MouseDownChange, new HikImageView.DrawRoi_MouseDownChange(OnDrawROISubstitute_MouseDown));
+		HikImageView hikImageView4 = Owner;
+		hikImageView4.OnDrawRoi_RightMouseUpChange = (HikImageView.DrawRoi_RightMouseUpChange)Delegate.Combine(hikImageView4.OnDrawRoi_RightMouseUpChange, new HikImageView.DrawRoi_RightMouseUpChange(OnDrawROISubstitute_RightMouseUp));
+		MouseDownPoint = mouseDownPoint;
+		substitute.Points.Clear();
+		substitute.Stroke = HikROIBase.SubstituteBrush;
+		substitute.StrokeThickness = 1.0 / (Owner.sfr.ScaleX * Owner.ViewScale);
+		substitute.Opacity = 1.0;
+		if (Owner != null)
+		{
+			maxPolygonPointNum = Owner.MaxPolygonPointNum;
+		}
+		substitute.Points.Add(MouseDownPoint);
+		substitute.Points.Add(MouseDownPoint);
+		PointNum = 1;
+		IsMoved = false;
+		Owner.AddROIChild(substitute);
+	}
+
+	public void Init()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public void DeInit()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+		bottomText.FontSize = textSize * num2;
+		bd.BorderThickness = new Thickness(num2);
+		bd.Margin = new Thickness(0.0 - num2);
+		polygon.StrokeThickness = num2;
+		if (num < 1.0)
+		{
+			num = 1.0;
+		}
+		double num3 = recWidth / ((sender as ScaleTransform).ScaleX * num);
+		angle.view.Width = angleWidth / ((sender as ScaleTransform).ScaleX * num);
+		angle.view.Height = angleHeight / ((sender as ScaleTransform).ScaleX * num);
+		left.view.Width = num3;
+		top.view.Height = num3;
+		right.view.Width = num3;
+		bottom.view.Height = num3;
+		top_left.view.Width = num3;
+		top_left.view.Height = num3;
+		top_right.view.Width = num3;
+		top_right.view.Height = num3;
+		bottom_left.view.Width = num3;
+		bottom_left.view.Height = num3;
+		bottom_right.view.Width = num3;
+		bottom_right.view.Height = num3;
+	}
+
+	public static void OnDrawROISubstitute_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (Owner != null && Owner.SourceImage.Source != null)
+		{
+			if (!IsMoved)
+			{
+				IsMoved = true;
+			}
+			Point position = e.GetPosition(Owner.SourceImage);
+			if (position.X < 0.0)
+			{
+				position.X = 0.0;
+			}
+			if (position.Y < 0.0)
+			{
+				position.Y = 0.0;
+			}
+			if (position.X > Owner.SourceImage.Width)
+			{
+				position.X = Owner.SourceImage.Width;
+			}
+			if (position.Y > Owner.SourceImage.ActualHeight)
+			{
+				position.Y = Owner.SourceImage.ActualHeight;
+			}
+			if (PointNum < substitute.Points.Count && PointNum >= 0)
+			{
+				substitute.Points[PointNum] = position;
+			}
+		}
+	}
+
+	public static void OnDrawROISubstitute_MouseDown(object sender, MouseEventArgs e)
+	{
+		try
+		{
+			if (Owner == null || !(e is MouseButtonEventArgs))
+			{
+				return;
+			}
+			if ((e as MouseButtonEventArgs).ClickCount < 2)
+			{
+				obj = new object();
+				new Thread(() =>
+				{
+					try
+					{
+						object obj = HikPolygon.obj;
+						IsDoubleClick = false;
+						Thread.Sleep(doubleClickTime);
+						if (obj == HikPolygon.obj && Owner != null)
+						{
+							Owner.Dispatcher.Invoke(() =>
+							{
+								try
+								{
+									if (!IsDoubleClick && substitute.Points.Count >= maxPolygonPointNum + 2)
+									{
+										if (Owner.OnControlAlert != null)
+										{
+											Owner.OnControlAlert(Owner, AppLocalizationService.GetLang("多边形点数不超过") + " " + maxPolygonPointNum);
+											Owner.SourceImage?.CaptureMouse();
+										}
+										if (substitute.Points.Count > 1)
+										{
+											PointNum--;
+											substitute.Points.RemoveAt(substitute.Points.Count - 2);
+										}
+									}
+								}
+								catch (Exception ex3)
+								{
+									LogHelper.Error("Message:" + ex3.Message + "StackTrace:" + ex3.StackTrace);
+								}
+							});
+						}
+					}
+					catch (Exception ex2)
+					{
+						LogHelper.Error("Message:" + ex2.Message + "StackTrace:" + ex2.StackTrace);
+					}
+				}).Start();
+				if (substitute.Points.Count >= maxPolygonPointNum + 3)
+				{
+					return;
+				}
+				int num = substitute.Points.Count - 2;
+				if (num >= 0)
+				{
+					Point point = substitute.Points.Last();
+					Point point2 = substitute.Points[num];
+					if (new Vector(point.X - point2.X, point.Y - point2.Y).Length < 1.0 * Owner.Radio)
+					{
+						return;
+					}
+				}
+				Point value = default;
+				if (PointNum >= 0 && PointNum < substitute.Points.Count)
+				{
+					value = substitute.Points[PointNum];
+				}
+				PointNum++;
+				substitute.Points.Add(value);
+				return;
+			}
+			IsDoubleClick = true;
+			if (PointNum == 2)
+			{
+				while (substitute.Points.Count > 0)
+				{
+					substitute.Points.RemoveAt(substitute.Points.Count - 1);
+					PointNum--;
+				}
+				DoFinishSubstitute();
+				return;
+			}
+			while (substitute.Points.Count > maxPolygonPointNum + 1)
+			{
+				substitute.Points.RemoveAt(substitute.Points.Count - 1);
+				PointNum--;
+			}
+			if (IsMoved && PointNum > 2)
+			{
+				HikPolygonRoiParameter hikPolygonRoiParameter = Owner.DoGetExtendROIParam(RoiUIType.HikPolygonRoi) as HikPolygonRoiParameter;
+				if (hikPolygonRoiParameter == null)
+				{
+					hikPolygonRoiParameter = new HikPolygonRoiParameter();
+				}
+				substitute.Points.RemoveAt(substitute.Points.Count - 1);
+				foreach (Point point3 in substitute.Points)
+				{
+					PolygonPoint item = new PolygonPoint
+					{
+						x = (float)(point3.X / Owner.Radio - 0.5),
+						y = (float)(point3.Y / Owner.Radio - 0.5)
+					};
+					hikPolygonRoiParameter.PolygonPoints.Add(item);
+					((IPolygonROI)hikPolygonRoiParameter).PolygonPoints.Add(new Point(point3.X / Owner.Radio - 0.5, point3.Y / Owner.Radio - 0.5));
+				}
+				hikPolygonRoiParameter.Name = "多边形";
+				hikPolygonRoiParameter.Sign = true;
+				Owner.RoiList.Add(hikPolygonRoiParameter);
+			}
+			DoFinishSubstitute();
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("Message:" + ex.Message + "StackTrace:" + ex.StackTrace);
+		}
+	}
+
+	public static void OnDrawROISubstitute_RightMouseUp(object sender, MouseEventArgs e)
+	{
+		if (PointNum > 0)
+		{
+			PointNum--;
+			substitute.Points.RemoveAt(PointNum);
+		}
+		if (PointNum == 0)
+		{
+			DoFinishSubstitute();
+		}
+	}
+
+	public static void DoFinishSubstitute()
+	{
+		if (Owner != null)
+		{
+			Owner.IsDrawRoi = false;
+			Owner.RemoveROIChild(substitute);
+			Owner.SourceImage.ReleaseMouseCapture();
+			HikImageView hikImageView = Owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+			HikImageView hikImageView2 = Owner;
+			hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+			HikImageView hikImageView3 = Owner;
+			hikImageView3.OnDrawRoi_MouseDownChange = (HikImageView.DrawRoi_MouseDownChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseDownChange, new HikImageView.DrawRoi_MouseDownChange(OnDrawROISubstitute_MouseDown));
+			HikImageView hikImageView4 = Owner;
+			hikImageView4.OnDrawRoi_RightMouseUpChange = (HikImageView.DrawRoi_RightMouseUpChange)Delegate.Remove(hikImageView4.OnDrawRoi_RightMouseUpChange, new HikImageView.DrawRoi_RightMouseUpChange(OnDrawROISubstitute_RightMouseUp));
+			Owner = null;
+		}
+	}
+
+	public static void OnScaleChangeSubstitute(object sender, object e)
+	{
+		substitute.StrokeThickness = 1.0 / (sender as ScaleTransform).ScaleX;
+	}
+
+	private static void OnPolygonPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPolygon).PointsDataDrawT((d as HikPolygon).PolygonPoints);
+		(d as HikPolygon).OnChangeOnPolygonPoints();
+	}
+
+	private void PointsDataDrawE(IList list, bool IsChangeStructure)
+	{
+		tlt.Angle = 0.0;
+		foreach (PolygonPoint item in list)
+		{
+			if (min_x > ((double)item.x + 0.5) * owner.Radio)
+			{
+				min_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (max_x < ((double)item.x + 0.5) * owner.Radio)
+			{
+				max_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (min_y > ((double)item.y + 0.5) * owner.Radio)
+			{
+				min_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+			if (max_y < ((double)item.y + 0.5) * owner.Radio)
+			{
+				max_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+		}
+		OriginPoint = new Point(min_x, min_y);
+		for (int i = 0; i < squareAreas.Count; i++)
+		{
+			PolygonPoint polygonPoint2 = (PolygonPoint)list[i];
+			squareAreas[i].X = ((double)polygonPoint2.X + 0.5) * owner.Radio - OriginPoint.X;
+			squareAreas[i].Y = ((double)polygonPoint2.Y + 0.5) * owner.Radio - OriginPoint.Y;
+			Point value = new Point
+			{
+				X = ((double)polygonPoint2.x + 0.5) * owner.Radio - min_x,
+				Y = ((double)polygonPoint2.y + 0.5) * owner.Radio - min_y
+			};
+			polygon.Points[i] = value;
+			if (IsChangeStructure)
+			{
+				squareAreas[i].OldRateX = value.X / (max_x - min_x);
+				squareAreas[i].OldRateY = value.Y / (max_y - min_y);
+			}
+		}
+		ZWidth = max_x - min_x;
+		ZHeight = max_y - min_y;
+	}
+
+	private void PointsDataDrawT(IList list)
+	{
+		tlt.Angle = 0.0;
+		polygon.Points.Clear();
+		foreach (SquareArea squareArea in squareAreas)
+		{
+			WokeView.Children.Remove(squareArea);
+		}
+		squareAreas.Clear();
+		PointsDataDraw(list);
+	}
+
+	private void PointsDataDraw(IList list)
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (PolygonPoint item in list)
+		{
+			if (min_x > ((double)item.x + 0.5) * owner.Radio)
+			{
+				min_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (max_x < ((double)item.x + 0.5) * owner.Radio)
+			{
+				max_x = ((double)item.x + 0.5) * owner.Radio;
+			}
+			if (min_y > ((double)item.y + 0.5) * owner.Radio)
+			{
+				min_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+			if (max_y < ((double)item.y + 0.5) * owner.Radio)
+			{
+				max_y = ((double)item.y + 0.5) * owner.Radio;
+			}
+		}
+		foreach (PolygonPoint item2 in list)
+		{
+			Point value = new Point
+			{
+				X = ((double)item2.x + 0.5) * owner.Radio - min_x,
+				Y = ((double)item2.y + 0.5) * owner.Radio - min_y
+			};
+			polygon.Points.Add(value);
+			SquareArea squareArea = new SquareArea
+			{
+				HorizontalAlignment = HorizontalAlignment.Center,
+				VerticalAlignment = VerticalAlignment.Center
+			};
+			squareArea.Width = recWidth;
+			squareArea.Height = recWidth;
+			squareArea.Opacity = 0.0;
+			squareArea.SetBinding(SquareArea.TXProperty, new Binding("X")
+			{
+				Mode = BindingMode.TwoWay
+			});
+			squareArea.SetBinding(SquareArea.TYProperty, new Binding("Y")
+			{
+				Mode = BindingMode.TwoWay
+			});
+			squareArea.Container = this;
+			squareArea.DataContext = item2;
+			squareArea.Index = polygon.Points.Count - 1;
+			squareArea.OldRateX = value.X / (max_x - min_x);
+			squareArea.OldRateY = value.Y / (max_y - min_y);
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(squareArea.OnScaleChange));
+			if (owner != null)
+			{
+				squareArea.SetScaleUI(owner.sfr.ScaleX * owner.viewScal);
+			}
+			else
+			{
+				squareArea.SetScaleUI(owner.sfr.ScaleX);
+			}
+			WokeView.Children.Add(squareArea);
+			squareAreas.Add(squareArea);
+		}
+		OriginPoint = new Point(min_x, min_y);
+		ZWidth = max_x - min_x;
+		ZHeight = max_y - min_y;
+	}
+
+	private void OnChangeOnPolygonPoints()
+	{
+		CollectionChangedEventManager.AddHandler(PolygonPoints, PolygonPoints_CollectionChanged);
+	}
+
+	private void PolygonPoints_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.NewItems == null)
+		{
+		}
+	}
+
+	private static void OnTAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPolygon).OnChangeAngle();
+	}
+
+	private void OnChangeAngle()
+	{
+		tlt.Angle = TAngle;
+	}
+
+	private static void OnTWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPolygon).OnChangeWidth();
+	}
+
+	private void OnChangeWidth()
+	{
+		if (TWidth >= 0.0)
+		{
+			Width = TWidth + recWidth * 2.0;
+			tlt.CenterX = Width / 2.0;
+		}
+	}
+
+	private static void OnTHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPolygon).OnChangHeight();
+	}
+
+	private void OnChangHeight()
+	{
+		if (THeight >= 0.0)
+		{
+			Height = THeight + recWidth * 2.0;
+			tlt.CenterY = Height / 2.0;
+		}
+	}
+
+	private static void OnTOriginPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPolygon).OnChangOriginPoint();
+	}
+
+	private void OnChangOriginPoint()
+	{
+		double num = TOriginPoint.X - recWidth;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+		num = TOriginPoint.Y - recWidth;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+	}
+
+	public HikPolygon()
+	{
+		InitializeComponent();
+		childControlList.Add(move);
+		childControlList.Add(top_left);
+		childControlList.Add(top);
+		childControlList.Add(top_right);
+		childControlList.Add(left);
+		childControlList.Add(right);
+		childControlList.Add(bottom_left);
+		childControlList.Add(bottom);
+		childControlList.Add(bottom_right);
+		childControlList.Add(angle);
+		foreach (IArea childControl in childControlList)
+		{
+			childControl.Container = this;
+		}
+		SetValue(Canvas.LeftProperty, 10.0);
+		SetValue(Canvas.TopProperty, 10.0);
+	}
+
+	private void UserControl_MouseEnter(object sender, MouseEventArgs e)
+	{
+		move.Opacity = 1.0;
+		foreach (SquareArea squareArea in squareAreas)
+		{
+			squareArea.Opacity = 1.0;
+		}
+	}
+
+	private void UserControl_MouseLeave(object sender, MouseEventArgs e)
+	{
+		move.Opacity = 0.0;
+		foreach (SquareArea squareArea in squareAreas)
+		{
+			squareArea.Opacity = 0.0;
+		}
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		IsParamChanged = false;
+		isDragging = true;
+		curType = rectangleArea.Name;
+		if (rectangleArea is IArea)
+		{
+			curControl = rectangleArea as IArea;
+		}
+		oldHeight = Height;
+		oldWeight = Width;
+		CaptureMouse();
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (parent == null)
+		{
+			DependencyObject dependencyObject = VisualTreeHelper.GetParent(this);
+			while (!(dependencyObject is Canvas))
+			{
+				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+			}
+			parent = dependencyObject as Canvas;
+			parent.MouseMove += zparent_MouseMove;
+		}
+	}
+
+	private void zparent_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (!isDragging)
+		{
+			return;
+		}
+		if (curControl is SquareArea)
+		{
+			Point position = e.GetPosition(WokeView);
+			SquareArea squareArea = curControl as SquareArea;
+			double x = squareArea.X;
+			double y = squareArea.Y;
+			double num = position.X - curControl.CurPoint.X + recWidth / 2.0;
+			double num2 = position.Y - curControl.CurPoint.Y + recWidth / 2.0;
+			if (Math.Abs(x - num) > 0.0001 || Math.Abs(y - num2) > 0.0001)
+			{
+				squareArea.X = num;
+				squareArea.Y = num2;
+				Point value = new Point(squareArea.X, squareArea.Y);
+				polygon.Points[squareArea.Index] = value;
+				IsParamChanged = true;
+			}
+			return;
+		}
+		double temp = 0.0;
+		double temp2 = 0.0;
+		double num3 = 0.0;
+		double num4 = 0.0;
+		double num5 = 0.0;
+		double num6 = 0.0;
+		double num7 = 0.0;
+		Point position2 = e.GetPosition(parent);
+		Point framePoint = new Point((double)GetValue(Canvas.LeftProperty), (double)GetValue(Canvas.TopProperty));
+		double num8 = Math.Sin(tlt.Angle * Math.PI / 180.0);
+		double num9 = Math.Cos(tlt.Angle * Math.PI / 180.0);
+		hu.Angle = tlt.Angle;
+		hu.CenterX = framePoint.X + Width / 2.0;
+		hu.CenterY = framePoint.Y + Height / 2.0;
+		position2 = hu.Inverse.Transform(position2);
+		num3 = Width;
+		num4 = Height;
+		num5 = tlt.Angle;
+		hu2.Angle = tlt.Angle;
+		hu2.CenterX = 0.0;
+		hu2.CenterY = 0.0;
+		theTemp1 = 0.0;
+		theTemp2 = 0.0;
+		switch (curType)
+		{
+		case "userControl":
+			temp = position2.X - framePoint.X - CurPoint.X;
+			temp2 = position2.Y - framePoint.Y - CurPoint.Y;
+			if (Math.Abs(temp) > 0.0001 || Math.Abs(temp2) > 0.0001)
+			{
+				CPoint = hu2.Transform(new Point(temp, temp2));
+				theTemp1 += CPoint.X;
+				theTemp2 += CPoint.Y;
+				IsParamChanged = true;
+			}
+			break;
+		case "move":
+		{
+			temp = position2.X - framePoint.X - curControl.CurPoint.X + (move.Width - Width) / 2.0;
+			temp2 = position2.Y - framePoint.Y - curControl.CurPoint.Y + (move.Height - Height) / 2.0;
+			CPoint = hu2.Transform(new Point(temp, temp2));
+			Point point3 = new Point(0.0, 0.0);
+			point3.X = framePoint.X + CPoint.X / 2.0 + Width / 2.0;
+			point3.Y = framePoint.Y + CPoint.Y / 2.0 + Height / 2.0;
+			double num11 = 0.0;
+			if (point3.X < 0.0)
+			{
+				num11 = 0.0 - point3.X;
+				CPoint.X += num11 * 2.0;
+			}
+			if (point3.X > parent.ActualWidth)
+			{
+				num11 = parent.ActualWidth - point3.X;
+				CPoint.X += num11 * 2.0;
+			}
+			if (point3.Y < 0.0)
+			{
+				num11 = 0.0 - point3.Y;
+				CPoint.Y += num11 * 2.0;
+			}
+			if (point3.Y > parent.ActualHeight)
+			{
+				num11 = parent.ActualHeight - point3.Y;
+				CPoint.Y += num11 * 2.0;
+			}
+			hu.CenterX = framePoint.X + CPoint.X / 2.0 + Width / 2.0;
+			hu.CenterY = framePoint.Y + CPoint.Y / 2.0 + Height / 2.0;
+			num6 = framePoint.X + CPoint.X / 2.0;
+			num7 = framePoint.Y + CPoint.Y / 2.0;
+			double defHMax2 = 0.0;
+			double defWMax2 = 0.0;
+			Point point4 = new Point(num6 + recWidth, num7 + recWidth);
+			point4 = hu.Transform(point4);
+			if (!JudgeBorderByPoint(point4))
+			{
+				JudgeBorderM(point4, ref defHMax2, ref defWMax2);
+			}
+			point4 = new Point(num6 + Width - recWidth, num7 + recWidth);
+			point4 = hu.Transform(point4);
+			if (!JudgeBorderByPoint(point4))
+			{
+				JudgeBorderM(point4, ref defHMax2, ref defWMax2);
+			}
+			point4 = new Point(num6 + recWidth, num7 + Height - recWidth);
+			point4 = hu.Transform(point4);
+			if (!JudgeBorderByPoint(point4))
+			{
+				JudgeBorderM(point4, ref defHMax2, ref defWMax2);
+			}
+			point4 = new Point(num6 + Width - recWidth, num7 + Height - recWidth);
+			point4 = hu.Transform(point4);
+			if (!JudgeBorderByPoint(point4))
+			{
+				JudgeBorderM(point4, ref defHMax2, ref defWMax2);
+			}
+			num4 = ((Height - defHMax2 * 2.0 < recWidth * 2.0) ? (recWidth * 2.0) : (Height - defHMax2 * 2.0));
+			num3 = ((Width - defWMax2 * 2.0 < recWidth * 2.0) ? (recWidth * 2.0) : (Width - defWMax2 * 2.0));
+			theTemp1 += CPoint.X;
+			theTemp2 += CPoint.Y;
+			break;
+		}
+		case "top_left":
+			InitTop(position2, framePoint, ref temp2, ref num4, 0.5);
+			InitLeft(position2, framePoint, ref temp, ref num3, 0.5);
+			break;
+		case "top":
+			InitTop(position2, framePoint, ref temp2, ref num4, 1.0);
+			break;
+		case "top_right":
+			InitTop(position2, framePoint, ref temp2, ref num4, 0.5);
+			InitRight(position2, framePoint, ref temp, ref num3, 0.5);
+			break;
+		case "left":
+			InitLeft(position2, framePoint, ref temp, ref num3, 1.0);
+			break;
+		case "right":
+			InitRight(position2, framePoint, ref temp, ref num3, 1.0);
+			break;
+		case "bottom_left":
+			InitBottom(position2, framePoint, ref temp2, ref num4, 0.5);
+			InitLeft(position2, framePoint, ref temp, ref num3, 0.5);
+			break;
+		case "bottom":
+			InitBottom(position2, framePoint, ref temp2, ref num4, 1.0);
+			break;
+		case "bottom_right":
+			InitBottom(position2, framePoint, ref temp2, ref num4, 0.5);
+			InitRight(position2, framePoint, ref temp, ref num3, 0.5);
+			break;
+		case "angle":
+		{
+			CPoint = new Point(framePoint.X + Width / 2.0, framePoint.Y + Height / 2.0);
+			Point point = new Point(position2.X - curControl.CurPoint.X + angleWidth / 2.0, position2.Y - curControl.CurPoint.Y + angleHeight / 2.0);
+			point = hu.Transform(point);
+			double num10 = Math.Atan2(point.Y - CPoint.Y, point.X - CPoint.X);
+			num5 = num10 * 180.0 / Math.PI;
+			double defHMax = 0.0;
+			double defWMax = 0.0;
+			RotateTransform rotateTransform = new RotateTransform
+			{
+				CenterX = hu.CenterX,
+				CenterY = hu.CenterY,
+				Angle = num5
+			};
+			Point point2 = new Point(CPoint.X - oldWeight / 2.0 + recWidth, CPoint.Y - oldHeight / 2.0 + recWidth);
+			point2 = rotateTransform.Transform(point2);
+			if (!JudgeBorderByPoint(point2))
+			{
+				JudgeBorderAngle(point2, ref defHMax, ref defWMax);
+			}
+			point2 = new Point(CPoint.X + oldWeight / 2.0 - recWidth, CPoint.Y - oldHeight / 2.0 + recWidth);
+			point2 = rotateTransform.Transform(point2);
+			if (!JudgeBorderByPoint(point2))
+			{
+				JudgeBorderAngle(point2, ref defHMax, ref defWMax);
+			}
+			point2 = new Point(CPoint.X - oldWeight / 2.0 + recWidth, CPoint.Y + oldHeight / 2.0 - recWidth);
+			point2 = rotateTransform.Transform(point2);
+			if (!JudgeBorderByPoint(point2))
+			{
+				JudgeBorderAngle(point2, ref defHMax, ref defWMax);
+			}
+			point2 = new Point(CPoint.X + oldWeight / 2.0 - recWidth, CPoint.Y + oldHeight / 2.0 - recWidth);
+			point2 = rotateTransform.Transform(point2);
+			if (!JudgeBorderByPoint(point2))
+			{
+				JudgeBorderAngle(point2, ref defHMax, ref defWMax);
+			}
+			num4 = ((oldHeight - defHMax * 2.0 < recWidth * 2.0) ? (recWidth * 2.0) : (oldHeight - defHMax * 2.0));
+			num3 = ((oldWeight - defWMax * 2.0 < recWidth * 2.0) ? (recWidth * 2.0) : (oldWeight - defWMax * 2.0));
+			break;
+		}
+		}
+		num6 = framePoint.X + (Width + theTemp1 - num3) / 2.0;
+		num7 = framePoint.Y + (Height + theTemp2 - num4) / 2.0;
+		bool flag = false;
+		if (num3 != Width)
+		{
+			Width = num3;
+			flag = true;
+		}
+		if (num4 != Height)
+		{
+			Height = num4;
+			flag = true;
+		}
+		if (num5 != tlt.Angle)
+		{
+			tlt.Angle = num5;
+		}
+		if (num6 != (double)GetValue(Canvas.LeftProperty))
+		{
+			SetValue(Canvas.LeftProperty, num6);
+		}
+		if (num7 != (double)GetValue(Canvas.TopProperty))
+		{
+			SetValue(Canvas.TopProperty, num7);
+		}
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		for (int i = 0; i < squareAreas.Count; i++)
+		{
+			squareAreas[i].TX = (float)((squareAreas[i].X + OriginPoint.X) / owner.Radio - 0.5);
+			squareAreas[i].TY = (float)((squareAreas[i].Y + OriginPoint.Y) / owner.Radio - 0.5);
+		}
+		if (flag)
+		{
+			double num12 = Width - recWidth * 2.0;
+			double num13 = Height - recWidth * 2.0;
+			for (int j = 0; j < squareAreas.Count; j++)
+			{
+				squareAreas[j].X = squareAreas[j].OldRateX * num12;
+				squareAreas[j].Y = squareAreas[j].OldRateY * num13;
+				Point value2 = new Point(squareAreas[j].X, squareAreas[j].Y);
+				polygon.Points[j] = value2;
+			}
+			min_x = num6 + recWidth;
+			min_y = num7 + recWidth;
+			max_x = num12 + min_x;
+			max_y = num13 + min_y;
+		}
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	private bool JudgeBorderByPoint(Point newframePoint)
+	{
+		if (newframePoint.X < 0.0 || newframePoint.X >= parent.ActualWidth || newframePoint.Y < 0.0 || newframePoint.Y >= parent.ActualHeight)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	private void InitRight(Point point, Point framePoint, ref double temp, ref double tempWidth, double component)
+	{
+		temp = point.X - framePoint.X - curControl.CurPoint.X + recWidth - Width;
+		tempWidth = ((temp + Width < recWidth * 2.0) ? (recWidth * 2.0) : (temp + Width));
+		CPoint = hu2.Transform(new Point(temp, 0.0));
+		theTemp1 += CPoint.X;
+		theTemp2 += CPoint.Y;
+	}
+
+	private void InitBottom(Point point, Point framePoint, ref double temp, ref double tempHeight, double component)
+	{
+		temp = point.Y - framePoint.Y - curControl.CurPoint.Y + recWidth - Height;
+		tempHeight = ((temp + Height < recWidth * 2.0) ? (recWidth * 2.0) : (temp + Height));
+		CPoint = hu2.Transform(new Point(0.0, temp));
+		theTemp1 += CPoint.X;
+		theTemp2 += CPoint.Y;
+	}
+
+	private void InitLeft(Point point, Point framePoint, ref double temp, ref double tempWidth, double component)
+	{
+		temp = point.X - framePoint.X - curControl.CurPoint.X;
+		tempWidth = ((Width - temp < recWidth * 2.0) ? (recWidth * 2.0) : (Width - temp));
+		CPoint = hu2.Transform(new Point(temp, 0.0));
+		theTemp1 += CPoint.X;
+		theTemp2 += CPoint.Y;
+	}
+
+	private void InitTop(Point point, Point framePoint, ref double temp, ref double tempHeight, double component)
+	{
+		temp = point.Y - framePoint.Y - curControl.CurPoint.Y;
+		tempHeight = ((Height - temp < recWidth * 2.0) ? (recWidth * 2.0) : (Height - temp));
+		CPoint = hu2.Transform(new Point(0.0, temp));
+		theTemp1 += CPoint.X;
+		theTemp2 += CPoint.Y;
+	}
+
+	private void JudgeBorderM(Point newframePoint, ref double defHMax, ref double defWMax)
+	{
+		double num = Math.Sin(tlt.Angle * Math.PI / 180.0);
+		double num2 = Math.Cos(tlt.Angle * Math.PI / 180.0);
+		double num3 = 0.0;
+		double num4 = 0.0;
+		if (newframePoint.X < 0.0)
+		{
+			num3 = Math.Abs(newframePoint.X * num);
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs(newframePoint.X * num2);
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+		if (newframePoint.X > parent.ActualWidth)
+		{
+			num3 = Math.Abs((parent.ActualWidth - newframePoint.X) * num);
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs((parent.ActualWidth - newframePoint.X) * num2);
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+		if (newframePoint.Y < 0.0)
+		{
+			num3 = Math.Abs(newframePoint.Y * num2);
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs(newframePoint.Y * num);
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+		if (newframePoint.Y > parent.ActualHeight)
+		{
+			num3 = Math.Abs((parent.ActualHeight - newframePoint.Y) * num2);
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs((parent.ActualHeight - newframePoint.Y) * num);
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+	}
+
+	private void JudgeBorderAngle(Point newframePoint, ref double defHMax, ref double defWMax)
+	{
+		double num = Math.Sin(tlt.Angle * Math.PI / 180.0);
+		double num2 = Math.Cos(tlt.Angle * Math.PI / 180.0);
+		double num3 = 0.0;
+		double num4 = 0.0;
+		if (newframePoint.X < 0.0)
+		{
+			num3 = Math.Abs((0.0 - newframePoint.X) * (oldHeight - recWidth * 2.0) / (2.0 * (0.0 - newframePoint.X + CPoint.X)));
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs((0.0 - newframePoint.X) * (oldWeight - recWidth * 2.0) / (2.0 * (0.0 - newframePoint.X + CPoint.X)));
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+		if (newframePoint.X > parent.ActualWidth)
+		{
+			num3 = Math.Abs((newframePoint.X - parent.ActualWidth) * (oldHeight - recWidth * 2.0) / (2.0 * (newframePoint.X - parent.ActualWidth + (parent.ActualWidth - CPoint.X))));
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs((newframePoint.X - parent.ActualWidth) * (oldWeight - recWidth * 2.0) / (2.0 * (newframePoint.X - parent.ActualWidth + (parent.ActualWidth - CPoint.X))));
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+		if (newframePoint.Y < 0.0)
+		{
+			num3 = Math.Abs((0.0 - newframePoint.Y) * (oldHeight - recWidth * 2.0) / (2.0 * (0.0 - newframePoint.Y + CPoint.Y)));
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs((0.0 - newframePoint.Y) * (oldWeight - recWidth * 2.0) / (2.0 * (0.0 - newframePoint.Y + CPoint.Y)));
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+		if (newframePoint.Y > parent.ActualHeight)
+		{
+			num3 = Math.Abs((newframePoint.Y - parent.ActualHeight) * (oldHeight - recWidth * 2.0) / (2.0 * (newframePoint.Y - parent.ActualHeight + (parent.ActualHeight - CPoint.Y))));
+			if (num3 > defHMax)
+			{
+				defHMax = num3;
+			}
+			num4 = Math.Abs((newframePoint.Y - parent.ActualHeight) * (oldWeight - recWidth * 2.0) / (2.0 * (newframePoint.Y - parent.ActualHeight + (parent.ActualHeight - CPoint.Y))));
+			if (num4 > defWMax)
+			{
+				defWMax = num4;
+			}
+		}
+	}
+
+	private void JudgeBorder(Point newframePoint, ref double defMax, ref double defMin, string dir)
+	{
+		double num = Math.Sin(tlt.Angle * Math.PI / 180.0);
+		double num2 = Math.Cos(tlt.Angle * Math.PI / 180.0);
+		int num3 = 1;
+		int num4 = 1;
+		double num5 = 1.0;
+		double num6 = 1.0;
+		switch (dir)
+		{
+		case "Right":
+		case "Left":
+			num3 = -1;
+			num4 = -1;
+			num5 = num2;
+			num6 = num;
+			break;
+		case "Bottom":
+		case "Top":
+			num3 = 1;
+			num4 = -1;
+			num5 = num;
+			num6 = num2;
+			break;
+		}
+		newframePoint = hu.Transform(newframePoint);
+		if (!(newframePoint.X < 0.0) && !(newframePoint.X >= parent.ActualWidth) && !(newframePoint.Y < 0.0) && !(newframePoint.Y >= parent.ActualHeight))
+		{
+			return;
+		}
+		double num7 = 0.0;
+		if (newframePoint.X < 0.0)
+		{
+			num7 = (double)num3 * newframePoint.X / num5;
+			if (Math.Abs(num5) > 0.0001)
+			{
+				if (num7 > defMax)
+				{
+					defMax = num7;
+				}
+				if (num7 < defMin)
+				{
+					defMin = num7;
+				}
+			}
+		}
+		if (newframePoint.X >= parent.ActualWidth)
+		{
+			num7 = (double)num3 * (newframePoint.X - parent.ActualWidth) / num5;
+			if (Math.Abs(num5) > 0.0001)
+			{
+				if (num7 > defMax)
+				{
+					defMax = num7;
+				}
+				if (num7 < defMin)
+				{
+					defMin = num7;
+				}
+			}
+		}
+		if (newframePoint.Y < 0.0)
+		{
+			num7 = (double)num4 * newframePoint.Y / num6;
+			if (Math.Abs(num6) > 0.0001)
+			{
+				if (num7 > defMax)
+				{
+					defMax = num7;
+				}
+				if (num7 < defMin)
+				{
+					defMin = num7;
+				}
+			}
+		}
+		if (!(newframePoint.Y >= parent.ActualHeight))
+		{
+			return;
+		}
+		num7 = (double)num4 * (newframePoint.Y - parent.ActualHeight) / num6;
+		if (Math.Abs(num6) > 0.0001)
+		{
+			if (num7 > defMax)
+			{
+				defMax = num7;
+			}
+			if (num7 < defMin)
+			{
+				defMin = num7;
+			}
+		}
+	}
+
+	private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (!DoDragROI(e))
+		{
+			if (ownerCanvas != null && ownerCanvas is ROIContainer rOIContainer)
+			{
+				rOIContainer.SelectionService.RoiSelected(DataContext);
+			}
+			else
+			{
+				owner.SelectionService.RoiSelected(DataContext);
+			}
+			Focus();
+			if (!isDragging)
+			{
+				CurPoint = e.GetPosition(mainGrid);
+				Doth(this, e);
+				owner.DoRoiClick(this, e);
+			}
+		}
+	}
+
+	private void UserControl_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		if (!isDragging)
+		{
+			return;
+		}
+		double num = 1.0;
+		if (owner != null)
+		{
+			num = owner.Radio;
+		}
+		isDragging = false;
+		TWidth = Width - recWidth * 2.0;
+		THeight = Height - recWidth * 2.0;
+		double num2 = (double)GetValue(Canvas.LeftProperty);
+		double num3 = (double)GetValue(Canvas.TopProperty);
+		TAngle = tlt.Angle;
+		if (curControl != null)
+		{
+			curControl.IsPressed = false;
+			if (curControl is SquareArea)
+			{
+				min_x = double.MaxValue;
+				max_x = 0.0;
+				min_y = double.MaxValue;
+				max_y = 0.0;
+				PointsDataDrawE(PolygonPoints, IsChangeStructure: true);
+			}
+			else
+			{
+				FrameworkElement frameworkElement = curControl as FrameworkElement;
+				string name = frameworkElement.Name;
+				min_x = double.MaxValue;
+				max_x = 0.0;
+				min_y = double.MaxValue;
+				max_y = 0.0;
+				PointsDataDrawE(PolygonPoints, IsChangeStructure: false);
+			}
+		}
+		curControl = null;
+		if (IsParamChanged)
+		{
+			HikPolygonRoiParameter hikPolygonRoiParameter = DataContext as HikPolygonRoiParameter;
+			IPolygonROI polygonROI = hikPolygonRoiParameter;
+			for (int i = 0; i < hikPolygonRoiParameter._PolygonPoints.Count; i++)
+			{
+				if (polygonROI.PolygonPoints.Count < i + 1)
+				{
+					polygonROI.PolygonPoints.Add(new Point(hikPolygonRoiParameter._PolygonPoints[i].x, hikPolygonRoiParameter._PolygonPoints[i].y));
+				}
+				else if ((double)hikPolygonRoiParameter._PolygonPoints[i].x != polygonROI.PolygonPoints[i].X || (double)hikPolygonRoiParameter._PolygonPoints[i].y != polygonROI.PolygonPoints[i].Y)
+				{
+					polygonROI.PolygonPoints[i] = new Point(hikPolygonRoiParameter._PolygonPoints[i].x, hikPolygonRoiParameter._PolygonPoints[i].y);
+				}
+			}
+			DoCallBack();
+		}
+		ReleaseMouseCapture();
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

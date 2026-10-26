@@ -1,0 +1,4952 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using Apps.Data;
+using Apps.Data.Common;
+using Apps.Data.ShapeDefine;
+using Apps.Interface;
+using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using Microsoft.Win32;
+using Mvvm.Commands;
+using VM.Controls;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikImageView : System.Windows.Controls.UserControl, INotifyPropertyChanged, IRoiOwner, IComponentConnector
+{
+	public delegate void RoiSizeChange(RoiDate Date);
+
+	public delegate void RoiParamChange(object Date);
+
+	public delegate void PixelChange(int X, int Y);
+
+	public delegate void DrawRoi_MouseMoveChange(object sender, System.Windows.Input.MouseEventArgs e);
+
+	public delegate void SelectedBaseROIChange(object sender, object Data);
+
+	public delegate void DrawRoi_MouseUpChange(object sender, System.Windows.Input.MouseEventArgs e);
+
+	public delegate void DrawRoi_MouseDownChange(object sender, System.Windows.Input.MouseEventArgs e);
+
+	public delegate void DrawRoi_RightMouseUpChange(object sender, System.Windows.Input.MouseEventArgs e);
+
+	public delegate void ScaleChanged(object sender, object Tag);
+
+	public delegate void RoiCountChanged(object Roi, EventArgs e = null);
+
+	public delegate void RoiDeCountChanged(object Roi);
+
+	public delegate void Roi_Click(object sender, System.Windows.Input.MouseEventArgs e);
+
+	public delegate RoiParameter GetExtendROIParam(object sender, RoiUIType ROIType);
+
+	public delegate void FreshExtendContent(object sender, object Tag);
+
+	public delegate void ControlAlert(object sender, string msg);
+
+	public delegate void SetImageEnd(object sender, string msg);
+
+	public class ImageLockData
+	{
+		public bool _bLocked;
+
+		public double _dScale;
+
+		public System.Windows.Point _tltOffset;
+
+		public System.Windows.Point _offsetPoint;
+
+		public System.Windows.Point _centerPonit;
+
+		public Size _imageSize;
+
+		public ImageLockData()
+		{
+			_bLocked = false;
+			_dScale = 1.0;
+			_tltOffset = default;
+			_offsetPoint = default;
+			_centerPonit = default;
+			_imageSize = default;
+		}
+
+		public ImageLockData(bool bLocked, double dScale, System.Windows.Point offsetPoint, System.Windows.Point centerPoint, System.Windows.Point tltOffset, Size imageSize)
+		{
+			_bLocked = bLocked;
+			_dScale = dScale;
+			_tltOffset = tltOffset;
+			_offsetPoint = offsetPoint;
+			_centerPonit = centerPoint;
+			_imageSize = imageSize;
+		}
+
+		public bool CheckDataValid()
+		{
+			return _imageSize.Width > 0.0 && _imageSize.Height > 0.0;
+		}
+	}
+
+	public Dictionary<RoiParameter, System.Windows.Point> Past_List = new Dictionary<RoiParameter, System.Windows.Point>();
+
+	private bool _IsMulRolModule;
+
+	public const float PixOffset = 0.5f;
+
+	private List<FrameworkElement> shapeList = new List<FrameworkElement>();
+
+	private List<FrameworkElement> shapeListE = new List<FrameworkElement>();
+
+	public RoiCountChanged OnRoiCountChanged;
+
+	private int _FindOrient = 1;
+
+	public PictureBox px;
+
+	private const double step = 0.5;
+
+	private ROITypeUIEnum _ROITypeUI = ROITypeUIEnum.Cover;
+
+	private double rate = 1.5;
+
+	private const uint GeoThickness = 1u;
+
+	private bool _ContextMenuVisible = true;
+
+	public static readonly DependencyProperty SizePanelHeightProperty = DependencyProperty.Register("SizePanelHeight", typeof(double), typeof(HikImageView), new PropertyMetadata(30.0));
+
+	public static readonly DependencyProperty SizePanelFontSizeProperty = DependencyProperty.Register("SizePanelFontSize", typeof(double), typeof(HikImageView), new PropertyMetadata(14.0));
+
+	public static readonly DependencyProperty TopContentProperty = DependencyProperty.Register("TopContent", typeof(object), typeof(HikImageView), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsShowAssistCrossProperty = DependencyProperty.Register("IsShowAssistCross", typeof(bool), typeof(HikImageView), new PropertyMetadata(false, IsShowAssistCrossChanged));
+
+	private System.Windows.Shapes.Line myHorizontalLine;
+
+	private System.Windows.Shapes.Line myVerticalLine;
+
+	public static readonly DependencyProperty IsAutoModeProperty = DependencyProperty.Register("IsAutoMode", typeof(bool), typeof(HikImageView), new PropertyMetadata(true, OnIsAutoModeChanged));
+
+	public static readonly DependencyProperty MinValue3DProperty = DependencyProperty.Register("MinValue3D", typeof(int), typeof(HikImageView), new PropertyMetadata(0));
+
+	public static readonly DependencyProperty MaxValue3DProperty = DependencyProperty.Register("MaxValue3D", typeof(int), typeof(HikImageView), new PropertyMetadata(4096));
+
+	public static readonly DependencyProperty RangeValueProperty = DependencyProperty.Register("RangeValue", typeof(int), typeof(HikImageView), new PropertyMetadata(0));
+
+	private int OldMinValue = 0;
+
+	private int OldMaxValue = 4096;
+
+	private DelegateCommand _ValueChangedCommand = null;
+
+	public static readonly DependencyProperty ROIChangedCommandProperty = DependencyProperty.Register("ROIChangedCommand", typeof(ICommand), typeof(HikImageView), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty DrawRoiUITypeProperty = DependencyProperty.Register("DrawRoiUIType", typeof(RoiUIType), typeof(HikImageView), new PropertyMetadata(RoiUIType.Default, OnDrawRoiUITypeCahnged));
+
+	public static readonly DependencyProperty ROIVisibleProperty = DependencyProperty.Register("ROIVisible", typeof(bool), typeof(HikImageView), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty ROIHitTestVisibleProperty = DependencyProperty.Register("ROIHitTestVisible", typeof(bool), typeof(HikImageView), new PropertyMetadata(true, ROIHitTestVisibleChanged));
+
+	public static readonly DependencyProperty PastCopyEnableProperty = DependencyProperty.Register("PastCopyEnable", typeof(bool), typeof(HikImageView), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty DragCopyEanbleProperty = DependencyProperty.Register("DragCopyEanble", typeof(bool), typeof(HikImageView), new PropertyMetadata(false));
+
+	private System.Windows.Shapes.Path GreenPath = new System.Windows.Shapes.Path();
+
+	private System.Windows.Shapes.Path YellowPath = new System.Windows.Shapes.Path();
+
+	private System.Windows.Shapes.Path RedPath = new System.Windows.Shapes.Path();
+
+	public static readonly DependencyProperty PointsDataProperty = DependencyProperty.Register("PointsData", typeof(ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT>), typeof(HikImageView), new PropertyMetadata(null, OnPointsDataChanged));
+
+	private GeometryGroup greenGeometryGroup = new GeometryGroup();
+
+	private GeometryGroup yellowGeometryGroup = new GeometryGroup();
+
+	private GeometryGroup redGeometryGroup = new GeometryGroup();
+
+	private Hashtable PointsTable = new Hashtable();
+
+	private RoiUIType _PrepareRoiType = RoiUIType.Default;
+
+	public bool IsDrawOne = false;
+
+	public bool IsSignShow = true;
+
+	private int _MaxPolygonPointNum = 1000;
+
+	private Hashtable shapeHashtable = new Hashtable();
+
+	public static readonly DependencyProperty ShapeListProperty = DependencyProperty.Register("ShapeList", typeof(IList), typeof(HikImageView), new PropertyMetadata(null, OnShapeListChanged));
+
+	public static readonly DependencyProperty RoiListProperty = DependencyProperty.Register("RoiList", typeof(ObservableCollection<object>), typeof(HikImageView), new PropertyMetadata(new ObservableCollection<object>(), OnRoiListChanged));
+
+	private Hashtable roiList = new Hashtable();
+
+	private Window topwindow;
+
+	private double gridWidth = 0.0;
+
+	private System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+
+	private bool needFlash = false;
+
+	private bool needFlashPoint = false;
+
+	private GeometryGroup geometryGroup = new GeometryGroup();
+
+	private double PointWidthBase = 3.0;
+
+	private double pointWidth = 2.0;
+
+	private List<System.Windows.Shapes.Path> pointPath = new List<System.Windows.Shapes.Path>();
+
+	private List<System.Windows.Shapes.Path> pointPathE = new List<System.Windows.Shapes.Path>();
+
+	private int PointLenth = 0;
+
+	public float[] PointX_Buffer;
+
+	public float[] PointY_Buffer;
+
+	public int[] PointColor_Buffer;
+
+	public List<byte[]> ExternPoint_Buffer;
+
+	public List<int> ExternPoint_Buffer_OkColor = new List<int>();
+
+	public List<int> ExternPoint_Buffer_NgColor = new List<int>();
+
+	public List<float> ExternPoint_Buffer_Opacity = new List<float>();
+
+	public static int DefaultOkColor = 65280;
+
+	public static int DefaultNgColor = 16776960;
+
+	public double ExternOpacity = 1.0;
+
+	private Byte2ImageSource b2SConvertor = new Byte2ImageSource();
+
+	private RotateTransform hu = new RotateTransform();
+
+	private double space = 0.1;
+
+	private static BrushConverter brushConverter = new BrushConverter();
+
+	public int _pixelX = 0;
+
+	public int _pixelY = 0;
+
+	public int _pixelR = 0;
+
+	public int _pixelG = 0;
+
+	public int _pixelB = 0;
+
+	public string _pixelInfoLabel;
+
+	public string _pixelInfo;
+
+	private int _ImageSourceWidth;
+
+	private int _ImageSourceHeight;
+
+	public static readonly DependencyProperty IsBindSourceProperty = DependencyProperty.Register("IsBindSource", typeof(bool), typeof(HikImageView), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(ImageSource), typeof(HikImageView), new PropertyMetadata(null, SourceChanged));
+
+	private int DataFlag = -1;
+
+	private bool IsSourceDataCompressed = false;
+
+	public static readonly DependencyProperty ImageDataSourceProperty = DependencyProperty.Register("ImageDataSource", typeof(ImageData), typeof(HikImageView), new PropertyMetadata(null, ImageSourceChanged));
+
+	private Byte2ImageSource _byte2Image = new Byte2ImageSource();
+
+	private double _imageViewWidth = 0.0;
+
+	private double _imageViewHeight = 0.0;
+
+	private Size _imageSize;
+
+	private ImageLockData _imageLockData = new ImageLockData();
+
+	private Size _lastImageSize = default;
+
+	private System.Windows.Point curPoint = default;
+
+	private System.Windows.Point offset = new System.Windows.Point(0.0, 0.0);
+
+	private const double MinScale = 0.3;
+
+	private bool _enableZoomIn = true;
+
+	private bool _enableZoomOut = true;
+
+	public static readonly DependencyProperty ElementsVisibilityProperty = DependencyProperty.Register("ElementsVisibility", typeof(Visibility), typeof(HikImageView), new PropertyMetadata(Visibility.Visible));
+
+	private int curImageX = -1;
+
+	private int curImageY = -1;
+
+	public bool isDragging = false;
+
+	private System.Windows.Point mouseOffset;
+
+	private double theTop;
+
+	private double theLeft;
+
+	public bool _IsDrawRoi = false;
+
+	private bool _IsDisplayPixelAuto = false;
+
+	private object WaitObj = new object();
+
+	private List<double> scales = new List<double> { 1.0 };
+
+	private double lastysfr = 1.0;
+
+	public double viewScal = 1.0;
+
+	public string _imageName;
+
+	private DelegateCommand _CtrlVCommand = null;
+
+	private static int OffSet = 4;
+
+	private DelegateCommand _CtrlCCommand = null;
+
+	private SelectionService selectionService;
+
+	private DelegateCommand _CtrlACommand = null;
+
+	public bool SaveAs_Enable => Source != null;
+
+	public bool ExternPast_Enable { get; set; }
+
+	public bool Past_Enable => Past_List.Count > 0 || ExternPast_Enable;
+
+	public bool IsMulRolModule
+	{
+		get
+		{
+			return _IsMulRolModule;
+		}
+		set
+		{
+			if (_IsMulRolModule != value)
+			{
+				_IsMulRolModule = value;
+				NotifyPropertyChanged("IsMulRolModule");
+			}
+		}
+	}
+
+	public bool IsTrigerParamChange { get; set; } = true;
+
+	public RoiSizeChange OnRoiSizeChange { get; set; }
+
+	public RoiParamChange OnRoiParamChange { get; set; }
+
+	public PixelChange OnPixelChange { get; set; }
+
+	public DrawRoi_MouseMoveChange OnDrawRoi_MouseMoveChange { get; set; }
+
+	public SelectedBaseROIChange OnSelectedBaseROIChange { get; set; }
+
+	public SelectedBaseROIChange OnPast { get; set; }
+
+	public SelectedBaseROIChange OnCopy { get; set; }
+
+	public DrawRoi_MouseUpChange OnDrawRoi_MouseUpChange { get; set; }
+
+	public DrawRoi_MouseDownChange OnDrawRoi_MouseDownChange { get; set; }
+
+	public DrawRoi_RightMouseUpChange OnDrawRoi_RightMouseUpChange { get; set; }
+
+	public ScaleChanged OnScaleChange { get; set; }
+
+	public RoiDeCountChanged OnRoiDeCountChanged { get; set; }
+
+	public Roi_Click OnRoi_Click { get; set; }
+
+	public GetExtendROIParam OnGetExtendROIParam { get; set; }
+
+	public FreshExtendContent OnFreshExtendContent { get; set; }
+
+	public ControlAlert OnControlAlert { get; set; }
+
+	public SetImageEnd OnSetImageEnd { get; set; }
+
+	public int FindOrient
+	{
+		get
+		{
+			return _FindOrient;
+		}
+		set
+		{
+			if (_FindOrient != value)
+			{
+				_FindOrient = value;
+				NotifyPropertyChanged("FindOrient");
+			}
+		}
+	}
+
+	public ROITypeUIEnum ROITypeUI
+	{
+		get
+		{
+			return _ROITypeUI;
+		}
+		set
+		{
+			if (_ROITypeUI != value)
+			{
+				_ROITypeUI = value;
+				NotifyPropertyChanged("ROITypeUI");
+			}
+		}
+	}
+
+	public static double ImageDesignWidth => 500.0;
+
+	public bool ContextMenuVisible
+	{
+		get
+		{
+			return _ContextMenuVisible;
+		}
+		set
+		{
+			if (_ContextMenuVisible != value)
+			{
+				_ContextMenuVisible = value;
+				NotifyPropertyChanged("ContextMenuVisible");
+			}
+		}
+	}
+
+	public double SizePanelHeight
+	{
+		get
+		{
+			return (double)GetValue(SizePanelHeightProperty);
+		}
+		set
+		{
+			SetValue(SizePanelHeightProperty, value);
+		}
+	}
+
+	public double SizePanelFontSize
+	{
+		get
+		{
+			return (double)GetValue(SizePanelFontSizeProperty);
+		}
+		set
+		{
+			SetValue(SizePanelFontSizeProperty, value);
+		}
+	}
+
+	public object TopContent
+	{
+		get
+		{
+			return GetValue(TopContentProperty);
+		}
+		set
+		{
+			SetValue(TopContentProperty, value);
+		}
+	}
+
+	public bool IsShowAssistCross
+	{
+		get
+		{
+			return (bool)GetValue(IsShowAssistCrossProperty);
+		}
+		set
+		{
+			SetValue(IsShowAssistCrossProperty, value);
+		}
+	}
+
+	public bool IsAutoMode
+	{
+		get
+		{
+			return (bool)GetValue(IsAutoModeProperty);
+		}
+		set
+		{
+			SetValue(IsAutoModeProperty, value);
+		}
+	}
+
+	public int MinValue3D
+	{
+		get
+		{
+			return (int)GetValue(MinValue3DProperty);
+		}
+		set
+		{
+			SetValue(MinValue3DProperty, value);
+		}
+	}
+
+	public int MaxValue3D
+	{
+		get
+		{
+			return (int)GetValue(MaxValue3DProperty);
+		}
+		set
+		{
+			SetValue(MaxValue3DProperty, value);
+		}
+	}
+
+	public int RangeValue
+	{
+		get
+		{
+			return (int)GetValue(RangeValueProperty);
+		}
+		set
+		{
+			SetValue(RangeValueProperty, value);
+		}
+	}
+
+	public bool IsShowRangeImage
+	{
+		get
+		{
+			IRangeImageData imageDataSource;
+			if ((imageDataSource = ImageDataSource) != null && imageDataSource.RangeBuffer != null)
+			{
+				return true;
+			}
+			ImageData imageDataSource2;
+			if ((imageDataSource2 = ImageDataSource) != null)
+			{
+				return imageDataSource2.DetailedPixelFormat == 17825976;
+			}
+			return false;
+		}
+	}
+
+	public ICommand ValueChangedCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_ValueChangedCommand == null)
+			{
+				_ValueChangedCommand = new DelegateCommand((Action)ValueChangedCmdExecute);
+			}
+			return (ICommand)_ValueChangedCommand;
+		}
+	}
+
+	public ICommand ROIChangedCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(ROIChangedCommandProperty);
+		}
+		set
+		{
+			SetValue(ROIChangedCommandProperty, value);
+		}
+	}
+
+	public RoiUIType DrawRoiUIType
+	{
+		get
+		{
+			return (RoiUIType)GetValue(DrawRoiUITypeProperty);
+		}
+		set
+		{
+			SetValue(DrawRoiUITypeProperty, value);
+		}
+	}
+
+	public bool ROIVisible
+	{
+		get
+		{
+			return (bool)GetValue(ROIVisibleProperty);
+		}
+		set
+		{
+			SetValue(ROIVisibleProperty, value);
+		}
+	}
+
+	public bool ROIHitTestVisible
+	{
+		get
+		{
+			return (bool)GetValue(ROIHitTestVisibleProperty);
+		}
+		set
+		{
+			SetValue(ROIHitTestVisibleProperty, value);
+		}
+	}
+
+	public bool PastCopyEnable
+	{
+		get
+		{
+			return (bool)GetValue(PastCopyEnableProperty);
+		}
+		set
+		{
+			SetValue(PastCopyEnableProperty, value);
+		}
+	}
+
+	public bool DragCopyEanble
+	{
+		get
+		{
+			return (bool)GetValue(DragCopyEanbleProperty);
+		}
+		set
+		{
+			SetValue(DragCopyEanbleProperty, value);
+		}
+	}
+
+	public ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT> PointsData
+	{
+		get
+		{
+			return (ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT>)GetValue(PointsDataProperty);
+		}
+		set
+		{
+			SetValue(PointsDataProperty, value);
+		}
+	}
+
+	public double ImageControlWidth => sImage.Width;
+
+	public RoiUIType PrepareRoiType
+	{
+		get
+		{
+			return _PrepareRoiType;
+		}
+		set
+		{
+			_PrepareRoiType = value;
+		}
+	}
+
+	public double ViewScale => viewScal;
+
+	public Image SourceImage => sImage;
+
+	public ScaleTransform ScaleTransform => sfr;
+
+	public int MaxPolygonPointNum
+	{
+		get
+		{
+			return _MaxPolygonPointNum;
+		}
+		set
+		{
+			if (_MaxPolygonPointNum > 2)
+			{
+				_MaxPolygonPointNum = value;
+				return;
+			}
+			throw new Exception("Param Error");
+		}
+	}
+
+	public IList ShapeList
+	{
+		get
+		{
+			return (IList)GetValue(ShapeListProperty);
+		}
+		set
+		{
+			SetValue(ShapeListProperty, value);
+		}
+	}
+
+	public ObservableCollection<object> RoiList
+	{
+		get
+		{
+			return (ObservableCollection<object>)GetValue(RoiListProperty);
+		}
+		set
+		{
+			SetValue(RoiListProperty, value);
+		}
+	}
+
+	public bool NeedLargePoints
+	{
+		get
+		{
+			if (PointX_Buffer != null)
+			{
+				return PointX_Buffer.Length >= 100000;
+			}
+			return false;
+		}
+		set
+		{
+			if (value)
+			{
+				PointX_Buffer = new float[100000];
+				PointY_Buffer = new float[100000];
+				PointColor_Buffer = new int[100000];
+			}
+		}
+	}
+
+	public System.Windows.Point ImageOffset => new System.Windows.Point((mapcanvas.ActualWidth - viewbox.ActualWidth) / 2.0 + Canvas.GetLeft(viewbox) + tlt.X, (mapcanvas.ActualHeight - viewbox.ActualHeight) / 2.0 + Canvas.GetTop(viewbox) + tlt.Y);
+
+	public double OnePixelWidth
+	{
+		get
+		{
+			if (sImage.Source != null)
+			{
+				return viewbox.ActualWidth * sfr.ScaleX / (double)ImageSourceWidth;
+			}
+			return 0.0;
+		}
+	}
+
+	public double ViewWidth => mapcanvas.ActualWidth;
+
+	public double ViewHeight => mapcanvas.ActualHeight;
+
+	public Canvas theCanvas => mView;
+
+	public int PixelX
+	{
+		get
+		{
+			if (_pixelX > 0)
+			{
+				return _pixelX;
+			}
+			return 0;
+		}
+		set
+		{
+			_pixelX = value;
+			NotifyPropertyChanged("PixelX");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public int PixelY
+	{
+		get
+		{
+			if (_pixelY > 0)
+			{
+				return _pixelY;
+			}
+			return 0;
+		}
+		set
+		{
+			_pixelY = value;
+			NotifyPropertyChanged("PixelY");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public int PixelR
+	{
+		get
+		{
+			return _pixelR;
+		}
+		set
+		{
+			_pixelR = value;
+			NotifyPropertyChanged("PixelR");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public int PixelG
+	{
+		get
+		{
+			return _pixelG;
+		}
+		set
+		{
+			_pixelG = value;
+			NotifyPropertyChanged("PixelG");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public int PixelB
+	{
+		get
+		{
+			return _pixelB;
+		}
+		set
+		{
+			_pixelB = value;
+			NotifyPropertyChanged("PixelB");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public string PixelInfoLabel
+	{
+		get
+		{
+			return _pixelInfoLabel;
+		}
+		set
+		{
+			_pixelInfoLabel = value;
+			NotifyPropertyChanged("PixelInfoLabel");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public string PixelInfo
+	{
+		get
+		{
+			return _pixelInfo;
+		}
+		set
+		{
+			_pixelInfo = value;
+			NotifyPropertyChanged("PixelInfo");
+			NotifyPropertyChanged("CoorInfo");
+		}
+	}
+
+	public string CoorInfo
+	{
+		get
+		{
+			string text = "";
+			if (IsShowRangeImage)
+			{
+				text = "  |  Value:" + RangeValue;
+			}
+			return PixelInfoLabel + PixelInfo + " X," + $"{PixelX:D4}" + "  Y," + $"{PixelY:D4}" + "  |  R:" + $"{PixelR:D3}" + "  G:" + $"{PixelG:D3}" + "  B:" + $"{PixelB:D3}" + text;
+		}
+	}
+
+	public double Radio => GetRatio();
+
+	public int ImageSourceWidth
+	{
+		get
+		{
+			return _ImageSourceWidth;
+		}
+		set
+		{
+			if (_ImageSourceWidth != value)
+			{
+				_ImageSourceWidth = value;
+				NotifyPropertyChanged("ImageSourceWidth");
+			}
+		}
+	}
+
+	public int ImageSourceHeight
+	{
+		get
+		{
+			return _ImageSourceHeight;
+		}
+		set
+		{
+			if (_ImageSourceHeight != value)
+			{
+				_ImageSourceHeight = value;
+				NotifyPropertyChanged("ImageSourceHeight");
+			}
+		}
+	}
+
+	public bool IsBindSource
+	{
+		get
+		{
+			return (bool)GetValue(IsBindSourceProperty);
+		}
+		set
+		{
+			SetValue(IsBindSourceProperty, value);
+		}
+	}
+
+	public ImageSource Source
+	{
+		get
+		{
+			return (ImageSource)GetValue(SourceProperty);
+		}
+		set
+		{
+			SetValue(SourceProperty, value);
+		}
+	}
+
+	public ImageData ImageDataSource
+	{
+		get
+		{
+			return (ImageData)GetValue(ImageDataSourceProperty);
+		}
+		set
+		{
+			SetValue(ImageDataSourceProperty, value);
+		}
+	}
+
+	public bool EnableZoomIn
+	{
+		get
+		{
+			return _enableZoomIn;
+		}
+		set
+		{
+			if (value != _enableZoomIn)
+			{
+				_enableZoomIn = value;
+				if (PropertyChanged != null)
+				{
+					PropertyChanged(this, new PropertyChangedEventArgs("EnableZoomIn"));
+				}
+			}
+		}
+	}
+
+	public bool EnableZoomOut
+	{
+		get
+		{
+			return _enableZoomOut;
+		}
+		set
+		{
+			if (value != _enableZoomOut)
+			{
+				_enableZoomOut = value;
+				if (PropertyChanged != null)
+				{
+					PropertyChanged(this, new PropertyChangedEventArgs("EnableZoomOut"));
+				}
+			}
+		}
+	}
+
+	public Visibility ElementsVisibility
+	{
+		get
+		{
+			return (Visibility)GetValue(ElementsVisibilityProperty);
+		}
+		set
+		{
+			SetValue(ElementsVisibilityProperty, value);
+		}
+	}
+
+	public bool IsDrawRoi
+	{
+		get
+		{
+			return _IsDrawRoi;
+		}
+		set
+		{
+			_IsDrawRoi = value;
+		}
+	}
+
+	public bool IsDisplayPixelAuto
+	{
+		get
+		{
+			return _IsDisplayPixelAuto;
+		}
+		set
+		{
+			if (_IsDisplayPixelAuto != value)
+			{
+				_IsDisplayPixelAuto = value;
+			}
+		}
+	}
+
+	public double ScaleRate => sfr.ScaleX * viewScal;
+
+	public string ImageName
+	{
+		get
+		{
+			return _imageName;
+		}
+		set
+		{
+			_imageName = value;
+			NotifyPropertyChanged("ImageName");
+		}
+	}
+
+	public List<object> ShapeDataList { get; set; }
+
+	public ICommand CtrlVCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_CtrlVCommand == null)
+			{
+				_CtrlVCommand = new DelegateCommand((Action)CtrlVCommandCmdExecute);
+			}
+			return (ICommand)_CtrlVCommand;
+		}
+	}
+
+	public ICommand CtrlCCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_CtrlCCommand == null)
+			{
+				_CtrlCCommand = new DelegateCommand((Action)CtrlCCommandCmdExecute);
+			}
+			return (ICommand)_CtrlCCommand;
+		}
+	}
+
+	public SelectionService SelectionService
+	{
+		get
+		{
+			if (selectionService == null)
+			{
+				selectionService = new SelectionService(this);
+			}
+			return selectionService;
+		}
+	}
+
+	public bool IsSelectMulRoiEnable { get; set; } = false;
+
+	public ICommand CtrlACommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_CtrlACommand == null)
+			{
+				_CtrlACommand = new DelegateCommand((Action)CtrlACommandCmdExecute);
+			}
+			return (ICommand)_CtrlACommand;
+		}
+	}
+
+	public event EventHandler<RoiEventArgs> RoiParamChangeEvent;
+
+	public event EventHandler<RoiEventArgs> RoiAddEvent;
+
+	public event EventHandler<RoiEventArgs> RoiDeleteEvent;
+
+	public event EventHandler<RoiEventArgs> RoiSelectedEvent;
+
+	public event Action<string> UpdateImageEvent;
+
+	public event Action<ImageData, ImageData> ImageSourceChangeEvent;
+
+	public event Action UpdateRoiEvent;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public RoiParameter DoGetExtendROIParam(RoiUIType ROIType)
+	{
+		if (OnGetExtendROIParam != null)
+		{
+			return OnGetExtendROIParam(this, ROIType);
+		}
+		return null;
+	}
+
+	public void UpdateImage(string imageName)
+	{
+		UpdateImageEvent?.Invoke(imageName);
+	}
+
+	private static void IsShowAssistCrossChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikImageView).OnIsShowAssistCrossChanged();
+	}
+
+	private void OnIsShowAssistCrossChanged()
+	{
+		if (IsShowAssistCross)
+		{
+			myHorizontalLine = new System.Windows.Shapes.Line
+			{
+				X1 = 0.0,
+				X2 = 1.0,
+				Stretch = Stretch.Fill,
+				StrokeThickness = 1.0,
+				Stroke = (Brush)new BrushConverter().ConvertFromString("#FFFF3C00"),
+				IsHitTestVisible = false,
+				HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+			};
+			myVerticalLine = new System.Windows.Shapes.Line
+			{
+				Y1 = 0.0,
+				Y2 = 1.0,
+				Stretch = Stretch.Fill,
+				StrokeThickness = 1.0,
+				Stroke = (Brush)new BrushConverter().ConvertFromString("#FFFF3C00"),
+				IsHitTestVisible = false,
+				HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+			};
+			AddGridChild(myHorizontalLine);
+			AddGridChild(myVerticalLine);
+		}
+		else
+		{
+			RemoveGridChild(myHorizontalLine);
+			RemoveGridChild(myVerticalLine);
+			myHorizontalLine = null;
+			myVerticalLine = null;
+		}
+	}
+
+	private static void OnIsAutoModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		HikImageView hikImageView = d as HikImageView;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+		if (hikImageView != null && hikImageView.IsShowRangeImage && oldValue != newValue)
+		{
+			hikImageView.SetImageSource();
+		}
+	}
+
+	protected void ValueChangedCmdExecute()
+	{
+		if (IsShowRangeImage && (OldMinValue != MinValue3D || OldMaxValue != MaxValue3D))
+		{
+			OldMinValue = MinValue3D;
+			OldMaxValue = MaxValue3D;
+			SetImageSource();
+		}
+	}
+
+	private static void OnDrawRoiUITypeCahnged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		HikImageView hikImageView = (HikImageView)d;
+		RoiUIType roiUIType = (RoiUIType)e.OldValue;
+		RoiUIType roiUIType2 = (RoiUIType)e.NewValue;
+		if (roiUIType2 == RoiUIType.Default)
+		{
+			hikImageView.UnPrepareRawRoi();
+		}
+		else
+		{
+			hikImageView.PrepareRawRoi(roiUIType2);
+		}
+	}
+
+	private static void ROIHitTestVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikImageView).DoROIHitTestVisibleChanged();
+	}
+
+	private void DoROIHitTestVisibleChanged()
+	{
+		mROIView.IsHitTestVisible = ROIHitTestVisible;
+	}
+
+	public static void OnPointsDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.OldValue != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, (d as HikImageView).PointsData_CollectionChanged);
+		}
+		(d as HikImageView).PointsDataRegister();
+		HikImageView view = d as HikImageView;
+		ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT> newList = e.NewValue as ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT>;
+		ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT> oldList = e.OldValue as ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT>;
+		RefreshLargePointList(view, newList, oldList);
+	}
+
+	private static void RefreshLargePointList(HikImageView view, ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT> newList, ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT> oldList)
+	{
+		IEnumerable<MVBPATMATCH_EDGEPOINT_OUT> enumerable = null;
+		IEnumerable<MVBPATMATCH_EDGEPOINT_OUT> enumerable2 = null;
+		if (oldList != null && newList != null)
+		{
+			enumerable = newList.Except(oldList);
+			enumerable2 = oldList.Except(newList);
+		}
+		else
+		{
+			if (oldList != null)
+			{
+				view.ClearLargePointSet();
+				view.CreatPointK();
+				return;
+			}
+			enumerable = newList;
+		}
+		if (view != null)
+		{
+			view.ClearLargePointSet();
+			AddPointSet(view, newList);
+			view.CreatPointK();
+		}
+	}
+
+	private static void AddPointSet(HikImageView view, ObservableCollection<MVBPATMATCH_EDGEPOINT_OUT> newList)
+	{
+		if (newList == null)
+		{
+			return;
+		}
+		foreach (MVBPATMATCH_EDGEPOINT_OUT @new in newList)
+		{
+			uint num = 0u;
+			view.AddNewPointK(color: (@new.score_flag != 0) ? ((@new.score_flag != 1) ? (-65536) : (-256)) : (-16711936), x: @new.x, y: @new.y);
+		}
+	}
+
+	private static void ChangePointSet(HikImageView view, IEnumerable<MVBPATMATCH_EDGEPOINT_OUT> addList, IEnumerable<MVBPATMATCH_EDGEPOINT_OUT> delList)
+	{
+		if (addList != null)
+		{
+			foreach (MVBPATMATCH_EDGEPOINT_OUT add in addList)
+			{
+				uint num = 0u;
+				view.AddNewPointK(color: (add.score_flag != 0) ? ((add.score_flag != 1) ? (-65536) : (-256)) : (-16711936), x: add.x, y: add.y);
+			}
+		}
+		if (delList != null)
+		{
+			foreach (MVBPATMATCH_EDGEPOINT_OUT del in delList)
+			{
+				view.DeletePointK(del.x, del.y);
+			}
+		}
+		view.CreatPointK();
+	}
+
+	private static void ChangePointSet(HikImageView view, IList addList, IList delList)
+	{
+		if (addList != null)
+		{
+			foreach (MVBPATMATCH_EDGEPOINT_OUT add in addList)
+			{
+				uint num = 0u;
+				view.AddNewPointK(color: (add.score_flag != 0) ? ((add.score_flag != 1) ? (-65536) : (-256)) : (-16711936), x: add.x, y: add.y);
+			}
+		}
+		if (delList != null)
+		{
+			foreach (MVBPATMATCH_EDGEPOINT_OUT del in delList)
+			{
+				view.DeletePointK(del.x, del.y);
+			}
+		}
+		view.CreatPointK();
+	}
+
+	private void PointsDataRegister()
+	{
+		if (PointsData != null)
+		{
+			CollectionChangedEventManager.AddHandler(PointsData, PointsData_CollectionChanged);
+		}
+	}
+
+	private void PointsData_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action == NotifyCollectionChangedAction.Reset)
+		{
+			ClearLargePointSet();
+			return;
+		}
+		IList newItems = e.NewItems;
+		IList oldItems = e.OldItems;
+		ChangePointSet(this, newItems, oldItems);
+	}
+
+	public void HideSizePanel()
+	{
+		SizePanel.Visibility = Visibility.Hidden;
+	}
+
+	public void PrepareRawRoi(RoiUIType roiType, bool isDrawOne)
+	{
+		ROIHitTestVisible = false;
+		mView.IsHitTestVisible = false;
+		PrepareRoiType = roiType;
+		IsDrawOne = isDrawOne;
+		ContextMenuVisible = false;
+	}
+
+	public void PrepareRawRoi(RoiUIType roiType, bool isDrawOne, bool isSignShow)
+	{
+		ROIHitTestVisible = false;
+		mView.IsHitTestVisible = false;
+		PrepareRoiType = roiType;
+		IsDrawOne = isDrawOne;
+		ContextMenuVisible = false;
+		IsSignShow = isSignShow;
+	}
+
+	public void PrepareRawRoi(RoiUIType roiType)
+	{
+		ROIHitTestVisible = false;
+		mView.IsHitTestVisible = false;
+		PrepareRoiType = roiType;
+		ContextMenuVisible = false;
+	}
+
+	public void UnPrepareRawRoi()
+	{
+		ROIHitTestVisible = true;
+		mView.IsHitTestVisible = true;
+		PrepareRoiType = RoiUIType.Default;
+		ContextMenuVisible = true;
+	}
+
+	public void AddROIContainer(ROIContainer roiContainer)
+	{
+		try
+		{
+			VGrid.Children.Insert(2, roiContainer);
+		}
+		catch
+		{
+		}
+	}
+
+	public void RemoveROIContainer(ROIContainer roiContainer)
+	{
+		try
+		{
+			VGrid.Children.Remove(roiContainer);
+		}
+		catch
+		{
+		}
+	}
+
+	public double GetRatio()
+	{
+		if (Source == null)
+		{
+			return 1.0;
+		}
+		return ImageDesignWidth / (double)ImageSourceWidth;
+	}
+
+	public static double GetRatioBySourceWidth(double SourceWidth)
+	{
+		if (SourceWidth == 0.0)
+		{
+			return 1.0;
+		}
+		return ImageDesignWidth / SourceWidth;
+	}
+
+	public double GetImageWidth()
+	{
+		if (sImage.Source == null)
+		{
+			return 0.0;
+		}
+		return ImageSourceWidth;
+	}
+
+	public double GetImageHeight()
+	{
+		if (sImage.Source == null)
+		{
+			return 0.0;
+		}
+		return ImageSourceHeight;
+	}
+
+	private static void OnShapeListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.OldValue != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, (d as HikImageView).ShapeList_CollectionChanged);
+		}
+		(d as HikImageView).ShapeListRegister();
+		(d as HikImageView).CreatPointK();
+	}
+
+	private void ShapeListRegister()
+	{
+		if (ShapeList is INotifyCollectionChanged)
+		{
+			CollectionChangedEventManager.AddHandler(ShapeList as INotifyCollectionChanged, ShapeList_CollectionChanged);
+		}
+	}
+
+	private void ShapeList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		CreatPointK();
+	}
+
+	private void DrawShape(IList proiList)
+	{
+		if (proiList == null)
+		{
+			return;
+		}
+		foreach (object proi in proiList)
+		{
+			if (!(proi is ShapeParameter shapeParameter))
+			{
+				continue;
+			}
+			FrameworkElement frameworkElement = null;
+			if (shapeParameter is HikRectangleShapeParameter)
+			{
+			}
+			AddChild(frameworkElement);
+			if (!shapeHashtable.ContainsKey(proi))
+			{
+				shapeHashtable.Add(proi, frameworkElement);
+				if (viewScal != 0.0 && OnScaleChange != null)
+				{
+					OnScaleChange(sfr, viewScal);
+				}
+			}
+		}
+	}
+
+	private static void OnRoiListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.OldValue != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, (d as HikImageView).RoiList_CollectionChanged);
+		}
+		foreach (object value in (d as HikImageView).roiList.Values)
+		{
+			(d as HikImageView).RemoveChild(value as FrameworkElement);
+			(d as HikImageView).RemoveROIChild(value as FrameworkElement);
+		}
+		(d as HikImageView).roiList.Clear();
+		(d as HikImageView).DrawRoi((d as HikImageView).RoiList);
+		(d as HikImageView).RoiListRegister();
+	}
+
+	public void RoiListRegister()
+	{
+		if (RoiList != null)
+		{
+			CollectionChangedEventManager.AddHandler(RoiList, RoiList_CollectionChanged);
+		}
+	}
+
+	public object GetPropertieByClass(object model, string name)
+	{
+		Type type = model.GetType();
+		object result = null;
+		PropertyInfo[] properties = type.GetProperties();
+		PropertyInfo[] array = properties;
+		foreach (PropertyInfo propertyInfo in array)
+		{
+			if (propertyInfo.Name == name)
+			{
+				result = propertyInfo.GetValue(model, null);
+				break;
+			}
+		}
+		return result;
+	}
+
+	private void RoiList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Reset:
+			foreach (object value in roiList.Values)
+			{
+				RemoveROIChild(value as FrameworkElement);
+				RemoveChild(value as FrameworkElement);
+			}
+			roiList.Clear();
+			break;
+		case NotifyCollectionChangedAction.Add:
+			DrawRoi(e.NewItems, needUpdate: true);
+			break;
+		case NotifyCollectionChangedAction.Replace:
+			foreach (object oldItem in e.OldItems)
+			{
+				if (oldItem != null && roiList.ContainsKey(oldItem))
+				{
+					object obj2 = roiList[oldItem];
+					RemoveROIChild(obj2 as FrameworkElement);
+					RemoveChild(obj2 as FrameworkElement);
+					roiList.Remove(oldItem);
+				}
+			}
+			DrawRoi(e.NewItems, needUpdate: true);
+			break;
+		case NotifyCollectionChangedAction.Remove:
+		{
+			foreach (object oldItem2 in e.OldItems)
+			{
+				if (oldItem2 != null && roiList.ContainsKey(oldItem2))
+				{
+					object obj = roiList[oldItem2];
+					RemoveROIChild(obj as FrameworkElement);
+					RemoveChild(obj as FrameworkElement);
+					roiList.Remove(oldItem2);
+					ChangeRoiDeCount(oldItem2);
+				}
+			}
+			break;
+		}
+		case NotifyCollectionChangedAction.Move:
+			break;
+		}
+	}
+
+	public void DrawRoi(IList proiList, bool needUpdate = false)
+	{
+		if (proiList == null)
+		{
+			return;
+		}
+		foreach (object proi in proiList)
+		{
+			if (!(proi is RoiParameter roiParameter))
+			{
+				continue;
+			}
+			FrameworkElement frameworkElement = null;
+			if (roiParameter is HikCircleArcRoiParameter)
+			{
+				frameworkElement = new HikCircleArc();
+				(frameworkElement as HikCircleArc).owner = this;
+				(frameworkElement as HikCircleArc).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCircleArc).SetBinding(HikCircleArc.TCenterPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCircleArc).SetBinding(HikCircleArc.TRadiusProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartAngle");
+				(frameworkElement as HikCircleArc).SetBinding(HikCircleArc.StartAngleProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndAngle");
+				(frameworkElement as HikCircleArc).SetBinding(HikCircleArc.EndAngleProperty, binding);
+				HikCircleArc obj = frameworkElement as HikCircleArc;
+				obj.OnTheSizeChange = (HikCircleArc.SizeChange)Delegate.Combine(obj.OnTheSizeChange, new HikCircleArc.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCircleArc).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikIndexPointRoiParameter)
+			{
+				frameworkElement = new HikIndexPoint();
+				(frameworkElement as HikIndexPoint).owner = this;
+				(frameworkElement as HikIndexPoint).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikIndexPoint).SetBinding(HikIndexPoint.TCenterPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Index");
+				(frameworkElement as HikIndexPoint).SetBinding(HikIndexPoint.IndexProperty, binding);
+				HikIndexPoint obj2 = frameworkElement as HikIndexPoint;
+				obj2.OnTheSizeChange = (HikIndexPoint.SizeChange)Delegate.Combine(obj2.OnTheSizeChange, new HikIndexPoint.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikIndexPoint).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCoverCircleRoiParameter2)
+			{
+				frameworkElement = new HikCoverCircle2();
+				(frameworkElement as HikCoverCircle2).owner = this;
+				(frameworkElement as HikCoverCircle2).Init();
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.ClockWiseProperty, new System.Windows.Data.Binding("ClockWise")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TCenterPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TRadiusProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("MinRadius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TMinRadiusProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.StartAngleProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.EndAngleProperty, binding);
+				HikCoverCircle2 obj3 = frameworkElement as HikCoverCircle2;
+				obj3.OnTheSizeChange = (HikCoverCircle2.SizeChange)Delegate.Combine(obj3.OnTheSizeChange, new HikCoverCircle2.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCoverCircle2).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikLineCaliperRoiParameter)
+			{
+				frameworkElement = new HikLineCaliper();
+				(frameworkElement as HikLineCaliper).owner = this;
+				(frameworkElement as HikLineCaliper).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartPoint");
+				(frameworkElement as HikLineCaliper).SetBinding(HikLineCaliper.TStartPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndPoint");
+				(frameworkElement as HikLineCaliper).SetBinding(HikLineCaliper.TEndPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperNum");
+				(frameworkElement as HikLineCaliper).SetBinding(HikLineCaliper.CaliperNumProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperHeight");
+				(frameworkElement as HikLineCaliper).SetBinding(HikLineCaliper.TCaliperHeightProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperWidth");
+				(frameworkElement as HikLineCaliper).SetBinding(HikLineCaliper.TCaliperWidthProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperRotateAngle");
+				(frameworkElement as HikLineCaliper).SetBinding(HikLineCaliper.CaliperRotateAngleProperty, binding);
+				(frameworkElement as HikLineCaliper).SetBinding(HikROIBase.LableTextProperty, "Lable");
+				HikLineCaliper obj4 = frameworkElement as HikLineCaliper;
+				obj4.OnTheSizeChange = (HikLineCaliper.SizeChange)Delegate.Combine(obj4.OnTheSizeChange, new HikLineCaliper.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+			}
+			else if (roiParameter is HikCircleCaliperRoiParameter)
+			{
+				frameworkElement = new HikCircleCaliper
+				{
+					IsRadiusLimit = true
+				};
+				(frameworkElement as HikCircleCaliper).owner = this;
+				(frameworkElement as HikCircleCaliper).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.TCenterPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.TRadiusProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartAngle");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.StartAngleProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndAngle");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.EndAngleProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperNum");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.CaliperNumProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperHeight");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.TCaliperHeightProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CaliperWidth");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.TCaliperWidthProperty, binding);
+				(frameworkElement as HikCircleCaliper).SetBinding(HikROIBase.LableTextProperty, "Lable");
+				(frameworkElement as HikCircleCaliper).SetBinding(HikCircleCaliper.IsLimitFlagProperty, "IsLimitFlag");
+				HikCircleCaliper obj5 = frameworkElement as HikCircleCaliper;
+				obj5.OnTheSizeChange = (HikCircleCaliper.SizeChange)Delegate.Combine(obj5.OnTheSizeChange, new HikCircleCaliper.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCircleCaliper).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCoverCircleRoiParameter)
+			{
+				frameworkElement = new HikCoverCircle2
+				{
+					IsRadiusLimit = true
+				};
+				(frameworkElement as HikCoverCircle2).owner = this;
+				(frameworkElement as HikCoverCircle2).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TCenterPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TRadiusProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("MinRadius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TMinRadiusProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.StartAngleProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.EndAngleProperty, binding);
+				HikCoverCircle2 obj6 = frameworkElement as HikCoverCircle2;
+				obj6.OnTheSizeChange = (HikCoverCircle2.SizeChange)Delegate.Combine(obj6.OnTheSizeChange, new HikCoverCircle2.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCoverCircle2).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikXYParameter)
+			{
+				frameworkElement = new HikXY();
+				(frameworkElement as HikXY).owner = this;
+				(frameworkElement as HikXY).Init();
+				frameworkElement.SetBinding(HikXY.OriginPointProperty, new System.Windows.Data.Binding("OriginPoint")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				frameworkElement.SetBinding(HikXY.XVectorProperty, new System.Windows.Data.Binding("XVector")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				frameworkElement.SetBinding(HikXY.YVectorProperty, new System.Windows.Data.Binding("YVector")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				HikXY obj7 = frameworkElement as HikXY;
+				obj7.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(obj7.OnTheSizeChange, new HikCover.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikXY).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCoverRoiParameter)
+			{
+				frameworkElement = new HikCover();
+				(frameworkElement as HikCover).owner = this;
+				(frameworkElement as HikCover).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Angle");
+				(frameworkElement as HikCover).SetBinding(HikCover.TAngleProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("OriginPoint");
+				(frameworkElement as HikCover).SetBinding(HikCover.TOriginPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Width");
+				(frameworkElement as HikCover).SetBinding(HikCover.TWidthProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Height");
+				(frameworkElement as HikCover).SetBinding(HikCover.THeightProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.OneWay;
+				binding.Path = new PropertyPath("FindOrient");
+				binding.Source = this;
+				(frameworkElement as HikCover).SetBinding(HikCover.FindOrientProperty, binding);
+				(frameworkElement as HikCover).SetBinding(HikCover.DisplayNameProperty, "Lable");
+				HikCover obj8 = frameworkElement as HikCover;
+				obj8.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(obj8.OnTheSizeChange, new HikCover.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCover).SetROITypeUI(ROITypeUI);
+				if (needUpdate)
+				{
+					(roiParameter as HikCoverRoiParameter)._TIsSignVisible = IsSignShow;
+					if (!IsSignShow)
+					{
+						(roiParameter as HikCoverRoiParameter)._IsAngleVis = false;
+					}
+				}
+			}
+			else if (roiParameter is HikDoubleCoverRoiParameter)
+			{
+				frameworkElement = new HikDoubleCover();
+				HikDoubleCover hikDoubleCover = frameworkElement as HikDoubleCover;
+				hikDoubleCover.owner = this;
+				hikDoubleCover.Init();
+				hikDoubleCover.SetBinding(HikDoubleCover.AngleFirstProperty, new System.Windows.Data.Binding("AngleFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.OriginPointFirstProperty, new System.Windows.Data.Binding("OriginPointFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.WidthFirstProperty, new System.Windows.Data.Binding("WidthFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.HeightFirstProperty, new System.Windows.Data.Binding("HeightFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.AngleSecondProperty, new System.Windows.Data.Binding("AngleSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.OriginPointSecondProperty, new System.Windows.Data.Binding("OriginPointSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.WidthSecondProperty, new System.Windows.Data.Binding("WidthSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.HeightSecondProperty, new System.Windows.Data.Binding("HeightSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.SignProperty, "Sign");
+				hikDoubleCover.SetBinding(HikDoubleCover.TIsVisibleProperty, "TIsVisible");
+				hikDoubleCover.SetBinding(HikDoubleCover.IsSelectedProperty, new System.Windows.Data.Binding("IsSelected")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.OnTheSizeChange = (HikDoubleCover.SizeChange)Delegate.Combine(hikDoubleCover.OnTheSizeChange, new HikDoubleCover.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				hikDoubleCover.SetROITypeUI(ROITypeUI);
+				hikDoubleCover.OnFremeMouseLeftButtonDown = (HikDoubleCover.FremeMouseLeftButtonDown)Delegate.Combine(hikDoubleCover.OnFremeMouseLeftButtonDown, new HikDoubleCover.FremeMouseLeftButtonDown(hikFrame_OnFremeMouseLeftButtonDown));
+			}
+			else if (roiParameter is HikQuadraCoverRoiParameter)
+			{
+				frameworkElement = new HikQuadraCover();
+				HikQuadraCover hikQuadraCover = frameworkElement as HikQuadraCover;
+				hikQuadraCover.owner = this;
+				hikQuadraCover.Init();
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleFirstProperty, new System.Windows.Data.Binding("AngleFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointFirstProperty, new System.Windows.Data.Binding("OriginPointFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthFirstProperty, new System.Windows.Data.Binding("WidthFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightFirstProperty, new System.Windows.Data.Binding("HeightFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleSecondProperty, new System.Windows.Data.Binding("AngleSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointSecondProperty, new System.Windows.Data.Binding("OriginPointSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthSecondProperty, new System.Windows.Data.Binding("WidthSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightSecondProperty, new System.Windows.Data.Binding("HeightSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleThirdProperty, new System.Windows.Data.Binding("AngleThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointThirdProperty, new System.Windows.Data.Binding("OriginPointThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthThirdProperty, new System.Windows.Data.Binding("WidthThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightThirdProperty, new System.Windows.Data.Binding("HeightThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleFourthProperty, new System.Windows.Data.Binding("AngleFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointFourthProperty, new System.Windows.Data.Binding("OriginPointFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthFourthProperty, new System.Windows.Data.Binding("WidthFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightFourthProperty, new System.Windows.Data.Binding("HeightFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.SignProperty, "Sign");
+				hikQuadraCover.SetBinding(HikQuadraCover.TIsVisibleProperty, "TIsVisible");
+				hikQuadraCover.SetBinding(HikQuadraCover.IsSelectedProperty, new System.Windows.Data.Binding("IsSelected")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.OnTheSizeChange = (HikQuadraCover.SizeChange)Delegate.Combine(hikQuadraCover.OnTheSizeChange, new HikQuadraCover.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				hikQuadraCover.SetROITypeUI(ROITypeUI);
+				hikQuadraCover.OnFremeMouseLeftButtonDown = (HikQuadraCover.FremeMouseLeftButtonDown)Delegate.Combine(hikQuadraCover.OnFremeMouseLeftButtonDown, new HikQuadraCover.FremeMouseLeftButtonDown(hikFrame_OnFremeMouseLeftButtonDown));
+			}
+			else if (roiParameter is HikPolygonRoiParameter)
+			{
+				frameworkElement = new HikPolygon();
+				(frameworkElement as HikPolygon).owner = this;
+				(frameworkElement as HikPolygon).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("PolygonPoints");
+				(frameworkElement as HikPolygon).SetBinding(HikPolygon.PolygonPointsProperty, binding);
+				HikPolygon obj9 = frameworkElement as HikPolygon;
+				obj9.OnTheSizeChange = (HikPolygon.SizeChange)Delegate.Combine(obj9.OnTheSizeChange, new HikPolygon.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikPolygon).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikPolylineRoiParameter)
+			{
+				frameworkElement = new HikPath();
+				(frameworkElement as HikPath).owner = this;
+				(frameworkElement as HikPath).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("PathPoints");
+				(frameworkElement as HikPath).SetBinding(HikPath.PathPointsProperty, binding);
+				HikPath obj10 = frameworkElement as HikPath;
+				obj10.OnTheSizeChange = (HikPath.SizeChange)Delegate.Combine(obj10.OnTheSizeChange, new HikPath.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikPath).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikPasterParameter)
+			{
+				frameworkElement = new HikPaster();
+				(frameworkElement as HikPaster).owner = this;
+				(frameworkElement as HikPaster).Init();
+				(frameworkElement as HikPaster).SetBinding(HikPaster.OriginPointProperty, "OriginPoint");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.AngleProperty, "Angle");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.TSkewAngleXProperty, "SkewAngleX");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.TWidthProperty, "Width");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.THeightProperty, "Height");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.GroupNameProperty, "GroupName");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.StateProperty, "State");
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("SubContent");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.SubContentProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("IsSelected");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.IsSelectedProperty, binding);
+				HikPaster obj11 = frameworkElement as HikPaster;
+				obj11.OnCheckedChange = (HikPaster.CheckedChange)Delegate.Combine(obj11.OnCheckedChange, new HikPaster.CheckedChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+			}
+			else if (roiParameter is HikLineRoiParameter)
+			{
+				frameworkElement = new HikLine();
+				(frameworkElement as HikLine).owner = this;
+				(frameworkElement as HikLine).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartPoint");
+				(frameworkElement as HikLine).SetBinding(HikLine.TStartPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndPoint");
+				(frameworkElement as HikLine).SetBinding(HikLine.TEndPointProperty, binding);
+				HikLine obj12 = frameworkElement as HikLine;
+				obj12.OnTheSizeChange = (HikLine.SizeChange)Delegate.Combine(obj12.OnTheSizeChange, new HikLine.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikLine).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikPointRoiParameter)
+			{
+				frameworkElement = new HikPoint();
+				(frameworkElement as HikPoint).owner = this;
+				(frameworkElement as HikPoint).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikPoint).SetBinding(HikPoint.TCenterPointProperty, binding);
+				HikPoint obj13 = frameworkElement as HikPoint;
+				obj13.OnTheSizeChange = (HikPoint.SizeChange)Delegate.Combine(obj13.OnTheSizeChange, new HikPoint.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikPoint).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCircleMesRoiParameter)
+			{
+				frameworkElement = new HikCircleMeasure();
+				(frameworkElement as HikCircleMeasure).owner = this;
+				(frameworkElement as HikCircleMeasure).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCircleMeasure).SetBinding(HikCircleMeasure.TCenterPointProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCircleMeasure).SetBinding(HikCircleMeasure.TRadiusProperty, binding);
+				HikCircleMeasure obj14 = frameworkElement as HikCircleMeasure;
+				obj14.OnTheSizeChange = (HikCircleMeasure.SizeChange)Delegate.Combine(obj14.OnTheSizeChange, new HikCircleMeasure.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCircleMeasure).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCruciformRoiParameter)
+			{
+				frameworkElement = new HikCruciform();
+				(frameworkElement as HikCruciform).owner = this;
+				(frameworkElement as HikCruciform).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("PolygonPoints");
+				(frameworkElement as HikCruciform).SetBinding(HikCruciform.PolygonPointsProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Angle");
+				(frameworkElement as HikCruciform).SetBinding(HikCruciform.TAngleProperty, binding);
+				HikCruciform obj15 = frameworkElement as HikCruciform;
+				obj15.OnTheSizeChange = (HikCruciform.SizeChange)Delegate.Combine(obj15.OnTheSizeChange, new HikCruciform.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCruciform).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCoverHollowRoiParameter)
+			{
+				frameworkElement = new HikCoverHollow();
+				(frameworkElement as HikCoverHollow).owner = this;
+				(frameworkElement as HikCoverHollow).Init();
+				System.Windows.Data.Binding binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("PolygonPoints");
+				(frameworkElement as HikCoverHollow).SetBinding(HikCoverHollow.PolygonPointsProperty, binding);
+				binding = new System.Windows.Data.Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Angle");
+				(frameworkElement as HikCoverHollow).SetBinding(HikCoverHollow.TAngleProperty, binding);
+				HikCoverHollow obj16 = frameworkElement as HikCoverHollow;
+				obj16.OnTheSizeChange = (HikCoverHollow.SizeChange)Delegate.Combine(obj16.OnTheSizeChange, new HikCoverHollow.SizeChange(hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCoverHollow).SetROITypeUI(ROITypeUI);
+			}
+			else
+			{
+				frameworkElement = new System.Windows.Controls.Label();
+				(frameworkElement as System.Windows.Controls.Label).Content = roiParameter.RoiType;
+			}
+			if (frameworkElement != null && frameworkElement is HikROIBase)
+			{
+				(frameworkElement as HikROIBase).SetBinding(HikROIBase.IsSelectedProperty, new System.Windows.Data.Binding("IsSelected")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				(frameworkElement as HikROIBase).SetBinding(HikROIBase.SignProperty, "Sign");
+				(frameworkElement as HikROIBase).SetBinding(HikROIBase.TIsVisibleProperty, "TIsVisible");
+			}
+			AddROIChild(frameworkElement);
+			if (!roiList.ContainsKey(proi))
+			{
+				roiList.Add(proi, frameworkElement);
+				if (IsDrawOne)
+				{
+					IsDrawOne = false;
+					UnPrepareRawRoi();
+				}
+				ChangeRoiCount(roiParameter);
+				if (frameworkElement is RectangleRoi && IsTrigerParamChange)
+				{
+					(frameworkElement as RectangleRoi).DoCallBack();
+				}
+				if (viewScal != 0.0 && OnScaleChange != null)
+				{
+					OnScaleChange(sfr, viewScal);
+				}
+			}
+		}
+	}
+
+	public void DoRoiClick(object Sender, System.Windows.Input.MouseEventArgs e)
+	{
+		if (OnRoi_Click != null)
+		{
+			OnRoi_Click(Sender, e);
+		}
+	}
+
+	public void ChangeSelectedBaseROI(object data)
+	{
+		if (OnSelectedBaseROIChange != null)
+		{
+			OnSelectedBaseROIChange(this, data);
+		}
+		RoiSelectedEvent?.Invoke(this, new RoiEventArgs(data));
+	}
+
+	public void ChangeRoiDeCount(object data)
+	{
+		if (OnRoiDeCountChanged != null)
+		{
+			OnRoiDeCountChanged(data);
+		}
+		RoiDeleteEvent?.Invoke(this, new RoiEventArgs(data));
+	}
+
+	public void ChangeRoiCount(object data)
+	{
+		if (OnRoiCountChanged != null)
+		{
+			OnRoiCountChanged(data);
+		}
+		RoiAddEvent?.Invoke(this, new RoiEventArgs(data));
+	}
+
+	public void hikImageView_OnROIParamChanged(object Param)
+	{
+		if (OnRoiParamChange != null)
+		{
+			OnRoiParamChange(Param);
+		}
+		RoiParamChangeEvent?.Invoke(this, new RoiEventArgs(Param));
+	}
+
+	public void SetSizePanelVisible(Visibility visibility)
+	{
+		SizePanel.Visibility = visibility;
+	}
+
+	public void SetMousePanelVisible(Visibility visibility)
+	{
+		MousePanel.Visibility = visibility;
+	}
+
+	public HikImageView()
+	{
+		try
+		{
+			InitializeComponent();
+			above.IsHitTestVisible = false;
+			GreenPath.Stroke = Brushes.LawnGreen;
+			GreenPath.IsHitTestVisible = false;
+			YellowPath.Stroke = Brushes.Yellow;
+			YellowPath.IsHitTestVisible = false;
+			RedPath.Stroke = Brushes.Red;
+			RedPath.IsHitTestVisible = false;
+			GreenPath.Data = greenGeometryGroup;
+			YellowPath.Data = yellowGeometryGroup;
+			RedPath.Data = redGeometryGroup;
+			mView.Children.Add(GreenPath);
+			mView.Children.Add(YellowPath);
+			mView.Children.Add(RedPath);
+			InitGrid();
+			viewbox.LayoutUpdated += viewbox_LayoutUpdated;
+			Loaded += (object s, RoutedEventArgs e) =>
+			{
+				topwindow = Window.GetWindow(this);
+				if (topwindow != null)
+				{
+					topwindow.Activated += Window_Activated;
+				}
+			};
+			Unloaded += (object s, RoutedEventArgs e) =>
+			{
+				if (topwindow != null)
+				{
+					topwindow.Activated -= Window_Activated;
+					topwindow = null;
+				}
+			};
+		}
+		catch (Exception ex)
+		{
+			string message = ex.Message;
+		}
+	}
+
+	private void Window_Activated(object sender, EventArgs e)
+	{
+		isDragging = false;
+	}
+
+	public void hikFrame_OnFremeMouseLeftButtonDown(MouseButtonEventArgs e)
+	{
+		mouseLBDown(sImage, e);
+	}
+
+	private void InitGrid()
+	{
+		path.Stroke = Brushes.Black;
+		path.StrokeThickness = 1.0;
+		above.Children.Add(path);
+	}
+
+	private void SetAboveCanvas()
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		System.Windows.Point point = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), mapcanvas);
+		System.Windows.Point point2 = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), viewbox);
+		double num = (viewbox.ActualWidth - point2.X * 2.0) * sfr.ScaleX;
+		double num2 = (viewbox.ActualHeight - point2.X * 2.0) * sfr.ScaleY;
+		double num3 = num / (double)ImageSourceWidth;
+		if (num3 > 50.0)
+		{
+			gridWidth = num3;
+			GeometryGroup geometryGroup = new GeometryGroup();
+			int num4 = (int)Math.Ceiling((0.0 - point.Y) / gridWidth);
+			int num5 = (int)Math.Ceiling((above.ActualHeight - point.Y) / gridWidth);
+			if (num4 < 0)
+			{
+				num4 = 0;
+			}
+			if ((double)num5 > num2 / gridWidth)
+			{
+				num5 = (int)Math.Ceiling(num2 / gridWidth);
+			}
+			for (int i = num4; i < num5; i++)
+			{
+				LineGeometry value = new LineGeometry(new System.Windows.Point(point.X, point.Y + gridWidth * (double)i), new System.Windows.Point(point.X + num, point.Y + gridWidth * (double)i));
+				geometryGroup.Children.Add(value);
+			}
+			num4 = (int)Math.Ceiling((0.0 - point.X) / gridWidth);
+			num5 = (int)Math.Ceiling((above.ActualWidth - point.X) / gridWidth);
+			if (num4 < 0)
+			{
+				num4 = 0;
+			}
+			if ((double)num5 > num / gridWidth)
+			{
+				num5 = (int)Math.Ceiling(num / gridWidth);
+			}
+			for (int j = num4; j < num5; j++)
+			{
+				LineGeometry value2 = new LineGeometry(new System.Windows.Point(point.X + gridWidth * (double)j, point.Y), new System.Windows.Point(point.X + gridWidth * (double)j, point.Y + num2));
+				geometryGroup.Children.Add(value2);
+			}
+			path.Data = geometryGroup;
+			above.Opacity = 1.0;
+		}
+		else
+		{
+			above.Opacity = 0.0;
+		}
+	}
+
+	private void viewbox_LayoutUpdated(object sender, EventArgs e)
+	{
+		if (!IsLoaded)
+		{
+			return;
+		}
+		if (needFlash)
+		{
+			needFlash = false;
+			SetAboveCanvas();
+		}
+		if (!needFlashPoint)
+		{
+			return;
+		}
+		try
+		{
+			needFlashPoint = false;
+			CreatPointK();
+			if (OnFreshExtendContent != null)
+			{
+				OnFreshExtendContent(this, null);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public double GetViewBoxWidth()
+	{
+		return viewbox.ActualWidth;
+	}
+
+	public double GetViewBoxHeight()
+	{
+		return viewbox.ActualHeight;
+	}
+
+	private void hikFrame_OnTheSizeChange(RoiDate Date)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			if (OnRoiSizeChange != null)
+			{
+				RoiDate date = new RoiDate
+				{
+					Width = Date.Width / ratio
+				};
+				date.Width /= ImageSourceWidth;
+				date.Height = Date.Height / ratio;
+				date.Height /= ImageSourceHeight;
+				date.CenterX = Date.CenterX / ratio;
+				date.CenterX = date.CenterX / (double)ImageSourceWidth + date.Width / 2.0;
+				date.CenterY = Date.CenterY / ratio;
+				date.CenterY = date.CenterY / (double)ImageSourceHeight + date.Height / 2.0;
+				date.Angle = Date.Angle;
+				OnRoiSizeChange(date);
+			}
+		}
+	}
+
+	private void hikCircle_OnTheSizeChange(RoiDate Date)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			if (OnRoiSizeChange != null)
+			{
+				Date.MaxRadius /= ratio;
+				Date.MinRadius /= ratio;
+				Date.Width = 2.0 * Date.MaxRadius / (double)ImageSourceWidth;
+				Date.Height = 2.0 * Date.MaxRadius / (double)ImageSourceHeight;
+				Date.CenterX /= ratio;
+				Date.CenterX /= ImageSourceWidth;
+				Date.CenterY /= ratio;
+				Date.CenterY /= ImageSourceHeight;
+				OnRoiSizeChange(Date);
+			}
+		}
+	}
+
+	public void Enlarge()
+	{
+		if (sImage.Source != null)
+		{
+			System.Windows.Point centerPoint = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), mapcanvas);
+			centerPoint.X = mapcanvas.ActualWidth / 2.0 - centerPoint.X;
+			centerPoint.Y = mapcanvas.ActualHeight / 2.0 - centerPoint.Y;
+			centerPoint.X /= sfr.ScaleX;
+			centerPoint.Y /= sfr.ScaleY;
+			ChangeSize(centerPoint, 1.5);
+		}
+	}
+
+	public void Shrink()
+	{
+		if (sImage.Source != null)
+		{
+			System.Windows.Point centerPoint = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), mapcanvas);
+			centerPoint.X = mapcanvas.ActualWidth / 2.0 - centerPoint.X;
+			centerPoint.Y = mapcanvas.ActualHeight / 2.0 - centerPoint.Y;
+			centerPoint.X /= sfr.ScaleX;
+			centerPoint.Y /= sfr.ScaleY;
+			ChangeSize(centerPoint, 0.5);
+		}
+	}
+
+	public void SetPointWidthBase(double pointWidthBase)
+	{
+		PointWidthBase = pointWidthBase;
+	}
+
+	public void CreatePointList(List<System.Windows.Point> ptList)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		double ratio = GetRatio();
+		pointWidth = PointWidthBase / (sfr.ScaleX * viewScal);
+		this.geometryGroup.Children.Clear();
+		foreach (System.Windows.Point pt in ptList)
+		{
+			GeometryGroup geometryGroup = new GeometryGroup();
+			LineGeometry value = new LineGeometry(new System.Windows.Point((pt.X + 0.5) * ratio - pointWidth, (pt.Y + 0.5) * ratio - pointWidth), new System.Windows.Point((pt.X + 0.5) * ratio + pointWidth, (pt.Y + 0.5) * ratio + pointWidth));
+			LineGeometry value2 = new LineGeometry(new System.Windows.Point((pt.X + 0.5) * ratio - pointWidth, (pt.Y + 0.5) * ratio + pointWidth), new System.Windows.Point((pt.X + 0.5) * ratio + pointWidth, (pt.Y + 0.5) * ratio - pointWidth));
+			geometryGroup.Children.Add(value);
+			geometryGroup.Children.Add(value2);
+			this.geometryGroup.Children.Add(geometryGroup);
+		}
+		System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+		path.Stroke = Brushes.LawnGreen;
+		path.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+		path.IsHitTestVisible = false;
+		path.Data = this.geometryGroup;
+		mView.Children.Add(path);
+		shapeList.Add(path);
+		pointPath.Add(path);
+	}
+
+	public void AddNewPointK(float x, float y, int color)
+	{
+		if (PointX_Buffer == null)
+		{
+			NeedLargePoints = true;
+		}
+		if (PointLenth >= PointX_Buffer.Length)
+		{
+			int num = PointX_Buffer.Length;
+			float[] pointX_Buffer = PointX_Buffer;
+			float[] pointY_Buffer = PointY_Buffer;
+			int[] pointColor_Buffer = PointColor_Buffer;
+			PointX_Buffer = new float[num + 100000];
+			PointY_Buffer = new float[num + 100000];
+			PointColor_Buffer = new int[num + 100000];
+			Buffer.BlockCopy(pointX_Buffer, 0, PointX_Buffer, 0, pointX_Buffer.Length * 4);
+			Buffer.BlockCopy(pointY_Buffer, 0, PointY_Buffer, 0, pointY_Buffer.Length * 4);
+			Buffer.BlockCopy(pointColor_Buffer, 0, PointColor_Buffer, 0, pointColor_Buffer.Length * 4);
+		}
+		PointX_Buffer[PointLenth] = x;
+		PointY_Buffer[PointLenth] = y;
+		PointColor_Buffer[PointLenth] = color;
+		PointLenth++;
+	}
+
+	public void DeletePointK(float x, float y)
+	{
+		if (PointsData == null)
+		{
+			return;
+		}
+		for (int i = 0; i < PointX_Buffer.Length && (PointX_Buffer[i] != 0f || PointY_Buffer[i] != 0f); i++)
+		{
+			if (PointX_Buffer[i] == x && PointY_Buffer[i] == y)
+			{
+				PointX_Buffer[i] = -1f;
+			}
+		}
+	}
+
+	public void DeletePointK(int index)
+	{
+		PointX_Buffer[index] = -1f;
+	}
+
+	public void CreatePoint(System.Windows.Point pt, int color, double opacity, string tips)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			pointWidth = PointWidthBase / (sfr.ScaleX * viewScal);
+			GeometryGroup geometryGroup = new GeometryGroup();
+			double num = (pt.X + 0.5) * ratio;
+			double num2 = (pt.Y + 0.5) * ratio;
+			LineGeometry value = new LineGeometry(new System.Windows.Point(num, num2 - pointWidth), new System.Windows.Point(num, num2 + pointWidth));
+			LineGeometry value2 = new LineGeometry(new System.Windows.Point(num - pointWidth, num2), new System.Windows.Point(num + pointWidth, num2));
+			geometryGroup.Children.Add(value);
+			geometryGroup.Children.Add(value2);
+			this.geometryGroup.Children.Add(geometryGroup);
+			System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+			path.Stroke = GetColorFromInt(color);
+			path.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			if (tips != "")
+			{
+				path.ToolTip = tips;
+				path.IsHitTestVisible = true;
+			}
+			else
+			{
+				path.IsHitTestVisible = false;
+			}
+			path.Opacity = opacity;
+			path.Data = geometryGroup;
+			mView.Children.Add(path);
+			shapeList.Add(path);
+			pointPath.Add(path);
+		}
+	}
+
+	public unsafe void CreatPointK()
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		if (PointLenth <= 0 && (ExternPoint_Buffer == null || ExternPoint_Buffer.Count == 0) && (ShapeList == null || ShapeList.Count == 0))
+		{
+			b2SConvertor.Clear();
+			pointsImage.Source = null;
+			return;
+		}
+		System.Windows.Point point = new System.Windows.Point((mapcanvas.ActualWidth - viewbox.ActualWidth) / 2.0 + Canvas.GetLeft(viewbox) + tlt.X, (mapcanvas.ActualHeight - viewbox.ActualHeight) / 2.0 + Canvas.GetTop(viewbox) + tlt.Y);
+		double num = viewbox.ActualWidth * sfr.ScaleX;
+		if (num == 0.0)
+		{
+			return;
+		}
+		double temp = num / (double)ImageSourceWidth;
+		int num2 = 0;
+		int num3 = 0;
+		int num4 = (int)mapcanvas.ActualWidth;
+		int num5 = (int)mapcanvas.ActualHeight;
+		if (num4 == 0 || num5 == 0)
+		{
+			return;
+		}
+		WriteableBitmap writeableBitmap = b2SConvertor.Init(num4, num5, PixelFormats.Bgra32);
+		if (writeableBitmap == null)
+		{
+			return;
+		}
+		pointsImage.Source = writeableBitmap;
+		writeableBitmap.Lock();
+		byte* ptr = (byte*)writeableBitmap.BackBuffer.ToPointer();
+		int wwe_Stride = writeableBitmap.BackBufferStride / 4;
+		int* ztemp = (int*)ptr;
+		writeableBitmap.Clear();
+		double fx = 0.5 + point.X / temp;
+		double fy = 0.5 + point.Y / temp;
+		if (ShapeList != null && ShapeList.Count > 0)
+		{
+			int[] array = new int[10];
+			foreach (IRect item in ShapeList.OfType<IRect>())
+			{
+				hu.CenterX = ((double)item.CenterX + fx) * temp;
+				hu.CenterY = ((double)item.CenterY + fy) * temp;
+				hu.Angle = item.Angle;
+				double num6 = (double)item.Width * temp;
+				double num7 = (double)item.Height * temp;
+				System.Windows.Point point2 = new System.Windows.Point(hu.CenterX - num6 / 2.0, hu.CenterY - num7 / 2.0);
+				System.Windows.Point point3 = new System.Windows.Point(point2.X + num6, point2.Y);
+				System.Windows.Point point4 = new System.Windows.Point(point3.X, point2.Y + num7);
+				System.Windows.Point point5 = new System.Windows.Point(point2.X, point4.Y);
+				if (hu.Angle != 0.0)
+				{
+					point2 = hu.Transform(point2);
+					point3 = hu.Transform(point3);
+					point4 = hu.Transform(point4);
+					point5 = hu.Transform(point5);
+				}
+				array[0] = (int)point2.X;
+				array[1] = (int)point2.Y;
+				array[2] = (int)point3.X;
+				array[3] = (int)point3.Y;
+				array[4] = (int)point4.X;
+				array[5] = (int)point4.Y;
+				array[6] = (int)point5.X;
+				array[7] = (int)point5.Y;
+				array[8] = array[0];
+				array[9] = array[1];
+				writeableBitmap.DrawPolyline(array, Colors.Blue);
+			}
+		}
+		fixed (float* pointX_Buffer = PointX_Buffer)
+		{
+			fixed (float* pointY_Buffer = PointY_Buffer)
+			{
+				fixed (int* pointColor_Buffer = PointColor_Buffer)
+				{
+					int Weeh = num4 - 4;
+					int Heeh = num5 - 4;
+					if (ExternPoint_Buffer != null)
+					{
+						int num8 = Marshal.SizeOf<IMVS_PATMATCH_POINT_INFO>();
+						for (int i = 0; i < ExternPoint_Buffer.Count; i++)
+						{
+							int num9 = ((ExternPoint_Buffer_OkColor.Count > i) ? (ExternPoint_Buffer_OkColor[i] & 0xFFFFFF) : DefaultOkColor);
+							int num10 = ((ExternPoint_Buffer_NgColor.Count > i) ? (ExternPoint_Buffer_NgColor[i] & 0xFFFFFF) : DefaultNgColor);
+							double num11 = ((ExternPoint_Buffer_Opacity.Count > i) ? ((double)ExternPoint_Buffer_Opacity[i]) : ExternOpacity);
+							int num12 = (int)(num11 * 255.0) << 24;
+							int greenColor = num12 | num9;
+							int yellowColor = num12 | 0xFFFF00;
+							int redColor = num12 | num10;
+							byte[] array2 = ExternPoint_Buffer[i];
+							if (array2 == null)
+							{
+								continue;
+							}
+							int num13 = array2.Length;
+							fixed (byte* ptr2 = array2)
+							{
+								IMVS_PATMATCH_POINT_INFO* tempExternPoint_Bufferptr = (IMVS_PATMATCH_POINT_INFO*)ptr2;
+								int toExclusive = num13 / num8;
+								Parallel.For(0, toExclusive, (int num15) =>
+								{
+									IMVS_PATMATCH_POINT_INFO iMVS_PATMATCH_POINT_INFO = tempExternPoint_Bufferptr[num15];
+									int num16 = (int)(((double)iMVS_PATMATCH_POINT_INFO.MatchOutlineX + fx) * temp);
+									if (num16 >= 0 && num16 <= Weeh)
+									{
+										int num17 = (int)(((double)iMVS_PATMATCH_POINT_INFO.MatchOutlineY + fy) * temp);
+										if (num17 >= 0 && num17 <= Heeh)
+										{
+											float matchOutlineScore = iMVS_PATMATCH_POINT_INFO.MatchOutlineScore;
+											float obj = matchOutlineScore;
+											int num18 = (0f.Equals(obj) ? greenColor : ((!1f.Equals(obj)) ? redColor : yellowColor));
+											int* ptr5 = ztemp + num17 * wwe_Stride + num16;
+											*ptr5 = num18;
+											ptr5++;
+											*ptr5 = num18;
+											ptr5 += wwe_Stride;
+											*ptr5 = num18;
+											ptr5--;
+											*ptr5 = num18;
+										}
+									}
+								});
+							}
+						}
+					}
+					for (int num14 = 0; num14 < PointLenth; num14++)
+					{
+						if (pointX_Buffer[num14] < 0f)
+						{
+							continue;
+						}
+						num2 = (int)(((double)pointX_Buffer[num14] + fx) * temp);
+						if (num2 >= 0 && num2 <= Weeh)
+						{
+							num3 = (int)(((double)pointY_Buffer[num14] + fy) * temp);
+							if (num3 >= 0 && num3 <= Heeh)
+							{
+								int* ptr3 = pointColor_Buffer + num14;
+								int* ptr4 = ztemp + num3 * wwe_Stride + num2;
+								*ptr4 = *ptr3;
+								ptr4++;
+								*ptr4 = *ptr3;
+								ptr4 += wwe_Stride;
+								*ptr4 = *ptr3;
+								ptr4--;
+								*ptr4 = *ptr3;
+							}
+						}
+					}
+				}
+			}
+		}
+		writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight));
+		writeableBitmap.Unlock();
+	}
+
+	public void CreatePointEE(System.Windows.Point pt, int color, double opacity, string tips)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			pointWidth = PointWidthBase / (sfr.ScaleX * viewScal);
+			GeometryGroup geometryGroup = new GeometryGroup();
+			double num = (pt.X + 0.5) * ratio;
+			double num2 = (pt.Y + 0.5) * ratio;
+			LineGeometry value = new LineGeometry(new System.Windows.Point(num, num2 - pointWidth), new System.Windows.Point(num, num2 + pointWidth));
+			LineGeometry value2 = new LineGeometry(new System.Windows.Point(num - pointWidth, num2), new System.Windows.Point(num + pointWidth, num2));
+			geometryGroup.Children.Add(value);
+			geometryGroup.Children.Add(value2);
+			this.geometryGroup.Children.Add(geometryGroup);
+			System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+			path.Stroke = GetColorFromInt(color);
+			path.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			if (tips != "")
+			{
+				path.ToolTip = tips;
+				path.IsHitTestVisible = true;
+			}
+			else
+			{
+				path.IsHitTestVisible = false;
+			}
+			path.Opacity = opacity;
+			path.Data = geometryGroup;
+			mView.Children.Add(path);
+			shapeListE.Add(path);
+			pointPathE.Add(path);
+		}
+	}
+
+	public void CreatePointE(List<System.Windows.Point> ptList, int color, double opacity, string tips)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		double ratio = GetRatio();
+		pointWidth = PointWidthBase / (sfr.ScaleX * viewScal);
+		GeometryGroup geometryGroup = null;
+		geometryGroup = new GeometryGroup();
+		foreach (System.Windows.Point pt in ptList)
+		{
+			GeometryGroup geometryGroup2 = new GeometryGroup();
+			double num = (pt.X + 0.5) * ratio;
+			double num2 = (pt.Y + 0.5) * ratio;
+			LineGeometry value = new LineGeometry(new System.Windows.Point(num - pointWidth, num2 - pointWidth), new System.Windows.Point(num + pointWidth, num2 + pointWidth));
+			LineGeometry value2 = new LineGeometry(new System.Windows.Point(num - pointWidth, num2 + pointWidth), new System.Windows.Point(num + pointWidth, num2 - pointWidth));
+			geometryGroup.Children.Add(value);
+			geometryGroup.Children.Add(value2);
+			geometryGroup2.Children.Add(value);
+			geometryGroup2.Children.Add(value2);
+			this.geometryGroup.Children.Add(geometryGroup2);
+		}
+		System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+		path.Stroke = GetColorFromInt(color);
+		path.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+		if (tips != "")
+		{
+			path.ToolTip = tips;
+			path.IsHitTestVisible = true;
+		}
+		else
+		{
+			path.IsHitTestVisible = false;
+		}
+		path.Opacity = opacity;
+		path.Data = geometryGroup;
+		mView.Children.Add(path);
+		shapeListE.Add(path);
+		pointPathE.Add(path);
+	}
+
+	public void CreateOutLineE(List<System.Windows.Point> ptList, int color, double opacity, string tips)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		double ratio = GetRatio();
+		pointWidth = PointWidthBase / (sfr.ScaleX * viewScal);
+		GeometryGroup geometryGroup = null;
+		geometryGroup = new GeometryGroup();
+		for (int i = 0; i < ptList.Count; i += 2)
+		{
+			if (i + 1 < ptList.Count && Math.Abs(ptList[i].X - ptList[i + 1].X) < 2.0 && Math.Abs(ptList[i].Y - ptList[i + 1].Y) < 2.0)
+			{
+				GeometryGroup geometryGroup2 = new GeometryGroup();
+				LineGeometry value = new LineGeometry(new System.Windows.Point(ptList[i].X * ratio, ptList[i].Y * ratio), new System.Windows.Point(ptList[i + 1].X * ratio, ptList[i + 1].Y * ratio));
+				geometryGroup.Children.Add(value);
+				geometryGroup2.Children.Add(value);
+				this.geometryGroup.Children.Add(geometryGroup2);
+			}
+		}
+		System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+		path.Stroke = GetColorFromInt(color);
+		path.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+		path.IsHitTestVisible = false;
+		path.Opacity = opacity;
+		path.Data = geometryGroup;
+		mView.Children.Add(path);
+		shapeListE.Add(path);
+		pointPathE.Add(path);
+	}
+
+	public void CreatCharacter(string text, double fStartX, double fStartY, double fAngle)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			TextBlock textBlock = new TextBlock();
+			textBlock.Foreground = Brushes.LightGreen;
+			textBlock.Text = text;
+			textBlock.IsHitTestVisible = false;
+			textBlock.SetValue(Canvas.TopProperty, fStartY * ratio);
+			textBlock.SetValue(Canvas.LeftProperty, fStartX * ratio);
+			if (fAngle >= -180.0 && fAngle <= 180.0)
+			{
+				RotateTransform rotateTransform = new RotateTransform(fAngle);
+				rotateTransform.CenterX = textBlock.ActualWidth / 2.0;
+				rotateTransform.CenterY = textBlock.ActualHeight / 2.0;
+				textBlock.RenderTransform = rotateTransform;
+			}
+			mView.Children.Add(textBlock);
+			shapeList.Add(textBlock);
+		}
+	}
+
+	private double CalculateMaxWidthFontSize(double width, double endFontSize, string text, FontFamily fontFamily, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch)
+	{
+		if (double.IsNaN(width))
+		{
+			return endFontSize;
+		}
+		if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, endFontSize).WidthIncludingTrailingWhitespace < width)
+		{
+			return endFontSize;
+		}
+		double num = 0.0;
+		while (endFontSize > 0.0)
+		{
+			double num2 = (endFontSize + num) / 2.0;
+			if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2).WidthIncludingTrailingWhitespace < width && MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2 + space).WidthIncludingTrailingWhitespace > width)
+			{
+				return num2;
+			}
+			if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2).WidthIncludingTrailingWhitespace < width)
+			{
+				num = num2 + space;
+				continue;
+			}
+			if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2).WidthIncludingTrailingWhitespace > width)
+			{
+				endFontSize = num2 - space;
+				continue;
+			}
+			return num2;
+		}
+		return FontSize;
+	}
+
+	private double CalculateMaxHeightFontSize(double height, double endFontSize, string text, FontFamily fontFamily, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch)
+	{
+		if (double.IsNaN(height))
+		{
+			return endFontSize;
+		}
+		if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, endFontSize).Height < height)
+		{
+			return endFontSize;
+		}
+		double num = 0.0;
+		while (endFontSize > 0.0)
+		{
+			double num2 = (endFontSize + num) / 2.0;
+			if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2).Height < height && MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2 + space).Height > height)
+			{
+				return num2;
+			}
+			if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2).Height < height)
+			{
+				num = num2 + space;
+				continue;
+			}
+			if (MeasureText(text, fontFamily, fontStyle, fontWeight, fontStretch, num2).Height > height)
+			{
+				endFontSize = num2 - space;
+				continue;
+			}
+			return num2;
+		}
+		return endFontSize;
+	}
+
+	public double CreatCharacterE(string text, double startX, double startY, double angle, int fontSize, string color, double opacity, double nextPos = 0.0, double width = 0.0, double height = 0.0, string tip = "", bool needTip = false, object dataSource = null)
+	{
+		if (sImage.Source == null)
+		{
+			return 0.0;
+		}
+		if (startX > GetImageWidth() || startY > GetImageHeight())
+		{
+			return nextPos;
+		}
+		if (text == (AppLocalizationService.GetLang("Lang_ModuleErr") ?? "模块执行异常"))
+		{
+			return 0.0;
+		}
+		if (fontSize == 0 || fontSize > 1000)
+		{
+			fontSize = 10;
+		}
+		double ratio = GetRatio();
+		TextBlock textBlock = new TextBlock
+		{
+			DataContext = dataSource
+		};
+		textBlock.IsHitTestVisible = false;
+		textBlock.TextWrapping = TextWrapping.Wrap;
+		textBlock.Text = text;
+		textBlock.SetValue(Canvas.TopProperty, startY * ratio);
+		textBlock.SetValue(Canvas.LeftProperty, startX * ratio);
+		textBlock.MaxWidth = sImage.Width;
+		if (width != 0.0 && height != 0.0)
+		{
+			textBlock.FontSize = Math.Min(CalculateMaxWidthFontSize(width * ratio, fontSize, textBlock.Text, textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch), CalculateMaxHeightFontSize(height * ratio, fontSize, textBlock.Text, textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch));
+		}
+		else
+		{
+			textBlock.FontSize = fontSize;
+		}
+		textBlock.Foreground = GetBrushByString(color);
+		textBlock.Opacity = opacity;
+		textBlock.ToolTip = tip;
+		if ((tip != "" && tip != text) & needTip)
+		{
+			textBlock.IsHitTestVisible = true;
+		}
+		if (angle >= -180.0 && angle <= 180.0)
+		{
+			RotateTransform renderTransform = new RotateTransform(angle);
+			textBlock.RenderTransform = renderTransform;
+		}
+		mView.Children.Add(textBlock);
+		shapeListE.Add(textBlock);
+		return GetTextDisplayWidth(textBlock.Text, textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch, textBlock.FontSize).Height / ratio + (startY + 0.5);
+	}
+
+	public void ClearShapesByData(object dataSource)
+	{
+		if (dataSource == null)
+		{
+			return;
+		}
+		IEnumerable<FrameworkElement> source = shapeListE.Where((FrameworkElement p) => p.DataContext == dataSource);
+		if (source.Count() > 0)
+		{
+			source.ToList().ForEach((FrameworkElement p) =>
+			{
+				mView.Children.Remove(p);
+				shapeListE.Remove(p);
+			});
+		}
+	}
+
+	private static SolidColorBrush GetColorFromInt(int nColor)
+	{
+		if (Convert.ToByte((nColor >> 24) & 0xFF) == 0)
+		{
+			return new SolidColorBrush(Color.FromArgb(Convert.ToByte(255), Convert.ToByte((nColor >> 16) & 0xFF), Convert.ToByte((nColor >> 8) & 0xFF), Convert.ToByte(nColor & 0xFF)));
+		}
+		return new SolidColorBrush(Color.FromArgb(Convert.ToByte((nColor >> 24) & 0xFF), Convert.ToByte((nColor >> 16) & 0xFF), Convert.ToByte((nColor >> 8) & 0xFF), Convert.ToByte(nColor & 0xFF)));
+	}
+
+	public void CreatAxis(float fCenterX, float fCenterY, float VectorX_X, float VectorX_Y, float VectorY_X, float VectorY_Y, string tips, string color, double opacity)
+	{
+		if (sImage.Source != null)
+		{
+			float axisLenth = (float)((double)ImageSourceWidth * 0.05);
+			System.Windows.Point centerPoint = new System.Windows.Point(fCenterX, fCenterY);
+			DrawAxis("X", centerPoint, VectorX_X, VectorX_Y, axisLenth, tips, color, opacity);
+			DrawAxis("Y", centerPoint, VectorY_X, VectorY_Y, axisLenth, tips, color, opacity);
+		}
+	}
+
+	private void DrawAxis(string text, System.Windows.Point CenterPoint, float Vector_X, float Vector_Y, float AxisLenth, string tips, string color, double opacity)
+	{
+		int num = 7;
+		float num2 = (float)GetRatio();
+		Vector vector = new Vector(Vector_X, Vector_Y);
+		vector.Normalize();
+		if (double.IsNaN(vector.X) || double.IsNaN(vector.Y))
+		{
+			return;
+		}
+		System.Windows.Point point = CenterPoint + vector * AxisLenth;
+		CreateArrowE(CenterPoint.X, CenterPoint.Y, point.X, point.Y, color, tips, needLabel: true, opacity, singleDir: true);
+		Size textDisplayWidth = GetTextDisplayWidth(text, FontFamily, FontStyle, FontWeight, FontStretch, num);
+		System.Windows.Point point2 = point;
+		Vector vector2 = new Vector(0f - Vector_Y, Vector_X);
+		vector2.Normalize();
+		if (!double.IsNaN(vector2.X) && !double.IsNaN(vector2.Y))
+		{
+			if (Vector.CrossProduct(vector, vector2) < 0.0)
+			{
+				vector2 = -vector2;
+			}
+			System.Windows.Point point3 = point2 + vector2 * textDisplayWidth.Width / num2 / 2.0;
+			double angle = Vector.AngleBetween(new Vector(0.0, 1.0), vector);
+			CreatCharacterE(text, point3.X, point3.Y, angle, num, color, opacity);
+		}
+	}
+
+	public static Size GetTextDisplayWidth(string str, FontFamily fontFamily, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, double FontSize)
+	{
+		FormattedText formattedText = MeasureText(str, fontFamily, fontStyle, fontWeight, fontStretch, FontSize);
+		return new Size(formattedText.Width, formattedText.Height);
+	}
+
+	private static FormattedText MeasureText(string str, FontFamily fontFamily, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, double FontSize)
+	{
+		return new FormattedText(str, CultureInfo.CurrentUICulture, System.Windows.FlowDirection.LeftToRight, new Typeface(fontFamily, fontStyle, fontWeight, fontStretch), FontSize, Brushes.Black);
+	}
+
+	public void CreateArrowE(double fStartX, double fStartY, double fEndX, double fEndY, string nColor, string tips, bool needLabel, double opacity, bool singleDir = false, bool IsThroughLine = false, double strokeThickness = 1.0, bool isDashed = false)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			System.Windows.Shapes.Line line = new System.Windows.Shapes.Line();
+			line.X1 = (fStartX + 0.5) * ratio;
+			line.Y1 = (fStartY + 0.5) * ratio;
+			line.X2 = (fEndX + 0.5) * ratio;
+			line.Y2 = (fEndY + 0.5) * ratio;
+			line.Stroke = GetBrushByString(nColor);
+			line.IsHitTestVisible = true;
+			line.Opacity = opacity;
+			line.ToolTip = tips;
+			line.StrokeThickness = 1.0 * strokeThickness / (sfr.ScaleX * viewScal);
+			mView.Children.Add(line);
+			shapeListE.Add(line);
+			float num = 10f;
+			double num2 = Math.Atan2(fStartY - fEndY, fStartX - fEndX);
+			num2 = num2 * 180.0 / Math.PI;
+			RotateTransform rotateTransform = new RotateTransform
+			{
+				CenterX = fEndX,
+				CenterY = fEndY,
+				Angle = num2
+			};
+			System.Windows.Point point = new System.Windows.Point(fEndX + (double)num, fEndY);
+			point = rotateTransform.Transform(point);
+			rotateTransform = new RotateTransform
+			{
+				CenterX = fEndX,
+				CenterY = fEndY,
+				Angle = 45.0
+			};
+			System.Windows.Point point2 = rotateTransform.Transform(point);
+			CreateLineE(fEndX, fEndY, point2.X, point2.Y, nColor, tips, needTips: true, needLabel: false, opacity, singleDir: true, IsThroughLine: false, strokeThickness);
+			rotateTransform = new RotateTransform
+			{
+				CenterX = fEndX,
+				CenterY = fEndY,
+				Angle = -45.0
+			};
+			System.Windows.Point point3 = rotateTransform.Transform(point);
+			CreateLineE(fEndX, fEndY, point3.X, point3.Y, nColor, tips, needTips: true, needLabel: false, opacity, singleDir: true, IsThroughLine: false, strokeThickness);
+		}
+	}
+
+	private System.Windows.Point getEllipsePointByAngle(double rWidth, double rHeight, double dAngle, double dCenterX, double dCenterY)
+	{
+		System.Windows.Point result = default;
+		dAngle %= 360.0;
+		double num = Math.PI * dAngle / 180.0;
+		if ((num >= 0.0 && num < Math.PI / 2.0) || (num > 4.71238898038469 && num < Math.PI * 2.0))
+		{
+			result.X = rWidth * rHeight / Math.Sqrt(rHeight * rHeight + rWidth * rWidth * Math.Tan(num) * Math.Tan(num));
+			result.Y = rWidth * rHeight * Math.Tan(num) / Math.Sqrt(rHeight * rHeight + rWidth * rWidth * Math.Tan(num) * Math.Tan(num));
+		}
+		else if (num > Math.PI / 2.0 && num < 4.71238898038469)
+		{
+			result.X = (0.0 - rWidth) * rHeight / Math.Sqrt(rHeight * rHeight + rWidth * rWidth * Math.Tan(num) * Math.Tan(num));
+			result.Y = (0.0 - rWidth) * rHeight * Math.Tan(num) / Math.Sqrt(rHeight * rHeight + rWidth * rWidth * Math.Tan(num) * Math.Tan(num));
+		}
+		else if (num == Math.PI / 2.0)
+		{
+			result.X = 0.0;
+			result.Y = rHeight;
+		}
+		else if (num == 4.71238898038469)
+		{
+			result.X = 0.0;
+			result.Y = 0.0 - rHeight;
+		}
+		result.X += dCenterX;
+		result.Y += dCenterY;
+		return result;
+	}
+
+	public void CreateArc(double rWidth, double rHeight, double fCenterX, double fCenterY, double fStartAngle, double fEndAngle, double fRotateAngle, string tips, int color, double opacity, float StrokeThickness = 1f)
+	{
+		if (fEndAngle == fStartAngle)
+		{
+			return;
+		}
+		if (Math.Abs(fEndAngle - fStartAngle) % 360.0 == 0.0)
+		{
+			CreateAngleCircle(rWidth, rHeight, fCenterX, fCenterY, fRotateAngle, tips, color, opacity, StrokeThickness);
+		}
+		else if (sImage.Source != null && !(rWidth < 0.0) && !(rHeight < 0.0))
+		{
+			double ratio = GetRatio();
+			System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+			double num = rWidth * ratio * 2.0;
+			double num2 = rHeight * ratio * 2.0;
+			fCenterX += 0.5;
+			fCenterY += 0.5;
+			fCenterX *= ratio;
+			fCenterY *= ratio;
+			path.SetValue(Canvas.TopProperty, fCenterY - num2 / 2.0);
+			path.SetValue(Canvas.LeftProperty, fCenterX - num / 2.0);
+			path.Stroke = GetColorFromInt(color);
+			path.IsHitTestVisible = true;
+			System.Windows.Controls.ToolTip toolTip = new System.Windows.Controls.ToolTip();
+			toolTip.Content = tips;
+			toolTip.StaysOpen = true;
+			path.ToolTip = toolTip;
+			path.Opacity = opacity;
+			System.Windows.Point ellipsePointByAngle = getEllipsePointByAngle(num / 2.0, num2 / 2.0, fStartAngle, num / 2.0, num2 / 2.0);
+			System.Windows.Point ellipsePointByAngle2 = getEllipsePointByAngle(num / 2.0, num2 / 2.0, fEndAngle, num / 2.0, num2 / 2.0);
+			int num3 = ((Math.Abs(fEndAngle - fStartAngle) > 180.0) ? 1 : 0);
+			string value = $"M {ellipsePointByAngle.X},{ellipsePointByAngle.Y} A {num / 2.0},{num2 / 2.0} 0 {num3} 1 {ellipsePointByAngle2.X},{ellipsePointByAngle2.Y}";
+			path.StrokeThickness = (double)StrokeThickness / (sfr.ScaleX * viewScal);
+			path.Width = num + path.StrokeThickness;
+			path.Height = num2 + path.StrokeThickness;
+			TypeConverter converter = TypeDescriptor.GetConverter(typeof(Geometry));
+			path.Data = (Geometry)converter.ConvertFrom(value);
+			if (fRotateAngle >= -180.0 && fRotateAngle <= 180.0)
+			{
+				RotateTransform rotateTransform = new RotateTransform(fRotateAngle);
+				rotateTransform.CenterX = path.Width / 2.0;
+				rotateTransform.CenterY = path.Height / 2.0;
+				path.RenderTransform = rotateTransform;
+			}
+			mView.Children.Add(path);
+			shapeListE.Add(path);
+		}
+	}
+
+	public void CreateAngleCircle(double rWidth, double rHeight, double fCenterX, double fCenterY, double fRotateAngle, string tips, int color, double opacity, float StrokeThickness = 1f)
+	{
+		if (sImage.Source != null && !(rWidth < 0.0) && !(rHeight < 0.0))
+		{
+			double ratio = GetRatio();
+			System.Windows.Shapes.Ellipse ellipse = new System.Windows.Shapes.Ellipse();
+			ellipse.Width = rWidth * ratio * 2.0;
+			ellipse.Height = rHeight * ratio * 2.0;
+			fCenterX += 0.5;
+			fCenterY += 0.5;
+			fCenterX *= ratio;
+			fCenterY *= ratio;
+			ellipse.SetValue(Canvas.TopProperty, fCenterY - ellipse.Height / 2.0);
+			ellipse.SetValue(Canvas.LeftProperty, fCenterX - ellipse.Width / 2.0);
+			ellipse.Stroke = GetColorFromInt(color);
+			ellipse.IsHitTestVisible = true;
+			System.Windows.Controls.ToolTip toolTip = new System.Windows.Controls.ToolTip();
+			toolTip.Content = tips;
+			toolTip.StaysOpen = true;
+			ellipse.ToolTip = toolTip;
+			ellipse.Opacity = opacity;
+			ellipse.StrokeThickness = (double)StrokeThickness / (sfr.ScaleX * viewScal);
+			if (fRotateAngle >= -180.0 && fRotateAngle <= 180.0 && fRotateAngle != 0.0)
+			{
+				RotateTransform rotateTransform = new RotateTransform(fRotateAngle);
+				rotateTransform.CenterX = ellipse.Width / 2.0;
+				rotateTransform.CenterY = ellipse.Height / 2.0;
+				ellipse.RenderTransform = rotateTransform;
+			}
+			mView.Children.Add(ellipse);
+			shapeListE.Add(ellipse);
+		}
+	}
+
+	private static Brush GetBrushByString(string color)
+	{
+		if (color != null)
+		{
+			try
+			{
+				return brushConverter.ConvertFromString(color) as Brush;
+			}
+			catch
+			{
+			}
+		}
+		return null;
+	}
+
+	public void CreatCircleE(double rWidth, double rHeight, double fCenterX, double fCenterY, string tips, string color, double opacity, double strokeThickness = 1.0, string fill = null)
+	{
+		if (sImage.Source != null && !(rWidth < 0.0) && !(rHeight < 0.0))
+		{
+			double ratio = GetRatio();
+			System.Windows.Shapes.Ellipse ellipse = new System.Windows.Shapes.Ellipse();
+			ellipse.Width = rWidth * ratio * 2.0;
+			ellipse.Height = rHeight * ratio * 2.0;
+			fCenterX += 0.5;
+			fCenterY += 0.5;
+			fCenterX *= ratio;
+			fCenterY *= ratio;
+			ellipse.SetValue(Canvas.TopProperty, fCenterY - ellipse.Height / 2.0);
+			ellipse.SetValue(Canvas.LeftProperty, fCenterX - ellipse.Width / 2.0);
+			ellipse.Stroke = GetBrushByString(color);
+			ellipse.IsHitTestVisible = true;
+			System.Windows.Controls.ToolTip toolTip = new System.Windows.Controls.ToolTip();
+			toolTip.Content = tips;
+			toolTip.StaysOpen = true;
+			ellipse.ToolTip = toolTip;
+			ellipse.Opacity = opacity;
+			ellipse.Fill = GetBrushByString(fill);
+			ellipse.StrokeThickness = 1.0 * strokeThickness / (sfr.ScaleX * viewScal);
+			ellipse.Tag = strokeThickness;
+			mView.Children.Add(ellipse);
+			shapeListE.Add(ellipse);
+		}
+	}
+
+	public void CreatCircle(double rWidth, double rHeight, double fCenterX, double fCenterY)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			System.Windows.Shapes.Ellipse ellipse = new System.Windows.Shapes.Ellipse();
+			ellipse.Width = rWidth * ratio * 2.0;
+			ellipse.Height = rHeight * ratio * 2.0;
+			fCenterX += 0.5;
+			fCenterY += 0.5;
+			fCenterX *= ratio;
+			fCenterY *= ratio;
+			ellipse.SetValue(Canvas.TopProperty, fCenterY - ellipse.Height / 2.0);
+			ellipse.SetValue(Canvas.LeftProperty, fCenterX - ellipse.Width / 2.0);
+			ellipse.Stroke = Brushes.LawnGreen;
+			ellipse.IsHitTestVisible = false;
+			ellipse.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			mView.Children.Add(ellipse);
+			shapeList.Add(ellipse);
+		}
+	}
+
+	public void CreatAnnularSector(double rInnner, double rOuter, double fCenterX, double fCenterY, double fStartAngle, double fAngleRange, string tips, string color, double opacity, string fill = null, double strokeThickness = 1.0)
+	{
+		if (sImage.Source != null && !(rInnner < 0.0) && !(rOuter < rInnner))
+		{
+			double ratio = GetRatio();
+			RotateTransform rotateTransform = new RotateTransform();
+			System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
+			PathGeometry pathGeometry = new PathGeometry();
+			PathFigure pathFigure = new PathFigure();
+			fCenterX += 0.5;
+			fCenterY += 0.5;
+			fCenterX *= ratio;
+			fCenterY *= ratio;
+			rInnner *= ratio;
+			rOuter *= ratio;
+			if (fAngleRange == 360.0)
+			{
+				fAngleRange -= 1E-05;
+			}
+			rotateTransform.CenterX = fCenterX;
+			rotateTransform.CenterY = fCenterY;
+			rotateTransform.Angle = fStartAngle;
+			pathFigure.StartPoint = rotateTransform.Transform(new System.Windows.Point(fCenterX + rInnner, fCenterY));
+			rotateTransform.Angle = fStartAngle + fAngleRange;
+			System.Windows.Point point = rotateTransform.Transform(new System.Windows.Point(fCenterX + rInnner, fCenterY));
+			pathFigure.Segments.Add(new ArcSegment
+			{
+				Size = new Size(rInnner, rInnner),
+				IsLargeArc = (fAngleRange > 180.0),
+				SweepDirection = SweepDirection.Clockwise,
+				Point = new System.Windows.Point(point.X, point.Y)
+			});
+			point = rotateTransform.Transform(new System.Windows.Point(fCenterX + rOuter, fCenterY));
+			pathFigure.Segments.Add(new LineSegment
+			{
+				Point = new System.Windows.Point(point.X, point.Y),
+				IsStroked = false
+			});
+			rotateTransform.Angle = fStartAngle;
+			point = rotateTransform.Transform(new System.Windows.Point(fCenterX + rOuter, fCenterY));
+			pathFigure.Segments.Add(new ArcSegment
+			{
+				Size = new Size(rOuter, rOuter),
+				IsLargeArc = (fAngleRange > 180.0),
+				Point = new System.Windows.Point(point.X, point.Y)
+			});
+			pathFigure.Segments.Add(new LineSegment
+			{
+				Point = new System.Windows.Point(pathFigure.StartPoint.X, pathFigure.StartPoint.Y)
+			});
+			pathGeometry.Figures.Add(pathFigure);
+			path.Data = pathGeometry;
+			path.Stroke = GetBrushByString(color);
+			path.IsHitTestVisible = true;
+			System.Windows.Controls.ToolTip toolTip = new System.Windows.Controls.ToolTip();
+			toolTip.Content = tips;
+			toolTip.StaysOpen = true;
+			path.ToolTip = toolTip;
+			path.Opacity = opacity;
+			path.Fill = GetBrushByString(fill);
+			path.StrokeThickness = 1.0 * strokeThickness / (sfr.ScaleX * viewScal);
+			mView.Children.Add(path);
+			shapeListE.Add(path);
+		}
+	}
+
+	public void CreatPolygon(List<System.Windows.Point> points, string tips, string color, double opacity, string fill = null, double strokeThickness = 1.0)
+	{
+		if (sImage.Source == null || points == null || points.Count <= 0)
+		{
+			return;
+		}
+		double ratio = GetRatio();
+		System.Windows.Shapes.Polygon polygon = new System.Windows.Shapes.Polygon();
+		foreach (System.Windows.Point point in points)
+		{
+			double x = point.X * ratio;
+			double y = point.Y * ratio;
+			polygon.Points.Add(new System.Windows.Point(x, y));
+		}
+		polygon.Stroke = GetBrushByString(color);
+		polygon.IsHitTestVisible = true;
+		System.Windows.Controls.ToolTip toolTip = new System.Windows.Controls.ToolTip();
+		toolTip.Content = tips;
+		toolTip.StaysOpen = true;
+		polygon.ToolTip = toolTip;
+		polygon.Opacity = opacity;
+		polygon.Fill = GetBrushByString(fill);
+		polygon.StrokeThickness = 1.0 * strokeThickness / (sfr.ScaleX * viewScal);
+		polygon.Tag = strokeThickness;
+		mView.Children.Add(polygon);
+		shapeListE.Add(polygon);
+	}
+
+	public void CreatLine(double fStartX, double fStartY, double fEndX, double fEndY, int nColor)
+	{
+		if (sImage.Source != null)
+		{
+			double ratio = GetRatio();
+			System.Windows.Shapes.Line line = new System.Windows.Shapes.Line();
+			line.X1 = (fStartX + 0.5) * ratio;
+			line.Y1 = (fStartY + 0.5) * ratio;
+			line.X2 = (fEndX + 0.5) * ratio;
+			line.Y2 = (fEndY + 0.5) * ratio;
+			line.Stroke = GetColorFromInt(nColor);
+			line.IsHitTestVisible = false;
+			line.Opacity = 1.0;
+			line.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			mView.Children.Add(line);
+			shapeList.Add(line);
+		}
+	}
+
+	public void CreatDotLineX(double fStartX, double fEndX, double fY, double increase, double empty, int nColor)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		while (!(fStartX >= fEndX))
+		{
+			if (fStartX + increase < fEndX)
+			{
+				CreatLine(fStartX, fY, fStartX + increase, fY, nColor);
+				fStartX = fStartX + increase + empty;
+			}
+			else
+			{
+				CreatLine(fStartX, fY, fEndX, fY, nColor);
+				fStartX = fStartX + increase + empty;
+			}
+		}
+	}
+
+	public void CreatDotLineY(double fStartY, double fEndY, double fX, double increase, double empty, int nColor)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		while (!(fStartY >= fEndY))
+		{
+			if (fStartY + increase < fEndY)
+			{
+				CreatLine(fX, fStartY, fX, fStartY + increase, nColor);
+				fStartY = fStartY + increase + empty;
+			}
+			else
+			{
+				CreatLine(fX, fStartY, fX, fEndY, nColor);
+				fStartY = fStartY + increase + empty;
+			}
+		}
+	}
+
+	private System.Windows.Controls.ToolTip GetToolTip(string name, string remark)
+	{
+		StackPanel stackPanel = new StackPanel();
+		System.Windows.Controls.Label label = new System.Windows.Controls.Label();
+		label.FontWeight = FontWeights.Bold;
+		label.Background = Brushes.Blue;
+		label.Foreground = Brushes.White;
+		label.Content = name + "检测结果";
+		stackPanel.Children.Add(label);
+		TextBlock textBlock = new TextBlock();
+		textBlock.Padding = new Thickness(10.0);
+		textBlock.TextWrapping = TextWrapping.WrapWithOverflow;
+		textBlock.Width = 200.0;
+		textBlock.Text = name + "\r" + remark;
+		stackPanel.Children.Add(textBlock);
+		System.Windows.Shapes.Line line = new System.Windows.Shapes.Line();
+		line.Stroke = Brushes.Black;
+		line.StrokeThickness = 1.0;
+		line.X2 = 200.0;
+		stackPanel.Children.Add(line);
+		StackPanel stackPanel2 = new StackPanel();
+		stackPanel2.Orientation = System.Windows.Controls.Orientation.Horizontal;
+		System.Windows.Controls.Label label2 = new System.Windows.Controls.Label();
+		label2.FontWeight = FontWeights.Bold;
+		label2.Content = "右键菜单显示路由信息";
+		stackPanel2.Children.Add(label2);
+		stackPanel.Children.Add(stackPanel2);
+		System.Windows.Controls.ToolTip toolTip = new System.Windows.Controls.ToolTip();
+		toolTip.Content = stackPanel;
+		return toolTip;
+	}
+
+	public void CreateLineE(double fStartX, double fStartY, double fEndX, double fEndY, string nColor, string tips, bool needTips, bool needLabel, double opacity, bool singleDir = false, bool IsThroughLine = false, double strokeThickness = 1.0, bool isDashed = false)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		double ratio = GetRatio();
+		System.Windows.Shapes.Line line = new System.Windows.Shapes.Line();
+		if (IsThroughLine && ImageDataSource != null)
+		{
+			if (CalBoderPoint(new System.Windows.Point(fStartX, fStartY), new System.Windows.Point(fEndX, fEndY), ImageDataSource.Width, ImageDataSource.Height, out var borderPoint, out var borderPoint2))
+			{
+				line.X1 = (borderPoint.X + 0.5) * ratio;
+				line.Y1 = (borderPoint.Y + 0.5) * ratio;
+				line.X2 = (borderPoint2.X + 0.5) * ratio;
+				line.Y2 = (borderPoint2.Y + 0.5) * ratio;
+			}
+			else
+			{
+				line.X1 = (fStartX + 0.5) * ratio;
+				line.Y1 = (fStartY + 0.5) * ratio;
+				line.X2 = (fEndX + 0.5) * ratio;
+				line.Y2 = (fEndY + 0.5) * ratio;
+			}
+		}
+		else
+		{
+			line.X1 = (fStartX + 0.5) * ratio;
+			line.Y1 = (fStartY + 0.5) * ratio;
+			line.X2 = (fEndX + 0.5) * ratio;
+			line.Y2 = (fEndY + 0.5) * ratio;
+		}
+		line.Stroke = GetBrushByString(nColor);
+		line.IsHitTestVisible = true;
+		line.Opacity = opacity;
+		if (needTips)
+		{
+			line.ToolTip = tips;
+		}
+		double num = sfr.ScaleX * viewScal;
+		if (isDashed)
+		{
+			line.StrokeDashArray = new DoubleCollection
+			{
+				2.0 * num,
+				3.0 * num
+			};
+		}
+		line.Tag = strokeThickness;
+		line.StrokeThickness = 1.0 * strokeThickness / num;
+		line.Tag = strokeThickness;
+		mView.Children.Add(line);
+		shapeListE.Add(line);
+		if (needLabel)
+		{
+			CreateArrowE(fStartX, fStartY, fEndX, fEndY, nColor, tips, needLabel, opacity, singleDir, IsThroughLine, strokeThickness, isDashed);
+		}
+	}
+
+	public void CreatRectangle(double fCenterX, double fCenterY, double fWidth, double fHeight, double fAngle, int nColor)
+	{
+		if (sImage.Source != null && !(fWidth < 0.0) && !(fHeight < 0.0))
+		{
+			double ratio = GetRatio();
+			Rectangle rectangle = new Rectangle();
+			double num = fCenterX - fWidth / 2.0 + 0.5;
+			double num2 = fCenterY - fHeight / 2.0 + 0.5;
+			rectangle.Width = fWidth * ratio;
+			rectangle.Height = fHeight * ratio;
+			num *= ratio;
+			num2 *= ratio;
+			rectangle.Stroke = GetColorFromInt(nColor);
+			rectangle.SetValue(Canvas.TopProperty, num2);
+			rectangle.SetValue(Canvas.LeftProperty, num);
+			rectangle.IsHitTestVisible = false;
+			rectangle.Opacity = 1.0;
+			rectangle.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			if (fAngle >= -180.0 && fAngle <= 180.0)
+			{
+				RotateTransform rotateTransform = new RotateTransform(fAngle);
+				rotateTransform.CenterX = rectangle.Width / 2.0;
+				rotateTransform.CenterY = rectangle.Height / 2.0;
+				rectangle.RenderTransform = rotateTransform;
+			}
+			mView.Children.Add(rectangle);
+			shapeList.Add(rectangle);
+		}
+	}
+
+	public void CreatRectangleE(double fCenterX, double fCenterY, double fWidth, double fHeight, double fAngle, string nColor, string tips, double opacity, double fSkewAngleX = 0.0, double strokeThickness = 1.0, double fSkewAngleY = 0.0, string fill = null)
+	{
+		if (sImage.Source != null && !(fWidth < 0.0) && !(fHeight < 0.0))
+		{
+			double ratio = GetRatio();
+			Rectangle rectangle = new Rectangle();
+			double num = fCenterX - fWidth / 2.0 + 0.5;
+			double num2 = fCenterY - fHeight / 2.0 + 0.5;
+			rectangle.Width = fWidth * ratio;
+			rectangle.Height = fHeight * ratio;
+			num *= ratio;
+			num2 *= ratio;
+			rectangle.Stroke = GetBrushByString(nColor);
+			rectangle.SetValue(Canvas.TopProperty, num2);
+			rectangle.SetValue(Canvas.LeftProperty, num);
+			rectangle.IsHitTestVisible = true;
+			rectangle.Opacity = opacity;
+			rectangle.ToolTip = tips;
+			rectangle.StrokeThickness = 1.0 * strokeThickness / (sfr.ScaleX * viewScal);
+			rectangle.Tag = strokeThickness;
+			TransformGroup renderTransform = new TransformGroup
+			{
+				Children = new TransformCollection
+				{
+					new SkewTransform
+					{
+						AngleX = fSkewAngleX,
+						AngleY = fSkewAngleY,
+						CenterX = rectangle.Width / 2.0,
+						CenterY = rectangle.Height / 2.0
+					},
+					new RotateTransform
+					{
+						Angle = fAngle,
+						CenterX = rectangle.Width / 2.0,
+						CenterY = rectangle.Height / 2.0
+					}
+				}
+			};
+			rectangle.RenderTransform = renderTransform;
+			rectangle.IsHitTestVisible = !string.IsNullOrEmpty(tips);
+			rectangle.Fill = GetBrushByString(fill);
+			mView.Children.Add(rectangle);
+			shapeListE.Add(rectangle);
+		}
+	}
+
+	public void CreatHeighLightRectangle(double fCenterX, double fCenterY, double fWidth, double fHeight, double fAngle)
+	{
+		if (sImage.Source != null && !(fWidth < 0.0) && !(fHeight < 0.0))
+		{
+			double ratio = GetRatio();
+			Rectangle rectangle = new Rectangle();
+			double num = fCenterX - fWidth / 2.0 + 0.5;
+			double num2 = fCenterY - fHeight / 2.0 + 0.5;
+			rectangle.Width = fWidth * ratio;
+			rectangle.Height = fHeight * ratio;
+			num *= ratio;
+			num2 *= ratio;
+			rectangle.SetValue(Canvas.TopProperty, num2);
+			rectangle.SetValue(Canvas.LeftProperty, num);
+			rectangle.Stroke = new SolidColorBrush(Color.FromArgb(byte.MaxValue, 238, 140, 74));
+			rectangle.IsHitTestVisible = false;
+			rectangle.Opacity = 1.0;
+			rectangle.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			if (fAngle >= -180.0 && fAngle <= 180.0)
+			{
+				RotateTransform rotateTransform = new RotateTransform(fAngle);
+				rotateTransform.CenterX = rectangle.Width / 2.0;
+				rotateTransform.CenterY = rectangle.Height / 2.0;
+				rectangle.RenderTransform = rotateTransform;
+			}
+			mView.Children.Add(rectangle);
+			shapeList.Add(rectangle);
+		}
+	}
+
+	public void CreatAngle(LineAngle shape, string tips, string nColor, double opacity)
+	{
+		if (sImage.Source != null)
+		{
+			LineAndAngle lineAndAngle = new LineAndAngle();
+			lineAndAngle.SetBinding(LineAndAngle.Line1Point1XProperty, "StartLine1XA");
+			lineAndAngle.SetBinding(LineAndAngle.Line1Point1YProperty, "StartLine1YA");
+			lineAndAngle.SetBinding(LineAndAngle.Line1Point2XProperty, "EndLine1XA");
+			lineAndAngle.SetBinding(LineAndAngle.Line1Point2YProperty, "EndLine1YA");
+			lineAndAngle.SetBinding(LineAndAngle.IntersectionXProperty, "IntersectionXA");
+			lineAndAngle.SetBinding(LineAndAngle.IntersectionYProperty, "IntersectionYA");
+			lineAndAngle.SetBinding(LineAndAngle.Line2Point1XProperty, "StartLine2XA");
+			lineAndAngle.SetBinding(LineAndAngle.Line2Point1YProperty, "StartLine2YA");
+			lineAndAngle.SetBinding(LineAndAngle.Line2Point2XProperty, "EndLine2XA");
+			lineAndAngle.SetBinding(LineAndAngle.Line2Point2YProperty, "EndLine2YA");
+			lineAndAngle.SetBinding(LineAndAngle.AngleProperty, "AngleA");
+			lineAndAngle.SetBinding(LineAndAngle.ScaleRatioProperty, new System.Windows.Data.Binding("ScaleRate")
+			{
+				Source = this
+			});
+			lineAndAngle.Stroke = GetBrushByString(nColor);
+			lineAndAngle.StrokeThickness = 1.0;
+			lineAndAngle.Opacity = opacity;
+			lineAndAngle.Ratio = GetRatio();
+			lineAndAngle.DataContext = shape;
+			lineAndAngle.SetCurrentValue(LineAndAngle.ScaleRatioProperty, ScaleRate);
+			mView.Children.Add(lineAndAngle);
+		}
+	}
+
+	public void ClearShapes()
+	{
+		foreach (FrameworkElement shape in shapeList)
+		{
+			mView.Children.Remove(shape);
+		}
+		shapeList.Clear();
+		pointPath.Clear();
+	}
+
+	public void ClearShapesE()
+	{
+		mView.Children.Clear();
+		shapeListE.Clear();
+		pointPathE.Clear();
+		ClearLargePointSet();
+		geometryGroup.Children.Clear();
+		if (ShapeList != null)
+		{
+			ShapeList.Clear();
+		}
+		ShapeDataList = null;
+	}
+
+	private void ClearLargePointSet()
+	{
+		Dispatcher.Invoke(() =>
+		{
+			pointsImage.Source = null;
+			PointLenth = 0;
+			ExternPoint_Buffer = null;
+			ExternPoint_Buffer_OkColor.Clear();
+			ExternPoint_Buffer_NgColor.Clear();
+			ExternPoint_Buffer_Opacity.Clear();
+		});
+	}
+
+	private static bool CalBoderPoint(System.Windows.Point pt1, System.Windows.Point pt2, int Width, int Height, out System.Windows.Point borderPoint1, out System.Windows.Point borderPoint2)
+	{
+		borderPoint1 = default;
+		borderPoint2 = default;
+		if (pt1.X == pt2.X && pt1.Y == pt2.Y)
+		{
+			return false;
+		}
+		if (pt1.X == pt2.X)
+		{
+			borderPoint1.X = pt1.X;
+			borderPoint1.Y = 0.0;
+			borderPoint2.X = pt1.X;
+			borderPoint2.Y = Height;
+		}
+		else if (pt1.Y == pt2.Y)
+		{
+			borderPoint1.X = 0.0;
+			borderPoint1.Y = pt1.Y;
+			borderPoint2.X = Width;
+			borderPoint2.Y = pt1.Y;
+		}
+		else
+		{
+			System.Windows.Point[] array = new System.Windows.Point[4];
+			int[] array2 = new int[4] { 1, 1, 1, 1 };
+			double num = 0.0;
+			double num2 = 0.0;
+			num = (pt1.Y - pt2.Y) / (pt1.X - pt2.X);
+			num2 = pt2.Y - num * pt2.X;
+			array[0].X = 0.0;
+			array[0].Y = num2;
+			if (array[0].Y < 0.0 || array[0].Y > (double)Height)
+			{
+				array2[0] = 0;
+			}
+			array[1].X = Width;
+			array[1].Y = num * array[1].X + num2;
+			if (array[1].Y < 0.0 || array[1].Y > (double)Height)
+			{
+				array2[1] = 0;
+			}
+			array[2].Y = 0.0;
+			array[2].X = (array[2].Y - num2) / num;
+			if (array[2].X < 0.0 || array[2].X > (double)Width)
+			{
+				array2[2] = 0;
+			}
+			array[3].Y = Height;
+			array[3].X = (array[3].Y - num2) / num;
+			if (array[3].X < 0.0 || array[3].X > (double)Width)
+			{
+				array2[3] = 0;
+			}
+			int num3 = 0;
+			for (int i = 0; i < 4; i++)
+			{
+				if (array2[i] == 1)
+				{
+					switch (num3)
+					{
+					case 0:
+						borderPoint1.X = array[i].X;
+						borderPoint1.Y = array[i].Y;
+						num3++;
+						break;
+					case 1:
+						borderPoint2.X = array[i].X;
+						borderPoint2.Y = array[i].Y;
+						break;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	public bool AnyROIIsMouseOver()
+	{
+		IEnumerator rOIChildViewList = GetROIChildViewList();
+		rOIChildViewList.Reset();
+		while (rOIChildViewList.MoveNext())
+		{
+			System.Windows.Controls.UserControl obj = rOIChildViewList.Current as System.Windows.Controls.UserControl;
+			if (obj != null && obj.IsMouseOver)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public IEnumerator GetROIChildViewList()
+	{
+		return mROIView.Children.GetEnumerator();
+	}
+
+	public void AddROIChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			mROIView.Children.Add(frameworkElement);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void AddChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			mView.Children.Add(frameworkElement);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void AddImageLayer(Image layer)
+	{
+		if (!ImageLayers.Children.Contains(layer))
+		{
+			ImageLayers.Children.Add(layer);
+		}
+	}
+
+	public void RemoveImageLayer(Image layer)
+	{
+		if (ImageLayers.Children.Contains(layer))
+		{
+			ImageLayers.Children.Remove(layer);
+		}
+	}
+
+	public void AddAboveChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			ExtenAbove.Children.Add(frameworkElement);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void RemoveAboveChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			ExtenAbove.Children.Remove(frameworkElement);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void AddGridChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			mainGrid.Children.Add(frameworkElement);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void RemoveGridChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			mainGrid.Children.Remove(frameworkElement);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void RemoveROIChild(FrameworkElement frameworkElement)
+	{
+		if (mROIView.Children.Contains(frameworkElement))
+		{
+			mROIView.Children.Remove(frameworkElement);
+			if (frameworkElement is IDisposable)
+			{
+				(frameworkElement as IDisposable).Dispose();
+			}
+		}
+	}
+
+	public void RemoveChild(FrameworkElement frameworkElement)
+	{
+		if (mView.Children.Contains(frameworkElement))
+		{
+			mView.Children.Remove(frameworkElement);
+		}
+	}
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public void SetPixelInfo(int X, int Y, int R, int G, int B, int value)
+	{
+		PixelX = X;
+		PixelY = Y;
+		PixelG = G;
+		PixelR = R;
+		PixelB = B;
+		RangeValue = value;
+		PixelInfoLabel = ImageDataSource.PixelInfoLabel;
+		if (!(ImageDataSource.PixelFormat == PixelFormats.Gray8) || ImageDataSource.PixelExtraInfo.Keys.Count == 0 || ImageDataSource.ImageBuffer == null)
+		{
+			return;
+		}
+		try
+		{
+			string key = ImageDataSource.ImageBuffer[Y * ImageDataSource.Width + X].ToString();
+			if (ImageDataSource.PixelExtraInfo.ContainsKey(key))
+			{
+				PixelInfo = ImageDataSource.PixelExtraInfo[key];
+			}
+			else
+			{
+				PixelInfo = "";
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	public static void SourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+	{
+		if (!(sender is HikImageView hikImageView))
+		{
+			return;
+		}
+		ImageSource imageSource = e.OldValue as ImageSource;
+		ImageSource imageSource2 = e.NewValue as ImageSource;
+		if (e.NewValue == null)
+		{
+			hikImageView.SetCurrentValue(ImageDataSourceProperty, null);
+			hikImageView.ImageSourceWidth = 0;
+			hikImageView.ImageSourceHeight = 0;
+		}
+		hikImageView.IsSourceDataCompressed = hikImageView.DataFlag == 0;
+		if (hikImageView.IsSourceDataCompressed)
+		{
+			if (hikImageView.ImageDataSource != null)
+			{
+				hikImageView.ImageSourceWidth = hikImageView.ImageDataSource.Width;
+				hikImageView.ImageSourceHeight = hikImageView.ImageDataSource.Height;
+			}
+		}
+		else
+		{
+			WriteableBitmap writeableBitmap = null;
+			BitmapImage bitmapImage = null;
+			if (hikImageView.Source is WriteableBitmap writeableBitmap2)
+			{
+				hikImageView.ImageSourceWidth = writeableBitmap2.PixelWidth;
+				hikImageView.ImageSourceHeight = writeableBitmap2.PixelHeight;
+			}
+			else if (hikImageView.Source is BitmapImage bitmapImage2)
+			{
+				hikImageView.ImageSourceWidth = bitmapImage2.PixelWidth;
+				hikImageView.ImageSourceHeight = bitmapImage2.PixelHeight;
+			}
+			else
+			{
+				hikImageView.ImageSourceWidth = 0;
+				hikImageView.ImageSourceHeight = 0;
+			}
+		}
+		hikImageView.DataFlag = -1;
+		hikImageView.lastysfr = hikImageView.sfr.ScaleY;
+		hikImageView.sImage.Source = e.NewValue as ImageSource;
+		hikImageView.needFlash = true;
+		hikImageView.PixelInfoLabel = "";
+		hikImageView.PixelInfo = "";
+		if (hikImageView.curImageX >= 0 && hikImageView.curImageY >= 0 && hikImageView.curImageX < hikImageView.ImageSourceWidth && hikImageView.curImageX < hikImageView.ImageSourceHeight)
+		{
+			hikImageView.CallChangePixel(hikImageView.curImageX, hikImageView.curImageY);
+		}
+	}
+
+	private static void ImageSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		HikImageView hikImageView = d as HikImageView;
+		hikImageView.DoImageSourceChanged();
+		hikImageView.ImageSourceChangeEvent?.Invoke(e.OldValue as ImageData, e.NewValue as ImageData);
+		hikImageView.NotifyPropertyChanged("IsShowRangeImage");
+	}
+
+	private void DoImageSourceChanged()
+	{
+		try
+		{
+			SetImageSource();
+		}
+		catch (Exception)
+		{
+		}
+		finally
+		{
+			OnSetImageEnd?.Invoke(this, null);
+		}
+	}
+
+	public void SetImageDataSource(ImageData imageData)
+	{
+		ImageDataSource = imageData;
+	}
+
+	private void SetImageSource()
+	{
+		try
+		{
+			if (IsLoaded)
+			{
+				UpdateImageSize();
+			}
+			if (ImageDataSource == null && !IsBindSource)
+			{
+				Source = null;
+			}
+			else
+			{
+				if (double.IsNaN(_imageSize.Width) || double.IsNaN(_imageSize.Height))
+				{
+					return;
+				}
+				double scaleX = sfr.ScaleX;
+				Size size = new Size((int)(_imageSize.Width * scaleX), (int)(_imageSize.Height * scaleX));
+				double num = size.Width / (double)ImageDataSource.Width;
+				if (num > 0.5)
+				{
+					num = 1.0;
+				}
+				if (num < 1.0 && size.Width != 0.0 && size.Height != 0.0)
+				{
+					DataFlag = 0;
+					if (_byte2Image.ImageAddition == null)
+					{
+						Source = _byte2Image.BuiltImageSourceA(ImageDataSource, (int)size.Width, (int)size.Height);
+					}
+					else
+					{
+						Source = _byte2Image.ImageAddition.BuiltImageSourceA(ImageDataSource, (int)size.Width, (int)size.Height, IsAutoMode, MinValue3D, MaxValue3D) as ImageSource;
+					}
+					_imageViewWidth = size.Width;
+					_imageViewHeight = size.Height;
+				}
+				else
+				{
+					if (_byte2Image.ImageAddition == null)
+					{
+						Source = _byte2Image.BuiltImageSourceA(ImageDataSource);
+					}
+					else
+					{
+						Source = ((ImageDataSource == null) ? null : (_byte2Image.ImageAddition.BuiltImageSourceA(ImageDataSource, IsAutoMode, MinValue3D, MaxValue3D) as ImageSource));
+					}
+					_imageViewWidth = ((ImageDataSource != null) ? ImageDataSource.Width : 0);
+					_imageViewHeight = ((ImageDataSource != null) ? ImageDataSource.Height : 0);
+				}
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	public double GetImageViewWidth()
+	{
+		return _imageViewWidth;
+	}
+
+	public double GetImageViewHeight()
+	{
+		return _imageViewHeight;
+	}
+
+	private void UpdateImageSize()
+	{
+		if (ImageDataSource == null)
+		{
+			return;
+		}
+		try
+		{
+			double num = (double)ImageDataSource.Width / (double)ImageDataSource.Height;
+			double num2 = viewbox.Width / viewbox.Height;
+			if (num > num2)
+			{
+				double width = viewbox.Width;
+				double height = width / num;
+				_imageSize = new Size(width, height);
+			}
+			else
+			{
+				double height2 = viewbox.Height;
+				double width2 = num * height2;
+				_imageSize = new Size(width2, height2);
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	public void SetImageLockData(ImageLockData imageLockData)
+	{
+		_imageLockData = imageLockData;
+	}
+
+	public void LockImageShow()
+	{
+		if (!_imageLockData._bLocked || double.IsNaN(_imageSize.Width) || double.IsNaN(_imageSize.Height) || !_imageLockData.CheckDataValid())
+		{
+			return;
+		}
+		Size lastImageSize = new Size((int)_imageSize.Width, (int)_imageSize.Height);
+		if (lastImageSize.Width != 0.0 && lastImageSize.Height != 0.0)
+		{
+			double num = (double)viewbox.GetValue(Canvas.LeftProperty);
+			double num2 = (double)viewbox.GetValue(Canvas.TopProperty);
+			double x = curPoint.X;
+			double y = curPoint.Y;
+			if ((sfr.ScaleX != _imageLockData._dScale || Math.Abs(num - _imageLockData._offsetPoint.X) > 0.01 || Math.Abs(num2 - _imageLockData._offsetPoint.Y) > 0.01 || Math.Abs(x - _imageLockData._centerPonit.X) > 0.01 || Math.Abs(y - _imageLockData._centerPonit.Y) > 0.01 || lastImageSize.Width != _lastImageSize.Width || lastImageSize.Height != _lastImageSize.Height) && !double.IsNaN(_imageLockData._offsetPoint.X) && !double.IsNaN(_imageLockData._offsetPoint.Y) && !double.IsNaN(_imageLockData._centerPonit.X) && !double.IsNaN(_imageLockData._centerPonit.Y))
+			{
+				Init();
+				System.Windows.Point offsetPoint = _imageLockData._offsetPoint;
+				System.Windows.Point tltOffset = _imageLockData._tltOffset;
+				offsetPoint.X = (offsetPoint.X + tltOffset.X) * _imageSize.Width / _imageLockData._imageSize.Width;
+				offsetPoint.Y = (offsetPoint.Y + tltOffset.Y) * _imageSize.Width / _imageLockData._imageSize.Width;
+				viewbox.SetValue(Canvas.LeftProperty, offsetPoint.X);
+				viewbox.SetValue(Canvas.TopProperty, offsetPoint.Y);
+				double dScale = _imageLockData._dScale;
+				curPoint = new System.Windows.Point(0.0, 0.0);
+				System.Windows.Point centerPoint = new System.Windows.Point(_imageLockData._centerPonit.X * _imageSize.Width / _imageLockData._imageSize.Width, _imageLockData._centerPonit.Y * _imageSize.Width / _imageLockData._imageSize.Width);
+				ChangeSize(centerPoint, dScale);
+				_lastImageSize = lastImageSize;
+			}
+		}
+	}
+
+	public ImageLockData GetImageLockData()
+	{
+		System.Windows.Point offsetPoint = new System.Windows.Point((double)viewbox.GetValue(Canvas.LeftProperty), (double)viewbox.GetValue(Canvas.TopProperty));
+		Size size = new Size(viewbox.Width, viewbox.Height);
+		return new ImageLockData(bLocked: false, sfr.ScaleX, offsetPoint, curPoint, offset, _imageSize);
+	}
+
+	public void Init()
+	{
+		sfr.ScaleX = 1.0;
+		sfr.ScaleY = 1.0;
+		tlt.X = 0.0;
+		tlt.Y = 0.0;
+		offset.X = 0.0;
+		offset.Y = 0.0;
+		above.Opacity = 0.0;
+		gridWidth = 0.0;
+		viewbox.SetValue(Canvas.LeftProperty, 0.0);
+		viewbox.SetValue(Canvas.TopProperty, 0.0);
+		needFlashPoint = true;
+	}
+
+	public void ClearAuxiliaryLine()
+	{
+		above.Opacity = 0.0;
+	}
+
+	private void Viewbox_MouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		if (sImage.Source != null)
+		{
+			System.Windows.Point position = e.GetPosition(viewbox);
+			double num = Math.Round((double)e.Delta / 120.0, MidpointRounding.AwayFromZero) * 0.5;
+			double val = 1.0 + num;
+			ChangeSize(position, val);
+		}
+	}
+
+	public void ChangeSize(System.Windows.Point centerPoint, double val)
+	{
+		if (val != 1.0 && (!(val > 1.0) || EnableZoomOut) && (!(val < 1.0) || EnableZoomIn))
+		{
+			if (sfr.ScaleX * val < 0.3)
+			{
+				val = 0.3 / sfr.ScaleX;
+			}
+			if (Math.Abs(curPoint.X - centerPoint.X) > 0.001 || Math.Abs(curPoint.Y - centerPoint.Y) > 0.001)
+			{
+				offset = new System.Windows.Point(offset.X + (centerPoint.X - curPoint.X) * (sfr.ScaleX - 1.0), offset.Y + (centerPoint.Y - curPoint.Y) * (sfr.ScaleY - 1.0));
+			}
+			curPoint.X = centerPoint.X;
+			curPoint.Y = centerPoint.Y;
+			System.Windows.Point point = TG.Inverse.Transform(centerPoint);
+			sfr.ScaleX *= val;
+			sfr.ScaleY *= val;
+			tlt.X = -1.0 * (centerPoint.X * sfr.ScaleX - centerPoint.X) + offset.X;
+			tlt.Y = -1.0 * (centerPoint.Y * sfr.ScaleY - centerPoint.Y) + offset.Y;
+			SetAboveCanvas();
+			needFlashPoint = true;
+		}
+	}
+
+	private void sImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		if (PrepareRoiType != RoiUIType.Default && OnDrawRoi_RightMouseUpChange != null)
+		{
+			OnDrawRoi_RightMouseUpChange(sender, e);
+		}
+	}
+
+	private void mouseLBUp(object sender, MouseButtonEventArgs e)
+	{
+		foreach (ROIContainer item in VGrid.Children.OfType<ROIContainer>())
+		{
+			item.mouseLBUp(sender, e);
+		}
+		if (PrepareRoiType != RoiUIType.Default)
+		{
+			if (OnDrawRoi_MouseUpChange != null)
+			{
+				OnDrawRoi_MouseUpChange(sender, e);
+			}
+			return;
+		}
+		if (isDragging)
+		{
+			isDragging = false;
+		}
+		(sender as FrameworkElement).ReleaseMouseCapture();
+	}
+
+	private void mouseLBDown(object sender, MouseButtonEventArgs e)
+	{
+		if (IsSelectMulRoiEnable)
+		{
+			SelectionService.ClearSelection();
+		}
+		mouseOffset = e.GetPosition(mapcanvas);
+		isDragging = true;
+		mView.RaiseEvent(e);
+		foreach (ROIContainer item in VGrid.Children.OfType<ROIContainer>())
+		{
+			item.mouseLBDown(sender, e);
+		}
+		if (PrepareRoiType != RoiUIType.Default)
+		{
+			isDragging = false;
+			if (OnDrawRoi_MouseDownChange != null)
+			{
+				OnDrawRoi_MouseDownChange(sender, e);
+			}
+			if (!_IsDrawRoi)
+			{
+				switch (PrepareRoiType)
+				{
+				case RoiUIType.HikCoverRoi:
+					IsDrawRoi = true;
+					HikCover.InitSubstitute(this, mROIView, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikCoverCircleRoi:
+					IsDrawRoi = true;
+					HikCoverCircle.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikCoverCircleRoi2:
+					IsDrawRoi = true;
+					HikCoverCircle2.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikPolygonRoi:
+					IsDrawRoi = true;
+					HikPolygon.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikPath:
+					IsDrawRoi = true;
+					HikPath.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikCircleArcRoi:
+					IsDrawRoi = true;
+					HikCircleArc.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikIndexPointRoi:
+					IsDrawRoi = true;
+					HikIndexPoint.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikPointRoi:
+					IsDrawRoi = true;
+					HikPoint.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikLineRoi:
+					IsDrawRoi = true;
+					HikLine.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikCircleMesRoi:
+					IsDrawRoi = true;
+					HikCircleMeasure.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikXY:
+					IsDrawRoi = true;
+					HikXY.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikLineCaliperRoi:
+					IsDrawRoi = true;
+					HikLineCaliper.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				case RoiUIType.HikCircleCaliperRoi:
+					IsDrawRoi = true;
+					HikCircleCaliper.InitSubstitute(this, e.GetPosition(sImage));
+					break;
+				}
+				(sender as FrameworkElement).CaptureMouse();
+				return;
+			}
+		}
+		theTop = (double)viewbox.GetValue(Canvas.TopProperty);
+		theLeft = (double)viewbox.GetValue(Canvas.LeftProperty);
+		(sender as FrameworkElement).CaptureMouse();
+	}
+
+	public void CancelRoiDraw()
+	{
+		if (IsDrawRoi)
+		{
+			switch (PrepareRoiType)
+			{
+			case RoiUIType.HikCoverRoi:
+				HikCover.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikXY:
+				HikXY.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikCoverCircleRoi:
+				HikCoverCircle.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikPolygonRoi:
+				HikPolygon.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikPath:
+				HikPath.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikCircleArcRoi:
+				HikCircleArc.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikIndexPointRoi:
+				HikIndexPoint.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikPointRoi:
+				HikPoint.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikLineRoi:
+				HikLine.DoFinishSubstitute();
+				break;
+			case RoiUIType.HikCircleMesRoi:
+				HikCircleMeasure.DoFinishSubstitute();
+				break;
+			}
+			IsDrawRoi = false;
+		}
+	}
+
+	private void mainGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		sfr.ScaleX = 1.0;
+		sfr.ScaleY = 1.0;
+		tlt.X = 0.0;
+		tlt.Y = 0.0;
+		above.Opacity = 0.0;
+		offset.X = 0.0;
+		offset.Y = 0.0;
+		double width = e.NewSize.Width;
+		double height = e.NewSize.Height;
+		viewbox.Width = width;
+		viewbox.Height = height;
+		viewbox.SetValue(Canvas.LeftProperty, 0.0);
+		viewbox.SetValue(Canvas.TopProperty, 0.0);
+		lastysfr = 1.0;
+		SetImageSource();
+		needFlash = true;
+		needFlashPoint = true;
+		LockImageShow();
+	}
+
+	public void SetViewBoxPos(double leftX, double topY)
+	{
+		viewbox.SetValue(Canvas.TopProperty, topY);
+		viewbox.SetValue(Canvas.LeftProperty, leftX);
+	}
+
+	private void viewbox_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+	{
+		if (sImage.Source == null)
+		{
+			return;
+		}
+		foreach (ROIContainer item in VGrid.Children.OfType<ROIContainer>())
+		{
+			item.viewbox_MouseMove(sender, e);
+		}
+		if (PrepareRoiType != RoiUIType.Default)
+		{
+			if (OnDrawRoi_MouseMoveChange != null)
+			{
+				OnDrawRoi_MouseMoveChange(sender, e);
+			}
+		}
+		else if (isDragging)
+		{
+			System.Windows.Point position = e.GetPosition(mapcanvas);
+			viewbox.SetValue(Canvas.TopProperty, position.Y - mouseOffset.Y + theTop);
+			viewbox.SetValue(Canvas.LeftProperty, position.X - mouseOffset.X + theLeft);
+			pointsImage.Source = null;
+			object obj = new object();
+			WaitObj = obj;
+			needFlash = true;
+			Task.Run(() =>
+			{
+				Thread.Sleep(30);
+				if (WaitObj.Equals(obj))
+				{
+					Dispatcher.Invoke(() =>
+					{
+						CreatPointK();
+					});
+				}
+			});
+			if (OnFreshExtendContent != null)
+			{
+				OnFreshExtendContent(this, null);
+			}
+			if (e.LeftButton != MouseButtonState.Pressed)
+			{
+				isDragging = false;
+				sImage.ReleaseMouseCapture();
+			}
+		}
+		double ratio = GetRatio();
+		System.Windows.Point position2 = e.GetPosition(sImage);
+		position2.X = Math.Floor(position2.X / ratio);
+		position2.Y = Math.Floor(position2.Y / ratio);
+		if (position2.X < 0.0 || position2.X >= (double)ImageSourceWidth || position2.Y < 0.0 || position2.Y >= (double)ImageSourceHeight)
+		{
+			curImageX = -1;
+			curImageY = -1;
+		}
+		else if ((double)curImageX != position2.X || (double)curImageY != position2.Y)
+		{
+			curImageX = (int)position2.X;
+			curImageY = (int)position2.Y;
+			CallChangePixel(curImageX, curImageY);
+		}
+	}
+
+	public void CallChangePixel(int X, int Y)
+	{
+		if (OnPixelChange != null)
+		{
+			OnPixelChange(X, Y);
+		}
+		else if (IsDisplayPixelAuto)
+		{
+			ChangePixel(X, Y);
+		}
+	}
+
+	private unsafe void ChangePixel(int X, int Y)
+	{
+		int r = 0;
+		int g = 0;
+		int b = 0;
+		short value = 0;
+		if (IsSourceDataCompressed)
+		{
+			if (ImageDataSource != null && ImageDataSource.ImageBuffer != null)
+			{
+				int num = ImageDataSource.Width * ImageDataSource.PixelFormat.BitsPerPixel / 8;
+				int num2 = 0;
+				switch (ImageData.GetPixelFormatCode(ImageDataSource.PixelFormat))
+				{
+				case MPixelFormat.Gray8:
+					num2 = Y * num + X;
+					if (num2 >= 0 && num2 < ImageDataSource.ImageBuffer.Length)
+					{
+						byte b2 = ImageDataSource.ImageBuffer[num2];
+						r = b2;
+						g = b2;
+						b = b2;
+					}
+					break;
+				case MPixelFormat.Rgb24:
+					num2 = Y * num + ImageDataSource.PixelFormat.BitsPerPixel * X / 8;
+					if (num2 >= 0 && num2 + 2 < ImageDataSource.ImageBuffer.Length)
+					{
+						r = ImageDataSource.ImageBuffer[num2];
+						g = ImageDataSource.ImageBuffer[num2 + 1];
+						b = ImageDataSource.ImageBuffer[num2 + 2];
+					}
+					break;
+				}
+			}
+		}
+		else if (Source != null)
+		{
+			if (!(Source is WriteableBitmap writeableBitmap))
+			{
+				return;
+			}
+			_ = writeableBitmap.BackBuffer;
+			if (false)
+			{
+				return;
+			}
+			byte* ptr = (byte*)writeableBitmap.BackBuffer.ToPointer();
+			int backBufferStride = writeableBitmap.BackBufferStride;
+			int num3 = 0;
+			int num4 = backBufferStride * writeableBitmap.PixelHeight;
+			switch (ImageData.GetPixelFormatCode(writeableBitmap.Format))
+			{
+			case MPixelFormat.Gray8:
+				num3 = Y * backBufferStride + X;
+				if (num3 >= 0 && num3 < num4)
+				{
+					byte b3 = ptr[num3];
+					r = b3;
+					g = b3;
+					b = b3;
+				}
+				break;
+			case MPixelFormat.Rgb24:
+				num3 = Y * backBufferStride + writeableBitmap.Format.BitsPerPixel * X / 8;
+				if (num3 >= 0 && num3 + 2 < num4)
+				{
+					r = ptr[num3];
+					g = (ptr + num3)[1];
+					b = (ptr + num3)[2];
+				}
+				break;
+			}
+			IRangeImageData imageDataSource;
+			if ((imageDataSource = ImageDataSource) != null && imageDataSource.RangeBuffer != null)
+			{
+				fixed (byte* rangeBuffer = imageDataSource.RangeBuffer)
+				{
+					short* ptr2 = (short*)rangeBuffer;
+					num3 = Y * backBufferStride + X;
+					if (num3 >= 0 && num3 < imageDataSource.RangeBuffer.Length / 2)
+					{
+						value = ptr2[num3];
+					}
+				}
+			}
+		}
+		SetPixelInfo(X, Y, r, g, b, value);
+	}
+
+	private void sImage_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+	{
+		curImageX = -1;
+		curImageY = -1;
+		if (OnPixelChange != null)
+		{
+			OnPixelChange(curImageX, curImageY);
+		}
+	}
+
+	private void sfr_Changed(object sender, EventArgs e)
+	{
+		try
+		{
+			if (sImage.Source != null && lastysfr != sfr.ScaleY)
+			{
+				lastysfr = sfr.ScaleY;
+				if (OnScaleChange != null)
+				{
+					OnScaleChange(sender, viewScal);
+				}
+				while (scales.Count > 1)
+				{
+					scales.RemoveAt(0);
+				}
+				scales.Add(sfr.ScaleX);
+				SetImageSource();
+				ResizeByScale();
+				if (scales.Count != 1 && !scales[0].Equals(scales[1]))
+				{
+					EnableZoomIn = sfr.ScaleX > 0.3;
+					System.Windows.Point point = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), viewbox);
+					double num = (viewbox.ActualWidth - point.X * 2.0) * sfr.ScaleX;
+					double num2 = num / (double)ImageSourceWidth;
+					EnableZoomOut = !(num2 > 200.0) || !(scales[1] > scales[0]);
+				}
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	private void ResizeByScale()
+	{
+		NotifyPropertyChanged("ScaleRate");
+		foreach (FrameworkElement shape2 in shapeList)
+		{
+			if (shape2 is System.Windows.Shapes.Shape)
+			{
+				(shape2 as System.Windows.Shapes.Shape).StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+			}
+		}
+		foreach (FrameworkElement item in shapeListE)
+		{
+			if (item is System.Windows.Shapes.Shape { Tag: var tag } shape)
+			{
+				if (tag is double)
+				{
+					double num = 1.0;
+					num = (double)shape.Tag;
+					double num2 = sfr.ScaleX * viewScal;
+					shape.StrokeThickness = 1.0 * num / num2;
+				}
+				else
+				{
+					shape.StrokeThickness = 1.0 / (sfr.ScaleX * viewScal);
+				}
+			}
+		}
+		double newpointWidth = PointWidthBase / (sfr.ScaleX * viewScal);
+		foreach (GeometryGroup child in geometryGroup.Children)
+		{
+			ChangeLinePoint(newpointWidth, child);
+		}
+		foreach (GeometryGroup child2 in greenGeometryGroup.Children)
+		{
+			ChangeLinePoint(newpointWidth, child2);
+		}
+		foreach (GeometryGroup child3 in yellowGeometryGroup.Children)
+		{
+			ChangeLinePoint(newpointWidth, child3);
+		}
+		foreach (GeometryGroup child4 in redGeometryGroup.Children)
+		{
+			ChangeLinePoint(newpointWidth, child4);
+		}
+		foreach (System.Windows.Shapes.Path item2 in pointPath)
+		{
+			item2.StrokeThickness = 1.0 * rate / (sfr.ScaleX * viewScal);
+		}
+		foreach (System.Windows.Shapes.Path item3 in pointPathE)
+		{
+			item3.StrokeThickness = 1.0 * rate / (sfr.ScaleX * viewScal);
+		}
+		GreenPath.StrokeThickness = 1.0 * rate / (sfr.ScaleX * viewScal);
+		RedPath.StrokeThickness = 1.0 * rate / (sfr.ScaleX * viewScal);
+		YellowPath.StrokeThickness = 1.0 * rate / (sfr.ScaleX * viewScal);
+		pointWidth = newpointWidth;
+	}
+
+	private void ChangeLinePoint(double newpointWidth, GeometryGroup gp)
+	{
+		if (gp.Children.Count > 1)
+		{
+			System.Windows.Point startPoint = (gp.Children[0] as LineGeometry).StartPoint;
+			(gp.Children[0] as LineGeometry).StartPoint = new System.Windows.Point(startPoint.X, startPoint.Y - (0.0 - pointWidth + newpointWidth));
+			startPoint = (gp.Children[0] as LineGeometry).EndPoint;
+			(gp.Children[0] as LineGeometry).EndPoint = new System.Windows.Point(startPoint.X, startPoint.Y + (0.0 - pointWidth + newpointWidth));
+			startPoint = (gp.Children[1] as LineGeometry).StartPoint;
+			(gp.Children[1] as LineGeometry).StartPoint = new System.Windows.Point(startPoint.X - (0.0 - pointWidth + newpointWidth), startPoint.Y);
+			startPoint = (gp.Children[1] as LineGeometry).EndPoint;
+			(gp.Children[1] as LineGeometry).EndPoint = new System.Windows.Point(startPoint.X + (0.0 - pointWidth + newpointWidth), startPoint.Y);
+		}
+	}
+
+	private void viewbox_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		if (Source == null)
+		{
+			return;
+		}
+		viewScal = viewbox.ActualWidth / sImage.Width;
+		if (viewScal != 0.0)
+		{
+			ResizeByScale();
+			if (OnScaleChange != null)
+			{
+				OnScaleChange(sfr, viewScal);
+			}
+			needFlashPoint = true;
+		}
+	}
+
+	private void SizePanel_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+	{
+	}
+
+	private void SizePanel_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+	{
+	}
+
+	public void Dispose()
+	{
+		if (RoiList != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(RoiList, RoiList_CollectionChanged);
+		}
+		if (ShapeList != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(ShapeList as INotifyCollectionChanged, ShapeList_CollectionChanged);
+		}
+		if (PointsData != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(PointsData, PointsData_CollectionChanged);
+		}
+	}
+
+	private void mView_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		foreach (FrameworkElement child in mView.Children)
+		{
+			child.RaiseEvent(e);
+		}
+		Focusable = true;
+		Keyboard.Focus(this);
+	}
+
+	private void mView_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		foreach (FrameworkElement child in mView.Children)
+		{
+			child.RaiseEvent(e);
+		}
+	}
+
+	private void mView_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		foreach (FrameworkElement child in mView.Children)
+		{
+			child.RaiseEvent(e);
+		}
+	}
+
+	public static byte[] BitmapImageToByteArray(WriteableBitmap src, int bufferLenth)
+	{
+		byte[] array = new byte[bufferLenth];
+		src.CopyPixels(array, src.PixelWidth * src.Format.BitsPerPixel / 8, 0);
+		return array;
+	}
+
+	public void SaveAsCommandCmdExecute()
+	{
+		System.Windows.Forms.SaveFileDialog saveFileDialog = null;
+		try
+		{
+			saveFileDialog = new System.Windows.Forms.SaveFileDialog
+			{
+				Filter = "Bitmap Image|*.bmp",
+				Title = AppLocalizationService.GetLang("Lang_SaveAs")
+			};
+			saveFileDialog.ShowDialog();
+			if (string.IsNullOrEmpty(saveFileDialog.FileName))
+			{
+				return;
+			}
+			using FileStream fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create);
+			BmpBitmapEncoder bmpBitmapEncoder = new BmpBitmapEncoder();
+			bmpBitmapEncoder.Frames.Add(BitmapFrame.Create((BitmapSource)Source));
+			bmpBitmapEncoder.Save(fileStream);
+			fileStream.Flush();
+		}
+		catch (Exception ex)
+		{
+			System.Windows.Forms.MessageBox.Show(ex.Message);
+		}
+		finally
+		{
+			saveFileDialog?.Dispose();
+		}
+	}
+
+	public void SaveRenderCmdExecute()
+	{
+		try
+		{
+			if (ImageDataSource != null)
+			{
+				ImageData imageDataSource = ImageDataSource;
+				List<object> shapeDataList = ShapeDataList;
+				Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog
+				{
+					Filter = "JPG|*.jpg|JPEG|*.jpeg|PNG|*.png|BMP|*.bmp",
+					Title = AppLocalizationService.GetLang("Lang_SaveAs")
+				};
+				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
+				bool? flag = saveFileDialog.ShowDialog();
+				bool? flag2 = flag;
+				bool flag3 = true;
+				if (flag2 == true == flag3 && flag2.HasValue && !string.IsNullOrEmpty(saveFileDialog.FileName))
+				{
+					ImageSaveOpenCvHelper.SaveRoiImageSyn(saveFileDialog.FileName, imageDataSource, shapeDataList, null);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+		}
+	}
+
+	public void CtrlVCommandCmdExecute()
+	{
+		if (!PastCopyEnable || (ROITypeUI == ROITypeUIEnum.Transparent && !IsMulRolModule))
+		{
+			return;
+		}
+		if (OnPast != null)
+		{
+			OnPast(this, Past_List.Keys);
+		}
+		if (RoiList == null || sImage.Source == null)
+		{
+			return;
+		}
+		foreach (RoiParameter key in Past_List.Keys)
+		{
+			RoiParameter roiParameter = key.Clone() as RoiParameter;
+			if (roiParameter is HikPointRoiParameter hikPointRoiParameter)
+			{
+				hikPointRoiParameter.CenterPoint = new System.Windows.Point(hikPointRoiParameter.CenterX + (double)OffSet, hikPointRoiParameter.CenterY + (double)OffSet);
+				(key as HikPointRoiParameter).CenterPoint = hikPointRoiParameter.CenterPoint;
+			}
+			else if (roiParameter is HikCircleMesRoiParameter hikCircleMesRoiParameter)
+			{
+				hikCircleMesRoiParameter.CenterPoint = new System.Windows.Point(hikCircleMesRoiParameter.CenterX + (double)OffSet, hikCircleMesRoiParameter.CenterY + (double)OffSet);
+				(key as HikCircleMesRoiParameter).CenterPoint = hikCircleMesRoiParameter.CenterPoint;
+			}
+			else if (roiParameter is HikLineRoiParameter hikLineRoiParameter)
+			{
+				hikLineRoiParameter.StartPoint = new System.Windows.Point(hikLineRoiParameter.StartPointX + (double)OffSet, hikLineRoiParameter.StartPointY + (double)OffSet);
+				hikLineRoiParameter.EndPoint = new System.Windows.Point(hikLineRoiParameter.EndPointX + (double)OffSet, hikLineRoiParameter.EndPointY + (double)OffSet);
+				(key as HikLineRoiParameter).StartPoint = hikLineRoiParameter.StartPoint;
+				(key as HikLineRoiParameter).EndPoint = hikLineRoiParameter.EndPoint;
+			}
+			else if (roiParameter is HikCoverRoiParameter)
+			{
+				(roiParameter as HikCoverRoiParameter).OriginPoint = new System.Windows.Point((roiParameter as HikCoverRoiParameter).OriginPoint.X + (double)OffSet, (roiParameter as HikCoverRoiParameter).OriginPoint.Y + (double)OffSet);
+				(key as HikCoverRoiParameter).OriginPoint = (roiParameter as HikCoverRoiParameter).OriginPoint;
+			}
+			else if (roiParameter is HikCoverCircleRoiParameter)
+			{
+				(roiParameter as HikCoverCircleRoiParameter).CenterPoint = new System.Windows.Point((roiParameter as HikCoverCircleRoiParameter).CenterPoint.X + (double)OffSet, (roiParameter as HikCoverCircleRoiParameter).CenterPoint.Y + (double)OffSet);
+				(key as HikCoverCircleRoiParameter).CenterPoint = (roiParameter as HikCoverCircleRoiParameter).CenterPoint;
+			}
+			else if (roiParameter is HikPolygonRoiParameter)
+			{
+				HikPolygonRoiParameter hikPolygonRoiParameter = roiParameter as HikPolygonRoiParameter;
+				foreach (PolygonPoint polygonPoint in hikPolygonRoiParameter.PolygonPoints)
+				{
+					polygonPoint.x += OffSet;
+					polygonPoint.y += OffSet;
+				}
+				foreach (PolygonPoint polygonPoint2 in (key as HikPolygonRoiParameter).PolygonPoints)
+				{
+					polygonPoint2.x += OffSet;
+					polygonPoint2.y += OffSet;
+				}
+			}
+			roiParameter.Tag = key.Tag;
+			RoiList.Add(roiParameter);
+		}
+	}
+
+	public void CtrlCCommandCmdExecute()
+	{
+		if (PastCopyEnable && OnCopy != null)
+		{
+			OnCopy(this, Past_List.Keys);
+		}
+	}
+
+	private void VGrid_Drop(object sender, System.Windows.DragEventArgs e)
+	{
+		try
+		{
+			if (e.Effects != System.Windows.DragDropEffects.Copy)
+			{
+				return;
+			}
+			System.Windows.IDataObject data = e.Data;
+			if (!data.GetDataPresent(typeof(System.Windows.Controls.Button)) || !(data.GetData(typeof(System.Windows.Controls.Button)) is System.Windows.Controls.Button { Tag: object[] tag }) || tag.Count() <= 0)
+			{
+				return;
+			}
+			RoiParameter roiParameter = tag[0] as RoiParameter;
+			System.Windows.Point point = (System.Windows.Point)tag[1];
+			System.Windows.Point position = e.GetPosition(sImage);
+			position.X -= point.X;
+			position.Y -= point.Y;
+			position.X /= Radio;
+			position.Y /= Radio;
+			object obj = roiParameter.Clone();
+			if (obj is HikCoverRoiParameter)
+			{
+				HikCoverRoiParameter hikCoverRoiParameter = obj as HikCoverRoiParameter;
+				hikCoverRoiParameter.OriginPoint = new System.Windows.Point(position.X, position.Y);
+			}
+			if (obj is HikCoverCircleRoiParameter)
+			{
+				HikCoverCircleRoiParameter hikCoverCircleRoiParameter = obj as HikCoverCircleRoiParameter;
+				hikCoverCircleRoiParameter.CenterPoint = new System.Windows.Point(position.X + hikCoverCircleRoiParameter.Radius, position.Y + hikCoverCircleRoiParameter.Radius);
+			}
+			if (obj is HikPolygonRoiParameter)
+			{
+				HikPolygonRoiParameter hikPolygonRoiParameter = obj as HikPolygonRoiParameter;
+				float num = hikPolygonRoiParameter.PolygonPoints.Min((PolygonPoint p) => p.x);
+				float num2 = hikPolygonRoiParameter.PolygonPoints.Min((PolygonPoint p) => p.y);
+				Vector vector = position - new System.Windows.Point(num, num2);
+				foreach (PolygonPoint polygonPoint in hikPolygonRoiParameter.PolygonPoints)
+				{
+					polygonPoint.x += (float)vector.X;
+					polygonPoint.y += (float)vector.Y;
+				}
+			}
+			RoiList.Add(obj);
+			e.Handled = true;
+		}
+		catch
+		{
+		}
+	}
+
+	public void SaveImage()
+	{
+		try
+		{
+			if (ImageDataSource != null)
+			{
+				ImageData imageDataSource = ImageDataSource;
+				Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog
+				{
+					Filter = "JPG|*.jpg|JPEG|*.jpeg|PNG|*.png|BMP|*.bmp",
+					Title = AppLocalizationService.GetLang("Lang_SaveAs")
+				};
+				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
+				bool? flag = saveFileDialog.ShowDialog();
+				bool? flag2 = flag;
+				bool flag3 = true;
+				if (flag2 == true == flag3 && flag2.HasValue && !string.IsNullOrEmpty(saveFileDialog.FileName))
+				{
+					ImageSaveOpenCvHelper.SaveRawImageSyn(saveFileDialog.FileName, imageDataSource);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+		}
+	}
+
+	public void CtrlACommandCmdExecute()
+	{
+		if (IsSelectMulRoiEnable)
+		{
+			SelectionService.SelectAll();
+		}
+	}
+
+	public void UpdateRoi()
+	{
+		UpdateRoiEvent?.Invoke();
+	}
+
+	public void RoiLock()
+	{
+		ROIHitTestVisible = false;
+	}
+
+	public void RoiUnLock()
+	{
+		ROIHitTestVisible = true;
+	}
+}

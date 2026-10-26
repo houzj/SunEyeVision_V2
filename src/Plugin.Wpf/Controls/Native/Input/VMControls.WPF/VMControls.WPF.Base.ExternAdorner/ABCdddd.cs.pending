@@ -1,0 +1,27 @@
+using System;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Apps.UIHelper.Service;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ExternAdorner;
+
+/// <summary>
+/// 测试用
+/// </summary>
+public class ABCdddd : AdornerProvider
+{
+	private readonly AdornerPanel adornerPanel;
+
+	public ABCdddd()
+	{
+		adornerPanel = new AdornerPanel();
+		Adorners.Add(adornerPanel);
+		adornerPanel.Children.Add(new Grid
+		{
+			Width = 60.0,
+			Height = 60.0,
+			Background = Brushes.Red
+		});
+		Console.WriteLine("BBBBBB");
+	}
+}

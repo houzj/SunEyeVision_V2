@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<localBase:ServiceProvideControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.SingleModuleSetControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <local:ProcedureConfigControl x:Name="pro" IsForSingleModulesetMode="True" IsSingleProcedure="True" IsFidSupportFunction="True" Procedures="{Binding SingleCollection, RelativeSource={RelativeSource Mode=TemplatedParent}}" SelectedItem="{Binding SelectedItem, Mode=TwoWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" SingleModulesetSource="{Binding ModuleSource, RelativeSource={RelativeSource Mode=TemplatedParent}}" IsParamsEditState="{Binding IsParamsEditState, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    </ControlTemplate>
+  </Control.Template>
+</localBase:ServiceProvideControl>

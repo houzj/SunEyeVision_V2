@@ -1,0 +1,71 @@
+using System.Collections;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// OneProcedureConfigControl
+/// </summary>
+[TemplatePart(Name = "PART_View", Type = typeof(Grid))]
+public partial class OneProcedureConfigControl : ServiceProvideControl, IComponentConnector
+{
+	public static readonly DependencyProperty ToolBoxItemsSourceProperty = DependencyProperty.Register("ToolBoxItemsSource", typeof(IList), typeof(OneProcedureConfigControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ProcedureProperty = DependencyProperty.Register("Procedure", typeof(object), typeof(OneProcedureConfigControl), new PropertyMetadata(null));
+
+	private Visual Child;
+
+	public IList ToolBoxItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ToolBoxItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ToolBoxItemsSourceProperty, value);
+		}
+	}
+
+	public object Procedure
+	{
+		get
+		{
+			return GetValue(ProcedureProperty);
+		}
+		set
+		{
+			SetValue(ProcedureProperty, value);
+		}
+	}
+
+	protected override int VisualChildrenCount => 2;
+
+	public OneProcedureConfigControl()
+	{
+		InitializeComponent();
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		Child = Template.FindName("PART_View", this) as Visual;
+	}
+
+	protected override Visual GetVisualChild(int index)
+	{
+		if (index == 0)
+		{
+			return Child;
+		}
+		return _adornerLayer;
+	}
+}

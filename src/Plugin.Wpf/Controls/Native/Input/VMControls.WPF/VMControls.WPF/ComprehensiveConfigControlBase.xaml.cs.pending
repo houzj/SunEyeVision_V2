@@ -1,0 +1,575 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Interop;
+using System.Windows.Markup;
+using Apps.Data;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlUI;
+using Hik.Util;
+using Hik.Xml;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility.SingleInstance;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ParamsConfigControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ComprehensiveConfigControlBase
+/// </summary>
+public partial class ComprehensiveConfigControlBase : Control, IComponentConnector
+{
+	public static readonly DependencyProperty ROIPartUIProperty = DependencyProperty.Register("ROIPartUI", typeof(object), typeof(ComprehensiveConfigControlBase), new PropertyMetadata(null, OnROIPartUIChanged));
+
+	public static readonly DependencyProperty IsEditStateProperty = DependencyProperty.Register("IsEditState", typeof(bool), typeof(ComprehensiveConfigControlBase), new PropertyMetadata(true));
+
+	private Window curSubWindow;
+
+	private bool needOpenSubWindowAfterLoaded = false;
+
+	public static readonly DependencyProperty IsOpenSubWindowProperty = DependencyProperty.Register("IsOpenSubWindow", typeof(bool), typeof(ComprehensiveConfigControlBase), new PropertyMetadata(false, OnIsOpenSubWindowChanged));
+
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfig", typeof(IParamsConfig), typeof(ComprehensiveConfigControlBase), new PropertyMetadata(null, OnParamsConfigChanged));
+
+	public static readonly DependencyProperty IsDynamicResultViewVisibleProperty = DependencyProperty.Register("IsDynamicResultViewVisible", typeof(bool), typeof(ComprehensiveConfigControlBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsButtomCombinationVisibleProperty = DependencyProperty.Register("IsButtomCombinationVisible", typeof(bool), typeof(ComprehensiveConfigControlBase), new PropertyMetadata(true));
+
+	private ParamsTabUserControl paramstab;
+
+	private const uint DEFAULT_PROCESS_ID = 100000u;
+
+	private IntPtr groupInfoPtr = IntPtr.Zero;
+
+	public GroupIndependInfo _independentGro;
+
+	/// <summary>
+	/// 用于画ROI时，得到对应的绘制控件
+	/// </summary>
+	public object ROIPartUI
+	{
+		get
+		{
+			return GetValue(ROIPartUIProperty);
+		}
+		set
+		{
+			SetValue(ROIPartUIProperty, value);
+		}
+	}
+
+	public bool IsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsEditStateProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开订阅浮窗
+	/// </summary>
+	public bool IsOpenSubWindow
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenSubWindowProperty);
+		}
+		set
+		{
+			SetValue(IsOpenSubWindowProperty, value);
+		}
+	}
+
+	public IParamsConfig ParamsConfig
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 渲染控件是否显示
+	/// </summary>
+	public bool IsDynamicResultViewVisible
+	{
+		get
+		{
+			return (bool)GetValue(IsDynamicResultViewVisibleProperty);
+		}
+		set
+		{
+			SetValue(IsDynamicResultViewVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 渲染控件是否显示
+	/// </summary>
+	public bool IsButtomCombinationVisible
+	{
+		get
+		{
+			if (CVmObjectBase.GetIsSDKMode())
+			{
+				return false;
+			}
+			return true;
+		}
+		set
+		{
+			SetValue(IsButtomCombinationVisibleProperty, value);
+		}
+	}
+
+	private static void OnROIPartUIChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	private static void OnIsOpenSubWindowChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ComprehensiveConfigControlBase comprehensiveConfigControlBase = d as ComprehensiveConfigControlBase;
+		bool flag = (bool)e.NewValue;
+		if (comprehensiveConfigControlBase != null)
+		{
+			if (flag)
+			{
+				comprehensiveConfigControlBase.OpenSubWindow();
+			}
+			else
+			{
+				comprehensiveConfigControlBase.CloseSubWindow();
+			}
+		}
+	}
+
+	private void OpenSubWindow()
+	{
+		if (!IsLoaded)
+		{
+			needOpenSubWindowAfterLoaded = true;
+		}
+		else
+		{
+			if (!(DataContext is AlgorithmTabRoot { HasSubscribeInWindow: false } algorithmTabRoot))
+			{
+				return;
+			}
+			if (curSubWindow == null)
+			{
+				Window window = Window.GetWindow(this);
+				if (window != null)
+				{
+					curSubWindow = new ParamSubscribeWindow(window, IntPtr.Zero);
+				}
+				else
+				{
+					HwndSource hwndSource = PresentationSource.FromDependencyObject(this) as HwndSource;
+					curSubWindow = new ParamSubscribeWindow(null, hwndSource.Handle);
+				}
+				curSubWindow.Closed += CurSubWindow_Closed;
+			}
+			if (AppLocalizationService.GetLang("Language") == "English")
+			{
+				curSubWindow.Width = 320.0;
+			}
+			curSubWindow.DataContext = DataContext;
+			curSubWindow.Show();
+			algorithmTabRoot.HasSubscribeInWindow = true;
+		}
+	}
+
+	private void CloseSubWindow()
+	{
+		if (curSubWindow != null)
+		{
+			curSubWindow.Closed -= CurSubWindow_Closed;
+			curSubWindow.DataContext = null;
+			curSubWindow.Close();
+			curSubWindow = null;
+		}
+	}
+
+	private void CurSubWindow_Closed(object sender, EventArgs e)
+	{
+		curSubWindow.Closed -= CurSubWindow_Closed;
+		curSubWindow.DataContext = null;
+		IsOpenSubWindow = false;
+		curSubWindow = null;
+	}
+
+	private static void OnParamsConfigChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ComprehensiveConfigControlBase comprehensiveConfigControlBase = (ComprehensiveConfigControlBase)d;
+		IParamsConfig paramsConfig = e.OldValue as IParamsConfig;
+		IParamsConfig paramsConfig2 = e.NewValue as IParamsConfig;
+		if (paramsConfig != null && comprehensiveConfigControlBase.DataContext is AlgorithmTabRoot algorithmTabRoot)
+		{
+			algorithmTabRoot.Dispose();
+		}
+		if (paramsConfig2 != null)
+		{
+			comprehensiveConfigControlBase.LoadModuleControlDLL(paramsConfig2);
+			if (paramsConfig2.XmlPath == null || !File.Exists(paramsConfig2.XmlPath))
+			{
+				return;
+			}
+			AlgorithmTabRoot algorithmTabRoot2 = null;
+			algorithmTabRoot2 = ((!(paramsConfig2 is ModuleParam param)) ? new AlgorithmTabRoot(paramsConfig2) : param.GetParamRoot());
+			if (AppLocalizationService.GetLang("Language") == "English")
+			{
+				if (algorithmTabRoot2.ENCustomTabWidth != 0f)
+				{
+					algorithmTabRoot2.CustomTabWidth = algorithmTabRoot2.ENCustomTabWidth;
+					if (algorithmTabRoot2.ENCustomTabHeight != 0f)
+					{
+						algorithmTabRoot2.CustomTabHeight = algorithmTabRoot2.ENCustomTabHeight;
+					}
+				}
+				else
+				{
+					algorithmTabRoot2.CustomTabWidth = algorithmTabRoot2.CustomTabENWidth;
+				}
+			}
+			else if (algorithmTabRoot2.ZHCustomTabWidth != 0f)
+			{
+				algorithmTabRoot2.CustomTabWidth = algorithmTabRoot2.ZHCustomTabWidth;
+				if (algorithmTabRoot2.ZHCustomTabHeight != 0f)
+				{
+					algorithmTabRoot2.CustomTabHeight = algorithmTabRoot2.ZHCustomTabHeight;
+				}
+			}
+			else
+			{
+				algorithmTabRoot2.CustomTabWidth = algorithmTabRoot2.CustomTabCHWidth;
+			}
+			algorithmTabRoot2.DoIniter();
+			if (Window.GetWindow(comprehensiveConfigControlBase) is BaseWindow || !CVmObjectBase.GetIsSDKMode())
+			{
+				algorithmTabRoot2.IsSubscribeInWindow = ((IVmSolution)VmSolution.Instance)?.IsSubscribeInWindow ?? false;
+			}
+			algorithmTabRoot2.GetItemsValueUnit();
+			comprehensiveConfigControlBase.DataContext = algorithmTabRoot2;
+			comprehensiveConfigControlBase.SetBinding(IsOpenSubWindowProperty, new Binding("IsSubscribeInWindow")
+			{
+				Source = algorithmTabRoot2,
+				Mode = BindingMode.TwoWay
+			});
+		}
+		else
+		{
+			comprehensiveConfigControlBase.IsOpenSubWindow = false;
+			comprehensiveConfigControlBase.DataContext = null;
+		}
+	}
+
+	/// <summary>
+	/// CH: 通知参数更新 | EN: Notify Item's Value Changed
+	/// </summary>
+	public void NotifyItemValueChanged(string key)
+	{
+		BaseNode baseNode = (DataContext as AlgorithmTabRoot)?.FindBaseNodeByName(key);
+		(baseNode as NameValueItem)?.GetParamUnit();
+	}
+
+	public void UpdateAllItem()
+	{
+		(DataContext as AlgorithmTabRoot)?.GetItemsValueUnit();
+	}
+
+	public void UpdataTab(int index)
+	{
+		((DataContext as AlgorithmTabRoot)?.Tabs.OfType<Tab>().ToList()[index])?.GetItemsValueUnit();
+	}
+
+	public List<string> GetParamTabNames()
+	{
+		List<string> result = new List<string>();
+		try
+		{
+			ISpecialModuleParamTabVisible specialModuleParamTabVisible = UIHelper.FindFirstChildByInterface<ISpecialModuleParamTabVisible>(this);
+			if (specialModuleParamTabVisible != null)
+			{
+				result = specialModuleParamTabVisible.GetParamTabNames();
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+			VmException ex2 = new VmException(-536870911);
+			throw ex2;
+		}
+		return result;
+	}
+
+	public void SetParamTabVisible(string tabName, bool isVisible)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			try
+			{
+				UIHelper.FindFirstChildByInterface<ISpecialModuleParamTabVisible>(this)?.SetParamTabVisible(tabName, isVisible);
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error(ex.Message + ex.StackTrace);
+				VmException ex2 = new VmException(-536870911);
+				throw ex2;
+			}
+		});
+	}
+
+	public ComprehensiveConfigControlBase()
+	{
+		InitializeComponent();
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+		Loaded += ComprehensiveConfigControlBase_Loaded;
+	}
+
+	~ComprehensiveConfigControlBase()
+	{
+		try
+		{
+			if (IntPtr.Zero != groupInfoPtr)
+			{
+				Marshal.FreeCoTaskMem(groupInfoPtr);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	private void ComprehensiveConfigControlBase_Loaded(object sender, RoutedEventArgs e)
+	{
+		Window window = Window.GetWindow(this);
+		if (window != null)
+		{
+			WeakEventManager<Window, EventArgs>.RemoveHandler(window, "Closed", Window_Closed);
+			WeakEventManager<Window, EventArgs>.AddHandler(window, "Closed", Window_Closed);
+		}
+		if (needOpenSubWindowAfterLoaded)
+		{
+			OpenSubWindow();
+			needOpenSubWindowAfterLoaded = false;
+		}
+	}
+
+	private void Window_Closed(object sender, EventArgs e)
+	{
+		if (DataContext is AlgorithmTabRoot algorithmTabRoot)
+		{
+			if (((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute)
+			{
+				((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute = false;
+			}
+			FunctionCameraManager.UnRegister("GetLight");
+			FunctionCameraManager.UnRegister("DeleteLight");
+			FunctionCameraManager.UnRegister("GetCameraParam");
+			FunctionCameraManager.UnRegister("GetImageConfigLight");
+			FunctionCameraManager.UnRegister("DeleteImageConfigLight");
+			FunctionCameraManager.UnRegister("GetCamera");
+			FunctionCameraManager.UnRegister("GetFrameMeanCount");
+			FunctionCameraManager.UnRegister("GetComm");
+			FunctionCameraManager.UnRegister("GetCommAddress");
+			FunctionCameraManager.UnRegister("GetSendAddress");
+			algorithmTabRoot.Dispose();
+			algorithmTabRoot.DoFinish();
+		}
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		paramstab = Template.FindName("paramstab", this) as ParamsTabUserControl;
+	}
+
+	/// <summary>
+	/// 加载模块控件库，用于二次开发
+	/// </summary>
+	private void LoadModuleControlDLL(IParamsConfig paramsConfig)
+	{
+		if (!((paramsConfig as IParent)?.Parent is IVmModule vmModule))
+		{
+			return;
+		}
+		string moduleName = vmModule.ModuleTypeName;
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control"));
+		if (!(assembly == null))
+		{
+			return;
+		}
+		string text = Path.GetDirectoryName(paramsConfig.XmlPath) + "\\" + moduleName + "Control.dll";
+		if (File.Exists(text))
+		{
+			ActivatorWrap.LoadAssembly(text);
+			assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control")) ?? AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName.Remove(moduleName.LastIndexOf('C')) + "Control"));
+		}
+		if (!(moduleName == "SolutionModule"))
+		{
+			return;
+		}
+		string dirPath = Path.GetDirectoryName(paramsConfig.XmlPath);
+		string text2 = dirPath + "\\Librarys.Config";
+		if (!File.Exists(text2))
+		{
+			return;
+		}
+		string[] libs = GetLibs(text2);
+		libs.ToList().ForEach((string p) =>
+		{
+			string text3 = dirPath + "\\" + p;
+			if (File.Exists(text3))
+			{
+				ActivatorWrap.LoadAssembly(text3);
+			}
+		});
+	}
+
+	/// <summary>
+	/// 获取公共外部库路径
+	/// </summary>
+	/// <param name="libPath">Librarys.Config路径</param>
+	/// <returns></returns>
+	internal static string[] GetLibs(string libPath)
+	{
+		TextReader textReader = null;
+		string text = null;
+		try
+		{
+			textReader = File.OpenText(libPath);
+			text = textReader.ReadToEnd();
+		}
+		catch (Exception ex)
+		{
+			throw new Exception("加载动态库配置文件异常:" + ex.Message + "\r\n配置文件:" + libPath);
+		}
+		finally
+		{
+			textReader?.Close();
+		}
+		text = text.Trim().Replace("\n", "");
+		return text.Split('\r');
+	}
+
+	/// <summary>
+	/// 获取基础句柄
+	/// </summary>
+	/// <returns></returns>
+	public long GetBaseHandle()
+	{
+		TempVmSolution.Init();
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	/// <summary>
+	/// 加载独立Group方案
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportIndependentGroup(string path, string password)
+	{
+		IMVSGroup iMVSGroup = VmSolution.LoadIndependentGroup(path, password);
+		ParamsConfig = iMVSGroup.Params;
+		_independentGro = default;
+		_independentGro.nId = iMVSGroup.ID;
+		_independentGro.pHandle = VmSolution.Instance.BaseHandle;
+		if (IntPtr.Zero == groupInfoPtr)
+		{
+			groupInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(_independentGro));
+		}
+		Marshal.StructureToPtr(_independentGro, groupInfoPtr, fDeleteOld: true);
+		return groupInfoPtr;
+	}
+
+	/// <summary>
+	/// 加载Group模块库（独立使用时调用）
+	/// </summary>
+	private void LoadAssembliesForIndependentGroup()
+	{
+		string moduleName = "IMVSGroup";
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Cs"));
+		string text = string.Empty;
+		if (VmSolution.ModulePathList.Keys.Contains(moduleName))
+		{
+			text = VmSolution.ModulePathList[moduleName];
+		}
+		else
+		{
+			DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPathHelper.Instance.GetCurrentPath() + "\\Module(sp)\\x64");
+			DirectoryInfo[] directories = directoryInfo.GetDirectories();
+			foreach (DirectoryInfo directoryInfo2 in directories)
+			{
+				if ((from p in directoryInfo2.GetDirectories()
+					select p.Name).Contains(moduleName))
+				{
+					text = directoryInfo2.FullName + "\\" + moduleName;
+					VmSolution.ModulePathList.TryAdd(moduleName, text);
+					break;
+				}
+			}
+		}
+		if (File.Exists(text + "\\" + moduleName + "Cs.dll"))
+		{
+			ActivatorWrap.LoadAssembly(text + "\\" + moduleName + "Cs.dll");
+			if (assembly == null)
+			{
+				assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Cs"));
+			}
+		}
+		if (File.Exists(text + "\\" + moduleName + "Control.dll"))
+		{
+			ActivatorWrap.LoadAssembly(text + "\\" + moduleName + "Control.dll");
+		}
+		string text2 = Path.Combine(CurrentPathHelper.Instance.GetCurrentPath(), "Module(sp)\\x64\\.CommonControl\\DynamicObjectConfigControl.dll");
+		if (File.Exists(text2))
+		{
+			ActivatorWrap.LoadAssembly(text2);
+		}
+	}
+
+	/// <summary>
+	/// 加载方案
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportSol(string path, string password)
+	{
+		VmSolution.Import(path, password);
+		return VmSolution.Instance.BaseHandle;
+	}
+
+	public void BindParamById(uint Id)
+	{
+		VmModule moduleByID = VmSolution.Instance.GetModuleByID(Id);
+		if (moduleByID != null)
+		{
+			ParamsConfig = moduleByID.Params;
+		}
+	}
+}

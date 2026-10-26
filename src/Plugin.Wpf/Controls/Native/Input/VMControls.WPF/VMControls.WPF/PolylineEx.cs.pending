@@ -1,0 +1,57 @@
+using System.Collections.Generic;
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 折线
+/// </summary>
+public struct PolylineEx : IPolyline, IShape, IShapeBase
+{
+	/// <summary>
+	/// 点数
+	/// </summary>
+	public int PolylinePointNum { get; set; }
+
+	/// <summary>
+	/// 点列表
+	/// </summary>
+	public List<Point> PolylinePointList { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 边框粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public PolylineEx(List<Point> polylinePointList, double opacity = 1.0, string stroke = "#66FF00", double strokeThickness = 1.0)
+	{
+		PolylinePointNum = polylinePointList?.Count ?? 0;
+		PolylinePointList = polylinePointList;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = null;
+		StrokeThickness = strokeThickness;
+		ToolTip = null;
+	}
+}

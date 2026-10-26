@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
+using Apps.Data;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 单个分组信息
+/// </summary>
+public class VarGroupItem : NotifyPropertyChangedBase
+{
+	private string _name;
+
+	private DelegateCommand _RenameCommand = null;
+
+	private bool _IsReName;
+
+	/// <summary>
+	/// 总数
+	/// </summary>
+	public List<GlobalVariableItem> Items = new List<GlobalVariableItem>();
+
+	private ObservableCollection<GlobalVariableItem> _bindItems = new ObservableCollection<GlobalVariableItem>();
+
+	/// <summary>
+	/// 父级对象
+	/// </summary>
+	public IVarGroup Parent { get; set; }
+
+	/// <summary>
+	/// 分组名称
+	/// </summary>
+	public string Name
+	{
+		get
+		{
+			return _name;
+		}
+		set
+		{
+			if (!(_name != value))
+			{
+				return;
+			}
+			if (string.IsNullOrEmpty(value))
+			{
+				HikMessageBox.Show("Lang_ParamNameErr", "Lang_PmValueEptErr", MessageIcons.Error, isTranslate: true);
+				OnPropertyChanged("Name");
+				return;
+			}
+			if (StringUtil.GetByteCountWithZero(value) > 126)
+			{
+				HikMessageBox.Show("Lang_ParamNameErr", "Lang_PmNameLong", MessageIcons.Error, isTranslate: true);
+				OnPropertyChanged("Name");
+				return;
+			}
+			string name = _name;
+			if (Parent != null)
+			{
+				if (!Parent.ReName(name, value))
+				{
+					_name = name;
+				}
+				else
+				{
+					_name = value;
+				}
+			}
+			OnPropertyChanged("Name");
+		}
+	}
+
+	/// <summary>
+	/// 重命名
+	/// </summary>
+	public ICommand RenameCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _RenameCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)RenameCommandExe);
+				DelegateCommand val3 = val2;
+				_RenameCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	/// <summary>
+	/// 是否重命名
+	/// </summary>
+	public bool IsReName
+	{
+		get
+		{
+			return _IsReName;
+		}
+		set
+		{
+			if (_IsReName != value)
+			{
+				_IsReName = value;
+				OnPropertyChanged("IsReName");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 总元素个数
+	/// </summary>
+	public int Count => BindItems.Count;
+
+	/// <summary>
+	/// 绑定元素
+	/// </summary>
+	public ObservableCollection<GlobalVariableItem> BindItems
+	{
+		get
+		{
+			return _bindItems;
+		}
+		set
+		{
+			if (_bindItems != value)
+			{
+				_bindItems = value;
+				OnPropertyChanged("BindItems");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public VarGroupItem(string name, IVarGroup parent)
+	{
+		_name = name;
+		Parent = parent;
+	}
+
+	private void RenameCommandExe()
+	{
+		IsReName = true;
+	}
+
+	/// <summary>
+	/// 添加元素
+	/// </summary>
+	public void AddItem(GlobalVariableItem item)
+	{
+		BindItems.Add(item);
+	}
+
+	/// <summary>
+	/// 清空数据
+	/// </summary>
+	public void Clear()
+	{
+		BindItems.Clear();
+	}
+
+	/// <summary>
+	/// 更新绑定数据源
+	/// </summary>
+	public void UpdateBindItems(int startindex, int endIndex, IEnumerable<GlobalVariableItem> source)
+	{
+		BindItems.Clear();
+		for (int i = startindex; i < endIndex; i++)
+		{
+			BindItems.Add(source.ElementAt(i));
+		}
+	}
+
+	/// <summary>
+	/// 更新绑定数据源，查询状态下
+	/// </summary>
+	public void UpdateBindItems(Collection<GlobalVariableItem> source, int[] index, int startindex, int endIndex)
+	{
+		BindItems.Clear();
+		IEnumerable<GlobalVariableItem> source2 = source.Where((GlobalVariableItem x) => index.Contains(x.Index));
+		for (int num = startindex; num < endIndex; num++)
+		{
+			BindItems.Add(source2.ElementAt(num));
+		}
+	}
+
+	/// <summary>
+	/// 根据索引获取对应的对象
+	/// </summary>
+	/// <returns></returns>
+	public GlobalVariableItem GetItem()
+	{
+		if (BindItems.Count == 0)
+		{
+			return null;
+		}
+		return BindItems[BindItems.Count - 1];
+	}
+}

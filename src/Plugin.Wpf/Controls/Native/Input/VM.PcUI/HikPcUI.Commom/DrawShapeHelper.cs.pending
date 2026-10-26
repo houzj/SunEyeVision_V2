@@ -1,0 +1,205 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows;
+using Apps.Data.ShapeDefine;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+
+public class DrawShapeHelper
+{
+	public static int XmlColorToInt(string xmlString)
+	{
+		if (xmlString != "")
+		{
+			return ColorTranslator.FromHtml(xmlString).ToArgb();
+		}
+		return 0;
+	}
+
+	public static void DrawShapes(List<object> shapes, HikImageView imageView, object displayobj = null)
+	{
+		try
+		{
+			if (shapes == null || shapes.Count < 1 || imageView == null)
+			{
+				return;
+			}
+			if (imageView.ShapeDataList == null)
+			{
+				imageView.ShapeDataList = new List<object>();
+			}
+			if (!imageView.ShapeDataList.Contains(shapes))
+			{
+				imageView.ShapeDataList.Add(shapes);
+			}
+			Type type = shapes.FirstOrDefault().GetType();
+			if (type == typeof(Circle))
+			{
+				foreach (object shape in shapes)
+				{
+					Circle circle = shape as Circle;
+					imageView.CreatCircleE(circle.MajorRadius, circle.MinorRadius, circle.CenterX, circle.CenterY, circle.Tips, circle.Color, circle.Opacity, fill: circle.FillColor, strokeThickness: circle.StrokeThickness);
+				}
+				return;
+			}
+			if (type == typeof(Text))
+			{
+				imageView.ClearShapesByData(displayobj);
+				double num = 0.0;
+				float num2 = 0f;
+				float num3 = 0f;
+				{
+					foreach (object shape2 in shapes)
+					{
+						Text text = shape2 as Text;
+						double num4 = 0.0;
+						if (num2 == text.PositionY && num3 == text.PositionX)
+						{
+							num4 = num;
+						}
+						num = imageView.CreatCharacterE(text.Content, text.PositionX, (double)text.PositionY + num4, 0.0, text.FontSize, text.Color, text.Opacity, (double)text.PositionY + num, text.Width, text.Height, text.Tips, needTip: false, displayobj);
+						num -= (double)text.PositionY;
+						num2 = text.PositionY;
+						num3 = text.PositionX;
+					}
+					return;
+				}
+			}
+			if (type == typeof(Line))
+			{
+				foreach (object shape3 in shapes)
+				{
+					Line line = shape3 as Line;
+					imageView.CreateLineE(line.StartLineX, line.StartLineY, line.EndLineX, line.EndLineY, line.Color, line.Tips, needTips: true, needLabel: false, line.Opacity, singleDir: false, strokeThickness: line.StrokeThickness, IsThroughLine: line.IsThroughLine);
+				}
+				return;
+			}
+			if (type == typeof(Apps.Data.ShapeDefine.Rect))
+			{
+				foreach (object shape4 in shapes)
+				{
+					Apps.Data.ShapeDefine.Rect rect = shape4 as Apps.Data.ShapeDefine.Rect;
+					imageView.CreatRectangleE(rect.CenterX, rect.CenterY, rect.Width, rect.Height, rect.Angle, rect.Color, rect.Tips, rect.Opacity, 0.0, rect.StrokeThickness);
+				}
+				return;
+			}
+			if (type == typeof(Apps.Data.ShapeDefine.Point))
+			{
+				foreach (object shape5 in shapes)
+				{
+					Apps.Data.ShapeDefine.Point point = shape5 as Apps.Data.ShapeDefine.Point;
+					int color = (XmlColorToInt(point.Color) & 0xFFFFFF) | ((int)(point.Opacity * 255.0) << 24);
+					imageView.CreatePointEE(new System.Windows.Point(point.CenterX, point.CenterY), color, point.Opacity, point.Tips);
+				}
+				return;
+			}
+			if (type == typeof(Outlinepoint))
+			{
+				List<byte[]> list = new List<byte[]>();
+				foreach (object shape6 in shapes)
+				{
+					Outlinepoint outlinepoint = shape6 as Outlinepoint;
+					imageView.ExternPoint_Buffer_OkColor.Add(XmlColorToInt(outlinepoint.ColorA));
+					imageView.ExternPoint_Buffer_NgColor.Add(XmlColorToInt(outlinepoint.NgColorA));
+					imageView.ExternOpacity = outlinepoint.Opacity;
+					if (outlinepoint.OutLineInfo != null)
+					{
+						list.Add(outlinepoint.OutLineInfo.GetData());
+					}
+				}
+				imageView.ExternPoint_Buffer = (imageView.ExternPoint_Buffer ?? new List<byte[]>()).Union(list).ToList();
+				imageView.CreatPointK();
+				return;
+			}
+			if (type == typeof(SimpleRect))
+			{
+				imageView.ShapeList = shapes;
+				return;
+			}
+			if (type == typeof(MicroPoint))
+			{
+				DrawMicroPoint(shapes, imageView);
+				return;
+			}
+			if (type == typeof(Coordinate))
+			{
+				foreach (object shape7 in shapes)
+				{
+					Coordinate coordinate = shape7 as Coordinate;
+					imageView.CreatAxis(coordinate.CenterX, coordinate.CenterY, coordinate.CoorDXVecX, coordinate.CoorDXVecY, coordinate.CoorDYVecX, coordinate.CoorDYVecY, null, coordinate.Color, coordinate.Opacity);
+				}
+				return;
+			}
+			if (type == typeof(Path))
+			{
+				DrawPath(shapes, imageView);
+				return;
+			}
+			if (type == typeof(Coordinate))
+			{
+				foreach (object shape8 in shapes)
+				{
+					Coordinate coordinate2 = shape8 as Coordinate;
+					imageView.CreatAxis(coordinate2.CenterX, coordinate2.CenterY, coordinate2.CoorDXVecX, coordinate2.CoorDXVecY, coordinate2.CoorDYVecX, coordinate2.CoorDYVecY, null, coordinate2.Color, coordinate2.Opacity);
+				}
+				return;
+			}
+			if (type == typeof(LineAngle))
+			{
+				foreach (LineAngle item in shapes.OfType<LineAngle>())
+				{
+					imageView.CreatAngle(item, null, item.Color, item.Opacity);
+				}
+				return;
+			}
+			if (!(type == typeof(Polygon)))
+			{
+				return;
+			}
+			foreach (Polygon item2 in shapes.OfType<Polygon>())
+			{
+				imageView.CreatPolygon(item2.PolygonPoints.ToList(), item2.Tips, item2.Color, item2.Opacity, item2.FillColor, item2.StrokeThickness);
+			}
+		}
+		catch (Exception)
+		{
+			throw;
+		}
+	}
+
+	private static void DrawMicroPoint(object shapes, HikImageView imageView)
+	{
+		int count = (shapes as List<object>).Count;
+		for (int i = 0; i < count; i++)
+		{
+			MicroPoint microPoint = (shapes as List<object>)[i] as MicroPoint;
+			imageView.AddNewPointK(microPoint.CenterX, microPoint.CenterY, (XmlColorToInt(microPoint.Color) & 0xFFFFFF) | ((int)(microPoint.Opacity * 255.0) << 24));
+		}
+		imageView.CreatPointK();
+	}
+
+	private static void DrawPath(object shapes, HikImageView imageView)
+	{
+		float num = 0.8f;
+		int count = (shapes as List<object>).Count;
+		for (int i = 0; i < count; i++)
+		{
+			Path path = (shapes as List<object>)[i] as Path;
+			float centerX = path.CenterX;
+			float centerY = path.CenterY;
+			if (i + 1 < count)
+			{
+				Path path2 = (shapes as List<object>)[i + 1] as Path;
+				double num2 = path2.CenterX - centerX;
+				double num3 = path2.CenterY - centerY;
+				imageView.CreateLineE((double)centerX + (double)(1f - num) * num2, (double)centerY + (double)(1f - num) * num3, (double)centerX + num2 * (double)num, (double)centerY + (double)num * num3, path2.Color, null, needTips: true, needLabel: true, path.Opacity, singleDir: true);
+			}
+			int num4 = (int)(path.Opacity * 255.0) << 24;
+			int color = (XmlColorToInt(path.Color) & 0xFFFFFF) | num4;
+			imageView.CreatePointEE(new System.Windows.Point(centerX, centerY), color, path.Opacity, path.Tips);
+		}
+	}
+}

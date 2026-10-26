@@ -1,0 +1,117 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using Apps.XmlParser.ParamTab;
+using Mvvm.Commands;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class GlobalTriggerEventItem(ITriggerConfig triggerConfig) : ComTriggerItem(triggerConfig)
+{
+	private int _curEventIndex = -1;
+
+	private DelegateCommand _OpenParamCommand = null;
+
+	public Dictionary<string, List<BindParams>> EventRunParamsDict = new Dictionary<string, List<BindParams>>();
+
+	public Dictionary<string, List<BindParams>> EventInputParamsDict = new Dictionary<string, List<BindParams>>();
+
+	private bool _isOutPutChange = false;
+
+	public int CurEventIndex
+	{
+		get
+		{
+			return _curEventIndex;
+		}
+		set
+		{
+			if (_curEventIndex == value)
+			{
+				return;
+			}
+			_curEventIndex = value;
+			IsProTriggerSub = false;
+			ProTriggerString = "";
+			OnPropertyChanged("CurEventIndex");
+			IList allReceiveEventParams = CommunicationMgrHelper.GetAllReceiveEventParams(value);
+			if (ItemsA == null)
+			{
+				ItemsA = new ObservableCollection<TrigerOutPutItem>();
+			}
+			ItemsA.Clear();
+			if (allReceiveEventParams != null)
+			{
+				for (int i = 0; i < allReceiveEventParams.Count; i++)
+				{
+					EnumEntry enumEntry = allReceiveEventParams[i] as EnumEntry;
+					TrigerOutPutItem item = new TrigerOutPutItem
+					{
+						ItemIndex = i + 1,
+						ItemName = enumEntry.NameA,
+						ItemType = enumEntry.ReservedProperty.ToString(),
+						Parent = this,
+						RunParamsDict = (EventRunParamsDict.ContainsKey(enumEntry.NameA) ? EventRunParamsDict[enumEntry.NameA] : null),
+						InputParamsDict = (EventInputParamsDict.ContainsKey(enumEntry.NameA) ? EventInputParamsDict[enumEntry.NameA] : null)
+					};
+					ItemsA.Add(item);
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// 事件列表
+	/// </summary>
+	public IList ReceiveEventList => (Parent as GlobalTriggerConfig).GetAllReceiveList();
+
+	public ObservableCollection<TrigerOutPutItem> ItemsA { get; set; }
+
+	public ICommand OpenParamCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_OpenParamCommand == null)
+			{
+				_OpenParamCommand = new DelegateCommand((Action)OpenParamExecute);
+			}
+			return (ICommand)_OpenParamCommand;
+		}
+	}
+
+	public bool IsOutPutChange
+	{
+		get
+		{
+			return _isOutPutChange;
+		}
+		set
+		{
+			if (_isOutPutChange != value)
+			{
+				_isOutPutChange = value;
+				OnPropertyChanged("IsOutPutChange");
+			}
+		}
+	}
+
+	private void OpenParamExecute()
+	{
+		GlobalTriggerParamSet globalTriggerParamSet = new GlobalTriggerParamSet();
+		if (ItemsA == null)
+		{
+			return;
+		}
+		globalTriggerParamSet.IsEmptyParams = ItemsA.Count < 1;
+		foreach (TrigerOutPutItem item in ItemsA)
+		{
+			item.SetSelectParams();
+		}
+		globalTriggerParamSet.DataContext = ItemsA;
+		globalTriggerParamSet.ShowDialog();
+	}
+}

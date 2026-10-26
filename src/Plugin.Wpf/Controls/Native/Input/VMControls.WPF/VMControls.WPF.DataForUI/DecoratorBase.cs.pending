@@ -1,0 +1,438 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using Apps.Data;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlUI;
+using DirectoryBrowser;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility;
+using VM.Utility.SingleInstance;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class DecoratorBase : NotifyPropertyChangedBase, IDecorate
+{
+	private object _DecorateSource;
+
+	/// <summary>
+	/// 是否远端模式
+	/// </summary>
+	public bool IsRemoteMode => RemoteOperate.IsRemoteMode;
+
+	/// <summary>
+	/// 源数据
+	/// </summary>
+	public object DecorateSource
+	{
+		get
+		{
+			return _DecorateSource;
+		}
+		set
+		{
+			if (value != _DecorateSource)
+			{
+				if (_DecorateSource is INotifyPropertyChanged source)
+				{
+					PropertyChangedEventManager.RemoveHandler(source, DecorateSourcePropertyChanged, "");
+				}
+				_DecorateSource = value;
+				if (_DecorateSource is INotifyPropertyChanged source2)
+				{
+					PropertyChangedEventManager.AddHandler(source2, DecorateSourcePropertyChanged, "");
+				}
+			}
+		}
+	}
+
+	protected virtual void DecorateSourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		OnPropertyChanged(e.PropertyName);
+	}
+
+	/// <summary>
+	/// 检查是否正在运行
+	/// </summary>
+	/// <returns></returns>
+	public static bool CheckRunning(IVMRun vMRun)
+	{
+		if (vMRun.IsRunning)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_OpeRun"), MessageIcons.Error);
+			return false;
+		}
+		return true;
+	}
+
+	public void DeleteItemsCommandExecute(IList obj)
+	{
+		if (!CheckRunning(DecorateSource as IVMRun))
+		{
+			return;
+		}
+		IList list = obj.OfType<IDecorate>().ToList();
+		int num = 0;
+		string text = "";
+		bool flag = false;
+		int num2 = 0;
+		foreach (IDecorate item in list)
+		{
+			if (item.DecorateSource is IVmProcedure)
+			{
+				num2++;
+			}
+			if (num < 3 && item.DecorateSource is IVmModule { IsGlobalModu: false })
+			{
+				text = text + (item.DecorateSource as IVmFrameBase).Name + ",";
+			}
+			if (num == 2 && text.Length > 0)
+			{
+				text = text.Substring(0, text.Length - 1);
+				text += "...";
+			}
+			num++;
+		}
+		flag = num2 > 0;
+		bool isForbid = (list as List<IDecorate>).Any((IDecorate x) => x.DecorateSource is IVmModule { IsLoadFailed: var isLoadFailed } && isLoadFailed != false);
+		if (obj.OfType<VmModuleBaseDecorator>().Any((VmModuleBaseDecorator p) => p.DecorateSource is IVmModuleSet) && HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ConfirmDelete"), "", MessageButtons.YesOrNo, MessageIcons.Question) != DialogResult.Yes)
+		{
+			return;
+		}
+		if (this is VmSolutionDecorator)
+		{
+			UILogManager.logCreate("信息", AppLocalizationService.GetLang("删除多个流程") + string.Join(AppLocalizationService.GetPunctuation("，"), from x in obj.OfType<VmModuleBaseDecorator>().ToList()
+				select x.VMModule.FullName));
+		}
+		else
+		{
+			UILogManager.logCreate("信息", AppLocalizationService.GetLang("删除多个模块") + string.Join(AppLocalizationService.GetPunctuation("，"), from x in obj.OfType<VmModuleBaseDecorator>().ToList()
+				select x.VMModule.FullName));
+		}
+		if (num2 <= 1)
+		{
+			if (flag)
+			{
+				Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+				{
+					ForbidBuild = isForbid
+				}, AppLocalizationService.GetLang("删除流程") + ": " + text);
+			}
+			else
+			{
+				Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+				{
+					ForbidBuild = isForbid,
+					RootOperType = "DeleteModule"
+				}, AppLocalizationService.GetLang("删除模块") + ": " + text);
+			}
+			obj.OfType<VmModuleBaseDecorator>().ToList().ForEach((VmModuleBaseDecorator p) =>
+			{
+				p.DeleteItemCommandExecute(isShowWarn: false);
+			});
+		}
+		else
+		{
+			obj.OfType<VmModuleBaseDecorator>().ToList().ForEach((VmModuleBaseDecorator p) =>
+			{
+				if (p.DecorateSource is IVmProcedure)
+				{
+					Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+					{
+						ForbidBuild = isForbid
+					}, AppLocalizationService.GetLang("删除流程") ?? "");
+				}
+				else
+				{
+					Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+					{
+						ForbidBuild = isForbid,
+						RootOperType = "DeleteModule"
+					}, AppLocalizationService.GetLang("删除模块") ?? "");
+				}
+				p.DeleteItemCommandExecute(isShowWarn: false);
+			});
+		}
+		Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+	}
+
+	protected static void AutoLinkData(IVmModule source, IVmModule target)
+	{
+		target.AutoLinkData(source);
+	}
+
+	protected void DropItemsCommandExecute(ObjectEventArgs ts)
+	{
+		int num = 0;
+		string text = "";
+		DecoratorBase decoratorBase = null;
+		foreach (object[] item in ts.Param as IList)
+		{
+			VmModuleBaseDecorator vmModuleBaseDecorator = item[0] as VmModuleBaseDecorator;
+			Point position = (Point)item[1];
+			if (item.Length > 2)
+			{
+				decoratorBase = item[2] as DecoratorBase;
+			}
+			if (vmModuleBaseDecorator.DecorateSource is IToolBoxData toolBoxData)
+			{
+				if (!CheckRunning(DecorateSource as IVMRun))
+				{
+					break;
+				}
+				VmConnectionDecorator vmConnectionDecorator = null;
+				if (toolBoxData.Tag is VmConnectionDecorator vmConnectionDecorator2)
+				{
+					vmConnectionDecorator = vmConnectionDecorator2;
+				}
+				if (toolBoxData.DirPath.Contains("GroupTools"))
+				{
+					string text2 = toolBoxData.DirPath.Substring(toolBoxData.DirPath.LastIndexOf('\\'));
+					string strPath = toolBoxData.DirPath + text2 + "." + AppFileExtension.Group;
+					UILogManager.logCreate("信息", "拖入自定义工具包");
+					IMVSGroup iMVSGroup = VmSolution.LoadGroup(DecorateSource as IVmModuleSet, strPath);
+					if (iMVSGroup != null)
+					{
+						VmModuleDecorator vmModuleDecorator = new VmModuleDecorator
+						{
+							DecorateSource = iMVSGroup
+						};
+						vmModuleDecorator.Position = position;
+					}
+				}
+				else
+				{
+					try
+					{
+						if (toolBoxData.Info == "IMVSGroup" && DecorateSource is IVMGroup vMGroup)
+						{
+							int level = VmGroupDecorator.GetLevel(vMGroup);
+							if (level >= 2)
+							{
+								HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GroupMuch"), MessageButtons.Normal, MessageIcons.Warning);
+								break;
+							}
+						}
+						if (this is VmSolutionDecorator)
+						{
+							Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("添加流程") ?? "");
+						}
+						else
+						{
+							Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("添加模块") ?? "");
+						}
+						object obj = toolBoxData.AddNewItem(DecorateSource);
+						LogHelper.Info("工具箱拖入创建:" + (obj as IVmModule)?.FullName);
+						if (obj is IVmProcedure)
+						{
+							vmModuleBaseDecorator = new VmProcedureDecorator
+							{
+								DecorateSource = obj
+							};
+							UILogManager.logCreate("信息", AppLocalizationService.GetLang("添加流程") + AppLocalizationService.GetPunctuation("：") + (obj as IVmModule)?.FullName);
+						}
+						else
+						{
+							vmModuleBaseDecorator = new VmModuleDecorator
+							{
+								DecorateSource = obj
+							};
+							UILogManager.logCreate("信息", AppLocalizationService.GetLang("添加模块") + AppLocalizationService.GetPunctuation("：") + (obj as IVmModule)?.FullName);
+						}
+						if ((obj as IVmModule).Parent is IVmModuleSet vmModuleSet && vmModuleSet.Children.Count == 1)
+						{
+							AutoLinkData(vmModuleSet as IVmModule, obj as IVmModule);
+						}
+						Ioc.Get<IUnRedoService>()?.ModifyDisplayInfo((obj as IVmFrameBase).Name);
+						vmModuleBaseDecorator.Position = position;
+						if (obj is IVmModule { IsGlobalModu: not false })
+						{
+							Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+						}
+						if (decoratorBase != null)
+						{
+							VmModuleBaseDecorator.AddConnection(decoratorBase.DecorateSource as IVmModule, obj as IVmModule);
+							VmConnectionDecorator vmConnectionDecorator3 = new VmConnectionDecorator();
+							vmConnectionDecorator3.ConnectionSource = decoratorBase.DecorateSource as IVmModule;
+							vmConnectionDecorator3.DecorateSource = obj as IVmModule;
+							VmConnectionDecorator vmConnectionDecorator4 = vmConnectionDecorator3;
+							vmConnectionDecorator4.SourceIndex = 3;
+							vmConnectionDecorator4.TargetIndex = 1;
+						}
+						if (vmConnectionDecorator != null)
+						{
+							vmConnectionDecorator.InsertModule(obj as IVmModule);
+							toolBoxData.Tag = null;
+						}
+					}
+					catch (VmException ex)
+					{
+						ShowMessage.ShowVmExceptionMessage(ex);
+						UILogManager.logCreate("错误", ErrorCodeInfo.GetErrorInfo(ex.errorCode));
+						LogHelper.Error(ex.errorMessage);
+						Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+						break;
+					}
+					catch (Exception ex2)
+					{
+						HikMessageBox.Show(ex2.Message, MessageIcons.Error);
+						UILogManager.logCreate("错误", ex2.Message, ifLang: false);
+						LogHelper.Error(ex2.Message);
+						Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (vmModuleBaseDecorator.DecorateSource is IVmModule { IsGlobalModu: false })
+				{
+					if (num == 0)
+					{
+						Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("调整位置") + ": " + (vmModuleBaseDecorator.DecorateSource as IVmFrameBase).Name);
+						text = (vmModuleBaseDecorator.DecorateSource as IVmFrameBase).Name;
+					}
+					else if (num < 3)
+					{
+						text = text + "," + (vmModuleBaseDecorator.DecorateSource as IVmFrameBase).Name;
+					}
+					if (num + 1 == (ts.Param as IList).Count)
+					{
+						Ioc.Get<IUnRedoService>()?.ModifyDisplayInfo(text);
+					}
+				}
+				try
+				{
+					vmModuleBaseDecorator.Position = position;
+				}
+				finally
+				{
+					Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+				}
+			}
+			num++;
+		}
+	}
+
+	/// <summary>
+	/// 导入Group
+	/// </summary>
+	public static void ImportGroup(IVmModuleSet moduleSet, Point point, bool isRemoteMode = false)
+	{
+		if (!CheckRunning(moduleSet as IVMRun))
+		{
+			return;
+		}
+		LogHelper.Info("Import group start.");
+		string text = null;
+		if (isRemoteMode)
+		{
+			string text2 = ConfigurationHelper.INIGetStringValue("OpenGroupRemote");
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				CheckFileExists = true,
+				Filter = "Group文件|*.grox"
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				text = openFileDialog.FileNames.First();
+				string directoryName = openFileDialog.GetDirectoryName();
+				ConfigurationHelper.INISetStringValue("OpenGroupRemote", directoryName);
+			}
+		}
+		else
+		{
+			string initPath = ConfigurationHelper.INIGetStringValue("OpenGroup");
+			text = ServerSDKManager.serverSDKManager.mCollectionManager.OpenImportDialog("Group文件", "|*." + AppFileExtension.Group, initPath);
+			if (File.Exists(text))
+			{
+				ConfigurationHelper.INISetStringValue("OpenGroup", Path.GetDirectoryName(text));
+			}
+		}
+		if (text != null)
+		{
+			IMVSGroup iMVSGroup = VmSolution.LoadGroup(moduleSet, text);
+			if (iMVSGroup != null)
+			{
+				VmModuleDecorator vmModuleDecorator = new VmModuleDecorator
+				{
+					DecorateSource = iMVSGroup
+				};
+				vmModuleDecorator.Position = point;
+				UILogManager.logCreate("信息", AppLocalizationService.GetLang("Lang_ImportGroup") + AppLocalizationService.GetPunctuation("：") + iMVSGroup.ModuleFilePath);
+			}
+			LogHelper.Info("Import group end.");
+		}
+	}
+
+	public static void ImportProcedure(Point point, bool isRemoteImport = false)
+	{
+		if (!CheckRunning(VmSolution.Instance))
+		{
+			return;
+		}
+		string text = null;
+		if (isRemoteImport)
+		{
+			string text2 = ConfigurationHelper.INIGetStringValue("OpenProcessRemote");
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			string text3 = AppLocalizationService.GetLang("导入");
+			if (AppLocalizationService.GetLang("Language") == "English")
+			{
+				text3 += " ";
+			}
+			text3 += AppLocalizationService.GetLang("Lang_ProcessFile");
+			openFileDialog.Title = text3;
+			openFileDialog.Filter = AppLocalizationService.GetLang("Lang_ProcessFile") + "|*.prcx";
+			if (openFileDialog.ShowDialog() != true)
+			{
+				text = null;
+			}
+			try
+			{
+				text = openFileDialog.FileNames[0];
+				string directoryName = openFileDialog.GetDirectoryName();
+				ConfigurationHelper.INISetStringValue("OpenProcessRemote", directoryName);
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("Import error: " + ex.Message);
+				text = null;
+			}
+		}
+		else
+		{
+			string initPath = ConfigurationHelper.INIGetStringValue("OpenProcess");
+			text = ServerSDKManager.serverSDKManager.mCollectionManager.OpenImportDialog("Lang_ProcessFile", "|*." + AppFileExtension.Process, initPath);
+			if (File.Exists(text))
+			{
+				ConfigurationHelper.INISetStringValue("OpenProcess", Path.GetDirectoryName(text));
+			}
+		}
+		if (!string.IsNullOrWhiteSpace(text))
+		{
+			Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("Lang_ImportProcess") ?? "");
+			object obj = VmSolution.ImportProFile(ref text);
+			if (obj != null)
+			{
+				VmModuleDecorator vmModuleDecorator = new VmModuleDecorator
+				{
+					DecorateSource = obj
+				};
+				vmModuleDecorator.Position = point;
+				LogHelper.Info("Import procedure end. path: " + text);
+				UILogManager.logCreate("信息", AppLocalizationService.GetLang("Lang_ImportProcess") + AppLocalizationService.GetPunctuation("：") + text);
+			}
+		}
+	}
+}

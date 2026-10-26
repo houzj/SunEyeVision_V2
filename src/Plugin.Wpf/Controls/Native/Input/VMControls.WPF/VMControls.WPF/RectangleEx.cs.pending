@@ -1,0 +1,77 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 矩形/平行四边形
+/// </summary>
+public struct RectangleEx : IRectangle, IShape, IShapeBase
+{
+	/// <summary>
+	/// 中心点坐标
+	/// </summary>
+	public Point CenterPoint { get; set; }
+
+	/// <summary>
+	/// 宽度
+	/// </summary>
+	public double Width { get; set; }
+
+	/// <summary>
+	/// 高度
+	/// </summary>
+	public double Height { get; set; }
+
+	/// <summary>
+	/// 角度
+	/// </summary>
+	public double Angle { get; set; }
+
+	/// <summary>
+	/// 倾斜角X
+	/// </summary>
+	public double SkewAngleX { get; set; }
+
+	/// <summary>
+	/// 倾斜角Y
+	/// </summary>
+	public double SkewAngleY { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 边框颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	public double StrokeThickness { get; set; }
+
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public RectangleEx(Point centerPoint, double width, double height, double angle = 0.0, double skewAngleX = 0.0, double skewAngleY = 0.0, double opacity = 1.0, string stroke = "#66FF00", string fill = null, double strokeThickness = 1.0, string toolTip = null)
+	{
+		CenterPoint = centerPoint;
+		Width = width;
+		Height = height;
+		Angle = angle;
+		SkewAngleX = skewAngleX;
+		SkewAngleY = skewAngleY;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = fill;
+		StrokeThickness = strokeThickness;
+		ToolTip = toolTip;
+	}
+}

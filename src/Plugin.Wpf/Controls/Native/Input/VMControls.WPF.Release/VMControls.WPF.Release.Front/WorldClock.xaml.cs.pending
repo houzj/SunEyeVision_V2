@@ -1,0 +1,122 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// WorldClock.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// WorldClock
+/// </summary>
+public partial class WorldClock : ContentControl, IComponentConnector
+{
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public System.Windows.Media.Brush ForeColor
+	{
+		get
+		{
+			return PART_Control.ForeColor;
+		}
+		set
+		{
+			PART_Control.ForeColor = value;
+		}
+	}
+
+	public object DisplayTypeSelectSource
+	{
+		get
+		{
+			return PART_Control.DisplayTypeSelectSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.DisplayTypeSelectSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("DisplayTypeSelectSource Type Error!");
+		}
+	}
+
+	public object TimeZoneSelectSource
+	{
+		get
+		{
+			return PART_Control.TimeZoneSelectSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.TimeZoneSelectSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("TimeZoneSelectSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public WorldClock()
+	{
+		InitializeComponent();
+	}
+}

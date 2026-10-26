@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ModuleResultView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;assembly=SunEyeVision.Plugin.Wpf" xmlns:imagecontrol="clr-namespace:VMBaseControls;assembly=VMBaseControls" xmlns:vmcontrols="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:VMCore="clr-namespace:VM.Core;assembly=VM.Core" xmlns:localParamTab="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseDate="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:pclist="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;assembly=SunEyeVision.Plugin.Wpf" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" x:Name="us">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/TabControlStyle/TabControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/RadioButtonStyle/RadioButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ComboBoxStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:MultiBindingConverter x:Key="multiBindingConverter" />
+      <localParamTab:LogManageTypeImageConvert x:Key="logTypeImageConvert" />
+      <BaseDate:TypeFilterConverter x:Key="typeFilterConverter" />
+      <localParamTab:BooleanToVisibilityConverterReverse x:Key="negativeb2v" />
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <imagecontrol:Bool2CollapesdConverter x:Key="bool2CollapesdConvert" />
+      <BooleanToVisibilityConverter x:Key="bool2VisibleConverter" />
+      <local:AdditionCloudResultSelector x:Key="AdditionCloudSelector" />
+      <local:AdditionRangeResultSelector x:Key="AdditionRangeSelector" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Name="CommonModuleView">
+    <Border>
+      <Grid Name="imageRec">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="2" />
+          <RowDefinition Name="resultRow" Height="235" MinHeight="40" MaxHeight="{Binding ActualHeight, ElementName=CommonModuleView}" />
+          <RowDefinition Height="28" />
+        </Grid.RowDefinitions>
+        <Grid Row="0" RowSpan="2">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+          </Grid.RowDefinitions>
+          <TabControl Name="ResultTab" Background="{DynamicResource Col_DisplayImage_Background}" VerticalAlignment="Stretch" BorderBrush="{DynamicResource Col_DisplayImage_BorderBrush}" Margin="0,0,1,0" SelectionChanged="ResultTab_SelectionChanged">
+            <TabItem Foreground="{DynamicResource Col_DisplayImage_Foreground}" Height="38" FontSize="14" BorderThickness="0">
+              <Grid Name="imageUnion" DataContext="{x:Null}">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="40" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Name="colInput" Width="0" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ScrollViewer Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+                  <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="260" DataContext="{Binding m_CurrentInfo, ElementName=us}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                      <ComboBox Style="{StaticResource ImageListComboBox}" Height="32" Width="142" SelectedValuePath="DisplayObject" ItemsSource="{Binding InputImageViewList}" SelectedItem="{Binding SelectedInputImage, Mode=TwoWay}" SelectionChanged="imageListComboboxIn_SelectionChanged">
+                        <FrameworkElement.ToolTip>
+                          <MultiBinding Converter="{StaticResource multiBindingConverter}">
+                            <Binding Path="SelectedInputImage.DisplayObject.Owner.Name" />
+                            <Lang:ResourceBinding Path="SelectedInputImage.DisplayObject.NameA" />
+                          </MultiBinding>
+                        </FrameworkElement.ToolTip>
+                      </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                      <ToggleButton Style="{StaticResource DoubleImageToggleButton}" Width="35" Height="35" IsChecked="{Binding IsShowDoubleImage, ElementName=us, Mode=TwoWay}" />
+                      <UniformGrid Columns="2" Width="75">
+                        <Button Name="BtnToolRegionScaleIn" Width="34" Height="34" Style="{StaticResource ClientOriginScaleBtn}" Content="1:1" Click="BtnToolRegionScaleIn_Click" />
+                        <Button Name="BtnToolFullScreenIn" Width="34" Height="34" Style="{StaticResource ClientFullScreenBtn}" Content="全屏" Click="m_btnFullScreenIn_Click" />
+                      </UniformGrid>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+                <ScrollViewer Grid.Column="1" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+                  <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="300" DataContext="{Binding m_CurrentInfo, ElementName=us}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                      <ComboBox Style="{StaticResource ImageListComboBox}" Height="32" Width="142" SelectedValuePath="DisplayObject" ItemsSource="{Binding ImageViewList}" SelectedItem="{Binding SelectedImage, Mode=TwoWay}" SelectionChanged="imageListCombobox_SelectionChanged">
+                        <FrameworkElement.ToolTip>
+                          <MultiBinding Converter="{StaticResource multiBindingConverter}">
+                            <Binding Path="SelectedImage.DisplayObject.Owner.Name" />
+                            <Lang:ResourceBinding Path="SelectedImage.DisplayObject.NameA" />
+                          </MultiBinding>
+                        </FrameworkElement.ToolTip>
+                      </ComboBox>
+                      <ContentControl Name="AdditionCTemplate" ContentTemplateSelector="{StaticResource AdditionCloudSelector}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                      <ContentControl Name="AdditionRTemplate" ContentTemplateSelector="{StaticResource AdditionRangeSelector}" />
+                      <ComboBox Name="comcor" SelectedIndex="{Binding CorSelectIndex}">
+                        <ComboBoxItem Content="{DynamicResource Image Coord}" />
+                        <ComboBoxItem Content="{DynamicResource Physical Coord}" />
+                        <ComboBoxItem Content="{DynamicResource Lang_BothDisplay}" />
+                        <FrameworkElement.Style>
+                          <Style BasedOn="{StaticResource ListViewComboBoxGrayStyleCor}" TargetType="{x:Type ComboBox}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Value="True" Binding="{Binding IsShowCoordinate}">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ComboBox>
+                      <ToggleButton Style="{StaticResource DoubleImageToggleButton}" Width="35" Height="35" IsChecked="{Binding IsShowDoubleImage, ElementName=us, Mode=TwoWay}" Visibility="{Binding IsProcedure, Converter={StaticResource negativeb2v}}" />
+                      <StackPanel Orientation="Horizontal" Visibility="{Binding IsShowPointCloud, ElementName=imageView, Converter={StaticResource bool2CollapesdConvert}}">
+                        <Button Name="line" Style="{StaticResource CrossLineStyle}" ToolTip="{DynamicResource 辅助线}" Click="Line_Click" />
+                        <Rectangle Width="1" Height="18" Margin="4,0" Fill="{DynamicResource DashedLineStroke}" />
+                        <controls:ZoomOutButton Width="34" Height="34" Content="{DynamicResource 放大}" Margin="1" HookImageViewBox="{Binding ElementName=imageView}" Visibility="{Binding IsShowDoubleImage, ElementName=us, Converter={StaticResource negativeb2v}}" />
+                        <controls:ZoomInButton Width="34" Height="34" Content="{DynamicResource 缩小}" Margin="1" HookImageViewBox="{Binding ElementName=imageView}" Visibility="{Binding IsShowDoubleImage, ElementName=us, Converter={StaticResource negativeb2v}}" />
+                        <Button Name="BtnToolRegionScale" Width="34" Height="34" Style="{StaticResource ClientOriginScaleBtn}" Content="1:1" Click="BtnToolRegionScale_Click" />
+                        <Button Name="BtnToolFullScreen" Width="34" Height="34" Style="{StaticResource ClientFullScreenBtn}" Content="全屏" Click="m_btnFullScreen_Click" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+                <Grid Name="viewboxIn" Row="1" Margin="-1" Background="{DynamicResource Col_DisplayImage_Control_BorderBrush}">
+                  <imagecontrol:ImageViewBox Name="imageViewIn" Margin="1" IsDisplayPixelAuto="True" ImageDataSource="{Binding m_CurrentInfo.ImageDataSourceIn, ElementName=us}" MouseLeftButtonDown="imageView_MouseLeftButtonDown">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type imagecontrol:ImageViewBox}">
+                        <Style.Triggers>
+                          <DataTrigger Value="True" Binding="{Binding Path=m_CurrentInfo.AlgorithmItems.SelectedROI, ElementName=us, Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IAddROIWidthImageCommand}}">
+                            <Setter Property="imagecontrol:ImageViewBox.RoiAddWithImageCommand" Value="{Binding Path=m_CurrentInfo.AlgorithmItems.SelectedROI.(Interface:IAddROIWidthImageCommand.AddROIWidthImageCommand), ElementName=us}" />
+                          </DataTrigger>
+                          <DataTrigger Value="True" Binding="{Binding IsShowDoubleImage, ElementName=us}">
+                            <Setter Property="imagecontrol:ImageViewBox.DrawROIType" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.DrawROIType, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.IsStateForDrawROI" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.IsStateForDrawROI, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiAddCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.AddROICommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.ROIList" Value="{Binding m_CurrentInfo.ROIList, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.AdditionDataCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.AdditionDataCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.SelectedSubROIList" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.ROIList, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.ImageSizeChangedCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.ImageSizeChangedCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiSelectedCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiSelectedCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiDelCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiDelCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiCopyCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiCopyCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiPasteCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiPasteCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiVisibleChangedCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiVisibleChangedCommand, ElementName=us}" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </imagecontrol:ImageViewBox>
+                </Grid>
+                <Grid Name="viewbox" Row="1" Column="1" Margin="-1" Background="{DynamicResource Col_DisplayImage_Control_BorderBrush}">
+                  <imagecontrol:ImageViewBox Name="imageView" Margin="1" IsDisplayPixelAuto="True" IsSaveRenderImageVisible="True" ImageDataSource="{Binding m_CurrentInfo.ImageDataSource, ElementName=us}" ShapeConvertMatrix="{Binding m_CurrentInfo.ShapeMatrix, ElementName=us}" CordinateShow="{Binding m_CurrentInfo.CorSelectIndex, ElementName=us}" ShapeList="{Binding m_CurrentInfo.ShapeList, ElementName=us}" MouseLeftButtonDown="imageView_MouseLeftButtonDown">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type imagecontrol:ImageViewBox}">
+                        <Style.Triggers>
+                          <DataTrigger Value="True" Binding="{Binding Path=m_CurrentInfo.AlgorithmItems.SelectedROI, ElementName=us, Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IAddROIWidthImageCommand}}">
+                            <Setter Property="imagecontrol:ImageViewBox.RoiAddWithImageCommand" Value="{Binding Path=m_CurrentInfo.AlgorithmItems.SelectedROI.(Interface:IAddROIWidthImageCommand.AddROIWidthImageCommand), ElementName=us}" />
+                          </DataTrigger>
+                          <DataTrigger Value="false" Binding="{Binding IsShowDoubleImage, ElementName=us}">
+                            <Setter Property="imagecontrol:ImageViewBox.DrawROIType" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.DrawROIType, ElementName=us, Mode=TwoWay}" />
+                            <Setter Property="imagecontrol:ImageViewBox.IsStateForDrawROI" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.IsStateForDrawROI, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiAddCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.AddROICommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.ROIList" Value="{Binding m_CurrentInfo.ROIList, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.SelectedSubROIList" Value="{Binding m_CurrentInfo.AlgorithmItems.SelectedROI.ROIList, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.ImageSizeChangedCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.ImageSizeChangedCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiSelectedCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiSelectedCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.AdditionDataCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.AdditionDataCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiDelCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiDelCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiCopyCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiCopyCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiPasteCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiPasteCommand, ElementName=us}" />
+                            <Setter Property="imagecontrol:ImageViewBox.RoiVisibleChangedCommand" Value="{Binding m_CurrentInfo.AlgorithmItems.RoiVisibleChangedCommand, ElementName=us}" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </imagecontrol:ImageViewBox>
+                </Grid>
+                <Button Name="btnLeft" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Center" Width="26" Height="54" Panel.ZIndex="0" Style="{StaticResource StyleLeft}" Click="btnLeft_Click" />
+                <Button Name="btnRight" Grid.Row="1" Grid.ColumnSpan="2" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" VerticalAlignment="Center" Height="54" Width="26" Panel.ZIndex="0" UseLayoutRounding="True" SnapsToDevicePixels="True" Style="{StaticResource StyleLeft}" Click="btnRight_Click">
+                  <UIElement.RenderTransform>
+                    <ScaleTransform ScaleX="-1" />
+                  </UIElement.RenderTransform>
+                </Button>
+              </Grid>
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource FrequentTab}" TargetType="{x:Type TabItem}">
+                  <Setter Property="Header" Value="{DynamicResource Result_ImageData}" />
+                  <Setter Property="Width" Value="120" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding m_CurrentInfo.IsProcedure, ElementName=us}">
+                      <Setter Property="Header" Value="{DynamicResource Process_Image}" />
+                      <Setter Property="Width" Value="125" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </TabItem>
+            <TabItem Name="treeTabItem" Header="{DynamicResource Result_ModuleResult}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" Width="130" Height="38" FontSize="14" BorderThickness="0">
+              <Grid Name="resultGrid" Background="{DynamicResource Col_ShowResults_ModuleResult_Background}" DataContext="{x:Null}">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="40" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Border Grid.RowSpan="3" Background="{DynamicResource Col_ShowResults_ModuleResult_Background}" Opacity="0.15" />
+                <Grid Background="{DynamicResource Col_ShowResults_ModuleResult_Title_Background}" Margin="2,0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1" />
+                  </Grid.ColumnDefinitions>
+                  <Rectangle Grid.Column="0" StrokeThickness="0" Fill="{DynamicResource Col_ShowResults_ModuleResult_BorderBrush}" />
+                  <Rectangle Grid.Column="2" StrokeThickness="0" Fill="{DynamicResource Col_ShowResults_ModuleResult_BorderBrush}" />
+                  <Rectangle Grid.Column="4" StrokeThickness="0" Fill="{DynamicResource Col_ShowResults_ModuleResult_BorderBrush}" />
+                  <Rectangle Grid.Column="6" StrokeThickness="0" Fill="{DynamicResource Col_ShowResults_ModuleResult_BorderBrush}" />
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{DynamicResource Lang_ResultName}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" FontSize="14" Margin="10,0" ToolTip="{Binding Text, RelativeSource={RelativeSource self}}" />
+                  <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{DynamicResource Lang_CurValue}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" FontSize="14" Margin="10,0" ToolTip="{Binding Text, RelativeSource={RelativeSource self}}" />
+                  <TextBlock Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{DynamicResource Lang_VariableManager}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" FontSize="14" Margin="10,0" ToolTip="{Binding Text, RelativeSource={RelativeSource self}}" />
+                </Grid>
+                <Grid Height="40" Background="{DynamicResource TreeTabItemBaground}" Row="1">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image Height="28" Width="28" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_告警.png" VerticalAlignment="Center" />
+                    <TextBlock ToolTipService.ShowDuration="10000" FontSize="16" Foreground="{DynamicResource NoCameraForground}" VerticalAlignment="Center" Text="{Binding ErrorInfo}" ToolTip="{Binding Text, RelativeSource={RelativeSource Mode=Self}}" />
+                  </StackPanel>
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Grid}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorInfo}" Value="{x:Null}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Grid>
+                <ScrollViewer Grid.Row="2" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                  <Grid Name="resgrid" Margin="2,0">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type VMCore:VmModule}}" DataType="{x:Type VMCore:VmModule}" ItemsSource="{Binding Outputs}" />
+                        <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type VMCore:VmIO}}" DataType="{x:Type VMCore:VmIO}" ItemsSource="{Binding Children}" />
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                    <TreeView Name="resultTreeView" Style="{StaticResource ResultTreeViewStyle}" ItemContainerStyle="{StaticResource ResultTreeViewItemStyle}" ItemsSource="{Binding ResultData}" MaxWidth="{Binding ActualWidth, ElementName=resgrid}" />
+                  </Grid>
+                </ScrollViewer>
+                <Grid Height="40" Background="{DynamicResource TreeTabItemBoBaground}" Opacity="0.5" Row="3">
+                  <TextBox Name="tbPath" IsReadOnly="True" BorderThickness="0" Background="#00FFFFFF" FontSize="14" Foreground="{DynamicResource NoCameraForground}" VerticalAlignment="Center" Margin="12,0" ToolTip="{DynamicResource Lang_SelectAgainTip}" Text="{Binding Path=SelectedItemPath, StringFormat='VmSolution.Instance[&quot;{0}&quot;]'}" />
+                  <Button Style="{StaticResource BaseImage_ButtonStyle}" HorizontalAlignment="Right" Width="30" Height="30" ToolTip="{DynamicResource Lang_CopySuccessFirstTip}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding Text, ElementName=tbPath}">
+                    <Image Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_copy_normal.png" />
+                    <FrameworkElement.Tag>
+                      <Image Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_copy_click.png" />
+                    </FrameworkElement.Tag>
+                  </Button>
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Grid}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedItemPath}" Value="{x:Null}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Grid>
+              </Grid>
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource FrequentTab}" TargetType="{x:Type TabItem}" />
+              </FrameworkElement.Style>
+            </TabItem>
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource ModuleViewTabControl}" TargetType="{x:Type TabControl}" />
+            </FrameworkElement.Style>
+          </TabControl>
+          <Grid Name="localImageGrid" Row="1" MaxHeight="110" DataContext="{x:Null}">
+            <local:LocalImageListView x:Name="localImageList" Visibility="{Binding IsShowLocalImageList, Converter={StaticResource bool2VisibilityConverter}}" Root="{Binding ImageAlgorithmTabRoot, ElementName=us}" />
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Grid}">
+                <Style.Triggers>
+                  <Trigger Property="FrameworkElement.DataContext" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Grid>
+        </Grid>
+        <GridSplitter Height="2" Grid.Row="1" HorizontalAlignment="Stretch" Background="#00FFFFFF" />
+        <Grid Name="logUnion" Row="2">
+          <Border BorderBrush="{DynamicResource Col_DisplayImage_BorderBrush}" Background="{DynamicResource Col_DisplayImage_Background}" BorderThickness="0,1,0,1">
+            <Grid>
+              <TabControl Name="InfoTab" Margin="0,0,0,0" VerticalAlignment="Stretch" Background="{DynamicResource Col_DisplayImage_Background}" BorderBrush="{DynamicResource Col_DisplayImage_BorderBrush}" Style="{DynamicResource ModuleViewTabControl}" SelectionChanged="InfoTab_SelectionChanged">
+                <TabItem Name="CommonParamTabItem" Header="{DynamicResource Tab_Common Params}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" Height="40" FontSize="14" BorderThickness="0" Visibility="Collapsed" Style="{StaticResource FrequentTab}">
+                  <Grid Name="ParamsView" />
+                </TabItem>
+                <TabItem Name="DataqueueTabItem" Height="40" FontSize="14" Header="{DynamicResource Lang_DataQueue}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" HorizontalAlignment="Left" Style="{StaticResource FrequentTab}" Visibility="Collapsed">
+                  <Grid Name="QueueView" />
+                </TabItem>
+                <TabItem Name="CurResultTabItem" FontSize="14" Header="{DynamicResource Lang_CurRslt}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" HorizontalAlignment="Left" Style="{StaticResource FrequentTab}" Visibility="Visible">
+                  <Grid Name="m_LeftResultTabItemGrid" DataContext="{Binding m_CurrentInfo, ElementName=us}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <DataGrid Name="m_ResultDataGrid" Grid.Column="1" CellStyle="{StaticResource dgCellCenterAlignmentStyle}" Style="{StaticResource CurResultDataGridStyle}" ItemsSource="{Binding ModuleCurrentResultList, Mode=OneWay, IsAsync=True}" SelectionChanged="m_ResultDataGrid_SelectionChanged" />
+                    <controls:HikHistogram Name="m_HikHistogram" Visibility="Collapsed" Margin="3,5,0,0" Panel.ZIndex="1" />
+                  </Grid>
+                </TabItem>
+                <TabItem Name="hstTab" Header="{DynamicResource Lang_HstRslt}" Height="40" FontSize="14" Foreground="{DynamicResource Col_DisplayImage_Foreground}" BorderThickness="0" Style="{StaticResource FrequentTab}">
+                  <DataGrid Name="m_DataGrid" Grid.Row="2" ColumnWidth="Auto" Style="{StaticResource ModuleViewDataGridStyle}" ItemsSource="{Binding m_CurrentInfo.ModuleDisplayInfoList, ElementName=us, Mode=OneWay, IsAsync=True}">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn MinWidth="30" CellStyle="{StaticResource dgCellLeftAlignmentStyle}" Binding="{Binding Path=RowIndex}">
+                        <DataGridColumn.Header>
+                          <TextBlock Text="{DynamicResource Lang_ExecuteNum}" VerticalAlignment="Center" />
+                        </DataGridColumn.Header>
+                      </DataGridTextColumn>
+                      <DataGridTextColumn MinWidth="150" CellStyle="{StaticResource dgCellLeftAlignmentStyle}" Binding="{Binding Path=AddTime}">
+                        <DataGridColumn.Header>
+                          <TextBlock Text="{DynamicResource Lang_Time}" VerticalAlignment="Center" />
+                        </DataGridColumn.Header>
+                      </DataGridTextColumn>
+                      <DataGridTextColumn MinWidth="200" CellStyle="{StaticResource dgCellLeftAlignmentStyle}" Binding="{Binding Path=Content}">
+                        <DataGridColumn.Header>
+                          <TextBlock Text="{DynamicResource Lang_ModuData}" VerticalAlignment="Center" />
+                        </DataGridColumn.Header>
+                      </DataGridTextColumn>
+                    </DataGrid.Columns>
+                  </DataGrid>
+                  <FrameworkElement.ContextMenu>
+                    <vmcontrols:HikContextMenu>
+                      <MenuItem Name="Menu_Clear" Header="{DynamicResource Clear}" Click="Menu_Clear_Click" />
+                      <MenuItem Name="Menu_Save" Header="{DynamicResource Save}" Click="Menu_Save_Click" />
+                    </vmcontrols:HikContextMenu>
+                  </FrameworkElement.ContextMenu>
+                </TabItem>
+                <TabItem Name="helpTab" Header="{DynamicResource Lang_Help}" Foreground="{DynamicResource Col_DisplayImage_Foreground}" Height="40" Width="90" FontSize="14" BorderThickness="0" Style="{StaticResource FrequentTab}">
+                  <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Style="{StaticResource shrinkScrollViewer}">
+                    <TextBlock Name="moduleHelp" TextWrapping="Wrap" Foreground="{DynamicResource Col_DisplayImage_Foreground}" Text="{Lang:ResourceBinding m_CurrentInfo.HelperContent, ElementName=us}" />
+                  </ScrollViewer>
+                </TabItem>
+              </TabControl>
+              <ToggleButton Style="{StaticResource DisplayHideBtnStyle}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,0,0" IsChecked="{Binding IsInfoTabExpand, ElementName=us}" />
+            </Grid>
+          </Border>
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

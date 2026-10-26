@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;assembly=SunEyeVision.Plugin.Wpf" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF">
+  <Style x:Key="SuperImageButtonRunOnceStyle" TargetType="{x:Type Control}">
+    <Style.Triggers>
+      <DataTrigger Value="True" Binding="{Binding Path=DecorateSource.(VMInterface:IVMRun.IsRunning)}">
+        <Setter Property="IsEnabled" Value="False" />
+      </DataTrigger>
+      <DataTrigger Value="0" Binding="{Binding DecorateSource.Modules.Count}">
+        <Setter Property="IsEnabled" Value="False" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="ContentPresenterContinousRunStyle" TargetType="{x:Type FrameworkElement}">
+    <Style.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="False" Binding="{Binding Path=DecorateSource.(VMInterface:IVMRun.ContinuousRunEnable)}" />
+          <Condition Value="True" Binding="{Binding Path=DecorateSource.(VMInterface:IVMRun.IsRunning)}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="IsEnabled" Value="False" />
+      </MultiDataTrigger>
+      <DataTrigger Value="0" Binding="{Binding DecorateSource.Modules.Count}">
+        <Setter Property="IsEnabled" Value="False" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+</ResourceDictionary>

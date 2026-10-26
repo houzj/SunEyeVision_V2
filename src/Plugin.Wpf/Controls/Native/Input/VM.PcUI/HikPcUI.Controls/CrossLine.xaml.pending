@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.CrossLine" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls" xmlns:win="clr-namespace:System.Windows.Media;assembly=PresentationCore">
+  <Control.Template>
+    <ControlTemplate TargetType="{x:Type Control}">
+      <Canvas IsHitTestVisible="False" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+        <Line X1="0" Y1="{Binding Line1YR}" X2="{Binding Line1XR}" Y2="{Binding Line1YR}" Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThicknessR}" />
+        <Line Y1="0" X1="{Binding Line2XR}" X2="{Binding Line2XR}" Y2="{Binding Line2YR}" Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThicknessR}" />
+      </Canvas>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

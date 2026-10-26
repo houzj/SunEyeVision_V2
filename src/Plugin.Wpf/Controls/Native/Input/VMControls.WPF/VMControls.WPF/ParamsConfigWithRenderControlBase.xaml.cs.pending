@@ -1,0 +1,641 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Markup;
+using Apps.Interface;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ItemInterface;
+using Apps.XmlParser.ParamTab;
+using Hik.Util;
+using Hik.Xml;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility.SingleInstance;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ParamsConfigWithRenderControlBase.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ParamsConfigWithRenderControlBase
+/// </summary>
+public partial class ParamsConfigWithRenderControlBase : UserControl, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(null, OnModuleSourceChanged));
+
+	/// <summary>
+	/// 参数列表编辑状态属性
+	/// </summary>
+	public static readonly DependencyProperty IsParamsEditStateProperty = DependencyProperty.Register("IsParamsEditState", typeof(bool), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfigSource", typeof(IParamsConfig), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IImageDataProperty = DependencyProperty.Register("ImageDataSource", typeof(IImageData), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ROIVisibleProperty = DependencyProperty.Register("ROIVisible", typeof(bool), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty CoordinateInfoVisibleProperty = DependencyProperty.Register("CoordinateInfoVisible", typeof(bool), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty ParamsConfigWidthProperty = DependencyProperty.Register("ParamsConfigWidth", typeof(int), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(380));
+
+	public static readonly DependencyProperty MultiImageButtonVisibleProperty = DependencyProperty.Register("MultiImageButtonVisible", typeof(bool), typeof(ParamsConfigWithRenderControlBase), new PropertyMetadata(false));
+
+	private IntPtr groupInfoPtr = IntPtr.Zero;
+
+	public GroupIndependInfo _independentGro;
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数列表编辑状态
+	/// </summary>
+	public bool IsParamsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsParamsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsParamsEditStateProperty, value);
+		}
+	}
+
+	public IParamsConfig ParamsConfigSource
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 图像源
+	/// </summary>
+	public IImageData ImageDataSource
+	{
+		get
+		{
+			return (IImageData)GetValue(IImageDataProperty);
+		}
+		set
+		{
+			SetValue(IImageDataProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示ROI
+	/// </summary>
+	public bool ROIVisible
+	{
+		get
+		{
+			return (bool)GetValue(ROIVisibleProperty);
+		}
+		set
+		{
+			SetValue(ROIVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示坐标信息
+	/// </summary>
+	public bool CoordinateInfoVisible
+	{
+		get
+		{
+			return (bool)GetValue(CoordinateInfoVisibleProperty);
+		}
+		set
+		{
+			SetValue(CoordinateInfoVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数配置控件宽度
+	/// </summary>
+	public int ParamsConfigWidth
+	{
+		get
+		{
+			return (int)GetValue(ParamsConfigWidthProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigWidthProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 多画面切换按钮是否可见
+	/// </summary>
+	public bool MultiImageButtonVisible
+	{
+		get
+		{
+			return (bool)GetValue(MultiImageButtonVisibleProperty);
+		}
+		set
+		{
+			SetValue(MultiImageButtonVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 鼠标左键点击位置像素坐标事件
+	/// </summary>
+	public event PixelPositionChanged OnMouseLeftButtonDownPixelChanged;
+
+	/// <summary>
+	/// 当前选中图像改变事件
+	/// </summary>
+	public event NameChangedEventHandler OnSelectedImageChanged;
+
+	public ParamsConfigWithRenderControlBase()
+	{
+		InitializeComponent();
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+		Init();
+	}
+
+	~ParamsConfigWithRenderControlBase()
+	{
+		try
+		{
+			if (IntPtr.Zero != groupInfoPtr)
+			{
+				Marshal.FreeCoTaskMem(groupInfoPtr);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	private void Init()
+	{
+		ParamsConfig.ROIPartUI = RenderControl.ImageView;
+		SetBinding(ParamsConfigWidthProperty, new Binding("DataContext.ConfigWindowWidth")
+		{
+			Source = ParamsConfig
+		});
+		RenderControl.OnSelectedImageChanged += RenderControl_OnSelectedImageChanged;
+		RenderControlBase renderControl = RenderControl;
+		renderControl.OnMouseLeftButtonDownPixelChanged = (PixelPositionChanged)Delegate.Combine(renderControl.OnMouseLeftButtonDownPixelChanged, new PixelPositionChanged(RenderControl_OnMouseLeftButtonDownPixelChanged));
+	}
+
+	private void RenderControl_OnMouseLeftButtonDownPixelChanged(int x, int y)
+	{
+		OnMouseLeftButtonDownPixelChanged?.Invoke(x, y);
+	}
+
+	private AlgorithmTabRoot GetAlgorithmTabRoot()
+	{
+		AlgorithmTabRoot result = null;
+		if (ModuleSource != null)
+		{
+			if (ModuleSource.Params is IData data)
+			{
+				if (data is ModuleParam param)
+				{
+					result = param.GetParamRoot();
+				}
+			}
+			else
+			{
+				result = new AlgorithmTabRoot(ModuleSource.Params);
+			}
+		}
+		return result;
+	}
+
+	private static void OnModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ParamsConfigWithRenderControlBase paramsConfigWithRenderControlBase)
+		{
+			if (e.OldValue != null)
+			{
+				paramsConfigWithRenderControlBase.DeInit();
+			}
+			paramsConfigWithRenderControlBase.ParamsConfigSource = paramsConfigWithRenderControlBase.ModuleSource?.Params;
+			AlgorithmTabRoot algorithmTabRoot = paramsConfigWithRenderControlBase.GetAlgorithmTabRoot();
+			paramsConfigWithRenderControlBase.RenderControl.AlgorithmItems = algorithmTabRoot;
+			paramsConfigWithRenderControlBase.RenderControl.ROIList = paramsConfigWithRenderControlBase.RenderControl.AlgorithmItems?.ROISelecters.Select((IROISelecter p) => p.ROIList).ToList();
+			if (paramsConfigWithRenderControlBase.ModuleSource is VmModuleSet)
+			{
+				BaseNode source = algorithmTabRoot.FindBaseNodeByName(VmModuleExtern.GroupParamsName);
+				Binding binding = new Binding("SelectedModule")
+				{
+					Source = source
+				};
+				paramsConfigWithRenderControlBase.RenderControl.SetBinding(RenderControlBase.ModuleSourceProperty, binding);
+			}
+			else
+			{
+				Binding binding2 = new Binding("ModuleSource")
+				{
+					Source = paramsConfigWithRenderControlBase
+				};
+				paramsConfigWithRenderControlBase.RenderControl.SetBinding(RenderControlBase.ModuleSourceProperty, binding2);
+			}
+		}
+	}
+
+	private void DeInit()
+	{
+		if (ParamsConfig.DataContext is AlgorithmTabRoot)
+		{
+			if (((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute)
+			{
+				((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute = false;
+			}
+			RenderControl.AlgorithmItems = null;
+			RenderControl.ROIList = null;
+			RenderControl.ClearImageView();
+		}
+	}
+
+	/// <summary>
+	/// 获取基础句柄
+	/// </summary>
+	/// <returns></returns>
+	public long GetBaseHandle()
+	{
+		TempVmSolution.Init();
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	/// <summary>
+	/// 刷新渲染
+	/// </summary>
+	public void UpdateView()
+	{
+		RenderControl.UpdateVMResultShow();
+	}
+
+	/// <summary>
+	/// 绘制图形（立刻绘制）
+	/// </summary>
+	/// <param name="shape"></param>
+	public void DrawShapes(object shape)
+	{
+		RenderControl.DrawShapes(shape);
+	}
+
+	/// <summary>
+	/// 添加图形（在下次刷新渲染时自动绘制）
+	/// </summary>
+	/// <param name="shape"></param>
+	public void AddShapes(object shape)
+	{
+		RenderControl.AddShapes(shape);
+	}
+
+	/// <summary>
+	/// 添加图形供cpp接口调用
+	/// </summary>
+	/// <param name="shape"></param>
+	public void DrawCppShapes(object shape, bool isAddShape)
+	{
+		RenderControl.DrawCppShapes(shape, isAddShape);
+	}
+
+	/// <summary>
+	/// 加载方案
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportSol(string path, string password)
+	{
+		VmSolution.Import(path, password);
+		return VmSolution.Instance.BaseHandle;
+	}
+
+	public void BindParamById(uint Id)
+	{
+		VmModule moduleByID = VmSolution.Instance.GetModuleByID(Id);
+		if (moduleByID != null)
+		{
+			ModuleSource = moduleByID;
+		}
+	}
+
+	public bool SetBackgroundImage(IVmIO io)
+	{
+		return RenderControl.SetBackgroundImage(io);
+	}
+
+	/// <summary>
+	/// 加载独立Group方案
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportIndependentGroup(string path, string password)
+	{
+		IMVSGroup iMVSGroup = (IMVSGroup)(ModuleSource = VmSolution.LoadIndependentGroup(path, password));
+		_independentGro = default;
+		_independentGro.nId = iMVSGroup.ID;
+		_independentGro.pHandle = VmSolution.Instance.BaseHandle;
+		if (IntPtr.Zero == groupInfoPtr)
+		{
+			groupInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(_independentGro));
+		}
+		Marshal.StructureToPtr(_independentGro, groupInfoPtr, fDeleteOld: true);
+		return groupInfoPtr;
+	}
+
+	/// <summary>
+	/// 加载Group模块库（独立使用时调用）
+	/// </summary>
+	private void LoadAssembliesForIndependentGroup()
+	{
+		string moduleName = "IMVSGroup";
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Cs"));
+		string text = string.Empty;
+		if (VmSolution.ModulePathList.Keys.Contains(moduleName))
+		{
+			text = VmSolution.ModulePathList[moduleName];
+		}
+		else
+		{
+			DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPathHelper.Instance.GetCurrentPath() + "\\Module(sp)\\x64");
+			DirectoryInfo[] directories = directoryInfo.GetDirectories();
+			foreach (DirectoryInfo directoryInfo2 in directories)
+			{
+				if ((from p in directoryInfo2.GetDirectories()
+					select p.Name).Contains(moduleName))
+				{
+					text = directoryInfo2.FullName + "\\" + moduleName;
+					VmSolution.ModulePathList.TryAdd(moduleName, text);
+					break;
+				}
+			}
+		}
+		if (File.Exists(text + "\\" + moduleName + "Cs.dll"))
+		{
+			ActivatorWrap.LoadAssembly(text + "\\" + moduleName + "Cs.dll");
+			if (assembly == null)
+			{
+				assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Cs"));
+			}
+		}
+		if (File.Exists(text + "\\" + moduleName + "Control.dll"))
+		{
+			ActivatorWrap.LoadAssembly(text + "\\" + moduleName + "Control.dll");
+		}
+		string text2 = Path.Combine(CurrentPathHelper.Instance.GetCurrentPath(), "Module(sp)\\x64\\.CommonControl\\DynamicObjectConfigControl.dll");
+		if (File.Exists(text2))
+		{
+			ActivatorWrap.LoadAssembly(text2);
+		}
+	}
+
+	/// <summary>
+	/// 放大视图
+	/// </summary>
+	public void EnlargeView(int index = 1)
+	{
+		RenderControl.EnlargeView(index);
+	}
+
+	/// <summary>
+	/// 缩小视图
+	/// </summary>
+	public void ShrinkView(int index = 1)
+	{
+		RenderControl.ShrinkView(index);
+	}
+
+	/// <summary>
+	/// 还原视图
+	/// </summary>
+	public void InitViewSize(int index = 1)
+	{
+		RenderControl.InitViewSize(index);
+	}
+
+	/// <summary>
+	/// 清空渲染显示区域（包括图像和图形）
+	/// </summary>
+	public void ClearDisplayView(int index = 1)
+	{
+		RenderControl.ClearImageView(index);
+	}
+
+	/// <summary>
+	/// 保存原图，jpgQuality范围[1,100]，数值越大质量越高
+	/// </summary>
+	public void SaveOriginalImage(string fileName, int index = 1, int jpgQuality = 95)
+	{
+		RenderControl.SaveOriginalImage(fileName, index, jpgQuality);
+	}
+
+	/// <summary>
+	/// 保存渲染图，jpgQuality范围[1,100]，数值越大质量越高
+	/// </summary>
+	public void SaveRenderedImage(string fileName, int jpgQuality = 95)
+	{
+		RenderControl.SaveRenderedImage(fileName, jpgQuality);
+	}
+
+	/// <summary>
+	/// 设置控件背景
+	/// 参数为尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串
+	/// </summary>
+	/// <param name="value">尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串</param>
+	public void SetBackground(string value)
+	{
+		RenderControl.SetBackground(value);
+	}
+
+	/// <summary>
+	/// 设置渲染间隔(ms)
+	/// </summary>
+	/// <param name="millseconds"></param>
+	public void SetRenderInterval(int millseconds)
+	{
+		RenderControl.SetRenderInterval(millseconds);
+	}
+
+	public List<string> GetParamTabNames()
+	{
+		List<string> list = new List<string>();
+		try
+		{
+			IOwner owner = ParamsConfig.DataContext as AlgorithmTabRoot;
+			if (owner != null && owner.Owner != null)
+			{
+				VmModule vmModule = owner.Owner as VmModule;
+				if (vmModule.StrModuleName == "ShellModule")
+				{
+					ISpecialModuleParamTabVisible specialModuleParamTabVisible = UIHelper.FindAndConvertDataContext<ISpecialModuleParamTabVisible>(this);
+					if (specialModuleParamTabVisible != null)
+					{
+						return specialModuleParamTabVisible.GetParamTabNames();
+					}
+				}
+			}
+			List<Tab> list2 = (ParamsConfig.DataContext as AlgorithmTabRoot)?.Tabs.OfType<Tab>().ToList();
+			if (list2 != null)
+			{
+				foreach (Tab item in list2)
+				{
+					list.Add(AppLocalizationService.GetLang(item.Name));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+			VmException ex2 = new VmException(-536870911);
+			throw ex2;
+		}
+		return list;
+	}
+
+	public void SetParamTabVisible(string tabName, bool isVisible)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			if (string.IsNullOrEmpty(tabName))
+			{
+				throw new VmException(-536870911);
+			}
+			IOwner owner = ParamsConfig.DataContext as AlgorithmTabRoot;
+			if (owner != null && owner.Owner != null)
+			{
+				VmModule vmModule = owner.Owner as VmModule;
+				if (vmModule.StrModuleName == "ShellModule")
+				{
+					ISpecialModuleParamTabVisible specialModuleParamTabVisible = UIHelper.FindAndConvertDataContext<ISpecialModuleParamTabVisible>(this);
+					if (specialModuleParamTabVisible != null)
+					{
+						List<string> paramTabNames = specialModuleParamTabVisible.GetParamTabNames();
+						if (!paramTabNames.Contains(tabName))
+						{
+							throw new VmException(-536870911);
+						}
+						specialModuleParamTabVisible.SetParamTabVisible(tabName, isVisible);
+					}
+					return;
+				}
+			}
+			Tab tab = (ParamsConfig.DataContext as AlgorithmTabRoot)?.Tabs.OfType<Tab>().ToList().FirstOrDefault((Tab p) => AppLocalizationService.GetLang(p.Name) == tabName);
+			if (tab == null)
+			{
+				throw new VmException(-536870911);
+			}
+			tab.IsVisible = isVisible;
+			int value = ((ParamsConfig.DataContext as AlgorithmTabRoot)?.Tabs.IndexOf(tab)).Value;
+			(ParamsConfig.DataContext as AlgorithmTabRoot).HandleTabSelectionChange(value);
+		});
+	}
+
+	public void SetRenderToolbarVisible(bool isVisible)
+	{
+		RenderControl.SetRenderToolbarVisible(isVisible);
+	}
+
+	public List<string> GetDisplayableImageNameList()
+	{
+		return RenderControl.GetDisplayableImageNameList();
+	}
+
+	public void SetSelectedImage(string displayImageName)
+	{
+		RenderControl.SetSelectedImage(displayImageName);
+	}
+
+	public void SwitchBackgroundImage(string backgroundImageName)
+	{
+		RenderControl.SwitchBackgroundImage(backgroundImageName);
+	}
+
+	public void AddStackImage(string displayImageName)
+	{
+		RenderControl.AddStackImage(displayImageName);
+	}
+
+	public void RemoveStackImage(string displayImageName)
+	{
+		RenderControl.RemoveStackImage(displayImageName);
+	}
+
+	/// <summary>
+	/// 控制图层选择控件显示隐藏
+	/// </summary>
+	/// <param name="flag"></param>
+	public void ChangeImageComboBoxVisibility(bool flag)
+	{
+		RenderControl.ChangeImageComboBoxVisibility(flag);
+	}
+
+	/// <summary>
+	/// 获取当前选中图像名称
+	/// </summary>
+	public string GetSelectedImageDisplayName(int index = 1)
+	{
+		if (index == 0)
+		{
+			return RenderControl.ImageListDecorator?.SelectedInputImage?.DisplayName;
+		}
+		return RenderControl.ImageListDecorator?.SelectedImage?.DisplayName;
+	}
+
+	private void RenderControl_OnSelectedImageChanged(object sender, NameChangedEventArgs args)
+	{
+		OnSelectedImageChanged?.Invoke(this, args);
+	}
+
+	/// <summary>
+	/// 设置渲染控件OK/NG时刷新，module：OK/NG状态所属模块（此处模块状态指模块输出中的“模块状态”项，0为NG，1为OK）
+	/// </summary>
+	/// <param name="module"></param>
+	/// <param name="status"></param>
+	public void SetModuleAndStatusForRender(IVmModule module, RenderSatus status)
+	{
+		RenderControl.SetModuleAndStatusForRender(module, status);
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

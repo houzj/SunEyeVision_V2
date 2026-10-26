@@ -1,0 +1,970 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikCoverCircle : HikROIBase, RectangleRoi, IDisposable, IComponentConnector
+{
+	public delegate void SizeChange(object Param);
+
+	private List<Control> childControlList = new List<Control>();
+
+	private string curType = "";
+
+	private IArea curControl = null;
+
+	public static Path substitute;
+
+	private static EllipseGeometry ellipseGeometry;
+
+	private double Scale = 1.0;
+
+	private double _CWidth = 0.0;
+
+	private double md = 0.0;
+
+	public static readonly DependencyProperty MinEndPointProperty = DependencyProperty.Register("MinEndPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty MyCenterPointProperty = DependencyProperty.Register("MyCenterPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty MinStartPointProperty = DependencyProperty.Register("MinStartPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty TMinRadiusProperty = DependencyProperty.Register("TMinRadius", typeof(double), typeof(HikCoverCircle), new PropertyMetadata(-1.0, OnTMinRadiusChanged));
+
+	public static readonly DependencyProperty MinRadiusProperty = DependencyProperty.Register("MinRadius", typeof(double), typeof(HikCoverCircle), new PropertyMetadata(-1.0, OnMinRadiusChanged));
+
+	public static readonly DependencyProperty MinSizeProperty = DependencyProperty.Register("MinSize", typeof(Size), typeof(HikCoverCircle), new PropertyMetadata(new Size(0.0, 0.0)));
+
+	public static readonly DependencyProperty MaxSizeProperty = DependencyProperty.Register("MaxSize", typeof(Size), typeof(HikCoverCircle), new PropertyMetadata(new Size(0.0, 0.0)));
+
+	public static readonly DependencyProperty IsLargeArcProperty = DependencyProperty.Register("IsLargeArc", typeof(bool), typeof(HikCoverCircle), new PropertyMetadata(false, OnIsLargeArcChanged));
+
+	public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register("StartPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(100.0, 0.0), OnStartPointChanged));
+
+	public static readonly DependencyProperty EndPointProperty = DependencyProperty.Register("EndPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(100.0, 0.0), OnEndPointChanged));
+
+	public static readonly DependencyProperty StartAngleProperty = DependencyProperty.Register("StartAngle", typeof(double), typeof(HikCoverCircle), new PropertyMetadata(0.0, OnStartAngleChanged));
+
+	public static readonly DependencyProperty EndAngleProperty = DependencyProperty.Register("EndAngle", typeof(double), typeof(HikCoverCircle), new PropertyMetadata(0.0, OnEndAngleChanged));
+
+	public static readonly DependencyProperty TCenterPointProperty = DependencyProperty.Register("TCenterPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(0.0, 0.0), OnTCenterPointChanged));
+
+	public static readonly DependencyProperty CenterPointProperty = DependencyProperty.Register("CenterPoint", typeof(Point), typeof(HikCoverCircle), new PropertyMetadata(new Point(0.0, 0.0), OnCenterPointChanged));
+
+	public static readonly DependencyProperty TRadiusProperty = DependencyProperty.Register("TRadius", typeof(double), typeof(HikCoverCircle), new PropertyMetadata(-1.0, OnTRadiusChanged));
+
+	public static readonly DependencyProperty RadiusProperty = DependencyProperty.Register("Radius", typeof(double), typeof(HikCoverCircle), new PropertyMetadata(-1.0, OnRadiusChanged));
+
+	private RotateTransform tlt = new RotateTransform();
+
+	private bool recInited = false;
+
+	private bool recInited2 = false;
+
+	public SizeChange OnTheSizeChange;
+
+	public static HikImageView Owner { get; set; }
+
+	private static Point MouseDownPoint { get; set; }
+
+	private static bool IsMoved { get; set; }
+
+	public double CWidth
+	{
+		get
+		{
+			if (_CWidth == 0.0)
+			{
+				_CWidth = (double)FindResource("cwidth");
+			}
+			return _CWidth;
+		}
+	}
+
+	public Point MinEndPoint
+	{
+		get
+		{
+			return (Point)GetValue(MinEndPointProperty);
+		}
+		set
+		{
+			SetValue(MinEndPointProperty, value);
+		}
+	}
+
+	public Point MyCenterPoint
+	{
+		get
+		{
+			return (Point)GetValue(MyCenterPointProperty);
+		}
+		set
+		{
+			SetValue(MyCenterPointProperty, value);
+		}
+	}
+
+	public Point MinStartPoint
+	{
+		get
+		{
+			return (Point)GetValue(MinStartPointProperty);
+		}
+		set
+		{
+			SetValue(MinStartPointProperty, value);
+		}
+	}
+
+	public double TMinRadius
+	{
+		get
+		{
+			return (double)GetValue(TMinRadiusProperty);
+		}
+		set
+		{
+			SetValue(TMinRadiusProperty, value);
+		}
+	}
+
+	public double MinRadius
+	{
+		get
+		{
+			return (double)GetValue(MinRadiusProperty);
+		}
+		set
+		{
+			SetValue(MinRadiusProperty, value);
+		}
+	}
+
+	public Size MinSize
+	{
+		get
+		{
+			return (Size)GetValue(MinSizeProperty);
+		}
+		set
+		{
+			SetValue(MinSizeProperty, value);
+		}
+	}
+
+	public Size MaxSize
+	{
+		get
+		{
+			return (Size)GetValue(MaxSizeProperty);
+		}
+		set
+		{
+			SetValue(MaxSizeProperty, value);
+		}
+	}
+
+	public bool IsLargeArc
+	{
+		get
+		{
+			return (bool)GetValue(IsLargeArcProperty);
+		}
+		set
+		{
+			SetValue(IsLargeArcProperty, value);
+		}
+	}
+
+	public Point StartPoint
+	{
+		get
+		{
+			return (Point)GetValue(StartPointProperty);
+		}
+		set
+		{
+			SetValue(StartPointProperty, value);
+		}
+	}
+
+	public Point EndPoint
+	{
+		get
+		{
+			return (Point)GetValue(EndPointProperty);
+		}
+		set
+		{
+			SetValue(EndPointProperty, value);
+		}
+	}
+
+	public double StartAngle
+	{
+		get
+		{
+			return (double)GetValue(StartAngleProperty);
+		}
+		set
+		{
+			SetValue(StartAngleProperty, value);
+		}
+	}
+
+	public double EndAngle
+	{
+		get
+		{
+			return (double)GetValue(EndAngleProperty);
+		}
+		set
+		{
+			SetValue(EndAngleProperty, value);
+		}
+	}
+
+	public Point TCenterPoint
+	{
+		get
+		{
+			return (Point)GetValue(TCenterPointProperty);
+		}
+		set
+		{
+			SetValue(TCenterPointProperty, value);
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return (Point)GetValue(CenterPointProperty);
+		}
+		set
+		{
+			SetValue(CenterPointProperty, value);
+		}
+	}
+
+	public double TRadius
+	{
+		get
+		{
+			return (double)GetValue(TRadiusProperty);
+		}
+		set
+		{
+			SetValue(TRadiusProperty, value);
+		}
+	}
+
+	public double Radius
+	{
+		get
+		{
+			return (double)GetValue(RadiusProperty);
+		}
+		set
+		{
+			SetValue(RadiusProperty, value);
+		}
+	}
+
+	public void Dispose()
+	{
+		DeInit();
+		if (parent != null)
+		{
+			parent.MouseMove -= zparent_MouseMove;
+		}
+		if (PathFillColor.ContextMenu != null)
+		{
+			PathFillColor.ContextMenu.IsOpen = false;
+		}
+	}
+
+	public static void DoFinishSubstitute()
+	{
+		if (Owner != null)
+		{
+			Owner.IsDrawRoi = false;
+			Owner.RemoveChild(substitute);
+			Owner.SourceImage.ReleaseMouseCapture();
+			HikImageView hikImageView = Owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+			HikImageView hikImageView2 = Owner;
+			hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+			HikImageView hikImageView3 = Owner;
+			hikImageView3.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+			Owner = null;
+			substitute = null;
+			ellipseGeometry = null;
+		}
+	}
+
+	public static void InitSubstitute(HikImageView view, Point mouseDownPoint)
+	{
+		Owner = view;
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Combine(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Combine(hikImageView3.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+		MouseDownPoint = mouseDownPoint;
+		substitute = new Path();
+		ellipseGeometry = new EllipseGeometry();
+		substitute.Data = ellipseGeometry;
+		substitute.Stroke = HikROIBase.SubstituteBrush;
+		substitute.StrokeThickness = 1.0 / (Owner.sfr.ScaleX * Owner.ViewScale);
+		IsMoved = false;
+		Owner.AddROIChild(substitute);
+	}
+
+	public HikCoverCircle()
+	{
+		InitializeComponent();
+		childControlList.Add(Move);
+		childControlList.Add(startAngle);
+		childControlList.Add(endAngle);
+		childControlList.Add(rec1);
+		childControlList.Add(rec2);
+		foreach (IArea childControl in childControlList)
+		{
+			childControl.Container = this;
+		}
+	}
+
+	public void Init()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public void DeInit()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = (Scale = 1.0 / ((sender as ScaleTransform).ScaleX * num));
+		PathFillColor.StrokeThickness = num2;
+		PathFillColor2.StrokeThickness = num2;
+		bd.BorderThickness = new Thickness(num2);
+		bd.Margin = new Thickness(0.0 - num2);
+	}
+
+	public static void OnScaleChangeSubstitute(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		substitute.StrokeThickness = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+	}
+
+	private static void OnTMinRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).MinRadius = (double)e.NewValue * (d as HikCoverCircle).owner.Radio;
+	}
+
+	private static void OnMinRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangMinRadius();
+	}
+
+	private void OnChangMinRadius()
+	{
+		TMinRadius = MinRadius / owner.Radio;
+		MinSize = new Size(MinRadius, MinRadius);
+		tlt.CenterX = Radius;
+		tlt.CenterY = Radius;
+		tlt.Angle = StartAngle;
+		MinStartPoint = tlt.Transform(new Point(MinRadius + Radius, Radius));
+		tlt.Angle = EndAngle;
+		MinEndPoint = tlt.Transform(new Point(MinRadius + Radius, Radius));
+		if (!recInited2)
+		{
+			recInited2 = true;
+			rec2.X = Width * (0.5 + Math.Sqrt(2.0) / 4.0 * MinRadius / Radius);
+			rec2.Y = Height * (0.5 + Math.Sqrt(2.0) / 4.0 * MinRadius / Radius);
+		}
+		else
+		{
+			RelocationRec2();
+		}
+	}
+
+	private void RelocationRec1(double oldRadius)
+	{
+		double num = rec1.X - oldRadius;
+		double num2 = rec1.Y - oldRadius;
+		if (oldRadius != 0.0)
+		{
+			double num3 = Radius / oldRadius;
+			rec1.X = num * num3 + Radius;
+			rec1.Y = num2 * num3 + Radius;
+		}
+		else
+		{
+			rec1.X = Width * (0.5 + Math.Sqrt(2.0) / 4.0);
+			rec1.Y = Height * (0.5 + Math.Sqrt(2.0) / 4.0);
+		}
+	}
+
+	private void RelocationRec2()
+	{
+		double num = rec2.X - Radius;
+		double num2 = rec2.Y - Radius;
+		double num3 = Math.Sqrt(num * num + num2 * num2);
+		if (num3 != 0.0)
+		{
+			double num4 = MinRadius / num3;
+			rec2.X = num * num4 + Radius;
+			rec2.Y = num2 * num4 + Radius;
+		}
+		else
+		{
+			rec2.X = Width * (0.5 + Math.Sqrt(2.0) / 4.0 * MinRadius / Radius);
+			rec2.Y = Height * (0.5 + Math.Sqrt(2.0) / 4.0 * MinRadius / Radius);
+		}
+	}
+
+	private static void OnIsLargeArcChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangedIsLargeArc();
+	}
+
+	private void OnChangedIsLargeArc()
+	{
+	}
+
+	private static void OnStartPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangedStartPoint();
+	}
+
+	private void OnChangedStartPoint()
+	{
+	}
+
+	private static void OnEndPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangedEndPoint();
+	}
+
+	private void OnChangedEndPoint()
+	{
+	}
+
+	private static void OnStartAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangStartAngle();
+	}
+
+	private void OnChangStartAngle()
+	{
+		if (StartAngle == EndAngle)
+		{
+			PathFillColor.Visibility = Visibility.Collapsed;
+			PathFillColor2.Visibility = Visibility.Visible;
+		}
+		else
+		{
+			PathFillColor.Visibility = Visibility.Visible;
+			PathFillColor2.Visibility = Visibility.Collapsed;
+		}
+		tlt.CenterX = Radius;
+		tlt.CenterY = Radius;
+		tlt.Angle = StartAngle;
+		StartPoint = tlt.Transform(new Point(2.0 * Radius, Radius));
+		MinStartPoint = tlt.Transform(new Point(MinRadius + Radius, Radius));
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		Point point = tlt.Transform(new Point(Width + startAngle.Width / 2.0 + md, Height * 0.5 + startAngle.Height / 2.0));
+		startAngle.X = point.X;
+		startAngle.Y = point.Y;
+		startAngle.Angle = StartAngle;
+		double num = ((EndAngle <= 0.0) ? (0.0 - EndAngle) : (360.0 - EndAngle));
+		double num2 = ((StartAngle < 0.0) ? (360.0 + StartAngle) : StartAngle);
+		if ((num2 + num) % 360.0 > 180.0)
+		{
+			IsLargeArc = false;
+		}
+		else
+		{
+			IsLargeArc = true;
+		}
+	}
+
+	private static void OnEndAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangEndAngle();
+	}
+
+	private void OnChangEndAngle()
+	{
+		if (StartAngle == EndAngle)
+		{
+			PathFillColor.Visibility = Visibility.Collapsed;
+			PathFillColor2.Visibility = Visibility.Visible;
+		}
+		else
+		{
+			PathFillColor.Visibility = Visibility.Visible;
+			PathFillColor2.Visibility = Visibility.Collapsed;
+		}
+		tlt.CenterX = Radius;
+		tlt.CenterY = Radius;
+		tlt.Angle = EndAngle;
+		EndPoint = tlt.Transform(new Point(2.0 * Radius, Radius));
+		MinEndPoint = tlt.Transform(new Point(MinRadius + Radius, Radius));
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		Point point = tlt.Transform(new Point(Width + endAngle.Width / 2.0 + md, Height * 0.5 - endAngle.Height / 2.0));
+		endAngle.X = point.X;
+		endAngle.Y = point.Y;
+		endAngle.Angle = EndAngle;
+		double num = ((EndAngle <= 0.0) ? (0.0 - EndAngle) : (360.0 - EndAngle));
+		double num2 = ((StartAngle < 0.0) ? (360.0 + StartAngle) : StartAngle);
+		if ((num2 + num) % 360.0 > 180.0)
+		{
+			IsLargeArc = false;
+		}
+		else
+		{
+			IsLargeArc = true;
+		}
+	}
+
+	private static void OnTCenterPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		Point centerPoint = (Point)e.NewValue;
+		double radio = (d as HikCoverCircle).owner.Radio;
+		centerPoint.X *= radio;
+		centerPoint.Y *= radio;
+		(d as HikCoverCircle).CenterPoint = centerPoint;
+	}
+
+	private static void OnCenterPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangCenterPoint();
+	}
+
+	private void OnChangCenterPoint()
+	{
+		double radio = owner.Radio;
+		TCenterPoint = new Point(CenterPoint.X / radio, CenterPoint.Y / radio);
+		double num = CenterPoint.X - Radius;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+		num = CenterPoint.Y - Radius;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+		num = (Width - Move.Width) / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			Move.SetValue(Canvas.LeftProperty, num);
+		}
+		num = (Height - Move.Height) / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			Move.SetValue(Canvas.TopProperty, num);
+		}
+	}
+
+	private static void OnTRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).Radius = (double)e.NewValue * (d as HikCoverCircle).owner.Radio;
+	}
+
+	private static void OnRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCoverCircle).OnChangRadius((double)e.OldValue);
+	}
+
+	private void OnChangRadius(double oldRadius)
+	{
+		TRadius = Radius / owner.Radio;
+		Width = 2.0 * Radius;
+		Height = 2.0 * Radius;
+		MyCenterPoint = new Point(Radius, Radius);
+		tlt.CenterX = Radius;
+		tlt.CenterY = Radius;
+		tlt.Angle = StartAngle;
+		StartPoint = tlt.Transform(new Point(2.0 * Radius, Radius));
+		tlt.Angle = EndAngle;
+		EndPoint = tlt.Transform(new Point(2.0 * Radius, Radius));
+		MaxSize = new Size(Radius, Radius);
+		double num = CenterPoint.X - Radius;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+		num = CenterPoint.Y - Radius;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+		num = (Width - Move.Width) / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			Move.SetValue(Canvas.LeftProperty, num);
+		}
+		num = (Height - Move.Height) / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			Move.SetValue(Canvas.TopProperty, num);
+		}
+		tlt.Angle = StartAngle;
+		MinStartPoint = tlt.Transform(new Point(MinRadius + Radius, Radius));
+		tlt.Angle = EndAngle;
+		MinEndPoint = tlt.Transform(new Point(MinRadius + Radius, Radius));
+		if (!recInited)
+		{
+			recInited = true;
+			rec1.X = Width * (0.5 + Math.Sqrt(2.0) / 4.0);
+			rec1.Y = Height * (0.5 + Math.Sqrt(2.0) / 4.0);
+		}
+		else
+		{
+			RelocationRec1(oldRadius);
+		}
+		tlt.Angle = EndAngle;
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		Point point = tlt.Transform(new Point(Width + endAngle.Width / 2.0 + md, Height * 0.5 - endAngle.Height / 2.0));
+		endAngle.X = point.X;
+		endAngle.Y = point.Y;
+		endAngle.Angle = EndAngle;
+		tlt.Angle = StartAngle;
+		point = tlt.Transform(new Point(Width + startAngle.Width / 2.0 + md, Height * 0.5 + startAngle.Height / 2.0));
+		startAngle.X = point.X;
+		startAngle.Y = point.Y;
+		startAngle.Angle = StartAngle;
+		RelocationRec2();
+	}
+
+	public static void OnDrawROISubstitute_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (Owner != null && Owner.SourceImage.Source != null)
+		{
+			if (!IsMoved)
+			{
+				IsMoved = true;
+			}
+			Point position = e.GetPosition(Owner.SourceImage);
+			if (position.X < 0.0)
+			{
+				position.X = 0.0;
+			}
+			if (position.Y < 0.0)
+			{
+				position.Y = 0.0;
+			}
+			if (position.X > Owner.SourceImage.Width)
+			{
+				position.X = Owner.SourceImage.Width;
+			}
+			if (position.Y > Owner.SourceImage.ActualHeight)
+			{
+				position.Y = Owner.SourceImage.ActualHeight;
+			}
+			double num = 0.0;
+			double num2 = 0.0;
+			if (position.X < MouseDownPoint.X)
+			{
+				num = position.X;
+			}
+			else
+			{
+				num = MouseDownPoint.X;
+			}
+			if (position.Y < MouseDownPoint.Y)
+			{
+				num2 = position.Y;
+			}
+			else
+			{
+				num2 = MouseDownPoint.Y;
+			}
+			ellipseGeometry.Center = MouseDownPoint;
+			double num3 = Math.Sqrt(Math.Pow(position.X - MouseDownPoint.X, 2.0) + Math.Pow(position.Y - MouseDownPoint.Y, 2.0));
+			ellipseGeometry.RadiusX = num3;
+			ellipseGeometry.RadiusY = num3;
+		}
+	}
+
+	public static void OnDrawROISubstitute_MouseUp(object sender, MouseEventArgs e)
+	{
+		if (Owner == null)
+		{
+			return;
+		}
+		Owner.IsDrawRoi = false;
+		Owner.RemoveROIChild(substitute);
+		Owner.SourceImage.ReleaseMouseCapture();
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		if (IsMoved)
+		{
+			HikCoverCircleRoiParameter hikCoverCircleRoiParameter = Owner.DoGetExtendROIParam(RoiUIType.HikCoverCircleRoi) as HikCoverCircleRoiParameter;
+			if (hikCoverCircleRoiParameter == null)
+			{
+				hikCoverCircleRoiParameter = new HikCoverCircleRoiParameter();
+			}
+			Point center = ellipseGeometry.Center;
+			center.X = center.X / Owner.Radio - 0.5;
+			center.Y = center.Y / Owner.Radio - 0.5;
+			hikCoverCircleRoiParameter.CenterPoint = center;
+			hikCoverCircleRoiParameter.Radius = ellipseGeometry.RadiusX / Owner.Radio;
+			hikCoverCircleRoiParameter.MinRadius = 0.0;
+			hikCoverCircleRoiParameter.Sign = true;
+			Owner.RoiList.Add(hikCoverCircleRoiParameter);
+		}
+		Owner = null;
+		substitute = null;
+		ellipseGeometry = null;
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		isDragging = true;
+		curType = rectangleArea.Name;
+		curControl = rectangleArea as IArea;
+		CaptureMouse();
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (parent == null)
+		{
+			parent = VisualTreeHelper.GetParent(this) as FrameworkElement;
+			parent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
+			parent.MouseMove += zparent_MouseMove;
+		}
+	}
+
+	private void zparent_MouseMove(object sender, MouseEventArgs e)
+	{
+		double num = 0.0;
+		double num2 = 0.0;
+		double num3 = 0.0;
+		if (!isDragging)
+		{
+			return;
+		}
+		Point position = e.GetPosition(parent);
+		switch (curType)
+		{
+		case "Move":
+			num2 = position.Y - Move.CurPoint.Y + Move.Height / 2.0;
+			num3 = position.X - Move.CurPoint.X + Move.Width / 2.0;
+			if (num2 < 0.0)
+			{
+				num2 = 0.0;
+			}
+			if (num3 < 0.0)
+			{
+				num3 = 0.0;
+			}
+			if (num2 > parent.ActualHeight)
+			{
+				num2 = parent.ActualHeight;
+			}
+			if (num3 > parent.ActualWidth)
+			{
+				num3 = parent.ActualWidth;
+			}
+			CenterPoint = new Point(num3, num2);
+			break;
+		case "rec1":
+		{
+			double num6 = rec2.X - Width / 2.0;
+			double num7 = rec2.Y - Height / 2.0;
+			num2 = position.Y - rec1.CurPoint.Y + rec1.Height / 2.0;
+			num3 = position.X - rec1.CurPoint.X + rec1.Width / 2.0;
+			if (num2 < 0.0)
+			{
+				num2 = 0.0;
+			}
+			if (num3 < 0.0)
+			{
+				num3 = 0.0;
+			}
+			if (num2 > parent.ActualHeight)
+			{
+				num2 = parent.ActualHeight;
+			}
+			if (num3 > parent.ActualWidth)
+			{
+				num3 = parent.ActualWidth;
+			}
+			num = Math.Sqrt(Math.Pow(num3 - CenterPoint.X, 2.0) + Math.Pow(num2 - CenterPoint.Y, 2.0));
+			Radius = num;
+			num2 -= (double)GetValue(Canvas.TopProperty);
+			num3 -= (double)GetValue(Canvas.LeftProperty);
+			rec1.X = num3;
+			rec1.Y = num2;
+			double num8 = 1.0;
+			if (Radius < MinRadius)
+			{
+				num8 = Radius / MinRadius;
+				MinRadius = Radius;
+			}
+			break;
+		}
+		case "rec2":
+			num2 = position.Y - rec2.CurPoint.Y + rec2.Height / 2.0;
+			num3 = position.X - rec2.CurPoint.X + rec2.Width / 2.0;
+			num = Math.Sqrt(Math.Pow(num3 - CenterPoint.X, 2.0) + Math.Pow(num2 - CenterPoint.Y, 2.0));
+			if (num > Radius)
+			{
+				num2 = CenterPoint.Y + Radius * (position.Y - CenterPoint.Y) / num - rec2.CurPoint.Y + rec2.Height / 2.0;
+				num3 = CenterPoint.X + Radius * (position.X - CenterPoint.X) / num - rec2.CurPoint.X + rec2.Width / 2.0;
+				num = Radius;
+			}
+			MinRadius = num;
+			num2 -= (double)GetValue(Canvas.TopProperty);
+			num3 -= (double)GetValue(Canvas.LeftProperty);
+			rec2.X = num3;
+			rec2.Y = num2;
+			if (MinRadius < 5.0 * Scale)
+			{
+				MinRadius = 0.0;
+				rec2.X = Width / 2.0;
+				rec2.Y = Height / 2.0;
+			}
+			break;
+		case "endAngle":
+		{
+			double num9 = Math.Atan2(position.Y - CenterPoint.Y, position.X - CenterPoint.X) * 180.0 / Math.PI;
+			double num10 = Math.Atan2(endAngle.Height - endAngle.CurPoint.Y, Width / 2.0 + endAngle.CurPoint.X) * 180.0 / Math.PI;
+			EndAngle = num9 + num10;
+			if (Math.Abs(EndAngle - StartAngle) < 2.0 * Scale)
+			{
+				EndAngle = StartAngle;
+			}
+			break;
+		}
+		case "startAngle":
+		{
+			double num4 = Math.Atan2(position.Y - CenterPoint.Y, position.X - CenterPoint.X) * 180.0 / Math.PI;
+			double num5 = Math.Atan2(startAngle.CurPoint.Y, Width / 2.0 + startAngle.CurPoint.X) * 180.0 / Math.PI;
+			StartAngle = num4 - num5;
+			if (Math.Abs(EndAngle - StartAngle) < 2.0 * Scale)
+			{
+				StartAngle = EndAngle;
+			}
+			break;
+		}
+		}
+	}
+
+	private void UserControl_MouseEnter(object sender, MouseEventArgs e)
+	{
+		rec1.Opacity = 1.0;
+		rec2.Opacity = 1.0;
+		startAngle.Opacity = 1.0;
+		endAngle.Opacity = 1.0;
+		Move.Opacity = 1.0;
+	}
+
+	private void UserControl_MouseLeave(object sender, MouseEventArgs e)
+	{
+		rec1.Opacity = 0.0;
+		rec2.Opacity = 0.0;
+		startAngle.Opacity = 0.0;
+		endAngle.Opacity = 0.0;
+		Move.Opacity = 0.0;
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	private void UserControl_MouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (isDragging)
+		{
+			curControl.IsPressed = false;
+			isDragging = false;
+			DoCallBack();
+			ReleaseMouseCapture();
+		}
+	}
+
+	private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (ownerCanvas != null && ownerCanvas is ROIContainer rOIContainer)
+		{
+			rOIContainer.SelectionService.RoiSelected(DataContext);
+		}
+		else
+		{
+			owner.SelectionService.RoiSelected(DataContext);
+		}
+		Focus();
+		if (!isDragging)
+		{
+			owner.SourceImage.RaiseEvent(e);
+			owner.DoRoiClick(this, e);
+		}
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

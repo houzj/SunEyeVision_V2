@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.RenderControlBase" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:HikpcUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;assembly=SunEyeVision.Plugin.Wpf" xmlns:xmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:imagecontrol="clr-namespace:VMBaseControls;assembly=VMBaseControls" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;assembly=SunEyeVision.Plugin.Wpf" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="us">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="b2v" />
+      <xmlUI:BooleanToVisibilityConverterReverse x:Key="negativeb2v" />
+      <BaseData:TypeFilterConverter x:Key="typeFilterConverter" />
+      <local:MultiBindingConverter x:Key="multiBindingConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource MainviewBaground}">
+    <Grid.RowDefinitions>
+      <RowDefinition Name="rowInput" Height="40" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Name="colInput" Width="0" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <ScrollViewer Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto" Visibility="{Binding Path=RenderToolbarVisible, ElementName=us, Converter={StaticResource b2v}}">
+      <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="260" DataContext="{Binding ImageListDecorator, ElementName=us}">
+        <ComboBox Style="{StaticResource ImageListComboBox}" Height="32" Width="142" SelectedValuePath="DisplayObject" HorizontalAlignment="Left" ItemsSource="{Binding InputImageViewList}" SelectedItem="{Binding SelectedInputImage, Mode=TwoWay}" Visibility="{Binding ImageComboBoxVisible, ElementName=us, Mode=OneWay, Converter={StaticResource bool2VisibilityConverter}}" SelectionChanged="imageListComboboxIn_SelectionChanged">
+          <FrameworkElement.ToolTip>
+            <MultiBinding Converter="{StaticResource multiBindingConverter}">
+              <Binding Path="SelectedInputImage.DisplayObject.Owner.Name" />
+              <Lang:ResourceBinding Path="SelectedInputImage.DisplayObject.NameA" />
+            </MultiBinding>
+          </FrameworkElement.ToolTip>
+        </ComboBox>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <ToggleButton Style="{StaticResource DoubleImageToggleButton}" Width="34" Height="34" Margin="1" IsChecked="{Binding IsShowDoubleImage, ElementName=us, Mode=TwoWay}" Visibility="{Binding MultiImageButtonVisible, ElementName=us, Converter={StaticResource b2v}}" />
+          <UniformGrid Columns="2" Width="75">
+            <Button Name="BtnToolRegionScaleIn" Width="34" Height="34" Style="{StaticResource ClientOriginScaleBtn}" Content="1:1" Click="BtnToolRegionScaleIn_Click" />
+            <Button Name="BtnToolFullScreenIn" Width="34" Height="34" Style="{StaticResource ClientFullScreenBtn}" Content="全屏" Click="m_btnFullScreenIn_Click" />
+          </UniformGrid>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+    <ScrollViewer Grid.Column="1" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto" Visibility="{Binding Path=RenderToolbarVisible, ElementName=us, Converter={StaticResource b2v}}">
+      <Grid VerticalAlignment="Top" Margin="8,3,0,0" MinWidth="260" DataContext="{Binding ImageListDecorator, ElementName=us}">
+        <ComboBox Name="imageList_combox" Style="{StaticResource ImageListComboBox}" Height="32" Width="142" SelectedValuePath="DisplayObject" HorizontalAlignment="Left" ItemsSource="{Binding ImageViewList}" SelectedItem="{Binding SelectedImage, Mode=TwoWay}" Visibility="{Binding ImageComboBoxVisible, ElementName=us, Mode=OneWay, Converter={StaticResource bool2VisibilityConverter}}" SelectionChanged="imageListCombobox_SelectionChanged">
+          <FrameworkElement.ToolTip>
+            <MultiBinding Converter="{StaticResource multiBindingConverter}">
+              <Binding Path="SelectedImage.DisplayObject.Owner.Name" />
+              <Lang:ResourceBinding Path="SelectedImage.DisplayObject.NameA" />
+            </MultiBinding>
+          </FrameworkElement.ToolTip>
+        </ComboBox>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right">
+          <ToggleButton Style="{StaticResource DoubleImageToggleButton}" Width="34" Height="34" Margin="1" IsChecked="{Binding IsShowDoubleImage, ElementName=us, Mode=TwoWay}" Visibility="{Binding MultiImageButtonVisible, ElementName=us, Converter={StaticResource b2v}}" />
+          <controls:ZoomOutButton Width="34" Height="34" Content="{DynamicResource 放大}" Margin="1" HookImageViewBox="{Binding ElementName=imageView}" Visibility="{Binding IsShowDoubleImage, ElementName=us, Converter={StaticResource negativeb2v}}" />
+          <controls:ZoomInButton Width="34" Height="34" Content="{DynamicResource 缩小}" Margin="1" HookImageViewBox="{Binding ElementName=imageView}" Visibility="{Binding IsShowDoubleImage, ElementName=us, Converter={StaticResource negativeb2v}}" />
+          <Button Name="BtnToolRegionScale" Width="34" Height="34" Style="{StaticResource ClientOriginScaleBtn}" Content="1:1" Margin="1" Click="BtnToolRegionScale_Click" />
+          <Button Name="BtnToolFullScreen" Width="34" Height="34" Style="{StaticResource ClientFullScreenBtn}" Content="全屏" Margin="1" Click="m_btnFullScreen_Click" />
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+    <Grid Name="viewboxIn" Row="1" Background="{DynamicResource Col_DisplayImage_Control_BorderBrush}" UseLayoutRounding="True" SnapsToDevicePixels="True">
+      <imagecontrol:ImageViewBox Name="imageViewIn" ROIVisible="False" IsDisplayPixelAuto="True" ImageDataSource="{Binding ImageDataSourceIn, ElementName=us}" MouseLeftButtonDown="imageView_MouseLeftButtonDown">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type imagecontrol:ImageViewBox}">
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding SelectedROI, ElementName=us, Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IAddROIWidthImageCommand}}">
+                <Setter Property="imagecontrol:ImageViewBox.RoiAddWithImageCommand" Value="{Binding Path=SelectedROI.(Interface:IAddROIWidthImageCommand.AddROIWidthImageCommand), ElementName=us}" />
+              </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding IsShowDoubleImage, ElementName=us}">
+                <Setter Property="imagecontrol:ImageViewBox.DrawROIType" Value="{Binding SelectedROI.DrawROIType, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.IsStateForDrawROI" Value="{Binding SelectedROI.IsStateForDrawROI, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiAddCommand" Value="{Binding SelectedROI.AddROICommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.ROIList" Value="{Binding ROIList, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.SelectedSubROIList" Value="{Binding SelectedROI.ROIList, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.ImageSizeChangedCommand" Value="{Binding ImageSizeChangedCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiSelectedCommand" Value="{Binding RoiSelectedCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiDelCommand" Value="{Binding RoiDelCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiCopyCommand" Value="{Binding RoiCopyCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiPasteCommand" Value="{Binding RoiPasteCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiVisibleChangedCommand" Value="{Binding RoiVisibleChangedCommand, ElementName=us}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </imagecontrol:ImageViewBox>
+    </Grid>
+    <Grid Name="viewbox" Row="1" Column="1" Background="{DynamicResource Col_DisplayImage_Control_BorderBrush}" UseLayoutRounding="True" SnapsToDevicePixels="True">
+      <imagecontrol:ImageViewBox Name="imageView" IsDisplayPixelAuto="True" IsSaveRenderImageVisible="True" ImageDataSource="{Binding ImageDataSource, ElementName=us}" ShapeList="{Binding ShapeList, ElementName=us}" ROIVisible="{Binding ROIVisible, ElementName=us, Mode=OneWay}" MouseLeftButtonDown="imageView_MouseLeftButtonDown">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type imagecontrol:ImageViewBox}">
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding SelectedROI, ElementName=us, Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IAddROIWidthImageCommand}}">
+                <Setter Property="imagecontrol:ImageViewBox.RoiAddWithImageCommand" Value="{Binding Path=SelectedROI.(Interface:IAddROIWidthImageCommand.AddROIWidthImageCommand), ElementName=us}" />
+              </DataTrigger>
+              <DataTrigger Value="false" Binding="{Binding IsShowDoubleImage, ElementName=us}">
+                <Setter Property="imagecontrol:ImageViewBox.DrawROIType" Value="{Binding SelectedROI.DrawROIType, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.IsStateForDrawROI" Value="{Binding SelectedROI.IsStateForDrawROI, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiAddCommand" Value="{Binding SelectedROI.AddROICommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.ROIList" Value="{Binding ROIList, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.SelectedSubROIList" Value="{Binding SelectedROI.ROIList, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.ImageSizeChangedCommand" Value="{Binding ImageSizeChangedCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiSelectedCommand" Value="{Binding RoiSelectedCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiDelCommand" Value="{Binding RoiDelCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiCopyCommand" Value="{Binding RoiCopyCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiPasteCommand" Value="{Binding RoiPasteCommand, ElementName=us}" />
+                <Setter Property="imagecontrol:ImageViewBox.RoiVisibleChangedCommand" Value="{Binding RoiVisibleChangedCommand, ElementName=us}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </imagecontrol:ImageViewBox>
+    </Grid>
+  </Grid>
+</UserControl>

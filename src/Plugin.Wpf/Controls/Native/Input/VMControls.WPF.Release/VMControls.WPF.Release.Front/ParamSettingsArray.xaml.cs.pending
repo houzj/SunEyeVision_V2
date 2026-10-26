@@ -1,0 +1,182 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// ParamSettingsArray.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ParamSettingsArray
+/// </summary>
+public partial class ParamSettingsArray : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public object DisplayTypeSelectSource
+	{
+		get
+		{
+			return PART_Control.DisplayTypeSelectSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.DisplayTypeSelectSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("DisplayTypeSelectSource Type Error!");
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public string Title
+	{
+		get
+		{
+			return PART_Control.Title;
+		}
+		set
+		{
+			PART_Control.Title = value;
+		}
+	}
+
+	public System.Windows.Media.Brush TitleColor
+	{
+		get
+		{
+			return PART_Control.TitleColor;
+		}
+		set
+		{
+			PART_Control.TitleColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush TitleTextColor
+	{
+		get
+		{
+			return PART_Control.TitleTextColor;
+		}
+		set
+		{
+			PART_Control.TitleTextColor = value;
+		}
+	}
+
+	public bool ShowTitleBar
+	{
+		get
+		{
+			return PART_Control.ShowTitleBar;
+		}
+		set
+		{
+			PART_Control.ShowTitleBar = value;
+		}
+	}
+
+	public object BindingPathSource
+	{
+		get
+		{
+			return PART_Control.BindingPathSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.BindingPathSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("BindingPathSource Type Error!");
+		}
+	}
+
+	public uint Spacing
+	{
+		get
+		{
+			return PART_Control.Spacing;
+		}
+		set
+		{
+			PART_Control.Spacing = value;
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public ParamSettingsArray()
+	{
+		InitializeComponent();
+	}
+}

@@ -1,0 +1,110 @@
+using System;
+using System.Windows.Input;
+using Mvvm.Commands;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmCommentDecorator : DecoratorBase
+{
+	private int _upStatus = 0;
+
+	private DelegateCommand _upCanvasCommand = null;
+
+	private DelegateCommand _bottomCanvasCommand = null;
+
+	private DelegateCommand _deleteCommentBoxCommand = null;
+
+	public string Name { get; set; }
+
+	public int UpStatus
+	{
+		get
+		{
+			return _upStatus;
+		}
+		set
+		{
+			if (_upStatus != value)
+			{
+				_upStatus = value;
+				OnPropertyChanged("UpStatus");
+			}
+		}
+	}
+
+	public ICommand UpCanvasCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _upCanvasCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)UpCanvasCommandExecute);
+				DelegateCommand val3 = val2;
+				_upCanvasCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand BottomCanvasCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _bottomCanvasCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)BottomCanvasCommandExecute);
+				DelegateCommand val3 = val2;
+				_bottomCanvasCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DeleteCommentBoxCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _deleteCommentBoxCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)DeleteCommentBoxCommandExecute);
+				DelegateCommand val3 = val2;
+				_deleteCommentBoxCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	private void UpCanvasCommandExecute()
+	{
+		UpStatus = 1;
+	}
+
+	private void BottomCanvasCommandExecute()
+	{
+		UpStatus = 0;
+	}
+
+	private void DeleteCommentBoxCommandExecute()
+	{
+		(DecorateSource as IVmModuleSet)?.DeleteCommentSource(Name);
+	}
+}

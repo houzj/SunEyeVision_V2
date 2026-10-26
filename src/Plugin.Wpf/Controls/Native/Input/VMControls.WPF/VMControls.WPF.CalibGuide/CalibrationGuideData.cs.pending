@@ -1,0 +1,550 @@
+using System;
+using System.Collections.ObjectModel;
+using Apps.XmlParser.ParamTab;
+using Hik.Util;
+using VM.Core;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CalibGuide;
+
+/// <summary>
+/// 一键标定引导界面数据类
+/// </summary>
+public class CalibrationGuideData : NameValueItem, IParent
+{
+	public bool _Step0Enable = true;
+
+	public bool _Step1Enable = false;
+
+	public bool _Step2Enable = false;
+
+	public bool _Step3Enable = false;
+
+	public int _CalibrationType = 0;
+
+	public int _CurCommunicationDeviceIndex = -1;
+
+	public string _StartSignalInput = "SC";
+
+	public string _CalibrationSignalInput = "C";
+
+	public string _EndSignalInput = "EC";
+
+	public string _TeachSignalInput = "TE";
+
+	public string _RefelctStartSignal = "T0";
+
+	public string _CameraOneTriggerSignal = "T1";
+
+	public string _CameraTwoTriggerSignal = "T2";
+
+	public string _ReflectTriggerSignal = "T3";
+
+	public string _ReflectTeachSignal = "T4";
+
+	public string _TriggerSignal = "T";
+
+	public int _CalibrationWay = 0;
+
+	public ObservableCollection<object> _CalibrationModules = new ObservableCollection<object>();
+
+	private ObservableCollection<object> _Signals = new ObservableCollection<object>();
+
+	private float[] _CalibrationMatrix = new float[9];
+
+	public bool _UseEnd = false;
+
+	public int _EndIndex = -1;
+
+	private int _GuideStep = 0;
+
+	public bool _NeedGetAllModulesCallBack = false;
+
+	private object _Parent = null;
+
+	/// <summary>
+	/// 按钮0是否可用
+	/// </summary>
+	public bool Step0Enable
+	{
+		get
+		{
+			return _Step0Enable;
+		}
+		set
+		{
+			if (_Step0Enable != value)
+			{
+				_Step0Enable = value;
+				OnPropertyChanged("Step0Enable");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 按钮1是否可用
+	/// </summary>
+	public bool Step1Enable
+	{
+		get
+		{
+			return _Step1Enable;
+		}
+		set
+		{
+			if (_Step1Enable != value)
+			{
+				_Step1Enable = value;
+				OnPropertyChanged("Step1Enable");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 按钮2是否可用
+	/// </summary>
+	public bool Step2Enable
+	{
+		get
+		{
+			return _Step2Enable;
+		}
+		set
+		{
+			if (_Step2Enable != value)
+			{
+				_Step2Enable = value;
+				OnPropertyChanged("Step2Enable");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 按钮3是否可用
+	/// </summary>
+	public bool Step3Enable
+	{
+		get
+		{
+			return _Step3Enable;
+		}
+		set
+		{
+			if (_Step3Enable != value)
+			{
+				_Step3Enable = value;
+				OnPropertyChanged("Step3Enable");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 标定类型，0-静态标定，1-动态标定，2-映射标定
+	/// </summary>
+	public int CalibrationType
+	{
+		get
+		{
+			return _CalibrationType;
+		}
+		set
+		{
+			if (_CalibrationType != value)
+			{
+				_CalibrationType = value;
+				OnPropertyChanged("CalibrationType");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前通信设备ID
+	/// </summary>
+	public int CurCommunicationDeviceIndex
+	{
+		get
+		{
+			return _CurCommunicationDeviceIndex;
+		}
+		set
+		{
+			if (_CurCommunicationDeviceIndex != value)
+			{
+				_CurCommunicationDeviceIndex = value;
+				OnPropertyChanged("CurCommunicationDeviceIndex");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 开始信号，动态标定使用
+	/// </summary>
+	public string StartSignalInput
+	{
+		get
+		{
+			return _StartSignalInput;
+		}
+		set
+		{
+			if (_StartSignalInput != value)
+			{
+				_StartSignalInput = value;
+				OnPropertyChanged("StartSignalInput");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 标定信号，动态标定使用
+	/// </summary>
+	public string CalibrationSignalInput
+	{
+		get
+		{
+			return _CalibrationSignalInput;
+		}
+		set
+		{
+			if (_CalibrationSignalInput != value)
+			{
+				_CalibrationSignalInput = value;
+				OnPropertyChanged("CalibrationSignalInput");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 结束信号，动态标定使用
+	/// </summary>
+	public string EndSignalInput
+	{
+		get
+		{
+			return _EndSignalInput;
+		}
+		set
+		{
+			if (_EndSignalInput != value)
+			{
+				_EndSignalInput = value;
+				OnPropertyChanged("EndSignalInput");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 示教信号，动态标定使用
+	/// </summary>
+	public string TeachSignalInput
+	{
+		get
+		{
+			return _TeachSignalInput;
+		}
+		set
+		{
+			if (_TeachSignalInput != value)
+			{
+				_TeachSignalInput = value;
+				OnPropertyChanged("TeachSignalInput");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 映射开始信号，映射标定使用
+	/// </summary>
+	public string RefelctStartSignal
+	{
+		get
+		{
+			return _RefelctStartSignal;
+		}
+		set
+		{
+			if (_RefelctStartSignal != value)
+			{
+				_RefelctStartSignal = value;
+				OnPropertyChanged("RefelctStartSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 相机1触发信号，映射标定使用
+	/// </summary>
+	public string CameraOneTriggerSignal
+	{
+		get
+		{
+			return _CameraOneTriggerSignal;
+		}
+		set
+		{
+			if (_CameraOneTriggerSignal != value)
+			{
+				_CameraOneTriggerSignal = value;
+				OnPropertyChanged("CameraOneTriggerSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 相机2触发信号，映射标定使用
+	/// </summary>
+	public string CameraTwoTriggerSignal
+	{
+		get
+		{
+			return _CameraTwoTriggerSignal;
+		}
+		set
+		{
+			if (_CameraTwoTriggerSignal != value)
+			{
+				_CameraTwoTriggerSignal = value;
+				OnPropertyChanged("CameraTwoTriggerSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 映射信号，映射标定使用
+	/// </summary>
+	public string ReflectTriggerSignal
+	{
+		get
+		{
+			return _ReflectTriggerSignal;
+		}
+		set
+		{
+			if (_ReflectTriggerSignal != value)
+			{
+				_ReflectTriggerSignal = value;
+				OnPropertyChanged("ReflectTriggerSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 映射示教信号，映射标定使用
+	/// </summary>
+	public string ReflectTeachSignal
+	{
+		get
+		{
+			return _ReflectTeachSignal;
+		}
+		set
+		{
+			if (_ReflectTeachSignal != value)
+			{
+				_ReflectTeachSignal = value;
+				OnPropertyChanged("ReflectTeachSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 触发信号，静态标定使用
+	/// </summary>
+	public string TriggerSignal
+	{
+		get
+		{
+			return _TriggerSignal;
+		}
+		set
+		{
+			if (_TriggerSignal != value)
+			{
+				_TriggerSignal = value;
+				OnPropertyChanged("TriggerSignal");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 标定方式，0-标定板，1-特征点，2-映射
+	/// </summary>
+	public int CalibrationWay
+	{
+		get
+		{
+			return _CalibrationWay;
+		}
+		set
+		{
+			if (_CalibrationWay != value)
+			{
+				_CalibrationWay = value;
+				OnPropertyChanged("CalibrationWay");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 标定模块集合，动态标定特征点方式使用
+	/// </summary>
+	public ObservableCollection<object> CalibrationModules
+	{
+		get
+		{
+			return _CalibrationModules;
+		}
+		set
+		{
+			if (_CalibrationModules != value)
+			{
+				_CalibrationModules = value;
+				OnPropertyChanged("CalibrationModules");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 结果信号集合
+	/// </summary>
+	public ObservableCollection<object> Signals
+	{
+		get
+		{
+			return _Signals;
+		}
+		set
+		{
+			if (_Signals != value)
+			{
+				_Signals = value;
+				OnPropertyChanged("Signals");
+			}
+		}
+	}
+
+	public float[] CalibrationMatrix
+	{
+		get
+		{
+			return _CalibrationMatrix;
+		}
+		set
+		{
+			if (_CalibrationMatrix != value)
+			{
+				_CalibrationMatrix = value;
+				OnPropertyChanged("CalibrationMatrix");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否使用结束符
+	/// </summary>
+	public bool UseEnd
+	{
+		get
+		{
+			return _UseEnd;
+		}
+		set
+		{
+			if (_UseEnd != value)
+			{
+				_UseEnd = value;
+				OnPropertyChanged("UseEnd");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 结束符序号0-\r,1-\n,2-\r\n
+	/// </summary>
+	public int EndIndex
+	{
+		get
+		{
+			return _EndIndex;
+		}
+		set
+		{
+			if (_EndIndex != value)
+			{
+				_EndIndex = value;
+				OnPropertyChanged("EndIndex");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前引导步骤
+	/// </summary>
+	public int GuideStep
+	{
+		get
+		{
+			return _GuideStep;
+		}
+		set
+		{
+			if (_GuideStep != value)
+			{
+				_GuideStep = value;
+				OnPropertyChanged("GuideStep");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否需要开启所有模块结果回调
+	/// </summary>
+	public bool NeedGetAllModulesCallBack
+	{
+		get
+		{
+			return _NeedGetAllModulesCallBack;
+		}
+		set
+		{
+			if (_NeedGetAllModulesCallBack != value)
+			{
+				_NeedGetAllModulesCallBack = value;
+				OnPropertyChanged("NeedGetAllModulesCallBack");
+				if (Parent != null && Parent is IVmProcedure vmProcedure)
+				{
+					vmProcedure.NeedGetAllModulesCallBack = _NeedGetAllModulesCallBack;
+				}
+			}
+		}
+	}
+
+	public object Parent
+	{
+		get
+		{
+			return _Parent;
+		}
+		set
+		{
+			if (_Parent != value)
+			{
+				_Parent = value;
+				OnPropertyChanged("Parent");
+				if (_Parent != null && Parent is VmProcedure vmProcedure)
+				{
+					vmProcedure.SaveCalibDataToUserData = (VmProcedure.SaveCalibrationData)Delegate.Remove(vmProcedure.SaveCalibDataToUserData, new VmProcedure.SaveCalibrationData(SaveData));
+					vmProcedure.SaveCalibDataToUserData = (VmProcedure.SaveCalibrationData)Delegate.Combine(vmProcedure.SaveCalibDataToUserData, new VmProcedure.SaveCalibrationData(SaveData));
+				}
+			}
+		}
+	}
+
+	private void SaveData()
+	{
+		if (Parent != null && Parent is VmProcedure vmProcedure)
+		{
+			vmProcedure.UserData["CalibData"] = ByteUtil.GetBytes(ToXmlStringWithHead());
+		}
+	}
+}

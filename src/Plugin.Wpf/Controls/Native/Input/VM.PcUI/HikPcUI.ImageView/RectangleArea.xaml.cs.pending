@@ -1,0 +1,161 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class RectangleArea : UserControl, IArea, INotifyPropertyChanged, IComponentConnector
+{
+	private bool _IsPressed;
+
+	private double ScaleX = 1.0;
+
+	public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(RectangleArea), new PropertyMetadata(double.MinValue, OnXChanged));
+
+	public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(RectangleArea), new PropertyMetadata(double.MinValue, OnYChanged));
+
+	public bool IsPressed
+	{
+		get
+		{
+			return _IsPressed;
+		}
+		set
+		{
+			_IsPressed = value;
+			NotifyPropertyChanged("IsPressed");
+		}
+	}
+
+	public int Index { get; set; }
+
+	public Point CurPoint { get; set; }
+
+	public Control Container { get; set; }
+
+	public double X
+	{
+		get
+		{
+			return (double)GetValue(XProperty);
+		}
+		set
+		{
+			SetValue(XProperty, value);
+			ChangeX();
+		}
+	}
+
+	public double Y
+	{
+		get
+		{
+			return (double)GetValue(YProperty);
+		}
+		set
+		{
+			SetValue(YProperty, value);
+			ChangeY();
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public RectangleArea()
+	{
+		InitializeComponent();
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		ScaleX = (sender as ScaleTransform).ScaleX * num;
+		view.BorderThickness = new Thickness(2.0 / ScaleX);
+	}
+
+	private void view_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (Container is RectangleRoi)
+		{
+			IsPressed = true;
+			Point position = e.GetPosition(this);
+			CurPoint = new Point(position.X + Margin.Left - Margin.Right, position.Y + Margin.Top - Margin.Bottom);
+			(Container as RectangleRoi).Doth(this, e);
+		}
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (ScaleX >= 1.0)
+		{
+			if (double.IsInfinity(Width / ScaleX))
+			{
+				view.Width = Width;
+			}
+			else
+			{
+				view.Width = Width / ScaleX;
+			}
+			if (double.IsInfinity(Height / ScaleX))
+			{
+				view.Height = Height;
+			}
+			else
+			{
+				view.Height = Height / ScaleX;
+			}
+		}
+		else
+		{
+			view.Width = Width;
+			view.Height = Height;
+		}
+	}
+
+	public void ChangeSize()
+	{
+		view.Width = Width;
+		view.Height = Height;
+	}
+
+	private static void OnXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	private void ChangeX()
+	{
+		double num = X - Width / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+	}
+
+	private static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	private void ChangeY()
+	{
+		double num = Y - Height / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+	}
+}

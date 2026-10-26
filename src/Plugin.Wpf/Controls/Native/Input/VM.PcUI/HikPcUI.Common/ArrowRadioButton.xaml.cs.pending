@@ -1,0 +1,28 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public partial class ArrowRadioButton : ImageViewControlButton, IComponentConnector
+{
+	public override ImageViewController.BarItemenum Itemenum => ImageViewController.BarItemenum.Arrow;
+
+	public ArrowRadioButton()
+	{
+		ToolTipString = "移动图像";
+		InitializeComponent();
+	}
+
+	protected override void OnRoiCountChanged(object Roi, EventArgs e = null)
+	{
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

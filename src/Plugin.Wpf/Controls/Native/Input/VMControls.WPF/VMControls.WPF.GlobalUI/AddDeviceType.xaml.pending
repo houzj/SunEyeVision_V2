@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.AddDeviceType" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="mybasewindow" Height="214" Width="370" xmlns:globalui="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;assembly=SunEyeVision.Plugin.Wpf">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/CheckBoxStyle/CheckBoxStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="btv" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource GlobalMouseOverBg}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="32" />
+    </Grid.RowDefinitions>
+    <StackPanel Margin="10" Grid.Row="0">
+      <TextBlock Text="{DynamicResource ChooseAddType}" Margin="10" HorizontalAlignment="Center" FontSize="14" TextWrapping="Wrap" />
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl Name="cameralist" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid>
+                <RadioButton FontSize="14" Height="24" GroupName="1" Content="{Lang:ResourceBinding Type}" Visibility="{Binding IsShow, Converter={StaticResource btv}}" IsChecked="{Binding IsCurrentCamera}" Click="Button_Click" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+          <ItemsControl.ItemContainerStyle>
+            <Style>
+              <Setter Property="FrameworkElement.Margin" Value="5" />
+            </Style>
+          </ItemsControl.ItemContainerStyle>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel IsItemsHost="True" Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </ScrollViewer>
+    </StackPanel>
+    <Border Grid.Row="1" BorderThickness="0" Background="{DynamicResource GlobalBorderBg}">
+      <Button Style="{StaticResource BottomButtonStyle}" Content="{DynamicResource Confirm}" Margin="0,0,15,0" HorizontalAlignment="Right" VerticalAlignment="Center" Click="Confirm_Click" />
+    </Border>
+  </Grid>
+</controls:BaseWindow>

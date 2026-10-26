@@ -1,0 +1,140 @@
+using System.ComponentModel;
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikEllipseRoiParameter : RoiParameter, IEllipseROI, IROI, INotifyPropertyChanged, IROISign
+{
+	private string _Name = "Ellipse";
+
+	public Point _CenterPoint = new Point(0.0, 0.0);
+
+	public double _RadiusX = 0.0;
+
+	public double _RadiusY = 0.0;
+
+	public double _Angle = 0.0;
+
+	public bool? _Sign = true;
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public double CenterX
+	{
+		get
+		{
+			return CenterPoint.X;
+		}
+		set
+		{
+			CenterPoint = new Point(value, CenterPoint.Y);
+			NotifyPropertyChanged("CenterX");
+		}
+	}
+
+	public double CenterY
+	{
+		get
+		{
+			return CenterPoint.Y;
+		}
+		set
+		{
+			CenterPoint = new Point(CenterPoint.X, value);
+			NotifyPropertyChanged("CenterY");
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return _CenterPoint;
+		}
+		set
+		{
+			if (_CenterPoint != value)
+			{
+				_CenterPoint = value;
+				NotifyPropertyChanged("CenterPoint");
+				NotifyPropertyChanged("CenterX");
+				NotifyPropertyChanged("CenterY");
+			}
+		}
+	}
+
+	public double RadiusX
+	{
+		get
+		{
+			return _RadiusX;
+		}
+		set
+		{
+			if (_RadiusX != value)
+			{
+				_RadiusX = value;
+				NotifyPropertyChanged("RadiusX");
+			}
+		}
+	}
+
+	public double RadiusY
+	{
+		get
+		{
+			return _RadiusY;
+		}
+		set
+		{
+			if (_RadiusY != value)
+			{
+				_RadiusY = value;
+				NotifyPropertyChanged("RadiusY");
+			}
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return _Angle;
+		}
+		set
+		{
+			if (_Angle != value)
+			{
+				_Angle = value;
+				NotifyPropertyChanged("Angle");
+			}
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return _Sign;
+		}
+		set
+		{
+			if (_Sign != value)
+			{
+				_Sign = value;
+				NotifyPropertyChanged("Sign");
+			}
+		}
+	}
+}

@@ -1,0 +1,26 @@
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public enum RoiUIType
+{
+	Default,
+	HikTool,
+	HikShowTool,
+	HikCoverCircleRoi,
+	HikCoverCircleRoi2,
+	HikCoverRoi,
+	HikDoubleCoverRoi,
+	HikQuadraCoverRoi,
+	HikPolygonRoi,
+	HikPaster,
+	HikPath,
+	HikLineRoi,
+	HikPointRoi,
+	HikCircleMesRoi,
+	HikXY,
+	HikLineCaliperRoi,
+	HikCircleCaliperRoi,
+	HikCircleArcRoi,
+	HikIndexPointRoi,
+	HikCruciformRoi,
+	HikCoverHollowRoi
+}

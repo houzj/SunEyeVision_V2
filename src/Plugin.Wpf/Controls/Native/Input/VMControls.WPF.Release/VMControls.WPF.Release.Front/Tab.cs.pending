@@ -1,0 +1,14 @@
+using System.Windows;
+using System.Windows.Controls;
+using FrontendUI.Design.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+[TemplatePart(Name = "PART_ItemsHolder", Type = typeof(Panel))]
+public class Tab : FrontendUI.Design.Controls.Tab
+{
+	static Tab()
+	{
+		FrameworkElement.StyleProperty.OverrideMetadata(typeof(Tab));
+	}
+}

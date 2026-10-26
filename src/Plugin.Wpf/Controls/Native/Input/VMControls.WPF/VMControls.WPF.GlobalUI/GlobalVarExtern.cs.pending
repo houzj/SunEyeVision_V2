@@ -1,0 +1,189 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlParser.Variable;
+using Apps.XmlUI.ParamTab;
+using HikExternalCall.Common;
+using VM.Core;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 实体对象转换
+/// </summary>
+public class GlobalVarExtern
+{
+	internal const int MaxNameLen = 256;
+
+	internal const int MaxNameLenEx = 128;
+
+	internal const int MaxContentLen = 256;
+
+	/// <summary>
+	/// 结构体转实体类
+	/// </summary>
+	/// <param name="value"></param>
+	/// <returns></returns>
+	public static GlobalVariableItem StructToGlobalVarItem(VariableManager.IMVS_VARIABLE value)
+	{
+		GlobalVariableItem globalVariableItem = new GlobalVariableItem
+		{
+			Index = value.nIndex,
+			CommInit = value.bCommEnable,
+			Type = StringUtil.UTF8GetString(value.chszValueType),
+			Value = StringUtil.UTF8GetString(value.chszValue),
+			Name = StringUtil.UTF8GetString(value.chszValueName),
+			RemarkInfo = StringUtil.UTF8GetString(value.chszRemark),
+			VarGroupInfo = StringUtil.UTF8GetString(value.chsGroupInfo)
+		};
+		if (value.stVarValue.nValueNum != 0)
+		{
+			if (globalVariableItem.Type == "int")
+			{
+				int[] array = new int[value.stVarValue.nValueNum];
+				int num = (int)(value.stVarValue.nValueNum * Marshal.SizeOf(typeof(int)));
+				byte[] array2 = new byte[num];
+				Marshal.Copy(value.stVarValue.pIntValue, array2, 0, num);
+				Buffer.BlockCopy(array2, 0, array, 0, array2.Length);
+				globalVariableItem.ArrayValue = new string[array.Length];
+				globalVariableItem.ArrayValue = Array.ConvertAll(array, (int x) => x.ToString());
+				globalVariableItem.Value = array[0].ToString();
+			}
+			else if (globalVariableItem.Type == "float")
+			{
+				float[] array3 = new float[value.stVarValue.nValueNum];
+				int num2 = (int)(value.stVarValue.nValueNum * Marshal.SizeOf(typeof(float)));
+				byte[] array4 = new byte[num2];
+				Marshal.Copy(value.stVarValue.pFloatValue, array4, 0, num2);
+				Buffer.BlockCopy(array4, 0, array3, 0, array4.Length);
+				globalVariableItem.ArrayValue = new string[array3.Length];
+				globalVariableItem.ArrayValue = Array.ConvertAll(array3, (float x) => x.ToString());
+				globalVariableItem.Value = array3[0].ToString();
+			}
+			else if (globalVariableItem.Type == "byte")
+			{
+				VariableManager.ByteDataArray[] array5 = ExternalCallHelper.IntPtr2Structures<VariableManager.ByteDataArray>(value.stVarValue.pByteValue, (int)value.stVarValue.nValueNum);
+				globalVariableItem.ArrayValue = new string[value.stVarValue.nValueNum];
+				for (int num3 = 0; num3 < value.stVarValue.nValueNum; num3++)
+				{
+					if (array5[num3].nDataLen != 0)
+					{
+						byte[] array6 = new byte[array5[num3].nDataLen];
+						Marshal.Copy(array5[num3].pData, array6, 0, array6.Length);
+						string text = StringUtil.ByteGetHexString(array6);
+						globalVariableItem.ArrayValue[num3] = text;
+						if (num3 == 0)
+						{
+							globalVariableItem.Value = text;
+						}
+					}
+					else if (num3 == 0)
+					{
+						globalVariableItem.Value = "";
+					}
+				}
+			}
+			else if (globalVariableItem.Type == "string")
+			{
+				VariableManager.ByteDataArray[] array7 = ExternalCallHelper.IntPtr2Structures<VariableManager.ByteDataArray>(value.stVarValue.pByteValue, (int)value.stVarValue.nValueNum);
+				globalVariableItem.ArrayValue = new string[value.stVarValue.nValueNum];
+				for (int num4 = 0; num4 < value.stVarValue.nValueNum; num4++)
+				{
+					if (array7[num4].nDataLen >= int.MaxValue)
+					{
+						LogHelper.Error("数组超过int最大值:" + array7[num4].nDataLen);
+					}
+					else if (array7[num4].nDataLen != 0)
+					{
+						byte[] array8 = new byte[array7[num4].nDataLen];
+						Marshal.Copy(array7[num4].pData, array8, 0, array8.Length);
+						string text2 = StringUtil.UTF8GetString(array8);
+						globalVariableItem.ArrayValue[num4] = text2;
+						if (num4 == 0)
+						{
+							globalVariableItem.Value = text2;
+						}
+					}
+					else if (num4 == 0)
+					{
+						globalVariableItem.Value = "";
+					}
+				}
+			}
+			globalVariableItem.IsArrayValue = value.stVarValue.nValueNum > 1 && !value.bCombination;
+		}
+		VariableManager.IMVS_LINKMODULE[] value2 = new VariableManager.IMVS_LINKMODULE[0];
+		if (value.nLinkCount > 0)
+		{
+			value2 = ExternalCallHelper.IntPtr2Structures<VariableManager.IMVS_LINKMODULE>(value.pLinkModuleList, value.nLinkCount);
+		}
+		globalVariableItem.SelectedRunParams = GetRunParams(value2);
+		return globalVariableItem;
+	}
+
+	/// <summary>
+	/// 获取绑定运行参数的名称 TODO zhouriwen 这里得支持显示多个绑定的信息
+	/// </summary>
+	/// <returns></returns>
+	private static List<RunParamsBaseNode> GetRunParams(VariableManager.IMVS_LINKMODULE[] value)
+	{
+		List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+		if (value.Length == 0)
+		{
+			return list;
+		}
+		List<int> bindIDList = new List<int>();
+		Array.ForEach(value, (VariableManager.IMVS_LINKMODULE x) =>
+		{
+			bindIDList.Add(x.nModuleID);
+		});
+		List<VmModule> list2 = new List<VmModule>();
+		VmSolution.Instance.GetAllModuleByIDs(list2, bindIDList.ToArray());
+		int i;
+		for (i = 0; i < value.Length; i++)
+		{
+			RunParamsBaseNode runParamsBaseNode = new RunParamsBaseNode
+			{
+				OutputEnabled = true
+			};
+			string text = StringUtil.UTF8GetString(value[i].chszRunParamName);
+			if (value[i].nModuleID >= 0 && !string.IsNullOrEmpty(text))
+			{
+				runParamsBaseNode.TargetObject = (list2.FirstOrDefault((VmModule x) => x.ID == value[i].nModuleID)?.Params?.GetParamRoot())?.FindBaseNodeByName(text) as NameValueItem;
+			}
+			if (runParamsBaseNode.TargetObject != null)
+			{
+				list.Add(runParamsBaseNode);
+			}
+		}
+		return list;
+	}
+
+	/// <summary>
+	/// 运行参数绑定类转数据
+	/// </summary>
+	/// <returns></returns>
+	public static VarRunParamInfo[] GetLinkModuleInfoByRunParams(List<RunParamsBaseNode> SelectedRunParams)
+	{
+		if (SelectedRunParams != null && SelectedRunParams.Count > 0)
+		{
+			VarRunParamInfo[] array = new VarRunParamInfo[SelectedRunParams.Count];
+			for (int i = 0; i < SelectedRunParams.Count; i++)
+			{
+				VarRunParamInfo varRunParamInfo = new VarRunParamInfo();
+				varRunParamInfo.nModuleID = (int)SelectedRunParams[i].ModuleID.Value;
+				varRunParamInfo.Name = SelectedRunParams[i].Name;
+				varRunParamInfo.Type = SelectedRunParams[i].RunParamIoType;
+				varRunParamInfo.IsSupportSub = SelectedRunParams[i].IsSupportSub;
+				varRunParamInfo.Owner = SelectedRunParams[i].TargetObject;
+				array[i] = varRunParamInfo;
+			}
+			return array;
+		}
+		return null;
+	}
+}

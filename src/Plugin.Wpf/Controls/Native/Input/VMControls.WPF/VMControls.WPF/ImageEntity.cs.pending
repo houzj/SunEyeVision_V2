@@ -1,0 +1,78 @@
+using System.ComponentModel;
+using System.IO;
+using Apps.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 缩略图实体类
+/// </summary>
+public class ImageEntity : INotifyPropertyChanged
+{
+	private ImageData _ImageSource;
+
+	private bool isCheck;
+
+	/// <summary>
+	/// 图片
+	/// </summary>
+	public ImageData ImageSource
+	{
+		get
+		{
+			return _ImageSource;
+		}
+		set
+		{
+			if (_ImageSource != value)
+			{
+				_ImageSource = value;
+				OnPropertyChanged("ImageSource");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 索引
+	/// </summary>
+	public int ImageIndex { get; set; }
+
+	/// <summary>
+	/// 图片路径
+	/// </summary>
+	public string ImagePath { get; set; }
+
+	public string ImageName
+	{
+		get
+		{
+			return Path.GetFileName(ImagePath);
+		}
+		set
+		{
+		}
+	}
+
+	public bool IsCheck
+	{
+		get
+		{
+			return isCheck;
+		}
+		set
+		{
+			if (isCheck != value)
+			{
+				isCheck = value;
+				OnPropertyChanged("IsCheck");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+}

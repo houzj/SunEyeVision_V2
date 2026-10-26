@@ -1,0 +1,193 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Windows;
+using System.Windows.Input;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+using Mvvm.Commands;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// 用于承载ROISelecter数据的控件
+/// </summary>
+public class ROISelecterHolder : FrameworkElement
+{
+	public static readonly DependencyProperty RoiChangedCommandProperty = DependencyProperty.Register("RoiChangedCommand", typeof(DelegateCommand<object>), typeof(ROISelecterHolder), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ROIListOfHikImageViewProperty = DependencyProperty.Register("ROIListOfHikImageView", typeof(IList), typeof(ROISelecterHolder), new PropertyMetadata(null, OnROIListOfHikImageViewChanged));
+
+	private static bool roiListImageFlag;
+
+	private DelegateCommand<object> imRoiChangedCommand = null;
+
+	public static readonly DependencyProperty DrawRoiUITypeProperty = DependencyProperty.Register("DrawRoiUIType", typeof(RoiUIType), typeof(ROISelecterHolder), new PropertyMetadata(RoiUIType.Default));
+
+	private List<object> ROIListHolder = new List<object>();
+
+	public static readonly DependencyProperty ROIListProperty = DependencyProperty.Register("ROIList", typeof(IList), typeof(ROISelecterHolder), new PropertyMetadata(null, OnROIListChanged));
+
+	private static bool roiListFlag;
+
+	/// <summary>
+	/// roi数据变更事件
+	/// </summary>
+	public DelegateCommand<object> RoiChangedCommand
+	{
+		get
+		{
+			return (DelegateCommand<object>)GetValue(RoiChangedCommandProperty);
+		}
+		set
+		{
+			SetValue(RoiChangedCommandProperty, value);
+		}
+	}
+
+	public IList ROIListOfHikImageView
+	{
+		get
+		{
+			return (IList)GetValue(ROIListOfHikImageViewProperty);
+		}
+		set
+		{
+			SetValue(ROIListOfHikImageViewProperty, value);
+		}
+	}
+
+	public ICommand ImRoiChangedCommand => (ICommand)(imRoiChangedCommand ?? (imRoiChangedCommand = new DelegateCommand<object>((Action<object>)ImRoiChangedCommandExecute)));
+
+	public RoiUIType DrawRoiUIType
+	{
+		get
+		{
+			return (RoiUIType)GetValue(DrawRoiUITypeProperty);
+		}
+		set
+		{
+			SetValue(DrawRoiUITypeProperty, value);
+		}
+	}
+
+	public IList ROIList
+	{
+		get
+		{
+			return (IList)GetValue(ROIListProperty);
+		}
+		set
+		{
+			SetValue(ROIListProperty, value);
+		}
+	}
+
+	private static void OnROIListOfHikImageViewChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ROISelecterHolder rOISelecterHolder = (ROISelecterHolder)d;
+		IList list = e.OldValue as IList;
+		IList list2 = e.NewValue as IList;
+		if (list != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, rOISelecterHolder.ROIListOfHikImageView_CollectionChanged);
+			foreach (object item in list)
+			{
+				rOISelecterHolder.ROIListOfHikImageView.Remove(item);
+			}
+		}
+		if (list2 != null)
+		{
+			CollectionChangedEventManager.AddHandler(list2 as INotifyCollectionChanged, rOISelecterHolder.ROIListOfHikImageView_CollectionChanged);
+		}
+	}
+
+	private void ROIListOfHikImageView_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (roiListFlag)
+		{
+			return;
+		}
+		roiListImageFlag = true;
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Remove:
+			foreach (object oldItem in e.OldItems)
+			{
+				if (ROIList.Contains(oldItem))
+				{
+					ROIList.Remove(oldItem);
+				}
+			}
+			break;
+		}
+		roiListImageFlag = false;
+	}
+
+	private void ImRoiChangedCommandExecute(object obj)
+	{
+	}
+
+	private static void OnROIListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ROISelecterHolder rOISelecterHolder = (ROISelecterHolder)d;
+		IList list = e.OldValue as IList;
+		IList list2 = e.NewValue as IList;
+		if (list != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, rOISelecterHolder.RoiList_CollectionChanged);
+			foreach (object item in list)
+			{
+				rOISelecterHolder.ROIListOfHikImageView.Remove(item);
+			}
+		}
+		if (list2 != null)
+		{
+			rOISelecterHolder.AddAllROI(list2);
+			CollectionChangedEventManager.AddHandler(list2 as INotifyCollectionChanged, rOISelecterHolder.RoiList_CollectionChanged);
+		}
+	}
+
+	private void AddAllROI(IList items)
+	{
+		foreach (object item in items)
+		{
+			if (!ROIListOfHikImageView.Contains(item))
+			{
+				ROIListOfHikImageView.Add(item);
+			}
+			ROIListHolder.Add(item);
+		}
+	}
+
+	private void RoiList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (roiListImageFlag)
+		{
+			return;
+		}
+		roiListFlag = true;
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Add:
+			AddAllROI(e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Reset:
+			foreach (object item in ROIListHolder)
+			{
+				ROIListOfHikImageView.Remove(item);
+			}
+			ROIListHolder.Clear();
+			break;
+		}
+		roiListFlag = false;
+	}
+
+	/// <summary>
+	/// 清除所管理的ROI
+	/// </summary>
+	internal void ClearROI()
+	{
+		ROIList.Clear();
+	}
+}

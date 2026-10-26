@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Controls;
+using Hik.Util;
+using VM.AppData;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CalibGuide;
+
+/// <summary>
+/// 一键标定帮助类
+/// </summary>
+public class CalibHelper
+{
+	public static Control GetGuidePageControl()
+	{
+		string tmpName = (AppDataFactory.Instance().IsNeutral ? "CalibGuide" : "VM.CalibGuide");
+		string text = AppDomain.CurrentDomain.BaseDirectory + "myLibs\\" + tmpName + ".dll";
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, tmpName));
+		if (assembly == null && File.Exists(text))
+		{
+			ActivatorWrap.LoadAssembly(text);
+			assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, tmpName));
+		}
+		if (assembly != null)
+		{
+			List<Type> list = (from p in assembly.GetTypes()
+				where typeof(IGuidePage).IsAssignableFrom(p)
+				select p).ToList();
+			if (list.Count > 0)
+			{
+				return ActivatorWrap.CreateInstance(list[0]) as Control;
+			}
+		}
+		return null;
+	}
+}

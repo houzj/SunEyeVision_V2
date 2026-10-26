@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikCoverCircle2" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:comm="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom" xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Name="userControl" Loaded="UserControl_Loaded" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" MouseUp="UserControl_MouseUp" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" Focusable="True" FocusVisualStyle="{x:Null}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:HikCoverCircleStyleConverter x:Key="hccStyleConverter" />
+      <sys:Double x:Key="dwidth">8</sys:Double>
+      <sys:Double x:Key="mwidth">32</sys:Double>
+      <Style x:Key="squareAreaStyle" TargetType="{x:Type local:SquareArea}">
+        <Style.Triggers>
+          <DataTrigger Value="True" Binding="{Binding IsRadiusLimit, ElementName=userControl}">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Border Name="bd" BorderThickness="1" Margin="-1" Style="{DynamicResource SelectedBorderStyle}">
+    <Canvas Name="Gp">
+      <Path Name="PathFillColor" Stretch="None" StrokeThickness="1" Opacity="1" Visibility="Visible" Cursor="SizeAll" Style="{Binding ROITypeUI, ElementName=userControl, Converter={StaticResource hccStyleConverter}}">
+        <Path.Data>
+          <GeometryGroup>
+            <PathGeometry>
+              <PathFigure IsClosed="True" StartPoint="{Binding ElementName=userControl, Path=EndPoint}">
+                <LineSegment Point="{Binding ElementName=userControl, Path=MinEndPoint}" />
+                <ArcSegment Size="{Binding ElementName=userControl, Path=MinSize}" Point="{Binding ElementName=userControl, Path=MinStartPoint}" IsLargeArc="{Binding ElementName=userControl, Path=IsLargeArc}" SweepDirection="{Binding ElementName=userControl, Path=DeClockWise}" />
+                <LineSegment Point="{Binding ElementName=userControl, Path=StartPoint}" />
+                <ArcSegment Size="{Binding ElementName=userControl, Path=MaxSize}" Point="{Binding ElementName=userControl, Path=EndPoint}" IsLargeArc="{Binding ElementName=userControl, Path=IsLargeArc}" SweepDirection="{Binding ElementName=userControl, Path=ClockWise}" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+      <Path Stretch="None" Opacity="1" IsHitTestVisible="False" Stroke="{DynamicResource ROIMouseOverColor}" StrokeThickness="{Binding ElementName=PathFillColor, Path=StrokeThickness}">
+        <Path.Data>
+          <GeometryGroup>
+            <PathGeometry>
+              <PathFigure StartPoint="{Binding ElementName=userControl, Path=EndPoint}">
+                <LineSegment Point="{Binding ElementName=userControl, Path=MinEndPoint}" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryGroup>
+        </Path.Data>
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Path}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding ElementName=moveRec2, Path=IsPressed}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding ElementName=moveRec2, Path=IsMouseOver}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Path>
+      <Path Stretch="None" Opacity="1" IsHitTestVisible="False" Stroke="#FF9ACD32" StrokeThickness="{Binding ElementName=PathFillColor, Path=StrokeThickness}">
+        <Path.Data>
+          <GeometryGroup>
+            <PathGeometry>
+              <PathFigure StartPoint="{Binding ElementName=userControl, Path=StartPoint}">
+                <LineSegment Point="{Binding ElementName=userControl, Path=MinStartPoint}" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryGroup>
+        </Path.Data>
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Path}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding ElementName=moveRec1, Path=IsPressed}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding ElementName=moveRec1, Path=IsMouseOver}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Path>
+      <Path Name="PathFillColor2" Stretch="None" StrokeThickness="1" Opacity="1" Visibility="Visible" Cursor="SizeAll" Style="{Binding ROITypeUI, ElementName=userControl, Converter={StaticResource hccStyleConverter}}">
+        <Path.Data>
+          <GeometryGroup>
+            <EllipseGeometry RadiusX="{Binding ElementName=userControl, Path=MinRadius}" RadiusY="{Binding ElementName=userControl, Path=MinRadius}" Center="{Binding ElementName=userControl, Path=MyCenterPoint}" />
+            <EllipseGeometry RadiusX="{Binding ElementName=userControl, Path=Radius}" RadiusY="{Binding ElementName=userControl, Path=Radius}" Center="{Binding ElementName=userControl, Path=MyCenterPoint}" />
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+      <Canvas Background="#00FFFFFF">
+        <local:SquareArea x:Name="moveRec2" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+        <local:SquareArea x:Name="moveRec1" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+        <local:SquareArea x:Name="endAngle" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="YellowGreen" BorderAngle="{Binding ElementName=userControl, Path=EndAngle}" />
+        <local:SquareArea x:Name="startAngle" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="YellowGreen" BorderAngle="{Binding ElementName=userControl, Path=StartAngle}" />
+        <local:SquareArea x:Name="rec1" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="YellowGreen" />
+        <local:SquareArea x:Name="rec2" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        <local:SquareArea x:Name="startArrow" Opacity="1" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="Transparent" IsHitTestVisible="False" X="{Binding ElementName=userControl, Path=StartArrowPoint.X}" Y="{Binding ElementName=userControl, Path=StartArrowPoint.Y}" Angle="{Binding ElementName=userControl, Path=StartArrowAngle}">
+          <local:SquareArea.SquareGeometry>
+            <GeometryGroup>
+              <PathGeometry>
+                <PathFigure StartPoint="0,0">
+                  <LineSegment Point="6,6" />
+                  <LineSegment Point="0,12" />
+                </PathFigure>
+              </PathGeometry>
+            </GeometryGroup>
+          </local:SquareArea.SquareGeometry>
+        </local:SquareArea>
+        <local:SquareArea x:Name="endArrow" Opacity="1" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="Transparent" IsHitTestVisible="False" X="{Binding ElementName=userControl, Path=EndArrowPoint.X}" Y="{Binding ElementName=userControl, Path=EndArrowPoint.Y}" Angle="{Binding ElementName=userControl, Path=EndArrowAngle}">
+          <local:SquareArea.SquareGeometry>
+            <GeometryGroup>
+              <PathGeometry>
+                <PathFigure StartPoint="0,0">
+                  <LineSegment Point="6,6" />
+                  <LineSegment Point="0,12" />
+                </PathFigure>
+              </PathGeometry>
+            </GeometryGroup>
+          </local:SquareArea.SquareGeometry>
+        </local:SquareArea>
+        <local:SquareArea x:Name="radiusArrow" Style="{StaticResource squareAreaStyle}" Opacity="1" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="Transparent" IsHitTestVisible="False" X="{Binding ElementName=userControl, Path=RadiusArrowPoint.X}" Y="{Binding ElementName=userControl, Path=RadiusArrowPoint.Y}" Angle="{Binding ElementName=userControl, Path=RadiusArrowAngle}">
+          <local:SquareArea.SquareGeometry>
+            <GeometryGroup>
+              <PathGeometry>
+                <PathFigure StartPoint="0,0">
+                  <LineSegment Point="6,6" />
+                  <LineSegment Point="0,12" />
+                </PathFigure>
+              </PathGeometry>
+            </GeometryGroup>
+          </local:SquareArea.SquareGeometry>
+        </local:SquareArea>
+        <local:SquareArea x:Name="minRadiusArrow" Style="{StaticResource squareAreaStyle}" Opacity="1" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="Transparent" IsHitTestVisible="False" X="{Binding ElementName=userControl, Path=MinRadiusArrowPoint.X}" Y="{Binding ElementName=userControl, Path=MinRadiusArrowPoint.Y}" Angle="{Binding ElementName=userControl, Path=RadiusArrowAngle}">
+          <local:SquareArea.SquareGeometry>
+            <GeometryGroup>
+              <PathGeometry>
+                <PathFigure StartPoint="0,0">
+                  <LineSegment Point="6,6" />
+                  <LineSegment Point="0,12" />
+                </PathFigure>
+              </PathGeometry>
+            </GeometryGroup>
+          </local:SquareArea.SquareGeometry>
+        </local:SquareArea>
+      </Canvas>
+    </Canvas>
+  </Border>
+</local:HikROIBase>

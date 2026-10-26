@@ -1,0 +1,80 @@
+using System.Collections.ObjectModel;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCoverHollowRoiParameter : RoiParameter
+{
+	public double _Angle;
+
+	public bool _TIsSignVisible = false;
+
+	public bool _TIsDeleteVisible = false;
+
+	public ObservableCollection<PolygonPoint> _PolygonPoints = new ObservableCollection<PolygonPoint>();
+
+	public string Name { get; set; } = "矩形";
+
+	public double Angle
+	{
+		get
+		{
+			return _Angle;
+		}
+		set
+		{
+			if (_Angle != value)
+			{
+				_Angle = value;
+				NotifyPropertyChanged("Angle");
+			}
+		}
+	}
+
+	public bool TIsSignVisible
+	{
+		get
+		{
+			return _TIsSignVisible;
+		}
+		set
+		{
+			if (_TIsSignVisible != value)
+			{
+				_TIsSignVisible = value;
+				NotifyPropertyChanged("TIsSignVisible");
+			}
+		}
+	}
+
+	public bool TIsDeleteVisible
+	{
+		get
+		{
+			return _TIsDeleteVisible;
+		}
+		set
+		{
+			if (_TIsDeleteVisible != value)
+			{
+				_TIsDeleteVisible = value;
+				NotifyPropertyChanged("TIsDeleteVisible");
+			}
+		}
+	}
+
+	public ObservableCollection<PolygonPoint> PolygonPoints
+	{
+		get
+		{
+			return _PolygonPoints;
+		}
+		set
+		{
+			if (_PolygonPoints != value)
+			{
+				_PolygonPoints = value;
+				NotifyPropertyChanged("PolygonPoints");
+			}
+		}
+	}
+}

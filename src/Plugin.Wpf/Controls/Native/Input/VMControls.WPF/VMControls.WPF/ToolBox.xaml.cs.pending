@@ -1,0 +1,211 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using VM.AppData;
+using VMControls.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ToolBox.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ToolBox
+/// </summary>
+public partial class ToolBox : Control, IComponentConnector
+{
+	public static bool isFold = true;
+
+	public static readonly DependencyProperty IsGlobleModeProperty = DependencyProperty.Register("IsGlobleMode", typeof(bool), typeof(ToolBox), new PropertyMetadata(false, OnIsGlobleModeChanged));
+
+	public static readonly DependencyProperty UnFoldSwitchProperty = DependencyProperty.Register("UnFoldSwitch", typeof(bool), typeof(ToolBox), new PropertyMetadata(false, OnFoldSwitchChanged));
+
+	public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IList), typeof(ToolBox), new PropertyMetadata(null, OnItemSourceChanged));
+
+	public static readonly DependencyProperty IsNeuLayoutProperty = DependencyProperty.Register("IsNeuLayoutProperty", typeof(bool), typeof(ToolBox), new PropertyMetadata(false));
+
+	private List<UIElement> _items = new List<UIElement>();
+
+	/// <summary>
+	/// 是否展现为全局模式
+	/// </summary>
+	public bool IsGlobleMode
+	{
+		get
+		{
+			return (bool)GetValue(IsGlobleModeProperty);
+		}
+		set
+		{
+			SetValue(IsGlobleModeProperty, value);
+		}
+	}
+
+	public bool UnFoldSwitch
+	{
+		get
+		{
+			return (bool)GetValue(UnFoldSwitchProperty);
+		}
+		set
+		{
+			SetValue(UnFoldSwitchProperty, value);
+		}
+	}
+
+	public IList ItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemsSourceProperty, value);
+		}
+	}
+
+	public ToolBoxData ViewData { get; set; } = ToolBoxData.GetInstance();
+
+	public PlacementMode placementMode { get; set; }
+
+	public bool IsNeuLayout
+	{
+		get
+		{
+			return (bool)GetValue(IsNeuLayoutProperty);
+		}
+		set
+		{
+			SetValue(IsNeuLayoutProperty, value);
+		}
+	}
+
+	private static void OnIsGlobleModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ToolBox toolBox = (ToolBox)d;
+		bool flag = (bool)e.OldValue;
+		if ((bool)e.NewValue)
+		{
+			toolBox.SetCurrentValue(UnFoldSwitchProperty, false);
+			toolBox.SetBinding(ItemsSourceProperty, new Binding("GlobleToolSource")
+			{
+				Source = toolBox.ViewData
+			});
+			toolBox.SetItemsDispose();
+		}
+		else
+		{
+			toolBox.SetBinding(ItemsSourceProperty, new Binding("ToolSource")
+			{
+				Source = toolBox.ViewData
+			});
+		}
+	}
+
+	private static void OnFoldSwitchChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ToolBox toolBox = (ToolBox)d;
+		isFold = !toolBox.UnFoldSwitch;
+		if (isFold)
+		{
+			toolBox.SetItemsDispose();
+		}
+	}
+
+	private static void OnItemSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ToolBox toolBox = (ToolBox)d;
+		toolBox.SetItemsDispose();
+	}
+
+	public ToolBox()
+	{
+		InitializeComponent();
+		SetBinding(ItemsSourceProperty, new Binding("ToolSource")
+		{
+			Source = ViewData
+		});
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		if (AppDataFactory.Instance().IsRightLayout)
+		{
+			placementMode = PlacementMode.Left;
+			IsNeuLayout = true;
+		}
+		else
+		{
+			placementMode = PlacementMode.Right;
+			IsNeuLayout = false;
+		}
+	}
+
+	private void SetItemsDispose()
+	{
+		_items.ForEach((UIElement x) =>
+		{
+			x.MouseEnter -= OnMouseEnter;
+			x.MouseLeave -= OnMouseLeave;
+		});
+		_items = new List<UIElement>();
+	}
+
+	public void AddHandlers(UIElement uiElement)
+	{
+		if (!_items.Contains(uiElement))
+		{
+			_items.Add(uiElement);
+			uiElement.MouseEnter += OnMouseEnter;
+			uiElement.MouseLeave += OnMouseLeave;
+		}
+	}
+
+	private void OnMouseLeave(object sender, MouseEventArgs mouseEventArgs)
+	{
+		if (sender is UIElement uIElement)
+		{
+			Point position = mouseEventArgs.GetPosition(uIElement);
+			Point position2 = Mouse.GetPosition(uIElement);
+			if (!(position.X >= 0.0) || !(position.X <= uIElement.RenderSize.Width) || !(position.Y >= 0.0) || !(position.Y <= uIElement.RenderSize.Height))
+			{
+				SetIsMouseLeave(uIElement, value: true);
+			}
+		}
+	}
+
+	private void OnMouseEnter(object sender, MouseEventArgs mouseEventArgs)
+	{
+		UIElement uiitem = sender as UIElement;
+		if (uiitem == null)
+		{
+			return;
+		}
+		ViewData.UpdateLoad((uiitem as FrameworkElement).DataContext);
+		IEnumerable<UIElement> enumerable = _items.Where((UIElement p) => p != uiitem);
+		foreach (UIElement item in enumerable)
+		{
+			SetIsMouseLeave(item, value: true);
+		}
+		SetIsMouseLeave(uiitem, value: false);
+	}
+
+	public void SetIsMouseLeave(DependencyObject item, bool value)
+	{
+		item.SetValue(IsMouseEnterBehavior.IsMouseLeaveProperty, value);
+	}
+
+	public bool GetIsMouseLeave(DependencyObject item)
+	{
+		object value = item.GetValue(IsMouseEnterBehavior.IsMouseLeaveProperty);
+		return value != null && (bool)value;
+	}
+}

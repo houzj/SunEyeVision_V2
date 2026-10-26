@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:VMWpfUserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.VmParamsConfigWithRenderControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release" xmlns:vmWpf="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;assembly=SunEyeVision.Plugin.Wpf" x:Name="us">
+  <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+    <vmWpf:ParamsConfigWithRenderControlBase Name="prControl" ModuleSource="{Binding ModuleSource, ElementName=us}" ImageDataSource="{Binding ImageSource, ElementName=us}" ParamsConfigSource="{Binding ParamsConfig, ElementName=us}" ROIVisible="{Binding ROIVisible, Mode=TwoWay, ElementName=us}" CoordinateInfoVisible="{Binding CoordinateInfoVisible, ElementName=us}" MultiImageButtonVisible="{Binding MultiImageButtonVisible, ElementName=us}" />
+  </ScrollViewer>
+</local:VMWpfUserControl>

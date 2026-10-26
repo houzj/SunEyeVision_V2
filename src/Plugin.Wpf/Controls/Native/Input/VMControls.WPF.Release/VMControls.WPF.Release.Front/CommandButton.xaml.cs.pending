@@ -1,0 +1,145 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// CommandButton.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// CommandButton
+/// </summary>
+public partial class CommandButton : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public uint CornerRadius
+	{
+		get
+		{
+			return PART_Control.CornerRadius;
+		}
+		set
+		{
+			PART_Control.CornerRadius = value;
+		}
+	}
+
+	public string CommandButtonContent
+	{
+		get
+		{
+			return PART_Control.CommandButtonContent;
+		}
+		set
+		{
+			PART_Control.CommandButtonContent = value;
+		}
+	}
+
+	public object DataSource
+	{
+		get
+		{
+			return PART_Control.DataSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.DataSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("DataSource Type Error!");
+		}
+	}
+
+	public object ValueTypeSource
+	{
+		get
+		{
+			return PART_Control.ValueTypeSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ValueTypeSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ValueTypeSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public CommandButton()
+	{
+		InitializeComponent();
+	}
+}

@@ -1,0 +1,417 @@
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class SquareArea : UserControl, IArea, INotifyPropertyChanged, IComponentConnector
+{
+	public static readonly DependencyProperty SquareGeometryProperty = DependencyProperty.Register("SquareGeometry", typeof(Geometry), typeof(SquareArea), new PropertyMetadata(null));
+
+	private static SolidColorBrush _OriBrush;
+
+	public static readonly DependencyProperty SquareBordbrushProperty = DependencyProperty.Register("SquareBordbrush", typeof(SolidColorBrush), typeof(SquareArea), new PropertyMetadata(OriBrush));
+
+	public static readonly DependencyProperty IsPressedProperty = DependencyProperty.Register("IsPressed", typeof(bool), typeof(SquareArea), new PropertyMetadata(false));
+
+	private double ScaleX = 1.0;
+
+	public static readonly DependencyProperty AngleProperty = DependencyProperty.Register("Angle", typeof(double), typeof(SquareArea), new PropertyMetadata(0.0, OnAngleChanged));
+
+	public static readonly DependencyProperty BorderAngleProperty = DependencyProperty.Register("BorderAngle", typeof(double), typeof(SquareArea), new PropertyMetadata(0.0, OnBorderAngleChanged));
+
+	public static readonly DependencyProperty TXProperty = DependencyProperty.Register("TX", typeof(float), typeof(SquareArea), new PropertyMetadata(float.MinValue, OnTXChanged));
+
+	public static readonly DependencyProperty TYProperty = DependencyProperty.Register("TY", typeof(float), typeof(SquareArea), new PropertyMetadata(float.MinValue, OnTYChanged));
+
+	public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(SquareArea), new PropertyMetadata(double.MinValue, OnXChanged));
+
+	public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(SquareArea), new PropertyMetadata(double.MinValue, OnYChanged));
+
+	public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(object), typeof(SquareArea), new PropertyMetadata(false, OnSelectedItemChanged));
+
+	public static readonly DependencyProperty SelectedEnableProperty = DependencyProperty.Register("SelectedEnable", typeof(bool), typeof(SquareArea), new PropertyMetadata(false));
+
+	private double InitWidth;
+
+	public Geometry SquareGeometry
+	{
+		get
+		{
+			return (Geometry)GetValue(SquareGeometryProperty);
+		}
+		set
+		{
+			SetValue(SquareGeometryProperty, value);
+		}
+	}
+
+	public static SolidColorBrush OriBrush
+	{
+		get
+		{
+			if (_OriBrush == null)
+			{
+				try
+				{
+					Uri uri = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml", UriKind.Relative);
+					if (uri != null)
+					{
+						ResourceDictionary resourceDictionary = (ResourceDictionary)Application.LoadComponent(uri);
+						if (resourceDictionary != null)
+						{
+							_OriBrush = resourceDictionary["RectangleAreaColor"] as SolidColorBrush;
+						}
+					}
+				}
+				catch
+				{
+				}
+			}
+			if (_OriBrush != null)
+			{
+				return _OriBrush;
+			}
+			return Brushes.Red;
+		}
+	}
+
+	public SolidColorBrush SquareBordbrush
+	{
+		get
+		{
+			return (SolidColorBrush)GetValue(SquareBordbrushProperty);
+		}
+		set
+		{
+			SetValue(SquareBordbrushProperty, value);
+		}
+	}
+
+	public bool IsPressed
+	{
+		get
+		{
+			return (bool)GetValue(IsPressedProperty);
+		}
+		set
+		{
+			SetValue(IsPressedProperty, value);
+		}
+	}
+
+	public double OldRateX { get; set; }
+
+	public double OldRateY { get; set; }
+
+	public double Angle
+	{
+		get
+		{
+			return (double)GetValue(AngleProperty);
+		}
+		set
+		{
+			SetValue(AngleProperty, value);
+		}
+	}
+
+	public double BorderAngle
+	{
+		get
+		{
+			return (double)GetValue(BorderAngleProperty);
+		}
+		set
+		{
+			SetValue(BorderAngleProperty, value);
+		}
+	}
+
+	public float TX
+	{
+		get
+		{
+			return (float)GetValue(TXProperty);
+		}
+		set
+		{
+			SetValue(TXProperty, value);
+		}
+	}
+
+	public float TY
+	{
+		get
+		{
+			return (float)GetValue(TYProperty);
+		}
+		set
+		{
+			SetValue(TYProperty, value);
+		}
+	}
+
+	public double X
+	{
+		get
+		{
+			return (double)GetValue(XProperty);
+		}
+		set
+		{
+			SetValue(XProperty, value);
+		}
+	}
+
+	public double Y
+	{
+		get
+		{
+			return (double)GetValue(YProperty);
+		}
+		set
+		{
+			SetValue(YProperty, value);
+		}
+	}
+
+	public object SelectedItem
+	{
+		get
+		{
+			return GetValue(SelectedItemProperty);
+		}
+		set
+		{
+			SetValue(SelectedItemProperty, value);
+		}
+	}
+
+	public bool SelectedEnable
+	{
+		get
+		{
+			return (bool)GetValue(SelectedEnableProperty);
+		}
+		set
+		{
+			SetValue(SelectedEnableProperty, value);
+		}
+	}
+
+	public int Index { get; set; }
+
+	public Point CurPoint { get; set; }
+
+	public Control Container { get; set; }
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public SquareArea()
+	{
+		InitializeComponent();
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		ScaleX = (sender as ScaleTransform).ScaleX * num;
+		SetScaleUI();
+	}
+
+	private void SetScaleUI()
+	{
+		SetScaleUI(ScaleX);
+	}
+
+	public void SetScaleUI(double Scale)
+	{
+		ScaleX = Scale;
+		cview.BorderThickness = new Thickness(2.0 / Scale);
+		view.Width = InitWidth / Scale;
+		view.Height = view.Width;
+	}
+
+	private static void OnAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeAngle();
+	}
+
+	private void ChangeAngle()
+	{
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		tlt.Angle = Angle;
+	}
+
+	private static void OnBorderAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeBorderAngle();
+	}
+
+	private void ChangeBorderAngle()
+	{
+		blt.CenterX = cview.ActualWidth / 2.0;
+		blt.CenterY = cview.ActualHeight / 2.0;
+		blt.Angle = BorderAngle;
+	}
+
+	private void cview_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		ChangeBorderAngle();
+	}
+
+	private static void OnTXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeTX();
+	}
+
+	private void ChangeTX()
+	{
+		if (Container is HikPolygon hikPolygon)
+		{
+			X = ((double)TX + 0.5) * hikPolygon.owner.Radio - hikPolygon.OriginPoint.X;
+			hikPolygon.polygon.Points[Index] = new Point(X, Y);
+		}
+		if (Container is HikPath hikPath)
+		{
+			X = ((double)TX + 0.5) * hikPath.owner.Radio - hikPath.OriginPoint.X;
+			hikPath.Path.Points[Index] = new Point(X, Y);
+		}
+	}
+
+	private static void OnTYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeTY();
+	}
+
+	private void ChangeTY()
+	{
+		if (Container is HikPolygon hikPolygon)
+		{
+			Y = ((double)TY + 0.5) * hikPolygon.owner.Radio - hikPolygon.OriginPoint.Y;
+			hikPolygon.polygon.Points[Index] = new Point(X, Y);
+		}
+		if (Container is HikPath hikPath)
+		{
+			Y = ((double)TY + 0.5) * hikPath.owner.Radio - hikPath.OriginPoint.Y;
+			hikPath.Path.Points[Index] = new Point(X, Y);
+		}
+	}
+
+	private static void OnXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeX();
+	}
+
+	private void ChangeX()
+	{
+		double num = X - Width / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+		if (Container is HikPolygon hikPolygon)
+		{
+			TX = (float)((X + hikPolygon.OriginPoint.X) / hikPolygon.owner.Radio - 0.5);
+		}
+		if (Container is HikPath hikPath)
+		{
+			TX = (float)((X + hikPath.OriginPoint.X) / hikPath.owner.Radio - 0.5);
+		}
+	}
+
+	private static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeY();
+	}
+
+	private void ChangeY()
+	{
+		double num = Y - Height / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+		if (Container is HikPolygon hikPolygon)
+		{
+			TY = (float)((Y + hikPolygon.OriginPoint.Y) / hikPolygon.owner.Radio - 0.5);
+		}
+		if (Container is HikPath hikPath)
+		{
+			TY = (float)((Y + hikPath.OriginPoint.Y) / hikPath.owner.Radio - 0.5);
+		}
+	}
+
+	private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SquareArea).ChangeSelectedItem();
+	}
+
+	private void ChangeSelectedItem()
+	{
+		if (SelectedItem == DataContext)
+		{
+			Opacity = 1.0;
+		}
+		else
+		{
+			Opacity = 0.0;
+		}
+	}
+
+	private void view_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (Container is RectangleRoi && e.LeftButton == MouseButtonState.Pressed)
+		{
+			IsPressed = true;
+			CurPoint = e.GetPosition(this);
+			(Container as RectangleRoi).Doth(this, e);
+		}
+		if (SelectedEnable)
+		{
+			SelectedItem = DataContext;
+		}
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		InitWidth = Width;
+		if (view.Width == 0.0)
+		{
+			if (double.IsInfinity(Width / ScaleX))
+			{
+				view.Width = Width;
+			}
+			else
+			{
+				view.Width = Width / ScaleX;
+			}
+		}
+		if (double.IsInfinity(Height / ScaleX))
+		{
+			view.Height = Height;
+		}
+		else
+		{
+			view.Height = Height / ScaleX;
+		}
+	}
+}

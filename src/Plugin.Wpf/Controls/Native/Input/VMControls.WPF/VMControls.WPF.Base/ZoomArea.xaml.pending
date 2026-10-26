@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ZoomArea" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:localEx="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:localParamTab="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" x:Name="us">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <localParamTab:BooleanToVisibilityConverterReverse x:Key="negativeb2v" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <ScrollViewer Name="scrollViewer" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Visible" Focusable="False" HorizontalScrollBarVisibility="Visible">
+      <Grid Name="grid" RenderTransformOrigin="0.5,0.5">
+        <FrameworkElement.LayoutTransform>
+          <TransformGroup>
+            <ScaleTransform x:Name="scaleTransform" />
+          </TransformGroup>
+        </FrameworkElement.LayoutTransform>
+        <Grid Name="GridContent" HorizontalAlignment="Left" VerticalAlignment="Top" Background="{DynamicResource Col_EditProcess_DiagramPage_Background}">
+          <ContentPresenter Name="cp" Content="{Binding Path=Child, ElementName=us}" />
+        </Grid>
+      </Grid>
+    </ScrollViewer>
+    <Grid Name="GridEagleEye" AllowDrop="True" Margin="0,0,11,11" Height="150" Width="187" SnapsToDevicePixels="True" VerticalAlignment="Bottom" HorizontalAlignment="Right" PreviewMouseWheel="GridEagleEye_PreviewMouseWheel" MouseMove="GridEagleEye_MouseMove" MouseUp="GridEagleEye_MouseUp" MouseDown="GridEagleEye_MouseDown">
+      <Rectangle Name="RectEagleEye" Stroke="{DynamicResource Col_EagleEye_Big_BorderBrush}">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Rectangle}">
+            <Style.Triggers>
+              <DataTrigger Value="false" Binding="{Binding IsEyeSpread, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}">
+                <Setter Property="Width" Value="0" />
+                <Setter Property="Height" Value="0" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Rectangle>
+      <Canvas Name="CanvaSelectRegions">
+        <Rectangle Name="RectSelectRegion" Stroke="{DynamicResource Col_EagleEye_Small_BorderBrush}" Fill="#00FFFFFF" StrokeThickness="2" Width="{Binding SelectRegionWidth, ElementName=us}" Height="{Binding SelectRegionHeight, ElementName=us}" Canvas.Top="{Binding SelectRegionTop, ElementName=us}" Canvas.Left="{Binding SelectRegionLeft, ElementName=us}" MouseDown="SelectRegionRect_MouseDown" />
+      </Canvas>
+      <UIElement.Effect>
+        <DropShadowEffect Opacity="0.45" ShadowDepth="2" BlurRadius="8" Color="Black" />
+      </UIElement.Effect>
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Grid}">
+          <Style.Triggers>
+            <DataTrigger Value="false" Binding="{Binding IsEyeSpread, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </Grid>
+    <CheckBox Name="cbEagleEye" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,11,11" Background="#00FFFFFF" BorderBrush="{DynamicResource Col_EagleEye_Big_BorderBrush}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type CheckBox}">
+          <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxStroke}" />
+          <Setter Property="BorderThickness" Value="0" />
+          <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+          <Setter Property="ToggleButton.IsChecked" Value="{Binding IsEyeSpread, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type CheckBox}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}">
+                  <Image Name="im" Source="/Apps.Style;component/Resources/ic_expand_normal.png" Stretch="None" />
+                  <UIElement.Effect>
+                    <DropShadowEffect Opacity="1" ShadowDepth="2" BlurRadius="8" Color="Black" />
+                  </UIElement.Effect>
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="true">
+                    <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_retract_normal.png" />
+                  </Trigger>
+                  <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                      <Condition Property="ToggleButton.IsChecked" Value="true" />
+                      <Condition Property="UIElement.IsMouseOver" Value="True" />
+                    </MultiTrigger.Conditions>
+                    <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_retract_click.png" />
+                  </MultiTrigger>
+                  <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                      <Condition Property="ToggleButton.IsChecked" Value="false" />
+                      <Condition Property="UIElement.IsMouseOver" Value="True" />
+                    </MultiTrigger.Conditions>
+                    <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_expand_click.png" />
+                  </MultiTrigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+          <Style.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="False">
+              <Setter Property="BorderThickness" Value="1" />
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </CheckBox>
+    <Grid Visibility="{Binding IsFidSupportFunction, Converter={StaticResource negativeb2v}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}">
+      <StackPanel VerticalAlignment="Top" Margin="0,0,20,0" HorizontalAlignment="Right" Orientation="Horizontal" Visibility="{Binding BoolOfDisplayType, Converter={StaticResource negativeb2v}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}">
+        <local:SearchDryPopup x:Name="DryPopup" ToolTip="{DynamicResource Lang_Search}" Margin="0,5,0,0" Height="40" SnapsToDevicePixels="True" CornerRadius="0" BorderThickness="0" Visibility="{Binding IsCommentShowModel, Mode=OneWay, Converter={StaticResource negativeb2v}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" Background="{Color:ColorResourceBinding Col_ComboBox_Popup}" IsDisplayAll="{Binding BoolOfDisplayType, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}" IsSearchShow="{Binding IsSearchShowModel, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" IsDisposeNotify="{Binding IsDisposeNotify, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}" SelectedProID="{Binding DecoratorSelectedTabItem.DecorateSource.ID, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}" JumpCommand="{Binding JumpTargetCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}" />
+        <local:CommentSetting x:Name="CommentPopup" ToolTip="{DynamicResource Lang_ReMark}" Margin="0,5,0,0" Height="40" BorderThickness="0" Visibility="{Binding IsSearchShowModel, Mode=OneWay, Converter={StaticResource negativeb2v}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" IsEditComment="{Binding IsEditCommentModel, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" IsCommentSetShow="{Binding IsCommentShowModel, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" Background="{Color:ColorResourceBinding Col_ComboBox_Popup}" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

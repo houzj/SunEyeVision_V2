@@ -1,0 +1,250 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// ConditionalLightControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ConditionalLightControl
+/// </summary>
+public partial class ConditionalLightControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public uint CornerRadius
+	{
+		get
+		{
+			return PART_Control.CornerRadius;
+		}
+		set
+		{
+			PART_Control.CornerRadius = value;
+		}
+	}
+
+	public object DataSource
+	{
+		get
+		{
+			return PART_Control.DataSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.DataSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("DataSource Type Error!");
+		}
+	}
+
+	public object ParamTypeSource
+	{
+		get
+		{
+			return PART_Control.ParamTypeSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ParamTypeSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ParamTypeSource Type Error!");
+		}
+	}
+
+	public System.Windows.Media.Brush GreaterThanTheValueColor
+	{
+		get
+		{
+			return PART_Control.GreaterThanTheValueColor;
+		}
+		set
+		{
+			PART_Control.GreaterThanTheValueColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush LessThanTheValueColor
+	{
+		get
+		{
+			return PART_Control.LessThanTheValueColor;
+		}
+		set
+		{
+			PART_Control.LessThanTheValueColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush DefaultValueColor
+	{
+		get
+		{
+			return PART_Control.DefaultValueColor;
+		}
+		set
+		{
+			PART_Control.DefaultValueColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush GreaterThanTheValueBorderColor
+	{
+		get
+		{
+			return PART_Control.GreaterThanTheValueBorderColor;
+		}
+		set
+		{
+			PART_Control.GreaterThanTheValueBorderColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush LessThanTheValueBorderColor
+	{
+		get
+		{
+			return PART_Control.LessThanTheValueBorderColor;
+		}
+		set
+		{
+			PART_Control.LessThanTheValueBorderColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush DefaultValueBorderColor
+	{
+		get
+		{
+			return PART_Control.DefaultValueBorderColor;
+		}
+		set
+		{
+			PART_Control.DefaultValueBorderColor = value;
+		}
+	}
+
+	public double GreaterThanTheValueThreshold
+	{
+		get
+		{
+			return PART_Control.GreaterThanTheValueThreshold;
+		}
+		set
+		{
+			PART_Control.GreaterThanTheValueThreshold = value;
+		}
+	}
+
+	public double LessThanTheValueThreshold
+	{
+		get
+		{
+			return PART_Control.LessThanTheValueThreshold;
+		}
+		set
+		{
+			PART_Control.LessThanTheValueThreshold = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public object ConditionalLightContentDataSource
+	{
+		get
+		{
+			return PART_Control.ConditionalLightContentDataSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ConditionalLightContentDataSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ConditionalLightContentDataSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public ConditionalLightControl()
+	{
+		InitializeComponent();
+	}
+}

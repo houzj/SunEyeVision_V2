@@ -1,0 +1,8 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;
+
+public interface IGetImageView
+{
+	HikImageView GetImageView();
+}

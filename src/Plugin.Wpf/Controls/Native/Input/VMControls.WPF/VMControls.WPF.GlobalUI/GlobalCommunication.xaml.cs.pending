@@ -1,0 +1,1467 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Threading;
+using Apps.Data;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using GateWayFramework;
+using GateWayServer;
+using Hik.Xml;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility;
+using VM.Utility.SingleInstance;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// GlobalCommunication.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// GlobalCommunication
+/// </summary>
+public partial class GlobalCommunication : BaseWindow, IDecorate, IComponentConnector
+{
+	public delegate void UpdateDevices();
+
+	private const int CommunicationMgrID = 11000;
+
+	public static UpdateDevices UpdateGlobalCommunicationDevices;
+
+	private const int GlobalTriggerModuleID = 14200;
+
+	private string curLanguage = "";
+
+	private double CustomCHWidth = 1025.0;
+
+	private double CustomENWidth = 1128.0;
+
+	private double CustomParamLeftCHWidth = 100.0;
+
+	private double CustomParamLeftENWidth = 190.0;
+
+	private double CustomParamCHWidth = 335.0;
+
+	private double CustomParamEHWidth = 425.0;
+
+	public static readonly DependencyProperty CustomWidthProperty = DependencyProperty.Register("CustomWidth", typeof(double), typeof(GlobalCommunication), new PropertyMetadata(1025.0));
+
+	public static readonly DependencyProperty CustomLeftWidthProperty = DependencyProperty.Register("CustomLeftWidth", typeof(double), typeof(GlobalCommunication), new PropertyMetadata(100.0));
+
+	public static readonly DependencyProperty CustomParamsWidthProperty = DependencyProperty.Register("CustomParamsWidth", typeof(double), typeof(GlobalCommunication), new PropertyMetadata(335.0));
+
+	private AlgorithmTabRoot _paramConfig = null;
+
+	private object _decorateSource;
+
+	private EnumeraionComDevice _SolCommunicationModuleID;
+
+	private EnumeraionComDevice _ProcCommunicationModuleID;
+
+	private EnumeraionComDevice _CamCommunicationModuleID;
+
+	public static readonly DependencyProperty SolutionTriggerProperty = DependencyProperty.Register("SolutionTrigger", typeof(object), typeof(GlobalCommunication), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ProcessFreeTriggerProperty = DependencyProperty.Register("ProcessFreeTrigger", typeof(object), typeof(GlobalCommunication), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ProcessBusyTriggerProperty = DependencyProperty.Register("ProcessBusyTrigger", typeof(object), typeof(GlobalCommunication), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ConnectTriggerProperty = DependencyProperty.Register("ConnectTrigger", typeof(object), typeof(GlobalCommunication), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty DisConnectTriggerProperty = DependencyProperty.Register("DisConnectTrigger", typeof(object), typeof(GlobalCommunication), new PropertyMetadata(null));
+
+	private object _LoadSolution;
+
+	private object _SolutionTimeout;
+
+	private object _IsSolEndChar;
+
+	private object _IsPrcEndChar;
+
+	private object _IsCameraEndChar;
+
+	private object _SolEndChar;
+
+	private object _SolValueType;
+
+	private object _PrcEndChar;
+
+	private object _PrcValueType;
+
+	private object _CameraEndChar;
+
+	private object _CameraValueType;
+
+	private object _ProcessControl;
+
+	private object _ProSeparator;
+
+	private object _CameraRespnseControl;
+
+	private object _CameraSeparator;
+
+	private object _SampleSeparatorTip;
+
+	private object _CameraSeparatorTip;
+
+	private DelegateCommand<string> keyDownCommand = null;
+
+	public double CustomWidth
+	{
+		get
+		{
+			return (double)GetValue(CustomWidthProperty);
+		}
+		set
+		{
+			SetValue(CustomWidthProperty, value);
+		}
+	}
+
+	public double CustomLeftWidth
+	{
+		get
+		{
+			return (double)GetValue(CustomLeftWidthProperty);
+		}
+		set
+		{
+			SetValue(CustomLeftWidthProperty, value);
+		}
+	}
+
+	public double CustomParamsWidth
+	{
+		get
+		{
+			return (double)GetValue(CustomParamsWidthProperty);
+		}
+		set
+		{
+			SetValue(CustomParamsWidthProperty, value);
+		}
+	}
+
+	public AlgorithmTabRoot ParamsConfig
+	{
+		get
+		{
+			if (_paramConfig == null && _decorateSource != null)
+			{
+				_paramConfig = new AlgorithmTabRoot((_decorateSource as IVmModule).Params);
+				_paramConfig.GetItemsValueUnit();
+			}
+			return _paramConfig;
+		}
+		set
+		{
+			if (_paramConfig != value)
+			{
+				_paramConfig = value;
+				OnPropertyChanged("ParamsConfig");
+			}
+		}
+	}
+
+	public object DecorateSource
+	{
+		get
+		{
+			return _decorateSource;
+		}
+		set
+		{
+			if (_decorateSource != value)
+			{
+				_decorateSource = value;
+				OnPropertyChanged("ParamsConfig");
+			}
+		}
+	}
+
+	public object SolutionData => VmSolution.Instance;
+
+	/// <summary>
+	/// 方案加载通信设备
+	/// </summary>
+	public EnumeraionComDevice SolCommunicationModuleID
+	{
+		get
+		{
+			if (_SolCommunicationModuleID == null && ParamsConfig != null)
+			{
+				_SolCommunicationModuleID = ParamsConfig.FindBaseNodeByName("SolCommunicationModuleID") as EnumeraionComDevice;
+				if (_SolCommunicationModuleID != null)
+				{
+					_SolCommunicationModuleID.OnCurValueChanged -= Device_OnCurValueChanged;
+					_SolCommunicationModuleID.OnCurValueChanged += Device_OnCurValueChanged;
+				}
+			}
+			return _SolCommunicationModuleID;
+		}
+	}
+
+	/// <summary>
+	/// 流程控制通信设备
+	/// </summary>
+	public EnumeraionComDevice ProcCommunicationModuleID
+	{
+		get
+		{
+			if (_ProcCommunicationModuleID == null && ParamsConfig != null)
+			{
+				_ProcCommunicationModuleID = ParamsConfig.FindBaseNodeByName("ProcCommunicationModuleID") as EnumeraionComDevice;
+				if (_ProcCommunicationModuleID != null)
+				{
+					_ProcCommunicationModuleID.OnCurValueChanged -= Device_OnCurValueChanged;
+					_ProcCommunicationModuleID.OnCurValueChanged += Device_OnCurValueChanged;
+				}
+			}
+			return _ProcCommunicationModuleID;
+		}
+	}
+
+	/// <summary>
+	/// 相机响应通信设备
+	/// </summary>
+	public EnumeraionComDevice CamCommunicationModuleID
+	{
+		get
+		{
+			if (_CamCommunicationModuleID == null && ParamsConfig != null)
+			{
+				_CamCommunicationModuleID = ParamsConfig.FindBaseNodeByName("CamCommunicationModuleID") as EnumeraionComDevice;
+				if (_CamCommunicationModuleID != null)
+				{
+					_CamCommunicationModuleID.OnCurValueChanged -= Device_OnCurValueChanged;
+					_CamCommunicationModuleID.OnCurValueChanged += Device_OnCurValueChanged;
+				}
+			}
+			return _CamCommunicationModuleID;
+		}
+	}
+
+	/// <summary>
+	/// 加载方案触发字符
+	/// </summary>
+	public object SolutionTrigger
+	{
+		get
+		{
+			return GetValue(SolutionTriggerProperty);
+		}
+		set
+		{
+			SetValue(SolutionTriggerProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 流程控制空闲时触发字符
+	/// </summary>
+	public object ProcessFreeTrigger
+	{
+		get
+		{
+			return GetValue(ProcessFreeTriggerProperty);
+		}
+		set
+		{
+			SetValue(ProcessFreeTriggerProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 流程控制忙碌时触发字符
+	/// </summary>
+	public object ProcessBusyTrigger
+	{
+		get
+		{
+			return GetValue(ProcessBusyTriggerProperty);
+		}
+		set
+		{
+			SetValue(ProcessBusyTriggerProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 相机响应连线时触发字符
+	/// </summary>
+	public object ConnectTrigger
+	{
+		get
+		{
+			return GetValue(ConnectTriggerProperty);
+		}
+		set
+		{
+			SetValue(ConnectTriggerProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 相机响应掉线时触发字符
+	/// </summary>
+	public object DisConnectTrigger
+	{
+		get
+		{
+			return GetValue(DisConnectTriggerProperty);
+		}
+		set
+		{
+			SetValue(DisConnectTriggerProperty, value);
+		}
+	}
+
+	public object LoadSolution
+	{
+		get
+		{
+			if (_LoadSolution == null && ParamsConfig != null)
+			{
+				_LoadSolution = ParamsConfig.FindBaseNodeByName("LoadSolution");
+			}
+			return _LoadSolution;
+		}
+	}
+
+	public object SolutionTimeout
+	{
+		get
+		{
+			if (_SolutionTimeout == null && ParamsConfig != null)
+			{
+				_SolutionTimeout = ParamsConfig.FindBaseNodeByName("SolutionTimeOut");
+			}
+			return _SolutionTimeout;
+		}
+	}
+
+	public object IsSolEndChar
+	{
+		get
+		{
+			if (_IsSolEndChar == null && ParamsConfig != null)
+			{
+				_IsSolEndChar = ParamsConfig.FindBaseNodeByName("IsSolEndChar");
+			}
+			return _IsSolEndChar;
+		}
+	}
+
+	public object IsPrcEndChar
+	{
+		get
+		{
+			if (_IsPrcEndChar == null && ParamsConfig != null)
+			{
+				_IsPrcEndChar = ParamsConfig.FindBaseNodeByName("IsPrcEndChar");
+			}
+			return _IsPrcEndChar;
+		}
+	}
+
+	public object IsCameraEndChar
+	{
+		get
+		{
+			if (_IsCameraEndChar == null && ParamsConfig != null)
+			{
+				_IsCameraEndChar = ParamsConfig.FindBaseNodeByName("IsCameraEndChar");
+			}
+			return _IsCameraEndChar;
+		}
+	}
+
+	public object SolEndChar
+	{
+		get
+		{
+			if (_SolEndChar == null && ParamsConfig != null)
+			{
+				_SolEndChar = ParamsConfig.FindBaseNodeByName("SolEndChar");
+			}
+			return _SolEndChar;
+		}
+	}
+
+	public object SolValueType
+	{
+		get
+		{
+			if (_SolValueType == null && ParamsConfig != null)
+			{
+				_SolValueType = ParamsConfig.FindBaseNodeByName("SolValueType");
+				if (_SolValueType is ComboxEdit comboxEdit)
+				{
+					comboxEdit.PropertyChanged += (object obj, PropertyChangedEventArgs proName) =>
+					{
+						if (proName.PropertyName == "CurValueA" && SolutionTrigger is Apps.XmlParser.ParamTab.String obj2)
+						{
+							obj2.CurValueA = "";
+							obj2.SetParamUnit();
+						}
+					};
+				}
+			}
+			return _SolValueType;
+		}
+	}
+
+	public object PrcEndChar
+	{
+		get
+		{
+			if (_PrcEndChar == null && ParamsConfig != null)
+			{
+				_PrcEndChar = ParamsConfig.FindBaseNodeByName("PrcEndChar");
+			}
+			return _PrcEndChar;
+		}
+	}
+
+	public object PrcValueType
+	{
+		get
+		{
+			if (_PrcValueType == null && ParamsConfig != null)
+			{
+				_PrcValueType = ParamsConfig.FindBaseNodeByName("PrcValueType");
+				if (_PrcValueType is ComboxEdit comboxEdit)
+				{
+					comboxEdit.PropertyChanged += (object obj, PropertyChangedEventArgs proName) =>
+					{
+						if (proName.PropertyName == "CurValueA")
+						{
+							if (ProcessFreeTrigger is Apps.XmlParser.ParamTab.String obj2)
+							{
+								obj2.CurValueA = "";
+								obj2.SetParamUnit();
+							}
+							if (ProcessBusyTrigger is Apps.XmlParser.ParamTab.String obj3)
+							{
+								obj3.CurValueA = "";
+								obj3.SetParamUnit();
+							}
+						}
+					};
+				}
+			}
+			return _PrcValueType;
+		}
+	}
+
+	public object CameraEndChar
+	{
+		get
+		{
+			if (_CameraEndChar == null && ParamsConfig != null)
+			{
+				_CameraEndChar = ParamsConfig.FindBaseNodeByName("CameraEndChar");
+			}
+			return _CameraEndChar;
+		}
+	}
+
+	public object CameraValueType
+	{
+		get
+		{
+			if (_CameraValueType == null && ParamsConfig != null)
+			{
+				_CameraValueType = ParamsConfig.FindBaseNodeByName("CameraValueType");
+				if (_CameraValueType is ComboxEdit comboxEdit)
+				{
+					comboxEdit.PropertyChanged += (object obj, PropertyChangedEventArgs proName) =>
+					{
+						if (proName.PropertyName == "CurValueA")
+						{
+							if (ConnectTrigger is Apps.XmlParser.ParamTab.String obj2)
+							{
+								obj2.CurValueA = "";
+								obj2.SetParamUnit();
+							}
+							if (DisConnectTrigger is Apps.XmlParser.ParamTab.String obj3)
+							{
+								obj3.CurValueA = "";
+								obj3.SetParamUnit();
+							}
+						}
+					};
+				}
+			}
+			return _CameraValueType;
+		}
+	}
+
+	public object ProcessControl
+	{
+		get
+		{
+			if (_ProcessControl == null && ParamsConfig != null)
+			{
+				_ProcessControl = ParamsConfig.FindBaseNodeByName("ProcessControl");
+			}
+			return _ProcessControl;
+		}
+	}
+
+	public object ProSeparator
+	{
+		get
+		{
+			if (_ProSeparator == null && ParamsConfig != null)
+			{
+				_ProSeparator = ParamsConfig.FindBaseNodeByName("ProSeparator");
+			}
+			return _ProSeparator;
+		}
+	}
+
+	public object CameraRespnseControl
+	{
+		get
+		{
+			if (_CameraRespnseControl == null && ParamsConfig != null)
+			{
+				_CameraRespnseControl = ParamsConfig.FindBaseNodeByName("CameraRespnseControl");
+			}
+			return _CameraRespnseControl;
+		}
+	}
+
+	public object CameraSeparator
+	{
+		get
+		{
+			if (_CameraSeparator == null && ParamsConfig != null)
+			{
+				_CameraSeparator = ParamsConfig.FindBaseNodeByName("CameraSeparator");
+			}
+			return _CameraSeparator;
+		}
+	}
+
+	public object SampleSeparatorTip
+	{
+		get
+		{
+			if (_SampleSeparatorTip == null && ParamsConfig != null)
+			{
+				_SampleSeparatorTip = ParamsConfig.FindBaseNodeByName("SampleSeparatorTip");
+			}
+			return _SampleSeparatorTip;
+		}
+	}
+
+	public object CameraSeparatorTip
+	{
+		get
+		{
+			if (_CameraSeparatorTip == null && ParamsConfig != null)
+			{
+				_CameraSeparatorTip = ParamsConfig.FindBaseNodeByName("CameraSeparatorTip");
+			}
+			return _CameraSeparatorTip;
+		}
+	}
+
+	public ICommand KeyDownCommand => (ICommand)(keyDownCommand ?? (keyDownCommand = new DelegateCommand<string>((Action<string>)KeyDownCommandExecute)));
+
+	public event EventHandler ValuePropertyChanged;
+
+	public GlobalCommunication()
+	{
+		//IL_014b: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0183: Unknown result type (might be due to invalid IL or missing references)
+		//IL_01fd: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0207: Expected Obj, but got Unknown
+		//IL_0215: Unknown result type (might be due to invalid IL or missing references)
+		//IL_021f: Expected Obj, but got Unknown
+		InitializeComponent();
+		int result = -1;
+		VmModuleCollection<VmModule> modules = VmSolution.Instance.Modules;
+		VmModule vmModule = modules.FirstOrDefault((VmModule p) => p.ID == 11000);
+		if (vmModule != null)
+		{
+			string config = ConfigurationHelper.GetConfig("ServerSetting");
+			string text = "";
+			if (config != null)
+			{
+				string[] array = config.Split(':');
+				if (array.Length != 2)
+				{
+					throw new Exception("SDK: Address is invalid.");
+				}
+				text = array[0];
+			}
+			else
+			{
+				text = "127.0.0.1";
+			}
+			string s = vmModule.Params["GetProxyInitPort"];
+			if (int.TryParse(s, out result))
+			{
+				GateWayParams val = new GateWayParams
+				{
+					SdkIP = text,
+					SdkPort = result,
+					ThirdOwnr = 1,
+					RemoteMode = (RemoteOperate.IsRemoteMode ? 1 : 0)
+				};
+				try
+				{
+					mainArea.InitSource(val);
+				}
+				catch (Exception ex)
+				{
+					LogHelper.Error("InitSource is exception:" + ex.ToString());
+					string text2 = ((ex is VmException ex2) ? ErrorCodeInfo.GetErrorInfo(ex2.errorCode) : ex.Message);
+					throw new Exception("通信管理初始化失败:" + text2);
+				}
+				Unloaded += (object send, RoutedEventArgs e) =>
+				{
+					//IL_000e: Unknown result type (might be due to invalid IL or missing references)
+					//IL_0018: Expected Obj, but got Unknown
+					//IL_0026: Unknown result type (might be due to invalid IL or missing references)
+					//IL_0030: Expected Obj, but got Unknown
+					mainArea.UpdateCommDeviceEvent -= MainArea_UpdateCommDeviceEvent;
+					mainArea.EventParamChangeCallBack -= MainArea_EventParamChangeCallBack;
+					mainArea.ParamsStateChangeCallBack -= MainArea_ParamsStateChangeCallBack;
+				};
+				mainArea.UpdateCommDeviceEvent += MainArea_UpdateCommDeviceEvent;
+				mainArea.EventParamChangeCallBack += MainArea_EventParamChangeCallBack;
+				mainArea.ParamsStateChangeCallBack += MainArea_ParamsStateChangeCallBack;
+			}
+		}
+		LoadGlobalTriggerControl();
+	}
+
+	/// <summary>
+	/// 加载全局触发
+	/// </summary>
+	private void LoadGlobalTriggerControl()
+	{
+		GlobalTriggerConfigContent globalTriggerConfigContent = new GlobalTriggerConfigContent();
+		mainArea.SelectedGlobalTriggerControl = globalTriggerConfigContent.LoadGlobalTriggerData;
+		mainArea.GlobalTriggerControl = globalTriggerConfigContent;
+		PropertyChanged -= GlobalCommunication_PropertyChanged;
+		PropertyChanged += GlobalCommunication_PropertyChanged;
+	}
+
+	private void GlobalCommunication_PropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == "ParamsConfig" && ParamsConfig != null)
+		{
+			if (SolutionTrigger == null)
+			{
+				SolutionTrigger = AddTriggerStringChanged("SolutionTrigger", SolCommunicationModuleID, SolValueType);
+			}
+			if (ProcessFreeTrigger == null)
+			{
+				ProcessFreeTrigger = AddTriggerStringChanged("ProcessFreeTrigger", ProcCommunicationModuleID, PrcValueType);
+			}
+			if (ProcessBusyTrigger == null)
+			{
+				ProcessBusyTrigger = AddTriggerStringChanged("ProcessBusyTrigger", ProcCommunicationModuleID, PrcValueType);
+			}
+			if (ConnectTrigger == null)
+			{
+				ConnectTrigger = AddTriggerStringChanged("ConnectTrigger", CamCommunicationModuleID, CameraValueType);
+			}
+			if (DisConnectTrigger == null)
+			{
+				DisConnectTrigger = AddTriggerStringChanged("DisConnectTrigger", CamCommunicationModuleID, CameraValueType);
+			}
+			if (SolCommunicationModuleID != null)
+			{
+				SolCommunicationModuleID.OnPropertyChanged("CurValueA");
+			}
+			if (ProcCommunicationModuleID != null)
+			{
+				ProcCommunicationModuleID.OnPropertyChanged("CurValueA");
+			}
+			if (CamCommunicationModuleID != null)
+			{
+				CamCommunicationModuleID.OnPropertyChanged("CurValueA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 更新网关的多语言
+	/// </summary>
+	public void UpdateLanguage(string langName)
+	{
+		if (mainArea != null)
+		{
+			mainArea.UpdateLanguage(langName);
+		}
+		if (!string.IsNullOrEmpty(curLanguage) && curLanguage != langName)
+		{
+			_paramConfig = null;
+			_CameraSeparatorTip = null;
+			_SampleSeparatorTip = null;
+			OnPropertyChanged("ParamsConfig");
+			OnPropertyChanged("CameraSeparatorTip");
+			OnPropertyChanged("SampleSeparatorTip");
+			try
+			{
+				GlobalCommunicationMgr.Instance.ClearAll();
+				GlobalCommunicationMgr.Instance.GetData();
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("UpdateLanguage error:" + ex.ToString());
+			}
+		}
+		curLanguage = langName;
+		if (Width == CustomCHWidth || Width == CustomENWidth)
+		{
+			Width = ((curLanguage == "zh-cn") ? CustomCHWidth : CustomENWidth);
+		}
+		CustomLeftWidth = ((curLanguage == "zh-cn") ? CustomParamLeftCHWidth : CustomParamLeftENWidth);
+		CustomParamsWidth = ((curLanguage == "zh-cn") ? CustomParamCHWidth : CustomParamEHWidth);
+	}
+
+	/// <summary>
+	/// 设置技术员的权限
+	/// </summary>
+	public void SetTechOperate(bool isTech)
+	{
+		if (mainArea != null)
+		{
+			mainArea.SetTechOperate(isTech);
+		}
+	}
+
+	private void MainArea_ParamsStateChangeCallBack(bool obj)
+	{
+		if (obj && GlobalCommunicationMgr.Instance.IsOpen)
+		{
+			NotifySolChange();
+		}
+	}
+
+	private void MainArea_UpdateCommDeviceEvent(int commId, int addressId, CommDeviceOperate deviceOperate)
+	{
+		//IL_0077: Unknown result type (might be due to invalid IL or missing references)
+		//IL_003d: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0056: Unknown result type (might be due to invalid IL or missing references)
+		//IL_006f: Unknown result type (might be due to invalid IL or missing references)
+		//IL_007a: Unknown result type (might be due to invalid IL or missing references)
+		//IL_007c: Invalid comparison between Unknown and I4
+		//IL_007e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0080: Invalid comparison between Unknown and I4
+		//IL_009c: Unknown result type (might be due to invalid IL or missing references)
+		//IL_009e: Invalid comparison between Unknown and I4
+		//IL_00a0: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00a2: Invalid comparison between Unknown and I4
+		try
+		{
+			if (ParamsConfig != null)
+			{
+				UpdateEnumeraionComDevice("SolCommunicationModuleID", commId, addressId, deviceOperate);
+				UpdateEnumeraionComDevice("ProcCommunicationModuleID", commId, addressId, deviceOperate);
+				UpdateEnumeraionComDevice("CamCommunicationModuleID", commId, addressId, deviceOperate);
+			}
+			if ((int)deviceOperate == 0 || (int)deviceOperate == 2 || (int)deviceOperate == 4)
+			{
+				UpdateGlobalCommunicationDevices?.Invoke();
+			}
+			if ((int)deviceOperate == 2 || (int)deviceOperate == 3)
+			{
+				UpdateModuleParams((VmModule m) => m.StrModuleName == "SendDatasModule" || m.StrModuleName == "ReadDatasModule", (VmModule module) =>
+				{
+					string text = module.Params["OutputType"];
+					if (!(text != "1"))
+					{
+						string text2 = module.Params["CommunicationModuleID"];
+						if (!string.IsNullOrEmpty(text2))
+						{
+							string[] array = text2.Split('#');
+							if (array.Length >= 3 && array[1] == commId.ToString())
+							{
+								if (addressId <= 0)
+								{
+									array[1] = "0";
+									module.Params["CommunicationModuleID"] = string.Join("#", array);
+									if (array[2].ToLower() == "plc" || array[2].ToLower() == "modbus")
+									{
+										DeleteDataAddress(module, array[2].ToLower());
+									}
+									else
+									{
+										VmIO iO = module.GetIO("SendData1");
+										if (iO != null)
+										{
+											iO.RelateIO = null;
+										}
+									}
+								}
+								else
+								{
+									DeleteDataAddress(module, array[2].ToLower(), addressId);
+								}
+							}
+						}
+					}
+				});
+			}
+			FunctionCameraManager.Execute("GetComm");
+			FunctionCameraManager.Execute("GetCommAddress");
+			FunctionCameraManager.Execute("GetSendAddress");
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("UpdateCommDeviceEvent error:" + ex.ToString());
+		}
+	}
+
+	private void UpdateEnumeraionComDevice(string nodeName, int commId, int addressId, CommDeviceOperate deviceOperate)
+	{
+		//IL_0015: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+		//IL_005d: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0063: Invalid comparison between Unknown and I4
+		//IL_0066: Unknown result type (might be due to invalid IL or missing references)
+		//IL_006c: Invalid comparison between Unknown and I4
+		EnumeraionComDevice item = ParamsConfig?.FindBaseNodeByName(nodeName) as EnumeraionComDevice;
+		if (item == null)
+		{
+			return;
+		}
+		item.OnPropertyChanged("EnumEntrysA");
+		if ((int)deviceOperate == 2 || (int)deviceOperate == 3)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				//IL_0014: Unknown result type (might be due to invalid IL or missing references)
+				//IL_001a: Invalid comparison between Unknown and I4
+				item.ChangeDevice(commId, addressId, (int)deviceOperate == 2);
+			});
+		}
+	}
+
+	private void DeleteDataAddress(VmModule module, string type, int delAddress = -1)
+	{
+		if (module.StrModuleName == "SendDatasModule")
+		{
+			DeleteSendDataAddress(module, type, delAddress);
+		}
+		else if (module.StrModuleName == "ReadDatasModule")
+		{
+			DeleteReadDataAddress(module, type, delAddress);
+		}
+	}
+
+	private void DeleteSendDataAddress(VmModule module, string type, int delAddress = -1)
+	{
+		byte[] array = null;
+		if (type == "plc" || type == "modbus")
+		{
+			array = module.UserData["PlcItemRecord"];
+		}
+		if (array == null || array.Length == 0)
+		{
+			return;
+		}
+		string text = StringUtil.UTF8GetString(array);
+		string[] array2 = text.Split('\r');
+		if (array2.Length == 0)
+		{
+			return;
+		}
+		for (int i = 0; i < array2.Length; i++)
+		{
+			if (string.IsNullOrEmpty(array2[i]))
+			{
+				continue;
+			}
+			string[] array3 = array2[i].Split('#');
+			if (array3.Length < 4)
+			{
+				continue;
+			}
+			string key = array3[0];
+			string name = array3[1];
+			int num = int.Parse(array3[3]);
+			if (delAddress == -1 || num == delAddress)
+			{
+				num = 0;
+				VmIO iO = module.GetIO(name);
+				if (iO != null)
+				{
+					iO.RelateIO = null;
+				}
+				array3[3] = num.ToString();
+				string text2 = string.Join("#", array3);
+				module.Params[key] = text2;
+				array2[i] = text2;
+			}
+		}
+		string text3 = string.Join("\r", array2);
+		if (text != text3)
+		{
+			module.UserData["PlcItemRecord"] = StringUtil.UTF8GetBytesPadZero(text3);
+		}
+	}
+
+	private void DeleteReadDataAddress(VmModule module, string type, int delAddress = -1)
+	{
+		byte[] array = null;
+		if (type == "plc" || type == "modbus")
+		{
+			array = module.UserData["PlcItemRecord"];
+		}
+		if (array == null || array.Length == 0)
+		{
+			return;
+		}
+		string text = StringUtil.UTF8GetString(array);
+		string[] array2 = text.Split('\n');
+		if (array2.Length == 0)
+		{
+			return;
+		}
+		for (int i = 0; i < array2.Length; i++)
+		{
+			if (string.IsNullOrEmpty(array2[i]))
+			{
+				continue;
+			}
+			string[] array3 = array2[i].Split('\r');
+			if (array3.Length < 1)
+			{
+				continue;
+			}
+			string[] array4 = array3[0].Split(':');
+			if (array4.Length < 4)
+			{
+				continue;
+			}
+			int num = ((type == "plc") ? 11 : 27);
+			int num2 = int.Parse(array4[0]) - num;
+			if (delAddress == -1 || num2 == delAddress)
+			{
+				string[] array5 = array4[1].Split('#');
+				if (array5.Length >= 9)
+				{
+					string key = array5[1] + ":PLCAddressIndex";
+					num2 = num;
+					module.UserData[key] = StringUtil.UTF8GetBytesPadZero("0");
+					array4[0] = num2.ToString();
+					string text2 = string.Join(":", array4);
+					module.Params["OutputFilter"] = text2;
+					array2[i] = text2;
+				}
+			}
+		}
+		string text3 = string.Join("\n", array2);
+		if (text != text3)
+		{
+			module.UserData["PlcItemRecord"] = StringUtil.UTF8GetBytesPadZero(text3);
+		}
+	}
+
+	private void MainArea_EventParamChangeCallBack(OperateParams operateParams)
+	{
+		//IL_00d3: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00dd: Expected Obj, but got Unknown
+		//IL_0288: Unknown result type (might be due to invalid IL or missing references)
+		//IL_029a: Unknown result type (might be due to invalid IL or missing references)
+		//IL_02a0: Invalid comparison between Unknown and I4
+		//IL_02ad: Unknown result type (might be due to invalid IL or missing references)
+		//IL_02b3: Invalid comparison between Unknown and I4
+		//IL_0324: Unknown result type (might be due to invalid IL or missing references)
+		//IL_032a: Invalid comparison between Unknown and I4
+		//IL_0174: Unknown result type (might be due to invalid IL or missing references)
+		//IL_017a: Invalid comparison between Unknown and I4
+		//IL_01e4: Unknown result type (might be due to invalid IL or missing references)
+		//IL_01ea: Invalid comparison between Unknown and I4
+		//IL_023f: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0245: Invalid comparison between Unknown and I4
+		try
+		{
+			if (operateParams == null || operateParams.ObjectParam == null)
+			{
+				return;
+			}
+			ParamObject paramObject = null;
+			EventDataItem eventItem = null;
+			if (operateParams.ObjectParam is ParamObject)
+			{
+				object objectParam = operateParams.ObjectParam;
+				paramObject = (ParamObject)((objectParam is ParamObject) ? objectParam : null);
+				eventItem = paramObject.CurEventDataItem;
+			}
+			else if (operateParams.ObjectParam is EventDataItem)
+			{
+				eventItem = (EventDataItem)operateParams.ObjectParam;
+			}
+			if (eventItem == null)
+			{
+				return;
+			}
+			if (eventItem.IsReceiveType)
+			{
+				if (paramObject != null && paramObject.IsInput)
+				{
+					return;
+				}
+				VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == 14200);
+				if (vmModule != null)
+				{
+					if ((int)operateParams.ParamOperate == 2)
+					{
+						ModuleParam moduleParam = vmModule.Params;
+						object arg = eventItem.NodeID;
+						string arg2 = paramObject?.OldName;
+						ParamObject val = paramObject;
+						((IUserStringData)moduleParam)["UpdateEventName"] = $"{arg}\r{arg2}\r{((val != null) ? val.NameA : null)}";
+					}
+					else if ((int)operateParams.ParamOperate == 0)
+					{
+						ModuleParam moduleParam2 = vmModule.Params;
+						object arg3 = eventItem.NodeID;
+						ParamObject val2 = paramObject;
+						((IUserStringData)moduleParam2)["DeleteRecvEventParam"] = $"{arg3}-{((val2 != null) ? val2.NameA : null)}";
+					}
+					else if ((int)operateParams.ParamOperate == 3)
+					{
+						((IUserStringData)vmModule.Params)["DeleteRecvEventId"] = eventItem.NodeID.ToString();
+					}
+				}
+			}
+			else if ((int)operateParams.ParamOperate == 0 || (int)operateParams.ParamOperate == 1 || (int)operateParams.ParamOperate == 2)
+			{
+				if (paramObject != null && !paramObject.IsInput)
+				{
+					return;
+				}
+				UpdateModuleParams((VmModule m) => m.StrModuleName == "SendDatasModule", (VmModule module) =>
+				{
+					//IL_00c5: Unknown result type (might be due to invalid IL or missing references)
+					//IL_00ca: Unknown result type (might be due to invalid IL or missing references)
+					//IL_00cc: Unknown result type (might be due to invalid IL or missing references)
+					//IL_00df: Expected I4, but got Unknown
+					string text = module.Params["OutputType"];
+					if (!(text != "4"))
+					{
+						string text2 = module.Params["SendEventId"];
+						if (!(text2 != eventItem.NodeID.ToString()))
+						{
+							int indexA = paramObject.IndexA;
+							VmIO vmIO = module.GetIO("SendData" + indexA);
+							string text3 = module.Params["SendEventRule"];
+							string[] array = text3.Substring(text3.IndexOf('-') + 1).Split('\n');
+							EventParamOperate paramOperate = operateParams.ParamOperate;
+							switch ((int)paramOperate)
+							{
+							case 0:
+							{
+								int num = 1;
+								while (vmIO != null)
+								{
+									VmIO iO = module.GetIO("SendData" + (indexA + num));
+									if (iO != null)
+									{
+										vmIO.RelateIO = iO.RelateIO;
+									}
+									else
+									{
+										vmIO.RelateIO = null;
+									}
+									vmIO = iO;
+									num++;
+								}
+								for (int j = 0; j < array.Length; j++)
+								{
+									if (array[j].Contains(paramObject.NameA))
+									{
+										array[j] = "";
+										break;
+									}
+								}
+								break;
+							}
+							case 1:
+							{
+								vmIO.RelateIO = null;
+								for (int k = 0; k < array.Length; k++)
+								{
+									if (array[k].Contains(paramObject.NameA))
+									{
+										array[k] = paramObject.NameA + "\r" + paramObject.ValueTypeA;
+										break;
+									}
+								}
+								break;
+							}
+							case 2:
+							{
+								for (int i = 0; i < array.Length; i++)
+								{
+									if (array[i].Contains(paramObject.OldName))
+									{
+										array[i] = paramObject.NameA + "\r" + paramObject.ValueTypeA;
+										break;
+									}
+								}
+								break;
+							}
+							}
+							string value = array.Length - array.Count((string x) => string.IsNullOrEmpty(x)) + "-" + string.Join("\n", array.Where((string p) => !string.IsNullOrEmpty(p)).ToArray());
+							module.Params["SendEventRule"] = value;
+						}
+					}
+				});
+			}
+			else
+			{
+				if ((int)operateParams.ParamOperate != 3)
+				{
+					return;
+				}
+				UpdateModuleParams((VmModule m) => m.StrModuleName == "SendDatasModule", (VmModule module) =>
+				{
+					string text = module.Params["OutputType"];
+					if (!(text != "4"))
+					{
+						string text2 = module.Params["SendEventId"];
+						if (!(text2 != eventItem.NodeID.ToString()))
+						{
+							module.Params["SendEventId"] = "0";
+						}
+					}
+				});
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("UpdateCommDeviceEvent error:" + ex.ToString());
+		}
+	}
+
+	private void NotifySolChange()
+	{
+		try
+		{
+			((IUserStringData)((DecorateSource as IVmModule)?.Params))["DeviceChange"] = "";
+		}
+		catch
+		{
+		}
+	}
+
+	private void UpdateModuleParams(Func<VmModule, bool> predicate, Action<VmModule> act)
+	{
+		List<VmModule> list = new List<VmModule>();
+		VmSolution.Instance.GetAllModule(list);
+		IEnumerable<VmModule> enumerable = list.Where(predicate);
+		foreach (VmModule item in enumerable)
+		{
+			act?.Invoke(item);
+		}
+	}
+
+	protected override void OnClosing(CancelEventArgs e)
+	{
+		if (GlobalCommunicationMgr.Instance.IsGet)
+		{
+			Owner?.Activate();
+			e.Cancel = Visibility == Visibility.Visible;
+			if (e.Cancel)
+			{
+				Hide();
+			}
+		}
+		Owner?.Activate();
+		base.OnClosing(e);
+		if (Visibility != Visibility.Visible)
+		{
+			GlobalCommunicationMgr.Instance.IsOpen = false;
+		}
+	}
+
+	private void Device_OnCurValueChanged(object sender, EventArgs e)
+	{
+		if (!(sender is EnumeraionComDevice enumeraionComDevice))
+		{
+			return;
+		}
+		enumeraionComDevice.Reserved = "";
+		string curValueA = enumeraionComDevice.CurValueA;
+		string text = ((curValueA != null) ? curValueA.Split('.')[0] : null);
+		IList enumEntrysA = enumeraionComDevice.EnumEntrysA;
+		if (enumEntrysA == null || enumEntrysA.Count <= 0)
+		{
+			return;
+		}
+		foreach (object item in enumeraionComDevice.EnumEntrysA)
+		{
+			if (item is EnumEntry enumEntry && enumEntry.DisplayNameA == text)
+			{
+				object reservedProperty = (item as EnumEntry).ReservedProperty;
+				if (object.Equals((object)(MODULE_DEVICE_TYPE)5, reservedProperty) || object.Equals((object)(MODULE_DEVICE_TYPE)6, reservedProperty))
+				{
+					enumeraionComDevice.Reserved = AppLocalizationService.GetLang("Lang_PlcTriiger_Message");
+					OnTriggerPropertyChanged(SolutionTrigger);
+					OnTriggerPropertyChanged(ProcessFreeTrigger);
+					OnTriggerPropertyChanged(ProcessBusyTrigger);
+					OnTriggerPropertyChanged(ConnectTrigger);
+					OnTriggerPropertyChanged(DisConnectTrigger);
+				}
+			}
+		}
+	}
+
+	private object AddTriggerStringChanged(string trigerStringName, object comDeviceObject, object valueType)
+	{
+		BaseNode baseNode = ParamsConfig?.FindBaseNodeByName(trigerStringName);
+		Apps.XmlParser.ParamTab.String triggerString;
+		if ((triggerString = baseNode as Apps.XmlParser.ParamTab.String) != null)
+		{
+			triggerString.OnCurValueChanged += (object sender, EventArgs e) =>
+			{
+				if (comDeviceObject is EnumeraionComDevice enumeraionComDevice && enumeraionComDevice != null)
+				{
+					ComboxEdit comboxEdit;
+					if ((comboxEdit = valueType as ComboxEdit) != null && comboxEdit.CurValueA != "string" && !string.IsNullOrEmpty(triggerString.CurValueA) && enumeraionComDevice.Reserved is string value && !string.IsNullOrEmpty(value))
+					{
+						string message = string.Format(AppLocalizationService.GetLang("Lang_PlcTriiger_Message"), comboxEdit.CurValueA);
+						Dispatcher?.BeginInvoke((Action)(() =>
+						{
+							if (comboxEdit.CurValueA == "int" && !int.TryParse(triggerString.CurValueA, out var _))
+							{
+								HikMessageBox.Show(string.Format(AppLocalizationService.GetLang("Lang_Input_Message"), triggerString.CurValueA) + ", " + message);
+								triggerString.CurValueA = "";
+								triggerString.SetParamUnit();
+							}
+							else if (comboxEdit.CurValueA == "float")
+							{
+								if (float.TryParse(triggerString.CurValueA, out var _))
+								{
+									triggerString.SetParamUnit();
+								}
+								else
+								{
+									HikMessageBox.Show(string.Format(AppLocalizationService.GetLang("Lang_Input_Message"), triggerString.CurValueA) + ", " + message);
+									triggerString.CurValueA = "";
+									triggerString.SetParamUnit();
+								}
+							}
+						}), DispatcherPriority.Background);
+					}
+				}
+			};
+		}
+		return baseNode;
+	}
+
+	private void OnTriggerPropertyChanged(object triggerObject)
+	{
+		if (triggerObject is Apps.XmlParser.ParamTab.String obj)
+		{
+			obj.OnPropertyChanged("CurValueA");
+		}
+	}
+
+	public void OnValuePropertyChanged(object sender, EventArgs e)
+	{
+		if (ValuePropertyChanged != null)
+		{
+			ValuePropertyChanged(this, new EventArgs());
+		}
+	}
+
+	private void btnImport_Click(object sender, RoutedEventArgs e)
+	{
+		DialogResult dialogResult = HikMessageBox.Show(AppLocalizationService.GetLang("导入"), AppLocalizationService.GetLang("Lang_ImportConfirmInfo"), MessageButtons.OkOrCancel, MessageIcons.Question);
+		if (dialogResult != VM.Controls.DialogResult.Ok)
+		{
+			return;
+		}
+		string text = ServerSDKManager.serverSDKManager.mCollectionManager.OpenImportDialog(AppLocalizationService.GetLang("Lang_GlobalCommunication_File"), "|*.gtd");
+		if (string.IsNullOrEmpty(text))
+		{
+			return;
+		}
+		VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == 14200);
+		if (vmModule == null)
+		{
+			string path = CurrentPathHelper.Instance.GetCurrentPath() + "module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleCs.dll";
+			Assembly assembly = Assembly.LoadFile(path);
+			Type type = assembly.GetTypes().FirstOrDefault((Type p) => typeof(IVmModule).IsAssignableFrom(p));
+			Activator.CreateInstance(type, VmSolution.Instance);
+		}
+		VmModuleCollection<VmModule> modules = VmSolution.Instance.Modules;
+		VmModule vmModule2 = modules.FirstOrDefault((VmModule p) => p.ID == 11000);
+		if (vmModule2 != null)
+		{
+			try
+			{
+				CommunicationEncryService.RegisterEncryOperation(text, isEbcry: false);
+				vmModule2.Params["ImportCommData"] = text;
+				GlobalCommunicationMgr.Instance.ClearAll();
+				GlobalCommunicationMgr.Instance.GetData();
+				if (mainArea.GlobalTriggerControl is GlobalTriggerConfigContent globalTriggerConfigContent)
+				{
+					globalTriggerConfigContent.ResetPagaDisplay();
+				}
+				LoadTrigger(vmModule2);
+			}
+			catch (VmException ex)
+			{
+				string text2 = AppLocalizationService.GetLang("errCode:") + $"{ex.errorCode:X}" + "\r\n";
+				text2 = text2 + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportProcessFail"), text2, MessageIcons.Error);
+				return;
+			}
+			catch (Exception ex2)
+			{
+				LogHelper.Error("UpdateLanguage error:" + ex2.ToString());
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportProcessFail"), ex2.Message, MessageIcons.Error);
+				return;
+			}
+		}
+		HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadSuccess"), MessageIcons.Ok);
+	}
+
+	private void LoadTrigger(VmModule module)
+	{
+		_LoadSolution = null;
+		_SolutionTimeout = null;
+		_IsSolEndChar = null;
+		_IsPrcEndChar = null;
+		_IsCameraEndChar = null;
+		_SolEndChar = null;
+		_SolValueType = null;
+		_PrcEndChar = null;
+		_PrcValueType = null;
+		_CameraEndChar = null;
+		_CameraValueType = null;
+		_ProcessControl = null;
+		_ProSeparator = null;
+		_CameraRespnseControl = null;
+		_CameraSeparator = null;
+		_SampleSeparatorTip = null;
+		_CameraSeparatorTip = null;
+		SolutionTrigger = null;
+		ProcessFreeTrigger = null;
+		ProcessBusyTrigger = null;
+		ConnectTrigger = null;
+		DisConnectTrigger = null;
+		_SolCommunicationModuleID = null;
+		_ProcCommunicationModuleID = null;
+		_CamCommunicationModuleID = null;
+		DecorateSource = module;
+		ParamsConfig = null;
+		LoadGlobalTriggerControl();
+		OnPropertyChanged("ParamsConfig");
+		OnPropertyChanged("SolCommunicationModuleID");
+		OnPropertyChanged("ProcCommunicationModuleID");
+		OnPropertyChanged("CamCommunicationModuleID");
+		OnPropertyChanged("SolutionTrigger");
+		OnPropertyChanged("ProcessFreeTrigger");
+		OnPropertyChanged("ProcessBusyTrigger");
+		OnPropertyChanged("ConnectTrigger");
+		OnPropertyChanged("DisConnectTrigger");
+		OnPropertyChanged("LoadSolution");
+		OnPropertyChanged("SolutionTimeout");
+		OnPropertyChanged("IsSolEndChar");
+		OnPropertyChanged("IsPrcEndChar");
+		OnPropertyChanged("IsCameraEndChar");
+		OnPropertyChanged("SolEndChar");
+		OnPropertyChanged("SolValueType");
+		OnPropertyChanged("PrcEndChar");
+		OnPropertyChanged("PrcValueType");
+		OnPropertyChanged("CameraEndChar");
+		OnPropertyChanged("CameraValueType");
+		OnPropertyChanged("ProcessControl");
+		OnPropertyChanged("ProSeparator");
+		OnPropertyChanged("CameraRespnseControl");
+		OnPropertyChanged("CameraSeparator");
+		OnPropertyChanged("SampleSeparatorTip");
+		OnPropertyChanged("CameraSeparatorTip");
+	}
+
+	private void btnExport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			string text = ServerSDKManager.serverSDKManager.mCollectionManager.OpenExportDialogNotifyError(AppLocalizationService.GetLang("Lang_GlobalCommunication_File"), "|*.gtd");
+			if (!string.IsNullOrEmpty(text))
+			{
+				VmModuleCollection<VmModule> modules = VmSolution.Instance.Modules;
+				VmModule vmModule = modules.FirstOrDefault((VmModule p) => p.ID == 11000);
+				if (vmModule != null)
+				{
+					vmModule.Params["ExportCommData"] = text;
+					CommunicationEncryService.RegisterEncryOperation(text, isEbcry: true);
+				}
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportSuccess"), MessageIcons.Ok);
+			}
+		}
+		catch (PathTooLongException)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"), AppLocalizationService.GetLang("Lang_PathToLong"), MessageIcons.Error);
+		}
+		catch (Exception ex2)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"), ex2.Message, MessageIcons.Error);
+		}
+	}
+
+	private void KeyDownCommandExecute(string str)
+	{
+		switch (str)
+		{
+		case "LevelT":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "0");
+			break;
+		case "LevelD":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "1");
+			break;
+		case "LevelI":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "2");
+			break;
+		case "LevelW":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "3");
+			break;
+		case "LevelE":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "4");
+			break;
+		case "LevelC":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "5");
+			break;
+		case "LevelO":
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, 11000u, "LogLevel", "6");
+			break;
+		}
+	}
+
+	private void Close_OnClick(object sender, RoutedEventArgs e)
+	{
+		DialogResult = true;
+		Close();
+	}
+}

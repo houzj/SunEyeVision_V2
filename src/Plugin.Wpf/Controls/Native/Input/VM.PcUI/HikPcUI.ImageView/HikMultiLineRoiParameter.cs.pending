@@ -1,0 +1,139 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Xml;
+using Hik.Xml;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikMultiLineRoiParameter : RoiParameter, IMultiLineROI, IROI, INotifyPropertyChanged, IROISign
+{
+	public ObservableCollection<PolygonPoint> _PolygonPoints = new ObservableCollection<PolygonPoint>();
+
+	private string _Name = "多直线";
+
+	public bool? _Sign = true;
+
+	private ObservableCollection<Point> temp = new ObservableCollection<Point>();
+
+	public ObservableCollection<PolygonPoint> PolygonPoints
+	{
+		get
+		{
+			return _PolygonPoints;
+		}
+		set
+		{
+			if (_PolygonPoints != value)
+			{
+				_PolygonPoints = value;
+				NotifyPropertyChanged("PolygonPoints");
+			}
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return _Sign;
+		}
+		set
+		{
+			if (_Sign != value)
+			{
+				_Sign = value;
+				NotifyPropertyChanged("Sign");
+			}
+		}
+	}
+
+	ObservableCollection<Point> IMultiLineROI.Points
+	{
+		get
+		{
+			if (temp.Count == 0 && _PolygonPoints.Count > 0)
+			{
+				for (int i = 0; i < _PolygonPoints.Count; i++)
+				{
+					if (temp.Count < i + 1)
+					{
+						temp.Add(new Point
+						{
+							X = _PolygonPoints[i].X,
+							Y = _PolygonPoints[i].Y
+						});
+					}
+				}
+			}
+			return temp;
+		}
+		set
+		{
+			if (temp != value)
+			{
+				temp = value;
+			}
+		}
+	}
+
+	public override BaseNode Init(XmlNode node)
+	{
+		base.Init(node);
+		temp = new ObservableCollection<Point>(_PolygonPoints.Select((PolygonPoint p) => new Point(p.x, p.y)));
+		return this;
+	}
+
+	protected override void BeforSaveBaseNode()
+	{
+		base.BeforSaveBaseNode();
+		if (temp.Count <= 0)
+		{
+			return;
+		}
+		for (int i = 0; i < temp.Count; i++)
+		{
+			if (_PolygonPoints.Count < i + 1)
+			{
+				_PolygonPoints.Add(new PolygonPoint
+				{
+					x = (float)temp[i].X,
+					y = (float)temp[i].Y
+				});
+			}
+			else
+			{
+				_PolygonPoints[i].X = (float)temp[i].X;
+				_PolygonPoints[i].Y = (float)temp[i].Y;
+			}
+		}
+	}
+
+	public override void PastROI(Point center)
+	{
+		double num = temp.Min((Point p) => p.X);
+		double num2 = temp.Min((Point p) => p.Y);
+		double num3 = temp.Max((Point p) => p.X);
+		double num4 = temp.Max((Point p) => p.Y);
+		Point point = new Point(num + (num3 - num) / 2.0, num2 + (num4 - num2) / 2.0);
+		Vector vector = center - point;
+		for (int num5 = 0; num5 < temp.Count; num5++)
+		{
+			temp[num5] = new Point(temp[num5].X + vector.X, temp[num5].Y + vector.Y);
+		}
+	}
+}

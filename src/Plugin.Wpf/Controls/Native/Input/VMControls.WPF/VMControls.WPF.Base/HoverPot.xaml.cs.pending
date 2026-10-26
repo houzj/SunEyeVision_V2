@@ -1,0 +1,69 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// HoverPot.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// HoverPot
+/// </summary>
+public partial class HoverPot : UserControl, IComponentConnector
+{
+	private const double RectWidth = 6.0;
+
+	public static readonly DependencyProperty SiteProperty = DependencyProperty.Register("Site", typeof(HoverPotData), typeof(HoverPot), new PropertyMetadata(null, SiteChanged));
+
+	public HoverPotData Site
+	{
+		get
+		{
+			return (HoverPotData)GetValue(SiteProperty);
+		}
+		set
+		{
+			SetValue(SiteProperty, value);
+		}
+	}
+
+	public event EventHandler HMouseLeftButtonDown;
+
+	private static void SiteChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HoverPot).OnSiteChanged();
+	}
+
+	private void OnSiteChanged()
+	{
+		Margin = new Thickness
+		{
+			Left = Site.point.X - 3.0,
+			Top = Site.point.Y - 3.0
+		};
+		if (Site.StartIndex >= 0)
+		{
+			Cursor = (Site.IsHorizon ? Cursors.SizeNS : Cursors.SizeWE);
+		}
+		else
+		{
+			Cursor = Cursors.SizeAll;
+		}
+	}
+
+	public HoverPot()
+	{
+		Height = 6.0;
+		Width = 6.0;
+		InitializeComponent();
+	}
+
+	private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		HMouseLeftButtonDown?.Invoke(sender, e);
+		e.Handled = true;
+	}
+}

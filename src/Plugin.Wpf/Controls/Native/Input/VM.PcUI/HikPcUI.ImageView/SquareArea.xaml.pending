@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.SquareArea" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" x:Name="UserControl" Width="15" Height="15" xmlns:imageview="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;assembly=SunEyeVision.Plugin.Wpf" Loaded="UserControl_Loaded">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid HorizontalAlignment="{Binding HorizontalAlignment, ElementName=UserControl}" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}">
+    <Canvas Name="view" HorizontalAlignment="{Binding HorizontalAlignment, ElementName=UserControl}" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}">
+      <Path Stroke="{DynamicResource ROIBaseColor}" Stretch="Uniform" Height="{Binding Height, ElementName=view}" Width="{Binding Width, ElementName=view}" StrokeThickness="{Binding BorderThickness, ElementName=cview, Converter={StaticResource thickness2Double}}" Data="{Binding SquareGeometry, ElementName=UserControl}" />
+      <Border Name="cview" BorderThickness="2px" Background="#00FFFFFF" Height="{Binding Height, ElementName=view}" Width="{Binding Width, ElementName=view}" HorizontalAlignment="{Binding HorizontalAlignment, ElementName=UserControl}" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}" MouseDown="view_MouseDown" SizeChanged="cview_SizeChanged">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Border}">
+            <Setter Property="BorderBrush" Value="{Binding SquareBordbrush, ElementName=UserControl}" />
+            <Style.Triggers>
+              <DataTrigger Value="true" Binding="{Binding IsPressed, ElementName=UserControl}">
+                <Setter Property="BorderBrush" Value="{DynamicResource ROIMouseOverColor}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+        <UIElement.RenderTransform>
+          <RotateTransform x:Name="blt" />
+        </UIElement.RenderTransform>
+      </Border>
+    </Canvas>
+  </Grid>
+  <UIElement.RenderTransform>
+    <RotateTransform x:Name="tlt" />
+  </UIElement.RenderTransform>
+</UserControl>

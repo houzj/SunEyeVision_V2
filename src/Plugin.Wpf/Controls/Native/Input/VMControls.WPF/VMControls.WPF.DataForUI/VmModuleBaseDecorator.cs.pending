@@ -1,0 +1,1212 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlUI;
+using HikExternalCall.Common;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility.SingleInstance;
+using VMControls.Data;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmModuleBaseDecorator : DecoratorBase
+{
+	/// <summary>
+	/// 模块类型、模块显示类型对
+	/// </summary>
+	private static Dictionary<string, ModuleDisplayType> displayTypeDic;
+
+	private ObservableCollection<DecoratorBase> decorateChildren;
+
+	private ModuleDisplayType? displayType;
+
+	private DiagramItemSubDisplayEnum? _targetDisplayType;
+
+	private Point position;
+
+	private DelegateCommand<string> keyDownCommand = null;
+
+	private DelegateCommand copyItemCommand = null;
+
+	private DelegateCommand<IList> copyItemsCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> copyItemsByDropCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> pasteItemsCommand = null;
+
+	private DelegateCommand deleteItemCommand = null;
+
+	private DelegateCommand<ObjectEventArgs> connectCommand = null;
+
+	private static Dictionary<uint, uint> HasCheckPath;
+
+	private DelegateCommand _RenameWindowCommand = null;
+
+	private DelegateCommand _RenameCommand = null;
+
+	private bool _IsReName;
+
+	private DelegateCommand skipToModuleCommand = null;
+
+	private DelegateCommand<IVmModule> deleteConnectionCommand = null;
+
+	public DecoratorBase ParentDecorator { get; set; }
+
+	public IVmModule VMModule => DecorateSource as IVmModule;
+
+	public bool IsActive => VMModule?.IsActive ?? false;
+
+	/// <summary>
+	/// 后续模块
+	/// </summary>
+	public IList DisLinkTo => VMModule?.NextModules;
+
+	/// <summary>
+	/// 子项
+	/// </summary>
+	public IList DecorateChildren
+	{
+		get
+		{
+			if (decorateChildren == null && DecorateSource is IVmModuleSet vmModuleSet)
+			{
+				decorateChildren = new ObservableCollection<DecoratorBase>();
+				CollectionChangedEventManager.AddHandler(vmModuleSet.Children as INotifyCollectionChanged, OnCollectionChanged);
+				List<IVmModuleSet> list = vmModuleSet.Children.OfType<IVmModuleSet>().ToList();
+				list.ForEach((IVmModuleSet p) =>
+				{
+					AddChild(p);
+				});
+			}
+			return decorateChildren;
+		}
+	}
+
+	/// <summary>
+	/// 模块显示方式
+	/// </summary>
+	public virtual ModuleDisplayType DisplayType
+	{
+		get
+		{
+			if (!displayType.HasValue && VMModule != null)
+			{
+				if (displayTypeDic.ContainsKey(VMModule.ModuleTypeName))
+				{
+					displayType = displayTypeDic[VMModule.ModuleTypeName];
+				}
+				else
+				{
+					string text = VMModule.ModuleDir + "\\ToolItemInfo.xml";
+					if (File.Exists(text))
+					{
+						ToolBoxItemData toolBoxItemData = new ToolBoxItemData();
+						toolBoxItemData.loadXml(text);
+						string value = toolBoxItemData.DisplayType.Replace("ADORNER", "");
+						ModuleDisplayType result;
+						if (string.IsNullOrEmpty(value))
+						{
+							displayType = ModuleDisplayType.NORMAL;
+						}
+						else if (Enum.TryParse<ModuleDisplayType>(toolBoxItemData.DisplayType.Replace("ADORNER", ""), out result))
+						{
+							displayType = result;
+						}
+						else
+						{
+							displayType = ModuleDisplayType.NORMAL;
+						}
+					}
+					else
+					{
+						displayType = ModuleDisplayType.NORMAL;
+					}
+					if (!displayTypeDic.ContainsKey(VMModule.ModuleTypeName))
+					{
+						displayTypeDic.Add(VMModule.ModuleTypeName, displayType ?? ModuleDisplayType.NORMAL);
+					}
+				}
+			}
+			return displayType ?? ModuleDisplayType.DEFAULT;
+		}
+		set
+		{
+			if (value != displayType)
+			{
+				displayType = value;
+				OnPropertyChanged("DisplayType");
+			}
+		}
+	}
+
+	public DiagramItemSubDisplayEnum TargetDisplayType
+	{
+		get
+		{
+			if (!_targetDisplayType.HasValue)
+			{
+				switch (DisplayType)
+				{
+				case ModuleDisplayType.IMAGE:
+				case ModuleDisplayType.IMAGEADORNER:
+				{
+					DiagramItemSubDisplayEnum? diagramItemSubDisplayEnum = (_targetDisplayType = DiagramItemSubDisplayEnum.IMAGE);
+					return diagramItemSubDisplayEnum.Value;
+				}
+				case ModuleDisplayType.IFBRANCH:
+				case ModuleDisplayType.IFBRANCHADORNER:
+				{
+					DiagramItemSubDisplayEnum? diagramItemSubDisplayEnum = (_targetDisplayType = DiagramItemSubDisplayEnum.IFBRANCH);
+					return diagramItemSubDisplayEnum.Value;
+				}
+				case ModuleDisplayType.FUNCTION:
+				case ModuleDisplayType.FUNCTIONADORNER:
+				{
+					DiagramItemSubDisplayEnum? diagramItemSubDisplayEnum = (_targetDisplayType = DiagramItemSubDisplayEnum.FUNCTION);
+					return diagramItemSubDisplayEnum.Value;
+				}
+				case ModuleDisplayType.TIMER:
+				case ModuleDisplayType.TIMERADORNER:
+				{
+					DiagramItemSubDisplayEnum? diagramItemSubDisplayEnum = (_targetDisplayType = DiagramItemSubDisplayEnum.TIMER);
+					return diagramItemSubDisplayEnum.Value;
+				}
+				case ModuleDisplayType.SHELL:
+				case ModuleDisplayType.SHELLADORNER:
+				{
+					DiagramItemSubDisplayEnum? diagramItemSubDisplayEnum = (_targetDisplayType = DiagramItemSubDisplayEnum.SHELL);
+					return diagramItemSubDisplayEnum.Value;
+				}
+				case ModuleDisplayType.COMMUNCATION:
+				case ModuleDisplayType.COMMUNCATIONADORNER:
+				{
+					DiagramItemSubDisplayEnum? diagramItemSubDisplayEnum = (_targetDisplayType = DiagramItemSubDisplayEnum.COMMUNCATION);
+					return diagramItemSubDisplayEnum.Value;
+				}
+				default:
+					return DiagramItemSubDisplayEnum.DEFAULT;
+				}
+			}
+			return _targetDisplayType.Value;
+		}
+	}
+
+	public bool IsShowImportGroup => true;
+
+	public bool IsSingleProcedure
+	{
+		get
+		{
+			if (VMModule.Root == null)
+			{
+				return false;
+			}
+			return true;
+		}
+	}
+
+	/// <summary>
+	/// 用来记录模块的位置
+	/// </summary>
+	public Point Position
+	{
+		get
+		{
+			if (VMModule is IMVSGroup || VMModule is VmProcedure)
+			{
+				byte[] array = VMModule.UserData["Position"];
+				if (array != null)
+				{
+					position = ExternalCallHelper.BytesToStruct<Point>(array, 0, array.Length);
+					VMModule.Position = position;
+				}
+				return position;
+			}
+			if (VMModule.Position is Point result)
+			{
+				return result;
+			}
+			byte[] array2 = VMModule.UserData["Position"];
+			if (array2 != null)
+			{
+				position = ExternalCallHelper.BytesToStruct<Point>(array2, 0, array2.Length);
+				VMModule.Position = position;
+			}
+			return position;
+		}
+		set
+		{
+			if (value != position)
+			{
+				VMModule.Position = (position = value);
+				VMModule.UserData["Position"] = ExternalCallHelper.StructToBytes(value);
+				OnPropertyChanged("Position");
+			}
+		}
+	}
+
+	public bool? IsLoadFailed
+	{
+		get
+		{
+			return (VMModule == null) ? new bool?(false) : VMModule.IsLoadFailed;
+		}
+		set
+		{
+			if (VMModule.IsLoadFailed != value)
+			{
+				VMModule.IsLoadFailed = value;
+				OnPropertyChanged("IsLoadFailed");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 模块是否禁用
+	/// </summary>
+	public bool IsForbidden
+	{
+		get
+		{
+			return VMModule?.IsForbidden ?? false;
+		}
+		set
+		{
+			if (VMModule.IsForbidden != value)
+			{
+				try
+				{
+					string displayName = (value ? string.Format("{0}:{1}, {2}", AppLocalizationService.GetLang("Lang_Forbidden"), VMModule.Name, value) : string.Format("{0}:{1}, {2}", AppLocalizationService.GetLang("Lang_Enabled"), VMModule.Name, value));
+					Ioc.Get<IUnRedoService>()?.Register(new ForbidSetUnRedoOperation(SetNewForbid, SetOldForbid, new UnRedo_ForbidData(VMModule.FullName, VMModule.IsForbidden, value)), displayName);
+					VMModule.IsForbidden = value;
+					OnPropertyChanged("IsForbidden");
+				}
+				catch
+				{
+				}
+			}
+		}
+	}
+
+	public ICommand KeyDownCommand => (ICommand)(keyDownCommand ?? (keyDownCommand = new DelegateCommand<string>((Action<string>)KeyDownCommandExecute)));
+
+	public ICommand CopyItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = copyItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)CopyItemCommandExecute);
+				DelegateCommand val3 = val2;
+				copyItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand CopyItemsCommand => (ICommand)(copyItemsCommand ?? (copyItemsCommand = new DelegateCommand<IList>((Action<IList>)CopyItemsCommandExecute)));
+
+	public ICommand CopyItemsByDropCommand => (ICommand)(copyItemsByDropCommand ?? (copyItemsByDropCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)CopyItemsByDropCommandExecute)));
+
+	public ICommand PasteItemsCommand => (ICommand)(pasteItemsCommand ?? (pasteItemsCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)PasteItemsCommandExecute)));
+
+	public ICommand DeleteItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = deleteItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)DeleteItemCommandExecute);
+				DelegateCommand val3 = val2;
+				deleteItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ConnectCommand => (ICommand)(connectCommand ?? (connectCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)ConnectCommandExecute)));
+
+	public string Name
+	{
+		get
+		{
+			return VMModule.Name;
+		}
+		set
+		{
+			if (VMModule.Name != value)
+			{
+				try
+				{
+					if (value.Contains('?') || value.Contains(';') || value.Contains('.') || value.Contains("[") || value.Contains("]") || value.Contains("<") || value.Contains(">") || value.Contains("(") || value.Contains(")") || value.Contains("`"))
+					{
+						HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ModuleNameErrorInclude") + Environment.NewLine + "                             ? ; . [ ] < > ( ) `", MessageIcons.Error);
+						return;
+					}
+					string displayName = AppLocalizationService.GetLang("Lang_ModuRename") + ":" + VMModule.Name + ", " + value;
+					Ioc.Get<IUnRedoService>()?.Register(new ReNameUnRedoOperation(SetNewName, SetOldName, new UnRedo_NameData(VMModule.FullName, VMModule.Name, value)), displayName);
+					UILogManager.logCreate("信息", AppLocalizationService.GetLang("Lang_ModuRename") + AppLocalizationService.GetPunctuation("：") + VMModule.Name + " " + AppLocalizationService.GetLang("修改为") + " " + value, ifLang: false);
+					VMModule.Name = value;
+				}
+				catch (VmException ex)
+				{
+					if (string.IsNullOrEmpty(value))
+					{
+						HikMessageBox.Show(AppLocalizationService.GetLang("Lang_NameEmpty"), MessageIcons.Error);
+					}
+					else
+					{
+						ShowMessage.ShowVmExceptionMessage(ex);
+					}
+					UILogManager.logCreate("错误", ErrorCodeInfo.GetErrorInfo(ex.errorCode), ifLang: false);
+				}
+				OnPropertyChanged("Name");
+				VMModule.OnPropertyChanged("FullName");
+			}
+			else
+			{
+				Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+			}
+		}
+	}
+
+	public ICommand RenameWindowCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _RenameWindowCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)RenameWindowCommandExe);
+				DelegateCommand val3 = val2;
+				_RenameWindowCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand RenameCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _RenameCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)RenameCommandExe);
+				DelegateCommand val3 = val2;
+				_RenameCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public bool IsReName
+	{
+		get
+		{
+			return _IsReName;
+		}
+		set
+		{
+			if (_IsReName != value)
+			{
+				_IsReName = value;
+				if (_IsReName)
+				{
+					Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("Lang_ModuRename") ?? "");
+				}
+				OnPropertyChanged("IsReName");
+			}
+		}
+	}
+
+	public ICommand SkipToModuleCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = skipToModuleCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)SkipToModuleCommandExecute);
+				DelegateCommand val3 = val2;
+				skipToModuleCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DeleteConnectionCommand => (ICommand)(deleteConnectionCommand ?? (deleteConnectionCommand = new DelegateCommand<IVmModule>((Action<IVmModule>)DeleteConnectionCommandExecute)));
+
+	static VmModuleBaseDecorator()
+	{
+		displayTypeDic = new Dictionary<string, ModuleDisplayType>();
+		HasCheckPath = new Dictionary<uint, uint>();
+		LogHelper.Info("------yytest----------displaytype获取前");
+		string text = "";
+		string currentPath = CurrentPathHelper.Instance.GetCurrentPath();
+		using (StreamReader streamReader = new StreamReader(currentPath + "ModulePathGenerate.txt"))
+		{
+			while ((text = streamReader.ReadLine()) != null)
+			{
+				string[] array = text.Split(new string[1] { " # " }, StringSplitOptions.None);
+				if (!displayTypeDic.ContainsKey(array[0]))
+				{
+					ModuleDisplayType value = ModuleDisplayType.NORMAL;
+					string value2 = array[2].Replace("ADORNER", "");
+					ModuleDisplayType result;
+					if (string.IsNullOrEmpty(value2))
+					{
+						value = ModuleDisplayType.NORMAL;
+					}
+					else if (Enum.TryParse<ModuleDisplayType>(value2, out result))
+					{
+						value = result;
+					}
+					displayTypeDic.Add(array[0], value);
+				}
+			}
+		}
+		LogHelper.Info("------yytest----------displaytype获取后");
+	}
+
+	private void AddChild(object item)
+	{
+		if (item is IVmProcedure)
+		{
+			decorateChildren.Add(new VmProcedureDecorator
+			{
+				DecorateSource = item,
+				ParentDecorator = this
+			});
+		}
+		else if (item is IVMGroup)
+		{
+			decorateChildren.Add(new VmGroupDecorator
+			{
+				DecorateSource = item,
+				ParentDecorator = this
+			});
+		}
+	}
+
+	private void RemoveChild(object item)
+	{
+		if (item is IVmModuleSet)
+		{
+			DecoratorBase item2 = decorateChildren.Single((DecoratorBase p) => p.DecorateSource == item);
+			decorateChildren.Remove(item2);
+		}
+	}
+
+	private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Add:
+			e.NewItems.OfType<object>().ToList().ForEach((object p) =>
+			{
+				AddChild(p);
+			});
+			break;
+		case NotifyCollectionChangedAction.Remove:
+			e.OldItems.OfType<object>().ToList().ForEach((object p) =>
+			{
+				RemoveChild(p);
+			});
+			break;
+		case NotifyCollectionChangedAction.Reset:
+			decorateChildren.Clear();
+			break;
+		default:
+			throw new Exception("未实现");
+		}
+	}
+
+	protected T GetParent<T>() where T : class
+	{
+		VmModuleBaseDecorator vmModuleBaseDecorator = ParentDecorator as VmModuleBaseDecorator;
+		if (!(vmModuleBaseDecorator is T result))
+		{
+			return (vmModuleBaseDecorator != null) ? vmModuleBaseDecorator.GetParent<T>() : null;
+		}
+		return result;
+	}
+
+	private void KeyDownCommandExecute(string str)
+	{
+		switch (str)
+		{
+		case "M":
+			try
+			{
+				Process.Start("explorer.exe", Path.GetFullPath(Path.GetDirectoryName(VMModule.Params.XmlPath)));
+				break;
+			}
+			catch
+			{
+				break;
+			}
+		case "C":
+			if (DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+			{
+				string obj = (this?.DecorateSource as IVmFrameBase)?.FullName;
+				Clipboard.instance.ClearCopyInfo();
+				Clipboard.instance.AddCopyInfo(obj);
+				Clipboard.instance.Position = Position;
+			}
+			break;
+		case "F":
+			if (VMModule.ModuleTypeName != "DataQueueModule" && VMModule.ModuleTypeName != "GlobalCameraModule")
+			{
+				IsForbidden = true;
+			}
+			break;
+		case "A":
+			if (VMModule.ModuleTypeName != "DataQueueModule" && VMModule.ModuleTypeName != "GlobalCameraModule")
+			{
+				IsForbidden = false;
+			}
+			break;
+		case "LevelT":
+		{
+			IVmModule vmModule7 = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule7.ID, "LogLevel", "0");
+			break;
+		}
+		case "LevelD":
+		{
+			IVmModule vmModule6 = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule6.ID, "LogLevel", "1");
+			break;
+		}
+		case "LevelI":
+		{
+			IVmModule vmModule5 = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule5.ID, "LogLevel", "2");
+			break;
+		}
+		case "LevelW":
+		{
+			IVmModule vmModule4 = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule4.ID, "LogLevel", "3");
+			break;
+		}
+		case "LevelE":
+		{
+			IVmModule vmModule3 = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule3.ID, "LogLevel", "4");
+			break;
+		}
+		case "LevelC":
+		{
+			IVmModule vmModule2 = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule2.ID, "LogLevel", "5");
+			break;
+		}
+		case "LevelO":
+		{
+			IVmModule vmModule = DecorateSource as IVmModule;
+			ServerSDKAPI.IMVS_SetParamValue(CVmObjectBase.mhandle, vmModule.ID, "LogLevel", "6");
+			break;
+		}
+		}
+	}
+
+	private void CopyItemCommandExecute()
+	{
+		if (DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			IVmModule vmModule = DecorateSource as IVmModule;
+			if (vmModule.IsGlobalModu)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_UnCopyTips") + ":" + vmModule.Name, MessageIcons.Error);
+				return;
+			}
+			string fullName = vmModule.FullName;
+			Clipboard.instance.ClearCopyInfo();
+			Clipboard.instance.AddCopyInfo(fullName);
+		}
+	}
+
+	private void CopyItemsCommandExecute(IList obj)
+	{
+		if (!DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			return;
+		}
+		foreach (object item in obj)
+		{
+			if ((item as IDecorate).DecorateSource is IVmModule vmModule)
+			{
+				(vmModule as VmModule)?.Params.GetParamRoot();
+				if (vmModule.IsGlobalModu)
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_UnCopyTips") + ":" + vmModule.Name, MessageIcons.Error);
+					return;
+				}
+				if (vmModule.IsLoadFailed ?? true)
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_UnCopyTips") + ":" + vmModule.Name, MessageIcons.Error);
+					return;
+				}
+			}
+		}
+		Clipboard.instance.ClearCopyInfo();
+		bool flag = true;
+		foreach (object item2 in obj)
+		{
+			if (item2 is IDecorate { DecorateSource: IVmFrameBase decorateSource } decorate)
+			{
+				Clipboard.instance.AddCopyInfo(decorateSource.FullName);
+				if (flag)
+				{
+					Clipboard.instance.Position = (decorate as VmModuleBaseDecorator).Position;
+					flag = false;
+				}
+			}
+		}
+	}
+
+	private void CopyItemsByDropCommandExecute(DiagramEventArgs ts)
+	{
+		Clipboard.instance.ClearCopyInfo();
+		List<object[]> list = ts.Param as List<object[]>;
+		bool flag = true;
+		foreach (object[] item in ts.Param as IList)
+		{
+			VmModuleBaseDecorator vmModuleBaseDecorator = item[0] as VmModuleBaseDecorator;
+			Point point = (Point)item[1];
+			Clipboard.instance.AddCopyInfo((vmModuleBaseDecorator.DecorateSource as IVmFrameBase).FullName);
+			if (flag)
+			{
+				Clipboard.instance.Position = point;
+				flag = false;
+			}
+		}
+	}
+
+	private void PasteItemsCommandExecute(DiagramEventArgs ts)
+	{
+		if (!DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			return;
+		}
+		UILogManager.logCreate("信息", "粘贴");
+		IVmModuleSet vmModuleSet = DecorateSource as IVmModuleSet;
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "CopyModule"
+		}, AppLocalizationService.GetLang("复制模块") ?? "");
+		try
+		{
+			object obj = vmModuleSet.ProcedurePaste(Clipboard.instance.CopyInfos);
+			string text = "";
+			if (obj != null)
+			{
+				Dictionary<object, object> dictionary = obj as Dictionary<object, object>;
+				Point point = new Point(0.0, 0.0);
+				bool flag = true;
+				int num = 0;
+				foreach (KeyValuePair<object, object> item in dictionary)
+				{
+					VmModuleDecorator vmModuleDecorator = new VmModuleDecorator
+					{
+						DecorateSource = item.Key
+					};
+					VmModuleDecorator vmModuleDecorator2 = new VmModuleDecorator
+					{
+						DecorateSource = item.Value
+					};
+					if (flag)
+					{
+						flag = false;
+						point = vmModuleDecorator.Position;
+						if (ts.Point.X == 0.0 && ts.Point.Y == 0.0)
+						{
+							Point point2 = Clipboard.instance.Position;
+							point2.X += 100.0;
+							point2.Y += 100.0;
+							point2.X = Math.Round(Math.Min(point2.X, DiagramPage.DiagramPageWidth - 150.0) / 5.0) * 5.0;
+							point2.Y = Math.Round(Math.Min(point2.Y, DiagramPage.DiagramPageWidth - 150.0) / 5.0) * 5.0;
+							point2.X = ((point2.X < 0.0) ? 5.0 : point2.X);
+							point2.Y = ((point2.Y < 0.0) ? 5.0 : point2.Y);
+							ts.Point = point2;
+						}
+						Point point3 = ts.Point;
+						point3.X = Math.Round(point3.X / 5.0) * 5.0;
+						point3.Y = Math.Round(point3.Y / 5.0) * 5.0;
+						point3.X = ((point3.X < 0.0) ? 5.0 : point3.X);
+						point3.Y = ((point3.Y < 0.0) ? 5.0 : point3.Y);
+						vmModuleDecorator2.Position = point3;
+					}
+					else
+					{
+						Point point4 = ts.Point + (vmModuleDecorator.Position - point);
+						point4.X = Math.Round(Math.Min(point4.X, DiagramPage.DiagramPageWidth - 150.0) / 5.0) * 5.0;
+						point4.Y = Math.Round(Math.Min(point4.Y, DiagramPage.DiagramPageWidth - 150.0) / 5.0) * 5.0;
+						point4.X = ((point4.X < 0.0) ? 5.0 : point4.X);
+						point4.Y = ((point4.Y < 0.0) ? 5.0 : point4.Y);
+						vmModuleDecorator2.Position = point4;
+					}
+					if (num < 3)
+					{
+						text = text + (item.Key as IVmFrameBase).Name + ",";
+						if (num == 2)
+						{
+							text = text.Substring(0, text.Length - 1);
+							text += "...";
+						}
+						num++;
+					}
+				}
+			}
+			Ioc.Get<IUnRedoService>()?.ModifyDisplayInfo(text);
+		}
+		catch (VmException ex)
+		{
+			ShowMessage.ShowVmExceptionMessage(ex);
+			UILogManager.logCreate("错误", ErrorCodeInfo.GetErrorInfo(ex.errorCode), ifLang: false);
+			LogHelper.Error(ex.errorMessage);
+			Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+		}
+		catch (Exception ex2)
+		{
+			HikMessageBox.Show(ex2.Message, MessageIcons.Error);
+			UILogManager.logCreate("错误", ex2.Message, ifLang: false);
+			LogHelper.Error(ex2.Message);
+			Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+		}
+	}
+
+	private void DeleteItemCommandExecute()
+	{
+		DeleteItemCommandExecute(isShowWarn: true);
+	}
+
+	public virtual void DeleteItemCommandExecute(bool isShowWarn)
+	{
+		IVmModule vmModule = DecorateSource as IVmModule;
+		try
+		{
+			if (!DecoratorBase.CheckRunning(vmModule as IVMRun))
+			{
+				return;
+			}
+			if (isShowWarn)
+			{
+				if (VMModule is IVmModuleSet && HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ConfirmDelete"), "", MessageButtons.YesOrNo, MessageIcons.Question) != DialogResult.Yes)
+				{
+					return;
+				}
+				if (this is VmProcedureDecorator)
+				{
+					UILogManager.logCreate("信息", AppLocalizationService.GetLang("删除流程") + AppLocalizationService.GetPunctuation("：") + vmModule.FullName);
+				}
+				else if (this is VmGroupDecorator)
+				{
+					UILogManager.logCreate("信息", AppLocalizationService.GetLang("删除Group") + AppLocalizationService.GetPunctuation("：") + vmModule.FullName);
+				}
+				else
+				{
+					UILogManager.logCreate("信息", AppLocalizationService.GetLang("删除模块") + AppLocalizationService.GetPunctuation("：") + vmModule.FullName);
+				}
+			}
+			Clipboard.instance.ClearByModuleName(vmModule.FullName);
+			if (!vmModule.IsGlobalModu & isShowWarn)
+			{
+				Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+				{
+					ForbidBuild = (vmModule.IsLoadFailed ?? true),
+					RootOperType = ((vmModule is IVmProcedure) ? "" : "DeleteModule")
+				}, (vmModule is IVmProcedure) ? (AppLocalizationService.GetLang("删除流程") + ": ") : (AppLocalizationService.GetLang("删除模块") + ": " + vmModule.Name));
+			}
+			try
+			{
+				if (VmSolution.Instance[(vmModule as IVmFullPath).FullPath + ".[Display]"] is ParamRoot paramRoot)
+				{
+					IList<object> displayList = paramRoot.GetDisplayList();
+					if (displayList != null)
+					{
+						foreach (Apps.XmlParser.Object item in displayList)
+						{
+							if (item.Type != "image" && item.Type != "pixelinfoimage")
+							{
+								item.RemoveOutputFilter();
+							}
+							if (item.FeaturesB == null)
+							{
+								continue;
+							}
+							foreach (FeatureBase item2 in item.FeaturesB)
+							{
+								item2.RemoveOutputFilter();
+							}
+						}
+					}
+				}
+			}
+			catch
+			{
+			}
+			CheckAndClearDisplayObjectFromParent(vmModule);
+			IList preModules = vmModule.PreModules;
+			IList nextModules = vmModule.NextModules;
+			if (preModules.Count > 0 && nextModules.Count > 0)
+			{
+				foreach (object item3 in nextModules)
+				{
+					foreach (object item4 in preModules)
+					{
+						VmConnectionDecorator vmConnectionDecorator = new VmConnectionDecorator
+						{
+							ConnectionSource = item4,
+							DecorateSource = vmModule
+						};
+						VmConnectionDecorator vmConnectionDecorator2 = new VmConnectionDecorator
+						{
+							ConnectionSource = vmModule,
+							DecorateSource = item3
+						};
+						VMAddConnection(item4 as IVmModule, item3 as IVmModule, vmConnectionDecorator.SourceIndex, vmConnectionDecorator2.TargetIndex, isFilterUnReDo: true, isAutoLink: false);
+					}
+				}
+			}
+			vmModule.Dispose();
+		}
+		catch (VmException ex)
+		{
+			ShowMessage.ShowVmExceptionMessage(ex);
+			UILogManager.logCreate("错误", ErrorCodeInfo.GetErrorInfo(ex.errorCode), ifLang: false);
+			LogHelper.Error(ex.errorMessage);
+			Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+		}
+		catch (Exception ex2)
+		{
+			HikMessageBox.Show(ex2.Message, MessageIcons.Error);
+			UILogManager.logCreate("错误", ex2.Message, ifLang: false);
+			LogHelper.Error(ex2.Message);
+			Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+		}
+		finally
+		{
+			if (isShowWarn)
+			{
+				Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+			}
+		}
+	}
+
+	/// <summary>
+	/// 清理上层和本模块相关的显示
+	/// </summary>
+	/// <param name="module"></param>
+	private void CheckAndClearDisplayObjectFromParent(IVmModule module)
+	{
+		if (!(module.Parent is IVmModuleSet vmModuleSet))
+		{
+			return;
+		}
+		List<VmIO> outputs = (module.Outputs as VmIOCollection).GetAllIO();
+		if (!(VmSolution.Instance[(vmModuleSet as IVmFullPath).FullPath + ".[Display]"] is ParamRoot paramRoot))
+		{
+			return;
+		}
+		IEnumerable<DynamicObject> enumerable = paramRoot.GetDisplayList().OfType<DynamicObject>();
+		foreach (DynamicObject item in enumerable)
+		{
+			IEnumerable<VmIO> source = from p in item.GetAllTopMappingIO()
+				select p.RelateIO;
+			if (source.Any((VmIO p) => outputs.Contains(p)))
+			{
+				ClearModuleInfoFromObject(item);
+			}
+		}
+	}
+
+	public static void ClearModuleInfoFromObject(Apps.XmlParser.Object sourceObject)
+	{
+		IEnumerable<DynamicVmIO> enumerable = sourceObject.GetAllTopMappingIO().OfType<DynamicVmIO>();
+		VmModule vmModule = sourceObject.Owner as VmModule;
+		foreach (DynamicVmIO item in enumerable)
+		{
+			if (!item.Visible)
+			{
+				item.RemoveSelf();
+			}
+		}
+		foreach (FeatureBase item2 in sourceObject.FeaturesB)
+		{
+			IEnumerable<DynamicVmIO> enumerable2 = item2.vmIOs.OfType<DynamicVmIO>();
+			bool flag = true;
+			foreach (DynamicVmIO item3 in enumerable2)
+			{
+				if (!item3.Visible)
+				{
+					item3.RemoveSelf();
+					flag = false;
+				}
+			}
+			if (!flag)
+			{
+				item2.MappingA = null;
+				item2.ValueA = null;
+				item2.InitVmIOs();
+			}
+		}
+		(sourceObject as DynamicObject).SaveExternInfo("OriSelectedObj", null);
+		if (sourceObject.Owner is IVMGroup ioParams)
+		{
+			SetIoParams(ioParams);
+		}
+	}
+
+	public static void SetIoParams(IVmProcedure group)
+	{
+		try
+		{
+			group.SetIoParams();
+		}
+		catch (VmException vmException)
+		{
+			ShowMessage.ShowVmExceptionMessage(vmException);
+		}
+	}
+
+	public static void SetIoParams(IVMGroup group)
+	{
+		try
+		{
+			group.SetIoParams();
+		}
+		catch (VmException vmException)
+		{
+			ShowMessage.ShowVmExceptionMessage(vmException);
+		}
+	}
+
+	private void ConnectCommandExecute(ObjectEventArgs ts)
+	{
+		object[] array = (ts.Param as IList) as object[];
+		VmModuleBaseDecorator vmModuleBaseDecorator = array[0] as VmModuleBaseDecorator;
+		int index = (int)array[1];
+		int targetIndex = (int)array[2];
+		try
+		{
+			VMAddConnection(DecorateSource as IVmModule, vmModuleBaseDecorator.DecorateSource as IVmModule, index, targetIndex);
+		}
+		catch (VmException vmException)
+		{
+			ShowMessage.ShowVmExceptionMessage(vmException);
+		}
+	}
+
+	public static bool VMAddConnection(IVmModule source, IVmModule target, int index, int targetIndex, bool isFilterUnReDo = false, bool isAutoLink = true)
+	{
+		if (source == null || target == null)
+		{
+			return false;
+		}
+		if (!DecoratorBase.CheckRunning(source as IVMRun) || !DecoratorBase.CheckRunning(target as IVMRun))
+		{
+			return false;
+		}
+		string text = source.Name + ", " + target.Name;
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("增加连线") + AppLocalizationService.GetPunctuation("：") + source.FullName + "," + target.FullName, ifLang: false);
+		if (!source.IsGlobalModu && !target.IsGlobalModu && !isFilterUnReDo)
+		{
+			Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("增加连线") + AppLocalizationService.GetPunctuation("：") + text);
+		}
+		LogHelper.Info("连接：" + source.FullName + "," + target.FullName);
+		if (source.NextModules.Contains(target))
+		{
+			VmConnectionDecorator vmConnectionDecorator = new VmConnectionDecorator
+			{
+				ConnectionSource = source,
+				DecorateSource = target
+			};
+			vmConnectionDecorator.SourceIndex = index;
+			vmConnectionDecorator.TargetIndex = targetIndex;
+			target.OnPropertyChanged("SourceIndex");
+			target.OnPropertyChanged("TargetIndex");
+		}
+		else
+		{
+			HasCheckPath = new Dictionary<uint, uint>();
+			if (CheckPathByModule(target, source))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ModuLink"), AppLocalizationService.GetLang("Lang_FlowNoLoop"), MessageIcons.Warning);
+				return false;
+			}
+			if (!source.SpModuleCheck(true))
+			{
+				return false;
+			}
+			AddConnection(source, target, isAutoLink);
+			VmConnectionDecorator vmConnectionDecorator2 = new VmConnectionDecorator
+			{
+				ConnectionSource = source,
+				DecorateSource = target
+			};
+			vmConnectionDecorator2.SourceIndex = index;
+			vmConnectionDecorator2.TargetIndex = targetIndex;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 增加连接
+	/// </summary>
+	public static void AddConnection(IVmModule source, IVmModule target, bool isAutoLink = true)
+	{
+		if (source.NextModules.Count >= source.MaxConnecion)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Connection Exceed UL"), MessageIcons.Warning);
+		}
+		else if (!source.NextModules.Contains(target))
+		{
+			source.NextModules.Add(target);
+			if (isAutoLink && !(target is IVmProcedure))
+			{
+				DecoratorBase.AutoLinkData(source, target);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 判断是否存在StartItem到EndItem的路径
+	/// </summary>
+	/// <param name="hotItem"></param>
+	/// <param name="item"></param>
+	protected static bool CheckPathByModule(IVmModule StartItem, IVmModule EndItem)
+	{
+		if (HasCheckPath.ContainsKey(StartItem.ID))
+		{
+			return false;
+		}
+		HasCheckPath.Add(StartItem.ID, 0u);
+		foreach (IVmModule item in StartItem.NextModules.OfType<IVmModule>())
+		{
+			if (item == EndItem)
+			{
+				return true;
+			}
+			if (CheckPathByModule(item, EndItem))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void RenameWindowCommandExe()
+	{
+		IsReName = true;
+		ModifyName modifyName = new ModifyName(this);
+		modifyName.ShowDialog();
+	}
+
+	private void RenameCommandExe()
+	{
+		IsReName = true;
+	}
+
+	private void SetOldForbid(UnRedo_ForbidData data, IUnRedoParams unRedoParams)
+	{
+		object obj = VmSolution.Instance[data.ModuleName];
+		if (obj != null)
+		{
+			(obj as IVmModule).IsForbidden = data.OldValue;
+		}
+	}
+
+	private void SetNewForbid(UnRedo_ForbidData data, IUnRedoParams unRedoParams)
+	{
+		object obj = VmSolution.Instance[data.ModuleName];
+		if (obj != null)
+		{
+			(obj as IVmModule).IsForbidden = data.NewValue;
+		}
+	}
+
+	private void SetOldName(UnRedo_NameData nameData, IUnRedoParams unRedoParams)
+	{
+		string moduleFullName = nameData.ModuleFullName;
+		string text = moduleFullName.Substring(0, moduleFullName.LastIndexOf('.'));
+		string sub = text + "." + nameData.NewName;
+		object obj = VmSolution.Instance[sub];
+		(obj as IVmModule).Name = nameData.OldName;
+	}
+
+	private void SetNewName(UnRedo_NameData nameData, IUnRedoParams unRedoParams)
+	{
+		object obj = VmSolution.Instance[nameData.ModuleFullName];
+		(obj as IVmModule).Name = nameData.NewName;
+	}
+
+	private void SkipToModuleCommandExecute()
+	{
+		if (this is VmProcedureDecorator vmProcedureDecorator)
+		{
+			vmProcedureDecorator.OpenGroupCommandExecute(this);
+		}
+		else
+		{
+			GetParent<VmProcedureDecorator>()?.OpenGroupCommandExecute(this);
+		}
+	}
+
+	private void DeleteConnectionCommandExecute(IVmModule module)
+	{
+		string text = VMModule.Name + ", " + module.Name;
+		if (!VMModule.IsGlobalModu && !module.IsGlobalModu)
+		{
+			Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("删除连线") + ": " + text);
+		}
+		VmConnectionDecorator.DeleteConnection(VMModule, module);
+	}
+}

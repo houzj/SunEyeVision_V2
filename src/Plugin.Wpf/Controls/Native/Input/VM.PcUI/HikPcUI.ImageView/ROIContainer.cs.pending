@@ -1,0 +1,624 @@
+using System;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using Apps.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class ROIContainer : Canvas, INotifyPropertyChanged, IRoiOwner
+{
+	public bool IsDrawOne = false;
+
+	private HikImageView _parentView;
+
+	private Hashtable roiList = new Hashtable();
+
+	public static readonly DependencyProperty RoiListProperty = DependencyProperty.Register("RoiList", typeof(ObservableCollection<object>), typeof(ROIContainer), new PropertyMetadata(null, OnRoiListChanged));
+
+	private ROITypeUIEnum _ROITypeUI = ROITypeUIEnum.Cover;
+
+	private RoiUIType _PrepareRoiType = RoiUIType.Default;
+
+	private SelectionService selectionService;
+
+	public HikImageView.GetExtendROIParam OnGetExtendROIParam { get; set; }
+
+	private HikImageView ParentView
+	{
+		get
+		{
+			if (_parentView == null)
+			{
+				_parentView = CommonLibExtensions.GetParentObject<HikImageView>(this);
+			}
+			return _parentView;
+		}
+	}
+
+	public ObservableCollection<object> RoiList
+	{
+		get
+		{
+			return (ObservableCollection<object>)GetValue(RoiListProperty);
+		}
+		set
+		{
+			SetValue(RoiListProperty, value);
+		}
+	}
+
+	public ROITypeUIEnum ROITypeUI
+	{
+		get
+		{
+			return _ROITypeUI;
+		}
+		set
+		{
+			if (_ROITypeUI != value)
+			{
+				_ROITypeUI = value;
+				NotifyPropertyChanged("ROITypeUI");
+			}
+		}
+	}
+
+	public RoiUIType PrepareRoiType
+	{
+		get
+		{
+			return _PrepareRoiType;
+		}
+		set
+		{
+			_PrepareRoiType = value;
+		}
+	}
+
+	public SelectionService SelectionService
+	{
+		get
+		{
+			if (selectionService == null)
+			{
+				selectionService = new SelectionService(this);
+			}
+			return selectionService;
+		}
+	}
+
+	public bool IsSelectMulRoiEnable { get; set; } = false;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	private static void OnRoiListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.OldValue != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, (d as ROIContainer).RoiList_CollectionChanged);
+		}
+		foreach (object value in (d as ROIContainer).roiList.Values)
+		{
+			(d as ROIContainer).RemoveROIChild(value as FrameworkElement);
+		}
+		(d as ROIContainer).roiList.Clear();
+		(d as ROIContainer).DrawRoi((d as ROIContainer).RoiList);
+		(d as ROIContainer).RoiListRegister();
+	}
+
+	public void RoiListRegister()
+	{
+		if (RoiList != null)
+		{
+			CollectionChangedEventManager.AddHandler(RoiList, RoiList_CollectionChanged);
+		}
+	}
+
+	private void RoiList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (ParentView == null)
+		{
+			return;
+		}
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Reset:
+			foreach (object value in roiList.Values)
+			{
+				RemoveROIChild(value as FrameworkElement);
+			}
+			roiList.Clear();
+			break;
+		case NotifyCollectionChangedAction.Add:
+			DrawRoi(e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Remove:
+		{
+			foreach (object oldItem in e.OldItems)
+			{
+				if (roiList.ContainsKey(oldItem))
+				{
+					object obj = roiList[oldItem];
+					RemoveROIChild(obj as FrameworkElement);
+					roiList.Remove(oldItem);
+					ParentView.ChangeRoiDeCount(oldItem);
+				}
+			}
+			break;
+		}
+		case NotifyCollectionChangedAction.Replace:
+		case NotifyCollectionChangedAction.Move:
+			break;
+		}
+	}
+
+	public void RemoveROIChild(FrameworkElement frameworkElement)
+	{
+		if (Children.Contains(frameworkElement))
+		{
+			Children.Remove(frameworkElement);
+			if (frameworkElement is IDisposable)
+			{
+				(frameworkElement as IDisposable).Dispose();
+			}
+		}
+	}
+
+	public void DrawRoi(IList proiList)
+	{
+		if (ParentView == null || proiList == null)
+		{
+			return;
+		}
+		foreach (object proi in proiList)
+		{
+			if (!(proi is RoiParameter roiParameter))
+			{
+				continue;
+			}
+			FrameworkElement frameworkElement = null;
+			if (roiParameter is HikCoverCircleRoiParameter2)
+			{
+				frameworkElement = new HikCoverCircle2();
+				(frameworkElement as HikCoverCircle2).owner = ParentView;
+				(frameworkElement as HikCoverCircle2).Init();
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.ClockWiseProperty, new Binding("ClockWise")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				Binding binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TCenterPointProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TRadiusProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("MinRadius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TMinRadiusProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.StartAngleProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.EndAngleProperty, binding);
+				HikCoverCircle2 obj = frameworkElement as HikCoverCircle2;
+				obj.OnTheSizeChange = (HikCoverCircle2.SizeChange)Delegate.Combine(obj.OnTheSizeChange, new HikCoverCircle2.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCoverCircle2).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCoverCircleRoiParameter)
+			{
+				frameworkElement = new HikCoverCircle2
+				{
+					IsRadiusLimit = true
+				};
+				(frameworkElement as HikCoverCircle2).owner = ParentView;
+				(frameworkElement as HikCoverCircle2).Init();
+				Binding binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("CenterPoint");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TCenterPointProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Radius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TRadiusProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("MinRadius");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.TMinRadiusProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("StartAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.StartAngleProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("EndAngle");
+				(frameworkElement as HikCoverCircle2).SetBinding(HikCoverCircle2.EndAngleProperty, binding);
+				HikCoverCircle2 obj2 = frameworkElement as HikCoverCircle2;
+				obj2.OnTheSizeChange = (HikCoverCircle2.SizeChange)Delegate.Combine(obj2.OnTheSizeChange, new HikCoverCircle2.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCoverCircle2).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikCoverRoiParameter)
+			{
+				frameworkElement = new HikCover();
+				(frameworkElement as HikCover).owner = ParentView;
+				(frameworkElement as HikCover).ownerCanvas = this;
+				(frameworkElement as HikCover).Init();
+				Binding binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Angle");
+				(frameworkElement as HikCover).SetBinding(HikCover.TAngleProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("OriginPoint");
+				(frameworkElement as HikCover).SetBinding(HikCover.TOriginPointProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Width");
+				(frameworkElement as HikCover).SetBinding(HikCover.TWidthProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("Height");
+				(frameworkElement as HikCover).SetBinding(HikCover.THeightProperty, binding);
+				HikCover obj3 = frameworkElement as HikCover;
+				obj3.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(obj3.OnTheSizeChange, new HikCover.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikCover).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikDoubleCoverRoiParameter)
+			{
+				frameworkElement = new HikDoubleCover();
+				HikDoubleCover hikDoubleCover = frameworkElement as HikDoubleCover;
+				hikDoubleCover.owner = ParentView;
+				hikDoubleCover.Init();
+				hikDoubleCover.SetBinding(HikDoubleCover.AngleFirstProperty, new Binding("AngleFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.OriginPointFirstProperty, new Binding("OriginPointFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.WidthFirstProperty, new Binding("WidthFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.HeightFirstProperty, new Binding("HeightFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.AngleSecondProperty, new Binding("AngleSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.OriginPointSecondProperty, new Binding("OriginPointSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.WidthSecondProperty, new Binding("WidthSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.HeightSecondProperty, new Binding("HeightSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.SetBinding(HikDoubleCover.SignProperty, "Sign");
+				hikDoubleCover.SetBinding(HikDoubleCover.TIsVisibleProperty, "TIsVisible");
+				hikDoubleCover.SetBinding(HikDoubleCover.IsSelectedProperty, new Binding("IsSelected")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikDoubleCover.OnTheSizeChange = (HikDoubleCover.SizeChange)Delegate.Combine(hikDoubleCover.OnTheSizeChange, new HikDoubleCover.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				hikDoubleCover.SetROITypeUI(ROITypeUI);
+				hikDoubleCover.OnFremeMouseLeftButtonDown = (HikDoubleCover.FremeMouseLeftButtonDown)Delegate.Combine(hikDoubleCover.OnFremeMouseLeftButtonDown, new HikDoubleCover.FremeMouseLeftButtonDown(ParentView.hikFrame_OnFremeMouseLeftButtonDown));
+			}
+			else if (roiParameter is HikQuadraCoverRoiParameter)
+			{
+				frameworkElement = new HikQuadraCover();
+				HikQuadraCover hikQuadraCover = frameworkElement as HikQuadraCover;
+				hikQuadraCover.owner = ParentView;
+				hikQuadraCover.Init();
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleFirstProperty, new Binding("AngleFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointFirstProperty, new Binding("OriginPointFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthFirstProperty, new Binding("WidthFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightFirstProperty, new Binding("HeightFirst")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleSecondProperty, new Binding("AngleSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointSecondProperty, new Binding("OriginPointSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthSecondProperty, new Binding("WidthSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightSecondProperty, new Binding("HeightSecond")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleThirdProperty, new Binding("AngleThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointThirdProperty, new Binding("OriginPointThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthThirdProperty, new Binding("WidthThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightThirdProperty, new Binding("HeightThird")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.AngleFourthProperty, new Binding("AngleFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.OriginPointFourthProperty, new Binding("OriginPointFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.WidthFourthProperty, new Binding("WidthFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.HeightFourthProperty, new Binding("HeightFourth")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.SetBinding(HikQuadraCover.SignProperty, "Sign");
+				hikQuadraCover.SetBinding(HikQuadraCover.TIsVisibleProperty, "TIsVisible");
+				hikQuadraCover.SetBinding(HikQuadraCover.IsSelectedProperty, new Binding("IsSelected")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				hikQuadraCover.OnTheSizeChange = (HikQuadraCover.SizeChange)Delegate.Combine(hikQuadraCover.OnTheSizeChange, new HikQuadraCover.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				hikQuadraCover.SetROITypeUI(ROITypeUI);
+				hikQuadraCover.OnFremeMouseLeftButtonDown = (HikQuadraCover.FremeMouseLeftButtonDown)Delegate.Combine(hikQuadraCover.OnFremeMouseLeftButtonDown, new HikQuadraCover.FremeMouseLeftButtonDown(ParentView.hikFrame_OnFremeMouseLeftButtonDown));
+			}
+			else if (roiParameter is HikPolygonRoiParameter)
+			{
+				frameworkElement = new HikPolygon();
+				(frameworkElement as HikPolygon).owner = ParentView;
+				(frameworkElement as HikPolygon).Init();
+				Binding binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("PolygonPoints");
+				(frameworkElement as HikPolygon).SetBinding(HikPolygon.PolygonPointsProperty, binding);
+				HikPolygon obj4 = frameworkElement as HikPolygon;
+				obj4.OnTheSizeChange = (HikPolygon.SizeChange)Delegate.Combine(obj4.OnTheSizeChange, new HikPolygon.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikPolygon).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikPolylineRoiParameter)
+			{
+				frameworkElement = new HikPath();
+				(frameworkElement as HikPath).owner = ParentView;
+				(frameworkElement as HikPath).Init();
+				Binding binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("PathPoints");
+				(frameworkElement as HikPath).SetBinding(HikPath.PathPointsProperty, binding);
+				HikPath obj5 = frameworkElement as HikPath;
+				obj5.OnTheSizeChange = (HikPath.SizeChange)Delegate.Combine(obj5.OnTheSizeChange, new HikPath.SizeChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+				(frameworkElement as HikPath).SetROITypeUI(ROITypeUI);
+			}
+			else if (roiParameter is HikPasterParameter)
+			{
+				frameworkElement = new HikPaster();
+				(frameworkElement as HikPaster).owner = ParentView;
+				(frameworkElement as HikPaster).Init();
+				(frameworkElement as HikPaster).SetBinding(HikPaster.OriginPointProperty, "OriginPoint");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.AngleProperty, "Angle");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.TSkewAngleXProperty, "SkewAngleX");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.TWidthProperty, "Width");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.THeightProperty, "Height");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.GroupNameProperty, "GroupName");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.StateProperty, "State");
+				Binding binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("SubContent");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.SubContentProperty, binding);
+				binding = new Binding();
+				binding.Mode = BindingMode.TwoWay;
+				binding.Path = new PropertyPath("IsSelected");
+				(frameworkElement as HikPaster).SetBinding(HikPaster.IsSelectedProperty, binding);
+				HikPaster obj6 = frameworkElement as HikPaster;
+				obj6.OnCheckedChange = (HikPaster.CheckedChange)Delegate.Combine(obj6.OnCheckedChange, new HikPaster.CheckedChange(ParentView.hikImageView_OnROIParamChanged));
+				frameworkElement.DataContext = roiParameter;
+			}
+			else
+			{
+				frameworkElement = new Label();
+				(frameworkElement as Label).Content = roiParameter.RoiType;
+			}
+			if (frameworkElement != null && frameworkElement is HikROIBase)
+			{
+				(frameworkElement as HikROIBase).SetBinding(HikROIBase.IsSelectedProperty, new Binding("IsSelected")
+				{
+					Mode = BindingMode.TwoWay
+				});
+				(frameworkElement as HikROIBase).SetBinding(HikROIBase.SignProperty, "Sign");
+				(frameworkElement as HikROIBase).SetBinding(HikROIBase.TIsVisibleProperty, "TIsVisible");
+			}
+			AddROIChild(frameworkElement);
+			if (!roiList.ContainsKey(proi))
+			{
+				roiList.Add(proi, frameworkElement);
+				if (IsDrawOne)
+				{
+					IsDrawOne = false;
+					UnPrepareRawRoi();
+				}
+				ParentView.ChangeRoiCount(roiParameter);
+				if (frameworkElement is RectangleRoi)
+				{
+					(frameworkElement as RectangleRoi).DoCallBack();
+				}
+				if (ParentView.viewScal != 0.0 && ParentView.OnScaleChange != null)
+				{
+					ParentView.OnScaleChange(ParentView.ScaleTransform, ParentView.viewScal);
+				}
+			}
+		}
+	}
+
+	internal RoiParameter DoGetExtendROIParam(RoiUIType ROIType)
+	{
+		if (OnGetExtendROIParam != null)
+		{
+			return OnGetExtendROIParam(this, ROIType);
+		}
+		return null;
+	}
+
+	public void AddROIChild(FrameworkElement frameworkElement)
+	{
+		try
+		{
+			Children.Add(frameworkElement);
+		}
+		catch
+		{
+		}
+	}
+
+	public void PrepareRawRoi(RoiUIType roiType)
+	{
+		if (ParentView != null)
+		{
+			IsHitTestVisible = false;
+			PrepareRoiType = roiType;
+			ParentView.ContextMenuVisible = false;
+		}
+	}
+
+	public void PrepareRawRoi(RoiUIType roiType, bool isDrawOne)
+	{
+		if (ParentView != null)
+		{
+			IsHitTestVisible = false;
+			PrepareRoiType = roiType;
+			IsDrawOne = isDrawOne;
+			ParentView.ContextMenuVisible = false;
+		}
+	}
+
+	public void UnPrepareRawRoi()
+	{
+		if (ParentView != null)
+		{
+			IsHitTestVisible = true;
+			PrepareRoiType = RoiUIType.Default;
+			ParentView.ContextMenuVisible = true;
+		}
+	}
+
+	internal void mouseLBDown(object sender, MouseButtonEventArgs e)
+	{
+		if (ParentView == null || PrepareRoiType == RoiUIType.Default)
+		{
+			return;
+		}
+		ParentView.isDragging = false;
+		if (ParentView.OnDrawRoi_MouseDownChange != null)
+		{
+			ParentView.OnDrawRoi_MouseDownChange(sender, e);
+		}
+		if (!ParentView._IsDrawRoi)
+		{
+			switch (PrepareRoiType)
+			{
+			case RoiUIType.HikCoverRoi:
+				ParentView.IsDrawRoi = true;
+				HikCover.InitSubstitute(ParentView, this, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikCoverCircleRoi:
+				ParentView.IsDrawRoi = true;
+				HikCoverCircle.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikCoverCircleRoi2:
+				ParentView.IsDrawRoi = true;
+				HikCoverCircle2.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikPolygonRoi:
+				ParentView.IsDrawRoi = true;
+				HikPolygon.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikPath:
+				ParentView.IsDrawRoi = true;
+				HikPath.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikPointRoi:
+				ParentView.IsDrawRoi = true;
+				HikPoint.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikLineRoi:
+				ParentView.IsDrawRoi = true;
+				HikLine.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			case RoiUIType.HikCircleMesRoi:
+				ParentView.IsDrawRoi = true;
+				HikCircleMeasure.InitSubstitute(ParentView, e.GetPosition(ParentView.SourceImage));
+				break;
+			}
+			(sender as FrameworkElement).CaptureMouse();
+		}
+	}
+
+	internal void mouseLBUp(object sender, MouseButtonEventArgs e)
+	{
+		if (ParentView != null && PrepareRoiType != RoiUIType.Default && ParentView.OnDrawRoi_MouseUpChange != null)
+		{
+			ParentView.OnDrawRoi_MouseUpChange(sender, e);
+		}
+	}
+
+	internal void viewbox_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (ParentView != null && PrepareRoiType != RoiUIType.Default && ParentView.OnDrawRoi_MouseMoveChange != null)
+		{
+			ParentView.OnDrawRoi_MouseMoveChange(sender, e);
+		}
+	}
+}

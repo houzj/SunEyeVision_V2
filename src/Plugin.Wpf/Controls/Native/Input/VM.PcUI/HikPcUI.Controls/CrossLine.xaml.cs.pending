@@ -1,0 +1,128 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+
+public partial class CrossLine : Control, INotifyPropertyChanged, IComponentConnector
+{
+	private const double offset = 0.5;
+
+	public static readonly DependencyProperty RatioProperty = DependencyProperty.Register("Ratio", typeof(double), typeof(LineAndAngle), new PropertyMetadata(1.0));
+
+	public static readonly DependencyProperty ScaleRatioProperty = DependencyProperty.Register("ScaleRatio", typeof(double), typeof(CrossLine), new PropertyMetadata(1.0, ScaleRatioChanged));
+
+	public static readonly DependencyProperty StrokeProperty = DependencyProperty.Register("Stroke", typeof(Brush), typeof(CrossLine), new PropertyMetadata((object)null));
+
+	public static readonly DependencyProperty StrokeThicknessProperty = DependencyProperty.Register("StrokeThickness", typeof(double), typeof(CrossLine), new PropertyMetadata(1.0));
+
+	public static readonly DependencyProperty CenterPointXProperty = DependencyProperty.Register("CenterPointX", typeof(double), typeof(CrossLine), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty CenterPointYProperty = DependencyProperty.Register("CenterPointY", typeof(double), typeof(CrossLine), new PropertyMetadata(0.0));
+
+	public double Ratio
+	{
+		get
+		{
+			return (double)GetValue(RatioProperty);
+		}
+		set
+		{
+			SetValue(RatioProperty, value);
+		}
+	}
+
+	public double ScaleRatio
+	{
+		get
+		{
+			return (double)GetValue(ScaleRatioProperty);
+		}
+		set
+		{
+			SetValue(ScaleRatioProperty, value);
+		}
+	}
+
+	public Brush Stroke
+	{
+		get
+		{
+			return (Brush)GetValue(StrokeProperty);
+		}
+		set
+		{
+			SetValue(StrokeProperty, value);
+		}
+	}
+
+	public double StrokeThickness
+	{
+		get
+		{
+			return (double)GetValue(StrokeThicknessProperty);
+		}
+		set
+		{
+			SetValue(StrokeThicknessProperty, value);
+		}
+	}
+
+	public double CenterPointX
+	{
+		get
+		{
+			return (double)GetValue(CenterPointXProperty);
+		}
+		set
+		{
+			SetValue(CenterPointXProperty, value);
+		}
+	}
+
+	public double CenterPointY
+	{
+		get
+		{
+			return (double)GetValue(CenterPointYProperty);
+		}
+		set
+		{
+			SetValue(CenterPointYProperty, value);
+		}
+	}
+
+	public double StrokeThicknessR => StrokeThickness / ScaleRatio;
+
+	public double Line1XR => (CenterPointX + 0.5) * Ratio;
+
+	public double Line1YR => (CenterPointY + 0.5) * Ratio;
+
+	public double Line2XR => (CenterPointX + 0.5) * Ratio;
+
+	public double Line2YR => (CenterPointY + 0.5) * Ratio;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void ScaleRatioChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as CrossLine).OnScaleRatioChanged();
+	}
+
+	private void OnScaleRatioChanged()
+	{
+		OnPropertyChanged("StrokeThicknessR");
+	}
+
+	public CrossLine()
+	{
+		InitializeComponent();
+	}
+}

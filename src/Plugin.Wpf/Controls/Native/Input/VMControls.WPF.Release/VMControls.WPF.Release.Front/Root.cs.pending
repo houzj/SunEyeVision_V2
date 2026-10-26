@@ -1,0 +1,22 @@
+using System.Linq;
+using System.Windows;
+using FrontendUI.Design.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+public class Root : FrontendUI.Design.Controls.Root
+{
+	public Root()
+	{
+		Unloaded += (object s, RoutedEventArgs e) =>
+		{
+			if (!IsDesignMode)
+			{
+				Children?.OfType<SubWindow>()?.ToList().ForEach((SubWindow x) =>
+				{
+					(x.Content as FrontendUI.Design.Controls.SubWindow)._dialog?.Close();
+				});
+			}
+		};
+	}
+}

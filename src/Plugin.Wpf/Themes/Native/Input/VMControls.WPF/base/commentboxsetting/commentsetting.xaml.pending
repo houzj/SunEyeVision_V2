@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+  <ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="baseCheckBox" TargetType="{x:Type CheckBox}">
+    <Setter Property="BorderBrush" Value="{DynamicResource ListViewComboBoxBordBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+  </Style>
+  <Style x:Key="ExpandCheck" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource baseCheckBox}">
+    <Setter Property="ToggleButton.IsChecked" Value="{Binding IsCommentSetShow, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CommentSetting}}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type CheckBox}">
+          <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}">
+            <Image Name="im" Source="/Apps.Style;component/Resources/ic_note_edit_normal.png" Stretch="None" />
+            <UIElement.Effect>
+              <DropShadowEffect Opacity="1" ShadowDepth="2" BlurRadius="8" Color="Black" />
+            </UIElement.Effect>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="true">
+              <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_rightarrow32_normal.png" />
+            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="true" />
+                <Condition Property="UIElement.IsMouseOver" Value="True" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_rightarrow32_click.png" />
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="false" />
+                <Condition Property="UIElement.IsMouseOver" Value="True" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_note_edit_click.png" />
+            </MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="EditCommentCheck" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource baseCheckBox}">
+    <Setter Property="ToggleButton.IsChecked" Value="{Binding IsEditComment, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CommentSetting}}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type CheckBox}">
+          <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}">
+            <Image Name="im" Source="/Apps.Style;component/Resources/ic_note_DrawNoteBox_normal.png" Stretch="None" />
+            <UIElement.Effect>
+              <DropShadowEffect Opacity="1" ShadowDepth="2" BlurRadius="8" Color="Black" />
+            </UIElement.Effect>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="true">
+              <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_note_DrawNoteBox_click.png" />
+            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="true" />
+                <Condition Property="UIElement.IsMouseOver" Value="True" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_note_DrawNoteBox_click.png" />
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="false" />
+                <Condition Property="UIElement.IsMouseOver" Value="True" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="im" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_note_DrawNoteBox_click.png" />
+            </MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="{x:Type local:CommentSetting}" TargetType="{x:Type local:CommentSetting}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CommentSetting}">
+          <Border Name="Border" BorderBrush="{TemplateBinding Control.BorderBrush}" Opacity="0.3" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="{TemplateBinding local:CommentSetting.CornerRadius}" Background="{TemplateBinding Control.Background}" Padding="{TemplateBinding Control.Padding}">
+            <Grid Name="PART_Root11">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+              </Grid.ColumnDefinitions>
+              <Grid Width="150" Column="0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="auto" />
+                  <ColumnDefinition Width="auto" />
+                  <ColumnDefinition Width="auto" />
+                  <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox Name="cbEditComment" ToolTip="{DynamicResource RunParam_Draw}" Grid.Column="0" Margin="10,0,0,0" Background="#00FFFFFF" Style="{StaticResource EditCommentCheck}" />
+                <Button Name="PART_ButtonUP" ToolTip="{DynamicResource Lang_Top}" Width="30" Height="30" Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource ToUpButtonStyle}" Command="{Binding Child.UpComments, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" />
+                <Button Name="PART_ButtonDOWN" ToolTip="{DynamicResource Lang_ToDown}" Width="30" Height="30" Grid.Column="2" Margin="10,0,0,0" Style="{StaticResource ToDownButtonStyle}" Command="{Binding Child.DownComments, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" />
+                <Button Name="PART_ButtonClear1" ToolTip="{DynamicResource Clear}" Width="30" Height="30" Grid.Column="3" Margin="5,0,0,0" Style="{StaticResource DeleteBtnStyle2}" Command="{Binding Child.ClearComments, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" />
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Style.Triggers>
+                      <DataTrigger Value="true" Binding="{Binding IsCommentSetShow, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CommentSetting}}">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                      <DataTrigger Value="false" Binding="{Binding IsCommentSetShow, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CommentSetting}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </Grid>
+              <CheckBox Name="cbExpand11" Width="32" Grid.Column="1" Margin="0,0,0,0" Background="#00FFFFFF" Style="{StaticResource ExpandCheck}" />
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="Border" Property="UIElement.Opacity" Value="1" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

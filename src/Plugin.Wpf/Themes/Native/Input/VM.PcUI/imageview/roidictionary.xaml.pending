@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:com="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions">
+  <ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <com:Thickness2DoubleConverter x:Key="thickness2Double" />
+  <SolidColorBrush x:Key="ROIBaseSignColor" Color="#EC0000" Opacity="0.45" />
+  <SolidColorBrush x:Key="ROIBaseSignSpecialColor" Color="#60FF00" Opacity="0.3" />
+  <SolidColorBrush x:Key="ROIBaseBackgroundColor" Color="#3884FF" Opacity="0.25" />
+  <SolidColorBrush x:Key="ROIBaseColor" Color="#0F6AF3" />
+  <SolidColorBrush x:Key="ROIMouseOverColor" Color="#F76900" />
+  <SolidColorBrush x:Key="RectangleAreaColor" Color="#3585FD" />
+  <SolidColorBrush x:Key="ROISelectedColor" Color="Red" />
+  <SolidColorBrush x:Key="ROITextColor" Color="#3585FD" />
+  <SolidColorBrush x:Key="ROILowLevelColor" Color="#4CFEE404" />
+  <SolidColorBrush x:Key="ROIMiddleLevelColor" Color="#4CFE8B04" />
+  <SolidColorBrush x:Key="ROIHighLevelColor" Color="#4CFF1A1A" />
+  <SolidColorBrush x:Key="ROILowLevelColor_Selected" Color="#99FEE404" />
+  <SolidColorBrush x:Key="ROIMiddleLevelColor_Selected" Color="#99FE8B04" />
+  <SolidColorBrush x:Key="ROIHighLevelColor_Selected" Color="#99FF1A1A" />
+  <controls:HikContextMenu x:Key="OperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Delet}">
+      <interactivity:Interaction.Triggers xmlns:interactivity="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <interactivity:EventTrigger xmlns:interactivity="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" EventName="Click">
+          <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="DeleteSelf" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" />
+        </interactivity:EventTrigger>
+      </interactivity:Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Copy}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Style.Triggers>
+            <DataTrigger Value="false" Binding="{Binding PastCopyEnable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikImageView}}}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="CtrlCCommandCmdExecute" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <controls:HikContextMenu x:Key="OperateMenuHikPath">
+    <MenuItem Header="{DynamicResource Lang_Delet}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="DeleteSelf" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Copy}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Style.Triggers>
+            <DataTrigger Value="false" Binding="{Binding PastCopyEnable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikImageView}}}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="CtrlCCommandCmdExecute" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_InsertPoint}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="InsertPoint" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_DeletePoint}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="DeletePoint" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_CloseTraj}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="CloseTraj" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <controls:HikContextMenu x:Key="OperateMenuHikPathSquare">
+    <MenuItem Header="{DynamicResource Lang_DeletePoint}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="DeletePoint" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <controls:HikContextMenu x:Key="OperateMenu1">
+    <MenuItem Header="{DynamicResource Lang_Delet}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="DeleteSelf" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <controls:HikContextMenu x:Key="ArcOperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Delet}">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="DeleteSelf" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Copy}" Visibility="Collapsed">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="CtrlCCommandCmdExecute" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_ChangeSweepDirection}" Visibility="Collapsed">
+      <Interaction.Triggers xmlns="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+        <EventTrigger EventName="Click">
+          <CallMethodAction MethodName="ChangeSweepDirection" TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type local:HikROIBase}}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+        </EventTrigger>
+      </Interaction.Triggers>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <Style x:Key="SelectedBorderStyle" TargetType="{x:Type Border}">
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Style.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="{x:Static local:ROITypeUIEnum.Cover}" Binding="{Binding ROITypeUI, ElementName=userControl}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="BorderBrush" Value="{DynamicResource ROISelectedColor}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="True" Binding="{Binding ForceShowSelected}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="BorderBrush" Value="{DynamicResource ROIMouseOverColor}" />
+      </MultiDataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="ShapeBorderStyle" TargetType="{x:Type Border}">
+    <Setter Property="BorderBrush" Value="{DynamicResource ROIBaseColor}" />
+    <Style.Triggers>
+      <DataTrigger Value="{x:Static local:ROITypeUIEnum.Level}" Binding="{Binding ROITypeUI, ElementName=userControl}">
+        <Setter Property="BorderBrush" Value="#00FFFFFF" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="BorderBrush" Value="{DynamicResource ROISelectedColor}" />
+      </MultiDataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="TransparentGrid" TargetType="{x:Type Grid}">
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Style.Triggers>
+      <DataTrigger Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}">
+        <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="CoverGrid" TargetType="{x:Type Grid}">
+    <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+    <Style.Triggers>
+      <DataTrigger Value="false" Binding="{Binding Sign, ElementName=userControl}">
+        <Setter Property="Background" Value="{DynamicResource ROIBaseSignColor}" />
+      </DataTrigger>
+      <DataTrigger Value="true" Binding="{Binding Sign, ElementName=userControl}">
+        <Setter Property="Background" Value="{DynamicResource ROIBaseBackgroundColor}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Sign, ElementName=userControl}" Value="{x:Null}">
+        <Setter Property="Background" Value="{DynamicResource ROIBaseSignSpecialColor}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="LevelGrid" TargetType="{x:Type Grid}">
+    <Setter Property="Background" Value="{DynamicResource ROIBaseBackgroundColor}" />
+    <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+    <Style.Triggers>
+      <DataTrigger Value="0" Binding="{Binding LevelNum}">
+        <Setter Property="Background" Value="{DynamicResource ROILowLevelColor}" />
+      </DataTrigger>
+      <DataTrigger Value="1" Binding="{Binding LevelNum}">
+        <Setter Property="Background" Value="{DynamicResource ROIMiddleLevelColor}" />
+      </DataTrigger>
+      <DataTrigger Value="2" Binding="{Binding LevelNum}">
+        <Setter Property="Background" Value="{DynamicResource ROIHighLevelColor}" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="0" Binding="{Binding LevelNum}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Background" Value="{DynamicResource ROILowLevelColor_Selected}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="1" Binding="{Binding LevelNum}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Background" Value="{DynamicResource ROIMiddleLevelColor_Selected}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="2" Binding="{Binding LevelNum}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Background" Value="{DynamicResource ROIHighLevelColor_Selected}" />
+      </MultiDataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="TransparentPath" TargetType="{x:Type Shape}">
+    <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+    <Setter Property="Fill" Value="#00FFFFFF" />
+    <Style.Triggers>
+      <DataTrigger Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}">
+        <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Stroke" Value="{DynamicResource ROISelectedColor}" />
+      </MultiDataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="TransParentSelectPath" BasedOn="{StaticResource TransparentPath}" TargetType="{x:Type Shape}">
+    <Style.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="{x:Static local:ROITypeUIEnum.Cover}" Binding="{Binding ROITypeUI, ElementName=userControl}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Stroke" Value="{DynamicResource ROISelectedColor}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="True" Binding="{Binding ForceShowSelected}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Stroke" Value="{DynamicResource ROIMouseOverColor}" />
+      </MultiDataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="CoverPath" TargetType="{x:Type Shape}">
+    <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+    <Setter Property="Fill" Value="{DynamicResource ROIBaseBackgroundColor}" />
+    <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+    <Style.Triggers>
+      <DataTrigger Value="false" Binding="{Binding Sign, ElementName=userControl}">
+        <Setter Property="Fill" Value="{DynamicResource ROIBaseSignColor}" />
+      </DataTrigger>
+      <DataTrigger Value="true" Binding="{Binding Sign, ElementName=userControl}">
+        <Setter Property="Fill" Value="{DynamicResource ROIBaseBackgroundColor}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Sign, ElementName=userControl}" Value="{x:Null}">
+        <Setter Property="Fill" Value="{DynamicResource ROIBaseSignSpecialColor}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="AvoidPath" TargetType="{x:Type Shape}">
+    <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+    <Setter Property="Fill" Value="#7FFF5400" />
+    <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu1}" />
+  </Style>
+  <Style x:Key="LevelPath" TargetType="{x:Type Shape}">
+    <Setter Property="Stroke" Value="#00FFFFFF" />
+    <Setter Property="Fill" Value="{DynamicResource ROIBaseBackgroundColor}" />
+    <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+    <Style.Triggers>
+      <DataTrigger Value="0" Binding="{Binding LevelNum}">
+        <Setter Property="Fill" Value="{DynamicResource ROILowLevelColor}" />
+      </DataTrigger>
+      <DataTrigger Value="1" Binding="{Binding LevelNum}">
+        <Setter Property="Fill" Value="{DynamicResource ROIMiddleLevelColor}" />
+      </DataTrigger>
+      <DataTrigger Value="2" Binding="{Binding LevelNum}">
+        <Setter Property="Fill" Value="{DynamicResource ROIHighLevelColor}" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="0" Binding="{Binding LevelNum}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Fill" Value="{DynamicResource ROILowLevelColor_Selected}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="1" Binding="{Binding LevelNum}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Fill" Value="{DynamicResource ROIMiddleLevelColor_Selected}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+          <Condition Value="2" Binding="{Binding LevelNum}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Fill" Value="{DynamicResource ROIHighLevelColor_Selected}" />
+      </MultiDataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="HikArcPathStyle" TargetType="{x:Type Shape}">
+    <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+    <Setter Property="Fill" Value="#00FFFFFF" />
+    <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource ArcOperateMenu}" />
+    <Style.Triggers>
+      <DataTrigger Value="True" Binding="{Binding IsSelected, ElementName=userControl}">
+        <Setter Property="Stroke" Value="{DynamicResource ROISelectedColor}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+</ResourceDictionary>

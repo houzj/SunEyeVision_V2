@@ -1,0 +1,531 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.UIHelper.Extern;
+using Apps.UIHelper.Service;
+using Apps.UIHelper.Service.ExtensionControl;
+using VM.AppData;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+[ContentProperty("Children")]
+public class ToolItemGrid : ExtensionGrid
+{
+	/// <summary>
+	/// 获取该item对应的数据层数据
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <returns></returns>
+	public delegate void GetToolItemBackgroudData(object sender, ObjectEventArgs e);
+
+	public static readonly DependencyProperty DisplayTypeProperty = DependencyProperty.Register("DisplayType", typeof(ModuleDisplayType), typeof(ToolItemGrid), new PropertyMetadata(ModuleDisplayType.NORMALADORNER));
+
+	public static readonly DependencyProperty ModuleDirProperty = DependencyProperty.Register("ModuleDir", typeof(string), typeof(ToolItemGrid), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ModuleTypeNameProperty = DependencyProperty.Register("ModuleTypeName", typeof(string), typeof(ToolItemGrid), new PropertyMetadata(null));
+
+	private AdornerPanel adornerPanel;
+
+	private AdornerPanel subAdornerPanel;
+
+	private Grid grid;
+
+	private UIElement context;
+
+	private Rectangle CurrentHotRegion;
+
+	private Point CurrentHotPoint;
+
+	private Point CurrentHotCenterPoint;
+
+	private bool IsMouseDown;
+
+	private bool isDragOvered = false;
+
+	private Point _offset;
+
+	private ItemsPage page;
+
+	private DiagramPage diagram;
+
+	private Point _pageOffset;
+
+	private double leftOffset;
+
+	private double topOffset;
+
+	private GeneralTransform transform;
+
+	public ModuleDisplayType DisplayType
+	{
+		get
+		{
+			return (ModuleDisplayType)GetValue(DisplayTypeProperty);
+		}
+		set
+		{
+			SetValue(DisplayTypeProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 模块路径
+	/// </summary>
+	public string ModuleDir
+	{
+		get
+		{
+			return (string)GetValue(ModuleDirProperty);
+		}
+		set
+		{
+			SetValue(ModuleDirProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 模块类型名
+	/// </summary>
+	public string ModuleTypeName
+	{
+		get
+		{
+			return (string)GetValue(ModuleTypeNameProperty);
+		}
+		set
+		{
+			SetValue(ModuleTypeNameProperty, value);
+		}
+	}
+
+	public event GetToolItemBackgroudData OnGetToolItemBackgroudData;
+
+	public ToolItemGrid()
+	{
+		PreviewMouseLeftButtonDown += ToolItemGrid_PreviewMouseDown;
+		PreviewMouseLeftButtonUp += ToolItemGrid_PreviewMouseUp;
+	}
+
+	private void ToolItemGrid_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (IsMouseDown)
+		{
+			IsMouseDown = false;
+		}
+	}
+
+	private void ToolItemGrid_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+	{
+		IsMouseDown = true;
+		if (AppDataFactory.Instance().IsRightLayout)
+		{
+			leftOffset = 0.0;
+		}
+		else
+		{
+			leftOffset = (ToolBox.isFold ? 52 : 230);
+		}
+		topOffset = 40.0;
+		PreviewMouseMove += ToolItemGrid_PreviewMouseMove;
+	}
+
+	private void ToolItemGrid_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		PreviewMouseMove -= ToolItemGrid_PreviewMouseMove;
+		if (!IsMouseDown)
+		{
+			return;
+		}
+		if (e.LeftButton != MouseButtonState.Pressed)
+		{
+			ToolItemGrid_PreviewMouseUp(sender, null);
+			return;
+		}
+		adornerPanel = new AdornerPanelAttachToWorkArea();
+		subAdornerPanel = new AdornerPanel
+		{
+			IsAdornedElementTransformToWorkAreaElement = false
+		};
+		CurrentHotRegion = new Rectangle
+		{
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left
+		};
+		CurrentHotRegion.Visibility = Visibility.Collapsed;
+		CurrentHotRegion.Fill = new SolidColorBrush(Colors.Orange);
+		adornerPanel.Children.Add(CurrentHotRegion);
+		context = ExtensionDecorator.Services.GetService<IExtensionProvidePanel>() as UIElement;
+		DragDrop.AddPreviewDragOverHandler(context, _dragOver);
+		DragDrop.AddPreviewDropHandler(context, _dragDrop);
+		adornerPanel.WorkAreaElement = context;
+		DiagramItem diagramItem = new DiagramItem();
+		DataObject dataObject = new DataObject();
+		dataObject.SetData(new List<DiagramItem> { diagramItem });
+		object dataContext = DataContext;
+		if (dataContext is IToolBoxData toolBoxData)
+		{
+			toolBoxData.Tag = null;
+		}
+		diagramItem.DataContext = new VmModuleDecorator
+		{
+			DecorateSource = dataContext,
+			DisplayType = DisplayType,
+			ModuleDir = ModuleDir,
+			ModuleTypeName = ModuleTypeName
+		};
+		grid = new Grid
+		{
+			Opacity = 0.7,
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left,
+			IsHitTestVisible = false
+		};
+		grid.Children.Add(diagramItem);
+		subAdornerPanel.Children.Add(grid);
+		subAdornerPanel.Visibility = Visibility.Hidden;
+		subAdornerPanel.IsHitTestVisible = false;
+		adornerPanel.Children.Add(subAdornerPanel);
+		adornerPanel.SetAdornedElement(this, null);
+		(context as IExtensionProvidePanel).AdornerLayer.Children.Add(adornerPanel);
+		adornerPanel.top = topOffset;
+		adornerPanel.left = leftOffset;
+		DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move);
+		page = null;
+		diagram = null;
+		CurrentHotRegion = null;
+		CurrentHotPoint = new Point(52.0, 40.0);
+		(context as IExtensionProvidePanel).AdornerLayer.Children.Remove(adornerPanel);
+		subAdornerPanel = null;
+		adornerPanel = null;
+		grid = null;
+		DragDrop.RemovePreviewDragOverHandler(context, _dragOver);
+		DragDrop.RemovePreviewDropHandler(context, _dragDrop);
+		context = null;
+		ToolItemGrid_PreviewMouseUp(sender, null);
+	}
+
+	private void _dragDrop(object sender, DragEventArgs e)
+	{
+		if (!isDragOvered)
+		{
+			e.Handled = true;
+			return;
+		}
+		IDataObject data = e.Data;
+		if (data == null)
+		{
+			return;
+		}
+		Point offSet = new Point(_pageOffset.X, _pageOffset.Y);
+		data.SetData(new Point(subAdornerPanel.OffsetLeft, subAdornerPanel.OffsetTop) - new Vector(offSet.X, offSet.Y));
+		if (CurrentHotRegion.Visibility != Visibility.Visible)
+		{
+			return;
+		}
+		int span = ((data.GetData("diagramSpan") == null) ? 100 : ((int)data.GetData("diagramSpan")));
+		data.SetData(typeof(HotRegionInfo), new HotRegionInfo
+		{
+			CanHotVisible = (CurrentHotRegion.Visibility != Visibility.Collapsed)
+		});
+		data.SetData(new Point(CurrentHotPoint.X, CurrentHotPoint.Y) - new Vector(offSet.X, offSet.Y));
+		IEnumerable<DiagramItem> source = from x in diagram.hostPanal.Children.OfType<DiagramItem>()
+			where x.Position.X + x.ActualWidth / 2.0 == CurrentHotCenterPoint.X - offSet.X && x.Position.Y + x.ActualHeight / 2.0 == CurrentHotCenterPoint.Y - offSet.Y - (double)span
+			select x;
+		if (source.Count() > 0)
+		{
+			DiagramItem item = source.First();
+			if ((from x in item.ConnectionPanel.Children.OfType<Connection>()
+				where ((x.SourceItem == item && x.SourceIndex == 3) || (x.TargetItem == item && x.TargetIndex == 3)) && x.SourceItem != null && x.TargetItem != null
+				select x).Count() == 0)
+			{
+				AutoConnect data2 = new AutoConnect
+				{
+					SourceItem = item
+				};
+				data.SetData(typeof(AutoConnect), data2);
+			}
+		}
+	}
+
+	private void _dragOver(object sender, DragEventArgs e)
+	{
+		if (!grid.IsLoaded)
+		{
+			return;
+		}
+		if (page == null)
+		{
+			VisualTreeHelper.HitTest(context, (DependencyObject potentialHitTestTarget) =>
+			{
+				if (potentialHitTestTarget is AdornerLayer)
+				{
+					return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+				}
+				if (potentialHitTestTarget is ItemsPage)
+				{
+					page = potentialHitTestTarget as ItemsPage;
+					if (diagram != null)
+					{
+						return HitTestFilterBehavior.Continue;
+					}
+				}
+				if (potentialHitTestTarget is DiagramPage)
+				{
+					diagram = potentialHitTestTarget as DiagramPage;
+					if (page != null)
+					{
+						return HitTestFilterBehavior.Continue;
+					}
+				}
+				return HitTestFilterBehavior.Continue;
+			}, (HitTestResult result) => HitTestResultBehavior.Stop, new PointHitTestParameters(e.GetPosition(context)));
+			if (page != null)
+			{
+				_pageOffset = page.TranslatePoint(default, context);
+			}
+		}
+		Point position = e.GetPosition(adornerPanel.WorkAreaElement);
+		IDataObject data = e.Data;
+		isDragOvered = true;
+		if (_offset.X == 0.0)
+		{
+			_offset = new Point(grid.ActualWidth / 2.0, grid.ActualHeight / 2.0);
+		}
+		if (page != null)
+		{
+			transform = page.TransformAdorner.CurTransform;
+			adornerPanel.transform = transform;
+			position.X -= leftOffset;
+			position.Y -= topOffset;
+			position = transform.Inverse.Transform(position);
+			double offsetLeft = subAdornerPanel.OffsetLeft;
+			double offsetTop = subAdornerPanel.OffsetTop;
+			double num = offsetLeft;
+			double num2 = offsetTop;
+			bool flag = false;
+			if (Math.Abs(position.X - _offset.X - offsetLeft) > 3.0)
+			{
+				num = Math.Round((position.X - _offset.X) / 5.0) * 5.0 + _pageOffset.X;
+				num2 = Math.Round((position.Y - _offset.Y) / 5.0) * 5.0 + _pageOffset.Y;
+				flag = true;
+			}
+			if (Math.Abs(position.Y - _offset.Y - offsetTop) > 3.0)
+			{
+				num = Math.Round((position.X - _offset.X) / 5.0) * 5.0 + _pageOffset.X;
+				num2 = Math.Round((position.Y - _offset.Y) / 5.0) * 5.0 + _pageOffset.Y;
+				flag = true;
+			}
+			if (flag)
+			{
+				adornerPanel.Children.OfType<Line>().ToList().ForEach((Line p) =>
+				{
+					adornerPanel.Children.Remove(p);
+				});
+				CurrentHotRegion.Visibility = Visibility.Collapsed;
+				subAdornerPanel.SetOffsets(num, num2);
+				if (subAdornerPanel.Visibility != Visibility.Visible)
+				{
+					subAdornerPanel.Visibility = Visibility.Visible;
+				}
+				DrawAlignLine(num, num2);
+				DrawHotRegion(num, num2, data);
+			}
+		}
+		else
+		{
+			subAdornerPanel.SetOffsets(position.X - _offset.X, position.Y - _offset.Y);
+			if (subAdornerPanel.Visibility != Visibility.Visible)
+			{
+				subAdornerPanel.Visibility = Visibility.Visible;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 绘制热区
+	/// </summary>
+	private void DrawHotRegion(double px, double py, IDataObject data)
+	{
+		Point point = new Point(_pageOffset.X, _pageOffset.Y);
+		px -= point.X;
+		py -= point.Y;
+		IEnumerable<DiagramItem> source = diagram.hostPanal.Children.OfType<DiagramItem>();
+		IEnumerable<DiagramItem> source2 = source.Where((DiagramItem p) => p.Position.X + p.ActualWidth / 2.0 == px + grid.ActualWidth / 2.0 && p.Position.Y < py);
+		if (source2.Count() > 0)
+		{
+			IEnumerable<Tuple<double, double, double>> source3 = source2.Select((DiagramItem p) => new Tuple<double, double, double>(Math.Abs(py - p.Position.Y), p.Position.Y, p.ActualHeight));
+			double minY = source3.Min((Tuple<double, double, double> p) => p.Item1);
+			Tuple<double, double, double> tuple = source3.First((Tuple<double, double, double> p) => p.Item1 == minY);
+			double closest = tuple.Item2;
+			DiagramItem diagramItem = source2.First((DiagramItem x) => x.Position.Y == closest);
+			List<DiagramItem> list = data?.GetData(typeof(List<DiagramItem>)) as List<DiagramItem>;
+			ModuleDisplayType moduleDisplayType = ModuleDisplayType.DEFAULT;
+			if (list != null && list.Count != 0)
+			{
+				moduleDisplayType = list[0].DisplayType;
+				int spanByDiagramItem = diagramItem.GetSpanByDiagramItem(moduleDisplayType);
+				if (diagramItem.Position.Y + (double)spanByDiagramItem - diagramItem.ActualHeight < py && py < diagramItem.Position.Y + (double)spanByDiagramItem + diagramItem.ActualHeight)
+				{
+					data.SetData("diagramSpan", spanByDiagramItem);
+					double num = list[0].ActualWidth / 2.0;
+					double num2 = list[0].ActualHeight / 2.0;
+					CurrentHotPoint = new Point(diagramItem.Position.X + point.X - num + diagramItem.ActualWidth / 2.0, diagramItem.Position.Y + point.Y + (double)spanByDiagramItem - num2 + diagramItem.ActualHeight / 2.0);
+					CurrentHotCenterPoint = new Point(diagramItem.Position.X + point.X + diagramItem.ActualWidth / 2.0, diagramItem.Position.Y + point.Y + (double)spanByDiagramItem + diagramItem.ActualHeight / 2.0);
+					DrawHotRect(diagramItem.Position.X + point.X + diagramItem.ActualWidth / 2.0, diagramItem.Position.Y + point.Y + (double)spanByDiagramItem + diagramItem.ActualHeight / 2.0);
+					return;
+				}
+			}
+		}
+		if (CurrentHotRegion.Visibility == Visibility.Collapsed && (CurrentHotPoint.X != 52.0 || CurrentHotPoint.Y != 40.0) && CurrentHotPoint.X - point.X - 20.0 < px && px < CurrentHotPoint.X - point.X + 20.0 && CurrentHotPoint.Y - point.Y - grid.ActualHeight < py && py < CurrentHotPoint.Y - point.Y + grid.ActualHeight)
+		{
+			CurrentHotRegion.Visibility = Visibility.Visible;
+		}
+	}
+
+	private void DrawHotRect(double px, double py)
+	{
+		double scale = GetScale();
+		CurrentHotRegion.IsHitTestVisible = false;
+		CurrentHotRegion.Width = 66.0 * scale;
+		CurrentHotRegion.Height = 22.0 * scale;
+		CurrentHotRegion.Margin = new Thickness(_pageOffset.X + (px - _pageOffset.X) * scale - CurrentHotRegion.Width / 2.0, _pageOffset.Y + (py - _pageOffset.Y) * scale - CurrentHotRegion.Height / 2.0, 0.0, 0.0);
+		CurrentHotRegion.Visibility = Visibility.Visible;
+	}
+
+	/// <summary>
+	/// 绘制对齐线
+	/// </summary>
+	private void DrawAlignLine(double px, double py)
+	{
+		Point offSet = new Point(_pageOffset.X, _pageOffset.Y);
+		px -= offSet.X;
+		py -= offSet.Y;
+		IEnumerable<DiagramItem> items = diagram.hostPanal.Children.OfType<DiagramItem>();
+		double scale = GetScale();
+		DrawAlignLine(isHorizontal: true, offSet, px, py, items, (DiagramItem p) => p.Position.X == px, 0.0);
+		DrawAlignLine(isHorizontal: true, offSet, px, py, items, (DiagramItem p) => p.Position.X + p.ActualWidth == px + grid.ActualWidth, grid.ActualWidth * scale);
+		DrawAlignLine(isHorizontal: true, offSet, px, py, items, (DiagramItem p) => p.Position.X + p.ActualWidth / 2.0 == px + grid.ActualWidth / 2.0, grid.ActualWidth * scale / 2.0);
+		DrawAlignLine(isHorizontal: false, offSet, px, py, items, (DiagramItem p) => p.Position.Y == py, 0.0);
+		DrawAlignLine(isHorizontal: false, offSet, px, py, items, (DiagramItem p) => p.Position.Y + p.ActualHeight == py + grid.ActualHeight, grid.ActualHeight * scale);
+		DrawAlignLine(isHorizontal: false, offSet, px, py, items, (DiagramItem p) => p.Position.Y + p.ActualHeight / 2.0 == py + grid.ActualHeight / 2.0, grid.ActualHeight * scale / 2.0);
+	}
+
+	private void DrawAlignLine(bool isHorizontal, Point offSet, double px, double py, IEnumerable<DiagramItem> items, Func<DiagramItem, bool> getEqualItems, double xOffset)
+	{
+		double scale = GetScale();
+		IEnumerable<DiagramItem> source = items.Where(getEqualItems);
+		if (source.Count() <= 0)
+		{
+			return;
+		}
+		IEnumerable<Tuple<double, double, double>> source2 = (isHorizontal ? source.Select((DiagramItem p) => new Tuple<double, double, double>(Math.Abs(py - p.Position.Y), p.Position.Y, p.ActualHeight)) : source.Select((DiagramItem p) => new Tuple<double, double, double>(Math.Abs(px - p.Position.X), p.Position.X, p.ActualWidth)));
+		double minY = source2.Min((Tuple<double, double, double> p) => p.Item1);
+		Tuple<double, double, double> tuple = source2.First((Tuple<double, double, double> p) => p.Item1 == minY);
+		double item = tuple.Item2;
+		double item2 = tuple.Item3;
+		double num = scale * px;
+		double num2 = scale * py;
+		if (isHorizontal)
+		{
+			item = scale * item;
+			num += offSet.X + xOffset;
+			num2 += offSet.Y;
+			item += offSet.Y;
+			if (num2 > item)
+			{
+				num2 += scale * grid.ActualHeight;
+				num2 += 5.0;
+				item -= 5.0;
+			}
+			else
+			{
+				item += scale * item2;
+				num2 -= 5.0;
+				item += 5.0;
+			}
+			DrawLine(num, num2, num, item);
+		}
+		else
+		{
+			item = scale * item;
+			num += offSet.X;
+			num2 += offSet.Y + xOffset;
+			item += offSet.X;
+			if (num > item)
+			{
+				num += scale * grid.ActualWidth;
+				num += 5.0;
+				item -= 5.0;
+			}
+			else
+			{
+				item += scale * item2;
+				num -= 5.0;
+				item += 5.0;
+			}
+			DrawLine(num, num2, item, num2);
+		}
+	}
+
+	private void DrawLine(double x1, double y1, double x2, double y2)
+	{
+		Line line = new Line
+		{
+			IsHitTestVisible = false,
+			Stroke = Brushes.LightGreen,
+			StrokeThickness = 1.0,
+			StrokeDashArray = new DoubleCollection { 5.0, 2.5 },
+			StrokeLineJoin = PenLineJoin.Round
+		};
+		line.X1 = x1;
+		line.X2 = x2;
+		line.Y1 = y1;
+		line.Y2 = y2;
+		adornerPanel.Children.Add(line);
+	}
+
+	public MatrixTransform GetDesiredTransform(MatrixTransform transform, double x, double y)
+	{
+		if (transform != null)
+		{
+			MatrixTransform matrixTransform = new MatrixTransform();
+			string[] array = transform.ToString().Split(',');
+			double num = 1.0;
+			double num2 = 1.0;
+			if (array.Length > 4)
+			{
+				num = double.Parse(array[0]);
+				num2 = double.Parse(array[3]);
+			}
+			Matrix matrix = transform.Matrix;
+			matrix.OffsetX = x;
+			matrix.OffsetY = y;
+			return new MatrixTransform(matrix);
+		}
+		return null;
+	}
+
+	public double GetScale()
+	{
+		double result = 1.0;
+		if (transform == null)
+		{
+			return result;
+		}
+		MatrixTransform matrixTransform = transform as MatrixTransform;
+		string[] array = matrixTransform.ToString().Split(',');
+		if (!double.TryParse(array[0], out result))
+		{
+			result = 1.0;
+		}
+		return result;
+	}
+}

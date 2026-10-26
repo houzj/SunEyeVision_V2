@@ -1,0 +1,1046 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikLineCaliper : HikROIBase, RectangleRoi, IDisposable, IComponentConnector
+{
+	public delegate void SizeChange(object Param);
+
+	public static Line substitute;
+
+	private List<Control> childControlList = new List<Control>();
+
+	private const double ArrowWidth = 6.0;
+
+	private static Bitmap image;
+
+	private double Scale = 1.0;
+
+	private static double RP = 1.0;
+
+	private RotateTransform rotate = new RotateTransform();
+
+	private string curType = "";
+
+	private IArea curControl = null;
+
+	private double LastAngle = 0.0;
+
+	private double XOffset;
+
+	private double YOffset;
+
+	public static readonly DependencyProperty TStartPointProperty = DependencyProperty.Register("TStartPoint", typeof(System.Windows.Point), typeof(HikLineCaliper), new PropertyMetadata(new System.Windows.Point(0.0, 0.0), OnTStartPointChanged));
+
+	public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register("StartPoint", typeof(System.Windows.Point), typeof(HikLineCaliper), new PropertyMetadata(new System.Windows.Point(0.0, 0.0), OnStartPointChanged));
+
+	public static readonly DependencyProperty TEndPointProperty = DependencyProperty.Register("TEndPoint", typeof(System.Windows.Point), typeof(HikLineCaliper), new PropertyMetadata(new System.Windows.Point(0.0, 0.0), OnTEndPointChanged));
+
+	public static readonly DependencyProperty EndPointProperty = DependencyProperty.Register("EndPoint", typeof(System.Windows.Point), typeof(HikLineCaliper), new PropertyMetadata(new System.Windows.Point(0.0, 0.0), OnEndPointChanged));
+
+	public static readonly DependencyProperty TCaliperHeightProperty = DependencyProperty.Register("TCaliperHeight", typeof(double), typeof(HikLineCaliper), new PropertyMetadata(OnTCaliperHeightChanged));
+
+	public static readonly DependencyProperty CaliperHeightProperty = DependencyProperty.Register("CaliperHeight", typeof(double), typeof(HikLineCaliper), new PropertyMetadata(OnCaliperHeightChanged));
+
+	public static readonly DependencyProperty TCaliperWidthProperty = DependencyProperty.Register("TCaliperWidth", typeof(double), typeof(HikLineCaliper), new PropertyMetadata(0.0, OnTCaliperWidthChanged));
+
+	public static readonly DependencyProperty CaliperWidthProperty = DependencyProperty.Register("CaliperWidth", typeof(double), typeof(HikLineCaliper), new PropertyMetadata(OnCaliperWidthChanged));
+
+	public static readonly DependencyProperty CaliperNumProperty = DependencyProperty.Register("CaliperNum", typeof(uint), typeof(HikLineCaliper), new PropertyMetadata(OnCaliperNumChanged));
+
+	public static readonly DependencyProperty CaliperRotateAngleProperty = DependencyProperty.Register("CaliperRotateAngle", typeof(double), typeof(HikLineCaliper));
+
+	public static readonly DependencyProperty TStrokeThicknessProperty = DependencyProperty.Register("TStrokeThickness", typeof(double), typeof(HikLineCaliper), new PropertyMetadata(1.0));
+
+	private System.Windows.Point RectCenterPoint;
+
+	private List<UIElement> shapes = new List<UIElement>();
+
+	private System.Windows.Media.Brush brush = System.Windows.Media.Brushes.Transparent;
+
+	private System.Windows.Media.Pen pen = new System.Windows.Media.Pen();
+
+	private System.Windows.Media.Pen pen2 = new System.Windows.Media.Pen
+	{
+		Thickness = 0.0
+	};
+
+	private double CaliperMaxWidth = 0.0;
+
+	public SizeChange OnTheSizeChange;
+
+	public static HikImageView Owner { get; set; }
+
+	private static System.Windows.Point MouseDownPoint { get; set; }
+
+	private static bool IsMoved { get; set; }
+
+	public System.Windows.Point CurPoint { get; set; }
+
+	public System.Windows.Point CurStartPoint { get; set; }
+
+	public System.Windows.Point CurEndPoint { get; set; }
+
+	public System.Windows.Point TStartPoint
+	{
+		get
+		{
+			return (System.Windows.Point)GetValue(TStartPointProperty);
+		}
+		set
+		{
+			SetValue(TStartPointProperty, value);
+		}
+	}
+
+	public System.Windows.Point StartPoint
+	{
+		get
+		{
+			return (System.Windows.Point)GetValue(StartPointProperty);
+		}
+		set
+		{
+			SetValue(StartPointProperty, value);
+		}
+	}
+
+	public System.Windows.Point TEndPoint
+	{
+		get
+		{
+			return (System.Windows.Point)GetValue(TEndPointProperty);
+		}
+		set
+		{
+			SetValue(TEndPointProperty, value);
+		}
+	}
+
+	public System.Windows.Point EndPoint
+	{
+		get
+		{
+			return (System.Windows.Point)GetValue(EndPointProperty);
+		}
+		set
+		{
+			SetValue(EndPointProperty, value);
+		}
+	}
+
+	public double TCaliperHeight
+	{
+		get
+		{
+			return (double)GetValue(TCaliperHeightProperty);
+		}
+		set
+		{
+			SetValue(TCaliperHeightProperty, value);
+		}
+	}
+
+	public double CaliperHeight
+	{
+		get
+		{
+			return (double)GetValue(CaliperHeightProperty);
+		}
+		set
+		{
+			SetValue(CaliperHeightProperty, value);
+		}
+	}
+
+	public double TCaliperWidth
+	{
+		get
+		{
+			return (double)GetValue(TCaliperWidthProperty);
+		}
+		set
+		{
+			SetValue(TCaliperWidthProperty, value);
+		}
+	}
+
+	public double CaliperWidth
+	{
+		get
+		{
+			return (double)GetValue(CaliperWidthProperty);
+		}
+		set
+		{
+			SetValue(CaliperWidthProperty, value);
+		}
+	}
+
+	public uint CaliperNum
+	{
+		get
+		{
+			return (uint)GetValue(CaliperNumProperty);
+		}
+		set
+		{
+			SetValue(CaliperNumProperty, value);
+		}
+	}
+
+	public double CaliperRotateAngle
+	{
+		get
+		{
+			return (double)GetValue(CaliperRotateAngleProperty);
+		}
+		set
+		{
+			SetValue(CaliperRotateAngleProperty, value);
+		}
+	}
+
+	public double TStrokeThickness
+	{
+		get
+		{
+			return (double)GetValue(TStrokeThicknessProperty);
+		}
+		set
+		{
+			SetValue(TStrokeThicknessProperty, value);
+		}
+	}
+
+	public static void DoFinishSubstitute()
+	{
+		if (Owner != null)
+		{
+			Owner.IsDrawRoi = false;
+			Owner.RemoveChild(substitute);
+			Owner.SourceImage.ReleaseMouseCapture();
+			HikImageView hikImageView = Owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+			HikImageView hikImageView2 = Owner;
+			hikImageView2.OnDrawRoi_MouseDownChange = (HikImageView.DrawRoi_MouseDownChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseDownChange, new HikImageView.DrawRoi_MouseDownChange(OnDrawROISubstitute_MouseDown));
+			HikImageView hikImageView3 = Owner;
+			hikImageView3.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+			Owner = null;
+			substitute = null;
+		}
+	}
+
+	public static void InitSubstitute(HikImageView view, System.Windows.Point mouseDownPoint)
+	{
+		Owner = view;
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseDownChange = (HikImageView.DrawRoi_MouseDownChange)Delegate.Combine(hikImageView2.OnDrawRoi_MouseDownChange, new HikImageView.DrawRoi_MouseDownChange(OnDrawROISubstitute_MouseDown));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Combine(hikImageView3.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		MouseDownPoint = mouseDownPoint;
+		substitute = new Line();
+		substitute.Stroke = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#0F6AF3"));
+		substitute.StrokeThickness = 1.0 / (Owner.sfr.ScaleX * Owner.viewScal);
+		substitute.Opacity = 0.5;
+		substitute.Fill = System.Windows.Media.Brushes.LawnGreen;
+		substitute.X1 = mouseDownPoint.X;
+		substitute.Y1 = mouseDownPoint.Y;
+		substitute.X2 = mouseDownPoint.X;
+		substitute.Y2 = mouseDownPoint.Y;
+		IsMoved = false;
+		Owner.AddROIChild(substitute);
+	}
+
+	public static void OnScaleChangeSubstitute(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		substitute.StrokeThickness = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+	}
+
+	private static void OnDrawROISubstitute_MouseDown(object sender, MouseEventArgs e)
+	{
+		if (Owner != null && Owner.SourceImage.Source != null)
+		{
+			System.Windows.Point position = e.GetPosition(Owner.SourceImage);
+			if (position.X < 0.0)
+			{
+				position.X = 0.0;
+			}
+			if (position.Y < 0.0)
+			{
+				position.Y = 0.0;
+			}
+			if (position.X > Owner.SourceImage.Width)
+			{
+				position.X = Owner.SourceImage.Width;
+			}
+			if (position.Y > Owner.SourceImage.ActualHeight)
+			{
+				position.Y = Owner.SourceImage.ActualHeight;
+			}
+			substitute.X2 = position.X;
+			substitute.Y2 = position.Y;
+			OnDrawROISubstitute_MouseUp(null, null);
+		}
+	}
+
+	public static void OnDrawROISubstitute_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (Owner != null && Owner.SourceImage.Source != null)
+		{
+			if (!IsMoved)
+			{
+				IsMoved = true;
+			}
+			System.Windows.Point position = e.GetPosition(Owner.SourceImage);
+			if (position.X < 0.0)
+			{
+				position.X = 0.0;
+			}
+			if (position.Y < 0.0)
+			{
+				position.Y = 0.0;
+			}
+			if (position.X > Owner.SourceImage.Width)
+			{
+				position.X = Owner.SourceImage.Width;
+			}
+			if (position.Y > Owner.SourceImage.ActualHeight)
+			{
+				position.Y = Owner.SourceImage.ActualHeight;
+			}
+			substitute.X2 = position.X;
+			substitute.Y2 = position.Y;
+		}
+	}
+
+	public static void OnDrawROISubstitute_MouseUp(object sender, MouseEventArgs e)
+	{
+		if (Owner != null)
+		{
+			Owner.IsDrawRoi = false;
+			Owner.RemoveROIChild(substitute);
+			Owner.SourceImage.ReleaseMouseCapture();
+			HikImageView hikImageView = Owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+			HikImageView hikImageView2 = Owner;
+			hikImageView2.OnDrawRoi_MouseDownChange = (HikImageView.DrawRoi_MouseDownChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseDownChange, new HikImageView.DrawRoi_MouseDownChange(OnDrawROISubstitute_MouseDown));
+			HikImageView hikImageView3 = Owner;
+			hikImageView3.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+			HikImageView hikImageView4 = Owner;
+			hikImageView4.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView4.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+			if (IsMoved)
+			{
+				double num = substitute.X1 / Owner.Radio - 0.5;
+				double num2 = substitute.Y1 / Owner.Radio - 0.5;
+				double num3 = substitute.X2 / Owner.Radio - 0.5;
+				double num4 = substitute.Y2 / Owner.Radio - 0.5;
+				HikLineCaliperRoiParameter hikLineCaliperRoiParameter = new HikLineCaliperRoiParameter();
+				hikLineCaliperRoiParameter.StartPoint = new System.Windows.Point(num, num2);
+				hikLineCaliperRoiParameter.EndPoint = new System.Windows.Point(num3, num4);
+				hikLineCaliperRoiParameter.CaliperWidth = GetDistance(num, num2, num3, num4) / (double)((hikLineCaliperRoiParameter.CaliperNum + 1) * 2);
+				hikLineCaliperRoiParameter.CaliperHeight = 2.0 * hikLineCaliperRoiParameter.CaliperWidth;
+				hikLineCaliperRoiParameter.CaliperRotateAngle = GetRotate(new System.Windows.Point(substitute.X1, substitute.Y1), new System.Windows.Point(substitute.X2, substitute.Y2));
+				Owner.RoiList.Add(hikLineCaliperRoiParameter);
+			}
+			Owner = null;
+			substitute = null;
+		}
+	}
+
+	public HikLineCaliper()
+	{
+		InitializeComponent();
+		InitSelf();
+	}
+
+	private void InitSelf()
+	{
+		childControlList.Add(startpoint);
+		childControlList.Add(endpoint);
+		childControlList.Add(top_left);
+		top_left.MouseMove += Child_MouseMove;
+		childControlList.Add(top);
+		top.MouseMove += Child_MouseMove;
+		childControlList.Add(top_right);
+		top_right.MouseMove += Child_MouseMove;
+		childControlList.Add(left);
+		left.MouseMove += Child_MouseMove;
+		childControlList.Add(right);
+		right.MouseMove += Child_MouseMove;
+		childControlList.Add(bottom_left);
+		bottom_left.MouseMove += Child_MouseMove;
+		childControlList.Add(bottom);
+		bottom.MouseMove += Child_MouseMove;
+		childControlList.Add(bottom_right);
+		bottom_right.MouseMove += Child_MouseMove;
+		foreach (IArea childControl in childControlList)
+		{
+			childControl.Container = this;
+		}
+	}
+
+	public void Init()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	private void Child_MouseMove(object sender, MouseEventArgs e)
+	{
+		switch ((sender as FrameworkElement).Name)
+		{
+		case "top_left":
+			if (top_left.Tag == null || (double)top_left.Tag != CaliperRotateAngle)
+			{
+				top_left.Tag = CaliperRotateAngle;
+				Bitmap rotateImage2 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle + 45);
+				if (top_left.Cursor != null)
+				{
+					top_left.Cursor.Dispose();
+				}
+				top_left.Cursor = BitmapCursor.CreateBmpCursor(rotateImage2);
+			}
+			break;
+		case "top":
+			if (top.Tag == null || (double)top.Tag != CaliperRotateAngle)
+			{
+				top.Tag = CaliperRotateAngle;
+				Bitmap rotateImage7 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle + 90);
+				if (top.Cursor != null)
+				{
+					top.Cursor.Dispose();
+				}
+				top.Cursor = BitmapCursor.CreateBmpCursor(rotateImage7);
+			}
+			break;
+		case "top_right":
+			if (top_right.Tag == null || (double)top_right.Tag != CaliperRotateAngle)
+			{
+				top_right.Tag = CaliperRotateAngle;
+				Bitmap rotateImage8 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle - 45);
+				if (top_right.Cursor != null)
+				{
+					top_right.Cursor.Dispose();
+				}
+				top_right.Cursor = BitmapCursor.CreateBmpCursor(rotateImage8);
+			}
+			break;
+		case "left":
+			if (left.Tag == null || (double)left.Tag != CaliperRotateAngle)
+			{
+				left.Tag = CaliperRotateAngle;
+				Bitmap rotateImage4 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle);
+				if (left.Cursor != null)
+				{
+					left.Cursor.Dispose();
+				}
+				left.Cursor = BitmapCursor.CreateBmpCursor(rotateImage4);
+			}
+			break;
+		case "right":
+			if (right.Tag == null || (double)right.Tag != CaliperRotateAngle)
+			{
+				right.Tag = CaliperRotateAngle;
+				Bitmap rotateImage3 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle);
+				if (right.Cursor != null)
+				{
+					right.Cursor.Dispose();
+				}
+				right.Cursor = BitmapCursor.CreateBmpCursor(rotateImage3);
+			}
+			break;
+		case "bottom_left":
+			if (bottom_left.Tag == null || (double)bottom_left.Tag != CaliperRotateAngle)
+			{
+				bottom_left.Tag = CaliperRotateAngle;
+				Bitmap rotateImage5 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle - 45);
+				if (bottom_left.Cursor != null)
+				{
+					bottom_left.Cursor.Dispose();
+				}
+				bottom_left.Cursor = BitmapCursor.CreateBmpCursor(rotateImage5);
+			}
+			break;
+		case "bottom":
+			if (bottom.Tag == null || (double)bottom.Tag != CaliperRotateAngle)
+			{
+				bottom.Tag = CaliperRotateAngle;
+				Bitmap rotateImage6 = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle + 90);
+				if (bottom.Cursor != null)
+				{
+					bottom.Cursor.Dispose();
+				}
+				bottom.Cursor = BitmapCursor.CreateBmpCursor(rotateImage6);
+			}
+			break;
+		case "bottom_right":
+			if (bottom_right.Tag == null || (double)bottom_right.Tag != CaliperRotateAngle)
+			{
+				bottom_right.Tag = CaliperRotateAngle;
+				Bitmap rotateImage = GetRotateImage(GetBiArrowImage(), (int)CaliperRotateAngle + 45);
+				if (bottom_right.Cursor != null)
+				{
+					bottom_right.Cursor.Dispose();
+				}
+				bottom_right.Cursor = BitmapCursor.CreateBmpCursor(rotateImage);
+			}
+			break;
+		}
+	}
+
+	public static Bitmap GetBiArrowImage()
+	{
+		if (image == null)
+		{
+			Stream manifestResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VM.PcUI.Resources.鼠标双向箭头.png");
+			image = (Bitmap)System.Drawing.Image.FromStream(manifestResourceStream);
+			manifestResourceStream.Dispose();
+		}
+		return image;
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = (TStrokeThickness = (Scale = RP / ((sender as ScaleTransform).ScaleX * num)));
+		double num4 = 8.0 * num2;
+		double num5 = num4 / 2.0;
+		left.Width = num4;
+		left.Margin = new Thickness(0.0, 0.0, 0.0 - num5, 0.0);
+		right.Width = num4;
+		right.Margin = new Thickness(0.0 - num5, 0.0, 0.0, 0.0);
+		top.Height = num4;
+		top.Margin = new Thickness(0.0, 0.0, 0.0, 0.0 - num5);
+		bottom.Height = num4;
+		bottom.Margin = new Thickness(0.0, 0.0 - num5, 0.0, 0.0);
+		TarrowView0.StrokeThickness = num2 * 2.0;
+		TarrowView0.Height = 6.0 * num2;
+		TarrowView0.Width = TarrowView0.Height * 2.0;
+		TarrowView0.Margin = new Thickness(0.0 - TarrowView0.Height + 0.5 * num2, 0.0, 0.0, 0.0);
+		TarrowView1.StrokeThickness = num2 * 2.0;
+		TarrowView1.Height = 6.0 * num2;
+		TarrowView1.Width = TarrowView1.Height * 2.0;
+		TarrowView1.Margin = new Thickness(0.0, 0.0, 0.0 - TarrowView1.Height + 0.5 * num2, 0.0);
+		tb.FontSize = 14.0 * num2;
+		DrawCaliper();
+		line.HeadHeight = 6.0 * num2 / 2.0;
+		line.HeadWidth = 2.0 * line.HeadHeight;
+	}
+
+	private void myControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (parent == null)
+		{
+			parent = VisualTreeHelper.GetParent(this) as FrameworkElement;
+			parent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
+			parent.MouseMove += zparent_MouseMove;
+		}
+	}
+
+	private void Parent_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+	}
+
+	private void zparent_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (isDragging)
+		{
+			System.Windows.Point position = e.GetPosition(parent);
+			switch (curType)
+			{
+			case "userControl":
+			{
+				double num = position.Y - CurPoint.Y;
+				double num2 = position.X - CurPoint.X;
+				double x = CurStartPoint.X + num2;
+				double y = CurStartPoint.Y + num;
+				double x2 = CurEndPoint.X + num2;
+				double y2 = CurEndPoint.Y + num;
+				double num3 = CurEndPoint.Y - CurStartPoint.Y;
+				double num4 = CurEndPoint.X - CurStartPoint.X;
+				StartPoint = new System.Windows.Point(x, y);
+				EndPoint = new System.Windows.Point(x2, y2);
+				DrawCaliper();
+				break;
+			}
+			case "startpoint":
+				StartPoint = GetPoint(position);
+				DrawCaliper();
+				break;
+			case "endpoint":
+				EndPoint = GetPoint(position);
+				DrawCaliper();
+				break;
+			case "top":
+			case "bottom":
+				position = GetPoint(position);
+				SetCaliperSize(position, width: false, height: true);
+				break;
+			case "left":
+			case "right":
+				position = GetPoint(position);
+				SetCaliperSize(position, width: true, height: false);
+				break;
+			case "top_left":
+				position = GetPoint(position);
+				SetCaliperSize(position, width: true, height: true);
+				break;
+			case "top_right":
+				position = GetPoint(position);
+				SetCaliperSize(position, width: true, height: true);
+				break;
+			case "bottom_left":
+				position = GetPoint(position);
+				SetCaliperSize(position, width: true, height: true);
+				break;
+			case "bottom_right":
+				position = GetPoint(position);
+				SetCaliperSize(position, width: true, height: true);
+				break;
+			}
+		}
+	}
+
+	private System.Windows.Point GetPoint(System.Windows.Point point, bool isCheck = false)
+	{
+		double num = point.Y + YOffset;
+		double num2 = point.X + XOffset;
+		if (isCheck)
+		{
+			if (num < 0.0)
+			{
+				num = 0.0;
+			}
+			if (num2 < 0.0)
+			{
+				num2 = 0.0;
+			}
+			if (num > parent.ActualHeight)
+			{
+				num = parent.ActualHeight;
+			}
+			if (num2 > parent.ActualWidth)
+			{
+				num2 = parent.ActualWidth;
+			}
+		}
+		return new System.Windows.Point(num2, num);
+	}
+
+	private void SetCaliperSize(System.Windows.Point curPoint, bool width, bool height)
+	{
+		Vector vector = new Vector(EndPoint.X - StartPoint.X, EndPoint.Y - StartPoint.Y);
+		double num = Vector.AngleBetween(vector2: new Vector(curPoint.X - RectCenterPoint.X, curPoint.Y - RectCenterPoint.Y), vector1: vector);
+		double num2 = Math.Abs(num) * Math.PI / 180.0;
+		double distance = GetDistance(curPoint.X, curPoint.Y, RectCenterPoint.X, RectCenterPoint.Y);
+		if (width)
+		{
+			CaliperWidth = 2.0 * distance * Math.Abs(Math.Cos(num2));
+		}
+		if (height)
+		{
+			CaliperHeight = 2.0 * distance * Math.Abs(Math.Sin(num2));
+			if ((!(LastAngle > 0.0) || !(num < 0.0)) && LastAngle < 0.0 && !(num > 0.0))
+			{
+			}
+		}
+	}
+
+	private static double GetDistance(double A_x, double A_y, double B_x, double B_y)
+	{
+		double num = Math.Abs(B_x - A_x);
+		double num2 = Math.Abs(B_y - A_y);
+		return Math.Sqrt(num * num + num2 * num2);
+	}
+
+	private void UserControl_MouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (isDragging)
+		{
+			isDragging = false;
+			DoCallBack();
+			ReleaseMouseCapture();
+			if (curControl != null)
+			{
+				curControl.IsPressed = false;
+			}
+		}
+	}
+
+	private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (!isDragging)
+		{
+			CurPoint = e.GetPosition(this);
+			CurStartPoint = StartPoint;
+			CurEndPoint = EndPoint;
+			Doth(this, e);
+		}
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		curType = rectangleArea.Name;
+		curControl = rectangleArea as IArea;
+		CaptureMouse();
+		System.Windows.Point position = e.GetPosition(parent);
+		System.Windows.Point point = rectangleArea.TranslatePoint(new System.Windows.Point(rectangleArea.ActualWidth / 2.0, rectangleArea.ActualHeight / 2.0), parent);
+		XOffset = point.X - position.X;
+		YOffset = point.Y - position.Y;
+		Vector vector = new Vector(EndPoint.X - StartPoint.X, EndPoint.Y - StartPoint.Y);
+		LastAngle = Vector.AngleBetween(vector2: new Vector(position.X - RectCenterPoint.X, position.Y - RectCenterPoint.Y), vector1: vector);
+		isDragging = true;
+	}
+
+	private void UserControl_MouseEnter(object sender, MouseEventArgs e)
+	{
+		foreach (Control childControl in childControlList)
+		{
+			if (childControl != left && childControl != top && childControl != right && childControl != bottom)
+			{
+				childControl.Opacity = 1.0;
+			}
+		}
+	}
+
+	private void UserControl_MouseLeave(object sender, MouseEventArgs e)
+	{
+		foreach (Control childControl in childControlList)
+		{
+			childControl.Opacity = 0.0;
+		}
+	}
+
+	private static void OnTStartPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		System.Windows.Point startPoint = (System.Windows.Point)e.NewValue;
+		double radio = (d as HikLineCaliper).owner.Radio;
+		startPoint.X = (startPoint.X + 0.5) * radio;
+		startPoint.Y = (startPoint.Y + 0.5) * radio;
+		(d as HikLineCaliper).StartPoint = startPoint;
+		(d as HikLineCaliper).DrawCaliper();
+	}
+
+	private static void OnStartPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikLineCaliper).OnChangStartPoint();
+	}
+
+	private void OnChangStartPoint()
+	{
+		double radio = owner.Radio;
+		TStartPoint = new System.Windows.Point(StartPoint.X / radio - 0.5, StartPoint.Y / radio - 0.5);
+		startpoint.X = StartPoint.X;
+		startpoint.Y = StartPoint.Y;
+	}
+
+	private static void OnTEndPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		System.Windows.Point endPoint = (System.Windows.Point)e.NewValue;
+		double radio = (d as HikLineCaliper).owner.Radio;
+		endPoint.X = (endPoint.X + 0.5) * radio;
+		endPoint.Y = (endPoint.Y + 0.5) * radio;
+		(d as HikLineCaliper).EndPoint = endPoint;
+		(d as HikLineCaliper).DrawCaliper();
+	}
+
+	private static void OnEndPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikLineCaliper).OnChangEndPoint();
+	}
+
+	private void OnChangEndPoint()
+	{
+		double radio = owner.Radio;
+		TEndPoint = new System.Windows.Point(EndPoint.X / radio - 0.5, EndPoint.Y / radio - 0.5);
+		endpoint.X = EndPoint.X;
+		endpoint.Y = EndPoint.Y;
+	}
+
+	private static void OnTCaliperHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		double num = (double)e.NewValue;
+		double radio = (d as HikLineCaliper).owner.Radio;
+		(d as HikLineCaliper).CaliperHeight = num * radio;
+	}
+
+	private static void OnCaliperHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		double num = (double)e.NewValue;
+		double radio = (d as HikLineCaliper).owner.Radio;
+		(d as HikLineCaliper).TCaliperHeight = num / radio;
+		(d as HikLineCaliper).DrawCaliper();
+	}
+
+	private static void OnTCaliperWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		double num = (double)e.NewValue;
+		double radio = (d as HikLineCaliper).owner.Radio;
+		(d as HikLineCaliper).CaliperWidth = num * radio;
+	}
+
+	private static void OnCaliperWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		double num = (double)e.NewValue;
+		double radio = (d as HikLineCaliper).owner.Radio;
+		(d as HikLineCaliper).TCaliperWidth = num / radio;
+		(d as HikLineCaliper).DrawCaliper();
+	}
+
+	private static void OnCaliperNumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikLineCaliper).OnChangCaliperNum();
+	}
+
+	private void OnChangCaliperNum()
+	{
+		DrawCaliper();
+	}
+
+	private void DrawCaliper2()
+	{
+		foreach (UIElement shape in shapes)
+		{
+			WorkView.Children.Remove(shape);
+		}
+		shapes.Clear();
+		double num = EndPoint.Y - StartPoint.Y;
+		double num2 = EndPoint.X - StartPoint.X;
+		double num3 = num2 / (double)(CaliperNum + 1);
+		double num4 = num / (double)(CaliperNum + 1);
+		for (int i = 1; i < CaliperNum + 1; i++)
+		{
+			double num5 = StartPoint.X + num3 * (double)i;
+			double num6 = StartPoint.Y + num4 * (double)i;
+			System.Windows.Shapes.Rectangle rectangle = new System.Windows.Shapes.Rectangle();
+			Panel.SetZIndex(rectangle, -1);
+			Binding binding = new Binding();
+			binding.Source = this;
+			binding.Path = new PropertyPath("TStrokeThickness");
+			rectangle.SetBinding(Shape.StrokeThicknessProperty, binding);
+			rectangle.Width = CaliperWidth;
+			rectangle.Height = CaliperHeight;
+			rectangle.Fill = System.Windows.Media.Brushes.Transparent;
+			rectangle.Stroke = (System.Windows.Media.Brush)FindResource("ROIBaseColor");
+			rectangle.Cursor = Cursors.SizeAll;
+			double num7 = num6 - rectangle.Height / 2.0;
+			double num8 = num5 - rectangle.Width / 2.0;
+			rectangle.SetValue(Canvas.TopProperty, num7);
+			rectangle.SetValue(Canvas.LeftProperty, num8);
+			CaliperRotateAngle = GetRotate(StartPoint, EndPoint);
+			RotateTransform rotateTransform = new RotateTransform();
+			rotateTransform.CenterX = rectangle.Width / 2.0;
+			rotateTransform.CenterY = rectangle.Height / 2.0;
+			rotateTransform.Angle = CaliperRotateAngle;
+			rectangle.RenderTransform = rotateTransform;
+			if ((double)i == Math.Ceiling((double)CaliperNum / 2.0))
+			{
+				box.Width = CaliperWidth;
+				box.Height = CaliperHeight;
+				boxRt.Angle = CaliperRotateAngle;
+				boxRt.CenterX = box.Width / 2.0;
+				boxRt.CenterY = box.Height / 2.0;
+				box.SetValue(Canvas.TopProperty, num7);
+				box.SetValue(Canvas.LeftProperty, num8);
+				top_left.X = num8;
+				top_left.Y = num7;
+				top_left.tlt.CenterX = (top_left.Width + rectangle.Width) / 2.0;
+				top_left.tlt.CenterY = (top_left.Height + rectangle.Height) / 2.0;
+				top_left.tlt.Angle = CaliperRotateAngle;
+				top_right.X = num8 + rectangle.Width;
+				top_right.Y = num7;
+				top_right.tlt.CenterX = (top_left.Width - rectangle.Width) / 2.0;
+				top_right.tlt.CenterY = (top_left.Height + rectangle.Height) / 2.0;
+				top_right.tlt.Angle = CaliperRotateAngle;
+				bottom_left.X = num8;
+				bottom_left.Y = num7 + rectangle.Height;
+				bottom_left.tlt.CenterX = (top_left.Width + rectangle.Width) / 2.0;
+				bottom_left.tlt.CenterY = (top_left.Height - rectangle.Height) / 2.0;
+				bottom_left.tlt.Angle = CaliperRotateAngle;
+				bottom_right.X = num8 + rectangle.Width;
+				bottom_right.Y = num7 + rectangle.Height;
+				bottom_right.tlt.CenterX = (top_left.Width - rectangle.Width) / 2.0;
+				bottom_right.tlt.CenterY = (top_left.Height - rectangle.Height) / 2.0;
+				bottom_right.tlt.Angle = CaliperRotateAngle;
+				RectCenterPoint = new System.Windows.Point(num5, num6);
+			}
+			else
+			{
+				shapes.Add(rectangle);
+				WorkView.Children.Add(rectangle);
+			}
+		}
+	}
+
+	private void DrawCaliper()
+	{
+		drawCanvas.ClearVisuals();
+		pen.Thickness = TStrokeThickness;
+		if (pen.Brush == null)
+		{
+			pen.Brush = (System.Windows.Media.Brush)FindResource("ROIBaseColor");
+		}
+		double num = EndPoint.Y - StartPoint.Y;
+		double num2 = EndPoint.X - StartPoint.X;
+		double num3 = num2 / (double)(CaliperNum + 1);
+		double num4 = num / (double)(CaliperNum + 1);
+		double num5 = 2.0 * Math.Sqrt(num3 * num3 + num4 * num4) / owner.Radio;
+		CaliperMaxWidth = ((num5 > 500.0) ? 500.0 : num5);
+		if (TCaliperWidth > CaliperMaxWidth)
+		{
+			(DataContext as HikLineCaliperRoiParameter).CaliperWidth = CaliperMaxWidth;
+			return;
+		}
+		CaliperRotateAngle = GetRotate(StartPoint, EndPoint);
+		for (int i = 1; i < CaliperNum + 1; i++)
+		{
+			double num6 = StartPoint.X + num3 * (double)i;
+			double num7 = StartPoint.Y + num4 * (double)i;
+			double num8 = num7 - CaliperHeight / 2.0;
+			double num9 = num6 - CaliperWidth / 2.0;
+			RotateTransform rotateTransform = new RotateTransform();
+			rotateTransform.CenterX = num9 + CaliperWidth / 2.0;
+			rotateTransform.CenterY = num8 + CaliperHeight / 2.0;
+			rotateTransform.Angle = CaliperRotateAngle;
+			DrawingVisual drawingVisual = new DrawingVisual();
+			using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+			{
+				drawingContext.DrawRectangle(brush, pen, new Rect(new System.Windows.Point(num9, num8), new System.Windows.Size(CaliperWidth, CaliperHeight)));
+			}
+			drawingVisual.Transform = rotateTransform;
+			if ((double)i == Math.Ceiling((double)CaliperNum / 2.0))
+			{
+				box.Width = CaliperWidth;
+				box.Height = CaliperHeight;
+				boxRt.Angle = CaliperRotateAngle;
+				boxRt.CenterX = box.Width / 2.0;
+				boxRt.CenterY = box.Height / 2.0;
+				box.SetValue(Canvas.TopProperty, num8);
+				box.SetValue(Canvas.LeftProperty, num9);
+				top_left.X = num9;
+				top_left.Y = num8;
+				top_left.tlt.CenterX = (top_left.Width + CaliperWidth) / 2.0;
+				top_left.tlt.CenterY = (top_left.Height + CaliperHeight) / 2.0;
+				top_left.tlt.Angle = CaliperRotateAngle;
+				top_right.X = num9 + CaliperWidth;
+				top_right.Y = num8;
+				top_right.tlt.CenterX = (top_left.Width - CaliperWidth) / 2.0;
+				top_right.tlt.CenterY = (top_left.Height + CaliperHeight) / 2.0;
+				top_right.tlt.Angle = CaliperRotateAngle;
+				bottom_left.X = num9;
+				bottom_left.Y = num8 + CaliperHeight;
+				bottom_left.tlt.CenterX = (top_left.Width + CaliperWidth) / 2.0;
+				bottom_left.tlt.CenterY = (top_left.Height - CaliperHeight) / 2.0;
+				bottom_left.tlt.Angle = CaliperRotateAngle;
+				bottom_right.X = num9 + CaliperWidth;
+				bottom_right.Y = num8 + CaliperHeight;
+				bottom_right.tlt.CenterX = (top_left.Width - CaliperWidth) / 2.0;
+				bottom_right.tlt.CenterY = (top_left.Height - CaliperHeight) / 2.0;
+				bottom_right.tlt.Angle = CaliperRotateAngle;
+				RectCenterPoint = new System.Windows.Point(num6, num7);
+			}
+			drawCanvas.AddVisual(drawingVisual);
+		}
+		double distance = GetDistance(StartPoint.X, StartPoint.Y, EndPoint.X, EndPoint.Y);
+		double num10 = (StartPoint.X + EndPoint.X) / 2.0;
+		double num11 = (StartPoint.Y + EndPoint.Y) / 2.0;
+		double y = num11 - CaliperHeight / 2.0;
+		double x = num10 - distance / 2.0;
+		RotateTransform rotateTransform2 = new RotateTransform();
+		rotateTransform2.CenterX = num10;
+		rotateTransform2.CenterY = num11;
+		rotateTransform2.Angle = CaliperRotateAngle;
+		DrawingVisual drawingVisual2 = new DrawingVisual();
+		using (DrawingContext drawingContext2 = drawingVisual2.RenderOpen())
+		{
+			drawingContext2.DrawRectangle(brush, pen2, new Rect(new System.Windows.Point(x, y), new System.Windows.Size(distance, CaliperHeight)));
+		}
+		drawingVisual2.Transform = rotateTransform2;
+		drawCanvas.AddVisual(drawingVisual2);
+	}
+
+	private static double GetRotate(System.Windows.Point StartPoint, System.Windows.Point EndPoint)
+	{
+		Vector vector = new Vector(EndPoint.X - StartPoint.X, EndPoint.Y - StartPoint.Y);
+		Vector vector2 = new Vector(0.0, -10.0);
+		double num = Math.Abs(Vector.AngleBetween(vector, vector2));
+		if (EndPoint.X >= StartPoint.X && EndPoint.Y >= StartPoint.Y)
+		{
+			return num - 90.0;
+		}
+		if (EndPoint.X >= StartPoint.X && EndPoint.Y < StartPoint.Y)
+		{
+			return num + 270.0;
+		}
+		return 270.0 - num;
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	public void Dispose()
+	{
+		Owner = null;
+		substitute = null;
+		if (owner != null)
+		{
+			foreach (IArea childControl in childControlList)
+			{
+				HikImageView hikImageView = owner;
+				hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+			}
+			HikImageView hikImageView2 = owner;
+			hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+		}
+		if (parent != null)
+		{
+			parent.MouseMove -= zparent_MouseMove;
+		}
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

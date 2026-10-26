@@ -1,0 +1,585 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikXY : HikROIBase, RectangleRoi, INotifyPropertyChanged, IComponentConnector
+{
+	public HikCover.SizeChange OnTheSizeChange;
+
+	private List<Control> childControlList = new List<Control>();
+
+	private IArea curControl = null;
+
+	private string curType = "";
+
+	public static Path substitute;
+
+	private double arrowLenth = 12.0;
+
+	private double _recWidth = 0.0;
+
+	private Point _XPointE;
+
+	private Point _XMPoint1;
+
+	private Point _XMPoint2;
+
+	private Point _YPointE;
+
+	private Point _YMPoint1;
+
+	private Point _YMPoint2;
+
+	public static readonly DependencyProperty OriginPointProperty = DependencyProperty.Register("OriginPoint", typeof(Point), typeof(HikXY), new PropertyMetadata(new Point(0.0, 0.0), OnOriginPointChanged));
+
+	public static readonly DependencyProperty XVectorProperty = DependencyProperty.Register("XVector", typeof(Point), typeof(HikXY), new PropertyMetadata(new Point(0.0, 0.0), OnXVectorChanged));
+
+	public static readonly DependencyProperty YVectorProperty = DependencyProperty.Register("YVector", typeof(Point), typeof(HikXY), new PropertyMetadata(new Point(0.0, 0.0), OnYVectorChanged));
+
+	public static HikImageView Owner { get; set; }
+
+	private static Point MouseDownPoint { get; set; }
+
+	private static bool IsMoved { get; set; }
+
+	private double ArrowLenth { get; set; }
+
+	public double recWidth
+	{
+		get
+		{
+			if (_recWidth == 0.0)
+			{
+				_recWidth = (double)FindResource("dwidth");
+			}
+			return _recWidth;
+		}
+	}
+
+	public Point XPointE
+	{
+		get
+		{
+			return _XPointE;
+		}
+		set
+		{
+			if (_XPointE != value)
+			{
+				_XPointE = value;
+				NotifyPropertyChanged("XPointE");
+			}
+		}
+	}
+
+	public Point XMPoint1
+	{
+		get
+		{
+			return _XMPoint1;
+		}
+		set
+		{
+			if (_XMPoint1 != value)
+			{
+				_XMPoint1 = value;
+				NotifyPropertyChanged("XMPoint1");
+			}
+		}
+	}
+
+	public Point XMPoint2
+	{
+		get
+		{
+			return _XMPoint2;
+		}
+		set
+		{
+			if (_XMPoint2 != value)
+			{
+				_XMPoint2 = value;
+				NotifyPropertyChanged("XMPoint2");
+			}
+		}
+	}
+
+	public Point YPointE
+	{
+		get
+		{
+			return _YPointE;
+		}
+		set
+		{
+			if (_YPointE != value)
+			{
+				_YPointE = value;
+				NotifyPropertyChanged("YPointE");
+			}
+		}
+	}
+
+	public Point YMPoint1
+	{
+		get
+		{
+			return _YMPoint1;
+		}
+		set
+		{
+			if (_YMPoint1 != value)
+			{
+				_YMPoint1 = value;
+				NotifyPropertyChanged("YMPoint1");
+			}
+		}
+	}
+
+	public Point YMPoint2
+	{
+		get
+		{
+			return _YMPoint2;
+		}
+		set
+		{
+			if (_YMPoint2 != value)
+			{
+				_YMPoint2 = value;
+				NotifyPropertyChanged("YMPoint2");
+			}
+		}
+	}
+
+	public Point OriginPoint
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointProperty);
+		}
+		set
+		{
+			SetValue(OriginPointProperty, value);
+		}
+	}
+
+	public Point XVector
+	{
+		get
+		{
+			return (Point)GetValue(XVectorProperty);
+		}
+		set
+		{
+			SetValue(XVectorProperty, value);
+		}
+	}
+
+	public Point YVector
+	{
+		get
+		{
+			return (Point)GetValue(YVectorProperty);
+		}
+		set
+		{
+			SetValue(YVectorProperty, value);
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public void Init()
+	{
+		if (owner == null)
+		{
+			return;
+		}
+		foreach (IArea childControl in childControlList)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(childControl.OnScaleChange));
+		}
+		HikImageView hikImageView2 = owner;
+		hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+	}
+
+	public HikXY()
+	{
+		InitializeComponent();
+		childControlList.Add(moveRec);
+		childControlList.Add(XRec);
+		childControlList.Add(YRec);
+		foreach (IArea childControl in childControlList)
+		{
+			childControl.Container = this;
+		}
+		SetValue(Canvas.LeftProperty, 0.0);
+		SetValue(Canvas.TopProperty, 0.0);
+		Width = 0.0;
+		Height = 0.0;
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+		PathFillColor.StrokeThickness = num2;
+		ArrowLenth = arrowLenth * num2;
+		ChangeXArrow();
+		ChangeYArrow();
+	}
+
+	public static void InitSubstitute(HikImageView view, Point mouseDownPoint)
+	{
+		Owner = view;
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Combine(hikImageView2.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Combine(hikImageView3.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+		MouseDownPoint = mouseDownPoint;
+		substitute = new Path();
+		GeometryGroup geometryGroup = new GeometryGroup();
+		PathGeometry pathGeometry = new PathGeometry();
+		PathFigure pathFigure = new PathFigure
+		{
+			StartPoint = mouseDownPoint
+		};
+		geometryGroup.Children.Add(pathGeometry);
+		pathGeometry.Figures.Add(pathFigure);
+		pathFigure.Segments.Add(new LineSegment
+		{
+			Point = mouseDownPoint
+		});
+		pathFigure.Segments.Add(new LineSegment
+		{
+			Point = mouseDownPoint
+		});
+		substitute.Data = geometryGroup;
+		substitute.Stroke = HikROIBase.SubstituteBrush;
+		substitute.StrokeThickness = 1.0 / (Owner.ScaleTransform.ScaleX * Owner.ViewScale);
+		IsMoved = false;
+		Owner.AddROIChild(substitute);
+	}
+
+	private static void OnDrawROISubstitute_MouseUp(object sender, MouseEventArgs e)
+	{
+		if (Owner == null)
+		{
+			return;
+		}
+		Owner.IsDrawRoi = false;
+		Owner.RemoveROIChild(substitute);
+		Owner.SourceImage.ReleaseMouseCapture();
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		if (IsMoved)
+		{
+			HikXYParameter hikXYParameter = Owner.DoGetExtendROIParam(RoiUIType.HikXY) as HikXYParameter;
+			if (hikXYParameter == null)
+			{
+				hikXYParameter = new HikXYParameter();
+			}
+			PathFigure pathFigure = ((substitute.Data as GeometryGroup).Children[0] as PathGeometry).Figures[0];
+			LineSegment lineSegment = pathFigure.Segments[0] as LineSegment;
+			LineSegment lineSegment2 = pathFigure.Segments[1] as LineSegment;
+			hikXYParameter.OriginPoint = new Point(lineSegment.Point.X / Owner.Radio - 0.5, lineSegment.Point.Y / Owner.Radio - 0.5);
+			hikXYParameter.XVector = new Point((pathFigure.StartPoint.X - lineSegment.Point.X) / Owner.Radio, (pathFigure.StartPoint.Y - lineSegment.Point.Y) / Owner.Radio);
+			hikXYParameter.YVector = new Point((lineSegment2.Point.X - lineSegment.Point.X) / Owner.Radio, (lineSegment2.Point.Y - lineSegment.Point.Y) / Owner.Radio);
+			Owner.RoiList.Add(hikXYParameter);
+		}
+		Owner = null;
+		substitute = null;
+	}
+
+	public static void DoFinishSubstitute()
+	{
+		Owner.IsDrawRoi = false;
+		Owner.RemoveChild(substitute);
+		Owner.SourceImage.ReleaseMouseCapture();
+		HikImageView hikImageView = Owner;
+		hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChangeSubstitute));
+		HikImageView hikImageView2 = Owner;
+		hikImageView2.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView2.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(OnDrawROISubstitute_MouseUp));
+		HikImageView hikImageView3 = Owner;
+		hikImageView3.OnDrawRoi_MouseMoveChange = (HikImageView.DrawRoi_MouseMoveChange)Delegate.Remove(hikImageView3.OnDrawRoi_MouseMoveChange, new HikImageView.DrawRoi_MouseMoveChange(OnDrawROISubstitute_MouseMove));
+		Owner = null;
+		substitute = null;
+	}
+
+	private static void OnDrawROISubstitute_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (Owner.SourceImage.Source == null)
+		{
+			return;
+		}
+		if (!IsMoved)
+		{
+			IsMoved = true;
+		}
+		Point position = e.GetPosition(Owner.SourceImage);
+		if (substitute == null)
+		{
+			return;
+		}
+		try
+		{
+			PathFigure pathFigure = ((substitute.Data as GeometryGroup).Children[0] as PathGeometry).Figures[0];
+			LineSegment lineSegment = pathFigure.Segments[1] as LineSegment;
+			pathFigure.StartPoint = position;
+			RotateTransform rotateTransform = new RotateTransform();
+			rotateTransform.Angle = 90.0;
+			rotateTransform.CenterX = MouseDownPoint.X;
+			rotateTransform.CenterY = MouseDownPoint.Y;
+			lineSegment.Point = rotateTransform.Transform(position);
+		}
+		catch
+		{
+		}
+	}
+
+	private static void OnScaleChangeSubstitute(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		substitute.StrokeThickness = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+	}
+
+	private static void OnOriginPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikXY).OnChangOriginPoint();
+	}
+
+	private void OnChangOriginPoint()
+	{
+		double num = (OriginPoint.X + 0.5) * owner.Radio;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+		num = (OriginPoint.Y + 0.5) * owner.Radio;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+	}
+
+	private static void OnXVectorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikXY).OnChangXVector();
+	}
+
+	private void OnChangXVector()
+	{
+		XPointE = new Point(XVector.X * owner.Radio, XVector.Y * owner.Radio);
+		XRec.X = XPointE.X;
+		XRec.Y = XPointE.Y;
+		ChangeXArrow();
+	}
+
+	private void ChangeXArrow()
+	{
+		Vector vector = default(Point) - XVector;
+		vector.Normalize();
+		RotateTransform rotateTransform = new RotateTransform
+		{
+			CenterX = XPointE.X,
+			CenterY = XPointE.Y
+		};
+		rotateTransform.Angle = 30.0;
+		Point point = XPointE + vector * ArrowLenth;
+		XMPoint1 = rotateTransform.Transform(point);
+		XMPoint2 = rotateTransform.Inverse.Transform(point);
+		Size textDisplayWidth = HikImageView.GetTextDisplayWidth(t1.Text, FontFamily, FontStyle, FontWeight, FontStretch, ArrowLenth);
+		rotateTransform.Angle = -90.0;
+		rotateTransform.CenterX = XPointE.X;
+		rotateTransform.CenterY = XPointE.Y;
+		Vector vector2 = -vector;
+		Vector vector3 = XPointE - default(Point) + textDisplayWidth.Height * vector2;
+		Point point2 = rotateTransform.Transform(new Point(vector3.X, vector3.Y));
+		double angle = Vector.AngleBetween(new Vector(1.0, 0.0), vector2);
+		Canvas.SetLeft(t1, point2.X);
+		Canvas.SetTop(t1, point2.Y);
+		t1.FontSize = ArrowLenth;
+		r1.Angle = angle;
+	}
+
+	private void ChangeYArrow()
+	{
+		Vector vector = default(Point) - YVector;
+		vector.Normalize();
+		RotateTransform rotateTransform = new RotateTransform
+		{
+			CenterX = YPointE.X,
+			CenterY = YPointE.Y
+		};
+		rotateTransform.Angle = 30.0;
+		Point point = YPointE + vector * ArrowLenth;
+		YMPoint1 = rotateTransform.Transform(point);
+		YMPoint2 = rotateTransform.Inverse.Transform(point);
+		Size textDisplayWidth = HikImageView.GetTextDisplayWidth(t2.Text, FontFamily, FontStyle, FontWeight, FontStretch, ArrowLenth);
+		rotateTransform.Angle = 90.0;
+		rotateTransform.CenterX = YPointE.X;
+		rotateTransform.CenterY = YPointE.Y;
+		Vector vector2 = -vector;
+		Vector vector3 = YPointE - default(Point) + textDisplayWidth.Height * vector2;
+		Point point2 = rotateTransform.Transform(new Point(vector3.X, vector3.Y)) + textDisplayWidth.Width * vector2;
+		double num = Vector.AngleBetween(new Vector(0.0, 1.0), vector2);
+		Canvas.SetLeft(t2, point2.X);
+		Canvas.SetTop(t2, point2.Y);
+		t2.FontSize = ArrowLenth;
+		r2.Angle = num - 90.0;
+	}
+
+	private static void OnYVectorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikXY).OnChangYVector();
+	}
+
+	private void OnChangYVector()
+	{
+		YPointE = new Point(YVector.X * owner.Radio, YVector.Y * owner.Radio);
+		YRec.X = YPointE.X;
+		YRec.Y = YPointE.Y;
+		ChangeYArrow();
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		isDragging = true;
+		curType = rectangleArea.Name;
+		curControl = rectangleArea as IArea;
+		CaptureMouse();
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (parent == null)
+		{
+			DependencyObject dependencyObject = VisualTreeHelper.GetParent(this);
+			while (!(dependencyObject is Canvas))
+			{
+				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+			}
+			parent = dependencyObject as Canvas;
+			parent.MouseMove += zparent_MouseMove;
+		}
+	}
+
+	private void zparent_MouseMove(object sender, MouseEventArgs e)
+	{
+		double num = 0.0;
+		double num2 = 0.0;
+		if (isDragging)
+		{
+			Point position = e.GetPosition(parent);
+			switch (curType)
+			{
+			case "moveRec":
+				num = position.Y - moveRec.CurPoint.Y + moveRec.Height / 2.0;
+				num2 = position.X - moveRec.CurPoint.X + moveRec.Width / 2.0;
+				OriginPoint = new Point(num2 / owner.Radio - 0.5, num / owner.Radio - 0.5);
+				break;
+			case "XRec":
+				num = position.Y - XRec.CurPoint.Y + XRec.Height / 2.0;
+				num2 = position.X - XRec.CurPoint.X + XRec.Width / 2.0;
+				XVector = new Point((num2 - Canvas.GetLeft(this)) / owner.Radio, (num - Canvas.GetTop(this)) / owner.Radio);
+				break;
+			case "YRec":
+				num = position.Y - YRec.CurPoint.Y + YRec.Height / 2.0;
+				num2 = position.X - YRec.CurPoint.X + YRec.Width / 2.0;
+				YVector = new Point((num2 - Canvas.GetLeft(this)) / owner.Radio, (num - Canvas.GetTop(this)) / owner.Radio);
+				break;
+			}
+		}
+	}
+
+	private void UserControl_MouseEnter(object sender, MouseEventArgs e)
+	{
+		moveRec.Opacity = 1.0;
+		XRec.Opacity = 1.0;
+		YRec.Opacity = 1.0;
+	}
+
+	private void UserControl_MouseLeave(object sender, MouseEventArgs e)
+	{
+		moveRec.Opacity = 0.0;
+		XRec.Opacity = 0.0;
+		YRec.Opacity = 0.0;
+	}
+
+	private void UserControl_MouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (isDragging)
+		{
+			if (curControl != null)
+			{
+				curControl.IsPressed = false;
+			}
+			isDragging = false;
+			if (IsParamChanged)
+			{
+				DoCallBack();
+			}
+			ReleaseMouseCapture();
+		}
+	}
+
+	private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		IsSelected = true;
+		Focus();
+		if (!isDragging)
+		{
+			owner.SourceImage.RaiseEvent(e);
+			owner.DoRoiClick(this, e);
+		}
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

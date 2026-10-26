@@ -1,0 +1,649 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
+using Mvvm.Commands;
+using VM.Core;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+public class SearchDryPopup : Control
+{
+	private TextBlock _ttbSearchTips = null;
+
+	private TextBox _ttbInput = null;
+
+	private Button _btnClear = null;
+
+	private Popup _popup = null;
+
+	private ListBox _lstSearchResult = null;
+
+	private bool _canSearching = true;
+
+	private ComboBox _currentProcess = null;
+
+	private object _window = null;
+
+	/// <summary>
+	/// 控件圆角半径
+	/// </summary>
+	public static readonly DependencyProperty CornerRadiusProperty;
+
+	/// <summary>
+	/// 搜索提示文字
+	/// </summary>
+	public static readonly DependencyProperty SearchTipsProperty;
+
+	/// <summary>
+	/// 搜索提示文字颜色
+	/// </summary>
+	public static readonly DependencyProperty SearchTipsForegroundProperty;
+
+	/// <summary>
+	/// 是否显示全部搜索结果
+	/// </summary>
+	public static readonly DependencyProperty IsShowAllSearchResultProperty;
+
+	/// <summary>
+	/// （在不显示全部搜索结果的条件下）可显示的搜索结果的最大数据量
+	/// </summary>
+	public static readonly DependencyProperty MaxShownResultCountProperty;
+
+	/// <summary>
+	/// 搜索结果集合（用于绑定到ListBox）
+	/// </summary>
+	public static readonly DependencyProperty SearchResultCollectionProperty;
+
+	public static readonly DependencyProperty SearchTextProperty;
+
+	/// <summary>
+	/// 选中的搜索结果项
+	/// </summary>
+	public static readonly DependencyProperty SelectedSearchItemProperty;
+
+	/// <summary>
+	/// 是否为全流程
+	/// </summary>
+	public static readonly DependencyProperty IsDisplayAllProperty;
+
+	public static readonly DependencyProperty JumpCommandProperty;
+
+	public static readonly DependencyProperty SelectedProIDProperty;
+
+	public static readonly DependencyProperty IsSearchShowProperty;
+
+	public static readonly DependencyProperty IsDisposeNotifyProperty;
+
+	private DelegateCommand<object> _SelectionChangedCommand = null;
+
+	private List<FullMoudleInfo> allFullModuleList;
+
+	/// <summary>
+	/// 选择目标模块跳转
+	/// </summary>
+	public ICommand JumpCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(JumpCommandProperty);
+		}
+		set
+		{
+			SetValue(JumpCommandProperty, value);
+		}
+	}
+
+	public string SelectedProID
+	{
+		get
+		{
+			return (string)GetValue(SelectedProIDProperty);
+		}
+		set
+		{
+			SetValue(SelectedProIDProperty, value);
+		}
+	}
+
+	public bool IsSearchShow
+	{
+		get
+		{
+			return (bool)GetValue(IsSearchShowProperty);
+		}
+		set
+		{
+			SetValue(IsSearchShowProperty, value);
+		}
+	}
+
+	public bool IsDisposeNotify
+	{
+		get
+		{
+			return (bool)GetValue(IsDisposeNotifyProperty);
+		}
+		set
+		{
+			SetValue(IsDisposeNotifyProperty, value);
+		}
+	}
+
+	public CornerRadius CornerRadius
+	{
+		get
+		{
+			return (CornerRadius)GetValue(CornerRadiusProperty);
+		}
+		set
+		{
+			SetValue(CornerRadiusProperty, value);
+		}
+	}
+
+	public string SearchTips
+	{
+		get
+		{
+			return (string)GetValue(SearchTipsProperty);
+		}
+		set
+		{
+			SetValue(SearchTipsProperty, value);
+		}
+	}
+
+	public Brush SearchTipsForeground
+	{
+		get
+		{
+			return (Brush)GetValue(SearchTipsForegroundProperty);
+		}
+		set
+		{
+			SetValue(SearchTipsForegroundProperty, value);
+		}
+	}
+
+	public bool IsShowAllSearchResult
+	{
+		get
+		{
+			return (bool)GetValue(IsShowAllSearchResultProperty);
+		}
+		set
+		{
+			SetValue(IsShowAllSearchResultProperty, value);
+		}
+	}
+
+	public int MaxShownResultCount
+	{
+		get
+		{
+			return (int)GetValue(MaxShownResultCountProperty);
+		}
+		set
+		{
+			SetValue(MaxShownResultCountProperty, value);
+		}
+	}
+
+	public bool? IsDisplayAll
+	{
+		get
+		{
+			return (bool)GetValue(IsDisplayAllProperty);
+		}
+		set
+		{
+			SetValue(IsDisplayAllProperty, value);
+		}
+	}
+
+	public ObservableCollection<SearchPopupModel> SearchResultCollection
+	{
+		get
+		{
+			return (ObservableCollection<SearchPopupModel>)GetValue(SearchResultCollectionProperty);
+		}
+		set
+		{
+			SetValue(SearchResultCollectionProperty, value);
+		}
+	}
+
+	public string SearchText
+	{
+		get
+		{
+			return (string)GetValue(SearchTextProperty);
+		}
+		set
+		{
+			SetValue(SearchTextProperty, value);
+		}
+	}
+
+	public SearchPopupModel SelectedSearchItem
+	{
+		get
+		{
+			return (SearchPopupModel)GetValue(SelectedSearchItemProperty);
+		}
+		set
+		{
+			SetValue(SelectedSearchItemProperty, value);
+		}
+	}
+
+	public ICommand SelectionChangedCommand
+	{
+		get
+		{
+			if (_SelectionChangedCommand == null)
+			{
+				_SelectionChangedCommand = new DelegateCommand<object>((Action<object>)SelectionChangedCommandExe);
+			}
+			return (ICommand)_SelectionChangedCommand;
+		}
+	}
+
+	private static void OnDisposeStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is SearchDryPopup searchDryPopup && (bool)e.NewValue)
+		{
+			searchDryPopup.DeleteSelf();
+		}
+	}
+
+	private void DeleteSelf()
+	{
+		if (_ttbInput != null)
+		{
+			_ttbInput.TextChanged -= _ttbInput_TextChanged;
+			_ttbInput.LostFocus -= _ttbInput_LostFocus;
+			_ttbInput.GotFocus -= _ttbInput_GotFocus;
+		}
+		if (_btnClear != null)
+		{
+			_btnClear.Click -= _btnClear_Click;
+		}
+		if (_window != null)
+		{
+			(_window as Window).LocationChanged -= Window_LocationChanged;
+			(_window as Window).Deactivated -= Window_Deactivated;
+		}
+		_window = null;
+	}
+
+	static SearchDryPopup()
+	{
+		CornerRadiusProperty = DependencyProperty.Register("CornerRadius", typeof(CornerRadius), typeof(SearchDryPopup), new PropertyMetadata(new CornerRadius(0.0), null));
+		SearchTipsProperty = DependencyProperty.Register("SearchTips", typeof(string), typeof(SearchDryPopup), new PropertyMetadata("请输入搜索条件", null));
+		SearchTipsForegroundProperty = DependencyProperty.Register("SearchTipsForeground", typeof(Brush), typeof(SearchDryPopup), new PropertyMetadata(new SolidColorBrush(Colors.Gray), null));
+		IsShowAllSearchResultProperty = DependencyProperty.Register("IsShowAllSearchResult", typeof(bool), typeof(SearchDryPopup), new PropertyMetadata(true, null));
+		MaxShownResultCountProperty = DependencyProperty.Register("MaxShownResultCount", typeof(int), typeof(SearchDryPopup), new PropertyMetadata(10, null));
+		SearchResultCollectionProperty = DependencyProperty.Register("SearchResultCollection", typeof(ObservableCollection<SearchPopupModel>), typeof(SearchDryPopup), new PropertyMetadata(new ObservableCollection<SearchPopupModel>(), null));
+		SearchTextProperty = DependencyProperty.Register("SearchText", typeof(string), typeof(SearchDryPopup), new PropertyMetadata("", OnSearchTextPropretyChanged));
+		SelectedSearchItemProperty = DependencyProperty.Register("SelectedSearchItem", typeof(SearchPopupModel), typeof(SearchDryPopup), new PropertyMetadata(null));
+		IsDisplayAllProperty = DependencyProperty.Register("IsDisplayAll", typeof(bool?), typeof(SearchDryPopup), new PropertyMetadata(null, OnIsDisplayAllProperty));
+		JumpCommandProperty = DependencyProperty.Register("JumpCommand", typeof(ICommand), typeof(SearchDryPopup), new PropertyMetadata(null));
+		SelectedProIDProperty = DependencyProperty.Register("SelectedProID", typeof(string), typeof(SearchDryPopup), new PropertyMetadata(null, null));
+		IsSearchShowProperty = DependencyProperty.Register("IsSearchShow", typeof(bool), typeof(SearchDryPopup), new PropertyMetadata(false));
+		IsDisposeNotifyProperty = DependencyProperty.Register("IsDisposeNotify", typeof(bool), typeof(SearchDryPopup), new PropertyMetadata(false, OnDisposeStatusChanged));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(SearchDryPopup), new FrameworkPropertyMetadata(typeof(SearchDryPopup)));
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		PreviewKeyDown += SearchableTextBox_PreviewKeyDown;
+		_ttbSearchTips = GetTemplateChild("PART_TextBlockTips") as TextBlock;
+		_ttbInput = GetTemplateChild("PART_TextBoxInput") as TextBox;
+		_currentProcess = GetTemplateChild("SearchComboBox") as ComboBox;
+		if (_ttbInput != null)
+		{
+			_ttbInput.TextChanged -= _ttbInput_TextChanged;
+			_ttbInput.LostFocus -= _ttbInput_LostFocus;
+			_ttbInput.GotFocus -= _ttbInput_GotFocus;
+			_ttbInput.TextChanged += _ttbInput_TextChanged;
+			_ttbInput.LostFocus += _ttbInput_LostFocus;
+			_ttbInput.GotFocus += _ttbInput_GotFocus;
+		}
+		_popup = GetTemplateChild("PART_Popup") as Popup;
+		if (_popup != null)
+		{
+			_window = Window.GetWindow(this);
+			if (_window != null)
+			{
+				(_window as Window).LocationChanged -= Window_LocationChanged;
+				(_window as Window).LocationChanged += Window_LocationChanged;
+				(_window as Window).Deactivated -= Window_Deactivated;
+				(_window as Window).Deactivated += Window_Deactivated;
+			}
+			else
+			{
+				_popup.StaysOpen = false;
+			}
+		}
+		_lstSearchResult = GetTemplateChild("PART_ListBoxSearchResult") as ListBox;
+		if (_lstSearchResult != null)
+		{
+			_lstSearchResult.PreviewMouseLeftButtonDown += _lstSearchResult_PreviewMouseLeftButtonDown;
+		}
+		_btnClear = GetTemplateChild("PART_ButtonClear") as Button;
+		if (_btnClear != null)
+		{
+			_btnClear.Click -= _btnClear_Click;
+			_btnClear.Click += _btnClear_Click;
+		}
+	}
+
+	private void Window_Deactivated(object sender, EventArgs e)
+	{
+		_popup.IsOpen = false;
+	}
+
+	private void Window_LocationChanged(object sender, EventArgs e)
+	{
+		if (_popup.IsOpen)
+		{
+			typeof(Popup).GetMethod("UpdatePosition", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(_popup, null);
+		}
+	}
+
+	private void _ttbInput_GotFocus(object sender, RoutedEventArgs e)
+	{
+		if (_popup.IsOpen || string.IsNullOrEmpty(_ttbInput.Text))
+		{
+			return;
+		}
+		if (!_popup.IsOpen)
+		{
+			string iD = ((_currentProcess.SelectedIndex == 0) ? null : SelectedProID);
+			allFullModuleList = VmSolution.Instance.GetFullModuleList(iD);
+		}
+		IEnumerable<FullMoudleInfo> enumerable = allFullModuleList?.Where((FullMoudleInfo x) => x.Name.Contains(_ttbInput.Text));
+		if (enumerable == null || enumerable.Count() == 0)
+		{
+			if (_popup != null)
+			{
+				_popup.IsOpen = true;
+			}
+			if (_lstSearchResult != null)
+			{
+				_lstSearchResult.Visibility = Visibility.Collapsed;
+			}
+			return;
+		}
+		lock (this)
+		{
+			SearchResultCollection.Clear();
+			if (enumerable.Count() > 0)
+			{
+				foreach (FullMoudleInfo item in enumerable)
+				{
+					SearchPopupModel searchPopupModel = new SearchPopupModel();
+					uint iD2 = item.ID;
+					searchPopupModel.Id = iD2.ToString();
+					searchPopupModel.Name = item.Name;
+					searchPopupModel.GroupName = searchPopupModel.Id + searchPopupModel.Name;
+					searchPopupModel.FullPath = item.FullName;
+					iD2 = item.ProcessID;
+					searchPopupModel.ProcessID = iD2.ToString();
+					iD2 = item.ParentID;
+					searchPopupModel.ParentID = iD2.ToString();
+					SearchResultCollection.Add(searchPopupModel);
+				}
+			}
+			if (_popup != null)
+			{
+				_popup.IsOpen = true;
+			}
+			if (_lstSearchResult == null)
+			{
+				return;
+			}
+			if (SearchResultCollection.Count != 0)
+			{
+				_lstSearchResult.Visibility = Visibility.Visible;
+				if (_lstSearchResult.GetItemsHost() is VirtualizingPanel virtualizingPanel)
+				{
+					virtualizingPanel.CallEnsureGenerator();
+					virtualizingPanel.CallBringIndexIntoView(0);
+				}
+				ListBoxItem listBoxItem = (ListBoxItem)_lstSearchResult.ItemContainerGenerator.ContainerFromIndex(0);
+				if (listBoxItem != null)
+				{
+					listBoxItem.UpdateLayout();
+					listBoxItem.BringIntoView();
+				}
+			}
+			else
+			{
+				_lstSearchResult.Visibility = Visibility.Collapsed;
+			}
+		}
+	}
+
+	private void _ttbInput_LostFocus(object sender, RoutedEventArgs e)
+	{
+		_popup.IsOpen = false;
+	}
+
+	private void SelectionChangedCommandExe(object obj)
+	{
+	}
+
+	private static void OnIsDisplayAllProperty(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		SearchDryPopup searchDryPopup = d as SearchDryPopup;
+		bool? flag = e.NewValue as bool?;
+		if (searchDryPopup._currentProcess != null)
+		{
+			if (flag == true)
+			{
+				searchDryPopup._currentProcess.SelectedIndex = 0;
+			}
+			else
+			{
+				searchDryPopup._currentProcess.SelectedIndex = 1;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 搜索条件更改回调
+	/// </summary>
+	/// <param name="d"></param>
+	/// <param name="e"></param>
+	private static void OnSearchTextPropretyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (!(d is SearchDryPopup { _canSearching: not false } searchDryPopup))
+		{
+			return;
+		}
+		string searchKey = e.NewValue as string;
+		if (string.IsNullOrEmpty(searchKey))
+		{
+			if (searchDryPopup._popup != null)
+			{
+				searchDryPopup._popup.IsOpen = false;
+			}
+			return;
+		}
+		if (!searchDryPopup._popup.IsOpen)
+		{
+			string iD = ((searchDryPopup._currentProcess.SelectedIndex == 0) ? null : searchDryPopup.SelectedProID);
+			searchDryPopup.allFullModuleList = VmSolution.Instance.GetFullModuleList(iD);
+		}
+		IEnumerable<FullMoudleInfo> enumerable = searchDryPopup.allFullModuleList?.Where((FullMoudleInfo x) => x.Name.Contains(searchKey));
+		if (enumerable == null || enumerable.Count() == 0)
+		{
+			if (searchDryPopup._popup != null)
+			{
+				searchDryPopup._popup.IsOpen = true;
+			}
+			if (searchDryPopup._lstSearchResult != null)
+			{
+				searchDryPopup._lstSearchResult.Visibility = Visibility.Collapsed;
+			}
+			return;
+		}
+		lock (searchDryPopup)
+		{
+			searchDryPopup.SearchResultCollection.Clear();
+			if (enumerable.Count() > 0)
+			{
+				foreach (FullMoudleInfo item in enumerable)
+				{
+					SearchPopupModel searchPopupModel = new SearchPopupModel();
+					uint iD2 = item.ID;
+					searchPopupModel.Id = iD2.ToString();
+					searchPopupModel.Name = item.Name;
+					searchPopupModel.GroupName = searchPopupModel.Id + searchPopupModel.Name;
+					searchPopupModel.FullPath = item.FullName;
+					iD2 = item.ProcessID;
+					searchPopupModel.ProcessID = iD2.ToString();
+					iD2 = item.ParentID;
+					searchPopupModel.ParentID = iD2.ToString();
+					searchDryPopup.SearchResultCollection.Add(searchPopupModel);
+				}
+			}
+			if (searchDryPopup._popup != null)
+			{
+				searchDryPopup._popup.IsOpen = true;
+			}
+			if (searchDryPopup._lstSearchResult == null)
+			{
+				return;
+			}
+			if (searchDryPopup.SearchResultCollection.Count != 0)
+			{
+				searchDryPopup._lstSearchResult.Visibility = Visibility.Visible;
+				if (searchDryPopup._lstSearchResult.GetItemsHost() is VirtualizingPanel virtualizingPanel)
+				{
+					virtualizingPanel.CallEnsureGenerator();
+					virtualizingPanel.CallBringIndexIntoView(0);
+				}
+				ListBoxItem listBoxItem = (ListBoxItem)searchDryPopup._lstSearchResult.ItemContainerGenerator.ContainerFromIndex(0);
+				if (listBoxItem != null)
+				{
+					listBoxItem.UpdateLayout();
+					listBoxItem.BringIntoView();
+				}
+			}
+			else
+			{
+				searchDryPopup._lstSearchResult.Visibility = Visibility.Collapsed;
+			}
+		}
+	}
+
+	private void _ttbInput_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (string.IsNullOrEmpty(_ttbInput.Text))
+		{
+			if (_ttbSearchTips != null)
+			{
+				_ttbSearchTips.Visibility = Visibility;
+			}
+			if (_btnClear != null)
+			{
+				_btnClear.Visibility = Visibility.Hidden;
+			}
+		}
+		else
+		{
+			if (_ttbSearchTips != null)
+			{
+				_ttbSearchTips.Visibility = Visibility.Collapsed;
+			}
+			if (_btnClear != null)
+			{
+				_btnClear.Visibility = Visibility.Visible;
+			}
+		}
+	}
+
+	private void _btnClear_Click(object sender, RoutedEventArgs e)
+	{
+		if (_ttbInput != null)
+		{
+			_ttbInput.Text = "";
+		}
+	}
+
+	private void _lstSearchResult_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		ListBoxItem ancestor = UIElementExtension.GetAncestor<ListBoxItem>((DependencyObject)e.OriginalSource);
+		if (ancestor != null)
+		{
+			SetSelectedSearchItem(ancestor.DataContext as SearchPopupModel);
+			_popup.IsOpen = false;
+		}
+	}
+
+	private void SearchableTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+	{
+		if (_popup == null || !_popup.IsOpen || _lstSearchResult == null || _lstSearchResult.Items.Count == 0)
+		{
+			return;
+		}
+		if (e.Key == Key.Down)
+		{
+			if (_lstSearchResult.SelectedIndex < _lstSearchResult.Items.Count - 1)
+			{
+				_lstSearchResult.SelectedIndex = ((_lstSearchResult.SelectedIndex != -1) ? (_lstSearchResult.SelectedIndex + 1) : 0);
+				_lstSearchResult.ScrollIntoView(_lstSearchResult.SelectedItem);
+			}
+			e.Handled = true;
+		}
+		if (e.Key == Key.Up)
+		{
+			if (_lstSearchResult.SelectedIndex == -1 || _lstSearchResult.SelectedIndex == 0)
+			{
+				_lstSearchResult.SelectedIndex = 0;
+			}
+			else
+			{
+				_lstSearchResult.SelectedIndex -= 1;
+				_lstSearchResult.ScrollIntoView(_lstSearchResult.SelectedItem);
+			}
+			e.Handled = true;
+		}
+		if (e.Key == Key.Return)
+		{
+			if (_lstSearchResult.SelectedItem != null)
+			{
+				SetSelectedSearchItem(_lstSearchResult.SelectedItem as SearchPopupModel);
+				_popup.IsOpen = false;
+			}
+			e.Handled = true;
+		}
+	}
+
+	/// <summary>
+	/// 设置选中的搜索结果项
+	/// </summary>
+	/// <param name="selectedItem"></param>
+	private void SetSelectedSearchItem(SearchPopupModel selectedSearchPopupModel)
+	{
+		SelectedSearchItem = selectedSearchPopupModel;
+		JumpCommand?.Execute(selectedSearchPopupModel);
+		if (selectedSearchPopupModel != null)
+		{
+			_canSearching = false;
+			SearchText = selectedSearchPopupModel.Name;
+			_canSearching = true;
+		}
+	}
+}

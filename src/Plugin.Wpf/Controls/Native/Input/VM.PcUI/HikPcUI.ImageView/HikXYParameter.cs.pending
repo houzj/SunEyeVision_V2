@@ -1,0 +1,60 @@
+using System.Windows;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikXYParameter : RoiParameter
+{
+	public Point _OriginPoint;
+
+	public Point _XVector;
+
+	public Point _YVector;
+
+	public Point OriginPoint
+	{
+		get
+		{
+			return _OriginPoint;
+		}
+		set
+		{
+			if (_OriginPoint != value)
+			{
+				_OriginPoint = value;
+				NotifyPropertyChanged("OriginPoint");
+			}
+		}
+	}
+
+	public Point XVector
+	{
+		get
+		{
+			return _XVector;
+		}
+		set
+		{
+			if (_XVector != value)
+			{
+				_XVector = value;
+				NotifyPropertyChanged("XVector");
+			}
+		}
+	}
+
+	public Point YVector
+	{
+		get
+		{
+			return _YVector;
+		}
+		set
+		{
+			if (_YVector != value)
+			{
+				_YVector = value;
+				NotifyPropertyChanged("YVector");
+			}
+		}
+	}
+}

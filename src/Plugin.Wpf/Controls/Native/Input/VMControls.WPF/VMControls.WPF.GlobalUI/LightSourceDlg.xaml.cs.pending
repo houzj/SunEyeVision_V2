@@ -1,0 +1,59 @@
+using System;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.Data;
+using Apps.Localization;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// LightSourceDlg.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// LightSourceDlg
+/// </summary>
+public partial class LightSourceDlg : BaseWindow, IComponentConnector
+{
+	public static readonly DependencyProperty LeftTextWidthProperty = DependencyProperty.Register("LeftTextWidth", typeof(int), typeof(LightSourceDlg), new PropertyMetadata(89));
+
+	/// <summary>
+	/// 参数名宽度
+	/// </summary>
+	public int LeftTextWidth
+	{
+		get
+		{
+			return (int)GetValue(LeftTextWidthProperty);
+		}
+		set
+		{
+			SetValue(LeftTextWidthProperty, value);
+		}
+	}
+
+	public LightSourceDlg()
+	{
+		InitializeComponent();
+		DataContext = LightSourceManager.Instance;
+	}
+
+	private void Confirm_Click(object sender, RoutedEventArgs e)
+	{
+		Close();
+	}
+
+	private void lightDlg_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (AppLocalizationService.GetLang("Language") == "English")
+		{
+			LeftTextWidth = 140;
+		}
+	}
+
+	private void lightDlg_Closed(object sender, EventArgs e)
+	{
+		FunctionCameraManager.Execute("GetLight");
+		FunctionCameraManager.Execute("GetImageConfigLight");
+	}
+}

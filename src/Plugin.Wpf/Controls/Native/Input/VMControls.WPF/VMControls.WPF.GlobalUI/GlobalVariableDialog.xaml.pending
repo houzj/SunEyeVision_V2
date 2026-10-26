@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalVariableDialog" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:globalVariable="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:paramtab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:AppPcUI="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:progressUI="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" x:Name="source" Height="683" Width="{Binding ConfigWidth, ElementName=source}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TextBoxStyle/TextBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/DataGridStyle/DataGridStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <controls:BaseWindow.TitleBar>
+    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+      <TextBlock Foreground="{DynamicResource Col_SubForm_HeaderBrush_Foreground}" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="13" FontWeight="Bold" Text="{Binding DisplayName, ElementName=source}" />
+      <Button Margin="8,0" ToolTip="{DynamicResource Lang_Help}" WindowChrome.IsHitTestVisibleInChrome="True" Command="{Binding ElementName=source, Path=ParamsConfig.OpenHelpCommand}">
+        <ContentControl.Content>
+          <Image Name="img" Width="14" Height="14" Stretch="Uniform" Source="/Apps.Style;component/Resources/btn_help.png" />
+        </ContentControl.Content>
+        <Control.Template>
+          <ControlTemplate TargetType="{x:Type Button}">
+            <Border Name="border" Width="30" Height="26" Background="#00FFFFFF" CornerRadius="2">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="border" Value="{DynamicResource Col_Menubar_Shortcut_Selected_Background}" Property="Border.Background" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Control.Template>
+      </Button>
+    </StackPanel>
+  </controls:BaseWindow.TitleBar>
+  <Grid Background="#F2F3F5">
+    <FrameworkElement.Resources>
+      <ResourceDictionary>
+        <globalVariable:NullToVisibilityConverter x:Key="NullToVisiblity" />
+        <globalVariable:StringToMultiLenConverter x:Key="StringToMultiLen" />
+        <globalVariable:EditEnableMultiConverter x:Key="EditMultiToEnable" />
+        <globalVariable:BoolToBackVisiableConverter x:Key="BoolBackToEnable" />
+        <globalVariable:VisibleToWidthConverter x:Key="VisibleToWidth" />
+        <Style x:Key="BottomLineButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Background" Value="#F2F2F2" />
+          <Setter Property="BorderBrush" Value="#CCCCCC" />
+          <Setter Property="FontSize" Value="12px" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <controls:FouerColorBorder Name="Border" CornerRadius="2" BottomBorderBrush="{DynamicResource Col_Theme}" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1,1,1,1">
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                </controls:FouerColorBorder>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#80F2F2F2" />
+                    <Setter Property="Foreground" Value="#80666666" />
+                    <Setter Property="BorderBrush" Value="#80CCCCCC" />
+                    <Setter TargetName="Border" Value="{DynamicResource Col_Theme_Light}" Property="controls:FouerColorBorder.BottomBorderBrush" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="delete_ButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="HorizontalAlignment" Value="Right" />
+          <Style.Triggers>
+            <Trigger Property="FrameworkElement.Tag" Value="unbind">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type Button}">
+                    <Image Name="addIcon" Margin="2,0,0,0" Width="24" Height="24" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_deduct_normal.png" />
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="UIElement.IsMouseOver" Value="True">
+                        <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_deduct_hover.png" />
+                      </Trigger>
+                      <Trigger Property="IsPressed" Value="True">
+                        <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_deduct_click.png" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="FrameworkElement.Tag" Value="bind">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type Button}">
+                    <Image Name="addIcon" Margin="2,0,0,0" Width="32" Height="32" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_link_gray_normal.png" />
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="UIElement.IsMouseOver" Value="True">
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_link_gray_click.png" />
+                      </Trigger>
+                      <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_link_gray_click.png" />
+                      </Trigger>
+                      <DataTrigger Value="Collapsed" Binding="{Binding ElementName=ulinkButton, Path=Visibility}">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                      <DataTrigger Value="Visible" Binding="{Binding ElementName=ulinkButton, Path=Visibility}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                      </DataTrigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+        <Style x:Key="TopButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+          <Setter Property="Background" Value="#00FFFFFF" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                  <Image Name="img" Stretch="None" Source="/Apps.Style;component/Resources/ic_top_normal.png" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="img" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_top_click.png" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="img" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_top_disable.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="UpButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+          <Setter Property="Background" Value="#00FFFFFF" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                  <Image Name="img" Stretch="None" Source="/Apps.Style;component/Resources/ic_up_normal.png" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="img" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_up_click.png" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="img" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_up_disable.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="DownButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+          <Setter Property="Background" Value="#00FFFFFF" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                  <Image Name="img" Stretch="None" Source="/Apps.Style;component/Resources/ic_down_normal.png" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="img" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_down_click.png" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="img" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_down_disable.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="importButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="Background" Value="{DynamicResource GlobalBorderBg}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="FontSize" Value="12" />
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter Value="{DynamicResource BottomLineBtnEnableBG}" Property="Background" />
+                    <Setter Value="{DynamicResource BottomLineBtnEnableBB}" Property="BorderBrush" />
+                    <Setter Value="{DynamicResource btnEditTemplateEnableFG}" Property="Foreground" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="boolean" TargetType="{x:Type ToggleButton}">
+          <Setter Property="BorderThickness" Value="0" />
+          <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="Width" Value="48" />
+          <Setter Property="Height" Value="32" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                <Image Name="Image" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_off.png" />
+                <ControlTemplate.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter TargetName="Image" Property="Image.Source" Value="../../Resources/swith_on.png" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter Value="{DynamicResource Lang_COMMSTREMPTY}" Property="FrameworkElement.ToolTip" />
+                  </Trigger>
+                  <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                  <DataTrigger Value="{x:Static system:String.Empty}" Binding="{Binding Name}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="delete" TargetType="{x:Type Button}" BasedOn="{StaticResource deleteButton}">
+          <EventSetter Event="Click" Handler="Delete_OnHandler" />
+        </Style>
+        <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
+          <Setter Property="FrameworkElement.UseLayoutRounding" Value="True" />
+          <Setter Property="ItemsPanel">
+            <Setter.Value>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" />
+              </ItemsPanelTemplate>
+            </Setter.Value>
+          </Setter>
+          <Setter Property="ItemTemplate">
+            <Setter.Value>
+              <DataTemplate DataType="globalVariable:GlobalVariableItem">
+                <Border Name="outBorder" Margin="0,0,0,6" BorderThickness="0,0,0,1" BorderBrush="#00FFFFFF">
+                  <Grid Name="gridGlob" MouseDown="GridGlob_MouseDown">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}" BasedOn="{StaticResource input}">
+                          <EventSetter Event="GotFocus" Handler="GotFocus_OnHandler" />
+                          <EventSetter Event="LostFocus" Handler="LostFocus_OnHandler" />
+                          <EventSetter Event="PreviewKeyDown" Handler="TextBox_PreviewKeyDown" />
+                        </Style>
+                        <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ListViewComboBoxStyle}">
+                          <Setter Property="ComboBox.IsDropDownOpen" Value="{Binding Capture, Mode=OneWayToSource}" />
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="0.5*" />
+                      <ColumnDefinition Width="90" />
+                      <ColumnDefinition Width="100" />
+                      <ColumnDefinition Width="100" />
+                      <ColumnDefinition Width="200" />
+                      <ColumnDefinition Width="2.0*" />
+                      <ColumnDefinition Width="200" />
+                      <ColumnDefinition Width="{Binding IsVisibleComInit, ElementName=source, Converter={StaticResource VisibleToWidth}}" />
+                      <ColumnDefinition Width="0.8*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Stretch" MaxWidth="40" Margin="6,0,0,0" FontFamily="Microsoft YaHei" FontSize="14px" Foreground="#666666" Text="{Binding Index}" />
+                    <TextBox Name="itemNameTxt" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,5,0" Text="{Lang:ResourceBinding Name, Mode=OneWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                      <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="LostFocus">
+                          <UIHelper:ParamsEventCommand Command="{Binding TextChangedCommand}" CommandParameter="{Binding Text, ElementName=itemNameTxt}" />
+                        </i:EventTrigger>
+                      </i:Interaction.Triggers>
+                    </TextBox>
+                    <TextBox Grid.Column="2" HorizontalAlignment="Stretch" Text="{Binding RemarkInfo}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource StringToMultiLen}}" />
+                    <ComboBox Margin="4,0,0,0" Height="32" Grid.Column="3" HorizontalAlignment="Stretch" SelectedItem="{Binding DisplayType}" ItemsSource="{Binding IoSelectValueTypes}" />
+                    <StackPanel Grid.Column="4" Margin="6,0,0,0" Background="#00FFFFFF" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                      <TextBox Width="170" HorizontalAlignment="Stretch" Text="{Binding Value}" ToolTip="{Binding Value, Converter={StaticResource StringToMultiLen}}" Visibility="{Binding IsVarValueVisibility, Converter={StaticResource bool2VisibilityConverter}}" />
+                      <Button Margin="5,0,0,0" Foreground="#F76900" Background="#00FFFFFF" Content="{DynamicResource Lang_Details}" FontSize="14px" FontFamily="Microsoft YaHei" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{x:Null}" Command="{Binding DisplayValueArrayCommand}" Visibility="{Binding IsArrayValue, Converter={StaticResource bool2VisibilityConverter}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="5" MaxWidth="160" Margin="10,0,0,0" HorizontalAlignment="Stretch" FontSize="14px" VerticalAlignment="Center" FontFamily="Microsoft YaHei" Foreground="#666666" Text="{Binding BindString}" ToolTip="{Binding DisplayTooltipBindString}" />
+                    <StackPanel Grid.Column="6" Margin="10,0,0,0" Background="#00FFFFFF" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                      <TextBlock Name="targetText" MaxWidth="150" VerticalAlignment="Center" HorizontalAlignment="Stretch" FontFamily="Microsoft YaHei" FontSize="14px" Foreground="#0080FF" Text="{Binding DisplayParamsName}" ToolTip="{Binding DisplayTooltipName}">
+                        <UIElement.InputBindings>
+                          <MouseBinding MouseAction="LeftClick" Command="{Binding ModifiyRunParamsCommand}" />
+                        </UIElement.InputBindings>
+                      </TextBlock>
+                      <Button Name="linkButton" Tag="bind" Margin="5,0,0,0" Style="{StaticResource delete_ButtonStyle}" IsEnabled="{Binding IsBindMoudleResult}" Visibility="{Binding IsBindTarget}" Command="{Binding ModifiyRunParamsCommand}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="7" Orientation="Horizontal" VerticalAlignment="Center" Background="#00FFFFFF" HorizontalAlignment="Stretch">
+                      <ToggleButton Name="ToggleButton" HorizontalAlignment="Left" Style="{StaticResource boolean}" IsChecked="{Binding CommInit}" IsEnabled="{Binding IsComInitEnable}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center" Background="#00FFFFFF" HorizontalAlignment="Stretch">
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                          <Style.Triggers>
+                            <DataTrigger Value="False" Binding="{Binding ElementName=ToggleButton, Path=IsEnabled}">
+                              <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_COMMSTREMPTY}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </FrameworkElement.Style>
+                      <Button HorizontalAlignment="Center" Margin="10,0,0,0" VerticalAlignment="Center" Style="{StaticResource delete}" IsEnabled="{Binding ElementName=source, Path=IsAllowOperat}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+                <DataTemplate.Triggers>
+                  <DataTrigger Value="true" Binding="{Binding IsSelected}">
+                    <Setter TargetName="gridGlob" Property="Panel.Background" Value="#E2E0E0" />
+                    <Setter TargetName="outBorder" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  </DataTrigger>
+                </DataTemplate.Triggers>
+              </DataTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="norLabel" TargetType="{x:Type Label}">
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Foreground" Value="#4C4C4C" />
+          <Setter Property="FontWeight" Value="Bold" />
+          <Setter Property="FontSize" Value="14px" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="showTipLabel" TargetType="{x:Type Label}">
+          <Setter Property="Foreground" Value="#4C4C4C" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="FontWeight" Value="Bold" />
+          <Setter Property="FontSize" Value="14px" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Label}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+                  <StackPanel Orientation="Horizontal">
+                    <ContentPresenter ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" Content="{TemplateBinding ContentControl.Content}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                    <Image Name="icon1" Margin="2,0,0,0" Height="18" Width="18" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_help_normal.png">
+                      <FrameworkElement.ToolTip>
+                        <TextBlock Text="{TemplateBinding FrameworkElement.Tag}" Width="200" TextWrapping="Wrap" />
+                      </FrameworkElement.ToolTip>
+                    </Image>
+                  </StackPanel>
+                </Border>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="MyButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="Background" Value="#00FFFFFF" />
+          <Setter Property="BorderBrush" Value="{DynamicResource GloCameraComboBB}" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="FontSize" Value="14" />
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Border Name="Back" Background="#00FFFFFF" Height="24" Margin="2,0,2,0" Focusable="False">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="10" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter Grid.Column="1" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                    <Rectangle Name="rect" Grid.ColumnSpan="2" Fill="{DynamicResource Col_Theme}" Height="1" StrokeThickness="0" Visibility="Collapsed" VerticalAlignment="Bottom" />
+                  </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="Back" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="Back" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                    <Setter TargetName="rect" Property="Visibility" Value="Visible" />
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <controls:HikContextMenu x:Key="GroupOperateMenu">
+          <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding RenameCommand}" />
+          <MenuItem Header="{DynamicResource Lang_Delet}" Click="DelVarGroup_Click" />
+        </controls:HikContextMenu>
+        <commomcontrol:SuperImageButton x:Key="Com" HorizontalAlignment="Left" Click="AddVarGroup_Click">
+          <commomcontrol:SuperImageButton.NormalConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_hu_add_normal.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.NormalConnent>
+          <commomcontrol:SuperImageButton.DisableConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_hu_add_disable.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.DisableConnent>
+          <commomcontrol:SuperImageButton.PressedConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_hu_add_click.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.PressedConnent>
+          <commomcontrol:SuperImageButton.MOverConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_hu_add_hover.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.MOverConnent>
+        </commomcontrol:SuperImageButton>
+        <Style x:Key="TabControlStyle1" TargetType="{x:Type TabControl}">
+          <Setter Property="Foreground" Value="{DynamicResource LogicTypeFG}" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="BorderBrush" Value="#E6E8EB" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type TabControl}">
+                <Grid ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" SnapsToDevicePixels="True">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Name="ColumnDefinition0" />
+                    <ColumnDefinition Name="ColumnDefinition1" Width="0" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Name="RowDefinition0" Height="38" />
+                    <RowDefinition Name="RowDefinition1" Height="*" />
+                  </Grid.RowDefinitions>
+                  <Border Name="head" BorderBrush="#E6E8EB" BorderThickness="0,1,0,0" Background="#FAFAFC">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="64" />
+                      </Grid.ColumnDefinitions>
+                      <Grid>
+                        <ScrollViewer Name="scroll" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Grid.Column="1" ScrollChanged="Sv_ScrollChanged">
+                          <StackPanel Name="stack" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <TabPanel Name="HeaderPanel" Margin="0" ZIndex="1" IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+                            <Grid Name="Com" Margin="4,0,0,0" Width="32">
+                              <ContentPresenter Name="ComContent" HorizontalAlignment="Left" Content="{x:Null}" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=source, Converter={StaticResource BoolBackToEnable}}" />
+                            </Grid>
+                          </StackPanel>
+                        </ScrollViewer>
+                      </Grid>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Background="#00FFFFFF">
+                        <ContentPresenter Name="subComContent" Content="{x:Null}" />
+                        <ComboBox Width="32" Background="#00FFFFFF" ItemsSource="{TemplateBinding ItemsControl.ItemsSource}" DisplayMemberPath="Name" Style="{StaticResource ListViewBtnComboBoxStyle}" SelectedItem="{Binding Path=SelectGroupItem, ElementName=source}" />
+                      </StackPanel>
+                    </Grid>
+                    <i:Interaction.Triggers>
+                      <core:DataTrigger xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" Comparison="LessThan" core:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}">
+                        <core:ChangePropertyAction PropertyName="Content" i:TargetedTriggerAction.TargetObject="{Binding ElementName=ComContent}" Value="{x:Null}" />
+                        <core:ChangePropertyAction PropertyName="Content" Value="{DynamicResource Com}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=subComContent}" />
+                      </core:DataTrigger>
+                      <DataTrigger Comparison="GreaterThanOrEqual" p29:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}" xmlns:p29="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions">
+                        <p29:ChangePropertyAction PropertyName="Content" i:TargetedTriggerAction.TargetObject="{Binding ElementName=subComContent}" Value="{x:Null}" />
+                        <p29:ChangePropertyAction PropertyName="Content" Value="{DynamicResource Com}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=ComContent}" />
+                      </DataTrigger>
+                    </i:Interaction.Triggers>
+                  </Border>
+                  <Grid Name="PART_ItemsHolder" Column="0" Row="1" />
+                  <ContentPresenter Name="PART_SelectedContentHost" Grid.Row="1" ContentSource="SelectedContent" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="TopTabItemStyle1" TargetType="{x:Type TabItem}">
+          <Setter Property="FontSize" Value="12" />
+          <Setter Property="FontWeight" Value="Normal" />
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="TabItem.IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+          <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource GroupOperateMenu}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type TabItem}">
+                <Grid ToolTip="{Binding Name}">
+                  <Border Name="bd" HorizontalAlignment="Center" VerticalAlignment="Center" Height="35" Width="auto" Background="#00FFFFFF">
+                    <StackPanel Orientation="Horizontal" Background="#00FFFFFF" Margin="0,0,12,0">
+                      <ContentPresenter Name="Content" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0,0,0" SnapsToDevicePixels="True" />
+                    </StackPanel>
+                  </Border>
+                  <Rectangle Name="line" Height="2" Fill="{DynamicResource Col_Theme}" Visibility="Hidden" VerticalAlignment="Bottom" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="TabItem.IsSelected" Value="True">
+                    <Setter TargetName="bd" Value="{DynamicResource Col_Theme_Light}" Property="Border.Background" />
+                    <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Value="{DynamicResource Col_ModuleConfig_Title_Selected_Foreground}" Property="Foreground" />
+                    <Setter TargetName="line" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                    <Setter TargetName="line" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </ResourceDictionary>
+    </FrameworkElement.Resources>
+    <Grid.RowDefinitions>
+      <RowDefinition />
+      <RowDefinition Height="32" />
+    </Grid.RowDefinitions>
+    <Grid Margin="15,10,15,0" Background="#F2F3F5">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="34" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Grid Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="440" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="300" />
+        </Grid.ColumnDefinitions>
+        <TextBox Name="txtFocus" Width="0" Height="0" MaxLength="1" Style="{x:Null}" />
+        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="32">
+          <Button Width="94" Height="32" Style="{StaticResource Add_ButtonStyle}" Content="{DynamicResource Lang_GlobalVariableAdd}" FontSize="14px" Click="AddItem_OnClick">
+            <UIElement.IsEnabled>
+              <MultiBinding Converter="{StaticResource EditMultiToEnable}" Mode="OneWay">
+                <Binding Path="IsAllowOperat" ElementName="source" />
+                <Binding Path="SolutionData.(VMInterface:IVMRun.IsRunning)" ElementName="source" />
+              </MultiBinding>
+            </UIElement.IsEnabled>
+          </Button>
+          <Button Name="btnImport" Content="{DynamicResource 导入}" Margin="10,0,0,0" Width="50" Height="32" Style="{StaticResource importButtonStyle}" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=source, Converter={StaticResource BoolBackToEnable}}" Click="BtnImport_Click" />
+          <Popup Name="PopImport" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=btnImport}">
+            <Grid Height="60" Width="80" HorizontalAlignment="Left" Background="#00FFFFFF">
+              <Border BorderBrush="#00FFFFFF" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource GlobalBorderBg}">
+                <UIElement.Effect>
+                  <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                </UIElement.Effect>
+                <StackPanel>
+                  <Button Content="{DynamicResource Local}" Style="{StaticResource MyButtonStyle}" Click="LocalImport_Click" />
+                  <Button Content="{DynamicResource Remote}" Style="{StaticResource MyButtonStyle}" Click="RemoteImport_Click" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Popup>
+          <Button Name="btnExport" Content="{DynamicResource 导出}" Margin="10,0,0,0" Width="50" Height="32" Style="{StaticResource importButtonStyle}" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=source, Converter={StaticResource BoolBackToEnable}}" Click="BtnExport_Click" />
+          <Popup Name="PopExport" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=btnExport}">
+            <Grid Height="60" Width="80" HorizontalAlignment="Left" Background="#00FFFFFF">
+              <Border BorderBrush="#00FFFFFF" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource GlobalBorderBg}">
+                <UIElement.Effect>
+                  <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                </UIElement.Effect>
+                <StackPanel>
+                  <Button Content="{DynamicResource Local}" Style="{StaticResource MyButtonStyle}" Click="LocalExport_Click" />
+                  <Button Content="{DynamicResource Remote}" Style="{StaticResource MyButtonStyle}" Click="RemoteExport_Click" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Popup>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="32" Margin="10,0,0,0">
+            <TextBox Name="SearchText" Tag="{DynamicResource Lang_GlobalVariableSearchName}" Style="{StaticResource input}" Padding="6,0,16,0" Width="190" Height="32" TextChanged="SearchText_TextChanged" />
+            <Button Style="{StaticResource searchBtn}" Margin="-32,0,0,0" Click="SearchItem_OnClick" />
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="32">
+          <Button Name="btnTop" Margin="10,0,0,0" ToolTip="{DynamicResource Lang_Top}" Width="28" Height="28" IsEnabled="False" Style="{StaticResource TopButtonStyle}" Click="BtnTop_Click" />
+          <Button Name="btnUp" Margin="10,0,0,0" ToolTip="{DynamicResource MoveUp}" Width="28" Height="28" IsEnabled="False" Style="{StaticResource UpButtonStyle}" Click="BtnUp_Click" />
+          <Button Name="btnDown" Margin="10,0,0,0" ToolTip="{DynamicResource MoveDown}" Width="28" Height="28" IsEnabled="False" Style="{StaticResource DownButtonStyle}" Click="BtnDown_Click" />
+          <Button Name="LightSave" Grid.Column="2" Width="78" Height="30" Margin="10,0,0,0" Style="{StaticResource BottomLineButtonStyle}" Content="{DynamicResource Lang_GlobalVariableSave}" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=source, Converter={StaticResource BoolBackToEnable}}" Visibility="{Binding Path=IsVisibleComInit, ElementName=source, Converter={StaticResource bool2VisibilityConverter}}" Click="LightSave_Click" />
+        </StackPanel>
+      </Grid>
+      <TabControl Name="tabControl" Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource TabControlStyle1}" ItemContainerStyle="{StaticResource TopTabItemStyle1}" ItemsSource="{Binding ElementName=source, Path=VarItemGroups}" SelectedItem="{Binding ElementName=source, Path=SelectGroupItem}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <ContentPresenter ContextMenu="{StaticResource GroupOperateMenu}" Content="{Binding}">
+              <ContentPresenter.ContentTemplate>
+                <DataTemplate>
+                  <AppPcUI:HeadReNameTextBox Name="headText" BorderThickness="0" Background="#00FFFFFF" MaxLength="64" FontSize="14px" FontFamily="Microsoft YaHei" Margin="8,0,0,0" VerticalAlignment="Center" MaxWidth="100" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" ToolTip="{Binding Name}" IsReName="{Binding IsReName, Mode=TwoWay}" />
+                </DataTemplate>
+              </ContentPresenter.ContentTemplate>
+            </ContentPresenter>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate>
+            <Grid>
+              <Border Visibility="{Binding ElementName=source, Path=EmptyStatus}">
+                <StackPanel VerticalAlignment="Center">
+                  <Image Height="50" Width="100" VerticalAlignment="Center" Source="/Apps.Style;component/Resources/ic_empty.png" />
+                  <TextBlock Text="{DynamicResource Lang_ContentEmpty}" Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="14" FontFamily="Microsoft YaHei" />
+                </StackPanel>
+              </Border>
+              <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,5,0,0">
+                <DataGrid Name="varDataGrid" Width="{TemplateBinding FrameworkElement.Width}" Style="{StaticResource varDataGridStyle}" MaxHeight="510" CanUserSortColumns="False" CanUserReorderColumns="False" BorderThickness="0" BorderBrush="#00FFFFFF" GridLinesVisibility="Vertical" AutoGenerateColumns="True" SelectionMode="Single" ItemsSource="{Binding BindItems}" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=source, Converter={StaticResource BoolBackToEnable}}" SelectedItem="{Binding Path=SelectedVarItem, ElementName=source}" AutoGeneratedColumns="varDataGrid_AutoGeneratedColumns">
+                  <FrameworkElement.Resources>
+                    <ResourceDictionary>
+                      <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}" BasedOn="{StaticResource input}">
+                        <EventSetter Event="LostFocus" Handler="LostFocus_OnHandler" />
+                        <EventSetter Event="PreviewKeyDown" Handler="TextBox_PreviewKeyDown" />
+                      </Style>
+                    </ResourceDictionary>
+                  </FrameworkElement.Resources>
+                  <DataGrid.Columns>
+                    <DataGridTemplateColumn IsReadOnly="True" Width="60">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_GlobalVariableIndex}" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,0,5,0" FontFamily="Microsoft YaHei" FontSize="14px" Foreground="#666666" Text="{Binding Index}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="135">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_Name}" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBox Name="itemNameTxt" Margin="5,0,5,0" Height="32" HorizontalAlignment="Stretch" Text="{Lang:ResourceBinding Name, Mode=OneWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                            <i:Interaction.Triggers>
+                              <i:EventTrigger EventName="LostFocus">
+                                <UIHelper:ParamsEventCommand Command="{Binding TextChangedCommand}" CommandParameter="{Binding Text, ElementName=itemNameTxt}" />
+                              </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                          </TextBox>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="130">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_ReMark}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBox Margin="5,0,5,0" Height="32" HorizontalAlignment="Stretch" Text="{Binding DataContext.RemarkInfo, RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}}" ToolTip="{Binding Path=Text, Converter={StaticResource StringToMultiLen}, RelativeSource={RelativeSource Mode=Self}}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="95">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_Type}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <ComboBox Style="{StaticResource ListViewComboBoxStyle}" Margin="5,0,5,0" Height="32" HorizontalAlignment="Stretch" SelectedValue="{Binding DataContext.DisplayType, RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}}" ItemsSource="{Binding IoSelectValueTypes}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="158">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_GlobalVariableDefaultValue}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Grid Margin="5,0,5,0" Background="#00FFFFFF" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <TextBox Margin="0" Height="32" HorizontalAlignment="Stretch" Text="{Binding DataContext.Value, RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}}" ToolTip="{Binding Value, Converter={StaticResource StringToMultiLen}}" Visibility="{Binding IsVarValueVisibility, Converter={StaticResource bool2VisibilityConverter}}" />
+                            <Button Foreground="#F76900" Height="32" Background="#00FFFFFF" Content="{DynamicResource Lang_Details}" FontSize="14px" FontFamily="Microsoft YaHei" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{x:Null}" Command="{Binding DisplayValueArrayCommand}" Visibility="{Binding IsArrayValue, Converter={StaticResource bool2VisibilityConverter}}" />
+                          </Grid>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="150">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource showTipLabel}" Tag="{DynamicResource Lang_GlobalVariableTipInput}" Content="{DynamicResource Lang_GlobalVariableInputSource}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock Margin="5,0,5,0" HorizontalAlignment="Stretch" FontSize="14px" VerticalAlignment="Center" FontFamily="Microsoft YaHei" Foreground="#666666" Text="{Binding BindString}" ToolTip="{Binding DisplayTooltipBindString}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="160">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource showTipLabel}" Tag="{DynamicResource Lang_GlobalVariableTipOutput}" Content="{DynamicResource Lang_GlobalVariableTargetOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Grid Background="#00FFFFFF" Margin="5,0,5,0" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <TextBlock Name="targetText" MaxWidth="140" VerticalAlignment="Center" HorizontalAlignment="Left" FontFamily="Microsoft YaHei" FontSize="14px" Foreground="#0080FF" Text="{Binding DisplayParamsName}" ToolTip="{Binding DisplayTooltipName}">
+                              <UIElement.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding ModifiyRunParamsCommand}" />
+                              </UIElement.InputBindings>
+                            </TextBlock>
+                            <Button Name="linkButton" HorizontalAlignment="Left" Style="{StaticResource delete_ButtonStyle}" Tag="bind" IsEnabled="{Binding IsBindMoudleResult}" Visibility="{Binding IsBindTarget}" Command="{Binding ModifiyRunParamsCommand}" />
+                          </Grid>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn x:Name="dgComitColumn" Width="93">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource showTipLabel}" Tag="{DynamicResource Lang_GlobalVariableLable}" Content="{DynamicResource Lang_CalculatorCInitial}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <ToggleButton Name="ToggleButton" Style="{StaticResource boolean}" HorizontalAlignment="Center" IsChecked="{Binding DataContext.CommInit, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}" IsEnabled="{Binding IsComInitEnable}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="75">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_Operate}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Button Style="{StaticResource delete}" VerticalAlignment="Center" IsEnabled="{Binding ElementName=source, Path=IsAllowOperat}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                </DataGrid>
+              </StackPanel>
+            </Grid>
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+      <progressUI:ProgressMask Name="windowShadow" Grid.Row="1" IsShowProgressBar="False" Visibility="{Binding Path=IsShowProcessbar, ElementName=source}" Message="{Binding Path=ProcessbarMessage, ElementName=source}" />
+    </Grid>
+    <Border Grid.Row="1" Background="#E4E5E7" Visibility="{Binding ElementName=source, Path=PageNumShowStatus}">
+      <paramtab:PageNumControl HorizontalAlignment="Right" Margin="0,1,9,2" PageCountVisible="Visible" PageDataCount="{Binding ElementName=source, Path=PageCount, Mode=TwoWay}" TotalDataCount="{Binding ElementName=source, Path=ItemsTotalCount}" CurrentPageNumber="{Binding ElementName=source, Path=CurrentPageNum, Mode=TwoWay}" />
+    </Border>
+  </Grid>
+</controls:BaseWindow>

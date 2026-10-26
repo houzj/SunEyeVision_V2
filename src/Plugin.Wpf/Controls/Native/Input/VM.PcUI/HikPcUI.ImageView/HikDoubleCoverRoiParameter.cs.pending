@@ -1,0 +1,183 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikDoubleCoverRoiParameter : RoiParameter, IROISign
+{
+	public Point _OriginPointFirst = new Point(0.0, 0.0);
+
+	public double _WidthFirst = 0.0;
+
+	public double _HeightFirst = 0.0;
+
+	public double _AngleFirst = 0.0;
+
+	public Point _OriginPointSecond = new Point(0.0, 0.0);
+
+	public double _WidthSecond = 0.0;
+
+	public double _HeightSecond = 0.0;
+
+	public double _AngleSecond = 0.0;
+
+	private string _Name = "双矩形";
+
+	public bool? _Sign = true;
+
+	public Point OriginPointFirst
+	{
+		get
+		{
+			return _OriginPointFirst;
+		}
+		set
+		{
+			if (_OriginPointFirst != value)
+			{
+				_OriginPointFirst = value;
+				NotifyPropertyChanged("OriginPointFirst");
+			}
+		}
+	}
+
+	public double WidthFirst
+	{
+		get
+		{
+			return _WidthFirst;
+		}
+		set
+		{
+			if (_WidthFirst != value)
+			{
+				_WidthFirst = value;
+				NotifyPropertyChanged("WidthFirst");
+			}
+		}
+	}
+
+	public double HeightFirst
+	{
+		get
+		{
+			return _HeightFirst;
+		}
+		set
+		{
+			if (_HeightFirst != value)
+			{
+				_HeightFirst = value;
+				NotifyPropertyChanged("HeightFirst");
+			}
+		}
+	}
+
+	public double AngleFirst
+	{
+		get
+		{
+			return _AngleFirst;
+		}
+		set
+		{
+			if (_AngleFirst != value)
+			{
+				_AngleFirst = value;
+				NotifyPropertyChanged("AngleFirst");
+			}
+		}
+	}
+
+	public Point OriginPointSecond
+	{
+		get
+		{
+			return _OriginPointSecond;
+		}
+		set
+		{
+			if (_OriginPointSecond != value)
+			{
+				_OriginPointSecond = value;
+				NotifyPropertyChanged("OriginPointSecond");
+			}
+		}
+	}
+
+	public double WidthSecond
+	{
+		get
+		{
+			return _WidthSecond;
+		}
+		set
+		{
+			if (_WidthSecond != value)
+			{
+				_WidthSecond = value;
+				NotifyPropertyChanged("WidthSecond");
+			}
+		}
+	}
+
+	public double HeightSecond
+	{
+		get
+		{
+			return _HeightSecond;
+		}
+		set
+		{
+			if (_HeightSecond != value)
+			{
+				_HeightSecond = value;
+				NotifyPropertyChanged("HeightSecond");
+			}
+		}
+	}
+
+	public double AngleSecond
+	{
+		get
+		{
+			return _AngleSecond;
+		}
+		set
+		{
+			if (_AngleSecond != value)
+			{
+				_AngleSecond = value;
+				NotifyPropertyChanged("AngleSecond");
+			}
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return _Sign;
+		}
+		set
+		{
+			if (_Sign != value)
+			{
+				_Sign = value;
+				NotifyPropertyChanged("Sign");
+			}
+		}
+	}
+}

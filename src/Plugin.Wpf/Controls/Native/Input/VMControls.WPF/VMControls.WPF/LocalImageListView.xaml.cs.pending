@@ -1,0 +1,315 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.Data;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using VMControls.BaseInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// LocalImageListView.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// LocalImageListView
+/// </summary>
+public partial class LocalImageListView : Control, INotifyPropertyChanged, IComponentConnector, IStyleConnector
+{
+	public delegate void SelectItemChaneged(NameValueItem info);
+
+	private class TempClass : INotifyPropertyChanged
+	{
+		private string displayName;
+
+		private bool val;
+
+		public string DisplayName
+		{
+			get
+			{
+				return displayName;
+			}
+			set
+			{
+				displayName = value;
+			}
+		}
+
+		public bool Value
+		{
+			get
+			{
+				return val;
+			}
+			set
+			{
+				val = value;
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public void OnPropertyChanged(string name)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	private ImageListPanel list;
+
+	private ComboBox cbx;
+
+	public SelectItemChaneged OnSelectedItemChanged;
+
+	public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register("IsExpanded", typeof(bool), typeof(LocalImageListView), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsSelectModeProperty = DependencyProperty.Register("IsSelectMode", typeof(bool), typeof(LocalImageListView), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty RootProperty = DependencyProperty.Register("Root", typeof(AlgorithmTabRoot), typeof(LocalImageListView), new PropertyMetadata(null, OnRootChanged));
+
+	private List<object> imageModes = null;
+
+	private object _AutoPlay;
+
+	private object _Interval;
+
+	private object _CurrentImagePath;
+
+	public bool IsExpanded
+	{
+		get
+		{
+			return (bool)GetValue(IsExpandedProperty);
+		}
+		set
+		{
+			SetValue(IsExpandedProperty, value);
+		}
+	}
+
+	public bool IsSelectMode
+	{
+		get
+		{
+			return (bool)GetValue(IsSelectModeProperty);
+		}
+		set
+		{
+			SetValue(IsSelectModeProperty, value);
+		}
+	}
+
+	public AlgorithmTabRoot Root
+	{
+		get
+		{
+			return (AlgorithmTabRoot)GetValue(RootProperty);
+		}
+		set
+		{
+			SetValue(RootProperty, value);
+		}
+	}
+
+	public List<object> ImageModes
+	{
+		get
+		{
+			if (imageModes == null)
+			{
+				imageModes = new List<object>
+				{
+					new TempClass
+					{
+						Value = false,
+						DisplayName = AppLocalizationService.GetLang("运行全部")
+					},
+					new TempClass
+					{
+						Value = true,
+						DisplayName = AppLocalizationService.GetLang("运行选中")
+					}
+				};
+			}
+			return imageModes;
+		}
+	}
+
+	/// <summary>
+	/// 自动切换
+	/// </summary>
+	public object AutoPlay
+	{
+		get
+		{
+			if (_AutoPlay == null && Root != null)
+			{
+				_AutoPlay = Root.FindBaseNodeByName("AutoPlay");
+			}
+			return _AutoPlay;
+		}
+	}
+
+	/// <summary>
+	/// 取图间隔
+	/// </summary>
+	public object Interval
+	{
+		get
+		{
+			if (_Interval == null && Root != null)
+			{
+				_Interval = Root.FindBaseNodeByName("Interval");
+			}
+			return _Interval;
+		}
+	}
+
+	/// <summary>
+	/// 当前图像
+	/// </summary>
+	public object CurrentImagePath
+	{
+		get
+		{
+			if (_CurrentImagePath == null && Root != null)
+			{
+				_CurrentImagePath = Root.FindBaseNodeByName("CurrentImagePath");
+				(_CurrentImagePath as NameValueItem)?.GetParamUnit();
+			}
+			return _CurrentImagePath;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public LocalImageListView()
+	{
+		InitializeComponent();
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		list = Template.FindName("list", this) as ImageListPanel;
+		cbx = Template.FindName("cbx", this) as ComboBox;
+		OnLanguageChanged();
+	}
+
+	public void ClearParamListView()
+	{
+	}
+
+	private void listViewUserDefinedKeyParam_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+	}
+
+	private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+	}
+
+	private static void OnRootChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		LocalImageListView localImageListView = d as LocalImageListView;
+		AlgorithmTabRoot algorithmTabRoot = e.OldValue as AlgorithmTabRoot;
+		AlgorithmTabRoot algorithmTabRoot2 = e.NewValue as AlgorithmTabRoot;
+		if (localImageListView == null)
+		{
+			return;
+		}
+		if (algorithmTabRoot != null)
+		{
+			localImageListView._AutoPlay = null;
+			localImageListView._CurrentImagePath = null;
+			localImageListView._Interval = null;
+		}
+		if (algorithmTabRoot2 != null)
+		{
+			try
+			{
+				localImageListView.IsSelectMode = ((IUserStringData)algorithmTabRoot2.UserStringData)["ExecuteType"] == "2";
+				if (localImageListView.CurrentImagePath is ButtonSelecter_ImageList buttonSelecter_ImageList)
+				{
+					buttonSelecter_ImageList.SelectEnable = localImageListView.IsSelectMode;
+				}
+			}
+			catch (Exception)
+			{
+			}
+		}
+		localImageListView.OnPropertyChanged("AutoPlay");
+		localImageListView.OnPropertyChanged("Interval");
+		localImageListView.OnPropertyChanged("CurrentImagePath");
+		localImageListView.OnLanguageChanged();
+	}
+
+	private void cbxMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		try
+		{
+			if (Root?.UserStringData == null)
+			{
+				return;
+			}
+			string text = ((IUserStringData)Root.UserStringData)["ExecuteType"];
+			if (IsSelectMode)
+			{
+				if (CurrentImagePath is ButtonSelecter_ImageList buttonSelecter_ImageList)
+				{
+					buttonSelecter_ImageList.SelectEnable = true;
+				}
+				if (text != "2")
+				{
+					((IUserStringData)Root.UserStringData)["ExecuteType"] = "2";
+				}
+				list?.GetModuleSelectMode();
+			}
+			else
+			{
+				if (CurrentImagePath is ButtonSelecter_ImageList buttonSelecter_ImageList2)
+				{
+					buttonSelecter_ImageList2.SelectEnable = false;
+				}
+				if (text != "1")
+				{
+					((IUserStringData)Root.UserStringData)["ExecuteType"] = "1";
+				}
+			}
+			list?.OnExcuteTypeParamChanged();
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	internal void OnLanguageChanged()
+	{
+		imageModes = null;
+		OnPropertyChanged("ImageModes");
+		if (cbx == null)
+		{
+			return;
+		}
+		if (IsSelectMode)
+		{
+			cbx.SelectedItem = imageModes.Find((object p) => p.GetPropertyValueByName("Value") as bool? == true);
+		}
+		else
+		{
+			cbx.SelectedItem = imageModes.Find((object p) => p.GetPropertyValueByName("Value") as bool? == false);
+		}
+	}
+}

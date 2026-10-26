@@ -1,0 +1,99 @@
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows;
+using Apps.PcUI;
+using VM.AppData;
+using VM.Controls;
+using VMControls.BaseInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+public class TabWinBase : BaseWindow
+{
+	public static readonly DependencyProperty ROIPartUIProperty = DependencyProperty.Register("ROIPartUI", typeof(object), typeof(TabWinBase), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsEditStateProperty = DependencyProperty.Register("IsEditState", typeof(bool), typeof(TabWinBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsCustomPositionProperty = DependencyProperty.Register("IsCustomPosition", typeof(bool), typeof(TabWinBase), new PropertyMetadata(false));
+
+	/// <summary>
+	/// 用于画ROI时，得到对应的绘制控件
+	/// </summary>
+	public object ROIPartUI
+	{
+		get
+		{
+			return GetValue(ROIPartUIProperty);
+		}
+		set
+		{
+			SetValue(ROIPartUIProperty, value);
+		}
+	}
+
+	public bool IsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsEditStateProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否自定义窗口起始位置
+	/// </summary>
+	public bool IsCustomPosition
+	{
+		get
+		{
+			return (bool)GetValue(IsCustomPositionProperty);
+		}
+		set
+		{
+			SetValue(IsCustomPositionProperty, value);
+		}
+	}
+
+	public ProcedureConfigControl AlongParent { get; internal set; }
+
+	public virtual IParamsConfig ParamsConfig { get; set; }
+
+	public TabWinBase()
+	{
+		Loaded += BaseWindow_Loaded;
+	}
+
+	private void BaseWindow_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (AlongParent == null || IsCustomPosition)
+		{
+			return;
+		}
+		using Graphics graphics = Graphics.FromHwnd(IntPtr.Zero);
+		System.Windows.Point point = ((!AppDataFactory.Instance().IsRightLayout) ? AlongParent.PointToScreen(new System.Windows.Point(AlongParent.ActualWidth, 0.0)) : AlongParent.PointToScreen(new System.Windows.Point(0.0, 0.0)));
+		float num = 96f / graphics.DpiX;
+		float num2 = 96f / graphics.DpiY;
+		WpfScreen screenFrom = WpfScreen.GetScreenFrom(point);
+		double num3 = (AppDataFactory.Instance().IsRightLayout ? (point.X * (double)num) : (point.X * (double)num - ActualWidth - 12.0));
+		double top = (screenFrom.WorkingArea.Height * (double)num2 - ActualHeight) / 2.0 + screenFrom.WorkingArea.Top * (double)num2;
+		if (num3 < screenFrom.WorkingArea.Left * (double)num)
+		{
+			num3 = screenFrom.WorkingArea.Left * (double)num;
+		}
+		else if (num3 > screenFrom.WorkingArea.Right * (double)num - ActualWidth)
+		{
+			num3 = screenFrom.WorkingArea.Right * (double)num - ActualWidth;
+		}
+		Left = num3;
+		Top = top;
+	}
+
+	private void BaseWindow_Closing(object sender, CancelEventArgs e)
+	{
+	}
+}

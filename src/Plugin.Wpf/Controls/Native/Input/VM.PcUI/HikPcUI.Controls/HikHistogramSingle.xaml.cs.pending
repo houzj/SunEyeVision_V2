@@ -1,0 +1,295 @@
+using System;
+using System.CodeDom.Compiler;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+using VM.Utility;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+
+public partial class HikHistogramSingle : UserControl, RectangleRoi, INotifyPropertyChanged, IComponentConnector
+{
+	private string langType;
+
+	private double _OuterHeight;
+
+	private double _InnerHeight;
+
+	public static readonly DependencyProperty TitleTextProperty = DependencyProperty.Register("TitleText", typeof(string), typeof(HikHistogramSingle), new PropertyMetadata(""));
+
+	public static readonly DependencyProperty DataPointsProperty = DependencyProperty.Register("DataPoints", typeof(PointCollection), typeof(HikHistogramSingle), new PropertyMetadata(null, OnDataPointsChanged));
+
+	private double maxX;
+
+	private double maxY;
+
+	private PointCollection InnerData = new PointCollection();
+
+	private double oldSize = 5.0;
+
+	private int curImageX = -1;
+
+	private bool isDragging = false;
+
+	private IArea curControl = null;
+
+	private string curType = "";
+
+	private bool isLeft = false;
+
+	private double leftPosition = 0.0;
+
+	public string LangType
+	{
+		get
+		{
+			langType = ResourceHelper.FindResoure("Language");
+			if (string.IsNullOrWhiteSpace(langType))
+			{
+				return "DefaultCH";
+			}
+			return langType;
+		}
+	}
+
+	public double OuterHeight
+	{
+		get
+		{
+			return _OuterHeight;
+		}
+		set
+		{
+			if (_OuterHeight != value)
+			{
+				_OuterHeight = value;
+				NotifyPropertyChanged("OuterHeight");
+			}
+		}
+	}
+
+	public double InnerHeight
+	{
+		get
+		{
+			return _InnerHeight;
+		}
+		set
+		{
+			if (_InnerHeight != value)
+			{
+				_InnerHeight = value;
+				NotifyPropertyChanged("InnerHeight");
+			}
+		}
+	}
+
+	public string TitleText
+	{
+		get
+		{
+			return (string)GetValue(TitleTextProperty);
+		}
+		set
+		{
+			SetValue(TitleTextProperty, value);
+		}
+	}
+
+	public PointCollection DataPoints
+	{
+		get
+		{
+			return (PointCollection)GetValue(DataPointsProperty);
+		}
+		set
+		{
+			SetValue(DataPointsProperty, value);
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public void SetOuterHeight(double dfHeight)
+	{
+		OuterHeight = dfHeight;
+		InnerHeight = dfHeight - 4.0;
+	}
+
+	private static void OnDataPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikHistogramSingle).DoDataPointsChanged();
+	}
+
+	private void DoDataPointsChanged()
+	{
+		maxX = 0.0;
+		maxY = 0.0;
+		if (DataPoints != null && DataPoints.Count > 1)
+		{
+			maxX = DataPoints.Max((Point r) => r.X);
+			maxY = DataPoints.Max((Point r) => r.Y);
+			InnerData.Clear();
+			for (int num = 0; num < DataPoints.Count; num++)
+			{
+				InnerData.Add(new Point(DataPoints[num].X * Width / maxX, DataPoints[num].Y * InnerHeight / maxY));
+			}
+			pathFigure.StartPoint = InnerData[0];
+			PathCirle.Center = InnerData[0];
+			PointLable.SetValue(Canvas.TopProperty, InnerData[0].Y + 5.0);
+			PointLable.SetValue(Canvas.LeftProperty, InnerData[0].X + 5.0);
+			polyLine.Points = InnerData;
+		}
+		else
+		{
+			Point point = new Point(0.0, 0.0);
+			pathFigure.StartPoint = point;
+			PathCirle.Center = point;
+			PointLable.SetValue(Canvas.TopProperty, point.Y);
+			PointLable.SetValue(Canvas.LeftProperty, point.X);
+			polyLine.Points = null;
+			move.X = 0.0;
+			PathLine.StartPoint = point;
+			PathLine.EndPoint = new Point(0.0, Width);
+		}
+	}
+
+	private void SetPozision(double left)
+	{
+		double num = maxX / 256.0;
+		double num2 = Math.Floor((left + 1.0) * num);
+		if ((double)curImageX != num2 && num2 >= 0.0 && num2 <= maxX)
+		{
+			curImageX = (int)num2;
+			move.X = (double)curImageX / num;
+			PathLine.StartPoint = new Point((double)curImageX / num, 0.0);
+			PathLine.EndPoint = new Point((double)curImageX / num, 255.0);
+			PathCirle.Center = InnerData[curImageX];
+			int num3 = (from x in view.Children.OfType<UIElement>()
+				where x != PointLable
+				select Panel.GetZIndex(x)).Max();
+			Panel.SetZIndex(PointLable, num3 + 1);
+			leftPosition = InnerData[curImageX].X;
+			if (InnerData[curImageX].X + PointLable.ActualWidth > 250.0)
+			{
+				PointLable.SetValue(Canvas.LeftProperty, InnerData[curImageX].X - PointLable.ActualWidth - 5.0);
+				isLeft = true;
+			}
+			else
+			{
+				PointLable.SetValue(Canvas.LeftProperty, InnerData[curImageX].X + 5.0);
+				isLeft = false;
+			}
+			if (InnerData[curImageX].Y + PointLable.ActualHeight > 250.0)
+			{
+				PointLable.SetValue(Canvas.TopProperty, InnerData[curImageX].Y - PointLable.ActualHeight - 5.0);
+			}
+			else
+			{
+				PointLable.SetValue(Canvas.TopProperty, InnerData[curImageX].Y + 5.0);
+			}
+		}
+	}
+
+	public HikHistogramSingle()
+	{
+		InitializeComponent();
+		Init();
+	}
+
+	private void Init()
+	{
+		move.Container = this;
+		oldSize = PointLable.FontSize;
+		OuterHeight = 82.0;
+		InnerHeight = 78.0;
+	}
+
+	private void Viewbox_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		double num = 1.0 / (viewbox.ActualWidth / view.Width);
+		double fontSize = oldSize * num;
+		PointLable.FontSize = fontSize;
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		isDragging = true;
+		curType = rectangleArea.Name;
+		curControl = rectangleArea as IArea;
+		CaptureMouse();
+	}
+
+	private void userControl_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		if (isDragging)
+		{
+			isDragging = false;
+			ReleaseMouseCapture();
+		}
+	}
+
+	private void userControl_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (!isDragging)
+		{
+			return;
+		}
+		Point position = e.GetPosition(view);
+		double num = 0.0;
+		string text = curType;
+		if (text == "move")
+		{
+			num = position.X - move.CurPoint.X + move.Width / 2.0;
+			if (num < 0.0)
+			{
+				num = 0.0;
+			}
+			if (num > 255.0)
+			{
+				num = 255.0;
+			}
+			if (DataPoints != null && DataPoints.Count > 1 && maxX > 0.0)
+			{
+				SetPozision(num);
+			}
+		}
+	}
+
+	private void PointLable_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		if (isLeft)
+		{
+			PointLable.SetValue(Canvas.LeftProperty, leftPosition - e.NewSize.Width - 5.0);
+		}
+		else if (leftPosition + e.NewSize.Width > 250.0)
+		{
+			PointLable.SetValue(Canvas.LeftProperty, leftPosition - e.NewSize.Width - 5.0);
+		}
+	}
+
+	public void DoCallBack()
+	{
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

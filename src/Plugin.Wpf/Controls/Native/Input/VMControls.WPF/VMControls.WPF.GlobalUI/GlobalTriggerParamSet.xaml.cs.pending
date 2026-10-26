@@ -1,0 +1,33 @@
+using System.Windows;
+using System.Windows.Markup;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// GlobalTriggerParamSet.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// GlobalTriggerParamSet
+/// </summary>
+public partial class GlobalTriggerParamSet : BaseWindow, IComponentConnector
+{
+	public static readonly DependencyProperty IsEmptyParamsProperty = DependencyProperty.Register("IsEmptyParams", typeof(bool), typeof(GlobalTriggerParamSet), new PropertyMetadata(false));
+
+	public bool IsEmptyParams
+	{
+		get
+		{
+			return (bool)GetValue(IsEmptyParamsProperty);
+		}
+		set
+		{
+			SetValue(IsEmptyParamsProperty, value);
+		}
+	}
+
+	public GlobalTriggerParamSet()
+	{
+		InitializeComponent();
+	}
+}

@@ -1,0 +1,107 @@
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Xml;
+using Apps.Log;
+using Microsoft.Win32;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class CameraDeviceTypeHelper
+{
+	private static readonly string registerkeyPathName = "SOFTWARE\\WOW6432Node\\Microsoft\\.NETFramework\\v4.0.30319\\AssemblyFoldersEx\\VisionMaster";
+
+	private static readonly string vmInstallPath = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+
+	public static void GetModuleType(string path, ObservableCollection<CameraInfo> cameraInfos)
+	{
+		XmlDocument xmlDocument = new XmlDocument();
+		xmlDocument.Load(path);
+		XmlNode xmlNode = xmlDocument.SelectSingleNode("ParamRoot");
+		XmlNode lastChild = xmlNode.FirstChild.FirstChild.LastChild;
+		if (lastChild == null)
+		{
+			return;
+		}
+		foreach (XmlNode childNode in lastChild.ChildNodes)
+		{
+			XmlElement xmlElement = (XmlElement)childNode;
+			if (!(xmlElement.GetAttribute("Name") == "ModuleType") || !(childNode.InnerText == "6"))
+			{
+				continue;
+			}
+			CameraInfo cameraInfo = new CameraInfo();
+			cameraInfo.Type = Path.GetFileNameWithoutExtension(path);
+			if (Path.GetFileNameWithoutExtension(path) == "ImageCollectIKModu")
+			{
+				string isShowIKCamera = GetIsShowIKCamera();
+				if (!bool.Parse(isShowIKCamera))
+				{
+					continue;
+				}
+			}
+			cameraInfo.IsShow = !(cameraInfo.Type == "ImageCollect3DModu") && !(cameraInfo.Type == "RGBDImageCollect3DModu") && !(cameraInfo.Type == "Image4KCollect3DModu");
+			cameraInfos.Add(cameraInfo);
+		}
+	}
+
+	public static string GetIsShowIKCamera()
+	{
+		string text = "";
+		string text2 = "";
+		try
+		{
+			XmlDocument xmlDocument = new XmlDocument();
+			string path = GetVMInstallPath() + "mylibs\\Librarys.Config";
+			string[] array = File.ReadAllLines(path);
+			string text3 = array[array.Length - 1];
+			string[] array2 = text3.Split('.');
+			string text4 = array2[0];
+			text2 = GetVMInstallPath() + text4 + ".cfg";
+			xmlDocument.Load(text2);
+			XmlNode xmlNode = xmlDocument.SelectSingleNode("VisionMasterCfgRoot/IsShowIKCamera");
+			text = xmlNode.InnerText;
+		}
+		catch
+		{
+			text = "false";
+			LogHelper.Error("GetIsShowIKCamera()" + text2);
+		}
+		return text;
+	}
+
+	/// <summary>
+	/// 获取VM安装路径
+	/// </summary>
+	private static string GetVMInstallPath()
+	{
+		string registerValueByName = GetRegisterValueByName(registerkeyPathName, "CurrentVersion");
+		string path = Path.Combine(vmInstallPath, "VisionMaster_" + registerValueByName);
+		string registerValueByName2 = GetRegisterValueByName(path, "InstallPath");
+		return string.IsNullOrEmpty(registerValueByName2) ? AppDomain.CurrentDomain.SetupInformation.ApplicationBase : (registerValueByName2 + "\\Applications\\");
+	}
+
+	/// <summary>
+	/// 获取注册表中key对应的值
+	/// </summary>
+	private static string GetRegisterValueByName(string path, string name)
+	{
+		string result = "";
+		try
+		{
+			RegistryKey localMachine = Registry.LocalMachine;
+			RegistryKey registryKey = localMachine.OpenSubKey(path);
+			object obj = registryKey?.GetValue(name);
+			if (obj != null && obj is string text)
+			{
+				result = text;
+				registryKey.Close();
+			}
+			localMachine.Close();
+		}
+		catch
+		{
+		}
+		return result;
+	}
+}

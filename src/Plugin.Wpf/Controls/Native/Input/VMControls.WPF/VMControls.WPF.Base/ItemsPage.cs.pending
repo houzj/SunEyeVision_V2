@@ -1,0 +1,791 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.UIHelper.Service;
+using VM.Core;
+using VM.User;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+public class ItemsPage : ListView, INotifyPropertyChanged
+{
+	public delegate void CopyItems(object sender, DiagramEventArgs e);
+
+	public delegate void PastItems(object sender, DiagramEventArgs e);
+
+	public delegate void SearchModule(object sender, DiagramEventArgs e);
+
+	public delegate void ImportGroup(object sender, DiagramEventArgs e);
+
+	public delegate void ImportGroupRemote(object sender, DiagramEventArgs e);
+
+	public delegate void ImportProcess(object sender, DiagramEventArgs e);
+
+	public delegate void ImportProcessRemote(object sender, DiagramEventArgs e);
+
+	public delegate void LoadSolution(string path);
+
+	public static readonly DependencyProperty IsLockWorkAreaProperty;
+
+	public static readonly DependencyProperty IsEditCommentModelProperty;
+
+	public static readonly DependencyProperty IsCommentShowModelProperty;
+
+	public static readonly DependencyProperty IsOpenParamsProperty;
+
+	public static readonly DependencyProperty SelectedModuleProperty;
+
+	private Point ptPos;
+
+	private Point startPoint;
+
+	private Point startPointofPage;
+
+	private bool IsMouseDown;
+
+	private UIElement context;
+
+	private AdornerPanel adornerPanel;
+
+	private PathFigure figure;
+
+	public static readonly DependencyProperty IsShowRectDragPanalProperty;
+
+	public static readonly DependencyProperty RectDragPanalRectProperty;
+
+	private List<DiagramItem> curBoxOfItems;
+
+	public static readonly DependencyProperty CurBoxOfItemsOfDataProperty;
+
+	public const int RectDragPanalRectInflate = 10;
+
+	/// <summary>
+	/// 是否锁定工作区
+	/// </summary>
+	public bool IsLockWorkArea
+	{
+		get
+		{
+			return (bool)GetValue(IsLockWorkAreaProperty);
+		}
+		set
+		{
+			SetValue(IsLockWorkAreaProperty, value);
+		}
+	}
+
+	public bool IsEditCommentModel
+	{
+		get
+		{
+			return (bool)GetValue(IsEditCommentModelProperty);
+		}
+		set
+		{
+			SetValue(IsEditCommentModelProperty, value);
+		}
+	}
+
+	public bool IsCommentShowModel
+	{
+		get
+		{
+			return (bool)GetValue(IsCommentShowModelProperty);
+		}
+		set
+		{
+			SetValue(IsCommentShowModelProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开了参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	public object SelectedModule
+	{
+		get
+		{
+			return GetValue(SelectedModuleProperty);
+		}
+		set
+		{
+			SetValue(SelectedModuleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 用于获取缩放系数的装饰器
+	/// </summary>
+	public DefaultAdorner TransformAdorner { get; set; }
+
+	public bool IsShowRectDragPanal
+	{
+		get
+		{
+			return (bool)GetValue(IsShowRectDragPanalProperty);
+		}
+		set
+		{
+			SetValue(IsShowRectDragPanalProperty, value);
+		}
+	}
+
+	public Rect RectDragPanalRect
+	{
+		get
+		{
+			return (Rect)GetValue(RectDragPanalRectProperty);
+		}
+		set
+		{
+			SetValue(RectDragPanalRectProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 当前被框选的项
+	/// </summary>
+	public List<DiagramItem> CurBoxOfItems
+	{
+		get
+		{
+			return curBoxOfItems;
+		}
+		set
+		{
+			if (curBoxOfItems == value)
+			{
+				return;
+			}
+			curBoxOfItems = value;
+			if (curBoxOfItems != null)
+			{
+				SetValue(CurBoxOfItemsOfDataProperty, curBoxOfItems.Select((DiagramItem p) => p.DataContext).ToList());
+			}
+			else
+			{
+				SetValue(CurBoxOfItemsOfDataProperty, null);
+			}
+			if (DataContext is VmModuleSetDecorator vmModuleSetDecorator && curBoxOfItems != null)
+			{
+				bool flag = curBoxOfItems.Any((DiagramItem p) => (p.DataContext as VmModuleBaseDecorator).IsForbidden);
+				if (!curBoxOfItems.Any((DiagramItem p) => (p.DataContext as VmModuleBaseDecorator).IsForbidden))
+				{
+					vmModuleSetDecorator.IsCollapsedEnableItems = true;
+					vmModuleSetDecorator.IsCollapsedForbiddenItems = false;
+				}
+				else if (!curBoxOfItems.Any((DiagramItem p) => !(p.DataContext as VmModuleBaseDecorator).IsForbidden))
+				{
+					vmModuleSetDecorator.IsCollapsedEnableItems = false;
+					vmModuleSetDecorator.IsCollapsedForbiddenItems = true;
+				}
+				else
+				{
+					vmModuleSetDecorator.IsCollapsedEnableItems = false;
+					vmModuleSetDecorator.IsCollapsedForbiddenItems = false;
+				}
+			}
+		}
+	}
+
+	public IList CurBoxOfItemsOfData
+	{
+		get
+		{
+			return (IList)GetValue(CurBoxOfItemsOfDataProperty);
+		}
+		set
+		{
+			SetValue(CurBoxOfItemsOfDataProperty, value);
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public event ToolItemGrid.GetToolItemBackgroudData OnDropItems;
+
+	public event CopyItems OnCopyItems;
+
+	public event PastItems OnPasteItems;
+
+	public event SearchModule OnSearchModule;
+
+	public event ImportGroup OnImportGroup;
+
+	public event ImportGroupRemote OnImportGroupRemote;
+
+	public event ImportProcess OnImportProcess;
+
+	public event ImportProcessRemote OnImportProcessRemote;
+
+	public static event LoadSolution OnLoadSolution;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void OnCommentModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ItemsPage itemsPage)
+		{
+			itemsPage.SetCommentBoxShow((bool)e.NewValue);
+		}
+	}
+
+	protected virtual void SetCommentBoxShow(bool isVisible)
+	{
+	}
+
+	private static void OnSelectedModuleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.NewValue != null)
+		{
+			ItemsPage itemsPage = d as ItemsPage;
+			if (e.NewValue is SearchModel searchModel)
+			{
+				itemsPage.SelectedItem = searchModel.Source;
+			}
+		}
+	}
+
+	static ItemsPage()
+	{
+		IsLockWorkAreaProperty = DependencyProperty.Register("IsLockWorkArea", typeof(bool), typeof(ItemsPage), new PropertyMetadata(false));
+		IsEditCommentModelProperty = DependencyProperty.Register("IsEditCommentModel", typeof(bool), typeof(ItemsPage), new PropertyMetadata(false));
+		IsCommentShowModelProperty = DependencyProperty.Register("IsCommentShowModel", typeof(bool), typeof(ItemsPage), new PropertyMetadata(false, OnCommentModelChanged));
+		IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(ItemsPage), new PropertyMetadata(false));
+		SelectedModuleProperty = DependencyProperty.Register("SelectedModule", typeof(object), typeof(ItemsPage), new PropertyMetadata(null, OnSelectedModuleChanged));
+		IsShowRectDragPanalProperty = DependencyProperty.Register("IsShowRectDragPanal", typeof(bool), typeof(ItemsPage), new PropertyMetadata(false, OnIsShowRectDragPanalChanged));
+		RectDragPanalRectProperty = DependencyProperty.Register("RectDragPanalRect", typeof(Rect), typeof(ItemsPage), new PropertyMetadata(default(Rect)));
+		CurBoxOfItemsOfDataProperty = DependencyProperty.Register("CurBoxOfItemsOfData", typeof(IList), typeof(ItemsPage), new PropertyMetadata(null));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(ItemsPage), new FrameworkPropertyMetadata(typeof(ItemsPage)));
+	}
+
+	public ItemsPage()
+	{
+		SelectionMode = SelectionMode.Single;
+		TransformAdorner = new DefaultAdorner(this);
+		Loaded += (object s, RoutedEventArgs e) =>
+		{
+			if (ContextMenu != null)
+			{
+				ContextMenu.Opened += ContextMenu_Opened;
+			}
+		};
+	}
+
+	/// <summary>
+	/// 不要删除,重写MouseCapturedChanged，防止长按鼠标左键导致选中模块改变
+	/// </summary>
+	/// <param name="e"></param>
+	protected override void OnIsMouseCapturedChanged(DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	private void ContextMenu_Opened(object sender, RoutedEventArgs e)
+	{
+		ptPos = Mouse.GetPosition(this);
+	}
+
+	/// <summary>
+	/// 获取需要放置模块的信息
+	/// </summary>
+	/// <param name="point"></param>
+	/// <param name="diagramItems"></param>
+	/// <returns></returns>
+	protected List<object[]> GetDropItems(Point point, List<DiagramItem> diagramItems, DiagramItem module = null)
+	{
+		double num = diagramItems.Min((DiagramItem p) => p.Position.X);
+		double num2 = diagramItems.Min((DiagramItem p) => p.Position.Y);
+		List<object[]> list = new List<object[]>();
+		foreach (DiagramItem diagramItem in diagramItems)
+		{
+			Point point2 = default;
+			point.X = Math.Round(point.X / 5.0) * 5.0;
+			point.Y = Math.Round(point.Y / 5.0) * 5.0;
+			Point point3 = new Point(Math.Min(Math.Max(point.X - point2.X + (diagramItem.Position.X - num), 0.0), (int)(DiagramPage.DiagramPageWidth - diagramItem.ActualWidth)), Math.Min(Math.Max(point.Y - point2.Y + (diagramItem.Position.Y - num2), 0.0), (int)(DiagramPage.DiagramPageWidth - diagramItem.ActualHeight)));
+			if (module != null)
+			{
+				list.Add(new object[3] { diagramItem.DataContext, point3, module.DataContext });
+			}
+			else
+			{
+				list.Add(new object[2] { diagramItem.DataContext, point3 });
+			}
+		}
+		return list;
+	}
+
+	protected void DoDropItems(List<object[]> res)
+	{
+		OnDropItems?.Invoke(this, new ObjectEventArgs
+		{
+			Param = res
+		});
+	}
+
+	/// <summary>
+	/// 可拖动元素或选取的文本放置在目标区域时触发,创建Item并添加到界面
+	/// </summary>
+	/// <param name="e"></param>
+	protected override void OnDrop(DragEventArgs e)
+	{
+		IDataObject data = e.Data;
+		if (data == null)
+		{
+			return;
+		}
+		Array array = (Array)data.GetData(DataFormats.FileDrop);
+		if (array != null)
+		{
+			string path = array.GetValue(0).ToString();
+			if (File.Exists(path))
+			{
+				OnLoadSolution?.Invoke(path);
+				return;
+			}
+		}
+		if (data.GetData(typeof(Point)) == null)
+		{
+			return;
+		}
+		Point point = (Point)data.GetData(typeof(Point));
+		if (data.GetData(typeof(HotRegionInfo)) is HotRegionInfo hotRegionInfo && !(hotRegionInfo?.CanHotVisible ?? false))
+		{
+			return;
+		}
+		List<DiagramItem> list = data.GetData(typeof(List<DiagramItem>)) as List<DiagramItem>;
+		AutoConnect autoConnect = data.GetData(typeof(AutoConnect)) as AutoConnect;
+		if (list != null)
+		{
+			List<object[]> dropItems = GetDropItems(point, list, autoConnect?.SourceItem);
+			if (e.Effects == DragDropEffects.Move)
+			{
+				DoDropItems(dropItems);
+			}
+			else if (e.KeyStates == DragDropKeyStates.ControlKey && e.AllowedEffects.HasFlag(DragDropEffects.Copy))
+			{
+				Point point2 = (Point)dropItems.First()[1];
+				DiagramEventArgs e2 = new DiagramEventArgs
+				{
+					Param = dropItems,
+					Point = point2
+				};
+				OnCopyItems?.Invoke(this, e2);
+				OnPasteItems?.Invoke(this, e2);
+			}
+		}
+	}
+
+	public virtual void GetAllRect(List<Rect> list, ItemsPage dpage)
+	{
+	}
+
+	protected void PasteMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (ContextMenu != null)
+		{
+			Point drawPointByRoughPoint = GetDrawPointByRoughPoint(ptPos);
+			DoPaste(drawPointByRoughPoint);
+		}
+	}
+
+	private void DoPaste(Point point)
+	{
+		if (OnPasteItems != null)
+		{
+			DiagramEventArgs e = new DiagramEventArgs
+			{
+				Point = point
+			};
+			OnPasteItems(this, e);
+		}
+	}
+
+	protected void KeyVdown(object sender, KeyEventArgs e)
+	{
+		if (!IsLockWorkArea)
+		{
+			base.OnKeyDown(e);
+			if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.V)
+			{
+				Point point = new Point(0.0, 0.0);
+				DoPaste(point);
+			}
+			if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.F && DataContext is VmModuleBaseDecorator { IsShowImportGroup: not false })
+			{
+				SearchOperation();
+			}
+		}
+	}
+
+	/// <summary>
+	/// 根据初始点位得到归一化的点位
+	/// </summary>
+	/// <param name="ptPos">初始点位</param>
+	/// <returns>归一化后的点位(Item中心的位置)</returns>
+	private Point GetDrawPointByRoughPoint(Point ptPos)
+	{
+		int num = Math.Max(0, (int)Math.Round(ptPos.X / 5.0) * 5);
+		int num2 = Math.Max(0, (int)Math.Round(ptPos.Y / 5.0) * 5);
+		return new Point(num, num2);
+	}
+
+	protected void SearchModule_Click(object sender, RoutedEventArgs e)
+	{
+		if (ContextMenu != null)
+		{
+			SearchOperation();
+		}
+	}
+
+	private void SearchOperation()
+	{
+		IList<SearchPathInfo> path = new List<SearchPathInfo>();
+		bool? flag = ShowSearchWin(path);
+		if (flag.HasValue && flag.Value)
+		{
+			SearchTargetModule(path);
+			path = null;
+		}
+	}
+
+	private bool? ShowSearchWin(IList<SearchPathInfo> path)
+	{
+		SearchModuleView searchModuleView = new SearchModuleView(path);
+		searchModuleView.Owner = Application.Current?.MainWindow;
+		bool? result = searchModuleView.ShowDialog();
+		searchModuleView = null;
+		return result;
+	}
+
+	private void SearchTargetModule(IList<SearchPathInfo> path)
+	{
+		if (OnSearchModule != null)
+		{
+			DiagramEventArgs e = new DiagramEventArgs();
+			e.Param = path;
+			OnSearchModule(this, e);
+		}
+	}
+
+	protected void ImportGroup_Click(object sender, RoutedEventArgs e)
+	{
+		if (ContextMenu != null)
+		{
+			Point drawPointByRoughPoint = GetDrawPointByRoughPoint(ptPos);
+			DoImportGroup(drawPointByRoughPoint);
+		}
+	}
+
+	private void DoImportGroup(Point point)
+	{
+		if (OnImportGroup != null)
+		{
+			DiagramEventArgs e = new DiagramEventArgs
+			{
+				Point = point
+			};
+			OnImportGroup(this, e);
+		}
+	}
+
+	protected void ImportGroupRemote_Click(object sender, RoutedEventArgs e)
+	{
+		if (ContextMenu != null)
+		{
+			Point drawPointByRoughPoint = GetDrawPointByRoughPoint(ptPos);
+			DoImportGroupRemote(drawPointByRoughPoint);
+		}
+	}
+
+	private void DoImportGroupRemote(Point point)
+	{
+		if (OnImportGroupRemote != null)
+		{
+			DiagramEventArgs e = new DiagramEventArgs
+			{
+				Point = point
+			};
+			OnImportGroupRemote(this, e);
+		}
+	}
+
+	protected void ImportProcess_Click(object sender, RoutedEventArgs e)
+	{
+		if (ContextMenu != null)
+		{
+			Point drawPointByRoughPoint = GetDrawPointByRoughPoint(ptPos);
+			DoImportProcess(drawPointByRoughPoint);
+		}
+	}
+
+	protected void ImportProcessRemote_Click(object sender, RoutedEventArgs e)
+	{
+		if (ContextMenu != null)
+		{
+			Point drawPointByRoughPoint = GetDrawPointByRoughPoint(ptPos);
+			DoImportProcessRemote(drawPointByRoughPoint);
+		}
+	}
+
+	private void DoImportProcess(Point point)
+	{
+		if (OnImportProcess != null)
+		{
+			DiagramEventArgs e = new DiagramEventArgs
+			{
+				Point = point
+			};
+			OnImportProcess(this, e);
+		}
+	}
+
+	private void DoImportProcessRemote(Point point)
+	{
+		if (OnImportProcessRemote != null)
+		{
+			DiagramEventArgs e = new DiagramEventArgs
+			{
+				Point = point
+			};
+			OnImportProcessRemote(this, e);
+		}
+	}
+
+	protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+	{
+		if (!IsLockWorkArea && !IsOpenParams && CodeManager.GetInstance().IsAdmin)
+		{
+			startPoint = e.GetPosition(this.GetParent<ZoomArea>());
+			startPointofPage = e.GetPosition(this);
+			IsMouseDown = true;
+			PreviewMouseMove += ToolItemGrid_PreviewMouseMove;
+			PreviewMouseLeftButtonUp += ToolItemGrid_PreviewMouseUp;
+		}
+	}
+
+	private static void OnIsShowRectDragPanalChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ItemsPage itemsPage = (ItemsPage)d;
+		bool flag = (bool)e.OldValue;
+		if (!(bool)e.NewValue)
+		{
+			itemsPage.CurBoxOfItems = null;
+		}
+	}
+
+	protected Rect GetBoxRect()
+	{
+		Rect result = new Rect(new Point(CurBoxOfItems.Min((DiagramItem p) => p.Position.X), CurBoxOfItems.Min((DiagramItem p) => p.Position.Y)), new Point(CurBoxOfItems.Max((DiagramItem p) => p.Position.X + p.ActualWidth), CurBoxOfItems.Max((DiagramItem p) => p.Position.Y + p.ActualHeight)));
+		result.Inflate(10.0, 10.0);
+		return result;
+	}
+
+	private void ToolItemGrid_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+	{
+		PreviewMouseMove -= ToolItemGrid_PreviewMouseMove;
+		PreviewMouseLeftButtonUp -= ToolItemGrid_PreviewMouseUp;
+		if (context != null)
+		{
+			context.PreviewMouseLeftButtonUp -= ToolItemGrid_PreviewMouseUp;
+			context.PreviewMouseMove -= AttachedDiagramItem_PreviewMouseMove;
+			context.ReleaseMouseCapture();
+			int num = 0;
+			try
+			{
+				if (!(context is IExtensionProvidePanel))
+				{
+					throw new Exception("类型不对");
+				}
+				if ((context as IExtensionProvidePanel).AdornerLayer == null)
+				{
+					throw new Exception("没有装饰");
+				}
+				(context as IExtensionProvidePanel)?.AdornerLayer.Children.Remove(adornerPanel);
+				Rect rect = new Rect(startPointofPage, e.GetPosition(this));
+				if (IsEditCommentModel)
+				{
+					if (rect.Width >= CommentBox.MinWidth && rect.Height >= CommentBox.MinHeight)
+					{
+						AddCommentBox(rect);
+					}
+					IsEditCommentModel = false;
+					return;
+				}
+				List<DiagramItem> itemsByRect = GetItemsByRect(rect);
+				num++;
+				if (itemsByRect.Count > 0)
+				{
+					num++;
+					CurBoxOfItems = itemsByRect;
+					num++;
+					RectDragPanalRect = GetBoxRect();
+					num++;
+					IsShowRectDragPanal = true;
+				}
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error(ex.Message + " " + num);
+				throw ex;
+			}
+		}
+		adornerPanel = null;
+		figure = null;
+		context = null;
+		if (IsMouseDown)
+		{
+			IsMouseDown = false;
+		}
+	}
+
+	private void AddCommentBox(Rect targetRect)
+	{
+		VMCommentInfo vMCommentInfo = new VMCommentInfo();
+		vMCommentInfo.Width = targetRect.Width;
+		vMCommentInfo.Height = targetRect.Height;
+		vMCommentInfo.Text = AppLocalizationService.GetLang(CommentBox.CommentDefaultText);
+		vMCommentInfo.ZIndex = 0;
+		vMCommentInfo.OriginPoint = new Point(targetRect.X, targetRect.Y);
+		((DataContext as VmModuleBaseDecorator)?.DecorateSource as IVmModuleSet)?.AddCommentSource(vMCommentInfo);
+	}
+
+	private void Box_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+	{
+		IsMouseDown = true;
+		(sender as UIElement).PreviewMouseMove += ItemsPage_PreviewMouseMove;
+		e.Handled = true;
+	}
+
+	private void ItemsPage_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		(sender as UIElement).PreviewMouseMove -= ItemsPage_PreviewMouseMove;
+		if (IsMouseDown && e.LeftButton == MouseButtonState.Pressed)
+		{
+		}
+	}
+
+	protected virtual List<DiagramItem> GetItemsByRect(Rect rect)
+	{
+		throw new NotImplementedException();
+	}
+
+	protected virtual Canvas GetHostPanel()
+	{
+		return null;
+	}
+
+	private void ToolItemGrid_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		try
+		{
+			PreviewMouseMove -= ToolItemGrid_PreviewMouseMove;
+			if (!IsMouseDown)
+			{
+				return;
+			}
+			if (e.LeftButton != MouseButtonState.Pressed)
+			{
+				ToolItemGrid_PreviewMouseUp(sender, null);
+				return;
+			}
+			context = this.GetParent<IExtensionProvidePanel>() as UIElement;
+			if (context != null)
+			{
+				context.CaptureMouse();
+				context.PreviewMouseMove += AttachedDiagramItem_PreviewMouseMove;
+				context.PreviewMouseLeftButtonUp += ToolItemGrid_PreviewMouseUp;
+				adornerPanel = new AdornerPanelAttachToWorkArea();
+				adornerPanel.SetAdornedElement(this, null);
+				adornerPanel.WorkAreaElement = this.GetParent<ZoomArea>();
+				System.Windows.Shapes.Path path = new System.Windows.Shapes.Path
+				{
+					StrokeThickness = 1.0,
+					Stroke = Brushes.LightSlateGray,
+					StrokeDashArray = new DoubleCollection { 2.0, 1.0 },
+					StrokeLineJoin = PenLineJoin.Round
+				};
+				PathGeometry pathGeometry = new PathGeometry();
+				figure = new PathFigure
+				{
+					IsClosed = true
+				};
+				figure.StartPoint = startPoint;
+				pathGeometry.Figures.Add(figure);
+				path.Data = pathGeometry;
+				path.IsHitTestVisible = false;
+				adornerPanel.Children.Add(path);
+				(context as IExtensionProvidePanel)?.AdornerLayer.Children.Add(adornerPanel);
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+		}
+	}
+
+	private void AttachedDiagramItem_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		try
+		{
+			if (figure == null)
+			{
+				throw new Exception("figure null");
+			}
+			if (this.GetParent<ZoomArea>() == null)
+			{
+				throw new Exception("ZoomArea null");
+			}
+			if (figure.Segments == null)
+			{
+				throw new Exception("Segments null");
+			}
+			figure.Segments.Clear();
+			Point position = e.GetPosition(this.GetParent<ZoomArea>());
+			Point[] points = new Point[3]
+			{
+				new Point(position.X, startPoint.Y),
+				position,
+				new Point(startPoint.X, position.Y)
+			};
+			Console.WriteLine($"点1{position.X},{startPoint.Y},点2{position.X},{position.Y},点3{startPoint.X},{position.Y}");
+			figure.Segments.Add(new PolyLineSegment(points, isStroked: true));
+		}
+		catch (Exception ex)
+		{
+			if (context != null)
+			{
+				context.PreviewMouseMove -= AttachedDiagramItem_PreviewMouseMove;
+				ToolItemGrid_PreviewMouseUp(null, null);
+			}
+			LogHelper.Error(ex.Message);
+		}
+	}
+}

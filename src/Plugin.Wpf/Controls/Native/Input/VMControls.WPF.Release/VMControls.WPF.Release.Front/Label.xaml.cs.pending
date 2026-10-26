@@ -1,0 +1,157 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// Label.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// Label
+/// </summary>
+public partial class Label : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public bool IsNeedLoadOrUnLoad
+	{
+		get
+		{
+			return PART_Control.IsNeedLoadOrUnLoad;
+		}
+		set
+		{
+			PART_Control.IsNeedLoadOrUnLoad = value;
+		}
+	}
+
+	public object TextSource
+	{
+		get
+		{
+			return PART_Control.TextSource;
+		}
+		set
+		{
+			PART_Control.TextSource = value;
+		}
+	}
+
+	public object FormatSource
+	{
+		get
+		{
+			return PART_Control.FormatSource;
+		}
+		set
+		{
+			PART_Control.FormatSource = value;
+		}
+	}
+
+	public object ValueTypeSource
+	{
+		get
+		{
+			return PART_Control.ValueTypeSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ValueTypeSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ValueTypeSource Type Error!");
+		}
+	}
+
+	public object TextDataSource
+	{
+		get
+		{
+			return PART_Control.TextDataSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.TextDataSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("TextDataSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public Label()
+	{
+		InitializeComponent();
+	}
+}

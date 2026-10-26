@@ -1,0 +1,82 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 扇环形
+/// </summary>
+public struct AnnularSectorEx : IAnnularSector, IShape, IShapeBase
+{
+	/// <summary>
+	/// 中心点坐标X
+	/// </summary>
+	public double CenterX { get; set; }
+
+	/// <summary>
+	/// 中心点坐标Y
+	/// </summary>
+	public double CenterY { get; set; }
+
+	/// <summary>
+	/// 外径
+	/// </summary>
+	public double OuterRadius { get; set; }
+
+	/// <summary>
+	/// 内径
+	/// </summary>
+	public double InnerRadius { get; set; }
+
+	/// <summary>
+	/// 起始角度
+	/// </summary>
+	public double StartAngle { get; set; }
+
+	/// <summary>
+	/// 角度范围
+	/// </summary>
+	public double AngleRange { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 边框颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 边框粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	public string ToolTip { get; set; }
+
+	public Point CenterPoint => new Point(CenterX, CenterY);
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public AnnularSectorEx(Point centerPoint, double outerRadius, double innerRadius, double startAngle = 0.0, double angleRange = 360.0, double opacity = 1.0, string stroke = "#66FF00", string fill = null, double strokeThickness = 1.0, string toolTip = null)
+	{
+		CenterX = centerPoint.X;
+		CenterY = centerPoint.Y;
+		OuterRadius = outerRadius;
+		InnerRadius = innerRadius;
+		StartAngle = startAngle;
+		AngleRange = angleRange;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = fill;
+		StrokeThickness = strokeThickness;
+		ToolTip = toolTip;
+	}
+}

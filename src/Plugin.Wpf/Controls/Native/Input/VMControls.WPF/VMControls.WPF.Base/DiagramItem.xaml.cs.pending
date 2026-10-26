@@ -1,0 +1,969 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.UIHelper.Extern;
+using Apps.UIHelper.Service;
+using VM.AppData;
+using VM.User;
+using VM.Utility;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// DiagramItem.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// DiagramItem
+/// </summary>
+public partial class DiagramItem : ListViewItem, IExtensionItem, IComponentConnector
+{
+	public const int MaxNameLenth = 64;
+
+	public static readonly DependencyProperty PositionProperty;
+
+	public static readonly DependencyProperty DeleteCommandProperty;
+
+	public static readonly DependencyProperty DisplayTypeProperty;
+
+	public static readonly DependencyProperty IsModuleConfigCorrectProperty;
+
+	public static readonly DependencyProperty IsModuleFailedProperty;
+
+	public static readonly DependencyProperty IsModuleForbiddenProperty;
+
+	public static readonly DependencyProperty IsLockWorkAreaProperty;
+
+	public static readonly DependencyProperty IsOpenParamsProperty;
+
+	public static readonly DependencyProperty RunStateProperty;
+
+	public static readonly DependencyProperty NextItemsSourceProperty;
+
+	public static readonly DependencyProperty IsHitedProperty;
+
+	private ExtensionItemDecorator extensionItemHelper;
+
+	private Grid ConnectorView;
+
+	private FrameworkElement DragView;
+
+	private Rectangle rectangle;
+
+	private Image logoIm;
+
+	private FrameworkElement itemBorder;
+
+	private IDecorate tempDataContext;
+
+	private AdornerPanel adornerPanel;
+
+	private AdornerPanel subAdornerPanel;
+
+	private bool IsMouseDown;
+
+	private Rectangle CurrentHotRegion;
+
+	private Point CurrentHotPoint;
+
+	private bool isDragOvered = false;
+
+	private Point _offset;
+
+	private DiagramPage diagramPage;
+
+	private Point controlOffset;
+
+	private ItemsPage page;
+
+	private GeneralTransform transform;
+
+	private double leftOffset;
+
+	private double topOffset;
+
+	/// <summary>
+	/// 模块位置信息
+	/// </summary>
+	public Point Position
+	{
+		get
+		{
+			return (Point)GetValue(PositionProperty);
+		}
+		set
+		{
+			SetValue(PositionProperty, value);
+		}
+	}
+
+	public ICommand DeleteCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(DeleteCommandProperty);
+		}
+		set
+		{
+			SetValue(DeleteCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 显示类型
+	/// </summary>
+	public ModuleDisplayType DisplayType
+	{
+		get
+		{
+			return (ModuleDisplayType)GetValue(DisplayTypeProperty);
+		}
+		set
+		{
+			SetValue(DisplayTypeProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 模块配置状态
+	/// </summary>
+	public bool? IsModuleConfigCorrect
+	{
+		get
+		{
+			return (bool?)GetValue(IsModuleConfigCorrectProperty);
+		}
+		set
+		{
+			SetValue(IsModuleConfigCorrectProperty, value);
+		}
+	}
+
+	public bool? IsModuleFailed
+	{
+		get
+		{
+			return (bool)GetValue(IsModuleFailedProperty);
+		}
+		set
+		{
+			SetValue(IsModuleFailedProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 模块是否禁用
+	/// </summary>
+	public bool IsModuleForbidden
+	{
+		get
+		{
+			return (bool)GetValue(IsModuleForbiddenProperty);
+		}
+		set
+		{
+			SetValue(IsModuleForbiddenProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否锁定工作区
+	/// </summary>
+	public bool IsLockWorkArea
+	{
+		get
+		{
+			return (bool)GetValue(IsLockWorkAreaProperty);
+		}
+		set
+		{
+			SetValue(IsLockWorkAreaProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开了参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 模块运行状态
+	/// </summary>
+	public bool? RunState
+	{
+		get
+		{
+			return (bool?)GetValue(RunStateProperty);
+		}
+		set
+		{
+			SetValue(RunStateProperty, value);
+		}
+	}
+
+	public IEnumerable NextItemsSource
+	{
+		get
+		{
+			return (IEnumerable)GetValue(NextItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(NextItemsSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 击中
+	/// </summary>
+	public bool IsHited
+	{
+		get
+		{
+			return (bool)GetValue(IsHitedProperty);
+		}
+		set
+		{
+			SetValue(IsHitedProperty, value);
+		}
+	}
+
+	public ExtensionItemDecorator ExtensionDecorator => extensionItemHelper;
+
+	public Canvas HostPanel { get; internal set; }
+
+	public Canvas ConnectionPanel { get; internal set; }
+
+	public DiagramPage ItemDiagramPage { get; internal set; }
+
+	/// <summary>
+	/// 设置连接
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <returns></returns>
+	public event ToolItemGrid.GetToolItemBackgroudData OnConnect;
+
+	private static void PositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		Point point = (Point)e.NewValue;
+		DiagramItem element = d as DiagramItem;
+		Canvas.SetLeft(element, point.X);
+		Canvas.SetTop(element, point.Y);
+	}
+
+	private static void OnNextItemsSource(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DiagramItem diagramItem = (DiagramItem)d;
+		IEnumerable enumerable = (IEnumerable)e.OldValue;
+		IEnumerable enumerable2 = (IEnumerable)e.NewValue;
+		if (enumerable != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(enumerable as INotifyCollectionChanged, diagramItem.NextItemsSource_CollectionChanged);
+			diagramItem.RemoveConnections(enumerable);
+		}
+		if (enumerable2 != null)
+		{
+			CollectionChangedEventManager.AddHandler(enumerable2 as INotifyCollectionChanged, diagramItem.NextItemsSource_CollectionChanged);
+			diagramItem.AddConnections(enumerable2);
+		}
+	}
+
+	/// <summary>
+	/// 连接
+	/// </summary>
+	/// <param name="targetItem"></param>
+	/// <param name="hitIndex"></param>
+	internal void Connect(DiagramItem targetItem, int index, int hitIndex)
+	{
+		OnConnect?.Invoke(this, new ObjectEventArgs
+		{
+			Param = new object[3] { targetItem.DataContext, index, hitIndex }
+		});
+	}
+
+	/// <summary>
+	/// 获取所有连接点位置信息
+	/// </summary>
+	/// <returns></returns>
+	internal List<Point> GetAllConnectorPosition()
+	{
+		Vector vector = new Vector(Position.X, Position.Y);
+		List<Point> list = new List<Point>();
+		for (int i = 0; i < 4; i++)
+		{
+			list.Add(AnchorPoint(i) - vector);
+		}
+		return list;
+	}
+
+	internal Rect GetRectWithMargin(double margin)
+	{
+		Rect result = new Rect(Position.X, Position.Y, ActualWidth, ActualHeight);
+		result.Inflate(margin, margin);
+		return result;
+	}
+
+	internal Point AnchorPoint(int sourceIndex)
+	{
+		Vector vector = new Vector(Position.X, Position.Y);
+		return GetConnectorPosition(GetOrientation(sourceIndex)) + vector;
+	}
+
+	internal static ConnectorOrientation GetOrientation(int sourceIndex)
+	{
+		return sourceIndex switch
+		{
+			0 => ConnectorOrientation.Left, 
+			1 => ConnectorOrientation.Top, 
+			2 => ConnectorOrientation.Right, 
+			3 => ConnectorOrientation.Bottom, 
+			_ => ConnectorOrientation.Right, 
+		};
+	}
+
+	/// <summary>
+	/// 获取当前所有连接点
+	/// </summary>
+	/// <returns></returns>
+	internal List<Connector> GetAllConnectors()
+	{
+		return (from p in ConnectorView.Children.OfType<ContentPresenter>()
+			select p.Content).OfType<Connector>().ToList();
+	}
+
+	internal Point GetOffsetPoint(int sourceIndex, double margion)
+	{
+		return sourceIndex switch
+		{
+			0 => AnchorPoint(sourceIndex) + new Vector(0.0 - margion, 0.0), 
+			1 => AnchorPoint(sourceIndex) + new Vector(0.0, 0.0 - margion), 
+			2 => AnchorPoint(sourceIndex) + new Vector(margion, 0.0), 
+			3 => AnchorPoint(sourceIndex) + new Vector(0.0, margion), 
+			_ => AnchorPoint(sourceIndex) + new Vector(0.0 - margion, 0.0), 
+		};
+	}
+
+	private void AddConnections(IEnumerable newValue)
+	{
+		if (ConnectionPanel == null)
+		{
+			return;
+		}
+		foreach (object data in newValue)
+		{
+			Connection connection = new Connection(ItemDiagramPage);
+			connection.DataContext = new VmConnectionDecorator
+			{
+				ConnectionSource = (DataContext as IDecorate).DecorateSource,
+				DecorateSource = data
+			};
+			Connection connection2 = connection;
+			connection2.SourceItem = this;
+			DiagramItem diagramItem = HostPanel.Children.OfType<DiagramItem>().FirstOrDefault((DiagramItem p) => (p.DataContext as IDecorate).DecorateSource == data);
+			if (diagramItem != null)
+			{
+				connection2.TargetItem = diagramItem;
+			}
+			ConnectionPanel.Children.Add(connection2);
+		}
+	}
+
+	internal void SetConnectorDisplay(bool v)
+	{
+		IsHited = v;
+	}
+
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		if (e.Property == UIElement.IsMouseOverProperty)
+		{
+			bool connectorDisplay = (bool)e.NewValue;
+			SetConnectorDisplay(connectorDisplay);
+		}
+	}
+
+	private void RemoveConnections(IEnumerable oldValue)
+	{
+		if (ConnectionPanel == null)
+		{
+			return;
+		}
+		foreach (object data in oldValue)
+		{
+			Connection element = ConnectionPanel.Children.OfType<Connection>().Single((Connection p) => (p.DataContext as VmConnectionDecorator).DecorateSource == data && (p.DataContext as VmConnectionDecorator).ConnectionSource == tempDataContext.DecorateSource);
+			ConnectionPanel.Children.Remove(element);
+		}
+	}
+
+	private void ReplaceConnections(IList oldItems, IList newItems)
+	{
+		int num = 0;
+		foreach (object data in oldItems)
+		{
+			object decorateSource = newItems[num];
+			num++;
+			FrameworkElement frameworkElement = ConnectionPanel.Children.OfType<FrameworkElement>().Single((FrameworkElement p) => (p.DataContext as IDecorate).DecorateSource == data);
+			int num2 = ConnectionPanel.Children.IndexOf(frameworkElement);
+			frameworkElement.DataContext = new VmConnectionDecorator
+			{
+				DecorateSource = decorateSource
+			};
+		}
+	}
+
+	private void NextItemsSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Add:
+			AddConnections(e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Remove:
+			RemoveConnections(e.OldItems);
+			break;
+		case NotifyCollectionChangedAction.Move:
+			throw new NotImplementedException();
+		case NotifyCollectionChangedAction.Replace:
+			ReplaceConnections(e.OldItems, e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Reset:
+			RemoveConnections(e.OldItems);
+			break;
+		}
+	}
+
+	static DiagramItem()
+	{
+		PositionProperty = DependencyProperty.Register("Position", typeof(Point), typeof(DiagramItem), new PropertyMetadata(default(Point), PositionChanged));
+		DeleteCommandProperty = DependencyProperty.Register("DeleteCommand", typeof(ICommand), typeof(DiagramItem), new PropertyMetadata(null));
+		DisplayTypeProperty = DependencyProperty.Register("DisplayType", typeof(ModuleDisplayType), typeof(DiagramItem), new PropertyMetadata(ModuleDisplayType.DEFAULT));
+		IsModuleConfigCorrectProperty = DependencyProperty.Register("IsModuleConfigCorrect", typeof(bool?), typeof(DiagramItem), new PropertyMetadata(null));
+		IsModuleFailedProperty = DependencyProperty.Register("IsModuleFailed", typeof(bool?), typeof(DiagramItem), new PropertyMetadata(false));
+		IsModuleForbiddenProperty = DependencyProperty.Register("IsModuleForbidden", typeof(bool), typeof(DiagramItem), new PropertyMetadata(false));
+		IsLockWorkAreaProperty = DependencyProperty.Register("IsLockWorkArea", typeof(bool), typeof(DiagramItem), new PropertyMetadata(false));
+		IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(DiagramItem), new PropertyMetadata(false));
+		RunStateProperty = DependencyProperty.Register("RunState", typeof(bool?), typeof(DiagramItem), new PropertyMetadata(null));
+		NextItemsSourceProperty = DependencyProperty.Register("NextItemsSource", typeof(IEnumerable), typeof(DiagramItem), new PropertyMetadata(null, OnNextItemsSource));
+		IsHitedProperty = DependencyProperty.Register("IsHited", typeof(bool), typeof(DiagramItem), new PropertyMetadata(false));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(DiagramItem), new FrameworkPropertyMetadata(typeof(DiagramItem)));
+	}
+
+	protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+	{
+		if (IsOpenParams)
+		{
+			if (e.ClickCount < 2 && !((e.OriginalSource as FrameworkElement)?.Tag is Button))
+			{
+				e.Handled = true;
+			}
+			else
+			{
+				IsSelected = true;
+			}
+		}
+	}
+
+	public DiagramItem()
+	{
+		InitializeComponent();
+		extensionItemHelper = new ExtensionItemDecorator(this);
+		DataContextChanged += DiagramItem_DataContextChanged;
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		ConnectorView = Template.FindName("PART_View", this) as Grid;
+		rectangle = Template.FindName("Rec", this) as Rectangle;
+		DragView = Template.FindName("Drag_View", this) as FrameworkElement;
+		itemBorder = Template.FindName("itemBorder", this) as FrameworkElement;
+		logoIm = Template.FindName("LogoIm", this) as Image;
+		if (logoIm != null)
+		{
+			if (AppDataFactory.Instance().IsRightLayout)
+			{
+				logoIm.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				logoIm.Visibility = Visibility.Visible;
+			}
+		}
+		UIElement uIElement = ((DragView == null) ? ConnectorView : DragView);
+		uIElement.MouseLeftButtonDown += ToolItemGrid_PreviewMouseDown;
+		uIElement.PreviewMouseLeftButtonUp += DiagramItem_PreviewMouseUp;
+		itemBorder.MouseUp += ItemBorder_MouseUp;
+	}
+
+	private void ItemBorder_MouseUp(object sender, MouseButtonEventArgs e)
+	{
+		DiagramPage parent = Apps.UIHelper.Extern.UIHelper.GetParent<DiagramPage>(sender as FrameworkElement);
+		if (parent != null && parent.IsMouseCaptured)
+		{
+			parent.ReleaseMouseCapture();
+			Mouse.Capture(sender as FrameworkElement);
+			if (Mouse.Captured == sender)
+			{
+				Mouse.Capture(null);
+			}
+		}
+	}
+
+	private void DiagramItem_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+		if (!(DataContext is IDecorate))
+		{
+			if (e.NewValue is IVmProcedure)
+			{
+				DataContext = new VmProcedureDecorator
+				{
+					DecorateSource = e.NewValue
+				};
+			}
+			else if (e.NewValue is IVMGroup)
+			{
+				DataContext = new VmGroupDecorator
+				{
+					DecorateSource = e.NewValue
+				};
+			}
+			else
+			{
+				DataContext = new VmModuleDecorator
+				{
+					DecorateSource = e.NewValue
+				};
+			}
+			foreach (Connection item in from p in ConnectionPanel.Children.OfType<Connection>()
+				where p.TargetItem == null
+				select p)
+			{
+				if (item.DataContext is VmConnectionDecorator vmConnectionDecorator && vmConnectionDecorator.DecorateSource == e.NewValue)
+				{
+					item.TargetItem = this;
+				}
+			}
+		}
+		tempDataContext = DataContext as IDecorate;
+		if (!(e.NewValue is IDecorate))
+		{
+			ReplaceCurBox();
+		}
+	}
+
+	private void ReplaceCurBox()
+	{
+		DiagramItem diagramItem = ItemDiagramPage.CurBoxOfItems?.FirstOrDefault((DiagramItem x) => x?.ToolTip?.ToString() == (tempDataContext as VmModuleBaseDecorator)?.Name);
+		if (diagramItem != null)
+		{
+			ItemDiagramPage.CurBoxOfItems?.Remove(diagramItem);
+			ItemDiagramPage.CurBoxOfItems?.Add(this);
+		}
+	}
+
+	internal Point GetConnectorPosition(ConnectorOrientation orientation)
+	{
+		return orientation switch
+		{
+			ConnectorOrientation.Left => new Point(0.0, ActualHeight / 2.0), 
+			ConnectorOrientation.Right => new Point(ActualWidth, ActualHeight / 2.0), 
+			ConnectorOrientation.Top => new Point(ActualWidth / 2.0, 0.0), 
+			ConnectorOrientation.Bottom => new Point(ActualWidth / 2.0, ActualHeight), 
+			_ => default, 
+		};
+	}
+
+	private void DiagramItem_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (IsMouseDown)
+		{
+			IsMouseDown = false;
+		}
+	}
+
+	private void ToolItemGrid_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (!IsLockWorkArea && e.OriginalSource != rectangle)
+		{
+			IsMouseDown = true;
+			_offset = e.GetPosition(this);
+			if (AppDataFactory.Instance().IsRightLayout)
+			{
+				leftOffset = 0.0;
+			}
+			else
+			{
+				leftOffset = (ToolBox.isFold ? 52 : 230);
+			}
+			topOffset = 40.0;
+			ConnectorView.PreviewMouseMove += DiagramItem_PreviewMouseMove;
+		}
+	}
+
+	private void DiagramItem_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		ConnectorView.PreviewMouseMove -= DiagramItem_PreviewMouseMove;
+		if (!IsMouseDown)
+		{
+			return;
+		}
+		if (e.LeftButton != MouseButtonState.Pressed)
+		{
+			DiagramItem_PreviewMouseUp(sender, null);
+			return;
+		}
+		DataObject dataObject = new DataObject();
+		dataObject.SetData(new List<DiagramItem> { this });
+		adornerPanel = new AdornerPanelAttachToWorkArea();
+		subAdornerPanel = new AdornerPanel
+		{
+			IsAdornedElementTransformToWorkAreaElement = false
+		};
+		CurrentHotRegion = new Rectangle
+		{
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left
+		};
+		CurrentHotRegion.Visibility = Visibility.Collapsed;
+		CurrentHotRegion.Fill = new SolidColorBrush(Colors.Orange);
+		adornerPanel.Children.Add(CurrentHotRegion);
+		UIElement uIElement = ExtensionDecorator.Services.GetService<IExtensionProvidePanel>() as UIElement;
+		DragDrop.AddPreviewDragOverHandler(uIElement, _dragOver);
+		DragDrop.AddPreviewDropHandler(uIElement, _dragDrop);
+		adornerPanel.WorkAreaElement = uIElement;
+		Rect descendantBounds = VisualTreeHelper.GetDescendantBounds(this);
+		VisualBrush visualBrush = new VisualBrush(this);
+		visualBrush.Stretch = Stretch.None;
+		visualBrush.Opacity = 0.7;
+		Rectangle rectangle = new Rectangle
+		{
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left
+		};
+		rectangle.Margin = new Thickness(descendantBounds.X, descendantBounds.Y, 0.0, 0.0);
+		rectangle.Fill = visualBrush;
+		rectangle.Width = descendantBounds.Width;
+		rectangle.Height = descendantBounds.Height;
+		rectangle.IsHitTestVisible = false;
+		subAdornerPanel.Children.Add(rectangle);
+		subAdornerPanel.Visibility = Visibility.Hidden;
+		adornerPanel.Children.Add(subAdornerPanel);
+		adornerPanel.SetAdornedElement(this, null);
+		(uIElement as IExtensionProvidePanel).AdornerLayer.Children.Add(adornerPanel);
+		if (page == null)
+		{
+			VisualTreeHelper.HitTest(uIElement, (DependencyObject potentialHitTestTarget) =>
+			{
+				if (potentialHitTestTarget is AdornerLayer)
+				{
+					return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+				}
+				if (potentialHitTestTarget is ItemsPage)
+				{
+					page = potentialHitTestTarget as ItemsPage;
+					return HitTestFilterBehavior.Continue;
+				}
+				return HitTestFilterBehavior.Continue;
+			}, (HitTestResult result) => HitTestResultBehavior.Stop, new PointHitTestParameters(e.GetPosition(uIElement)));
+			if (page != null)
+			{
+				controlOffset = page.TranslatePoint(default, uIElement);
+			}
+		}
+		adornerPanel.top = topOffset;
+		adornerPanel.left = leftOffset;
+		if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+		{
+			DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Copy);
+		}
+		else
+		{
+			DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move);
+		}
+		diagramPage = null;
+		isDragOvered = false;
+		CurrentHotRegion = null;
+		CurrentHotPoint = new Point(52.0, 40.0);
+		(uIElement as IExtensionProvidePanel).AdornerLayer.Children.Remove(adornerPanel);
+		subAdornerPanel = null;
+		adornerPanel = null;
+		page = null;
+		DragDrop.RemovePreviewDragOverHandler(uIElement, _dragOver);
+		DragDrop.RemovePreviewDropHandler(uIElement, _dragDrop);
+		DiagramItem_PreviewMouseUp(sender, null);
+	}
+
+	private void _dragDrop(object sender, DragEventArgs e)
+	{
+		if (!isDragOvered)
+		{
+			e.Handled = true;
+			return;
+		}
+		IDataObject data = e.Data;
+		if (data != null)
+		{
+			Point point = new Point(controlOffset.X, controlOffset.Y);
+			data.SetData(new Point(subAdornerPanel.OffsetLeft, subAdornerPanel.OffsetTop) - new Vector(point.X, point.Y));
+			if (CurrentHotRegion.Visibility == Visibility.Visible)
+			{
+				data.SetData(typeof(HotRegionInfo), new HotRegionInfo
+				{
+					CanHotVisible = (CurrentHotRegion.Visibility != Visibility.Collapsed)
+				});
+				data.SetData(new Point(CurrentHotPoint.X, CurrentHotPoint.Y) - new Vector(point.X, point.Y));
+			}
+		}
+	}
+
+	private void _dragOver(object sender, DragEventArgs e)
+	{
+		if (diagramPage == null)
+		{
+			diagramPage = ItemDiagramPage;
+			controlOffset = diagramPage.TranslatePoint(default, sender as UIElement);
+			subAdornerPanel.SetOffsets(new Point(controlOffset.X, controlOffset.Y));
+		}
+		Point point = e.GetPosition(adornerPanel.WorkAreaElement);
+		if (page != null)
+		{
+			transform = page.TransformAdorner.CurTransform;
+			adornerPanel.transform = transform;
+			point.X -= leftOffset;
+			point.Y -= topOffset;
+			point = transform.Inverse.Transform(point);
+		}
+		double offsetLeft = subAdornerPanel.OffsetLeft;
+		double offsetTop = subAdornerPanel.OffsetTop;
+		double num = offsetLeft;
+		double num2 = offsetTop;
+		bool flag = false;
+		isDragOvered = true;
+		if (Math.Abs(point.X - _offset.X - offsetLeft) > 3.0)
+		{
+			num = Math.Round((point.X - _offset.X) / 5.0) * 5.0 + controlOffset.X;
+			num2 = Math.Round((point.Y - _offset.Y) / 5.0) * 5.0 + controlOffset.Y;
+			flag = true;
+		}
+		if (Math.Abs(point.Y - _offset.Y - offsetTop) > 3.0)
+		{
+			num2 = Math.Round((point.Y - _offset.Y) / 5.0) * 5.0 + controlOffset.Y;
+			num2 = Math.Round((point.Y - _offset.Y) / 5.0) * 5.0 + controlOffset.Y;
+			flag = true;
+		}
+		if (flag)
+		{
+			adornerPanel.Children.OfType<Line>().ToList().ForEach((Line p) =>
+			{
+				adornerPanel.Children.Remove(p);
+			});
+			CurrentHotRegion.Visibility = Visibility.Collapsed;
+			subAdornerPanel.SetOffsets(num, num2);
+			if (subAdornerPanel.Visibility != Visibility.Visible)
+			{
+				subAdornerPanel.Visibility = Visibility.Visible;
+			}
+			DrawAlignLine(num, num2);
+			DrawHotRegion(num, num2);
+		}
+	}
+
+	/// <summary>
+	/// 绘制热区
+	/// </summary>
+	private void DrawHotRegion(double px, double py)
+	{
+		Point point = new Point(controlOffset.X, controlOffset.Y);
+		px -= point.X;
+		py -= point.Y;
+		IEnumerable<DiagramItem> source = from p in HostPanel.Children.OfType<DiagramItem>()
+			where p != this
+			select p;
+		IEnumerable<DiagramItem> source2 = source.Where((DiagramItem p) => p.Position.X + p.ActualWidth / 2.0 == px + ActualWidth / 2.0 && p.Position.Y < py);
+		if (source2.Count() > 0)
+		{
+			IEnumerable<Tuple<double, double, double>> source3 = source2.Select((DiagramItem p) => new Tuple<double, double, double>(Math.Abs(py - p.Position.Y), p.Position.Y, p.ActualHeight));
+			double minY = source3.Min((Tuple<double, double, double> p) => p.Item1);
+			Tuple<double, double, double> tuple = source3.First((Tuple<double, double, double> p) => p.Item1 == minY);
+			double closest = tuple.Item2;
+			DiagramItem diagramItem = source2.First((DiagramItem x) => x.Position.Y == closest);
+			int spanByDiagramItem = GetSpanByDiagramItem(diagramItem.DisplayType);
+			if (diagramItem.Position.Y + (double)spanByDiagramItem - diagramItem.ActualHeight < py && py < diagramItem.Position.Y + (double)spanByDiagramItem + diagramItem.ActualHeight)
+			{
+				CurrentHotPoint = new Point(diagramItem.Position.X + point.X + diagramItem.ActualWidth / 2.0 - ActualWidth / 2.0, diagramItem.Position.Y + point.Y + (double)spanByDiagramItem + diagramItem.ActualHeight / 2.0 - ActualHeight / 2.0);
+				DrawHotRect(diagramItem.Position.X + point.X + diagramItem.ActualWidth / 2.0, diagramItem.Position.Y + point.Y + (double)spanByDiagramItem + diagramItem.ActualHeight / 2.0);
+				return;
+			}
+		}
+		if (CurrentHotRegion.Visibility == Visibility.Collapsed && (CurrentHotPoint.X != 52.0 || CurrentHotPoint.Y != 40.0) && CurrentHotPoint.X - point.X - 20.0 < px && px < CurrentHotPoint.X - point.X + 20.0 && CurrentHotPoint.Y - point.Y - ActualHeight < py && py < CurrentHotPoint.Y - point.Y + ActualHeight)
+		{
+			CurrentHotRegion.Visibility = Visibility.Visible;
+		}
+	}
+
+	internal int GetSpanByDiagramItem(ModuleDisplayType takeItemType)
+	{
+		if ((takeItemType == ModuleDisplayType.PROCESS || takeItemType == ModuleDisplayType.PROCESSADORNER) && (DisplayType == ModuleDisplayType.PROCESS || DisplayType == ModuleDisplayType.PROCESSADORNER))
+		{
+			return 160;
+		}
+		if (takeItemType == ModuleDisplayType.PROCESS || takeItemType == ModuleDisplayType.PROCESSADORNER || DisplayType == ModuleDisplayType.PROCESS || DisplayType == ModuleDisplayType.PROCESSADORNER)
+		{
+			return 115;
+		}
+		int num = 40;
+		if (ConfigurationHelper.GetConfig("ModuleSpanCount") != null)
+		{
+			num = Convert.ToInt32(ConfigurationHelper.GetConfig("ModuleSpanCount"));
+		}
+		return num + 30;
+	}
+
+	private void DrawHotRect(double px, double py)
+	{
+		double scale = GetScale();
+		CurrentHotRegion.IsHitTestVisible = false;
+		CurrentHotRegion.Width = 66.0 * scale;
+		CurrentHotRegion.Height = 22.0 * scale;
+		CurrentHotRegion.Margin = new Thickness(controlOffset.X + (px - controlOffset.X) * scale - CurrentHotRegion.Width / 2.0, controlOffset.Y + (py - controlOffset.Y) * scale - CurrentHotRegion.Height / 2.0, 0.0, 0.0);
+		CurrentHotRegion.Visibility = Visibility.Visible;
+	}
+
+	/// <summary>
+	/// 绘制对齐线
+	/// </summary>
+	private void DrawAlignLine(double px, double py)
+	{
+		Point offSet = new Point(controlOffset.X, controlOffset.Y);
+		px -= offSet.X;
+		py -= offSet.Y;
+		IEnumerable<DiagramItem> items = from p in HostPanel.Children.OfType<DiagramItem>()
+			where p != this
+			select p;
+		double scale = GetScale();
+		DrawAlignLine(isHorizontal: true, offSet, px, py, items, (DiagramItem p) => p.Position.X == px, 0.0);
+		DrawAlignLine(isHorizontal: true, offSet, px, py, items, (DiagramItem p) => p.Position.X + p.ActualWidth == px + ActualWidth, ActualWidth * scale);
+		DrawAlignLine(isHorizontal: true, offSet, px, py, items, (DiagramItem p) => p.Position.X + p.ActualWidth / 2.0 == px + ActualWidth / 2.0, ActualWidth * scale / 2.0);
+		DrawAlignLine(isHorizontal: false, offSet, px, py, items, (DiagramItem p) => p.Position.Y == py, 0.0);
+		DrawAlignLine(isHorizontal: false, offSet, px, py, items, (DiagramItem p) => p.Position.Y + p.ActualHeight == py + p.ActualHeight, ActualHeight * scale);
+		DrawAlignLine(isHorizontal: false, offSet, px, py, items, (DiagramItem p) => p.Position.Y + p.ActualHeight / 2.0 == py + p.ActualHeight / 2.0, ActualHeight * scale / 2.0);
+	}
+
+	private void DrawAlignLine(bool isHorizontal, Point offSet, double px, double py, IEnumerable<DiagramItem> items, Func<DiagramItem, bool> getEqualItems, double xOffset)
+	{
+		double scale = GetScale();
+		IEnumerable<DiagramItem> source = items.Where(getEqualItems);
+		if (source.Count() <= 0)
+		{
+			return;
+		}
+		IEnumerable<Tuple<double, double, double>> source2 = (isHorizontal ? source.Select((DiagramItem p) => new Tuple<double, double, double>(Math.Abs(py - p.Position.Y), p.Position.Y, p.ActualHeight)) : source.Select((DiagramItem p) => new Tuple<double, double, double>(Math.Abs(px - p.Position.X), p.Position.X, p.ActualWidth)));
+		double minY = source2.Min((Tuple<double, double, double> p) => p.Item1);
+		Tuple<double, double, double> tuple = source2.First((Tuple<double, double, double> p) => p.Item1 == minY);
+		double item = tuple.Item2;
+		double item2 = tuple.Item3;
+		double num = scale * px;
+		double num2 = scale * py;
+		if (isHorizontal)
+		{
+			item = scale * item;
+			num += offSet.X + xOffset;
+			num2 += offSet.Y;
+			item += offSet.Y;
+			if (num2 > item)
+			{
+				num2 += scale * ActualHeight;
+				num2 += 5.0;
+				item -= 5.0;
+			}
+			else
+			{
+				item += scale * item2;
+				num2 -= 5.0;
+				item += 5.0;
+			}
+			DrawLine(num, num2, num, item);
+		}
+		else
+		{
+			item = scale * item;
+			num += offSet.X;
+			num2 += offSet.Y + xOffset;
+			item += offSet.X;
+			if (num > item)
+			{
+				num += scale * ActualWidth;
+				num += 5.0;
+				item -= 5.0;
+			}
+			else
+			{
+				item += scale * item2;
+				num -= 5.0;
+				item += 5.0;
+			}
+			DrawLine(num, num2, item, num2);
+		}
+	}
+
+	private void DrawLine(double x1, double y1, double x2, double y2)
+	{
+		Line line = new Line
+		{
+			IsHitTestVisible = false,
+			Stroke = Brushes.LightGreen,
+			StrokeThickness = 1.0,
+			StrokeDashArray = new DoubleCollection { 5.0, 2.5 },
+			StrokeLineJoin = PenLineJoin.Round
+		};
+		line.X1 = x1;
+		line.X2 = x2;
+		line.Y1 = y1;
+		line.Y2 = y2;
+		adornerPanel.Children.Add(line);
+	}
+
+	private void ListViewItem_KeyDown(object sender, KeyEventArgs e)
+	{
+		if (!IsLockWorkArea && !IsOpenParams && CodeManager.GetInstance().IsAdmin && e.Key == Key.Delete)
+		{
+			DeleteCommand?.Execute(null);
+		}
+	}
+
+	public double GetScale()
+	{
+		double result = 1.0;
+		if (transform == null)
+		{
+			return result;
+		}
+		MatrixTransform matrixTransform = transform as MatrixTransform;
+		string[] array = matrixTransform.ToString().Split(',');
+		if (!double.TryParse(array[0], out result))
+		{
+			result = 1.0;
+		}
+		return result;
+	}
+}

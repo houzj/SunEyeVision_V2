@@ -1,0 +1,109 @@
+using System.Collections.Generic;
+using System.ComponentModel;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+public class SearchModuleModel : INotifyPropertyChanged
+{
+	internal IList<SearchPathInfo> searchPath;
+
+	private string _moduleID;
+
+	private bool _isSuccess = true;
+
+	public string ModuleID
+	{
+		get
+		{
+			return _moduleID;
+		}
+		set
+		{
+			if (_moduleID != value)
+			{
+				_moduleID = value;
+				OnPropertyChanged("ModuleID");
+			}
+		}
+	}
+
+	public bool IsSuccess
+	{
+		get
+		{
+			return _isSuccess;
+		}
+		set
+		{
+			if (_isSuccess != value)
+			{
+				_isSuccess = value;
+				OnPropertyChanged("IsSuccess");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	internal void Search()
+	{
+		ImvsSdkDefine.IMVS_PROCESS_INFO_LIST? allProcessList = ServerSDKManager.serverSDKManager.mSolutionManager.GetAllProcessList();
+		ImvsSdkDefine.IMVS_PROCESS_INFO_LIST? iMVS_PROCESS_INFO_LIST = allProcessList;
+		ImvsSdkDefine.IMVS_PROCESS_INFO_LIST valueOrDefault = iMVS_PROCESS_INFO_LIST.GetValueOrDefault();
+		if (iMVS_PROCESS_INFO_LIST.HasValue)
+		{
+			for (int i = 0; i < valueOrDefault.nNum; i++)
+			{
+				ImvsSdkDefine.IMVS_PROCESS_INFO iMVS_PROCESS_INFO = valueOrDefault.astProcessInfo[i];
+				if (iMVS_PROCESS_INFO.nProcID.ToString() == ModuleID || GetTargetModule(iMVS_PROCESS_INFO.nProcID, 1u))
+				{
+					searchPath.Add(new SearchPathInfo
+					{
+						nodeType = 1u,
+						nodeID = iMVS_PROCESS_INFO.nProcID
+					});
+					IsSuccess = true;
+					return;
+				}
+			}
+		}
+		IsSuccess = false;
+	}
+
+	private bool GetTargetModule(uint id, uint type)
+	{
+		if (type == 1 || type == 20)
+		{
+			ImvsSdkDefine.IMVS_NODE_TREE_INFO? firstLayerModuleTree = ServerSDKManager.serverSDKManager.mProcessManager.GetFirstLayerModuleTree(id, type);
+			ImvsSdkDefine.IMVS_NODE_TREE_INFO? iMVS_NODE_TREE_INFO = firstLayerModuleTree;
+			ImvsSdkDefine.IMVS_NODE_TREE_INFO valueOrDefault = iMVS_NODE_TREE_INFO.GetValueOrDefault();
+			if (iMVS_NODE_TREE_INFO.HasValue)
+			{
+				for (int i = 0; i < valueOrDefault.nChildNodeNum; i++)
+				{
+					ImvsSdkDefine.IMVS_MODULE_INFO iMVS_MODULE_INFO = valueOrDefault.astChildNodeInfo[i];
+					if (iMVS_MODULE_INFO.nNodeID.ToString() == ModuleID || (iMVS_MODULE_INFO.nModuleType == 20 && GetTargetModule(iMVS_MODULE_INFO.nNodeID, iMVS_MODULE_INFO.nModuleType)))
+					{
+						searchPath.Add(new SearchPathInfo
+						{
+							nodeType = iMVS_MODULE_INFO.nModuleType,
+							nodeID = iMVS_MODULE_INFO.nNodeID
+						});
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		return false;
+	}
+}

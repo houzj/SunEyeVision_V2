@@ -1,0 +1,132 @@
+using System.ComponentModel;
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCoverLineRoiParameter : RoiParameter, ILineROI, IROI, INotifyPropertyChanged, IROISign
+{
+	private string _Name = "Line";
+
+	public Point _StartPoint = new Point(0.0, 0.0);
+
+	public Point _EndPoint = new Point(0.0, 0.0);
+
+	public bool? _Sign = true;
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public double StartPointX
+	{
+		get
+		{
+			return StartPoint.X;
+		}
+		set
+		{
+			StartPoint = new Point(value, StartPoint.Y);
+			NotifyPropertyChanged("StartPointX");
+		}
+	}
+
+	public double StartPointY
+	{
+		get
+		{
+			return StartPoint.Y;
+		}
+		set
+		{
+			StartPoint = new Point(StartPoint.X, value);
+			NotifyPropertyChanged("StartPointY");
+		}
+	}
+
+	public double EndPointX
+	{
+		get
+		{
+			return EndPoint.X;
+		}
+		set
+		{
+			EndPoint = new Point(value, EndPoint.Y);
+			NotifyPropertyChanged("EndPointX");
+		}
+	}
+
+	public double EndPointY
+	{
+		get
+		{
+			return EndPoint.Y;
+		}
+		set
+		{
+			EndPoint = new Point(EndPoint.X, value);
+			NotifyPropertyChanged("EndPointY");
+		}
+	}
+
+	public Point StartPoint
+	{
+		get
+		{
+			return _StartPoint;
+		}
+		set
+		{
+			if (_StartPoint != value)
+			{
+				_StartPoint = value;
+				NotifyPropertyChanged("StartPoint");
+				NotifyPropertyChanged("StartPointX");
+				NotifyPropertyChanged("StartPointY");
+			}
+		}
+	}
+
+	public Point EndPoint
+	{
+		get
+		{
+			return _EndPoint;
+		}
+		set
+		{
+			if (_EndPoint != value)
+			{
+				_EndPoint = value;
+				NotifyPropertyChanged("EndPoint");
+				NotifyPropertyChanged("EndPointX");
+				NotifyPropertyChanged("EndPointY");
+			}
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return _Sign;
+		}
+		set
+		{
+			if (_Sign != value)
+			{
+				_Sign = value;
+				NotifyPropertyChanged("Sign");
+			}
+		}
+	}
+}

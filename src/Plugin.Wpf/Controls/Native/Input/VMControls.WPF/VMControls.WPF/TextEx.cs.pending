@@ -1,0 +1,77 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 文本
+/// </summary>
+public struct TextEx : IText, IShapeBase
+{
+	/// <summary>
+	/// 内容
+	/// </summary>
+	public string Content { get; set; }
+
+	/// <summary>
+	/// 位置
+	/// </summary>
+	public Point Position { get; set; }
+
+	/// <summary>
+	/// 宽度(已弃用)
+	/// </summary>
+	public double Width { get; set; }
+
+	/// <summary>
+	/// 高度(已弃用)
+	/// </summary>
+	public double Height { get; set; }
+
+	/// <summary>
+	/// 字号
+	/// </summary>
+	public int FontSize { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 粗细（在文本图形中不生效）
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	/// <summary>
+	/// 提示语（在文本图形中不生效）
+	/// </summary>
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public TextEx(string content, Point position, int fontSize = 10, double opacity = 1.0, string stroke = "#66FF00")
+	{
+		Content = content;
+		Position = position;
+		Width = 0.0;
+		Height = 0.0;
+		FontSize = fontSize;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = null;
+		StrokeThickness = 1.0;
+		ToolTip = null;
+	}
+}

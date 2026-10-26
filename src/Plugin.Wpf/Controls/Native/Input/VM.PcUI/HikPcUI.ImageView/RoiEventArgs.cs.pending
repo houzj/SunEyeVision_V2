@@ -1,0 +1,13 @@
+using System;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class RoiEventArgs : EventArgs
+{
+	public RoiParameter Roi { get; private set; }
+
+	public RoiEventArgs(object roi)
+	{
+		Roi = roi as RoiParameter;
+	}
+}

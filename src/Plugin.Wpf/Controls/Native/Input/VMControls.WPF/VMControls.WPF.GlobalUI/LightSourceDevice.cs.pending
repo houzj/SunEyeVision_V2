@@ -1,0 +1,1573 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Input;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.PlatformSDKCS;
+using VM.Utility.SingleInstance;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class LightSourceDevice : INotifyPropertyChanged
+{
+	private bool isConnected;
+
+	private bool isParamError;
+
+	private string Name;
+
+	private Enumeration brand;
+
+	private string CommType;
+
+	private int Index;
+
+	private Apps.XmlParser.ParamTab.Boolean isReConnect;
+
+	private List<object> CommTypes;
+
+	private EnumerationCom comName;
+
+	private Enumeration baudRate;
+
+	private Enumeration stopBit;
+
+	private Enumeration parityBit;
+
+	private Enumeration dataBits;
+
+	private Device_IO device_IO;
+
+	private ObservableCollection<object> Channels;
+
+	private TriggerProcedurePanel triggerProcedure;
+
+	private int[] Lights = new int[9] { 101, 103, 104, 107, 110, 8917764, 105, 109, 114 };
+
+	private int[] IOs = new int[9] { 103, 104, 106, 110, 108, 8917764, 105, 109, 114 };
+
+	public bool IsNeedSetParam = true;
+
+	/// <summary>
+	/// 列表刷新时不触发控制器改变命令
+	/// </summary>
+	public bool isTriggerControllerSelectChange = true;
+
+	/// <summary>
+	/// 连接光源设备
+	/// </summary>
+	private DelegateCommand connectDevCommand = null;
+
+	/// <summary>
+	/// 重命名光源设备
+	/// </summary>
+	private DelegateCommand reNameDevCommand = null;
+
+	/// <summary>
+	/// 删除光源设备
+	/// </summary>
+	private DelegateCommand delDevCommand = null;
+
+	public bool IsLight => Lights.Contains(LightType);
+
+	/// <summary>
+	/// 是否已连接
+	/// </summary>
+	public bool IsConnected
+	{
+		get
+		{
+			return isConnected;
+		}
+		set
+		{
+			if (isConnected != value)
+			{
+				isConnected = value;
+				OnPropertyChanged("IsConnected");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否自动重连
+	/// </summary>
+	public Apps.XmlParser.ParamTab.Boolean IsReConnect
+	{
+		get
+		{
+			if (isReConnect == null)
+			{
+				isReConnect = new Apps.XmlParser.ParamTab.Boolean
+				{
+					DisplayName = "RunParam_AutoReconnect",
+					Description = "RunParam_AutoReconnect",
+					AccessMode = "O",
+					CurValue = false,
+					DefaultValue = false
+				};
+				isReConnect.OnCurValueChanged += ParamValueChanged;
+			}
+			return isReConnect;
+		}
+	}
+
+	/// <summary>
+	/// 参数是否错误
+	/// </summary>
+	public bool IsParamError
+	{
+		get
+		{
+			return isParamError;
+		}
+		set
+		{
+			if (isParamError != value)
+			{
+				isParamError = value;
+				OnPropertyChanged("IsParamError");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 唯一标识
+	/// </summary>
+	public string Guid { get; set; }
+
+	/// <summary>
+	/// 名称
+	/// </summary>
+	public string NameA
+	{
+		get
+		{
+			return Name;
+		}
+		set
+		{
+			if (Name != value)
+			{
+				Name = value;
+				OnPropertyChanged("NameA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 品牌
+	/// </summary>
+	public Enumeration Brand
+	{
+		get
+		{
+			if (brand == null)
+			{
+				brand = new Enumeration
+				{
+					DisplayName = "Lang_Brand",
+					Description = "Lang_Brand",
+					AccessMode = "O",
+					CurValue = 0,
+					DefaultValue = 0
+				};
+				brand.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "Lang_NoneChoose",
+						DisplayName = "Lang_NoneChoose",
+						Value = 0,
+						StrValue = "None"
+					},
+					new EnumEntry
+					{
+						Description = "DPS2",
+						DisplayName = "DPS2",
+						Value = 1,
+						StrValue = "HIK-DPS2"
+					},
+					new EnumEntry
+					{
+						Description = "MV-AP1024-2T",
+						DisplayName = "MV-AP1024-2T",
+						Value = 2,
+						StrValue = "HIK-MV-AP1024-2T"
+					},
+					new EnumEntry
+					{
+						Description = "MV-LEVD",
+						DisplayName = "MV-LEVD",
+						Value = 3,
+						StrValue = "HIK-MV-LEVD"
+					},
+					new EnumEntry
+					{
+						Description = "VB2200",
+						DisplayName = "VB2200",
+						Value = 4,
+						StrValue = "HIK-VB2200"
+					},
+					new EnumEntry
+					{
+						Description = "VC3000(Light)",
+						DisplayName = "VC3000(Light)",
+						Value = 5,
+						StrValue = "HIK-VC3000-Light"
+					},
+					new EnumEntry
+					{
+						Description = "VC3000(IO)",
+						DisplayName = "VC3000(IO)",
+						Value = 6,
+						StrValue = "HIK-VC3000-IO"
+					},
+					new EnumEntry
+					{
+						Description = "VC4000",
+						DisplayName = "VC4000",
+						Value = 7,
+						StrValue = "HIK-VC4000"
+					},
+					new EnumEntry
+					{
+						Description = "GPIO",
+						DisplayName = "GPIO",
+						Value = 8,
+						StrValue = "HIK-VC3000-GPIO"
+					},
+					new EnumEntry
+					{
+						Description = "VB2230",
+						DisplayName = "VB2230",
+						Value = 10,
+						StrValue = "HIK-VB2230"
+					},
+					new EnumEntry
+					{
+						Description = "VC2000/2100",
+						DisplayName = "VC2000/2100",
+						Value = 11,
+						StrValue = "HIK-VC2000"
+					},
+					new EnumEntry
+					{
+						Description = "VC5000",
+						DisplayName = "VC5000",
+						Value = 15,
+						StrValue = "HIK-VC5000"
+					}
+				};
+				brand.OnCurValueChanged += ParamValueChanged;
+			}
+			return brand;
+		}
+	}
+
+	/// <summary>
+	/// 通信协议
+	/// </summary>
+	public string CommTypeA
+	{
+		get
+		{
+			return CommType;
+		}
+		set
+		{
+			if (CommType != value)
+			{
+				CommType = value;
+				OnPropertyChanged("CommTypeA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 序号
+	/// </summary>
+	public int IndexA
+	{
+		get
+		{
+			return Index;
+		}
+		set
+		{
+			if (Index != value)
+			{
+				Index = value;
+				OnPropertyChanged("IndexA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否可删除（用于权限管理）
+	/// </summary>
+	public bool IsDeleteEnabled => LightSourceManager.Instance.IsAddEnabled;
+
+	/// <summary>
+	/// 通信协议列表
+	/// </summary>
+	public List<object> CommTypesA
+	{
+		get
+		{
+			if (CommTypes == null)
+			{
+				CommTypes = new List<object> { "COM" };
+			}
+			return CommTypes;
+		}
+	}
+
+	/// <summary>
+	/// IO参数
+	/// </summary>
+	public Device_IO Device_IO
+	{
+		get
+		{
+			if (device_IO == null)
+			{
+				device_IO = new Device_IO();
+				device_IO.Parent = this;
+			}
+			return device_IO;
+		}
+	}
+
+	/// <summary>
+	/// 通道列表
+	/// </summary>
+	public ObservableCollection<object> ChannelsA
+	{
+		get
+		{
+			if (Channels == null)
+			{
+				Channels = new ObservableCollection<object>
+				{
+					new LightChannel
+					{
+						ChannelNumA = 1,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 2,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 3,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 4,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 5,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 6,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 7,
+						Parent = this
+					},
+					new LightChannel
+					{
+						ChannelNumA = 8,
+						Parent = this
+					}
+				};
+			}
+			return Channels;
+		}
+	}
+
+	/// <summary>
+	/// 是否远端模式
+	/// </summary>
+	public bool IsLocalMode => !RemoteOperate.IsRemoteMode;
+
+	public EnumerationCom ComName
+	{
+		get
+		{
+			if (comName == null)
+			{
+				comName = new EnumerationCom
+				{
+					DisplayName = "Port Number",
+					Description = "Port Number",
+					AccessMode = "O",
+					CurValue = 0,
+					DefaultValue = 0
+				};
+				if (IsLocalMode)
+				{
+					comName.Initers = new ObservableCollection<object>();
+					Setter setter = new Setter
+					{
+						TargetName = "EnumEntrys",
+						OperationName = "GetSerialPortListOperation"
+					};
+					setter.CreatOperateInstance();
+					comName.Initers.Add(setter);
+					setter.SetParentNode(comName);
+					comName.InniterBusiness();
+				}
+				else
+				{
+					comName.CurValue = 1;
+					comName.DefaultValue = 1;
+					comName.EnumEntrysA = new ObservableCollection<object>
+					{
+						new EnumEntry
+						{
+							Description = "/dev/ttyS1",
+							DisplayName = "/dev/ttyS1",
+							Value = 1
+						}
+					};
+				}
+			}
+			return comName;
+		}
+	}
+
+	public Enumeration DataBits
+	{
+		get
+		{
+			if (dataBits == null)
+			{
+				dataBits = new Enumeration
+				{
+					DisplayName = "Data Bit",
+					Description = "Data Bit",
+					AccessMode = "O",
+					CurValue = 8,
+					DefaultValue = 8
+				};
+				dataBits.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "6",
+						DisplayName = "6",
+						Value = 6
+					},
+					new EnumEntry
+					{
+						Description = "7",
+						DisplayName = "7",
+						Value = 7
+					},
+					new EnumEntry
+					{
+						Description = "8",
+						DisplayName = "8",
+						Value = 8
+					}
+				};
+			}
+			return dataBits;
+		}
+	}
+
+	public Enumeration StopBit
+	{
+		get
+		{
+			if (stopBit == null)
+			{
+				stopBit = new Enumeration
+				{
+					DisplayName = "Stop Bit",
+					Description = "Stop Bit",
+					AccessMode = "O",
+					CurValue = 1,
+					DefaultValue = 1
+				};
+				stopBit.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "1",
+						DisplayName = "1",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "2",
+						DisplayName = "2",
+						Value = 2
+					}
+				};
+			}
+			return stopBit;
+		}
+	}
+
+	public Enumeration ParityBit
+	{
+		get
+		{
+			if (parityBit == null)
+			{
+				parityBit = new Enumeration
+				{
+					DisplayName = "Parity Bit",
+					Description = "Parity Bit",
+					AccessMode = "O",
+					CurValue = 0,
+					DefaultValue = 0
+				};
+				parityBit.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "None",
+						DisplayName = "None",
+						Value = 0
+					},
+					new EnumEntry
+					{
+						Description = "Odd",
+						DisplayName = "Odd",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "Even",
+						DisplayName = "Even",
+						Value = 2
+					}
+				};
+			}
+			return parityBit;
+		}
+	}
+
+	public Enumeration BaudRate
+	{
+		get
+		{
+			if (baudRate == null)
+			{
+				baudRate = new Enumeration
+				{
+					DisplayName = "Baudrate",
+					Description = "Baudrate",
+					AccessMode = "O",
+					CurValue = 19200,
+					DefaultValue = 19200
+				};
+				baudRate.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "300",
+						DisplayName = "300",
+						Value = 300
+					},
+					new EnumEntry
+					{
+						Description = "600",
+						DisplayName = "600",
+						Value = 600
+					},
+					new EnumEntry
+					{
+						Description = "1200",
+						DisplayName = "1200",
+						Value = 1200
+					},
+					new EnumEntry
+					{
+						Description = "2400",
+						DisplayName = "2400",
+						Value = 2400
+					},
+					new EnumEntry
+					{
+						Description = "4800",
+						DisplayName = "4800",
+						Value = 4800
+					},
+					new EnumEntry
+					{
+						Description = "9600",
+						DisplayName = "9600",
+						Value = 9600
+					},
+					new EnumEntry
+					{
+						Description = "14400",
+						DisplayName = "14400",
+						Value = 14400
+					},
+					new EnumEntry
+					{
+						Description = "19200",
+						DisplayName = "19200",
+						Value = 19200
+					},
+					new EnumEntry
+					{
+						Description = "38400",
+						DisplayName = "38400",
+						Value = 38400
+					},
+					new EnumEntry
+					{
+						Description = "56000",
+						DisplayName = "56000",
+						Value = 56000
+					},
+					new EnumEntry
+					{
+						Description = "57600",
+						DisplayName = "57600",
+						Value = 57600
+					},
+					new EnumEntry
+					{
+						Description = "115200",
+						DisplayName = "115200",
+						Value = 115200
+					}
+				};
+			}
+			return baudRate;
+		}
+	}
+
+	/// <summary>
+	/// 触发设置
+	/// </summary>
+	public TriggerProcedurePanel TriggerProcedure
+	{
+		get
+		{
+			if (triggerProcedure == null)
+			{
+				triggerProcedure = new TriggerProcedurePanel();
+			}
+			return triggerProcedure;
+		}
+	}
+
+	/// <summary>
+	/// 可以触发流程执行的IO数量
+	/// </summary>
+	internal int TriggerProcedure_IO_Number
+	{
+		get
+		{
+			switch (LightType)
+			{
+			case 103:
+			case 104:
+				return 4;
+			case 105:
+			case 106:
+			case 110:
+				return 8;
+			case 114:
+				return 8;
+			default:
+				return 0;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 设备类型
+	/// </summary>
+	public int LightType
+	{
+		get
+		{
+			int result = 101;
+			switch (Brand.CurValueA)
+			{
+			case 0:
+				result = 0;
+				break;
+			case 4:
+				result = 103;
+				break;
+			case 5:
+				result = 107;
+				break;
+			case 6:
+				result = 106;
+				break;
+			case 7:
+				result = 110;
+				break;
+			case 8:
+				result = 108;
+				break;
+			case 9:
+				result = 8917764;
+				break;
+			case 10:
+				result = 104;
+				break;
+			case 11:
+				result = 105;
+				break;
+			case 12:
+				result = 109;
+				break;
+			case 15:
+				result = 114;
+				break;
+			}
+			return result;
+		}
+	}
+
+	public ICommand ConnectDevCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = connectDevCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ConnectDevCommandExecute);
+				DelegateCommand val3 = val2;
+				connectDevCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ReNameDevCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = reNameDevCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ReNameDevCommandExecute);
+				DelegateCommand val3 = val2;
+				reNameDevCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DelDevCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = delDevCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)DelDevCommandExecute);
+				DelegateCommand val3 = val2;
+				delDevCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public LightSourceDevice()
+	{
+		Guid = UIHelper.GenerateUniqueText();
+		CommType = "COM";
+		ServerSDKManager.serverSDKManager.mSolutionManager.OnReportDataToVM += ServerManager_OnReportDataToVM;
+	}
+
+	/// <summary>
+	/// 通知属性变化
+	/// </summary>
+	/// <param name="name"></param>
+	public void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	public void AddParamValueChangedHandle()
+	{
+		comName.OnCurValueChanged -= ParamValueChanged;
+		comName.OnCurValueChanged += ParamValueChanged;
+	}
+
+	/// <summary>
+	/// 光源设备转换为结构体
+	/// </summary>
+	/// <returns></returns>
+	public IMVS_LIGHT_DEVICE ConvertToIMVS_LIGHT_DEVICE()
+	{
+		string strValue = (Brand.EnumEntrysA.FirstOrDefault((object p) => (p as EnumEntry)?.ValueA == Brand.CurValueA) as EnumEntry)?.StrValue ?? "None";
+		IMVS_LIGHT_DEVICE result = new IMVS_LIGHT_DEVICE
+		{
+			chszBrandName = GetBytes_UTF8(256u, strValue),
+			chszDeviceName = GetBytes_UTF8(256u, Name),
+			chszDeviceGuid = Guid,
+			nIndex = Index,
+			nDeviceType = LightType,
+			bConnected = IsConnected,
+			bReConnect = IsReConnect.CurValueA,
+			stComParam = new COM_PARAM
+			{
+				nComNum = (uint)ComName.CurValueA,
+				nBaudRate = (uint)BaudRate.CurValueA,
+				nDataBits = (uint)DataBits.CurValueA,
+				nParity = (uint)ParityBit.CurValueA,
+				nStopBits = (uint)StopBit.CurValueA
+			},
+			stIOPARAM = new IO_PARAM
+			{
+				nOutType = (uint)Device_IO.IOOutType.CurValueA,
+				nOutputPolarity = (uint)Device_IO.OutputPolarity.CurValueA,
+				nSendInterval = (uint)Device_IO.SendInterval.CurValueA,
+				nPollingEnable = Device_IO.PollingEnable.CurValueA,
+				nPollingInterval = (uint)Device_IO.PollingInterval.CurValueA,
+				nDelayTime = (uint)Device_IO.DelayTime.CurValueA,
+				nDurationTime = new uint[20],
+				nElectricalLevel = new uint[20]
+			}
+		};
+		for (int num = 0; num < 20; num++)
+		{
+			result.stIOPARAM.nDurationTime[num] = (uint)Device_IO.DurationTimes[num];
+			result.stIOPARAM.nElectricalLevel[num] = (uint)Device_IO.ElectricalLevels[num];
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 解析从底层获取的IO参数
+	/// </summary>
+	public void GetIOParam(IO_PARAM param)
+	{
+		IsNeedSetParam = false;
+		Device_IO.IOOutType.CurValueA = (int)param.nOutType;
+		Device_IO.OutputPolarity.CurValueA = (int)param.nOutputPolarity;
+		Device_IO.SendInterval.CurValueA = (int)param.nSendInterval;
+		Device_IO.PollingEnable.CurValueA = param.nPollingEnable;
+		Device_IO.PollingInterval.CurValueA = (int)param.nPollingInterval;
+		Device_IO.DelayTime.CurValueA = (int)param.nDelayTime;
+		for (int i = 0; i < 20; i++)
+		{
+			Device_IO.DurationTimes[i] = (int)param.nDurationTime[i];
+			Device_IO.ElectricalLevels[i] = (int)param.nElectricalLevel[i];
+		}
+		Device_IO.DurationTime.CurValueA = Device_IO.DurationTimes[0];
+		IsNeedSetParam = true;
+	}
+
+	/// <summary>
+	/// 通道参数转换为结构体
+	/// </summary>
+	/// <returns></returns>
+	public ST_LIGHT_CONFIG_ID ConvertToST_LIGHT_CONFIG_ID()
+	{
+		return new ST_LIGHT_CONFIG_ID
+		{
+			nIndex = Index,
+			nDeviceType = LightType,
+			chszDeviceGuid = Guid,
+			stLightConfig = new ST_LIGHT_CONFIG
+			{
+				channel1 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[0] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[0] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[0] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[0] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[0] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel2 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[1] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[1] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[1] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[1] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[1] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel3 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[2] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[2] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[2] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[2] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[2] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel4 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[3] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[3] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[3] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[3] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[3] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel5 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[4] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[4] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[4] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[4] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[4] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel6 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[5] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[5] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[5] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[5] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[5] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel7 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[6] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[6] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[6] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[6] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[6] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				},
+				channel8 = new LIGHT_CHANNEL_PARAM
+				{
+					nChannelNum = (Channels[7] as LightChannel).ChannelNumA,
+					bChannelEnable = true,
+					nLightBrightness = (Channels[7] as LightChannel).LightBrightnessA.CurValueA,
+					nLightState = (Channels[7] as LightChannel).LightStateA.CurValueA,
+					nTriggerEdge = (Channels[7] as LightChannel).TriggerEdgeA.CurValueA,
+					nDurationTime = (Channels[7] as LightChannel).DurationTimeA.CurValueA,
+					nLightSource = (Channels[0] as LightChannel).LightSourceA.CurValueA
+				}
+			}
+		};
+	}
+
+	/// <summary>
+	/// 参数修改下发底层
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void ParamValueChanged(object sender, EventArgs e)
+	{
+		IsParamError = false;
+		bool flag = false;
+		if (sender == brand)
+		{
+			flag = true;
+			List<object> source = LightSourceManager.Instance.ItemsA.Where((object p) => (p as LightSourceDevice).LightType == 108).ToList();
+			if (source.Count() > 1)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GPIONumLimit"), MessageIcons.Warning);
+				(sender as Enumeration).CurValueA = 0;
+				IsParamError = true;
+				return;
+			}
+			SetChannelShowStates();
+			TriggerProcedure.ChangeIOTotalNumber(TriggerProcedure_IO_Number);
+		}
+		if (IsNeedSetParam)
+		{
+			int num = -1;
+			num = LightSourceManager.Instance.SetData();
+			if (num != 0)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_InfoTips"), AppLocalizationService.GetLang("Lang_ParamSetFail"), MessageButtons.Normal, MessageIcons.Error);
+			}
+			else if (flag)
+			{
+				TriggerProcedure.SetProcessList();
+			}
+		}
+	}
+
+	/// <summary>
+	/// 从底层获取通道参数
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	public void GetChannelParam()
+	{
+		string paramName = "LightDeviceParamGet-" + IndexA + "-" + Guid;
+		int binaryData = ServerSDKManager.serverSDKManager.mModuleManager.GetBinaryData((uint)LightSourceManager.Instance.ModuleID, paramName, out var data);
+		try
+		{
+			if (binaryData > 0)
+			{
+				ST_LIGHT_CONFIG_ID sT_LIGHT_CONFIG_ID = Marshal.PtrToStructure<ST_LIGHT_CONFIG_ID>(data);
+				if (sT_LIGHT_CONFIG_ID.chszDeviceGuid == Guid)
+				{
+					IsNeedSetParam = false;
+					(ChannelsA[0] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel1);
+					(ChannelsA[1] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel2);
+					(ChannelsA[2] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel3);
+					(ChannelsA[3] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel4);
+					(ChannelsA[4] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel5);
+					(ChannelsA[5] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel6);
+					(ChannelsA[6] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel7);
+					(ChannelsA[7] as LightChannel).InitParamValue(sT_LIGHT_CONFIG_ID.stLightConfig.channel8);
+					IsNeedSetParam = true;
+				}
+			}
+			else if (binaryData == -1)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GetLightParamERR"), MessageIcons.Error);
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+		}
+		finally
+		{
+			if (data != IntPtr.Zero)
+			{
+				Marshal.FreeHGlobal(data);
+				data = IntPtr.Zero;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 通道参数下发底层
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private int SetChannelParam(ST_LIGHT_CONFIG_ID param)
+	{
+		int result = -1;
+		int num = Marshal.SizeOf<ST_LIGHT_CONFIG_ID>();
+		IntPtr intPtr = Marshal.AllocHGlobal(num);
+		try
+		{
+			Marshal.StructureToPtr(param, intPtr, fDeleteOld: true);
+			result = ServerSDKManager.serverSDKManager.mModuleManager.SetBinaryData((uint)LightSourceManager.Instance.ModuleID, "LightDeviceParamSet", intPtr, num);
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+		}
+		finally
+		{
+			if (intPtr != IntPtr.Zero)
+			{
+				Marshal.FreeHGlobal(intPtr);
+				intPtr = IntPtr.Zero;
+			}
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 设置通道参数
+	/// </summary>
+	/// <returns></returns>
+	public int SetChannelConfig()
+	{
+		int num = -1;
+		ST_LIGHT_CONFIG_ID channelParam = ConvertToST_LIGHT_CONFIG_ID();
+		num = SetChannelParam(channelParam);
+		if (num != 0)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_InfoTips"), AppLocalizationService.GetLang("Lang_ParamSetFail"), MessageButtons.Normal, MessageIcons.Error);
+		}
+		return num;
+	}
+
+	/// <summary>
+	/// 设置通道参数显示状态
+	/// </summary>
+	public void SetChannelShowStates()
+	{
+		Device_IO.HiddenPort(needHidden: false, 4);
+		switch (LightType)
+		{
+		case 101:
+		{
+			foreach (object item in ChannelsA)
+			{
+				if ((item as LightChannel).ChannelNumA >= 5)
+				{
+					(item as LightChannel).IsShow = false;
+					continue;
+				}
+				(item as LightChannel).IsShowDurationTime = false;
+				(item as LightChannel).IsShowLightState = false;
+				(item as LightChannel).IsShowTriggerEdge = false;
+				(item as LightChannel).LightBrightnessA.MaxValueA = 255;
+				(item as LightChannel).IsShow = true;
+			}
+			break;
+		}
+		case 103:
+			foreach (object item2 in ChannelsA)
+			{
+				if ((item2 as LightChannel).ChannelNumA == 1)
+				{
+					(item2 as LightChannel).IsShowDurationTime = false;
+					(item2 as LightChannel).IsShowLightState = true;
+					(item2 as LightChannel).IsShowTriggerEdge = false;
+					(item2 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+					{
+						new EnumEntry
+						{
+							Description = "RunParam_LightStateOnVB",
+							DisplayName = "RunParam_LightStateOnVB",
+							Value = 1
+						},
+						new EnumEntry
+						{
+							Description = "RunParam_LightStateOffVB",
+							DisplayName = "RunParam_LightStateOffVB",
+							Value = 2
+						}
+					};
+					(item2 as LightChannel).LightBrightnessA.MaxValueA = 100;
+					(item2 as LightChannel).IsShow = true;
+				}
+				else
+				{
+					(item2 as LightChannel).IsShow = false;
+				}
+			}
+			Device_IO.HiddenPort(needHidden: true, 4);
+			break;
+		case 104:
+			foreach (object item3 in ChannelsA)
+			{
+				if ((item3 as LightChannel).ChannelNumA >= 5)
+				{
+					(item3 as LightChannel).IsShowDurationTime = false;
+					(item3 as LightChannel).IsShowLightState = true;
+					(item3 as LightChannel).IsShowTriggerEdge = false;
+					(item3 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+					{
+						new EnumEntry
+						{
+							Description = "RunParam_LightStateOnVB",
+							DisplayName = "RunParam_LightStateOnVB",
+							Value = 1
+						},
+						new EnumEntry
+						{
+							Description = "RunParam_LightStateOffVB",
+							DisplayName = "RunParam_LightStateOffVB",
+							Value = 2
+						}
+					};
+					(item3 as LightChannel).LightBrightnessA.MaxValueA = 100;
+					(item3 as LightChannel).IsShow = true;
+				}
+				else
+				{
+					(item3 as LightChannel).IsShow = false;
+				}
+			}
+			Device_IO.HiddenPort(needHidden: true, 4);
+			break;
+		case 107:
+		{
+			foreach (object item4 in ChannelsA)
+			{
+				if ((item4 as LightChannel).ChannelNumA >= 5)
+				{
+					(item4 as LightChannel).IsShow = false;
+					continue;
+				}
+				(item4 as LightChannel).IsShowDurationTime = true;
+				(item4 as LightChannel).IsShowLightState = true;
+				(item4 as LightChannel).IsShowTriggerEdge = true;
+				(item4 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOn",
+						DisplayName = "RunParam_LightStateOn",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOff",
+						DisplayName = "RunParam_LightStateOff",
+						Value = 2
+					}
+				};
+				(item4 as LightChannel).LightBrightnessA.MaxValueA = 100;
+				(item4 as LightChannel).IsShow = true;
+			}
+			break;
+		}
+		case 110:
+		{
+			foreach (object item5 in ChannelsA)
+			{
+				if ((item5 as LightChannel).ChannelNumA >= 5)
+				{
+					(item5 as LightChannel).IsShow = false;
+					continue;
+				}
+				(item5 as LightChannel).IsShowDurationTime = true;
+				(item5 as LightChannel).IsShowLightState = true;
+				(item5 as LightChannel).IsShowTriggerEdge = true;
+				(item5 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOn",
+						DisplayName = "RunParam_LightStateOn",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOff",
+						DisplayName = "RunParam_LightStateOff",
+						Value = 2
+					}
+				};
+				(item5 as LightChannel).LightBrightnessA.MaxValueA = 100;
+				(item5 as LightChannel).IsShow = true;
+			}
+			break;
+		}
+		case 8917764:
+		{
+			foreach (object item6 in ChannelsA)
+			{
+				if ((item6 as LightChannel).ChannelNumA >= 5)
+				{
+					(item6 as LightChannel).IsShow = false;
+					continue;
+				}
+				(item6 as LightChannel).IsShowDurationTime = false;
+				(item6 as LightChannel).IsShowLightState = false;
+				(item6 as LightChannel).IsShowTriggerEdge = false;
+				(item6 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOnVB",
+						DisplayName = "RunParam_LightStateOnVB",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input1",
+						DisplayName = "RunParam_Input1",
+						Value = 2
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input2",
+						DisplayName = "RunParam_Input2",
+						Value = 3
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input3",
+						DisplayName = "RunParam_Input3",
+						Value = 4
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input4",
+						DisplayName = "RunParam_Input4",
+						Value = 5
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input5",
+						DisplayName = "RunParam_Input5",
+						Value = 6
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input6",
+						DisplayName = "RunParam_Input6",
+						Value = 7
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input7",
+						DisplayName = "RunParam_Input7",
+						Value = 8
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input8",
+						DisplayName = "RunParam_Input8",
+						Value = 9
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer1",
+						DisplayName = "RunParam_Timer1",
+						Value = 10
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer2",
+						DisplayName = "RunParam_Timer2",
+						Value = 11
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer3",
+						DisplayName = "RunParam_Timer3",
+						Value = 12
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer4",
+						DisplayName = "RunParam_Timer4",
+						Value = 13
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer5",
+						DisplayName = "RunParam_Timer5",
+						Value = 14
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer6",
+						DisplayName = "RunParam_Timer6",
+						Value = 15
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer7",
+						DisplayName = "RunParam_Timer7",
+						Value = 16
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer8",
+						DisplayName = "RunParam_Timer8",
+						Value = 17
+					}
+				};
+				(item6 as LightChannel).LightBrightnessA.MaxValueA = 255;
+				(item6 as LightChannel).IsShow = true;
+			}
+			break;
+		}
+		case 105:
+		{
+			foreach (object item7 in ChannelsA)
+			{
+				if ((item7 as LightChannel).ChannelNumA >= 5)
+				{
+					(item7 as LightChannel).IsShow = false;
+					continue;
+				}
+				(item7 as LightChannel).IsShowDurationTime = false;
+				(item7 as LightChannel).IsShowLightState = true;
+				(item7 as LightChannel).IsShowTriggerEdge = false;
+				(item7 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOnVB",
+						DisplayName = "RunParam_LightStateOnVB",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOffVB",
+						DisplayName = "RunParam_LightStateOffVB",
+						Value = 2
+					}
+				};
+				(item7 as LightChannel).LightBrightnessA.MaxValueA = 100;
+				(item7 as LightChannel).IsShow = true;
+			}
+			break;
+		}
+		case 114:
+			foreach (object item8 in ChannelsA)
+			{
+				(item8 as LightChannel).IsShowDurationTime = false;
+				(item8 as LightChannel).IsShowLightState = true;
+				(item8 as LightChannel).IsShowTriggerEdge = false;
+				(item8 as LightChannel).LightStateA.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOn",
+						DisplayName = "RunParam_LightStateOn",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_LightStateOff",
+						DisplayName = "RunParam_LightStateOff",
+						Value = 2
+					}
+				};
+				(item8 as LightChannel).LightBrightnessA.MaxValueA = 100;
+				(item8 as LightChannel).IsShow = true;
+			}
+			Device_IO.HiddenPort(needHidden: false, 20);
+			break;
+		}
+	}
+
+	public static byte[] GetBytes_UTF8(uint bytesLen, string strValue)
+	{
+		byte[] array = new byte[bytesLen];
+		try
+		{
+			byte[] bytes = Encoding.UTF8.GetBytes(strValue);
+			Array.Copy(bytes, 0, array, 0, bytes.Length);
+		}
+		catch
+		{
+		}
+		return array;
+	}
+
+	private void ServerManager_OnReportDataToVM(ImvsSdkDefine.IMVS_ALGORITHM_INIT_RESULT_INFO algResultInfor)
+	{
+		CurrentUIHelper.Instance.Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (algResultInfor.nModuleID == (uint)LightSourceManager.Instance.ModuleID && algResultInfor.nType == 2952790016u)
+			{
+				string[] array = algResultInfor.strTransData.Split('-');
+				if (array.Length == 2 && int.Parse(array[0]) == Index)
+				{
+					if (array[1] == "0")
+					{
+						IsConnected = false;
+					}
+					else if (array[1] == "1")
+					{
+						IsConnected = true;
+						GetChannelParam();
+					}
+				}
+			}
+		}));
+	}
+
+	private void ConnectDevCommandExecute()
+	{
+		int num = ((!isConnected) ? 1 : 0);
+		string strParamName = "LightDeviceOpen";
+		string strParamValue = Index + "-" + num;
+		try
+		{
+			ServerSDKManager.serverSDKManager.mModuleManager.SetParamValue((uint)LightSourceManager.Instance.ModuleID, strParamName, strParamValue, bThrowException: true);
+		}
+		catch
+		{
+			IsConnected = !IsConnected;
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LightLinkFail"), MessageIcons.Error);
+			return;
+		}
+		GetChannelParam();
+	}
+
+	private void ReNameDevCommandExecute()
+	{
+		string name = Name;
+		AddLightSourceDeviceDlg addLightSourceDeviceDlg = new AddLightSourceDeviceDlg
+		{
+			Title = AppLocalizationService.GetLang("Lang_Rename"),
+			IsReName = true,
+			ConfigName = Name
+		};
+		addLightSourceDeviceDlg.ShowDialog();
+		if (addLightSourceDeviceDlg.IsConfirm && LightSourceManager.Instance.CheckName(addLightSourceDeviceDlg.ConfigName, isShow: true))
+		{
+			Name = addLightSourceDeviceDlg.ConfigName;
+			int num = LightSourceManager.Instance.SetData();
+			if (num != 0)
+			{
+				Name = name;
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ReNameFail"), MessageIcons.Error);
+			}
+			else
+			{
+				OnPropertyChanged("NameA");
+				LightSourceManager.Instance.UpdateLightModule();
+			}
+		}
+	}
+
+	private void DelDevCommandExecute()
+	{
+		if (HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ConfirmDelete"), MessageButtons.OkOrCancel, MessageIcons.Question) == DialogResult.Ok)
+		{
+			string strParamName = "LightDeviceDelete";
+			string strParamValue = Index.ToString();
+			try
+			{
+				ServerSDKManager.serverSDKManager.mModuleManager.SetParamValue((uint)LightSourceManager.Instance.ModuleID, strParamName, strParamValue);
+			}
+			catch
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_DeleteFail"), MessageIcons.Error);
+				return;
+			}
+			LightSourceManager.Instance.DeleteDevice(this);
+			ServerSDKManager.serverSDKManager.mSolutionManager.OnReportDataToVM -= ServerManager_OnReportDataToVM;
+		}
+	}
+}

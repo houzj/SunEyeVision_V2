@@ -1,0 +1,74 @@
+using System.Windows;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikIndexPointRoiParameter : RoiParameter
+{
+	private string _Name = "有序点";
+
+	public Point _centerpoint = new Point(0.0, 0.0);
+
+	public int index = 0;
+
+	public bool isMoved = false;
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return _centerpoint;
+		}
+		set
+		{
+			if (_centerpoint != value)
+			{
+				_centerpoint = value;
+				NotifyPropertyChanged("CenterPoint");
+			}
+		}
+	}
+
+	public int Index
+	{
+		get
+		{
+			return index;
+		}
+		set
+		{
+			if (index != value)
+			{
+				index = value;
+				NotifyPropertyChanged("Index");
+			}
+		}
+	}
+
+	public bool IsMoved
+	{
+		get
+		{
+			return isMoved;
+		}
+		set
+		{
+			if (isMoved != value)
+			{
+				isMoved = value;
+				NotifyPropertyChanged("IsMoved");
+			}
+		}
+	}
+}

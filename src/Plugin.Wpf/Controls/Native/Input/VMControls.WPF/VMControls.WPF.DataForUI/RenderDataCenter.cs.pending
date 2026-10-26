@@ -1,0 +1,288 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using Apps.Data;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+/// <summary>
+/// 渲染缓存数据处理中心
+/// </summary>
+public class RenderDataCenter
+{
+	private bool isInit = false;
+
+	private Dictionary<string, ImageData> displayImageStore = new Dictionary<string, ImageData>();
+
+	private Dictionary<object, object> displayShapeStore = new Dictionary<object, object>();
+
+	private Dictionary<string, ImageData> bufferImageStore = new Dictionary<string, ImageData>();
+
+	private Dictionary<object, object> bufferShapeStore = new Dictionary<object, object>();
+
+	private Dictionary<string, ImageData> spareImageStore = new Dictionary<string, ImageData>();
+
+	private Dictionary<object, object> spareShapeStore = new Dictionary<object, object>();
+
+	private readonly object _exchangelock = new object();
+
+	private bool NeedFixed = false;
+
+	private bool NeedFixedSpare = false;
+
+	/// <summary>
+	/// 背景图（渲染必需）
+	/// </summary>
+	public ImageViewItem SelectedImage { get; set; } = null;
+
+	/// <summary>
+	/// 输入背景图（不必需）
+	/// </summary>
+	public ImageViewItem SelectedInputImage { get; set; } = null;
+
+	/// <summary>
+	/// 叠加图层（不必需）
+	/// </summary>
+	public List<string> CheckImagesName { get; set; } = null;
+
+	/// <summary>
+	/// 缓存数据正在存的数据执行次数
+	/// </summary>
+	public uint BufferExecuteCount { get; private set; }
+
+	/// <summary>
+	/// 备用数据正在存的数据执行次数
+	/// </summary>
+	public uint SpareExecuteCount { get; private set; }
+
+	/// <summary>
+	/// 正在交换的执行次数
+	/// </summary>
+	public uint FixedExcuteCount { get; private set; }
+
+	/// <summary>
+	/// 是否正在交换数据
+	/// </summary>
+	public bool IsBusy => NeedFixed || NeedFixedSpare;
+
+	private void SetRenderDataToStore(object sender, ValueEventArgs valueEventArgs, Dictionary<string, ImageData> imageStore, Dictionary<object, object> shapeStore)
+	{
+		if (valueEventArgs.ValueType == "image" || valueEventArgs.ValueType == "pixelinfoimage")
+		{
+			if (isInit && sender is Apps.XmlParser.Object obj)
+			{
+				SetImageToStore(imageStore, obj, valueEventArgs);
+			}
+		}
+		else if (isInit && (sender as Apps.XmlParser.Object).IsDisplayA)
+		{
+			if (shapeStore.ContainsKey(sender))
+			{
+				shapeStore[sender] = valueEventArgs;
+			}
+			else
+			{
+				shapeStore.Add(sender, valueEventArgs);
+			}
+		}
+	}
+
+	private void SetImageToStore(Dictionary<string, ImageData> store, Apps.XmlParser.Object obj, ValueEventArgs valueEventArgs)
+	{
+		if (SelectedImage?.DisplayObject == obj)
+		{
+			ImageData imageData = valueEventArgs.Value as ImageData;
+			if (store.ContainsKey("SelectedImage"))
+			{
+				store["SelectedImage"] = imageData;
+			}
+			else
+			{
+				store.Add("SelectedImage", imageData);
+			}
+			if (imageData != null && SelectedImage != null)
+			{
+				imageData.Tag = SelectedImage.DisplayName;
+			}
+		}
+		else
+		{
+			string text = (obj.Owner as IVmModule).Name + "." + AppLocalizationService.GetLang(obj.Name);
+			if (CheckImagesName != null && CheckImagesName.Contains(text))
+			{
+				if (store.ContainsKey(text))
+				{
+					store[text] = valueEventArgs.Value as ImageData;
+				}
+				else
+				{
+					store.Add(text, valueEventArgs.Value as ImageData);
+				}
+			}
+		}
+		if (SelectedInputImage?.DisplayObject == obj)
+		{
+			if (store.ContainsKey("SelectedInputImage"))
+			{
+				store["SelectedInputImage"] = valueEventArgs.Value as ImageData;
+			}
+			else
+			{
+				store.Add("SelectedInputImage", valueEventArgs.Value as ImageData);
+			}
+		}
+	}
+
+	private void ExchangeBuffer(bool isSpare = false)
+	{
+		if (isSpare)
+		{
+			Dictionary<string, ImageData> dictionary = displayImageStore;
+			Dictionary<object, object> dictionary2 = displayShapeStore;
+			displayImageStore = spareImageStore;
+			displayShapeStore = spareShapeStore;
+			spareImageStore = dictionary;
+			spareShapeStore = dictionary2;
+		}
+		else
+		{
+			Dictionary<string, ImageData> dictionary3 = displayImageStore;
+			Dictionary<object, object> dictionary4 = displayShapeStore;
+			displayImageStore = bufferImageStore;
+			displayShapeStore = bufferShapeStore;
+			bufferImageStore = dictionary3;
+			bufferShapeStore = dictionary4;
+		}
+	}
+
+	/// <summary>
+	/// 将数据存入正确的缓存区
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	public void SetDataToStore(object sender, EventArgs e)
+	{
+		if (sender == null || !(e is ValueEventArgs e2))
+		{
+			return;
+		}
+		if ((NeedFixed && e2.ExecuteCount != FixedExcuteCount) || e2.ExecuteCount == SpareExecuteCount)
+		{
+			if (e2.ExecuteCount != SpareExecuteCount)
+			{
+				SpareExecuteCount = e2.ExecuteCount;
+				spareImageStore.Clear();
+				spareShapeStore.Clear();
+			}
+			SetRenderDataToStore(sender, e2, spareImageStore, spareShapeStore);
+			return;
+		}
+		if (e2.ExecuteCount != BufferExecuteCount)
+		{
+			BufferExecuteCount = e2.ExecuteCount;
+			bufferImageStore.Clear();
+			bufferShapeStore.Clear();
+		}
+		if (SpareExecuteCount == BufferExecuteCount)
+		{
+			LogHelper.Error("错误，同一批数据进了两个不同的缓存.BufferExecuteCount = " + BufferExecuteCount);
+		}
+		SetRenderDataToStore(sender, e2, bufferImageStore, bufferShapeStore);
+	}
+
+	/// <summary>
+	/// 获取指定键值对应图像
+	/// </summary>
+	/// <param name="key"></param>
+	/// <param name="image"></param>
+	/// <returns></returns>
+	public bool TryGetImage(string key, out ImageData image)
+	{
+		return displayImageStore.TryGetValue(key, out image);
+	}
+
+	/// <summary>
+	/// 获取待渲染图形仓库
+	/// </summary>
+	/// <returns></returns>
+	public Dictionary<object, object> GetShapeStore()
+	{
+		return displayShapeStore;
+	}
+
+	/// <summary>
+	/// 交换数据前给标志位置位，需要在回调线程中同步调用
+	/// </summary>
+	/// <param name="executeCount"></param>
+	public void BeforeExchange(uint executeCount)
+	{
+		bool flag = executeCount == SpareExecuteCount;
+		FixedExcuteCount = executeCount;
+		if (flag)
+		{
+			NeedFixedSpare = true;
+		}
+		else
+		{
+			NeedFixed = true;
+		}
+	}
+
+	/// <summary>
+	/// 交换缓存区
+	/// </summary>
+	public void Exchange(uint procID, uint executeCount)
+	{
+		while (Apps.XmlParser.Object.GetDataSendFinishState(procID, executeCount))
+		{
+			Thread.Sleep(3);
+		}
+		bool needFixedSpare = NeedFixedSpare;
+		ExchangeBuffer(needFixedSpare);
+		NeedFixedSpare = false;
+		NeedFixed = false;
+	}
+
+	/// <summary>
+	/// 清空渲染仓库
+	/// </summary>
+	public void ClearDisplayStore()
+	{
+		displayImageStore.Clear();
+		displayShapeStore.Clear();
+	}
+
+	/// <summary>
+	/// 初始化
+	/// </summary>
+	public void Init()
+	{
+		isInit = true;
+	}
+
+	/// <summary>
+	/// 反初始化
+	/// </summary>
+	public void DeInit()
+	{
+		isInit = false;
+		displayImageStore.Clear();
+		displayShapeStore.Clear();
+		bufferImageStore.Clear();
+		bufferShapeStore.Clear();
+		spareImageStore.Clear();
+		spareShapeStore.Clear();
+		FixedExcuteCount = 0u;
+		NeedFixed = false;
+		NeedFixedSpare = false;
+		BufferExecuteCount = 0u;
+		SpareExecuteCount = 0u;
+		CheckImagesName = null;
+		SelectedImage = null;
+		SelectedInputImage = null;
+	}
+}

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:ItemsPage x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.DiagramPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:localEx="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:attachedProperties="clr-namespace:VM.Controls.AttachedProperties;assembly=VM.Controls" xmlns:clip="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" KeyDown="KeyVdown" Loaded="DiagramPage_Loaded" Unloaded="DiagramPage_UnLoaded" Focusable="True" FocusVisualStyle="{x:Null}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ResourceDictionaries/GlobalResources.xaml" />
+        <ResourceDictionary Source="/VM.Controls;component/Styles/MenuItemStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:RectDragPanal x:Key="rectDragPanal" Loaded="RectDragPanal_Loaded" LostFocus="RectDragPanal_LostFocus" PreviewMouseDown="RectDragPanalBase_PreviewMouseDown" Focusable="True" Cursor="SizeAll" Area="{Binding RectDragPanalRect, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ItemsPage}}" />
+      <local:RectDragPanalBase x:Key="rectDragMask" Background="#00FFFFFF" Area="{Binding RectDragPanalRect, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ItemsPage}}" />
+      <Style x:Key="sp" TargetType="{x:Type Separator}">
+        <Setter Property="Background" Value="#D1CCC9" />
+        <Setter Property="Margin" Value="5,6,5,6" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Separator}">
+              <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Height="1" SnapsToDevicePixels="True" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <CollectionViewSource x:Key="infos" IsLiveGroupingRequested="True" Source="{Binding ToolBoxItemsSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramPage}}">
+        <CollectionViewSource.GroupDescriptions>
+          <PropertyGroupDescription PropertyName="GroupName" />
+        </CollectionViewSource.GroupDescriptions>
+      </CollectionViewSource>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Background>
+    <DrawingBrush Viewport="0,0,6,6" ViewportUnits="Absolute" TileMode="Tile">
+      <DrawingBrush.Drawing>
+        <GeometryDrawing>
+          <GeometryDrawing.Geometry>
+            <PathGeometry>
+              <PathFigure StartPoint="0,10" IsClosed="False">
+                <LineSegment Point="20,10" />
+              </PathFigure>
+              <PathFigure StartPoint="10,0" IsClosed="False">
+                <LineSegment Point="10,20" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryDrawing.Geometry>
+          <GeometryDrawing.Pen>
+            <Pen Thickness="5" Brush="{DynamicResource Col_EditProcess_DiagramPage_Fill}" />
+          </GeometryDrawing.Pen>
+        </GeometryDrawing>
+      </DrawingBrush.Drawing>
+    </DrawingBrush>
+  </Control.Background>
+  <ItemsControl.ItemsPanel>
+    <ItemsPanelTemplate>
+      <Canvas IsItemsHost="True" Initialized="Canvas_Initialized" />
+    </ItemsPanelTemplate>
+  </ItemsControl.ItemsPanel>
+  <Control.Template>
+    <ControlTemplate TargetType="{x:Type local:ItemsPage}">
+      <Canvas Name="Bd" Focusable="True" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="True" FocusVisualStyle="{x:Null}" MouseDown="Canvas_PreviewMouseDown">
+        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+      </Canvas>
+    </ControlTemplate>
+  </Control.Template>
+  <FrameworkElement.Style>
+    <Style TargetType="{x:Type local:ItemsPage}">
+      <Setter Property="FrameworkElement.ContextMenu">
+        <Setter.Value>
+          <controls:HikContextMenu Background="#FFFFFFFF" ItemsSource="{Binding Source={StaticResource infos}}">
+            <Control.Template>
+              <ControlTemplate TargetType="{x:Type ContextMenu}">
+                <StackPanel Background="{TemplateBinding Control.Background}">
+                  <MenuItem Header="{DynamicResource Lang_Paste}" IsEnabled="{Binding IsShowPaste, Source={x:Static clip:Clipboard.instance}}" Click="PasteMenuItem_Click">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Value="False" Binding="{Binding IsShowImportGroup}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </MenuItem>
+                  <MenuItem Header="{DynamicResource Lang_ImportGroup}" IsEnabled="{Binding IsShowImportGroup}" Click="ImportGroup_Click">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Value="False" Binding="{Binding IsRemoteMode}">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </MenuItem>
+                  <MenuItem Header="{DynamicResource Lang_ImportGroup}" IsEnabled="{Binding IsShowImportGroup}">
+                    <MenuItem Header="{DynamicResource Remote}" Click="ImportGroupRemote_Click" />
+                    <MenuItem Header="{DynamicResource Local}" Click="ImportGroup_Click" />
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <Trigger Property="UIElement.IsMouseOver" Value="True">
+                            <Setter Property="MenuItem.IsSubmenuOpen" Value="True" />
+                          </Trigger>
+                          <DataTrigger Value="True" Binding="{Binding IsRemoteMode}">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </MenuItem>
+                  <MenuItem Header="{DynamicResource Lang_ModuleSearch}" Click="SearchModule_Click">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Value="False" Binding="{Binding IsShowImportGroup}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </MenuItem>
+                  <MenuItem Header="{DynamicResource Lang_ImportProcess}" Click="ImportProcess_Click">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                              <Condition Value="False" Binding="{Binding IsShowImportGroup}" />
+                              <Condition Value="False" Binding="{Binding IsRemoteMode}" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                              <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger.Setters>
+                          </MultiDataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </MenuItem>
+                  <MenuItem Header="{DynamicResource Lang_ImportProcess}">
+                    <MenuItem Header="{DynamicResource Remote}" Click="ImportProcessRemote_Click" />
+                    <MenuItem Header="{DynamicResource Local}" Click="ImportProcess_Click" />
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <Trigger Property="UIElement.IsMouseOver" Value="True">
+                            <Setter Property="MenuItem.IsSubmenuOpen" Value="True" />
+                          </Trigger>
+                          <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                              <Condition Value="False" Binding="{Binding IsShowImportGroup}" />
+                              <Condition Value="True" Binding="{Binding IsRemoteMode}" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                              <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger.Setters>
+                          </MultiDataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </MenuItem>
+                  <Separator Style="{StaticResource sp}" />
+                  <StackPanel IsItemsHost="True" />
+                </StackPanel>
+              </ControlTemplate>
+            </Control.Template>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <MenuItem Header="{Lang:ResourceBinding Name}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.GroupStyle>
+              <GroupStyle>
+                <GroupStyle.ContainerStyle>
+                  <Style TargetType="{x:Type GroupItem}">
+                    <Setter Property="Template">
+                      <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                          <MenuItem attachedProperties:MenuItemBehavior.Routed="True" Header="{Lang:ResourceBinding Name.Name}" ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <MenuItem Name="item" Margin="-20,0,0,0" Header="{Lang:ResourceBinding Name}" Visibility="{Binding Visibility, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}}" Click="MenuItem_Click" />
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <FrameworkElement.Resources>
+                              <ResourceDictionary>
+                                <Style x:Key="{x:Type MenuItem}" TargetType="{x:Type MenuItem}">
+                                  <Style.Triggers>
+                                    <DataTrigger Value="false" Binding="{Binding IsVisible}">
+                                      <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </ResourceDictionary>
+                            </FrameworkElement.Resources>
+                            <i:Interaction.Triggers>
+                              <i:EventTrigger EventName="MouseEnter">
+                                <i:InvokeCommandAction Command="{Binding ViewData.ExpandCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramPage}}" CommandParameter="{Binding}" />
+                              </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                          </MenuItem>
+                        </ControlTemplate>
+                      </Setter.Value>
+                    </Setter>
+                  </Style>
+                </GroupStyle.ContainerStyle>
+              </GroupStyle>
+            </ItemsControl.GroupStyle>
+          </controls:HikContextMenu>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="local:ItemsPage.IsLockWorkArea" Value="True">
+          <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+        </Trigger>
+        <DataTrigger Value="False" Binding="{Binding IsAdmin, Source={x:Static user:CodeManager.Instance}}">
+          <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </FrameworkElement.Style>
+  <i:Interaction.Triggers>
+    <i:EventTrigger EventName="OnDropItems">
+      <UIHelper:ParamsEventCommand Command="{Binding DropItemsCommand}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnCopyItems">
+      <UIHelper:ParamsEventCommand Command="{Binding CopyItemsByDropCommand}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnPasteItems">
+      <UIHelper:ParamsEventCommand Command="{Binding PasteItemsCommand}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnSearchModule">
+      <UIHelper:ParamsEventCommand Command="{Binding SearchModuleCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localEx:ProcedureConfigControl}}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnImportGroup">
+      <UIHelper:ParamsEventCommand Command="{Binding ImportGroupCommand}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnImportGroupRemote">
+      <UIHelper:ParamsEventCommand Command="{Binding ImportGroupRemoteCommand}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnImportProcess">
+      <UIHelper:ParamsEventCommand Command="{Binding ImportProcessCommand}" />
+    </i:EventTrigger>
+    <i:EventTrigger EventName="OnImportProcessRemote">
+      <UIHelper:ParamsEventCommand Command="{Binding ImportProcessRemoteCommand}" />
+    </i:EventTrigger>
+  </i:Interaction.Triggers>
+</local:ItemsPage>

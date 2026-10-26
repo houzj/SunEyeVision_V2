@@ -1,0 +1,1220 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Windows.Markup;
+using Apps.Data;
+using Apps.ErrorCode;
+using Apps.Json;
+using Apps.Localization;
+using Apps.Log;
+using Apps.PcUI;
+using Apps.UIHelper.Extern;
+using DirectoryBrowser;
+using GlobalScriptUI;
+using Hik.Util;
+using Microsoft.Win32;
+using PasswordWindowUI;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.User;
+using VM.Utility.SingleInstance;
+using VMControls.Data;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+using starshipxac.Windows.Shell.Dialogs;
+using starshipxac.Windows.Shell.Dialogs.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ToolControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ToolControl
+/// </summary>
+public partial class ToolControl : UserControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty SolutionProperty = DependencyProperty.Register("Solution", typeof(IVmSolution), typeof(ToolControl), new PropertyMetadata(null, OnSolutionChanged));
+
+	public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IList), typeof(ToolControl), new PropertyMetadata(null));
+
+	private VmGlobalToolData toolData = new VmGlobalToolData();
+
+	private const int CommunicateID = 11000;
+
+	private const int LightID = 14000;
+
+	private const int globalVarID = 13000;
+
+	private const int globalTrigerID = 14200;
+
+	private const string OLD_VERSION = "4.0.0";
+
+	private static readonly string registerkeyPathName = "SOFTWARE\\WOW6432Node\\Microsoft\\.NETFramework\\v4.0.30319\\AssemblyFoldersEx\\VisionMaster";
+
+	private static readonly string vmInstallPath = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+
+	public static GlobalCommunication globalCommunication = null;
+
+	private object _globalScriptWindow = null;
+
+	/// <summary>
+	/// 用于记录查找二次开发模式下winform的窗体句柄，用于设置owner属性
+	/// </summary>
+	private static HwndSource hwndSource = null;
+
+	/// <summary>
+	/// 用于记录查找二次开发模式下WPF的窗体句柄，用于设置owner属性
+	/// </summary>
+	private static Window Owner = null;
+
+	private string tempStrPassWord = "";
+
+	private bool isdispoed = false;
+
+	private const string strFrontendDesignPath = "myLibs\\FrontendUI.Design.dll";
+
+	private const string strGACFrontendDesignPath = "FrontendUI.Design.dll";
+
+	public IVmSolution Solution
+	{
+		get
+		{
+			return (IVmSolution)GetValue(SolutionProperty);
+		}
+		set
+		{
+			SetValue(SolutionProperty, value);
+		}
+	}
+
+	public IList ItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemsSourceProperty, value);
+		}
+	}
+
+	private MainWindow globalScriptWindow
+	{
+		get
+		{
+			if (_globalScriptWindow == null)
+			{
+				return null;
+			}
+			return _globalScriptWindow as MainWindow;
+		}
+		set
+		{
+			_globalScriptWindow = value;
+		}
+	}
+
+	private static string Langauge { get; set; } = "zh-cn";
+
+	private static void OnSolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ToolControl toolControl = (ToolControl)d;
+		toolControl.SetVmSolution((IVmSolution)e.NewValue);
+	}
+
+	public ToolControl()
+	{
+		InitializeComponent();
+		if (!this.IsInDesignMode())
+		{
+			Loaded -= ToolControl_Loaded;
+			Unloaded -= ToolControl_Unloaded;
+			Loaded += ToolControl_Loaded;
+			Unloaded += ToolControl_Unloaded;
+		}
+	}
+
+	private void ToolControl_Unloaded(object sender, RoutedEventArgs e)
+	{
+		DeInit();
+	}
+
+	private void ToolControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		Init();
+	}
+
+	public void SetVmSolution(IVmSolution Solution)
+	{
+	}
+
+	public long GetBaseHandle()
+	{
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	private void Init()
+	{
+		toolData.FunctionExecuteEvent -= ToolData_FunctionExecuteEvent;
+		toolData.FunctionExecuteEvent += ToolData_FunctionExecuteEvent;
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDefaultDisplay;
+		VmSolution.RestoreDefaultDisplay += VmSolution_RestoreDefaultDisplay;
+		VmSolution.OnGlobalScriptReportCallBack -= VmSolution_OnGlobalSciptReportData;
+		VmSolution.OnGlobalScriptReportCallBack += VmSolution_OnGlobalSciptReportData;
+		VmSolution.OnProcessImportEndCallBack -= VmSolution_OnProcessImportEndCallBack;
+		VmSolution.OnProcessImportEndCallBack += VmSolution_OnProcessImportEndCallBack;
+		if (toolData.DecorateSource is List<GlobalToolDataItem> list)
+		{
+			ItemsSource = new ObservableCollection<GlobalToolDataItem>(list);
+			GlobalToolDataItem value = list.FirstOrDefault((GlobalToolDataItem t) => t.Name == "Lang_ControllerSet");
+			ItemsSource.Remove(value);
+		}
+		VmSolution.OnSolutionLoadEndCallBack -= VmSolution_OnSolutionLoadEndCallBack;
+		VmSolution.OnSolutionLoadEndCallBack += VmSolution_OnSolutionLoadEndCallBack;
+		toolData.Init();
+	}
+
+	private void VmSolution_OnSolutionLoadEndCallBack(object sender, EndEventArgs args)
+	{
+		if (args == null || args.ErrorCode != 0)
+		{
+			return;
+		}
+		Dispatcher?.Invoke(() =>
+		{
+			VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule m) => m.ID == 14000);
+			if (toolData.DecorateSource is List<GlobalToolDataItem> source)
+			{
+				GlobalToolDataItem globalToolDataItem = source.FirstOrDefault((GlobalToolDataItem t) => t.Name == "Lang_ControllerSet");
+				if (globalToolDataItem != null)
+				{
+					if (vmModule == null)
+					{
+						ItemsSource.Remove(globalToolDataItem);
+					}
+					else if (!ItemsSource.Contains(globalToolDataItem))
+					{
+						ItemsSource.Add(globalToolDataItem);
+					}
+				}
+			}
+		});
+	}
+
+	private void VmSolution_RestoreDefaultDisplay(object sender, EventArgs e)
+	{
+		Dispatcher?.Invoke(() =>
+		{
+			try
+			{
+				GlobalCommunicationMgr.Instance.CloseComm();
+				GlobalCommunicationMgr.Instance.IsGet = false;
+				globalCommunication?.Close();
+				globalCommunication = null;
+				GlobalCameraManager.Instance.CloseCamera();
+				globalScriptWindow?.Close();
+				globalScriptWindow = null;
+			}
+			catch (Exception ex)
+			{
+				Apps.Log.LogHelper.Error("VmSolution_InstanceChanged exception:" + ex.ToString());
+			}
+		});
+	}
+
+	private void VmSolution_OnProcessImportEndCallBack(object sender, EndEventArgs args)
+	{
+		Dispatcher?.BeginInvoke((Action)(() =>
+		{
+			try
+			{
+				if (GlobalCommunicationMgr.Instance.IsGet)
+				{
+					GlobalCommunicationMgr.Instance.ClearAll();
+					GlobalCommunicationMgr.Instance.IsGet = false;
+				}
+				globalCommunication?.Close();
+				globalCommunication = null;
+				GlobalCameraManager.Instance.CloseCamera();
+				globalScriptWindow?.Close();
+				globalScriptWindow = null;
+			}
+			catch (Exception ex)
+			{
+				Apps.Log.LogHelper.Error("process load end is error:" + ex.ToString());
+			}
+		}));
+	}
+
+	private void VmSolution_InstanceChanged(object sender, EventArgs e)
+	{
+		Dispatcher?.Invoke(() =>
+		{
+			try
+			{
+				GlobalCommunicationMgr.Instance.CloseComm();
+				GlobalCommunicationMgr.Instance.IsGet = false;
+				globalCommunication?.Close();
+				globalCommunication = null;
+				GlobalCameraManager.Instance.CloseCamera();
+				globalScriptWindow?.Close();
+				globalScriptWindow = null;
+			}
+			catch (Exception ex)
+			{
+				Apps.Log.LogHelper.Error("VmSolution_InstanceChanged exception:" + ex.ToString());
+			}
+		});
+	}
+
+	private void DeInit()
+	{
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDefaultDisplay;
+		VmSolution.OnGlobalScriptReportCallBack -= VmSolution_OnGlobalSciptReportData;
+		VmSolution.OnProcessImportEndCallBack -= VmSolution_OnProcessImportEndCallBack;
+		VmSolution.OnSolutionLoadEndCallBack -= VmSolution_OnSolutionLoadEndCallBack;
+		toolData.FunctionExecuteEvent -= ToolData_FunctionExecuteEvent;
+		toolData.Dispose();
+		DeintSource();
+	}
+
+	private void ToolData_FunctionExecuteEvent(string obj)
+	{
+		GetWinformHandle();
+		GetWPFOwner();
+		if (!string.IsNullOrEmpty(obj))
+		{
+			switch (obj)
+			{
+			case "GlobalCommSet":
+				CommSet();
+				break;
+			case "GlobalLightSet":
+				LightSet();
+				break;
+			case "GlobalCameraSet":
+				CameraSet();
+				break;
+			case "GlobalVariableSet":
+				GlobalVariable();
+				break;
+			case "GlobalScriptSet":
+				GlobalScript();
+				break;
+			case "GlobalTriggerSet":
+				GlobalTrigger();
+				break;
+			case "SaveSolution":
+				SaveSolution();
+				break;
+			case "SaveAsSolution":
+				SaveAsSolution();
+				break;
+			case "OpenSolution":
+				OpenSolution();
+				break;
+			case "EditFrontendUI":
+				EditFrontendUI();
+				break;
+			case "ComprehensiveConfig":
+				ComprehensiveConfig();
+				break;
+			}
+		}
+	}
+
+	private void DeintSource()
+	{
+		try
+		{
+			globalCommunication?.Close();
+			globalCommunication = null;
+			globalScriptWindow?.Close();
+			hwndSource = null;
+			Owner = null;
+		}
+		catch (Exception ex)
+		{
+			Apps.Log.LogHelper.Error("DeintSource exception:" + ex.ToString());
+		}
+	}
+
+	private static void OpenGlobalModule(string path, int id, Action<object> action)
+	{
+		try
+		{
+			VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == id);
+			if (vmModule == null)
+			{
+				string path2 = CurrentPathHelper.Instance.GetCurrentPath() + "\\" + path;
+				Assembly assembly = Assembly.LoadFile(path2);
+				Type type = assembly.GetTypes().FirstOrDefault((Type p) => typeof(IVmModule).IsAssignableFrom(p));
+				Activator.CreateInstance(type, VmSolution.Instance);
+				vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule x) => x.ID == id);
+				if (id == 11000)
+				{
+					if (globalCommunication != null)
+					{
+						globalCommunication = null;
+					}
+					globalCommunication = new GlobalCommunication();
+				}
+			}
+			if (vmModule != null)
+			{
+				action?.Invoke(vmModule);
+			}
+		}
+		catch (Exception ex)
+		{
+			VmException vmException = VmSolution.GetVmException(ex);
+			if (vmException != null)
+			{
+				ShowMessage.ShowVmExceptionMessage(vmException);
+				Apps.Log.LogHelper.Error(vmException.errorMessage);
+			}
+			else
+			{
+				Apps.Log.LogHelper.Error(ex.ToString());
+			}
+		}
+	}
+
+	/// <summary>
+	/// 注册全局模块窗体事件
+	/// </summary>
+	public static void RegesitGlobalModuleWinAction()
+	{
+		if (CVmObjectBase.GetIsSDKMode())
+		{
+			FunctionManager.Register("GlobalLightSet", LightSet);
+			FunctionManager.Register("GlobalCameraSet", CameraSet);
+		}
+	}
+
+	/// <summary>
+	/// 卸载全局模块窗体事件
+	/// </summary>
+	public static void UnRegesitGlobalModuleWinAction()
+	{
+		if (CVmObjectBase.GetIsSDKMode())
+		{
+			FunctionManager.UnRegister("GlobalLightSet");
+			FunctionManager.UnRegister("GlobalCameraSet");
+		}
+	}
+
+	/// <summary>
+	/// 每次打开通信管理窗体都是重新new,用于二次开发、运行界面子窗体上弹出通信管理窗体
+	/// </summary>
+	public static void CommSetWithNoHide()
+	{
+		if (globalCommunication != null)
+		{
+			globalCommunication.Close();
+			GlobalCommunicationMgr.Instance.IsOpen = false;
+			globalCommunication = null;
+		}
+		CommSet();
+	}
+
+	/// <summary>
+	/// 查找winform句柄
+	/// </summary>
+	private void GetWinformHandle()
+	{
+		try
+		{
+			if (Application.Current == null)
+			{
+				hwndSource = PresentationSource.FromDependencyObject(this) as HwndSource;
+			}
+		}
+		catch (Exception ex)
+		{
+			Apps.Log.LogHelper.Error("GetWinformHandle is exception:" + ex.ToString());
+		}
+	}
+
+	/// <summary>
+	/// 查找winform句柄
+	/// </summary>
+	private void GetWPFOwner()
+	{
+		try
+		{
+			if (Application.Current != null)
+			{
+				Owner = Window.GetWindow(this);
+			}
+		}
+		catch (Exception ex)
+		{
+			Apps.Log.LogHelper.Error("GetWPFOwner is exception:" + ex.ToString());
+		}
+	}
+
+	/// <summary>
+	/// 设置子窗体的owner属性
+	/// </summary>
+	/// <param name="window">主窗体</param>
+	/// <param name="owner">二次开发时父窗口对象</param>
+	private static void SetWindowOwner(BaseWindow window)
+	{
+		try
+		{
+			if (Application.Current != null)
+			{
+				if (Owner != null)
+				{
+					window.Owner = Owner;
+				}
+				else
+				{
+					window.Owner = Application.Current.MainWindow;
+				}
+			}
+			else if (hwndSource != null)
+			{
+				WindowInteropHelper windowInteropHelper = new WindowInteropHelper(window)
+				{
+					Owner = hwndSource.Handle
+				};
+			}
+		}
+		catch (Exception ex)
+		{
+			Apps.Log.LogHelper.Error("SetWindowOwner is exception:" + ex.ToString());
+		}
+	}
+
+	/// <summary>
+	/// 通信管理
+	/// </summary>
+	public static void CommSet()
+	{
+		OpenGlobalModule("module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleCs.dll", 11000, (object module) =>
+		{
+			if (module != null)
+			{
+				Langauge = AppLocalizationService.GetLangParm();
+				if (globalCommunication == null || globalCommunication.IsClosing)
+				{
+					globalCommunication = new GlobalCommunication();
+				}
+				globalCommunication.DecorateSource = module;
+				if (!GlobalCommunicationMgr.Instance.IsGet)
+				{
+					GlobalCommunicationMgr.Instance.IsGet = true;
+					GlobalCommunicationMgr.Instance.GetData();
+					globalCommunication.UpdateLanguage(string.IsNullOrEmpty(Langauge) ? "zh-cn" : Langauge);
+					GlobalCommunicationMgr.Instance.IsOpen = true;
+					GlobalCommunicationMgr.Instance.ResetParamStateFlag();
+					SetWindowOwner(globalCommunication);
+					globalCommunication.ShowDialog();
+				}
+				else
+				{
+					globalCommunication.UpdateLanguage(string.IsNullOrEmpty(Langauge) ? "zh-cn" : Langauge);
+					GlobalCommunicationMgr.Instance.IsOpen = true;
+					SetWindowOwner(globalCommunication);
+					globalCommunication.ShowDialog();
+				}
+			}
+		});
+	}
+
+	/// <summary>
+	/// 光源设置
+	/// </summary>
+	public static void LightSet()
+	{
+		VmModule vmModule = VmSolution.Instance.Modules.FirstOrDefault((VmModule m) => m.ID == 14000);
+		if (vmModule != null)
+		{
+			OpenGlobalModule("module(sp)\\x64\\Global\\LightControl\\LightControlCs.dll", 14000, (object module) =>
+			{
+				if (module != null)
+				{
+					VmModule vmModule2 = (VmModule)module;
+					LightSourceManager.Instance.ModuleID = (int)vmModule2.ID;
+					LightSourceDlg lightSourceDlg = new LightSourceDlg();
+					LightSourceManager.Instance.ModuleID = (int)vmModule2.ID;
+					LightSourceManager.Instance.GetData();
+					LightSourceManager.Instance.ReFreshComNum();
+					SetWindowOwner(lightSourceDlg);
+					lightSourceDlg.ShowDialog();
+				}
+			});
+		}
+		else
+		{
+			CommSetWithNoHide();
+		}
+	}
+
+	/// <summary>
+	/// 相机设置
+	/// </summary>
+	public static void CameraSet()
+	{
+		try
+		{
+			if (CodeManager.Instance.GetLoginUser() == AccessUser.Operator)
+			{
+				return;
+			}
+			List<VmModule> list = VmSolution.Instance.Modules.ToList();
+			foreach (VmModule item in list)
+			{
+				if (GlobalCameraManager.Instance.FilterCameraModule(item.StrModuleName) && !GlobalCameraManager.Instance.ItemsA.Contains(item))
+				{
+					GlobalCameraManager.Instance.ItemsA.Add(item);
+				}
+			}
+			List<VmModule> list2 = GlobalCameraManager.Instance.ItemsA.ToList();
+			foreach (VmModule item2 in list2)
+			{
+				if (!VmSolution.Instance.Modules.Contains(item2))
+				{
+					GlobalCameraManager.Instance.ItemsA.Remove(item2);
+					GlobalCameraManager.Instance.CurDeviceA = null;
+				}
+			}
+			GlobalCameraDlg globalCameraDlg = new GlobalCameraDlg();
+			GlobalCameraManager.Instance.GetAuthority();
+			SetWindowOwner(globalCameraDlg);
+			globalCameraDlg.ShowDialog();
+		}
+		catch (Exception ex)
+		{
+			Apps.Log.LogHelper.Error("CameraSet exception:" + ex.ToString());
+		}
+	}
+
+	/// <summary>
+	/// 全局变量
+	/// </summary>
+	public static void GlobalVariable()
+	{
+		try
+		{
+			OpenGlobalModule("module(sp)\\x64\\Global\\GlobalVariableModule\\GlobalVariableModuleCs.dll", 13000, (object module) =>
+			{
+				if (module != null)
+				{
+					GlobalVariableDialog globalVariableDialog = new GlobalVariableDialog
+					{
+						DecorateSource = module
+					};
+					SetWindowOwner(globalVariableDialog);
+					globalVariableDialog.ShowDialog();
+				}
+			});
+		}
+		catch (Exception ex)
+		{
+			Apps.Log.LogHelper.Error("GlobalVariable exception:" + ex.ToString());
+		}
+	}
+
+	/// <summary>
+	/// 全局脚本
+	/// </summary>
+	public void GlobalScript()
+	{
+		try
+		{
+			if (globalScriptWindow == null)
+			{
+				globalScriptWindow = new MainWindow();
+				globalScriptWindow.ExcuteEvent += () =>
+				{
+					VmSolution.Instance.Run();
+				};
+			}
+			if (globalScriptWindow.IsClosing)
+			{
+				globalScriptWindow.ExcuteEvent -= () =>
+				{
+					VmSolution.Instance.Run();
+				};
+				globalScriptWindow = new MainWindow();
+				globalScriptWindow.ExcuteEvent += () =>
+				{
+					VmSolution.Instance.Run();
+				};
+			}
+			if (globalScriptWindow.GetShellParamer() != 0)
+			{
+				return;
+			}
+			if (globalScriptWindow.ObjShellRun != null && globalScriptWindow.ObjShellRun.IsPasswordEnabled)
+			{
+				string password = globalScriptWindow.ObjShellRun.Password;
+				PasswordCheckWindow passwordCheckWindow = new PasswordCheckWindow
+				{
+					OriginalPassword = password
+				};
+				passwordCheckWindow.ShowDialog();
+				if (passwordCheckWindow.IsPasswordOK)
+				{
+					SetWindowOwner(globalScriptWindow);
+					globalScriptWindow.ShowDialog();
+				}
+			}
+			else
+			{
+				SetWindowOwner(globalScriptWindow);
+				globalScriptWindow.ShowDialog();
+			}
+		}
+		catch (Exception ex)
+		{
+			VmException vmException = VmSolution.GetVmException(ex);
+			if (vmException != null)
+			{
+				ShowMessage.ShowVmExceptionMessage(vmException);
+				Apps.Log.LogHelper.Error(vmException.errorMessage);
+			}
+			else
+			{
+				Apps.Log.LogHelper.Error(ex.ToString());
+			}
+		}
+	}
+
+	public void VmSolution_OnGlobalSciptReportData(object sender, ObjectEventArgs args)
+	{
+		if (args == null || args.Param == null || string.IsNullOrEmpty(args.Param.ToString()))
+		{
+			return;
+		}
+		string info = args.Param.ToString();
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			try
+			{
+				dynamic val = JsonConvert.DeserializeObject(info);
+				if (!((val == null) ? true : false))
+				{
+					dynamic val2 = val.head;
+					if (!((val2 == null) ? true : false))
+					{
+						string s = val.head.errorCode;
+						string text = val.head.type;
+						string text2 = text;
+						if (!(text2 == "report"))
+						{
+							if (text2 == "updateScript" && globalScriptWindow != null)
+							{
+								string text3 = val.head.msg;
+								if (!string.IsNullOrEmpty(text3))
+								{
+									globalScriptWindow.UpdateShellContent(text3);
+								}
+							}
+						}
+						else
+						{
+							int result = 0;
+							int.TryParse(s, out result);
+							string strMsg = AppLocalizationService.GetLang("Lang_GlobalScript") + ":" + ErrorCodeInfo.GetErrorInfo(result);
+							HikMessageBox.Show(strMsg, MessageIcons.Error);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Apps.Log.LogHelper.Error("VmSolution_OnGlobalSciptReportData exception:" + ex.ToString());
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 全局触发
+	/// </summary>
+	public static void GlobalTrigger()
+	{
+		try
+		{
+			OpenGlobalModule("module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleCs.dll", 14200, (object module) =>
+			{
+				if (module != null)
+				{
+					GlobalTriggerConfig dataContext = new GlobalTriggerConfig
+					{
+						DecorateSource = module
+					};
+					GloablTriggleConfigUI gloablTriggleConfigUI = new GloablTriggleConfigUI(module as VmModule)
+					{
+						DataContext = dataContext
+					};
+					SetWindowOwner(gloablTriggleConfigUI);
+					gloablTriggleConfigUI.ShowDialog();
+				}
+			});
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	/// <summary>
+	/// 保存方案
+	/// </summary>
+	public void SaveSolution()
+	{
+		if (!string.IsNullOrEmpty(VmSolution.Instance.SolutionPath))
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SaveCalibUserData();
+			});
+			Task.Run(() =>
+			{
+				VmSolution.SaveAs(VmSolution.Instance.SolutionPath);
+			}).ContinueWith((Task t) =>
+			{
+				GlobalCommunicationMgr.Instance.ResetParamStateFlag();
+			});
+		}
+		else
+		{
+			SaveAsSolutionProcess();
+		}
+	}
+
+	/// <summary>
+	/// 所有流程保存一键标定引导信息
+	/// </summary>
+	private void SaveCalibUserData()
+	{
+		foreach (VmProcedure item in VmSolution.Instance.Modules.OfType<VmProcedure>())
+		{
+			((IVmProcedure)item).SaveCalibData();
+		}
+	}
+
+	/// <summary>
+	/// 方案另存为
+	/// </summary>
+	public void SaveAsSolution()
+	{
+		SaveAsSolutionProcess();
+	}
+
+	/// <summary>
+	/// 获取VM安装路径
+	/// </summary>
+	private string GetVMInstallPath()
+	{
+		string registerValueByName = GetRegisterValueByName(registerkeyPathName, "CurrentVersion");
+		string path = Path.Combine(vmInstallPath, "VisionMaster_" + registerValueByName);
+		string registerValueByName2 = GetRegisterValueByName(path, "InstallPath");
+		return string.IsNullOrEmpty(registerValueByName2) ? AppDomain.CurrentDomain.SetupInformation.ApplicationBase : (registerValueByName2 + "\\Applications\\");
+	}
+
+	/// <summary>
+	/// 获取注册表中key对应的值
+	/// </summary>
+	private string GetRegisterValueByName(string path, string name)
+	{
+		string result = "";
+		try
+		{
+			RegistryKey localMachine = Registry.LocalMachine;
+			RegistryKey registryKey = localMachine.OpenSubKey(path);
+			object obj = registryKey?.GetValue(name);
+			if (obj != null && obj is string text)
+			{
+				result = text;
+			}
+			registryKey?.Close();
+			localMachine.Close();
+		}
+		catch
+		{
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 打开方案
+	/// </summary>
+	public void OpenSolution()
+	{
+		((IVMRun)VmSolution.Instance).ContinuousRunEnable = false;
+		bool flag = true;
+		string strFileName = "";
+		if (flag)
+		{
+			Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
+			{
+				Filter = "Solution Files (*." + AppFileExtension.Solution + ")|*." + AppFileExtension.Solution
+			};
+			if (openFileDialog.ShowDialog() != true)
+			{
+				return;
+			}
+			strFileName = openFileDialog.FileName;
+		}
+		else
+		{
+			DirectoryBrowser.OpenFileDialog openFileDialog2 = new DirectoryBrowser.OpenFileDialog
+			{
+				Filter = "Solution Files (*." + AppFileExtension.Solution + ")|*." + AppFileExtension.Solution
+			};
+			if (openFileDialog2.ShowDialog() != true)
+			{
+				return;
+			}
+			strFileName = openFileDialog2.FileNames.First();
+		}
+		if (string.IsNullOrEmpty(strFileName))
+		{
+			return;
+		}
+		uint nHasPwd = 0u;
+		uint nValidFormat = 0u;
+		try
+		{
+			ServerSDKManager.serverSDKManager.mSolutionManager.CheckSolution(strFileName, ref nHasPwd, ref nValidFormat);
+		}
+		catch (VmException vmException)
+		{
+			ShowMessage.ShowVmExceptionMessage(vmException);
+			return;
+		}
+		string passWord = "";
+		if (nValidFormat == 1)
+		{
+			if (nHasPwd == 1)
+			{
+				Decryption decryption = new Decryption();
+				decryption.SolutionPath = strFileName;
+				if (decryption.ShowDialog() != true)
+				{
+					return;
+				}
+				passWord = decryption.AccessAdministatorCode;
+			}
+			Task task = new Task(() =>
+			{
+				ImvsSdkDefine.IMVS_SOLUTION_VERSION_INFO stSolutionVersionInfo = default;
+				int num = ServerSDKAPI.IMVS_GetSolutionVersion(CVmObjectBase.mhandle, strFileName, passWord, ref stSolutionVersionInfo);
+				if (num != 0)
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("errCode:") + " " + num.ToString("X") + Environment.NewLine + AppLocalizationService.GetLang(ErrorCodeInfo.GetErrorInfo(num)), MessageIcons.Error);
+				}
+				else
+				{
+					string version = stSolutionVersionInfo.strTargetSolutionInfo.Substring(1);
+					Version version2 = new Version(version);
+					Version version3 = new Version("4.0.0");
+					if (version2 < version3)
+					{
+						Dispatcher.Invoke(() =>
+						{
+							string text = AppLocalizationService.GetLang("Lang_SolVersion_OutOfDate") + "\r\n" + AppLocalizationService.GetLang("版本信息") + stSolutionVersionInfo.strTargetSolutionInfo;
+							HikMessageBox.Show(text, MessageIcons.Error);
+							Apps.Log.LogHelper.Error(text);
+						});
+					}
+					else
+					{
+						string lang = AppLocalizationService.GetLang("Lang_version");
+						if (string.IsNullOrEmpty(lang))
+						{
+							Dispatcher.Invoke(() =>
+							{
+								string text = AppLocalizationService.GetLang("版本信息") + " Error";
+								HikMessageBox.Show(text, MessageIcons.Error);
+								Apps.Log.LogHelper.Error(text);
+							});
+						}
+						else
+						{
+							Version version4 = new Version(lang.Substring(1));
+							if (!(version2 < version4))
+							{
+								try
+								{
+									Apps.Log.LogHelper.Info("Load solution path: " + strFileName);
+									if (GlobalCommunicationMgr.Instance.IsGet)
+									{
+										GlobalCommunicationMgr.Instance.CloseComm();
+										GlobalCommunicationMgr.Instance.IsGet = false;
+									}
+									VmSolution.Load(strFileName, passWord);
+									return;
+								}
+								catch (VmException ex2)
+								{
+									VmException ex3 = ex2;
+									VmException vmException2 = ex3;
+									Dispatcher.Invoke(() =>
+									{
+										ShowMessage.ShowVmExceptionMessage(vmException2);
+									});
+									return;
+								}
+								catch (Exception ex4)
+								{
+									Exception ex5 = ex4;
+									Exception ex6 = ex5;
+									Dispatcher.Invoke(() =>
+									{
+										HikMessageBox.Show(ex6.Message);
+									});
+									return;
+								}
+							}
+							Dispatcher.Invoke(() =>
+							{
+								string text = AppLocalizationService.GetLang("版本信息") + " Error";
+								HikMessageBox.Show(text, MessageIcons.Error);
+								Apps.Log.LogHelper.Error(text);
+							});
+						}
+					}
+				}
+			});
+			SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI.Clipboard.instance.ClearCopyInfo();
+			if (VmSolution.Instance.Modules.Count > 0)
+			{
+				bool flag2 = false;
+				try
+				{
+					flag2 = VmSolution.Instance.IsSolModifyInfo();
+				}
+				catch (Exception ex)
+				{
+					Apps.Log.LogHelper.Error("get IsSolModifyInfo is error:" + ex.ToString());
+				}
+				if (flag2)
+				{
+					switch (HikMessageBox.Show(AppLocalizationService.GetLang("Lang_SolSave"), AppLocalizationService.GetLang("Lang_SolCurSave"), MessageButtons.YesOrNoOrCancel, MessageIcons.Question))
+					{
+					default:
+						return;
+					case DialogResult.Yes:
+						SaveSolution(task);
+						return;
+					case DialogResult.No:
+						break;
+					}
+				}
+			}
+			task.Start();
+		}
+		else
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_SolLoad"), AppLocalizationService.GetLang("Lang_SolFmt"), MessageIcons.Error);
+		}
+	}
+
+	/// <summary>
+	/// 先保存方案，再加载方案
+	/// </summary>
+	private void SaveSolution(Task afterSaveTask)
+	{
+		if (!string.IsNullOrEmpty(VmSolution.Instance.SolutionPath))
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SaveCalibUserData();
+			});
+			Task.Run(() =>
+			{
+				try
+				{
+					VmSolution.SaveAs(VmSolution.Instance.SolutionPath);
+				}
+				catch (Exception ex)
+				{
+					VmException vmException = VmSolution.GetVmException(ex);
+					if (vmException != null)
+					{
+						ShowMessage.ShowVmExceptionMessage(vmException);
+						Apps.Log.LogHelper.Error(vmException.errorMessage);
+					}
+					else
+					{
+						Apps.Log.LogHelper.Error(ex.ToString());
+					}
+				}
+			}).ContinueWith((Task t) =>
+			{
+				GlobalCommunicationMgr.Instance.ResetParamStateFlag();
+				afterSaveTask?.Start();
+			});
+		}
+		else if (SaveAsSolutionProcess())
+		{
+			afterSaveTask?.Start();
+		}
+	}
+
+	/// <summary>
+	/// 方案另存为
+	/// </summary>
+	private bool SaveAsSolutionProcess()
+	{
+		if (VmSolution.Instance.IsHasPassword)
+		{
+			Decryption decryption = new Decryption();
+			decryption.SolutionPath = VmSolution.Instance.SolutionPath;
+			if (decryption.ShowDialog() != true)
+			{
+				return false;
+			}
+		}
+		using (FileSaveDialog fileSaveDialog = new FileSaveDialog
+		{
+			FileTypeFilters = new FileTypeFilterCollection
+			{
+				new FileTypeFilter(AppLocalizationService.GetLang("解决方案"), "." + AppFileExtension.Solution)
+			},
+			DefaultFileExtension = "." + AppFileExtension.Solution,
+			RestoreDirectory = true
+		})
+		{
+			tempStrPassWord = "";
+			FileDialogButton fileDialogButton = new FileDialogButton("encryptButton", AppLocalizationService.GetLang("加密选项"));
+			fileDialogButton.Click += encryptCheckClick;
+			fileSaveDialog.Controls.Add(fileDialogButton);
+			if (fileSaveDialog.Show() == FileDialogResult.Ok)
+			{
+				string passWord = ((tempStrPassWord == null) ? "" : tempStrPassWord);
+				Dispatcher.Invoke(() =>
+				{
+					SaveCalibUserData();
+				});
+				VmSolution.SaveAs(fileSaveDialog.ShellFile.Path, passWord);
+				GlobalCommunicationMgr.Instance.ResetParamStateFlag();
+			}
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 打开综合配置窗口
+	/// </summary>
+	private void ComprehensiveConfig()
+	{
+		ComprehensiveConfigManager.ShowWindow();
+	}
+
+	private void encryptCheckClick(object sender, EventArgs e)
+	{
+		Encryption encryption = new Encryption();
+		if (encryption.ShowDialog() == true && !string.IsNullOrEmpty(encryption.AccessAdministatorCode))
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_Sure"), AppLocalizationService.GetLang("SubWindowPassword") + "：" + encryption.textCodeSet.Password + "\r\n" + AppLocalizationService.GetLang("Lang_Password"), MessageIcons.Warning);
+			tempStrPassWord = encryption.AccessAdministatorCode;
+		}
+	}
+
+	/// <summary>
+	/// 释放函数
+	/// </summary>
+	public void Dispose()
+	{
+		DeInit();
+	}
+
+	/// <summary>
+	/// 打开单一全局控件
+	/// </summary>
+	public void OpenGloablModule(string moduleName)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			ToolData_FunctionExecuteEvent(moduleName);
+		});
+	}
+
+	private void LoadFrontendDesignDllAssembly()
+	{
+		string currentPath = CurrentPathHelper.Instance.GetCurrentPath();
+		string text = Path.Combine(currentPath, "FrontendUI.Design.dll");
+		if (!File.Exists(text))
+		{
+			text = Path.Combine(currentPath, "myLibs\\FrontendUI.Design.dll");
+		}
+		if (File.Exists(text))
+		{
+			Assembly assemblyByFileName = ActivatorWrap.GetAssemblyByFileName(text);
+			if (null == assemblyByFileName)
+			{
+				ActivatorWrap.LoadAssembly(text);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 获取当前控件父窗体
+	/// </summary>
+	/// <returns></returns>
+	private static object GetWindowOwner()
+	{
+		object result = null;
+		try
+		{
+			if (Application.Current != null)
+			{
+				result = Application.Current.MainWindow;
+			}
+			else if (hwndSource != null)
+			{
+				result = hwndSource.Handle;
+			}
+		}
+		catch (Exception message)
+		{
+			Apps.Log.LogHelper.Error(message);
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 编辑运行界面
+	/// </summary>
+	public void EditFrontendUI()
+	{
+		try
+		{
+			LoadFrontendDesignDllAssembly();
+			Type type = (Type)ActivatorWrap.TypeTable["FrontendUI.Design.FrontendWindowData"];
+			if (type == null)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("未知类型") + "FrontendUI.Design.FrontendWindowData", MessageIcons.Warning);
+				return;
+			}
+			MethodInfo method = type.GetMethod("EditFrontendUI", BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public);
+			if (method != null)
+			{
+				method.Invoke(this, new object[1] { GetWindowOwner() });
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+			Apps.Log.LogHelper.Error(ex);
+		}
+	}
+}

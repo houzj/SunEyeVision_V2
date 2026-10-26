@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.DiagramArea" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:localData="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" xmlns:localParamTab="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:lo="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <localParamTab:BooleanToVisibilityConverterReverse x:Key="negativeb2v" />
+      <lo:FullPathConvert x:Key="FullPathConvert" />
+      <Style x:Key="GuideButton" TargetType="{x:Type Button}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="border" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Col_Theme}" CornerRadius="2" Background="#585A5D" Padding="5">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <Image Name="image" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_btn_切换_normal.png" Margin="2,0" Width="20" Height="20" HorizontalAlignment="Left" />
+                  <TextBlock Name="text" FontFamily="Microsoft YaHei" FontSize="12px" Foreground="#FFFFFF" FontWeight="Bold" Text="{TemplateBinding ContentControl.Content}" TextAlignment="Center" />
+                </StackPanel>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="image" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_btn_切换_click.png" />
+                  <Setter TargetName="border" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                  <Setter TargetName="text" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="image" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_btn_切换_click.png" />
+                  <Setter TargetName="border" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                  <Setter TargetName="text" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="image" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_btn_切换_disable.png" />
+                  <Setter TargetName="border" Property="UIElement.Opacity" Value="0.5" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid>
+        <Grid ZIndex="10">
+          <Button Name="btnBootMode" Content="{DynamicResource 引导模式}" ToolTip="{DynamicResource 引导模式}" Style="{StaticResource GuideButton}" Width="92" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="64,26,15,5" Visibility="Collapsed" Panel.ZIndex="20" Click="btnBootMode_Click" />
+          <Button Name="btnProcessMode" Content="{DynamicResource 流程模式}" ToolTip="{DynamicResource 流程模式}" Style="{StaticResource GuideButton}" Width="92" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="64,26,15,5" Visibility="Collapsed" Panel.ZIndex="20" Click="btnProcessMode_Click" />
+          <Grid Name="m_GuideGrid" />
+        </Grid>
+        <Grid Name="m_DiagramGrid" DataContext="{Binding Procedure, RelativeSource={RelativeSource TemplatedParent}}">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="28" />
+          </Grid.RowDefinitions>
+          <local:ZoomArea x:Name="zoom" SearchModuleInfo="{Binding SearchModuleInfo, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" DiagramZoomIndex="{Binding Path=(VMInterface:IZoomIndex.PartentZoomIndex), Mode=TwoWay}">
+            <local:DiagramPage IsLockWorkArea="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" IsEditCommentModel="{Binding IsEditCommentModel, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" IsCommentShowModel="{Binding IsCommentShowModel, Mode=OneWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ZoomArea}}" IsOpenParams="{Binding IsOpenParams, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" SelectedModule="{Binding SubSource.SelectedModule, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" CommentSource="{Binding Path=DecorateSource.(VMInterface:IVmModuleSet.CommentSource)}" ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                  <UIHelper:ParamsEventCommand Command="{Binding SelectionChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </local:DiagramPage>
+          </local:ZoomArea>
+          <local:StatusBar x:Name="statusBar" Grid.Row="1" SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" StatusSymbol="{Binding WorkState}" StatusInfo="{Binding WorkStateInfo}" ZoomIndex="{Binding Path=(VMInterface:IZoomIndex.PartentZoomIndex), Mode=TwoWay}" CurDiagramAreaSource="{Binding DecorateSource}" />
+          <StackPanel Orientation="Horizontal" Margin="5,5,0,0">
+            <TextBlock FontSize="15" Foreground="#FF808080" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="{Binding BoolOfDisplayType, Converter={StaticResource negativeb2v}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=lo:ProcedureConfigControl}}" Text="{Binding SelectedItem.FullName, Converter={StaticResource FullPathConvert}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=lo:ProcedureConfigControl}}" />
+            <TextBlock FontSize="15" Foreground="#FFFFFFFF" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="{Binding BoolOfDisplayType, Converter={StaticResource negativeb2v}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=lo:ProcedureConfigControl}}" Text="{Binding SelectedItem.Name, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=lo:ProcedureConfigControl}}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

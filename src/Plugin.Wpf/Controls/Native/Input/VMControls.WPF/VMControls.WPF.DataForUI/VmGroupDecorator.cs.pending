@@ -1,0 +1,573 @@
+using System;
+using System.Collections;
+using System.IO;
+using System.Linq;
+using System.Windows.Input;
+using System.Xml;
+using Apps.Data;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlUI;
+using DirectoryBrowser;
+using HikExternalCall.Common;
+using Mvvm.Commands;
+using PasswordWindowUI;
+using VM.Controls;
+using VM.PlatformSDKCS;
+using VM.Utility;
+using VM.Utility.SingleInstance;
+using VMControls.Data;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmGroupDecorator : VmModuleSetDecorator
+{
+	public const int MaxLevelOfGroup = 3;
+
+	private bool isPasswordEnabled;
+
+	private string password;
+
+	private DelegateCommand configParamsCommand = null;
+
+	private DelegateCommand<ObjectEventArgs> dropItemsCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> importGroupCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> importGroupRemoteCommand = null;
+
+	private DelegateCommand exportGroupCommand = null;
+
+	private DelegateCommand exportGroupRemoteCommand = null;
+
+	private DelegateCommand saveGroupCommand = null;
+
+	private DelegateCommand forbiddenItemCommand = null;
+
+	private DelegateCommand activateItemCommand = null;
+
+	private DelegateCommand<IList> forbiddenItemsCommand = null;
+
+	private DelegateCommand<IList> activateItemsCommand = null;
+
+	private DelegateCommand<IList> deleteItemsCommand = null;
+
+	private DelegateCommand enablePasswordCommand = null;
+
+	private DelegateCommand editPasswordCommand = null;
+
+	private DelegateCommand cancelPasswordCommand = null;
+
+	private DelegateCommand addToToolboxCommand = null;
+
+	public bool IsPasswordEnabledA
+	{
+		get
+		{
+			byte[] array = VMModule.UserData["IsPasswordEnabledA"];
+			if (array != null)
+			{
+				isPasswordEnabled = ExternalCallHelper.BytesToStruct<bool>(array, 0, array.Length);
+			}
+			return isPasswordEnabled;
+		}
+		set
+		{
+			if (value != isPasswordEnabled)
+			{
+				isPasswordEnabled = value;
+				VMModule.UserData["IsPasswordEnabledA"] = ExternalCallHelper.StructToBytes(value);
+				OnPropertyChanged("IsPasswordEnabledA");
+			}
+		}
+	}
+
+	public string ShowName => $"{VMModule.ID} {Name}";
+
+	public string PasswordA
+	{
+		get
+		{
+			byte[] array = VMModule.UserData["PasswordA"];
+			if (array != null)
+			{
+				password = StringUtil.UTF8GetString(array);
+			}
+			return password;
+		}
+		set
+		{
+			if (value != password)
+			{
+				password = value;
+				VMModule.UserData["PasswordA"] = StringUtil.UTF8GetBytes(value);
+				OnPropertyChanged("PasswordA");
+			}
+		}
+	}
+
+	public bool UpEnable => true;
+
+	/// <summary>
+	/// 模块显示方式
+	/// </summary>
+	public override ModuleDisplayType DisplayType => ModuleDisplayType.GROUP;
+
+	public ICommand ConfigParamsCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = configParamsCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ConfigParamsCommandExecute);
+				DelegateCommand val3 = val2;
+				configParamsCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DropItemsCommand => (ICommand)(dropItemsCommand ?? (dropItemsCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)DropItemsCommandExecute)));
+
+	public ICommand ImportGroupCommand => (ICommand)(importGroupCommand ?? (importGroupCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)ImportGroupCommandExecute)));
+
+	public ICommand ImportGroupRemoteCommand => (ICommand)(importGroupRemoteCommand ?? (importGroupRemoteCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)ImportGroupRemoteCommandExecute)));
+
+	public ICommand ExportGroupCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = exportGroupCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ExportGroupCommandExecute);
+				DelegateCommand val3 = val2;
+				exportGroupCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ExportGroupRemoteCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = exportGroupRemoteCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ExportGroupRemoteCommandExecute);
+				DelegateCommand val3 = val2;
+				exportGroupRemoteCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand SaveGroupCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = saveGroupCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)SaveGroupCommandExecute);
+				DelegateCommand val3 = val2;
+				exportGroupCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ForbiddenItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = forbiddenItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ForbiddenItemExecute);
+				DelegateCommand val3 = val2;
+				forbiddenItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ActivateItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = activateItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ActivateItemExecute);
+				DelegateCommand val3 = val2;
+				activateItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ForbiddenItemsCommand => (ICommand)(forbiddenItemsCommand ?? (forbiddenItemsCommand = new DelegateCommand<IList>((Action<IList>)ForbiddenItemsExecute)));
+
+	public ICommand ActivateItemsCommand => (ICommand)(activateItemsCommand ?? (activateItemsCommand = new DelegateCommand<IList>((Action<IList>)ActivateItemsExecute)));
+
+	public ICommand DeleteItemsCommand => (ICommand)(deleteItemsCommand ?? (deleteItemsCommand = new DelegateCommand<IList>((Action<IList>)DeleteItemsCommandExecute)));
+
+	public ICommand EnablePasswordCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = enablePasswordCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)EnablePasswordCommandExecute);
+				DelegateCommand val3 = val2;
+				enablePasswordCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand EditPasswordCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = editPasswordCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)EditPasswordCommandExecute);
+				DelegateCommand val3 = val2;
+				editPasswordCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand CancelPasswordCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = cancelPasswordCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)CancelPasswordCommandExecute);
+				DelegateCommand val3 = val2;
+				cancelPasswordCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand AddToToolboxCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = addToToolboxCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)AddToToolboxCommandExecute);
+				DelegateCommand val3 = val2;
+				addToToolboxCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	private void ConfigParamsCommandExecute()
+	{
+		if (IsPasswordEnabledA)
+		{
+			PasswordCheckWindow passwordCheckWindow = new PasswordCheckWindow();
+			passwordCheckWindow.OriginalPassword = PasswordA;
+			passwordCheckWindow.ShowInTaskbar = false;
+			passwordCheckWindow.ShowDialog();
+			if (passwordCheckWindow.IsPasswordOK)
+			{
+				ParamsTabControlBase paramsTabControlBase = new ParamsTabControlBase();
+				paramsTabControlBase.ParamsConfig = VMModule.Params;
+				paramsTabControlBase.ShowDialog();
+			}
+		}
+		else
+		{
+			ParamsTabControlBase paramsTabControlBase2 = new ParamsTabControlBase();
+			paramsTabControlBase2.ParamsConfig = VMModule.Params;
+			paramsTabControlBase2.ShowDialog();
+		}
+	}
+
+	public static int GetLevel(IVMGroup vMGroup)
+	{
+		int num = 0;
+		for (IVMGroup iVMGroup = vMGroup.Parent as IVMGroup; iVMGroup != null; iVMGroup = iVMGroup.Parent as IVMGroup)
+		{
+			num++;
+		}
+		return num;
+	}
+
+	private void ImportGroupCommandExecute(DiagramEventArgs args)
+	{
+		DecoratorBase.ImportGroup(DecorateSource as IVMGroup, args.Point);
+	}
+
+	private void ImportGroupRemoteCommandExecute(DiagramEventArgs args)
+	{
+		DecoratorBase.ImportGroup(DecorateSource as IVMGroup, args.Point, isRemoteMode: true);
+	}
+
+	private void ExportGroupCommandExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("Lang_ExportGroup") ?? "");
+		LogHelper.Info("Export group.");
+		string initDir = ConfigurationHelper.INIGetStringValue("OpenGroup");
+		string path = ((DecorateSource is IVMGroup iVMGroup) ? iVMGroup.ExportFile(null, null, isExportAs: true, initDir) : null);
+		if (File.Exists(path))
+		{
+			ConfigurationHelper.INISetStringValue("OpenGroup", Path.GetDirectoryName(path));
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportSuccess"), MessageIcons.Ok);
+		}
+	}
+
+	private void ExportGroupRemoteCommandExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("导出Group") ?? "");
+		LogHelper.Info("Export group.");
+		string initialDirectory = ConfigurationHelper.INIGetStringValue("OpenGroupRemote");
+		string text = null;
+		SaveFileDialog saveFileDialog = new SaveFileDialog
+		{
+			Filter = "Group文件|*.grox",
+			InitialDirectory = initialDirectory
+		};
+		if (saveFileDialog.ShowDialog() == true)
+		{
+			text = saveFileDialog.FilePath;
+		}
+		if (text != null)
+		{
+			text = ((DecorateSource is IVMGroup iVMGroup) ? iVMGroup.ExportFile(text, null, isExportAs: true) : null);
+			if (!ServerSDKAPI.FtpCheckFileName(CVmObjectBase.mhandle, text))
+			{
+				string directoryName = saveFileDialog.GetDirectoryName();
+				ConfigurationHelper.INISetStringValue("OpenGroupRemote", directoryName);
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportSuccess"), MessageIcons.Ok);
+			}
+		}
+	}
+
+	private void SaveGroupCommandExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("Lang_Save_Group") ?? "");
+		LogHelper.Info("Save group.");
+		if (DecorateSource is IVMGroup iVMGroup)
+		{
+			iVMGroup.ExportFile();
+		}
+	}
+
+	private void ForbiddenItemExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("模块禁用") + AppLocalizationService.GetPunctuation("：") + VMModule?.FullName);
+		IsForbidden = true;
+	}
+
+	private void ActivateItemExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("模块启用") + AppLocalizationService.GetPunctuation("：") + VMModule?.FullName);
+		IsForbidden = false;
+	}
+
+	private void ForbiddenItemsExecute(IList obj)
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("多模块禁用") + string.Join(AppLocalizationService.GetPunctuation("，"), from x in obj.OfType<VmModuleBaseDecorator>().ToList()
+			select x.VMModule?.FullName));
+		obj.OfType<VmModuleBaseDecorator>().ToList().ForEach((VmModuleBaseDecorator p) =>
+		{
+			p.IsForbidden = true;
+		});
+	}
+
+	private void ActivateItemsExecute(IList obj)
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("多模块启用") + string.Join(AppLocalizationService.GetPunctuation("，"), from x in obj.OfType<VmModuleBaseDecorator>().ToList()
+			select x.VMModule?.FullName));
+		obj.OfType<VmModuleBaseDecorator>().ToList().ForEach((VmModuleBaseDecorator p) =>
+		{
+			p.IsForbidden = false;
+		});
+	}
+
+	private void EnablePasswordCommandExecute()
+	{
+		try
+		{
+			PasswordSetWindow passwordSetWindow = new PasswordSetWindow();
+			passwordSetWindow.ShowDialog();
+			if (passwordSetWindow.IsPasswordOK)
+			{
+				UILogManager.logCreate("信息", "启用密码");
+				PasswordA = passwordSetWindow.Password;
+				IsPasswordEnabledA = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.objLog.Error(ex.ToString());
+		}
+	}
+
+	private void EditPasswordCommandExecute()
+	{
+		try
+		{
+			PasswordModifyWindow passwordModifyWindow = new PasswordModifyWindow(PasswordA);
+			passwordModifyWindow.ShowDialog();
+			if (passwordModifyWindow.IsPasswordOK)
+			{
+				UILogManager.logCreate("信息", "修改密码");
+				PasswordA = passwordModifyWindow.ModifiedPassword;
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.objLog.Error(ex.ToString());
+		}
+	}
+
+	private void CancelPasswordCommandExecute()
+	{
+		try
+		{
+			PasswordCheckWindow passwordCheckWindow = new PasswordCheckWindow();
+			passwordCheckWindow.OriginalPassword = PasswordA;
+			passwordCheckWindow.ShowDialog();
+			if (passwordCheckWindow.IsPasswordOK)
+			{
+				UILogManager.logCreate("信息", "取消密码");
+				PasswordA = "";
+				IsPasswordEnabledA = false;
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.objLog.Error(ex.ToString());
+		}
+	}
+
+	private void CreateXml(string toolName, string toolPath, int count)
+	{
+		XmlDocument xmlDocument = new XmlDocument();
+		XmlDeclaration newChild = xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", null);
+		xmlDocument.AppendChild(newChild);
+		XmlElement newChild2 = xmlDocument.CreateElement("", "ToolBoxItemData", "");
+		xmlDocument.AppendChild(newChild2);
+		XmlNode xmlNode = xmlDocument.SelectSingleNode("ToolBoxItemData");
+		XmlElement xmlElement = xmlDocument.CreateElement("name");
+		xmlElement.InnerText = "%" + toolName + "%";
+		xmlNode.AppendChild(xmlElement);
+		XmlElement xmlElement2 = xmlDocument.CreateElement("priority");
+		xmlElement2.InnerText = count.ToString();
+		xmlNode.AppendChild(xmlElement2);
+		XmlElement xmlElement3 = xmlDocument.CreateElement("toolTip");
+		xmlElement3.InnerText = "%" + toolName + "%";
+		xmlNode.AppendChild(xmlElement3);
+		string filename = toolPath + "\\ToolItemInfo.xml";
+		xmlDocument.Save(filename);
+	}
+
+	private void AddToToolboxCommandExecute()
+	{
+		string currentPath = CurrentPathHelper.Instance.GetCurrentPath();
+		string text = currentPath + "\\Module(sp)\\x64\\GroupTools";
+		string[] directories = Directory.GetDirectories(text);
+		string name = Name;
+		string text2 = text + "\\" + name;
+		if (Directory.Exists(text2))
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_PmNameExited"), MessageIcons.Error);
+			return;
+		}
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("添加自定义工具") ?? "");
+		try
+		{
+			Directory.CreateDirectory(text2);
+		}
+		catch (Exception)
+		{
+			HikMessageBox.Show("添加不成功，请修改命名不要包含特殊字符！", MessageIcons.Error);
+			return;
+		}
+		string text3 = "ImageEnable.png";
+		string sourceFileName = text + "\\" + text3;
+		string destFileName = text2 + "\\" + name + text3;
+		File.Copy(sourceFileName, destFileName);
+		string text4 = "." + AppFileExtension.Group;
+		string path = text2 + "\\" + name + text4;
+		if (string.IsNullOrEmpty((DecorateSource is IVMGroup iVMGroup) ? iVMGroup.ExportFile(path) : null))
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GroupExportFail"), MessageIcons.Error);
+			UILogManager.logCreate("告警", "导出失败");
+			Directory.Delete(text2);
+		}
+		else
+		{
+			CreateXml(name, text2, directories.Count());
+			ToolBoxData.AddToolItem(text2);
+		}
+	}
+}

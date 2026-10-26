@@ -1,0 +1,354 @@
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmRenderControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmRenderControl
+/// </summary>
+public partial class VmRenderControl : VMWpfUserControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(VmRenderControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ImageSourceProperty = DependencyProperty.Register("IImageSource", typeof(IImageData), typeof(VmRenderControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty CoordinateInfoVisibleProperty = DependencyProperty.Register("CoordinateInfoVisible", typeof(bool), typeof(VmRenderControl), new PropertyMetadata(true));
+
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public IImageData ImageSource
+	{
+		get
+		{
+			return IImageSource;
+		}
+		set
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (IImageSource != value)
+				{
+					IImageSource = value;
+				}
+			});
+		}
+	}
+
+	public IImageData IImageSource
+	{
+		get
+		{
+			return (IImageData)GetValue(ImageSourceProperty);
+		}
+		set
+		{
+			SetValue(ImageSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示坐标信息
+	/// </summary>
+	public bool CoordinateInfoVisible
+	{
+		get
+		{
+			return (bool)GetValue(CoordinateInfoVisibleProperty);
+		}
+		set
+		{
+			SetValue(CoordinateInfoVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 鼠标左键点击位置像素坐标事件
+	/// </summary>
+	public event PixelPositionChanged OnMouseLeftButtonDownPixelChanged;
+
+	/// <summary>
+	/// 当前选中图像改变事件
+	/// </summary>
+	public event NameChangedEventHandler OnSelectedImageChanged;
+
+	public VmRenderControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			renderControl.OnSelectedImageChanged += RenderControl_OnSelectedImageChanged;
+			RenderControlBase renderControlBase = renderControl;
+			renderControlBase.OnMouseLeftButtonDownPixelChanged = (PixelPositionChanged)Delegate.Combine(renderControlBase.OnMouseLeftButtonDownPixelChanged, new PixelPositionChanged(RenderControl_OnMouseLeftButtonDownPixelChanged));
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	private void RenderControl_OnMouseLeftButtonDownPixelChanged(int x, int y)
+	{
+		OnMouseLeftButtonDownPixelChanged?.Invoke(x, y);
+	}
+
+	public void UpdateVMResultShow()
+	{
+		renderControl?.UpdateVMResultShow();
+	}
+
+	/// <summary>
+	/// 绘制图形（立刻绘制）
+	/// 传入图形可使用VMControls.WPF中名称以Ex结尾的图形结构体
+	/// </summary>
+	/// <param name="shape"></param>
+	public void DrawShape(object shape)
+	{
+		renderControl?.DrawShapes(shape);
+	}
+
+	/// <summary>
+	/// 添加图形（在下次刷新渲染时自动绘制）
+	/// 传入图形可使用VMControls.WPF中名称以Ex结尾的图形结构体
+	/// </summary>
+	/// <param name="shape"></param>
+	public void AddShape(object shape)
+	{
+		renderControl?.AddShapes(shape);
+	}
+
+	public bool SetBackgroundImage(IVmIO io)
+	{
+		return renderControl?.SetBackgroundImage(io) ?? false;
+	}
+
+	/// <summary>
+	/// 放大视图
+	/// </summary>
+	public void EnlargeView()
+	{
+		renderControl?.EnlargeView();
+	}
+
+	/// <summary>
+	/// 缩小视图
+	/// </summary>
+	public void ShrinkView()
+	{
+		renderControl?.ShrinkView();
+	}
+
+	/// <summary>
+	/// 还原视图
+	/// </summary>
+	public void InitViewSize()
+	{
+		renderControl?.InitViewSize();
+	}
+
+	/// <summary>
+	/// 清空渲染显示区域（包括图像和图形）
+	/// </summary>
+	public void ClearDisplayView()
+	{
+		renderControl?.ClearImageView();
+	}
+
+	/// <summary>
+	/// 保存原图
+	/// </summary>
+	public void SaveOriginalImage(string fileName)
+	{
+		renderControl?.SaveOriginalImage(fileName);
+	}
+
+	/// <summary>
+	/// 保存原图，jpgQuality范围[1,100]，数值越大质量越高，默认值95
+	/// </summary>
+	public void SaveOriginalImage(string fileName, int jpgQuality)
+	{
+		renderControl?.SaveOriginalImage(fileName, 1, jpgQuality);
+	}
+
+	/// <summary>
+	/// 保存渲染图
+	/// </summary>
+	public void SaveRenderedImage(string fileName)
+	{
+		renderControl?.SaveRenderedImage(fileName);
+	}
+
+	/// <summary>
+	/// 保存渲染图，jpgQuality范围[1,100]，数值越大质量越高，默认值95
+	/// </summary>
+	public void SaveRenderedImage(string fileName, int jpgQuality)
+	{
+		renderControl?.SaveRenderedImage(fileName, jpgQuality);
+	}
+
+	/// <summary>
+	/// 设置控件背景
+	/// 参数为尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串
+	/// </summary>
+	/// <param name="value">尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串</param>
+	public void SetBackground(string value)
+	{
+		renderControl?.SetBackground(value);
+	}
+
+	/// <summary>
+	/// 设置渲染间隔(ms)，用于减低渲染频率。设置后，执行结束触发渲染时先校验距离上一次渲染的时间是否已超过设置的间隔时间，已超过则正常渲染，未超过则跳过此次渲染
+	/// </summary>
+	/// <param name="millseconds"></param>
+	public void SetRenderInterval(int millseconds)
+	{
+		renderControl?.SetRenderInterval(millseconds);
+	}
+
+	/// <summary>
+	/// 控制图层选择控件显示隐藏
+	/// </summary>
+	/// <param name="flag"></param>
+	public void ChangeImageComboBoxVisibility(bool flag)
+	{
+		renderControl?.ChangeImageComboBoxVisibility(flag);
+	}
+
+	/// <summary>
+	/// 获取当前选中图像名称
+	/// </summary>
+	public string GetSelectedImageDisplayName()
+	{
+		return renderControl?.ImageListDecorator?.SelectedImage?.DisplayName;
+	}
+
+	private void RenderControl_OnSelectedImageChanged(object sender, NameChangedEventArgs args)
+	{
+		OnSelectedImageChanged?.Invoke(this, args);
+	}
+
+	/// <summary>
+	/// 设置渲染条件：当设置条件status和模块状态值一致时才刷新
+	/// </summary>
+	/// <param name="status"></param>
+	public void SetRenderCondition(RenderSatus status)
+	{
+		renderControl?.SetModuleAndStatusForRender(null, status);
+	}
+
+	/// <summary>
+	/// 工具栏是否可见
+	/// </summary>
+	/// <param name="isVisible">是否可见</param>
+	public void SetRenderToolbarVisible(bool isVisible)
+	{
+		renderControl?.SetRenderToolbarVisible(isVisible);
+	}
+
+	/// <summary>
+	/// 获取可显示的图像名称列表
+	/// </summary>
+	public List<string> GetDisplayableImageNameList()
+	{
+		return renderControl?.GetDisplayableImageNameList();
+	}
+
+	/// <summary>
+	/// 设置图像显示
+	/// </summary>
+	/// <param name="displayImageName">显示的图像名称</param>
+	public void SetSelectedImage(string displayImageName)
+	{
+		renderControl?.SetSelectedImage(displayImageName);
+	}
+
+	/// <summary>
+	/// 当图像堆叠时，切换背景图像
+	/// </summary>
+	/// <param name="backgroundImageName">背景图像名称</param>
+	public void SwitchBackgroundImage(string backgroundImageName)
+	{
+		renderControl?.SwitchBackgroundImage(backgroundImageName);
+	}
+
+	/// <summary>
+	/// 设置堆叠显示的图像(单张)
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void AddStackImage(string displayImageName)
+	{
+		renderControl?.AddStackImage(displayImageName);
+	}
+
+	/// <summary>
+	/// 移除堆叠显示的图像
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void RemoveStackImage(string displayImageName)
+	{
+		renderControl?.RemoveStackImage(displayImageName);
+	}
+
+	/// <summary>
+	/// 添加图形供cpp接口调用（COM组件）
+	/// </summary>
+	/// <param name="shape"></param>
+	/// <param name="isAddShape"></param>
+	public void DrawCppShapes(object shape, bool isAddShape)
+	{
+		renderControl?.DrawCppShapes(shape, isAddShape);
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (renderControl == null)
+		{
+			return 0L;
+		}
+		return renderControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 根据模块ID绑定参数配置控件（COM组件）
+	/// </summary>
+	public void BindRenderById(uint Id)
+	{
+		renderControl?.BindRenderById(Id);
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		if (renderControl != null)
+		{
+			renderControl.OnSelectedImageChanged -= RenderControl_OnSelectedImageChanged;
+			ModuleSource = null;
+		}
+		Content = null;
+	}
+}

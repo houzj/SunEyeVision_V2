@@ -1,0 +1,19 @@
+using System.Windows;
+using System.Windows.Controls;
+using Apps.UIHelper.Extern;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+public class AdditionRangeResultSelector : DataTemplateSelector
+{
+	public override DataTemplate SelectTemplate(object item, DependencyObject container)
+	{
+		if (Ioc.HotGet<IAdditionService>() != null)
+		{
+			Ioc.Get<IAdditionService>()?.AdditionResource(container.GetParent<ModuleResultView>(), ResourceType.resultView);
+			return (DataTemplate)(container as FrameworkElement).FindResource("RangePanelTemplate");
+		}
+		return null;
+	}
+}

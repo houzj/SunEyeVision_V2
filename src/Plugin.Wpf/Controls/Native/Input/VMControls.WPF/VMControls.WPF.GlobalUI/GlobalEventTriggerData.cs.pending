@@ -1,0 +1,19 @@
+using System.Runtime.InteropServices;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public struct GlobalEventTriggerData
+{
+	public int nRecvEventId;
+
+	public GlobalTriggerData tiggerData;
+
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+	public Set_Module_Param[] seSetModuleParamList;
+
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+	public Set_Module_Input[] seSetModuleInputList;
+
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
+	public byte[] nReserved;
+}

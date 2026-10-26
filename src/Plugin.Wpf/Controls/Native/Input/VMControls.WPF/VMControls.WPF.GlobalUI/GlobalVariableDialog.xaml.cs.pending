@@ -1,0 +1,2096 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlParser.Variable;
+using DirectoryBrowser;
+using Microsoft.Win32;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.User;
+using VM.Utility.SingleInstance;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// GlobalVariableDialog.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// GlobalVariableDialog
+/// </summary>
+public partial class GlobalVariableDialog : BaseWindow, IDecorate, IVarGroup, IComponentConnector, IStyleConnector
+{
+	/// <summary>
+	/// 页码更新显示类型
+	/// </summary>
+	public enum PageShowType
+	{
+		/// <summary>
+		/// 第一次显示
+		/// </summary>
+		ShowFirstPage,
+		/// <summary>
+		/// 不发生改变
+		/// </summary>
+		NoChange,
+		/// <summary>
+		/// 立即更新页码
+		/// </summary>
+		ImmediateChange
+	}
+
+	private const string REMOTE_TEMP_FILE_DIRECTORY = "/root/vmtempfiles/ftp/ModelFiles/";
+
+	private const string REMOTE_TEMP_FILE_NAME = "temp.gvar";
+
+	private const double CONFIG_WIDTH = 1090.0;
+
+	/// <summary>
+	/// 默认初始化列的宽度
+	/// </summary>
+	public const double COMINIT_WIDTH = 93.0;
+
+	private VariableManager varManager;
+
+	/// <summary>
+	/// 分组数目最大个数
+	/// </summary>
+	public const int MAX_GROUP_COUNT = 10;
+
+	/// <summary>
+	/// 全局变量最大数目
+	/// </summary>
+	private const int MAX_VAR_COUNT = 2048;
+
+	/// <summary>
+	/// 隐藏
+	/// </summary>
+	private const string COLLAPSED = "Collapsed";
+
+	/// <summary>
+	/// 显示
+	/// </summary>
+	private const string VISIBLE = "Visible";
+
+	/// <summary>
+	/// 对象锁
+	/// </summary>
+	private object _lock = new object();
+
+	/// <summary>
+	/// 分组名前缀
+	/// </summary>
+	private const string _preGroupFix = "Lang_VarGroup";
+
+	/// <summary>
+	/// 变量名前缀
+	/// </summary>
+	private const string _prefix = "var";
+
+	/// <summary>
+	/// 变量索引号
+	/// </summary>
+	private int _variableIndex;
+
+	/// <summary>
+	/// 跟模块通信ID
+	/// </summary>
+	public int NodeId = -1;
+
+	/// <summary>
+	/// 总页数
+	/// </summary>
+	private int totalPageNum = 0;
+
+	/// <summary>
+	/// 分组信息
+	/// </summary>
+	private ObservableCollection<VarGroupItem> _varItemGroups = new ObservableCollection<VarGroupItem>();
+
+	/// <summary>
+	/// 旧选中模块
+	/// </summary>
+	private GlobalVariableItem oldSelectedItem;
+
+	/// <summary>
+	/// 标识是否正在移动元素
+	/// </summary>
+	private bool IsMoveItem = false;
+
+	/// <summary>
+	/// 标识是否正在修改变量值，如果正在修改，不进行值修改上报响应
+	/// </summary>
+	private bool IsChangeVarValue = false;
+
+	/// <summary>
+	/// 不响应事件的属性
+	/// </summary>
+	private List<string> ExcudePropertyNameList = new List<string> { "Index", "IsOdd", "DisplayTooltipName", "IsBindTarget", "IsBindMoudleResult", "Capture", "DisplayParamsName", "IsSelected", "" };
+
+	/// <summary>
+	/// 用于index排序的临时变量
+	/// </summary>
+	private List<GlobalVariableItem> sortItemsList = new List<GlobalVariableItem>();
+
+	private AlgorithmTabRoot _paramConfig = null;
+
+	private object decorateSource = null;
+
+	private GlobalVariableItem _selectedVarItem;
+
+	private VarGroupItem _selectGroupItem;
+
+	/// <summary>
+	/// 总的数据 -- add by zhourwien 2020-3-13
+	/// </summary>
+	public static readonly DependencyProperty ItemsTotalCountProperty = DependencyProperty.Register("ItemsTotalCount", typeof(int), typeof(GlobalVariableDialog), new PropertyMetadata(0));
+
+	private int _CurrentPageNum = 0;
+
+	private string _EmptyStatus = "Visible";
+
+	private string _PageNumShowStatus = "Visible";
+
+	private string _IsShowProcessbar = "Collapsed";
+
+	private string _ProcessbarMessage = AppLocalizationService.GetLang("Lang_Import");
+
+	/// <summary>
+	/// 首次获取全局变量的标志位 -- add by zhourwien 2020-3-13
+	/// </summary>
+	private bool bFirstGetData = true;
+
+	/// <summary>
+	/// 标志是否查询状态 查询状态下不进行页码的显示
+	/// </summary>
+	private bool IsSearchState = false;
+
+	/// <summary>
+	/// 查询出来的总数据源的索引值
+	/// </summary>
+	private List<int> iSearchCount = new List<int>();
+
+	private int _pageCount = 12;
+
+	/// <summary>
+	/// 总数据源依赖属性
+	/// </summary>
+	public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register("Items", typeof(ObservableCollection<GlobalVariableItem>), typeof(GlobalVariableDialog), new PropertyMetadata((object)null));
+
+	private bool _IsAllowOperat = true;
+
+	private object moveLock = new object();
+
+	/// <summary>
+	/// 是否滚动
+	/// </summary>
+	private bool CanScroll = true;
+
+	public AlgorithmTabRoot ParamsConfig
+	{
+		get
+		{
+			if (_paramConfig == null && decorateSource != null)
+			{
+				_paramConfig = new AlgorithmTabRoot((decorateSource as IVmModule).Params);
+				_paramConfig.GetItemsValueUnit();
+			}
+			return _paramConfig;
+		}
+		set
+		{
+			if (_paramConfig != value)
+			{
+				_paramConfig = value;
+				OnPropertyChanged("ParamsConfig");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 全局变量模块数据对象
+	/// </summary>
+	public object DecorateSource
+	{
+		get
+		{
+			return decorateSource;
+		}
+		set
+		{
+			decorateSource = value;
+			OnPropertyChanged("DisplayName");
+			OnPropertyChanged("IsVisibleComInit");
+			OnPropertyChanged("ConfigWidth");
+		}
+	}
+
+	/// <summary>
+	/// 窗体显示名称
+	/// </summary>
+	public string DisplayName
+	{
+		get
+		{
+			if (DecorateSource == null)
+			{
+				return AppLocalizationService.GetLang("Lang_GlobalVariable");
+			}
+			return AppLocalizationService.GetLang((DecorateSource as VmModule).StrModuleName);
+		}
+	}
+
+	/// <summary>
+	/// 窗体宽度
+	/// </summary>
+	public double ConfigWidth => IsVisibleComInit ? 1090.0 : 997.0;
+
+	/// <summary>
+	/// 通信初始化控件宽度
+	/// </summary>
+	public double ComInitWidth => IsVisibleComInit ? 93.0 : 0.0;
+
+	/// <summary>
+	/// 是否显示通信初始化栏，局部变量不做显示
+	/// </summary>
+	public bool IsVisibleComInit => DecorateSource == null || (DecorateSource as VmModule).ID == 13000;
+
+	/// <summary>
+	/// 选中的变量条目
+	/// </summary>
+	public GlobalVariableItem SelectedVarItem
+	{
+		get
+		{
+			return _selectedVarItem;
+		}
+		set
+		{
+			_selectedVarItem = value;
+			if (_selectedVarItem != null)
+			{
+				_selectedVarItem.Capture = true;
+				_selectedVarItem.IsSelected = true;
+				if (oldSelectedItem != null && oldSelectedItem.Name != _selectedVarItem.Name)
+				{
+					oldSelectedItem.IsSelected = false;
+				}
+				oldSelectedItem = _selectedVarItem;
+				UpdateBtnEnable();
+			}
+			OnPropertyChanged("SelectedVarItem");
+		}
+	}
+
+	/// <summary>
+	/// 分组列表
+	/// </summary>
+	public ObservableCollection<VarGroupItem> VarItemGroups
+	{
+		get
+		{
+			return _varItemGroups;
+		}
+		set
+		{
+			if (_varItemGroups != value)
+			{
+				_varItemGroups = value;
+				OnPropertyChanged("VarItemGroups");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前选中组
+	/// </summary>
+	public VarGroupItem SelectGroupItem
+	{
+		get
+		{
+			return _selectGroupItem;
+		}
+		set
+		{
+			if (_selectGroupItem != value)
+			{
+				_selectGroupItem = value;
+				if (value != null)
+				{
+					ItemsTotalCount = 0;
+					CurrentPageNum = 0;
+					if (IsSearchState)
+					{
+						string text = SearchText.Text;
+						SeearchItem(text);
+					}
+					else
+					{
+						UpdatePageData(PageShowType.ShowFirstPage);
+					}
+				}
+			}
+			OnPropertyChanged("SelectGroupItem");
+		}
+	}
+
+	/// <summary>
+	/// 变量总数
+	/// </summary>
+	public int ItemsTotalCount
+	{
+		get
+		{
+			return (int)GetValue(ItemsTotalCountProperty);
+		}
+		set
+		{
+			SetValue(ItemsTotalCountProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 当前选择的页码 -- add by zhourwien 2020-3-13
+	/// </summary>
+	public int CurrentPageNum
+	{
+		get
+		{
+			return _CurrentPageNum;
+		}
+		set
+		{
+			if (_CurrentPageNum != value)
+			{
+				_CurrentPageNum = value;
+				OnPropertyChanged("CurrentPageNum");
+				if (!IsSearchState)
+				{
+					SetBindData();
+				}
+				else
+				{
+					SetBindSearchData();
+				}
+				if (oldSelectedItem != null && !IsMoveItem)
+				{
+					oldSelectedItem.IsSelected = false;
+					oldSelectedItem = null;
+					UpdateBtnEnable();
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// 全局变量内容是否显示 标志位   Collapsed
+	/// </summary>
+	public string EmptyStatus
+	{
+		get
+		{
+			return _EmptyStatus;
+		}
+		set
+		{
+			if (_EmptyStatus != value)
+			{
+				_EmptyStatus = value;
+				OnPropertyChanged("EmptyStatus");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 页码区域是否显示标志位 -- add by zhourwien 2020-3-13
+	/// </summary>
+	public string PageNumShowStatus
+	{
+		get
+		{
+			return _PageNumShowStatus;
+		}
+		set
+		{
+			if (_PageNumShowStatus != value)
+			{
+				_PageNumShowStatus = value;
+				OnPropertyChanged("PageNumShowStatus");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否显示蒙版
+	/// </summary>
+	public string IsShowProcessbar
+	{
+		get
+		{
+			return _IsShowProcessbar;
+		}
+		set
+		{
+			_IsShowProcessbar = value;
+			OnPropertyChanged("IsShowProcessbar");
+		}
+	}
+
+	/// <summary>
+	/// 蒙版显示信息
+	/// </summary>
+	public string ProcessbarMessage
+	{
+		get
+		{
+			return _ProcessbarMessage;
+		}
+		set
+		{
+			_ProcessbarMessage = value;
+			OnPropertyChanged("ProcessbarMessage");
+		}
+	}
+
+	/// <summary>
+	/// 每页显示数
+	/// </summary>
+	public int PageCount
+	{
+		get
+		{
+			return _pageCount;
+		}
+		set
+		{
+			if (_pageCount != value)
+			{
+				_pageCount = value;
+				OnPropertyChanged("PageCount");
+				CurrentPageNum = 0;
+				ItemsTotalCount = 0;
+				UpdatePageData(PageShowType.ShowFirstPage);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 总数据源
+	/// </summary>
+	public ObservableCollection<GlobalVariableItem> Items
+	{
+		get
+		{
+			return (ObservableCollection<GlobalVariableItem>)GetValue(ItemsProperty);
+		}
+		set
+		{
+			SetValue(ItemsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否允许操作，和权限相关
+	/// </summary>
+	public bool IsAllowOperat
+	{
+		get
+		{
+			return _IsAllowOperat;
+		}
+		set
+		{
+			if (_IsAllowOperat != value)
+			{
+				_IsAllowOperat = value;
+				OnPropertyChanged("IsAllowOperat");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 方案信息
+	/// </summary>
+	public object SolutionData => VmSolution.Instance;
+
+	/// <summary>
+	/// 是否可以进行编辑
+	/// </summary>
+	public bool IsEdit => (SolutionData as IVMRun).IsRunning;
+
+	/// <summary>
+	/// 标识是否正在加载方案
+	/// </summary>
+	public bool IsLoading => ((IVmSolution)VmSolution.Instance).IsLoading;
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public GlobalVariableDialog()
+	{
+		InitializeComponent();
+		Items = new ObservableCollection<GlobalVariableItem>();
+		bool init = false;
+		Loaded += (object s, RoutedEventArgs e) =>
+		{
+			varManager = new VariableManager(DecorateSource);
+			if (!init)
+			{
+				VmModule obj = DecorateSource as VmModule;
+				if (obj != null && obj.Outputs.Where((VmIO x) => x.CustomVisibleA).Count() > 0)
+				{
+					ProcessbarMessage = AppLocalizationService.GetLang("Lang_VarLoading");
+					EmptyStatus = "Collapsed";
+					IsShowProcessbar = "Visible";
+				}
+				if (DecorateSource != null)
+				{
+					GetDataAsync();
+					init = true;
+				}
+				else
+				{
+					string lang = AppLocalizationService.GetLang("Lang_VarLoadFailed");
+					HikMessageBox.Show(lang, MessageIcons.Error);
+				}
+			}
+		};
+		GetAuthority();
+	}
+
+	private void VarValueReportEvent(object sender, EventArgs e)
+	{
+		if (IsChangeVarValue || !(e is ValueEventArgs e2))
+		{
+			return;
+		}
+		VarItem varItem = (VarItem)e2.Value;
+		if (varItem == null)
+		{
+			return;
+		}
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			GlobalVariableItem globalVariableItem = Items.FirstOrDefault((GlobalVariableItem x) => x.Name == varItem.Name && x.Type == varItem.Type);
+			if (globalVariableItem != null && varItem.ValueArray != null)
+			{
+				WeakEventManager<GlobalVariableItem, PropertyChangedEventArgs>.RemoveHandler(globalVariableItem, "PropertyChanged", ValueChanged);
+				if (varItem.ValueArray is string[] array && array.Length != 0)
+				{
+					if (array.Length <= 1)
+					{
+						globalVariableItem.Value = array[0];
+					}
+					else
+					{
+						globalVariableItem.UpdateArrayValue(array);
+					}
+				}
+				WeakEventManager<GlobalVariableItem, PropertyChangedEventArgs>.AddHandler(globalVariableItem, "PropertyChanged", ValueChanged);
+			}
+		}));
+	}
+
+	private void GetAuthority()
+	{
+		AccessUser loginUser = CodeManager.GetInstance().GetLoginUser();
+		if (loginUser == AccessUser.Tech)
+		{
+			IsAllowOperat = false;
+		}
+		else
+		{
+			IsAllowOperat = true;
+		}
+	}
+
+	/// <summary>
+	/// 获取默认名称
+	/// </summary>
+	/// <returns></returns>
+	public string GetDefaultName(StringBuilder stringBuilder)
+	{
+		if (stringBuilder == null)
+		{
+			stringBuilder = new StringBuilder(5);
+			stringBuilder.Append("var");
+			stringBuilder.Append(_variableIndex);
+		}
+		else
+		{
+			int num = _variableIndex;
+			int num2 = 0;
+			while (num > 0)
+			{
+				num /= 10;
+				num2++;
+			}
+			if (num2 == 0)
+			{
+				num2 = 1;
+			}
+			stringBuilder.Remove("var".Length, num2);
+			_variableIndex++;
+			stringBuilder.Append(_variableIndex);
+		}
+		return Items.Any((GlobalVariableItem p) => p.Name == "%" + stringBuilder.ToString() + "%") ? GetDefaultName(stringBuilder) : stringBuilder.ToString();
+	}
+
+	private void AddNewItem(GlobalVariableItem item, bool isAddBind = false)
+	{
+		if (item == null)
+		{
+			return;
+		}
+		item.Parent = Items;
+		if (isAddBind)
+		{
+			try
+			{
+				varManager.AddVar(item.Name, item.Type, "", SelectGroupItem.Name);
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("添加变量异常:" + item.Name + ",exception:" + VmSolution.GetVmException(ex).ToString());
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GlobalVariableAdd") + ":Failed", MessageIcons.Error);
+				return;
+			}
+			Items.Add(item);
+			SelectGroupItem.AddItem(item);
+		}
+		else
+		{
+			sortItemsList.Add(item);
+		}
+		VmIO vmIO = varManager.CheckVarAddIO(item.Name, item.Type, item.Index);
+		if (vmIO != null)
+		{
+			item.DecorateSource = vmIO;
+			vmIO.Index = item.Index;
+		}
+		item.SetVarManager(varManager);
+		WeakEventManager<GlobalVariableItem, PropertyChangedEventArgs>.AddHandler(item, "PropertyChanged", ValueChanged);
+	}
+
+	/// <summary>
+	///             过滤属性
+	/// </summary>
+	/// <returns></returns>
+	private bool ExcudePropertyName(string PropertyName)
+	{
+		if (ExcudePropertyNameList.FindIndex((string x) => x == PropertyName) >= 0)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// 参数值变化事件
+	/// </summary>
+	private void ValueChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (ExcudePropertyName(e.PropertyName))
+		{
+			return;
+		}
+		if (e.PropertyName == "Type")
+		{
+			GlobalVariableItem globalVariableItem = sender as GlobalVariableItem;
+			try
+			{
+				varManager.ModifyType(globalVariableItem.Name, globalVariableItem.Type, isFromUI: true, GlobalVarExtern.GetLinkModuleInfoByRunParams(globalVariableItem.SelectedRunParams));
+				globalVariableItem.ResetBindStr();
+				return;
+			}
+			catch (Exception ex)
+			{
+				VmException vmException = VmSolution.GetVmException(ex);
+				if (vmException != null)
+				{
+					LogHelper.Error("modify type [" + globalVariableItem.Type + "]  is exception:" + vmException.errorMessage);
+				}
+				else
+				{
+					LogHelper.Error("modify type [" + globalVariableItem.Type + "] is exception:" + ex.ToString());
+				}
+				LogHelper.Error(ex.StackTrace);
+				return;
+			}
+		}
+		if (e.PropertyName == "Name")
+		{
+			GlobalVariableItem globalVariableItem2 = sender as GlobalVariableItem;
+			try
+			{
+				varManager.ModifyVarName(globalVariableItem2.strOldName, globalVariableItem2.Name, GlobalVarExtern.GetLinkModuleInfoByRunParams(globalVariableItem2.SelectedRunParams));
+				return;
+			}
+			catch (Exception ex2)
+			{
+				VmException vmException2 = VmSolution.GetVmException(ex2);
+				if (vmException2 != null)
+				{
+					LogHelper.Error("modify name [" + globalVariableItem2.strOldName + "] to [" + globalVariableItem2.Name + "] is exception:" + vmException2.errorMessage);
+				}
+				else
+				{
+					LogHelper.Error("modify name [" + globalVariableItem2.strOldName + "] to [" + globalVariableItem2.Name + "] is exception:" + ex2.ToString());
+				}
+				LogHelper.Error(ex2.StackTrace);
+				return;
+			}
+		}
+		if (e.PropertyName == "RemarkInfo")
+		{
+			GlobalVariableItem globalVariableItem3 = sender as GlobalVariableItem;
+			varManager.ModifyRemark(globalVariableItem3.Name, globalVariableItem3.RemarkInfo);
+		}
+		else if (e.PropertyName == "Value")
+		{
+			IsChangeVarValue = true;
+			GlobalVariableItem globalVariableItem4 = sender as GlobalVariableItem;
+			try
+			{
+				if (globalVariableItem4.Type == "int")
+				{
+					varManager.SetVarIntValue(globalVariableItem4.Name, new int[1] { int.Parse(globalVariableItem4.Value) });
+				}
+				else if (globalVariableItem4.Type == "float")
+				{
+					varManager.SetVarFloatValue(globalVariableItem4.Name, new float[1] { float.Parse(globalVariableItem4.Value) });
+				}
+				else if (globalVariableItem4.Type == "string")
+				{
+					varManager.SetVarStringValue(globalVariableItem4.Name, new string[1] { globalVariableItem4.Value });
+				}
+				else if (globalVariableItem4.Type == "byte")
+				{
+					byte[] bytes = null;
+					if (StringUtil.CheckByteString(globalVariableItem4.Value, ref bytes))
+					{
+						varManager.SetVarByteValue(globalVariableItem4.Name, bytes);
+					}
+				}
+			}
+			catch (Exception ex3)
+			{
+				VmException vmException3 = VmSolution.GetVmException(ex3);
+				if (vmException3 != null)
+				{
+					LogHelper.Error("modify value is exception:" + globalVariableItem4.Name + "," + vmException3.errorMessage);
+				}
+				else
+				{
+					LogHelper.Error("modify value is exception:" + globalVariableItem4.Name + "," + ex3.ToString());
+				}
+			}
+			IsChangeVarValue = false;
+		}
+		else if (e.PropertyName == "SelectedRunParams")
+		{
+			GlobalVariableItem globalVariableItem5 = sender as GlobalVariableItem;
+			VarRunParamInfo[] linkModuleInfoByRunParams = GlobalVarExtern.GetLinkModuleInfoByRunParams(globalVariableItem5.SelectedRunParams);
+			varManager.ModifyLinkModuleForSub(globalVariableItem5.Name, globalVariableItem5.Type, globalVariableItem5.GetOldSelectedRunParams(), linkModuleInfoByRunParams);
+		}
+		else if (e.PropertyName == "CommInit")
+		{
+			GlobalVariableItem globalVariableItem6 = sender as GlobalVariableItem;
+			varManager.ModifyVarCommInit(globalVariableItem6.Name, globalVariableItem6.CommInit);
+		}
+	}
+
+	/// <summary>
+	/// 更新页码数据 add by zhouriwen 2020-03-13
+	/// </summary>
+	private void UpdatePageData(PageShowType type = PageShowType.ImmediateChange)
+	{
+		lock (_lock)
+		{
+			int num = (IsSearchState ? iSearchCount.Count() : Items.Count((GlobalVariableItem x) => x.VarGroupInfo == SelectGroupItem.Name));
+			if (num > 0)
+			{
+				if (!IsSearchState)
+				{
+					EmptyStatus = "Collapsed";
+				}
+				PageNumShowStatus = "Visible";
+			}
+			else if (num == 0)
+			{
+				EmptyStatus = "Visible";
+				PageNumShowStatus = "Collapsed";
+			}
+			if (ItemsTotalCount == num)
+			{
+				return;
+			}
+			int num2 = 0;
+			ItemsTotalCount = num;
+			if (PageCount > 0)
+			{
+				num2 = ((ItemsTotalCount % PageCount <= 0) ? (ItemsTotalCount / PageCount) : (ItemsTotalCount / PageCount + 1));
+			}
+			totalPageNum = num2;
+			if (type == PageShowType.ShowFirstPage && num2 > 0)
+			{
+				CurrentPageNum = 1;
+			}
+			else if (type == PageShowType.NoChange)
+			{
+				if (CurrentPageNum > num2)
+				{
+					CurrentPageNum = num2;
+				}
+			}
+			else
+			{
+				CurrentPageNum = num2;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 查询全局变量 add by zhouriwen 2020-03-13
+	/// </summary>
+	private void SeearchItem(string searchName)
+	{
+		lock (_lock)
+		{
+			if (string.IsNullOrEmpty(searchName))
+			{
+				if (IsSearchState)
+				{
+					IsSearchState = false;
+					iSearchCount.Clear();
+					CurrentPageNum = 0;
+					ItemsTotalCount = 0;
+					UpdatePageData(PageShowType.ShowFirstPage);
+					if (oldSelectedItem != null)
+					{
+						oldSelectedItem.IsSelected = false;
+					}
+					oldSelectedItem = null;
+					UpdateBtnEnable();
+				}
+				return;
+			}
+			IsSearchState = true;
+			List<int> list = (from x in Items
+				where x.Name.Contains(searchName) && x.VarGroupInfo == SelectGroupItem.Name
+				select x.Index).ToList();
+			if (list.Count > 0)
+			{
+				CurrentPageNum = 0;
+				ItemsTotalCount = 0;
+				iSearchCount = list;
+				UpdatePageData(PageShowType.ShowFirstPage);
+				EmptyStatus = "Collapsed";
+			}
+			else
+			{
+				SelectGroupItem.Clear();
+				iSearchCount.Clear();
+				ItemsTotalCount = 0;
+				EmptyStatus = "Visible";
+				PageNumShowStatus = "Collapsed";
+			}
+			if (oldSelectedItem != null && iSearchCount.FindIndex((int x) => x == oldSelectedItem.Index) < 0)
+			{
+				oldSelectedItem.IsSelected = false;
+				oldSelectedItem = null;
+				UpdateBtnEnable();
+			}
+		}
+	}
+
+	/// <summary>
+	/// 重新设置界面绑定显示的数据
+	/// </summary>
+	private void SetBindData()
+	{
+		if (CurrentPageNum > 0 && SelectGroupItem != null)
+		{
+			int num = (CurrentPageNum - 1) * PageCount;
+			IOrderedEnumerable<GlobalVariableItem> orderedEnumerable = from p in Items
+				where p.VarGroupInfo == SelectGroupItem.Name
+				orderby p.Index
+				select p;
+			int endIndex = ((CurrentPageNum < totalPageNum) ? (num + PageCount) : orderedEnumerable.Count());
+			SelectGroupItem.UpdateBindItems(num, endIndex, orderedEnumerable);
+		}
+	}
+
+	/// <summary>
+	/// 搜寻状态下绑定显示的数据
+	/// </summary>
+	private void SetBindSearchData()
+	{
+		if (CurrentPageNum > 0 && SelectGroupItem != null)
+		{
+			int num = (CurrentPageNum - 1) * PageCount;
+			int endIndex = ((CurrentPageNum < totalPageNum) ? (num + PageCount) : iSearchCount.Count());
+			SelectGroupItem.UpdateBindItems(Items, iSearchCount.ToArray(), num, endIndex);
+		}
+	}
+
+	/// <summary>
+	/// 定时器任务
+	/// </summary>
+	public void GetDataAsync()
+	{
+		Task.Run(async () =>
+		{
+			try
+			{
+				LogHelper.Error("GetDataAsync start");
+				if (IsLoading)
+				{
+					LogHelper.Info("solution is loading");
+				}
+				else
+				{
+					varManager.SetReportState(isEnable: true);
+					VariableManager.IMVS_VARIABLE[] vARIABLEs = new VariableManager.IMVS_VARIABLE[0];
+					varManager.GetAllVar(ref vARIABLEs);
+					if (IsLoading)
+					{
+						LogHelper.Info("solution is loading");
+					}
+					else
+					{
+						varManager.GetGlobalBindingRelation(vARIABLEs);
+						if (IsLoading)
+						{
+							LogHelper.Info("solution is loading");
+						}
+						else
+						{
+							Dispatcher.Invoke((Func<bool>)GetVarGroupMsg);
+							if (IsLoading)
+							{
+								LogHelper.Info("solution is loading");
+							}
+							else
+							{
+								Dispatcher.Invoke(() =>
+								{
+									GetData(vARIABLEs);
+								});
+								(DecorateSource as IVarModule).VarValueReportEvent += VarValueReportEvent;
+								LogHelper.Error("GetDataAsync start end");
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Exception ex2 = ex;
+				IsShowProcessbar = "Collapsed";
+				string errorMsg = AppLocalizationService.GetLang("Lang_VarLoadFailed");
+				VmException vmex = VmSolution.GetVmException(ex2);
+				errorMsg = ((vmex == null) ? (errorMsg + "\r\n" + ex2.ToString()) : (errorMsg + "\r\n" + vmex.errorMessage));
+				LogHelper.Error("GetDataAsync is error:" + errorMsg);
+				HikMessageBox.Show(errorMsg, MessageIcons.Error);
+			}
+		});
+	}
+
+	/// <summary>
+	/// 关闭按钮
+	/// </summary>
+	protected override void OnClosing(CancelEventArgs e)
+	{
+		base.OnClosing(e);
+		varManager.SetReportState(isEnable: false);
+		varManager.ClearCache();
+		(DecorateSource as IVarModule).VarValueReportEvent -= VarValueReportEvent;
+	}
+
+	/// <summary>
+	/// 初始化对象
+	/// </summary>
+	private void GetData(VariableManager.IMVS_VARIABLE[] vARIABLEs)
+	{
+		try
+		{
+			lock (_lock)
+			{
+				if (DecorateSource == null || !(DecorateSource is IVmModule) || vARIABLEs == null)
+				{
+					return;
+				}
+				VmIOCollection inputs = (DecorateSource as VmModule).Inputs;
+				sortItemsList.Clear();
+				if (Items.Count > vARIABLEs.Length)
+				{
+					Items.Clear();
+				}
+				List<string> list = new List<string>();
+				for (int i = 0; i < vARIABLEs.Length; i++)
+				{
+					if (IsLoading)
+					{
+						LogHelper.Info("solution is loading");
+						return;
+					}
+					GlobalVariableItem globalVariableItem = GlobalVarExtern.StructToGlobalVarItem(vARIABLEs[i]);
+					AddNewItem(globalVariableItem);
+					list.Add(globalVariableItem.Name);
+				}
+				sortItemsList.Sort((GlobalVariableItem b1, GlobalVariableItem b2) => Comparer<int>.Default.Compare(b1.Index, b2.Index));
+				Items = new ObservableCollection<GlobalVariableItem>(sortItemsList);
+				foreach (GlobalVariableItem item2 in Items)
+				{
+					item2.Parent = Items;
+				}
+				VmModule vmModule = DecorateSource as VmModule;
+				List<string> list2 = vmModule.Outputs.Select((VmIO p) => p.Name).ToList();
+				foreach (string item in list2)
+				{
+					if (!VmModule.fTimeStamp.Contains(item) && list.FindIndex((string x) => x == item) < 0)
+					{
+						vmModule.Outputs.GetIO(item)?.Dispose();
+					}
+				}
+				if (bFirstGetData)
+				{
+					bFirstGetData = false;
+					if (SelectGroupItem != null && Items.Count((GlobalVariableItem x) => string.IsNullOrEmpty(x.VarGroupInfo)) == Items.Count && Items.Count > 0)
+					{
+						foreach (GlobalVariableItem item3 in Items)
+						{
+							item3.VarGroupInfo = SelectGroupItem.Name;
+						}
+						varManager.SetDefaultGroupInfo(SelectGroupItem.Name);
+					}
+					UpdatePageData(PageShowType.ShowFirstPage);
+					ProcessbarMessage = AppLocalizationService.GetLang("Lang_Import");
+					IsShowProcessbar = "Collapsed";
+				}
+				else
+				{
+					UpdatePageData(PageShowType.NoChange);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("GetData is error:" + ex.ToString());
+			IsShowProcessbar = "Collapsed";
+			string text = AppLocalizationService.GetLang("Lang_VarLoadFailed");
+			VmException vmException = VmSolution.GetVmException(ex);
+			if (vmException != null)
+			{
+				text = text + "\r\n" + vmException.errorMessage;
+			}
+			HikMessageBox.Show(text, MessageIcons.Error);
+		}
+	}
+
+	/// <summary>
+	/// 初始化一次输出IO
+	/// </summary>
+	private void InitDynamicIO()
+	{
+		try
+		{
+			if (DecorateSource == null || !(DecorateSource is IVmModule))
+			{
+				return;
+			}
+			VariableManager.IMVS_VARIABLE[] vARIABLEs = new VariableManager.IMVS_VARIABLE[0];
+			varManager?.GetAllVar(ref vARIABLEs);
+			if (vARIABLEs.Length == 0)
+			{
+				return;
+			}
+			for (int i = 0; i < vARIABLEs.Length; i++)
+			{
+				string varname = StringUtil.UTF8GetString(vARIABLEs[i].chszValueName);
+				string typeName = StringUtil.UTF8GetString(vARIABLEs[i].chszValueType);
+				VmIO vmIO = (DecorateSource as VmModule).Outputs.FirstOrDefault((VmIO x) => x.Name == varname);
+				if (vmIO == null)
+				{
+					DynamicVmIO dynamicVmIO = new DynamicVmIO
+					{
+						Name = varname,
+						TypeName = typeName,
+						Root = (VmModule)DecorateSource,
+						Index = i + 1
+					};
+					dynamicVmIO.Parent = dynamicVmIO.Root;
+					(DecorateSource as VmModule).Outputs.Add(dynamicVmIO);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("GetData is error:" + ex.ToString());
+		}
+	}
+
+	private void Delete_OnHandler(object sender, RoutedEventArgs e)
+	{
+		if (!(sender is Button { DataContext: GlobalVariableItem dataContext }))
+		{
+			return;
+		}
+		dataContext.Parent = null;
+		WeakEventManager<GlobalVariableItem, PropertyChangedEventArgs>.RemoveHandler(dataContext, "PropertyChanged", ValueChanged);
+		try
+		{
+			varManager.DeleteVar(dataContext.Name, isFromUI: true, GlobalVarExtern.GetLinkModuleInfoByRunParams(dataContext.SelectedRunParams));
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("删除变量异常:" + dataContext.Name + ",exception:" + VmSolution.GetVmException(ex).ToString());
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_VariableDelete") + ":Failed", MessageIcons.Error);
+			WeakEventManager<GlobalVariableItem, PropertyChangedEventArgs>.AddHandler(dataContext, "PropertyChanged", ValueChanged);
+			return;
+		}
+		int nDelIndex = dataContext.Index;
+		lock (_lock)
+		{
+			if (oldSelectedItem != null && oldSelectedItem.Index == nDelIndex)
+			{
+				oldSelectedItem = null;
+			}
+			foreach (GlobalVariableItem item in Items)
+			{
+				if (item.Index > nDelIndex)
+				{
+					item.Index--;
+				}
+			}
+			if (IsSearchState)
+			{
+				if (iSearchCount.Contains(nDelIndex))
+				{
+					iSearchCount.Remove(dataContext.Index);
+				}
+				iSearchCount.ForEach((int x) =>
+				{
+					if (x > nDelIndex)
+					{
+						x--;
+					}
+				});
+			}
+			if (Items.Contains(dataContext))
+			{
+				Items.Remove(dataContext);
+			}
+			if (SelectGroupItem.BindItems.Contains(dataContext))
+			{
+				SelectGroupItem.BindItems.Remove(dataContext);
+			}
+			if (CurrentPageNum < totalPageNum)
+			{
+				int nAddIndex = CurrentPageNum * PageCount - 1;
+				if (!IsSearchState)
+				{
+					IEnumerable<GlobalVariableItem> enumerable = Items.Where((GlobalVariableItem x) => x.VarGroupInfo == SelectGroupItem.Name);
+					if (enumerable.Count() > nAddIndex)
+					{
+						SelectGroupItem.BindItems.Add(enumerable.ElementAt(nAddIndex));
+					}
+				}
+				else
+				{
+					GlobalVariableItem globalVariableItem = Items.FirstOrDefault((GlobalVariableItem p) => p.Index == iSearchCount[nAddIndex]);
+					if (globalVariableItem != null)
+					{
+						SelectGroupItem.BindItems.Add(globalVariableItem);
+					}
+				}
+			}
+			UpdatePageData(PageShowType.NoChange);
+			UpdateBtnEnable();
+		}
+	}
+
+	private void SearchItem_OnClick(object sender, RoutedEventArgs e)
+	{
+		string text = SearchText.Text;
+		SeearchItem(text);
+	}
+
+	private void AddItem_OnClick(object sender, RoutedEventArgs e)
+	{
+		if (SelectGroupItem == null)
+		{
+			return;
+		}
+		int count = Items.Count;
+		if (count >= 2048)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("添加") + AppLocalizationService.GetLang("超限") + ":" + 2048, MessageButtons.Normal, MessageIcons.Warning);
+			return;
+		}
+		if (IsSearchState)
+		{
+			SearchText.Text = "";
+		}
+		GlobalVariableItem item = new GlobalVariableItem
+		{
+			Name = "%" + GetDefaultName(null) + "%",
+			Type = "int",
+			Value = "0",
+			Index = count + 1,
+			VarGroupInfo = SelectGroupItem.Name
+		};
+		AddNewItem(item, isAddBind: true);
+		UpdatePageData();
+		if (SelectGroupItem.Count <= 0)
+		{
+			return;
+		}
+		GlobalVariableItem item2 = SelectGroupItem.GetItem();
+		if (item2 != null)
+		{
+			item2.IsSelected = true;
+			if (oldSelectedItem != null && oldSelectedItem.Name != item2.Name)
+			{
+				oldSelectedItem.IsSelected = false;
+			}
+			oldSelectedItem = item2;
+			UpdateBtnEnable();
+		}
+	}
+
+	private void LightSave_Click(object sender, RoutedEventArgs e)
+	{
+		if (ItemsTotalCount <= 0)
+		{
+			return;
+		}
+		if (string.IsNullOrEmpty(VmSolution.Instance.SolutionPath))
+		{
+			HikMessageBox.Show(DisplayName + " " + AppLocalizationService.GetLang("Lang_SaveSuccess"), MessageIcons.Ok, MessageButtons.NoButton, 1000u);
+			return;
+		}
+		try
+		{
+			ServerSDKManager.serverSDKManager.mVmInterfaceManager.LightSaveSolutionEx();
+			HikMessageBox.Show(DisplayName + " " + AppLocalizationService.GetLang("Lang_SaveSuccess"), MessageIcons.Ok, MessageButtons.NoButton, 1000u);
+		}
+		catch (VmException ex)
+		{
+			LogHelper.objLog.Info("全局变量保存文件数据失败，错误码为:" + ex.errorCode);
+			HikMessageBox.Show(AppLocalizationService.GetLang("保存文件数据失败"), MessageIcons.Error);
+		}
+	}
+
+	private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		string text = SearchText.Text;
+		SeearchItem(text);
+	}
+
+	private void GotFocus_OnHandler(object sender, RoutedEventArgs e)
+	{
+		if (((TextBox)sender).DataContext is GlobalVariableItem globalVariableItem)
+		{
+			globalVariableItem.Capture = true;
+			globalVariableItem.IsSelected = true;
+			if (oldSelectedItem != null && oldSelectedItem.Name != globalVariableItem.Name)
+			{
+				oldSelectedItem.IsSelected = false;
+			}
+			oldSelectedItem = globalVariableItem;
+			UpdateBtnEnable();
+		}
+	}
+
+	private void LostFocus_OnHandler(object sender, RoutedEventArgs e)
+	{
+		if (((TextBox)sender).DataContext is GlobalVariableItem globalVariableItem)
+		{
+			globalVariableItem.Capture = false;
+		}
+	}
+
+	private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+	{
+		if (e.Key == Key.Space && sender != null && sender is TextBox { Name: "itemNameTxt" })
+		{
+			e.Handled = true;
+		}
+		else if (e.Key == Key.Return)
+		{
+			txtFocus.Focus();
+		}
+	}
+
+	/// <summary>
+	/// 置顶操作，交换操作，需要通知动态io重新下发至底层，否则保存后加载会有问题
+	/// 这里需要通知到发送数据和接收数据 模块进行更改
+	/// </summary>
+	private void SetHeadIndex(int currentIndex)
+	{
+		IsMoveItem = true;
+		GlobalVariableItem globalVariableItem = Items.FirstOrDefault((GlobalVariableItem x) => x.Index == currentIndex);
+		if (globalVariableItem == null)
+		{
+			return;
+		}
+		List<GlobalVariableItem> list = (from p in Items
+			where p.VarGroupInfo == SelectGroupItem.Name
+			orderby p.Index
+			select p).ToList();
+		int index = list[0].Index;
+		for (int num = 0; num < Items.Count; num++)
+		{
+			if (index <= Items[num].Index && Items[num].Index < currentIndex)
+			{
+				Items[num].Index = Items[num].Index + 1;
+			}
+		}
+		int index2 = globalVariableItem.Index;
+		globalVariableItem.Index = index;
+		varManager.ModifyIndex(globalVariableItem.Name, globalVariableItem.Index, bSetTop: true, index);
+		int currentPageNum = CurrentPageNum;
+		int num2 = -1;
+		if (IsSearchState)
+		{
+			num2 = iSearchCount.FindIndex((int x) => x == currentIndex);
+			for (int num3 = 0; num3 < num2; num3++)
+			{
+				iSearchCount[num3] += 1;
+			}
+			if (num2 > -1)
+			{
+				iSearchCount[num2] = 1;
+			}
+			iSearchCount = iSearchCount.OrderBy((int x) => x).ToList();
+		}
+		CurrentPageNum = 1;
+		if (currentPageNum == CurrentPageNum)
+		{
+			if (!IsSearchState)
+			{
+				SetBindData();
+			}
+			else
+			{
+				SetBindSearchData();
+			}
+		}
+		LogHelper.Info($"SetHeadIndex varName:{globalVariableItem.Name} sourceindex:{index2},index:{index}");
+		varManager.ChangeToSendReceiveData(currentIndex, index, isDel: false, isReset: false, isSetTop: true);
+		UpdateBtnEnable();
+		IsMoveItem = false;
+	}
+
+	/// <summary>
+	/// 交换全局变量的位置
+	/// </summary>
+	private void SwapIndex(int souceIndex, int destIndex, int destGroupIndex)
+	{
+		if (souceIndex < 0 || destIndex < 0)
+		{
+			return;
+		}
+		IsMoveItem = true;
+		GlobalVariableItem globalVariableItem = Items.FirstOrDefault((GlobalVariableItem x) => x.Index == souceIndex);
+		if (globalVariableItem == null)
+		{
+			return;
+		}
+		GlobalVariableItem globalVariableItem2 = Items.FirstOrDefault((GlobalVariableItem x) => x.Index == destIndex);
+		if (globalVariableItem2 == null)
+		{
+			return;
+		}
+		varManager.ModifyIndex(globalVariableItem.Name, destIndex);
+		varManager.ModifyIndex(globalVariableItem2.Name, souceIndex);
+		globalVariableItem2.Index = souceIndex;
+		globalVariableItem.Index = destIndex;
+		int currentPageNum = CurrentPageNum;
+		int num = (IsSearchState ? iSearchCount.Count() : Items.Count((GlobalVariableItem x) => x.VarGroupInfo == SelectGroupItem.Name));
+		int num2 = num / PageCount + 1;
+		int num3 = -1;
+		if (IsSearchState)
+		{
+			num3 = iSearchCount.FindIndex((int x) => x == souceIndex);
+			int num4 = iSearchCount.FindIndex((int x) => x == destIndex);
+			if (num3 > -1)
+			{
+				iSearchCount[num3] = destIndex;
+			}
+			if (num4 > -1)
+			{
+				iSearchCount[num4] = souceIndex;
+			}
+			iSearchCount = iSearchCount.OrderBy((int x) => x).ToList();
+		}
+		CurrentPageNum = (IsSearchState ? (num3 / PageCount + 1) : (destGroupIndex / PageCount + 1));
+		if (currentPageNum == CurrentPageNum)
+		{
+			if (!IsSearchState)
+			{
+				SetBindData();
+			}
+			else
+			{
+				SetBindSearchData();
+			}
+		}
+		LogHelper.Info($"SwapIndex srcVarName:{globalVariableItem.Name} sourceindex:{souceIndex},dstVarName:{globalVariableItem2.Name} dstindex:{destIndex}");
+		varManager.ChangeToSendReceiveData(souceIndex, destIndex, isDel: false);
+		UpdateBtnEnable();
+		IsMoveItem = false;
+	}
+
+	private void GridGlob_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if ((sender as FrameworkElement).DataContext is GlobalVariableItem globalVariableItem)
+		{
+			globalVariableItem.IsSelected = true;
+			if (oldSelectedItem != null && oldSelectedItem.Name != globalVariableItem.Name)
+			{
+				oldSelectedItem.IsSelected = false;
+			}
+			oldSelectedItem = globalVariableItem;
+			UpdateBtnEnable();
+		}
+	}
+
+	private void UpdateBtnEnable()
+	{
+		List<GlobalVariableItem> list = (from p in Items
+			where p.VarGroupInfo == SelectGroupItem.Name
+			orderby p.Index
+			select p).ToList();
+		int num = list.IndexOf(oldSelectedItem);
+		if (oldSelectedItem == null || list.Count == 1)
+		{
+			btnTop.IsEnabled = false;
+			btnUp.IsEnabled = false;
+			btnDown.IsEnabled = false;
+		}
+		else if (num == 0)
+		{
+			btnTop.IsEnabled = false;
+			btnUp.IsEnabled = false;
+			btnDown.IsEnabled = true;
+		}
+		else if (num == list.Count - 1)
+		{
+			btnDown.IsEnabled = false;
+			btnTop.IsEnabled = true;
+			btnUp.IsEnabled = true;
+		}
+		else
+		{
+			btnTop.IsEnabled = true;
+			btnUp.IsEnabled = true;
+			btnDown.IsEnabled = true;
+		}
+	}
+
+	/// <summary>
+	/// 上移
+	/// </summary>
+	private void BtnUp_Click(object sender, RoutedEventArgs e)
+	{
+		if (oldSelectedItem == null)
+		{
+			return;
+		}
+		int destIndex = 0;
+		int destGroupIndex = 0;
+		List<GlobalVariableItem> list = (from p in Items
+			where p.VarGroupInfo == SelectGroupItem.Name
+			orderby p.Index
+			select p).ToList();
+		for (int num = 0; num < list.Count; num++)
+		{
+			if (list[num].Index == oldSelectedItem.Index)
+			{
+				destIndex = list[num - 1].Index;
+				destGroupIndex = num - 1;
+				break;
+			}
+		}
+		SwapIndex(oldSelectedItem.Index, destIndex, destGroupIndex);
+		_selectedVarItem = oldSelectedItem;
+		OnPropertyChanged("SelectedVarItem");
+	}
+
+	/// <summary>
+	/// 下移
+	/// </summary>
+	private void BtnDown_Click(object sender, RoutedEventArgs e)
+	{
+		if (oldSelectedItem == null)
+		{
+			return;
+		}
+		int destIndex = 0;
+		int destGroupIndex = 0;
+		List<GlobalVariableItem> list = (from p in Items
+			where p.VarGroupInfo == SelectGroupItem.Name
+			orderby p.Index
+			select p).ToList();
+		for (int num = 0; num < list.Count; num++)
+		{
+			if (list[num].Index == oldSelectedItem.Index)
+			{
+				destIndex = list[num + 1].Index;
+				destGroupIndex = num + 1;
+				break;
+			}
+		}
+		SwapIndex(oldSelectedItem.Index, destIndex, destGroupIndex);
+		_selectedVarItem = oldSelectedItem;
+		OnPropertyChanged("SelectedVarItem");
+	}
+
+	/// <summary>
+	/// 置顶
+	/// </summary>
+	private void BtnTop_Click(object sender, RoutedEventArgs e)
+	{
+		if (oldSelectedItem != null)
+		{
+			SetHeadIndex(oldSelectedItem.Index);
+			_selectedVarItem = oldSelectedItem;
+			OnPropertyChanged("SelectedVarItem");
+		}
+	}
+
+	private void BtnImport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			if (DecorateSource == null)
+			{
+				return;
+			}
+			if (!RemoteOperate.IsRemoteMode)
+			{
+				Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+				openFileDialog.CheckFileExists = true;
+				openFileDialog.CheckPathExists = true;
+				openFileDialog.Filter = "*.gvar|*.gvar";
+				bool? flag = openFileDialog.ShowDialog();
+				string fileName = openFileDialog.FileName;
+				if (flag.Value && (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes))
+				{
+					long length = new FileInfo(fileName).Length;
+					ProcessbarMessage = AppLocalizationService.GetLang("Lang_Import");
+					IsShowProcessbar = "Visible";
+					ImportGlobalVar(fileName);
+				}
+			}
+			else
+			{
+				PopImport.IsOpen = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadFail"));
+			LogHelper.objLog.Error("全局变量导入失败，ex:" + ex.ToString());
+		}
+	}
+
+	private async void ImportGlobalVar(string filePath)
+	{
+		int nRet = 0;
+		Task importTask = Task.Factory.StartNew(() =>
+		{
+			try
+			{
+				Dictionary<string, VarRunParamInfo[]> varRunParamDict = new Dictionary<string, VarRunParamInfo[]>();
+				Dispatcher?.Invoke(() =>
+				{
+					foreach (GlobalVariableItem item in Items)
+					{
+						varRunParamDict.Add(item.Name, GlobalVarExtern.GetLinkModuleInfoByRunParams(item.SelectedRunParams));
+					}
+				});
+				varManager.ImportVar(filePath, isFromUI: true, varRunParamDict, () =>
+				{
+					Dispatcher?.Invoke(() =>
+					{
+						if (DecorateSource is VmModule vmModule)
+						{
+							for (int num = vmModule.Outputs.Count - 1; num >= 0; num--)
+							{
+								vmModule.Outputs[num].Dispose();
+							}
+						}
+					});
+				});
+			}
+			catch (Exception ex)
+			{
+				Dispatcher.Invoke(() =>
+				{
+					IsShowProcessbar = "Collapsed";
+					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadFail"), MessageIcons.Error);
+				});
+				LogHelper.objLog.Error("导入失败:" + ex.ToString());
+				return;
+			}
+			if (nRet == 0)
+			{
+				oldSelectedItem = null;
+				Dispatcher.Invoke(() =>
+				{
+					SelectGroupItem?.Clear();
+					SelectGroupItem = null;
+					VarItemGroups?.Clear();
+					Items.Clear();
+					CurrentPageNum = 0;
+					ItemsTotalCount = 0;
+					UpdateBtnEnable();
+					bFirstGetData = true;
+					GetVarGroupMsg();
+					VariableManager.IMVS_VARIABLE[] vARIABLEs = new VariableManager.IMVS_VARIABLE[0];
+					varManager.GetAllVar(ref vARIABLEs);
+					GetData(vARIABLEs);
+				});
+			}
+			string msg = ((nRet == 0) ? AppLocalizationService.GetLang("Lang_LoadSuccess") : AppLocalizationService.GetLang("Lang_LoadFail"));
+			Dispatcher.Invoke(() =>
+			{
+				IsShowProcessbar = "Collapsed";
+				HikMessageBox.Show(msg, (nRet == 0) ? MessageIcons.Ok : MessageIcons.Error);
+			});
+		});
+		await importTask;
+	}
+
+	private void BtnExport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			if (DecorateSource == null || Items.Count <= 0)
+			{
+				return;
+			}
+			if (!RemoteOperate.IsRemoteMode)
+			{
+				Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
+				saveFileDialog.Filter = "*.gvar|*.gvar";
+				saveFileDialog.FilterIndex = 1;
+				saveFileDialog.RestoreDirectory = true;
+				if (saveFileDialog.ShowDialog() == true)
+				{
+					ExportGlobalVar(saveFileDialog.FileName);
+				}
+			}
+			else
+			{
+				PopExport.IsOpen = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"));
+			LogHelper.objLog.Error("全局变量导出失败，ex:" + ex.ToString());
+		}
+	}
+
+	private async void ExportGlobalVar(string filePath, string downLoadPath = "")
+	{
+		Task exportTask = Task.Factory.StartNew(() =>
+		{
+			int nRet = 0;
+			try
+			{
+				varManager.ExportVar(filePath);
+			}
+			catch (Exception ex)
+			{
+				Dispatcher.Invoke(() =>
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"), MessageIcons.Error);
+				});
+				LogHelper.objLog.Error("导出全局变量失败:" + ex.ToString());
+				return;
+			}
+			if (downLoadPath != "")
+			{
+				if (!ServerSDKAPI.FtpDownloadFile(CVmObjectBase.mhandle, downLoadPath, filePath, bCover: true) || !File.Exists(downLoadPath))
+				{
+					LogHelper.objLog.Error("Down load file error, local file path = " + downLoadPath + ", remote file path = " + filePath + ".");
+					HikMessageBox.Show(AppLocalizationService.GetLang("导出失败"), MessageIcons.Error);
+					return;
+				}
+				ServerSDKAPI.FtpRemoveFile(CVmObjectBase.mhandle, filePath);
+			}
+			string msg = ((nRet == 0) ? "Lang_ExportSuccess" : "导出失败");
+			Dispatcher.Invoke(() =>
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang(msg), (nRet == 0) ? MessageIcons.Ok : MessageIcons.Error);
+			});
+		});
+		await exportTask;
+	}
+
+	private void Sv_ScrollChanged(object sender, ScrollChangedEventArgs e)
+	{
+		if (!CanScroll)
+		{
+			CanScroll = true;
+		}
+		else if (!CanScroll)
+		{
+		}
+	}
+
+	/// <summary>
+	/// 获取默认的分组名
+	/// </summary>
+	/// <returns></returns>
+	private string GetUniqueName(string startName)
+	{
+		IEnumerable<string> enumerable = VarItemGroups.Select((VarGroupItem p) => p.Name);
+		string text = startName;
+		int num = 0;
+		while (true)
+		{
+			text = startName + num;
+			if (!enumerable.Contains(text))
+			{
+				break;
+			}
+			num++;
+		}
+		return text;
+	}
+
+	/// <summary>
+	/// 添加一个分组
+	/// </summary>
+	private void AddNewVarGroup()
+	{
+		if (VarItemGroups.Count() >= 10)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("添加") + AppLocalizationService.GetLang("超限") + ":" + 10, MessageButtons.Normal, MessageIcons.Warning);
+			return;
+		}
+		string uniqueName = GetUniqueName(AppLocalizationService.GetLang("Lang_VarGroup"));
+		varManager.AddGroup(uniqueName);
+		VarItemGroups.Add(new VarGroupItem(uniqueName, this));
+		SelectGroupItem = VarItemGroups[VarItemGroups.Count - 1];
+	}
+
+	private void AddVarGroup_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			AddNewVarGroup();
+		}
+		catch (Exception)
+		{
+			LogHelper.Error("AddNewVarGroup is exception:" + e.ToString());
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_AddGroup") + AppLocalizationService.GetLang("失败"), MessageButtons.Normal);
+		}
+	}
+
+	private void DelVarGroup_Click(object sender, RoutedEventArgs e)
+	{
+		if (HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ConfirmDelete"), "", MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes)
+		{
+			object dataContext = (sender as MenuItem).DataContext;
+			if (dataContext is VarGroupItem varGroup)
+			{
+				ProcessbarMessage = AppLocalizationService.GetLang("Lang_DeleteGroup");
+				IsShowProcessbar = "Visible";
+				DelVarGroup(varGroup);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 删除分组信息
+	/// </summary>
+	private async void DelVarGroup(VarGroupItem varGroup)
+	{
+		Task delTask = Task.Factory.StartNew(() =>
+		{
+			try
+			{
+				VmModule vmModule = DecorateSource as VmModule;
+				varManager.DeleteGroup(varGroup.Name);
+				List<GlobalVariableItem> tmplist = new List<GlobalVariableItem>();
+				Dispatcher.Invoke(() =>
+				{
+					tmplist = Items.Where((GlobalVariableItem x) => x.VarGroupInfo == SelectGroupItem?.Name).ToList();
+				});
+				foreach (GlobalVariableItem item in tmplist)
+				{
+					varManager.DeleteVarFromGroup(item.Name, isFromUI: true, GlobalVarExtern.GetLinkModuleInfoByRunParams(item.SelectedRunParams));
+				}
+				Dispatcher.Invoke(() =>
+				{
+					tmplist.ForEach((GlobalVariableItem x) =>
+					{
+						Items.Remove(x);
+					});
+					tmplist.ForEach((GlobalVariableItem p) =>
+					{
+						vmModule.Outputs[p.Name]?.RemoveSelf();
+					});
+				});
+				List<VarItem> allVarList = new List<VarItem>();
+				varManager.GetAllVar(ref allVarList);
+				Dispatcher.Invoke(() =>
+				{
+					allVarList.ForEach((VarItem m) =>
+					{
+						GlobalVariableItem globalVariableItem = Items.FirstOrDefault((GlobalVariableItem p) => p.Name == m.Name);
+						if (globalVariableItem != null)
+						{
+							globalVariableItem.Index = m.Index;
+						}
+					});
+				});
+				string msg = AppLocalizationService.GetLang("Lang_DeleteSucceed");
+				Dispatcher.Invoke(() =>
+				{
+					IsShowProcessbar = "Collapsed";
+					HikMessageBox.Show(msg, MessageIcons.Ok);
+				});
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("DelVarGroup is exception:" + ex.ToString());
+				string msg2 = AppLocalizationService.GetLang("Lang_DeleteFail");
+				Dispatcher.Invoke(() =>
+				{
+					IsShowProcessbar = "Collapsed";
+					HikMessageBox.Show(msg2, MessageIcons.Error);
+				});
+			}
+		});
+		await delTask;
+		if (VarItemGroups.Count > 1)
+		{
+			SelectGroupItem = VarItemGroups[VarItemGroups.Count - 2];
+		}
+		else
+		{
+			SelectGroupItem = null;
+		}
+		if (VarItemGroups.Contains(varGroup))
+		{
+			VarItemGroups.Remove(varGroup);
+		}
+	}
+
+	/// <summary>
+	/// 下发分组信息
+	/// </summary>
+	public bool SetVarGroupMsg()
+	{
+		try
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (VarGroupItem varItemGroup in VarItemGroups)
+			{
+				stringBuilder.Append(varItemGroup.Name).Append("\r");
+			}
+			if (stringBuilder.Length > 0)
+			{
+				(DecorateSource as VmModule).Params["VarGroupInfo"] = stringBuilder.ToString();
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("SetVarGroupMsg is error:" + ex.ToString());
+			return false;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 获取分组信息
+	/// </summary>
+	public bool GetVarGroupMsg()
+	{
+		try
+		{
+			List<string> list = new List<string>();
+			varManager.GetGroupInfo(list);
+			if (list.Count > 0)
+			{
+				Array.ForEach(list.ToArray(), (string x) =>
+				{
+					if (!string.IsNullOrEmpty(x))
+					{
+						VarItemGroups.Add(new VarGroupItem(x, this));
+					}
+				});
+				SelectGroupItem = VarItemGroups[0];
+			}
+			else
+			{
+				AddNewVarGroup();
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("GetVarGroupMsg is error:" + ex.ToString());
+			return false;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 重命名
+	/// </summary>
+	/// <returns></returns>
+	public bool ReName(string oldName, string newName)
+	{
+		try
+		{
+			if (VarItemGroups.FirstOrDefault((VarGroupItem x) => x.Name == newName) != null)
+			{
+				HikMessageBox.Show("Lang_ParamNameErr", "Lang_PmNameExited", MessageIcons.Error, isTranslate: true);
+				return false;
+			}
+			IEnumerable<GlobalVariableItem> enumerable = Items.Where((GlobalVariableItem x) => x.VarGroupInfo == oldName);
+			foreach (GlobalVariableItem item in enumerable)
+			{
+				item.VarGroupInfo = newName;
+			}
+			varManager.ReNameGroup(oldName, newName);
+			return true;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("ReName is ecxeption:" + oldName + "," + newName + "," + ex.ToString());
+			return false;
+		}
+	}
+
+	private void LocalImport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+			openFileDialog.CheckFileExists = true;
+			openFileDialog.CheckPathExists = true;
+			openFileDialog.Filter = "*.gvar|*.gvar";
+			bool? flag = openFileDialog.ShowDialog();
+			string filePath = (flag.Value ? "/root/vmtempfiles/ftp/ModelFiles/temp.gvar" : "");
+			if (flag.Value)
+			{
+				if (!ServerSDKAPI.FtpUploadFile(CVmObjectBase.mhandle, openFileDialog.FileName, "/root/vmtempfiles/ftp/ModelFiles/temp.gvar", bCreatDir: true, bCover: true))
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadFail"));
+					LogHelper.objLog.Error("Upload local file " + openFileDialog.FileName + " to remote path /root/vmtempfiles/ftp/ModelFiles/temp.gvar fail");
+				}
+				else if (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes)
+				{
+					ImportGlobalVar(filePath);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadFail"));
+			LogHelper.objLog.Error("全局变量导入失败，ex:" + ex.ToString());
+		}
+	}
+
+	private void RemoteImport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			DirectoryBrowser.OpenFileDialog openFileDialog = new DirectoryBrowser.OpenFileDialog();
+			openFileDialog.Filter = "*.gvar|*.gvar";
+			openFileDialog.CheckFileExists = true;
+			bool? flag = openFileDialog.ShowDialog();
+			string filePath = (flag.Value ? openFileDialog.FileNames[0] : "");
+			if (flag.Value && (Items.Count <= 0 || HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImportSure"), AppLocalizationService.GetLang("Lang_ImportEmpty"), MessageButtons.YesOrNo, MessageIcons.Question) == VM.Controls.DialogResult.Yes))
+			{
+				ImportGlobalVar(filePath);
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_LoadFail"));
+			LogHelper.objLog.Error("全局变量导入失败，ex:" + ex.ToString());
+		}
+	}
+
+	private void LocalExport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
+			saveFileDialog.Filter = "*.gvar|*.gvar";
+			saveFileDialog.FilterIndex = 1;
+			saveFileDialog.RestoreDirectory = true;
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				ServerSDKAPI.FtpCreatDir(CVmObjectBase.mhandle, "/root/vmtempfiles/ftp/ModelFiles/");
+				ExportGlobalVar("/root/vmtempfiles/ftp/ModelFiles/temp.gvar", saveFileDialog.FileName);
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("导出失败"));
+			LogHelper.objLog.Error("全局变量导出失败，ex:" + ex.ToString());
+		}
+	}
+
+	private void RemoteExport_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			DirectoryBrowser.SaveFileDialog saveFileDialog = new DirectoryBrowser.SaveFileDialog();
+			saveFileDialog.Filter = "*.gvar|*.gvar";
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				ExportGlobalVar(saveFileDialog.FilePath);
+			}
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("导出失败"));
+			LogHelper.objLog.Error("全局变量导出失败，ex:" + ex.ToString());
+		}
+	}
+
+	private void varDataGrid_AutoGeneratedColumns(object sender, EventArgs e)
+	{
+		if (sender == null || !(sender is DataGrid dataGrid))
+		{
+			return;
+		}
+		for (int i = 0; i < dataGrid.Columns.Count; i++)
+		{
+			if (i == 7)
+			{
+				dataGrid.Columns[i].Visibility = ((!IsVisibleComInit) ? Visibility.Collapsed : Visibility.Visible);
+			}
+			if (dataGrid.Columns[i].Header is string)
+			{
+				dataGrid.Columns[i].Visibility = Visibility.Collapsed;
+			}
+		}
+	}
+}

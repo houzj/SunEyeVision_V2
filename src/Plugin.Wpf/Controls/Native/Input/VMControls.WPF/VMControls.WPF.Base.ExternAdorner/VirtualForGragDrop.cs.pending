@@ -1,0 +1,112 @@
+using System;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.UIHelper.Service;
+using VM.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ExternServer;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ExternAdorner;
+
+/// <summary>
+/// 模块拖拽
+/// </summary>
+public class VirtualForGragDrop : AdornerProvider
+{
+	private readonly AdornerPanel adornerPanel;
+
+	private readonly AdornerPanel subAdornerPanel;
+
+	private UIElement context;
+
+	private Point _offset;
+
+	private bool isDragOvered = false;
+
+	public VirtualForGragDrop()
+	{
+		adornerPanel = new AdornerPanelAttachToWorkArea();
+		Adorners.Add(adornerPanel);
+		subAdornerPanel = new AdornerPanel
+		{
+			IsAdornedElementTransformToWorkAreaElement = false
+		};
+	}
+
+	protected override void OnInitialized()
+	{
+		context = ExtendedItem.ExtensionDecorator.Services.GetService<IExtensionProvidePanel>() as UIElement;
+		DragDrop.AddPreviewDragOverHandler(context, _dragOver);
+		DragDrop.AddPreviewDropHandler(context, _dragDrop);
+		if (Server is DragDropExtensionServer dragDropExtensionServer)
+		{
+			_offset = dragDropExtensionServer.ClickPoint;
+		}
+		if (ExtendedItem is UIElement uIElement)
+		{
+			ZoomArea parent = uIElement.GetParent<ZoomArea>();
+			adornerPanel.WorkAreaElement = parent;
+			Rect descendantBounds = VisualTreeHelper.GetDescendantBounds(uIElement);
+			VisualBrush visualBrush = new VisualBrush(uIElement);
+			visualBrush.Stretch = Stretch.None;
+			visualBrush.Opacity = 0.7;
+			Rectangle rectangle = new Rectangle
+			{
+				VerticalAlignment = VerticalAlignment.Top,
+				HorizontalAlignment = HorizontalAlignment.Left
+			};
+			rectangle.Margin = new Thickness(descendantBounds.X + 1.0, descendantBounds.Y + 1.0, 0.0, 0.0);
+			rectangle.Fill = visualBrush;
+			rectangle.Width = descendantBounds.Width;
+			rectangle.Height = descendantBounds.Height;
+			rectangle.IsHitTestVisible = false;
+			subAdornerPanel.Children.Add(rectangle);
+			adornerPanel.Children.Add(subAdornerPanel);
+		}
+		base.OnInitialized();
+	}
+
+	private void _dragDrop(object sender, DragEventArgs e)
+	{
+		if (!isDragOvered)
+		{
+			e.Handled = true;
+		}
+		else
+		{
+			e.Data?.SetData(new Point(subAdornerPanel.OffsetLeft, subAdornerPanel.OffsetTop));
+		}
+	}
+
+	private void _dragOver(object sender, DragEventArgs e)
+	{
+		Point position = e.GetPosition(adornerPanel.WorkAreaElement);
+		double offsetLeft = subAdornerPanel.OffsetLeft;
+		double offsetTop = subAdornerPanel.OffsetTop;
+		double left = offsetLeft;
+		double top = offsetTop;
+		bool flag = false;
+		isDragOvered = true;
+		if (Math.Abs(position.X - _offset.X - offsetLeft) > 3.0)
+		{
+			left = Math.Round((position.X - _offset.X) / 5.0) * 5.0;
+			flag = true;
+		}
+		if (Math.Abs(position.Y - _offset.Y - offsetTop) > 3.0)
+		{
+			top = Math.Round((position.Y - _offset.Y) / 5.0) * 5.0;
+			flag = true;
+		}
+		if (flag)
+		{
+			subAdornerPanel.SetOffsets(left, top);
+		}
+	}
+
+	protected override void OnRemove()
+	{
+		DragDrop.RemovePreviewDragOverHandler(context, _dragOver);
+		DragDrop.RemovePreviewDropHandler(context, _dragDrop);
+		base.OnRemove();
+	}
+}

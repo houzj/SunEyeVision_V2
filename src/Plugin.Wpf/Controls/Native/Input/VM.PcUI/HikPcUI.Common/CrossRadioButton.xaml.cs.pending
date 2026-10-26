@@ -1,0 +1,43 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public partial class CrossRadioButton : ImageViewControlButton, IComponentConnector
+{
+	private HikCross Cross;
+
+	public override ImageViewController.BarItemenum Itemenum => ImageViewController.BarItemenum.Cross;
+
+	public CrossRadioButton()
+	{
+		ToolTipString = "中心定位";
+		InitializeComponent();
+		Cross = new HikCross();
+	}
+
+	protected override void PrepareRawRoi()
+	{
+		ImageView.PrepareRawRoi(RoiUIType.HikTool);
+		Cross.RegisterRoi(ImageView);
+	}
+
+	protected override void UnPrepareRawRoi()
+	{
+		if (Cross != null)
+		{
+			Cross.UnRegisterRoi();
+		}
+		ImageView.UnPrepareRawRoi();
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

@@ -1,0 +1,104 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// HoverPotDelegate.xaml 的交互逻辑
+/// </summary>
+public class HoverPotDelegate : FrameworkElement
+{
+	private List<UIElement> uIElements = new List<UIElement>();
+
+	public static readonly DependencyProperty OwnerPanelProperty = DependencyProperty.Register("OwnerPanel", typeof(Panel), typeof(HoverPotDelegate), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(HoverPotDelegate), new PropertyMetadata(null, ItemsSourceChanged));
+
+	public Panel OwnerPanel
+	{
+		get
+		{
+			return (Panel)GetValue(OwnerPanelProperty);
+		}
+		set
+		{
+			SetValue(OwnerPanelProperty, value);
+		}
+	}
+
+	public IEnumerable ItemsSource
+	{
+		get
+		{
+			return (IEnumerable)GetValue(ItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemsSourceProperty, value);
+		}
+	}
+
+	private static void ItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (e.OldValue != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, (d as HoverPotDelegate).ItemsSource_CollectionChanged);
+		}
+		foreach (UIElement uIElement in (d as HoverPotDelegate).uIElements)
+		{
+			(d as HoverPotDelegate).RemoveChild(uIElement);
+		}
+		(d as HoverPotDelegate).uIElements.Clear();
+		(d as HoverPotDelegate).AddUI(e.NewValue as IEnumerable);
+		(d as HoverPotDelegate).RoiListRegister();
+	}
+
+	private void AddUI(IEnumerable enumerable)
+	{
+		if (enumerable == null)
+		{
+			return;
+		}
+		foreach (object item in enumerable)
+		{
+			HoverPot hoverPot = new HoverPot
+			{
+				DataContext = item
+			};
+			hoverPot.SetBinding(HoverPot.SiteProperty, new Binding(""));
+			uIElements.Add(hoverPot);
+			OwnerPanel.Children.Add(hoverPot);
+		}
+	}
+
+	private void RoiListRegister()
+	{
+		CollectionChangedEventManager.AddHandler(ItemsSource as INotifyCollectionChanged, ItemsSource_CollectionChanged);
+	}
+
+	private void ItemsSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Reset:
+			foreach (UIElement uIElement in uIElements)
+			{
+				RemoveChild(uIElement as FrameworkElement);
+			}
+			uIElements.Clear();
+			break;
+		case NotifyCollectionChangedAction.Add:
+			AddUI(e.NewItems);
+			break;
+		}
+	}
+
+	private void RemoveChild(UIElement obj)
+	{
+		OwnerPanel?.Children.Remove(obj);
+	}
+}

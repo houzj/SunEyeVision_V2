@@ -1,0 +1,264 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Markup;
+using Apps.XmlParser.ParamTab;
+using VM.Controls;
+using VM.Core;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ParamsConfigWithRenderControlBase.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ParamsConfigWithResultViewControl
+/// </summary>
+public partial class ParamsConfigWithResultViewControl : BaseWindow, IComponentConnector
+{
+	/// <summary>
+	/// 参数列表编辑状态属性
+	/// </summary>
+	public static readonly DependencyProperty IsParamsEditStateProperty = DependencyProperty.Register("IsParamsEditState", typeof(bool), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(null, OnModuleSourceChanged));
+
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfigSource", typeof(IParamsConfig), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IImageDataProperty = DependencyProperty.Register("ImageDataSource", typeof(IImageData), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ROIVisibleProperty = DependencyProperty.Register("ROIVisible", typeof(bool), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty CoordinateInfoVisibleProperty = DependencyProperty.Register("CoordinateInfoVisible", typeof(bool), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty ParamsConfigWidthProperty = DependencyProperty.Register("ParamsConfigWidth", typeof(int), typeof(ParamsConfigWithResultViewControl), new PropertyMetadata(380));
+
+	private double mincolumnWidth = 460.0;
+
+	private double scale = 0.0;
+
+	/// <summary>
+	/// 参数列表编辑状态
+	/// </summary>
+	public bool IsParamsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsParamsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsParamsEditStateProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public IParamsConfig ParamsConfigSource
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 图像源
+	/// </summary>
+	public IImageData ImageDataSource
+	{
+		get
+		{
+			return (IImageData)GetValue(IImageDataProperty);
+		}
+		set
+		{
+			SetValue(IImageDataProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示ROI
+	/// </summary>
+	public bool ROIVisible
+	{
+		get
+		{
+			return (bool)GetValue(ROIVisibleProperty);
+		}
+		set
+		{
+			SetValue(ROIVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示坐标信息
+	/// </summary>
+	public bool CoordinateInfoVisible
+	{
+		get
+		{
+			return (bool)GetValue(CoordinateInfoVisibleProperty);
+		}
+		set
+		{
+			SetValue(CoordinateInfoVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数配置控件宽度
+	/// </summary>
+	public int ParamsConfigWidth
+	{
+		get
+		{
+			return (int)GetValue(ParamsConfigWidthProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigWidthProperty, value);
+		}
+	}
+
+	public ParamsConfigWithResultViewControl()
+	{
+		InitializeComponent();
+		Init();
+	}
+
+	private void Init()
+	{
+		ParamsConfig.ROIPartUI = ModuleResultControl.imageView;
+		SetBinding(ParamsConfigWidthProperty, new Binding("DataContext.ConfigWindowWidth")
+		{
+			Source = ParamsConfig
+		});
+	}
+
+	private static void OnModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ParamsConfigWithResultViewControl paramsConfigWithResultViewControl)
+		{
+			if (e.OldValue != null)
+			{
+				paramsConfigWithResultViewControl.DeInit();
+			}
+			paramsConfigWithResultViewControl.ParamsConfigSource = paramsConfigWithResultViewControl.ModuleSource?.Params;
+		}
+	}
+
+	private void DeInit()
+	{
+		if (ParamsConfig.DataContext is AlgorithmTabRoot algorithmTabRoot)
+		{
+			if (((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute)
+			{
+				((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute = false;
+			}
+			algorithmTabRoot.Dispose();
+		}
+	}
+
+	/// <summary>
+	/// 获取基础句柄
+	/// </summary>
+	/// <returns></returns>
+	public long GetBaseHandle()
+	{
+		TempVmSolution.Init();
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	/// <summary>
+	/// 加载方案
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportSol(string path, string password)
+	{
+		VmSolution.Import(path, password);
+		return VmSolution.Instance.BaseHandle;
+	}
+
+	public void BindParamById(uint Id)
+	{
+		VmModule moduleByID = VmSolution.Instance.GetModuleByID(Id);
+		if (moduleByID != null)
+		{
+			ModuleSource = moduleByID;
+		}
+	}
+
+	private void Workarea_OnSizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		if (scale != 0.0)
+		{
+			scale = e.NewSize.Width / e.PreviousSize.Width;
+			double width = columnDefinition.Width.Value * scale;
+			UpdateColumnDefinitionWidth(width, sender as FrameworkElement);
+		}
+	}
+
+	private void UpdateColumnDefinitionWidth(double width, FrameworkElement frameworkElement)
+	{
+		if (width < mincolumnWidth)
+		{
+			width = mincolumnWidth;
+		}
+		double num = frameworkElement.ActualWidth - 2.0 - width;
+		if (!(num < 0.0))
+		{
+			columnDefinition.Width = new GridLength(width, GridUnitType.Pixel);
+		}
+	}
+
+	private void us_Loaded(object sender, RoutedEventArgs e)
+	{
+		ModuleResultControl.IsOpenParams = true;
+		ModuleResultControl.SetRoiVisible();
+	}
+
+	private void us_Unloaded(object sender, RoutedEventArgs e)
+	{
+		ModuleResultControl.IsOpenParams = false;
+	}
+
+	/// <summary>
+	/// 修改右侧显示控件数据源绑定
+	/// </summary>
+	/// <param name="binding"></param>
+	public void ChangeResultViewModuleSourceBinding(Binding binding)
+	{
+		ModuleResultControl.SetBinding(ModuleResultView.ModuleSourceProperty, binding);
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

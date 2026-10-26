@@ -1,0 +1,47 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public partial class ClearImageButton : ImageViewControlButton, IComponentConnector
+{
+	public override ImageViewController.BarItemenum Itemenum => ImageViewController.BarItemenum.ClearImage;
+
+	public override bool IsSimpleButton => true;
+
+	public ClearImageButton()
+	{
+		ToolTipString = "清除图像";
+		InitializeComponent();
+		Click += AssistCrossRadioButton_Click;
+		GroupName = GetHashCode().ToString();
+	}
+
+	private void AssistCrossRadioButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (IsChecked.Value)
+		{
+			IsChecked = false;
+		}
+	}
+
+	protected override void PrepareRawRoi()
+	{
+		ImageView.SetCurrentValue(HikImageView.SourceProperty, null);
+	}
+
+	protected override void UnPrepareRawRoi()
+	{
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

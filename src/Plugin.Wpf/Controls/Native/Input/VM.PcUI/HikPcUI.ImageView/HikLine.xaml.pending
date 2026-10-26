@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikLine" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Name="userControl" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" Loaded="myControl_Loaded" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" MouseLeftButtonUp="UserControl_MouseLeftButtonUp" Focusable="True" Width="30" Height="30" FocusVisualStyle="{x:Null}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <sys:Double x:Key="dwidth">8</sys:Double>
+      <sys:Double x:Key="mwidth">32</sys:Double>
+      <Style x:Key="LineStyle" TargetType="{x:Type Line}">
+        <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+        <Style.Triggers>
+          <DataTrigger Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+          </DataTrigger>
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+              <Condition Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}" />
+            </MultiDataTrigger.Conditions>
+            <Setter Property="Stroke" Value="{DynamicResource ROISelectedColor}" />
+          </MultiDataTrigger>
+        </Style.Triggers>
+      </Style>
+      <Style x:Key="CanvasStyle" TargetType="{x:Type Canvas}">
+        <Style.Triggers>
+          <DataTrigger Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Canvas Name="WorkView" Style="{StaticResource CanvasStyle}">
+    <Line Name="line" StrokeThickness="1" Style="{StaticResource LineStyle}" X1="{Binding X, ElementName=startpoint}" Y1="{Binding Y, ElementName=startpoint}" X2="{Binding X, ElementName=endpoint}" Y2="{Binding Y, ElementName=endpoint}" />
+    <Line Name="bakline" StrokeThickness="4" Stroke="#00FFFFFF" Cursor="SizeAll" X1="{Binding X, ElementName=startpoint}" Y1="{Binding Y, ElementName=startpoint}" X2="{Binding X, ElementName=endpoint}" Y2="{Binding Y, ElementName=endpoint}" />
+    <local:SquareArea x:Name="startpoint" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+    <local:SquareArea x:Name="endpoint" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+  </Canvas>
+</local:HikROIBase>

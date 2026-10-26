@@ -1,0 +1,73 @@
+using System.Windows.Markup;
+using Apps.XmlParser.ParamTab;
+using VM.Controls;
+using VM.Core;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 全局触发模块
+/// GloablTiggleConfigeUI.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// GloablTriggleConfigUI
+/// </summary>
+public partial class GloablTriggleConfigUI : BaseWindow, IComponentConnector
+{
+	private AlgorithmTabRoot _paramConfig = null;
+
+	private object _decorateSource;
+
+	public AlgorithmTabRoot ParamsConfig
+	{
+		get
+		{
+			if (_paramConfig == null && _decorateSource != null)
+			{
+				_paramConfig = new AlgorithmTabRoot((_decorateSource as IVmModule).Params);
+				_paramConfig.GetItemsValueUnit();
+			}
+			return _paramConfig;
+		}
+		set
+		{
+			if (_paramConfig != value)
+			{
+				_paramConfig = value;
+				OnPropertyChanged("ParamsConfig");
+			}
+		}
+	}
+
+	public object DecorateSource
+	{
+		get
+		{
+			return _decorateSource;
+		}
+		set
+		{
+			if (_decorateSource != value)
+			{
+				_decorateSource = value;
+				OnPropertyChanged("DecorateSource");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 初始化
+	/// </summary>
+	public GloablTriggleConfigUI(VmModule vmModule)
+	{
+		InitializeComponent();
+		DecorateSource = vmModule;
+	}
+
+	public override void Close()
+	{
+		GlobalTriggerConfig.CacheTabRoot.Clear();
+		base.Close();
+	}
+}

@@ -1,0 +1,298 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public partial class ImageViewController : Grid, INotifyPropertyChanged, IComponentConnector
+{
+	public enum BarItemenum
+	{
+		Arrow,
+		Rectangular,
+		coordinates,
+		Cross,
+		AssistCross,
+		ClearImage
+	}
+
+	public class BarItemInfo
+	{
+		public BarItemenum Bartype { get; set; }
+
+		public string GroupName { get; set; }
+
+		public string ToolTip { get; set; }
+	}
+
+	public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(ImageViewController), new PropertyMetadata("Title"));
+
+	public static readonly DependencyProperty ZoomVisibleProperty = DependencyProperty.Register("ZoomVisible", typeof(Visibility), typeof(ImageViewController), new PropertyMetadata(Visibility.Visible));
+
+	public static readonly DependencyProperty TitleVisibleProperty = DependencyProperty.Register("TitleVisible", typeof(Visibility), typeof(ImageViewController), new PropertyMetadata(Visibility.Collapsed));
+
+	public static readonly DependencyProperty ColumnWidthProperty = DependencyProperty.Register("ColumnWidth", typeof(double), typeof(ImageViewController), new PropertyMetadata(34.0));
+
+	public static readonly DependencyProperty ImageViewProperty = DependencyProperty.Register("ImageView", typeof(HikImageView), typeof(ImageViewController), new PropertyMetadata(null, OnImageViewChanged));
+
+	public static readonly DependencyProperty BarListProperty = DependencyProperty.Register("BarList", typeof(IList<BarItemInfo>), typeof(ImageViewController), new PropertyMetadata(null, OnBarListChanged));
+
+	private List<ImageViewControlButton> operitions;
+
+	private bool _IsReName;
+
+	public string Title
+	{
+		get
+		{
+			return (string)GetValue(TitleProperty);
+		}
+		set
+		{
+			SetValue(TitleProperty, value);
+		}
+	}
+
+	public Visibility ZoomVisible
+	{
+		get
+		{
+			return (Visibility)GetValue(ZoomVisibleProperty);
+		}
+		set
+		{
+			SetValue(ZoomVisibleProperty, value);
+		}
+	}
+
+	public Visibility TitleVisible
+	{
+		get
+		{
+			return (Visibility)GetValue(TitleVisibleProperty);
+		}
+		set
+		{
+			SetValue(TitleVisibleProperty, value);
+		}
+	}
+
+	public double ColumnWidth
+	{
+		get
+		{
+			return (double)GetValue(ColumnWidthProperty);
+		}
+		set
+		{
+			SetValue(ColumnWidthProperty, value);
+		}
+	}
+
+	public HikImageView ImageView
+	{
+		get
+		{
+			return (HikImageView)GetValue(ImageViewProperty);
+		}
+		set
+		{
+			SetValue(ImageViewProperty, value);
+		}
+	}
+
+	public IList<BarItemInfo> BarList
+	{
+		get
+		{
+			return (IList<BarItemInfo>)GetValue(BarListProperty);
+		}
+		set
+		{
+			SetValue(BarListProperty, value);
+		}
+	}
+
+	public List<ImageViewControlButton> Operitions
+	{
+		get
+		{
+			if (operitions == null)
+			{
+				operitions = (from type in Assembly.GetAssembly(GetType()).GetTypes()
+					where type.IsSubclassOf(typeof(ImageViewControlButton))
+					select (ImageViewControlButton)Activator.CreateInstance(type)).ToList();
+			}
+			return operitions;
+		}
+	}
+
+	public bool IsReName
+	{
+		get
+		{
+			return _IsReName;
+		}
+		set
+		{
+			if (_IsReName != value)
+			{
+				_IsReName = value;
+				OnPropertyChanged("IsReName");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void OnPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public ImageViewController()
+	{
+		InitializeComponent();
+	}
+
+	private static void OnImageViewChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as ImageViewController).AddBarItems();
+	}
+
+	private static void OnBarListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as ImageViewController).AddBarItems();
+	}
+
+	private void AddBarItems()
+	{
+		if (BarList == null || ImageView == null)
+		{
+			return;
+		}
+		List<BarItemenum> list = new List<BarItemenum>();
+		foreach (BarItemenum item2 in BarList.Select((BarItemInfo p) => p.Bartype))
+		{
+			if (list.Contains(item2))
+			{
+				throw new Exception("item repeated");
+			}
+			list.Add(item2);
+		}
+		g1.Width = ColumnWidth * (double)BarList.Count;
+		g1.Columns = BarList.Count;
+		g1.Children.Clear();
+		foreach (BarItemInfo item in BarList)
+		{
+			ImageViewControlButton imageViewControlButton = null;
+			ImageViewControlButton imageViewControlButton2 = Operitions.FirstOrDefault((ImageViewControlButton p) => p.Itemenum == item.Bartype);
+			if (imageViewControlButton2 != null)
+			{
+				imageViewControlButton = (ImageViewControlButton)Activator.CreateInstance(imageViewControlButton2.GetType());
+			}
+			if (imageViewControlButton != null)
+			{
+				imageViewControlButton.ImageView = ImageView;
+				if (!imageViewControlButton.IsSimpleButton)
+				{
+					imageViewControlButton.ItemGroupName = item.GroupName;
+					imageViewControlButton.GroupName = GetHashCode().ToString();
+					imageViewControlButton.AfterRoiCountChanged += ImageViewControlButton_AfterRoiCountChanged;
+				}
+				if (item.ToolTip != null)
+				{
+					imageViewControlButton.ToolTipString = item.ToolTip;
+				}
+				g1.Children.Add(imageViewControlButton);
+			}
+		}
+	}
+
+	private void ImageViewControlButton_AfterRoiCountChanged(object sender, EventArgs e)
+	{
+		ArrowRadioButton arrowRadioButton = g1.Children.OfType<ArrowRadioButton>().FirstOrDefault();
+		if (arrowRadioButton != null)
+		{
+			arrowRadioButton.IsChecked = true;
+		}
+	}
+
+	private void zoomOrgBtn_Click(object sender, RoutedEventArgs e)
+	{
+		ImageView?.Init();
+	}
+
+	private void zoomFullBtn_Click(object sender, RoutedEventArgs e)
+	{
+		if (ImageView != null)
+		{
+			FullScreen instance = FullScreen.Instance;
+			instance.DataContext = ImageView.DataContext;
+			if (ImageView.Parent is Grid grid)
+			{
+				grid.Children.Remove(ImageView);
+				instance.SetChild(ImageView);
+				instance.ShowDialog();
+				instance.RemoveChild();
+				instance.DataContext = null;
+				grid.Children.Add(ImageView);
+			}
+		}
+	}
+
+	private void OnModuleRename(object sender, RoutedEventArgs e)
+	{
+		IsReName = true;
+	}
+
+	private void itemName_KeyDown(object sender, KeyEventArgs e)
+	{
+		if (e.Key == Key.Return)
+		{
+			IsReName = false;
+		}
+	}
+
+	private void itemName_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+	{
+		e.Handled = true;
+	}
+
+	private void itemName_FocusableChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+		if (sender is TextBox textBox)
+		{
+			if (textBox.Focusable)
+			{
+				textBox.Focus();
+			}
+			textBox.SelectAll();
+		}
+	}
+
+	private void itemName_LostFocus(object sender, RoutedEventArgs e)
+	{
+		IsReName = false;
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

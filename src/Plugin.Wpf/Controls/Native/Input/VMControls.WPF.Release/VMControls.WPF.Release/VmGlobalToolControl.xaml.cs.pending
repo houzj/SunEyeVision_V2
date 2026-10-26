@@ -1,0 +1,96 @@
+using System;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmGlobalToolControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmGlobalToolControl
+/// </summary>
+public partial class VmGlobalToolControl : VMWpfUserControl, IDisposable, IComponentConnector
+{
+	private ToolControl toolControl;
+
+	public VmGlobalToolControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			Loaded += VmParamsConfigControl_Loaded;
+			Unloaded += VmParamsConfigControl_Unloaded;
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	private void VmParamsConfigControl_Loaded(object sender, RoutedEventArgs e)
+	{
+	}
+
+	private void VmParamsConfigControl_Unloaded(object sender, RoutedEventArgs e)
+	{
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		toolControl = Template.FindName("toolControl", this) as ToolControl;
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (toolControl == null)
+		{
+			return 0L;
+		}
+		return toolControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		Template = null;
+	}
+
+	/// <summary>
+	/// 打开单一的全局控件
+	/// </summary>
+	public void OpenGlobalVariable()
+	{
+		toolControl.OpenGloablModule("GlobalVariableSet");
+	}
+
+	public void OpenGlobalScript()
+	{
+		toolControl.OpenGloablModule("GlobalScriptSet");
+	}
+
+	public void OpenGlobalCamera()
+	{
+		toolControl.OpenGloablModule("GlobalCameraSet");
+	}
+
+	public void OpenCommunicationManager()
+	{
+		toolControl.OpenGloablModule("GlobalCommSet");
+	}
+
+	public void OpenGlobalTrigger()
+	{
+		toolControl.OpenGloablModule("GlobalTriggerSet");
+	}
+}

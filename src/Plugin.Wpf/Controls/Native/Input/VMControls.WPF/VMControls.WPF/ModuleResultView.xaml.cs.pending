@@ -1,0 +1,2581 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Threading;
+using Apps.BaseData;
+using Apps.Data;
+using Apps.Data.ShapeDefine;
+using Apps.ErrorCode;
+using Apps.Interface;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser;
+using Apps.XmlParser.ParamTab;
+using Hik.Util;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMBaseControls;
+using VMBaseControls.Base.ImageView.Shape;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ModuleResultView.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ModuleResultView
+/// </summary>
+public partial class ModuleResultView : System.Windows.Controls.UserControl, INotifyPropertyChanged, IModuleResultView, IOutResultView, IComponentConnector
+{
+	public struct Roi
+	{
+		public bool bIsUsed;
+
+		public bool bIsCircleEnabled;
+
+		public double fCenterX;
+
+		public double fCenterY;
+
+		public double fWidth;
+
+		public double fHeight;
+
+		public double fAngle;
+
+		public double fMaxR;
+
+		public double fMinR;
+	}
+
+	/// <summary>
+	/// 更新显示结果
+	/// </summary>
+	/// <param name="struList"></param>
+	/// <param name="bIsForce"></param>
+	/// <returns></returns>
+	public delegate void UpdateDataResult(bool needRefreshDataList = true, bool needClearROIItemsData = false);
+
+	/// <summary>
+	/// 通知双击界面事件
+	/// </summary>
+	/// <param name="type"></param>
+	public delegate void RebuildModule();
+
+	/// <summary>
+	/// 输入输出源选择
+	/// </summary>
+	/// <param name="nIndex"></param>
+	public delegate void ImageListCombobox_SelectionChanged(int nIndex);
+
+	/// <summary>
+	/// 只刷新界面  不入列表
+	/// </summary>
+	/// <param name="nIndex"></param>
+	public delegate void UpadateModuleViewDataGridDisable();
+
+	private delegate void BeginInvokeDelegate();
+
+	public static int MaxPolygonPointNum = 32;
+
+	private Roi m_roi = new Roi
+	{
+		bIsUsed = false,
+		bIsCircleEnabled = false
+	};
+
+	/// <summary>
+	/// 用户自定义窗口句柄
+	/// </summary>
+	private IntPtr pHandle = IntPtr.Zero;
+
+	private readonly System.Windows.Forms.Panel UserViewPanel = new System.Windows.Forms.Panel();
+
+	/// <summary>
+	/// 当前图像数据
+	/// </summary>
+	public ImageData curImageData = null;
+
+	public UpdateDataResult OnUpdateDataResult = null;
+
+	public RebuildModule OnRebuildModule = null;
+
+	public ImageListCombobox_SelectionChanged OnImageListCombobox_SelectionChanged;
+
+	public UpadateModuleViewDataGridDisable OnUpadateModuleViewDataGridDisable;
+
+	public ObservableCollection<Image> checkImageList = new ObservableCollection<Image>();
+
+	public ObservableCollection<TransparencyData> imageTransparencyList = new ObservableCollection<TransparencyData>();
+
+	private Byte2ImageSource _byte2Image = new Byte2ImageSource();
+
+	private ModuleDisplayDecorator selectedDecorator;
+
+	public static readonly DependencyProperty IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(ModuleResultView), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsRoiVisibleProperty = DependencyProperty.Register("IsRoiVisible", typeof(bool), typeof(ModuleResultView), new PropertyMetadata(true, change));
+
+	private List<ROISelecterHolder> roiHolders = new List<ROISelecterHolder>();
+
+	public static readonly DependencyProperty ROISelectersProperty = DependencyProperty.Register("ROISelecters", typeof(IList), typeof(ModuleResultView), new PropertyMetadata(null, OnROISelectersChanged));
+
+	private uint executeCount;
+
+	private bool isInit = false;
+
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(ModuleResultView), new PropertyMetadata(null, ModuleSourceChanged));
+
+	private List<object> datalist = null;
+
+	private object needRenderSignal = null;
+
+	private uint OwnerProcessID = 0u;
+
+	private readonly object _datalistlock = new object();
+
+	private IVmProcedure ownerProcedure = null;
+
+	private bool isclose = false;
+
+	/// <summary>
+	/// 是否正在使用主仓库数据渲染
+	/// </summary>
+	private bool isRendering = false;
+
+	private bool needActiveUpdateShapes = false;
+
+	private bool isDecoratorRebuilding;
+
+	private AlgorithmTabRoot imageAlgorithmTabRoot;
+
+	private LocalImageListView localView = null;
+
+	private string[] displayVmIOTypes = new string[5] { "int", "float", "string", "byte", "double" };
+
+	private int[] columMaxLens = null;
+
+	private uint? curHsiListShowCount = null;
+
+	private uint? curCharBoxShowCount = null;
+
+	private int selectIndex;
+
+	private List<CrossData> crossDatas = null;
+
+	private bool isFirstOpenCross = true;
+
+	private CrossConfig lineConfig = null;
+
+	private DelegateCommand<object> crossShowCommand = null;
+
+	private static readonly string[] exceptTypes = new string[6] { "image", "datachart", "hsilist", "sampleimage", "imagetitle", "pixelinfoimage" };
+
+	private const int IMAGE_DEFAULT_WIDTH = 920;
+
+	private const int IMAGE_DEFAULT_HEIGHT = 517;
+
+	private bool _logChecked;
+
+	private bool isInfoTabExpand = true;
+
+	public static readonly DependencyProperty IsShowDoubleImageProperty = DependencyProperty.Register("IsShowDoubleImage", typeof(bool), typeof(ModuleResultView), new PropertyMetadata(false, OnIsShowDoubleImageChanged));
+
+	public IMoudleResultAddition ResultViewAddition { get; set; }
+
+	/// <summary>
+	/// 请求地址
+	/// </summary>
+	public string CurrentReqAddress { get; set; }
+
+	public ModuleDisplayDecorator m_CurrentInfo
+	{
+		get
+		{
+			return selectedDecorator;
+		}
+		set
+		{
+			if (selectedDecorator != value)
+			{
+				selectedDecorator = value;
+				OnPropertyChanged("m_CurrentInfo");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否打开参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// roi是否显示
+	/// </summary>
+	public bool IsRoiVisible
+	{
+		get
+		{
+			return (bool)GetValue(IsRoiVisibleProperty);
+		}
+		set
+		{
+			SetValue(IsRoiVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数列表绘制ROI的项
+	/// </summary>
+	public IList ROISelecters
+	{
+		get
+		{
+			return (IList)GetValue(ROISelectersProperty);
+		}
+		set
+		{
+			SetValue(ROISelectersProperty, value);
+		}
+	}
+
+	public uint ExecuteCount
+	{
+		get
+		{
+			return executeCount;
+		}
+		set
+		{
+			if (executeCount != value)
+			{
+				executeCount = value;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前模块绑定信息
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public AlgorithmTabRoot ImageAlgorithmTabRoot
+	{
+		get
+		{
+			return imageAlgorithmTabRoot;
+		}
+		set
+		{
+			if (imageAlgorithmTabRoot != value && !isDecoratorRebuilding)
+			{
+				imageAlgorithmTabRoot = value;
+				OnPropertyChanged("ImageAlgorithmTabRoot");
+			}
+		}
+	}
+
+	public List<CrossData> CrossDatas
+	{
+		get
+		{
+			if (crossDatas == null)
+			{
+				crossDatas = new List<CrossData>
+				{
+					new CrossData
+					{
+						index = 1
+					},
+					new CrossData
+					{
+						index = 2
+					}
+				};
+			}
+			return crossDatas;
+		}
+	}
+
+	/// <summary>
+	/// 显示十字线
+	/// </summary>
+	public ICommand CrossShowCommand => (ICommand)(crossShowCommand ?? (crossShowCommand = new DelegateCommand<object>((Action<object>)CrossShowCommandExecute)));
+
+	public ImageViewBox ImageView => imageView;
+
+	public bool LogChecked
+	{
+		get
+		{
+			return _logChecked;
+		}
+		set
+		{
+			_logChecked = value;
+			OnPropertyChanged("LogChecked");
+		}
+	}
+
+	public bool IsInfoTabExpand
+	{
+		get
+		{
+			return isInfoTabExpand;
+		}
+		set
+		{
+			if (isInfoTabExpand != value)
+			{
+				isInfoTabExpand = value;
+				OnPropertyChanged("IsInfoTabExpand");
+				resultRow.Height = new GridLength(isInfoTabExpand ? 235 : 40);
+			}
+		}
+	}
+
+	public bool IsCanDrawROI => m_CurrentInfo.IsCanDrawROI;
+
+	/// <summary>
+	/// 是否显示双画面
+	/// </summary>
+	public bool IsShowDoubleImage
+	{
+		get
+		{
+			return (bool)GetValue(IsShowDoubleImageProperty);
+		}
+		set
+		{
+			SetValue(IsShowDoubleImageProperty, value);
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public event Action<object> ImageChangedEvent;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void change(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	private static void OnROISelectersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	public static void ModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ModuleResultView ic = (ModuleResultView)d;
+		IVmModule oldValue = e.OldValue as IVmModule;
+		IVmModule newValue = e.NewValue as IVmModule;
+		if (!ic.isInit)
+		{
+			ic.Dispatcher.BeginInvoke((Action)(() =>
+			{
+				if (newValue == ic.ModuleSource)
+				{
+					ic.DoSourceChanged(oldValue, newValue);
+				}
+			}));
+			ic.isInit = true;
+		}
+		else
+		{
+			ic.DoSourceChanged(oldValue, newValue);
+		}
+		ic.ResultViewAddition?.ModuleSourceChangedOut(newValue);
+	}
+
+	private void DoSourceChanged(IVmModule oldValue, IVmModule newValue)
+	{
+		if (oldValue != null)
+		{
+			isDecoratorRebuilding = true;
+			m_CurrentInfo?.Dispose();
+			isDecoratorRebuilding = false;
+			m_CurrentInfo = null;
+		}
+		ClearDataStore();
+		if (newValue != null)
+		{
+			RefreshExecuteCount(newValue);
+			m_CurrentInfo = new ModuleDisplayDecorator
+			{
+				DecorateSource = newValue,
+				ParentUI = this
+			};
+			isDecoratorRebuilding = true;
+			m_CurrentInfo.Init();
+			isDecoratorRebuilding = false;
+			resultGrid.DataContext = m_CurrentInfo;
+			localImageGrid.DataContext = m_CurrentInfo;
+			ImageAlgorithmTabRoot = m_CurrentInfo.ImageAlgorithmTabRoot;
+		}
+		else
+		{
+			m_CurrentInfo = null;
+		}
+		UpdateModuleView();
+	}
+
+	public void P_ValueChanged(object sender, EventArgs e)
+	{
+		if (sender == null)
+		{
+			return;
+		}
+		if (e is ValueEventArgs e2)
+		{
+			if (e2.ValueType == "datalist" && !isclose)
+			{
+				lock (_datalistlock)
+				{
+					datalist = e2.Value as List<object>;
+				}
+			}
+			m_CurrentInfo?.RenderDataCenter.SetDataToStore(sender, e);
+		}
+		else if (e != null && !isclose)
+		{
+			IVMRun obj = ownerProcedure as IVMRun;
+			if (obj != null && !obj.IsRunning)
+			{
+				UpdateModuleViewResultShow();
+			}
+		}
+	}
+
+	public void OnRelatedIOChanged(object sender, EventArgs e)
+	{
+		VmIO relatedIO;
+		if (e is ValueEventArgs e2 && (relatedIO = e2.Value as VmIO) != null)
+		{
+			if (relatedIO.Parent is VmIO { TypeName: "PIXELIMAGE" } vmIO)
+			{
+				relatedIO = vmIO;
+			}
+			if (!IsShowDoubleImage && m_CurrentInfo != null)
+			{
+				ImageViewItem imageViewItem = m_CurrentInfo.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayValue == relatedIO);
+				if (imageViewItem != null)
+				{
+					m_CurrentInfo.SelectedImage = imageViewItem;
+				}
+				else
+				{
+					ResultViewAddition?.OnRelatedIOChanged();
+				}
+			}
+			m_CurrentInfo.RefreshInputImageList(e2.Value);
+		}
+		SetRoiVisible();
+	}
+
+	public void OnModuleCallBackArrived(object sender, EventArgs e)
+	{
+		if (isclose)
+		{
+			return;
+		}
+		ValueEventArgs valueEvent;
+		if ((valueEvent = e as ValueEventArgs) == null)
+		{
+			return;
+		}
+		bool isSelfExecute = valueEvent.Value is ImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX_Data iMVS_MODULE_RESULT_INFO_LIST_EX_Data && iMVS_MODULE_RESULT_INFO_LIST_EX_Data.bIsSelfExecute == 1;
+		if ((m_CurrentInfo != null) & isSelfExecute)
+		{
+			if (m_CurrentInfo.RenderDataCenter.IsBusy || isRendering)
+			{
+				return;
+			}
+			m_CurrentInfo.RenderDataCenter.BeforeExchange(valueEvent.ExecuteCount);
+		}
+		Dispatcher.BeginInvoke((BeginInvokeDelegate)(() =>
+		{
+			try
+			{
+				if (!isclose)
+				{
+					if ((m_CurrentInfo != null) & isSelfExecute)
+					{
+						m_CurrentInfo.RenderDataCenter.Exchange(OwnerProcessID, valueEvent.ExecuteCount);
+						bool flag = false;
+						if (m_CurrentInfo.RenderDataCenter.TryGetImage("SelectedImage", out var image) && image != m_CurrentInfo.ImageDataSource)
+						{
+							if (image?.Tag?.ToString() == m_CurrentInfo.SelectedImage?.DisplayName)
+							{
+								isRendering = true;
+								if (ResultViewAddition == null)
+								{
+									m_CurrentInfo.ImageDataSource = image;
+								}
+								else
+								{
+									ResultViewAddition.OnModuleCallBackArrived(0, image);
+								}
+								flag = true;
+							}
+						}
+						else if (!flag && image == null && m_CurrentInfo.SelectedImage?.DisplayValue is IVmIO vmIO && vmIO.Owner == ModuleSource)
+						{
+							image = (m_CurrentInfo.SelectedImage?.DisplayObject as Apps.XmlParser.Object)?.GetValue(uint.MaxValue) as ImageData;
+							if (m_CurrentInfo.ImageDataSource != image)
+							{
+								isRendering = true;
+								if (ResultViewAddition == null)
+								{
+									m_CurrentInfo.ImageDataSource = image;
+								}
+								else
+								{
+									ResultViewAddition.OnModuleCallBackArrived(0, image);
+								}
+								flag = true;
+							}
+							LogHelper.Debug("Current image is null.ExecuteCount = " + ExecuteCount);
+						}
+						else
+						{
+							UpdateShapesWithCallBackData(isSelfExecute: true);
+							ResultViewAddition?.OnModuleCallBackArrived(1);
+							flag = true;
+						}
+						if (!flag)
+						{
+							m_CurrentInfo.RenderDataCenter.ClearDisplayStore();
+						}
+						RefreshDataListResult(datalist, needClear: true);
+						RefreshResultTree();
+					}
+					RefreshDataRecord(valueEvent.Value);
+					ImageViewBox imageViewBox = (IsShowDoubleImage ? imageViewIn : imageView);
+					if (imageViewBox.ROIVisible && !imageViewBox.IsDragROI)
+					{
+						ModuleSource.UpdateROI();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("自执行渲染异常：" + ex.Message + ex.StackTrace);
+			}
+		}), DispatcherPriority.Background);
+	}
+
+	private void Dispatcher_ShutdownStarted(object sender, EventArgs e)
+	{
+		isclose = true;
+		RenderThreadPool.ShutDown();
+	}
+
+	private void RefreshExecuteCount(IVmModule obj)
+	{
+		curHsiListShowCount = null;
+		IVmProcedure vmProcedure = (obj as IVmProcedure) ?? (obj.Root as IVmProcedure);
+		if (vmProcedure != null)
+		{
+			ownerProcedure = vmProcedure;
+			OwnerProcessID = (vmProcedure as IVmModule).ID;
+			LogHelper.Info($"ModuleResultView Binding Process [{OwnerProcessID}]");
+			if (!(vmProcedure as IVMRun).IsRunning)
+			{
+				ExecuteCount = (vmProcedure as IVmModule).ExecuteCount;
+			}
+			WeakEventManager<IVmProcedure, EventArgs>.RemoveHandler(vmProcedure, "AsyncWorkStatusCallBack", OnPreduceResultCallBackArrived);
+			WeakEventManager<IVmProcedure, EventArgs>.AddHandler(vmProcedure, "AsyncWorkStatusCallBack", OnPreduceResultCallBackArrived);
+		}
+	}
+
+	public void OnPreduceResultCallBackArrived(object sender, EventArgs e)
+	{
+		if (!(e is ValueEventArgs e2))
+		{
+			return;
+		}
+		try
+		{
+			if (!(e2.Value is ImvsSdkDefine.IMVS_MODULE_WORK_STAUS iMVS_MODULE_WORK_STAUS))
+			{
+				return;
+			}
+			if (iMVS_MODULE_WORK_STAUS.nWorkStatus == 0)
+			{
+				if ((m_CurrentInfo.RenderDataCenter.IsBusy || isRendering) && e2.ExecuteCount != m_CurrentInfo.RenderDataCenter.FixedExcuteCount)
+				{
+					needRenderSignal = e2;
+					return;
+				}
+				if (e2.ExecuteCount != ExecuteCount)
+				{
+					LogHelper.Error($"不应该进这个分支.args.ExecuteCount = {e2.ExecuteCount}, ExecuteCount = {ExecuteCount}");
+					ExecuteCount = e2.ExecuteCount;
+				}
+				UpdateRender(e2.ExecuteCount);
+			}
+			else if (iMVS_MODULE_WORK_STAUS.nWorkStatus == 1)
+			{
+				ExecuteCount = iMVS_MODULE_WORK_STAUS.nExecuteCount;
+			}
+		}
+		catch (Exception)
+		{
+			LogHelper.Debug("Set isReadyToRender True in Exception.");
+		}
+	}
+
+	private void UpdateRender(uint executeCount)
+	{
+		if (m_CurrentInfo.ImageDataSource == null)
+		{
+			isRendering = false;
+		}
+		m_CurrentInfo.RenderDataCenter.BeforeExchange(executeCount);
+		RenderThreadPool.AsyncRun((object moduleDecorator) =>
+		{
+			try
+			{
+				if (moduleDecorator == m_CurrentInfo)
+				{
+					m_CurrentInfo.RenderDataCenter.Exchange(OwnerProcessID, executeCount);
+					if (!isclose && m_CurrentInfo != null)
+					{
+						bool hasRendered = false;
+						if (m_CurrentInfo.RenderDataCenter.TryGetImage("SelectedImage", out var image) && image != m_CurrentInfo.ImageDataSource)
+						{
+							isRendering = true;
+							Dispatcher.Invoke(() =>
+							{
+								if (moduleDecorator != m_CurrentInfo)
+								{
+									isRendering = false;
+								}
+								else
+								{
+									if (ResultViewAddition == null)
+									{
+										m_CurrentInfo.ImageDataSource = image;
+									}
+									else
+									{
+										ResultViewAddition.OnModuleCallBackArrived(0, image);
+									}
+									hasRendered = true;
+								}
+							}, DispatcherPriority.Background);
+						}
+						if (!hasRendered && m_CurrentInfo.SelectedImage?.DisplayObject is Apps.XmlParser.Object obj)
+						{
+							image = obj.GetValue(uint.MaxValue) as ImageData;
+							if (image != m_CurrentInfo.ImageDataSource)
+							{
+								isRendering = true;
+								Dispatcher.Invoke(() =>
+								{
+									if (moduleDecorator != m_CurrentInfo)
+									{
+										isRendering = false;
+									}
+									else
+									{
+										needActiveUpdateShapes = true;
+										if (ResultViewAddition == null)
+										{
+											m_CurrentInfo.ImageDataSource = image;
+										}
+										else
+										{
+											ResultViewAddition.OnModuleCallBackArrived(0, image);
+										}
+										hasRendered = true;
+									}
+								}, DispatcherPriority.Background);
+								LogHelper.Info("Current image is null.ExecuteCount = " + executeCount);
+							}
+						}
+						if (!hasRendered && m_CurrentInfo.IsDoubleImageMode && m_CurrentInfo.RenderDataCenter.TryGetImage("SelectedInputImage", out var imageIn) && imageIn != m_CurrentInfo.ImageDataSourceIn)
+						{
+							Dispatcher.Invoke(() =>
+							{
+								m_CurrentInfo.ImageDataSourceIn = imageIn;
+							}, DispatcherPriority.Background);
+						}
+						if (!hasRendered)
+						{
+							m_CurrentInfo.RenderDataCenter.ClearDisplayStore();
+						}
+						Dispatcher.BeginInvoke((BeginInvokeDelegate)(() =>
+						{
+							if (!isclose)
+							{
+								RefreshDataListResult(datalist);
+								RefreshResultTree();
+							}
+						}));
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("渲染异常：" + ex.Message + ex.StackTrace);
+			}
+		}, m_CurrentInfo);
+	}
+
+	public ModuleResultView()
+	{
+		InitializeComponent();
+		if (!this.IsInDesignMode())
+		{
+			CurrentReqAddress = "";
+			CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+			{
+			});
+			ImageViewBox imageViewBox = imageView;
+			imageViewBox.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Remove(imageViewBox.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+			ImageViewBox imageViewBox2 = imageView;
+			imageViewBox2.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Combine(imageViewBox2.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+			imageTransparencyList.Add(new TransparencyData
+			{
+				ImageTransparency = 191,
+				ZIndex = 100,
+				IsUsed = false
+			});
+			imageTransparencyList.Add(new TransparencyData
+			{
+				ImageTransparency = 127,
+				ZIndex = 101,
+				IsUsed = false
+			});
+			imageTransparencyList.Add(new TransparencyData
+			{
+				ImageTransparency = 63,
+				ZIndex = 102,
+				IsUsed = false
+			});
+			P_ValueChanged(null, null);
+		}
+		Loaded += ModuleResultView_Loaded;
+		Unloaded += ModuleResultView_Unloaded;
+		ResultViewAddition = Ioc.HotGet<IAdditionService>()?.GetMoudleResultAddition(this);
+		AdditionCTemplate.Content = ResultViewAddition;
+		AdditionRTemplate.Content = ResultViewAddition;
+	}
+
+	private void ModuleResultView_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (!this.IsInDesignMode())
+		{
+			Ioc.Set<IModuleResultView>(this);
+			Dispatcher.ShutdownStarted -= Dispatcher_ShutdownStarted;
+			Dispatcher.ShutdownStarted += Dispatcher_ShutdownStarted;
+			FunctionCameraManager.Register("RefreshResultView", OnLanguageChanged);
+			Apps.Data.PropertyManager.Register("ImageSourceType");
+			Apps.Data.PropertyManager.UpdateDisplayStatus -= UpdateLocalImageListVisibility;
+			Apps.Data.PropertyManager.UpdateDisplayStatus += UpdateLocalImageListVisibility;
+			ImageViewBox imageViewBox = imageView;
+			imageViewBox.OnControlAlert = (ImageViewBox.ControlAlert)Delegate.Remove(imageViewBox.OnControlAlert, new ImageViewBox.ControlAlert(imageView_OnControlAlert));
+			ImageViewBox imageViewBox2 = imageView;
+			imageViewBox2.OnControlAlert = (ImageViewBox.ControlAlert)Delegate.Combine(imageViewBox2.OnControlAlert, new ImageViewBox.ControlAlert(imageView_OnControlAlert));
+			ImageViewBox imageViewBox3 = imageView;
+			imageViewBox3.OnFreshExtendContent = (ImageViewBox.FreshExtendContent)Delegate.Remove(imageViewBox3.OnFreshExtendContent, new ImageViewBox.FreshExtendContent(imageView_OnFreshExtendContent));
+			ImageViewBox imageViewBox4 = imageView;
+			imageViewBox4.OnFreshExtendContent = (ImageViewBox.FreshExtendContent)Delegate.Combine(imageViewBox4.OnFreshExtendContent, new ImageViewBox.FreshExtendContent(imageView_OnFreshExtendContent));
+			Window window = Window.GetWindow(this);
+			if (window != null)
+			{
+				window.Closed += OwnerWin_Closed;
+			}
+		}
+	}
+
+	private void OwnerWin_Closed(object sender, EventArgs e)
+	{
+		ModuleSource = null;
+	}
+
+	private void ModuleResultView_Unloaded(object sender, RoutedEventArgs e)
+	{
+		if (!this.IsInDesignMode())
+		{
+			Ioc.Set<IModuleResultView>(null);
+			Dispatcher.ShutdownStarted -= Dispatcher_ShutdownStarted;
+			FunctionCameraManager.UnRegister("RefreshResultView");
+			Apps.Data.PropertyManager.UpdateDisplayStatus -= UpdateLocalImageListVisibility;
+			Apps.Data.PropertyManager.UnRegister("ImageSourceType");
+			ImageViewBox imageViewBox = imageView;
+			imageViewBox.OnControlAlert = (ImageViewBox.ControlAlert)Delegate.Remove(imageViewBox.OnControlAlert, new ImageViewBox.ControlAlert(imageView_OnControlAlert));
+			ImageViewBox imageViewBox2 = imageView;
+			imageViewBox2.OnFreshExtendContent = (ImageViewBox.FreshExtendContent)Delegate.Remove(imageViewBox2.OnFreshExtendContent, new ImageViewBox.FreshExtendContent(imageView_OnFreshExtendContent));
+			Window window = Window.GetWindow(this);
+			if (window != null)
+			{
+				window.Closed -= OwnerWin_Closed;
+			}
+		}
+	}
+
+	private void imageView_OnSetImageEnd(object sender, string msg)
+	{
+		try
+		{
+			bool result = true;
+			if (bool.TryParse(msg, out result) && !result)
+			{
+				return;
+			}
+			if (needActiveUpdateShapes)
+			{
+				ActiveUpdateShapes(uint.MaxValue, needClear: true);
+			}
+			else
+			{
+				UpdateShapesWithCallBackData();
+			}
+			ResultViewAddition?.OnModuleCallBackArrived(1);
+			ImageData image = null;
+			if (m_CurrentInfo != null && IsShowDoubleImage)
+			{
+				if (m_CurrentInfo.RenderDataCenter.TryGetImage("SelectedInputImage", out image))
+				{
+					m_CurrentInfo.ImageDataSourceIn = image;
+				}
+				else if (m_CurrentInfo.SelectedInputImage?.DisplayObject is Apps.XmlParser.Object obj)
+				{
+					image = obj.GetValue(uint.MaxValue) as ImageData;
+					if (image != m_CurrentInfo.ImageDataSourceIn)
+					{
+						m_CurrentInfo.ImageDataSourceIn = image;
+					}
+				}
+			}
+			if (m_CurrentInfo != null && m_CurrentInfo.IsShowLocalImageList && m_CurrentInfo.IsShowImageName && m_CurrentInfo.ImageDataSource != null)
+			{
+				imageView.ImageName = System.IO.Path.GetFileName(m_CurrentInfo.ImageFilePath);
+			}
+			else
+			{
+				imageView.ImageName = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("渲染异常：" + ex.Message + ex.StackTrace);
+		}
+		finally
+		{
+			m_CurrentInfo.RenderDataCenter.ClearDisplayStore();
+			isRendering = false;
+			needActiveUpdateShapes = false;
+			if (needRenderSignal is ValueEventArgs e && !m_CurrentInfo.RenderDataCenter.IsBusy && (e.ExecuteCount == m_CurrentInfo.RenderDataCenter.SpareExecuteCount || e.ExecuteCount == m_CurrentInfo.RenderDataCenter.BufferExecuteCount || Apps.XmlParser.Object.GetDataSendFinishState(OwnerProcessID, e.ExecuteCount)))
+			{
+				UpdateRender(e.ExecuteCount);
+			}
+			needRenderSignal = null;
+		}
+	}
+
+	private void UpdateShapesWithCallBackData(bool isSelfExecute = false)
+	{
+		Dictionary<object, object> shapeStore = m_CurrentInfo.RenderDataCenter.GetShapeStore();
+		ClearOldShapes();
+		ResultViewAddition?.UpdateShapesWithCallBackData();
+		bool textUpdated = false;
+		bool datachartUpdated = false;
+		if (isSelfExecute && curCharBoxShowCount.HasValue)
+		{
+			curCharBoxShowCount = 0u;
+		}
+		DrawShapesByStore(shapeStore, ref textUpdated, ref datachartUpdated);
+		shapeStore.Clear();
+		shapeStore = null;
+		curImageData = m_CurrentInfo.ImageDataSource as ImageData;
+		IVmModule moduleSource = ModuleSource;
+		if (moduleSource != null && !moduleSource.IsForbidden && ModuleSource?.ExecuteCount == ExecuteCount)
+		{
+			if (!textUpdated)
+			{
+				List<object> list = m_CurrentInfo.ModuleParams.GetDisplayList()?.Where((object p) => p is Apps.XmlParser.Object obj4 && obj4.TypeA == "text")?.ToList();
+				if (list != null && list.Count > 0)
+				{
+					foreach (object item in list)
+					{
+						if (item is Apps.XmlParser.Object { IsDisplay: not false } obj)
+						{
+							if (curImageData != null)
+							{
+								List<object> shapes = obj.GetValue(uint.MaxValue) as List<object>;
+								DrawCurModuleUIResult(obj, obj.Type, shapes);
+							}
+							obj.ClearValueStore();
+						}
+					}
+				}
+			}
+			if (datachartUpdated)
+			{
+				RefreshHikHistogramSelection();
+			}
+			if (curHsiListShowCount.HasValue && m_CurrentInfo.ModuleParams.GetDisplayList()?.FirstOrDefault((object p) => p is Apps.XmlParser.Object obj4 && obj4.TypeA == "hsilist") is Apps.XmlParser.Object obj2)
+			{
+				List<object> shapes2 = obj2.GetValue(uint.MaxValue) as List<object>;
+				DrawCurModuleUIResult(obj2, obj2.Type, shapes2);
+				obj2.ClearValueStore();
+			}
+			if (curCharBoxShowCount.HasValue && curCharBoxShowCount != ExecuteCount && m_CurrentInfo.ModuleParams.GetDisplayList()?.FirstOrDefault((object p) => p is Apps.XmlParser.Object obj4 && obj4.NameA == "CharBox") is Apps.XmlParser.Object { IsDisplay: not false } obj3)
+			{
+				List<object> shapes3 = obj3.GetValue(uint.MaxValue) as List<object>;
+				DrawCurModuleUIResult(obj3, obj3.Type, shapes3);
+				obj3.ClearValueStore();
+			}
+		}
+		AddCrossLine();
+		UpdateCheckImages();
+	}
+
+	private void ClearOldShapes()
+	{
+		imageView.ClearExternShapes();
+		m_CurrentInfo.ShapeList.Clear();
+		if (m_HikHistogram.Visibility == Visibility.Visible)
+		{
+			List<string> list = m_HikHistogram.DataPointsCollection.Select((KeyValuePair<string, PointCollection> p) => p.Key).ToList();
+			foreach (string item in list)
+			{
+				m_HikHistogram.DataPointsCollection[item] = new PointCollection();
+			}
+			m_HikHistogram.DataPoints = null;
+		}
+		if (m_LeftResultTabItemGrid.Children.OfType<ISpecialParam>().Count() <= 0)
+		{
+			return;
+		}
+		foreach (object child in m_LeftResultTabItemGrid.Children)
+		{
+			if (child is ISpecialParam specialParam)
+			{
+				specialParam.RenderFunction(null);
+			}
+		}
+	}
+
+	private void DrawShapesByStore(Dictionary<object, object> store, ref bool textUpdated, ref bool datachartUpdated)
+	{
+		List<KeyValuePair<object, object>> list = store.ToList();
+		ValueEventArgs e = list.FirstOrDefault((KeyValuePair<object, object> p) => p.Key is Apps.XmlParser.Object obj2 && obj2.TypeA == "shepematrix").Value as ValueEventArgs;
+		m_CurrentInfo.ShapeMatrix = e?.Value;
+		foreach (KeyValuePair<object, object> item in list)
+		{
+			Apps.XmlParser.Object obj = item.Key as Apps.XmlParser.Object;
+			ValueEventArgs e2 = item.Value as ValueEventArgs;
+			List<object> list2 = e2.Value as List<object>;
+			if (list2 == null && e2.Value is ImageData)
+			{
+				list2 = new List<object> { e2.Value };
+			}
+			DrawCurModuleUIResult(obj, e2.ValueType, list2);
+			if (obj.NameA == "Show Text")
+			{
+				textUpdated = true;
+			}
+			else if (e2.ValueType == "datachart")
+			{
+				datachartUpdated = true;
+			}
+		}
+	}
+
+	private void imageView_OnControlAlert(object sender, string msg)
+	{
+		HikMessageBox.Show(AppLocalizationService.GetLang("视图"), msg, MessageIcons.Warning);
+	}
+
+	public void UpdateModuleView()
+	{
+		if (ModuleSource == null)
+		{
+			ClearModuleView();
+			return;
+		}
+		AddCrossLine();
+		ModuleDisplayDecorator currentInfo = m_CurrentInfo;
+		if (currentInfo != null && currentInfo.IsProcedure)
+		{
+			IsShowDoubleImage = false;
+		}
+	}
+
+	/// <summary>
+	/// 清空缓存数据
+	/// </summary>
+	public void ClearDataStore()
+	{
+		curHsiListShowCount = null;
+		curCharBoxShowCount = null;
+		isRendering = false;
+		lock (_datalistlock)
+		{
+			datalist = null;
+		}
+	}
+
+	/// <summary>
+	/// 切换为通用视图模型
+	/// </summary>
+	/// <param name="info"></param>
+	/// <param name="resultList"></param>
+	/// <param name="bIsFirstOpen"></param>
+	public void SetCommonModuleView()
+	{
+		ModuleDisplayDecorator currentInfo = m_CurrentInfo;
+		ClearModuleView();
+		SetCommonViewMode();
+		bool flag = (currentInfo.ModuleParams?.GetDisplayList())?.Any((object x) => x is Apps.XmlParser.Object && (x as Apps.XmlParser.Object).Type == "datalist") ?? false;
+		CurResultTabItem.Visibility = ((!flag) ? Visibility.Collapsed : Visibility.Visible);
+		hstTab.Visibility = Visibility.Visible;
+		m_ResultDataGrid.Visibility = Visibility.Visible;
+		InitSpecialParams();
+		if ((InfoTab.Items[currentInfo.curTabIndex] as TabItem).IsVisible)
+		{
+			InfoTab.SelectedIndex = currentInfo.curTabIndex;
+		}
+		else
+		{
+			SetFirstVisibleTab();
+		}
+		if (m_CurrentInfo?.DecorateSource is IVmProcedure)
+		{
+			return;
+		}
+		Dispatcher.BeginInvoke((BeginInvokeDelegate)(() =>
+		{
+			try
+			{
+				RefreshDataListResult(null, needClear: true);
+				m_CurrentInfo?.RefreshRecordResult();
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("刷新结果列表异常：" + ex.Message + ex.StackTrace);
+			}
+		}), DispatcherPriority.Background);
+	}
+
+	/// <summary>
+	/// 初始化特殊参数控件
+	/// </summary>
+	/// <param name="info"></param>
+	public void InitSpecialParams()
+	{
+		if (ModuleSource == null)
+		{
+			return;
+		}
+		string moduleName = ModuleSource.ModuleTypeName;
+		string text = System.IO.Path.GetDirectoryName(ModuleSource.Params.XmlPath) + "\\" + moduleName + "Control.dll";
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control"));
+		if (assembly == null && File.Exists(text))
+		{
+			ActivatorWrap.LoadAssembly(text);
+			assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control")) ?? AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName.Remove(moduleName.LastIndexOf('C')) + "Control"));
+		}
+		if (!(assembly != null))
+		{
+			return;
+		}
+		List<Type> list = (from p in assembly.GetTypes()
+			where typeof(ISpecialParam).IsAssignableFrom(p)
+			select p).ToList();
+		if (list.Count <= 0)
+		{
+			return;
+		}
+		if (ModuleSource.Params is ModuleParam param)
+		{
+			m_CurrentInfo.AlgorithmItems = param.GetParamRoot();
+		}
+		else
+		{
+			m_CurrentInfo.AlgorithmItems = new AlgorithmTabRoot(ModuleSource.Params);
+			m_CurrentInfo.AlgorithmItems.Owner = m_CurrentInfo.DecorateSource;
+		}
+		m_CurrentInfo.AlgorithmItems.GetItemsValueUnit();
+		System.Windows.Controls.Control control = ActivatorWrap.CreateInstance(list[0], new object[1] { m_CurrentInfo.AlgorithmItems }) as System.Windows.Controls.Control;
+		string text2 = (control as ISpecialParam)?.TabItemName;
+		if (!string.IsNullOrEmpty(text2))
+		{
+			switch (text2)
+			{
+			case "CommonParamTabItem":
+				ParamsView.Children.Add(control);
+				CommonParamTabItem.Visibility = Visibility.Visible;
+				break;
+			case "DataqueueTabItem":
+				QueueView.Children.Add(control);
+				DataqueueTabItem.Visibility = Visibility.Visible;
+				break;
+			case "CurResultTabItem":
+				m_LeftResultTabItemGrid.Children.Add(control);
+				Grid.SetColumn(control, 2);
+				CurResultTabItem.Visibility = Visibility.Visible;
+				break;
+			}
+		}
+		(control as ISpecialParam).InitFunction();
+	}
+
+	private void UpdateLocalImageListVisibility(string name, string value)
+	{
+		if (!(name != "ImageSourceType") && ImageAlgorithmTabRoot != null)
+		{
+			if (value == "1")
+			{
+				m_CurrentInfo.IsShowLocalImageList = true;
+			}
+			else
+			{
+				m_CurrentInfo.IsShowLocalImageList = false;
+			}
+		}
+	}
+
+	private void OnLanguageChanged()
+	{
+		if (m_CurrentInfo?.DecorateSource != null)
+		{
+			SetCommonModuleView();
+			IVMRun obj = ownerProcedure as IVMRun;
+			if (obj != null && !obj.IsRunning)
+			{
+				IList<object> displayList = m_CurrentInfo.ModuleParams.GetDisplayList();
+				if (displayList != null)
+				{
+					foreach (Apps.XmlParser.Object item in displayList)
+					{
+						if (item.IsDisplay && item.Type != "image" && item.Type != "pixelinfoimage")
+						{
+							item.ClearValueStore();
+						}
+					}
+				}
+			}
+			m_CurrentInfo.RefreshImageList();
+			m_CurrentInfo.ResultData.Clear();
+			m_CurrentInfo.ResultData.Add(m_CurrentInfo?.DecorateSource);
+			m_CurrentInfo.OnPropertyChanged("HelperContent");
+			if (localView == null)
+			{
+				localView = Template.FindName("localView", this) as LocalImageListView;
+			}
+			localView?.OnLanguageChanged();
+			if (m_CurrentInfo.SelectedImage == null)
+			{
+				ActiveUpdateShapes(uint.MaxValue);
+			}
+		}
+		if (lineConfig != null)
+		{
+			lineConfig.Close();
+		}
+	}
+
+	/// <summary>
+	/// 清空模块显示内容
+	/// </summary>
+	public void ClearModuleView()
+	{
+		imageView.ClearExternShapes();
+		m_CurrentInfo?.ShapeList.Clear();
+		ResultViewAddition?.UpdateShapesWithCallBackData();
+		imageView.Init();
+		imageView.ImageName = null;
+		ClearModuleTab();
+		UpdateImageView(null);
+		CurrentReqAddress = "";
+		ClearDataGird();
+		ClearImageLayer();
+	}
+
+	/// <summary>
+	/// 清理模块结果tab控件
+	/// 删除模块自定义控件并执行控件内部方法
+	/// </summary>
+	private void ClearModuleTab()
+	{
+		foreach (object child in ParamsView.Children)
+		{
+			if (child is ISpecialParam specialParam)
+			{
+				specialParam.DisposeFunction();
+			}
+		}
+		ParamsView.Children.Clear();
+		if (DataqueueTabItem.Visibility == Visibility.Visible)
+		{
+			foreach (object child2 in QueueView.Children)
+			{
+				if (child2 is ISpecialParam specialParam2)
+				{
+					specialParam2.DisposeFunction();
+				}
+			}
+			QueueView.Children.Clear();
+		}
+		if (CurResultTabItem.Visibility == Visibility.Visible)
+		{
+			for (int num = m_LeftResultTabItemGrid.Children.Count - 1; num >= 0; num--)
+			{
+				if (m_LeftResultTabItemGrid.Children[num] is ISpecialParam specialParam3)
+				{
+					specialParam3.DisposeFunction();
+					m_LeftResultTabItemGrid.Children.RemoveAt(num);
+				}
+			}
+		}
+		CommonParamTabItem.Visibility = Visibility.Collapsed;
+		DataqueueTabItem.Visibility = Visibility.Collapsed;
+	}
+
+	public void ClearImage()
+	{
+		if (m_CurrentInfo != null)
+		{
+			m_CurrentInfo.ImageDataSource = null;
+		}
+		if (curImageData != null)
+		{
+			curImageData = null;
+		}
+	}
+
+	public void ClearDataGird()
+	{
+		m_CurrentInfo?.ClearCurrentResultList();
+		m_ResultDataGrid.Columns.Clear();
+		columMaxLens = null;
+		m_HikHistogram.HistogramTypes.Clear();
+		m_HikHistogram.DataPointsCollection.Clear();
+		m_HikHistogram.DataPoints = null;
+		if (m_HikHistogram.Visibility == Visibility.Visible)
+		{
+			m_HikHistogram.Visibility = Visibility.Collapsed;
+		}
+	}
+
+	/// <summary>
+	/// 显示首个可见页面
+	/// </summary>
+	public void SetFirstVisibleTab()
+	{
+		for (int i = 0; i < InfoTab.Items.Count; i++)
+		{
+			if (InfoTab.Items[i] is TabItem && (InfoTab.Items[i] as TabItem).IsVisible)
+			{
+				InfoTab.SelectedIndex = i;
+				m_CurrentInfo.curTabIndex = i;
+				break;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 设为通用视图模型
+	/// </summary>
+	public void SetCommonViewMode()
+	{
+		CommonModuleView.Visibility = Visibility.Visible;
+	}
+
+	/// <summary>
+	/// 更新模块结果显示
+	/// </summary>
+	public void UpdateModuleViewResultShow(string imageName = null)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			Debugger.Log(0, null, "结果绘制:enter");
+			if (imageView != null && ModuleSource != null && m_CurrentInfo?.ModuleParams != null)
+			{
+				IList<object> list = null;
+				if ((list = m_CurrentInfo.ModuleParams.GetDisplayList()) != null)
+				{
+					ImageData imageData = null;
+					uint num = (((IVmSolution)VmSolution.Instance).IsClearLastExecuteResult ? ExecuteCount : uint.MaxValue);
+					if (m_CurrentInfo.SelectedImage != null && m_CurrentInfo.SelectedImage.DisplayObject is Apps.XmlParser.Object obj)
+					{
+						imageData = (ImageData)obj.GetValue(num);
+					}
+					else
+					{
+						foreach (Apps.XmlParser.Object item in list)
+						{
+							if (item.Type == "image" || item.Type == "pixelinfoimage")
+							{
+								imageData = (ImageData)item.GetValue(num);
+								break;
+							}
+						}
+					}
+					imageView.ClearExternShapes();
+					m_CurrentInfo.ShapeList.Clear();
+					ResultViewAddition?.UpdateShapesWithCallBackData();
+					UpdateImageView(imageData);
+					m_HikHistogram.Visibility = Visibility.Collapsed;
+					ActiveUpdateShapes(num);
+				}
+			}
+		});
+	}
+
+	/// <summary>
+	/// 主动更新图形，用于切换模块等场景
+	/// </summary>
+	private void ActiveUpdateShapes(uint getValueCount, bool needClear = false)
+	{
+		IList<object> displayList = m_CurrentInfo.ModuleParams.GetDisplayList();
+		if (displayList == null)
+		{
+			return;
+		}
+		if (needClear)
+		{
+			ClearOldShapes();
+		}
+		object obj = displayList.FirstOrDefault((object p) => p is Apps.XmlParser.Object obj3 && obj3.TypeA == "shepematrix");
+		if (obj != null)
+		{
+			m_CurrentInfo.ShapeMatrix = (obj as Apps.XmlParser.Object).GetValue(getValueCount);
+		}
+		foreach (Apps.XmlParser.Object item in displayList)
+		{
+			if (!item.IsDisplay || !(item.Type != "image") || !(item.Type != "pixelinfoimage") || !(item.Type != "datarecord") || !(item.Type != "shepematrix"))
+			{
+				continue;
+			}
+			IMoudleResultAddition resultViewAddition = ResultViewAddition;
+			if (resultViewAddition == null || resultViewAddition.ActiveUpdateShapes(item.Type))
+			{
+				item.ClearValueStore();
+				object value = item.GetValue(getValueCount);
+				List<object> list = value as List<object>;
+				if (list == null && value is ImageData)
+				{
+					list = new List<object> { value };
+				}
+				DrawCurModuleUIResult(item, item.Type, list);
+			}
+		}
+		RefreshHikHistogramSelection();
+		AddCrossLine();
+		if (m_CurrentInfo != null && m_CurrentInfo.IsShowLocalImageList && m_CurrentInfo.IsShowImageName && m_CurrentInfo.ImageDataSource != null)
+		{
+			imageView.ImageName = System.IO.Path.GetFileName(m_CurrentInfo.ImageFilePath);
+		}
+		else
+		{
+			imageView.ImageName = null;
+		}
+		UpdateCheckImages();
+		ResultViewAddition?.OnModuleCallBackArrived(1);
+	}
+
+	/// <summary>
+	/// 刷新模块结果树
+	/// </summary>
+	public void RefreshResultTree()
+	{
+		if (ResultTab.SelectedItem != treeTabItem || ModuleSource == null)
+		{
+			return;
+		}
+		List<VmIO> list = (ModuleSource.Outputs as VmIOCollection)?.GetAllLeafIO();
+		if (list == null)
+		{
+			return;
+		}
+		foreach (VmIO item in list)
+		{
+			if (displayVmIOTypes.Contains(item.TypeName))
+			{
+				item.OnPropertyChanged("DisplayValue");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 刷新直方图选中项
+	/// </summary>
+	private void RefreshHikHistogramSelection()
+	{
+		if (m_HikHistogram.Visibility == Visibility.Visible)
+		{
+			int num = m_HikHistogram.SelectedHistogramTypeIndex;
+			if (num == -1)
+			{
+				num = 0;
+			}
+			m_HikHistogram.SelectedHistogramTypeIndex = num;
+			m_HikHistogram.HistogramTypeSelectionChanged();
+		}
+	}
+
+	/// <summary>
+	/// 刷新当前结果
+	/// </summary>
+	public void RefreshDataListResult(List<object> columns, bool needClear = false)
+	{
+		try
+		{
+			if (InfoTab.SelectedItem != CurResultTabItem)
+			{
+				return;
+			}
+			IList<object> list = m_CurrentInfo?.ModuleParams?.GetDisplayList();
+			if (m_HikHistogram.Visibility == Visibility.Visible && curImageData == null)
+			{
+				Apps.XmlParser.Object obj = (Apps.XmlParser.Object)(list?.FirstOrDefault((object p) => (p as Apps.XmlParser.Object)?.Type == "datachart"));
+				if (obj != null)
+				{
+					List<object> shapes = obj.GetValue(uint.MaxValue) as List<object>;
+					DrawCurModuleUIResult(obj, obj.Type, shapes);
+					RefreshHikHistogramSelection();
+				}
+			}
+			Apps.XmlParser.Object obj2 = (Apps.XmlParser.Object)(list?.FirstOrDefault((object p) => (p as Apps.XmlParser.Object)?.Type == "datalist"));
+			string[] array = (obj2?.Features?.FirstOrDefault((FeatureBase p) => p.Name == "Colume"))?.Value?.Split(',');
+			if (array == null)
+			{
+				m_CurrentInfo?.ClearCurrentResultList();
+				m_ResultDataGrid.Columns.Clear();
+				columMaxLens = null;
+				return;
+			}
+			if (NeedRebuildColume(array))
+			{
+				RebuildDataGridColume(array);
+				columMaxLens = new int[array.Length];
+			}
+			if (ModuleSource != null && ModuleSource.IsForbidden && ModuleSource.ExecuteCount != ExecuteCount)
+			{
+				m_CurrentInfo?.ClearCurrentResultList();
+				return;
+			}
+			if (needClear)
+			{
+				obj2.ClearValueStore();
+			}
+			List<object> curDatas = columns ?? (obj2.GetValue(uint.MaxValue) as List<object>);
+			int[] array2 = new int[array.Length];
+			m_CurrentInfo.RefreshCurrentResultList(curDatas, array, array2);
+			for (int num = 0; num < array.Length; num++)
+			{
+				if (array2[num] + 50 < columMaxLens[num] && num + 1 < m_ResultDataGrid.Columns.Count)
+				{
+					m_ResultDataGrid.Columns[num + 1].Width = DataGridLength.SizeToHeader;
+					m_ResultDataGrid.Columns[num + 1].Width = DataGridLength.Auto;
+				}
+			}
+			columMaxLens = array2;
+			m_ResultDataGrid.SelectedIndex = -1;
+			lock (_datalistlock)
+			{
+				datalist = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("RefreshDataListResult异常：" + ex.Message + ex.StackTrace);
+		}
+	}
+
+	/// <summary>
+	/// 刷新模块历史结果
+	/// </summary>
+	public void RefreshDataRecord(object result)
+	{
+		if (m_CurrentInfo == null)
+		{
+			return;
+		}
+		try
+		{
+			m_CurrentInfo.AddRecord(result, isChangeErrorInfo: true, isCallBack: true);
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("RefreshDataRecord异常：" + ex.Message + ex.StackTrace);
+		}
+	}
+
+	private bool NeedRebuildColume(string[] columeArr)
+	{
+		if (m_ResultDataGrid.Columns.Count != columeArr.Length + 1)
+		{
+			return true;
+		}
+		foreach (string key in columeArr)
+		{
+			if (m_ResultDataGrid.Columns.FirstOrDefault((DataGridColumn p) => p.Header.ToString() == AppLocalizationService.GetLang(key)) == null)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void RebuildDataGridColume(string[] columeArr)
+	{
+		m_ResultDataGrid.Columns.Clear();
+		m_ResultDataGrid.Columns.Add(new DataGridTextColumn
+		{
+			Header = AppLocalizationService.GetLang("Number"),
+			Binding = new System.Windows.Data.Binding("序号")
+		});
+		foreach (string text in columeArr)
+		{
+			DataGridTextColumn item = new DataGridTextColumn
+			{
+				Header = AppLocalizationService.GetLang(text),
+				Binding = new System.Windows.Data.Binding(text)
+			};
+			m_ResultDataGrid.Columns.Add(item);
+		}
+	}
+
+	/// <summary>
+	/// 更新图像
+	/// </summary>
+	/// <param name="imageData"></param>
+	public void UpdateImageView(ImageData imageData)
+	{
+		ImageViewBox imageViewBox = imageView;
+		imageViewBox.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Remove(imageViewBox.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+		try
+		{
+			if (imageData == null || imageData.Width == 0 || imageData.Height == 0 || (!(imageData.PixelFormat == PixelFormats.Gray8) && !(imageData.PixelFormat == PixelFormats.Rgb24)))
+			{
+				IMoudleResultAddition resultViewAddition = ResultViewAddition;
+				if (resultViewAddition == null || !resultViewAddition.CheckUpdateImageView(imageData))
+				{
+					ClearImage();
+					return;
+				}
+			}
+			if (ResultViewAddition == null)
+			{
+				m_CurrentInfo.ImageDataSource = imageData;
+			}
+			else
+			{
+				ResultViewAddition?.OnModuleCallBackArrived(0, imageData);
+			}
+			curImageData = imageData;
+		}
+		catch
+		{
+		}
+		finally
+		{
+			ImageViewBox imageViewBox2 = imageView;
+			imageViewBox2.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Remove(imageViewBox2.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+			ImageViewBox imageViewBox3 = imageView;
+			imageViewBox3.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Combine(imageViewBox3.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+		}
+	}
+
+	public void DrawCurModuleUIResult(Apps.XmlParser.Object displayobj, string shapeType, List<object> shapes)
+	{
+		try
+		{
+			if (displayobj.NameA == "CharBox")
+			{
+				curCharBoxShowCount = ExecuteCount;
+			}
+			if (!m_CurrentInfo.ShapeList.Any((object p) => p is IMultiPoint))
+			{
+				MultiPoint multiPoint = new MultiPoint();
+				m_CurrentInfo.ShapeList.Add(multiPoint);
+				multiPoint.OutlinePoints = new ObservableCollection<IOutlinePoint>();
+				multiPoint.MicroPoints = new ObservableCollection<IMicroPoint>();
+				multiPoint.Rectangles = new ObservableCollection<IRectangle>();
+			}
+			if (shapes == null)
+			{
+				return;
+			}
+			ResultViewAddition?.DrawCurModuleUIResult(displayobj, shapeType, shapes);
+			switch (shapeType)
+			{
+			case "datachart":
+			{
+				try
+				{
+					string value = ((IUserStringData)(ModuleSource?.Params))?["MinScore"];
+					int num = Convert.ToInt32(value);
+					m_HikHistogram.StartPositionX = num;
+				}
+				catch
+				{
+				}
+				string value2 = displayobj.Features.FirstOrDefault((FeatureBase p) => p.Name == "Width")?.Value;
+				if (!string.IsNullOrEmpty(value2))
+				{
+					m_ResultDataGrid.Visibility = Visibility.Collapsed;
+				}
+				FeatureBase featureBase = displayobj.Features.FirstOrDefault((FeatureBase p) => p.Name == "VerticalAxis");
+				if (featureBase != null)
+				{
+					string text = featureBase.Value;
+					if (string.IsNullOrEmpty(text))
+					{
+						text = featureBase.Mapping;
+					}
+					DrawDataChart(shapes, text, Convert.ToInt32(value2));
+				}
+				break;
+			}
+			case "hsilist":
+			{
+				Dictionary<string, object> dictionary3 = new Dictionary<string, object>();
+				dictionary3.Add("Shapes", shapes);
+				dictionary3.Add("Features", displayobj.Features);
+				if (CurResultTabItem.Visibility != Visibility.Visible)
+				{
+					break;
+				}
+				{
+					foreach (object child in m_LeftResultTabItemGrid.Children)
+					{
+						if (child is ISpecialParam specialParam3)
+						{
+							specialParam3.RenderFunction(dictionary3);
+							curHsiListShowCount = ExecuteCount;
+							break;
+						}
+					}
+					break;
+				}
+			}
+			case "sampleimage":
+			{
+				Dictionary<string, object> dictionary = new Dictionary<string, object>();
+				dictionary.Add("Object", displayobj);
+				if (CurResultTabItem.Visibility != Visibility.Visible)
+				{
+					break;
+				}
+				{
+					foreach (object child2 in m_LeftResultTabItemGrid.Children)
+					{
+						if (child2 is ISpecialParam specialParam)
+						{
+							specialParam.RenderFunction(dictionary);
+							break;
+						}
+					}
+					break;
+				}
+			}
+			case "imagetitle":
+			{
+				Dictionary<string, object> dictionary2 = new Dictionary<string, object>();
+				dictionary2.Add("Shapes", shapes);
+				if (CurResultTabItem.Visibility != Visibility.Visible)
+				{
+					break;
+				}
+				{
+					foreach (object child3 in m_LeftResultTabItemGrid.Children)
+					{
+						if (child3 is ISpecialParam specialParam2)
+						{
+							specialParam2.RenderFunction(dictionary2);
+							break;
+						}
+					}
+					break;
+				}
+			}
+			case "path":
+			{
+				ArrowPath arrowPath = Apps.Data.ShapeDefine.Path.GetArrowPath(shapes);
+				if (arrowPath != null)
+				{
+					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { arrowPath }, m_CurrentInfo.ShapeList, imageView);
+					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView);
+				}
+				break;
+			}
+			case "polyline":
+			{
+				Polyline polyline = Polyline.GetPolyline(shapes);
+				if (polyline != null)
+				{
+					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { polyline }, m_CurrentInfo.ShapeList, imageView);
+					VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView);
+				}
+				break;
+			}
+			case "shepematrix":
+				break;
+			default:
+				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, m_CurrentInfo.ShapeList, imageView, displayobj.IsLowQuality);
+				break;
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	/// <summary>
+	/// 设置矩形高亮显示
+	/// </summary>
+	/// <param name="displayobj"></param>
+	/// <param name="shapes"></param>
+	private void SetRectHighLight(Apps.XmlParser.Object displayobj, List<object> shapes)
+	{
+		if (displayobj.Type == "rect")
+		{
+			int highLightIndex = GetHighLightIndex(displayobj);
+			if (shapes.Count >= highLightIndex && highLightIndex >= 1 && shapes[highLightIndex - 1] is Apps.Data.ShapeDefine.Rect rect && (displayobj.highLightEnable || (shapes.Count > 1 && m_CurrentInfo.IsInLoop)))
+			{
+				rect.ColorA = "#FFFF00";
+			}
+		}
+	}
+
+	private int GetHighLightIndex(Apps.XmlParser.Object displayobj)
+	{
+		int result = selectIndex;
+		int? num = displayobj?.GetFeatureByName("HighLightIndex")?.GetValueCount();
+		if (num.HasValue && selectIndex > 0 && num >= selectIndex)
+		{
+			string[] array = null;
+			int num2 = selectIndex - 1;
+			object obj = displayobj?.GetFeatureByName("HighLightIndex")?.GetValue(uint.MaxValue, num2);
+			if (obj is string)
+			{
+				array = (obj as string)?.Split('-');
+			}
+			else if (obj is Array array2 && array2.Length > num2)
+			{
+				object obj2 = array2?.GetValue(num2);
+				if (obj2 != null && obj2 is ImvsSdkDefine.IMVS_MODULE_STRING_VALUE_EX iMVS_MODULE_STRING_VALUE_EX)
+				{
+					array = iMVS_MODULE_STRING_VALUE_EX.strValue?.Split('-');
+				}
+			}
+			result = ((array == null || array.Length < 2) ? selectIndex : Convert.ToInt32(array[0]));
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 更新图标结果
+	/// </summary>
+	/// <param name="dataResultList"></param>
+	/// <param name="displayobj"></param>
+	public void DrawDataChart(List<object> shapes, string mapName, int width)
+	{
+		if (mapName != null)
+		{
+			m_HikHistogram.Visibility = Visibility.Visible;
+			if (width > 0)
+			{
+				m_HikHistogram.Width = width;
+			}
+			else
+			{
+				m_HikHistogram.Width = 256.0;
+			}
+			PointCollection pointCollection = new PointCollection();
+			for (int i = 0; i < shapes.Count; i++)
+			{
+				pointCollection.Add(new System.Windows.Point(i, (shapes[i] as Datachart).VerticalAxis));
+			}
+			if (!m_HikHistogram.DataPointsCollection.ContainsKey(mapName))
+			{
+				m_HikHistogram.HistogramTypes.Add(new MultiLangItem(mapName));
+				m_HikHistogram.DataPointsCollection.Add(mapName, pointCollection);
+			}
+			else
+			{
+				m_HikHistogram.DataPointsCollection[mapName] = pointCollection;
+			}
+		}
+	}
+
+	private void AddCrossLine()
+	{
+		if (CrossDatas == null)
+		{
+			return;
+		}
+		foreach (CrossData crossData in CrossDatas)
+		{
+			if (crossData.IsVisible)
+			{
+				ModuleDisplayDecorator currentInfo = m_CurrentInfo;
+				if (currentInfo == null || !currentInfo.ShapeList.Contains(crossData))
+				{
+					crossData.ImageWidth = imageView.ImageSourceWidth;
+					crossData.ImageHeight = imageView.ImageSourceHeight;
+					crossData.Init();
+					m_CurrentInfo?.ShapeList.Add(crossData);
+				}
+			}
+		}
+	}
+
+	private void Line_Click(object sender, RoutedEventArgs e)
+	{
+		if (lineConfig != null)
+		{
+			lineConfig.Close();
+		}
+		if (isFirstOpenCross)
+		{
+			CrossDatas[0].IsVisible = true;
+			isFirstOpenCross = false;
+			foreach (CrossData crossData in CrossDatas)
+			{
+				ModuleDisplayDecorator currentInfo = m_CurrentInfo;
+				if (currentInfo != null && !currentInfo.ShapeList.Contains(crossData))
+				{
+					crossData.ImageWidth = imageView.ImageSourceWidth;
+					crossData.ImageHeight = imageView.ImageSourceHeight;
+					crossData.Init();
+					m_CurrentInfo?.ShapeList.Add(crossData);
+				}
+			}
+		}
+		lineConfig = new CrossConfig();
+		lineConfig.Owner = System.Windows.Application.Current?.MainWindow;
+		lineConfig.DataContext = this;
+		lineConfig.Show();
+	}
+
+	private void CrossShowCommandExecute(object sender)
+	{
+		if (sender is CrossData { IsVisible: not false })
+		{
+			AddCrossLine();
+		}
+	}
+
+	private void BtnToolRegionScale_Click(object sender, RoutedEventArgs e)
+	{
+		imageView.Init();
+	}
+
+	private void m_btnFullScreen_Click(object sender, RoutedEventArgs e)
+	{
+		FullScreen instance = FullScreen.Instance;
+		instance.DataContext = viewbox.DataContext;
+		viewbox.Children.Remove(imageView);
+		imageUnion.Children.Remove(btnLeft);
+		imageUnion.Children.Remove(btnRight);
+		instance.SetChild(imageView);
+		instance.SetChild(btnLeft);
+		instance.SetChild(btnRight);
+		instance.ShowDialog();
+		instance.RemoveChild();
+		instance.DataContext = null;
+		viewbox.Children.Add(imageView);
+		imageUnion.Children.Add(btnLeft);
+		imageUnion.Children.Add(btnRight);
+	}
+
+	private void btnLeft_Click(object sender, RoutedEventArgs e)
+	{
+		if (m_CurrentInfo == null || ModuleSource == null || !(ownerProcedure is VmProcedure vmProcedure))
+		{
+			return;
+		}
+		string workStateInfo = "";
+		if (!vmProcedure.RunCheck(ref workStateInfo))
+		{
+			string strMsg = vmProcedure.Name + ":" + workStateInfo;
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+			return;
+		}
+		if (vmProcedure.IsRunning)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_PlzLoopStop"), MessageIcons.Error);
+			return;
+		}
+		List<VmModule> list = new List<VmModule>();
+		vmProcedure.GetAllModuleByType(list, "ImageSourceModule", isCurrentLevel: true);
+		foreach (VmModule item in list)
+		{
+			try
+			{
+				((IUserStringData)item.Params)["LastImage"] = "";
+			}
+			catch (Exception)
+			{
+			}
+		}
+		try
+		{
+			vmProcedure.Run(null, bIsWait: false);
+		}
+		catch (VmException ex2)
+		{
+			string strMsg2 = vmProcedure.FullName + ":" + ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+			HikMessageBox.Show(strMsg2, MessageIcons.Error);
+		}
+	}
+
+	private void btnRight_Click(object sender, RoutedEventArgs e)
+	{
+		if (m_CurrentInfo == null || ModuleSource == null || !(ownerProcedure is VmProcedure vmProcedure))
+		{
+			return;
+		}
+		string workStateInfo = "";
+		if (!vmProcedure.RunCheck(ref workStateInfo))
+		{
+			string strMsg = vmProcedure.Name + ":" + workStateInfo;
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+			return;
+		}
+		if (vmProcedure.IsRunning)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_PlzLoopStop"), MessageIcons.Error);
+			return;
+		}
+		List<VmModule> list = new List<VmModule>();
+		vmProcedure.GetAllModuleByType(list, "ImageSourceModule", isCurrentLevel: true);
+		foreach (VmModule item in list)
+		{
+			try
+			{
+				((IUserStringData)item.Params)["NextImage"] = "";
+			}
+			catch (Exception)
+			{
+			}
+		}
+		try
+		{
+			vmProcedure.Run(null, bIsWait: false);
+		}
+		catch (VmException ex2)
+		{
+			string strMsg2 = vmProcedure.FullName + ":" + ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+			HikMessageBox.Show(strMsg2, MessageIcons.Error);
+		}
+	}
+
+	private void m_ResultDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (m_ResultDataGrid.SelectedItem == null)
+		{
+			return;
+		}
+		int num = m_ResultDataGrid.Items.IndexOf(m_ResultDataGrid.SelectedItem) + 1;
+		selectIndex = num;
+		IList<object> list = null;
+		if ((list = m_CurrentInfo.ModuleParams.GetDisplayList()) == null)
+		{
+			return;
+		}
+		imageView.ClearExternShapes();
+		m_CurrentInfo.ShapeList.Clear();
+		AddCrossLine();
+		foreach (Apps.XmlParser.Object item in list)
+		{
+			if (item.IsDisplay && !exceptTypes.Contains(item.Type))
+			{
+				item.ClearValueStore();
+				List<object> shapes = item.GetValue(ExecuteCount) as List<object>;
+				SetRectHighLight(item, shapes);
+				DrawCurModuleUIResult(item, item.Type, shapes);
+			}
+		}
+	}
+
+	private void InfoTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (!isDecoratorRebuilding && InfoTab.SelectedItem == CurResultTabItem)
+		{
+			RefreshDataListResult(datalist, needClear: true);
+		}
+	}
+
+	private void Menu_Clear_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			if (m_CurrentInfo?.ModuleDisplayInfoList != null && ModuleSource != null)
+			{
+				m_CurrentInfo.ModuleDisplayInfoList.Clear();
+				ServerSDKManager.serverSDKManager.mModuleManager.ClearModuleHistoryResult(ModuleSource.ID);
+			}
+		}
+		catch (Exception ex)
+		{
+			string strMsg = ex.Message;
+			if (ex is VmException ex2)
+			{
+				strMsg = ErrorCodeInfo.GetErrorInfo(ex2.errorCode) + "," + AppLocalizationService.GetLang("errCode:") + ex2.errorCode;
+			}
+			HikMessageBox.Show(strMsg, MessageIcons.Error);
+		}
+	}
+
+	/// <summary>  
+	/// 保存数据data到文件处理过程，返回值为保存的文件名  
+	/// </summary>  
+	public string SaveProcess(string data, string name)
+	{
+		StreamWriter streamWriter = null;
+		try
+		{
+			streamWriter = new StreamWriter(name, append: false);
+			streamWriter.Write(data);
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(ex.Message, MessageIcons.Error);
+		}
+		finally
+		{
+			streamWriter?.Close();
+			streamWriter?.Dispose();
+		}
+		return name;
+	}
+
+	private void Menu_Save_Click(object sender, RoutedEventArgs e)
+	{
+		if (!(m_DataGrid.ItemsSource is IList list))
+		{
+			return;
+		}
+		if (list.Count < 1)
+		{
+			HikMessageBox.Show(System.Windows.Application.Current?.MainWindow, AppLocalizationService.GetLang("Savefailed"), AppLocalizationService.GetLang("CountingErrors"), MessageIcons.Warning);
+			return;
+		}
+		System.Windows.Forms.SaveFileDialog saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+		saveFileDialog.Filter = "(*.txt)|*.txt|(*.TXT)|*.TXT";
+		saveFileDialog.FileName = ((ModuleSource as VmModule).Name + "_" + DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss")) ?? "";
+		saveFileDialog.AddExtension = true;
+		saveFileDialog.RestoreDirectory = true;
+		System.Windows.Forms.SaveFileDialog saveFileDialog2 = saveFileDialog;
+		try
+		{
+			if (saveFileDialog2.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+			{
+				return;
+			}
+			string fileName = saveFileDialog2.FileName;
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (object item in list)
+			{
+				if (item is LogInfo logInfo)
+				{
+					stringBuilder.Append($"{logInfo.RowIndex}  {logInfo.AddTime}  {logInfo.Content}\r\n");
+				}
+			}
+			SaveProcess(stringBuilder.ToString(), fileName);
+		}
+		catch (Exception ex)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Savefailed"), ex.Message, MessageIcons.Error);
+		}
+		finally
+		{
+			saveFileDialog2.Dispose();
+		}
+	}
+
+	private void imageListCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		ResultViewAddition?.SelectionChangedOut();
+		System.Windows.Controls.ComboBox comboBox = sender as System.Windows.Controls.ComboBox;
+		if (comboBox.SelectedValue == null)
+		{
+			imageView.ClearExternShapes();
+			m_CurrentInfo.ShapeList.Clear();
+			ResultViewAddition?.UpdateShapesWithCallBackData();
+			imageView.Init();
+			UpdateImageView(null);
+			return;
+		}
+		if (m_CurrentInfo?.ModuleParams != null && comboBox.SelectedValue is Apps.XmlParser.Object obj)
+		{
+			if (!(obj.TypeA == "image") && !(obj.TypeA == "pixelinfoimage"))
+			{
+				IMoudleResultAddition resultViewAddition = ResultViewAddition;
+				if (resultViewAddition == null || resultViewAddition.ActiveUpdateShapes(obj.TypeA))
+				{
+					goto IL_03bc;
+				}
+			}
+			if (m_CurrentInfo.ImageViewList.Count((ImageViewItem p) => p.IsBackgroundImage) == 0)
+			{
+				ImageViewItem imageViewItem = m_CurrentInfo.ImageViewList.FirstOrDefault((ImageViewItem p) => p.IsCheck);
+				if (imageViewItem != null)
+				{
+					imageViewItem.IsCheck = false;
+					imageViewItem.IsEnable = true;
+				}
+				if (comboBox.SelectedItem is ImageViewItem imageViewItem2)
+				{
+					imageViewItem2.IsCheck = true;
+					imageViewItem2.IsEnable = false;
+				}
+			}
+			else if (comboBox.SelectedItem is ImageViewItem imageViewItem3)
+			{
+				if (imageViewItem3.IsBackgroundImage)
+				{
+					foreach (Image layer in checkImageList)
+					{
+						layer.Visibility = Visibility.Visible;
+						ImageViewItem imageViewItem4 = m_CurrentInfo?.ImageViewList?.FirstOrDefault((ImageViewItem p) => p.DisplayName == layer.Uid);
+						if (imageViewItem4 != null && !imageViewItem4.IsCallBackEnable && imageViewItem4.DisplayObject is Apps.XmlParser.Object obj2)
+						{
+							obj2.SetOutputFilter();
+							WeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj2, "ValueChanged", P_ValueChanged);
+							WeakEventManager<Apps.XmlParser.Object, EventArgs>.AddHandler(obj2, "ValueChanged", P_ValueChanged);
+							imageViewItem4.IsCallBackEnable = true;
+						}
+					}
+				}
+				else
+				{
+					foreach (Image layer2 in checkImageList)
+					{
+						layer2.Visibility = Visibility.Collapsed;
+						ImageViewItem imageViewItem5 = m_CurrentInfo?.ImageViewList?.FirstOrDefault((ImageViewItem p) => p.DisplayName == layer2.Uid);
+						if (imageViewItem5 != null && imageViewItem5.IsCallBackEnable && imageViewItem5 != imageViewItem3 && imageViewItem5.DisplayObject is Apps.XmlParser.Object obj3)
+						{
+							obj3.RemoveOutputFilter();
+							WeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj3, "ValueChanged", P_ValueChanged);
+							imageViewItem5.IsCallBackEnable = false;
+						}
+					}
+				}
+			}
+			m_CurrentInfo.RecordCheckedImages();
+			UpdateModuleViewResultShow();
+		}
+		goto IL_03bc;
+		IL_03bc:
+		SetRoiVisible();
+		ImageChangedEvent?.Invoke(m_CurrentInfo.SelectedImage.DisplayValue);
+	}
+
+	private void imageListComboboxIn_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		System.Windows.Controls.ComboBox comboBox = sender as System.Windows.Controls.ComboBox;
+		if (!IsShowDoubleImage || comboBox.SelectedValue == null)
+		{
+			imageViewIn.ClearExternShapes();
+			imageViewIn.Init();
+			if (m_CurrentInfo != null)
+			{
+				m_CurrentInfo.ImageDataSourceIn = null;
+			}
+		}
+		else
+		{
+			if (m_CurrentInfo?.ModuleParams != null && comboBox.SelectedValue is Apps.XmlParser.Object obj && (obj.TypeA == "image" || obj.TypeA == "pixelinfoimage"))
+			{
+				m_CurrentInfo.ImageDataSourceIn = obj.GetValue(uint.MaxValue);
+			}
+			SetRoiVisible();
+			ImageChangedEvent?.Invoke(m_CurrentInfo.SelectedImage.DisplayValue);
+		}
+	}
+
+	/// <summary>
+	/// 设置roi的可见性
+	/// </summary>
+	public void SetRoiVisible()
+	{
+		if (IsOpenParams)
+		{
+			if (m_CurrentInfo != null)
+			{
+				bool isCanDrawROI = m_CurrentInfo.IsCanDrawROI;
+				if (IsShowDoubleImage)
+				{
+					imageView.ROIVisible = false;
+					imageViewIn.ROIVisible = isCanDrawROI;
+				}
+				else
+				{
+					imageView.ROIVisible = isCanDrawROI;
+				}
+			}
+		}
+		else
+		{
+			imageView.ROIVisible = false;
+			imageViewIn.ROIVisible = false;
+		}
+	}
+
+	/// <summary>
+	/// 增加已选中待叠加的图像
+	/// </summary>
+	public void AddCheckImage(ImageData imageData, string strCheckImageName)
+	{
+		bool flag = true;
+		int num = (int)imageView.GetImageViewWidth();
+		int num2 = (int)imageView.GetImageViewHeight();
+		if (num == 0)
+		{
+			num = 920;
+		}
+		if (num2 == 0)
+		{
+			num2 = 517;
+		}
+		ImageViewItem selectedImage;
+		if ((selectedImage = m_CurrentInfo.SelectedImage) != null)
+		{
+			flag = (selectedImage.IsBackgroundImage ? true : false);
+		}
+		int value = 0;
+		byte transparency = 0;
+		int count = checkImageList.Count;
+		if (count < 3)
+		{
+			foreach (TransparencyData imageTransparency in imageTransparencyList)
+			{
+				if (!imageTransparency.IsUsed)
+				{
+					value = imageTransparency.ZIndex;
+					transparency = imageTransparency.ImageTransparency;
+					imageTransparency.IsUsed = true;
+					imageTransparency.key = strCheckImageName;
+					break;
+				}
+			}
+			Image image = new Image();
+			image.Uid = strCheckImageName;
+			image.MouseLeftButtonDown += checkImage_PreviewMouseLeftButtonDown;
+			image.MouseLeftButtonUp += checkImage_PreviewMouseLeftButtonUp;
+			image.MouseEnter += checkImage_MouseEnter;
+			image.MouseMove += checkImage_MouseMove;
+			image.MouseWheel += checkImage_MouseWheel;
+			image.IsHitTestVisible = false;
+			image.Focusable = true;
+			image.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
+			imageView.AddImageLayer(image);
+			System.Windows.Controls.Panel.SetZIndex(image, value);
+			if (flag)
+			{
+				image.Visibility = Visibility.Visible;
+			}
+			else
+			{
+				image.Visibility = Visibility.Collapsed;
+			}
+			_byte2Image.Clear();
+			image.Source = _byte2Image.BuiltBgraImageSource(imageData, num, num2, transparency);
+			checkImageList.Add(image);
+		}
+		m_CurrentInfo.RenderDataCenter.CheckImagesName = checkImageList.Select((Image p) => p.Uid).ToList();
+	}
+
+	/// <summary>
+	/// 移除已叠加的图层
+	/// </summary>
+	public void RemoveCheckImage(string strCheckImageName)
+	{
+		Image image = checkImageList.FirstOrDefault((Image p) => p.Uid == strCheckImageName);
+		if (image != null)
+		{
+			checkImageList.Remove(image);
+			imageView.RemoveImageLayer(image);
+			TransparencyData transparencyData = imageTransparencyList.FirstOrDefault((TransparencyData p) => p.key == strCheckImageName);
+			if (transparencyData != null)
+			{
+				transparencyData.key = null;
+				transparencyData.IsUsed = false;
+			}
+		}
+		m_CurrentInfo.RenderDataCenter.CheckImagesName = checkImageList.Select((Image p) => p.Uid).ToList();
+	}
+
+	/// <summary>
+	/// 更新已叠加图层的图像
+	/// </summary>
+	public void UpdateCheckImages()
+	{
+		byte transparency = 0;
+		int num = (int)imageView.GetImageViewWidth();
+		int num2 = (int)imageView.GetImageViewHeight();
+		if (num == 0)
+		{
+			num = 920;
+		}
+		if (num2 == 0)
+		{
+			num2 = 517;
+		}
+		foreach (Image checkImage in checkImageList)
+		{
+			if (curImageData == null)
+			{
+				checkImage.Source = null;
+				continue;
+			}
+			ImageViewItem imageViewItem = m_CurrentInfo.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayName == checkImage.Uid);
+			ImageData image = null;
+			if (imageViewItem != null && imageViewItem.DisplayObject != null && !m_CurrentInfo.RenderDataCenter.TryGetImage(imageViewItem.DisplayName, out image))
+			{
+				image = (imageViewItem.DisplayObject as Apps.XmlParser.Object).GetValue(ExecuteCount) as ImageData;
+			}
+			if (image != null)
+			{
+				TransparencyData transparencyData = imageTransparencyList.FirstOrDefault((TransparencyData p) => p.key == checkImage.Uid);
+				if (transparencyData != null)
+				{
+					transparency = transparencyData.ImageTransparency;
+				}
+				_byte2Image.Clear();
+				checkImage.Source = _byte2Image.BuiltBgraImageSource(image, num, num2, transparency);
+			}
+			else
+			{
+				checkImage.Source = null;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 清空图层
+	/// </summary>
+	public void ClearImageLayer()
+	{
+		foreach (Image checkImage in checkImageList)
+		{
+			imageView.RemoveImageLayer(checkImage);
+		}
+		checkImageList.Clear();
+		if (m_CurrentInfo?.RenderDataCenter != null)
+		{
+			m_CurrentInfo.RenderDataCenter.CheckImagesName = null;
+		}
+		foreach (TransparencyData imageTransparency in imageTransparencyList)
+		{
+			imageTransparency.key = null;
+			imageTransparency.IsUsed = false;
+		}
+	}
+
+	/// <summary>
+	/// 底图显示大小改变时刷新叠加图层
+	/// </summary>
+	private void imageView_OnFreshExtendContent(object sender, object Tag)
+	{
+		UpdateCheckImages();
+	}
+
+	private void checkImage_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_MouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	/// <summary>
+	/// 图形配置窗口
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void ShapesConfig_Click(object sender, RoutedEventArgs e)
+	{
+		ModuleSetShapesConfig moduleSetShapesConfig = new ModuleSetShapesConfig();
+		moduleSetShapesConfig.SetBinding(ModuleSetShapesConfig.ConfigCommandProperty, "ShapesConfigCommand");
+		moduleSetShapesConfig.SetBinding(ModuleSetShapesConfig.ItemsSourceProperty, "ShapeSourceList");
+		moduleSetShapesConfig.SetBinding(ModuleSetShapesConfig.SearchCommandProperty, "shapesSearchCommand");
+		moduleSetShapesConfig.DataContext = m_CurrentInfo;
+		moduleSetShapesConfig.ShowDialog();
+	}
+
+	/// <summary>
+	/// 根据选择的ROI名称改变imageListCombobox选中项
+	/// </summary>
+	/// <param name="strDisplayImageName"></param>
+	public void ImageChanged(string strDisplayImageName)
+	{
+		if (m_CurrentInfo == null)
+		{
+			return;
+		}
+		VmIO io = (m_CurrentInfo.DecorateSource as VmModule)?.Root?.GetIoByPathFromAround(strDisplayImageName);
+		if (io == null)
+		{
+			return;
+		}
+		if (IsShowDoubleImage)
+		{
+			ImageViewItem imageViewItem = m_CurrentInfo.InputImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayValue == io);
+			if (imageViewItem != null)
+			{
+				m_CurrentInfo.SelectedInputImage = imageViewItem;
+			}
+		}
+		else
+		{
+			ImageViewItem imageViewItem2 = m_CurrentInfo.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayValue == io);
+			if (imageViewItem2 != null)
+			{
+				m_CurrentInfo.SelectedImage = imageViewItem2;
+			}
+		}
+	}
+
+	private void ResultTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		RefreshResultTree();
+	}
+
+	private void imageView_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is ImageViewBox { ROIVisible: false, IsStateForDrawROI: not false } imageViewBox && imageViewBox.DrawROIType != null)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("RoiDrawTips"), MessageIcons.Warning);
+			imageViewBox.Focus();
+		}
+	}
+
+	private static void OnIsShowDoubleImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ModuleResultView moduleResultView = d as ModuleResultView;
+		bool flag = (bool)e.NewValue;
+		if (moduleResultView == null)
+		{
+			return;
+		}
+		moduleResultView.colInput.Width = (flag ? new GridLength(1.0, GridUnitType.Star) : new GridLength(0.0));
+		if (moduleResultView.m_CurrentInfo != null)
+		{
+			moduleResultView.m_CurrentInfo.IsDoubleImageMode = flag;
+			moduleResultView.m_CurrentInfo.SelectedInputImage = null;
+			if (flag && moduleResultView.m_CurrentInfo.InputImageViewList.Count > 0)
+			{
+				moduleResultView.m_CurrentInfo.SelectedInputImage = moduleResultView.m_CurrentInfo.InputImageViewList[0];
+			}
+			moduleResultView.SetRoiVisible();
+		}
+	}
+
+	private void BtnToolRegionScaleIn_Click(object sender, RoutedEventArgs e)
+	{
+		imageViewIn.Init();
+	}
+
+	private void m_btnFullScreenIn_Click(object sender, RoutedEventArgs e)
+	{
+		FullScreen instance = FullScreen.Instance;
+		instance.DataContext = viewboxIn.DataContext;
+		viewboxIn.Children.Remove(imageViewIn);
+		imageUnion.Children.Remove(btnLeft);
+		imageUnion.Children.Remove(btnRight);
+		instance.SetChild(imageViewIn);
+		instance.SetChild(btnLeft);
+		instance.SetChild(btnRight);
+		instance.ShowDialog();
+		instance.RemoveChild();
+		instance.DataContext = null;
+		viewboxIn.Children.Add(imageViewIn);
+		imageUnion.Children.Add(btnLeft);
+		imageUnion.Children.Add(btnRight);
+	}
+
+	private void BtnImageSetting_Click(object sender, RoutedEventArgs e)
+	{
+		ResultViewAddition?.BtnImageSettingClick();
+	}
+
+	object IOutResultView.GetImageBox()
+	{
+		return imageView;
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

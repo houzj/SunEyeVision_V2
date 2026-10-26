@@ -1,0 +1,1812 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
+using Apps.Data;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using DirectoryBrowser;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility;
+using VM.Utility.SingleInstance;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+public class ImageListPanelBase : UserControl, INotifyPropertyChanged
+{
+	private const double ImageItemWidth = 76.0;
+
+	private int curScrollOffset = 0;
+
+	private double curActualWidth = 0.0;
+
+	private ScrollViewer scrollViewer = null;
+
+	private const string EXECUTE_TYPE = "ExcuteType";
+
+	private Thread refreshImageThread = null;
+
+	private bool refreshImageThreadAlive = true;
+
+	private object mutexrefreshImageThread = new object();
+
+	private int dataNumForReceiveStore = 0;
+
+	private int dataNumForSendStore = 0;
+
+	private static int maxStoreLen = 1000;
+
+	private int[] forReceiveStore = new int[maxStoreLen];
+
+	private int[] forSendStore = new int[maxStoreLen];
+
+	private string needSelectImagePath = null;
+
+	public static readonly DependencyProperty TargetValueProperty = DependencyProperty.Register("TargetValue", typeof(string), typeof(ImageListPanelBase), new PropertyMetadata(TargetValueChanged));
+
+	public static readonly DependencyProperty CurSelectedModuleProperty = DependencyProperty.Register("CurSelectedModule", typeof(IVmModule), typeof(ImageListPanelBase), new PropertyMetadata(null, CurSelectedModuleChanged));
+
+	public static readonly DependencyProperty CurSelectedIndexProperty = DependencyProperty.Register("CurSelectedIndex", typeof(int), typeof(ImageListPanelBase), new PropertyMetadata(-1));
+
+	public static readonly DependencyProperty DoFreshImageListProperty = DependencyProperty.Register("DoFreshImageList", typeof(int), typeof(ImageListPanelBase), new PropertyMetadata(DoFreshImageListChanged));
+
+	public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register("IsExpanded", typeof(bool), typeof(ImageListPanelBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsSelectModeProperty = DependencyProperty.Register("IsSelectMode", typeof(bool), typeof(ImageListPanelBase), new PropertyMetadata(false));
+
+	private object _IsSubscribeFolderMode;
+
+	private bool needReflashImages = false;
+
+	private DateTime curTime = DateTime.Now;
+
+	public IntPtr ptr = CVmObjectBase.mhandle;
+
+	private const int PATH_MAX = 255;
+
+	private bool isWindowsPicture = false;
+
+	/// <summary>
+	///  当前LIST选中项
+	/// </summary>
+	private int CurImageIndex = -1;
+
+	/// <summary>
+	/// 所属模块
+	/// </summary>
+	private IVmModule OwnerModule = null;
+
+	private AlgorithmTabRoot root = null;
+
+	private bool needSelectionTrigger = true;
+
+	private bool needSetSelectImage = true;
+
+	private bool isReturnFirstForce = false;
+
+	/// <summary>
+	/// 列表当前图像依赖属性
+	/// </summary>
+	public string TargetValue
+	{
+		get
+		{
+			return (string)GetValue(TargetValueProperty);
+		}
+		set
+		{
+			SetValue(TargetValueProperty, value);
+		}
+	}
+
+	public IVmModule CurSelectedModule
+	{
+		get
+		{
+			return (IVmModule)GetValue(CurSelectedModuleProperty);
+		}
+		set
+		{
+			SetValue(CurSelectedModuleProperty, value);
+		}
+	}
+
+	public int CurSelectedIndex
+	{
+		get
+		{
+			return (int)GetValue(CurSelectedIndexProperty);
+		}
+		set
+		{
+			SetValue(CurSelectedIndexProperty, value);
+		}
+	}
+
+	public int DoFreshImageList
+	{
+		get
+		{
+			return (int)GetValue(DoFreshImageListProperty);
+		}
+		set
+		{
+			SetValue(DoFreshImageListProperty, value);
+		}
+	}
+
+	public bool IsExpanded
+	{
+		get
+		{
+			return (bool)GetValue(IsExpandedProperty);
+		}
+		set
+		{
+			SetValue(IsExpandedProperty, value);
+		}
+	}
+
+	public bool IsSelectMode
+	{
+		get
+		{
+			return (bool)GetValue(IsSelectModeProperty);
+		}
+		set
+		{
+			SetValue(IsSelectModeProperty, value);
+		}
+	}
+
+	public bool IsImageSourceModule => (CurSelectedModule is ISubjectModel subjectModel) ? (subjectModel.DepositModule is IImageSourceNode) : (CurSelectedModule is IImageSourceNode);
+
+	/// <summary>
+	/// 是否订阅文件夹模式
+	/// </summary>
+	public object IsSubscribeFolderMode
+	{
+		get
+		{
+			if (_IsSubscribeFolderMode == null && GetRoot() != null)
+			{
+				_IsSubscribeFolderMode = GetRoot().FindBaseNodeByName("IsSubscribeFolderMode");
+				if (_IsSubscribeFolderMode is NameValueItem nameValueItem)
+				{
+					nameValueItem.GetParamUnit();
+					nameValueItem.OnCurValueChanged += OnSubscribeFolderModeChanged;
+				}
+			}
+			return _IsSubscribeFolderMode;
+		}
+	}
+
+	public int ImageCount => ImageList.Count();
+
+	/// <summary>
+	/// 图片列表
+	/// </summary>
+	public ObservableCollection<ImageEntity> ImageList { get; } = new ObservableCollection<ImageEntity>();
+
+	/// <summary>
+	/// 是否本地
+	/// </summary>
+	private bool Islocal => !RemoteOperate.IsRemoteMode;
+
+	/// <summary>
+	/// 当前图像序号
+	/// </summary>
+	public int CurImageIndexT
+	{
+		get
+		{
+			return CurImageIndex + 1;
+		}
+		set
+		{
+			CurImageIndex = value - 1;
+			NotifyPropertyChanged("CurImageIndexT");
+		}
+	}
+
+	/// <summary>
+	/// 是否准备强制回到首张
+	/// </summary>
+	public bool IsReturnFirstForce
+	{
+		get
+		{
+			return isReturnFirstForce;
+		}
+		set
+		{
+			if (isReturnFirstForce != value)
+			{
+				isReturnFirstForce = value;
+				NotifyPropertyChanged("IsReturnFirstForce");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	[DllImport("shell32.dll", ExactSpelling = true)]
+	private static extern void ILFree(IntPtr pidlList);
+
+	[DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+	private static extern IntPtr ILCreateFromPathW(string pszPath);
+
+	[DllImport("shell32.dll", ExactSpelling = true)]
+	private static extern int SHOpenFolderAndSelectItems(IntPtr pidlList, uint cild, IntPtr children, uint dwFlags);
+
+	/// <summary>
+	/// 刷新当前图像操作
+	/// </summary>
+	/// <param name="d"></param>
+	/// <param name="e"></param>
+	public static void TargetValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ImageListPanelBase imageListPanelBase = d as ImageListPanelBase;
+		string path = e.NewValue as string;
+		if (imageListPanelBase == null || !imageListPanelBase.IsTimeRefreshView())
+		{
+			imageListPanelBase.needSelectImagePath = path;
+		}
+		else
+		{
+			imageListPanelBase.GetModuleSel(path);
+		}
+	}
+
+	private static void CurSelectedModuleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ImageListPanelBase imageListPanelBase)
+		{
+			imageListPanelBase.NotifyPropertyChanged("IsImageSourceModule");
+		}
+	}
+
+	private static void DoFreshImageListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as ImageListPanelBase).RefreshImageList();
+	}
+
+	public ImageListPanelBase()
+	{
+		if (!DesignerProperties.GetIsInDesignMode(this))
+		{
+			Loaded += ImageListPanel_Loaded;
+			Unloaded += ImageListPanel_Unloaded;
+		}
+	}
+
+	private void ImageListPanel_Loaded(object sender, RoutedEventArgs e)
+	{
+		refreshImageThreadAlive = true;
+		LogHelper.Info("设置refreshImageThreadAlive = true");
+		if (refreshImageThread == null || !refreshImageThread.IsAlive)
+		{
+			LogHelper.Info("ImageListPanelBase控件创建缩略图刷新线程");
+			refreshImageThread = new Thread(() =>
+			{
+				try
+				{
+					while (refreshImageThreadAlive)
+					{
+						if (dataNumForReceiveStore > 0)
+						{
+							LogHelper.Info($"mutexrefreshImageThread:dataNumForReceiveStore={dataNumForReceiveStore}");
+							int[] array = forSendStore;
+							lock (mutexrefreshImageThread)
+							{
+								forSendStore = forReceiveStore;
+								dataNumForSendStore = dataNumForReceiveStore;
+								dataNumForReceiveStore = 0;
+								forReceiveStore = array;
+							}
+							for (int i = 0; i < dataNumForSendStore; i++)
+							{
+								int index = forSendStore[i];
+								LoadThumbnailImage(index);
+								forSendStore[i] = -1;
+							}
+							dataNumForSendStore = 0;
+						}
+						if (needSelectImagePath != null)
+						{
+							Dispatcher.Invoke(() =>
+							{
+								GetModuleSel(needSelectImagePath);
+							});
+						}
+						Thread.Sleep(100);
+					}
+					LogHelper.Info("ImageListPanelBase控件停止刷新缩略图");
+				}
+				catch (ThreadAbortException)
+				{
+					LogHelper.Info("ImageListPanelBase控件停止数据读取");
+				}
+			})
+			{
+				IsBackground = true,
+				Priority = ThreadPriority.BelowNormal
+			};
+			refreshImageThread.Start();
+		}
+		PropertyManager.Register("ExcuteType");
+		PropertyManager.UpdateDisplayStatus -= OnUpdateExcuteType;
+		PropertyManager.UpdateDisplayStatus += OnUpdateExcuteType;
+		VmSolution.OnReportModuleData += VmSolution_OnReportModuleData;
+	}
+
+	private void ImageListPanel_Unloaded(object sender, RoutedEventArgs e)
+	{
+		if (refreshImageThread != null)
+		{
+			refreshImageThreadAlive = false;
+			LogHelper.Info("设置refreshImageThreadAlive = false");
+		}
+		PropertyManager.UpdateDisplayStatus -= OnUpdateExcuteType;
+		PropertyManager.UnRegister("ExcuteType");
+		VmSolution.OnReportModuleData -= VmSolution_OnReportModuleData;
+	}
+
+	/// <summary>
+	/// 同步更新是否选中执行
+	/// </summary>
+	/// <param name="name"></param>
+	/// <param name="value"></param>
+	private void OnUpdateExcuteType(string name, string value)
+	{
+		if (name == "ExcuteType" && value != GetHashCode().ToString())
+		{
+			ButtonSelecter_ImageList imageList = DataContext as ButtonSelecter_ImageList;
+			UpdateExcuteType(imageList);
+		}
+	}
+
+	private void UpdateExcuteType(ButtonSelecter_ImageList imageList)
+	{
+		if (imageList != null)
+		{
+			IsSelectMode = imageList.SelectEnable;
+			GetModuleSelectMode();
+		}
+	}
+
+	public void OnExcuteTypeParamChanged()
+	{
+		PropertyManager.DisplayExecute("ExcuteType", GetHashCode().ToString());
+	}
+
+	private void OnSubscribeFolderModeChanged(object sender, EventArgs e)
+	{
+		if (DataContext is ButtonSelecter_ImageList buttonSelecter_ImageList)
+		{
+			buttonSelecter_ImageList.SelectEnable = false;
+			UpdateExcuteType(buttonSelecter_ImageList);
+		}
+	}
+
+	/// <summary>
+	/// 底层模块上报数据到主界面，用于订阅文件夹时刷新图像
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="args"></param>
+	private void VmSolution_OnReportModuleData(object sender, ObjectEventArgs args)
+	{
+		if (args.Param is ImvsSdkDefine.IMVS_ALGORITHM_INIT_RESULT_INFO iMVS_ALGORITHM_INIT_RESULT_INFO)
+		{
+			IVmModule vMModule = GetVMModule();
+			if (vMModule != null && vMModule.ID == iMVS_ALGORITHM_INIT_RESULT_INFO.nModuleID && iMVS_ALGORITHM_INIT_RESULT_INFO.nType == 268439552)
+			{
+				needReflashImages = true;
+			}
+		}
+	}
+
+	private bool IsTimeRefreshView(int timeSpan = 50)
+	{
+		bool flag = (DateTime.Now - curTime).TotalMilliseconds > (double)timeSpan;
+		if (flag)
+		{
+			curTime = DateTime.Now;
+		}
+		return flag;
+	}
+
+	private void RefreshImageList()
+	{
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			try
+			{
+				string value = "";
+				if (GetVMModule() != null)
+				{
+					value = ((IUserStringData)GetVMModule().Params)["ImageNumber"];
+				}
+				if (!string.IsNullOrEmpty(value))
+				{
+					int num = Convert.ToInt32(value);
+					if (num == 0)
+					{
+						ImageList.Clear();
+					}
+					List<string> list = new List<string>();
+					foreach (ImageEntity image in ImageList)
+					{
+						list.Add(image.ImagePath);
+					}
+					for (int i = 0; i < num; i++)
+					{
+						string text = "";
+						if (GetVMModule() != null)
+						{
+							text = ((IUserStringData)GetVMModule().Params)["ImagePath" + i];
+						}
+						AddImageToList(text);
+						if (list.Contains(text))
+						{
+							list.Remove(text);
+						}
+					}
+					if (list.Count() > 0)
+					{
+						int j;
+						for (j = 0; j < list.Count(); j++)
+						{
+							ImageList.Remove(ImageList.FirstOrDefault((ImageEntity p) => p.ImagePath == list[j]));
+						}
+					}
+				}
+				GetModuleSelectMode();
+				GetModuleSel();
+				UpdateImageListSource();
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("图像列表初始化异常:" + ex.Message);
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 根据底层当前图像刷新图像列表Selitem
+	/// </summary>
+	private void GetModuleSel(string path = null)
+	{
+		try
+		{
+			string text = null;
+			if (path == null)
+			{
+				if (GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList)
+				{
+					object obj = ((GetVMModule() as VmModule)?["CurImagePath.Value"] as Array)?.GetValue(0);
+					if (obj is ImvsSdkDefine.IMVS_MODULE_STRING_VALUE_EX)
+					{
+						text = ((ImvsSdkDefine.IMVS_MODULE_STRING_VALUE_EX)obj).strValue;
+					}
+				}
+			}
+			else
+			{
+				text = path;
+			}
+			if (text == null)
+			{
+				return;
+			}
+			foreach (ImageEntity image in ImageList)
+			{
+				if (image.ImagePath == text.ToString())
+				{
+					CurImageIndex = ImageList.IndexOf(image);
+					CurImageIndexT = CurImageIndex + 1;
+				}
+			}
+			if (CurImageIndexT != 0)
+			{
+				needSelectionTrigger = false;
+				CurSelectedIndex = CurImageIndex;
+				needSelectionTrigger = true;
+			}
+			IsReturnFirstForce = false;
+			int curSelectedIndex = CurSelectedIndex;
+			int num = curSelectedIndex - (int)Math.Floor(curActualWidth / 76.0) + 1;
+			if (num < 0)
+			{
+				num = 0;
+			}
+			if (curScrollOffset < num || curScrollOffset > curSelectedIndex)
+			{
+				scrollViewer?.ScrollToHorizontalOffset(num);
+			}
+			needSelectImagePath = null;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("图像刷新错误GetModuleSel():" + ex.Message);
+		}
+	}
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	/// <summary>
+	/// 图像删除按钮响应
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void BtnDelete_Click(object sender, RoutedEventArgs e)
+	{
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "ModifyConfig"
+		}, AppLocalizationService.GetLang("修改配置") + ": " + GetVMModule().Name);
+		byte[] value = new byte[4];
+		try
+		{
+			((IUserBytesData)GetVMModule().Params)["UseModel"] = value;
+		}
+		catch (Exception)
+		{
+			return;
+		}
+		Button button = sender as Button;
+		object tag = button.Tag;
+		ImageEntity imageEntity = (ImageEntity)tag;
+		int num = ImageList.IndexOf(imageEntity);
+		if (CurImageIndex == num)
+		{
+			CurImageIndexT = 0;
+		}
+		ImageList.Remove((ImageEntity)tag);
+		if (GetVMModule() != null)
+		{
+			try
+			{
+				((IUserStringData)GetVMModule().Params)["DeleteImage"] = imageEntity.ImagePath;
+			}
+			catch (Exception)
+			{
+			}
+		}
+		if (num < CurImageIndex)
+		{
+			CurImageIndexT--;
+		}
+		UpdateImageListSource();
+		Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+		(GetRoot()?.FindBaseNodeByName("CurrentImagePath") as ButtonSelecter_ImageList).FreshImageListFlag++;
+	}
+
+	/// <summary>
+	/// 控制图像列表中图像名grid 鼠标移入时的显示
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void Grid_MouseEnter(object sender, MouseEventArgs e)
+	{
+		if (IsImageSourceModule)
+		{
+			NameValueItem nameValueItem = IsSubscribeFolderMode as NameValueItem;
+			if (!(nameValueItem.Value == "True"))
+			{
+				Grid grid = sender as Grid;
+				Button button = grid.Tag as Button;
+				button.Visibility = Visibility.Visible;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 控制图像列表中图像名grid 鼠标移出时的隐藏
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void Grid_MouseLeave(object sender, MouseEventArgs e)
+	{
+		if (IsImageSourceModule && sender is Grid { Tag: Button tag })
+		{
+			tag.Visibility = Visibility.Collapsed;
+		}
+	}
+
+	/// <summary>
+	/// 获取模块信息
+	/// </summary>
+	/// <returns></returns>
+	public IVmModule GetVMModule()
+	{
+		if (OwnerModule == null)
+		{
+			AlgorithmTabRoot algorithmTabRoot = GetRoot();
+			if (algorithmTabRoot == null)
+			{
+				return null;
+			}
+			OwnerModule = algorithmTabRoot.Owner as IVmModule;
+			return OwnerModule;
+		}
+		return OwnerModule;
+	}
+
+	private AlgorithmTabRoot GetRoot()
+	{
+		if (root == null)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (DataContext is ButtonSelecter_ImageList buttonSelecter_ImageList)
+				{
+					root = buttonSelecter_ImageList.GetTopBaseNode() as AlgorithmTabRoot;
+				}
+			});
+		}
+		return root;
+	}
+
+	/// <summary>
+	/// 图像清空按钮响应
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void BtnImageClear_Click(object sender, RoutedEventArgs e)
+	{
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "ModifyConfig"
+		}, AppLocalizationService.GetLang("修改配置") + ": " + GetVMModule().Name);
+		byte[] value = new byte[4];
+		try
+		{
+			((IUserBytesData)GetVMModule().Params)["UseModel"] = value;
+		}
+		catch (Exception)
+		{
+			return;
+		}
+		ImageList.Clear();
+		CurImageIndexT = 0;
+		if (GetVMModule() != null)
+		{
+			try
+			{
+				((IUserStringData)GetVMModule().Params)["ClearImage"] = "";
+			}
+			catch (Exception)
+			{
+			}
+		}
+		NotifyPropertyChanged("ImageCount");
+		Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+		(GetRoot()?.FindBaseNodeByName("CurrentImagePath") as ButtonSelecter_ImageList).FreshImageListFlag++;
+	}
+
+	/// <summary>
+	/// 添加图片按钮响应
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void BtnImageAdd_Click(object sender, RoutedEventArgs e)
+	{
+		if (Islocal)
+		{
+			isWindowsPicture = true;
+			Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+			openFileDialog.CheckFileExists = true;
+			openFileDialog.CheckPathExists = true;
+			openFileDialog.Multiselect = true;
+			string text = "|*.bmp;*.jpeg;*.jpg;*.png;*.tif;*.tiff";
+			if (GetVMModule()?.ModuleTypeName == "ImageSource3DModule")
+			{
+				text = "|*.raw";
+			}
+			string filter = (openFileDialog.Filter = AppLocalizationService.GetLang("图像文件") + text);
+			openFileDialog.Filter = filter;
+			string path = ConfigurationHelper.INIGetDefaultOpenPath(GetVMModule()?.ModuleDir);
+			Apps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, path);
+			if (openFileDialog.ShowDialog() == false)
+			{
+				return;
+			}
+			DoAddImages(openFileDialog.FileNames);
+			if (File.Exists(openFileDialog.FileName))
+			{
+				ConfigurationHelper.INISetDefaultOpenPath(Path.GetDirectoryName(openFileDialog.FileName), GetVMModule()?.ModuleDir);
+			}
+		}
+		(GetRoot()?.FindBaseNodeByName("CurrentImagePath") as ButtonSelecter_ImageList).FreshImageListFlag++;
+	}
+
+	protected void LocalImage_Click(object sender, RoutedEventArgs e)
+	{
+		isWindowsPicture = true;
+		Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+		openFileDialog.CheckFileExists = true;
+		openFileDialog.CheckPathExists = true;
+		openFileDialog.Multiselect = true;
+		openFileDialog.Filter = AppLocalizationService.GetLang("图像文件") + "|*.bmp;*.jpeg;*.jpg;*.png;*.tif;*.tiff";
+		string path = ConfigurationHelper.INIGetDefaultOpenPath(GetVMModule()?.ModuleDir);
+		Apps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, path);
+		if (openFileDialog.ShowDialog() != false)
+		{
+			DoAddImages(openFileDialog.FileNames);
+			if (File.Exists(openFileDialog.FileName))
+			{
+				ConfigurationHelper.INISetDefaultOpenPath(Path.GetDirectoryName(openFileDialog.FileName), GetVMModule()?.ModuleDir);
+			}
+		}
+	}
+
+	protected void LinuxImage_Click(object sender, RoutedEventArgs e)
+	{
+		isWindowsPicture = false;
+		DirectoryBrowser.OpenFileDialog openFileDialog = new DirectoryBrowser.OpenFileDialog();
+		openFileDialog.CheckFileExists = true;
+		openFileDialog.Filter = AppLocalizationService.GetLang("图像文件") + "|*.bmp;*.jpeg;*.jpg;*.png;*.tif;*.tiff";
+		string initialDirectory = ConfigurationHelper.INIGetDefaultOpenRemotePath(GetVMModule()?.ModuleDir);
+		openFileDialog.InitialDirectory = initialDirectory;
+		if (openFileDialog.ShowDialog() != false)
+		{
+			DoAddImages(openFileDialog.FileNames);
+			string directoryName = openFileDialog.GetDirectoryName();
+			ConfigurationHelper.INISetDefaultOpenRemotePath(directoryName, GetVMModule()?.ModuleDir);
+		}
+	}
+
+	private void DoAddImages(string[] fileNames)
+	{
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "ModifyConfig"
+		}, AppLocalizationService.GetLang("修改配置") + ": " + GetVMModule().Name);
+		byte[] value = new byte[4];
+		try
+		{
+			((IUserBytesData)GetVMModule().Params)["UseModel"] = value;
+		}
+		catch (Exception)
+		{
+			return;
+		}
+		for (int i = 0; i < fileNames.Length; i++)
+		{
+			string path = "/Picture/";
+			if (Islocal)
+			{
+				if (!AddImageLocal(fileNames[i]))
+				{
+					break;
+				}
+			}
+			else if (!AddImage(fileNames[i], path))
+			{
+				break;
+			}
+		}
+		UpdateImageListSource();
+		Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+	}
+
+	private bool AddImage(string fileName, string path)
+	{
+		if (isWindowsPicture)
+		{
+			if (!AddImageToLinux(fileName, path))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_ImagePathError"), MessageIcons.Error);
+				return false;
+			}
+		}
+		else
+		{
+			if (!AddImageToServer(fileName))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_ImagePathError"), MessageIcons.Error);
+				return false;
+			}
+			if (!AddImageToList(fileName))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_LocalImageNeed"), MessageIcons.Error);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private bool AddImageLocal(string fileName)
+	{
+		try
+		{
+			if (!AddImageToServer(fileName))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_ImagePathError"), MessageIcons.Error);
+				return false;
+			}
+			if (!AddImageToList(fileName))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_LocalImageNeed"), MessageIcons.Error);
+				return false;
+			}
+		}
+		catch (Exception ex)
+		{
+			if (ex is VmException ex2)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), ErrorCodeInfo.GetErrorInfo(ex2.errorCode), MessageIcons.Error);
+			}
+			else
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), ex.Message, MessageIcons.Error);
+			}
+			return false;
+		}
+		return true;
+	}
+
+	private bool AddImageToLinux(string fileName, string strRemoteFile)
+	{
+		if (!ServerSDKAPI.FtpCreatDir(CVmObjectBase.mhandle, strRemoteFile))
+		{
+		}
+		string path = fileName;
+		bool flag = ServerSDKAPI.FtpCheckFileName(CVmObjectBase.mhandle, strRemoteFile + Path.GetFileName(fileName));
+		string text = fileName.GetHashCode().ToString();
+		if (!flag)
+		{
+			path = ((!Path.GetDirectoryName(fileName).EndsWith("\\")) ? (Path.GetDirectoryName(fileName) + "\\" + Path.GetFileNameWithoutExtension(fileName) + "_" + text + Path.GetExtension(fileName)) : (Path.GetDirectoryName(fileName) + Path.GetFileNameWithoutExtension(fileName) + "_" + text + Path.GetExtension(fileName)));
+		}
+		string text2 = "/root/vmtempfiles/ftp";
+		string text3 = strRemoteFile + Path.GetFileName(path);
+		flag = ServerSDKAPI.FtpUploadFile(ptr, fileName, text3, bCreatDir: true, bCover: true);
+		string text4 = text2 + text3;
+		if (AddImageToServer(text4) && AddImageToList(text4))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	private bool AddImageToServer(string fileName)
+	{
+		if (GetVMModule() != null && ImageList.FirstOrDefault((ImageEntity x) => x.ImagePath == fileName) == null)
+		{
+			((IUserStringData)GetVMModule().Params)["AddImage"] = fileName;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 根据图像名称获取列表中的图像实例
+	/// </summary>
+	/// <param name="ImagePath"></param>
+	/// <returns></returns>
+	private ImageEntity GetImageEntitybyPath(string ImagePath)
+	{
+		foreach (ImageEntity image in ImageList)
+		{
+			if (image.ImagePath == ImagePath)
+			{
+				return image;
+			}
+		}
+		return null;
+	}
+
+	/// <summary>
+	/// 添加路径中的所有图像
+	/// </summary>
+	/// <param name="dir">文件夹路径</param>
+	/// <returns></returns>
+	private void AddImageByDir(string dir, int folderLayer = 1)
+	{
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "ModifyConfig"
+		}, AppLocalizationService.GetLang("修改配置") + ": " + GetVMModule().Name);
+		byte[] value = new byte[4];
+		try
+		{
+			((IUserBytesData)GetVMModule().Params)["UseModel"] = value;
+		}
+		catch (Exception)
+		{
+			return;
+		}
+		try
+		{
+			if (!Directory.Exists(dir))
+			{
+				return;
+			}
+			string[] array = (from x in Directory.GetFileSystemEntries(dir)
+				orderby x.Length, x
+				select x).ToArray();
+			string[] array2 = array;
+			foreach (string text in array2)
+			{
+				if (File.Exists(text))
+				{
+					if (GetVMModule()?.ModuleTypeName == "ImageSourceModule")
+					{
+						if (Path.GetExtension(text).ToUpper() != ".JPG" && Path.GetExtension(text).ToUpper() != ".JPEG" && Path.GetExtension(text).ToUpper() != ".BMP" && Path.GetExtension(text).ToUpper() != ".PNG" && Path.GetExtension(text).ToUpper() != ".TIF" && Path.GetExtension(text).ToUpper() != ".TIFF")
+						{
+							continue;
+						}
+					}
+					else if (GetVMModule()?.ModuleTypeName == "ImageSource3DModule" && Path.GetExtension(text).ToUpper() != ".RAW")
+					{
+						continue;
+					}
+					string path = "/Picture/";
+					if (Islocal)
+					{
+						if (!AddImageLocal(text))
+						{
+							break;
+						}
+					}
+					else if (!AddImage(text, path))
+					{
+						break;
+					}
+				}
+				else if (folderLayer <= 1)
+				{
+					AddImageByDir(text, folderLayer + 1);
+				}
+			}
+		}
+		catch (Exception ex2)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_ReadImageFail"), MessageIcons.Error);
+			LogHelper.Error("Message:" + ex2.Message + "StackTrace:" + ex2.StackTrace);
+		}
+	}
+
+	/// <summary>
+	/// 添加图像至图像列表
+	/// </summary>
+	/// <param name="strResult">图像文件路径</param>
+	private bool AddImageToList(string strResult)
+	{
+		if (string.IsNullOrEmpty(strResult))
+		{
+			return false;
+		}
+		if (ImageList.FirstOrDefault((ImageEntity x) => x.ImagePath == strResult) == null)
+		{
+			ImageList.Add(new ImageEntity
+			{
+				ImagePath = strResult
+			});
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 添加文件夹按钮响应
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void BtnImageAddFolder_Click(object sender, RoutedEventArgs e)
+	{
+		//IL_0013: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0019: Expected Obj, but got Unknown
+		//IL_002a: Unknown result type (might be due to invalid IL or missing references)
+		//IL_002f: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0031: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0033: Invalid comparison between Unknown and I4
+		if (Islocal)
+		{
+			isWindowsPicture = true;
+			CommonOpenFileDialog val = new CommonOpenFileDialog();
+			val.IsFolderPicker = true;
+			val.Multiselect = false;
+			CommonFileDialogResult val2 = ((CommonFileDialog)val).ShowDialog();
+			try
+			{
+				if ((int)val2 != 2)
+				{
+					string dir = ((CommonFileDialog)val).FileName.Trim();
+					AddImageByDir(dir);
+					UpdateImageListSource();
+				}
+			}
+			catch
+			{
+			}
+			finally
+			{
+				((CommonFileDialog)val).Dispose();
+			}
+		}
+		(GetRoot()?.FindBaseNodeByName("CurrentImagePath") as ButtonSelecter_ImageList).FreshImageListFlag++;
+	}
+
+	protected void LocalImageFolder_Click(object sender, RoutedEventArgs e)
+	{
+		//IL_0008: Unknown result type (might be due to invalid IL or missing references)
+		//IL_000e: Expected Obj, but got Unknown
+		//IL_001f: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0024: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0026: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0028: Invalid comparison between Unknown and I4
+		isWindowsPicture = true;
+		CommonOpenFileDialog val = new CommonOpenFileDialog();
+		val.IsFolderPicker = true;
+		val.Multiselect = false;
+		CommonFileDialogResult val2 = ((CommonFileDialog)val).ShowDialog();
+		try
+		{
+			if ((int)val2 != 2)
+			{
+				string dir = ((CommonFileDialog)val).FileName.Trim();
+				AddImageByDir(dir);
+				UpdateImageListSource();
+			}
+		}
+		catch
+		{
+		}
+		finally
+		{
+			((CommonFileDialog)val).Dispose();
+		}
+	}
+
+	/// <summary>
+	/// 获取当前文件夹下所有文件（夹）集合字符串信息
+	/// </summary>
+	/// <param name="fileName"></param>
+	/// <returns></returns>
+	protected string GetFiles(string fileName)
+	{
+		int nDataLength = 0;
+		byte[] dataByte = new byte[0];
+		string empty = string.Empty;
+		bool flag = ServerSDKAPI.FtpRemoteList(CVmObjectBase.mhandle, fileName, ref nDataLength, ref dataByte);
+		if (!flag && nDataLength > 0)
+		{
+			dataByte = new byte[nDataLength];
+			flag = ServerSDKAPI.FtpRemoteList(CVmObjectBase.mhandle, fileName, ref nDataLength, ref dataByte);
+		}
+		if (flag)
+		{
+			return Encoding.UTF8.GetString(dataByte);
+		}
+		return string.Empty;
+	}
+
+	protected void LinuxImageFolder_Click(object sender, RoutedEventArgs e)
+	{
+		isWindowsPicture = false;
+		List<string> list = new List<string>();
+		FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+		if (folderBrowserDialog.ShowDialog() != true)
+		{
+			return;
+		}
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "ModifyConfig"
+		}, AppLocalizationService.GetLang("修改配置") + ": " + GetVMModule().Name);
+		byte[] value = new byte[4];
+		try
+		{
+			((IUserBytesData)GetVMModule().Params)["UseModel"] = value;
+		}
+		catch (Exception)
+		{
+			return;
+		}
+		try
+		{
+			string text = folderBrowserDialog.FilePath.Trim();
+			string text2 = "";
+			text2 = ((!(text.Substring(0, 21) == "/root/vmtempfiles/ftp")) ? (text + "//") : (text.Remove(0, 21) + "//"));
+			ImvsSdkDefine.FTP_REMOTE_FILE_LIST_INFO ftpFileInfo = default;
+			if (ServerSDKAPI.FtpRemoteFileList(CVmObjectBase.mhandle, text2, ref ftpFileInfo))
+			{
+				for (int i = 0; i < ftpFileInfo.FileNum; i++)
+				{
+					ImvsSdkDefine.FTP_REMOTE_FILE_INFO fTP_REMOTE_FILE_INFO = (ImvsSdkDefine.FTP_REMOTE_FILE_INFO)Marshal.PtrToStructure(ftpFileInfo.FTPFileInfos + i * Marshal.SizeOf(typeof(ImvsSdkDefine.FTP_REMOTE_FILE_INFO)), typeof(ImvsSdkDefine.FTP_REMOTE_FILE_INFO));
+					string text3 = Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FileName).TrimEnd(default(char));
+					string text4 = Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FileTime).TrimEnd(default(char));
+					string text5 = Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO.FilePermission).TrimEnd(default(char));
+					if (text5.StartsWith("d"))
+					{
+						string strRemoteDir = text.Remove(0, 21) + "/" + text3 + "//";
+						ImvsSdkDefine.FTP_REMOTE_FILE_LIST_INFO ftpFileInfo2 = default;
+						if (ServerSDKAPI.FtpRemoteFileList(CVmObjectBase.mhandle, strRemoteDir, ref ftpFileInfo2))
+						{
+							for (int j = 0; j < ftpFileInfo2.FileNum; j++)
+							{
+								ImvsSdkDefine.FTP_REMOTE_FILE_INFO fTP_REMOTE_FILE_INFO2 = (ImvsSdkDefine.FTP_REMOTE_FILE_INFO)Marshal.PtrToStructure(ftpFileInfo2.FTPFileInfos + j * Marshal.SizeOf(typeof(ImvsSdkDefine.FTP_REMOTE_FILE_INFO)), typeof(ImvsSdkDefine.FTP_REMOTE_FILE_INFO));
+								string text6 = Encoding.UTF8.GetString(fTP_REMOTE_FILE_INFO2.FileName).TrimEnd(default(char));
+								string item = text3 + "/" + text6;
+								list.Add(item);
+							}
+						}
+						if (IntPtr.Zero != ftpFileInfo2.FTPFileInfos)
+						{
+							Marshal.FreeHGlobal(ftpFileInfo2.FTPFileInfos);
+							ftpFileInfo2.FTPFileInfos = IntPtr.Zero;
+						}
+					}
+					else
+					{
+						list.Add(text3);
+					}
+				}
+				foreach (string item2 in list)
+				{
+					string text7 = item2.Split('.').LastOrDefault().ToUpper();
+					if (!(text7 != "JPG") || !(text7 != "JPEG") || !(text7 != "BMP") || !(text7 != "PNG") || !(text7 != "TIF") || !(text7 != "TIFF"))
+					{
+						string fileName = text + "/" + item2;
+						if (!AddImage(fileName, ""))
+						{
+							break;
+						}
+					}
+				}
+				UpdateImageListSource();
+			}
+			if (IntPtr.Zero != ftpFileInfo.FTPFileInfos)
+			{
+				Marshal.FreeHGlobal(ftpFileInfo.FTPFileInfos);
+				ftpFileInfo.FTPFileInfos = IntPtr.Zero;
+			}
+		}
+		catch (Exception ex2)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), AppLocalizationService.GetLang("Lang_ReadImageFail"), MessageIcons.Error);
+			LogHelper.Error("Message:" + ex2.Message + "StackTrace:" + ex2.StackTrace);
+		}
+	}
+
+	/// <summary>
+	/// 耗时操作同时处理界面事件
+	/// </summary>
+	public void DoEvents()
+	{
+		DispatcherFrame dispatcherFrame = new DispatcherFrame();
+		Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, (DispatcherOperationCallback)((object f) =>
+		{
+			((DispatcherFrame)f).Continue = false;
+			return (object)null;
+		}), dispatcherFrame);
+		Dispatcher.PushFrame(dispatcherFrame);
+	}
+
+	/// <summary>
+	/// 判断子控件是否在父控件中可见
+	/// </summary>
+	/// <param name="child">子控件</param>
+	/// <param name="parent">父控件</param>
+	/// <returns></returns>
+	private bool IsChildVisibleInParent(FrameworkElement child, FrameworkElement parent)
+	{
+		Rect rect = child.TransformToAncestor(parent)?.TransformBounds(new Rect(new Point(0.0, 0.0), child.RenderSize)) ?? new Rect(new Point(0.0, 0.0), child.RenderSize);
+		return new Rect(new Point(0.0, 0.0), parent.RenderSize).IntersectsWith(rect);
+	}
+
+	/// <summary>
+	/// 界面刷新图像源列表
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	public void InterfaceUpdateImageList(object sender, EventArgs e)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			ImageList.Clear();
+			if (GetRoot()?.FindBaseNodeByName("AutoPlay") is Apps.XmlParser.ParamTab.Boolean boolean)
+			{
+				boolean.CurValueA = Convert.ToBoolean(((IUserStringData)GetVMModule().Params)["AutoPlay"]);
+			}
+		});
+		RefreshImageList();
+	}
+
+	/// <summary>
+	/// 更新当前图像列表的缩略图
+	/// </summary>
+	private void UpdateImageListSource()
+	{
+		try
+		{
+			int num = curScrollOffset;
+			int num2 = num + (int)Math.Ceiling(curActualWidth / 76.0);
+			if (num2 > ImageList.Count)
+			{
+				num2 = ImageList.Count;
+			}
+			LogHelper.Info($"startIndex={num},endIndex={num2},ImageList.Count={ImageList.Count}");
+			for (int i = num; i < num2; i++)
+			{
+				lock (mutexrefreshImageThread)
+				{
+					if (dataNumForReceiveStore < maxStoreLen)
+					{
+						forReceiveStore[dataNumForReceiveStore] = i;
+						dataNumForReceiveStore++;
+					}
+				}
+			}
+			NotifyPropertyChanged("ImageCount");
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+		}
+	}
+
+	private void LoadThumbnailImage(int index)
+	{
+		try
+		{
+			LogHelper.Info($"LoadThumbnailImage:{index}");
+			int num = curScrollOffset;
+			int num2 = num + (int)Math.Ceiling(curActualWidth / 76.0);
+			LogHelper.Info($"index={index},startIndex={num},endIndex={num2},ImageList.Count={ImageList.Count}");
+			if (index < num || index >= num2 || index >= ImageList.Count)
+			{
+				return;
+			}
+			ImageEntity imageEntity = ImageList[index];
+			if (imageEntity == null || imageEntity.ImageSource != null)
+			{
+				return;
+			}
+			ImageData imageData = null;
+			if (Islocal)
+			{
+				imageData = ((!(Path.GetExtension(imageEntity.ImagePath)?.ToLower() == ".raw")) ? ImageData.GetImageDataFromFile(imageEntity.ImagePath, 72, 52) : ImageData.GetImageDataFrom3DFile(imageEntity.ImagePath, 72, 52));
+				if (imageData != null)
+				{
+					LogHelper.Info("GetImageDataFromFile successfully");
+					imageEntity.ImageSource = imageData;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+		}
+	}
+
+	/// <summary>
+	/// 图像列表选项改变响应
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void lst_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		CurImageIndexT = CurSelectedIndex + 1;
+		if (0 > CurImageIndex || !needSelectionTrigger || GetVMModule() == null)
+		{
+			return;
+		}
+		bool flag = GetRoot()?.FindBaseNodeByName("AutoPlay") is Apps.XmlParser.ParamTab.Boolean boolean && boolean.CurValueA;
+		if (!(GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList buttonSelecter_ImageList))
+		{
+			return;
+		}
+		try
+		{
+			if (buttonSelecter_ImageList.SelectEnable && !ImageList[CurImageIndex].IsCheck)
+			{
+				GetModuleSel();
+			}
+			List<ImageEntity> list = (buttonSelecter_ImageList.SelectEnable ? ImageList.Where((ImageEntity p) => p.IsCheck).ToList() : ImageList.ToList());
+			int num = list.IndexOf(ImageList[CurImageIndex]);
+			int index = ((num == 0) ? (list.Count - 1) : (num - 1));
+			string value = (flag ? list[index].ImagePath : list[num].ImagePath);
+			((IUserStringData)GetVMModule().Params)["CurrentImagePath"] = value;
+			VmProcedure vmProcedure = (GetVMModule() as VmModule).Root;
+			if (vmProcedure != null && !vmProcedure.IsVirtual)
+			{
+				string workStateInfo = "";
+				if (!vmProcedure.RunCheck(ref workStateInfo))
+				{
+					string strMsg = vmProcedure.Name + ":" + workStateInfo;
+					HikMessageBox.Show(strMsg, MessageIcons.Error);
+				}
+				else
+				{
+					vmProcedure.Run(null, bIsWait: false);
+				}
+			}
+		}
+		catch (VmException ex)
+		{
+			string errorInfo = ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+			HikMessageBox.Show(errorInfo, MessageIcons.Error);
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public void OnPreduceResultCallBackArrived(object sender, EventArgs e)
+	{
+		if (!(e is ValueEventArgs { Value: var value }) || !(value is ImvsSdkDefine.IMVS_MODULE_WORK_STAUS { nWorkStatus: 0u, nExecuteCount: >0u }))
+		{
+			return;
+		}
+		Task.Run(() =>
+		{
+			if (e is ValueEventArgs)
+			{
+				DoRefreshLocalImage();
+			}
+		});
+	}
+
+	private void DoRefreshLocalImage()
+	{
+		try
+		{
+			if (GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList buttonSelecter_ImageList)
+			{
+				string curValueA = null;
+				object obj = ((GetVMModule() as VmModule)?["CurImagePath.Value"] as Array)?.GetValue(0);
+				if (obj is ImvsSdkDefine.IMVS_MODULE_STRING_VALUE_EX)
+				{
+					curValueA = ((ImvsSdkDefine.IMVS_MODULE_STRING_VALUE_EX)obj).strValue;
+				}
+				buttonSelecter_ImageList.CurValueA = curValueA;
+			}
+			if (GetRoot()?.FindBaseNodeByName("RefreshImage") is Apps.XmlParser.ParamTab.Boolean { CustomVisibleA: not false, CurValueA: not false } && needReflashImages)
+			{
+				RefreshImageList();
+			}
+			needReflashImages = false;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("图像刷新错误DoRefreshLocalImage():" + ex.Message);
+		}
+	}
+
+	protected void lst_ScrollChanged(object sender, ScrollChangedEventArgs e)
+	{
+		try
+		{
+			if (!(sender is ListBox listBox))
+			{
+				return;
+			}
+			int num = (int)e.HorizontalOffset;
+			double actualWidth = listBox.ActualWidth;
+			if (num != curScrollOffset || actualWidth != curActualWidth)
+			{
+				int num2 = num + (int)Math.Ceiling(actualWidth / 76.0);
+				if (num2 > ImageList.Count)
+				{
+					num2 = ImageList.Count;
+				}
+				LogHelper.Info($"startIndex={num},endIndex={num2},ImageList.Count={ImageList.Count}");
+				for (int i = 0; i < ImageList.Count; i++)
+				{
+					if (i >= num && i < num2)
+					{
+						lock (mutexrefreshImageThread)
+						{
+							if (dataNumForReceiveStore < maxStoreLen)
+							{
+								forReceiveStore[dataNumForReceiveStore] = i;
+								dataNumForReceiveStore++;
+							}
+						}
+					}
+					else if (i >= num2 || i < num)
+					{
+						ImageList[i].ImageSource = null;
+					}
+				}
+				curScrollOffset = (int)e.HorizontalOffset;
+				curActualWidth = listBox.ActualWidth;
+			}
+			if (scrollViewer == null)
+			{
+				ScrollViewer child = Apps.UIHelper.Extern.UIHelper.GetChild<ScrollViewer>(this);
+				if (child != null)
+				{
+					scrollViewer = child;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+		}
+	}
+
+	private void JudgeDrage(DragEventArgs e)
+	{
+		Array array = (Array)(e.Data?.GetData(DataFormats.FileDrop));
+		if (array == null)
+		{
+			return;
+		}
+		foreach (object item in array)
+		{
+			string path = item.ToString();
+			string text = Path.GetExtension(path).ToLower();
+			if (!File.Exists(path) || (text != ".bmp" && text != ".jpeg" && text != ".jpg" && text != ".png" && text != ".tif" && text != ".tiff"))
+			{
+				e.Effects = DragDropEffects.None;
+				e.Handled = true;
+				break;
+			}
+		}
+	}
+
+	protected void lst_DragEnter(object sender, DragEventArgs e)
+	{
+		JudgeDrage(e);
+	}
+
+	protected void lst_DragOver(object sender, DragEventArgs e)
+	{
+		JudgeDrage(e);
+	}
+
+	protected void lst_Drop(object sender, DragEventArgs e)
+	{
+		Array array = (Array)(e.Data?.GetData(DataFormats.FileDrop));
+		if (array == null)
+		{
+			return;
+		}
+		List<string> list = new List<string>();
+		foreach (object item in array)
+		{
+			list.Add(item.ToString());
+		}
+		DoAddImages(list.ToArray());
+	}
+
+	protected void ImagePanel_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+		ImageListPanelBase imageListPanelBase = sender as ImageListPanelBase;
+		ButtonSelecter_ImageList buttonSelecter_ImageList = e.OldValue as ButtonSelecter_ImageList;
+		ButtonSelecter_ImageList buttonSelecter_ImageList2 = e.NewValue as ButtonSelecter_ImageList;
+		IVmModule vmModule = (buttonSelecter_ImageList?.GetTopBaseNode() as AlgorithmTabRoot)?.Owner as IVmModule;
+		IVmModule vmModule2 = (buttonSelecter_ImageList2?.GetTopBaseNode() as AlgorithmTabRoot)?.Owner as IVmModule;
+		if (imageListPanelBase == null)
+		{
+			return;
+		}
+		if (vmModule != null)
+		{
+			vmModule.SubscribeCount--;
+			if (vmModule.Root != null)
+			{
+				WeakEventManager<IVmProcedure, EventArgs>.RemoveHandler(vmModule.Root as IVmProcedure, "OnWorkEndStatusCallBack", OnPreduceResultCallBackArrived);
+			}
+			WeakEventManager<IImageSourceNode, EventArgs>.RemoveHandler(vmModule2 as IImageSourceNode, "ModelChanged", InterfaceUpdateImageList);
+			ChangeShadowDataSource(null);
+			if (IsSubscribeFolderMode is NameValueItem nameValueItem)
+			{
+				nameValueItem.OnCurValueChanged -= OnSubscribeFolderModeChanged;
+			}
+			_IsSubscribeFolderMode = null;
+			OwnerModule = null;
+			root = null;
+		}
+		ImageList.Clear();
+		if (vmModule2 != null)
+		{
+			vmModule2.SubscribeCount++;
+			root = buttonSelecter_ImageList2.GetTopBaseNode() as AlgorithmTabRoot;
+			if (vmModule2.Root != null)
+			{
+				WeakEventManager<IVmProcedure, EventArgs>.AddHandler(vmModule2.Root as IVmProcedure, "OnWorkEndStatusCallBack", OnPreduceResultCallBackArrived);
+			}
+			WeakEventManager<IImageSourceNode, EventArgs>.AddHandler(vmModule2 as IImageSourceNode, "ModelChanged", InterfaceUpdateImageList);
+			IVmModuleSet vmModuleSet = vmModule2.Root;
+			if (vmModuleSet != null)
+			{
+				ChangeShadowDataSource(vmModuleSet);
+			}
+		}
+		RefreshImageList();
+		NotifyPropertyChanged("IsSubscribeFolderMode");
+	}
+
+	protected virtual void ChangeShadowDataSource(object source)
+	{
+	}
+
+	protected void CheckBox_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is CheckBox { Tag: ImageEntity tag } && needSetSelectImage)
+		{
+			ChangedExecutePic(tag);
+		}
+	}
+
+	protected void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (!IsSelectMode || !(sender is Grid { DataContext: ImageEntity dataContext }) || e.ChangedButton != MouseButton.Left)
+		{
+			return;
+		}
+		if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+		{
+			dataContext.IsCheck = !dataContext.IsCheck;
+			ChangedExecutePic(dataContext);
+			e.Handled = true;
+		}
+		else
+		{
+			if (CurImageIndex < 0 || (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift)))
+			{
+				return;
+			}
+			int val = ImageList.IndexOf(dataContext);
+			int num = Math.Min(CurImageIndex, val);
+			int num2 = Math.Max(CurImageIndex, val);
+			if (num2 <= num)
+			{
+				return;
+			}
+			for (int i = 0; i < ImageList.Count; i++)
+			{
+				if (i < num || i > num2)
+				{
+					if (ImageList[i].IsCheck)
+					{
+						ImageList[i].IsCheck = false;
+						ChangedExecutePic(ImageList[i]);
+					}
+				}
+				else if (!ImageList[i].IsCheck)
+				{
+					ImageList[i].IsCheck = true;
+					ChangedExecutePic(ImageList[i]);
+				}
+			}
+			e.Handled = true;
+		}
+	}
+
+	/// <summary>
+	/// 重新下发待执行图像列表
+	/// </summary>
+	/// <param name="image"></param>
+	private void ChangedExecutePic(ImageEntity image)
+	{
+		try
+		{
+			if (image.IsCheck)
+			{
+				((IUserStringData)GetVMModule().Params)["SelectExecutePic"] = image.ImagePath;
+			}
+			else
+			{
+				((IUserStringData)GetVMModule().Params)["CancelExecutePic"] = image.ImagePath;
+			}
+			OnExcuteTypeParamChanged();
+		}
+		catch (Exception ex)
+		{
+			string text = ex.Message;
+			if (ex is VmException ex2)
+			{
+				text = ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+			}
+			HikMessageBox.Show(text, MessageIcons.Error);
+			LogHelper.Error(text);
+		}
+	}
+
+	/// <summary>
+	/// 获取当前是否选中模式，若是则获取选中项
+	/// </summary>
+	public void GetModuleSelectMode()
+	{
+		needSetSelectImage = false;
+		try
+		{
+			if (!(DataContext is ButtonSelecter_ImageList { SelectEnable: not false }))
+			{
+				return;
+			}
+			string[] array = ((IUserStringData)GetVMModule().Params)["GetAllExecutePic"]?.Split('|');
+			if (array == null || array.Length == 0)
+			{
+				return;
+			}
+			foreach (ImageEntity image in ImageList)
+			{
+				if (array.Contains(image.ImagePath))
+				{
+					image.IsCheck = true;
+				}
+				else
+				{
+					image.IsCheck = false;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			string text = ex.Message;
+			if (ex is VmException ex2)
+			{
+				text = ErrorCodeInfo.GetErrorInfo(ex2.errorCode);
+			}
+			LogHelper.Error("刷新选中模式失败：" + text);
+		}
+		finally
+		{
+			needSetSelectImage = true;
+		}
+	}
+
+	protected void FirstImage_Click(object sender, RoutedEventArgs e)
+	{
+		if (ImageList.Count == 0)
+		{
+			return;
+		}
+		if (IsSelectMode)
+		{
+			List<ImageEntity> list = ImageList.Where((ImageEntity p) => p.IsCheck).ToList();
+			if (list.Count == 0)
+			{
+				return;
+			}
+			if (GetRoot()?.FindBaseNodeByName("AutoPlay") is Apps.XmlParser.ParamTab.Boolean boolean)
+			{
+				if (!boolean.CurValue)
+				{
+					((IUserStringData)GetVMModule().Params)["CurrentImagePath"] = list[0].ImagePath;
+					if (GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList buttonSelecter_ImageList)
+					{
+						buttonSelecter_ImageList.CurValueA = list[0].ImagePath;
+					}
+				}
+				else if (boolean.CurValue)
+				{
+					((IUserStringData)GetVMModule().Params)["CurrentImagePath"] = list[list.Count - 1].ImagePath;
+					if (GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList buttonSelecter_ImageList2)
+					{
+						buttonSelecter_ImageList2.CurValueA = list[list.Count - 1].ImagePath;
+					}
+				}
+			}
+		}
+		else if (GetRoot()?.FindBaseNodeByName("AutoPlay") is Apps.XmlParser.ParamTab.Boolean boolean2)
+		{
+			if (!boolean2.CurValue)
+			{
+				((IUserStringData)GetVMModule().Params)["CurrentImagePath"] = ImageList[0].ImagePath;
+				if (GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList buttonSelecter_ImageList3)
+				{
+					buttonSelecter_ImageList3.CurValueA = ImageList[0].ImagePath;
+				}
+			}
+			else if (boolean2.CurValue)
+			{
+				((IUserStringData)GetVMModule().Params)["CurrentImagePath"] = ImageList[ImageCount - 1].ImagePath;
+				if (GetRoot()?.FindBaseNodeByName("CurrentImagePath") is ButtonSelecter_ImageList buttonSelecter_ImageList4)
+				{
+					buttonSelecter_ImageList4.CurValueA = ImageList[ImageCount - 1].ImagePath;
+				}
+			}
+		}
+		IsReturnFirstForce = true;
+		Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+		{
+			scrollViewer?.ScrollToLeftEnd();
+		}));
+	}
+
+	protected void MenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		string imagePath = ImageList[CurImageIndex].ImagePath;
+		if (Directory.Exists(imagePath))
+		{
+			Process.Start("Explorer.exe", "/select," + imagePath);
+			return;
+		}
+		IntPtr intPtr = ILCreateFromPathW(imagePath);
+		if (!(intPtr != IntPtr.Zero))
+		{
+			return;
+		}
+		try
+		{
+			Marshal.ThrowExceptionForHR(SHOpenFolderAndSelectItems(intPtr, 0u, IntPtr.Zero, 0u));
+		}
+		finally
+		{
+			ILFree(intPtr);
+		}
+	}
+
+	/// <summary>
+	/// 3D新增，导入RP文件夹
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void BtnImageAddRpFolder_Click(object sender, RoutedEventArgs e)
+	{
+		//IL_0001: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0007: Expected Obj, but got Unknown
+		//IL_0018: Unknown result type (might be due to invalid IL or missing references)
+		//IL_001d: Unknown result type (might be due to invalid IL or missing references)
+		//IL_001f: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0021: Invalid comparison between Unknown and I4
+		CommonOpenFileDialog val = new CommonOpenFileDialog();
+		val.IsFolderPicker = true;
+		val.Multiselect = false;
+		CommonFileDialogResult val2 = ((CommonFileDialog)val).ShowDialog();
+		try
+		{
+			if ((int)val2 == 2)
+			{
+				return;
+			}
+			string value = ((CommonFileDialog)val).FileName.Trim();
+			try
+			{
+				((IUserStringData)GetVMModule().Params)["AddRpDir"] = value;
+				string text = ((IUserStringData)GetVMModule().Params)["RpRawDir"];
+				if (Directory.Exists(text))
+				{
+					AddImageByDir(text);
+					UpdateImageListSource();
+				}
+			}
+			catch (VmException ex)
+			{
+				string text2 = AppLocalizationService.GetLang("errCode:") + $"{ex.errorCode:X}" + "\r\n";
+				text2 = text2 + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ImageAdd"), text2, MessageIcons.Error);
+			}
+		}
+		catch
+		{
+		}
+		finally
+		{
+			((CommonFileDialog)val).Dispose();
+		}
+	}
+}

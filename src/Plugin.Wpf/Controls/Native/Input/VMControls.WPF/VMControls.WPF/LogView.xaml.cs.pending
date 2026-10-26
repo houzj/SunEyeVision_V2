@@ -1,0 +1,87 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// LogView.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// LogView
+/// </summary>
+public partial class LogView : Control, IComponentConnector, IStyleConnector
+{
+	private ScrollViewer scrollViewer;
+
+	public static readonly DependencyProperty LogSourceProperty = DependencyProperty.Register("LogSource", typeof(object), typeof(LogView), new PropertyMetadata(null, null));
+
+	public object LogSource
+	{
+		get
+		{
+			return GetValue(LogSourceProperty);
+		}
+		set
+		{
+			SetValue(LogSourceProperty, value);
+		}
+	}
+
+	public LogView()
+	{
+		InitializeComponent();
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		scrollViewer = Template.FindName("scrollViewer", this) as ScrollViewer;
+	}
+
+	private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		bool exit = false;
+		UIElement uIElement = sender as UIElement;
+		ComboBox a;
+		VisualTreeHelper.HitTest(uIElement, (DependencyObject potentialHitTestTarget) =>
+		{
+			if (potentialHitTestTarget is AdornerLayer)
+			{
+				return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+			}
+			if (potentialHitTestTarget is ComboBox)
+			{
+				a = potentialHitTestTarget as ComboBox;
+				exit = true;
+				return HitTestFilterBehavior.Stop;
+			}
+			return HitTestFilterBehavior.Continue;
+		}, (HitTestResult result) => HitTestResultBehavior.Stop, new PointHitTestParameters(e.GetPosition(uIElement)));
+		if (exit)
+		{
+			return;
+		}
+		ScrollViewer scrollViewer = this.scrollViewer;
+		if (scrollViewer != null)
+		{
+			double num = Math.Abs(e.Delta / 2);
+			double num2 = 0.0;
+			num2 = ((e.Delta <= 0) ? Math.Min(scrollViewer.ScrollableHeight, scrollViewer.VerticalOffset + num) : Math.Max(0.0, scrollViewer.VerticalOffset - num));
+			if (num2 != scrollViewer.VerticalOffset)
+			{
+				scrollViewer.ScrollToVerticalOffset(num2);
+				e.Handled = true;
+			}
+		}
+	}
+
+	private void Logshow_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		scrollViewer.ScrollToEnd();
+	}
+}

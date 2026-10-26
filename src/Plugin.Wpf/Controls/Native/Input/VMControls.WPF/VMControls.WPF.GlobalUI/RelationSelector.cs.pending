@@ -1,0 +1,188 @@
+using System;
+using System.Collections.Generic;
+using System.Windows.Input;
+using Apps.Data;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using Mvvm.Commands;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 参数订阅项
+/// </summary>
+public class RelationSelector : NotifyPropertyChangedBase, IParent
+{
+	public string CurValue = "";
+
+	private bool isDropDownOpen;
+
+	public object _parent = null;
+
+	/// <summary>
+	/// 是否只读
+	/// </summary>
+	private bool ReadOnly = false;
+
+	private ICommand _DropDownCommand = null;
+
+	private DelegateCommand<ObjectEventArgs> _ClickCommand = null;
+
+	/// <summary>
+	/// 显示名
+	/// </summary>
+	public string CurValueA
+	{
+		get
+		{
+			return CurValue;
+		}
+		set
+		{
+			if (CurValue != value)
+			{
+				CurValue = value;
+				OnPropertyChanged("CurValueA");
+				CurValueChange?.Invoke();
+			}
+		}
+	}
+
+	public string Tag { get; set; }
+
+	/// <summary>
+	/// 下拉展开
+	/// </summary>
+	public bool IsDropDownOpen
+	{
+		get
+		{
+			return isDropDownOpen;
+		}
+		set
+		{
+			if (isDropDownOpen != value)
+			{
+				isDropDownOpen = value;
+				OnPropertyChanged("IsDropDownOpen");
+			}
+		}
+	}
+
+	public object Parent
+	{
+		get
+		{
+			return _parent;
+		}
+		set
+		{
+			if (_parent == null)
+			{
+				_parent = value;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前参数对象
+	/// </summary>
+	public GlobalTriggerEventItem CurrParamObject => (Parent == null) ? null : ((GlobalTriggerEventItem)Parent);
+
+	public bool ReadOnlyA
+	{
+		get
+		{
+			return ReadOnly;
+		}
+		set
+		{
+			ReadOnly = value;
+			OnPropertyChanged("ReadOnlyA");
+		}
+	}
+
+	public bool IsSubScribe { get; set; }
+
+	/// <summary>
+	/// 下来订阅数
+	/// </summary>
+	public object EnumEntrysA
+	{
+		get
+		{
+			List<Holder> list = new List<Holder>();
+			if (CurrParamObject != null && CurrParamObject?.ItemsA != null)
+			{
+				foreach (TrigerOutPutItem item in CurrParamObject?.ItemsA)
+				{
+					if (item.ItemType.Equals("string"))
+					{
+						Holder holder = new Holder();
+						holder.DisplayNameA = "%" + item.ItemName + "%";
+						holder.HolderTarget = item;
+						list.Add(holder);
+					}
+				}
+				list.Insert(0, new Holder
+				{
+					DisplayNameA = Holder.NullName,
+					HolderTarget = "null"
+				});
+			}
+			return list;
+		}
+	}
+
+	/// <summary>
+	/// 下拉点击命令
+	/// </summary>
+	public ICommand DropDownCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			ICommand command = _DropDownCommand;
+			if (command == null)
+			{
+				DelegateCommand val = new DelegateCommand((Action)DropDownCommandCmdExecute);
+				ICommand command2 = (ICommand)val;
+				_DropDownCommand = (ICommand)val;
+				command = command2;
+			}
+			return command;
+		}
+	}
+
+	/// <summary>
+	/// 双击选中命令
+	/// </summary>
+	public ICommand ClickCommand => (ICommand)(_ClickCommand ?? (_ClickCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)ClickCommandCmdExecute)));
+
+	public event Action CurValueChange = null;
+
+	private void DropDownCommandCmdExecute()
+	{
+		OnPropertyChanged("EnumEntrysA");
+	}
+
+	private void ClickCommandCmdExecute(ObjectEventArgs e)
+	{
+		string displayNameA = (e.Param as Holder).DisplayNameA;
+		if (displayNameA == "无" || displayNameA.ToLower() == "none" || displayNameA == "RunParam_None")
+		{
+			CurValueA = "";
+			IsDropDownOpen = false;
+			return;
+		}
+		if ((e.Param as Holder).HolderTarget is TrigerOutPutItem trigerOutPutItem)
+		{
+			CurValueA = trigerOutPutItem.ItemName;
+		}
+		IsDropDownOpen = false;
+	}
+}

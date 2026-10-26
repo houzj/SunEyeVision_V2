@@ -1,0 +1,75 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 直线段
+/// </summary>
+public struct LineEx : ILine, IShape, IShapeBase
+{
+	/// <summary>
+	/// 起始点坐标X
+	/// </summary>
+	public float StartPointX { get; set; }
+
+	/// <summary>
+	/// 起始点坐标Y
+	/// </summary>
+	public float StartPointY { get; set; }
+
+	/// <summary>
+	/// 终止点坐标X
+	/// </summary>
+	public float EndPointX { get; set; }
+
+	/// <summary>
+	/// 终止点坐标Y
+	/// </summary>
+	public float EndPointY { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	public bool IsThroughLine { get; set; }
+
+	Point ILine.StartPoint => new Point(StartPointX, StartPointY);
+
+	Point ILine.EndPoint => new Point(EndPointX, EndPointY);
+
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public LineEx(Point startPoint, Point endPoint, double opacity = 1.0, string stroke = "#66FF00", double strokeThickness = 1.0, bool isThroughLine = false, string toolTip = null)
+	{
+		StartPointX = (float)startPoint.X;
+		StartPointY = (float)startPoint.Y;
+		EndPointX = (float)endPoint.X;
+		EndPointY = (float)endPoint.Y;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = null;
+		StrokeThickness = strokeThickness;
+		IsThroughLine = isThroughLine;
+		ToolTip = toolTip;
+	}
+}

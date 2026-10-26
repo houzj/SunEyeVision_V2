@@ -1,0 +1,245 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlUI;
+using HikExternalCall.Common;
+using Mvvm.Commands;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmConnectionDecorator : DecoratorBase
+{
+	private IList<Point> pathPoints = new List<Point>();
+
+	private int? sourceIndex;
+
+	private int? targetIndex;
+
+	private DelegateCommand deleteConnectionCommand = null;
+
+	private DelegateCommand<ObjectEventArgs> insertItemCommand = null;
+
+	/// <summary>
+	/// 连线的源模块
+	/// </summary>
+	public object ConnectionSource { get; set; }
+
+	/// <summary>
+	/// 连线后序模块
+	/// </summary>
+	private IVmModule SourceVMModule => DecorateSource as IVmModule;
+
+	/// <summary>
+	/// 连线前序模块
+	/// </summary>
+	private IVmModule VMModule => ConnectionSource as IVmModule;
+
+	/// <summary>
+	/// 用来记录自定义连线
+	/// </summary>
+	public IList<Point> PathPoints
+	{
+		get
+		{
+			byte[] array = VMModule.UserData["PathPoints" + SourceVMModule.Name];
+			if (array != null)
+			{
+				pathPoints = ExternalCallHelper.BytesToStructs<Point>(array);
+			}
+			return pathPoints;
+		}
+		set
+		{
+			if (value != pathPoints)
+			{
+				pathPoints = value;
+				if (value != null && value.Count > 0)
+				{
+					VMModule.UserData["PathPoints" + SourceVMModule.Name] = ExternalCallHelper.StructsToBytes(value);
+				}
+				else
+				{
+					VMModule.UserData["PathPoints" + SourceVMModule.Name] = null;
+				}
+				OnPropertyChanged("PathPoints");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 用来记录连线锚点位置
+	/// </summary>
+	public int SourceIndex
+	{
+		get
+		{
+			byte[] array = null;
+			string key = "SourceIndex" + SourceVMModule.Name;
+			IIndexData indexData = VMModule.SourceIndexs.OfType<IIndexData>().FirstOrDefault((IIndexData p) => p.ParamKey == key);
+			if (indexData != null && indexData.IsLoad)
+			{
+				indexData.IsLoad = false;
+				array = indexData.ParamValue;
+			}
+			else
+			{
+				array = VMModule.UserData[key];
+			}
+			if (array != null)
+			{
+				sourceIndex = ExternalCallHelper.BytesToStruct<int>(array, 0, array.Length);
+			}
+			else
+			{
+				sourceIndex = 2;
+				VMModule.UserData[key] = ExternalCallHelper.StructToBytes(sourceIndex);
+			}
+			return sourceIndex ?? 0;
+		}
+		set
+		{
+			if (value != sourceIndex)
+			{
+				sourceIndex = value;
+				VMModule.UserData["SourceIndex" + SourceVMModule.Name] = ExternalCallHelper.StructToBytes(value);
+				OnPropertyChanged("SourceIndex");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 用来记录连线锚点位置
+	/// </summary>
+	public int TargetIndex
+	{
+		get
+		{
+			byte[] array = null;
+			string key = "TargetIndex" + SourceVMModule.Name;
+			IIndexData indexData = VMModule.TargetIndexs.OfType<IIndexData>().FirstOrDefault((IIndexData p) => p.ParamKey == key);
+			if (indexData != null && indexData.IsLoad)
+			{
+				indexData.IsLoad = false;
+				array = indexData.ParamValue;
+			}
+			else
+			{
+				array = VMModule.UserData[key];
+			}
+			if (array != null)
+			{
+				targetIndex = ExternalCallHelper.BytesToStruct<int>(array, 0, array.Length);
+			}
+			else
+			{
+				VMModule.UserData[key] = ExternalCallHelper.StructToBytes(targetIndex ?? 0);
+			}
+			return targetIndex ?? 0;
+		}
+		set
+		{
+			if (value != targetIndex)
+			{
+				targetIndex = value;
+				VMModule.UserData["TargetIndex" + SourceVMModule.Name] = ExternalCallHelper.StructToBytes(value);
+				OnPropertyChanged("TargetIndex");
+			}
+		}
+	}
+
+	public ICommand DeleteConnectionCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = deleteConnectionCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)DeleteConnectionCommandExecute);
+				DelegateCommand val3 = val2;
+				deleteConnectionCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand InsertItemCommand => (ICommand)(insertItemCommand ?? (insertItemCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)InsertItemCommandExecute)));
+
+	private void DeleteConnectionCommandExecute()
+	{
+		string text = VMModule.Name + ", " + SourceVMModule.Name;
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("删除连线") + AppLocalizationService.GetPunctuation("：") + text);
+		if (!VMModule.IsGlobalModu && !SourceVMModule.IsGlobalModu)
+		{
+			Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("删除连线") + ": " + text);
+		}
+		DeleteConnection(VMModule, SourceVMModule);
+		PathPoints = null;
+	}
+
+	/// <summary>
+	/// 断开连接
+	/// </summary>
+	/// <param name="source"></param>
+	/// <param name="target"></param>
+	public static void DeleteConnection(IVmModule source, IVmModule target)
+	{
+		if (DecoratorBase.CheckRunning(source as IVMRun) && DecoratorBase.CheckRunning(target as IVMRun))
+		{
+			LogHelper.Info("断开：" + source.FullName + "," + target.FullName);
+			source.NextModules.Remove(target);
+		}
+	}
+
+	private void InsertItemCommandExecute(ObjectEventArgs e)
+	{
+		IVmModule vmModule = (e.Param as IDecorate)?.DecorateSource as IVmModule;
+		if (vmModule == null && (e.Param as IDecorate)?.DecorateSource is IToolBoxData toolBoxData)
+		{
+			toolBoxData.Tag = this;
+		}
+		else
+		{
+			InsertModule(vmModule);
+		}
+	}
+
+	/// <summary>
+	/// 插入模块
+	/// </summary>
+	public void InsertModule(IVmModule insertModule)
+	{
+		if (insertModule is IVmProcedure || insertModule == VMModule || insertModule == SourceVMModule)
+		{
+			return;
+		}
+		string text = VMModule.Name + ", " + SourceVMModule.Name;
+		if (!VMModule.IsGlobalModu && !SourceVMModule.IsGlobalModu)
+		{
+			Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("删除连线") + ": " + text);
+		}
+		int index = SourceIndex;
+		int num = TargetIndex;
+		if (VmModuleBaseDecorator.VMAddConnection(VMModule, insertModule, index, num, isFilterUnReDo: true))
+		{
+			if (!VmModuleBaseDecorator.VMAddConnection(insertModule, SourceVMModule, index, num, isFilterUnReDo: true, isAutoLink: false))
+			{
+				DeleteConnection(VMModule, insertModule);
+			}
+			else
+			{
+				DeleteConnection(VMModule, SourceVMModule);
+			}
+		}
+	}
+}

@@ -1,0 +1,267 @@
+using System;
+using System.IO;
+using Apps.Log;
+using ICSharpCode.SharpZipLib.Zip;
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class CommunicationEncryService
+{
+	public static void RegisterEncryOperation(string path, bool isEbcry)
+	{
+		if (!File.Exists(path))
+		{
+			return;
+		}
+		string text = "VMExtensionTemp";
+		string extension = Path.GetExtension(path);
+		string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
+		string text2 = fileNameWithoutExtension + text;
+		string directoryName = Path.GetDirectoryName(path);
+		string text3 = directoryName + "\\" + text2 + extension;
+		File.Move(path, text3);
+		string text4 = directoryName + "\\" + text2;
+		if (!Directory.Exists(text4))
+		{
+			Directory.CreateDirectory(text4);
+		}
+		try
+		{
+			DecompressToFiles(text3, text4);
+			string[] files = Directory.GetFiles(text4);
+			string[] array = files;
+			foreach (string path2 in array)
+			{
+				RegisterEncryToFile(path2, isEbcry);
+			}
+		}
+		catch (Exception ex)
+		{
+			Directory.Delete(text4, recursive: true);
+			File.Move(text3, path);
+			throw ex;
+		}
+		File.Delete(text3);
+		CompressZipFiles(text4, path, zipFinishRemoved: true);
+	}
+
+	private static void CompressZipFiles(string dir, string zipedFile, bool zipFinishRemoved, int CompressLevel = 6)
+	{
+		//IL_000d: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0013: Expected Obj, but got Unknown
+		using (FileStream fileStream = new FileStream(zipedFile, FileMode.Create))
+		{
+			ZipOutputStream val = new ZipOutputStream((Stream)fileStream);
+			try
+			{
+				if (CompressLevel > -1 && CompressLevel < 10)
+				{
+					val.SetLevel(CompressLevel);
+				}
+				else
+				{
+					val.SetLevel(6);
+				}
+				InnerWalkZip(dir, dir, val, zipedFile, zipFinishRemoved);
+				((DeflaterOutputStream)val).Finish();
+				((Stream)(object)val).Close();
+			}
+			finally
+			{
+				((IDisposable)val)?.Dispose();
+			}
+		}
+		if (zipFinishRemoved)
+		{
+			Directory.Delete(dir, recursive: false);
+		}
+	}
+
+	private static void InnerWalkZip(string rootDir, string dir, ZipOutputStream output, string outFile, bool zipFinishRemoved)
+	{
+		//IL_0104: Unknown result type (might be due to invalid IL or missing references)
+		//IL_010b: Expected Obj, but got Unknown
+		//IL_0050: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0056: Expected Obj, but got Unknown
+		string[] files = Directory.GetFiles(dir);
+		foreach (string text in files)
+		{
+			if (!(Path.GetExtension(text) == ".zip") && !(text.ToLower() == outFile.ToLower()))
+			{
+				ZipEntry val = new ZipEntry(ZipEntry.CleanName(GetShortFileName(rootDir, text)));
+				val.IsUnicodeText = true;
+				output.PutNextEntry(val);
+				FileStream fileStream = File.Open(text, FileMode.Open, FileAccess.Read, FileShare.Read);
+				byte[] array = new byte[fileStream.Length];
+				fileStream.Read(array, 0, (int)fileStream.Length);
+				((Stream)(object)output).Write(array, 0, array.Length);
+				fileStream.Close();
+				if (zipFinishRemoved)
+				{
+					File.Delete(text);
+				}
+			}
+		}
+		string[] directories = Directory.GetDirectories(dir);
+		foreach (string text2 in directories)
+		{
+			ZipEntry val2 = new ZipEntry((ZipEntry.CleanName(GetShortFileName(rootDir, text2)) + "\\").Replace("//", "/"));
+			val2.IsUnicodeText = true;
+			output.PutNextEntry(val2);
+			InnerWalkZip(rootDir, text2, output, outFile, zipFinishRemoved);
+			if (zipFinishRemoved)
+			{
+				Directory.Delete(text2, recursive: false);
+			}
+		}
+	}
+
+	private static string GetShortFileName(string dir, string p)
+	{
+		return p.Substring(dir.Length);
+	}
+
+	private static void DecompressToFiles(string zipfile, string destDir)
+	{
+		//IL_0028: Unknown result type (might be due to invalid IL or missing references)
+		//IL_002e: Expected Obj, but got Unknown
+		if (!destDir.EndsWith("\\"))
+		{
+			destDir += "\\";
+		}
+		ZipInputStream val = new ZipInputStream((Stream)File.OpenRead(zipfile));
+		try
+		{
+			ZipEntry nextEntry;
+			while ((nextEntry = val.GetNextEntry()) != null)
+			{
+				byte[] array = new byte[((Stream)(object)val).Length];
+				((Stream)(object)val).Read(array, 0, array.Length);
+				using FileStream fileStream = new FileStream(destDir + nextEntry.Name, FileMode.Create);
+				fileStream.Write(array, 0, array.Length);
+			}
+		}
+		finally
+		{
+			((IDisposable)val)?.Dispose();
+		}
+	}
+
+	private static void RegisterEncryToFile(string path, bool isEncry)
+	{
+		byte[] array;
+		using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+		{
+			try
+			{
+				array = new byte[fileStream.Length];
+				fileStream.Read(array, 0, (int)fileStream.Length);
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+		File.Delete(path);
+		InnerWriteLibFile(path, array, isEncry);
+	}
+
+	/// <summary>
+	/// 获取解密信息
+	/// </summary>
+	/// <param name="source"></param>
+	/// <returns></returns>
+	private static byte[] GetInnerDecryptedData(byte[] source)
+	{
+		byte[] array = source;
+		if (array != null && array.Length != 0)
+		{
+			byte[] keyBuff = null;
+			bool isEncrypted = false;
+			byte[] dataOut = null;
+			ServerSDKManager.serverSDKManager.mSolutionManager.CheckDataEncryptByDongle(array, ref isEncrypted);
+			if (isEncrypted)
+			{
+				bool bIsContainKey = false;
+				ServerSDKManager.serverSDKManager.mSolutionManager.GetEncryptionFromDongle(ref keyBuff, ref bIsContainKey);
+				if (keyBuff != null)
+				{
+					int num = ServerSDKManager.serverSDKManager.mSolutionManager.DataDecryptByDongle(array, keyBuff, ref dataOut);
+					if (num != 0)
+					{
+						throw new VmException(num);
+					}
+					array = dataOut;
+				}
+			}
+		}
+		return array;
+	}
+
+	/// <summary>
+	/// 获取指定数据加密后的数据
+	/// </summary>
+	/// <param name="source"></param>
+	/// <returns></returns>
+	private static byte[] GetInnerEncryptedData(byte[] source)
+	{
+		byte[] array = source;
+		if (array != null && array.Length != 0)
+		{
+			byte[] keyBuff = null;
+			bool bIsContainKey = false;
+			byte[] dataOut = null;
+			ServerSDKManager.serverSDKManager.mSolutionManager.GetEncryptionFromDongle(ref keyBuff, ref bIsContainKey);
+			if (bIsContainKey)
+			{
+				int num = ServerSDKManager.serverSDKManager.mSolutionManager.DataEncryptByDongle(array, keyBuff, ref dataOut);
+				if (num != 0)
+				{
+					throw new VmException(num);
+				}
+				array = dataOut;
+			}
+		}
+		return array;
+	}
+
+	/// <summary>
+	/// 把指定数据加密后写入目标路径
+	/// </summary>
+	/// <param name="path"></param>
+	/// <param name="libData"></param>
+	/// <returns></returns>
+	private static bool InnerWriteLibFile(string path, byte[] libData, bool isEncry)
+	{
+		FileStream fileStream = null;
+		bool flag = false;
+		try
+		{
+			byte[] array = (isEncry ? GetInnerEncryptedData(libData) : GetInnerDecryptedData(libData));
+			if (array == null)
+			{
+				return false;
+			}
+			fileStream = new FileStream(path, FileMode.Create);
+			fileStream.Write(array, 0, array.Length);
+			fileStream.Close();
+			return true;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+			flag = true;
+			throw ex;
+		}
+		finally
+		{
+			fileStream?.Close();
+			if (File.Exists(path) & flag)
+			{
+				File.Delete(path);
+			}
+		}
+	}
+}

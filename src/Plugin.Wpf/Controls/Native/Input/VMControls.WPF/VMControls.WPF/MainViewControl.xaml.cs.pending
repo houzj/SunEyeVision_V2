@@ -1,0 +1,491 @@
+using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.PcUI.Controls;
+using Apps.UIHelper.Extern;
+using Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using Mvvm.Commands;
+using VM.AppData;
+using VM.PlatformSDKCS;
+using VMControls.Data;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// MainViewControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// MainViewControl
+/// </summary>
+public partial class MainViewControl : Control, INotifyPropertyChanged, IDisposable, IComponentConnector, IStyleConnector
+{
+	public static readonly DependencyProperty SolutionProperty = DependencyProperty.Register("Solution", typeof(IVmSolution), typeof(MainViewControl), new PropertyMetadata(null, OnSolutionChanged));
+
+	public static readonly DependencyProperty SelectedModuleProperty = DependencyProperty.Register("SelectedModule", typeof(IVmModule), typeof(MainViewControl), new PropertyMetadata(null, OnSelectedModuleChanged));
+
+	public static readonly DependencyProperty IsLoadingFlagProperty = DependencyProperty.Register("IsLoadingFlag", typeof(bool), typeof(MainViewControl), new PropertyMetadata(false, null));
+
+	public static readonly DependencyProperty IsShowProgressMaskProperty = DependencyProperty.Register("IsShowProgressMask", typeof(bool), typeof(MainViewControl), new PropertyMetadata(false, OnIsShowProgressMaskChanged));
+
+	public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register("Progress", typeof(double), typeof(MainViewControl), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty MaskMessageProperty = DependencyProperty.Register("MaskMessage", typeof(string), typeof(MainViewControl), new PropertyMetadata(null));
+
+	private ProgressMask progressMask;
+
+	public static readonly DependencyProperty ZoomIndexProperty = DependencyProperty.Register("ZoomIndex", typeof(double), typeof(MainViewControl), new PropertyMetadata(1.0));
+
+	public static readonly DependencyProperty IsLockWorkAreaProperty = DependencyProperty.Register("IsLockWorkArea", typeof(bool), typeof(MainViewControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(MainViewControl), new PropertyMetadata(false));
+
+	/// <summary>
+	/// 参数列表编辑状态属性
+	/// </summary>
+	public static readonly DependencyProperty IsParamsEditStateProperty = DependencyProperty.Register("IsParamsEditState", typeof(bool), typeof(MainViewControl), new PropertyMetadata(true));
+
+	private Grid View;
+
+	private Grid workarea;
+
+	private ColumnDefinition columnDefinition1;
+
+	private ColumnDefinition columnDefinition2;
+
+	private ColumnDefinition columnDefinition3;
+
+	private ModuleResultView mrv;
+
+	private ProcedureConfigControl proConfig;
+
+	private Grid moduleViewHost;
+
+	private Grid workareaConfig;
+
+	private static string logType = "";
+
+	private string currentLogTime = string.Empty;
+
+	private string currentLogContent = string.Empty;
+
+	private string currentLogType = string.Empty;
+
+	private bool _isLogFold = true;
+
+	/// <summary>
+	/// 打开日志浮窗命令
+	/// </summary>
+	private DelegateCommand<object> logCommand = null;
+
+	private DelegateCommand<object> logTypeCommand = null;
+
+	public object ROIPartUI => mrv;
+
+	public object WorkAreaGrid => workarea;
+
+	public object ModuleViewHost => moduleViewHost;
+
+	public object ProcedureConfigUI => proConfig;
+
+	public IVmSolution Solution
+	{
+		get
+		{
+			return (IVmSolution)GetValue(SolutionProperty);
+		}
+		set
+		{
+			SetValue(SolutionProperty, value);
+		}
+	}
+
+	public IVmModule SelectedModule
+	{
+		get
+		{
+			return (IVmModule)GetValue(SelectedModuleProperty);
+		}
+		set
+		{
+			SetValue(SelectedModuleProperty, value);
+		}
+	}
+
+	public MainViewData ViewData { get; set; } = new MainViewData();
+
+	public bool IsLoadingFlag
+	{
+		get
+		{
+			return (bool)GetValue(IsLoadingFlagProperty);
+		}
+		set
+		{
+			SetValue(IsLoadingFlagProperty, value);
+		}
+	}
+
+	public bool IsShowProgressMask
+	{
+		get
+		{
+			return (bool)GetValue(IsShowProgressMaskProperty);
+		}
+		set
+		{
+			SetValue(IsShowProgressMaskProperty, value);
+		}
+	}
+
+	public double Progress
+	{
+		get
+		{
+			return (double)GetValue(ProgressProperty);
+		}
+		set
+		{
+			SetValue(ProgressProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 滚动条信息
+	/// </summary>
+	public string MaskMessage
+	{
+		get
+		{
+			return (string)GetValue(MaskMessageProperty);
+		}
+		set
+		{
+			SetValue(MaskMessageProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 缩放比例
+	/// </summary>
+	public double ZoomIndex
+	{
+		get
+		{
+			return (double)GetValue(ZoomIndexProperty);
+		}
+		set
+		{
+			SetValue(ZoomIndexProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否锁定工作区
+	/// </summary>
+	public bool IsLockWorkArea
+	{
+		get
+		{
+			return (bool)GetValue(IsLockWorkAreaProperty);
+		}
+		set
+		{
+			SetValue(IsLockWorkAreaProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数列表编辑状态
+	/// </summary>
+	public bool IsParamsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsParamsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsParamsEditStateProperty, value);
+		}
+	}
+
+	public object LogData
+	{
+		get
+		{
+			if (logType != "")
+			{
+				return from p in UILogManager.logInfoShow.ToObservableCollection()
+					where p.LogType == logType
+					select p;
+			}
+			return UILogManager.logInfoShow.ToObservableCollection();
+		}
+	}
+
+	public string VersionInfo => AppDataFactory.Instance().VersionInfo;
+
+	public bool IsSdkMode => CVmObjectBase.GetIsSDKMode();
+
+	public string CurrentLogTime
+	{
+		get
+		{
+			return currentLogTime;
+		}
+		set
+		{
+			if (currentLogTime != value)
+			{
+				currentLogTime = value;
+				OnPropertyChanged("CurrentLogTime");
+			}
+		}
+	}
+
+	public string CurrentLogContent
+	{
+		get
+		{
+			return currentLogContent;
+		}
+		set
+		{
+			if (currentLogContent != value)
+			{
+				currentLogContent = value;
+				OnPropertyChanged("CurrentLogContent");
+			}
+		}
+	}
+
+	public string CurrentLogType
+	{
+		get
+		{
+			return currentLogType;
+		}
+		set
+		{
+			if (currentLogType != value)
+			{
+				currentLogType = value;
+				OnPropertyChanged("CurrentLogType");
+			}
+		}
+	}
+
+	public bool IsLogFold
+	{
+		get
+		{
+			return _isLogFold;
+		}
+		set
+		{
+			_isLogFold = value;
+			OnPropertyChanged("IsLogFold");
+		}
+	}
+
+	public ICommand LogCommand => (ICommand)(logCommand ?? (logCommand = new DelegateCommand<object>((Action<object>)LogCommandExecute)));
+
+	public ICommand LogTypeCommand => (ICommand)(logTypeCommand ?? (logTypeCommand = new DelegateCommand<object>((Action<object>)LogTypeCommandExecute)));
+
+	public event ToolItemGrid.GetToolItemBackgroudData SelectionChanged;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void OnSolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		MainViewControl mainViewControl = (MainViewControl)d;
+		IVmSolution vmSolution = (IVmSolution)e.OldValue;
+		IVmSolution vmSolution2 = (IVmSolution)e.NewValue;
+	}
+
+	private static void OnSelectedModuleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		MainViewControl mainViewControl = (MainViewControl)d;
+		mainViewControl.SelectionChanged?.Invoke(mainViewControl, new ObjectEventArgs
+		{
+			Param = e.NewValue
+		});
+	}
+
+	private static void OnIsShowProgressMaskChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		MainViewControl mainViewControl = (MainViewControl)d;
+		if ((bool)e.NewValue)
+		{
+			mainViewControl.AddMask();
+		}
+		else
+		{
+			mainViewControl.RemoveMask();
+		}
+	}
+
+	private void RemoveMask()
+	{
+		View?.Children?.Remove(progressMask);
+		progressMask = null;
+	}
+
+	private void AddMask()
+	{
+		progressMask = new ProgressMask();
+		progressMask.SetBinding(ProgressMask.MessageProperty, new Binding("MaskMessage")
+		{
+			Source = this
+		});
+		progressMask.SetBinding(ProgressMask.ValueProperty, new Binding("Progress")
+		{
+			Source = this
+		});
+		progressMask.SetValue(Grid.ColumnSpanProperty, 2);
+		View?.Children?.Add(progressMask);
+	}
+
+	public MainViewControl()
+	{
+		InitializeComponent();
+		if (!this.IsInDesignMode())
+		{
+			DataContext = ViewData;
+			CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+			{
+			});
+		}
+		Loaded += MainViewControl_Loaded;
+		Unloaded += MainViewControl_Unloaded;
+	}
+
+	private void MainViewControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		UILogManager.logInfoShow.CollectionChanged -= LogInfoShow_CollectionChanged;
+		UILogManager.logInfoShow.CollectionChanged += LogInfoShow_CollectionChanged;
+	}
+
+	private void MainViewControl_Unloaded(object sender, RoutedEventArgs e)
+	{
+		UILogManager.logInfoShow.CollectionChanged -= LogInfoShow_CollectionChanged;
+	}
+
+	private void LogInfoShow_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems[0] is LogContect logContect)
+		{
+			CurrentLogContent = logContect.LogEvent;
+			CurrentLogTime = logContect.LogInfoTime;
+			CurrentLogType = logContect.LogType;
+		}
+		OnPropertyChanged("LogData");
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		View = GetTemplateChild("PART_View") as Grid;
+		workarea = GetTemplateChild("workarea") as Grid;
+		mrv = GetTemplateChild("m_ModuleView") as ModuleResultView;
+		proConfig = GetTemplateChild("m_ProcedureConfig") as ProcedureConfigControl;
+		moduleViewHost = GetTemplateChild("ModuleViewHost") as Grid;
+		columnDefinition1 = GetTemplateChild("columnDefinition1") as ColumnDefinition;
+		columnDefinition2 = GetTemplateChild("columnDefinition2") as ColumnDefinition;
+		columnDefinition3 = GetTemplateChild("columnDefinition3") as ColumnDefinition;
+		workareaConfig = GetTemplateChild("workareaConfig") as Grid;
+		if (AppDataFactory.Instance().IsRightLayout && columnDefinition1 != null)
+		{
+			columnDefinition1.MinWidth = 400.0;
+			Grid.SetColumn(workareaConfig, 2);
+			Grid.SetColumn(moduleViewHost, 0);
+		}
+	}
+
+	private void GridSplitter_DragStarted(object sender, DragStartedEventArgs e)
+	{
+		if (columnDefinition1 != null && columnDefinition3 != null)
+		{
+			if (AppDataFactory.Instance().IsRightLayout)
+			{
+				columnDefinition1.MaxWidth = workarea.ActualWidth - 65.0;
+			}
+			else
+			{
+				columnDefinition3.MaxWidth = workarea.ActualWidth - 65.0;
+			}
+		}
+	}
+
+	public void Dispose()
+	{
+		if (mrv != null)
+		{
+			mrv.ModuleSource = null;
+		}
+	}
+
+	private void LogCommandExecute(object param)
+	{
+		if (param is bool flag)
+		{
+			IsLogFold = !flag;
+			if (logType != "")
+			{
+				logType = "";
+				OnPropertyChanged("LogData");
+			}
+		}
+	}
+
+	private void LogTypeCommandExecute(object param)
+	{
+		if (param as string == "1")
+		{
+			logType = "";
+		}
+		else if (param as string == "2")
+		{
+			logType = "警告";
+		}
+		else if (param as string == "3")
+		{
+			logType = "错误";
+		}
+		else if (param as string == "4")
+		{
+			logType = "信息";
+		}
+		OnPropertyChanged("LogData");
+	}
+}

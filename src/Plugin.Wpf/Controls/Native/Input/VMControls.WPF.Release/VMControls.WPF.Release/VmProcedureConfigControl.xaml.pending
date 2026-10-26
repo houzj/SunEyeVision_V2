@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:VMWpfUserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.VmProcedureConfigControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release" xmlns:VMWpf="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;assembly=SunEyeVision.Plugin.Wpf" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface">
+  <VMWpf:ProcedureConfigControl Name="procedureConfigControl" Procedures="{Binding Path=Solution.(VMInterface:IChildren.Children), RelativeSource={RelativeSource Mode=Self}}" />
+</local:VMWpfUserControl>

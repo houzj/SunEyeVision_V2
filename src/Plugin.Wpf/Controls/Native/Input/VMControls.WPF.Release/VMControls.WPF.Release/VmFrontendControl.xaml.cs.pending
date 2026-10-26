@@ -1,0 +1,94 @@
+using System;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using Apps.UIHelper.Extern;
+using VM.Core;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmFrontendControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmFrontendControl
+/// </summary>
+public partial class VmFrontendControl : VMWpfUserControl, IDisposable, IComponentConnector
+{
+	public VmFrontendControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			if (!this.IsInDesignMode())
+			{
+				TempVmSolution.Init();
+			}
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	/// <summary>
+	/// 加载运行界面
+	/// </summary>
+	public void LoadFrontendSource()
+	{
+		frontendRootControl?.LoadFrontendSource();
+	}
+
+	/// <summary>
+	/// 主动自适应大小
+	/// </summary>
+	public void AutoChangeSize()
+	{
+		frontendRootControl?.AutoChangeSizeForSDKMode();
+	}
+
+	/// <summary>
+	/// 流程、Group运行参数页中的添加、删除、编辑按钮是否可见
+	/// </summary>
+	/// <param name="isEditable">是否可见 true:按钮可见,false:按钮不可见</param>
+	public void SetParamTabEditable(bool isEditable)
+	{
+		if (frontendRootControl != null)
+		{
+			frontendRootControl.IsParamsEditState = isEditable;
+		}
+	}
+
+	/// <summary>
+	/// 初始化（COM）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (frontendRootControl == null)
+		{
+			return 0L;
+		}
+		return frontendRootControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 加载方案（COM）
+	/// 弃用 推荐外部方法调用方案加载
+	/// </summary>
+	/// <returns></returns>
+	public void LoadSol(string strPath, string strPassword)
+	{
+		frontendRootControl?.LoadSol(strPath, strPassword);
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		frontendRootControl.Dispose();
+		Content = null;
+	}
+}

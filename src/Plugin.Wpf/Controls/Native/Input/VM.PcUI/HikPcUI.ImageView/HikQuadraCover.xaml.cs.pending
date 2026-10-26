@@ -1,0 +1,362 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikQuadraCover : Canvas, IDisposable, RectangleRoi, IComponentConnector
+{
+	public delegate void SizeChange(object Param);
+
+	public delegate void FremeMouseLeftButtonDown(MouseButtonEventArgs e);
+
+	public static readonly DependencyProperty WidthFirstProperty = DependencyProperty.Register("WidthFirst", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty HeightFirstProperty = DependencyProperty.Register("HeightFirst", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty OriginPointFirstProperty = DependencyProperty.Register("OriginPointFirst", typeof(Point), typeof(HikQuadraCover), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty AngleFirstProperty = DependencyProperty.Register("AngleFirst", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty WidthSecondProperty = DependencyProperty.Register("WidthSecond", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty HeightSecondProperty = DependencyProperty.Register("HeightSecond", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty OriginPointSecondProperty = DependencyProperty.Register("OriginPointSecond", typeof(Point), typeof(HikQuadraCover), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty AngleSecondProperty = DependencyProperty.Register("AngleSecond", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty WidthThirdProperty = DependencyProperty.Register("WidthThird", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty HeightThirdProperty = DependencyProperty.Register("HeightThird", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty OriginPointThirdProperty = DependencyProperty.Register("OriginPointThird", typeof(Point), typeof(HikQuadraCover), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty AngleThirdProperty = DependencyProperty.Register("AngleThird", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty WidthFourthProperty = DependencyProperty.Register("WidthFourth", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty HeightFourthProperty = DependencyProperty.Register("HeightFourth", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty OriginPointFourthProperty = DependencyProperty.Register("OriginPointFourth", typeof(Point), typeof(HikQuadraCover), new PropertyMetadata(new Point(0.0, 0.0)));
+
+	public static readonly DependencyProperty AngleFourthProperty = DependencyProperty.Register("AngleFourth", typeof(double), typeof(HikQuadraCover), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty SignProperty = DependencyProperty.Register("Sign", typeof(bool?), typeof(HikQuadraCover), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty TIsVisibleProperty = DependencyProperty.Register("TIsVisible", typeof(bool), typeof(HikQuadraCover), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register("IsSelected", typeof(bool), typeof(HikQuadraCover), new PropertyMetadata(false));
+
+	public SizeChange OnTheSizeChange;
+
+	public FremeMouseLeftButtonDown OnFremeMouseLeftButtonDown;
+
+	public double WidthFirst
+	{
+		get
+		{
+			return (double)GetValue(WidthFirstProperty);
+		}
+		set
+		{
+			SetValue(WidthFirstProperty, value);
+		}
+	}
+
+	public double HeightFirst
+	{
+		get
+		{
+			return (double)GetValue(HeightFirstProperty);
+		}
+		set
+		{
+			SetValue(HeightFirstProperty, value);
+		}
+	}
+
+	public Point OriginPointFirst
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointFirstProperty);
+		}
+		set
+		{
+			SetValue(OriginPointFirstProperty, value);
+		}
+	}
+
+	public double AngleFirst
+	{
+		get
+		{
+			return (double)GetValue(AngleFirstProperty);
+		}
+		set
+		{
+			SetValue(AngleFirstProperty, value);
+		}
+	}
+
+	public double WidthSecond
+	{
+		get
+		{
+			return (double)GetValue(WidthSecondProperty);
+		}
+		set
+		{
+			SetValue(WidthSecondProperty, value);
+		}
+	}
+
+	public double HeightSecond
+	{
+		get
+		{
+			return (double)GetValue(HeightSecondProperty);
+		}
+		set
+		{
+			SetValue(HeightSecondProperty, value);
+		}
+	}
+
+	public Point OriginPointSecond
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointSecondProperty);
+		}
+		set
+		{
+			SetValue(OriginPointSecondProperty, value);
+		}
+	}
+
+	public double AngleSecond
+	{
+		get
+		{
+			return (double)GetValue(AngleSecondProperty);
+		}
+		set
+		{
+			SetValue(AngleSecondProperty, value);
+		}
+	}
+
+	public double WidthThird
+	{
+		get
+		{
+			return (double)GetValue(WidthThirdProperty);
+		}
+		set
+		{
+			SetValue(WidthThirdProperty, value);
+		}
+	}
+
+	public double HeightThird
+	{
+		get
+		{
+			return (double)GetValue(HeightThirdProperty);
+		}
+		set
+		{
+			SetValue(HeightThirdProperty, value);
+		}
+	}
+
+	public Point OriginPointThird
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointThirdProperty);
+		}
+		set
+		{
+			SetValue(OriginPointThirdProperty, value);
+		}
+	}
+
+	public double AngleThird
+	{
+		get
+		{
+			return (double)GetValue(AngleThirdProperty);
+		}
+		set
+		{
+			SetValue(AngleThirdProperty, value);
+		}
+	}
+
+	public double WidthFourth
+	{
+		get
+		{
+			return (double)GetValue(WidthFourthProperty);
+		}
+		set
+		{
+			SetValue(WidthFourthProperty, value);
+		}
+	}
+
+	public double HeightFourth
+	{
+		get
+		{
+			return (double)GetValue(HeightFourthProperty);
+		}
+		set
+		{
+			SetValue(HeightFourthProperty, value);
+		}
+	}
+
+	public Point OriginPointFourth
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointFourthProperty);
+		}
+		set
+		{
+			SetValue(OriginPointFourthProperty, value);
+		}
+	}
+
+	public double AngleFourth
+	{
+		get
+		{
+			return (double)GetValue(AngleFourthProperty);
+		}
+		set
+		{
+			SetValue(AngleFourthProperty, value);
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return (bool?)GetValue(SignProperty);
+		}
+		set
+		{
+			SetValue(SignProperty, value);
+		}
+	}
+
+	public bool TIsVisible
+	{
+		get
+		{
+			return (bool)GetValue(TIsVisibleProperty);
+		}
+		set
+		{
+			SetValue(TIsVisibleProperty, value);
+		}
+	}
+
+	public bool IsSelected
+	{
+		get
+		{
+			return (bool)GetValue(IsSelectedProperty);
+		}
+		set
+		{
+			SetValue(IsSelectedProperty, value);
+		}
+	}
+
+	public HikImageView owner
+	{
+		get
+		{
+			return box1.owner;
+		}
+		set
+		{
+			box1.owner = value;
+			box2.owner = value;
+			box3.owner = value;
+			box4.owner = value;
+		}
+	}
+
+	public void Dispose()
+	{
+		box1.Dispose();
+		box2.Dispose();
+		box3.Dispose();
+		box4.Dispose();
+	}
+
+	public HikQuadraCover()
+	{
+		InitializeComponent();
+		HikCover hikCover = box1;
+		hikCover.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(hikCover.OnTheSizeChange, new HikCover.SizeChange(OnBoxSizeChange));
+		HikCover hikCover2 = box2;
+		hikCover2.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(hikCover2.OnTheSizeChange, new HikCover.SizeChange(OnBoxSizeChange));
+		HikCover hikCover3 = box3;
+		hikCover3.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(hikCover3.OnTheSizeChange, new HikCover.SizeChange(OnBoxSizeChange));
+		HikCover hikCover4 = box4;
+		hikCover4.OnTheSizeChange = (HikCover.SizeChange)Delegate.Combine(hikCover4.OnTheSizeChange, new HikCover.SizeChange(OnBoxSizeChange));
+	}
+
+	private void OnBoxSizeChange(object Param)
+	{
+		OnTheSizeChange(DataContext);
+	}
+
+	public void DoCallBack()
+	{
+		if (OnTheSizeChange != null)
+		{
+			OnTheSizeChange(DataContext);
+		}
+	}
+
+	public void Init()
+	{
+		box1.Init();
+		box2.Init();
+		box3.Init();
+		box4.Init();
+	}
+
+	internal void SetROITypeUI(ROITypeUIEnum ROITypeUI)
+	{
+		box1.SetROITypeUI(ROITypeUI);
+		box2.SetROITypeUI(ROITypeUI);
+		box3.SetROITypeUI(ROITypeUI);
+		box4.SetROITypeUI(ROITypeUI);
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

@@ -1,0 +1,231 @@
+using System.ComponentModel;
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCoverRoiParameter : RoiParameter, IRectROI, IROI, INotifyPropertyChanged, IAngleEnable, IROISign, IProfileROI, IFullROI
+{
+	public Point _OriginPoint = new Point(0.0, 0.0);
+
+	public double _width = 0.0;
+
+	public double _height = 0.0;
+
+	private string _Name = "矩形";
+
+	public bool? _Sign = true;
+
+	public bool _TIsSignVisible = true;
+
+	public double _Angle = 0.0;
+
+	public bool _IsAngleVis = true;
+
+	private bool _IsFullScreen = false;
+
+	public Point OriginPoint
+	{
+		get
+		{
+			return _OriginPoint;
+		}
+		set
+		{
+			if (_OriginPoint != value)
+			{
+				_OriginPoint = value;
+				NotifyPropertyChanged("OriginPoint");
+				NotifyPropertyChanged("CenterX");
+				NotifyPropertyChanged("CenterY");
+				NotifyPropertyChanged("CenterPoint");
+			}
+		}
+	}
+
+	public double Width
+	{
+		get
+		{
+			return _width;
+		}
+		set
+		{
+			if (_width != value)
+			{
+				double centerX = CenterX;
+				_width = value;
+				NotifyPropertyChanged("Width");
+				OriginPoint = new Point(centerX - _width / 2.0, OriginPoint.Y);
+			}
+		}
+	}
+
+	public double Height
+	{
+		get
+		{
+			return _height;
+		}
+		set
+		{
+			if (_height != value)
+			{
+				double centerY = CenterY;
+				_height = value;
+				NotifyPropertyChanged("Height");
+				OriginPoint = new Point(OriginPoint.X, centerY - _height / 2.0);
+			}
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return _Sign;
+		}
+		set
+		{
+			if (_Sign != value)
+			{
+				_Sign = value;
+				NotifyPropertyChanged("Sign");
+			}
+		}
+	}
+
+	public bool TIsSignVisible
+	{
+		get
+		{
+			return _TIsSignVisible;
+		}
+		set
+		{
+			if (_TIsSignVisible != value)
+			{
+				_TIsSignVisible = value;
+				NotifyPropertyChanged("TIsSignVisible");
+			}
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return _Angle;
+		}
+		set
+		{
+			if (_Angle != value)
+			{
+				_Angle = value;
+				NotifyPropertyChanged("Angle");
+			}
+		}
+	}
+
+	public double CenterX
+	{
+		get
+		{
+			return OriginPoint.X + Width / 2.0;
+		}
+		set
+		{
+			OriginPoint = new Point(value - Width / 2.0, OriginPoint.Y);
+			NotifyPropertyChanged("CenterX");
+		}
+	}
+
+	public double CenterY
+	{
+		get
+		{
+			return OriginPoint.Y + Height / 2.0;
+		}
+		set
+		{
+			OriginPoint = new Point(OriginPoint.X, value - Height / 2.0);
+			NotifyPropertyChanged("CenterY");
+		}
+	}
+
+	public bool IsAngleVis
+	{
+		get
+		{
+			return _IsAngleVis;
+		}
+		set
+		{
+			if (_IsAngleVis != value)
+			{
+				_IsAngleVis = value;
+				NotifyPropertyChanged("IsAngleVis");
+			}
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return new Point(CenterX, CenterY);
+		}
+		set
+		{
+			CenterX = value.X;
+			CenterY = value.Y;
+		}
+	}
+
+	bool IAngleEnable.IsAngleEnable
+	{
+		get
+		{
+			return IsAngleVis;
+		}
+		set
+		{
+			IsAngleVis = value;
+		}
+	}
+
+	public bool IsRealROI => Width > 1.0 || Height > 1.0;
+
+	public bool IsFullScreen
+	{
+		get
+		{
+			return _IsFullScreen;
+		}
+		set
+		{
+			if (_IsFullScreen != value)
+			{
+				_IsFullScreen = value;
+				NotifyPropertyChanged("IsFullScreen");
+			}
+		}
+	}
+
+	public override void PastROI(Point center)
+	{
+		CenterPoint = center;
+	}
+}

@@ -1,0 +1,548 @@
+using System;
+using System.Collections;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using Mvvm.Commands;
+using VM.Controls;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CalibGuide;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// DiagramArea.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// DiagramArea
+/// </summary>
+public partial class DiagramArea : Control, INotifyPropertyChanged, IComponentConnector, IStyleConnector
+{
+	public static readonly DependencyProperty ItemDoubleClickProperty = DependencyProperty.Register("ItemDoubleClick", typeof(EventHandler), typeof(DiagramArea), new PropertyMetadata(null));
+
+	public static int MaxNameLenth = 64;
+
+	public static readonly DependencyProperty ProcedureProperty = DependencyProperty.Register("Procedure", typeof(object), typeof(DiagramArea), new PropertyMetadata(null, OnProcedureChanged));
+
+	public static readonly DependencyProperty SubSourceProperty = DependencyProperty.Register("SubSource", typeof(object), typeof(DiagramArea), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty SearchModuleInfoProperty = DependencyProperty.Register("SearchModuleInfo", typeof(object), typeof(DiagramArea), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ZoomIndexProperty = DependencyProperty.Register("ZoomIndex", typeof(double), typeof(DiagramArea), new PropertyMetadata(1.0, OnZoomIndexPropertyChanged));
+
+	public static readonly DependencyProperty IsLockWorkAreaProperty = DependencyProperty.Register("IsLockWorkArea", typeof(bool), typeof(DiagramArea), new PropertyMetadata(false, OnIsLockWorkAreaChanged));
+
+	public static readonly DependencyProperty IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(DiagramArea), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IList), typeof(DiagramArea), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(object), typeof(DiagramArea), new PropertyMetadata(null));
+
+	private DelegateCommand<object> configParamsCommand = null;
+
+	private Grid View;
+
+	private Grid Guide;
+
+	private Button BootModeButton;
+
+	private Button ProcessModeButton;
+
+	private StatusBar statusBar;
+
+	public EventHandler ItemDoubleClick
+	{
+		get
+		{
+			return (EventHandler)GetValue(ItemDoubleClickProperty);
+		}
+		set
+		{
+			SetValue(ItemDoubleClickProperty, value);
+		}
+	}
+
+	public object Procedure
+	{
+		get
+		{
+			return GetValue(ProcedureProperty);
+		}
+		set
+		{
+			SetValue(ProcedureProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 用来存流程数据，Procedure用来显示流程和group
+	/// </summary>
+	public object SubSource
+	{
+		get
+		{
+			return GetValue(SubSourceProperty);
+		}
+		set
+		{
+			SetValue(SubSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 搜索完成后将目标模块的信息传递给ZoomArea控制滚动条
+	/// </summary>
+	public object SearchModuleInfo
+	{
+		get
+		{
+			return GetValue(SearchModuleInfoProperty);
+		}
+		set
+		{
+			SetValue(SearchModuleInfoProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 缩放比例
+	/// </summary>
+	public double ZoomIndex
+	{
+		get
+		{
+			return (double)GetValue(ZoomIndexProperty);
+		}
+		set
+		{
+			SetValue(ZoomIndexProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否锁定工作区
+	/// </summary>
+	public bool IsLockWorkArea
+	{
+		get
+		{
+			return (bool)GetValue(IsLockWorkAreaProperty);
+		}
+		set
+		{
+			SetValue(IsLockWorkAreaProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开了参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	public IList ItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ItemsSourceProperty, value);
+		}
+	}
+
+	public object SelectedItem
+	{
+		get
+		{
+			return GetValue(SelectedItemProperty);
+		}
+		set
+		{
+			SetValue(SelectedItemProperty, value);
+		}
+	}
+
+	public ICommand ConfigParamsCommand => (ICommand)(configParamsCommand ?? (configParamsCommand = new DelegateCommand<object>((Action<object>)ConfigParamsCommandExecute)));
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void OnProcedureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DiagramArea diagramArea = (DiagramArea)d;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+		if (newValue != null && newValue is VmProcedureDecorator vmProcedureDecorator)
+		{
+			if (!(vmProcedureDecorator.DecorateSource is IVmProcedure vmProcedure))
+			{
+				return;
+			}
+			if (vmProcedure.CalibrationData != null)
+			{
+				if (vmProcedure.CalibrationData is byte[] data)
+				{
+					CalibrationGuideData calibrationGuideData = new CalibrationGuideData();
+					calibrationGuideData.loadXml(data);
+					vmProcedure.CalibrationData = calibrationGuideData;
+					calibrationGuideData.Parent = vmProcedure;
+				}
+				if (vmProcedure.IsBootMode)
+				{
+					Control guidePageControl = CalibHelper.GetGuidePageControl();
+					if (diagramArea.Guide != null && guidePageControl != null && guidePageControl is IGuidePage)
+					{
+						(guidePageControl as IGuidePage).Owner = diagramArea;
+						(guidePageControl as IGuidePage).CurDiagram = vmProcedureDecorator;
+						for (int i = 0; i < diagramArea.Guide.Children.Count; i++)
+						{
+							if (diagramArea.Guide.Children[i] is IDisposable disposable)
+							{
+								disposable.Dispose();
+								IDisposable disposable2 = null;
+							}
+						}
+						diagramArea.Guide.Children.Clear();
+						GC.Collect();
+						diagramArea.Guide.Children.Add(guidePageControl);
+					}
+					if (diagramArea.ProcessModeButton != null)
+					{
+						diagramArea.ProcessModeButton.Visibility = Visibility.Visible;
+						Binding binding = new Binding
+						{
+							Source = guidePageControl,
+							Path = new PropertyPath("CanChangeMode"),
+							Mode = BindingMode.TwoWay
+						};
+						diagramArea.ProcessModeButton.SetBinding(UIElement.IsEnabledProperty, binding);
+					}
+					if (diagramArea.BootModeButton != null)
+					{
+						diagramArea.BootModeButton.Visibility = Visibility.Collapsed;
+					}
+					return;
+				}
+				if (diagramArea.Guide != null)
+				{
+					for (int j = 0; j < diagramArea.Guide.Children.Count; j++)
+					{
+						if (diagramArea.Guide.Children[j] is IDisposable disposable3)
+						{
+							disposable3.Dispose();
+							IDisposable disposable4 = null;
+						}
+					}
+					diagramArea.Guide.Children.Clear();
+					GC.Collect();
+				}
+				if (diagramArea.ProcessModeButton != null)
+				{
+					diagramArea.ProcessModeButton.Visibility = Visibility.Collapsed;
+				}
+				if (diagramArea.BootModeButton != null)
+				{
+					diagramArea.BootModeButton.Visibility = Visibility.Visible;
+				}
+				return;
+			}
+			if (diagramArea.Guide != null)
+			{
+				for (int k = 0; k < diagramArea.Guide.Children.Count; k++)
+				{
+					if (diagramArea.Guide.Children[k] is IDisposable disposable5)
+					{
+						disposable5.Dispose();
+						IDisposable disposable6 = null;
+					}
+				}
+				diagramArea.Guide.Children.Clear();
+			}
+			if (diagramArea.ProcessModeButton != null)
+			{
+				diagramArea.ProcessModeButton.Visibility = Visibility.Collapsed;
+			}
+			if (diagramArea.BootModeButton != null)
+			{
+				diagramArea.BootModeButton.Visibility = Visibility.Collapsed;
+			}
+			return;
+		}
+		if (diagramArea.Guide != null)
+		{
+			for (int l = 0; l < diagramArea.Guide.Children.Count; l++)
+			{
+				if (diagramArea.Guide.Children[l] is IDisposable disposable7)
+				{
+					disposable7.Dispose();
+					IDisposable disposable8 = null;
+				}
+			}
+			diagramArea.Guide.Children.Clear();
+		}
+		if (diagramArea.ProcessModeButton != null)
+		{
+			diagramArea.ProcessModeButton.Visibility = Visibility.Collapsed;
+		}
+		if (diagramArea.BootModeButton != null)
+		{
+			diagramArea.BootModeButton.Visibility = Visibility.Collapsed;
+		}
+	}
+
+	private static void OnZoomIndexPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DiagramArea diagramArea = d as DiagramArea;
+		double num = (double)e.OldValue;
+		double item = (double)e.NewValue;
+		int num2 = StatusBar._ZoomTicks.IndexOf(item);
+		if (num2 >= 0 && num2 < StatusBar._ZoomTicks.Count && num2 != diagramArea.statusBar.ZoomIndex)
+		{
+			diagramArea.statusBar.ZoomIndex = num2;
+		}
+	}
+
+	private static void OnIsLockWorkAreaChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DiagramArea ic = d as DiagramArea;
+		bool flag = (bool)e.OldValue;
+		if ((bool)e.NewValue)
+		{
+			WindowLockModeTipsView windowLockModeTipsView = new WindowLockModeTipsView();
+			windowLockModeTipsView.HorizontalAlignment = HorizontalAlignment.Right;
+			windowLockModeTipsView.VerticalAlignment = VerticalAlignment.Top;
+			ic.View.Children.Add(windowLockModeTipsView);
+		}
+		else
+		{
+			ic.View.Children.OfType<WindowLockModeTipsView>().ToList().ForEach((WindowLockModeTipsView p) =>
+			{
+				ic.View.Children.Remove(p);
+			});
+		}
+	}
+
+	private void ConfigParamsCommandExecute(object obj)
+	{
+		VmModuleBaseDecorator obj2 = obj as VmModuleBaseDecorator;
+		if (obj2 == null || !obj2.IsForbidden)
+		{
+			VmModuleBaseDecorator obj3 = obj as VmModuleBaseDecorator;
+			if (obj3 != null && obj3.IsLoadFailed == true)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang(((obj as VmModuleBaseDecorator).DecorateSource as IVmModule).ModuleTypeName) + AppLocalizationService.GetLang("Lang_ModuleLoadErr"), MessageButtons.Normal, MessageIcons.Warning);
+			}
+			else if (obj is VmGroupDecorator)
+			{
+				ItemDoubleClick?.Invoke(this, new ObjectEventArgs
+				{
+					Param = obj
+				});
+			}
+			else
+			{
+				ItemDoubleClick?.Invoke(this, new ObjectEventArgs
+				{
+					Param = obj
+				});
+			}
+		}
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		View = Template.FindName("m_DiagramGrid", this) as Grid;
+		Guide = Template.FindName("m_GuideGrid", this) as Grid;
+		BootModeButton = Template.FindName("btnBootMode", this) as Button;
+		ProcessModeButton = Template.FindName("btnProcessMode", this) as Button;
+		statusBar = Template.FindName("statusBar", this) as StatusBar;
+		UpdateCalibGuide();
+	}
+
+	public DiagramArea()
+	{
+		InitializeComponent();
+	}
+
+	/// <summary>
+	/// 更新一键标定配置界面
+	/// </summary>
+	private void UpdateCalibGuide()
+	{
+		if (!(Procedure is VmProcedureDecorator { DecorateSource: IVmProcedure decorateSource } vmProcedureDecorator))
+		{
+			return;
+		}
+		if (decorateSource.CalibrationData != null)
+		{
+			if (decorateSource.CalibrationData is byte[] data)
+			{
+				CalibrationGuideData calibrationGuideData = new CalibrationGuideData();
+				calibrationGuideData.loadXml(data);
+				decorateSource.CalibrationData = calibrationGuideData;
+				calibrationGuideData.Parent = decorateSource;
+			}
+			if (decorateSource.IsBootMode)
+			{
+				Control guidePageControl = CalibHelper.GetGuidePageControl();
+				if (Guide != null && guidePageControl != null && guidePageControl is IGuidePage)
+				{
+					(guidePageControl as IGuidePage).Owner = this;
+					(guidePageControl as IGuidePage).CurDiagram = vmProcedureDecorator;
+					for (int i = 0; i < Guide.Children.Count; i++)
+					{
+						if (Guide.Children[i] is IDisposable disposable)
+						{
+							disposable.Dispose();
+							IDisposable disposable2 = null;
+						}
+					}
+					Guide.Children.Clear();
+					GC.Collect();
+					Guide.Children.Add(guidePageControl);
+				}
+				if (ProcessModeButton != null)
+				{
+					ProcessModeButton.Visibility = Visibility.Visible;
+					Binding binding = new Binding
+					{
+						Source = guidePageControl,
+						Path = new PropertyPath("CanChangeMode"),
+						Mode = BindingMode.TwoWay
+					};
+					ProcessModeButton.SetBinding(UIElement.IsEnabledProperty, binding);
+				}
+				if (BootModeButton != null)
+				{
+					BootModeButton.Visibility = Visibility.Collapsed;
+				}
+			}
+			else
+			{
+				if (ProcessModeButton != null)
+				{
+					ProcessModeButton.Visibility = Visibility.Collapsed;
+				}
+				if (BootModeButton != null)
+				{
+					BootModeButton.Visibility = Visibility.Visible;
+				}
+			}
+			return;
+		}
+		if (Guide != null)
+		{
+			for (int j = 0; j < Guide.Children.Count; j++)
+			{
+				if (Guide.Children[j] is IDisposable disposable3)
+				{
+					disposable3.Dispose();
+					IDisposable disposable4 = null;
+				}
+			}
+			Guide.Children.Clear();
+		}
+		if (ProcessModeButton != null)
+		{
+			ProcessModeButton.Visibility = Visibility.Collapsed;
+		}
+		if (BootModeButton != null)
+		{
+			BootModeButton.Visibility = Visibility.Collapsed;
+		}
+	}
+
+	private void btnBootMode_Click(object sender, RoutedEventArgs e)
+	{
+		if (!(Procedure is VmProcedureDecorator { DecorateSource: IVmProcedure decorateSource } vmProcedureDecorator))
+		{
+			return;
+		}
+		decorateSource.IsBootMode = true;
+		Control guidePageControl = CalibHelper.GetGuidePageControl();
+		if (Guide != null && guidePageControl != null && guidePageControl is IGuidePage)
+		{
+			(guidePageControl as IGuidePage).Owner = this;
+			(guidePageControl as IGuidePage).CurDiagram = vmProcedureDecorator;
+			for (int i = 0; i < Guide.Children.Count; i++)
+			{
+				if (Guide.Children[i] is IDisposable disposable)
+				{
+					disposable.Dispose();
+					IDisposable disposable2 = null;
+				}
+			}
+			Guide.Children.Clear();
+			GC.Collect();
+			Guide.Children.Add(guidePageControl);
+		}
+		if (BootModeButton != null)
+		{
+			BootModeButton.Visibility = Visibility.Collapsed;
+		}
+		if (ProcessModeButton != null)
+		{
+			ProcessModeButton.Visibility = Visibility.Visible;
+			Binding binding = new Binding
+			{
+				Source = guidePageControl,
+				Path = new PropertyPath("CanChangeMode"),
+				Mode = BindingMode.TwoWay
+			};
+			ProcessModeButton.SetBinding(UIElement.IsEnabledProperty, binding);
+		}
+	}
+
+	private void btnProcessMode_Click(object sender, RoutedEventArgs e)
+	{
+		if (!(Procedure is VmProcedureDecorator { DecorateSource: IVmProcedure decorateSource }))
+		{
+			return;
+		}
+		decorateSource.IsBootMode = false;
+		if (Guide != null)
+		{
+			for (int i = 0; i < Guide.Children.Count; i++)
+			{
+				if (Guide.Children[i] is IDisposable disposable)
+				{
+					disposable.Dispose();
+					IDisposable disposable2 = null;
+				}
+			}
+			GC.Collect();
+			Guide.Children.Clear();
+		}
+		if (BootModeButton != null)
+		{
+			BootModeButton.Visibility = Visibility.Visible;
+		}
+		if (ProcessModeButton != null)
+		{
+			ProcessModeButton.Visibility = Visibility.Collapsed;
+		}
+	}
+}

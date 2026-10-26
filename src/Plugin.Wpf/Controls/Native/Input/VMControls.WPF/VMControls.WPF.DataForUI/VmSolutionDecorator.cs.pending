@@ -1,0 +1,214 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using Apps.XmlUI;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmSolutionDecorator : DecoratorBase
+{
+	private DelegateCommand<ObjectEventArgs> dropItemsCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> importProcessCommand = null;
+
+	private DelegateCommand<DiagramEventArgs> importProcessRemoteCommand = null;
+
+	private DelegateCommand _AddCommand = null;
+
+	private DelegateCommand<IList> deleteItemsCommand = null;
+
+	private DelegateCommand<IList> copyItemsCommand = null;
+
+	public ICommand DropItemsCommand => (ICommand)(dropItemsCommand ?? (dropItemsCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)DropItemsCommandExecute)));
+
+	public ICommand ImportProcessCommand => (ICommand)(importProcessCommand ?? (importProcessCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)ImportProcessCommandExecute)));
+
+	public ICommand ImportProcessRemoteCommand => (ICommand)(importProcessRemoteCommand ?? (importProcessRemoteCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)ImportProcessRemoteCommandExecute)));
+
+	public bool IsShowImportGroup => false;
+
+	public ICommand AddCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _AddCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)AddCommandExecute);
+				DelegateCommand val3 = val2;
+				_AddCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DeleteItemsCommand => (ICommand)(deleteItemsCommand ?? (deleteItemsCommand = new DelegateCommand<IList>((Action<IList>)DeleteItemsCommandExecute)));
+
+	public ICommand CopyItemsCommand => (ICommand)(copyItemsCommand ?? (copyItemsCommand = new DelegateCommand<IList>((Action<IList>)CopyItemsCommandExecute)));
+
+	private void ImportProcessCommandExecute(DiagramEventArgs args)
+	{
+		DecoratorBase.ImportProcedure(args.Point);
+	}
+
+	private void ImportProcessRemoteCommandExecute(DiagramEventArgs args)
+	{
+		DecoratorBase.ImportProcedure(args.Point, isRemoteImport: true);
+	}
+
+	private void AddCommandExecute()
+	{
+		if (!DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			return;
+		}
+		IVmSolution vmSolution = DecorateSource as IVmSolution;
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation(), AppLocalizationService.GetLang("添加流程") ?? "");
+		List<VmModuleBaseDecorator> decorates = (from p in vmSolution.Children.OfType<IVmModule>()
+			select new VmModuleBaseDecorator
+			{
+				DecorateSource = p
+			}).ToList();
+		try
+		{
+			IVmProcedure vmProcedure = vmSolution.CreateProcedure();
+			Ioc.Get<IUnRedoService>()?.ModifyDisplayInfo(vmProcedure.Name);
+			UILogManager.logCreate("信息", AppLocalizationService.GetLang("添加流程") + AppLocalizationService.GetPunctuation("：") + vmProcedure.FullName, ifLang: false);
+			SetDefaultPosition(vmProcedure, decorates);
+		}
+		catch (VmException ex)
+		{
+			ShowMessage.ShowVmExceptionMessage(ex);
+			UILogManager.logCreate("错误", ErrorCodeInfo.GetErrorInfo(ex.errorCode), ifLang: false);
+			Ioc.Get<IUnRedoService>()?.DeleteLastOperation();
+		}
+	}
+
+	/// <summary>
+	/// 设置默认位置,模块多了会卡，因为要从底层获取位置信息
+	/// </summary>
+	/// <param name="curProcedure"></param>
+	/// <param name="decorates"></param>
+	public void SetDefaultPosition(IVmProcedure curProcedure, List<VmModuleBaseDecorator> decorates)
+	{
+		int num = 1;
+		int num2 = 150;
+		int num3 = 0;
+		int num4 = 0;
+		int num5 = 0;
+		int num6 = 1;
+		Rect rect = new Rect(0.0, 0.0, num2, num2);
+		Rect rect2 = new Rect(0.0, 0.0, num2, num2);
+		bool flag = true;
+		for (int i = 0; i < decorates.Count + 1; i++)
+		{
+			if (flag)
+			{
+				switch (num5)
+				{
+				case 0:
+					num3 = 1;
+					break;
+				case 1:
+					num4++;
+					num3 = num4;
+					break;
+				}
+				num5++;
+				if (num5 > 2)
+				{
+					num5 = 0;
+				}
+			}
+			double num7 = num2 * num3;
+			if (i < decorates.Count)
+			{
+				switch (num)
+				{
+				case 0:
+					rect.Offset(new Vector(0.0, -num2));
+					if (flag)
+					{
+						rect2.Offset(new Vector(0.0, 0.0 - num7));
+					}
+					break;
+				case 1:
+					rect.Offset(new Vector(num2, 0.0));
+					if (flag)
+					{
+						rect2.Offset(new Vector(num7, 0.0));
+					}
+					break;
+				case 2:
+					rect.Offset(new Vector(0.0, num2));
+					if (flag)
+					{
+						rect2.Offset(new Vector(0.0, num7));
+					}
+					break;
+				case 3:
+					rect.Offset(new Vector(-num2, 0.0));
+					if (flag)
+					{
+						rect2.Offset(new Vector(0.0 - num7, 0.0));
+					}
+					break;
+				}
+				flag = false;
+				if (rect == rect2)
+				{
+					flag = true;
+					num += num6;
+					if (num > 3)
+					{
+						num = 2;
+						num6 = -num6;
+					}
+					if (num < 0)
+					{
+						num = 1;
+						num6 = -num6;
+					}
+				}
+				continue;
+			}
+			new VmModuleBaseDecorator
+			{
+				DecorateSource = curProcedure,
+				Position = rect.Location
+			};
+			break;
+		}
+	}
+
+	private void CopyItemsCommandExecute(IList obj)
+	{
+		if (!DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			return;
+		}
+		foreach (object item in obj)
+		{
+			if ((item as IDecorate).DecorateSource is IVmModule { IsGlobalModu: not false } vmModule)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_UnCopyTips") + ":" + vmModule.Name, MessageIcons.Error);
+				break;
+			}
+		}
+	}
+}

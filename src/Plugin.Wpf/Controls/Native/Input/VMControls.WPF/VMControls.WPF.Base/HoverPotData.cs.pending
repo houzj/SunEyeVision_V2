@@ -1,0 +1,40 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Input;
+using Mvvm.Commands;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+public class HoverPotData : INotifyPropertyChanged
+{
+	private DelegateCommand<object> _MouseDownCommand = null;
+
+	public int StartIndex { get; set; }
+
+	public bool IsHorizon { get; set; }
+
+	public Point point { get; set; }
+
+	public ICommand MouseDownCommand
+	{
+		get
+		{
+			return (ICommand)_MouseDownCommand;
+		}
+		set
+		{
+			if (_MouseDownCommand != value)
+			{
+				_MouseDownCommand = value as DelegateCommand<object>;
+				OnPropertyChanged("MouseDownCommand");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+}

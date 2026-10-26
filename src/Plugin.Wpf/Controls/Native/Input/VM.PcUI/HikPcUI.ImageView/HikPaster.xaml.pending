@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikPaster" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" x:Name="userControl" SizeChanged="userControl_SizeChanged" PreviewKeyDown="userControl_PreviewKeyDown" MouseDown="userControl_MouseDown">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="ToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="ButtonBase.ClickMode" Value="Press" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Grid>
+                <Border Name="jBorder" Background="{TemplateBinding Control.Background}" BorderBrush="{DynamicResource Col_Theme}" Opacity="0.5" BorderThickness="0" IsHitTestVisible="False" Margin="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource thickness2Double}}" />
+                <Rectangle Name="iBorder" Stroke="#FF000000" StrokeThickness="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource thickness2Double}}" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <DataTrigger Value="{x:Static local:ROIState.Error}" Binding="{Binding State}">
+                  <Setter TargetName="iBorder" Property="Shape.Stroke" Value="#FF1A1A" />
+                  <Setter TargetName="iBorder" Property="Shape.StrokeDashArray" Value="2,3" />
+                </DataTrigger>
+                <DataTrigger Value="{x:Static local:ROIState.Normal}" Binding="{Binding State}">
+                  <Setter TargetName="iBorder" Property="Shape.Stroke" Value="#11B711" />
+                </DataTrigger>
+                <DataTrigger Value="{x:Static local:ROIState.Undetermined}" Binding="{Binding State}">
+                  <Setter TargetName="iBorder" Property="Shape.Stroke" Value="#11B711" />
+                </DataTrigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="jBorder" Value="{DynamicResource Col_Theme_Light}" Property="Border.Background" />
+                  <Setter TargetName="jBorder" Property="Border.BorderThickness" Value="{Binding StrokeThickness, ElementName=iBorder}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid IsHitTestVisible="{Binding IsFocusble}" MouseMove="toggle_MouseMove">
+    <Canvas>
+      <Grid Background="#00FFFFFF" Width="{Binding ElementName=userControl, Path=Width}" Height="{Binding ElementName=userControl, Path=Height}" />
+      <UniformGrid Rows="2" Height="auto" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <RadioButton Name="toggle" BorderThickness="1" Style="{StaticResource ToggleButtonStyle}" GroupName="{Binding GroupName, ElementName=userControl}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Width="{Binding ElementName=userControl, Path=Width}" Height="{Binding ElementName=userControl, Path=Height}" />
+        <Canvas Width="{Binding ElementName=userControl, Path=Width}">
+          <TextBlock Name="subText" IsHitTestVisible="False" FontSize="16" Text="{Binding SubContent, ElementName=userControl}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type TextBlock}">
+                <Style.Triggers>
+                  <DataTrigger Value="{x:Static local:ROIState.Error}" Binding="{Binding State}">
+                    <Setter Property="Foreground" Value="#FF1A1A" />
+                  </DataTrigger>
+                  <DataTrigger Value="{x:Static local:ROIState.Normal}" Binding="{Binding State}">
+                    <Setter Property="Foreground" Value="#11B711" />
+                  </DataTrigger>
+                  <DataTrigger Value="{x:Static local:ROIState.Undetermined}" Binding="{Binding State}">
+                    <Setter Property="Foreground" Value="#11B711" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </TextBlock>
+        </Canvas>
+      </UniformGrid>
+    </Canvas>
+    <UIElement.RenderTransform>
+      <TransformGroup x:Name="TG">
+        <SkewTransform x:Name="skewTransf" />
+        <RotateTransform x:Name="tlt" />
+      </TransformGroup>
+    </UIElement.RenderTransform>
+  </Grid>
+</UserControl>

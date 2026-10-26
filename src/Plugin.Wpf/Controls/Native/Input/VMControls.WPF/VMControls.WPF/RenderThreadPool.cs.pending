@@ -1,0 +1,50 @@
+using System;
+using VM.Utility;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 渲染专用线程池
+/// </summary>
+public class RenderThreadPool
+{
+	private static SmartThreadPool instance;
+
+	/// <summary>
+	/// 创建线程池
+	/// </summary>
+	public static void Create()
+	{
+		if (instance == null)
+		{
+			instance = ThreadService.CreateNewPool(10, 1);
+		}
+	}
+
+	/// <summary>
+	/// 异步执行
+	/// </summary>
+	/// <param name="action"></param>
+	/// <param name="param"></param>
+	/// <param name="workPriority"></param>
+	public static void AsyncRun<T>(Action<T> action, T param, WorkItemPriority workPriority = WorkItemPriority.Normal)
+	{
+		if (instance == null)
+		{
+			Create();
+		}
+		instance.QueueWorkItem(action, param, workPriority);
+	}
+
+	/// <summary>
+	/// 销毁线程池
+	/// </summary>
+	public static void ShutDown()
+	{
+		if (instance != null)
+		{
+			instance.Shutdown();
+			instance = null;
+		}
+	}
+}

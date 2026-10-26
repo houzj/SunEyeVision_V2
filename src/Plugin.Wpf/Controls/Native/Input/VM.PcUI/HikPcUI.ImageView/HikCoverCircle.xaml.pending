@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikCoverCircle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Name="userControl" Loaded="UserControl_Loaded" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" MouseUp="UserControl_MouseUp" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" Focusable="True" FocusVisualStyle="{x:Null}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:HikCoverCircleStyleConverter x:Key="hccStyleConverter" />
+      <sys:Double x:Key="dwidth">8</sys:Double>
+      <sys:Double x:Key="cwidth">7</sys:Double>
+      <sys:Double x:Key="mwidth">32</sys:Double>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Border Name="bd" BorderThickness="1" Margin="-1" Style="{DynamicResource SelectedBorderStyle}">
+    <Canvas Name="Gp">
+      <Path Name="PathFillColor" Stretch="None" StrokeThickness="1" Opacity="1" Visibility="Collapsed" Style="{Binding ROITypeUI, ElementName=userControl, Converter={StaticResource hccStyleConverter}}">
+        <Path.Data>
+          <GeometryGroup>
+            <PathGeometry>
+              <PathFigure IsClosed="True" StartPoint="{Binding ElementName=userControl, Path=EndPoint}">
+                <LineSegment Point="{Binding ElementName=userControl, Path=MinEndPoint}" />
+                <ArcSegment SweepDirection="Counterclockwise" Size="{Binding ElementName=userControl, Path=MinSize}" Point="{Binding ElementName=userControl, Path=MinStartPoint}" IsLargeArc="{Binding ElementName=userControl, Path=IsLargeArc}" />
+                <LineSegment Point="{Binding ElementName=userControl, Path=StartPoint}" />
+                <ArcSegment SweepDirection="clockwise" Size="{Binding ElementName=userControl, Path=MaxSize}" Point="{Binding ElementName=userControl, Path=EndPoint}" IsLargeArc="{Binding ElementName=userControl, Path=IsLargeArc}" />
+              </PathFigure>
+            </PathGeometry>
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+      <Path Name="PathFillColor2" Stretch="None" StrokeThickness="1" Opacity="1" Visibility="Visible" Style="{Binding ROITypeUI, ElementName=userControl, Converter={StaticResource hccStyleConverter}}">
+        <Path.Data>
+          <GeometryGroup>
+            <EllipseGeometry RadiusX="{Binding ElementName=userControl, Path=MinRadius}" RadiusY="{Binding ElementName=userControl, Path=MinRadius}" Center="{Binding ElementName=userControl, Path=MyCenterPoint}" />
+            <EllipseGeometry RadiusX="{Binding ElementName=userControl, Path=Radius}" RadiusY="{Binding ElementName=userControl, Path=Radius}" Center="{Binding ElementName=userControl, Path=MyCenterPoint}" />
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+      <Canvas Background="#00FFFFFF">
+        <local:MoveArea x:Name="Move" Opacity="0" Height="{DynamicResource mwidth}" Width="{DynamicResource mwidth}" />
+        <local:SquareArea x:Name="startAngle" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Top" HorizontalAlignment="Left" />
+        <local:SquareArea x:Name="endAngle" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+        <local:SquareArea x:Name="rec1" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        <local:CircleArea x:Name="rec2" Opacity="0" Height="{DynamicResource cwidth}" Width="{DynamicResource cwidth}" />
+      </Canvas>
+    </Canvas>
+  </Border>
+</local:HikROIBase>

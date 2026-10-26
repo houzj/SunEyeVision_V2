@@ -1,0 +1,627 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
+using Apps.Data;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using DirectoryBrowser;
+using Microsoft.Win32;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.Utility.SingleInstance;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class ComTriggerItem : NotifyPropertyChangedBase
+{
+	public ITriggerConfig Parent;
+
+	private string _proTriggerString = "";
+
+	private int _command = 1;
+
+	private int _index;
+
+	private string _solutionPath = "";
+
+	private string _solutionPasswd = "";
+
+	private bool _isEventTrigger = true;
+
+	private int _triggerModule = -1;
+
+	private int _triggerProcessId = -1;
+
+	private string _paramName = "";
+
+	private RelationSelector _relatonSelector = null;
+
+	private bool isClearing = false;
+
+	private IList _EnumEntrys = null;
+
+	private IVmModule _triggerSelectedModule;
+
+	private EnumEntry _triggerSelectedObject;
+
+	private DelegateCommand _DeleteCommand = null;
+
+	private DelegateCommand<ObjectEventArgs> _ClickCommand = null;
+
+	private DelegateCommand _PathSelectCommand = null;
+
+	public int Index
+	{
+		get
+		{
+			return _index;
+		}
+		set
+		{
+			if (_index != value)
+			{
+				_index = value;
+				OnPropertyChanged("Index");
+			}
+		}
+	}
+
+	public virtual IList EnumEntrysA
+	{
+		get
+		{
+			if (_EnumEntrys == null)
+			{
+				_EnumEntrys = GetEnumEntrysList();
+			}
+			return _EnumEntrys;
+		}
+	}
+
+	public virtual List<EnumEntry> SelectCommandTypes => new List<EnumEntry>
+	{
+		new EnumEntry
+		{
+			DisplayNameA = "ChangeSolution",
+			ValueA = 0
+		},
+		new EnumEntry
+		{
+			DisplayNameA = "ExecuteProcedure",
+			ValueA = 1
+		},
+		new EnumEntry
+		{
+			DisplayNameA = "ExecuteModule",
+			ValueA = 2
+		},
+		new EnumEntry
+		{
+			DisplayNameA = "SetModuleParam",
+			ValueA = 3
+		}
+	};
+
+	public virtual int Command
+	{
+		get
+		{
+			return _command;
+		}
+		set
+		{
+			if (_command != value)
+			{
+				_command = value;
+				OnPropertyChanged("Command");
+				_EnumEntrys = null;
+				OnPropertyChanged("EnumEntrysA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 流程触发字符串
+	/// </summary>
+	public string ProTriggerString
+	{
+		get
+		{
+			return _proTriggerString;
+		}
+		set
+		{
+			if (!(_proTriggerString != value))
+			{
+				return;
+			}
+			if (IsProTriggerSub)
+			{
+				TrigerOutPutItem trigerOutPutItem = (this as GlobalTriggerEventItem).ItemsA.FirstOrDefault((TrigerOutPutItem x) => x.ItemName == value);
+				if (trigerOutPutItem != null)
+				{
+					_proTriggerString = value;
+					ProTriggerSelector.CurValueA = _proTriggerString;
+				}
+			}
+			else
+			{
+				_proTriggerString = value;
+				ProTriggerSelector.CurValueA = _proTriggerString;
+			}
+			OnPropertyChanged("ProTriggerString");
+		}
+	}
+
+	public bool IsProTriggerSub { get; set; }
+
+	public RelationSelector ProTriggerSelector
+	{
+		get
+		{
+			if (_relatonSelector == null)
+			{
+				_relatonSelector = new RelationSelector();
+				_relatonSelector.Parent = this;
+				_relatonSelector.CurValueChange += () =>
+				{
+					string tmpstr = _relatonSelector.CurValueA;
+					if (string.IsNullOrEmpty(tmpstr))
+					{
+						IsProTriggerSub = false;
+					}
+					else
+					{
+						IsProTriggerSub = (this as GlobalTriggerEventItem).ItemsA.FirstOrDefault((TrigerOutPutItem x) => x.ItemName == tmpstr) != null;
+					}
+					ProTriggerString = tmpstr;
+				};
+			}
+			return _relatonSelector;
+		}
+	}
+
+	/// <summary>
+	/// 方案路径
+	/// </summary>
+	public string SolutionPath
+	{
+		get
+		{
+			return _solutionPath;
+		}
+		set
+		{
+			if (!(_solutionPath != value))
+			{
+				return;
+			}
+			_solutionPath = value;
+			OnPropertyChanged("SolutionPath");
+			if (!Parent.IsLoading && !isClearing)
+			{
+				uint nHasPwd = 0u;
+				uint nValidFormat = 0u;
+				ServerSDKManager.serverSDKManager.mSolutionManager.CheckSolution(_solutionPath, ref nHasPwd, ref nValidFormat);
+				if (nValidFormat == 1 && nHasPwd == 1)
+				{
+					HikMessageBox.Show(AppLocalizationService.GetLang("请输入密码"), MessageButtons.Normal, MessageIcons.Warning);
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// 方案密码
+	/// </summary>
+	public string SolutionPasswd
+	{
+		get
+		{
+			return _solutionPasswd;
+		}
+		set
+		{
+			if (_solutionPasswd != value)
+			{
+				_solutionPasswd = value;
+				OnPropertyChanged("SolutionPasswd");
+			}
+		}
+	}
+
+	public int TriggerPeocessID
+	{
+		get
+		{
+			return _triggerProcessId;
+		}
+		set
+		{
+			if (_triggerProcessId != value)
+			{
+				_triggerProcessId = value;
+				OnPropertyChanged("TriggerPeocessID");
+			}
+		}
+	}
+
+	public int TriggerModule
+	{
+		get
+		{
+			return _triggerModule;
+		}
+		set
+		{
+			if (_triggerModule != value)
+			{
+				_triggerModule = value;
+				OnPropertyChanged("TriggerActionsA");
+			}
+		}
+	}
+
+	public IVmModule TriggerSelectedModule
+	{
+		get
+		{
+			return _triggerSelectedModule;
+		}
+		set
+		{
+			if (_triggerSelectedModule != value)
+			{
+				_triggerSelectedModule = value;
+				OnPropertyChanged("TriggerSelectedObject");
+			}
+		}
+	}
+
+	public EnumEntry TriggerSelectedObject
+	{
+		get
+		{
+			if (_triggerSelectedObject == null || !_triggerSelectedObject.ReservedProperty.Equals(TriggerSelectedModule))
+			{
+				if (TriggerSelectedModule != null)
+				{
+					_triggerSelectedObject = new EnumEntry
+					{
+						DisplayNameA = TriggerSelectedModule.Name,
+						Value = (int)TriggerSelectedModule.ID,
+						ReservedProperty = TriggerSelectedModule
+					};
+				}
+				else
+				{
+					_triggerSelectedObject = null;
+				}
+			}
+			return _triggerSelectedObject;
+		}
+		set
+		{
+			if (_triggerSelectedObject != value)
+			{
+				_triggerSelectedObject = value;
+				_triggerSelectedModule = value.ReservedProperty as IVmModule;
+				OnPropertyChanged("TriggerSelectedObject");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 触发模块执行动作
+	/// </summary>
+	public ObservableCollection<EnumEntry> TriggerActionsA
+	{
+		get
+		{
+			ObservableCollection<EnumEntry> observableCollection = new ObservableCollection<EnumEntry>();
+			if (Command == 3 && TriggerModule >= 0)
+			{
+				if (GlobalTriggerConfig.CacheTabRoot.ContainsKey(TriggerModule))
+				{
+					IEnumerable<NameValueItem> item = GlobalTriggerConfig.CacheTabRoot[TriggerModule].GetItem((NameValueItem p) => p.SupportCommTrigger);
+					if (item != null)
+					{
+						foreach (NameValueItem item2 in item)
+						{
+							observableCollection.Add(new EnumEntry
+							{
+								DisplayNameA = item2.DisplayNameA,
+								StrValue = item2.NameA
+							});
+						}
+					}
+				}
+				else if (ServerSDKManager.serverSDKManager.mModuleManager.CheckLocalVariableModule(TriggerModule))
+				{
+					observableCollection.Add(new EnumEntry
+					{
+						DisplayNameA = "Lang_GlobalVariableInitial",
+						StrValue = "GlobalValueInit"
+					});
+				}
+			}
+			return observableCollection;
+		}
+	}
+
+	/// <summary>
+	/// 触发动作字符串
+	/// </summary>
+	public string ParamName
+	{
+		get
+		{
+			return _paramName;
+		}
+		set
+		{
+			if (_paramName != value)
+			{
+				_paramName = value;
+				OnPropertyChanged("ParamName");
+			}
+		}
+	}
+
+	public bool IsEventTrigger
+	{
+		get
+		{
+			return _isEventTrigger;
+		}
+		set
+		{
+			if (_isEventTrigger != value)
+			{
+				_isEventTrigger = value;
+				OnPropertyChanged("IsEventTrigger");
+				OnPropertyChanged("IsStrTrigger");
+			}
+		}
+	}
+
+	public bool IsStrTrigger => !IsEventTrigger;
+
+	public ICommand DeleteCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_DeleteCommand == null)
+			{
+				_DeleteCommand = new DelegateCommand((Action)DeleteCommandCmdExecute);
+			}
+			return (ICommand)_DeleteCommand;
+		}
+	}
+
+	public ICommand ClickCommand
+	{
+		get
+		{
+			if (_ClickCommand == null)
+			{
+				_ClickCommand = new DelegateCommand<ObjectEventArgs>((Action<ObjectEventArgs>)ClickCommandExecute);
+			}
+			return (ICommand)_ClickCommand;
+		}
+	}
+
+	public ICommand PathSelectCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_PathSelectCommand == null)
+			{
+				_PathSelectCommand = new DelegateCommand((Action)PathSelectCmdExecute);
+			}
+			return (ICommand)_PathSelectCommand;
+		}
+	}
+
+	public ComTriggerItem(ITriggerConfig triggerConfig)
+	{
+		Parent = triggerConfig;
+	}
+
+	private IList GetEnumEntrysList()
+	{
+		if (Command == 1)
+		{
+			return GetAllProcess();
+		}
+		if (Command == 2)
+		{
+			return GetAllModules((object p) => true);
+		}
+		if (Command == 3)
+		{
+			return GetAllModules((object p) => HaveModuleAction(p as VmModule), isContainGlobalModule: true);
+		}
+		return new ObservableCollection<EnumEntry>();
+	}
+
+	private void GetSubModules(object module, Func<object, bool> predicate, ObservableCollection<object> subEnumEntrys, EnumEntry enumEntry)
+	{
+		if (module == null)
+		{
+			return;
+		}
+		if (module is IVmModuleSet)
+		{
+			ObservableCollection<object> observableCollection = new ObservableCollection<object>();
+			EnumEntry enumEntry2 = new EnumEntry();
+			foreach (object child in (module as IVmModuleSet).Children)
+			{
+				GetSubModules(child, predicate, observableCollection, enumEntry);
+			}
+			GetSubModules((module as IVmModuleSet).LocalVariablModule, predicate, observableCollection, enumEntry);
+			if (observableCollection.Count > 0)
+			{
+				enumEntry2.DisplayNameA = (module as IVmModuleSet).Name;
+				enumEntry2.Value = (int)(module as IVmModule).ID;
+				enumEntry2.EnumEntrys = observableCollection;
+				subEnumEntrys.Add(enumEntry2);
+			}
+		}
+		else if (module is IVmModule && predicate(module))
+		{
+			subEnumEntrys.Add(new EnumEntry
+			{
+				DisplayNameA = (module as IVmModule).Name,
+				Value = (int)(module as IVmModule).ID,
+				ReservedProperty = module
+			});
+		}
+	}
+
+	private IList GetAllModules(Func<object, bool> predicate, bool isContainGlobalModule = false)
+	{
+		ObservableCollection<EnumEntry> observableCollection = new ObservableCollection<EnumEntry>();
+		observableCollection.Clear();
+		foreach (VmModule module in VmSolution.Instance.Modules)
+		{
+			if (module.IsGlobalModu & isContainGlobalModule)
+			{
+				EnumEntry enumEntry = new EnumEntry();
+				ObservableCollection<object> observableCollection2 = new ObservableCollection<object>();
+				GetSubModules(module, predicate, observableCollection2, enumEntry);
+				if (observableCollection2.Count > 0)
+				{
+					observableCollection.Add(observableCollection2[0] as EnumEntry);
+				}
+			}
+		}
+		foreach (VmProcedure item in VmSolution.Instance.Modules.OfType<VmProcedure>())
+		{
+			EnumEntry enumEntry2 = new EnumEntry();
+			ObservableCollection<object> subEnumEntrys = new ObservableCollection<object>();
+			item.Modules.ToList().ForEach((VmModule x) =>
+			{
+				GetSubModules(x, predicate, subEnumEntrys, enumEntry2);
+			});
+			if (isContainGlobalModule)
+			{
+				GetSubModules(((IVmModuleSet)item).LocalVariablModule, predicate, subEnumEntrys, enumEntry2);
+			}
+			enumEntry2.EnumEntrys = subEnumEntrys;
+			if (enumEntry2.EnumEntrys != null && enumEntry2.EnumEntrys.Count > 0)
+			{
+				enumEntry2.DisplayNameA = item.Name;
+				enumEntry2.Value = (int)item.ID;
+				observableCollection.Add(enumEntry2);
+			}
+		}
+		return observableCollection;
+	}
+
+	private bool HaveModuleAction(VmModule module)
+	{
+		if (module == null)
+		{
+			return false;
+		}
+		if (ServerSDKManager.serverSDKManager.mModuleManager.CheckLocalVariableModule((int)module.ID))
+		{
+			return true;
+		}
+		if (!GlobalTriggerConfig.CacheTabRoot.ContainsKey((int)module.ID))
+		{
+			AlgorithmTabRoot value = new AlgorithmTabRoot(module.Params);
+			GlobalTriggerConfig.CacheTabRoot.Add((int)module.ID, value);
+		}
+		return GlobalTriggerConfig.CacheTabRoot[(int)module.ID].GetItem((NameValueItem p) => p.SupportCommTrigger).Count() > 0;
+	}
+
+	/// <summary>
+	/// command切换时，清空现有的配置
+	/// </summary>
+	public void ClearConfig()
+	{
+		isClearing = true;
+		SolutionPath = "";
+		SolutionPasswd = "";
+		ProTriggerString = "";
+		TriggerPeocessID = -1;
+		ProTriggerSelector.CurValueA = null;
+		TriggerModule = -1;
+		ParamName = "";
+		TriggerSelectedModule = null;
+		isClearing = false;
+	}
+
+	public ObservableCollection<EnumEntry> GetAllProcess()
+	{
+		ObservableCollection<EnumEntry> observableCollection = new ObservableCollection<EnumEntry>();
+		foreach (VmProcedure item in VmSolution.Instance.Modules.OfType<VmProcedure>())
+		{
+			observableCollection.Add(new EnumEntry
+			{
+				DisplayNameA = item.FullName,
+				Value = (int)item.ID
+			});
+		}
+		if (observableCollection.Count > 0)
+		{
+			observableCollection.Insert(0, new EnumEntry
+			{
+				DisplayNameA = AppLocalizationService.GetLang("Lang_AllProcess"),
+				Value = 10999
+			});
+		}
+		return observableCollection;
+	}
+
+	private void DeleteCommandCmdExecute()
+	{
+		Parent.RemoveItem(this);
+	}
+
+	public void ClickCommandExecute(ObjectEventArgs obj)
+	{
+		if (obj != null)
+		{
+			TriggerModule = (obj.Param as EnumEntry).ValueA;
+		}
+	}
+
+	private void PathSelectCmdExecute()
+	{
+		if (!RemoteOperate.IsRemoteMode)
+		{
+			Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
+			{
+				Filter = "Solution Files (*." + AppFileExtension.Solution + ")|*." + AppFileExtension.Solution
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				SolutionPath = openFileDialog.FileName;
+			}
+			return;
+		}
+		DirectoryBrowser.OpenFileDialog openFileDialog2 = new DirectoryBrowser.OpenFileDialog
+		{
+			Filter = "Solution Files (*.solx)|*.solx",
+			CheckFileExists = true
+		};
+		if (openFileDialog2.ShowDialog() == true)
+		{
+			SolutionPath = openFileDialog2.FileNames.First();
+		}
+	}
+}

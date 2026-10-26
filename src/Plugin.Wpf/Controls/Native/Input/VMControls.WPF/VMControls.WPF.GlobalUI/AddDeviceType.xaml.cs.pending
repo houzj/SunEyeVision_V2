@@ -1,0 +1,90 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using Apps.Localization;
+using VM.Controls;
+using VM.Utility.SingleInstance;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// AddDeviceType.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// AddDeviceType
+/// </summary>
+public partial class AddDeviceType : BaseWindow, INotifyPropertyChanged, IComponentConnector, IStyleConnector
+{
+	public static ObservableCollection<CameraInfo> CameraList = new ObservableCollection<CameraInfo>();
+
+	private string currentCamera = string.Empty;
+
+	private string _camera3DName = AppLocalizationService.GetLang("Camera3D");
+
+	public AddDeviceType()
+	{
+		InitializeComponent();
+		CameraList.Clear();
+		if (CameraList.Count == 0)
+		{
+			string path = CurrentPathHelper.Instance.GetCurrentPath() + "Module(sp)\\x64\\Global\\";
+			string[] directories = Directory.GetDirectories(path);
+			string[] array = directories;
+			foreach (string path2 in array)
+			{
+				ListFile(path2);
+			}
+		}
+		CameraList.Add(new CameraInfo
+		{
+			Type = _camera3DName,
+			IsShow = true
+		});
+		CameraList[0].IsCurrentCamera = true;
+		cameralist.ItemsSource = CameraList;
+	}
+
+	public void ListFile(string path)
+	{
+		DirectoryInfo directoryInfo = new DirectoryInfo(path);
+		FileInfo[] files = directoryInfo.GetFiles();
+		foreach (FileInfo fileInfo in files)
+		{
+			if (fileInfo.Name == directoryInfo.Name + ".xml")
+			{
+				string path2 = path + "\\" + fileInfo.Name;
+				CameraDeviceTypeHelper.GetModuleType(path2, CameraList);
+			}
+		}
+	}
+
+	private void Confirm_Click(object sender, RoutedEventArgs e)
+	{
+		DialogResult = true;
+	}
+
+	private void Button_Click(object sender, RoutedEventArgs e)
+	{
+		currentCamera = ((RadioButton)sender).Content.ToString();
+		if (!(currentCamera == _camera3DName))
+		{
+			return;
+		}
+		foreach (CameraInfo camera in CameraList)
+		{
+			if (camera.Type.Contains("3D") && camera.Type != _camera3DName)
+			{
+				camera.IsShow = true;
+			}
+			else
+			{
+				camera.IsShow = false;
+			}
+		}
+		CameraList.FirstOrDefault((CameraInfo a) => a.IsShow).IsCurrentCamera = true;
+	}
+}

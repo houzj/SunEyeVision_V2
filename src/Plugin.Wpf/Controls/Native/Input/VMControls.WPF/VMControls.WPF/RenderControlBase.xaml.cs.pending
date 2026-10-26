@@ -1,0 +1,2525 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.BaseData;
+using Apps.Data;
+using Apps.Data.Common;
+using Apps.Data.ShapeDefine;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser;
+using Apps.XmlParser.ItemInterface;
+using Apps.XmlParser.ParamTab;
+using HikExternalCall.Common;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMBaseControls;
+using VMBaseControls.Base.ImageView.Shape;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// RenderControlBase.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// RenderControlBase
+/// </summary>
+public partial class RenderControlBase : UserControl, INotifyPropertyChanged, IComponentConnector
+{
+	private delegate void BeginInvokeDelegate();
+
+	public static readonly DependencyProperty IImageDataProperty = DependencyProperty.Register("IImageData", typeof(IImageData), typeof(RenderControlBase), new PropertyMetadata(null, ImageDataChanged));
+
+	public static readonly DependencyProperty ROIVisibleProperty = DependencyProperty.Register("ROIVisible", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty CoordinateInfoVisibleProperty = DependencyProperty.Register("CoordinateInfoVisible", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(true, OnCoordinateInfoVisibleChanged));
+
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(RenderControlBase), new PropertyMetadata(null, OnModuleSourceChanged));
+
+	private object imageDataSource;
+
+	private List<object> shapeBuffer = new List<object>();
+
+	private ObservableCollection<object> shapeList = new ObservableCollection<object>();
+
+	private DisplayImageListDecorator imageListDecorator;
+
+	private ParamRoot ModuleParams;
+
+	private uint ExecuteCount = 0u;
+
+	private Dictionary<string, object> tempImageStore = new Dictionary<string, object>();
+
+	private Dictionary<object, object> tempShapeStore = new Dictionary<object, object>();
+
+	private static readonly object _shapelock = new object();
+
+	private static readonly object _imageslock = new object();
+
+	private uint OwnerProcessID = 0u;
+
+	public static readonly DependencyProperty ImageComboBoxVisibleProperty = DependencyProperty.Register("ImageComboBoxVisible", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty TopBarVisibleProperty = DependencyProperty.Register("TopBarVisible", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(true));
+
+	private const int IMAGE_DEFAULT_WIDTH = 920;
+
+	private const int IMAGE_DEFAULT_HEIGHT = 517;
+
+	public ObservableCollection<Image> checkImageList = new ObservableCollection<Image>();
+
+	public ObservableCollection<TransparencyData> imageTransparencyList = new ObservableCollection<TransparencyData>();
+
+	private Byte2ImageSource _byte2Image = new Byte2ImageSource();
+
+	private List<string> CheckImagesName;
+
+	private AlgorithmTabRoot algorithmItems;
+
+	public static readonly DependencyProperty SelectedROIProperty = DependencyProperty.Register("SelectedROI", typeof(object), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// ROI列表依赖属性
+	/// </summary>
+	public static readonly DependencyProperty ROIListProperty = DependencyProperty.Register("ROIList", typeof(IList), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// 图像分辨率更改命令依赖属性
+	/// </summary>
+	public static readonly DependencyProperty ImageSizeChangedCommandProperty = DependencyProperty.Register("ImageSizeChangedCommand", typeof(ICommand), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// ROI选中命令依赖属性
+	/// </summary>
+	public static readonly DependencyProperty RoiSelectedCommandProperty = DependencyProperty.Register("RoiSelectedCommand", typeof(ICommand), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// ROI删除命令依赖属性
+	/// </summary>
+	public static readonly DependencyProperty RoiDelCommandProperty = DependencyProperty.Register("RoiDelCommand", typeof(ICommand), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// ROI复制命令依赖属性
+	/// </summary>
+	public static readonly DependencyProperty RoiCopyCommandProperty = DependencyProperty.Register("RoiCopyCommand", typeof(ICommand), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// ROI粘贴命令依赖属性
+	/// </summary>
+	public static readonly DependencyProperty RoiPasteCommandProperty = DependencyProperty.Register("RoiPasteCommand", typeof(ICommand), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	/// <summary>
+	/// ROI可见性更改通知命令依赖属性
+	/// </summary>
+	public static readonly DependencyProperty RoiVisibleChangedCommandProperty = DependencyProperty.Register("RoiVisibleChangedCommand", typeof(ICommand), typeof(RenderControlBase), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty MultiImageButtonVisibleProperty = DependencyProperty.Register("MultiImageButtonVisible", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsShowDoubleImageProperty = DependencyProperty.Register("IsShowDoubleImage", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(false, OnIsShowDoubleImageChanged));
+
+	private object imageDataSourceIn;
+
+	private int renderInterval = 0;
+
+	private long oldTimeStamp = 0L;
+
+	private bool needUpdateRender = true;
+
+	private RenderSatus renderStatus = RenderSatus.ALL;
+
+	private IVmModule renderStatusModule = null;
+
+	public static readonly DependencyProperty RenderToolbarVisibleProperty = DependencyProperty.Register("RenderToolbarVisible", typeof(bool), typeof(RenderControlBase), new PropertyMetadata(true, OnRenderToolbarVisibleChanged));
+
+	/// <summary>
+	/// 设置堆叠显示的图像(单张)
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	private const int CheckedMaxCount = 4;
+
+	public IImageData IImageData
+	{
+		get
+		{
+			return (IImageData)GetValue(IImageDataProperty);
+		}
+		set
+		{
+			SetValue(IImageDataProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示ROI
+	/// </summary>
+	public bool ROIVisible
+	{
+		get
+		{
+			return (bool)GetValue(ROIVisibleProperty);
+		}
+		set
+		{
+			SetValue(ROIVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示坐标信息
+	/// </summary>
+	public bool CoordinateInfoVisible
+	{
+		get
+		{
+			return (bool)GetValue(CoordinateInfoVisibleProperty);
+		}
+		set
+		{
+			SetValue(CoordinateInfoVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public object ImageDataSource
+	{
+		get
+		{
+			return imageDataSource;
+		}
+		set
+		{
+			if (imageDataSource != value)
+			{
+				imageDataSource = value;
+				OnPropertyChanged("ImageDataSource");
+			}
+		}
+	}
+
+	public ObservableCollection<object> ShapeList => shapeList;
+
+	/// <summary>
+	/// 暂用属性
+	/// </summary>
+	internal ImageViewBox ImageView => imageView;
+
+	/// <summary>
+	/// 图像列表数据源装饰器
+	/// </summary>
+	public DisplayImageListDecorator ImageListDecorator
+	{
+		get
+		{
+			return imageListDecorator;
+		}
+		set
+		{
+			if (imageListDecorator != value)
+			{
+				imageListDecorator = value;
+				OnPropertyChanged("ImageListDecorator");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否显示图像下拉选择控件
+	/// </summary>
+	public bool ImageComboBoxVisible
+	{
+		get
+		{
+			return (bool)GetValue(ImageComboBoxVisibleProperty);
+		}
+		set
+		{
+			SetValue(ImageComboBoxVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示图像顶部栏控件
+	/// </summary>
+	public bool TopBarVisible
+	{
+		get
+		{
+			return (bool)GetValue(TopBarVisibleProperty);
+		}
+		set
+		{
+			SetValue(TopBarVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 模块配置参数
+	/// </summary>
+	public AlgorithmTabRoot AlgorithmItems
+	{
+		get
+		{
+			return algorithmItems;
+		}
+		set
+		{
+			if (value != algorithmItems)
+			{
+				algorithmItems = value;
+				OnPropertyChanged("AlgorithmItems");
+			}
+		}
+	}
+
+	public object SelectedROI
+	{
+		get
+		{
+			return GetValue(SelectedROIProperty);
+		}
+		set
+		{
+			SetValue(SelectedROIProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// ROI列表
+	/// </summary>
+	public IList ROIList
+	{
+		get
+		{
+			return (IList)GetValue(ROIListProperty);
+		}
+		set
+		{
+			SetValue(ROIListProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 图像分辨率更改命令
+	/// </summary>
+	public ICommand ImageSizeChangedCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(ImageSizeChangedCommandProperty);
+		}
+		set
+		{
+			SetValue(ImageSizeChangedCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// ROI选中命令
+	/// </summary>
+	public ICommand RoiSelectedCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(RoiSelectedCommandProperty);
+		}
+		set
+		{
+			SetValue(RoiSelectedCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// ROI删除命令
+	/// </summary>
+	public ICommand RoiDelCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(RoiDelCommandProperty);
+		}
+		set
+		{
+			SetValue(RoiDelCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// ROI复制命令
+	/// </summary>
+	public ICommand RoiCopyCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(RoiCopyCommandProperty);
+		}
+		set
+		{
+			SetValue(RoiCopyCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// ROI粘贴命令
+	/// </summary>
+	public ICommand RoiPasteCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(RoiPasteCommandProperty);
+		}
+		set
+		{
+			SetValue(RoiPasteCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// ROI可见性更改通知命令
+	/// </summary>
+	public ICommand RoiVisibleChangedCommand
+	{
+		get
+		{
+			return (ICommand)GetValue(RoiVisibleChangedCommandProperty);
+		}
+		set
+		{
+			SetValue(RoiVisibleChangedCommandProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 多画面切换按钮是否可见
+	/// </summary>
+	public bool MultiImageButtonVisible
+	{
+		get
+		{
+			return (bool)GetValue(MultiImageButtonVisibleProperty);
+		}
+		set
+		{
+			SetValue(MultiImageButtonVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示双画面
+	/// </summary>
+	public bool IsShowDoubleImage
+	{
+		get
+		{
+			return (bool)GetValue(IsShowDoubleImageProperty);
+		}
+		set
+		{
+			SetValue(IsShowDoubleImageProperty, value);
+		}
+	}
+
+	public object ImageDataSourceIn
+	{
+		get
+		{
+			return imageDataSourceIn;
+		}
+		set
+		{
+			if (imageDataSourceIn != value)
+			{
+				imageDataSourceIn = value;
+				OnPropertyChanged("ImageDataSourceIn");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 鼠标左键点击位置像素坐标事件
+	/// </summary>
+	public PixelPositionChanged OnMouseLeftButtonDownPixelChanged { get; set; }
+
+	/// <summary>
+	/// 工具栏是否可见
+	/// </summary>
+	public bool RenderToolbarVisible
+	{
+		get
+		{
+			return (bool)GetValue(RenderToolbarVisibleProperty);
+		}
+		set
+		{
+			SetValue(RenderToolbarVisibleProperty, value);
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	/// <summary>
+	/// 当前选中图像改变事件
+	/// </summary>
+	public event NameChangedEventHandler OnSelectedImageChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void ImageDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		RenderControlBase renderControlBase = (RenderControlBase)d;
+		IImageData imageData = (IImageData)e.NewValue;
+		if (renderControlBase != null && imageData != null)
+		{
+			renderControlBase.UpdateImageView(new ImageData(imageData.Width, imageData.Height, imageData.Buffer, imageData.PixelFormat));
+		}
+	}
+
+	private static void OnCoordinateInfoVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		RenderControlBase renderControlBase = d as RenderControlBase;
+		if (e.NewValue as bool? == true)
+		{
+			Visibility visibility = Visibility.Visible;
+			renderControlBase.imageView.IsDisplayPixelAuto = true;
+			renderControlBase.imageViewIn.IsDisplayPixelAuto = true;
+		}
+		else
+		{
+			Visibility visibility = Visibility.Collapsed;
+			renderControlBase.imageView.IsDisplayPixelAuto = false;
+			renderControlBase.imageViewIn.IsDisplayPixelAuto = false;
+		}
+	}
+
+	private static void OnModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		RenderControlBase renderControlBase = d as RenderControlBase;
+		IVmModule vmModule = e.OldValue as IVmModule;
+		IVmModule vmModule2 = e.NewValue as IVmModule;
+		if (renderControlBase == null)
+		{
+			return;
+		}
+		if (vmModule != null)
+		{
+			renderControlBase.DeInitRenderControl(vmModule);
+			WeakEventManager<IVmModule, EventArgs>.RemoveHandler(vmModule, "AsyncModuleResultCallBackArrived", renderControlBase.OnModuleResultCallBackArrived);
+			IVmProcedure vmProcedure = (vmModule as IVmProcedure) ?? (vmModule.Root as IVmProcedure);
+			if (vmProcedure != null)
+			{
+				WeakEventManager<IVmProcedure, EventArgs>.RemoveHandler(vmProcedure, "AsyncWorkStatusCallBack", renderControlBase.OnPreduceResultCallBackArrived);
+			}
+		}
+		if (vmModule2 != null)
+		{
+			renderControlBase.InitRenderControl(vmModule2);
+			WeakEventManager<IVmModule, EventArgs>.RemoveHandler(vmModule2, "AsyncModuleResultCallBackArrived", renderControlBase.OnModuleResultCallBackArrived);
+			WeakEventManager<IVmModule, EventArgs>.AddHandler(vmModule2, "AsyncModuleResultCallBackArrived", renderControlBase.OnModuleResultCallBackArrived);
+			IVmProcedure vmProcedure2 = (vmModule2 as IVmProcedure) ?? (vmModule2.Root as IVmProcedure);
+			if (vmProcedure2 != null)
+			{
+				renderControlBase.OwnerProcessID = (vmProcedure2 as IVmModule).ID;
+				LogHelper.Info($"VmRenderControl Binding Process [{renderControlBase.OwnerProcessID}]");
+				WeakEventManager<IVmProcedure, EventArgs>.RemoveHandler(vmProcedure2, "AsyncWorkStatusCallBack", renderControlBase.OnPreduceResultCallBackArrived);
+				WeakEventManager<IVmProcedure, EventArgs>.AddHandler(vmProcedure2, "AsyncWorkStatusCallBack", renderControlBase.OnPreduceResultCallBackArrived);
+			}
+		}
+		if (!((renderControlBase.ModuleSource as VmModuleSet)?.StrModuleName == "SolutionModule"))
+		{
+		}
+	}
+
+	public bool SetBackgroundImage(IVmIO io)
+	{
+		IVmModule owner;
+		if ((owner = io.Owner) != null && ImageListDecorator != null)
+		{
+			foreach (ImageViewItem imageView in ImageListDecorator.ImageViewList)
+			{
+				if (imageView.DisplayValue == io)
+				{
+					ImageListDecorator.SelectedImage = imageView;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public RenderControlBase()
+	{
+		InitializeComponent();
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+		Loaded += RenderControlBase_Loaded;
+		Unloaded += RenderControlBase_Unloaded;
+		imageTransparencyList.Add(new TransparencyData
+		{
+			ImageTransparency = 191,
+			ZIndex = 100,
+			IsUsed = false
+		});
+		imageTransparencyList.Add(new TransparencyData
+		{
+			ImageTransparency = 127,
+			ZIndex = 101,
+			IsUsed = false
+		});
+		imageTransparencyList.Add(new TransparencyData
+		{
+			ImageTransparency = 63,
+			ZIndex = 102,
+			IsUsed = false
+		});
+	}
+
+	private void RenderControlBase_Loaded(object sender, RoutedEventArgs e)
+	{
+		imageView.IsDisplayPixelAuto = true;
+		ImageViewBox imageViewBox = imageView;
+		imageViewBox.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Remove(imageViewBox.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+		ImageViewBox imageViewBox2 = imageView;
+		imageViewBox2.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Combine(imageViewBox2.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+		ImageViewBox imageViewBox3 = imageView;
+		imageViewBox3.OnFreshExtendContent = (ImageViewBox.FreshExtendContent)Delegate.Remove(imageViewBox3.OnFreshExtendContent, new ImageViewBox.FreshExtendContent(imageView_OnFreshExtendContent));
+		ImageViewBox imageViewBox4 = imageView;
+		imageViewBox4.OnFreshExtendContent = (ImageViewBox.FreshExtendContent)Delegate.Combine(imageViewBox4.OnFreshExtendContent, new ImageViewBox.FreshExtendContent(imageView_OnFreshExtendContent));
+		if (!Resources.MergedDictionaries.Contains((ResourceDictionary)(object)LocalizationResourceDictionary.Instance))
+		{
+			Resources.MergedDictionaries.Add((ResourceDictionary)(object)LocalizationResourceDictionary.Instance);
+		}
+	}
+
+	private void RenderControlBase_Unloaded(object sender, RoutedEventArgs e)
+	{
+		ImageViewBox imageViewBox = imageView;
+		imageViewBox.OnSetImageEnd = (ImageViewBox.SetImageEnd)Delegate.Remove(imageViewBox.OnSetImageEnd, new ImageViewBox.SetImageEnd(imageView_OnSetImageEnd));
+		ImageViewBox imageViewBox2 = imageView;
+		imageViewBox2.OnFreshExtendContent = (ImageViewBox.FreshExtendContent)Delegate.Remove(imageViewBox2.OnFreshExtendContent, new ImageViewBox.FreshExtendContent(imageView_OnFreshExtendContent));
+	}
+
+	private void InitRenderControl(IVmModule newModule)
+	{
+		ModuleParams = VmSolution.Instance[(ModuleSource as IVmFullPath).FullPath + ".[Display]"] as ParamRoot;
+		ImageListDecorator = new DisplayImageListDecorator
+		{
+			DecorateSource = ModuleSource,
+			ParentUI = this
+		};
+		if (ModuleParams == null || ImageListDecorator == null)
+		{
+			return;
+		}
+		IList<object> displayList = ModuleParams.GetDisplayList();
+		if (displayList != null)
+		{
+			CollectionChangedEventManager.AddHandler(displayList as INotifyCollectionChanged, shapes_CollectionChanged);
+			foreach (Apps.XmlParser.Object item in displayList)
+			{
+				if (item.Type != "image" && item.Type != "pixelinfoimage")
+				{
+					item.SetOutputFilter();
+					WeakEventManager<Apps.XmlParser.Object, EventArgs>.AddHandler(item, "ValueChanged", P_ValueChanged);
+				}
+			}
+		}
+		ExecuteCount = newModule.ExecuteCount;
+		ImageListDecorator.RefreshImageList();
+	}
+
+	private void shapes_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action == NotifyCollectionChangedAction.Add)
+		{
+			foreach (DynamicObject item in e.NewItems.OfType<DynamicObject>())
+			{
+				ImageListDecorator?.RefreshImageList();
+				WeakEventManager<DynamicObject, EventArgs>.AddHandler(item, "ValueChanged", P_ValueChanged);
+				WeakEventManager<DynamicObject, EventArgs>.AddHandler(item, "MappingChanged", Shape_MappingChanged);
+			}
+			return;
+		}
+		if (e.Action != NotifyCollectionChangedAction.Remove)
+		{
+			return;
+		}
+		foreach (DynamicObject item2 in e.OldItems.OfType<DynamicObject>())
+		{
+			ImageListDecorator?.RefreshImageList();
+			WeakEventManager<DynamicObject, EventArgs>.RemoveHandler(item2, "ValueChanged", P_ValueChanged);
+			WeakEventManager<DynamicObject, EventArgs>.RemoveHandler(item2, "MappingChanged", Shape_MappingChanged);
+		}
+	}
+
+	private void Shape_MappingChanged(object sender, EventArgs e)
+	{
+		DynamicObject source = sender as DynamicObject;
+		WeakEventManager<DynamicObject, EventArgs>.RemoveHandler(source, "ValueChanged", P_ValueChanged);
+		WeakEventManager<DynamicObject, EventArgs>.AddHandler(source, "ValueChanged", P_ValueChanged);
+	}
+
+	private void DeInitRenderControl(IVmModule oldModule)
+	{
+		if (ModuleParams != null)
+		{
+			IList<object> displayList = ModuleParams.GetDisplayList();
+			if (displayList != null)
+			{
+				CollectionChangedEventManager.RemoveHandler(displayList as INotifyCollectionChanged, shapes_CollectionChanged);
+				IEnumerable<DynamicObject> source = displayList.OfType<DynamicObject>();
+				source.ToList().ForEach((DynamicObject p) =>
+				{
+					WeakEventManager<DynamicObject, EventArgs>.RemoveHandler(p, "MappingChanged", Shape_MappingChanged);
+					WeakEventManager<DynamicObject, EventArgs>.RemoveHandler(p, "ValueChanged", P_ValueChanged);
+				});
+				foreach (Apps.XmlParser.Object item in displayList)
+				{
+					if (item.Type != "image" && item.Type != "pixelinfoimage")
+					{
+						item.RemoveOutputFilter();
+						WeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(item, "ValueChanged", P_ValueChanged);
+					}
+				}
+			}
+		}
+		ModuleParams = null;
+		ImageListDecorator?.Dispose();
+		lock (_imageslock)
+		{
+			tempImageStore.Clear();
+		}
+		lock (_shapelock)
+		{
+			tempShapeStore.Clear();
+		}
+		if (renderStatusModule != null)
+		{
+			WeakEventManager<IVmModule, EventArgs>.RemoveHandler(renderStatusModule, "ModuleResultCallBackArrived", RenderStatusModule_ModuleResultCallBackArrived);
+			renderStatusModule.SubscribeCount--;
+			renderStatusModule = null;
+			renderStatus = RenderSatus.ALL;
+		}
+	}
+
+	internal void P_ValueChanged(object sender, EventArgs e)
+	{
+		try
+		{
+			if (e is ValueEventArgs e2)
+			{
+				if (e2.ExecuteCount != ExecuteCount)
+				{
+					ExecuteCount = e2.ExecuteCount;
+				}
+				if (e2.ValueType == "image" || e2.ValueType == "pixelinfoimage")
+				{
+					if (!(sender is Apps.XmlParser.Object obj))
+					{
+						return;
+					}
+					lock (_imageslock)
+					{
+						if (ImageListDecorator?.SelectedImage?.DisplayObject == obj)
+						{
+							if (tempImageStore.ContainsKey("SelectedImage"))
+							{
+								tempImageStore["SelectedImage"] = e2.Value;
+							}
+							else
+							{
+								tempImageStore.Add("SelectedImage", e2.Value);
+							}
+						}
+						if (ImageListDecorator?.SelectedInputImage?.DisplayObject == obj)
+						{
+							if (tempImageStore.ContainsKey("SelectedInputImage"))
+							{
+								tempImageStore["SelectedInputImage"] = e2.Value;
+							}
+							else
+							{
+								tempImageStore.Add("SelectedInputImage", e2.Value);
+							}
+						}
+						return;
+					}
+				}
+				Apps.XmlParser.Object obj2 = sender as Apps.XmlParser.Object;
+				if (obj2 == null || !obj2.IsDisplayA)
+				{
+					return;
+				}
+				lock (_shapelock)
+				{
+					if (tempShapeStore.ContainsKey(sender))
+					{
+						tempShapeStore[sender] = e2;
+					}
+					else
+					{
+						tempShapeStore.Add(sender, e2);
+					}
+					return;
+				}
+			}
+			if (e != null && !((IVmSolution)VmSolution.Instance).IsRunning)
+			{
+				UpdateVMResultShow();
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+		}
+	}
+
+	private void OnModuleResultCallBackArrived(object sender, EventArgs e)
+	{
+		ValueEventArgs valueEventArgs;
+		if ((valueEventArgs = e as ValueEventArgs) == null)
+		{
+			return;
+		}
+		if (valueEventArgs.Value is ImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX_Data { bIsSelfExecute: 1u })
+		{
+			if (!needUpdateRender)
+			{
+				needUpdateRender = true;
+				if (tempImageStore.ContainsKey("SelectedImage"))
+				{
+					lock (_imageslock)
+					{
+						tempImageStore["SelectedImage"] = null;
+					}
+				}
+				lock (_shapelock)
+				{
+					tempShapeStore.Clear();
+					return;
+				}
+			}
+			Task.Run(() =>
+			{
+				try
+				{
+					uint executeCount = valueEventArgs.ExecuteCount;
+					while (Apps.XmlParser.Object.GetDataSendFinishState(OwnerProcessID, executeCount))
+					{
+						Thread.Sleep(3);
+					}
+					UpdateRenderAfterSelfExecute(sender);
+				}
+				catch (Exception ex)
+				{
+					LogHelper.Error("渲染异常：" + ex.Message + ex.StackTrace);
+				}
+			});
+		}
+		Dispatcher.BeginInvoke((BeginInvokeDelegate)(() =>
+		{
+			ImageViewBox imageViewBox = (IsShowDoubleImage ? imageViewIn : imageView);
+			if (imageViewBox.ROIVisible && !imageViewBox.IsDragROI)
+			{
+				UpdateRoi();
+			}
+		}));
+	}
+
+	private void OnPreduceResultCallBackArrived(object sender, EventArgs e)
+	{
+		ValueEventArgs valueEventArgs;
+		if ((valueEventArgs = e as ValueEventArgs) == null || !(valueEventArgs.Value is ImvsSdkDefine.IMVS_MODULE_WORK_STAUS { nWorkStatus: 0u } iMVS_MODULE_WORK_STAUS))
+		{
+			return;
+		}
+		if (!needUpdateRender)
+		{
+			needUpdateRender = true;
+			if (tempImageStore.ContainsKey("SelectedImage"))
+			{
+				lock (_imageslock)
+				{
+					tempImageStore["SelectedImage"] = null;
+				}
+			}
+			lock (_shapelock)
+			{
+				tempShapeStore.Clear();
+				return;
+			}
+		}
+		lock (_shapelock)
+		{
+			List<object> list = tempShapeStore.Keys.ToList();
+			foreach (object item in list)
+			{
+				if (tempShapeStore.ContainsKey(item) && tempShapeStore[item] is ValueEventArgs e2 && e2.ExecuteCount != iMVS_MODULE_WORK_STAUS.nExecuteCount)
+				{
+					tempShapeStore.Remove(item);
+				}
+			}
+		}
+		long timestamp = Stopwatch.GetTimestamp();
+		if (!IsNeedRender(timestamp))
+		{
+			return;
+		}
+		oldTimeStamp = timestamp;
+		Task.Run(() =>
+		{
+			try
+			{
+				uint executeCount = valueEventArgs.ExecuteCount;
+				if (executeCount == 0)
+				{
+					UpdateImageView(null);
+				}
+				else
+				{
+					while (Apps.XmlParser.Object.GetDataSendFinishState(OwnerProcessID, executeCount))
+					{
+						Thread.Sleep(3);
+					}
+					UpdateRender(executeCount);
+				}
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error("渲染异常：" + ex.Message + ex.StackTrace);
+			}
+		});
+	}
+
+	private void UpdateRender(uint excuteCount)
+	{
+		ImageData imageData = (tempImageStore.ContainsKey("SelectedImage") ? (tempImageStore["SelectedImage"] as ImageData) : null);
+		if (imageData != ImageDataSource)
+		{
+			if (imageData == null && ImageListDecorator?.SelectedImage?.DisplayObject is Apps.XmlParser.Object obj && (obj.Owner as IVmModule)?.ExecuteCount == ExecuteCount)
+			{
+				imageData = obj.GetValue(uint.MaxValue) as ImageData;
+			}
+			if (imageData == null)
+			{
+				LogHelper.Debug($"VmRenderControl:UpdateRender set imageData is null,ExecuteCount = {excuteCount}");
+			}
+			ImageDataSource = imageData;
+			if (tempImageStore.ContainsKey("SelectedImage"))
+			{
+				lock (_imageslock)
+				{
+					tempImageStore["SelectedImage"] = null;
+					return;
+				}
+			}
+			return;
+		}
+		if (tempImageStore.ContainsKey("SelectedInputImage"))
+		{
+			ImageData imageData2 = tempImageStore["SelectedInputImage"] as ImageData;
+			ImageDataSourceIn = imageData2;
+			lock (_imageslock)
+			{
+				tempImageStore.Remove("SelectedInputImage");
+			}
+		}
+		shapeBuffer.Clear();
+	}
+
+	private void UpdateRenderAfterSelfExecute(object moduleSource)
+	{
+		ImageData imageData = (tempImageStore.ContainsKey("SelectedImage") ? (tempImageStore["SelectedImage"] as ImageData) : null);
+		if (imageData != ImageDataSource && imageData != null)
+		{
+			ImageDataSource = imageData;
+			lock (_imageslock)
+			{
+				tempImageStore.Clear();
+				return;
+			}
+		}
+		if (imageData == null && ImageListDecorator?.SelectedImage?.DisplayValue is IVmIO vmIO && vmIO.Owner == moduleSource && imageData != ImageDataSource)
+		{
+			ImageDataSource = imageData;
+		}
+		else if (ImageDataSource == null && ImageListDecorator?.SelectedImage?.DisplayObject is Apps.XmlParser.Object obj)
+		{
+			if (obj.GetValue(uint.MaxValue) is ImageData imageData2)
+			{
+				ImageDataSource = imageData2;
+			}
+		}
+		else
+		{
+			Dispatcher.BeginInvoke((BeginInvokeDelegate)(() =>
+			{
+				UpdateShapesWithCallBackData(tempShapeStore, tempImageStore);
+			}));
+		}
+	}
+
+	private void imageView_OnSetImageEnd(object sender, string msg)
+	{
+		try
+		{
+			bool result = true;
+			if (bool.TryParse(msg, out result) && !result)
+			{
+				return;
+			}
+			UpdateShapesWithCallBackData();
+			if (IsShowDoubleImage && tempImageStore.ContainsKey("SelectedInputImage"))
+			{
+				ImageData imageData = tempImageStore["SelectedInputImage"] as ImageData;
+				ImageDataSourceIn = imageData;
+				lock (_imageslock)
+				{
+					tempImageStore.Remove("SelectedInputImage");
+					return;
+				}
+			}
+		}
+		catch (Exception)
+		{
+		}
+		finally
+		{
+		}
+	}
+
+	private void UpdateShapesWithCallBackData(Dictionary<object, object> shapeStore = null, Dictionary<string, object> imageStore = null)
+	{
+		Dictionary<object, object> dictionary = shapeStore ?? tempShapeStore;
+		imageView.ClearExternShapes();
+		ShapeList.Clear();
+		bool flag = false;
+		lock (_shapelock)
+		{
+			foreach (KeyValuePair<object, object> item in dictionary)
+			{
+				Apps.XmlParser.Object obj = item.Key as Apps.XmlParser.Object;
+				ValueEventArgs e = item.Value as ValueEventArgs;
+				List<object> shapes = e.Value as List<object>;
+				DrawCurModuleUIResult(e.ValueType, shapes, obj.IsLowQuality);
+				if (e.ValueType == "text")
+				{
+					flag = true;
+				}
+			}
+			tempShapeStore.Clear();
+			dictionary = null;
+		}
+		if (!flag && (ModuleParams?.GetDisplayList())?.FirstOrDefault((object p) => p is Apps.XmlParser.Object obj3 && obj3.TypeA == "text") is Apps.XmlParser.Object { IsDisplay: not false } obj2)
+		{
+			List<object> shapes2 = obj2.GetValue(uint.MaxValue) as List<object>;
+			DrawCurModuleUIResult(obj2.Type, shapes2);
+		}
+		DrawShapesInShapeBuffer();
+		UpdateCheckImages(imageStore);
+	}
+
+	private void DrawShapesInShapeBuffer()
+	{
+		try
+		{
+			if (shapeBuffer.Count <= 0)
+			{
+				return;
+			}
+			List<object> list = shapeBuffer.ToList();
+			foreach (object item in list)
+			{
+				if (item is IMultiPoint multiPoint)
+				{
+					int count = multiPoint.MicroPoints.Count;
+					if (!shapeList.Any((object p) => p is IMultiPoint))
+					{
+						MultiPoint multiPoint2 = new MultiPoint();
+						shapeList.Add(multiPoint2);
+						multiPoint2.OutlinePoints = new ObservableCollection<IOutlinePoint>();
+						multiPoint2.MicroPoints = new ObservableCollection<IMicroPoint>();
+						multiPoint2.Rectangles = new ObservableCollection<IRectangle>();
+					}
+					if (shapeList.FirstOrDefault((object p) => p is IMultiPoint) is IMultiPoint multiPoint3)
+					{
+						for (int num = 0; num < count; num++)
+						{
+							multiPoint3.MicroPoints.Add(multiPoint.MicroPoints[num]);
+						}
+						imageView.NeedRefreshShapes = true;
+					}
+				}
+				else
+				{
+					ShapeList.Add(item);
+				}
+			}
+		}
+		catch (Exception)
+		{
+		}
+		finally
+		{
+			shapeBuffer.Clear();
+		}
+	}
+
+	/// <summary>
+	/// 清空模块结果显示内容
+	/// </summary>
+	public void ClearImageView(int index = 1)
+	{
+		if (index == 1)
+		{
+			imageView.Init();
+			UpdateImageView(null);
+		}
+		else
+		{
+			imageViewIn.Init();
+			ImageDataSourceIn = null;
+		}
+	}
+
+	/// <summary>
+	/// 更新模块结果显示
+	/// </summary>
+	public void UpdateVMResultShow()
+	{
+		try
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (ModuleSource != null && ModuleParams != null)
+				{
+					IList<object> list = null;
+					if ((list = ModuleParams.GetDisplayList()) != null)
+					{
+						ImageData imageData = null;
+						if (ImageListDecorator?.SelectedImage != null && ImageListDecorator.SelectedImage.DisplayObject is Apps.XmlParser.Object obj)
+						{
+							imageData = (ImageData)obj.GetValue(uint.MaxValue);
+						}
+						else
+						{
+							foreach (Apps.XmlParser.Object item in list)
+							{
+								if (item.Type == "image" || item.Type == "pixelinfoimage")
+								{
+									imageData = (ImageData)item.GetValue(uint.MaxValue);
+									break;
+								}
+							}
+						}
+						UpdateImageView(imageData);
+						foreach (Apps.XmlParser.Object item2 in list)
+						{
+							if (item2.IsDisplay && item2.Type != "image" && item2.Type != "pixelinfoimage")
+							{
+								List<object> shapes = item2.GetValue(uint.MaxValue) as List<object>;
+								DrawCurModuleUIResult(item2.Type, shapes, item2.IsLowQuality);
+							}
+						}
+						DrawShapesInShapeBuffer();
+						imageView.NeedRefreshShapes = true;
+						UpdateCheckImages();
+						ImageViewBox imageViewBox = (IsShowDoubleImage ? imageViewIn : imageView);
+						if (imageViewBox.ROIVisible && !imageViewBox.IsDragROI)
+						{
+							UpdateRoi();
+						}
+					}
+				}
+			});
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+		}
+	}
+
+	/// <summary>
+	/// 更新图像
+	/// </summary>
+	/// <param name="imageData"></param>
+	private void UpdateImageView(ImageData imageData)
+	{
+		try
+		{
+			imageView.ClearExternShapes();
+			ShapeList.Clear();
+			ImageDataSource = imageData;
+		}
+		catch
+		{
+		}
+	}
+
+	private void DrawCurModuleUIResult(string shapeType, List<object> shapes, bool isLowQuality = false)
+	{
+		try
+		{
+			if (!ShapeList.Any((object p) => p is IMultiPoint))
+			{
+				MultiPoint multiPoint = new MultiPoint();
+				ShapeList.Add(multiPoint);
+				multiPoint.OutlinePoints = new ObservableCollection<IOutlinePoint>();
+				multiPoint.MicroPoints = new ObservableCollection<IMicroPoint>();
+				multiPoint.Rectangles = new ObservableCollection<IRectangle>();
+			}
+			switch (shapeType)
+			{
+			case "hsilist":
+				break;
+			case "sampleimage":
+				break;
+			case "imagetitle":
+				break;
+			case "path":
+			{
+				ArrowPath arrowPath = Path.GetArrowPath(shapes);
+				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { arrowPath }, ShapeList, imageView);
+				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
+				break;
+			}
+			case "polyline":
+			{
+				Polyline polyline = Polyline.GetPolyline(shapes);
+				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(new List<object> { polyline }, ShapeList, imageView);
+				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
+				break;
+			}
+			default:
+				VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.DrawShapes(shapes, ShapeList, imageView);
+				break;
+			}
+		}
+		catch
+		{
+		}
+	}
+
+	public void DrawShapes(object shape)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			try
+			{
+				if (shape != null && imageView != null)
+				{
+					AddShapeToList(shape, ShapeList);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+		});
+	}
+
+	public void AddShapes(object shape)
+	{
+		try
+		{
+			if (shape != null && imageView != null)
+			{
+				AddShapeToList(shape, shapeBuffer);
+			}
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show(ex.Message);
+		}
+	}
+
+	private void AddShapeToList(object shape, IList<object> shapeList)
+	{
+		if (shape is ICircle { Stroke: var color, Opacity: var opacity, StrokeThickness: var strokeThickness } circle)
+		{
+			Pretreatment(ref color, ref opacity, ref strokeThickness);
+			Apps.Data.ShapeDefine.Circle circle2 = new Apps.Data.ShapeDefine.Circle();
+			circle2.CenterX = (float)circle.CenterPoint.X;
+			circle2.CenterY = (float)circle.CenterPoint.Y;
+			circle2.MajorRadius = (float)circle.Radius;
+			circle2.MinorRadius = (float)circle.Radius;
+			circle2.Color = color;
+			circle2.FillColor = circle.Fill;
+			circle2.Opacity = opacity;
+			circle2.StrokeThickness = strokeThickness;
+			shapeList.Add(circle2);
+		}
+		else if (shape is IAnnularSector { Stroke: var color2, Opacity: var opacity2, StrokeThickness: var strokeThickness2 } annularSector)
+		{
+			Pretreatment(ref color2, ref opacity2, ref strokeThickness2);
+			AnnularSector annularSector2 = new AnnularSector();
+			annularSector2.CenterX = (float)annularSector.CenterPoint.X;
+			annularSector2.CenterY = (float)annularSector.CenterPoint.Y;
+			annularSector2.InnerRadius = (float)annularSector.InnerRadius;
+			annularSector2.OuterRadius = (float)annularSector.OuterRadius;
+			annularSector2.StartAngle = (float)annularSector.StartAngle;
+			annularSector2.AngleRange = (float)annularSector.AngleRange;
+			annularSector2.Color = color2;
+			annularSector2.FillColor = annularSector.Fill;
+			annularSector2.Opacity = opacity2;
+			annularSector2.StrokeThickness = strokeThickness2;
+			shapeList.Add(annularSector2);
+		}
+		else if (shape is IEllipse { Stroke: var color3, Opacity: var opacity3, StrokeThickness: var strokeThickness3 } ellipse)
+		{
+			Pretreatment(ref color3, ref opacity3, ref strokeThickness3);
+			Apps.Data.ShapeDefine.Ellipse ellipse2 = new Apps.Data.ShapeDefine.Ellipse();
+			ellipse2.CenterX = (float)ellipse.CenterPoint.X;
+			ellipse2.CenterY = (float)ellipse.CenterPoint.Y;
+			ellipse2.MajorRadius = (float)ellipse.MajorRadius;
+			ellipse2.MinorRadius = (float)ellipse.MinorRadius;
+			ellipse2.Angle = (float)ellipse.Angle;
+			ellipse2.Color = color3;
+			ellipse2.FillColor = ellipse.Fill;
+			ellipse2.Opacity = opacity3;
+			ellipse2.StrokeThickness = strokeThickness3;
+			shapeList.Add(ellipse2);
+		}
+		else if (shape is IText { Stroke: var color4, Opacity: var opacity4 } text)
+		{
+			double strokeThickness4 = 1.0;
+			Pretreatment(ref color4, ref opacity4, ref strokeThickness4);
+			Text text2 = new Text();
+			text2.PositionX = (float)text.Position.X;
+			text2.PositionY = (float)text.Position.Y;
+			text2.Content = text.Content;
+			text2.FontSize = ((text.FontSize == 0) ? 10 : text.FontSize);
+			text2.Color = color4;
+			text2.Opacity = opacity4;
+			text2.StrokeThickness = strokeThickness4;
+			List<object> list = new List<object>();
+			list.Add(text2);
+			object item = VMBaseControls.Base.ImageView.Shape.DrawShapeHelper.PretreatTexts(list);
+			shapeList.Add(item);
+		}
+		else if (shape is ILine { Stroke: var color5, Opacity: var opacity5, StrokeThickness: var strokeThickness5 } line)
+		{
+			Pretreatment(ref color5, ref opacity5, ref strokeThickness5);
+			Apps.Data.ShapeDefine.Line line2 = new Apps.Data.ShapeDefine.Line();
+			line2.StartLineX = (float)line.StartPoint.X;
+			line2.StartLineY = (float)line.StartPoint.Y;
+			line2.EndLineX = (float)line.EndPoint.X;
+			line2.EndLineY = (float)line.EndPoint.Y;
+			line2.Color = color5;
+			line2.FillColor = line.Fill;
+			line2.Opacity = opacity5;
+			line2.StrokeThickness = strokeThickness5;
+			line2.IsThroughLine = line.IsThroughLine;
+			shapeList.Add(line2);
+		}
+		else if (shape is IRectangle { Stroke: var color6, Opacity: var opacity6, StrokeThickness: var strokeThickness6 } rectangle)
+		{
+			Pretreatment(ref color6, ref opacity6, ref strokeThickness6);
+			Apps.Data.ShapeDefine.Rect rect = new Apps.Data.ShapeDefine.Rect();
+			rect.Width = (float)rectangle.Width;
+			rect.Height = (float)rectangle.Height;
+			rect.Angle = (float)rectangle.Angle;
+			rect.SkewAngleX = (float)rectangle.SkewAngleX;
+			rect.CenterX = (float)rectangle.CenterPoint.X;
+			rect.CenterY = (float)rectangle.CenterPoint.Y;
+			rect.Color = color6;
+			rect.FillColor = rectangle.Fill;
+			rect.Opacity = opacity6;
+			rect.StrokeThickness = strokeThickness6;
+			shapeList.Add(rect);
+		}
+		else if (shape is IPoint { Stroke: var color7, Opacity: var opacity7, StrokeThickness: var strokeThickness7 } point)
+		{
+			Pretreatment(ref color7, ref opacity7, ref strokeThickness7);
+			Apps.Data.ShapeDefine.Point point2 = new Apps.Data.ShapeDefine.Point();
+			point2.CenterX = (float)point.Point.X;
+			point2.CenterY = (float)point.Point.Y;
+			point2.Color = color7;
+			point2.FillColor = point.Fill;
+			point2.Opacity = opacity7;
+			point2.StrokeThickness = strokeThickness7;
+			shapeList.Add(point2);
+		}
+		else if (shape is IPointSet pointSet)
+		{
+			DrawPointSet(shapeList, pointSet);
+		}
+		else if (shape is IOutlinePoint outlinePoint)
+		{
+			DrawOutlinePoint(shapeList, outlinePoint);
+		}
+		else if (shape is IPolygon { Stroke: var color8, Opacity: var opacity8, StrokeThickness: var strokeThickness8 } polygon)
+		{
+			Pretreatment(ref color8, ref opacity8, ref strokeThickness8);
+			Apps.Data.ShapeDefine.Polygon polygon2 = new Apps.Data.ShapeDefine.Polygon();
+			if (polygon.Points != null)
+			{
+				foreach (System.Windows.Point point3 in polygon.Points)
+				{
+					polygon2.PolygonPoints.Add(point3);
+				}
+				polygon2.Color = color8;
+				polygon2.FillColor = polygon.Fill;
+				polygon2.Opacity = opacity8;
+				polygon2.StrokeThickness = strokeThickness8;
+			}
+			shapeList.Add(polygon2);
+		}
+		else if (shape is IPolyline polyline)
+		{
+			DrawPolyline(shapeList, polyline);
+		}
+	}
+
+	private void Pretreatment(ref string color, ref double opacity, ref double strokeThickness)
+	{
+		if (color == null)
+		{
+			color = "#" + VMColors.Green.ToString("X");
+		}
+		if (opacity == 0.0)
+		{
+			opacity = 1.0;
+		}
+		if (strokeThickness == 0.0)
+		{
+			strokeThickness = 1.0;
+		}
+	}
+
+	public void DrawCppShapes(object shape, bool isAddShape)
+	{
+		try
+		{
+			object obj = new object();
+			obj = ThirdDataConvert(shape);
+			if (isAddShape)
+			{
+				AddShapes(obj);
+			}
+			else
+			{
+				DrawShapes(obj);
+			}
+		}
+		catch (Exception)
+		{
+			throw;
+		}
+	}
+
+	/// <summary>
+	/// 获取基础句柄
+	/// </summary>
+	/// <returns></returns>
+	public long GetBaseHandle()
+	{
+		TempVmSolution.Init();
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	/// <summary>
+	/// 根据渲染控件绑定ID
+	/// </summary>
+	/// <returns></returns>
+	public void BindRenderById(uint Id)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			VmModule moduleByID = VmSolution.Instance.GetModuleByID(Id);
+			if (moduleByID != null)
+			{
+				ModuleSource = moduleByID;
+			}
+		});
+	}
+
+	private object ThirdDataConvert(object objInput)
+	{
+		try
+		{
+			if (objInput is PointSetIn)
+			{
+				PointSetEx pointSetEx = new PointSetEx
+				{
+					PointList = new List<System.Windows.Point>()
+				};
+				PointSetIn pointSetIn = (PointSetIn)objInput;
+				pointSetEx.Stroke = pointSetIn.Color;
+				pointSetEx.Fill = pointSetIn.FillColor;
+				pointSetEx.Opacity = pointSetIn.Opacity;
+				pointSetEx.StrokeThickness = pointSetIn.StrokeThickness;
+				pointSetEx.PointNum = pointSetIn.PointNum;
+				PointEx[] array = new PointEx[pointSetIn.PointNum];
+				array = ExternalCallHelper.IntPtr2Structures<PointEx>(pointSetIn.PointListPtr, pointSetIn.PointNum);
+				for (int i = 0; i < pointSetIn.PointNum; i++)
+				{
+					pointSetEx.PointList.Add(((IPoint)array[i]).Point);
+				}
+				return pointSetEx;
+			}
+			if (objInput is PointSetInOld)
+			{
+				PointSetEx pointSetEx2 = new PointSetEx
+				{
+					PointList = new List<System.Windows.Point>()
+				};
+				PointSetInOld pointSetInOld = (PointSetInOld)objInput;
+				pointSetEx2.Stroke = "#" + pointSetInOld.Color.ToString("X6");
+				pointSetEx2.Fill = "#" + pointSetInOld.FillColor.ToString("X8");
+				pointSetEx2.Opacity = pointSetInOld.Opacity;
+				pointSetEx2.StrokeThickness = pointSetInOld.StrokeThickness;
+				pointSetEx2.PointNum = pointSetInOld.PointNum;
+				PointExOld[] array2 = new PointExOld[pointSetInOld.PointNum];
+				PointEx[] array3 = new PointEx[pointSetInOld.PointNum];
+				array2 = ExternalCallHelper.IntPtr2Structures<PointExOld>(pointSetInOld.PointListPtr, pointSetInOld.PointNum);
+				for (int j = 0; j < pointSetInOld.PointNum; j++)
+				{
+					array3[j].CenterX = array2[j].CenterX;
+					array3[j].CenterY = array2[j].CenterY;
+					array3[j].StrokeThickness = array2[j].StrokeThickness;
+					array3[j].Opacity = array2[j].Opacity;
+					array3[j].Stroke = "#" + array2[j].Color.ToString("X6");
+					array3[j].Fill = "#" + array2[j].FillColor.ToString("X8");
+					array3[j].ToolTip = "(" + array2[j].CenterX + "," + array3[j].CenterY + ")";
+				}
+				for (int k = 0; k < pointSetInOld.PointNum; k++)
+				{
+					pointSetEx2.PointList.Add(((IPoint)array3[k]).Point);
+				}
+				return pointSetEx2;
+			}
+			if (objInput is PolygonIn)
+			{
+				PolygonEx polygonEx = new PolygonEx
+				{
+					Points = new List<System.Windows.Point>()
+				};
+				PolygonIn polygonIn = (PolygonIn)objInput;
+				polygonEx.Stroke = polygonIn.Color;
+				polygonEx.Fill = polygonIn.FillColor;
+				polygonEx.Opacity = polygonIn.Opacity;
+				polygonEx.StrokeThickness = polygonIn.StrokeThickness;
+				polygonEx.PolygonPointNum = polygonIn.PolygonPointNum;
+				PointEx[] array4 = new PointEx[polygonIn.PolygonPointNum];
+				array4 = ExternalCallHelper.IntPtr2Structures<PointEx>(polygonIn.PolygonPointListPtr, polygonIn.PolygonPointNum);
+				for (int l = 0; l < polygonIn.PolygonPointNum; l++)
+				{
+					polygonEx.Points.Add(new System.Windows.Point(array4[l].CenterX, array4[l].CenterY));
+				}
+				return polygonEx;
+			}
+			if (objInput is PolygonInOld)
+			{
+				PolygonEx polygonEx2 = new PolygonEx
+				{
+					Points = new List<System.Windows.Point>()
+				};
+				PolygonInOld polygonInOld = (PolygonInOld)objInput;
+				polygonEx2.Stroke = "#" + polygonInOld.Color.ToString("X6");
+				polygonEx2.Fill = "#" + polygonInOld.FillColor.ToString("X8");
+				polygonEx2.Opacity = polygonInOld.Opacity;
+				polygonEx2.StrokeThickness = polygonInOld.StrokeThickness;
+				polygonEx2.PolygonPointNum = polygonInOld.PolygonPointNum;
+				PointEx[] array5 = new PointEx[polygonInOld.PolygonPointNum];
+				PointExOld[] array6 = new PointExOld[polygonInOld.PolygonPointNum];
+				array6 = ExternalCallHelper.IntPtr2Structures<PointExOld>(polygonInOld.PolygonPointListPtr, polygonInOld.PolygonPointNum);
+				for (int m = 0; m < polygonInOld.PolygonPointNum; m++)
+				{
+					array5[m].CenterX = array6[m].CenterX;
+					array5[m].CenterY = array6[m].CenterY;
+					array5[m].StrokeThickness = array6[m].StrokeThickness;
+					array5[m].Opacity = array6[m].Opacity;
+					array5[m].Stroke = "#" + array6[m].Color.ToString("X6");
+					array5[m].Fill = "#" + array6[m].FillColor.ToString("X8");
+					array5[m].ToolTip = "(" + array6[m].CenterX + "," + array5[m].CenterY + ")";
+				}
+				for (int n = 0; n < polygonInOld.PolygonPointNum; n++)
+				{
+					polygonEx2.Points.Add(new System.Windows.Point(array5[n].CenterX, array5[n].CenterY));
+				}
+				return polygonEx2;
+			}
+			if (objInput is PolylineIn)
+			{
+				PolylineEx polylineEx = new PolylineEx
+				{
+					PolylinePointList = new List<System.Windows.Point>()
+				};
+				PolylineIn polylineIn = (PolylineIn)objInput;
+				polylineEx.Stroke = polylineIn.Color;
+				polylineEx.Fill = polylineIn.FillColor;
+				polylineEx.Opacity = polylineIn.Opacity;
+				polylineEx.StrokeThickness = polylineIn.StrokeThickness;
+				polylineEx.PolylinePointNum = polylineIn.PolylinePointNum;
+				PointEx[] array7 = new PointEx[polylineIn.PolylinePointNum];
+				array7 = ExternalCallHelper.IntPtr2Structures<PointEx>(polylineIn.PolylinePointListPtr, polylineIn.PolylinePointNum);
+				for (int num = 0; num < polylineIn.PolylinePointNum; num++)
+				{
+					polylineEx.PolylinePointList.Add(((IPoint)array7[num]).Point);
+				}
+				return polylineEx;
+			}
+			if (objInput is PolylineInOld)
+			{
+				PolylineEx polylineEx2 = new PolylineEx
+				{
+					PolylinePointList = new List<System.Windows.Point>()
+				};
+				PolylineInOld polylineInOld = (PolylineInOld)objInput;
+				polylineEx2.Stroke = "#" + polylineInOld.Color.ToString("X6");
+				polylineEx2.Fill = "#" + polylineInOld.FillColor.ToString("X8");
+				polylineEx2.Opacity = polylineInOld.Opacity;
+				polylineEx2.StrokeThickness = polylineInOld.StrokeThickness;
+				polylineEx2.PolylinePointNum = polylineInOld.PolylinePointNum;
+				PointEx[] array8 = new PointEx[polylineInOld.PolylinePointNum];
+				PointExOld[] array9 = new PointExOld[polylineInOld.PolylinePointNum];
+				array9 = ExternalCallHelper.IntPtr2Structures<PointExOld>(polylineInOld.PolylinePointListPtr, polylineInOld.PolylinePointNum);
+				for (int num2 = 0; num2 < polylineInOld.PolylinePointNum; num2++)
+				{
+					array8[num2].CenterX = array9[num2].CenterX;
+					array8[num2].CenterY = array9[num2].CenterY;
+					array8[num2].StrokeThickness = array9[num2].StrokeThickness;
+					array8[num2].Opacity = array9[num2].Opacity;
+					array8[num2].Stroke = "#" + array9[num2].Color.ToString("X6");
+					array8[num2].Fill = "#" + array9[num2].FillColor.ToString("X8");
+					array8[num2].ToolTip = "(" + array9[num2].CenterX + "," + array8[num2].CenterY + ")";
+				}
+				for (int num3 = 0; num3 < polylineInOld.PolylinePointNum; num3++)
+				{
+					polylineEx2.PolylinePointList.Add(((IPoint)array8[num3]).Point);
+				}
+				return polylineEx2;
+			}
+			if (objInput is CircleIn)
+			{
+				CircleEx circleEx = default;
+				CircleIn circleIn = (CircleIn)objInput;
+				circleEx.Stroke = circleIn.Color;
+				circleEx.Fill = circleIn.FillColor;
+				circleEx.Opacity = circleIn.Opacity;
+				circleEx.StrokeThickness = circleIn.StrokeThickness;
+				circleEx.CenterPoint = new System.Windows.Point(circleIn.CenterX, circleIn.CenterY);
+				circleEx.Radius = circleIn.MajorRadius;
+				return circleEx;
+			}
+			if (objInput is EllipseIn)
+			{
+				EllipseEx ellipseEx = default;
+				EllipseIn ellipseIn = (EllipseIn)objInput;
+				ellipseEx.Stroke = ellipseIn.Color;
+				ellipseEx.Fill = ellipseIn.FillColor;
+				ellipseEx.Opacity = ellipseIn.Opacity;
+				ellipseEx.StrokeThickness = ellipseIn.StrokeThickness;
+				ellipseEx.CenterPoint = new System.Windows.Point(ellipseIn.CenterX, ellipseIn.CenterY);
+				ellipseEx.MajorRadius = ellipseIn.MajorRadius;
+				ellipseEx.MinorRadius = ellipseIn.MinorRadius;
+				ellipseEx.Angle = ellipseIn.Angle;
+				return ellipseEx;
+			}
+			if (objInput is AnnularSectorIn)
+			{
+				AnnularSectorEx annularSectorEx = default;
+				AnnularSectorIn annularSectorIn = (AnnularSectorIn)objInput;
+				annularSectorEx.Stroke = annularSectorIn.Color;
+				annularSectorEx.Fill = annularSectorIn.FillColor;
+				annularSectorEx.Opacity = annularSectorIn.Opacity;
+				annularSectorEx.StrokeThickness = annularSectorIn.StrokeThickness;
+				annularSectorEx.CenterX = annularSectorIn.CenterX;
+				annularSectorEx.CenterY = annularSectorIn.CenterY;
+				annularSectorEx.AngleRange = annularSectorIn.AngleRange;
+				annularSectorEx.InnerRadius = annularSectorIn.InnerRadius;
+				annularSectorEx.OuterRadius = annularSectorIn.OuterRadius;
+				annularSectorEx.StartAngle = annularSectorIn.StartAngle;
+				return annularSectorEx;
+			}
+			if (objInput is LineIn)
+			{
+				LineEx lineEx = default;
+				LineIn lineIn = (LineIn)objInput;
+				lineEx.Stroke = lineIn.Color;
+				lineEx.Fill = lineIn.FillColor;
+				lineEx.Opacity = lineIn.Opacity;
+				lineEx.StrokeThickness = lineIn.StrokeThickness;
+				lineEx.EndPointX = lineIn.EndPointX;
+				lineEx.EndPointY = lineIn.EndPointY;
+				lineEx.StartPointX = lineIn.StartPointX;
+				lineEx.StartPointY = lineIn.StartPointY;
+				return lineEx;
+			}
+			if (objInput is RectangleIn)
+			{
+				RectangleEx rectangleEx = default;
+				RectangleIn rectangleIn = (RectangleIn)objInput;
+				rectangleEx.Stroke = rectangleIn.Color;
+				rectangleEx.Fill = rectangleIn.FillColor;
+				rectangleEx.Opacity = rectangleIn.Opacity;
+				rectangleEx.StrokeThickness = rectangleIn.StrokeThickness;
+				rectangleEx.Angle = rectangleIn.Angle;
+				rectangleEx.CenterPoint = new System.Windows.Point(rectangleIn.CenterX, rectangleIn.CenterY);
+				rectangleEx.Height = rectangleIn.Height;
+				rectangleEx.Width = rectangleIn.Width;
+				rectangleEx.SkewAngleX = rectangleIn.SkewAngle;
+				return rectangleEx;
+			}
+			if (objInput is TextIn)
+			{
+				TextEx textEx = default;
+				TextIn textIn = (TextIn)objInput;
+				textEx.Stroke = textIn.Color;
+				textEx.Fill = textIn.FillColor;
+				textEx.Opacity = textIn.Opacity;
+				textEx.StrokeThickness = textIn.StrokeThickness;
+				textEx.Content = Encoding.UTF8.GetString(textIn.Content).TrimEnd(default(char));
+				int num4 = textEx.Content.IndexOf("\0");
+				if (num4 >= 0)
+				{
+					textEx.Content = textEx.Content.Remove(num4);
+				}
+				textEx.FontSize = textIn.FontSize;
+				textEx.Height = textIn.Height;
+				textEx.Width = textIn.Width;
+				textEx.Position = new System.Windows.Point(textIn.PositionX, textIn.PositionY);
+				return textEx;
+			}
+			return objInput;
+		}
+		catch (Exception)
+		{
+			throw;
+		}
+	}
+
+	private void DrawPointSet(IList<object> shapeList, IPointSet pointSet)
+	{
+		int pointNum = pointSet.PointNum;
+		string color = pointSet.Stroke;
+		double opacity = pointSet.Opacity;
+		double strokeThickness = pointSet.StrokeThickness;
+		Pretreatment(ref color, ref opacity, ref strokeThickness);
+		if (!shapeList.Any((object p) => p is IMultiPoint))
+		{
+			MultiPoint multiPoint = new MultiPoint();
+			shapeList.Add(multiPoint);
+			multiPoint.OutlinePoints = new ObservableCollection<IOutlinePoint>();
+			multiPoint.MicroPoints = new ObservableCollection<IMicroPoint>();
+			multiPoint.Rectangles = new ObservableCollection<IRectangle>();
+		}
+		if (shapeList.FirstOrDefault((object p) => p is IMultiPoint) is IMultiPoint multiPoint2)
+		{
+			for (int num = 0; num < pointNum; num++)
+			{
+				MicroPoint microPoint = new MicroPoint();
+				microPoint.CenterX = (float)pointSet.PointList[num].X;
+				microPoint.CenterY = (float)pointSet.PointList[num].Y;
+				microPoint.Color = color;
+				microPoint.Opacity = opacity;
+				multiPoint2.MicroPoints.Add(microPoint);
+			}
+			if (shapeList != shapeBuffer)
+			{
+				imageView.NeedRefreshShapes = true;
+			}
+		}
+	}
+
+	private void DrawOutlinePoint(IList<object> shapeList, IOutlinePoint outlinePoint)
+	{
+		if (!shapeList.Any((object p) => p is IMultiPoint))
+		{
+			MultiPoint multiPoint = new MultiPoint();
+			shapeList.Add(multiPoint);
+			multiPoint.OutlinePoints = new ObservableCollection<IOutlinePoint>();
+			multiPoint.MicroPoints = new ObservableCollection<IMicroPoint>();
+			multiPoint.Rectangles = new ObservableCollection<IRectangle>();
+		}
+		if (shapeList.FirstOrDefault((object p) => p is IMultiPoint) is IMultiPoint multiPoint2)
+		{
+			multiPoint2.OutlinePoints.Add(outlinePoint);
+			if (shapeList != shapeBuffer)
+			{
+				imageView.NeedRefreshShapes = true;
+			}
+		}
+	}
+
+	private void DrawPolyline(IList<object> shapes, IPolyline polyline)
+	{
+		int num = polyline.PolylinePointList?.Count ?? 0;
+		string color = polyline.Stroke;
+		double opacity = polyline.Opacity;
+		double strokeThickness = polyline.StrokeThickness;
+		Pretreatment(ref color, ref opacity, ref strokeThickness);
+		for (int i = 0; i < num; i++)
+		{
+			System.Windows.Point point = polyline.PolylinePointList[i];
+			if (i + 1 < num)
+			{
+				System.Windows.Point point2 = polyline.PolylinePointList[i + 1];
+				Apps.Data.ShapeDefine.Line line = new Apps.Data.ShapeDefine.Line();
+				line.StartLineX = (float)point.X;
+				line.StartLineY = (float)point.Y;
+				line.EndLineX = (float)point2.X;
+				line.EndLineY = (float)point2.Y;
+				line.Color = color;
+				line.Opacity = opacity;
+				line.StrokeThickness = strokeThickness;
+				shapes.Add(line);
+			}
+		}
+	}
+
+	private void BtnToolRegionScale_Click(object sender, RoutedEventArgs e)
+	{
+		InitViewSize();
+	}
+
+	private void m_btnFullScreen_Click(object sender, RoutedEventArgs e)
+	{
+		FullScreen instance = FullScreen.Instance;
+		instance.DataContext = viewbox.DataContext;
+		viewbox.Children.Remove(imageView);
+		instance.SetChild(imageView);
+		instance.ShowDialog();
+		instance.RemoveChild();
+		instance.DataContext = null;
+		viewbox.Children.Add(imageView);
+	}
+
+	/// <summary>
+	/// 放大视图
+	/// </summary>
+	public void EnlargeView(int index = 1)
+	{
+		ImageViewBox imageViewBox = ((index == 1) ? imageView : imageViewIn);
+		imageViewBox.Enlarge();
+	}
+
+	/// <summary>
+	/// 缩小视图
+	/// </summary>
+	public void ShrinkView(int index = 1)
+	{
+		ImageViewBox imageViewBox = ((index == 1) ? imageView : imageViewIn);
+		imageViewBox.Shrink();
+	}
+
+	/// <summary>
+	/// 还原视图
+	/// </summary>
+	public void InitViewSize(int index = 1)
+	{
+		ImageViewBox imageViewBox = ((index == 1) ? imageView : imageViewIn);
+		imageViewBox.Init();
+	}
+
+	/// <summary>
+	/// 保存原图，jpgQuality范围[1,100]
+	/// </summary>
+	public void SaveOriginalImage(string fileName, int index = 1, int jpgQuality = 95)
+	{
+		try
+		{
+			if (!(((index == 1) ? ImageDataSource : ImageDataSourceIn) is ImageData imageData))
+			{
+				MessageBox.Show(AppLocalizationService.GetLang("NoImageData"));
+				return;
+			}
+			if (jpgQuality <= 0 || jpgQuality > 100)
+			{
+				throw new VmException(-536870911);
+			}
+			ImageSaveOpenCvHelper.SaveRawImageSyn(fileName, imageData, jpgQuality);
+		}
+		catch (VmException ex)
+		{
+			throw ex;
+		}
+		catch (Exception ex2)
+		{
+			MessageBox.Show(ex2.Message);
+		}
+	}
+
+	/// <summary>
+	/// 保存渲染图，jpgQuality范围[1,100]
+	/// </summary>
+	public void SaveRenderedImage(string fileName, int jpgQuality = 95)
+	{
+		try
+		{
+			ImageData imageData = ImageDataSource as ImageData;
+			List<object> shapesSource = new List<object>(ShapeList);
+			if (imageData == null)
+			{
+				MessageBox.Show(AppLocalizationService.GetLang("NoImageData"));
+				return;
+			}
+			if (jpgQuality <= 0 || jpgQuality > 100)
+			{
+				throw new VmException(-536870911);
+			}
+			ImageSaveOpenCvHelper.SaveRoiImageSyn(fileName, imageData, shapesSource, null, jpgQuality);
+		}
+		catch (VmException ex)
+		{
+			throw ex;
+		}
+		catch (Exception ex2)
+		{
+			MessageBox.Show(ex2.Message);
+		}
+	}
+
+	/// <summary>
+	/// 设置控件背景
+	/// 参数为尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串
+	/// </summary>
+	/// <param name="value">尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串</param>
+	public void SetBackground(string value)
+	{
+		Dispatcher?.Invoke(() =>
+		{
+			ImageView.SetBackground(value);
+		});
+	}
+
+	public void ChangeImageComboBoxVisibility(bool flag)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			ImageComboBoxVisible = flag;
+		});
+	}
+
+	private void imageListCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		ComboBox comboBox = sender as ComboBox;
+		if (comboBox.SelectedValue == null)
+		{
+			imageView.ClearExternShapes();
+			ShapeList.Clear();
+			imageView.Init();
+			ImageDataSource = null;
+		}
+		else
+		{
+			if (ImageListDecorator == null)
+			{
+				return;
+			}
+			if (comboBox.SelectedValue is Apps.XmlParser.Object obj && (obj.TypeA == "image" || obj.TypeA == "pixelinfoimage"))
+			{
+				if (ImageListDecorator.ImageViewList.Count((ImageViewItem p) => p.IsBackgroundImage) == 0)
+				{
+					ImageViewItem imageViewItem = ImageListDecorator.ImageViewList.FirstOrDefault((ImageViewItem p) => p.IsCheck);
+					if (imageViewItem != null)
+					{
+						imageViewItem.IsCheck = false;
+						imageViewItem.IsEnable = true;
+					}
+					if (comboBox.SelectedItem is ImageViewItem imageViewItem2)
+					{
+						imageViewItem2.IsCheck = true;
+						imageViewItem2.IsEnable = false;
+					}
+				}
+				else if (comboBox.SelectedItem is ImageViewItem imageViewItem3)
+				{
+					if (imageViewItem3.IsBackgroundImage)
+					{
+						foreach (Image layer in checkImageList)
+						{
+							layer.Visibility = Visibility.Visible;
+							ImageViewItem imageViewItem4 = ImageListDecorator?.ImageViewList?.FirstOrDefault((ImageViewItem p) => p.DisplayName == layer.Uid);
+							if (imageViewItem4 != null && !imageViewItem4.IsCallBackEnable && imageViewItem4.DisplayObject is Apps.XmlParser.Object obj2)
+							{
+								obj2.SetOutputFilter();
+								WeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj2, "ValueChanged", P_ValueChanged);
+								WeakEventManager<Apps.XmlParser.Object, EventArgs>.AddHandler(obj2, "ValueChanged", P_ValueChanged);
+								imageViewItem4.IsCallBackEnable = true;
+							}
+						}
+					}
+					else
+					{
+						foreach (Image layer2 in checkImageList)
+						{
+							layer2.Visibility = Visibility.Collapsed;
+							ImageViewItem imageViewItem5 = ImageListDecorator?.ImageViewList?.FirstOrDefault((ImageViewItem p) => p.DisplayName == layer2.Uid);
+							if (imageViewItem5 != null && imageViewItem5.IsCallBackEnable && imageViewItem5 != imageViewItem3 && imageViewItem5.DisplayObject is Apps.XmlParser.Object obj3)
+							{
+								obj3.RemoveOutputFilter();
+								WeakEventManager<Apps.XmlParser.Object, EventArgs>.RemoveHandler(obj3, "ValueChanged", P_ValueChanged);
+								imageViewItem5.IsCallBackEnable = false;
+							}
+						}
+					}
+				}
+				ImageListDecorator?.RecordCheckedImages();
+				UpdateVMResultShow();
+			}
+			ImageListDecorator.RecordCheckedImages();
+			if (!IsShowDoubleImage && ImageListDecorator.SelectedImage != null)
+			{
+				ROIVisible = ImageListDecorator.InputImageViewList.Any((ImageViewItem p) => p.DisplayValue == ImageListDecorator.SelectedImage.DisplayValue);
+			}
+		}
+	}
+
+	internal void MyOnSelectedImageChanged(NameChangedEventArgs args)
+	{
+		OnSelectedImageChanged?.Invoke(this, args);
+	}
+
+	/// <summary>
+	/// 增加已选中待叠加的图像
+	/// </summary>
+	public void AddCheckImage(ImageData imageData, string strCheckImageName)
+	{
+		bool flag = true;
+		int num = (int)imageView.GetImageViewWidth();
+		int num2 = (int)imageView.GetImageViewHeight();
+		if (num == 0)
+		{
+			num = 920;
+		}
+		if (num2 == 0)
+		{
+			num2 = 517;
+		}
+		ImageViewItem imageViewItem;
+		if ((imageViewItem = ImageListDecorator?.SelectedImage) != null)
+		{
+			flag = (imageViewItem.IsBackgroundImage ? true : false);
+		}
+		int value = 0;
+		byte transparency = 0;
+		int count = checkImageList.Count;
+		if (count < 3)
+		{
+			foreach (TransparencyData imageTransparency in imageTransparencyList)
+			{
+				if (!imageTransparency.IsUsed)
+				{
+					value = imageTransparency.ZIndex;
+					transparency = imageTransparency.ImageTransparency;
+					imageTransparency.IsUsed = true;
+					imageTransparency.key = strCheckImageName;
+					break;
+				}
+			}
+			Image image = new Image();
+			image.Uid = strCheckImageName;
+			image.MouseLeftButtonDown += checkImage_PreviewMouseLeftButtonDown;
+			image.MouseLeftButtonUp += checkImage_PreviewMouseLeftButtonUp;
+			image.MouseEnter += checkImage_MouseEnter;
+			image.MouseMove += checkImage_MouseMove;
+			image.MouseWheel += checkImage_MouseWheel;
+			image.IsHitTestVisible = false;
+			image.Focusable = true;
+			image.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
+			imageView.AddImageLayer(image);
+			Panel.SetZIndex(image, value);
+			if (flag)
+			{
+				image.Visibility = Visibility.Visible;
+			}
+			else
+			{
+				image.Visibility = Visibility.Collapsed;
+			}
+			_byte2Image.Clear();
+			image.Source = _byte2Image.BuiltBgraImageSource(imageData, num, num2, transparency);
+			checkImageList.Add(image);
+		}
+		CheckImagesName = checkImageList.Select((Image p) => p.Uid).ToList();
+	}
+
+	/// <summary>
+	/// 移除已叠加的图层
+	/// </summary>
+	public void RemoveCheckImage(string strCheckImageName)
+	{
+		Image image = checkImageList.FirstOrDefault((Image p) => p.Uid == strCheckImageName);
+		if (image != null)
+		{
+			checkImageList.Remove(image);
+			imageView.RemoveImageLayer(image);
+			TransparencyData transparencyData = imageTransparencyList.FirstOrDefault((TransparencyData p) => p.key == strCheckImageName);
+			if (transparencyData != null)
+			{
+				transparencyData.key = null;
+				transparencyData.IsUsed = false;
+			}
+		}
+		CheckImagesName = checkImageList.Select((Image p) => p.Uid).ToList();
+	}
+
+	/// <summary>
+	/// 更新已叠加图层的图像
+	/// </summary>
+	public void UpdateCheckImages(Dictionary<string, object> imageStore = null)
+	{
+		Dictionary<string, object> dictionary = imageStore;
+		byte transparency = 0;
+		int num = (int)imageView.GetImageViewWidth();
+		int num2 = (int)imageView.GetImageViewHeight();
+		if (num == 0)
+		{
+			num = 920;
+		}
+		if (num2 == 0)
+		{
+			num2 = 517;
+		}
+		foreach (Image checkImage in checkImageList)
+		{
+			if (ImageDataSource == null)
+			{
+				checkImage.Source = null;
+				continue;
+			}
+			ImageViewItem imageViewItem = ImageListDecorator?.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayName == checkImage.Uid);
+			ImageData imageData = null;
+			if (imageViewItem != null && imageViewItem.DisplayObject != null)
+			{
+				imageData = ((dictionary == null || !dictionary.Keys.Contains(imageViewItem.DisplayName)) ? ((imageViewItem.DisplayObject as Apps.XmlParser.Object).GetValue(ExecuteCount) as ImageData) : (dictionary[imageViewItem.DisplayName] as ImageData));
+			}
+			if (imageData != null)
+			{
+				TransparencyData transparencyData = imageTransparencyList.FirstOrDefault((TransparencyData p) => p.key == checkImage.Uid);
+				if (transparencyData != null)
+				{
+					transparency = transparencyData.ImageTransparency;
+				}
+				_byte2Image.Clear();
+				checkImage.Source = _byte2Image.BuiltBgraImageSource(imageData, num, num2, transparency);
+			}
+		}
+		dictionary = null;
+	}
+
+	/// <summary>
+	/// 清空图层
+	/// </summary>
+	public void ClearImageLayer()
+	{
+		foreach (Image checkImage in checkImageList)
+		{
+			imageView.RemoveImageLayer(checkImage);
+		}
+		checkImageList.Clear();
+		CheckImagesName = null;
+		foreach (TransparencyData imageTransparency in imageTransparencyList)
+		{
+			imageTransparency.key = null;
+			imageTransparency.IsUsed = false;
+		}
+	}
+
+	/// <summary>
+	/// 底图显示大小改变时刷新叠加图层
+	/// </summary>
+	private void imageView_OnFreshExtendContent(object sender, object Tag)
+	{
+		UpdateCheckImages();
+	}
+
+	private void checkImage_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_MouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_MouseMove(object sender, MouseEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private void checkImage_MouseEnter(object sender, MouseEventArgs e)
+	{
+		imageView.SourceImage?.RaiseEvent(e);
+	}
+
+	private AlgorithmTabRoot GetAlgorithmTabRoot()
+	{
+		AlgorithmTabRoot result = null;
+		if (ModuleSource != null)
+		{
+			if (ModuleSource.Params is IData data)
+			{
+				if (data is ModuleParam param)
+				{
+					result = param.GetParamRoot();
+				}
+			}
+			else
+			{
+				result = new AlgorithmTabRoot(ModuleSource.Params);
+			}
+		}
+		return result;
+	}
+
+	private void UpdateRoi()
+	{
+		if (AlgorithmItems != null)
+		{
+			AlgorithmItems.UpdateROI();
+		}
+		else if (SelectedROI is IROISelecter iROISelecter)
+		{
+			iROISelecter.UpdateROI();
+		}
+	}
+
+	private static void OnIsShowDoubleImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		RenderControlBase ic = d as RenderControlBase;
+		bool flag = (bool)e.NewValue;
+		if (ic == null)
+		{
+			return;
+		}
+		ic.colInput.Width = (flag ? new GridLength(1.0, GridUnitType.Star) : new GridLength(0.0));
+		if (ic.ImageListDecorator != null)
+		{
+			ic.ImageListDecorator.SelectedInputImage = null;
+		}
+		Binding binding = new Binding("ROIVisible")
+		{
+			Source = ic,
+			Mode = BindingMode.OneWay
+		};
+		if (flag)
+		{
+			BindingOperations.ClearBinding(ic.imageView, ImageViewBox.ROIVisibleProperty);
+			ic.imageView.ROIVisible = false;
+			ic.imageViewIn.SetBinding(ImageViewBox.ROIVisibleProperty, binding);
+			if (ic.ImageListDecorator != null && ic.ImageListDecorator.InputImageViewList.Count > 0)
+			{
+				ic.ImageListDecorator.SelectedInputImage = ic.ImageListDecorator.InputImageViewList[0];
+				ic.ROIVisible = ic.ImageListDecorator.SelectedInputImage != null;
+			}
+		}
+		else
+		{
+			BindingOperations.ClearBinding(ic.imageViewIn, ImageViewBox.ROIVisibleProperty);
+			ic.imageViewIn.ROIVisible = false;
+			ic.imageView.SetBinding(ImageViewBox.ROIVisibleProperty, binding);
+			ic.ROIVisible = ic.ImageListDecorator.InputImageViewList.Any((ImageViewItem p) => p.DisplayValue == ic.ImageListDecorator.SelectedImage.DisplayValue);
+		}
+	}
+
+	private void BtnToolRegionScaleIn_Click(object sender, RoutedEventArgs e)
+	{
+		imageViewIn.Init();
+	}
+
+	private void m_btnFullScreenIn_Click(object sender, RoutedEventArgs e)
+	{
+		FullScreen instance = FullScreen.Instance;
+		instance.DataContext = viewboxIn.DataContext;
+		viewboxIn.Children.Remove(imageViewIn);
+		instance.SetChild(imageViewIn);
+		instance.ShowDialog();
+		instance.RemoveChild();
+		instance.DataContext = null;
+		viewboxIn.Children.Add(imageViewIn);
+	}
+
+	private void imageListComboboxIn_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		ComboBox comboBox = sender as ComboBox;
+		if (!IsShowDoubleImage || comboBox.SelectedValue == null)
+		{
+			imageViewIn.ClearExternShapes();
+			imageViewIn.Init();
+			ImageDataSourceIn = null;
+		}
+		else if (ModuleParams != null && comboBox.SelectedValue is Apps.XmlParser.Object obj && (obj.TypeA == "image" || obj.TypeA == "pixelinfoimage"))
+		{
+			ImageDataSourceIn = obj.GetValue(uint.MaxValue);
+		}
+	}
+
+	private void imageView_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is ImageViewBox { ROIVisible: false, IsStateForDrawROI: not false } imageViewBox && imageViewBox.DrawROIType != null)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("RoiDrawTips"), MessageIcons.Warning);
+			imageViewBox.Focus();
+		}
+		RaiseMouseLeftButtonDownPixelChangedEvent();
+	}
+
+	/// <summary>
+	/// 设置渲染间隔(ms)
+	/// </summary>
+	/// <param name="millseconds"></param>
+	public void SetRenderInterval(int millseconds)
+	{
+		if (millseconds < 0 || millseconds > 10000)
+		{
+			throw new VmException(-536870911);
+		}
+		renderInterval = millseconds / 100 * 100;
+	}
+
+	private double GetElapsedMillSeconds(long timeStamp)
+	{
+		long num = timeStamp - oldTimeStamp;
+		return (double)num * (1.0 / (double)Stopwatch.Frequency) * 1000.0;
+	}
+
+	private bool IsNeedRender(long timeStamp)
+	{
+		return GetElapsedMillSeconds(timeStamp) >= (double)renderInterval;
+	}
+
+	public void SetModuleAndStatusForRender(IVmModule module, RenderSatus status)
+	{
+		if (renderStatusModule != null)
+		{
+			WeakEventManager<IVmModule, EventArgs>.RemoveHandler(renderStatusModule, "ModuleResultCallBackArrived", RenderStatusModule_ModuleResultCallBackArrived);
+			renderStatusModule.SubscribeCount--;
+		}
+		renderStatusModule = module ?? ModuleSource;
+		if ((uint)status <= 1u)
+		{
+			if (renderStatusModule != null)
+			{
+				renderStatus = status;
+				WeakEventManager<IVmModule, EventArgs>.RemoveHandler(renderStatusModule, "ModuleResultCallBackArrived", RenderStatusModule_ModuleResultCallBackArrived);
+				WeakEventManager<IVmModule, EventArgs>.AddHandler(renderStatusModule, "ModuleResultCallBackArrived", RenderStatusModule_ModuleResultCallBackArrived);
+				renderStatusModule.SubscribeCount++;
+			}
+			else
+			{
+				renderStatus = RenderSatus.ALL;
+			}
+		}
+		else
+		{
+			renderStatusModule = null;
+			renderStatus = RenderSatus.ALL;
+		}
+	}
+
+	private void RenderStatusModule_ModuleResultCallBackArrived(object sender, EventArgs e)
+	{
+		try
+		{
+			if (e is ValueEventArgs e2 && sender is VmModule vmModule && e2.Value is ImvsSdkDefine.IMVS_MODULE_RESULT_INFO_LIST_EX_Data)
+			{
+				VmIO vmIO = vmModule["(ModuStatus)"] as VmIO;
+				int num = 2;
+				if (vmIO != null)
+				{
+					num = (int)(vmIO.GetValue(uint.MaxValue, 0) ?? ((object)1));
+				}
+				if (renderStatus != RenderSatus.ALL && num != 2 && num != (int)renderStatus)
+				{
+					needUpdateRender = false;
+				}
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	private void RaiseMouseLeftButtonDownPixelChangedEvent()
+	{
+		int x = imageView?.PixelX ?? 0;
+		int y = imageView?.PixelY ?? 0;
+		OnMouseLeftButtonDownPixelChanged?.Invoke(x, y);
+	}
+
+	private static void OnRenderToolbarVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		RenderControlBase renderControlBase = d as RenderControlBase;
+		bool flag = (bool)e.NewValue;
+		if (renderControlBase != null)
+		{
+			renderControlBase.rowInput.Height = (flag ? new GridLength(40.0) : new GridLength(0.0));
+		}
+	}
+
+	/// <summary>
+	/// 当图像已堆叠显示时，切换背景图
+	/// </summary>
+	public void SwitchBackgroundImage(string backgroundImageName)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			if (string.IsNullOrEmpty(backgroundImageName))
+			{
+				throw new VmException(-536870911);
+			}
+			ImageViewItem imageViewItem = ImageListDecorator?.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayName == backgroundImageName);
+			if (imageViewItem == null || imageViewItem.IsBackgroundImage || !imageViewItem.IsCheck)
+			{
+				throw new VmException(-536870911);
+			}
+			if (imageViewItem.IsCheck)
+			{
+				DisplayImageListDecorator displayImageListDecorator = ImageListDecorator;
+				if (displayImageListDecorator != null && displayImageListDecorator.ImageViewList.Count((ImageViewItem p) => p.IsCheck) == 1)
+				{
+					throw new VmException(-536870911);
+				}
+			}
+			try
+			{
+				ImageListDecorator.isNeedTips = false;
+				ImageListDecorator.SetBackgoundImage(imageViewItem);
+				ImageListDecorator.isNeedTips = true;
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error(ex.Message);
+			}
+		});
+	}
+
+	/// <summary>
+	/// 工具栏是否可见
+	/// </summary>
+	/// <param name="isVisible">是否可见</param>
+	public void SetRenderToolbarVisible(bool isVisible)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			RenderToolbarVisible = isVisible;
+		});
+	}
+
+	/// <summary>
+	/// 获取可显示的图像名称列表
+	/// </summary>
+	public List<string> GetDisplayableImageNameList()
+	{
+		return ImageListDecorator?.ImageViewList?.Select((ImageViewItem p) => p.DisplayName).ToList() ?? new List<string>();
+	}
+
+	/// <summary>
+	/// 设置图像显示
+	/// </summary>
+	/// <param name="displayImageName">显示的图像名称</param>
+	public void SetSelectedImage(string displayImageName)
+	{
+		if (string.IsNullOrEmpty(displayImageName))
+		{
+			throw new VmException(-536870911);
+		}
+		ImageViewItem imageViewItem = ImageListDecorator?.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayName == displayImageName);
+		if (imageViewItem == null)
+		{
+			throw new VmException(-536870911);
+		}
+		ImageListDecorator.SelectedImage = imageViewItem;
+	}
+
+	public void AddStackImage(string displayImageName)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			if (!string.IsNullOrEmpty(displayImageName))
+			{
+				DisplayImageListDecorator displayImageListDecorator = ImageListDecorator;
+				if (displayImageListDecorator == null || displayImageListDecorator.ImageViewList.Count((ImageViewItem p) => p.IsCheck) != 4)
+				{
+					ImageViewItem imageViewItem = ImageListDecorator?.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayName == displayImageName);
+					if (imageViewItem == null || imageViewItem.IsCheck)
+					{
+						throw new VmException(-536870911);
+					}
+					imageViewItem.IsCheck = true;
+					ImageListDecorator?.TriggerSelectImageChange(imageViewItem);
+					return;
+				}
+			}
+			throw new VmException(-536870911);
+		});
+	}
+
+	/// <summary>
+	/// 移除堆叠显示的图像
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void RemoveStackImage(string displayImageName)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			if (!string.IsNullOrEmpty(displayImageName))
+			{
+				DisplayImageListDecorator displayImageListDecorator = ImageListDecorator;
+				if (displayImageListDecorator == null || displayImageListDecorator.ImageViewList.Count((ImageViewItem p) => p.IsBackgroundImage) != 0)
+				{
+					ImageViewItem imageViewItem = ImageListDecorator?.ImageViewList.FirstOrDefault((ImageViewItem p) => p.IsBackgroundImage);
+					if (imageViewItem != null && imageViewItem.DisplayName == displayImageName && ImageListDecorator.ImageViewList.Count((ImageViewItem p) => p.IsCheck) == 0)
+					{
+						throw new VmException(-536870911);
+					}
+					ImageViewItem imageViewItem2 = ImageListDecorator?.ImageViewList.FirstOrDefault((ImageViewItem p) => p.DisplayName == displayImageName);
+					if (imageViewItem2 == null || !imageViewItem2.IsCheck)
+					{
+						throw new VmException(-536870911);
+					}
+					imageViewItem2.IsCheck = false;
+					ImageListDecorator?.TriggerSelectImageChange(imageViewItem2);
+					return;
+				}
+			}
+			throw new VmException(-536870911);
+		});
+	}
+}

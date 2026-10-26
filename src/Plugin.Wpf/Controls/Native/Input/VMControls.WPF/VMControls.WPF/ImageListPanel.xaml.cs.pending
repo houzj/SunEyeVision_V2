@@ -1,0 +1,32 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ImageListPanel.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ImageListPanel
+/// </summary>
+public partial class ImageListPanel : ImageListPanelBase, IComponentConnector, IStyleConnector
+{
+	public ImageListPanel()
+	{
+		InitializeComponent();
+	}
+
+	protected override void ChangeShadowDataSource(object source)
+	{
+		windowShadow.DataContext = source;
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

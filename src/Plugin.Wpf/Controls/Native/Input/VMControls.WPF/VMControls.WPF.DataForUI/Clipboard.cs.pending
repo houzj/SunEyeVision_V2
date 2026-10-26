@@ -1,0 +1,62 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using Apps.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class Clipboard : NotifyPropertyChangedBase
+{
+	public delegate void OnChangeCallBack(bool isShow);
+
+	/// <summary>
+	/// 剪贴板
+	/// </summary>
+	private List<object> copyInfos = new List<object>();
+
+	public Point Position = new Point(0.0, 0.0);
+
+	private object copyParamInfo;
+
+	public IList CopyInfos => copyInfos;
+
+	public static Clipboard instance { get; private set; } = new Clipboard();
+
+	public bool IsShowPaste => CopyInfos.Count > 0;
+
+	public object CopyParamInfo
+	{
+		get
+		{
+			return copyParamInfo;
+		}
+		set
+		{
+			copyParamInfo = value;
+		}
+	}
+
+	public bool AddCopyInfo(object obj)
+	{
+		copyInfos.Add(obj);
+		OnPropertyChanged("IsShowPaste");
+		return true;
+	}
+
+	public void ClearCopyInfo()
+	{
+		copyInfos?.Clear();
+		Position.X = 0.0;
+		Position.Y = 0.0;
+		OnPropertyChanged("IsShowPaste");
+	}
+
+	public void ClearByModuleName(string fullName)
+	{
+		if (copyInfos.Any((object p) => (p as string).Equals(fullName)))
+		{
+			ClearCopyInfo();
+		}
+	}
+}

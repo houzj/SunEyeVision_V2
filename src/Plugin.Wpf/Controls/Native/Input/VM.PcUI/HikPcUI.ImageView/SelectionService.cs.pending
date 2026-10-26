@@ -1,0 +1,159 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class SelectionService
+{
+	public delegate void RoiDeChanged(List<RoiParameter> roiList);
+
+	private IRoiOwner owner;
+
+	public List<RoiParameter> CurrentSelection
+	{
+		get
+		{
+			List<RoiParameter> list = (owner.RoiList?.OfType<RoiParameter>())?.Where((RoiParameter p) => p.IsSelected).ToList();
+			if (list == null)
+			{
+				return new List<RoiParameter>();
+			}
+			return list;
+		}
+	}
+
+	public event RoiDeChanged RoiDeChangedEvent;
+
+	public SelectionService(IRoiOwner canvas)
+	{
+		if (canvas == null)
+		{
+			throw new Exception("canvas is null");
+		}
+		owner = canvas;
+	}
+
+	public void SelectItem(object item)
+	{
+		if (item is RoiParameter item2)
+		{
+			ClearSelection();
+			AddToSelection(item2);
+		}
+	}
+
+	public void AddToSelection(object item)
+	{
+		if (item is RoiParameter roiParameter)
+		{
+			roiParameter.IsSelected = true;
+			if (owner is HikImageView hikImageView)
+			{
+				hikImageView.ChangeSelectedBaseROI(roiParameter);
+			}
+		}
+	}
+
+	public void RemoveFromSelection(object item)
+	{
+		if (item is RoiParameter roiParameter)
+		{
+			roiParameter.IsSelected = false;
+		}
+	}
+
+	public void ClearSelection()
+	{
+		CurrentSelection.ForEach((RoiParameter item) =>
+		{
+			item.IsSelected = false;
+		});
+	}
+
+	public void SelectAll()
+	{
+		foreach (RoiParameter roi in owner.RoiList)
+		{
+			roi.IsSelected = true;
+		}
+	}
+
+	public void DeleteItem(RoiParameter roi)
+	{
+		if (roi == null)
+		{
+			return;
+		}
+		owner.RoiList.Remove(roi);
+		List<RoiParameter> list = new List<RoiParameter>();
+		list.Add(roi);
+		if (roi.IsSelected)
+		{
+			if (owner is HikImageView hikImageView)
+			{
+				hikImageView.ChangeSelectedBaseROI(null);
+			}
+			if (owner.IsSelectMulRoiEnable)
+			{
+				foreach (RoiParameter item in CurrentSelection)
+				{
+					list.Add(item);
+					owner.RoiList.Remove(item);
+				}
+			}
+		}
+		if (RoiDeChangedEvent != null)
+		{
+			RoiDeChangedEvent(list);
+		}
+	}
+
+	public void RoiSelected(object item)
+	{
+		if (!(item is RoiParameter roiParameter))
+		{
+			return;
+		}
+		if ((Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift)) != 0 && owner.IsSelectMulRoiEnable)
+		{
+			if (roiParameter.IsSelected)
+			{
+				RemoveFromSelection(roiParameter);
+			}
+			else
+			{
+				AddToSelection(roiParameter);
+			}
+		}
+		else if (!roiParameter.IsSelected)
+		{
+			SelectItem(roiParameter);
+		}
+	}
+
+	public void ChangeSelectedCoverRoiAngle(double offset, object roi)
+	{
+		foreach (RoiParameter item in CurrentSelection)
+		{
+			if (item != roi && item is HikCoverRoiParameter hikCoverRoiParameter)
+			{
+				hikCoverRoiParameter.Angle += offset;
+			}
+		}
+	}
+
+	public void ChangeSelectedCoverRoiPosition(double xOffset, double yOffset, object roi)
+	{
+		foreach (RoiParameter item in CurrentSelection)
+		{
+			if (item != roi && item is HikCoverRoiParameter hikCoverRoiParameter)
+			{
+				Point originPoint = new Point(hikCoverRoiParameter.OriginPoint.X + xOffset, hikCoverRoiParameter.OriginPoint.Y + yOffset);
+				hikCoverRoiParameter.OriginPoint = originPoint;
+			}
+		}
+	}
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikPoint" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" x:Name="userControl" Loaded="pointControl_Loaded" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" MouseLeftButtonUp="UserControl_MouseLeftButtonUp" Width="19" Height="19" Focusable="True" FocusVisualStyle="{x:Null}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="PathStyle" TargetType="{x:Type Path}">
+        <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+        <Style.Triggers>
+          <DataTrigger Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{DynamicResource OperateMenu}" />
+          </DataTrigger>
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Value="True" Binding="{Binding IsSelected, ElementName=userControl}" />
+              <Condition Value="{x:Static local:CustomROITypeUIEnum.Mul}" Binding="{Binding DataContext.Tag, ElementName=userControl}" />
+            </MultiDataTrigger.Conditions>
+            <Setter Property="Stroke" Value="{DynamicResource ROISelectedColor}" />
+          </MultiDataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid HorizontalAlignment="{Binding HorizontalAlignment, ElementName=UserControl}" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}">
+    <Canvas Name="view" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#00FFFFFF" Cursor="SizeAll">
+      <Path Name="cview" StrokeThickness="1" Fill="#00FFFFFF" Stretch="Uniform" Style="{StaticResource PathStyle}" Height="{Binding Height, ElementName=view}" Width="{Binding Width, ElementName=view}">
+        <Path.Data>
+          <GeometryGroup>
+            <LineGeometry StartPoint="0,0" EndPoint="1,1" />
+            <LineGeometry StartPoint="1,0" EndPoint="0,1" />
+          </GeometryGroup>
+        </Path.Data>
+      </Path>
+    </Canvas>
+  </Grid>
+</local:HikROIBase>

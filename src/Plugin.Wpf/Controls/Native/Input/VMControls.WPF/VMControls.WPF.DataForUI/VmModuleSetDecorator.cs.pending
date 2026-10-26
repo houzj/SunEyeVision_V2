@@ -1,0 +1,223 @@
+using System;
+using System.ComponentModel;
+using System.Windows.Input;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlUI.ParamTab;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmModuleSetDecorator : VmModuleBaseDecorator, IZoomIndex
+{
+	private int proceZoomIndex = 9;
+
+	private bool isInit = false;
+
+	private bool _isCollapsedEnableItems = false;
+
+	private bool _isCollapsedForbiddenItems = false;
+
+	/// <summary>
+	/// 状态栏信息
+	/// </summary>
+	private string _WorkStateInfo;
+
+	/// <summary>
+	/// 流程配置界面显示百分比
+	/// </summary>
+	public int ProceZoomIndex
+	{
+		get
+		{
+			byte[] array = (DecorateSource as IVmModule).UserData["ProceZoomIndex"];
+			if (array == null)
+			{
+				return proceZoomIndex;
+			}
+			return int.Parse(StringUtil.UTF8GetString(array));
+		}
+		set
+		{
+			try
+			{
+				byte[] array = (DecorateSource as IVmModule).UserData["ProceZoomIndex"];
+				if (array != null)
+				{
+					proceZoomIndex = int.Parse(StringUtil.UTF8GetString(array));
+				}
+			}
+			catch (VmException ex)
+			{
+				LogHelper.Error($"Get ProceZoomIndex Failed,ErrorCode:{ex.errorCode}, ErrorMessage:{ex.errorMessage}");
+			}
+			catch (Exception ex2)
+			{
+				LogHelper.Error("Get proceZoomIndex Failed, Message:" + ex2.Message + "StackTrace:" + ex2.StackTrace);
+			}
+			if (proceZoomIndex != value)
+			{
+				proceZoomIndex = value;
+				try
+				{
+					(DecorateSource as IVmModule).UserData["ProceZoomIndex"] = StringUtil.UTF8GetBytesPadZero(proceZoomIndex.ToString());
+				}
+				catch (Exception ex3)
+				{
+					HikMessageBox.Show(ex3.Message);
+				}
+				OnPropertyChanged("ProceZoomIndex");
+				OnPropertyChanged("PartentZoomIndex");
+			}
+		}
+	}
+
+	public bool IsCollapsedEnableItems
+	{
+		get
+		{
+			Console.WriteLine("----IsCollapsedEnableItems-----");
+			return _isCollapsedEnableItems;
+		}
+		set
+		{
+			if (_isCollapsedEnableItems != value)
+			{
+				_isCollapsedEnableItems = value;
+				OnPropertyChanged("IsCollapsedEnableItems");
+			}
+		}
+	}
+
+	public bool IsCollapsedForbiddenItems
+	{
+		get
+		{
+			Console.WriteLine("----IsCollapsedForbiddenItems-----");
+			return _isCollapsedForbiddenItems;
+		}
+		set
+		{
+			if (_isCollapsedForbiddenItems != value)
+			{
+				_isCollapsedForbiddenItems = value;
+				OnPropertyChanged("IsCollapsedForbiddenItems");
+			}
+		}
+	}
+
+	public string WorkStateInfo
+	{
+		get
+		{
+			if (!(DecorateSource as IVmModule).IsReady.HasValue)
+			{
+				_WorkStateInfo = AppLocalizationService.GetLang("等待添加组件");
+				return _WorkStateInfo;
+			}
+			if (!(DecorateSource as IVmModule).IsReady.Value)
+			{
+				_WorkStateInfo = (DecorateSource as IVmModuleSet).UnReadyModuleID + " " + (DecorateSource as IVmModuleSet).UnReadyModuleName + " " + AppLocalizationService.GetLang("Param not Complete");
+				return _WorkStateInfo;
+			}
+			return _WorkStateInfo;
+		}
+	}
+
+	public StatusBarSymbol WorkState
+	{
+		get
+		{
+			if (!(DecorateSource as IVmModule).IsReady.HasValue)
+			{
+				return StatusBarSymbol.NOItem;
+			}
+			if (!(DecorateSource as IVmModule).IsReady.Value)
+			{
+				return StatusBarSymbol.WaitConfig;
+			}
+			return StatusBarSymbol.Ready;
+		}
+	}
+
+	/// <summary>
+	/// 导入流程命令,对应VmSolutionDecorator中的命令，默认为空
+	/// </summary>
+	public ICommand ImportProcessCommand => null;
+
+	/// <summary>
+	/// 局部变量模块
+	/// </summary>
+	public IVmModule LocalVariableModule => (DecorateSource as IVmModuleSet).AddLocalVariableModule();
+
+	/// <summary>
+	/// 导出算子代码指令
+	/// </summary>
+	public ICommand ExportAlgorithmCommand { get; set; }
+
+	int IZoomIndex.PartentZoomIndex
+	{
+		get
+		{
+			return ProceZoomIndex;
+		}
+		set
+		{
+			ProceZoomIndex = value;
+		}
+	}
+
+	protected override void DecorateSourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.DecorateSourcePropertyChanged(sender, e);
+		if (e.PropertyName == "Name")
+		{
+			OnPropertyChanged("ShowName");
+		}
+	}
+
+	public override void OnPropertyChanged(string name)
+	{
+		base.OnPropertyChanged(name);
+		if (name == "UnReadyModuleName" || name == "IsReady")
+		{
+			OnPropertyChanged("WorkState");
+			OnPropertyChanged("WorkStateInfo");
+		}
+	}
+
+	private void ExportAlgorithmCommandExecute()
+	{
+		LogHelper.Info("Start Export Algorithm.");
+		try
+		{
+			uint iD = (DecorateSource as IVmModule).ID;
+			if (WorkState != StatusBarSymbol.Ready)
+			{
+				string strMsg = Name + ":" + WorkStateInfo;
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ExportFailed"), strMsg, MessageIcons.Error);
+			}
+			else
+			{
+				ExportAlgorithmWindow.ShowDialog(iD);
+			}
+		}
+		catch (VmException ex)
+		{
+			string text = AppLocalizationService.GetLang("errCode:") + $"{ex.errorCode:X}" + "\r\n";
+			text = text + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+			HikMessageBox.Show(text, MessageIcons.Error);
+		}
+	}
+
+	public VmModuleSetDecorator()
+	{
+		//IL_0032: Unknown result type (might be due to invalid IL or missing references)
+		//IL_003c: Expected Obj, but got Unknown
+		ExportAlgorithmCommand = (ICommand)new DelegateCommand((Action)ExportAlgorithmCommandExecute);
+	}
+}

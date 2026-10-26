@@ -1,0 +1,806 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using Apps.UIHelper.Service;
+using Mvvm.Commands;
+using VM.AppData;
+using VM.Controls;
+using VM.Core;
+using VMControls.Data;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.Astar;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// DiagramPage.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// DiagramPage
+/// </summary>
+public partial class DiagramPage : ItemsPage, IComponentConnector, IStyleConnector
+{
+	protected readonly Canvas _adornerLayer = new Canvas
+	{
+		FocusVisualStyle = null,
+		Focusable = true
+	};
+
+	/// <summary>
+	/// 幕布大小
+	/// </summary>
+	public static double DiagramPageWidth = 5000.0;
+
+	public static readonly DependencyProperty CommentSourceProperty = DependencyProperty.Register("CommentSource", typeof(IEnumerable), typeof(DiagramPage), new PropertyMetadata(null, OnCommentSourceChanged));
+
+	private DelegateCommand _clearComments = null;
+
+	private DelegateCommand _upComments = null;
+
+	private DelegateCommand _downComments = null;
+
+	public static readonly DependencyProperty ToolBoxItemsSourceProperty = DependencyProperty.Register("ToolBoxItemsSource", typeof(IList), typeof(DiagramPage), new PropertyMetadata(null));
+
+	private bool isGlobleMode;
+
+	private bool hasAddedTransformAdorner = false;
+
+	private Visual Child;
+
+	internal Canvas hostPanal;
+
+	private APoint[,] map = null;
+
+	private AdornerPanel adornerPanel;
+
+	private AdornerPanel subAdornerPanel;
+
+	private UIElement dragObject;
+
+	private bool IsMouseDown;
+
+	private bool isDragOvered = false;
+
+	private Point _offset;
+
+	private DiagramPage diagramPage;
+
+	private Point controlOffset;
+
+	private double leftOffset;
+
+	private double topOffset;
+
+	public IEnumerable CommentSource
+	{
+		get
+		{
+			return (IEnumerable)GetValue(CommentSourceProperty);
+		}
+		set
+		{
+			SetValue(CommentSourceProperty, value);
+		}
+	}
+
+	public ICommand ClearComments
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _clearComments;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ClearCommentsExecute);
+				DelegateCommand val3 = val2;
+				_clearComments = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand UpComments
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _upComments;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)UpCommentsExecute);
+				DelegateCommand val3 = val2;
+				_upComments = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand DownComments
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _downComments;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)DownCommentsExecute);
+				DelegateCommand val3 = val2;
+				_downComments = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public IList ToolBoxItemsSource
+	{
+		get
+		{
+			return (IList)GetValue(ToolBoxItemsSourceProperty);
+		}
+		set
+		{
+			SetValue(ToolBoxItemsSourceProperty, value);
+		}
+	}
+
+	public ToolBoxData ViewData { get; set; } = ToolBoxData.GetInstance();
+
+	public bool IsGlobleMode
+	{
+		get
+		{
+			return isGlobleMode;
+		}
+		set
+		{
+			if (isGlobleMode != value)
+			{
+				isGlobleMode = value;
+				if (value)
+				{
+					SetBinding(ToolBoxItemsSourceProperty, new Binding("GlobleToolSource")
+					{
+						Source = ViewData
+					});
+				}
+				else
+				{
+					SetBinding(ToolBoxItemsSourceProperty, new Binding("ToolSource")
+					{
+						Source = ViewData
+					});
+				}
+				OnPropertyChanged("IsGlobleMode");
+			}
+		}
+	}
+
+	protected override int VisualChildrenCount => 2;
+
+	private static void OnCommentSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		DiagramPage diagramPage = (DiagramPage)d;
+		IEnumerable enumerable = (IEnumerable)e.OldValue;
+		IEnumerable enumerable2 = (IEnumerable)e.NewValue;
+		if (enumerable != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(enumerable as INotifyCollectionChanged, diagramPage.CommentSource_CollectionChanged);
+			diagramPage.RemoveCommentBoxs(enumerable);
+		}
+		if (enumerable2 != null)
+		{
+			CollectionChangedEventManager.AddHandler(enumerable2 as INotifyCollectionChanged, diagramPage.CommentSource_CollectionChanged);
+			diagramPage.AddCommentBoxs(enumerable2);
+		}
+	}
+
+	private void CommentSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Add:
+			AddCommentBoxs(e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Remove:
+			RemoveCommentBoxs(e.OldItems);
+			break;
+		}
+	}
+
+	private void RemoveCommentBoxs(IEnumerable oldValue)
+	{
+		if (Child == null)
+		{
+			return;
+		}
+		foreach (object item in oldValue)
+		{
+			CommentBox commentBox = (Child as Panel).Children.OfType<CommentBox>().FirstOrDefault((CommentBox x) => x.Name == (item as VMCommentInfo).Name);
+			(Child as Panel).Children.Remove(commentBox);
+			commentBox.Dispose();
+		}
+	}
+
+	protected override void SetCommentBoxShow(bool isVisible)
+	{
+		if (Child != null)
+		{
+			(Child as Panel).Children.OfType<CommentBox>()?.ToList().ForEach((CommentBox x) =>
+			{
+				x.Visibility = ((!isVisible) ? Visibility.Collapsed : Visibility.Visible);
+			});
+		}
+	}
+
+	private void AddCommentBoxs(IEnumerable newValue)
+	{
+		if (Child == null)
+		{
+			return;
+		}
+		foreach (object item in newValue)
+		{
+			VMCommentInfo vMCommentInfo = item as VMCommentInfo;
+			CommentBox commentBox = new CommentBox(vMCommentInfo);
+			commentBox.Visibility = ((!IsCommentShowModel) ? Visibility.Collapsed : Visibility.Visible);
+			(Child as Panel).Children.Insert(0, commentBox);
+			Canvas.SetLeft(commentBox, vMCommentInfo.OriginPoint.X);
+			Canvas.SetTop(commentBox, vMCommentInfo.OriginPoint.Y);
+			commentBox.UpIndexStatus = vMCommentInfo.ZIndex;
+			(commentBox.DataContext as DecoratorBase).DecorateSource = (DataContext as VmModuleBaseDecorator)?.DecorateSource;
+			commentBox.SetCommentStatusComplate();
+		}
+	}
+
+	private void ClearCommentsExecute()
+	{
+		DialogResult dialogResult = HikMessageBox.Show(AppLocalizationService.GetLang("Lang_ClearComments"), AppLocalizationService.GetLang("Lang_ClearCommentsInfo"), MessageButtons.YesOrNo, MessageIcons.Question);
+		if (dialogResult == DialogResult.Yes)
+		{
+			((DataContext as VmModuleBaseDecorator)?.DecorateSource as IVmModuleSet)?.DeleteCommentSource();
+		}
+	}
+
+	private void UpCommentsExecute()
+	{
+		if (Child != null)
+		{
+			(Child as Panel).Children.OfType<CommentBox>()?.ToList().ForEach((CommentBox x) =>
+			{
+				x.UpIndexStatus = 1;
+			});
+		}
+	}
+
+	private void DownCommentsExecute()
+	{
+		if (Child != null)
+		{
+			(Child as Panel).Children.OfType<CommentBox>()?.ToList().ForEach((CommentBox x) =>
+			{
+				x.UpIndexStatus = 0;
+			});
+		}
+	}
+
+	public DiagramPage()
+	{
+		Width = DiagramPageWidth;
+		Height = DiagramPageWidth;
+		InitializeComponent();
+		DataContextChanged += DiagramPage_DataContextChanged;
+		AddVisualChild(_adornerLayer);
+		SetBinding(ToolBoxItemsSourceProperty, new Binding("ToolSource")
+		{
+			Source = ViewData
+		});
+		Loaded += (object s, RoutedEventArgs e) =>
+		{
+			if (!hasAddedTransformAdorner)
+			{
+				System.Windows.Documents.AdornerLayer.GetAdornerLayer(this).Add(TransformAdorner);
+				hasAddedTransformAdorner = true;
+			}
+		};
+	}
+
+	private void DiagramPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+		if (DataContext == null)
+		{
+			return;
+		}
+		if (!(DataContext is IDecorate))
+		{
+			IsGlobleMode = DataContext is IVmSolution;
+			if (DataContext is IVmSolution)
+			{
+				DataContext = new VmSolutionDecorator
+				{
+					DecorateSource = e.NewValue
+				};
+			}
+			else if (e.NewValue is IVMGroup)
+			{
+				DataContext = new VmGroupDecorator
+				{
+					DecorateSource = e.NewValue
+				};
+			}
+			else
+			{
+				DataContext = new VmProcedureDecorator
+				{
+					DecorateSource = e.NewValue
+				};
+			}
+		}
+		else
+		{
+			IsGlobleMode = (DataContext as IDecorate).DecorateSource is IVmSolution;
+		}
+	}
+
+	/// <summary> Create or identify the element used to display the given item. </summary>
+	protected override DependencyObject GetContainerForItemOverride()
+	{
+		return new DiagramItem
+		{
+			HostPanel = hostPanal,
+			ConnectionPanel = _adornerLayer,
+			ItemDiagramPage = this
+		};
+	}
+
+	protected override List<DiagramItem> GetItemsByRect(Rect rect)
+	{
+		ItemsPresenter reference = (Child as Panel).Children.OfType<ItemsPresenter>().First();
+		Canvas canvas = VisualTreeHelper.GetChild(reference, 0) as Canvas;
+		return (from p in canvas.Children.OfType<DiagramItem>()
+			where rect.Contains(new Rect(p.Position, new Vector(p.ActualWidth, p.ActualHeight)))
+			select p).ToList();
+	}
+
+	protected override Canvas GetHostPanel()
+	{
+		return hostPanal;
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		Child = Template.FindName("Bd", this) as Visual;
+	}
+
+	protected override Size MeasureOverride(Size constraint)
+	{
+		Size result = base.MeasureOverride(constraint);
+		_adornerLayer.Measure(constraint);
+		return result;
+	}
+
+	protected override Size ArrangeOverride(Size arrangeSize)
+	{
+		Size result = base.ArrangeOverride(arrangeSize);
+		Rect finalRect = new Rect(new Point(0.0, 0.0), arrangeSize);
+		_adornerLayer.Arrange(finalRect);
+		return result;
+	}
+
+	protected override Visual GetVisualChild(int index)
+	{
+		if (index == 0)
+		{
+			return Child;
+		}
+		return _adornerLayer;
+	}
+
+	private void Canvas_Initialized(object sender, EventArgs e)
+	{
+		hostPanal = sender as Canvas;
+	}
+
+	/// <summary>
+	/// 获得连线
+	/// </summary>
+	/// <param name="sourceItem">源</param>
+	/// <param name="targetItem">目标</param>
+	/// <param name="sourceIndex">锚点位置</param>
+	/// <param name="targetIndex">锚点位置</param>
+	internal IList<Point> GetPath(DiagramItem sourceItem, DiagramItem targetItem, int sourceIndex, int targetIndex)
+	{
+		List<Point> list = new List<Point>();
+		Point item = sourceItem.AnchorPoint(sourceIndex);
+		Point item2 = targetItem.AnchorPoint(targetIndex);
+		double num = 5.0;
+		Rect rectWithMargin = sourceItem.GetRectWithMargin(num);
+		Rect rectWithMargin2 = targetItem.GetRectWithMargin(num);
+		Point offsetPoint = sourceItem.GetOffsetPoint(sourceIndex, num);
+		Point offsetPoint2 = targetItem.GetOffsetPoint(targetIndex, num);
+		List<Rect> allRects = GetAllRect();
+		List<Rect> list2 = new List<Rect> { rectWithMargin, rectWithMargin2 };
+		APoint[,] pathMap = GetPathMap(list2);
+		List<APoint> list3 = AStar.FindPath(new APoint((int)offsetPoint.X / 5 + 1, (int)offsetPoint.Y / 5 + 1), new APoint((int)offsetPoint2.X / 5 + 1, (int)offsetPoint2.Y / 5 + 1), pathMap);
+		if (list3.Count < 3)
+		{
+			pathMap = GetPathMap(list2, list2);
+			allRects = list2;
+			list3 = AStar.FindPath(new APoint((int)offsetPoint.X / 5 + 1, (int)offsetPoint.Y / 5 + 1), new APoint((int)offsetPoint2.X / 5 + 1, (int)offsetPoint2.Y / 5 + 1), pathMap);
+		}
+		if (list3.Count < 3)
+		{
+			if (offsetPoint.X != offsetPoint2.X && offsetPoint.Y != offsetPoint2.Y)
+			{
+				list.Add(new Point(offsetPoint.X, offsetPoint2.Y));
+			}
+			list.Insert(0, offsetPoint);
+			list.Add(offsetPoint2);
+		}
+		else
+		{
+			for (int i = 0; i < list3.Count; i++)
+			{
+				list.Add(new Point((list3[i].X - 1) * 5, (list3[i].Y - 1) * 5));
+			}
+		}
+		list = PathFinder.OptimizeLinePoints(list, list2, allRects, DiagramItem.GetOrientation(sourceIndex), DiagramItem.GetOrientation(targetIndex));
+		list.Insert(0, item);
+		list.Add(item2);
+		List<Point> turnPoints = PathFinder.GetTurnPoints(list);
+		PathFinder.RechargeLinePoints(turnPoints, allRects);
+		return turnPoints;
+	}
+
+	internal APoint[,] GetPathMap(List<Rect> slist)
+	{
+		List<Rect> allRect = GetAllRect();
+		return GetPathMap(allRect, slist);
+	}
+
+	internal APoint[,] GetPathMap(List<Rect> list, List<Rect> slist)
+	{
+		if (map == null)
+		{
+			map = new APoint[(int)ActualWidth / 5 + 32, (int)ActualHeight / 5 + 32];
+			for (int i = 0; i < map.GetLength(0); i++)
+			{
+				for (int j = 0; j < map.GetLength(1); j++)
+				{
+					map[i, j] = new APoint(i, j);
+				}
+			}
+		}
+		APoint.CurTimeEnableFlag = UIHelper.GenerateUniqueText();
+		foreach (Rect item in list)
+		{
+			for (int k = 1; (double)k < item.Width / 5.0; k++)
+			{
+				for (int l = 1; (double)l < item.Height / 5.0; l++)
+				{
+					int num = k + (int)item.X / 5 + 1;
+					int num2 = l + (int)item.Y / 5 + 1;
+					if (num < map.GetLength(0) && num2 < map.GetLength(1))
+					{
+						map[num, num2].IsWall = true;
+					}
+				}
+			}
+		}
+		return map;
+	}
+
+	/// <summary>
+	/// 获取页面所有的被占有矩形
+	/// </summary>
+	/// <returns></returns>
+	private List<Rect> GetAllRect()
+	{
+		List<Rect> list = new List<Rect>();
+		GetAllRect(list, this);
+		return list;
+	}
+
+	/// <summary>
+	/// 获取页面所有的被占有矩形
+	/// </summary>
+	/// <param name="diagramPage"></param>
+	/// <returns></returns>
+	public override void GetAllRect(List<Rect> list, ItemsPage dpage)
+	{
+		foreach (object child in hostPanal.Children)
+		{
+			if (child is DiagramItem)
+			{
+				DiagramItem diagramItem = child as DiagramItem;
+				Rect rectWithMargin = diagramItem.GetRectWithMargin(5.0);
+				list.Add(rectWithMargin);
+			}
+			else if (child is ItemsPage)
+			{
+				ItemsPage itemsPage = child as ItemsPage;
+				itemsPage.GetAllRect(list, dpage);
+			}
+		}
+	}
+
+	private void RectDragPanal_LostFocus(object sender, RoutedEventArgs e)
+	{
+		IsShowRectDragPanal = false;
+	}
+
+	private void RectDragPanal_Loaded(object sender, RoutedEventArgs e)
+	{
+		(sender as UIElement).Focus();
+	}
+
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		if (e.Property == ItemsPage.IsShowRectDragPanalProperty)
+		{
+			if (IsShowRectDragPanal)
+			{
+				(Child as Panel).Children.Insert(0, Resources["rectDragMask"] as UIElement);
+				_adornerLayer.Children.Add(Resources["rectDragPanal"] as UIElement);
+			}
+			else
+			{
+				(Child as Panel).Children.Remove(Resources["rectDragMask"] as UIElement);
+				_adornerLayer.Children.Remove(Resources["rectDragPanal"] as UIElement);
+			}
+		}
+	}
+
+	private void Canvas_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+	{
+		(sender as UIElement).Focus();
+	}
+
+	private void DiagramPage_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (IsMouseDown)
+		{
+			IsMouseDown = false;
+		}
+	}
+
+	private void RectDragPanalBase_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+	{
+		IsMouseDown = true;
+		if (AppDataFactory.Instance().IsRightLayout)
+		{
+			leftOffset = 0.0;
+		}
+		else
+		{
+			leftOffset = (ToolBox.isFold ? 52 : 230);
+		}
+		topOffset = 40.0;
+		dragObject = Resources["rectDragMask"] as UIElement;
+		_offset = e.GetPosition(dragObject);
+		_adornerLayer.PreviewMouseMove += DiagramPage_PreviewMouseMove;
+		e.Handled = true;
+	}
+
+	private void DiagramPage_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		_adornerLayer.PreviewMouseMove -= DiagramPage_PreviewMouseMove;
+		if (!IsMouseDown)
+		{
+			return;
+		}
+		if (e.LeftButton != MouseButtonState.Pressed)
+		{
+			DiagramPage_PreviewMouseUp(sender, null);
+			return;
+		}
+		DataObject dataObject = new DataObject();
+		dataObject.SetData(CurBoxOfItems);
+		adornerPanel = new AdornerPanelAttachToWorkArea();
+		subAdornerPanel = new AdornerPanel
+		{
+			IsAdornedElementTransformToWorkAreaElement = false
+		};
+		UIElement uIElement = this.GetParent<IExtensionProvidePanel>() as UIElement;
+		DragDrop.AddPreviewDragOverHandler(uIElement, _dragOver);
+		DragDrop.AddPreviewDropHandler(uIElement, _dragDrop);
+		adornerPanel.WorkAreaElement = uIElement;
+		Rect descendantBounds = VisualTreeHelper.GetDescendantBounds(dragObject);
+		VisualBrush visualBrush = new VisualBrush(dragObject);
+		visualBrush.Stretch = Stretch.None;
+		ItemsPresenter reference = (Child as Panel).Children.OfType<ItemsPresenter>().First();
+		Canvas visual = VisualTreeHelper.GetChild(reference, 0) as Canvas;
+		VisualBrush visualBrush2 = new VisualBrush(visual);
+		visualBrush2.Viewbox = RectDragPanalRect;
+		visualBrush2.ViewboxUnits = BrushMappingMode.Absolute;
+		visualBrush2.Stretch = Stretch.None;
+		Grid grid = new Grid
+		{
+			Opacity = 0.7,
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left,
+			IsHitTestVisible = false
+		};
+		Rectangle rectangle = new Rectangle
+		{
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left
+		};
+		rectangle.Margin = new Thickness(descendantBounds.X, descendantBounds.Y, 0.0, 0.0);
+		rectangle.Fill = visualBrush;
+		rectangle.Width = descendantBounds.Width;
+		rectangle.Height = descendantBounds.Height;
+		grid.Children.Add(rectangle);
+		Rectangle rectangle2 = new Rectangle
+		{
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left
+		};
+		rectangle2.Fill = visualBrush2;
+		rectangle2.Width = RectDragPanalRect.Width;
+		rectangle2.Height = RectDragPanalRect.Height;
+		grid.Children.Add(rectangle2);
+		subAdornerPanel.Children.Add(grid);
+		subAdornerPanel.Visibility = Visibility.Hidden;
+		adornerPanel.Children.Add(subAdornerPanel);
+		adornerPanel.SetAdornedElement(this, null);
+		(uIElement as IExtensionProvidePanel).AdornerLayer.Children.Add(adornerPanel);
+		adornerPanel.top = topOffset;
+		adornerPanel.left = leftOffset;
+		if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+		{
+			DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Copy);
+		}
+		else
+		{
+			DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move);
+		}
+		diagramPage = null;
+		isDragOvered = false;
+		(uIElement as IExtensionProvidePanel).AdornerLayer.Children.Remove(adornerPanel);
+		subAdornerPanel = null;
+		adornerPanel = null;
+		dragObject = null;
+		DragDrop.RemovePreviewDragOverHandler(uIElement, _dragOver);
+		DragDrop.RemovePreviewDropHandler(uIElement, _dragDrop);
+		DiagramPage_PreviewMouseUp(sender, null);
+		RectDragPanalRect = GetBoxRect();
+	}
+
+	private void _dragDrop(object sender, DragEventArgs e)
+	{
+		if (!isDragOvered)
+		{
+			e.Handled = true;
+			return;
+		}
+		IDataObject data = e.Data;
+		if (data != null)
+		{
+			Point point = new Point(controlOffset.X, controlOffset.Y);
+			Point point2 = new Point(subAdornerPanel.OffsetLeft, subAdornerPanel.OffsetTop) - new Vector(point.X, point.Y);
+			data.SetData(point2 + new Vector(10.0, 10.0));
+		}
+	}
+
+	private void _dragOver(object sender, DragEventArgs e)
+	{
+		if (diagramPage == null)
+		{
+			diagramPage = this;
+			controlOffset = diagramPage.TranslatePoint(default, e.Source as UIElement);
+			subAdornerPanel.SetOffsets(new Point(controlOffset.X, controlOffset.Y));
+		}
+		Point position = e.GetPosition(adornerPanel.WorkAreaElement);
+		GeneralTransform curTransform = TransformAdorner.CurTransform;
+		adornerPanel.transform = curTransform;
+		position.X -= leftOffset;
+		position.Y -= topOffset;
+		position = curTransform.Inverse.Transform(position);
+		double offsetLeft = subAdornerPanel.OffsetLeft;
+		double offsetTop = subAdornerPanel.OffsetTop;
+		double left = offsetLeft;
+		double top = offsetTop;
+		bool flag = false;
+		isDragOvered = true;
+		DiagramItem diagramItem = (e.Data?.GetData(typeof(List<DiagramItem>)) as List<DiagramItem>)?.First();
+		if (Math.Abs(position.X - _offset.X - offsetLeft) > 3.0)
+		{
+			left = Math.Round((position.X - _offset.X) / 5.0) * 5.0 + controlOffset.X;
+			flag = true;
+		}
+		if (Math.Abs(position.Y - _offset.Y - offsetTop) > 3.0)
+		{
+			top = Math.Round((position.Y - _offset.Y) / 5.0) * 5.0 + controlOffset.Y;
+			flag = true;
+		}
+		if (flag)
+		{
+			subAdornerPanel.SetOffsets(left, top);
+			if (subAdornerPanel.Visibility != Visibility.Visible)
+			{
+				subAdornerPanel.Visibility = Visibility.Visible;
+			}
+		}
+	}
+
+	private void MenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		ContextMenu parent = (sender as FrameworkElement).GetParent<ContextMenu>();
+		Point point = parent.TranslatePoint(new Point(0.0, 0.0), this);
+		DiagramItem diagramItem = new DiagramItem();
+		diagramItem.DataContext = new VmModuleDecorator
+		{
+			DecorateSource = (sender as FrameworkElement).DataContext
+		};
+		List<object[]> dropItems = GetDropItems(point, new List<DiagramItem> { diagramItem });
+		DoDropItems(dropItems);
+	}
+
+	private void DiagramPage_Loaded(object sender, RoutedEventArgs e)
+	{
+		AppLocalizationService.LanguageChangeEvent = (EventHandler<EventArgs>)Delegate.Combine(AppLocalizationService.LanguageChangeEvent, new EventHandler<EventArgs>(LanguageChanged));
+	}
+
+	private void DiagramPage_UnLoaded(object sender, RoutedEventArgs e)
+	{
+		AppLocalizationService.LanguageChangeEvent = (EventHandler<EventArgs>)Delegate.Remove(AppLocalizationService.LanguageChangeEvent, new EventHandler<EventArgs>(LanguageChanged));
+	}
+
+	public void LanguageChanged(object s, EventArgs e)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			ToolBoxItemsSource = null;
+			if (IsGlobleMode)
+			{
+				SetBinding(ToolBoxItemsSourceProperty, new Binding("GlobleToolSource")
+				{
+					Source = ViewData
+				});
+			}
+			else
+			{
+				SetBinding(ToolBoxItemsSourceProperty, new Binding("ToolSource")
+				{
+					Source = ViewData
+				});
+			}
+		});
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

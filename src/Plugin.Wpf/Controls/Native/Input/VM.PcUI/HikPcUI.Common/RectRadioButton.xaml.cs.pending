@@ -1,0 +1,30 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public partial class RectRadioButton : ImageViewControlButton, IComponentConnector
+{
+	public override ImageViewController.BarItemenum Itemenum => ImageViewController.BarItemenum.Rectangular;
+
+	public RectRadioButton()
+	{
+		ToolTipString = "矩形";
+		InitializeComponent();
+	}
+
+	protected override void PrepareRawRoi()
+	{
+		ImageView.PrepareRawRoi(RoiUIType.HikCoverRoi);
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

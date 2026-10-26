@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front">
+  <Style x:Key="TabColumnItem" TargetType="{x:Type local:TabColumnItem}">
+    <Setter Property="Foreground" Value="#BEBEBE" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontFamily" Value="MicrosoftYaHei" />
+    <Setter Property="Background" Value="{Binding Path=TabItemBackground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" />
+    <Setter Property="BorderBrush" Value="#FFACACAC" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:TabColumnItem}">
+          <Grid Name="templateRoot" Margin="{TemplateBinding Control.Padding}" UseLayoutRounding="True" Background="#FFFF0000" Height="Auto" MinHeight="30" MaxWidth="500" Width="Auto" SnapsToDevicePixels="True">
+            <Border Name="b1" BorderThickness="0" CornerRadius="1" BorderBrush="{Binding Path=BorderBrush, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" Background="{Binding Path=TabItemBackground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" />
+            <Grid>
+              <TextBlock Name="txt" FontWeight="Normal" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{TemplateBinding HeaderedContentControl.Header}" ToolTip="{TemplateBinding HeaderedContentControl.Header}" Height="Auto" MinHeight="18" Width="Auto" MaxWidth="450" Margin="10,0,10,0" FontFamily="{Binding Path=FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" FontSize="{Binding Path=FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" />
+              <Rectangle Name="line" Height="1" Fill="#FFF76900" VerticalAlignment="Bottom" Visibility="Hidden" Margin="1" Width="Auto" />
+            </Grid>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="0,0,0,0" Binding="{Binding Padding, RelativeSource={RelativeSource Self}}">
+              <Setter TargetName="b1" Property="Border.BorderThickness" Value="0,0,1,0" />
+            </DataTrigger>
+            <DataTrigger Value="Left" Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}">
+              <Setter TargetName="b1" Property="Border.BorderThickness" Value="0,0,0,1" />
+            </DataTrigger>
+            <DataTrigger Value="Right" Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}">
+              <Setter TargetName="b1" Property="Border.BorderThickness" Value="0,0,0,1" />
+            </DataTrigger>
+            <DataTrigger Value="true" Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}">
+              <Setter Property="Panel.ZIndex" Value="1" />
+              <Setter TargetName="txt" Property="TextBlock.FontWeight" Value="Bold" />
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+              <Setter TargetName="b1" Property="Border.Background" Value="{Binding Path=TabItemSelectedBackground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Tab}}}" />
+            </DataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true" Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" />
+                <Condition Value="Top" Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+              <Setter TargetName="line" Property="VerticalAlignment" Value="Bottom" />
+              <Setter TargetName="line" Property="HorizontalAlignment" Value="Stretch" />
+              <Setter TargetName="line" Property="Height" Value="1" />
+              <Setter TargetName="line" Property="Width" Value="Auto" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true" Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" />
+                <Condition Value="True" Binding="{Binding IsInDesignModeA, RelativeSource={RelativeSource Self}}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="b1" Property="Border.BorderThickness" Value="2" />
+              <Setter TargetName="b1" Property="Border.BorderBrush" Value="#FFF76900" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true" Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" />
+                <Condition Value="Bottom" Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+              <Setter TargetName="line" Property="VerticalAlignment" Value="Top" />
+              <Setter TargetName="line" Property="Height" Value="1" />
+              <Setter TargetName="line" Property="Width" Value="Auto" />
+              <Setter TargetName="line" Property="HorizontalAlignment" Value="Stretch" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true" Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" />
+                <Condition Value="Left" Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+              <Setter TargetName="line" Property="VerticalAlignment" Value="Stretch" />
+              <Setter TargetName="line" Property="Width" Value="1" />
+              <Setter TargetName="line" Property="Height" Value="Auto" />
+              <Setter TargetName="line" Property="HorizontalAlignment" Value="Right" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true" Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" />
+                <Condition Value="Right" Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="line" Property="Visibility" Value="Visible" />
+              <Setter TargetName="line" Property="VerticalAlignment" Value="Stretch" />
+              <Setter TargetName="line" Property="Width" Value="1" />
+              <Setter TargetName="line" Property="Height" Value="Auto" />
+              <Setter TargetName="line" Property="HorizontalAlignment" Value="Left" />
+            </MultiDataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

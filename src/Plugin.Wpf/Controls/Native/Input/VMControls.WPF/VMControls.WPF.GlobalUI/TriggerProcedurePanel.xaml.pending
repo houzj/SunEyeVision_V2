@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.TriggerProcedurePanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:listView="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;assembly=SunEyeVision.Plugin.Wpf" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" x:Name="source" UseLayoutRounding="True" MouseDown="Source_MouseDown">
+  <Grid Background="#F2F3F3">
+    <FrameworkElement.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+          <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/TextBoxStyle/TextBoxStyle.xaml" />
+          <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource CategoryHeader}" />
+        <Style x:Key="{x:Type Button}" TargetType="{x:Type Button}" BasedOn="{StaticResource addButton}" />
+        <Style x:Key="label" TargetType="{x:Type TextBlock}">
+          <Setter Property="HorizontalAlignment" Value="Left" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Foreground" Value="#666666" />
+          <Setter Property="FontSize" Value="14px" />
+        </Style>
+        <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ListViewComboBoxStyle}" />
+        <Style x:Key="delete" TargetType="{x:Type Button}" BasedOn="{StaticResource deleteButton}">
+          <EventSetter Event="Click" Handler="Delete_OnHandler" />
+        </Style>
+        <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
+          <Setter Property="FrameworkElement.UseLayoutRounding" Value="True" />
+          <Setter Property="ItemsPanel">
+            <Setter.Value>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" />
+              </ItemsPanelTemplate>
+            </Setter.Value>
+          </Setter>
+          <Setter Property="ItemTemplate">
+            <Setter.Value>
+              <DataTemplate DataType="local:TriggerProcessItem">
+                <Grid Margin="0,0,0,6">
+                  <FrameworkElement.Resources>
+                    <ResourceDictionary>
+                      <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}" BasedOn="{StaticResource input}" />
+                    </ResourceDictionary>
+                  </FrameworkElement.Resources>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock VerticalAlignment="Center" Margin="10,0" HorizontalAlignment="Left" Foreground="#666666" FontSize="14" FontFamily="Microsoft YaHei" Text="{Binding Index}" />
+                  <Grid Column="1" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="65" />
+                      <ColumnDefinition Width="80" />
+                      <ColumnDefinition Width="5*" />
+                      <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Grid.Column="0" DisplayMemberPath="DisplayNameA" SelectedValuePath="ValueA" Height="32" HorizontalAlignment="Stretch" Margin="0,0,10,0" ItemsSource="{Binding InputIOList}" SelectedValue="{Binding InputIONum, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
+                    <ComboBox Grid.Column="1" DisplayMemberPath="DisplayNameA" SelectedValuePath="ValueA" Height="32" HorizontalAlignment="Stretch" Margin="0,0,10,0" ItemsSource="{Binding TriggerSignalList}" SelectedValue="{Binding TriggerSignal, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
+                    <ComboBox Grid.Column="2" DisplayMemberPath="DisplayNameA" SelectedValuePath="ValueA" Height="32" HorizontalAlignment="Stretch" Margin="0,0,10,0" ItemsSource="{Binding ProcessList}" SelectedValue="{Binding TriggerProcessID, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
+                    <Button Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource delete}" />
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </ResourceDictionary>
+    </FrameworkElement.Resources>
+    <Grid Margin="18,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="38" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Grid Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="45" />
+          <ColumnDefinition Width="67" />
+          <ColumnDefinition Width="135" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="{DynamicResource Lang_Num}" />
+        <TextBlock Grid.Column="1" Text="{DynamicResource Lang_InputIO}" />
+        <TextBlock Grid.Column="2" Text="{DynamicResource 触发信号}" />
+        <TextBlock Grid.Column="3" Text="{DynamicResource ProcedureModule}" />
+      </Grid>
+      <StackPanel Orientation="Vertical" Grid.Row="1" VerticalAlignment="Top">
+        <ItemsControl Name="controlItem" ItemsSource="{Binding ElementName=source, Path=Items}" />
+        <Button VerticalAlignment="Center" HorizontalAlignment="Left" Click="AddProcessItem_OnClick" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

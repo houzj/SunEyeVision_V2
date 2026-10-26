@@ -1,0 +1,46 @@
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Windows;
+using System.Windows.Controls;
+using Apps.UIHelper.Service;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+public abstract class ServiceProvideControl : Control, IExtensionProvidePanel
+{
+	private readonly ServiceContainer _services = new ServiceContainer();
+
+	protected readonly AdornerLayer _adornerLayer;
+
+	/// <summary>
+	/// Gets the ServiceContainer
+	/// </summary>
+	public ServiceContainer Services => _services;
+
+	public ICollection<AdornerPanel> Adorners => _adornerLayer.Adorners;
+
+	public AdornerLayer AdornerLayer => _adornerLayer;
+
+	public ServiceProvideControl()
+	{
+		_services.AddService(typeof(ExtensionManager), new ExtensionManager(this));
+		_services.AddService(typeof(IExtensionProvidePanel), this);
+		_adornerLayer = new AdornerLayer(this);
+		AddVisualChild(_adornerLayer);
+	}
+
+	protected override Size MeasureOverride(Size constraint)
+	{
+		Size result = base.MeasureOverride(constraint);
+		_adornerLayer.Measure(constraint);
+		return result;
+	}
+
+	protected override Size ArrangeOverride(Size arrangeSize)
+	{
+		Size result = base.ArrangeOverride(arrangeSize);
+		Rect finalRect = new Rect(new Point(0.0, 0.0), arrangeSize);
+		_adornerLayer.Arrange(finalRect);
+		return result;
+	}
+}

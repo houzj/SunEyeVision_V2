@@ -1,0 +1,147 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// WorkStatusControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// WorkStatusControl
+/// </summary>
+public partial class WorkStatusControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public uint CornerRadius
+	{
+		get
+		{
+			return PART_Control.CornerRadius;
+		}
+		set
+		{
+			PART_Control.CornerRadius = value;
+		}
+	}
+
+	public object DataSource
+	{
+		get
+		{
+			return PART_Control.DataSource;
+		}
+		set
+		{
+			if (value is IVMRun dataSource)
+			{
+				PART_Control.DataSource = dataSource;
+				return;
+			}
+			throw new ArgumentException("DataSource Type Error!");
+		}
+	}
+
+	public Brush FreeBackColor
+	{
+		get
+		{
+			return PART_Control.FreeBackColor;
+		}
+		set
+		{
+			PART_Control.FreeBackColor = value;
+		}
+	}
+
+	public Brush BusyBackColor
+	{
+		get
+		{
+			return PART_Control.BusyBackColor;
+		}
+		set
+		{
+			PART_Control.BusyBackColor = value;
+		}
+	}
+
+	public Brush BusyForeColor
+	{
+		get
+		{
+			return PART_Control.BusyForeColor;
+		}
+		set
+		{
+			PART_Control.BusyForeColor = value;
+		}
+	}
+
+	public Brush FreeForeColor
+	{
+		get
+		{
+			return PART_Control.FreeForeColor;
+		}
+		set
+		{
+			PART_Control.FreeForeColor = value;
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public WorkStatusControl()
+	{
+		InitializeComponent();
+	}
+}

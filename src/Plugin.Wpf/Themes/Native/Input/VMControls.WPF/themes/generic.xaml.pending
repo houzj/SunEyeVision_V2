@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/diagramitemtemplate.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/connection/connectionstyle.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/rectdragpanalbasestyle.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/commentboxstyle.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/itemspage.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/searchmodulepopup/searchdrypopup.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/base/commentboxsetting/commentsetting.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

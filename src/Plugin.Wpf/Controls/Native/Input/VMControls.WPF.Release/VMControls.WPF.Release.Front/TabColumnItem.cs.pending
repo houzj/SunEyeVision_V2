@@ -1,0 +1,32 @@
+using System.ComponentModel;
+using System.Windows;
+using FrontendUI.Design.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class TabColumnItem : FrontendUI.Design.Controls.TabColumnItem
+{
+	private string _tabItemname;
+
+	public new string TabItemName
+	{
+		get
+		{
+			return _tabItemname;
+		}
+		set
+		{
+			if (_tabItemname != value)
+			{
+				_tabItemname = value;
+				Header = _tabItemname;
+			}
+		}
+	}
+
+	static TabColumnItem()
+	{
+		FrameworkElement.StyleProperty.OverrideMetadata(typeof(TabColumnItem));
+	}
+}

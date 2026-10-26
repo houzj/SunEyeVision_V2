@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikCover" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:sysw="clr-namespace:System.Windows;assembly=PresentationFramework" x:Name="userControl" Loaded="UserControl_Loaded" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" MouseLeftButtonUp="UserControl_MouseLeftButtonUp" MouseWheel="userControl_MouseWheel" Focusable="True" Width="100" Height="100" FocusVisualStyle="{x:Null}">
+  <sysw:FrameworkElement.Resources>
+    <sysw:ResourceDictionary>
+      <sysw:ResourceDictionary.MergedDictionaries>
+        <sysw:ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </sysw:ResourceDictionary.MergedDictionaries>
+      <sys:Double x:Key="dwidth">8</sys:Double>
+      <sys:Double x:Key="mwidth">16</sys:Double>
+      <sys:Double x:Key="angleWidth">9</sys:Double>
+      <sys:Double x:Key="angleHeight">13</sys:Double>
+      <sys:Double x:Key="arrowWidth">12</sys:Double>
+      <sys:Double x:Key="arrowHalfWidth">6</sys:Double>
+      <sys:Double x:Key="TextForeSize">14</sys:Double>
+      <sysw:Thickness x:Key="TextThick">3,3,0,0</sysw:Thickness>
+      <local:HikCoverStyleConverter x:Key="hcStyleConverter" />
+      <BooleanToVisibilityConverter x:Key="bool2Vis" />
+      <sysw:Style x:Key="HorizonArrowStyle" TargetType="{x:Type Grid}">
+        <sysw:Setter Property="Visibility" Value="Collapsed" />
+        <sysw:Style.Triggers>
+          <sysw:DataTrigger Value="True" Binding="{Binding IsHorizonDirectionOfArrow, Mode=OneWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:HikCover}}">
+            <sysw:Setter Property="Visibility" Value="Visible" />
+          </sysw:DataTrigger>
+        </sysw:Style.Triggers>
+      </sysw:Style>
+      <sysw:Style x:Key="VerticalArrowStyle" TargetType="{x:Type Grid}">
+        <sysw:Style.Triggers>
+          <sysw:DataTrigger Value="True" Binding="{Binding IsHorizonDirectionOfArrow, Mode=OneWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:HikCover}}">
+            <sysw:Setter Property="Visibility" Value="Collapsed" />
+          </sysw:DataTrigger>
+        </sysw:Style.Triggers>
+      </sysw:Style>
+    </sysw:ResourceDictionary>
+  </sysw:FrameworkElement.Resources>
+  <Grid Name="mainGrid" Cursor="SizeAll">
+    <DockPanel>
+      <Grid DockPanel.Dock="Top" ZIndex="1" Height="{sysw:StaticResource dwidth}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="auto" />
+        </Grid.ColumnDefinitions>
+        <local:SquareArea x:Name="top_left" Grid.Column="0" Width="{sysw:StaticResource dwidth}" Height="{sysw:StaticResource dwidth}" Opacity="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+        <Grid Column="1" DockPanel.Dock="Bottom">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="1*" />
+          </Grid.ColumnDefinitions>
+          <Grid ColumnSpan="2">
+            <local:RectangleArea x:Name="top" Height="{sysw:StaticResource dwidth}" Opacity="0" VerticalAlignment="Bottom" />
+            <local:SpinArea x:Name="angle" Margin="0,-5,0,0" Width="{sysw:StaticResource angleWidth}" Height="{sysw:StaticResource angleHeight}" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="{Binding IsAngleVis, Converter={sysw:StaticResource bool2Vis}}" />
+          </Grid>
+          <Grid Column="1" HorizontalAlignment="Left" IsHitTestVisible="False" Margin="0,1,0,-7" Style="{sysw:StaticResource HorizonArrowStyle}">
+            <Canvas Name="arrowView2" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Path Name="TarrowView2" Stroke="{sysw:DynamicResource ROIBaseColor}" StrokeThickness="2" Fill="#00FFFFFF" Stretch="Uniform" Height="{Binding Height, ElementName=arrowView2}" Width="{Binding Width, ElementName=arrowView2}">
+                <Path.Data>
+                  <GeometryGroup>
+                    <PathGeometry>
+                      <PathFigure StartPoint="0,0">
+                        <LineSegment Point="6,6" />
+                        <LineSegment Point="0,12" />
+                      </PathFigure>
+                    </PathGeometry>
+                  </GeometryGroup>
+                </Path.Data>
+              </Path>
+            </Canvas>
+          </Grid>
+        </Grid>
+        <local:SquareArea x:Name="top_right" Grid.Column="2" Width="{sysw:StaticResource dwidth}" Height="{sysw:StaticResource dwidth}" Opacity="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+      </Grid>
+      <Grid DockPanel.Dock="Bottom" Height="{sysw:StaticResource dwidth}" ZIndex="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="auto" />
+        </Grid.ColumnDefinitions>
+        <local:SquareArea x:Name="bottom_left" Grid.Column="0" Width="{sysw:StaticResource dwidth}" Height="{sysw:StaticResource dwidth}" Opacity="0" VerticalAlignment="Top" HorizontalAlignment="Right" />
+        <Grid Column="1" VerticalAlignment="Top">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="1*" />
+          </Grid.ColumnDefinitions>
+          <local:RectangleArea x:Name="bottom" Height="{sysw:StaticResource dwidth}" Opacity="0" Grid.ColumnSpan="2" VerticalAlignment="Top" />
+          <Canvas Grid.ColumnSpan="2">
+            <TextBlock Name="bottomText" IsHitTestVisible="False" Foreground="#FF9ACD32" FontSize="{sysw:DynamicResource TextForeSize}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0" Text="{Binding Flags}" />
+          </Canvas>
+          <Grid Column="1" HorizontalAlignment="Left" IsHitTestVisible="False" Margin="0,-7,0,1" Style="{sysw:StaticResource HorizonArrowStyle}">
+            <Canvas Name="arrowView3" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Path Name="TarrowView3" Stroke="{sysw:DynamicResource ROIBaseColor}" StrokeThickness="2" Fill="#00FFFFFF" Stretch="Uniform" Height="{Binding Height, ElementName=arrowView3}" Width="{Binding Width, ElementName=arrowView3}">
+                <Path.Data>
+                  <GeometryGroup>
+                    <PathGeometry>
+                      <PathFigure StartPoint="0,0">
+                        <LineSegment Point="6,6" />
+                        <LineSegment Point="0,12" />
+                      </PathFigure>
+                    </PathGeometry>
+                  </GeometryGroup>
+                </Path.Data>
+              </Path>
+            </Canvas>
+          </Grid>
+        </Grid>
+        <local:SquareArea x:Name="bottom_right" Grid.Column="2" Width="{sysw:StaticResource dwidth}" Height="{sysw:StaticResource dwidth}" Opacity="0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+      </Grid>
+      <Grid DockPanel.Dock="Left" Width="{sysw:StaticResource dwidth}" ZIndex="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="2*" />
+          <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <local:RectangleArea x:Name="left" Grid.RowSpan="2" Width="{sysw:StaticResource dwidth}" Opacity="0" HorizontalAlignment="Right" />
+        <Grid Row="1" VerticalAlignment="Top" IsHitTestVisible="False" Margin="1,0,-7,0" Style="{sysw:StaticResource VerticalArrowStyle}">
+          <Canvas Name="arrowView0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Path Name="TarrowView0" Stroke="{sysw:DynamicResource ROIBaseColor}" StrokeThickness="2" Fill="#00FFFFFF" Stretch="Uniform" Height="{Binding Height, ElementName=arrowView0}" Width="{Binding Width, ElementName=arrowView0}">
+              <Path.Data>
+                <GeometryGroup>
+                  <PathGeometry>
+                    <PathFigure StartPoint="0,0">
+                      <LineSegment Point="-6,6" />
+                      <LineSegment Point="-12,0" />
+                    </PathFigure>
+                  </PathGeometry>
+                </GeometryGroup>
+              </Path.Data>
+            </Path>
+          </Canvas>
+        </Grid>
+      </Grid>
+      <Grid DockPanel.Dock="Right" Width="{sysw:StaticResource dwidth}" ZIndex="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="2*" />
+          <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <local:RectangleArea x:Name="right" Grid.RowSpan="2" Width="{sysw:StaticResource dwidth}" Opacity="0" HorizontalAlignment="Left" />
+        <Grid Row="1" VerticalAlignment="Top" IsHitTestVisible="False" Margin="-7,0,1,0" Style="{sysw:StaticResource VerticalArrowStyle}">
+          <Canvas Name="arrowView1" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Path Name="TarrowView1" Stroke="{sysw:DynamicResource ROIBaseColor}" StrokeThickness="2" Fill="#00FFFFFF" Stretch="Uniform" Height="{Binding Height, ElementName=arrowView1}" Width="{Binding Width, ElementName=arrowView1}">
+              <Path.Data>
+                <GeometryGroup>
+                  <PathGeometry>
+                    <PathFigure StartPoint="0,0">
+                      <LineSegment Point="-6,6" />
+                      <LineSegment Point="-12,0" />
+                    </PathFigure>
+                  </PathGeometry>
+                </GeometryGroup>
+              </Path.Data>
+            </Path>
+          </Canvas>
+        </Grid>
+      </Grid>
+      <Border Name="bd" Grid.Row="1" Grid.Column="1" BorderThickness="1,1,1,1" Margin="-1" Style="{sysw:DynamicResource ShapeBorderStyle}">
+        <Border Background="#00FFFFFF" Style="{sysw:DynamicResource SelectedBorderStyle}" BorderThickness="{Binding BorderThickness, ElementName=bd}" Margin="{Binding Margin, ElementName=bd}">
+          <Grid Name="SignView" ZIndex="-2" Style="{Binding ROITypeUI, ElementName=userControl, Converter={sysw:StaticResource hcStyleConverter}}">
+            <TextBlock Name="subText" IsHitTestVisible="False" Foreground="{sysw:DynamicResource ROITextColor}" FontWeight="Bold" FontSize="{sysw:DynamicResource TextForeSize}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{sysw:DynamicResource TextThick}" Text="{Binding DisplayName, ElementName=userControl}" />
+            <TextBlock Name="txtOrient" Text="" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            <local:MoveArea x:Name="move" Width="{sysw:StaticResource mwidth}" Height="{sysw:StaticResource mwidth}" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+          </Grid>
+        </Border>
+      </Border>
+    </DockPanel>
+    <UIElement.RenderTransform>
+      <TransformGroup x:Name="TG">
+        <RotateTransform x:Name="tlt" />
+      </TransformGroup>
+    </UIElement.RenderTransform>
+  </Grid>
+</local:HikROIBase>

@@ -1,0 +1,60 @@
+using System.Collections.Generic;
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 点集
+/// </summary>
+public struct PointSetEx : IPointSet, IShape, IShapeBase
+{
+	/// <summary>
+	/// 点数
+	/// </summary>
+	public int PointNum { get; set; }
+
+	/// <summary>
+	/// 点列表
+	/// </summary>
+	public List<Point> PointList { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 粗细（不生效）
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	/// <summary>
+	/// 提示语（不生效）
+	/// </summary>
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public PointSetEx(List<Point> pointList, double opacity = 1.0, string stroke = "#66FF00")
+	{
+		PointNum = pointList?.Count ?? 0;
+		PointList = pointList;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = null;
+		StrokeThickness = 1.0;
+		ToolTip = null;
+	}
+}

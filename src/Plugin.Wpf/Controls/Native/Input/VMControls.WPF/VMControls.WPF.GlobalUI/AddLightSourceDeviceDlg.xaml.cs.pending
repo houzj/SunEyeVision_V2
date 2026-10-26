@@ -1,0 +1,105 @@
+using System.Windows;
+using System.Windows.Markup;
+using Apps.Localization;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// AddLightSourceDeviceDlg.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// AddLightSourceDeviceDlg
+/// </summary>
+public partial class AddLightSourceDeviceDlg : BaseWindow, IComponentConnector
+{
+	public static readonly DependencyProperty LeftTextWidthProperty = DependencyProperty.Register("LeftTextWidth", typeof(int), typeof(AddLightSourceDeviceDlg), new PropertyMetadata(89));
+
+	public static readonly DependencyProperty IsAddProperty = DependencyProperty.Register("IsAdd", typeof(bool), typeof(AddLightSourceDeviceDlg), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsReNameProperty = DependencyProperty.Register("IsReName", typeof(bool), typeof(AddLightSourceDeviceDlg), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ConfigNameProperty = DependencyProperty.Register("ConfigName", typeof(string), typeof(AddLightSourceDeviceDlg), new PropertyMetadata(null));
+
+	public bool IsConfirm { get; set; }
+
+	/// <summary>
+	/// 参数名宽度
+	/// </summary>
+	public int LeftTextWidth
+	{
+		get
+		{
+			return (int)GetValue(LeftTextWidthProperty);
+		}
+		set
+		{
+			SetValue(LeftTextWidthProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 添加设备
+	/// </summary>
+	public bool IsAdd
+	{
+		get
+		{
+			return (bool)GetValue(IsAddProperty);
+		}
+		set
+		{
+			SetValue(IsAddProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 重命名
+	/// </summary>
+	public bool IsReName
+	{
+		get
+		{
+			return (bool)GetValue(IsReNameProperty);
+		}
+		set
+		{
+			SetValue(IsReNameProperty, value);
+		}
+	}
+
+	public string ConfigName
+	{
+		get
+		{
+			return (string)GetValue(ConfigNameProperty);
+		}
+		set
+		{
+			SetValue(ConfigNameProperty, value);
+		}
+	}
+
+	public AddLightSourceDeviceDlg()
+	{
+		InitializeComponent();
+	}
+
+	private void Confirm_Click(object sender, RoutedEventArgs e)
+	{
+		IsConfirm = true;
+		Close();
+	}
+
+	private void paramWindow_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (AppLocalizationService.GetLang("Language") == "English")
+		{
+			LeftTextWidth = 120;
+		}
+		if (IsReName)
+		{
+			Height = 160.0;
+		}
+	}
+}

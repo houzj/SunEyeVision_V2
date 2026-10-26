@@ -1,0 +1,47 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using Apps.XmlParser.ParamTab;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// OutputConfigWindow.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// OutputConfigWindow
+/// </summary>
+public partial class OutputConfigWindow : BaseWindow, IComponentConnector, IStyleConnector
+{
+	private OutputconfigManger outputConfigData = new OutputconfigManger();
+
+	public OutputConfigWindow()
+	{
+		InitializeComponent();
+		DataContext = outputConfigData;
+	}
+
+	/// <summary>
+	/// 关闭
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Close_OnClick(object sender, RoutedEventArgs e)
+	{
+		Close();
+	}
+
+	/// <summary>
+	/// 删除当前项
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Delete_OnHandler(object sender, RoutedEventArgs e)
+	{
+		if ((sender as Button).DataContext is DynamicIO dynamicIO)
+		{
+			dynamicIO.OutputEnabled = false;
+		}
+	}
+}

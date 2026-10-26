@@ -1,0 +1,26 @@
+using System;
+using System.Globalization;
+using System.Windows.Data;
+using Apps.Localization;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalTrigger;
+
+/// <summary>
+/// 局部变量通过FullName拿到的[UserVar]转换为实际的名称
+/// </summary>
+public class LocalModuleToFullNameConverter : IValueConverter
+{
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (value != null && value is string text && text.Contains("[UserVar]"))
+		{
+			return text.Replace("[UserVar]", AppLocalizationService.GetLang("Lang_LocalVariable"));
+		}
+		return value;
+	}
+
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}

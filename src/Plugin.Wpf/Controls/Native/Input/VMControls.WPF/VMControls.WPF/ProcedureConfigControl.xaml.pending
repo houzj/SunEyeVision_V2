@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<localBase:ServiceProvideControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ProcedureConfigControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:appUi="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:appUiCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:xmlUi="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:controlls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;assembly=SunEyeVision.Plugin.Wpf" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localBase="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/commonstyle.xaml" />
+        <ResourceDictionary Source="/VM.Controls;component/Styles/MenuItemStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <commomcontrol:NegateConverter x:Key="negate" />
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <Style x:Key="BtnProcessGround" TargetType="{x:Type ToggleButton}">
+        <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_AllProcess}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Border Name="border" Background="#00FFFFFF" CornerRadius="2" BorderThickness="1">
+                <Image Name="fore" Width="36" Height="36" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_单个_normal.png" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="fore" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_全局_normal.png" />
+                </Trigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="IsEnabled" Value="False" />
+                    <Condition Property="ToggleButton.IsChecked" Value="True" />
+                  </MultiTrigger.Conditions>
+                  <Setter TargetName="fore" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_全局_disable.png" />
+                </MultiTrigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="IsEnabled" Value="False" />
+                    <Condition Property="ToggleButton.IsChecked" Value="False" />
+                  </MultiTrigger.Conditions>
+                  <Setter TargetName="fore" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_单个_disable.png" />
+                </MultiTrigger>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="border" Value="{DynamicResource Col_EditProcess_AllProcess_MouseOver_Background}" Property="Border.Background" />
+                  <Setter TargetName="border" Value="{DynamicResource Col_EditProcess_AllProcess_BorderBursh}" Property="Border.BorderBrush" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="border" Value="{DynamicResource Col_EditProcess_AllProcess_Pressed_Background}" Property="Border.Background" />
+                  <Setter TargetName="border" Value="{DynamicResource Col_EditProcess_AllProcess_BorderBursh}" Property="Border.BorderBrush" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+          <Trigger Property="ToggleButton.IsChecked" Value="True">
+            <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource 子流程}" />
+          </Trigger>
+          <DataTrigger Value="True" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+      <commomcontrol:SuperImageButton x:Key="Com" HorizontalAlignment="Left" Command="{Binding DecoratorSolution.AddCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+        <commomcontrol:SuperImageButton.NormalConnent>
+          <Image Source="/Apps.Style;component/Resources/ic_hu_add_normal.png" Stretch="None" />
+        </commomcontrol:SuperImageButton.NormalConnent>
+        <commomcontrol:SuperImageButton.DisableConnent>
+          <Image Source="/Apps.Style;component/Resources/ic_hu_add_disable.png" Stretch="None" />
+        </commomcontrol:SuperImageButton.DisableConnent>
+        <commomcontrol:SuperImageButton.PressedConnent>
+          <Image Source="/Apps.Style;component/Resources/ic_hu_add_click.png" Stretch="None" />
+        </commomcontrol:SuperImageButton.PressedConnent>
+        <commomcontrol:SuperImageButton.MOverConnent>
+          <Image Source="/Apps.Style;component/Resources/ic_hu_add_hover.png" Stretch="None" />
+        </commomcontrol:SuperImageButton.MOverConnent>
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type commomcontrol:SuperImageButton}">
+            <Style.Triggers>
+              <DataTrigger Value="true" Binding="{Binding Path=DecoratorSolution.DecorateSource.(VMInterface:IVMRun.IsRunning), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                <Setter Property="Visibility" Value="Collapsed" />
+              </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                <Setter Property="Visibility" Value="Collapsed" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </commomcontrol:SuperImageButton>
+      <ToggleButton x:Key="ViewSwitchButton" HorizontalAlignment="Left" Margin="4 0" Height="36" Width="36" Style="{StaticResource BtnProcessGround}" IsChecked="{Binding BoolOfDisplayType}" />
+      <Style x:Key="TabControlStyle" TargetType="{x:Type TabControl}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+        <Setter Property="Padding" Value="4,4,4,4" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Col_ProcessBar_BorderBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TabControl}">
+              <Grid ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" SnapsToDevicePixels="True">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Name="ColumnDefinition0" />
+                  <ColumnDefinition Name="ColumnDefinition1" Width="0" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Name="RowDefinition0" Height="Auto" />
+                  <RowDefinition Name="RowDefinition1" Height="*" />
+                </Grid.RowDefinitions>
+                <Rectangle Height="1" Fill="{DynamicResource Col_ProcessBar_BorderBrush}" VerticalAlignment="Bottom" />
+                <Border Name="head">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="64" />
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <ContentPresenter Content="{StaticResource ViewSwitchButton}" DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" />
+                      <ScrollViewer Name="scroll" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Grid.Column="1" ScrollChanged="Sv_ScrollChanged">
+                        <StackPanel Name="stack" Orientation="Horizontal" HorizontalAlignment="Left">
+                          <TabPanel Name="HeaderPanel" Grid.Column="0" Grid.Row="0" Margin="0" ZIndex="1" IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+                          <Grid Name="Com" Margin="4,0,0,0" Width="32">
+                            <ContentPresenter Name="ComContent" HorizontalAlignment="Left" Content="{x:Null}" />
+                          </Grid>
+                        </StackPanel>
+                      </ScrollViewer>
+                    </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Background="{DynamicResource Col_ProcessBar_Background}">
+                      <ContentPresenter Name="subComContent" Content="{x:Null}" />
+                      <localBase:DiagramGroupListUI Width="32" ItemsSource="{TemplateBinding ItemsControl.ItemsSource}" />
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                          <Style.Triggers>
+                            <DataTrigger Value="True" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </FrameworkElement.Style>
+                    </StackPanel>
+                  </Grid>
+                  <i:Interaction.Triggers>
+                    <core:DataTrigger xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" Comparison="LessThan" core:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}">
+                      <core:ChangePropertyAction PropertyName="Content" i:TargetedTriggerAction.TargetObject="{Binding ElementName=ComContent}" Value="{x:Null}" />
+                      <core:ChangePropertyAction PropertyName="Content" Value="{DynamicResource Com}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=subComContent}" />
+                    </core:DataTrigger>
+                    <DataTrigger Comparison="GreaterThanOrEqual" p30:PropertyChangedTrigger.Binding="{Binding ActualWidth, ElementName=scroll}" Value="{Binding ActualWidth, ElementName=stack}" xmlns:p30="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions">
+                      <p30:ChangePropertyAction PropertyName="Content" i:TargetedTriggerAction.TargetObject="{Binding ElementName=subComContent}" Value="{x:Null}" />
+                      <p30:ChangePropertyAction PropertyName="Content" Value="{DynamicResource Com}" i:TargetedTriggerAction.TargetObject="{Binding ElementName=ComContent}" />
+                    </DataTrigger>
+                  </i:Interaction.Triggers>
+                </Border>
+                <Grid Name="PART_ItemsHolder" Column="0" Row="1" />
+                <ContentPresenter Name="PART_SelectedContentHost" Grid.Row="1" ContentSource="SelectedContent" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="CheckMenuItemStyle" TargetType="{x:Type MenuItem}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type MenuItem}">
+              <Border Background="{TemplateBinding Control.Background}" MinWidth="156" BorderThickness="0,0,0,1" BorderBrush="{TemplateBinding Control.BorderBrush}" HorizontalAlignment="Stretch" Height="30">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <ContentPresenter Name="Icon" ContentSource="Icon" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="Center" />
+                  <StackPanel Name="HeaderHost" Orientation="Horizontal" Margin="12,0,0,0" Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{TemplateBinding HeaderedItemsControl.Header}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    <ToggleButton Margin="5,0,0,0" IsChecked="{Binding DecorateSource.IsProcessRunStop, Mode=TwoWay}">
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type ToggleButton}">
+                          <Setter Property="Template">
+                            <Setter.Value>
+                              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                <Image Name="icon" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_off.png" Stretch="Fill" />
+                                <ControlTemplate.Triggers>
+                                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                    <Setter TargetName="icon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/swith_on.png" />
+                                  </Trigger>
+                                </ControlTemplate.Triggers>
+                              </ControlTemplate>
+                            </Setter.Value>
+                          </Setter>
+                        </Style>
+                      </FrameworkElement.Style>
+                    </ToggleButton>
+                  </StackPanel>
+                  <ContentPresenter Name="Shortcuts" Margin="0,0,12,0" Grid.Column="2" ContentSource="InputGestureText" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="MenuItem.IsSuspendingPopupAnimation" Value="True" />
+                <Trigger Property="MenuItem.Icon" Value="{x:Null}">
+                  <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+                  <Setter TargetName="HeaderHost" Property="Margin" Value="0" />
+                </Trigger>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Value="{DynamicResource ListViewComboBoxIsSelected}" Property="Background" />
+                  <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                </Trigger>
+                <Trigger Property="MenuItem.IsChecked" Value="True">
+                  <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                  <Setter Property="Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="MenuItem.IsPressed" Value="True">
+                  <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                  <Setter Property="Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <controlls:HikContextMenu x:Key="OperateMenu">
+        <MenuItem Name="exportItem" Header="{DynamicResource Lang_PrcExport}" Command="{Binding ProcessExportCommand}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type MenuItem}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Value="False" Binding="{Binding IsRemoteMode}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </MenuItem>
+        <MenuItem Name="exportItemRemote" Header="{DynamicResource Lang_PrcExport}">
+          <MenuItem Header="{DynamicResource Remote}" Command="{Binding ProcessExportRemoteCommand}" />
+          <MenuItem Header="{DynamicResource Local}" Command="{Binding ProcessExportCommand}" />
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type MenuItem}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding IsRemoteMode}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </MenuItem>
+        <MenuItem Name="copyItem" Header="{DynamicResource Lang_ProcessCopy}" Command="{Binding CopyCommand}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type MenuItem}">
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </MenuItem>
+        <MenuItem Header="{DynamicResource Lang_ExportAlgorithmCode}" Command="{Binding ExportAlgorithmCommand}" />
+        <MenuItem Header="{DynamicResource Lang_RunInterval}" Command="{Binding SetIntervalCommand}" />
+        <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding DeleteItemCommand}" />
+        <MenuItem Header="{DynamicResource Lang_StopProcessNG}" Style="{StaticResource CheckMenuItemStyle}" />
+        <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding DisplayModuleSet.RenameCommand}" />
+        <MenuItem Header="{DynamicResource Lang_ProcessTimeOut}" Command="{Binding SetTimeOutCommand}" />
+      </controlls:HikContextMenu>
+      <controlls:HikContextMenu x:Key="GroupOperateMenu">
+        <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding DisplayModuleSet.CopyItemCommand}" />
+        <MenuItem Header="{DynamicResource Lang_ExportGroup}" Command="{Binding DisplayModuleSet.ExportGroupCommand}" />
+        <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding DisplayModuleSet.RenameCommand}" />
+        <MenuItem Header="{DynamicResource Lang_AddToToolbox}" Command="{Binding DisplayModuleSet.AddToToolboxCommand}" />
+      </controlls:HikContextMenu>
+      <controlls:HikContextMenu x:Key="IndependentGroupOperateMenu">
+        <MenuItem Header="{DynamicResource Lang_ExportGroup}" Command="{Binding DisplayModuleSet.ExportGroupCommand}" />
+        <MenuItem Header="{DynamicResource Lang_Save_Group}" Command="{Binding DisplayModuleSet.SaveGroupCommand}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type MenuItem}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding IsDependentGroup}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </MenuItem>
+      </controlls:HikContextMenu>
+      <DataTemplate x:Key="RunStopButton">
+        <appUiCommon:PerSuperImageButton Margin="4,0,0,0" Command="{Binding RunContinuousCommand}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type appUiCommon:PerSuperImageButton}">
+              <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_MutiRun}" />
+              <Setter Property="appUiCommon:PerSuperImageButton.NormalSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_normal.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.DisableSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_disable.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.PressedSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_click.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.MoveOverSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_hover.png" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding DecorateSource.ContinuousRunEnable}">
+                  <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_StopRun}" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.NormalSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_normal.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.DisableSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_disable.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.PressedSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_click.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.MoveOverSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_hover.png" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </appUiCommon:PerSuperImageButton>
+      </DataTemplate>
+      <StackPanel x:Key="ConfigButton" Orientation="Horizontal">
+        <commomcontrol:SuperImageButton ToolTip="{DynamicResource Lang_SetCnfg}" Margin="0,0,0,0" Command="{Binding ConfigParamsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" CommandParameter="{Binding DisplayModuleSet}" Click="SuperImageButton_Click">
+          <commomcontrol:SuperImageButton.NormalConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_tab_group_configuration_normal.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.NormalConnent>
+          <commomcontrol:SuperImageButton.DisableConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_tab_group_configuration_disable.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.DisableConnent>
+          <commomcontrol:SuperImageButton.PressedConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_tab_group_configuration_click.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.PressedConnent>
+          <commomcontrol:SuperImageButton.MOverConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_tab_group_configuration_hover.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.MOverConnent>
+        </commomcontrol:SuperImageButton>
+      </StackPanel>
+      <StackPanel x:Key="VarConfigButton" Orientation="Horizontal">
+        <commomcontrol:SuperImageButton ToolTip="{DynamicResource Lang_LocalVariable}" Margin="0,0,0,0" Command="{Binding VarConfigParamsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" CommandParameter="{Binding DisplayModuleSet}">
+          <commomcontrol:SuperImageButton.NormalConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_local variable_normal.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.NormalConnent>
+          <commomcontrol:SuperImageButton.DisableConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_local variable_disable.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.DisableConnent>
+          <commomcontrol:SuperImageButton.PressedConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_local variable_click.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.PressedConnent>
+          <commomcontrol:SuperImageButton.MOverConnent>
+            <Image Source="/Apps.Style;component/Resources/ic_local variable_hover.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.MOverConnent>
+        </commomcontrol:SuperImageButton>
+        <Rectangle Width="1" Height="30" Fill="{DynamicResource Col_ProcessBar_BorderBrush}" />
+      </StackPanel>
+      <StackPanel x:Key="RunButtons" Orientation="Horizontal">
+        <appUiCommon:PerSuperImageButton ToolTip="{DynamicResource Lang_SigRun}" NormalSource="/VMControls.WPF;component/Resources/ic_play_单流程_normal.png" MoveOverSource="/VMControls.WPF;component/Resources/ic_play_单流程_hover.png" PressedSource="/VMControls.WPF;component/Resources/ic_play_单流程_click.png" DisableSource="/VMControls.WPF;component/Resources/ic_play_单流程_disable.png" Style="{StaticResource SuperImageButtonRunOnceStyle}" Command="{Binding RunOnceCommand}" />
+        <ContentPresenter Style="{StaticResource ContentPresenterContinousRunStyle}" ContentTemplate="{StaticResource RunStopButton}" Content="{Binding}" />
+      </StackPanel>
+      <DataTemplate x:Key="btnUp">
+        <StackPanel Orientation="Horizontal">
+          <commomcontrol:SuperImageButton ToolTip="{DynamicResource Lang_UpLay}" Margin="3,0,4,0" Command="{Binding UpCommand}">
+            <commomcontrol:SuperImageButton.NormalConnent>
+              <Image Source="/Apps.Style;component/Resources/tab_ic_back_normal.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.NormalConnent>
+            <commomcontrol:SuperImageButton.DisableConnent>
+              <Image Source="/Apps.Style;component/Resources/tab_ic_back_hover.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.DisableConnent>
+            <commomcontrol:SuperImageButton.PressedConnent>
+              <Image Source="/Apps.Style;component/Resources/tab_ic_back_click.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.PressedConnent>
+            <commomcontrol:SuperImageButton.MOverConnent>
+              <Image Source="/Apps.Style;component/Resources/tab_ic_back_disable.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.MOverConnent>
+          </commomcontrol:SuperImageButton>
+          <Rectangle Width="1" Height="30" Fill="{DynamicResource Col_ProcessBar_BorderBrush}" />
+        </StackPanel>
+      </DataTemplate>
+      <Style x:Key="TopTabItemStyle" TargetType="{x:Type TabItem}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{DynamicResource Col_ProcessBar_Foreground}" />
+        <Setter Property="TabItem.IsSelected" Value="{Binding IsSelected}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TabItem}">
+              <Grid IsEnabled="{Binding IsActive}" ToolTip="{Binding DisplayModuleSet.Name}">
+                <Border Name="bd" HorizontalAlignment="Center" VerticalAlignment="Center" Height="40" Width="auto" Background="{DynamicResource Col_ProcessBar_Background}" BorderThickness="0,0,1,1" BorderBrush="{DynamicResource Col_ProcessBar_BorderBrush}">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal" Background="#00FFFFFF" MouseLeftButtonDown="HeadText_MouseDown">
+                      <ContentPresenter Name="Up" Content="{x:Null}" />
+                      <ContentPresenter Name="Config" Content="{x:Null}" />
+                      <ContentPresenter Name="VarConfig" Content="{x:Null}" />
+                      <Ellipse Name="light" Width="8" Height="8" Fill="#FFEC0000" Margin="8,0,0,0" />
+                      <ContentPresenter Name="Content" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" SnapsToDevicePixels="True" Margin="0,0,0,0" />
+                    </StackPanel>
+                    <ContentPresenter Name="buttons" Margin="0,0,0,0" Content="{x:Null}" IsEnabled="{Binding IsEnabled}">
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type ContentPresenter}">
+                          <Style.Triggers>
+                            <DataTrigger Value="False" Binding="{Binding Path=DecorateSource.(VMInterface:IVMRun.RunEnable)}">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </FrameworkElement.Style>
+                    </ContentPresenter>
+                  </StackPanel>
+                </Border>
+              </Grid>
+              <ControlTemplate.Triggers>
+                <DataTrigger Value="True" Binding="{Binding DisplayModuleSet.UpEnable}">
+                  <Setter TargetName="Up" Property="ContentPresenter.ContentTemplate" Value="{StaticResource btnUp}" />
+                  <Setter TargetName="Up" Property="ContentPresenter.Content" Value="{Binding}" />
+                </DataTrigger>
+                <DataTrigger Value="true" Binding="{Binding IsDisplaySingleModulesetSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                  <Setter TargetName="Up" Property="ContentPresenter.ContentTemplate" Value="{x:Null}" />
+                  <Setter TargetName="Up" Property="ContentPresenter.Content" Value="{x:Null}" />
+                </DataTrigger>
+                <DataTrigger Value="{x:Static DataForUI:StatusBarSymbol.Ready}" Binding="{Binding WorkState}">
+                  <Setter TargetName="light" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <Trigger Property="TabItem.IsSelected" Value="True">
+                  <Setter TargetName="bd" Value="{DynamicResource Col_ProcessBar_Selected_Background}" Property="Border.Background" />
+                  <Setter TargetName="bd" Value="{DynamicResource Col_ProcessBar_BorderBrush}" Property="Border.BorderBrush" />
+                  <Setter Property="FontWeight" Value="Bold" />
+                  <Setter TargetName="buttons" Property="ContentPresenter.Content" Value="{StaticResource RunButtons}" />
+                  <Setter TargetName="Config" Property="ContentPresenter.Content" Value="{StaticResource ConfigButton}" />
+                  <Setter TargetName="VarConfig" Property="ContentPresenter.Content" Value="{StaticResource VarConfigButton}" />
+                </Trigger>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Value="True" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" />
+                    <Condition Value="False" Binding="{Binding IsShowAtSingleProcedureMode}" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </MultiDataTrigger>
+                <DataTrigger Value="True" Binding="{Binding IsForSingleModulesetMode, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Value="True" Binding="{Binding IsForbidden}">
+                  <Setter TargetName="Config" Property="IsEnabled" Value="False" />
+                  <Setter TargetName="VarConfig" Property="IsEnabled" Value="False" />
+                </DataTrigger>
+                <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+                  <Setter TargetName="Config" Property="IsEnabled" Value="False" />
+                  <Setter TargetName="VarConfig" Property="IsEnabled" Value="False" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+          <DataTrigger Value="True" Binding="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+          </DataTrigger>
+          <DataTrigger Value="True" Binding="{Binding IsOpenParams, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+          </DataTrigger>
+          <DataTrigger Value="false" Binding="{Binding IsAdmin, Source={x:Static user:CodeManager.Instance}}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+          </DataTrigger>
+          <DataTrigger Value="True" Binding="{Binding IsProcedure}">
+            <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource OperateMenu}" />
+          </DataTrigger>
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Value="False" Binding="{Binding IsProcedure}" />
+              <Condition Value="False" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" />
+            </MultiDataTrigger.Conditions>
+            <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource GroupOperateMenu}" />
+          </MultiDataTrigger>
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Value="False" Binding="{Binding IsProcedure}" />
+              <Condition Value="True" Binding="{Binding IsSingleProcedure, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" />
+            </MultiDataTrigger.Conditions>
+            <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource IndependentGroupOperateMenu}" />
+          </MultiDataTrigger>
+        </Style.Triggers>
+      </Style>
+      <DataTemplate x:Key="noSource">
+        <Grid>
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock FontSize="16" Foreground="#858688" Margin="0,-40,0,16" HorizontalAlignment="Center" Text="{DynamicResource 无数据}" />
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="noProcess">
+        <Grid>
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Image Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/pic_流程.png" Stretch="None" HorizontalAlignment="Center" />
+            <TextBlock FontSize="16" Foreground="{DynamicResource Col_EditProcess_Foreground}" Margin="0,-40,0,16" HorizontalAlignment="Center" Text="{DynamicResource 暂无流程配置，请添加流程}" />
+            <Button Width="170" Height="42" Margin="0,8,0,0" HorizontalAlignment="Center" ClickMode="Release" Command="{Binding DecoratorSolution.AddCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Button}">
+                  <Setter Property="Template">
+                    <Setter.Value>
+                      <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Name="bd" BorderThickness="1" BorderBrush="{DynamicResource Col_EditProcess_AddProcess_BorderBrush}" Background="{DynamicResource Col_EditProcess_AddProcess_Background}" CornerRadius="2">
+                          <StackPanel Orientation="Horizontal">
+                            <Image Name="im" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/btn_add_normal.png" Stretch="None" Margin="5,0,0,0" VerticalAlignment="Center" />
+                            <Border Width="140" VerticalAlignment="Center">
+                              <TextBlock Name="tb" FontSize="16" Foreground="{DynamicResource Col_EditProcess_AddProcess_Foreground}" Text="{DynamicResource 添加流程}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                          </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                          <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="im" Property="Image.Source" Value="/VMControls.WPF;component/Resources/btn_add_click.png" />
+                            <Setter TargetName="tb" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
+                            <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                            <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                          </Trigger>
+                        </ControlTemplate.Triggers>
+                      </ControlTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </FrameworkElement.Style>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="tabProcess">
+        <Grid>
+          <TabControl Name="tabControl" BorderThickness="0" Style="{StaticResource TabControlStyle}" ItemContainerStyle="{StaticResource TopTabItemStyle}" ItemsSource="{Binding DecoratedProcedures, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" SelectedItem="{Binding DecoratorSelectedTabItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" SelectionChanged="m_ProcessTabControl_SelectionChanged" Loaded="TabControl_Loaded">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <ContentPresenter Content="{Binding DisplayModuleSet}" DataContextChanged="ContentPresenter_DataContextChanged">
+                  <ContentPresenter.ContentTemplate>
+                    <DataTemplate>
+                      <appUi:HeadReNameTextBox Name="headText" Foreground="{DynamicResource Col_ProcessBar_Foreground}" BorderThickness="0" Background="#00FFFFFF" MaxLength="64" FontSize="14" Margin="8,0,0,0" VerticalAlignment="Center" MaxWidth="240" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" IsReName="{Binding IsReName, Mode=TwoWay}" />
+                    </DataTemplate>
+                  </ContentPresenter.ContentTemplate>
+                </ContentPresenter>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+              <DataTemplate>
+                <Grid>
+                  <localBase:DiagramArea ItemDoubleClick="DiagramArea_ItemDoubleClick" Procedure="{Binding DisplayModuleSet}" IsEnabled="{Binding IsActive}" IsLockWorkArea="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" IsOpenParams="{Binding IsOpenParams, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" ZoomIndex="{Binding ZoomIndex, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" SelectedItem="{Binding DecoratorSelectedItem, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" ItemsSource="{Binding Path=DisplayModuleSet.DecorateSource.(VMInterface:IChildren.Children)}" SubSource="{Binding}" SearchModuleInfo="{Binding SelectedModule}" />
+                </Grid>
+              </DataTemplate>
+            </TabControl.ContentTemplate>
+          </TabControl>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="allProcess">
+        <Grid Name="allProcess">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <ContentPresenter Margin="0,2" Content="{StaticResource ViewSwitchButton}" DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" />
+          <localBase:DiagramArea x:Name="DiagramAreaControl" Loaded="DiagramArea_Loaded" Grid.Row="1" ItemDoubleClick="DiagramArea_ItemDoubleClick" IsLockWorkArea="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" IsOpenParams="{Binding IsOpenParams, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" SelectedItem="{Binding DecoratorSelectedItem, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" ItemsSource="{Binding DecoratedModules, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" Procedure="{Binding Solution, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ProcedureConfigControl}}" />
+        </Grid>
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate TargetType="{x:Type localBase:ServiceProvideControl}">
+      <Grid Name="PART_View" Background="{DynamicResource Col_ProcessBar_Background}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Name="columnDefinition1" Width="Auto" />
+          <ColumnDefinition Name="columnDefinition2" Width="*" />
+        </Grid.ColumnDefinitions>
+        <local:ToolBox x:Name="toolBox" Margin="1,0,0,0" IsGlobleMode="{Binding BoolOfDisplayType, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+          <UIElement.Effect>
+            <DropShadowEffect BlurRadius="5" Direction="360" Opacity="0.30" ShadowDepth="2" Color="#FF0F1010" />
+          </UIElement.Effect>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type local:ToolBox}">
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                  <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </local:ToolBox>
+        <Grid Name="paramControl" Column="1">
+          <ContentPresenter Name="cp" ContentTemplate="{StaticResource tabProcess}" Content="{Binding}" />
+        </Grid>
+      </Grid>
+      <ControlTemplate.Triggers>
+        <DataTrigger Value="True" Binding="{Binding BoolOfDisplayType, RelativeSource={RelativeSource Mode=Self}}">
+          <Setter TargetName="cp" Value="{StaticResource allProcess}" Property="ContentPresenter.ContentTemplate" />
+        </DataTrigger>
+        <DataTrigger Value="0" Binding="{Binding DecoratedProcedures.Count, RelativeSource={RelativeSource Mode=Self}}">
+          <Setter TargetName="cp" Value="{StaticResource noProcess}" Property="ContentPresenter.ContentTemplate" />
+        </DataTrigger>
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Value="0" Binding="{Binding DecoratedProcedures.Count, RelativeSource={RelativeSource Mode=Self}}" />
+            <Condition Value="True" Binding="{Binding IsForSingleModulesetMode, RelativeSource={RelativeSource Mode=Self}}" />
+          </MultiDataTrigger.Conditions>
+          <Setter TargetName="cp" Value="{StaticResource noSource}" Property="ContentPresenter.ContentTemplate" />
+        </MultiDataTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
+  </Control.Template>
+</localBase:ServiceProvideControl>

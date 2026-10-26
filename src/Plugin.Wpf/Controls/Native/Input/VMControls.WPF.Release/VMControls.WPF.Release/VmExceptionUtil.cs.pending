@@ -1,0 +1,60 @@
+using System;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+internal static class VmExceptionUtil
+{
+	private static bool IsNeedStartAuth(int ErrorCode)
+	{
+		if (ErrorCode == -536869115 || ErrorCode == -536869113)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	private static VmException GetVmException(Exception exception)
+	{
+		VmException result = null;
+		while (exception != null)
+		{
+			if (exception is VmException)
+			{
+				result = (VmException)exception;
+				break;
+			}
+			exception = exception.InnerException;
+		}
+		return result;
+	}
+
+	public static void DoneException(Exception ex, bool needThrow = false)
+	{
+		VmException vmException = GetVmException(ex);
+		string text = null;
+		if (vmException != null)
+		{
+			if (IsNeedStartAuth(vmException.errorCode))
+			{
+				text = ((vmException.errorCode != -536869115) ? AppLocalizationService.GetLang("软件授权已过期，是否进行重新授权？") : AppLocalizationService.GetLang("软件未激活，是否进行授权激活？"));
+			}
+			else
+			{
+				text = ((vmException.errorCode != -536869093) ? ErrorCodeInfo.GetErrorInfo(vmException.errorCode) : (ErrorCodeInfo.GetErrorInfo(vmException.errorCode) + AppLocalizationService.GetLang("逗号") + AppLocalizationService.GetLang("是否打开帮助文档")));
+			}
+		}
+		else
+		{
+			text = ((!ex.Message.Contains("VM.Core.TempVmSolution")) ? AppLocalizationService.GetLang("Lang_StartErr") : AppLocalizationService.GetLang("Lang_EnvironmentAbnormalities"));
+		}
+		LogHelper.objLog.Error("启动失败:" + text, ex);
+		if (needThrow)
+		{
+			throw new Exception(text, ex);
+		}
+	}
+}

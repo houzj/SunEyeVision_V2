@@ -1,0 +1,797 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows.Input;
+using Apps.Data;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser.Variable;
+using Apps.XmlUI.ParamTab;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 变量实体类
+/// </summary>
+public class GlobalVariableItem : NotifyPropertyChangedBase, IDecorate, IVmFrameBase, IParent
+{
+	private const string Collapsed = "Collapsed";
+
+	private const string Visible = "Visible";
+
+	private const string BindDefaultStr = "    ------    ";
+
+	/// <summary>
+	/// 变量名
+	/// </summary>
+	private string _name;
+
+	/// <summary>
+	/// 变量值
+	/// </summary>
+	private string _value;
+
+	/// <summary>
+	/// 变量类型
+	/// </summary>
+	private string _type;
+
+	/// <summary>
+	/// 通讯初始化
+	/// </summary>
+	private bool _comminit;
+
+	/// <summary>
+	/// 索引值 
+	/// </summary>
+	private int _Index = 1;
+
+	/// <summary>
+	/// 绑定模块结果
+	/// </summary>
+	private string _bindString = "    ------    ";
+
+	private bool _isSelected = false;
+
+	private bool _iscapture = false;
+
+	private string _displayParamsName;
+
+	private string _IsBindTarget = "Visible";
+
+	private string _RemarkInfo;
+
+	private string _displayType = "";
+
+	private VariableManager variableManager;
+
+	/// <summary>
+	/// 保存旧名称
+	/// </summary>
+	public string strOldName = "";
+
+	private DelegateCommand<string> _TextChangedCommand = null;
+
+	private string _displayTooltipBindString;
+
+	private string _displayTooltipName;
+
+	private List<RunParamsBaseNode> _SelectedRunParams = null;
+
+	private VarRunParamInfo[] _OldSelectedRunParams = null;
+
+	private DelegateCommand _ModifiyRunParamsCommand = null;
+
+	private DelegateCommand _DisplayValueArrayCommand = null;
+
+	private ArrayDisplayWindow arrayDisplay = null;
+
+	private bool _isArrayValue = false;
+
+	/// <summary>
+	/// 绑定的变量IO对象
+	/// </summary>
+	public object DecorateSource { get; set; }
+
+	/// <summary>
+	/// 父节点
+	/// </summary>
+	public object Parent { get; set; }
+
+	/// <summary>
+	/// 暂时支持这些控件，后面需要从xml读取支持所有类型的控件
+	/// </summary>
+	public List<string> IoSelectValueTypes => VariableManager.GetDisplaySupportIO();
+
+	/// <summary>
+	/// 是否选中
+	/// </summary>
+	public bool IsSelected
+	{
+		get
+		{
+			return _isSelected;
+		}
+		set
+		{
+			if (_isSelected != value)
+			{
+				_isSelected = value;
+				OnPropertyChanged("IsSelected");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否在编辑
+	/// </summary>
+	public bool Capture
+	{
+		get
+		{
+			return _iscapture;
+		}
+		set
+		{
+			if (_iscapture != value)
+			{
+				_iscapture = value;
+				OnPropertyChanged("Capture");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 名称
+	/// </summary>
+	public string Name
+	{
+		get
+		{
+			return _name;
+		}
+		set
+		{
+			if (_name != null && _name == AppLocalizationService.UnDoTranslate(value))
+			{
+				return;
+			}
+			if (string.IsNullOrEmpty(value))
+			{
+				HikMessageBox.Show("Lang_ParamNameErr", "Lang_PmValueEptErr", MessageIcons.Error, isTranslate: true);
+				OnPropertyChanged("Name");
+				return;
+			}
+			if (StringUtil.GetByteCountWithZero(value) > 126)
+			{
+				HikMessageBox.Show("Lang_ParamNameErr", "Lang_PmNameLong", MessageIcons.Error, isTranslate: true);
+				OnPropertyChanged("Name");
+				return;
+			}
+			if (value.Contains('?') || value.Contains(';') || value.Contains('.') || value.Contains('/') || value.Contains('\\') || value.Contains('`') || value.Contains('{') || value.Contains('}') || value.Contains('[') || value.Contains(']') || value.Contains('<') || value.Contains('>') || value.Contains('(') || value.Contains(')'))
+			{
+				HikMessageBox.Show("Lang_SetCnfg", "Lang_Containsillegal", MessageIcons.Error, isTranslate: true);
+				OnPropertyChanged("Name");
+				return;
+			}
+			if (Parent != null)
+			{
+				IList<GlobalVariableItem> source = Parent as IList<GlobalVariableItem>;
+				string translateValue = AppLocalizationService.UnDoTranslate(value);
+				bool flag = DecorateSource != null && ((IVmModule)(DecorateSource as VmIO).Root).IsExistName(translateValue);
+				if (source.Any((GlobalVariableItem p) => p.Name == translateValue) | flag)
+				{
+					HikMessageBox.Show("Lang_ParamNameErr", "Lang_PmNameExited", MessageIcons.Error, isTranslate: true);
+					OnPropertyChanged("Name");
+					return;
+				}
+			}
+			strOldName = _name;
+			_name = ((_name == null) ? value : AppLocalizationService.UnDoTranslate(value));
+			if (string.IsNullOrEmpty(_name))
+			{
+				CommInit = false;
+			}
+			OnPropertyChanged("Name");
+		}
+	}
+
+	/// <summary>
+	/// 名称修改命令
+	/// </summary>
+	public ICommand TextChangedCommand => (ICommand)(_TextChangedCommand ?? (_TextChangedCommand = new DelegateCommand<string>((Action<string>)TextChangedExecute)));
+
+	/// <summary>
+	/// 显示类型
+	/// </summary>
+	public string DisplayType
+	{
+		get
+		{
+			if (string.IsNullOrEmpty(_displayType))
+			{
+				if (Type == "ROIANNULUS")
+				{
+					_displayType = "ANNULUS";
+				}
+				else if (Type == "ROIPOLYGON")
+				{
+					_displayType = "POLYGON";
+				}
+				else if (Type == "Rect")
+				{
+					_displayType = "RECT";
+				}
+				else if (Type == "ROIBOX")
+				{
+					_displayType = "BOX";
+				}
+				else
+				{
+					_displayType = Type;
+				}
+			}
+			return _displayType;
+		}
+		set
+		{
+			if (value != _displayType)
+			{
+				_displayType = value;
+				switch (value)
+				{
+				case "ANNULUS":
+					Type = "ROIANNULUS";
+					break;
+				case "POLYGON":
+					Type = "ROIPOLYGON";
+					break;
+				case "RECT":
+					Type = "Rect";
+					break;
+				case "BOX":
+					Type = "ROIBOX";
+					break;
+				default:
+					Type = value;
+					break;
+				}
+				OnPropertyChanged("DisplayType");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 类型
+	/// </summary>
+	public string Type
+	{
+		get
+		{
+			return _type;
+		}
+		set
+		{
+			string value2 = Value;
+			if (_type == value)
+			{
+				return;
+			}
+			_type = value;
+			switch (Type)
+			{
+			case "int":
+			{
+				if (!int.TryParse(Value, out var _))
+				{
+					value2 = "0";
+				}
+				break;
+			}
+			case "float":
+			{
+				if (!float.TryParse(Value, out var _))
+				{
+					value2 = "0.0";
+				}
+				break;
+			}
+			case "string":
+				value2 = "";
+				break;
+			case "double":
+			{
+				if (!double.TryParse(Value, out var _))
+				{
+					value2 = "0.0";
+				}
+				break;
+			}
+			}
+			OnPropertyChanged("Type");
+			Value = value2;
+			IsArrayValue = false;
+			OnPropertyChanged("Value");
+			OnPropertyChanged("IsVarValueVisibility");
+			OnPropertyChanged("IsBindMoudleResult");
+			OnPropertyChanged("IsComInitEnable");
+			if (!IsComInitEnable)
+			{
+				CommInit = false;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 数组信息-todo zrw 暂定
+	/// </summary>
+	public string[] ArrayValue { get; set; }
+
+	/// <summary>
+	/// 初始值
+	/// </summary>
+	public string Value
+	{
+		get
+		{
+			return _value;
+		}
+		set
+		{
+			if (_value == value)
+			{
+				return;
+			}
+			string value2 = value;
+			switch (Type)
+			{
+			case "int":
+			{
+				if (!int.TryParse(value, out var result3))
+				{
+					return;
+				}
+				value2 = result3.ToString("D");
+				break;
+			}
+			case "float":
+			{
+				if (!float.TryParse(value, out var result2))
+				{
+					return;
+				}
+				value2 = result2.ToString();
+				break;
+			}
+			case "byte":
+			{
+				byte[] bytes = null;
+				if (StringUtil.CheckByteString(value, ref bytes))
+				{
+					value2 = value;
+					break;
+				}
+				return;
+			}
+			case "double":
+			{
+				if (!double.TryParse(value, out var result))
+				{
+					return;
+				}
+				value2 = result.ToString();
+				break;
+			}
+			}
+			_value = value2;
+			OnPropertyChanged("Value");
+		}
+	}
+
+	/// <summary>
+	/// 通讯初始化
+	/// </summary>
+	public bool CommInit
+	{
+		get
+		{
+			return _comminit;
+		}
+		set
+		{
+			if (_comminit != value)
+			{
+				_comminit = value;
+				OnPropertyChanged("CommInit");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 索引值 add by zhouriwen 2020-03-13
+	/// </summary>
+	public int Index
+	{
+		get
+		{
+			return _Index;
+		}
+		set
+		{
+			if (_Index != value)
+			{
+				_Index = value;
+				if (DecorateSource != null)
+				{
+					(DecorateSource as VmIO).Index = _Index;
+				}
+				OnPropertyChanged("Index");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 绑定的BindString显示名称，数据显示
+	/// </summary>
+	public string DisplayTooltipBindString
+	{
+		get
+		{
+			return _displayTooltipBindString;
+		}
+		set
+		{
+			if (value != _displayTooltipBindString)
+			{
+				_displayTooltipBindString = value;
+				OnPropertyChanged("DisplayTooltipBindString");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 绑定模块结果 add by zhouriwen 2020-03-13
+	/// </summary>
+	public string BindString
+	{
+		get
+		{
+			string[] array = variableManager?.GetBindGlobalVariableItem(Name, Type);
+			if (array == null || array.Length == 0)
+			{
+				OnPropertyChanged("IsBindMoudleResult");
+				return _bindString;
+			}
+			StringBuilder sb = new StringBuilder();
+			Array.ForEach(array, (string x) =>
+			{
+				sb.Append(x + ";");
+			});
+			_bindString = sb.ToString();
+			_bindString = _bindString.Substring(0, _bindString.Length - 1);
+			DisplayTooltipBindString = _bindString.Replace(";", "\r\n");
+			OnPropertyChanged("IsBindMoudleResult");
+			return _bindString;
+		}
+		set
+		{
+			if (!(_bindString == value))
+			{
+				_bindString = value;
+				OnPropertyChanged("BindString");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否该全局变量绑定到了模块结果
+	/// </summary>
+	public bool IsBindMoudleResult => !IsCombinationType;
+
+	/// <summary>
+	/// 用于指示是否显示删除按钮
+	/// </summary>
+	public string IsBindTarget
+	{
+		get
+		{
+			return _IsBindTarget;
+		}
+		set
+		{
+			if (_IsBindTarget != value)
+			{
+				_IsBindTarget = value;
+				OnPropertyChanged("IsBindTarget");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 绑定的显示名称
+	/// </summary>
+	public string DisplayParamsName
+	{
+		get
+		{
+			return _displayParamsName;
+		}
+		set
+		{
+			if (value != _displayParamsName)
+			{
+				_displayParamsName = value;
+				OnPropertyChanged("DisplayParamsName");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 绑定的tooltip显示名称
+	/// </summary>
+	public string DisplayTooltipName
+	{
+		get
+		{
+			return _displayTooltipName;
+		}
+		set
+		{
+			if (value != _displayTooltipName)
+			{
+				_displayTooltipName = value;
+				OnPropertyChanged("DisplayTooltipName");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 全名称
+	/// </summary>
+	public string FullName
+	{
+		get
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	/// <summary>
+	/// 备注信息
+	/// </summary>
+	public string RemarkInfo
+	{
+		get
+		{
+			return _RemarkInfo;
+		}
+		set
+		{
+			if (value != _RemarkInfo)
+			{
+				if (StringUtil.GetByteCountWithZero(value) > 256)
+				{
+					HikMessageBox.Show("Lang_ParamNameErr", "Lang_ParamLenErr", MessageIcons.Error, isTranslate: true);
+					return;
+				}
+				_RemarkInfo = value;
+				OnPropertyChanged("RemarkInfo");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 分组信息
+	/// </summary>
+	public string VarGroupInfo { get; set; }
+
+	/// <summary>
+	/// 目标参数信息绑定集合
+	/// </summary>
+	public List<RunParamsBaseNode> SelectedRunParams
+	{
+		get
+		{
+			return _SelectedRunParams;
+		}
+		set
+		{
+			if (_SelectedRunParams == value)
+			{
+				return;
+			}
+			_SelectedRunParams = value;
+			if (_SelectedRunParams != null && _SelectedRunParams.Count > 0)
+			{
+				string text = string.Empty;
+				foreach (RunParamsBaseNode selectedRunParam in SelectedRunParams)
+				{
+					text = text + selectedRunParam.FunllParamsNameA + ";";
+				}
+				text = text.Substring(0, text.Length - 1);
+				DisplayTooltipName = text.Replace(";", "\r\n");
+				IsBindTarget = "Collapsed";
+				DisplayParamsName = text;
+			}
+			else
+			{
+				DisplayParamsName = "";
+				IsBindTarget = "Visible";
+			}
+			OnPropertyChanged("SelectedRunParams");
+		}
+	}
+
+	/// <summary>
+	/// 编辑目标参数绑定
+	/// </summary>
+	public ICommand ModifiyRunParamsCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_ModifiyRunParamsCommand == null)
+			{
+				_ModifiyRunParamsCommand = new DelegateCommand((Action)ModifyRunParamsExecute);
+			}
+			return (ICommand)_ModifiyRunParamsCommand;
+		}
+	}
+
+	/// <summary>
+	/// 弹出显示数据
+	/// </summary>
+	public ICommand DisplayValueArrayCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_DisplayValueArrayCommand == null)
+			{
+				_DisplayValueArrayCommand = new DelegateCommand((Action)DisplayValueArrayExecute);
+			}
+			return (ICommand)_DisplayValueArrayCommand;
+		}
+	}
+
+	/// <summary>
+	/// 是否组合类型 
+	/// </summary>
+	public bool IsCombinationType
+	{
+		get
+		{
+			if (variableManager == null)
+			{
+				return true;
+			}
+			return variableManager.IsCombinationIO(Type);
+		}
+	}
+
+	/// <summary>
+	/// 通信初始化按钮是否可操作
+	/// </summary>
+	public bool IsComInitEnable => Type == "int" || Type == "float" || Type == "string";
+
+	/// <summary>
+	/// 是否显示
+	/// </summary>
+	public bool IsVarValueVisibility => !IsArrayValue && !IsCombinationType;
+
+	/// <summary>
+	/// 是否数组类型
+	/// </summary>
+	public bool IsArrayValue
+	{
+		get
+		{
+			return _isArrayValue;
+		}
+		set
+		{
+			_isArrayValue = value;
+			OnPropertyChanged("IsArrayValue");
+		}
+	}
+
+	private void TextChangedExecute(string newName)
+	{
+		Name = newName;
+	}
+
+	/// <summary>
+	/// 重置绑定字符串
+	/// </summary>
+	public void ResetBindStr()
+	{
+		BindString = "    ------    ";
+		SelectedRunParams = new List<RunParamsBaseNode>();
+	}
+
+	/// <summary>
+	/// 获取旧的绑定参数关系
+	/// </summary>
+	public VarRunParamInfo[] GetOldSelectedRunParams()
+	{
+		return _OldSelectedRunParams;
+	}
+
+	private void ModifyRunParamsExecute()
+	{
+		_OldSelectedRunParams = null;
+		_OldSelectedRunParams = GlobalVarExtern.GetLinkModuleInfoByRunParams(SelectedRunParams);
+		if (DecorateSource == null)
+		{
+			LogHelper.Error("DecorateSource is null");
+			return;
+		}
+		RunParamsSelectData runParamsSelectData = new RunParamsSelectData();
+		runParamsSelectData.DecorateSource = (DecorateSource as VmIO).Root;
+		RunParamsSelectData paramsData = runParamsSelectData;
+		List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+		if (Parent != null && Parent is IList<GlobalVariableItem> list2)
+		{
+			foreach (GlobalVariableItem item in list2)
+			{
+				if (item.Name != Name && item.SelectedRunParams != null)
+				{
+					list.AddRange(item.SelectedRunParams);
+				}
+			}
+		}
+		RunParamsSelectWindow runParamsSelectWindow = new RunParamsSelectWindow(SelectedRunParams, list, paramsData, Type);
+		if (runParamsSelectWindow.ShowDialog() == true)
+		{
+			SelectedRunParams = runParamsSelectWindow.GetSelectedParams();
+		}
+	}
+
+	private void DisplayValueArrayExecute()
+	{
+		string title = AppLocalizationService.GetLang((DecorateSource as VmIO)?.Root.StrModuleName) + "." + AppLocalizationService.GetLang(Name);
+		arrayDisplay = new ArrayDisplayWindow(title, ArrayValue);
+		arrayDisplay.ShowDialog();
+	}
+
+	/// <summary>
+	/// 更新数组界面
+	/// </summary>
+	public void UpdateArrayValue(string[] arryValue)
+	{
+		ArrayValue = arryValue;
+		if (arrayDisplay != null && arrayDisplay.IsVisible)
+		{
+			arrayDisplay.UpdateArrayValue(ArrayValue);
+		}
+	}
+
+	T IVmFrameBase.GetParent<T>()
+	{
+		if (!(this is T result))
+		{
+			if (Parent != null)
+			{
+				return (Parent as IVmFrameBase).GetParent<T>();
+			}
+			return null;
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 设置varmanager类
+	/// </summary>
+	public void SetVarManager(VariableManager manager)
+	{
+		variableManager = manager;
+	}
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Canvas x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikDoubleCover" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" x:Name="myControl">
+  <local:HikCover x:Name="box1" DisplayName="1" THeight="{Binding HeightFirst, Mode=TwoWay}" TWidth="{Binding WidthFirst, Mode=TwoWay}" TAngle="{Binding AngleFirst, Mode=TwoWay}" TOriginPoint="{Binding OriginPointFirst, Mode=TwoWay}" TIsVisible="{Binding TIsVisible}" IsSelected="{Binding IsSelected, Mode=TwoWay}" Sign="{Binding Sign}" />
+  <local:HikCover x:Name="box2" DisplayName="2" THeight="{Binding HeightSecond, Mode=TwoWay}" TWidth="{Binding WidthSecond, Mode=TwoWay}" TAngle="{Binding AngleSecond, Mode=TwoWay}" TOriginPoint="{Binding OriginPointSecond, Mode=TwoWay}" TIsVisible="{Binding TIsVisible}" IsSelected="{Binding IsSelected, Mode=TwoWay}" Sign="{Binding Sign}" />
+</Canvas>

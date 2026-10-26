@@ -1,0 +1,272 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// OKNGControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// OKNGControl
+/// </summary>
+public partial class OKNGControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public uint CornerRadius
+	{
+		get
+		{
+			return PART_Control.CornerRadius;
+		}
+		set
+		{
+			PART_Control.CornerRadius = value;
+		}
+	}
+
+	public object DataSource
+	{
+		get
+		{
+			return PART_Control.DataSource;
+		}
+		set
+		{
+			if (value is IVmIO dataSource)
+			{
+				PART_Control.DataSource = dataSource;
+				return;
+			}
+			throw new ArgumentException("DataSource Type Error!");
+		}
+	}
+
+	public Font NGFont
+	{
+		get
+		{
+			return PART_Control.NGFont;
+		}
+		set
+		{
+			PART_Control.NGFont = value;
+		}
+	}
+
+	public Font OKFont
+	{
+		get
+		{
+			return PART_Control.OKFont;
+		}
+		set
+		{
+			PART_Control.OKFont = value;
+		}
+	}
+
+	public object OKContentSource
+	{
+		get
+		{
+			return PART_Control.OKContentSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.OKContentSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("OKContentSource Type Error!");
+		}
+	}
+
+	public object NGContentSource
+	{
+		get
+		{
+			return PART_Control.NGContentSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.NGContentSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("NGContentSource Type Error!");
+		}
+	}
+
+	public System.Windows.Media.Brush OKBackColor
+	{
+		get
+		{
+			return PART_Control.OKBackColor;
+		}
+		set
+		{
+			PART_Control.OKBackColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush OKBorderColor
+	{
+		get
+		{
+			return PART_Control.OKBorderColor;
+		}
+		set
+		{
+			PART_Control.OKBorderColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush OKForeColor
+	{
+		get
+		{
+			return PART_Control.OKForeColor;
+		}
+		set
+		{
+			PART_Control.OKForeColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush NGBackColor
+	{
+		get
+		{
+			return PART_Control.NGBackColor;
+		}
+		set
+		{
+			PART_Control.NGBackColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush NGBorderColor
+	{
+		get
+		{
+			return PART_Control.NGBorderColor;
+		}
+		set
+		{
+			PART_Control.NGBorderColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush NGForeColor
+	{
+		get
+		{
+			return PART_Control.NGForeColor;
+		}
+		set
+		{
+			PART_Control.NGForeColor = value;
+		}
+	}
+
+	public uint OKBorderThickness
+	{
+		get
+		{
+			return PART_Control.OKBorderThickness;
+		}
+		set
+		{
+			PART_Control.OKBorderThickness = value;
+		}
+	}
+
+	public uint NGBorderThickness
+	{
+		get
+		{
+			return PART_Control.NGBorderThickness;
+		}
+		set
+		{
+			PART_Control.NGBorderThickness = value;
+		}
+	}
+
+	public bool IsNeedLoadOrUnLoad
+	{
+		get
+		{
+			return PART_Control.IsNeedLoadOrUnLoad;
+		}
+		set
+		{
+			PART_Control.IsNeedLoadOrUnLoad = value;
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public OKNGControl()
+	{
+		InitializeComponent();
+	}
+}

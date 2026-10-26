@@ -1,0 +1,378 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using Apps.Localization;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.User;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class VmModuleDecorator : VmModuleBaseDecorator
+{
+	private string moduleDir;
+
+	private string moduleTypeName;
+
+	private string normalImagePath;
+
+	private string stateImagePath;
+
+	private static ParamsTabControlBase curTabControlBase;
+
+	private DelegateCommand<HikImageView> configParamsCommand = null;
+
+	private DelegateCommand copyAlgoParamItemCommand = null;
+
+	private DelegateCommand pasteAlgoParamItemCommand = null;
+
+	private DelegateCommand forbiddenItemCommand = null;
+
+	private DelegateCommand activateItemCommand = null;
+
+	/// <summary>
+	/// 模块路径
+	/// </summary>
+	public string ModuleDir
+	{
+		get
+		{
+			if (moduleDir == null && VMModule != null)
+			{
+				moduleDir = VMModule.ModuleDir;
+			}
+			return moduleDir;
+		}
+		set
+		{
+			if (moduleDir != value)
+			{
+				moduleDir = value;
+				OnPropertyChanged("ModuleDir");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 模块类型名
+	/// </summary>
+	public string ModuleTypeName
+	{
+		get
+		{
+			if (moduleTypeName == null && VMModule != null)
+			{
+				moduleTypeName = VMModule.ModuleTypeName;
+			}
+			return moduleTypeName;
+		}
+		set
+		{
+			if (moduleTypeName != value)
+			{
+				moduleTypeName = value;
+				OnPropertyChanged("ModuleTypeName");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 模块左侧显示图片路径
+	/// </summary>
+	public string NormalImagePath
+	{
+		get
+		{
+			if (normalImagePath == null && !string.IsNullOrEmpty(ModuleDir) && !string.IsNullOrEmpty(ModuleTypeName))
+			{
+				string path = ModuleDir + "\\" + ModuleTypeName + "_NormalLogo.png";
+				if (File.Exists(path))
+				{
+					normalImagePath = path;
+				}
+			}
+			return normalImagePath;
+		}
+	}
+
+	/// <summary>
+	/// 模块左侧显示图片路径
+	/// </summary>
+	public string StateImagePath
+	{
+		get
+		{
+			if (stateImagePath == null && !string.IsNullOrEmpty(ModuleDir) && !string.IsNullOrEmpty(ModuleTypeName))
+			{
+				string path = ModuleDir + "\\" + ModuleTypeName + "_StateLogo.png";
+				if (File.Exists(path))
+				{
+					stateImagePath = path;
+				}
+			}
+			return stateImagePath;
+		}
+	}
+
+	public ICommand ConfigParamsCommand => (ICommand)(configParamsCommand ?? (configParamsCommand = new DelegateCommand<HikImageView>((Action<HikImageView>)ConfigParamsCommandExecute)));
+
+	public ICommand CopyAlgoParamItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = copyAlgoParamItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)CopyAlgoParamItemExecute);
+				DelegateCommand val3 = val2;
+				copyAlgoParamItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand PasteAlgoParamItemCommand
+	{
+		get
+		{
+			//IL_0024: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0029: Unknown result type (might be due to invalid IL or missing references)
+			//IL_002b: Expected Obj, but got Unknown
+			//IL_0030: Expected Obj, but got Unknown
+			DelegateCommand val = pasteAlgoParamItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)PasteAlgoParamItemExecute, (Func<bool>)CanExecuteMethod, false);
+				DelegateCommand val3 = val2;
+				pasteAlgoParamItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public bool IsShowParamPaste
+	{
+		get
+		{
+			if (Clipboard.instance.CopyParamInfo != null)
+			{
+				return true;
+			}
+			return false;
+		}
+	}
+
+	public bool IsSupportCopyParam => IsUnsupportCopyParams();
+
+	public ICommand ForbiddenItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = forbiddenItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ForbiddenItemExecute);
+				DelegateCommand val3 = val2;
+				forbiddenItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand ActivateItemCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = activateItemCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ActivateItemExecute);
+				DelegateCommand val3 = val2;
+				activateItemCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public void ConfigParamsCommandExecute(HikImageView roiUIPart)
+	{
+		ConfigParamsExecute(roiUIPart);
+	}
+
+	public void ConfigParamsExecute(HikImageView roiUIPart, bool isFrontedShow = false, Window frontWindow = null)
+	{
+		if (!CanOpenConfigurationInterface())
+		{
+			return;
+		}
+		if (curTabControlBase != null)
+		{
+			if (curTabControlBase.ParamsConfig == VMModule.Params)
+			{
+				return;
+			}
+			curTabControlBase.Close();
+		}
+		OpenParamsTabControl(roiUIPart, isFrontedShow, frontWindow);
+	}
+
+	private void OpenParamsTabControl(HikImageView roiUIPart, bool isFrontedShow = false, Window frontWindow = null)
+	{
+		Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+		{
+			RootOperType = "ModifyConfig"
+		}, AppLocalizationService.GetLang("修改配置") + ": " + VMModule.Name);
+		ParamsTabControlBase paramsTabControlBase = new ParamsTabControlBase();
+		paramsTabControlBase.ParamsConfig = VMModule.Params;
+		paramsTabControlBase.ROIPartUI = roiUIPart;
+		if (isFrontedShow && frontWindow != null)
+		{
+			paramsTabControlBase.Owner = frontWindow;
+		}
+		else
+		{
+			paramsTabControlBase.Owner = Application.Current?.MainWindow;
+		}
+		paramsTabControlBase.Show();
+		curTabControlBase = paramsTabControlBase;
+		curTabControlBase.Closed += CurTabControlBase_Closed;
+	}
+
+	private void CurTabControlBase_Closed(object sender, EventArgs e)
+	{
+		if (curTabControlBase != null)
+		{
+			if (Application.Current != null && Application.Current.MainWindow != null)
+			{
+				Application.Current.MainWindow.Dispatcher.Invoke(() =>
+				{
+					curTabControlBase = null;
+				});
+			}
+			else
+			{
+				curTabControlBase = null;
+			}
+		}
+		Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+	}
+
+	private void CopyAlgoParamItemExecute()
+	{
+		if (DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			if (IsUnsupportCopyParams())
+			{
+				string lang = AppLocalizationService.GetLang("Lang_UnSupportAlgoParamCopy");
+				HikMessageBox.Show(lang, MessageButtons.Normal, MessageIcons.Error);
+			}
+			else
+			{
+				string fullName = (DecorateSource as IVmFrameBase).FullName;
+				Clipboard.instance.CopyParamInfo = fullName;
+			}
+		}
+	}
+
+	private bool CanExecuteMethod()
+	{
+		if (Clipboard.instance.CopyParamInfo != null)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	private void PasteAlgoParamItemExecute()
+	{
+		if (DecoratorBase.CheckRunning(DecorateSource as IVMRun))
+		{
+			IVmModule vmModule = DecorateSource as IVmModule;
+			UILogManager.logCreate("信息", "粘贴模块参数");
+			Ioc.Get<IUnRedoService>()?.Register(new RootOperation
+			{
+				RootOperType = "ModifyConfig"
+			}, AppLocalizationService.GetLang("修改配置") + AppLocalizationService.GetPunctuation("：") + vmModule.Name);
+			if (vmModule.PasteParam(Clipboard.instance.CopyParamInfo))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_PasteAlgoParamSuccess") + "!", MessageButtons.Normal, MessageIcons.Ok);
+			}
+			else
+			{
+				string text = AppLocalizationService.GetLang("Lang_PasteAlgoParamFail") + "!";
+				HikMessageBox.Show(text, MessageIcons.Error);
+				LogHelper.objLog.Error(text);
+			}
+			Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+		}
+	}
+
+	private void ForbiddenItemExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("模块禁用") + AppLocalizationService.GetPunctuation("：") + VMModule?.FullName);
+		IsForbidden = true;
+	}
+
+	private void ActivateItemExecute()
+	{
+		UILogManager.logCreate("信息", AppLocalizationService.GetLang("模块启用") + AppLocalizationService.GetPunctuation("：") + VMModule?.FullName);
+		IsForbidden = false;
+	}
+
+	/// <summary>
+	/// 能否打开参数配置界面
+	/// [权限]
+	/// </summary>
+	/// <returns></returns>
+	public bool CanOpenConfigurationInterface()
+	{
+		bool result = true;
+		AccessUser loginUser = CodeManager.Instance.GetLoginUser();
+		if (IsForbidden || (IsLoadFailed ?? false) || (!VMModule.ConfigAvailable && (loginUser == AccessUser.Tech || loginUser == AccessUser.Operator)))
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 判断模块是否支持复制参数
+	/// </summary>
+	/// <returns></returns>
+	private bool IsUnsupportCopyParams()
+	{
+		if (VMModule.ModuleTypeName.Equals("IMVSEdgeInspGroupModu") || VMModule.ModuleTypeName.Equals("IMVSEdgePairInspGroupModu") || VMModule.ModuleTypeName.Equals("IMVSImageCombineProcessModu") || VMModule.ModuleTypeName.Equals("IMVSCaliperGeometricFindModu"))
+		{
+			return true;
+		}
+		AlgorithmTabRoot algorithmTabRoot = new AlgorithmTabRoot(VMModule.Params);
+		if (algorithmTabRoot.TabsA == null || !algorithmTabRoot.TabsA.Any((object f) => (f as Tab).NameA == "Tab_Run Params"))
+		{
+			return true;
+		}
+		return false;
+	}
+}

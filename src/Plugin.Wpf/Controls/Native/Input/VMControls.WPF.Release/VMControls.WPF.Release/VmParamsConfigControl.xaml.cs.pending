@@ -1,0 +1,210 @@
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using VM.PlatformSDKCS;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// ParamsConfigControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmParamsConfigControl
+/// </summary>
+public partial class VmParamsConfigControl : VMWpfUserControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfig", typeof(IParamsConfig), typeof(VmParamsConfigControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(VmParamsConfigControl), new PropertyMetadata(null, OnModuleSourceChanged));
+
+	/// <summary>
+	/// 绑定模块参数（内部使用）
+	/// </summary>
+	public IParamsConfig ParamsConfig
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	private static void OnModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is VmParamsConfigControl vmParamsConfigControl)
+		{
+			vmParamsConfigControl.ParamsConfig = vmParamsConfigControl.ModuleSource?.Params;
+		}
+	}
+
+	public void NotifyItemValueChanged(string key)
+	{
+		ParamView.NotifyItemValueChanged(key);
+	}
+
+	public void UpdateAllItem()
+	{
+		ParamView.UpdateAllItem();
+	}
+
+	public void UpdataTab(int index)
+	{
+		ParamView.UpdataTab(index);
+	}
+
+	public VmParamsConfigControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			Loaded += VmParamsConfigControl_Loaded;
+			Unloaded += VmParamsConfigControl_Unloaded;
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	private void VmParamsConfigControl_Unloaded(object sender, RoutedEventArgs e)
+	{
+	}
+
+	private void VmParamsConfigControl_Loaded(object sender, RoutedEventArgs e)
+	{
+	}
+
+	/// <summary>
+	/// 流程、Group运行参数页中的添加、删除、编辑按钮是否可见
+	/// </summary>
+	/// <param name="isEditable">是否可见 true:按钮可见,false:按钮不可见</param>
+	public void SetParamTabEditable(bool isEditable)
+	{
+		if (ParamView != null)
+		{
+			ParamView.IsEditState = isEditable;
+		}
+	}
+
+	/// <summary>
+	/// 获取所有Tab名称
+	/// </summary>
+	public List<string> GetParamTabNames()
+	{
+		if (ParamView != null)
+		{
+			return ParamView.GetParamTabNames();
+		}
+		return new List<string>();
+	}
+
+	/// <summary>
+	/// Tab页是否可见，如果绑定同一个数据源，调用此接口会同步更新与tabName对应的参数配置tab页的显示或者隐藏
+	/// </summary>
+	/// <param name="tabName">tab页名称</param>
+	/// <param name="isVisible">是否可见</param>
+	public void SetParamTabVisible(string tabName, bool isVisible)
+	{
+		if (ParamView != null)
+		{
+			ParamView.SetParamTabVisible(tabName, isVisible);
+		}
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (ParamView == null)
+		{
+			return 0L;
+		}
+		return ParamView.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 加载独立Group方案（COM组件）
+	/// </summary>
+	public IntPtr ImportIndependentGroup(string path, string password)
+	{
+		try
+		{
+			if (ParamView == null)
+			{
+				return IntPtr.Zero;
+			}
+			return ParamView.ImportIndependentGroup(path, password);
+		}
+		catch (VmException ex)
+		{
+			MessageBox.Show(ex.errorMessage);
+			return IntPtr.Zero;
+		}
+	}
+
+	/// <summary>
+	/// 加载方案（COM组件）
+	/// </summary>
+	public IntPtr ImportSol(string path, string password)
+	{
+		try
+		{
+			if (ParamView == null)
+			{
+				return IntPtr.Zero;
+			}
+			return ParamView.ImportSol(path, password);
+		}
+		catch (VmException ex)
+		{
+			MessageBox.Show(ex.errorMessage);
+			return IntPtr.Zero;
+		}
+	}
+
+	/// <summary>
+	/// 根据模块ID绑定参数配置控件（COM组件）
+	/// </summary>
+	public void BindParamById(uint Id)
+	{
+		ParamView?.BindParamById(Id);
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		ParamsConfig = null;
+		if (ParamView != null)
+		{
+			ParamView.ParamsConfig = null;
+		}
+		Content = null;
+	}
+}

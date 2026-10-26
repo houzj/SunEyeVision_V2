@@ -1,0 +1,52 @@
+using System.ComponentModel;
+using Hik.Xml;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class ShapeParameter : BaseNode, INotifyPropertyChanged
+{
+	public bool _TIsVisible = true;
+
+	private object _Tag;
+
+	public string RoiType => GetType().Name.Replace("Parameter", "");
+
+	public bool TIsVisible
+	{
+		get
+		{
+			return _TIsVisible;
+		}
+		set
+		{
+			if (_TIsVisible != value)
+			{
+				_TIsVisible = value;
+				NotifyPropertyChanged("TIsVisible");
+			}
+		}
+	}
+
+	public new object Tag
+	{
+		get
+		{
+			return _Tag;
+		}
+		set
+		{
+			_Tag = value;
+			NotifyPropertyChanged("Tag");
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+}

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow xmlns:nativeNumeric0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;assembly=SunEyeVision.Plugin.Wpf" x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CrossConfig" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:PCListView="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;assembly=SunEyeVision.Plugin.Wpf" Height="420" Width="380" Title="{DynamicResource 十字辅助线}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="btnCenterTemplateStyle" TargetType="{x:Type Button}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Background="{DynamicResource btnEditTemplateEnableBG}" BorderBrush="{DynamicResource btnEditTemplateEnableBB}" BorderThickness="1" CornerRadius="2">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <TextBlock Name="tx" Text="{DynamicResource Lang_Center}" FontSize="12" Foreground="{DynamicResource ParamsTabForeground}" VerticalAlignment="Center" />
+                </StackPanel>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                  <Setter TargetName="iBorder" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  <Setter TargetName="tx" Value="{DynamicResource TabPanalLight}" Property="TextBlock.Foreground" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="crossItem" TargetType="{x:Type ListViewItem}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListViewItem}">
+              <Grid Margin="0,10">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="46" />
+                  <ColumnDefinition Width="56" />
+                  <ColumnDefinition Width="68" />
+                  <ColumnDefinition Width="26" />
+                  <ColumnDefinition Width="56" />
+                  <ColumnDefinition Width="68" />
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="40" />
+                  <RowDefinition Height="40" />
+                  <RowDefinition Height="40" />
+                  <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+                <TextBlock Margin="18,0" FontWeight="Bold" Foreground="{DynamicResource ModuleForeground}" Grid.ColumnSpan="3" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding Name}" />
+                <ToggleButton Grid.Column="2" Width="50" HorizontalAlignment="Right" Style="{StaticResource SwitchButton}" IsChecked="{Binding IsVisible, Mode=TwoWay}" Command="{Binding DataContext.CrossShowCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{DynamicResource Trans Coordinate X}" ToolTip="{DynamicResource Trans Coordinate X}" HorizontalAlignment="Left" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Row="1" Grid.Column="4" Text="{DynamicResource Trans Coordinate Y}" ToolTip="{DynamicResource Trans Coordinate Y}" HorizontalAlignment="Left" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{DynamicResource 粗细}" ToolTip="{DynamicResource 粗细}" HorizontalAlignment="Left" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Row="2" Grid.Column="4" Text="{DynamicResource CrossBrush}" ToolTip="{DynamicResource CrossBrush}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{DynamicResource RunParam_Display}" ToolTip="{DynamicResource RunParam_Display}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="3" Grid.Column="4" Text="{DynamicResource Lang_Locking}" ToolTip="{DynamicResource Lang_Locking}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                <nativeNumeric0:SliderArrange Grid.Row="1" Grid.Column="2" SliderTickFrequency="1" Minimum="0" Maximum="100000" IsSubscribeLeft="False" IsSubscribeVisible="Collapsed" StartValue="{Binding CenterX, Mode=TwoWay}" />
+                <nativeNumeric0:SliderArrange Grid.Row="1" Grid.Column="5" SliderTickFrequency="1" Minimum="0" Maximum="100000" IsSubscribeLeft="False" IsSubscribeVisible="Collapsed" StartValue="{Binding CenterY, Mode=TwoWay}" />
+                <nativeNumeric0:SliderArrange Grid.Row="2" Grid.Column="2" SliderTickFrequency="1" Minimum="1" Maximum="10" IsSubscribeLeft="False" IsSubscribeVisible="Collapsed" StartValue="{Binding StrokeThickness, Mode=TwoWay}" />
+                <PCListView:ColorPickerControlView Grid.Row="2" Grid.Column="5" TextVisibility="Collapsed" Width="42" Height="26" CurrentColor="{Binding Stroke, Mode=TwoWay}" />
+                <Button Grid.Row="3" Grid.Column="2" Height="26" Width="68" Style="{StaticResource btnCenterTemplateStyle}" Command="{Binding CenterCommand}" />
+                <ToggleButton Grid.Row="3" Grid.Column="5" Width="50" HorizontalAlignment="Left" Margin="-3,0,0,0" Style="{StaticResource SwitchButton}" IsChecked="{Binding IsLocked, Mode=TwoWay}" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource GlobalMouseOverBg}">
+    <Line Name="line1" X1="0" X2="1" Stretch="Fill" StrokeThickness="1" Stroke="{DynamicResource GlobalRectFill}" HorizontalAlignment="Center" Margin="18,0,18,40" />
+    <ListView Style="{StaticResource ListViewStyle1}" ItemContainerStyle="{StaticResource crossItem}" Background="#00FFFFFF" BorderThickness="0" Padding="0" ItemsSource="{Binding CrossDatas}" />
+  </Grid>
+</controls:BaseWindow>

@@ -1,0 +1,40 @@
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// TreeViewItem的缩进值计算
+/// </summary>
+internal class IndentConverter : IValueConverter
+{
+	private const double c_IndentSize = 15.0;
+
+	public object Convert(object o, Type type, object parameter, CultureInfo culture)
+	{
+		int num = -1;
+		if (o is FrameworkElement source)
+		{
+			FrameworkElement parent = source.GetParent<FrameworkElement>();
+			while (!(parent is TreeView))
+			{
+				if (parent is TreeViewItem)
+				{
+					num++;
+				}
+				parent = parent.GetParent<FrameworkElement>();
+			}
+		}
+		num = ((num >= 0) ? num : 0);
+		return new Thickness((double)num * 15.0, 0.0, 0.0, 0.0);
+	}
+
+	public object ConvertBack(object o, Type type, object parameter, CultureInfo culture)
+	{
+		throw new NotSupportedException();
+	}
+}

@@ -1,0 +1,512 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VMMainViewControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmMainViewConfigControl
+/// </summary>
+public partial class VmMainViewConfigControl : VMWpfUserControl, INotifyPropertyChanged, IDisposable, IBindSomeProcedures, IComponentConnector
+{
+	public static readonly DependencyProperty SelectedModuleProperty = DependencyProperty.Register("SelectedModule", typeof(IVmModule), typeof(VmMainViewConfigControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ZoomIndexProperty = DependencyProperty.Register("ZoomIndex", typeof(double), typeof(VmMainViewConfigControl), new PropertyMetadata(1.0));
+
+	public static readonly DependencyProperty IsLockWorkAreaProperty = DependencyProperty.Register("IsLockWorkArea", typeof(bool), typeof(VmMainViewConfigControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(VmMainViewConfigControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsShowProgressMaskProperty = DependencyProperty.Register("IsShowProgressMask", typeof(bool), typeof(VmMainViewConfigControl), new PropertyMetadata(false));
+
+	/// <summary>
+	/// 参数列表编辑状态属性
+	/// </summary>
+	public static readonly DependencyProperty IsParamsEditStateProperty = DependencyProperty.Register("IsParamsEditState", typeof(bool), typeof(VmMainViewConfigControl), new PropertyMetadata(true));
+
+	private string[] proNameList = null;
+
+	public IVmModule SelectedModule
+	{
+		get
+		{
+			return (IVmModule)GetValue(SelectedModuleProperty);
+		}
+		set
+		{
+			SetValue(SelectedModuleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 缩放比例
+	/// </summary>
+	public double ZoomIndex
+	{
+		get
+		{
+			return (double)GetValue(ZoomIndexProperty);
+		}
+		set
+		{
+			SetValue(ZoomIndexProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否锁定工作区
+	/// </summary>
+	public bool IsLockWorkArea
+	{
+		get
+		{
+			return (bool)GetValue(IsLockWorkAreaProperty);
+		}
+		set
+		{
+			SetValue(IsLockWorkAreaProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否打开参数列表（内部使用）
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	public bool IsShowProgressMask
+	{
+		get
+		{
+			return (bool)GetValue(IsShowProgressMaskProperty);
+		}
+		set
+		{
+			SetValue(IsShowProgressMaskProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数列表编辑状态
+	/// </summary>
+	public bool IsParamsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsParamsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsParamsEditStateProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// Winform窗口句柄
+	/// </summary>
+	public IntPtr WinformHandle
+	{
+		get
+		{
+			return (mainViewControl.ProcedureConfigUI as ProcedureConfigControl)?.WinformHandle ?? IntPtr.Zero;
+		}
+		set
+		{
+			if (mainViewControl.ProcedureConfigUI is ProcedureConfigControl procedureConfigControl)
+			{
+				procedureConfigControl.WinformHandle = value;
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public event ToolItemGrid.GetToolItemBackgroudData SectionChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public VmMainViewConfigControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			if (!this.IsInDesignMode())
+			{
+				TempVmSolution.Init();
+				if (mainViewControl != null)
+				{
+					mainViewControl.Solution = VmSolution.Instance;
+				}
+			}
+			VmSolution.RestoreDefaultDisplay += VmSolution_RestoreDefaultDisplay;
+			Loaded += VmMainViewConfigControl_Loaded;
+			Unloaded += VmMainViewConfigControl_Unloaded;
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	private void VmMainViewConfigControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (this.IsInDesignMode())
+		{
+			return;
+		}
+		VmMainViewConfigControl_Unloaded(sender, e);
+		VmSolution.OnSolutionLoadBeginCallBack += VmSolution_OnSolutionLoadBeginCallBack;
+		VmSolution.OnSolutionLoadEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionLoadProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnExecuteAfterLoadStart += VmSolution_OnExecuteAfterLoadStart;
+		VmSolution.OnExecuteAfterLoadFinally += VmSolution_OnExecuteAfterLoadFinally;
+		VmSolution.OnModelLoadWarn += VmSolution_OnModelLoadWarn;
+		VmSolution.OnSolutionSaveBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnSolutionSaveEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionSaveProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessImportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessImportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnProcessImportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessExportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnProcedureUnRegister += VmSolution_OnProcedureUnRegister;
+		VmSolution.OnGroupImportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupImportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnGroupImportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnGroupExportBeginCallBack += VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupExportEndCallBack += VmSolution_OnEndCallBack;
+		VmSolution.OnGroupExportProgressCallBack += VmSolution_OnSolutionLoadProgressCallBack;
+		if (mainViewControl == null)
+		{
+			return;
+		}
+		mainViewControl.SelectionChanged += MainViewControl_SelectionChanged;
+		mainViewControl.Solution = VmSolution.Instance;
+		if (proNameList != null)
+		{
+			if (proNameList.Length == 1)
+			{
+				BindSingleProcedure(proNameList[0]);
+			}
+			else if (proNameList.Length > 1)
+			{
+				((IBindSomeProcedures)this).BindSomeProcedures(proNameList.ToList());
+			}
+		}
+	}
+
+	private void VmSolution_RestoreDefaultDisplay(object sender, EventArgs e)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			mainViewControl.Solution = VmSolution.Instance;
+		});
+	}
+
+	private void VmMainViewConfigControl_Unloaded(object sender, RoutedEventArgs e)
+	{
+		VmSolution.OnSolutionLoadBeginCallBack -= VmSolution_OnSolutionLoadBeginCallBack;
+		VmSolution.OnSolutionLoadEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionLoadProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnExecuteAfterLoadStart -= VmSolution_OnExecuteAfterLoadStart;
+		VmSolution.OnExecuteAfterLoadFinally -= VmSolution_OnExecuteAfterLoadFinally;
+		VmSolution.OnModelLoadWarn -= VmSolution_OnModelLoadWarn;
+		VmSolution.OnSolutionSaveBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnSolutionSaveEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnSolutionSaveProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessImportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessImportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnProcessImportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnProcessExportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnProcessExportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnProcedureUnRegister -= VmSolution_OnProcedureUnRegister;
+		VmSolution.OnGroupImportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupImportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnGroupImportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+		VmSolution.OnGroupExportBeginCallBack -= VmSolution_OnProgressBeginCallBack;
+		VmSolution.OnGroupExportEndCallBack -= VmSolution_OnEndCallBack;
+		VmSolution.OnGroupExportProgressCallBack -= VmSolution_OnSolutionLoadProgressCallBack;
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		VmMainViewConfigControl_Unloaded(null, null);
+		VmSolution.RestoreDefaultDisplay -= VmSolution_RestoreDefaultDisplay;
+		mainViewControl?.Dispose();
+		Content = null;
+	}
+
+	/// <summary>
+	/// 静默执行结束（内部使用）
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="args"></param>
+	private void VmSolution_OnExecuteAfterLoadFinally(object sender, EventArgs args)
+	{
+		LogHelper.Info("VmSolution_OnExecuteAfterLoadFinally ------beigin");
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			LogHelper.Info("VmSolution_OnExecuteAfterLoadFinally----- IsShowProgressMask------beigin");
+			IsShowProgressMask = false;
+			LogHelper.Info("VmSolution_OnExecuteAfterLoadFinally----- IsShowProgressMask------end");
+		}));
+		LogHelper.Info("VmSolution_OnExecuteAfterLoadFinally ------end");
+	}
+
+	/// <summary>
+	/// 静默执行开始（内部使用）
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="args"></param>
+	private void VmSolution_OnExecuteAfterLoadStart(object sender, EventArgs args)
+	{
+		LogHelper.Info("VmSolution_OnExecuteAfterLoadStart ------begin");
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			LogHelper.Info("VmSolution_OnExecuteAfterLoadStart-----Dispatcher ------begin");
+			if (mainViewControl != null)
+			{
+				IsShowProgressMask = true;
+				mainViewControl.MaskMessage = AppLocalizationService.GetLang("Lang_CalculatorCInitial");
+			}
+			LogHelper.Info("VmSolution_OnExecuteAfterLoadStart-----Dispatcher ------end");
+		}));
+		LogHelper.Info("VmSolution_OnExecuteAfterLoadStart ------end");
+	}
+
+	/// <summary>
+	/// 加载进度（内部使用）
+	/// </summary>
+	private void VmSolution_OnSolutionLoadProgressCallBack(object sender, ObjectEventArgs args)
+	{
+		uint progress = (uint)args.Param;
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (mainViewControl != null)
+			{
+				mainViewControl.Progress = progress;
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 结束回调（内部使用）
+	/// </summary>
+	private void VmSolution_OnEndCallBack(object sender, EndEventArgs e)
+	{
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			IsShowProgressMask = false;
+			if (mainViewControl != null)
+			{
+				mainViewControl.MaskMessage = null;
+				mainViewControl.IsLoadingFlag = false;
+			}
+			if (e != null && e.ErrorCode != 0 && e.ErrorCode != -536870093)
+			{
+				string text = AppLocalizationService.GetLang("errCode:") + $"{e.ErrorCode:X}" + "\r\n";
+				text = text + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(e.ErrorCode);
+				HikMessageBox.Show(e.BoxTitle, text, MessageIcons.Error);
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 流程解注册（内部使用）
+	/// </summary>
+	private void VmSolution_OnProcedureUnRegister(object sender, ObjectEventArgs args)
+	{
+		uint id = (uint)args.Param;
+		Dispatcher.Invoke(() =>
+		{
+			((IVmProcedure)(VmProcedure)VmSolution.Instance.Modules.FirstOrDefault((VmModule p) => p.ID == id))?.DeleteSelf();
+		});
+	}
+
+	/// <summary>
+	/// 开始加载（内部使用）
+	/// </summary>
+	private void VmSolution_OnSolutionLoadBeginCallBack(object sender, ObjectEventArgs args)
+	{
+		string message = (string)args.Param;
+		if (CVmObjectBase.GetIsSDKMode())
+		{
+			Dispatcher.Invoke(() =>
+			{
+				BindMultiProcedure();
+			});
+		}
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (mainViewControl != null)
+			{
+				IsShowProgressMask = true;
+				mainViewControl.MaskMessage = message;
+				mainViewControl.IsLoadingFlag = true;
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 开始保存、导入、导出等（内部使用）
+	/// </summary>
+	private void VmSolution_OnProgressBeginCallBack(object sender, ObjectEventArgs args)
+	{
+		string message = (string)args.Param;
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (mainViewControl != null)
+			{
+				IsShowProgressMask = true;
+				mainViewControl.MaskMessage = message;
+				mainViewControl.IsLoadingFlag = true;
+			}
+		}));
+	}
+
+	/// <summary>
+	/// 警告回调（内部使用）
+	/// </summary>
+	private void VmSolution_OnModelLoadWarn(object sender, ObjectEventArgs args)
+	{
+		string message = (string)args.Param;
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			HikMessageBox.Show(message, MessageIcons.Warning, MessageButtons.Normal, 1000u);
+		}));
+	}
+
+	private void Instance_InstanceChanged(object sender, EventArgs e)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			mainViewControl.Solution = VmSolution.Instance;
+		});
+	}
+
+	private void MainViewControl_SelectionChanged(object sender, ObjectEventArgs e)
+	{
+		SetCurrentValue(SelectedModuleProperty, e.Param);
+		SectionChanged?.Invoke(this, e);
+	}
+
+	/// <summary>
+	/// 根据流程名称绑定单流程
+	/// </summary>
+	public void BindSingleProcedure(string name)
+	{
+		if (mainViewControl?.ProcedureConfigUI is ProcedureConfigControl procedureConfigControl)
+		{
+			procedureConfigControl.ShowSingleProcedure(name);
+			proNameList = null;
+		}
+		else
+		{
+			proNameList = new string[1] { name };
+		}
+	}
+
+	/// <summary>
+	/// 绑定多流程
+	/// </summary>
+	public void BindMultiProcedure()
+	{
+		if (mainViewControl?.ProcedureConfigUI is ProcedureConfigControl procedureConfigControl)
+		{
+			procedureConfigControl.ShowMultiProcedure();
+		}
+		proNameList = null;
+	}
+
+	/// <summary>
+	/// 绑定部分流程
+	/// </summary>
+	/// <param name="nameList"></param>
+	void IBindSomeProcedures.BindSomeProcedures(List<string> nameList)
+	{
+		if (mainViewControl?.ProcedureConfigUI is ProcedureConfigControl procedureConfigControl)
+		{
+			procedureConfigControl.ShowSomeProcedure(nameList);
+			proNameList = null;
+		}
+		else
+		{
+			proNameList = nameList.ToArray();
+		}
+	}
+
+	/// <summary>
+	/// 锁定工作区
+	/// </summary>
+	public void LockWorkArea()
+	{
+		IsLockWorkArea = true;
+	}
+
+	/// <summary>
+	/// 解除锁定工作区
+	/// </summary>
+	public void UnlockWorkArea()
+	{
+		IsLockWorkArea = false;
+	}
+
+	/// <summary>
+	/// 流程、Group运行参数页中的添加、删除、编辑按钮是否可见
+	/// </summary>
+	/// <param name="isEditable">是否可见 true:按钮可见,false:按钮不可见</param>
+	public void SetParamTabEditable(bool isEditable)
+	{
+		IsParamsEditState = isEditable;
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (VmSolution.Instance == null)
+		{
+			return 0L;
+		}
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+}

@@ -1,0 +1,115 @@
+using System;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CameraAcq;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmGlobalToolControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmRealTimeAcqControl
+/// </summary>
+public partial class VmRealTimeAcqControl : VMWpfControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(VmRealTimeAcqControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsShowButtonProperty = DependencyProperty.Register("IsShowButton", typeof(bool), typeof(VmRealTimeAcqControl), new PropertyMetadata(true));
+
+	private RealTimeAcqControl realTimeAcqControl;
+
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public bool IsShowButton
+	{
+		get
+		{
+			return (bool)GetValue(IsShowButtonProperty);
+		}
+		set
+		{
+			SetValue(IsShowButtonProperty, value);
+		}
+	}
+
+	public VmRealTimeAcqControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		realTimeAcqControl = Template.FindName("realTimeAcqControl", this) as RealTimeAcqControl;
+	}
+
+	public void StartGrabbing()
+	{
+		realTimeAcqControl?.StartGrabbing();
+	}
+
+	public void StopGrabbing()
+	{
+		realTimeAcqControl?.StopGrabbing();
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (realTimeAcqControl == null)
+		{
+			return 0L;
+		}
+		return realTimeAcqControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 根据模块ID绑定实时取流控件（COM组件）
+	/// </summary>
+	public void BindRealTimeAcqById(uint Id)
+	{
+		realTimeAcqControl?.BindRealTimeAcqById(Id);
+	}
+
+	/// <summary>
+	/// 按钮是否可见接口（COM组件）
+	/// </summary>
+	/// <returns></returns>
+	public void ShowButton(bool Flag)
+	{
+		IsShowButton = Flag;
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		Template = null;
+	}
+}

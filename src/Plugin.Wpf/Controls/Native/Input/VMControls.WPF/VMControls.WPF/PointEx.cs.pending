@@ -1,0 +1,61 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 点
+/// </summary>
+public struct PointEx : IPoint, IShape, IShapeBase
+{
+	/// <summary>
+	/// 坐标X
+	/// </summary>
+	public float CenterX { get; set; }
+
+	/// <summary>
+	/// 坐标Y
+	/// </summary>
+	public float CenterY { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 边框粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	Point IPoint.Point => new Point(CenterX, CenterY);
+
+	/// <summary>
+	/// 提示语
+	/// </summary>
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public PointEx(float centerX, float centerY, double opacity = 1.0, string stroke = "#66FF00", double strokeThickness = 1.0, string toolTip = null)
+	{
+		CenterX = centerX;
+		CenterY = centerY;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = null;
+		StrokeThickness = strokeThickness;
+		ToolTip = toolTip;
+	}
+}

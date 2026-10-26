@@ -1,0 +1,104 @@
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using Apps.UIHelper.Service;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ExternServer;
+
+public class DragDropExtensionServer : DefaultExtensionServer
+{
+	private IExtensionItem _lastItem = null;
+
+	private bool IsMouseDown;
+
+	private IExtensionItem _preItem = null;
+
+	public Point ClickPoint { get; internal set; }
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		if (Context != null)
+		{
+			Context.PreviewMouseLeftButtonDown += Context_PreviewMouseDown;
+			Context.PreviewMouseLeftButtonUp += Context_PreviewMouseUp;
+		}
+	}
+
+	private void Context_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+	{
+		if (IsMouseDown)
+		{
+			IsMouseDown = false;
+			IExtensionItem lastItem = _lastItem;
+			_preItem = null;
+			_lastItem = _preItem;
+			if (lastItem != null && lastItem != _preItem)
+			{
+				ReapplyExtensions(new IExtensionItem[2] { lastItem, _preItem });
+			}
+			else
+			{
+				ReapplyExtensions(new IExtensionItem[1] { _preItem });
+			}
+		}
+	}
+
+	private void Context_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		if (!IsMouseDown)
+		{
+			return;
+		}
+		if (e.LeftButton != MouseButtonState.Pressed)
+		{
+			Context_PreviewMouseUp(Context, null);
+			return;
+		}
+		Context.PreviewMouseMove -= Context_PreviewMouseMove;
+		IExtensionItem lastItem = _lastItem;
+		_lastItem = _preItem;
+		if (lastItem != null && lastItem != _preItem)
+		{
+			ReapplyExtensions(new IExtensionItem[2] { lastItem, _preItem });
+		}
+		else
+		{
+			ReapplyExtensions(new IExtensionItem[1] { _preItem });
+		}
+		DataObject dataObject = new DataObject();
+		dataObject.SetData(_lastItem);
+		DragDrop.DoDragDrop(_lastItem as UIElement, dataObject, DragDropEffects.Move);
+		Context_PreviewMouseUp(Context, null);
+	}
+
+	private void Context_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+	{
+		IExtensionItem element = null;
+		VisualTreeHelper.HitTest(Context, (DependencyObject potentialHitTestTarget) =>
+		{
+			if (potentialHitTestTarget is AdornerLayer)
+			{
+				return HitTestFilterBehavior.ContinueSkipSelf;
+			}
+			if (potentialHitTestTarget is IExtensionItem)
+			{
+				element = potentialHitTestTarget as IExtensionItem;
+				return HitTestFilterBehavior.Continue;
+			}
+			return HitTestFilterBehavior.Continue;
+		}, (HitTestResult result) => HitTestResultBehavior.Stop, new PointHitTestParameters(e.GetPosition(Context)));
+		if (element != null)
+		{
+			IsMouseDown = true;
+			ClickPoint = e.GetPosition(element as IInputElement);
+			Context.PreviewMouseMove += Context_PreviewMouseMove;
+		}
+		_preItem = element;
+	}
+
+	public override bool ShouldApplyExtensions(IExtensionItem extendedItem)
+	{
+		return extendedItem == _lastItem;
+	}
+}

@@ -1,0 +1,346 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Input;
+using Apps.Data;
+using Apps.Log;
+using Apps.XmlParser.ParamTab;
+using Apps.XmlUI.ParamTab;
+using Mvvm.Commands;
+using VM.Core;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public class TrigerOutPutItem : NotifyPropertyChangedBase, IParent
+{
+	internal const string Collapsed = "Collapsed";
+
+	internal const string Visible = "Visible";
+
+	private string targetBindStr;
+
+	private string _IsBindTarget = "Visible";
+
+	public List<BindParams> RunParamsDict = null;
+
+	private List<RunParamsBaseNode> _SelectedRunParams = null;
+
+	private DelegateCommand _ModifiyRunParamsCommand = null;
+
+	public List<BindParams> InputParamsDict = null;
+
+	private string targetBindInputStr;
+
+	private string _IsBindInputTarget = "Visible";
+
+	private List<RunParamsBaseNode> _SelectedInputParams = null;
+
+	private DelegateCommand _ModifiyInputParamsCommand = null;
+
+	public object Parent { get; set; }
+
+	public int ItemIndex { get; set; }
+
+	public string ItemType { get; set; }
+
+	public string ItemName { get; set; }
+
+	public string TargetBindStr
+	{
+		get
+		{
+			return targetBindStr;
+		}
+		set
+		{
+			if (value != targetBindStr)
+			{
+				targetBindStr = value;
+				OnPropertyChanged("TargetBindStr");
+			}
+		}
+	}
+
+	public string IsBindTarget
+	{
+		get
+		{
+			return _IsBindTarget;
+		}
+		set
+		{
+			if (_IsBindTarget != value)
+			{
+				_IsBindTarget = value;
+				OnPropertyChanged("IsBindTarget");
+			}
+		}
+	}
+
+	public List<RunParamsBaseNode> SelectedRunParams
+	{
+		get
+		{
+			return _SelectedRunParams;
+		}
+		set
+		{
+			if (_SelectedRunParams == value)
+			{
+				return;
+			}
+			_SelectedRunParams = value;
+			if (_SelectedRunParams != null && _SelectedRunParams.Count > 0)
+			{
+				string text = string.Empty;
+				foreach (RunParamsBaseNode selectedRunParam in SelectedRunParams)
+				{
+					text = text + selectedRunParam.FunllParamsNameA + ";";
+				}
+				text = text.Substring(0, text.Length - 1);
+				IsBindTarget = "Collapsed";
+				TargetBindStr = text;
+			}
+			else
+			{
+				TargetBindStr = "";
+				IsBindTarget = "Visible";
+			}
+		}
+	}
+
+	public ICommand ModifiyRunParamsCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_ModifiyRunParamsCommand == null)
+			{
+				_ModifiyRunParamsCommand = new DelegateCommand((Action)ModifyRunParamsExecute);
+			}
+			return (ICommand)_ModifiyRunParamsCommand;
+		}
+	}
+
+	public string TargetBindInputStr
+	{
+		get
+		{
+			return targetBindInputStr;
+		}
+		set
+		{
+			if (value != targetBindInputStr)
+			{
+				targetBindInputStr = value;
+				OnPropertyChanged("TargetBindInputStr");
+			}
+		}
+	}
+
+	public string IsBindInputTarget
+	{
+		get
+		{
+			return _IsBindInputTarget;
+		}
+		set
+		{
+			if (_IsBindInputTarget != value)
+			{
+				_IsBindInputTarget = value;
+				OnPropertyChanged("IsBindInputTarget");
+			}
+		}
+	}
+
+	public List<RunParamsBaseNode> SelectedInputParams
+	{
+		get
+		{
+			return _SelectedInputParams;
+		}
+		set
+		{
+			if (_SelectedInputParams == value)
+			{
+				return;
+			}
+			_SelectedInputParams = value;
+			if (_SelectedInputParams != null && _SelectedInputParams.Count > 0)
+			{
+				string text = string.Empty;
+				foreach (RunParamsBaseNode selectedInputParam in SelectedInputParams)
+				{
+					text = text + selectedInputParam.FunllParamsNameA + ";";
+				}
+				text = text.Substring(0, text.Length - 1);
+				IsBindInputTarget = "Collapsed";
+				TargetBindInputStr = text;
+			}
+			else
+			{
+				TargetBindInputStr = "";
+				IsBindInputTarget = "Visible";
+			}
+		}
+	}
+
+	public ICommand ModifiyInputParamsCommand
+	{
+		get
+		{
+			//IL_001b: Unknown result type (might be due to invalid IL or missing references)
+			//IL_0025: Expected Obj, but got Unknown
+			if (_ModifiyInputParamsCommand == null)
+			{
+				_ModifiyInputParamsCommand = new DelegateCommand((Action)ModifyInputParamsExecute);
+			}
+			return (ICommand)_ModifiyInputParamsCommand;
+		}
+	}
+
+	public void SetSelectParams()
+	{
+		if (RunParamsDict != null && RunParamsDict.Count > 0)
+		{
+			SelectedRunParams = GetRunParams(RunParamsDict);
+		}
+		if (InputParamsDict != null && InputParamsDict.Count > 0)
+		{
+			SelectedInputParams = GetInputRunParams(InputParamsDict);
+		}
+	}
+
+	private void ModifyRunParamsExecute()
+	{
+		RunParamsSelectData runParamsSelectData = new RunParamsSelectData();
+		runParamsSelectData.DecorateSource = ((Parent as ComTriggerItem).Parent as GlobalTriggerConfig).DecorateSource;
+		runParamsSelectData.WindowTitle = "Lang_GlobalVariableTargetOutput";
+		RunParamsSelectData paramsData = runParamsSelectData;
+		RunParamsSelectWindow runParamsSelectWindow = new RunParamsSelectWindow(SelectedRunParams, paramsData);
+		if (runParamsSelectWindow.ShowDialog() != true)
+		{
+			return;
+		}
+		SelectedRunParams = runParamsSelectWindow.GetSelectedParams();
+		if (SelectedRunParams != null && SelectedRunParams.Count > 0)
+		{
+			RunParamsDict = SelectedRunParams.Select((RunParamsBaseNode x) => new BindParams
+			{
+				ModuleID = (int)x.ModuleID.Value,
+				ParamName = x.Name
+			}).ToList();
+		}
+		else
+		{
+			RunParamsDict = null;
+		}
+		(Parent as GlobalTriggerEventItem).OnPropertyChanged("IsOutPutChange");
+	}
+
+	public List<RunParamsBaseNode> GetRunParams(List<BindParams> dictParamName)
+	{
+		try
+		{
+			List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+			if (dictParamName == null || dictParamName.Count < 0)
+			{
+				return list;
+			}
+			foreach (BindParams item in dictParamName)
+			{
+				RunParamsBaseNode runParamsBaseNode = new RunParamsBaseNode
+				{
+					OutputEnabled = true
+				};
+				if (!GlobalTriggerConfig.CacheTabRoot.ContainsKey(item.ModuleID))
+				{
+					AlgorithmTabRoot value = new AlgorithmTabRoot(VmSolution.Instance.GetModuleByID((uint)item.ModuleID)?.Params);
+					GlobalTriggerConfig.CacheTabRoot.Add(item.ModuleID, value);
+				}
+				runParamsBaseNode.TargetObject = GlobalTriggerConfig.CacheTabRoot[item.ModuleID].FindBaseNodeByName(item.ParamName) as NameValueItem;
+				if (runParamsBaseNode.TargetObject != null)
+				{
+					list.Add(runParamsBaseNode);
+				}
+			}
+			return list;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("GetRunParams is exception:" + ex.ToString());
+			return null;
+		}
+	}
+
+	private void ModifyInputParamsExecute()
+	{
+		if (Parent == null || (Parent as GlobalTriggerEventItem).ItemsA.All((TrigerOutPutItem x) => x.ItemType == "byte"))
+		{
+			return;
+		}
+		ModuleInputSelectData moduleInputSelectData = new ModuleInputSelectData();
+		moduleInputSelectData.DecorateSource = ((Parent as ComTriggerItem).Parent as GlobalTriggerConfig)?.DecorateSource;
+		moduleInputSelectData.WindowTitle = "Lang_SetInput";
+		ModuleInputSelectData paramsData = moduleInputSelectData;
+		RunParamsSelectWindow runParamsSelectWindow = new RunParamsSelectWindow(SelectedInputParams, paramsData);
+		if (runParamsSelectWindow.ShowDialog() != true)
+		{
+			return;
+		}
+		SelectedInputParams = runParamsSelectWindow.GetSelectedParams();
+		if (SelectedInputParams != null && SelectedInputParams.Count > 0)
+		{
+			InputParamsDict = SelectedInputParams.Select((RunParamsBaseNode x) => new BindParams
+			{
+				ModuleID = (int)x.ModuleID.Value,
+				ParamName = x.Name
+			}).ToList();
+		}
+		else
+		{
+			InputParamsDict = null;
+		}
+		(Parent as GlobalTriggerEventItem)?.OnPropertyChanged("IsOutPutChange");
+	}
+
+	public List<RunParamsBaseNode> GetInputRunParams(List<BindParams> dictParamName)
+	{
+		try
+		{
+			List<RunParamsBaseNode> list = new List<RunParamsBaseNode>();
+			if (dictParamName == null || dictParamName.Count < 0)
+			{
+				return list;
+			}
+			foreach (BindParams item in dictParamName)
+			{
+				RunParamsBaseNode runParamsBaseNode = new RunParamsBaseNode
+				{
+					OutputEnabled = true
+				};
+				VmIO vmIO = VmSolution.Instance.GetModuleByID((uint)item.ModuleID)?.Inputs[item.ParamName];
+				if (vmIO != null)
+				{
+					runParamsBaseNode.TargetObject = new DynamicIO
+					{
+						IoDataSource = vmIO
+					};
+					if (runParamsBaseNode.TargetObject != null)
+					{
+						list.Add(runParamsBaseNode);
+					}
+				}
+			}
+			return list;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("GetInputRunParams is exception:" + ex.ToString());
+			return null;
+		}
+	}
+}

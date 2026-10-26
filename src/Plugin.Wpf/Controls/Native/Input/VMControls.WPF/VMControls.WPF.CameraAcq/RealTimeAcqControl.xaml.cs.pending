@@ -1,0 +1,585 @@
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.Data;
+using Apps.ErrorCode;
+using Apps.Log;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using MvCamCtrl.NET;
+using VM.Controls;
+using VM.Core;
+using VM.Utility;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CameraAcq;
+
+/// <summary>
+/// CameraPreviewControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// RealTimeAcqControl
+/// </summary>
+public partial class RealTimeAcqControl : UserControl, IDisposable, INotifyPropertyChanged, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(RealTimeAcqControl), new PropertyMetadata(null, OnModuleSourceChanged));
+
+	public static readonly DependencyProperty IsShowButtonProperty = DependencyProperty.Register("IsShowButton", typeof(bool), typeof(RealTimeAcqControl), new PropertyMetadata(true, OnVisibleChanged));
+
+	private static bool needPopLostPacketWarning = true;
+
+	private object popLock = new object();
+
+	public int _imageNum = 0;
+
+	private int _LostPackgeNum;
+
+	private ImageData imageSource;
+
+	private string serialNumber = "";
+
+	private MyCamera.cbOutputExdelegate m_cbImage = null;
+
+	private MyCamera.MV_CC_DEVICE_INFO_LIST m_stDeviceList = default;
+
+	private const uint MV_GVSP_PIX_ID_MASK = 65535u;
+
+	private const uint MV_GVSP_PIX_COLOR_MASK = 4278190080u;
+
+	private const uint MV_GVSP_PIX_COLOR = 33554432u;
+
+	private MyCamera device;
+
+	private string ipTemp = "";
+
+	private ushort portTemp;
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 按钮是否可见
+	/// </summary>
+	public bool IsShowButton
+	{
+		get
+		{
+			return (bool)GetValue(IsShowButtonProperty);
+		}
+		set
+		{
+			SetValue(IsShowButtonProperty, value);
+		}
+	}
+
+	public int ImageNum
+	{
+		get
+		{
+			return _imageNum;
+		}
+		set
+		{
+			if (_imageNum != value)
+			{
+				_imageNum = value;
+				OnPropertyChanged("ImageNum");
+			}
+		}
+	}
+
+	public int LostPackgeNum
+	{
+		get
+		{
+			return _LostPackgeNum;
+		}
+		set
+		{
+			if (_LostPackgeNum != value)
+			{
+				_LostPackgeNum = value;
+				OnPropertyChanged("LostPackgeNum");
+			}
+		}
+	}
+
+	public ImageData ImageSource
+	{
+		get
+		{
+			return imageSource;
+		}
+		set
+		{
+			if (imageSource != value)
+			{
+				imageSource = value;
+				OnPropertyChanged("ImageSource");
+			}
+		}
+	}
+
+	public string SerialNumber
+	{
+		get
+		{
+			string[] array = ((IUserStringData)(ModuleSource?.Params))["CameraPreviewInfo"]?.Split('$');
+			if (array != null && array.Length == 7)
+			{
+				serialNumber = array[6];
+			}
+			return serialNumber;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	private static void OnModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		RealTimeAcqControl realTimeAcqControl = d as RealTimeAcqControl;
+		VmModule vmModule = e.OldValue as VmModule;
+		VmModule vmModule2 = e.NewValue as VmModule;
+		if (vmModule != null)
+		{
+			realTimeAcqControl.StopOldGrabbing(vmModule);
+		}
+		if (vmModule2 != null && (realTimeAcqControl.SerialNumber == "" || realTimeAcqControl.SerialNumber == "0"))
+		{
+			HikMessageBox.Show("未连接相机", MessageIcons.Error, isTranslate: true);
+		}
+	}
+
+	private static void OnVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	public virtual void OnPropertyChanged(string proName)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(proName));
+	}
+
+	public RealTimeAcqControl()
+	{
+		InitializeComponent();
+	}
+
+	public void Dispose()
+	{
+		if (device != null)
+		{
+			device.MV_CC_StopGrabbing_NET();
+			device.MV_CC_CloseDevice_NET();
+			device.MV_CC_DestroyDevice_NET();
+		}
+	}
+
+	private void BtnToolZoomOut_Click(object sender, RoutedEventArgs e)
+	{
+		EnLarge();
+	}
+
+	private void BtnToolZoomIn_Click(object sender, RoutedEventArgs e)
+	{
+		Shrink();
+	}
+
+	private void BtnToolRegionScale_Click(object sender, RoutedEventArgs e)
+	{
+		RegionScale();
+	}
+
+	private void m_btnFullScreen_Click(object sender, RoutedEventArgs e)
+	{
+		FullScreen instance = SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.FullScreen.Instance;
+		instance.DataContext = viewbox.DataContext;
+		viewbox.Children.Remove(imageView);
+		instance.SetChild(imageView);
+		instance.ShowDialog();
+		instance.RemoveChild();
+		instance.DataContext = null;
+		viewbox.Children.Add(imageView);
+	}
+
+	private void bnStartGrab_Click(object sender, RoutedEventArgs e)
+	{
+		StartGrabbing();
+	}
+
+	private void bnStopGrab_Click(object sender, RoutedEventArgs e)
+	{
+		StopGrabbing();
+	}
+
+	private uint GetIp(string strIp)
+	{
+		string[] array = strIp.Split('.');
+		int num = Convert.ToInt32(array[0]);
+		int num2 = Convert.ToInt32(array[1]);
+		int num3 = Convert.ToInt32(array[2]);
+		int num4 = Convert.ToInt32(array[3]);
+		return (uint)((num << 24) | (num2 << 16) | (num3 << 8) | num4);
+	}
+
+	private void ImageCallBack(IntPtr pData, ref MyCamera.MV_FRAME_OUT_INFO_EX pFrameInfo, IntPtr pUser)
+	{
+		try
+		{
+			ImageData cbImage = new ImageData();
+			uint num = (uint)(pFrameInfo.enPixelType & (MyCamera.MvGvspPixelType)0xFFFF);
+			bool flag = (pFrameInfo.enPixelType & (MyCamera.MvGvspPixelType)(-16777216)) == (MyCamera.MvGvspPixelType)33554432 || (num >= 8 && num <= 19) || (num >= 38 && num <= 49);
+			cbImage.PixelFormat = (flag ? PixelFormats.Rgb24 : PixelFormats.Gray8);
+			cbImage.Width = pFrameInfo.nWidth;
+			cbImage.Height = pFrameInfo.nHeight;
+			int num2 = pFrameInfo.nWidth * pFrameInfo.nHeight * ((!flag) ? 1 : 3);
+			if ((cbImage.ImageBuffer?.Length ?? 0) < num2)
+			{
+				cbImage.ImageBuffer = new byte[num2];
+			}
+			if (pFrameInfo.enPixelType != (MyCamera.MvGvspPixelType)ImageData.GetPixelFormatProtocolCode(cbImage.PixelFormat))
+			{
+				ConvertPixelFormat(ref pFrameInfo, pData, ref cbImage);
+			}
+			else
+			{
+				Marshal.Copy(pData, cbImage.ImageBuffer, 0, (int)pFrameInfo.nFrameLen);
+			}
+			int tempLostPackgeNum = Convert.ToInt32(pFrameInfo.nLostPacket);
+			int tempImageNum = Convert.ToInt32(pFrameInfo.nFrameNum);
+			Dispatcher.BeginInvoke((Action)(() =>
+			{
+				ImageSource = cbImage;
+				LostPackgeNum = tempLostPackgeNum;
+				ImageNum = tempImageNum;
+			}));
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+		}
+	}
+
+	private void ConvertPixelFormat(ref MyCamera.MV_FRAME_OUT_INFO_EX pFrameInfo, IntPtr pData, ref ImageData dstImage)
+	{
+		MyCamera.MV_PIXEL_CONVERT_PARAM pstCvtParam = new MyCamera.MV_PIXEL_CONVERT_PARAM
+		{
+			enDstPixelType = (MyCamera.MvGvspPixelType)ImageData.GetPixelFormatProtocolCode(dstImage.PixelFormat),
+			enSrcPixelType = pFrameInfo.enPixelType,
+			nHeight = pFrameInfo.nHeight,
+			nWidth = pFrameInfo.nWidth,
+			nSrcDataLen = pFrameInfo.nFrameLen,
+			pSrcData = pData,
+			nDstBufferSize = (uint)dstImage.ImageBuffer.Length
+		};
+		GCHandle gCHandle = GCHandle.Alloc(dstImage.ImageBuffer, GCHandleType.Pinned);
+		IntPtr pDstBuffer = gCHandle.AddrOfPinnedObject();
+		pstCvtParam.pDstBuffer = pDstBuffer;
+		int? num = device?.MV_CC_ConvertPixelType_NET(ref pstCvtParam);
+		if (num != 0)
+		{
+			LogHelper.Error("MV_CC_ConvertPixelType_NET:" + num);
+		}
+		if (gCHandle.IsAllocated)
+		{
+			gCHandle.Free();
+		}
+	}
+
+	public void StartGrabbing()
+	{
+		try
+		{
+			if (SerialNumber == "" || SerialNumber == "0")
+			{
+				HikMessageBox.Show("未连接相机", MessageIcons.Error, isTranslate: true);
+				return;
+			}
+			if (device != null)
+			{
+				HikMessageBox.Show("已开始采集", MessageIcons.Error, isTranslate: true);
+				return;
+			}
+			string text = (ipTemp = MulticastIP.Instance.IpSite());
+			portTemp = (ushort)MulticastIP.Instance.GetPort();
+			((IUserStringData)(ModuleSource?.Params))["RealTimeImgAcq"] = "True$" + text + "$" + portTemp;
+			device = new MyCamera();
+			MyCamera.MV_CC_DEVICE_INFO_LIST stDevList = default;
+			MyCamera.MV_CC_DEVICE_INFO stDevInfo = default;
+			int num = 0;
+			bool flag = false;
+			num = MyCamera.MV_CC_EnumDevices_NET(5u, ref stDevList);
+			if (num != 0)
+			{
+				throw new Exception($"{ErrorCodeInfo.GetErrorInfo(num)}({num:x8})");
+			}
+			for (int i = 0; i < stDevList.nDeviceNum; i++)
+			{
+				MyCamera.MV_CC_DEVICE_INFO mV_CC_DEVICE_INFO = (MyCamera.MV_CC_DEVICE_INFO)Marshal.PtrToStructure(stDevList.pDeviceInfo[i], typeof(MyCamera.MV_CC_DEVICE_INFO));
+				if (1 == mV_CC_DEVICE_INFO.nTLayerType)
+				{
+					if (((MyCamera.MV_GIGE_DEVICE_INFO)MyCamera.ByteToStruct(mV_CC_DEVICE_INFO.SpecialInfo.stGigEInfo, typeof(MyCamera.MV_GIGE_DEVICE_INFO))).chSerialNumber == serialNumber)
+					{
+						stDevInfo = mV_CC_DEVICE_INFO;
+						flag = true;
+					}
+				}
+				else if (4 == mV_CC_DEVICE_INFO.nTLayerType && ((MyCamera.MV_USB3_DEVICE_INFO)MyCamera.ByteToStruct(mV_CC_DEVICE_INFO.SpecialInfo.stUsb3VInfo, typeof(MyCamera.MV_USB3_DEVICE_INFO))).chSerialNumber == serialNumber)
+				{
+					stDevInfo = mV_CC_DEVICE_INFO;
+					flag = true;
+				}
+			}
+			if (!flag)
+			{
+				HikMessageBox.Show("未连接相机", MessageIcons.Error, isTranslate: true);
+				if (device != null)
+				{
+					device = null;
+				}
+				return;
+			}
+			num = device.MV_CC_CreateDevice_NET(ref stDevInfo);
+			if (num != 0)
+			{
+				HikMessageBox.Show(ErrorCodeInfo.GetErrorInfo(num), MessageIcons.Error);
+				LogHelper.Error("Device create fail!" + ErrorCodeInfo.GetErrorInfo(num));
+				if (device != null)
+				{
+					device = null;
+				}
+				return;
+			}
+			num = device.MV_CC_OpenDevice_NET(7u, 0);
+			if (num != 0)
+			{
+				HikMessageBox.Show(ErrorCodeInfo.GetErrorInfo(num), MessageIcons.Error);
+				LogHelper.Error("Device open fail!" + ErrorCodeInfo.GetErrorInfo(num));
+				num = device.MV_CC_DestroyDevice_NET();
+				if (device != null)
+				{
+					device = null;
+				}
+				return;
+			}
+			m_cbImage = ImageCallBack;
+			MyCamera.MV_CC_TRANSMISSION_TYPE pstTransmissionType = new MyCamera.MV_CC_TRANSMISSION_TYPE
+			{
+				enTransmissionType = MyCamera.MV_GIGE_TRANSMISSION_TYPE.MV_GIGE_TRANSTYPE_MULTICAST,
+				nDestIp = GetIp(text),
+				nDestPort = portTemp
+			};
+			num = device.MV_GIGE_SetTransmissionType_NET(ref pstTransmissionType);
+			if (num != 0)
+			{
+				HikMessageBox.Show(ErrorCodeInfo.GetErrorInfo(num), MessageIcons.Error);
+				LogHelper.Error("MV_GIGE_SetTransmissionType_NET" + num);
+				num = device.MV_CC_DestroyDevice_NET();
+				if (device != null)
+				{
+					ClearIpAndPorts();
+					device = null;
+				}
+				return;
+			}
+			num = device.MV_CC_RegisterImageCallBackEx_NET(m_cbImage, IntPtr.Zero);
+			if (num != 0)
+			{
+				HikMessageBox.Show(ErrorCodeInfo.GetErrorInfo(num), MessageIcons.Error);
+				LogHelper.Error("MV_CC_RegisterImageCallBackEx_NET:" + ErrorCodeInfo.GetErrorInfo(num));
+				num = device.MV_CC_DestroyDevice_NET();
+				if (device != null)
+				{
+					ClearIpAndPorts();
+					device = null;
+				}
+				return;
+			}
+			num = device.MV_CC_StartGrabbing_NET();
+			if (num != 0)
+			{
+				HikMessageBox.Show(ErrorCodeInfo.GetErrorInfo(num), MessageIcons.Error);
+				LogHelper.Error("MV_CC_StartGrabbing_NET:" + ErrorCodeInfo.GetErrorInfo(num));
+				num = device.MV_CC_DestroyDevice_NET();
+				if (device != null)
+				{
+					ClearIpAndPorts();
+					device = null;
+				}
+			}
+			else
+			{
+				((IUserStringData)(ModuleSource?.Params))["GrabStatus"] = "True";
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+		}
+	}
+
+	public void StopGrabbing()
+	{
+		try
+		{
+			if (SerialNumber == "" || SerialNumber == "0")
+			{
+				HikMessageBox.Show("未连接相机", MessageIcons.Error, isTranslate: true);
+				return;
+			}
+			((IUserStringData)(ModuleSource?.Params))["RealTimeImgAcq"] = "False";
+			int num = device.MV_CC_StopGrabbing_NET();
+			if (num != 0)
+			{
+				LogHelper.Error("Stop Grabbing Fail!:" + ErrorCodeInfo.GetErrorInfo(num));
+				return;
+			}
+			num = device.MV_CC_CloseDevice_NET();
+			if (num != 0)
+			{
+				LogHelper.Error("Close device Fail:" + ErrorCodeInfo.GetErrorInfo(num));
+				return;
+			}
+			num = device.MV_CC_DestroyDevice_NET();
+			if (num != 0)
+			{
+				LogHelper.Error("Destroy device Fail:" + ErrorCodeInfo.GetErrorInfo(num));
+			}
+			else if (device != null)
+			{
+				ClearIpAndPorts();
+				device = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+		}
+	}
+
+	public void StopOldGrabbing(VmModule vmModule)
+	{
+		try
+		{
+			string text = ((IUserStringData)(vmModule?.Params))["CameraPreviewInfo"];
+			string value = string.Empty;
+			string[] array = text?.Split('$');
+			if (array != null && array.Length == 7)
+			{
+				value = array[6];
+			}
+			if (vmModule == null || string.IsNullOrEmpty(value))
+			{
+				return;
+			}
+			((IUserStringData)(vmModule?.Params))["RealTimeImgAcq"] = "False";
+			int num = device.MV_CC_StopGrabbing_NET();
+			if (num != 0)
+			{
+				LogHelper.Error("Stop Grabbing Fail!:" + ErrorCodeInfo.GetErrorInfo(num));
+				return;
+			}
+			num = device.MV_CC_CloseDevice_NET();
+			if (num != 0)
+			{
+				LogHelper.Error("Close device Fail:" + ErrorCodeInfo.GetErrorInfo(num));
+				return;
+			}
+			num = device.MV_CC_DestroyDevice_NET();
+			if (num != 0)
+			{
+				LogHelper.Error("Destroy device Fail:" + ErrorCodeInfo.GetErrorInfo(num));
+				return;
+			}
+			ClearIpAndPorts();
+			device = null;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message);
+		}
+	}
+
+	public void EnLarge()
+	{
+		imageView.Enlarge();
+	}
+
+	public void Shrink()
+	{
+		imageView.Shrink();
+	}
+
+	public void RegionScale()
+	{
+		imageView.Init();
+	}
+
+	public void FullScreen()
+	{
+		FullScreen instance = SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.FullScreen.Instance;
+		instance.DataContext = viewbox.DataContext;
+		viewbox.Children.Remove(imageView);
+		instance.SetChild(imageView);
+		instance.ShowDialog();
+		instance.RemoveChild();
+		instance.DataContext = null;
+		viewbox.Children.Add(imageView);
+	}
+
+	public long GetBaseHandle()
+	{
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	/// <summary>
+	/// 根据实时取流控件绑定ID
+	/// </summary>
+	/// <returns></returns>
+	public void BindRealTimeAcqById(uint Id)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			VmModule moduleByID = VmSolution.Instance.GetModuleByID(Id);
+			if (moduleByID != null)
+			{
+				ModuleSource = moduleByID;
+			}
+		});
+	}
+
+	public void ClearIpAndPorts()
+	{
+		for (int i = 0; i < MulticastIP.Instance.MulticastIPList.Count; i++)
+		{
+			if (MulticastIP.Instance.MulticastIPList[i].Equals(ipTemp))
+			{
+				MulticastIP.Instance.MulticastIPList.Remove(MulticastIP.Instance.MulticastIPList[i]);
+				break;
+			}
+		}
+		for (int j = 0; j < MulticastIP.Instance.MultiPortsList.Count; j++)
+		{
+			if (MulticastIP.Instance.MultiPortsList[j].Equals(portTemp))
+			{
+				MulticastIP.Instance.MultiPortsList.Remove(MulticastIP.Instance.MultiPortsList[j]);
+				break;
+			}
+		}
+	}
+}

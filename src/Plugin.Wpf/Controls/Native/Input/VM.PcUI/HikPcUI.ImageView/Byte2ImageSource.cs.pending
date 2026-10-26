@@ -1,0 +1,827 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Apps.Data;
+using HikExternalCall.Common;
+using VM.Utility;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class Byte2ImageSource : IByte2ImageSource
+{
+	public enum Interpolation
+	{
+		NearestNeighbor,
+		Bilinear
+	}
+
+	private WriteableBitmap m_wbBitmap;
+
+	private int m_nWidth = 0;
+
+	private int m_nHeight = 0;
+
+	private PixelFormat m_nPixelFormat = PixelFormats.Default;
+
+	public static Dictionary<byte, System.Drawing.Color> ColorTable;
+
+	public static Dictionary<int, Tuple<int, double, double>> OffsetTable;
+
+	public IByte2ImageAddition ImageAddition { get; set; }
+
+	public Byte2ImageSource()
+	{
+		ImageAddition = Ioc.HotGet<IAdditionService>()?.GetByte2ImageAddition(this);
+	}
+
+	public void Clear()
+	{
+		m_wbBitmap = null;
+	}
+
+	public void InitImageSource(int nWidth, int nHeight, PixelFormat npixelFormat, bool needThrow = false)
+	{
+		try
+		{
+			if (nWidth != 0 && nHeight != 0)
+			{
+				m_nWidth = nWidth;
+				m_nHeight = nHeight;
+				m_nPixelFormat = npixelFormat;
+				m_wbBitmap = new WriteableBitmap(nWidth, nHeight, 96.0, 96.0, npixelFormat, null);
+			}
+		}
+		catch (Exception ex)
+		{
+			m_wbBitmap = null;
+			GC.Collect();
+			if (needThrow)
+			{
+				throw ex;
+			}
+		}
+	}
+
+	public WriteableBitmap Init(int nWidth, int nHeight, PixelFormat npixelFormat)
+	{
+		try
+		{
+			if (nWidth != m_nWidth || nHeight != m_nHeight || npixelFormat != m_nPixelFormat || m_wbBitmap == null)
+			{
+				if (nWidth < 0 || nHeight < 0)
+				{
+					return null;
+				}
+				InitImageSource(nWidth, nHeight, npixelFormat);
+			}
+			return m_wbBitmap;
+		}
+		catch (Exception)
+		{
+			m_wbBitmap = null;
+			return null;
+		}
+	}
+
+	public ImageSource BuiltImageSource(byte[] rawValues, int nWidth, int nHeight, PixelFormat npixelFormats)
+	{
+		if (nWidth != m_nWidth || nHeight != m_nHeight || npixelFormats != m_nPixelFormat || m_wbBitmap == null)
+		{
+			if (nWidth < 0 || nHeight < 0)
+			{
+				return null;
+			}
+			InitImageSource(nWidth, nHeight, npixelFormats);
+		}
+		try
+		{
+			if (m_wbBitmap == null || Math.Abs((double)rawValues.Length - (double)nWidth * 1.0 * (double)nHeight * (double)m_wbBitmap.Format.BitsPerPixel / 8.0) > 0.10000000149011612)
+			{
+				return null;
+			}
+			m_wbBitmap.WritePixels(new Int32Rect(0, 0, nWidth, nHeight), rawValues, m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 8, 0);
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+		return m_wbBitmap;
+	}
+
+	public ImageSource BuiltImageSourceRgb(byte[] rawValues, int nWidth, int nHeight, PixelFormat npixelFormats)
+	{
+		if (nWidth != m_nWidth || nHeight != m_nHeight || npixelFormats != m_nPixelFormat || m_wbBitmap == null)
+		{
+			if (nWidth < 0 || nHeight < 0)
+			{
+				return null;
+			}
+			InitImageSource(nWidth, nHeight, npixelFormats);
+		}
+		try
+		{
+			if (m_wbBitmap == null || Math.Abs((double)rawValues.Length - (double)nWidth * 3.0 * (double)nHeight * (double)m_wbBitmap.Format.BitsPerPixel / 24.0) > 0.10000000149011612)
+			{
+				return null;
+			}
+			m_wbBitmap.WritePixels(new Int32Rect(0, 0, nWidth, nHeight), rawValues, 3 * m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 24, 0);
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+		return m_wbBitmap;
+	}
+
+	public ImageSource BuiltImageSourceA(ImageData image)
+	{
+		if (image == null)
+		{
+			return null;
+		}
+		if (image.NeedConvertColor)
+		{
+			return BuiltRgbImageSource(image);
+		}
+		if (image.ImageBuffer == null && !string.IsNullOrEmpty(image.MemoryAddress))
+		{
+			return BuiltImageSource(image.MemoryAddress, image.Width, image.Height, image.PixelFormat);
+		}
+		return (image.ImageBuffer == null) ? null : BuiltImageSource(image.ImageBuffer, image.Width, image.Height, image.PixelFormat);
+	}
+
+	public unsafe ImageSource BuiltImageSourceA(ImageData image, int width, int height)
+	{
+		if (image == null)
+		{
+			return null;
+		}
+		if (image.NeedConvertColor)
+		{
+			return BuiltRgbImageSource(image, width, height);
+		}
+		WriteableBitmap writeableBitmap = Init(width, height, image.PixelFormat);
+		if (writeableBitmap == null)
+		{
+			return null;
+		}
+		if (image.ImageBuffer == null)
+		{
+			if (string.IsNullOrEmpty(image.MemoryAddress))
+			{
+				return null;
+			}
+			image.ImageBuffer = GetImageBufferByFileName(image.MemoryAddress, image.Width, image.Height, image.PixelFormat, isDirect: false);
+			if (image.ImageBuffer == null)
+			{
+				return null;
+			}
+		}
+		int num = ((image.PixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		if (image.ImageBuffer.Length != image.Width * image.Height * num)
+		{
+			return null;
+		}
+		writeableBitmap.Lock();
+		fixed (byte* imageBuffer = image.ImageBuffer)
+		{
+			Resize(imageBuffer, (byte*)(void*)writeableBitmap.BackBuffer, image.Width, image.Height, width, height, Interpolation.NearestNeighbor, image.PixelFormat);
+		}
+		writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, width, height));
+		writeableBitmap.Unlock();
+		return writeableBitmap;
+	}
+
+	public unsafe byte[] GetImageBufferByFileNameT(WriteableBitmap bmp, int width, int height, string fileName, int nWidth, int nHeight, PixelFormat npixelFormats, bool isDirect = true)
+	{
+		int num = 16;
+		try
+		{
+			byte[] array = new byte[4];
+			uint num2 = (uint)array.Length;
+			IntPtr intPtr = MemoryHelper.OpenFileMapping(4, bInheritHandle: false, fileName);
+			if (intPtr == IntPtr.Zero)
+			{
+				return null;
+			}
+			IntPtr intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4, 0, 0, new IntPtr(num2));
+			if (intPtr2 == IntPtr.Zero)
+			{
+				return null;
+			}
+			Marshal.Copy(intPtr2, array, 0, array.Length);
+			if (intPtr2 != IntPtr.Zero)
+			{
+				MemoryHelper.UnmapViewOfFile(intPtr2);
+			}
+			int num3 = BitConverter.ToInt32(array, 0);
+			if (num3 < 0)
+			{
+				return null;
+			}
+			if (npixelFormats == PixelFormats.Gray8)
+			{
+				if (num3 != nWidth * nHeight)
+				{
+					return null;
+				}
+			}
+			else if (num3 != nWidth * nHeight * 3)
+			{
+				return null;
+			}
+			num2 = (uint)(num3 + num);
+			intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4, 0, 0, new IntPtr(num2));
+			if (intPtr2 == IntPtr.Zero)
+			{
+				return null;
+			}
+			byte[] result = null;
+			if (m_wbBitmap == null)
+			{
+				return null;
+			}
+			if (num3 != nWidth * nHeight * (m_wbBitmap.Format.BitsPerPixel / 8))
+			{
+				return null;
+			}
+			if (isDirect)
+			{
+				m_wbBitmap.WritePixels(new Int32Rect(0, 0, nWidth, nHeight), intPtr2 + num, num3, m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 8);
+			}
+			else
+			{
+				byte* pixels = (byte*)(intPtr2 + num).ToPointer();
+				bmp.Lock();
+				Resize(pixels, (byte*)(void*)bmp.BackBuffer, nWidth, nHeight, width, height, Interpolation.NearestNeighbor, npixelFormats);
+				bmp.AddDirtyRect(new Int32Rect(0, 0, width, height));
+				bmp.Unlock();
+				result = new byte[1];
+			}
+			if (intPtr2 != IntPtr.Zero)
+			{
+				MemoryHelper.UnmapViewOfFile(intPtr2);
+			}
+			if (intPtr != IntPtr.Zero)
+			{
+				MemoryHelper.CloseHandle(intPtr);
+			}
+			return result;
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
+	public unsafe ImageSource BuiltBgraImageSource(ImageData image, int width, int height, byte transparency)
+	{
+		if (image == null)
+		{
+			return null;
+		}
+		WriteableBitmap writeableBitmap = Init(width, height, PixelFormats.Bgra32);
+		if (writeableBitmap == null)
+		{
+			return null;
+		}
+		if (image.ImageBuffer == null)
+		{
+			if (string.IsNullOrEmpty(image.MemoryAddress))
+			{
+				return null;
+			}
+			image.ImageBuffer = GetImageBufferByFileName(image.MemoryAddress, image.Width, image.Height, image.PixelFormat);
+		}
+		if (image.ImageBuffer == null)
+		{
+			return null;
+		}
+		int num = ((image.PixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		if (image.ImageBuffer.Length != image.Width * image.Height * num)
+		{
+			return null;
+		}
+		int num2 = image.Width * image.Height;
+		int num3 = num2 * 4;
+		byte[] array = new byte[num3];
+		if (image.PixelFormat == PixelFormats.Gray8)
+		{
+			for (int i = 0; i < num2; i++)
+			{
+				if (image.ImageBuffer[i] != 0)
+				{
+					if (image.NeedConvertColor)
+					{
+						System.Drawing.Color categoryColor = GetCategoryColor(image.ImageBuffer[i]);
+						array[4 * i] = categoryColor.B;
+						array[4 * i + 1] = categoryColor.G;
+						array[4 * i + 2] = categoryColor.R;
+						array[4 * i + 3] = transparency;
+					}
+					else
+					{
+						array[4 * i] = image.ImageBuffer[i];
+						array[4 * i + 1] = image.ImageBuffer[i];
+						array[4 * i + 2] = image.ImageBuffer[i];
+						array[4 * i + 3] = transparency;
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int j = 0; j < num2; j++)
+			{
+				array[4 * j] = image.ImageBuffer[3 * j + 2];
+				array[4 * j + 1] = image.ImageBuffer[3 * j + 1];
+				array[4 * j + 2] = image.ImageBuffer[3 * j];
+				array[4 * j + 3] = transparency;
+			}
+		}
+		writeableBitmap.Lock();
+		fixed (byte* pixels = array)
+		{
+			Resize(pixels, (byte*)(void*)writeableBitmap.BackBuffer, image.Width, image.Height, width, height, Interpolation.NearestNeighbor, PixelFormats.Bgra32);
+		}
+		writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, width, height));
+		writeableBitmap.Unlock();
+		return writeableBitmap;
+	}
+
+	public unsafe ImageSource BuiltRgbImageSource(ImageData image, int width = 0, int height = 0)
+	{
+		if (image == null)
+		{
+			return null;
+		}
+		if (image.ImageBuffer == null)
+		{
+			if (string.IsNullOrEmpty(image.MemoryAddress))
+			{
+				return null;
+			}
+			image.ImageBuffer = GetImageBufferByFileName(image.MemoryAddress, image.Width, image.Height, image.PixelFormat);
+		}
+		if (image.ImageBuffer == null)
+		{
+			return null;
+		}
+		int num = ((image.PixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		if (image.ImageBuffer.Length != image.Width * image.Height * num)
+		{
+			return null;
+		}
+		int num2 = image.Width * image.Height;
+		int num3 = num2 * 3;
+		byte[] newBuffer = null;
+		if (image.PixelFormat == PixelFormats.Gray8)
+		{
+			newBuffer = new byte[num3];
+			try
+			{
+				Parallel.For(0, num2, (int i) =>
+				{
+					byte b = image.ImageBuffer[i];
+					if (b != 0)
+					{
+						System.Drawing.Color color = ColorTable[b];
+						int num4 = 3 * i;
+						newBuffer[num4] = color.B;
+						newBuffer[num4 + 1] = color.G;
+						newBuffer[num4 + 2] = color.R;
+					}
+				});
+			}
+			catch
+			{
+			}
+		}
+		else
+		{
+			newBuffer = image.ImageBuffer;
+		}
+		if (height == 0 || width == 0)
+		{
+			return BuiltImageSource(newBuffer, image.Width, image.Height, PixelFormats.Rgb24);
+		}
+		WriteableBitmap writeableBitmap = Init(width, height, PixelFormats.Rgb24);
+		if (writeableBitmap == null)
+		{
+			return null;
+		}
+		writeableBitmap.Lock();
+		fixed (byte* pixels = newBuffer)
+		{
+			Resize(pixels, (byte*)(void*)writeableBitmap.BackBuffer, image.Width, image.Height, width, height, Interpolation.NearestNeighbor, PixelFormats.Rgb24);
+		}
+		writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, width, height));
+		writeableBitmap.Unlock();
+		return writeableBitmap;
+	}
+
+	private System.Drawing.Color GetCategoryColor(byte mono)
+	{
+		if (ColorTable.ContainsKey(mono))
+		{
+			return ColorTable[mono];
+		}
+		return System.Drawing.Color.FromArgb(255, mono, mono, mono);
+	}
+
+	static Byte2ImageSource()
+	{
+		ColorTable = new Dictionary<byte, System.Drawing.Color>();
+		OffsetTable = new Dictionary<int, Tuple<int, double, double>>
+		{
+			{
+				0,
+				new Tuple<int, double, double>(0, 1.0, 1.0)
+			},
+			{
+				1,
+				new Tuple<int, double, double>(0, 1.0, 0.5)
+			},
+			{
+				2,
+				new Tuple<int, double, double>(35, 0.5, 1.0)
+			},
+			{
+				3,
+				new Tuple<int, double, double>(35, 0.5, 1.0)
+			},
+			{
+				4,
+				new Tuple<int, double, double>(17, 0.5, 0.5)
+			},
+			{
+				5,
+				new Tuple<int, double, double>(17, 0.5, 0.5)
+			},
+			{
+				6,
+				new Tuple<int, double, double>(53, 0.5, 0.5)
+			},
+			{
+				7,
+				new Tuple<int, double, double>(53, 0.5, 0.5)
+			}
+		};
+		for (byte b = 0; b < 4; b++)
+		{
+			for (byte b2 = 0; b2 < 8; b2++)
+			{
+				ColorTable.Add((byte)(b2 * 4 + b + 1), ColorFromHSV(b * 70 + OffsetTable[b2].Item1 + 60, OffsetTable[b2].Item2, OffsetTable[b2].Item3));
+			}
+		}
+	}
+
+	public static System.Drawing.Color ColorFromHSV(double hue, double saturation, double value)
+	{
+		int num = Convert.ToInt32(Math.Floor(hue / 60.0)) % 6;
+		double num2 = hue / 60.0 - Math.Floor(hue / 60.0);
+		value *= 255.0;
+		int num3 = Convert.ToInt32(value);
+		int num4 = Convert.ToInt32(value * (1.0 - saturation));
+		int num5 = Convert.ToInt32(value * (1.0 - num2 * saturation));
+		int num6 = Convert.ToInt32(value * (1.0 - (1.0 - num2) * saturation));
+		return num switch
+		{
+			0 => System.Drawing.Color.FromArgb(255, num3, num6, num4), 
+			1 => System.Drawing.Color.FromArgb(255, num5, num3, num4), 
+			2 => System.Drawing.Color.FromArgb(255, num4, num3, num6), 
+			3 => System.Drawing.Color.FromArgb(255, num4, num5, num3), 
+			4 => System.Drawing.Color.FromArgb(255, num6, num4, num3), 
+			_ => System.Drawing.Color.FromArgb(255, num3, num4, num5), 
+		};
+	}
+
+	public unsafe static void Resize(byte* pixels, byte* bufferptr, int widthSource, int heightSource, int width, int height, Interpolation interpolation, PixelFormat pixelFormat)
+	{
+		int channel = pixelFormat.BitsPerPixel / 8;
+		int strideSource = widthSource * pixelFormat.BitsPerPixel / 8;
+		int stride = (int)Math.Ceiling((double)width * (double)pixelFormat.BitsPerPixel / 32.0) * 4;
+		float xs = (float)widthSource / (float)width;
+		float ys = (float)heightSource / (float)height;
+		if (interpolation != Interpolation.NearestNeighbor)
+		{
+			return;
+		}
+		byte* ptr = height * stride + bufferptr;
+		int dlen = width * channel;
+		Parallel.For(0, height, (int y) =>
+		{
+			byte* ptr2 = pixels + (int)(ys * (float)y) * strideSource;
+			byte* ptr3 = bufferptr + y * stride;
+			double num = 0.0;
+			byte* ptr4 = dlen + ptr3;
+			for (byte* ptr5 = ptr3; ptr5 < ptr4; ptr5 += channel)
+			{
+				byte* ptr6 = ptr2 + (int)num * channel;
+				num += (double)xs;
+				for (int i = 0; i < channel; i++)
+				{
+					ptr5[i] = ptr6[i];
+				}
+			}
+		});
+	}
+
+	public ImageSource BuiltImageSource(IntPtr imageData, int dataLenth, int nWidth, int nHeight, PixelFormat npixelFormats)
+	{
+		if (nWidth != m_nWidth || nHeight != m_nHeight || npixelFormats != m_nPixelFormat || m_wbBitmap == null)
+		{
+			if (nWidth < 0 || nHeight < 0)
+			{
+				return null;
+			}
+			InitImageSource(nWidth, nHeight, npixelFormats);
+		}
+		try
+		{
+			if (m_wbBitmap != null)
+			{
+				m_wbBitmap.WritePixels(new Int32Rect(0, 0, nWidth, nHeight), imageData, dataLenth, m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 8);
+			}
+		}
+		catch
+		{
+		}
+		return m_wbBitmap;
+	}
+
+	public ImageSource BuiltImageSource(string fileName, int nWidth, int nHeight, PixelFormat npixelFormats)
+	{
+		if (nWidth != m_nWidth || nHeight != m_nHeight || npixelFormats != m_nPixelFormat || m_wbBitmap == null)
+		{
+			if (nWidth < 0 || nHeight < 0)
+			{
+				return null;
+			}
+			InitImageSource(nWidth, nHeight, npixelFormats);
+		}
+		GetImageBufferByFileName(fileName, nWidth, nHeight, npixelFormats, true);
+		return m_wbBitmap;
+	}
+
+	public byte[] GetImageBufferByFileName(string fileName, int nWidth, int nHeight, PixelFormat npixelFormats, bool isDirect = true)
+	{
+		int num = 16;
+		IntPtr intPtr = IntPtr.Zero;
+		IntPtr intPtr2 = IntPtr.Zero;
+		try
+		{
+			if (MemoryHelper.Is64)
+			{
+				byte[] array = new byte[16];
+				long value = array.Length;
+				intPtr = MemoryHelper.OpenFileMapping(4L, bInheritHandle: false, fileName);
+				if (intPtr == IntPtr.Zero)
+				{
+					return null;
+				}
+				intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4L, 0, 0, new IntPtr(value));
+				if (intPtr2 == IntPtr.Zero)
+				{
+					return null;
+				}
+				Marshal.Copy(intPtr2, array, 0, array.Length);
+				if (intPtr2 != IntPtr.Zero)
+				{
+					MemoryHelper.UnmapViewOfFile(intPtr2);
+				}
+				if (array[8] != 0)
+				{
+					return null;
+				}
+				long num2 = BitConverter.ToInt64(array, 0);
+				if (num2 < 0)
+				{
+					return null;
+				}
+				if (npixelFormats == PixelFormats.Gray8)
+				{
+					if (num2 != (long)nWidth * (long)nHeight)
+					{
+						return null;
+					}
+				}
+				else if (num2 != (long)nWidth * (long)nHeight * 3)
+				{
+					return null;
+				}
+				num = BitConverter.ToInt16(array, 14);
+				value = num2 + num;
+				intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4L, 0, 0, new IntPtr(value));
+				if (intPtr2 == IntPtr.Zero)
+				{
+					return null;
+				}
+				byte[] result = null;
+				if (m_wbBitmap == null)
+				{
+					return null;
+				}
+				if (num2 != (long)nWidth * (long)nHeight * (m_wbBitmap.Format.BitsPerPixel / 8))
+				{
+					return null;
+				}
+				if (isDirect)
+				{
+					m_wbBitmap.WritePixels(new Int32Rect(0, 0, nWidth, nHeight), intPtr2 + num, (int)num2, m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 8);
+				}
+				else
+				{
+					result = ExternalCallHelper.IntPtr2Bytes(intPtr2 + num, (int)num2);
+				}
+				return result;
+			}
+			byte[] array2 = new byte[16];
+			int value2 = array2.Length;
+			intPtr = MemoryHelper.OpenFileMapping(4, bInheritHandle: false, fileName);
+			if (intPtr == IntPtr.Zero)
+			{
+				return null;
+			}
+			intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4, 0, 0, new IntPtr(value2));
+			if (intPtr2 == IntPtr.Zero)
+			{
+				return null;
+			}
+			Marshal.Copy(intPtr2, array2, 0, array2.Length);
+			if (intPtr2 != IntPtr.Zero)
+			{
+				MemoryHelper.UnmapViewOfFile(intPtr2);
+			}
+			if (array2[8] != 0)
+			{
+				return null;
+			}
+			int num3 = BitConverter.ToInt32(array2, 0);
+			if (num3 < 0)
+			{
+				return null;
+			}
+			if (npixelFormats == PixelFormats.Gray8)
+			{
+				if (num3 != nWidth * nHeight)
+				{
+					return null;
+				}
+			}
+			else if (num3 != nWidth * nHeight * 3)
+			{
+				return null;
+			}
+			num = BitConverter.ToInt16(array2, 14);
+			value2 = num3 + num;
+			intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4, 0, 0, new IntPtr(value2));
+			if (intPtr2 == IntPtr.Zero)
+			{
+				return null;
+			}
+			byte[] result2 = null;
+			if (m_wbBitmap == null)
+			{
+				return null;
+			}
+			if (num3 != nWidth * nHeight * (m_wbBitmap.Format.BitsPerPixel / 8))
+			{
+				return null;
+			}
+			if (isDirect)
+			{
+				m_wbBitmap.WritePixels(new Int32Rect(0, 0, nWidth, nHeight), intPtr2 + num, num3, m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 8);
+			}
+			else
+			{
+				result2 = ExternalCallHelper.IntPtr2Bytes(intPtr2 + num, num3);
+			}
+			return result2;
+		}
+		catch
+		{
+			return null;
+		}
+		finally
+		{
+			if (intPtr2 != IntPtr.Zero)
+			{
+				MemoryHelper.UnmapViewOfFile(intPtr2);
+			}
+			if (intPtr != IntPtr.Zero)
+			{
+				MemoryHelper.CloseHandle(intPtr);
+			}
+		}
+	}
+
+	public static byte[] GetImageBufferByFileName(string fileName, int nWidth, int nHeight, PixelFormat npixelFormats)
+	{
+		int num = 16;
+		IntPtr intPtr = IntPtr.Zero;
+		IntPtr intPtr2 = IntPtr.Zero;
+		try
+		{
+			byte[] array = new byte[16];
+			long value = array.Length;
+			intPtr = MemoryHelper.OpenFileMapping(4L, bInheritHandle: false, fileName);
+			if (intPtr == IntPtr.Zero)
+			{
+				return null;
+			}
+			intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4L, 0, 0, new IntPtr(value));
+			if (intPtr2 == IntPtr.Zero)
+			{
+				return null;
+			}
+			Marshal.Copy(intPtr2, array, 0, array.Length);
+			if (intPtr2 != IntPtr.Zero)
+			{
+				MemoryHelper.UnmapViewOfFile(intPtr2);
+			}
+			if (array[8] != 0)
+			{
+				return null;
+			}
+			long num2 = BitConverter.ToInt64(array, 0);
+			if (num2 < 0)
+			{
+				return null;
+			}
+			if (npixelFormats == PixelFormats.Gray8)
+			{
+				if (num2 != (long)nWidth * (long)nHeight)
+				{
+					return null;
+				}
+			}
+			else if (num2 != (long)nWidth * (long)nHeight * 3)
+			{
+				return null;
+			}
+			num = BitConverter.ToInt16(array, 14);
+			value = num2 + num;
+			intPtr2 = MemoryHelper.MapViewOfFile(intPtr, 4L, 0, 0, new IntPtr(value));
+			if (intPtr2 == IntPtr.Zero)
+			{
+				return null;
+			}
+			return ExternalCallHelper.IntPtr2Bytes(size: (int)((!(npixelFormats == PixelFormats.Gray8)) ? ((long)nWidth * (long)nHeight * 3) : ((long)nWidth * (long)nHeight)), ptr: intPtr2 + num);
+		}
+		catch
+		{
+			return null;
+		}
+		finally
+		{
+			if (intPtr2 != IntPtr.Zero)
+			{
+				MemoryHelper.UnmapViewOfFile(intPtr2);
+			}
+			if (intPtr != IntPtr.Zero)
+			{
+				MemoryHelper.CloseHandle(intPtr);
+			}
+		}
+	}
+
+	public ImageSource BuiltImageSource(ImageData image, bool needThrow = false)
+	{
+		int num = ((image.PixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		if (image.ImageBuffer.Length != image.Width * image.Height * num)
+		{
+			return null;
+		}
+		try
+		{
+			if (image.Width != m_nWidth || image.Height != m_nHeight || image.PixelFormat != m_nPixelFormat || m_wbBitmap == null)
+			{
+				if (image.Width < 0 || image.Height < 0)
+				{
+					return null;
+				}
+				InitImageSource(image.Width, image.Height, image.PixelFormat, needThrow);
+			}
+			if (m_wbBitmap != null)
+			{
+				m_wbBitmap.WritePixels(new Int32Rect(0, 0, image.Width, image.Height), image.ImageBuffer, m_wbBitmap.PixelWidth * m_wbBitmap.Format.BitsPerPixel / 8, 0);
+			}
+		}
+		catch (Exception ex)
+		{
+			if (needThrow)
+			{
+				throw ex;
+			}
+			return null;
+		}
+		return m_wbBitmap;
+	}
+}

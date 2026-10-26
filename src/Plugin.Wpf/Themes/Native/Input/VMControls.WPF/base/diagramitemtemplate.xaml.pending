@@ -1,0 +1,1864 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" xmlns:commomcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;assembly=SunEyeVision.Plugin.Wpf" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:UIHelperConvert="clr-namespace:Apps.UIHelper.Converter;assembly=Apps.UIHelper" xmlns:Attached="clr-namespace:Apps.UIHelper.Attach;assembly=Apps.UIHelper" xmlns:localwpf="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:appUi="clr-namespace:Apps.PcUI;assembly=Apps.PcUI" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls">
+  <ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+    <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/commonstyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/MenuItemStyle.xaml" />
+    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+  <UIHelperConvert:InverseBooleanConverter x:Key="inverseBooleanConverter" />
+  <local:DiagramItemDisplayConverter x:Key="diagramItemDisplayConverter" />
+  <commomcontrol:Bool2CollapesdConverter x:Key="bool2CollapesdConverter" />
+  <DataTemplate x:Key="GroupCirculationBackground">
+    <Grid Name="grid" Margin="-5" IsHitTestVisible="False">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <Style x:Key="ArrowImage" TargetType="{x:Type Image}">
+            <Setter Property="Stretch" Value="None" />
+            <Setter Property="Source" Value="/Apps.Style;component/Resources/ic_cycle_right.png" />
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding IsModuleForbidden, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramItem}}">
+                <Setter Property="Source" Value="/Apps.Style;component/Resources/ic_cycle_right_disable.png" />
+              </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding IsModuleFailed, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramItem}}">
+                <Setter Property="Source" Value="/Apps.Style;component/Resources/ic_cycle_right_disable.png" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Border Name="bd" BorderBrush="#66F9F5F2" BorderThickness="2" CornerRadius="3">
+        <Border.Background>
+          <LinearGradientBrush EndPoint="0,1" StartPoint="0,0" Opacity="0.08">
+            <GradientStop Color="#19F6F6F6" Offset="0" />
+            <GradientStop Color="#33F3F3F3" Offset="1" />
+          </LinearGradientBrush>
+        </Border.Background>
+        <UIElement.Effect>
+          <DropShadowEffect Color="Black" ShadowDepth="3" Opacity="0.5" />
+        </UIElement.Effect>
+      </Border>
+      <Image Margin="0,-4,0,0" VerticalAlignment="Top" Style="{StaticResource ArrowImage}" />
+      <Image Margin="0,0,0,-4" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5" Style="{StaticResource ArrowImage}">
+        <UIElement.RenderTransform>
+          <RotateTransform Angle="180" />
+        </UIElement.RenderTransform>
+      </Image>
+      <Image Margin="-3,0,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.5,0.5" Style="{StaticResource ArrowImage}">
+        <UIElement.RenderTransform>
+          <RotateTransform Angle="-90" />
+        </UIElement.RenderTransform>
+      </Image>
+      <Image Margin="0,0,-3,0" HorizontalAlignment="Right" RenderTransformOrigin="0.5,0.5" Style="{StaticResource ArrowImage}">
+        <UIElement.RenderTransform>
+          <RotateTransform Angle="90" />
+        </UIElement.RenderTransform>
+      </Image>
+    </Grid>
+  </DataTemplate>
+  <Style x:Key="NormalModulePathStyle" TargetType="{x:Type Path}">
+    <Setter Property="Shape.Stretch" Value="Fill" />
+    <Setter Property="Data">
+      <Setter.Value>
+        <PathGeometry>
+          <PathFigure IsClosed="True" StartPoint="106,0">
+            <ArcSegment Point="110,4" Size="4,4" SweepDirection="Clockwise" />
+            <LineSegment Point="110,26" />
+            <ArcSegment Point="106,30" Size="4,4" SweepDirection="Clockwise" />
+            <LineSegment Point="4,30" />
+            <ArcSegment Point="0,26" Size="4,4" SweepDirection="Clockwise" />
+            <LineSegment Point="0,4" />
+            <ArcSegment Point="4,0" Size="4,4" SweepDirection="Clockwise" />
+          </PathFigure>
+        </PathGeometry>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Fill">
+      <Setter.Value>
+        <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+          <GradientStop Color="#FAF7F5" Offset="0" />
+          <GradientStop Color="#F3F6F5" Offset="0.47" />
+          <GradientStop Color="#ECEDF0" Offset="0.82" />
+          <GradientStop Color="#EBE6E2" Offset="0.97" />
+          <GradientStop Color="#EB6600" Offset="1.0" />
+        </LinearGradientBrush>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <PathGeometry x:Key="ImageModulePath">
+    <PathFigure IsClosed="True" StartPoint="15,0">
+      <LineSegment Point="95,0" />
+      <ArcSegment Point="110,15" Size="15,15" SweepDirection="Clockwise" />
+      <ArcSegment Point="95,30" Size="15,15" SweepDirection="Clockwise" />
+      <LineSegment Point="15,30" />
+      <ArcSegment Point="0,15" Size="15,15" SweepDirection="Clockwise" />
+      <ArcSegment Point="15,0" Size="15,15" SweepDirection="Clockwise" />
+    </PathFigure>
+  </PathGeometry>
+  <PathGeometry x:Key="IfBranchPath">
+    <PathFigure IsClosed="True" StartPoint="0,12">
+      <ArcSegment Point="2,10" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="54,1" />
+      <ArcSegment Point="56,1" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="108,10" />
+      <ArcSegment Point="110,12" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="110,28" />
+      <ArcSegment Point="108,30" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="56,39" />
+      <ArcSegment Point="54,39" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="2,30" />
+      <ArcSegment Point="0,28" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="0,12" />
+    </PathFigure>
+  </PathGeometry>
+  <PathGeometry x:Key="FunctionModulePath">
+    <PathFigure IsClosed="True" StartPoint="0,2">
+      <ArcSegment Point="2,0" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="38,0" />
+      <ArcSegment Point="40,2" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="40,38" />
+      <ArcSegment Point="38,40" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="2,40" />
+      <ArcSegment Point="0,38" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="0,2" />
+    </PathFigure>
+  </PathGeometry>
+  <PathGeometry x:Key="TimerModulePath">
+    <PathFigure IsClosed="True" StartPoint="20,0">
+      <ArcSegment Point="40,20" Size="20,20" SweepDirection="Clockwise" />
+      <ArcSegment Point="20,40" Size="20,20" SweepDirection="Clockwise" />
+      <ArcSegment Point="0,20" Size="20,20" SweepDirection="Clockwise" />
+      <ArcSegment Point="20,0" Size="20,20" SweepDirection="Clockwise" />
+    </PathFigure>
+  </PathGeometry>
+  <PathGeometry x:Key="ShellModulePath">
+    <PathFigure IsClosed="True" StartPoint="9.5,0">
+      <LineSegment Point="108,0" />
+      <ArcSegment Point="110,2" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="110,20.5" />
+      <ArcSegment Point="109,23.5" Size="1,3" SweepDirection="Clockwise" />
+      <LineSegment Point="103.5,29" />
+      <ArcSegment Point="100.5,30" Size="3,1" SweepDirection="Clockwise" />
+      <LineSegment Point="2,30" />
+      <ArcSegment Point="0,28" Size="2,2" SweepDirection="Clockwise" />
+      <LineSegment Point="0,9.5" />
+      <ArcSegment Point="1,6.5" Size="1,3" SweepDirection="Clockwise" />
+      <LineSegment Point="6.5,1" />
+      <ArcSegment Point="9.5,0" Size="3,1" SweepDirection="Clockwise" />
+    </PathFigure>
+  </PathGeometry>
+  <PathGeometry x:Key="CommuncationDataPath">
+    <PathFigure IsClosed="True" StartPoint="2,0">
+      <LineSegment Point="100.5,0" />
+      <ArcSegment Point="103.5,1.5" Size="3,1.5" SweepDirection="Clockwise" />
+      <LineSegment Point="109,13.5" />
+      <ArcSegment Point="109,16.5" Size="2,3" SweepDirection="Clockwise" />
+      <LineSegment Point="103.5,28.5" />
+      <ArcSegment Point="100.5,30" Size="3,1.5" SweepDirection="Clockwise" />
+      <LineSegment Point="2,30" />
+      <ArcSegment Point="1,28.5" Size="3,1.5" SweepDirection="Clockwise" />
+      <LineSegment Point="6.5,16.5" />
+      <ArcSegment Point="6.5,13.5" Size="2,3" SweepDirection="Clockwise" />
+      <LineSegment Point="1,1.5" />
+      <ArcSegment Point="2,0" Size="3,1.5" SweepDirection="Clockwise" />
+    </PathFigure>
+  </PathGeometry>
+  <local:Connector x:Key="left" Index="0" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="{x:Static local:ConnectorOrientation.Left}" Margin="-20,0,0,0">
+    <UIElement.RenderTransform>
+      <TransformGroup>
+        <ScaleTransform ScaleX="-1" ScaleY="1" />
+        <TranslateTransform X="20" />
+      </TransformGroup>
+    </UIElement.RenderTransform>
+  </local:Connector>
+  <local:Connector x:Key="right" Index="2" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="{x:Static local:ConnectorOrientation.Right}" Margin="0,0,-20,0" />
+  <local:Connector x:Key="top" Index="1" HorizontalAlignment="Center" VerticalAlignment="Top" Orientation="{x:Static local:ConnectorOrientation.Top}" Margin="0,-25,0,0">
+    <UIElement.RenderTransform>
+      <TransformGroup>
+        <RotateTransform Angle="-90" CenterX="10" CenterY="15" />
+      </TransformGroup>
+    </UIElement.RenderTransform>
+  </local:Connector>
+  <local:Connector x:Key="bottom" Index="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="{x:Static local:ConnectorOrientation.Bottom}" Margin="0,0,0,-25">
+    <UIElement.RenderTransform>
+      <TransformGroup>
+        <RotateTransform Angle="90" CenterX="10" CenterY="15" />
+      </TransformGroup>
+    </UIElement.RenderTransform>
+  </local:Connector>
+  <Geometry x:Key="ic_play_____hoverGeometry1">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z</Geometry>
+  <Geometry x:Key="ic_play_____hoverGeometry2">F1 M36,36z M0,0z M22.8,17.5L15.8,13A0.5,0.5,0,0,0,15.1,13.5L15.1,22.4A0.5,0.5,0,0,0,15.8,22.9L22.8,18.4A0.6,0.6,0,0,0,22.8,17.5z</Geometry>
+  <DrawingGroup x:Key="ic_play_____hoverDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic_play_____hoverGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+    </DrawingGroup>
+    <GeometryDrawing Geometry="{StaticResource ic_play_____hoverGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_play_____hoverDrawingImage" Drawing="{StaticResource ic_play_____hoverDrawingGroup}" />
+  <Geometry x:Key="ic_play_____disableGeometry1">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z</Geometry>
+  <Geometry x:Key="ic_play_____disableGeometry2">F1 M36,36z M0,0z M22.8,17.5L15.8,13A0.5,0.5,0,0,0,15.1,13.5L15.1,22.4A0.5,0.5,0,0,0,15.8,22.9L22.8,18.4A0.6,0.6,0,0,0,22.8,17.5z</Geometry>
+  <DrawingGroup x:Key="ic_play_____disableDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#7F494949" Geometry="{StaticResource ic_play_____disableGeometry1}" />
+    </DrawingGroup>
+    <GeometryDrawing Geometry="{StaticResource ic_play_____disableGeometry2}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.5" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_play_____disableDrawingImage" Drawing="{StaticResource ic_play_____disableDrawingGroup}" />
+  <Geometry x:Key="ic_play_____clickGeometry1">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z</Geometry>
+  <Geometry x:Key="ic_play_____clickGeometry2">F1 M36,36z M0,0z M22.8,17.5L15.8,13A0.5,0.5,0,0,0,15.1,13.5L15.1,22.4A0.5,0.5,0,0,0,15.8,22.9L22.8,18.4A0.6,0.6,0,0,0,22.8,17.5z</Geometry>
+  <DrawingGroup x:Key="ic_play_____clickDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic_play_____clickGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+    </DrawingGroup>
+    <GeometryDrawing Geometry="{StaticResource ic_play_____clickGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_play_____clickDrawingImage" Drawing="{StaticResource ic_play_____clickDrawingGroup}" />
+  <Geometry x:Key="ic_play_____normalGeometry1">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z</Geometry>
+  <Geometry x:Key="ic_play_____normalGeometry2">F1 M36,36z M0,0z M22.8,17.5L15.8,13A0.5,0.5,0,0,0,15.1,13.5L15.1,22.4A0.5,0.5,0,0,0,15.8,22.9L22.8,18.4A0.6,0.6,0,0,0,22.8,17.5z</Geometry>
+  <DrawingGroup x:Key="ic_play_____normalDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#E5494949" Geometry="{StaticResource ic_play_____normalGeometry1}" />
+    </DrawingGroup>
+    <GeometryDrawing Geometry="{StaticResource ic_play_____normalGeometry2}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_play_____normalDrawingImage" Drawing="{StaticResource ic_play_____normalDrawingGroup}" />
+  <Geometry x:Key="ic______normalGeometry1">F0 M36,36z M0,0z M25.8,10.2L24.2,8.9A10.9,10.9,0,0,0,18,7L18,7 18,9A9,9,0,0,1,24.6,24.1L26.3,25.2A10.9,10.9,0,0,0,29,18L29,18A11,11,0,0,0,25.8,10.2z M9,18A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L18,27A9,9,0,0,1,9,18z</Geometry>
+  <Geometry x:Key="ic______normalGeometry2">F0 M36,36z M0,0z M18,7L12,7 18,12z</Geometry>
+  <Geometry x:Key="ic______normalGeometry3">F1 M36,36z M0,0z M22.6,17.3L15.3,13.2A0.9,0.9,0,0,0,14,13.9L14,22.2A0.9,0.9,0,0,0,15.3,22.9L22.6,18.8A0.8,0.8,0,0,0,22.6,17.3z</Geometry>
+  <Geometry x:Key="ic______normalGeometry4">F0 M36,36z M0,0z M18,29L24,29 18,24z</Geometry>
+  <DrawingGroup x:Key="ic______normalDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#E5494949" Geometry="{StaticResource ic______normalGeometry1}" />
+    </DrawingGroup>
+    <GeometryDrawing Geometry="{StaticResource ic______normalGeometry2}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+    <GeometryDrawing Geometry="{StaticResource ic______normalGeometry3}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+    <GeometryDrawing Geometry="{StaticResource ic______normalGeometry4}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <Geometry x:Key="ic______hoverGeometry1">F1 M36,36z M0,0z M15.3,22.9L22.6,18.8A0.8,0.8,0,0,0,22.6,17.3L15.3,13.2A0.9,0.9,0,0,0,14,13.9L14,22.2A0.9,0.9,0,0,0,15.3,22.9z</Geometry>
+  <Geometry x:Key="ic______hoverGeometry2">F1 M36,36z M0,0z M25.8,10.2L24.2,8.9A10.9,10.9,0,0,0,18,7L12,7 18,12 18,7 18,7 18,9A9,9,0,0,1,24.6,24.1L26.3,25.2A10.9,10.9,0,0,0,29,18L29,18A11,11,0,0,0,25.8,10.2z</Geometry>
+  <Geometry x:Key="ic______hoverGeometry3">F1 M36,36z M0,0z M18,27A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L24,29 18,24z</Geometry>
+  <DrawingGroup x:Key="ic______hoverDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+      <GeometryDrawing Geometry="{StaticResource ic______hoverGeometry3}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="114.5,-132.5,29,15" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <PathGeometry FillRule="Nonzero" Figures="M117,-133A3,3,0,0,0,114,-130L114,-120A3,3,0,0,0,117,-117L141,-117A3,3,0,0,0,144,-120L144,-130A3,3,0,0,0,141,-133z M117,-131L141,-131A1,1,0,0,1,142,-130L142,-120A1,1,0,0,1,141,-119L117,-119A1,1,0,0,1,116,-120L116,-130A1,1,0,0,1,117,-131z" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <PathGeometry FillRule="Nonzero" Figures="M117,-132L141,-132A2,2,0,0,1,143,-130L143,-120A2,2,0,0,1,141,-118L117,-118A2,2,0,0,1,115,-120L115,-130A2,2,0,0,1,117,-132z M104,-143L154,-143 154,-107 104,-107z" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+          </DrawingGroup.ClipGeometry>
+          <DrawingGroup>
+            <DrawingGroup>
+              <DrawingGroup.ClipGeometry>
+                <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+              </DrawingGroup.ClipGeometry>
+            </DrawingGroup>
+          </DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="130.5,-133.5,13,17" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-418,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic______hoverDrawingImage" Drawing="{StaticResource ic______hoverDrawingGroup}" />
+  <Geometry x:Key="ic______disableGeometry1">F1 M36,36z M0,0z M15.3,22.9L22.6,18.8A0.8,0.8,0,0,0,22.6,17.3L15.3,13.2A0.9,0.9,0,0,0,14,13.9L14,22.2A0.9,0.9,0,0,0,15.3,22.9z</Geometry>
+  <Geometry x:Key="ic______disableGeometry2">F1 M36,36z M0,0z M25.8,10.2L24.2,8.9A10.9,10.9,0,0,0,18,7L12,7 18,12 18,7 18,7 18,9A9,9,0,0,1,24.6,24.1L26.3,25.2A10.9,10.9,0,0,0,29,18L29,18A11,11,0,0,0,25.8,10.2z</Geometry>
+  <Geometry x:Key="ic______disableGeometry3">F1 M36,36z M0,0z M18,27A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L24,29 18,24z</Geometry>
+  <DrawingGroup x:Key="ic______disableDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic______disableGeometry1}">
+        <GeometryDrawing.Brush>
+          <SolidColorBrush Color="#FF494949" Opacity="0.5" />
+        </GeometryDrawing.Brush>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource ic______disableGeometry2}">
+        <GeometryDrawing.Brush>
+          <SolidColorBrush Color="#FF494949" Opacity="0.5" />
+        </GeometryDrawing.Brush>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource ic______disableGeometry3}">
+        <GeometryDrawing.Brush>
+          <SolidColorBrush Color="#FF494949" Opacity="0.5" />
+        </GeometryDrawing.Brush>
+      </GeometryDrawing>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="114.5,-39.5,29,15" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <PathGeometry FillRule="Nonzero" Figures="M117,-40A3,3,0,0,0,114,-37L114,-27A3,3,0,0,0,117,-24L141,-24A3,3,0,0,0,144,-27L144,-37A3,3,0,0,0,141,-40z M117,-38L141,-38A1,1,0,0,1,142,-37L142,-27A1,1,0,0,1,141,-26L117,-26A1,1,0,0,1,116,-27L116,-37A1,1,0,0,1,117,-38z" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <PathGeometry FillRule="Nonzero" Figures="M117,-39L141,-39A2,2,0,0,1,143,-37L143,-27A2,2,0,0,1,141,-25L117,-25A2,2,0,0,1,115,-27L115,-37A2,2,0,0,1,117,-39z M104,-50L154,-50 154,-14 104,-14z" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+          </DrawingGroup.ClipGeometry>
+          <DrawingGroup>
+            <DrawingGroup>
+              <DrawingGroup.ClipGeometry>
+                <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+              </DrawingGroup.ClipGeometry>
+            </DrawingGroup>
+          </DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="130.5,-40.5,13,17" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-325,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic______disableDrawingImage" Drawing="{StaticResource ic______disableDrawingGroup}" />
+  <Geometry x:Key="ic______clickGeometry1">F1 M36,36z M0,0z M15.3,22.9L22.6,18.8A0.8,0.8,0,0,0,22.6,17.3L15.3,13.2A0.9,0.9,0,0,0,14,13.9L14,22.2A0.9,0.9,0,0,0,15.3,22.9z</Geometry>
+  <Geometry x:Key="ic______clickGeometry2">F1 M36,36z M0,0z M25.8,10.2L24.2,8.9A10.9,10.9,0,0,0,18,7L12,7 18,12 18,7 18,7 18,9A9,9,0,0,1,24.6,24.1L26.3,25.2A10.9,10.9,0,0,0,29,18L29,18A11,11,0,0,0,25.8,10.2z</Geometry>
+  <Geometry x:Key="ic______clickGeometry3">F1 M36,36z M0,0z M18,27A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L24,29 18,24z</Geometry>
+  <DrawingGroup x:Key="ic______clickDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry1}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry2}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+      <GeometryDrawing Geometry="{StaticResource ic______clickGeometry3}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="114.5,-86.5,29,15" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <PathGeometry FillRule="Nonzero" Figures="M117,-87A3,3,0,0,0,114,-84L114,-74A3,3,0,0,0,117,-71L141,-71A3,3,0,0,0,144,-74L144,-84A3,3,0,0,0,141,-87z M117,-85L141,-85A1,1,0,0,1,142,-84L142,-74A1,1,0,0,1,141,-73L117,-73A1,1,0,0,1,116,-74L116,-84A1,1,0,0,1,117,-85z" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <PathGeometry FillRule="Nonzero" Figures="M117,-86L141,-86A2,2,0,0,1,143,-84L143,-74A2,2,0,0,1,141,-72L117,-72A2,2,0,0,1,115,-74L115,-84A2,2,0,0,1,117,-86z M104,-97L154,-97 154,-61 104,-61z" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+          </DrawingGroup.ClipGeometry>
+          <DrawingGroup>
+            <DrawingGroup>
+              <DrawingGroup.ClipGeometry>
+                <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+              </DrawingGroup.ClipGeometry>
+            </DrawingGroup>
+          </DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="130.5,-87.5,13,17" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-372,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic______clickDrawingImage" Drawing="{StaticResource ic______clickDrawingGroup}" />
+  <Geometry x:Key="ic______normalGeometryz1">F1 M36,36z M0,0z M15.3,22.9L22.6,18.8A0.8,0.8,0,0,0,22.6,17.3L15.3,13.2A0.9,0.9,0,0,0,14,13.9L14,22.2A0.9,0.9,0,0,0,15.3,22.9z</Geometry>
+  <Geometry x:Key="ic______normalGeometryz2">F1 M36,36z M0,0z M25.8,10.2L24.2,8.9A10.9,10.9,0,0,0,18,7L12,7 18,12 18,7 18,7 18,9A9,9,0,0,1,24.6,24.1L26.3,25.2A10.9,10.9,0,0,0,29,18L29,18A11,11,0,0,0,25.8,10.2z</Geometry>
+  <Geometry x:Key="ic______normalGeometryz3">F1 M36,36z M0,0z M18,27A9,9,0,0,1,10.6,12.8L9.3,11.3A10.9,10.9,0,0,0,7,18L7,18A11,11,0,0,0,10.2,25.8L11.8,27.1A10.9,10.9,0,0,0,18,29L24,29 18,24z</Geometry>
+  <DrawingGroup x:Key="ic______normalDrawingGroupz" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <GeometryDrawing Geometry="{StaticResource ic______normalGeometryz1}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+    <GeometryDrawing Geometry="{StaticResource ic______normalGeometryz2}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+    <GeometryDrawing Geometry="{StaticResource ic______normalGeometryz3}">
+      <GeometryDrawing.Brush>
+        <SolidColorBrush Color="#FF494949" Opacity="0.9" />
+      </GeometryDrawing.Brush>
+    </GeometryDrawing>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="114.5,5.5,29,15" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <PathGeometry FillRule="Nonzero" Figures="M117,5A3,3,0,0,0,114,8L114,18A3,3,0,0,0,117,21L141,21A3,3,0,0,0,144,18L144,8A3,3,0,0,0,141,5z M117,7L141,7A1,1,0,0,1,142,8L142,18A1,1,0,0,1,141,19L117,19A1,1,0,0,1,116,18L116,8A1,1,0,0,1,117,7z" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <PathGeometry FillRule="Nonzero" Figures="M117,6L141,6A2,2,0,0,1,143,8L143,18A2,2,0,0,1,141,20L117,20A2,2,0,0,1,115,18L115,8A2,2,0,0,1,117,6z M104,-5L154,-5 154,31 104,31z" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+          </DrawingGroup.ClipGeometry>
+          <DrawingGroup>
+            <DrawingGroup>
+              <DrawingGroup.ClipGeometry>
+                <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+              </DrawingGroup.ClipGeometry>
+            </DrawingGroup>
+          </DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+    <DrawingGroup>
+      <DrawingGroup.ClipGeometry>
+        <RectangleGeometry RadiusX="2.5" RadiusY="2.5" Rect="130.5,4.5,13,17" />
+      </DrawingGroup.ClipGeometry>
+      <DrawingGroup>
+        <DrawingGroup.ClipGeometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+        </DrawingGroup.ClipGeometry>
+        <DrawingGroup>
+          <DrawingGroup>
+            <DrawingGroup.ClipGeometry>
+              <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+            </DrawingGroup.ClipGeometry>
+          </DrawingGroup>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup.ClipGeometry>
+            <RectangleGeometry RadiusX="0" RadiusY="0" Rect="-199,-280,1366,768" />
+          </DrawingGroup.ClipGeometry>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic______normalDrawingImage" Drawing="{StaticResource ic______normalDrawingGroupz}" />
+  <Geometry x:Key="ic_stop_disableGeometry">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z M21,14L15,14A1,1,0,0,0,14,15L14,21A1,1,0,0,0,15,22L21,22A1,1,0,0,0,22,21L22,15A1,1,0,0,0,21,14z</Geometry>
+  <DrawingGroup x:Key="ic_stop_disableDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#7F494949" Geometry="{StaticResource ic_stop_disableGeometry}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_stop_disableDrawingImage" Drawing="{StaticResource ic_stop_disableDrawingGroup}" />
+  <Geometry x:Key="ic_stop_normalGeometry">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z M21,14L15,14A1,1,0,0,0,14,15L14,21A1,1,0,0,0,15,22L21,22A1,1,0,0,0,22,21L22,15A1,1,0,0,0,21,14z</Geometry>
+  <DrawingGroup x:Key="ic_stop_normalDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF494949" Geometry="{StaticResource ic_stop_normalGeometry}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_stop_normalDrawingImage" Drawing="{StaticResource ic_stop_normalDrawingGroup}" />
+  <Geometry x:Key="ic_stop_hoverGeometry">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z M21,14L15,14A1,1,0,0,0,14,15L14,21A1,1,0,0,0,15,22L21,22A1,1,0,0,0,22,21L22,15A1,1,0,0,0,21,14z</Geometry>
+  <DrawingGroup x:Key="ic_stop_hoverDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic_stop_hoverGeometry}" Brush="{Color:ColorResourceBinding Col_Theme_Mouse}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_stop_hoverDrawingImage" Drawing="{StaticResource ic_stop_hoverDrawingGroup}" />
+  <Geometry x:Key="ic_stop_clickGeometry">F0 M36,36z M0,0z M18,7A11,11,0,1,0,29,18A11,11,0,0,0,18,7z M18,27A9,9,0,1,1,27,18A9,9,0,0,1,18,27z M21,14L15,14A1,1,0,0,0,14,15L14,21A1,1,0,0,0,15,22L21,22A1,1,0,0,0,22,21L22,15A1,1,0,0,0,21,14z</Geometry>
+  <DrawingGroup x:Key="ic_stop_clickDrawingGroup" ClipGeometry="M0,0 L0,36 L36,36 L36,0 L0,0">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource ic_stop_clickGeometry}" Brush="{Color:ColorResourceBinding Col_Theme}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="ic_stop_clickDrawingImage" Drawing="{StaticResource ic_stop_clickDrawingGroup}" />
+  <DrawingGroup x:Key="switch_on____DrawingGroup" ClipGeometry="M0,0 L0,28 L42,28 L42,0 L0,0">
+    <DrawingGroup>
+      <DrawingGroup>
+        <GeometryDrawing Brush="{Color:ColorResourceBinding Col_Theme}">
+          <GeometryDrawing.Geometry>
+            <RectangleGeometry RadiusX="3" RadiusY="3" Rect="6,6,30,16" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <GeometryDrawing Brush="{Color:ColorResourceBinding Col_Theme}">
+          <GeometryDrawing.Geometry>
+            <RectangleGeometry RadiusX="2" RadiusY="2" Rect="7,7,28,14" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <DrawingGroup>
+          <DrawingGroup>
+            <GeometryDrawing Brush="#FF000000">
+              <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="3" RadiusY="3" Rect="22,5,14,18" />
+              </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingGroup>
+          <GeometryDrawing Brush="#FF969696">
+            <GeometryDrawing.Geometry>
+              <RectangleGeometry RadiusX="3" RadiusY="3" Rect="22,5,14,18" />
+            </GeometryDrawing.Geometry>
+          </GeometryDrawing>
+        </DrawingGroup>
+        <DrawingGroup>
+          <DrawingGroup>
+            <GeometryDrawing Brush="#FF000000">
+              <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="2" RadiusY="2" Rect="23,6,12,16" />
+              </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingGroup>
+          <GeometryDrawing>
+            <GeometryDrawing.Brush>
+              <LinearGradientBrush StartPoint="-96.67,135.94" EndPoint="-96.67,134.97" MappingMode="Absolute" Opacity="1" Transform="12,0,0,-16,1189,2181">
+                <GradientStop Color="#FFFBF8F5" Offset="0" />
+                <GradientStop Color="#FFE7E6E6" Offset="1" />
+              </LinearGradientBrush>
+            </GeometryDrawing.Brush>
+            <GeometryDrawing.Geometry>
+              <RectangleGeometry RadiusX="2" RadiusY="2" Rect="23,6,12,16" />
+            </GeometryDrawing.Geometry>
+          </GeometryDrawing>
+          <DrawingGroup>
+            <GeometryDrawing Brush="#FFFFFFFF">
+              <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="2" RadiusY="2" Rect="23,6,12,16" />
+              </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingGroup>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="switch_on____DrawingImage" Drawing="{StaticResource switch_on____DrawingGroup}" />
+  <DrawingGroup x:Key="switch_off____DrawingGroup" ClipGeometry="M0,0 L0,28 L42,28 L42,0 L0,0">
+    <DrawingGroup>
+      <DrawingGroup>
+        <GeometryDrawing>
+          <GeometryDrawing.Brush>
+            <LinearGradientBrush StartPoint="-101.97,134.94" EndPoint="-101.97,135.94" MappingMode="Absolute" Opacity="1" Transform="30,0,0,-16,3080,2181">
+              <GradientStop Color="#FFABABAB" Offset="0" />
+              <GradientStop Color="#FF919292" Offset="1" />
+            </LinearGradientBrush>
+          </GeometryDrawing.Brush>
+          <GeometryDrawing.Geometry>
+            <RectangleGeometry RadiusX="3" RadiusY="3" Rect="6,6,30,16" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <GeometryDrawing>
+          <GeometryDrawing.Brush>
+            <LinearGradientBrush StartPoint="-101.71,133.93" EndPoint="-101.71,134.93" MappingMode="Absolute" Opacity="1" Transform="28,0,0,-14,2869,1896">
+              <GradientStop Color="#FFCCCCCC" Offset="0" />
+              <GradientStop Color="#FFC1C1C1" Offset="0.72" />
+              <GradientStop Color="#FFB3B4B7" Offset="1" />
+            </LinearGradientBrush>
+          </GeometryDrawing.Brush>
+          <GeometryDrawing.Geometry>
+            <RectangleGeometry RadiusX="2" RadiusY="2" Rect="7,7,28,14" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <DrawingGroup>
+          <DrawingGroup>
+            <GeometryDrawing Brush="#FF000000">
+              <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="3" RadiusY="3" Rect="6,5,14,18" />
+              </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingGroup>
+          <GeometryDrawing Brush="#FF969696">
+            <GeometryDrawing.Geometry>
+              <RectangleGeometry RadiusX="3" RadiusY="3" Rect="6,5,14,18" />
+            </GeometryDrawing.Geometry>
+          </GeometryDrawing>
+        </DrawingGroup>
+        <DrawingGroup>
+          <GeometryDrawing>
+            <GeometryDrawing.Brush>
+              <LinearGradientBrush StartPoint="-96.67,135.94" EndPoint="-96.67,134.97" MappingMode="Absolute" Opacity="1" Transform="12,0,0,-16,1173,2181">
+                <GradientStop Color="#FFFBF8F5" Offset="0" />
+                <GradientStop Color="#FFE7E6E6" Offset="1" />
+              </LinearGradientBrush>
+            </GeometryDrawing.Brush>
+            <GeometryDrawing.Geometry>
+              <RectangleGeometry RadiusX="2" RadiusY="2" Rect="7,6,12,16" />
+            </GeometryDrawing.Geometry>
+          </GeometryDrawing>
+          <DrawingGroup>
+            <GeometryDrawing Brush="#FFFFFFFF">
+              <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="2" RadiusY="2" Rect="7,6,12,16" />
+              </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingGroup>
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="switch_off____DrawingImage" Drawing="{StaticResource switch_off____DrawingGroup}" />
+  <DataTemplate x:Key="RunStopButton">
+    <commomcontrol:SuperImageButton Command="{Binding RunContinuousCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type commomcontrol:SuperImageButton}">
+          <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_MutiRun}" />
+          <Setter Property="commomcontrol:SuperImageButton.NormalConnent">
+            <Setter.Value>
+              <Image Stretch="None" Source="{StaticResource ic______normalDrawingImage}" />
+            </Setter.Value>
+          </Setter>
+          <Setter Property="commomcontrol:SuperImageButton.DisableConnent">
+            <Setter.Value>
+              <Image Stretch="None" Source="{StaticResource ic______disableDrawingImage}" />
+            </Setter.Value>
+          </Setter>
+          <Setter Property="commomcontrol:SuperImageButton.PressedConnent">
+            <Setter.Value>
+              <Image Width="36" Height="36" Source="{StaticResource ic______clickDrawingImage}" />
+            </Setter.Value>
+          </Setter>
+          <Setter Property="commomcontrol:SuperImageButton.MOverConnent">
+            <Setter.Value>
+              <Image Stretch="None" Source="{StaticResource ic______hoverDrawingImage}" />
+            </Setter.Value>
+          </Setter>
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding DecorateSource.ContinuousRunEnable}">
+              <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_StopRun}" />
+              <Setter Property="commomcontrol:SuperImageButton.NormalConnent">
+                <Setter.Value>
+                  <Image Stretch="None" Source="{StaticResource ic_stop_normalDrawingImage}" />
+                </Setter.Value>
+              </Setter>
+              <Setter Property="commomcontrol:SuperImageButton.DisableConnent">
+                <Setter.Value>
+                  <Image Stretch="None" Source="{StaticResource ic_stop_disableDrawingImage}" />
+                </Setter.Value>
+              </Setter>
+              <Setter Property="commomcontrol:SuperImageButton.PressedConnent">
+                <Setter.Value>
+                  <Image Stretch="None" Source="{StaticResource ic_stop_clickDrawingImage}" />
+                </Setter.Value>
+              </Setter>
+              <Setter Property="commomcontrol:SuperImageButton.MOverConnent">
+                <Setter.Value>
+                  <Image Stretch="None" Source="{StaticResource ic_stop_hoverDrawingImage}" />
+                </Setter.Value>
+              </Setter>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </commomcontrol:SuperImageButton>
+  </DataTemplate>
+  <Style x:Key="MenuItemDisLinkTo" TargetType="{x:Type MenuItem}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type MenuItem}">
+          <MenuItem Header="{Binding Name}" Command="{Binding DataContext.DeleteConnectionCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <controls:HikContextMenu x:Key="NormalOperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Disconnect}" ItemContainerStyle="{Binding Source={StaticResource MenuItemDisLinkTo}}" ItemsSource="{Binding DisLinkTo}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Style.Triggers>
+            <DataTrigger Value="0" Binding="{Binding ItemsSource.Count, RelativeSource={RelativeSource Mode=Self}}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding DeleteItemCommand}" />
+    <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding CopyItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Copy parameters}" Command="{Binding CopyAlgoParamItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="False" Binding="{Binding IsSupportCopyParam}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Paste parameters}" Command="{Binding PasteAlgoParamItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding RenameCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Forbidden}" Command="{Binding ForbiddenItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="True" Binding="{Binding IsSingleProcedure}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Enabled}" Command="{Binding ActivateItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="True" Binding="{Binding IsForbidden}" />
+                <Condition Value="True" Binding="{Binding IsSingleProcedure}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <ControlTemplate x:Key="Square" TargetType="{x:Type local:DiagramItem}">
+    <Grid Name="PART_View" Width="40" Height="40">
+      <Rectangle Name="Rec" Fill="#00FFFFFF" Margin="-10" />
+      <Path Name="itemBorder" Margin="0.2" Style="{StaticResource NormalModulePathStyle}">
+        <UIElement.Effect>
+          <DropShadowEffect Color="#FF121111" ShadowDepth="3" Opacity="0.45" />
+        </UIElement.Effect>
+      </Path>
+      <Canvas Name="StateFlag" Height="22" VerticalAlignment="Top" Clip="{Binding Data, ElementName=itemBorder}" />
+      <Image Name="LogoIm" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0" Source="{Binding StateImagePath}" />
+      <Path Name="errorBorder" Visibility="Collapsed" Stroke="#FF636468" StrokeThickness="2" Stretch="Fill" Data="{Binding Data, ElementName=itemBorder}" />
+      <Grid Margin="0,18,0,0">
+        <Grid HorizontalAlignment="Center" TextBlock.FontWeight="Bold" TextBlock.FontSize="12" TextBlock.Foreground="{Color:ColorResourceBinding Col_EditProcess_Foreground}">
+          <TextBlock Name="Id" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding DecorateSource.ID}" />
+        </Grid>
+      </Grid>
+      <ContentPresenter Name="leftConnector" Content="{x:Null}" />
+      <ContentPresenter Name="rightConnector" Content="{x:Null}" />
+      <ContentPresenter Name="topConnector" Content="{x:Null}" />
+      <ContentPresenter Name="bottomConnector" Content="{x:Null}" />
+    </Grid>
+    <ControlTemplate.Triggers>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="local:DiagramItem.IsHited" Value="True" />
+          <Condition Property="local:DiagramItem.IsLockWorkArea" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter TargetName="leftConnector" Property="ContentPresenter.Content" Value="{StaticResource left}" />
+        <Setter TargetName="rightConnector" Property="ContentPresenter.Content" Value="{StaticResource right}" />
+        <Setter TargetName="topConnector" Property="ContentPresenter.Content" Value="{StaticResource top}" />
+        <Setter TargetName="bottomConnector" Property="ContentPresenter.Content" Value="{StaticResource bottom}" />
+      </MultiTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemDisplayEnum.ADORNER}" Binding="{Binding DisplayType, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource diagramItemDisplayConverter}}">
+        <Setter TargetName="Id" Property="TextBlock.Text" Value="{x:Null}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.FUNCTION}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource FunctionModulePath}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.TIMER}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource TimerModulePath}" />
+      </DataTrigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="{x:Null}">
+        <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding NormalImagePath}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="True">
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_OK_Status}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="False">
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleConfigCorrect" Value="False">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="errorBorder" Property="Shape.StrokeDashArray" Value="3,2" />
+        <Setter TargetName="itemBorder" Property="Shape.Fill">
+          <Setter.Value>
+            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+              <GradientStop Color="#FFFAF7F5" Offset="0" />
+              <GradientStop Color="#FFE1E5E1" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleForbidden" Value="True">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="itemBorder" Property="Shape.Fill">
+          <Setter.Value>
+            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+              <GradientStop Color="#D3D3D3F5" Offset="0" />
+              <GradientStop Color="#D3D3D3E1" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding StateImagePath}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{x:Null}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleFailed" Value="True">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Collapsed" />
+        <Setter TargetName="itemBorder" Property="Shape.Fill">
+          <Setter.Value>
+            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+              <GradientStop Color="#FFFAF7F5" Offset="0" />
+              <GradientStop Color="#FFEBE6E2" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding StateImagePath}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+        <Setter TargetName="Id" Property="UIElement.Opacity" Value="0.4" />
+      </Trigger>
+      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="errorBorder" Property="Shape.Stroke" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_BorderBrush}" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <controls:HikContextMenu x:Key="SquareOperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Disconnect}" ItemContainerStyle="{Binding Source={StaticResource MenuItemDisLinkTo}}" ItemsSource="{Binding DisLinkTo}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Style.Triggers>
+            <DataTrigger Value="0" Binding="{Binding ItemsSource.Count, RelativeSource={RelativeSource Mode=Self}}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding DeleteItemCommand}" />
+    <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding CopyItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Copy parameters}" Command="{Binding CopyAlgoParamItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Paste parameters}" Command="{Binding PasteAlgoParamItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding RenameWindowCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Forbidden}" Command="{Binding ForbiddenItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="True" Binding="{Binding IsSingleProcedure}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Enabled}" Command="{Binding ActivateItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="True" Binding="{Binding IsForbidden}" />
+                <Condition Value="True" Binding="{Binding IsSingleProcedure}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <ControlTemplate x:Key="NORMAL" TargetType="{x:Type local:DiagramItem}">
+    <Grid Name="PART_View" Width="110" Height="30">
+      <Rectangle Name="Rec" Fill="#00FFFFFF" Margin="-10" />
+      <Path Name="itemBorder" Margin="0.2" Style="{StaticResource NormalModulePathStyle}">
+        <UIElement.Effect>
+          <DropShadowEffect Color="#FF121111" ShadowDepth="3" Opacity="0.45" />
+        </UIElement.Effect>
+      </Path>
+      <Canvas Name="StateFlag" Width="26" HorizontalAlignment="Left" Clip="{Binding Data, ElementName=itemBorder}" />
+      <Image Name="LogoIm" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0" Source="{Binding StateImagePath}" />
+      <Path Name="errorBorder" Visibility="Collapsed" Stroke="#FF636468" StrokeThickness="2" Stretch="Fill" Data="{Binding Data, ElementName=itemBorder}" />
+      <Grid Margin="26,0,0,0">
+        <Grid HorizontalAlignment="Center" TextBlock.FontWeight="Bold" TextBlock.FontSize="12" TextBlock.Foreground="{Color:ColorResourceBinding Col_EditProcess_Foreground}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Name="Id" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding DecorateSource.ID}" />
+          <appUi:HeadReNameTextBox Name="itemName" Grid.Column="1" Background="#00FFFFFF" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" BorderThickness="0" MaxLength="{x:Static local:DiagramItem.MaxNameLenth}" Foreground="{Color:ColorResourceBinding Col_EditProcess_Foreground}" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" IsReName="{Binding IsReName, Mode=TwoWay}" />
+        </Grid>
+      </Grid>
+      <ContentPresenter Name="leftConnector" Content="{x:Null}" />
+      <ContentPresenter Name="rightConnector" Content="{x:Null}" />
+      <ContentPresenter Name="topConnector" Content="{x:Null}" />
+      <ContentPresenter Name="bottomConnector" Content="{x:Null}" />
+    </Grid>
+    <ControlTemplate.Triggers>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="local:DiagramItem.IsHited" Value="True" />
+          <Condition Property="local:DiagramItem.IsLockWorkArea" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter TargetName="leftConnector" Property="ContentPresenter.Content" Value="{StaticResource left}" />
+        <Setter TargetName="rightConnector" Property="ContentPresenter.Content" Value="{StaticResource right}" />
+        <Setter TargetName="topConnector" Property="ContentPresenter.Content" Value="{StaticResource top}" />
+        <Setter TargetName="bottomConnector" Property="ContentPresenter.Content" Value="{StaticResource bottom}" />
+      </MultiTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemDisplayEnum.ADORNER}" Binding="{Binding DisplayType, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource diagramItemDisplayConverter}}">
+        <Setter TargetName="Id" Property="TextBlock.Text" Value="{x:Null}" />
+        <Setter TargetName="itemName" Property="TextBox.Text" Value="{Lang:ResourceBinding DecorateSource.Name}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.IMAGE}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource ImageModulePath}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.IFBRANCH}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource IfBranchPath}" />
+        <Setter TargetName="PART_View" Property="FrameworkElement.Height" Value="40" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.FUNCTION}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource FunctionModulePath}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.SHELL}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource ShellModulePath}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static local:DiagramItemSubDisplayEnum.COMMUNCATION}" Binding="{Binding TargetDisplayType}">
+        <Setter TargetName="itemBorder" Property="Path.Data" Value="{StaticResource CommuncationDataPath}" />
+      </DataTrigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="{x:Null}">
+        <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding NormalImagePath}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="True">
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_OK_Status}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="False">
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleConfigCorrect" Value="False">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="errorBorder" Property="Shape.StrokeDashArray" Value="3,2" />
+        <Setter TargetName="itemBorder" Property="Shape.Fill">
+          <Setter.Value>
+            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+              <GradientStop Color="#FFFAF7F5" Offset="0" />
+              <GradientStop Color="#FFE1E5E1" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleForbidden" Value="True">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="itemBorder" Property="Shape.Fill">
+          <Setter.Value>
+            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+              <GradientStop Color="#D3D3D3F5" Offset="0" />
+              <GradientStop Color="#D3D3D3E1" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding StateImagePath}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{x:Null}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleFailed" Value="True">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Collapsed" />
+        <Setter TargetName="itemBorder" Property="Shape.Fill">
+          <Setter.Value>
+            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+              <GradientStop Color="#FFFAF7F5" Offset="0" />
+              <GradientStop Color="#FFEBE6E2" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="LogoIm" Property="Image.Source" Value="{Binding StateImagePath}" />
+        <Setter TargetName="StateFlag" Property="Panel.Background" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_NG_Status}" />
+        <Setter TargetName="itemName" Property="UIElement.Opacity" Value="0.4" />
+        <Setter TargetName="Id" Property="UIElement.Opacity" Value="0.4" />
+      </Trigger>
+      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+        <Setter TargetName="errorBorder" Property="UIElement.Visibility" Value="Visible" />
+        <Setter TargetName="errorBorder" Property="Shape.Stroke" Value="{Color:ColorResourceBinding Col_EditProcess_Modular_BorderBrush}" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <Style x:Key="CheckMenuItemStyle" TargetType="{x:Type MenuItem}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type MenuItem}">
+          <Border Background="{TemplateBinding Control.Background}" MinWidth="156" BorderThickness="0,0,0,1" BorderBrush="{TemplateBinding Control.BorderBrush}" HorizontalAlignment="Stretch" Height="30">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <ContentPresenter Name="Icon" ContentSource="Icon" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="Center" />
+              <StackPanel Name="HeaderHost" Orientation="Horizontal" Margin="12,0,0,0" Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{TemplateBinding HeaderedItemsControl.Header}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                <ToggleButton Margin="5,0,0,0" IsChecked="{Binding DecorateSource.IsProcessRunStop, Mode=TwoWay}">
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type ToggleButton}">
+                      <Setter Property="Template">
+                        <Setter.Value>
+                          <ControlTemplate TargetType="{x:Type ToggleButton}">
+                            <Image Name="icon" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_off.png" Stretch="Fill" />
+                            <ControlTemplate.Triggers>
+                              <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                <Setter TargetName="icon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/swith_on.png" />
+                              </Trigger>
+                            </ControlTemplate.Triggers>
+                          </ControlTemplate>
+                        </Setter.Value>
+                      </Setter>
+                    </Style>
+                  </FrameworkElement.Style>
+                </ToggleButton>
+              </StackPanel>
+              <ContentPresenter Name="Shortcuts" Margin="0,0,12,0" Grid.Column="2" ContentSource="InputGestureText" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="MenuItem.IsSuspendingPopupAnimation" Value="True" />
+            <Trigger Property="MenuItem.Icon" Value="{x:Null}">
+              <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+              <Setter TargetName="HeaderHost" Property="Margin" Value="0" />
+            </Trigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Value="{DynamicResource ListViewComboBoxIsSelected}" Property="Background" />
+              <Setter Property="BorderBrush" Value="{Color:ColorResourceBinding Col_Theme}" />
+            </Trigger>
+            <Trigger Property="MenuItem.IsChecked" Value="True">
+              <Setter Property="Background" Value="{Color:ColorResourceBinding Col_Theme}" />
+              <Setter Property="Foreground" Value="#FFFFFFFF" />
+            </Trigger>
+            <Trigger Property="MenuItem.IsPressed" Value="True">
+              <Setter Property="Background" Value="{Color:ColorResourceBinding Col_Theme}" />
+              <Setter Property="Foreground" Value="#FFFFFFFF" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <controls:HikContextMenu x:Key="ProcessOperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Disconnect}" ItemContainerStyle="{Binding Source={StaticResource MenuItemDisLinkTo}}" ItemsSource="{Binding DisLinkTo}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Style.Triggers>
+            <DataTrigger Value="0" Binding="{Binding ItemsSource.Count, RelativeSource={RelativeSource Mode=Self}}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Name="exportItem" Header="{DynamicResource Lang_PrcExport}" Command="{Binding ProcessExportCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Value="False" Binding="{Binding IsRemoteMode}">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <!--Unknown connection ID: 1-->
+    </MenuItem>
+    <MenuItem Name="exportItemRemote" Header="{DynamicResource Lang_PrcExport}">
+      <MenuItem Header="{DynamicResource Remote}" Command="{Binding ProcessExportRemoteCommand}" />
+      <MenuItem Header="{DynamicResource Local}" Command="{Binding ProcessExportCommand}" />
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsRemoteMode}">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <!--Unknown connection ID: 2-->
+    </MenuItem>
+    <MenuItem Name="copyItem" Header="{DynamicResource Lang_ProcessCopy}" Command="{Binding CopyCommand}">
+      <!--Unknown connection ID: 3-->
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_ExportAlgorithmCode}" Command="{Binding ExportAlgorithmCommand}" />
+    <MenuItem Header="{DynamicResource Lang_RunInterval}" Command="{Binding SetIntervalCommand}" />
+    <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding DeleteItemCommand}" />
+    <MenuItem Header="{DynamicResource Lang_StopProcessNG}" Style="{StaticResource CheckMenuItemStyle}" />
+    <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding RenameCommand}" />
+    <MenuItem Header="{DynamicResource Lang_ProcessTimeOut}" Command="{Binding SetTimeOutCommand}" />
+  </controls:HikContextMenu>
+  <ControlTemplate x:Key="PROCESS" TargetType="{x:Type local:DiagramItem}">
+    <Grid Name="PART_View" Width="140" Height="120">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="30" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Border Grid.RowSpan="2" IsHitTestVisible="False" Background="#00FFFFFF" CornerRadius="3">
+        <UIElement.Effect>
+          <DropShadowEffect Color="#FF121111" ShadowDepth="3" Opacity="0.45" />
+        </UIElement.Effect>
+      </Border>
+      <Rectangle Name="Rec" Grid.RowSpan="2" Fill="#00FFFFFF" Margin="-20" />
+      <Border Name="itemBorder" Grid.Row="1" CornerRadius="0,0,4,4" Background="#FFF2F3F5" />
+      <Grid Name="subGrid" Row="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="46" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Name="controlArea" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="{Binding IsChecked, ElementName=workEnable}">
+          <commomcontrol:SuperImageButton ToolTip="{DynamicResource Lang_SigRun}" Style="{StaticResource SuperImageButtonRunOnceStyle}" Command="{Binding RunOnceCommand}">
+            <commomcontrol:SuperImageButton.NormalConnent>
+              <Image Stretch="None" Source="{StaticResource ic_play_____normalDrawingImage}" />
+            </commomcontrol:SuperImageButton.NormalConnent>
+            <commomcontrol:SuperImageButton.DisableConnent>
+              <Image Stretch="None" Source="{StaticResource ic_play_____disableDrawingImage}" />
+            </commomcontrol:SuperImageButton.DisableConnent>
+            <commomcontrol:SuperImageButton.PressedConnent>
+              <Image Stretch="None" Source="{StaticResource ic_play_____clickDrawingImage}" />
+            </commomcontrol:SuperImageButton.PressedConnent>
+            <commomcontrol:SuperImageButton.MOverConnent>
+              <Image Stretch="None" Source="{StaticResource ic_play_____hoverDrawingImage}" />
+            </commomcontrol:SuperImageButton.MOverConnent>
+          </commomcontrol:SuperImageButton>
+          <ContentPresenter Margin="2,0,0,0" Style="{StaticResource ContentPresenterContinousRunStyle}" ContentTemplate="{StaticResource RunStopButton}" Content="{Binding}" />
+          <Line X1="0" Y1="0" X2="0" Y2="1" Stretch="Fill" Width="3" Height="18" Margin="5.5,0,3.5,0" StrokeThickness="1" Stroke="#575858" StrokeDashArray="3,1.2" VerticalAlignment="Center" />
+          <commomcontrol:SuperImageButton Command="{Binding ConfigParamsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" CommandParameter="{Binding}">
+            <commomcontrol:SuperImageButton.NormalConnent>
+              <Image Source="/Apps.Style;component/Resources/ic_图形配置_normal.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.NormalConnent>
+            <commomcontrol:SuperImageButton.DisableConnent>
+              <Image Source="/Apps.Style;component/Resources/ic_图形配置_normal.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.DisableConnent>
+            <commomcontrol:SuperImageButton.PressedConnent>
+              <Image Source="/Apps.Style;component/Resources/ic_图形配置_click.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.PressedConnent>
+            <commomcontrol:SuperImageButton.MOverConnent>
+              <Image Source="/Apps.Style;component/Resources/ic_图形配置_hover.png" Stretch="None" />
+            </commomcontrol:SuperImageButton.MOverConnent>
+          </commomcontrol:SuperImageButton>
+        </StackPanel>
+        <Rectangle Fill="#FFE0DFDE" Height="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="126" />
+        <Grid Row="1">
+          <StackPanel Orientation="Vertical" Margin="12,0,0,0" HorizontalAlignment="Left" TextBlock.FontSize="11" TextBlock.Foreground="{DynamicResource ParamsTabForeground}">
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+              <TextBlock Text="{Binding DecorateSource.ExecuteCount}" />
+              <TextBlock Text="{DynamicResource 次}" />
+            </StackPanel>
+            <TextBlock Margin="0,4,0,0" Text="{Binding DecorateSource.ProcessTime, StringFormat='{}{0:N2}ms', Mode=OneWay}" />
+          </StackPanel>
+          <ToggleButton Name="workEnable" Margin="0,1,8,0" HorizontalAlignment="Right" VerticalAlignment="Top" IsChecked="{Binding IsForbidden, Converter={StaticResource inverseBooleanConverter}}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type ToggleButton}">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                      <Grid Background="#00FFFFFF">
+                        <Image Name="bg" Width="40" Height="28" Source="{StaticResource switch_off____DrawingImage}" />
+                      </Grid>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="ToggleButton.IsChecked" Value="True">
+                          <Setter TargetName="bg" Property="Image.Source" Value="{StaticResource switch_on____DrawingImage}" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+        </Grid>
+      </Grid>
+      <Border Name="Drag_View" Cursor="SizeAll" CornerRadius="4,4,0,0" Attached:EventOfMouseDownToDoubleClick.Event="MouseDown" Background="{Color:ColorResourceBinding Col_EditProcess_AllProcess_Title_Background}" Attached:AttachedRoutedEventBase.Command="{Binding OpenProcedureCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localwpf:ProcedureConfigControl}}">
+        <Grid>
+          <StackPanel Orientation="Horizontal">
+            <Ellipse Name="light" Width="8" Height="8" Fill="#FFEC0000" Margin="10,0,0,0" />
+            <appUi:HeadReNameTextBox Name="itemName" Margin="5,0,0,0" Width="90" HorizontalAlignment="Left" Background="#00FFFFFF" Foreground="#FFE4E4E4" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" BorderThickness="0" MaxLength="{x:Static local:DiagramItem.MaxNameLenth}" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" IsReName="{Binding IsReName, Mode=TwoWay}" />
+          </StackPanel>
+          <Button VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,6,0" Cursor="Arrow" Command="{Binding OpenProcedureCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localwpf:ProcedureConfigControl}}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Button}">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                      <Grid Background="#00FFFFFF">
+                        <Image Name="bg" Source="/Apps.Style;component/Resources/ic_展开_click.png" Stretch="None" Visibility="Hidden" />
+                        <Image Source="/Apps.Style;component/Resources/ic_展开_normal.png" Stretch="None" />
+                      </Grid>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                          <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </FrameworkElement.Style>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="Click">
+                <core:ChangePropertyAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" PropertyName="IsSelected" Value="True" i:TargetedTriggerAction.TargetObject="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Button>
+        </Grid>
+      </Border>
+      <Canvas Name="ContansFail" Visibility="Collapsed" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="20" Height="20" Margin="10,0,0,0">
+        <Panel.Background>
+          <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/ic_flow_group_notice.png" />
+        </Panel.Background>
+      </Canvas>
+      <ContentPresenter Name="leftConnector" Grid.RowSpan="2" Content="{x:Null}" />
+      <ContentPresenter Name="rightConnector" Grid.RowSpan="2" Content="{x:Null}" />
+      <ContentPresenter Name="topConnector" Grid.RowSpan="2" Content="{x:Null}" />
+      <ContentPresenter Name="bottomConnector" Grid.RowSpan="2" Content="{x:Null}" />
+    </Grid>
+    <ControlTemplate.Triggers>
+      <Trigger Value="{x:Static DataForUI:ModuleDisplayType.PROCESSADORNER}" Property="local:DiagramItem.DisplayType">
+        <Setter TargetName="itemName" Property="TextBox.Text" Value="{Lang:ResourceBinding DecorateSource.Name}" />
+      </Trigger>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="local:DiagramItem.IsHited" Value="True" />
+          <Condition Property="local:DiagramItem.IsLockWorkArea" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter TargetName="leftConnector" Property="ContentPresenter.Content" Value="{StaticResource left}" />
+        <Setter TargetName="rightConnector" Property="ContentPresenter.Content" Value="{StaticResource right}" />
+        <Setter TargetName="topConnector" Property="ContentPresenter.Content" Value="{StaticResource top}" />
+        <Setter TargetName="bottomConnector" Property="ContentPresenter.Content" Value="{StaticResource bottom}" />
+      </MultiTrigger>
+      <Trigger Property="local:DiagramItem.IsModuleFailed" Value="{x:Null}">
+        <Setter TargetName="ContansFail" Property="UIElement.Visibility" Value="Visible" />
+      </Trigger>
+      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+        <Setter TargetName="itemBorder" Property="Border.BorderBrush" Value="{Color:ColorResourceBinding Col_Theme}" />
+        <Setter TargetName="itemBorder" Property="Border.BorderThickness" Value="2,0,2,2" />
+      </Trigger>
+      <DataTrigger Value="{x:Static DataForUI:StatusBarSymbol.Ready}" Binding="{Binding WorkState}">
+        <Setter TargetName="light" Property="UIElement.Visibility" Value="Collapsed" />
+      </DataTrigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <controls:HikContextMenu x:Key="GroupOperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding DeleteItemCommand}" />
+    <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding CopyItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_ExportGroup}" Command="{Binding ExportGroupCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Value="False" Binding="{Binding IsRemoteMode}">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_ExportGroup}">
+      <MenuItem Header="{DynamicResource Remote}" Command="{Binding ExportGroupRemoteCommand}" />
+      <MenuItem Header="{DynamicResource Local}" Command="{Binding ExportGroupCommand}" />
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsRemoteMode}">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_ExportAlgorithmCode}" Visibility="Collapsed" Command="{Binding ExportAlgorithmCommand}" />
+    <MenuItem Header="{DynamicResource Lang_Rename}" Command="{Binding RenameCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_EnablePermissions}" Command="{Binding EnablePasswordCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="{Binding IsPasswordEnabledA, Converter={StaticResource bool2CollapesdConverter}}" />
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_SetScriptPassword}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="{Binding IsPasswordEnabledA, Converter={StaticResource bool2VisibilityConverter}}" />
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <MenuItem Header="{DynamicResource Lang_EditPassword}" Command="{Binding EditPasswordCommand}" />
+      <MenuItem Header="{DynamicResource Lang_DeletePassword}" Command="{Binding CancelPasswordCommand}" />
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_AddToToolbox}" Command="{Binding AddToToolboxCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsLoadFailed}">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Forbidden}" Command="{Binding ForbiddenItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="False" Binding="{Binding IsForbidden}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Enabled}" Command="{Binding ActivateItemCommand}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type MenuItem}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsLoadFailed}" />
+                <Condition Value="True" Binding="{Binding IsForbidden}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </MenuItem>
+  </controls:HikContextMenu>
+  <ControlTemplate x:Key="GROUP" TargetType="{x:Type local:DiagramItem}">
+    <Grid Name="PART_View" Width="110" Height="40">
+      <ContentPresenter Name="cp" ContentTemplate="{x:Null}" Content="{x:Null}" />
+      <Border IsHitTestVisible="False" Background="#00FFFFFF" CornerRadius="3">
+        <UIElement.Effect>
+          <DropShadowEffect Color="#FF121111" ShadowDepth="3" Opacity="0.45" />
+        </UIElement.Effect>
+      </Border>
+      <Rectangle Name="Rec" Fill="#00FFFFFF" Margin="-10" />
+      <Canvas Name="itemBorder">
+        <Panel.Background>
+          <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_bg.png" />
+        </Panel.Background>
+      </Canvas>
+      <Canvas Name="ContansFail" Visibility="Collapsed" HorizontalAlignment="Right" Width="20" Margin="10,20,0,0">
+        <Panel.Background>
+          <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/ic_flow_group_notice.png" />
+        </Panel.Background>
+      </Canvas>
+      <Grid TextBlock.Foreground="{DynamicResource ModuleForeground}" TextBlock.FontWeight="Bold" TextBlock.FontSize="12">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button Grid.Column="0" Margin="7,0,0,0" Command="{Binding ConfigParamsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" CommandParameter="{Binding}">
+          <Control.Template>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Image Name="ImageBackground" Stretch="None" Source="/Apps.Style;component/Resources/ic_group_configuration_normal.png" Tag="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" />
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_group_configuration_click.png" />
+                </Trigger>
+                <Trigger Property="UIElement.IsEnabled" Value="False">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_group_configuration_disable.png" />
+                </Trigger>
+                <DataTrigger Value="True" Binding="{Binding IsModuleForbidden, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramItem}}">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_group_configuration_disable.png" />
+                </DataTrigger>
+                <DataTrigger Value="True" Binding="{Binding IsModuleFailed, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramItem}}">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_group_configuration_disable.png" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Control.Template>
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+              <ChangePropertyAction PropertyName="IsSelected" Value="True" i:TargetedTriggerAction.TargetObject="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </Button>
+        <Grid HorizontalAlignment="Center" Column="1">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <appUi:HeadReNameTextBox Name="itemName" Grid.Column="1" Background="#00FFFFFF" Foreground="{DynamicResource ModuleForeground}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" BorderThickness="0" MaxLength="{x:Static local:DiagramItem.MaxNameLenth}" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}" IsReName="{Binding IsReName, Mode=TwoWay}" />
+        </Grid>
+        <Image Name="grouplock" Grid.Column="1" Margin="0,0,-20,-5" IsHitTestVisible="False" VerticalAlignment="Bottom" HorizontalAlignment="Right" Visibility="Collapsed" Stretch="None" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_group_encryption.png" />
+      </Grid>
+      <ContentPresenter Name="leftConnector" Content="{x:Null}" />
+      <ContentPresenter Name="rightConnector" Content="{x:Null}" />
+      <ContentPresenter Name="topConnector" Content="{x:Null}" />
+      <ContentPresenter Name="bottomConnector" Content="{x:Null}" />
+    </Grid>
+    <ControlTemplate.Triggers>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="local:DiagramItem.IsHited" Value="True" />
+          <Condition Property="local:DiagramItem.IsLockWorkArea" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter TargetName="leftConnector" Property="ContentPresenter.Content" Value="{StaticResource left}" />
+        <Setter TargetName="rightConnector" Property="ContentPresenter.Content" Value="{StaticResource right}" />
+        <Setter TargetName="topConnector" Property="ContentPresenter.Content" Value="{StaticResource top}" />
+        <Setter TargetName="bottomConnector" Property="ContentPresenter.Content" Value="{StaticResource bottom}" />
+      </MultiTrigger>
+      <Trigger Value="{x:Static DataForUI:ModuleDisplayType.GROUPADORNER}" Property="local:DiagramItem.DisplayType">
+        <Setter TargetName="itemName" Property="TextBox.Text" Value="{Lang:ResourceBinding DecorateSource.Name}" />
+      </Trigger>
+      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_bg_focus.png" />
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="True">
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_正常.png" />
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <Trigger Property="local:DiagramItem.RunState" Value="false">
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_异常.png" />
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="ListBoxItem.IsSelected" Value="True" />
+          <Condition Property="local:DiagramItem.RunState" Value="True" />
+        </MultiTrigger.Conditions>
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_正常选中.png" />
+          </Setter.Value>
+        </Setter>
+      </MultiTrigger>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="ListBoxItem.IsSelected" Value="True" />
+          <Condition Property="local:DiagramItem.RunState" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_异常选中.png" />
+          </Setter.Value>
+        </Setter>
+      </MultiTrigger>
+      <Trigger Property="local:DiagramItem.IsModuleForbidden" Value="True">
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_bg_forbidden.png" />
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleFailed" Value="True">
+        <Setter TargetName="itemBorder" Property="Panel.Background">
+          <Setter.Value>
+            <ImageBrush Stretch="None" ImageSource="/Apps.Style;component/Resources/group_bg_load_fail.png" />
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="itemName" Property="UIElement.Opacity" Value="0.4" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsModuleFailed" Value="{x:Null}">
+        <Setter TargetName="ContansFail" Property="UIElement.Visibility" Value="Visible" />
+      </Trigger>
+      <DataTrigger Value="True" Binding="{Binding DecorateSource.IsEnableLoop}">
+        <Setter TargetName="cp" Property="ContentPresenter.ContentTemplate" Value="{StaticResource GroupCirculationBackground}" />
+      </DataTrigger>
+      <DataTrigger Value="{x:Static DataForUI:ModuleDisplayType.GROUP}" Binding="{Binding DisplayType}">
+        <Setter TargetName="grouplock" Property="UIElement.Visibility" Value="{Binding IsPasswordEnabledA, Converter={StaticResource bool2VisibilityConverter}}" />
+      </DataTrigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <ControlTemplate x:Key="NONE" TargetType="{x:Type local:DiagramItem}" />
+  <Style x:Key="{x:Type local:DiagramItem}" TargetType="{x:Type local:DiagramItem}">
+    <Setter Property="local:DiagramItem.DisplayType" Value="{Binding DisplayType}" />
+    <Setter Property="local:DiagramItem.IsModuleConfigCorrect" Value="{Binding DecorateSource.IsReady}" />
+    <Setter Property="local:DiagramItem.IsLockWorkArea" Value="{Binding IsLockWorkArea, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ItemsPage}}" />
+    <Setter Property="local:DiagramItem.IsOpenParams" Value="{Binding IsOpenParams, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ItemsPage}}" />
+    <Setter Property="local:DiagramItem.DeleteCommand" Value="{Binding DeleteItemCommand}" />
+    <Setter Property="Template" Value="{StaticResource NORMAL}" />
+    <Setter Property="FrameworkElement.ToolTip" Value="{Binding DecorateSource.Name}" />
+    <Style.Triggers>
+      <DataTrigger Value="{x:Static local:DiagramItemDisplayEnum.MODULE}" Binding="{Binding DisplayType, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource diagramItemDisplayConverter}}">
+        <Setter Property="local:DiagramItem.IsModuleForbidden" Value="{Binding IsForbidden}" />
+        <Setter Property="local:DiagramItem.IsModuleFailed" Value="{Binding IsLoadFailed}" />
+        <Setter Property="local:DiagramItem.RunState" Value="{Binding DecorateSource.IsRunOK}" />
+        <Setter Property="local:DiagramItem.NextItemsSource" Value="{Binding Path=DecorateSource.(VMInterface:IVmModule.NextModules)}" />
+        <Setter Property="local:DiagramItem.Position" Value="{Binding Position}" />
+        <Setter Property="Attached:AttachedRoutedEvent.Event" Value="MouseDoubleClick" />
+        <Setter Property="Attached:AttachedRoutedEventBase.Command" Value="{Binding ConfigParamsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" />
+        <Setter Property="Attached:AttachedRoutedEventBase.CommandParameter" Value="{Binding}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource NormalOperateMenu}" />
+      </DataTrigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.FUNCTION}">
+        <Setter Property="Template" Value="{StaticResource Square}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource SquareOperateMenu}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.FUNCTIONADORNER}">
+        <Setter Property="Template" Value="{StaticResource Square}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource SquareOperateMenu}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.TIMER}">
+        <Setter Property="Template" Value="{StaticResource Square}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource SquareOperateMenu}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.TIMERADORNER}">
+        <Setter Property="Template" Value="{StaticResource Square}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource SquareOperateMenu}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.PROCESS}">
+        <Setter Property="Template" Value="{StaticResource PROCESS}" />
+        <Setter Property="local:DiagramItem.IsModuleFailed" Value="{Binding IsLoadFailed}" />
+        <Setter Property="local:DiagramItem.Position" Value="{Binding Position}" />
+        <Setter Property="local:DiagramItem.NextItemsSource" Value="{Binding Path=DecorateSource.(VMInterface:IVmModule.NextModules)}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource ProcessOperateMenu}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.PROCESSADORNER}">
+        <Setter Property="Template" Value="{StaticResource PROCESS}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.GROUP}">
+        <Setter Property="local:DiagramItem.IsModuleForbidden" Value="{Binding IsForbidden}" />
+        <Setter Property="local:DiagramItem.IsModuleFailed" Value="{Binding IsLoadFailed}" />
+        <Setter Property="local:DiagramItem.RunState" Value="{Binding DecorateSource.IsRunOK}" />
+        <Setter Property="Template" Value="{StaticResource GROUP}" />
+        <Setter Property="local:DiagramItem.Position" Value="{Binding Position}" />
+        <Setter Property="local:DiagramItem.NextItemsSource" Value="{Binding Path=DecorateSource.(VMInterface:IVmModule.NextModules)}" />
+        <Setter Property="Attached:AttachedRoutedEvent.Event" Value="MouseDoubleClick" />
+        <Setter Property="Attached:AttachedRoutedEventBase.Command" Value="{Binding SubSource.OpenGroupCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:DiagramArea}}" />
+        <Setter Property="Attached:AttachedRoutedEventBase.CommandParameter" Value="{Binding}" />
+        <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource GroupOperateMenu}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.GROUPADORNER}">
+        <Setter Property="Template" Value="{StaticResource GROUP}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.GROUPADORNER}">
+        <Setter Property="Template" Value="{StaticResource GROUP}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.DisplayType" Value="{x:Static DataForUI:ModuleDisplayType.NONE}">
+        <Setter Property="Template" Value="{StaticResource NONE}" />
+      </Trigger>
+      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+        <Setter Property="Panel.ZIndex" Value="10" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsLockWorkArea" Value="True">
+        <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+      </Trigger>
+      <Trigger Property="local:DiagramItem.IsOpenParams" Value="True">
+        <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+      </Trigger>
+      <DataTrigger Value="False" Binding="{Binding IsAdmin, Source={x:Static user:CodeManager.Instance}}">
+        <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+</ResourceDictionary>

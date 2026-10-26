@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.ResultOverviewPopupButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls">
+  <Grid>
+    <ComboBox Name="CBox">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type ComboBox}">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ComboBox}">
+                <Grid Name="MainGrid" SnapsToDevicePixels="True">
+                  <Popup Name="PART_Popup" AllowsTransparency="True" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom" IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}" HorizontalOffset="{Binding HorizontalOffsetVal, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type UserControl}}}" VerticalOffset="{Binding VerticalOffsetVal, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type UserControl}}}">
+                    <Grid>
+                      <ContentPresenter Content="{Binding SubContent, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type UserControl}}}" />
+                    </Grid>
+                  </Popup>
+                  <Grid Name="GT">
+                    <ToggleButton Name="TO" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Style="{Binding ButtonStyle, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type UserControl}}}" />
+                  </Grid>
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </FrameworkElement.Style>
+    </ComboBox>
+  </Grid>
+</UserControl>

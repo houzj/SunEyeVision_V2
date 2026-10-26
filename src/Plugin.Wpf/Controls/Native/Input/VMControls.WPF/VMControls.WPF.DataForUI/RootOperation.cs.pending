@@ -1,0 +1,25 @@
+using System;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+public class RootOperation : DisplayNotify, IUnRedoOperation, IDisposable, IRootParam
+{
+	public bool IsPart { get; set; } = false;
+
+	public bool ForbidBuild { get; set; }
+
+	public string RootOperType { get; set; }
+
+	public void Redo()
+	{
+	}
+
+	public void Undo()
+	{
+	}
+
+	public void Dispose()
+	{
+	}
+}

@@ -1,0 +1,395 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using Apps.Localization;
+using Apps.UIHelper.Extern;
+using VM.Core;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+public class CommentBox : Control
+{
+	private TextBox _currenTextBox;
+
+	private Button _currentButton;
+
+	private Border _canvas;
+
+	internal new static double MinHeight;
+
+	internal new static double MinWidth;
+
+	private bool isIniting = false;
+
+	private bool isDragOvered = false;
+
+	private Point? _mouseDown;
+
+	private Point _offset;
+
+	private DragDropAdorner _adorner;
+
+	private DragEventHandler _dragOver;
+
+	private DragEventHandler _dragEnter;
+
+	private DragEventHandler _dragLeave;
+
+	private DragEventHandler _dragDrop;
+
+	private FrameworkElement page;
+
+	private FrameworkElement curAdornerSource = null;
+
+	public static readonly DependencyProperty UpIndexStatusProperty;
+
+	internal static string CommentDefaultText;
+
+	public static readonly DependencyProperty CommentTextProperty;
+
+	public int UpIndexStatus
+	{
+		get
+		{
+			return (int)GetValue(UpIndexStatusProperty);
+		}
+		set
+		{
+			SetValue(UpIndexStatusProperty, value);
+		}
+	}
+
+	public string CommentText
+	{
+		get
+		{
+			return (string)GetValue(CommentTextProperty);
+		}
+		set
+		{
+			SetValue(CommentTextProperty, value);
+		}
+	}
+
+	static CommentBox()
+	{
+		MinHeight = 20.0;
+		MinWidth = 20.0;
+		UpIndexStatusProperty = DependencyProperty.Register("UpIndexStatus", typeof(int), typeof(CommentBox), new PropertyMetadata(0, OnUpIndexStatusChanged));
+		CommentDefaultText = "请填写注释内容";
+		CommentTextProperty = DependencyProperty.Register("CommentText", typeof(string), typeof(CommentBox), new PropertyMetadata(AppLocalizationService.GetLang(CommentDefaultText), OnCommentTextChanged));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(CommentBox), new FrameworkPropertyMetadata(typeof(CommentBox)));
+	}
+
+	public CommentBox()
+	{
+		_dragEnter = DragScope_DragEnter;
+		_dragOver = DragScope_DragOver;
+		_dragLeave = DragScope_DragLeave;
+		_dragDrop = DragScope_DragDrop;
+		PreviewMouseLeftButtonDown += _currenTextBox_PreviewMouseLeftButtonDown;
+		PreviewMouseMove += _currenTextBox_PreviewMouseMove;
+		isIniting = true;
+	}
+
+	public CommentBox(VMCommentInfo info)
+		: this()
+	{
+		Name = info.Name;
+		Width = info.Width;
+		Height = info.Height;
+		CommentText = info.Text;
+		DataContext = new VmCommentDecorator
+		{
+			Name = Name
+		};
+		SetBinding(UpIndexStatusProperty, new Binding("UpStatus")
+		{
+			Source = DataContext,
+			Mode = BindingMode.TwoWay
+		});
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		_currentButton = GetTemplateChild("dragButton") as Button;
+		_currentButton.MouseDoubleClick -= _currentButton_MouseDoubleClick;
+		_currentButton.MouseDoubleClick += _currentButton_MouseDoubleClick;
+		_currenTextBox = GetTemplateChild("dragElement") as TextBox;
+		_currenTextBox.LostFocus += _currenTextBox_LostFocus;
+		_canvas = GetTemplateChild("currentBorder") as Border;
+		_canvas.MouseDown += _canvas_MouseDown;
+	}
+
+	private void _canvas_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (e.ClickCount == 1)
+		{
+			_canvas.Focus();
+			e.Handled = true;
+		}
+	}
+
+	private void _currenTextBox_LostFocus(object sender, RoutedEventArgs e)
+	{
+		_currentButton.Visibility = Visibility.Visible;
+		_currenTextBox.Visibility = Visibility.Collapsed;
+	}
+
+	private void _currentButton_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+	{
+		_currentButton.Visibility = Visibility.Collapsed;
+		_currenTextBox.Visibility = Visibility.Visible;
+		if (CommentText == AppLocalizationService.GetLang(CommentDefaultText))
+		{
+			CommentText = "";
+		}
+		_currenTextBox.Focus();
+	}
+
+	internal void SetCommentStatusComplate()
+	{
+		isIniting = false;
+	}
+
+	private void DragScope_DragEnter(object sender, DragEventArgs args)
+	{
+		isDragOvered = true;
+		if (curAdornerSource != null)
+		{
+			curAdornerSource.IsHitTestVisible = false;
+		}
+		if (_adorner != null && page != null)
+		{
+			Point position = args.GetPosition(page);
+			_adorner.SetOffsets(position.X - _offset.X, position.Y - _offset.Y);
+			if (_adorner.Parent == null)
+			{
+				AdornerLayer.GetAdornerLayer(page).Add(_adorner);
+			}
+		}
+	}
+
+	private void DragScope_DragOver(object sender, DragEventArgs args)
+	{
+		if (_adorner != null)
+		{
+			Point position = args.GetPosition(page);
+			_adorner.SetOffsets(position.X - _offset.X, position.Y - _offset.Y);
+		}
+	}
+
+	private void DragScope_DragLeave(object sender, DragEventArgs args)
+	{
+		isDragOvered = false;
+		if (_adorner != null && page != null)
+		{
+			AdornerLayer.GetAdornerLayer(page).Remove(_adorner);
+		}
+	}
+
+	private void DragScope_DragDrop(object sender, DragEventArgs e)
+	{
+		if (!isDragOvered)
+		{
+			e.Handled = true;
+		}
+		else if (e.Effects == DragDropEffects.Move)
+		{
+			IDataObject data = e.Data;
+			if (data.GetDataPresent(typeof(Button)) && data.GetData(typeof(Button)) is Button { Tag: object[] tag })
+			{
+				Point point = (Point)tag[1];
+				Point position = e.GetPosition(this);
+				double left = Canvas.GetLeft(this);
+				double top = Canvas.GetTop(this);
+				Canvas.SetLeft(this, left + (position.X - point.X));
+				Canvas.SetTop(this, top + (position.Y - point.Y));
+				e.Handled = true;
+			}
+		}
+	}
+
+	public Point GetDrawPointByRoughPoint(Point ptPos)
+	{
+		int num = Math.Max(0, (int)Math.Round(ptPos.X / 5.0) * 5);
+		int num2 = Math.Max(0, (int)Math.Round(ptPos.Y / 5.0) * 5);
+		return new Point(num, num2);
+	}
+
+	private void _currenTextBox_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		if (e.LeftButton == MouseButtonState.Pressed)
+		{
+			if (_mouseDown.HasValue && HasMoved(e.GetPosition(this)))
+			{
+				FrameworkElement frameworkElement = null;
+				if (e.OriginalSource is Button button)
+				{
+					frameworkElement = button;
+				}
+				if (frameworkElement == null)
+				{
+					return;
+				}
+				page = this.GetParent<DiagramPage>();
+				if (page == null)
+				{
+					return;
+				}
+				_offset = e.GetPosition(this);
+				DoDragDrop(frameworkElement, this);
+				e.Handled = true;
+			}
+			e.Handled = true;
+		}
+		else
+		{
+			_mouseDown = null;
+		}
+	}
+
+	private void DoDragDrop(object dragItem, FrameworkElement adornerSource)
+	{
+		if (adornerSource != null)
+		{
+			Rect descendantBounds = VisualTreeHelper.GetDescendantBounds(adornerSource);
+			VisualBrush brush = new VisualBrush(adornerSource);
+			_adorner = new DragDropAdorner(page, adornerSource, descendantBounds, brush);
+			_adorner.Opacity = 0.7;
+			_adorner.Visibility = Visibility.Visible;
+		}
+		DragDrop.AddPreviewDragEnterHandler(page, _dragEnter);
+		DragDrop.AddPreviewDragOverHandler(page, _dragOver);
+		DragDrop.AddPreviewDragLeaveHandler(page, _dragLeave);
+		DragDrop.AddPreviewDropHandler(page, _dragDrop);
+		curAdornerSource = adornerSource;
+		Button button = new Button();
+		button.Tag = new object[2]
+		{
+			(adornerSource as Control).DataContext,
+			_offset
+		};
+		DragDropEffects ret = DragDrop.DoDragDrop(adornerSource, button, DragDropEffects.Move);
+		DragFinished(ret);
+		DragDrop.RemovePreviewDragEnterHandler(page, _dragEnter);
+		DragDrop.RemovePreviewDragOverHandler(page, _dragOver);
+		DragDrop.RemovePreviewDragLeaveHandler(page, _dragLeave);
+		DragDrop.RemovePreviewDropHandler(page, _dragDrop);
+		page = null;
+	}
+
+	private void UpdateToData(CommentBox box)
+	{
+		VMCommentInfo vMCommentInfo = new VMCommentInfo();
+		vMCommentInfo.Name = box.Name;
+		vMCommentInfo.Text = box.CommentText;
+		vMCommentInfo.Width = box.Width;
+		vMCommentInfo.Height = box.Height;
+		vMCommentInfo.ZIndex = box.UpIndexStatus;
+		vMCommentInfo.OriginPoint = new Point(Canvas.GetLeft(box), Canvas.GetTop(box));
+		((DataContext as DecoratorBase)?.DecorateSource as IVmModuleSet)?.UpdateCommentSource(vMCommentInfo);
+	}
+
+	protected void DragFinished(DragDropEffects ret)
+	{
+		UpdateToData(this);
+		if (curAdornerSource != null)
+		{
+			curAdornerSource.IsHitTestVisible = true;
+			curAdornerSource = null;
+		}
+		if (_adorner != null && page != null)
+		{
+			AdornerLayer.GetAdornerLayer(page)?.Remove(_adorner);
+		}
+		_adorner = null;
+	}
+
+	public void Dispose()
+	{
+		DataContext = null;
+		_adorner = null;
+		_dragOver = null;
+		_dragEnter = null;
+		_dragLeave = null;
+		_dragDrop = null;
+		page = null;
+	}
+
+	private bool HasMoved(Point point)
+	{
+		if (point.X == 0.0 && point.Y == 0.0)
+		{
+			return false;
+		}
+		return Math.Abs(point.X - _mouseDown.Value.X) >= 1.0 || Math.Abs(point.Y - _mouseDown.Value.Y) >= 1.0;
+	}
+
+	private void _currenTextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		page = this.GetParent<DiagramPage>();
+		if (page != null && !(page as ItemsPage).IsLockWorkArea)
+		{
+			Point position = e.GetPosition(this);
+			if (!IsMouseOverScrollbar(position))
+			{
+				_mouseDown = position;
+			}
+		}
+	}
+
+	private bool IsMouseOverScrollbar(Point ptMouse)
+	{
+		HitTestResult hitTestResult = VisualTreeHelper.HitTest(this, ptMouse);
+		if (hitTestResult == null)
+		{
+			return false;
+		}
+		for (DependencyObject dependencyObject = hitTestResult.VisualHit; dependencyObject != null; dependencyObject = ((!(dependencyObject is Visual) && !(dependencyObject is Visual3D)) ? LogicalTreeHelper.GetParent(dependencyObject) : VisualTreeHelper.GetParent(dependencyObject)))
+		{
+			if (dependencyObject is ScrollBar)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static void OnUpIndexStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is CommentBox commentBox)
+		{
+			Panel.SetZIndex(commentBox, (int)e.NewValue);
+			if ((int)e.NewValue == 1)
+			{
+				commentBox.Opacity = 1.0;
+			}
+			else
+			{
+				commentBox.Opacity = 0.3;
+			}
+			if (!commentBox.isIniting)
+			{
+				commentBox.UpdateToData(commentBox);
+			}
+		}
+	}
+
+	private static void OnCommentTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is CommentBox { isIniting: false } commentBox)
+		{
+			commentBox.UpdateToData(commentBox);
+		}
+	}
+}

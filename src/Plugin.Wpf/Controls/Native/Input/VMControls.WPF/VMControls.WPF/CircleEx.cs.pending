@@ -1,0 +1,59 @@
+using System.Windows;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 圆
+/// </summary>
+public struct CircleEx : ICircle, IShape, IShapeBase
+{
+	/// <summary>
+	/// 中心点
+	/// </summary>
+	public Point CenterPoint { get; set; }
+
+	/// <summary>
+	/// 半径
+	/// </summary>
+	public double Radius { get; set; }
+
+	/// <summary>
+	/// 不透明度
+	/// </summary>
+	public double Opacity { get; set; }
+
+	/// <summary>
+	/// 边框颜色
+	/// </summary>
+	public string Stroke { get; set; }
+
+	/// <summary>
+	/// 填充色（只在封闭图形中生效）
+	/// </summary>
+	public string Fill { get; set; }
+
+	/// <summary>
+	/// 边框粗细
+	/// </summary>
+	public double StrokeThickness { get; set; }
+
+	/// <summary>
+	/// 提示语
+	/// </summary>
+	public string ToolTip { get; set; }
+
+	/// <summary>
+	/// 构造函数
+	/// </summary>
+	public CircleEx(Point centerPoint, double radius, double opacity = 1.0, string stroke = "#66FF00", string fill = null, double strokeThickness = 1.0, string toolTip = null)
+	{
+		CenterPoint = centerPoint;
+		Radius = radius;
+		Opacity = opacity;
+		Stroke = stroke;
+		Fill = fill;
+		StrokeThickness = strokeThickness;
+		ToolTip = toolTip;
+	}
+}

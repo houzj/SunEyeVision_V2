@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using Apps.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public class ImageViewControlButton : RadioButton
+{
+	public static readonly DependencyProperty ToolTipStringProperty = DependencyProperty.Register("ToolTipString", typeof(string), typeof(ImageViewControlButton), new PropertyMetadata(""));
+
+	private HikImageView imageView;
+
+	public virtual ImageViewController.BarItemenum Itemenum
+	{
+		get
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public string ToolTipString
+	{
+		get
+		{
+			return (string)GetValue(ToolTipStringProperty);
+		}
+		set
+		{
+			SetValue(ToolTipStringProperty, value);
+		}
+	}
+
+	public HikImageView ImageView
+	{
+		get
+		{
+			return imageView;
+		}
+		set
+		{
+			if (imageView != value)
+			{
+				imageView = value;
+				OnImageViewChanged();
+			}
+		}
+	}
+
+	public virtual bool IsSimpleButton => false;
+
+	public string ItemGroupName { get; set; }
+
+	public event EventHandler AfterRoiCountChanged;
+
+	public ImageViewControlButton()
+	{
+		Checked += ImageViewControlButton_Checked;
+		Unchecked += ImageViewControlButton_Unchecked;
+	}
+
+	private void OnImageViewChanged()
+	{
+		if (ImageView != null)
+		{
+			HikImageView hikImageView = ImageView;
+			hikImageView.OnRoiCountChanged = (HikImageView.RoiCountChanged)Delegate.Combine(hikImageView.OnRoiCountChanged, new HikImageView.RoiCountChanged(OnRoiCountChanged));
+		}
+	}
+
+	protected virtual void OnRoiCountChanged(object Roi, EventArgs e = null)
+	{
+		if (!(IsChecked ?? false))
+		{
+			return;
+		}
+		ITag roiParameter = Roi as ITag;
+		if (roiParameter != null)
+		{
+			roiParameter.Tag = ItemGroupName;
+			if (!string.IsNullOrEmpty(ItemGroupName) && ImageView != null)
+			{
+				IEnumerable<ITag> enumerable = from p in ImageView.RoiList.OfType<ITag>().ToList()
+					where p != Roi && p.Tag == roiParameter.Tag
+					select p;
+				foreach (ITag item in enumerable)
+				{
+					ImageView.RoiList.Remove(item);
+				}
+			}
+		}
+		if (AfterRoiCountChanged != null)
+		{
+			AfterRoiCountChanged(this, null);
+		}
+	}
+
+	private void ImageViewControlButton_Unchecked(object sender, RoutedEventArgs e)
+	{
+		if (ImageView != null)
+		{
+			UnPrepareRawRoi();
+		}
+	}
+
+	private void ImageViewControlButton_Checked(object sender, RoutedEventArgs e)
+	{
+		if (ImageView != null)
+		{
+			PrepareRawRoi();
+		}
+	}
+
+	protected virtual void UnPrepareRawRoi()
+	{
+		ImageView.UnPrepareRawRoi();
+	}
+
+	protected virtual void PrepareRawRoi()
+	{
+		ImageView.UnPrepareRawRoi();
+	}
+}

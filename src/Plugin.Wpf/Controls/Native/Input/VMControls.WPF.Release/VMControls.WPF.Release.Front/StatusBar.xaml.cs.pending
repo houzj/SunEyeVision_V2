@@ -1,0 +1,30 @@
+using System.Windows.Controls;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// StatusBar.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// StatusBar
+/// </summary>
+public partial class StatusBar : ContentControl, IComponentConnector
+{
+	public string BindingPath
+	{
+		get
+		{
+			return PART_Control.BindingPath;
+		}
+		set
+		{
+			PART_Control.BindingPath = value;
+		}
+	}
+
+	public StatusBar()
+	{
+		InitializeComponent();
+	}
+}

@@ -1,0 +1,35 @@
+using System.Windows;
+using System.Windows.Controls;
+using Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// 用来解决滚动条阻拦问题,存在bug
+/// </summary>
+public static class IsMouseEnterBehavior
+{
+	/// <summary>
+	/// 为MenuItem对象增加MouseEnter与MouseLeave路由事件 防止原事件被GroupItem截停导致子节点无法展开的情况
+	/// </summary>
+	public static readonly DependencyProperty IsMouseLeaveProperty = DependencyProperty.RegisterAttached("IsMouseLeave", typeof(bool), typeof(IsMouseEnterBehavior), new PropertyMetadata(false, PropertyChangedCallback));
+
+	private static void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+	{
+		if (dependencyObject is UIElement uiElement)
+		{
+			(dependencyObject as Grid).GetParent<ToolBox>()?.AddHandlers(uiElement);
+		}
+	}
+
+	public static void SetIsMouseLeave(DependencyObject item, bool value)
+	{
+		item.SetValue(IsMouseLeaveProperty, value);
+	}
+
+	public static bool GetIsMouseLeave(DependencyObject item)
+	{
+		object value = item.GetValue(IsMouseLeaveProperty);
+		return value != null && (bool)value;
+	}
+}

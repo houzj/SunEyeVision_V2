@@ -1,0 +1,380 @@
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 视觉控制器IO参数
+/// </summary>
+public class Device_IO : INotifyPropertyChanged
+{
+	private Enumeration iOEnableElectricalLevel;
+
+	private Enumeration ioOutType;
+
+	private Enumeration outputPolarity;
+
+	private Integer durationTime;
+
+	private Enumeration curPort;
+
+	private Integer sendInterval;
+
+	private Apps.XmlParser.ParamTab.Boolean pollingEnable;
+
+	private Integer pollingInterval;
+
+	private Integer delayTime;
+
+	public int[] DurationTimes = new int[20]
+	{
+		500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+		500, 500, 500, 500, 500, 500, 500, 500, 500, 500
+	};
+
+	public int[] ElectricalLevels = new int[20]
+	{
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+	};
+
+	public object Parent { get; set; }
+
+	public bool IsShowPortParam => CurPort.CurValueA != 0;
+
+	public Enumeration CurPort
+	{
+		get
+		{
+			if (curPort == null)
+			{
+				curPort = new Enumeration
+				{
+					DisplayName = "Port",
+					Description = "Port",
+					AccessMode = "O",
+					CurValue = 0,
+					DefaultValue = 0
+				};
+				curPort.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "Lang_NoneChoose",
+						DisplayName = "Lang_NoneChoose",
+						Value = 0
+					}
+				};
+				curPort.OnCurValueChanged += CurPortChanged;
+			}
+			return curPort;
+		}
+	}
+
+	public Enumeration IOOutType
+	{
+		get
+		{
+			if (ioOutType == null)
+			{
+				ioOutType = new Enumeration
+				{
+					DisplayName = "Lang_CalculatorCType",
+					Description = "IO Output, Active when OK or NG",
+					AccessMode = "O",
+					CurValue = 2,
+					DefaultValue = 2
+				};
+				ioOutType.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "Output when OK",
+						DisplayName = "Output when OK",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "Output when NG",
+						DisplayName = "Output when NG",
+						Value = 2
+					}
+				};
+				ioOutType.OnCurValueChanged += ParamChanged;
+			}
+			return ioOutType;
+		}
+	}
+
+	public Integer SendInterval
+	{
+		get
+		{
+			if (sendInterval == null)
+			{
+				sendInterval = new Integer
+				{
+					DisplayName = "Lang_SendInterval(ms)",
+					Description = "Lang_SendInterval(ms)",
+					AccessMode = "O",
+					SubscribeVisible = false,
+					CurValue = 0,
+					DefaultValue = 0,
+					MinValue = 0,
+					MaxValue = 100,
+					IncValue = 1
+				};
+				sendInterval.OnCurValueChanged += ParamChanged;
+			}
+			return sendInterval;
+		}
+	}
+
+	public Enumeration OutputPolarity
+	{
+		get
+		{
+			if (outputPolarity == null)
+			{
+				outputPolarity = new Enumeration
+				{
+					DisplayName = "输出极性",
+					Description = "输出极性",
+					AccessMode = "O",
+					CurValue = 1,
+					DefaultValue = 1
+				};
+				outputPolarity.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "PNP",
+						DisplayName = "PNP",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "NPN",
+						DisplayName = "NPN",
+						Value = 2
+					}
+				};
+				outputPolarity.OnCurValueChanged += ParamChanged;
+			}
+			return outputPolarity;
+		}
+	}
+
+	public Integer DurationTime
+	{
+		get
+		{
+			if (durationTime == null)
+			{
+				durationTime = new Integer
+				{
+					DisplayName = "Duration(ms)",
+					Description = "RunParam_Duration",
+					AccessMode = "O",
+					SubscribeVisible = false,
+					CurValue = 500,
+					DefaultValue = 500,
+					MinValue = 1,
+					MaxValue = 30000,
+					IncValue = 1
+				};
+				durationTime.OnCurValueChanged += ParamChanged;
+			}
+			return durationTime;
+		}
+	}
+
+	public Apps.XmlParser.ParamTab.Boolean PollingEnable
+	{
+		get
+		{
+			if (pollingEnable == null)
+			{
+				pollingEnable = new Apps.XmlParser.ParamTab.Boolean
+				{
+					DisplayName = "RunParam_Polling Enable",
+					Description = "RunParam_Polling Enable",
+					AccessMode = "O",
+					CurValue = false,
+					DefaultValue = false
+				};
+				pollingEnable.OnCurValueChanged += ParamChanged;
+			}
+			return pollingEnable;
+		}
+	}
+
+	public Integer PollingInterval
+	{
+		get
+		{
+			if (pollingInterval == null)
+			{
+				pollingInterval = new Integer
+				{
+					DisplayName = "RunParam_Polling Interval",
+					Description = "RunParam_Polling Interval",
+					AccessMode = "O",
+					SubscribeVisible = false,
+					CurValue = 10,
+					DefaultValue = 10,
+					MinValue = 0,
+					MaxValue = 500,
+					IncValue = 1
+				};
+				pollingInterval.OnCurValueChanged += ParamChanged;
+			}
+			return pollingInterval;
+		}
+	}
+
+	public Integer DelayTime
+	{
+		get
+		{
+			if (delayTime == null)
+			{
+				delayTime = new Integer
+				{
+					DisplayName = "RunParam_Delay Time",
+					Description = "RunParam_Delay Time",
+					AccessMode = "O",
+					SubscribeVisible = false,
+					CurValue = 0,
+					DefaultValue = 0,
+					MinValue = 0,
+					MaxValue = 30000,
+					IncValue = 1
+				};
+				delayTime.OnCurValueChanged += ParamChanged;
+			}
+			return delayTime;
+		}
+	}
+
+	public Enumeration IOEnableElectricalLevel
+	{
+		get
+		{
+			if (iOEnableElectricalLevel == null)
+			{
+				iOEnableElectricalLevel = new Enumeration
+				{
+					DisplayName = "RunParam_Active Level",
+					Description = "IO Actvie Level, Active-High or Active-Low",
+					AccessMode = "O",
+					CurValue = 2,
+					DefaultValue = 2
+				};
+				iOEnableElectricalLevel.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "Active High",
+						DisplayName = "Active High",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "Active Low",
+						DisplayName = "Active Low",
+						Value = 2
+					}
+				};
+				iOEnableElectricalLevel.OnCurValueChanged += ParamChanged;
+			}
+			return iOEnableElectricalLevel;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	private void CurPortChanged(object sender, EventArgs e)
+	{
+		if (CurPort.CurValueA > 0 && Parent is LightSourceDevice lightSourceDevice)
+		{
+			lightSourceDevice.IsNeedSetParam = false;
+			DurationTime.CurValueA = DurationTimes[CurPort.CurValueA - 1];
+			IOEnableElectricalLevel.CurValueA = ElectricalLevels[CurPort.CurValueA - 1];
+			lightSourceDevice.IsNeedSetParam = true;
+		}
+		OnPropertyChanged("IsShowPortParam");
+	}
+
+	private void ParamChanged(object sender, EventArgs e)
+	{
+		if (!(Parent is LightSourceDevice { IsNeedSetParam: not false } lightSourceDevice))
+		{
+			return;
+		}
+		if (sender == durationTime)
+		{
+			if (lightSourceDevice.LightType == 108)
+			{
+				for (int i = 0; i < DurationTimes.Length; i++)
+				{
+					DurationTimes[i] = durationTime.CurValueA;
+				}
+			}
+			else if (CurPort.CurValueA > 0)
+			{
+				DurationTimes[CurPort.CurValueA - 1] = durationTime.CurValueA;
+			}
+		}
+		if (sender == iOEnableElectricalLevel && CurPort.CurValueA > 0)
+		{
+			ElectricalLevels[CurPort.CurValueA - 1] = iOEnableElectricalLevel.CurValueA;
+		}
+		int num = -1;
+		num = LightSourceManager.Instance.SetData();
+		if (num != 0)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_InfoTips"), AppLocalizationService.GetLang("Lang_ParamSetFail"), MessageButtons.Normal, MessageIcons.Error);
+		}
+	}
+
+	public void HiddenPort(bool needHidden, int ioNum)
+	{
+		int num = ioNum + 1;
+		if (needHidden)
+		{
+			while (CurPort.EnumEntrysA.Count > num)
+			{
+				CurPort.EnumEntrysA.RemoveAt(CurPort.EnumEntrysA.Count - 1);
+			}
+			return;
+		}
+		int num2 = 1;
+		while (CurPort.EnumEntrysA.Count < num)
+		{
+			if (num2 >= CurPort.EnumEntrysA.Count)
+			{
+				EnumEntry item = new EnumEntry
+				{
+					Description = num2.ToString(),
+					DisplayName = num2.ToString(),
+					Value = num2
+				};
+				CurPort.EnumEntrysA.Add(item);
+			}
+			num2++;
+		}
+	}
+}

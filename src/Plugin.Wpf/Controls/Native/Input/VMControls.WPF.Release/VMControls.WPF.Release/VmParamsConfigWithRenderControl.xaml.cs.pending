@@ -1,0 +1,504 @@
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using VM.PlatformSDKCS;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmParamsConfigWithRenderControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmParamsConfigWithRenderControl
+/// </summary>
+public partial class VmParamsConfigWithRenderControl : VMWpfUserControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModule), typeof(VmParamsConfigWithRenderControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ImageSourceProperty = DependencyProperty.Register("ImageSource", typeof(IImageData), typeof(VmParamsConfigWithRenderControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfig", typeof(IParamsConfig), typeof(VmParamsConfigWithRenderControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ROIVisibleProperty = DependencyProperty.Register("ROIVisible", typeof(bool), typeof(VmParamsConfigWithRenderControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty CoordinateInfoVisibleProperty = DependencyProperty.Register("CoordinateInfoVisible", typeof(bool), typeof(VmParamsConfigWithRenderControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty MultiImageButtonVisibleProperty = DependencyProperty.Register("MultiImageButtonVisible", typeof(bool), typeof(VmParamsConfigWithRenderControl), new PropertyMetadata(false));
+
+	/// <summary>
+	/// 绑定模块
+	/// </summary>
+	public IVmModule ModuleSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 绑定图像数据
+	/// </summary>
+	public IImageData ImageSource
+	{
+		get
+		{
+			return (IImageData)GetValue(ImageSourceProperty);
+		}
+		set
+		{
+			SetValue(ImageSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 绑定模块参数（内部使用）
+	/// </summary>
+	public IParamsConfig ParamsConfig
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示ROI
+	/// </summary>
+	public bool ROIVisible
+	{
+		get
+		{
+			return (bool)GetValue(ROIVisibleProperty);
+		}
+		set
+		{
+			SetValue(ROIVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否显示坐标信息
+	/// </summary>
+	public bool CoordinateInfoVisible
+	{
+		get
+		{
+			return (bool)GetValue(CoordinateInfoVisibleProperty);
+		}
+		set
+		{
+			SetValue(CoordinateInfoVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 多画面切换按钮是否可见
+	/// </summary>
+	public bool MultiImageButtonVisible
+	{
+		get
+		{
+			return (bool)GetValue(MultiImageButtonVisibleProperty);
+		}
+		set
+		{
+			SetValue(MultiImageButtonVisibleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 鼠标左键点击位置像素坐标事件
+	/// </summary>
+	public event PixelPositionChanged OnMouseLeftButtonDownPixelChanged;
+
+	/// <summary>
+	/// 当前选中图像改变事件，双画面显示时Index表示画面序号，从左到右为0，1
+	/// </summary>
+	public event NameChangedEventHandler OnSelectedImageChanged;
+
+	public VmParamsConfigWithRenderControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+			prControl.OnSelectedImageChanged += RenderControl_OnSelectedImageChanged;
+			prControl.OnMouseLeftButtonDownPixelChanged += RenderControl_OnMouseLeftButtonDownPixelChanged;
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	private void RenderControl_OnMouseLeftButtonDownPixelChanged(int x, int y)
+	{
+		OnMouseLeftButtonDownPixelChanged?.Invoke(x, y);
+	}
+
+	/// <summary>
+	/// 刷新
+	/// </summary>
+	public void UpdateView()
+	{
+		prControl?.UpdateView();
+	}
+
+	/// <summary>
+	/// 绘制图形（立刻绘制）
+	/// 传入图形可使用VMControls.WPF中名称以Ex结尾的图形结构体
+	/// </summary>
+	public void DrawShape(object shape)
+	{
+		prControl?.DrawShapes(shape);
+	}
+
+	/// <summary>
+	/// 添加图形（在下次刷新渲染时自动绘制）
+	/// 传入图形可使用VMControls.WPF中名称以Ex结尾的图形结构体
+	/// </summary>
+	/// <param name="shape"></param>
+	public void AddShape(object shape)
+	{
+		prControl?.AddShapes(shape);
+	}
+
+	/// <summary>
+	/// 设置背景图
+	/// </summary>
+	public bool SetBackgroundImage(IVmIO io)
+	{
+		return prControl?.SetBackgroundImage(io) ?? false;
+	}
+
+	/// <summary>
+	/// 放大视图，双画面显示时可指定操作某个画面，默认为右侧输出画面，index从左到右为0，1
+	/// </summary>
+	public void EnlargeView(int index = 1)
+	{
+		prControl?.EnlargeView(index);
+	}
+
+	/// <summary>
+	/// 缩小视图，双画面显示时可指定操作某个画面，默认为右侧输出画面，index从左到右为0，1
+	/// </summary>
+	public void ShrinkView(int index = 1)
+	{
+		prControl?.ShrinkView(index);
+	}
+
+	/// <summary>
+	/// 还原视图，双画面显示时可指定操作某个画面，默认为右侧输出画面，index从左到右为0，1
+	/// </summary>
+	public void InitViewSize(int index = 1)
+	{
+		prControl?.InitViewSize(index);
+	}
+
+	/// <summary>
+	/// 清空渲染显示区域（包括图像和图形），双画面显示时可指定操作某个画面，默认为右侧输出画面，index从左到右为0，1
+	/// </summary>
+	public void ClearDisplayView(int index = 1)
+	{
+		prControl?.ClearDisplayView(index);
+	}
+
+	/// <summary>
+	/// 保存原图，双画面显示时可指定操作某个画面，默认为右侧输出画面，index从左到右为0，1
+	/// </summary>
+	public void SaveOriginalImage(string fileName, int index = 1)
+	{
+		prControl?.SaveOriginalImage(fileName, index);
+	}
+
+	/// <summary>
+	/// 保存原图，双画面显示时可指定操作某个画面，默认为右侧输出画面，index从左到右为0，1，jpgQuality范围[1,100]，数值越大质量越高，默认值95
+	/// </summary>
+	public void SaveOriginalImage(string fileName, int index, int jpgQuality)
+	{
+		prControl?.SaveOriginalImage(fileName, index, jpgQuality);
+	}
+
+	/// <summary>
+	/// 保存渲染图
+	/// </summary>
+	public void SaveRenderedImage(string fileName)
+	{
+		prControl?.SaveRenderedImage(fileName);
+	}
+
+	/// <summary>
+	/// 保存渲染图，jpgQuality范围[1,100]，数值越大质量越高，默认值95
+	/// </summary>
+	public void SaveRenderedImage(string fileName, int jpgQuality)
+	{
+		prControl?.SaveRenderedImage(fileName, jpgQuality);
+	}
+
+	/// <summary>
+	/// 设置控件背景
+	/// 参数为尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串
+	/// </summary>
+	/// <param name="value">尺寸小于100*100的图像绝对路径或#+16进制数表示的颜色字符串</param>
+	public void SetBackground(string value)
+	{
+		prControl?.SetBackground(value);
+	}
+
+	/// <summary>
+	/// 设置渲染间隔(ms)，用于减低渲染频率。设置后，执行结束触发渲染时先校验距离上一次渲染的时间是否已超过设置的间隔时间，已超过则正常渲染，未超过则跳过此次渲染
+	/// </summary>
+	/// <param name="millseconds"></param>
+	public void SetRenderInterval(int millseconds)
+	{
+		prControl?.SetRenderInterval(millseconds);
+	}
+
+	/// <summary>
+	/// 控制图层选择控件显示隐藏
+	/// </summary>
+	/// <param name="flag"></param>
+	public void ChangeImageComboBoxVisibility(bool flag)
+	{
+		prControl?.ChangeImageComboBoxVisibility(flag);
+	}
+
+	/// <summary>
+	/// 获取当前选中图像名称，双画面显示时可指定获取某个画面，默认为右侧输出画面，index从左到右为0，1
+	/// </summary>
+	public string GetSelectedImageDisplayName(int index = 1)
+	{
+		return prControl?.GetSelectedImageDisplayName(index);
+	}
+
+	private void RenderControl_OnSelectedImageChanged(object sender, NameChangedEventArgs args)
+	{
+		OnSelectedImageChanged?.Invoke(this, args);
+	}
+
+	/// <summary>
+	/// 设置渲染条件：当设置条件status和模块状态值一致时才刷新
+	/// </summary>
+	/// <param name="status"></param>
+	public void SetRenderCondition(RenderSatus status)
+	{
+		prControl?.SetModuleAndStatusForRender(null, status);
+	}
+
+	/// <summary>
+	/// 流程、Group运行参数页中的添加、删除、编辑按钮是否可见
+	/// </summary>
+	/// <param name="isEditable">是否可见 true:按钮可见,false:按钮不可见</param>
+	public void SetParamTabEditable(bool isEditable)
+	{
+		if (prControl != null)
+		{
+			prControl.IsParamsEditState = isEditable;
+		}
+	}
+
+	/// <summary>
+	/// 多画面切换按钮是否可见
+	/// </summary>
+	public void SetMultiImageButtonVisible(bool isVisible)
+	{
+		MultiImageButtonVisible = isVisible;
+	}
+
+	/// <summary>
+	/// 获取所有Tab名称
+	/// </summary>
+	public List<string> GetParamTabNames()
+	{
+		if (prControl != null)
+		{
+			return prControl.GetParamTabNames();
+		}
+		return new List<string>();
+	}
+
+	/// <summary>
+	/// Tab页是否可见，如果绑定同一个数据源，调用此接口会同步更新与tabName对应的参数配置tab页的显示或者隐藏
+	/// </summary>
+	/// <param name="tabName">tab页名称</param>
+	/// <param name="isVisible">是否可见</param>
+	public void SetParamTabVisible(string tabName, bool isVisible)
+	{
+		if (prControl != null)
+		{
+			prControl.SetParamTabVisible(tabName, isVisible);
+		}
+	}
+
+	/// <summary>
+	/// 工具栏是否可见
+	/// </summary>
+	/// <param name="isVisible">是否可见</param>
+	public void SetRenderToolbarVisible(bool isVisible)
+	{
+		if (prControl != null)
+		{
+			prControl.SetRenderToolbarVisible(isVisible);
+		}
+	}
+
+	/// <summary>
+	/// 获取可显示的图像名称列表
+	/// </summary>
+	public List<string> GetDisplayableImageNameList()
+	{
+		List<string> result = new List<string>();
+		if (prControl != null)
+		{
+			result = prControl.GetDisplayableImageNameList();
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 设置图像显示
+	/// </summary>
+	/// <param name="displayImageName">显示的图像名称</param>
+	public void SetSelectedImage(string displayImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.SetSelectedImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 当图像堆叠时，切换背景图像
+	/// </summary>
+	/// <param name="backgroundImageName">背景图像名称</param>
+	public void SwitchBackgroundImage(string backgroundImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.SwitchBackgroundImage(backgroundImageName);
+		}
+	}
+
+	/// <summary>
+	/// 设置堆叠显示的图像(单张)
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void AddStackImage(string displayImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.AddStackImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 移除堆叠显示的图像
+	/// </summary>
+	/// <param name="displayImageName">图像名称</param>
+	public void RemoveStackImage(string displayImageName)
+	{
+		if (prControl != null)
+		{
+			prControl.RemoveStackImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (prControl == null)
+		{
+			return 0L;
+		}
+		return prControl.GetBaseHandle();
+	}
+
+	/// <summary>
+	/// 加载独立Group方案（COM组件）
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportIndependentGroup(string path, string password)
+	{
+		try
+		{
+			if (prControl == null)
+			{
+				return IntPtr.Zero;
+			}
+			return prControl.ImportIndependentGroup(path, password);
+		}
+		catch (VmException ex)
+		{
+			MessageBox.Show(ex.errorMessage);
+			return IntPtr.Zero;
+		}
+	}
+
+	/// <summary>
+	/// 加载方案（COM组件）
+	/// </summary>
+	public IntPtr ImportSol(string path, string password)
+	{
+		try
+		{
+			if (prControl == null)
+			{
+				return IntPtr.Zero;
+			}
+			return prControl.ImportSol(path, password);
+		}
+		catch (VmException ex)
+		{
+			MessageBox.Show(ex.errorMessage);
+			return IntPtr.Zero;
+		}
+	}
+
+	/// <summary>
+	/// 根据模块ID绑定参数配置控件（COM组件）
+	/// </summary>
+	public void BindParamById(uint Id)
+	{
+		prControl?.BindParamById(Id);
+	}
+
+	/// <summary>
+	/// 添加图形供cpp接口调用（COM组件）
+	/// </summary>
+	/// <param name="shape"></param>
+	public void DrawCppShapes(object shape, bool isAddShape)
+	{
+		prControl?.DrawCppShapes(shape, isAddShape);
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		if (prControl != null)
+		{
+			prControl.OnSelectedImageChanged -= RenderControl_OnSelectedImageChanged;
+			ModuleSource = null;
+			prControl.ModuleSource = null;
+		}
+		Content = null;
+	}
+}

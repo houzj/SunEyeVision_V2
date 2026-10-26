@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.SpinArea" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" x:Name="UserControl" Width="9" Height="13" xmlns:imageview="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;assembly=SunEyeVision.Plugin.Wpf" Loaded="UserControl_Loaded">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid HorizontalAlignment="{Binding HorizontalAlignment, ElementName=UserControl}" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}">
+    <Canvas Name="view" HorizontalAlignment="Center" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}">
+      <Path Name="cview" StrokeThickness="1" Fill="#00FFFFFF" Stretch="Uniform" Height="{Binding Height, ElementName=view}" Width="{Binding Width, ElementName=view}" VerticalAlignment="{Binding VerticalAlignment, ElementName=UserControl}" MouseDown="view_MouseDown">
+        <Path.Data>
+          <GeometryGroup>
+            <EllipseGeometry RadiusX="4.5" RadiusY="4.5" Center="4.5,4.5" />
+            <LineGeometry StartPoint="4.5,9" EndPoint="4.5,13" />
+          </GeometryGroup>
+        </Path.Data>
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Path}">
+            <Setter Property="Stroke" Value="{DynamicResource ROIBaseColor}" />
+            <Style.Triggers>
+              <DataTrigger Value="true" Binding="{Binding IsPressed, ElementName=UserControl}">
+                <Setter Property="Stroke" Value="{DynamicResource ROIMouseOverColor}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Path>
+    </Canvas>
+  </Grid>
+  <UIElement.RenderTransform>
+    <RotateTransform x:Name="tlt" />
+  </UIElement.RenderTransform>
+</UserControl>

@@ -1,0 +1,339 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Threading;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.BaseInterface;
+using VMControls.Interface;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ComprehensiveConfigWithRenderControlBase.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ComprehensiveConfigWithRenderControlBase
+/// </summary>
+public partial class ComprehensiveConfigWithRenderControlBase : UserControl, IComponentConnector
+{
+	public static readonly DependencyProperty SolutionSourceProperty = DependencyProperty.Register("SolutionSource", typeof(IVmModule), typeof(ComprehensiveConfigWithRenderControlBase), new PropertyMetadata(null, OnSolutionSourceChanged));
+
+	public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register("ParamsConfigSource", typeof(IParamsConfig), typeof(ComprehensiveConfigWithRenderControlBase), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IImageDataProperty = DependencyProperty.Register("ImageDataSource", typeof(IImageData), typeof(ComprehensiveConfigWithRenderControlBase), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty RenderToolbarVisibleProperty = DependencyProperty.Register("RenderToolbarVisible", typeof(bool), typeof(ComprehensiveConfigWithRenderControlBase), new PropertyMetadata(true));
+
+	private IntPtr groupInfoPtr = IntPtr.Zero;
+
+	private RenderControlBase RenderControl;
+
+	private bool isInitialEnd = false;
+
+	/// <summary>
+	/// 数据源模块
+	/// </summary>
+	public IVmModule SolutionSource
+	{
+		get
+		{
+			return (IVmModule)GetValue(SolutionSourceProperty);
+		}
+		set
+		{
+			SetValue(SolutionSourceProperty, value);
+		}
+	}
+
+	public IParamsConfig ParamsConfigSource
+	{
+		get
+		{
+			return (IParamsConfig)GetValue(ParamsConfigProperty);
+		}
+		set
+		{
+			SetValue(ParamsConfigProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 图像源
+	/// </summary>
+	public IImageData ImageDataSource
+	{
+		get
+		{
+			return (IImageData)GetValue(IImageDataProperty);
+		}
+		set
+		{
+			SetValue(IImageDataProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 工具栏是否可见
+	/// </summary>
+	public bool RenderToolbarVisible
+	{
+		get
+		{
+			return (bool)GetValue(RenderToolbarVisibleProperty);
+		}
+		set
+		{
+			SetValue(RenderToolbarVisibleProperty, value);
+		}
+	}
+
+	public ComprehensiveConfigWithRenderControlBase()
+	{
+		InitializeComponent();
+		CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+		{
+		});
+	}
+
+	~ComprehensiveConfigWithRenderControlBase()
+	{
+		try
+		{
+			if (IntPtr.Zero != groupInfoPtr)
+			{
+				Marshal.FreeCoTaskMem(groupInfoPtr);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	private void Init()
+	{
+		ParamsConfig.ROIPartUI = RenderControl.ImageView;
+	}
+
+	private AlgorithmTabRoot GetAlgorithmTabRoot()
+	{
+		AlgorithmTabRoot result = null;
+		if (SolutionSource != null)
+		{
+			if (SolutionSource.Params is IData data)
+			{
+				if (data is ModuleParam param)
+				{
+					result = param.GetParamRoot();
+				}
+			}
+			else
+			{
+				result = new AlgorithmTabRoot(SolutionSource.Params);
+			}
+		}
+		return result;
+	}
+
+	private static void OnSolutionSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ComprehensiveConfigWithRenderControlBase ic = d as ComprehensiveConfigWithRenderControlBase;
+		if (ic == null)
+		{
+			return;
+		}
+		if (e.OldValue != null)
+		{
+			ic.DeInit();
+			ic.isInitialEnd = false;
+		}
+		ic.ParamsConfigSource = ic.SolutionSource?.Params;
+		AlgorithmTabRoot algorithmTabRoot = ic.GetAlgorithmTabRoot();
+		ic.Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (!ic.isInitialEnd)
+			{
+				RenderControlBase child = UIHelper.GetChild<RenderControlBase>(ic.ParamsConfig);
+				if (child != null)
+				{
+					ic.RenderControl = child;
+					ic.Init();
+					ic.isInitialEnd = true;
+				}
+			}
+		}), DispatcherPriority.Loaded);
+		if (!ic.isInitialEnd)
+		{
+		}
+	}
+
+	private void DeInit()
+	{
+		if (ParamsConfig.DataContext is AlgorithmTabRoot && ((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute)
+		{
+			((IVmSolution)VmSolution.Instance).IsContinuousSelfExecute = false;
+		}
+	}
+
+	/// <summary>
+	/// 获取基础句柄
+	/// </summary>
+	/// <returns></returns>
+	public long GetBaseHandle()
+	{
+		TempVmSolution.Init();
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	public List<string> GetParamTabNames()
+	{
+		List<string> result = new List<string>();
+		try
+		{
+			ISpecialModuleParamTabVisible specialModuleParamTabVisible = UIHelper.FindFirstChildByInterface<ISpecialModuleParamTabVisible>(this);
+			if (specialModuleParamTabVisible != null)
+			{
+				result = specialModuleParamTabVisible.GetParamTabNames();
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error(ex.Message + ex.StackTrace);
+			VmException ex2 = new VmException(-536870911);
+			throw ex2;
+		}
+		return result;
+	}
+
+	public void SetParamTabVisible(string tabName, bool isVisible)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			try
+			{
+				UIHelper.FindFirstChildByInterface<ISpecialModuleParamTabVisible>(this)?.SetParamTabVisible(tabName, isVisible);
+			}
+			catch (Exception ex)
+			{
+				LogHelper.Error(ex.Message + ex.StackTrace);
+				VmException ex2 = new VmException(-536870911);
+				throw ex2;
+			}
+		});
+	}
+
+	public void SetRenderToolbarVisible(bool isVisible)
+	{
+		RenderControl.SetRenderToolbarVisible(isVisible);
+	}
+
+	public List<string> GetDisplayableImageNameList()
+	{
+		if (RenderControl != null)
+		{
+			return RenderControl.GetDisplayableImageNameList();
+		}
+		return new List<string>();
+	}
+
+	public void SetSelectedImage(string displayImageName)
+	{
+		if (RenderControl != null)
+		{
+			RenderControl.SetSelectedImage(displayImageName);
+		}
+	}
+
+	public void SwitchBackgroundImage(string backgroundImageName)
+	{
+		if (RenderControl != null)
+		{
+			RenderControl.SwitchBackgroundImage(backgroundImageName);
+		}
+	}
+
+	public void AddStackImage(string displayImageName)
+	{
+		if (RenderControl != null)
+		{
+			RenderControl.AddStackImage(displayImageName);
+		}
+	}
+
+	public void RemoveStackImage(string displayImageName)
+	{
+		if (RenderControl != null)
+		{
+			RenderControl.RemoveStackImage(displayImageName);
+		}
+	}
+
+	/// <summary>
+	/// 绑定综合配置
+	/// </summary>
+	public void BindingComprehensiveConfig()
+	{
+		SolutionSource = VmSolution.Instance;
+	}
+
+	/// <summary>
+	/// 控制图层选择控件显示隐藏
+	/// </summary>
+	/// <param name="flag"></param>
+	public void ChangeImageComboBoxVisibility(bool flag)
+	{
+		RenderControl.ChangeImageComboBoxVisibility(flag);
+	}
+
+	/// <summary>
+	/// 获取当前选中图像名称
+	/// </summary>
+	public string GetSelectedImageDisplayName(int index = 1)
+	{
+		if (index == 0)
+		{
+			return RenderControl.ImageListDecorator?.SelectedInputImage?.DisplayName;
+		}
+		return RenderControl.ImageListDecorator?.SelectedImage?.DisplayName;
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			RenderControlBase child = UIHelper.GetChild<RenderControlBase>(ParamsConfig);
+			if (child != null)
+			{
+				RenderControl = child;
+				Init();
+				isInitialEnd = true;
+				if (SolutionSource != null)
+				{
+					OnSolutionSourceChanged(this, new DependencyPropertyChangedEventArgs(SolutionSourceProperty, null, SolutionSource));
+				}
+			}
+			else
+			{
+				Console.WriteLine("RenderControlBase named 'us' not found.");
+			}
+		}), DispatcherPriority.Loaded);
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

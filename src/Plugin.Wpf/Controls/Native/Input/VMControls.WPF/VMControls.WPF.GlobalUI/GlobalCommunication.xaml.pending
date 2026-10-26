@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VMControl:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI.GlobalCommunication" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:test="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:gw="clr-namespace:GateWayFramework;assembly=GateWayFrameworkMain" xmlns:VMControl="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:AppsxmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:PControl="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI" xmlns:localParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" x:Name="globalCommunication" CloseButtonVisibility="Collapsed" AllowsTransparency="False" FontSize="13" FontFamily="Microsoft YaHei" BorderThickness="1" ShowInTaskbar="False" Tag="CommSet" Height="680" Width="1130" Title="{Lang:LangResource Lang_CommSet}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/VM.Controls;component/Styles/BaseWindowStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <localUI:BoolToBackVisiableConverter x:Key="BoolBackToEnable" />
+      <Style x:Key="{x:Type PControl:HikTextBox}" TargetType="{x:Type PControl:HikTextBox}">
+        <Setter Property="Padding" Value="8,0" />
+      </Style>
+      <Style x:Key="leftText" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FrameworkElement.ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="Width" Value="{Binding CustomLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+      </Style>
+      <Style x:Key="normalText" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Width" Value="{Binding CustomLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+      </Style>
+      <Style x:Key="leftStack" TargetType="{x:Type StackPanel}">
+        <Setter Property="Width" Value="{Binding CustomParamsWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+        <Setter Property="Margin" Value="34,5,40,5" />
+        <Setter Property="StackPanel.Orientation" Value="Horizontal" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+      </Style>
+      <Style x:Key="importButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Margin" Value="5,2" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FrameworkElement.ToolTip" Value="{Binding Path=Tag, RelativeSource={RelativeSource Mode=Self}}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                  <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                  <Setter Property="Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                  <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                  <Setter Property="Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter Value="{DynamicResource BottomLineBtnEnableBG}" Property="Background" />
+                  <Setter Value="{DynamicResource BottomLineBtnEnableBB}" Property="BorderBrush" />
+                  <Setter Value="{DynamicResource btnEditTemplateEnableFG}" Property="Foreground" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <DataTemplate x:Key="EnumeraionComDevice_Sub">
+        <Border BorderThickness="1" BorderBrush="{DynamicResource ListViewComboBoxBordBrush}" CornerRadius="2">
+          <localParamTab:TreeViewCombobox Height="30" TextBlock.Foreground="{DynamicResource TextBox.Normal.Forground}" ToggleButtonStyle="{StaticResource ComboxStyleBtnA}" ItemsSource="{Binding Path=EnumEntrysA, Converter={x:Static localParserTab:EnumeraionComDeviceCvt.Cvt}, ConverterParameter=0}" ExternSelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+            <FrameworkElement.Resources>
+              <ResourceDictionary>
+                <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type localParserTab:EnumEntry}}" DataType="{x:Type localParserTab:EnumEntry}" ItemsSource="{Binding EnumEntrysA}">
+                  <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="14" Text="{Lang:ResourceBinding DisplayNameA}" ToolTip="{Binding Text, RelativeSource={RelativeSource Mode=Self}}" />
+                </HierarchicalDataTemplate>
+              </ResourceDictionary>
+            </FrameworkElement.Resources>
+            <localParamTab:TreeViewCombobox.ExternSelectedItemTemplate>
+              <DataTemplate>
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" FontSize="14" Text="{Lang:PathResourceBinding FullName}" />
+              </DataTemplate>
+            </localParamTab:TreeViewCombobox.ExternSelectedItemTemplate>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="OnTreeNodeSingleClick">
+                <PCommon:ParamsEventCommand Command="{Binding ClickCommand}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </localParamTab:TreeViewCombobox>
+        </Border>
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <UIElement.InputBindings>
+    <KeyBinding Gesture="Ctrl+L" Key="D" CommandParameter="LevelD" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
+    <KeyBinding Gesture="Ctrl+L" Key="I" CommandParameter="LevelI" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
+    <KeyBinding Gesture="Ctrl+L" Key="W" CommandParameter="LevelW" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
+    <KeyBinding Gesture="Ctrl+L" Key="E" CommandParameter="LevelE" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
+    <KeyBinding Gesture="Ctrl+L" Key="R" CommandParameter="LevelC" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
+    <KeyBinding Gesture="Ctrl+L" Key="O" CommandParameter="LevelO" Command="{Binding KeyDownCommand, ElementName=globalCommunication}" />
+  </UIElement.InputBindings>
+  <VMControl:BaseWindow.TitleBar>
+    <Border Margin="-1" Height="32" BorderThickness="0,0,0,0" BorderBrush="{DynamicResource Col_Theme}" Background="{DynamicResource Col_FrontendUI_Background}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" Margin="18,0,8,0" Foreground="{Color:ColorResourceBinding Col_SubForm_HeaderBrush_Foreground}" Text="{Binding Path=Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=VMControl:BaseWindow}}" />
+        <Button Grid.Column="1" Margin="0,0,8,0" ToolTip="{DynamicResource Lang_Help}" WindowChrome.IsHitTestVisibleInChrome="True" Command="{Binding ElementName=globalCommunication, Path=ParamsConfig.OpenHelpCommand}">
+          <ContentControl.Content>
+            <Image Name="img" Width="14" Height="14" Stretch="Uniform" Source="/Apps.Style;component/Resources/btn_help.png" />
+          </ContentControl.Content>
+          <Control.Template>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="border" Width="30" Height="26" Background="#00FFFFFF" CornerRadius="2">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="border" Value="{DynamicResource Col_Menubar_Shortcut_Selected_Background}" Property="Border.Background" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Control.Template>
+        </Button>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <Button Name="btnImport" Tag="{DynamicResource 导入}" Style="{StaticResource importButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=globalCommunication, Converter={StaticResource BoolBackToEnable}}" Click="btnImport_Click">
+            <ContentControl.Content>
+              <Image Source="pack://application:,,,/Apps.XmlUI;component/Resources/ic_导入_normal.png" />
+            </ContentControl.Content>
+          </Button>
+          <Button Name="btnExport" Tag="{DynamicResource 导出}" Style="{StaticResource importButtonStyle}" WindowChrome.IsHitTestVisibleInChrome="True" IsEnabled="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=globalCommunication, Converter={StaticResource BoolBackToEnable}}" Click="btnExport_Click">
+            <ContentControl.Content>
+              <Image Source="pack://application:,,,/Apps.XmlUI;component/Resources/ic_导出2_normal.png" />
+            </ContentControl.Content>
+          </Button>
+          <Button WindowChrome.IsHitTestVisibleInChrome="True" Style="{DynamicResource WinCloseBtnStyle}" Height="32" Width="32" Click="Close_OnClick" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </VMControl:BaseWindow.TitleBar>
+  <Grid Name="rootElement">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="290*" />
+      <ColumnDefinition Width="74*" />
+      <ColumnDefinition Width="187*" />
+      <ColumnDefinition Width="465*" />
+    </Grid.ColumnDefinitions>
+    <gw:MainArea Name="mainArea" ExternVisiable="True" ColorTheme="{DynamicResource Col_Theme}" LightColorTheme="{DynamicResource Col_Theme_Light}" Grid.ColumnSpan="4" IsRuning="{Binding Path=SolutionData.(VMInterface:IVMRun.IsRunning), ElementName=globalCommunication}">
+      <gw:MainArea.ExternContent>
+        <DataTemplate>
+          <ScrollViewer Style="{StaticResource RecScrollViewer}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Tag="1">
+            <StackPanel Orientation="Vertical" Margin="0,0,0,0">
+              <StackPanel Style="{StaticResource leftStack}">
+                <TextBlock Text="{DynamicResource Lang_SolLoad}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding LoadSolution, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Communication Device}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding SolCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_SolutionTimeOut}" Style="{StaticResource normalText}" ToolTip="{DynamicResource Set communicate time out}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Integer_Sub}" Width="233" Background="#00FFFFFF" Content="{Binding SolutionTimeout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Width="920" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <UIElement.Visibility>
+                  <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
+                    <Binding Path="LoadSolution.CurValueA" />
+                    <Binding Path="SolCommunicationModuleID" />
+                    <Binding Path="SolCommunicationModuleID.CurValueA" />
+                  </MultiBinding>
+                </UIElement.Visibility>
+                <TextBlock Text="{DynamicResource LabelValueType}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding SolValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <UIElement.Visibility>
+                  <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
+                    <Binding Path="LoadSolution.CurValueA" />
+                    <Binding Path="SolValueType.CurValueA" />
+                    <Binding Path="SolCommunicationModuleID" />
+                    <Binding Path="SolCommunicationModuleID.CurValueA" />
+                  </MultiBinding>
+                </UIElement.Visibility>
+                <TextBlock Text="{DynamicResource End Char}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsSolEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding SolEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Visibility="{Binding Path=IsSolEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding LoadSolution.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource TriggerString}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding Path=SolutionTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType=localUI:GlobalCommunication}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=SolCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}">
+                <TextBlock Text="{DynamicResource IMVSProcessControl}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding ProcessControl, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Communication Device}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding ProcCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <UIElement.Visibility>
+                  <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
+                    <Binding Path="ProcessControl.CurValueA" />
+                    <Binding Path="ProcCommunicationModuleID" />
+                    <Binding Path="ProcCommunicationModuleID.CurValueA" />
+                  </MultiBinding>
+                </UIElement.Visibility>
+                <TextBlock Text="{DynamicResource LabelValueType}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding PrcValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <UIElement.Visibility>
+                  <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
+                    <Binding Path="ProcessControl.CurValueA" />
+                    <Binding Path="PrcValueType.CurValueA" />
+                    <Binding Path="ProcCommunicationModuleID" />
+                    <Binding Path="ProcCommunicationModuleID.CurValueA" />
+                  </MultiBinding>
+                </UIElement.Visibility>
+                <TextBlock Text="{DynamicResource End Char}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsPrcEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding PrcEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Visibility="{Binding Path=IsPrcEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Split Symbol}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="100" Content="{Binding ProSeparator, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Free Trigger}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ProcessFreeTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=ProcCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Busy Trigger}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ProcessBusyTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=ProcCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+              </StackPanel>
+              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource TextNormal}" Width="Auto" Visibility="{Binding ProcessControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Content="{Binding SampleSeparatorTip, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              <StackPanel Style="{StaticResource leftStack}">
+                <TextBlock Text="{DynamicResource RunParam_Camera Control}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding CameraRespnseControl, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Communication Device}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource EnumeraionComDevice_Sub}" Width="233" Content="{Binding CamCommunicationModuleID, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <UIElement.Visibility>
+                  <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
+                    <Binding Path="CameraRespnseControl.CurValueA" />
+                    <Binding Path="CamCommunicationModuleID" />
+                    <Binding Path="CamCommunicationModuleID.CurValueA" />
+                  </MultiBinding>
+                </UIElement.Visibility>
+                <TextBlock Text="{DynamicResource LabelValueType}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="231" Content="{Binding CameraValueType, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <UIElement.Visibility>
+                  <MultiBinding Converter="{x:Static localUI:GlobalCommunicationValueTypeCvt.Cvt}">
+                    <Binding Path="CameraRespnseControl.CurValueA" />
+                    <Binding Path="CameraValueType.CurValueA" />
+                    <Binding Path="CamCommunicationModuleID" />
+                    <Binding Path="CamCommunicationModuleID.CurValueA" />
+                  </MultiBinding>
+                </UIElement.Visibility>
+                <TextBlock Text="{DynamicResource End Char}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" Margin="0,0, 40,0" ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding IsCameraEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="140" Content="{Binding CameraEndChar, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Visibility="{Binding Path=IsCameraEndChar.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Split Symbol}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Width="100" Content="{Binding CameraSeparator, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Connect Trigger}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding ConnectTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=CamCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+              </StackPanel>
+              <StackPanel Style="{StaticResource leftStack}" Width="920" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}">
+                <TextBlock Text="{DynamicResource RunParam_Disconnect Trigger}" Style="{StaticResource leftText}" />
+                <ContentControl Height="32" ContentTemplate="{StaticResource String_sub}" Width="233" Content="{Binding DisConnectTrigger, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0" Text="{Binding Path=CamCommunicationModuleID.Reserved, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localUI:GlobalCommunication}}" Foreground="{Color:ColorResourceBinding Col_Theme}" />
+              </StackPanel>
+              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource TextNormal}" Width="Auto" Visibility="{Binding CameraRespnseControl.CurValueA, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" Content="{Binding CameraSeparatorTip, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type VMControl:BaseWindow}}}" />
+            </StackPanel>
+          </ScrollViewer>
+        </DataTemplate>
+      </gw:MainArea.ExternContent>
+      <gw:MainArea.ExternHeaderTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <Image Stretch="None">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Image}">
+                  <Setter Property="Source" Value="/Apps.Style;component/Resources/ic_响应配置_normal.png" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=TabItem}}">
+                      <Setter Property="Source" Value="/Apps.Style;component/Resources/ic_响应配置_click.png" />
+                    </DataTrigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter Property="Source" Value="/Apps.Style;component/Resources/ic_响应配置_disable.png" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </Image>
+            <TextBlock Grid.Row="1" Text="{DynamicResource Lang_ResponseConfig}" FontSize="16px" FontFamily="Microsoft YaHei UI" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type TextBlock}">
+                  <Setter Property="Foreground" Value="#FF000000" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=TabItem}}">
+                      <Setter Property="Foreground" Value="{DynamicResource Col_Theme}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </TextBlock>
+          </Grid>
+        </DataTemplate>
+      </gw:MainArea.ExternHeaderTemplate>
+      <!--Unknown connection ID: 7-->
+    </gw:MainArea>
+  </Grid>
+</VMControl:BaseWindow>

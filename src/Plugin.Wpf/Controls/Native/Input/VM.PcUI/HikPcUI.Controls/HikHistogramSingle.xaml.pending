@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.HikHistogramSingle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls" x:Name="userControl" Background="#00FFFFFF" Margin="0,0,0,0" MouseLeftButtonUp="userControl_MouseLeftButtonUp" MouseMove="userControl_MouseMove">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto" />
+      <RowDefinition Height="auto" />
+    </Grid.RowDefinitions>
+    <Grid ZIndex="1">
+      <Border BorderBrush="#FF262829" BorderThickness="2" Height="{Binding OuterHeight, ElementName=userControl}">
+        <Viewbox Name="viewbox" Stretch="None" SizeChanged="Viewbox_SizeChanged">
+          <Canvas Name="view" Width="103" SnapsToDevicePixels="True" UseLayoutRounding="False" Height="{Binding InnerHeight, ElementName=userControl}">
+            <Path Name="histogramData" Stretch="None" Fill="#67696D">
+              <Path.Data>
+                <GeometryGroup>
+                  <PathGeometry>
+                    <PathFigure x:Name="pathFigure" IsClosed="True">
+                      <PolyLineSegment x:Name="polyLine" />
+                      <LineSegment Point="103,0" />
+                      <LineSegment Point="0,0" />
+                    </PathFigure>
+                  </PathGeometry>
+                </GeometryGroup>
+              </Path.Data>
+            </Path>
+            <Path Name="PointLine" Visibility="Collapsed" StrokeThickness="2" Stroke="#0BA35A" Stretch="None">
+              <Path.Data>
+                <LineGeometry x:Name="PathLine" StartPoint="0,0" EndPoint="0,78" />
+              </Path.Data>
+            </Path>
+            <Path Name="PointCirle" Fill="#FFD201" Visibility="Collapsed">
+              <Path.Data>
+                <EllipseGeometry x:Name="PathCirle" RadiusX="4" RadiusY="4" />
+              </Path.Data>
+            </Path>
+            <TextBlock Name="PointLable" Visibility="Collapsed" Foreground="#E2E4E6" FontSize="15" Padding="6" TextOptions.TextFormattingMode="Ideal" SizeChanged="PointLable_SizeChanged">
+              <FrameworkElement.LayoutTransform>
+                <ScaleTransform ScaleY="-1" />
+              </FrameworkElement.LayoutTransform>
+              <UIElement.Effect>
+                <DropShadowEffect Color="Black" ShadowDepth="3" BlurRadius="2" />
+              </UIElement.Effect>
+              <TextBlock.Background>
+                <SolidColorBrush Color="DarkGray" Opacity="0.5" />
+              </TextBlock.Background>
+            </TextBlock>
+            <localcontrol:SquareArea x:Name="move" Y="78" X="0" BorderBrush="#0BA35A" />
+            <FrameworkElement.LayoutTransform>
+              <TransformGroup>
+                <ScaleTransform ScaleY="-1" />
+              </TransformGroup>
+            </FrameworkElement.LayoutTransform>
+          </Canvas>
+        </Viewbox>
+      </Border>
+      <Panel.Background>
+        <ImageBrush ImageSource="/VM.PcUI;component/Resources/GridBrushImg.png" Stretch="None" TileMode="Tile" ViewportUnits="Absolute">
+          <TileBrush.Viewport>
+            <Rect X="0" Y="0" Width="13" Height="13" />
+          </TileBrush.Viewport>
+        </ImageBrush>
+      </Panel.Background>
+    </Grid>
+    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Microsoft YaHei" FontSize="12" Foreground="#4D4D4D" Text="{Binding TitleText, ElementName=userControl}" />
+  </Grid>
+</UserControl>

@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Forms.Integration;
+using Apps.Localization;
+using Hik.Util;
+using UIVersionControlManager;
+using VM.Controls;
+using VM.Core;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 综合配置管理类
+/// </summary>
+public class ComprehensiveConfigManager
+{
+	/// <summary>
+	/// 显示综合配置窗口
+	/// </summary>
+	public static void ShowWindow()
+	{
+		if (UIVersionControlManagerCS.IsDongleLowerThanConfig(UIVersionControlManagerCS.ProLevel))
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_InsufficientDonglePermissions"));
+			return;
+		}
+		TabWinBase solutionTabWin = GetSolutionTabWin();
+		if (solutionTabWin != null)
+		{
+			solutionTabWin.ParamsConfig = VmSolution.Instance.Params;
+			solutionTabWin.ShowInTaskbar = true;
+			ElementHost.EnableModelessKeyboardInterop(solutionTabWin);
+			solutionTabWin.ShowDialog();
+		}
+	}
+
+	private static TabWinBase GetSolutionTabWin()
+	{
+		string moduleName = VmSolution.Instance.StrModuleName;
+		VmModuleSet.LoadModuleDLL(moduleName);
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control"));
+		if (assembly != null)
+		{
+			List<Type> list = (from p in assembly.GetTypes()
+				where typeof(TabWinBase).IsAssignableFrom(p)
+				select p).ToList();
+			if (list.Count > 0)
+			{
+				return ActivatorWrap.CreateInstance(list[0]) as TabWinBase;
+			}
+		}
+		return null;
+	}
+}

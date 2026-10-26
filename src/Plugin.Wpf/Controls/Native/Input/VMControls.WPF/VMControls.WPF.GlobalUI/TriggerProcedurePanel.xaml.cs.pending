@@ -1,0 +1,356 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using VM.Controls;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// TriggerProcedurePanel.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// TriggerProcedurePanel
+/// </summary>
+public partial class TriggerProcedurePanel : UserControl, IComponentConnector, IStyleConnector
+{
+	private object _lock = new object();
+
+	private bool init = false;
+
+	private bool changeByget = false;
+
+	private int CurDeviceIndex = -1;
+
+	private int CurDeviceIONum = 0;
+
+	public static readonly DependencyProperty ParentNodeProperty = DependencyProperty.Register("ParentNode", typeof(object), typeof(TriggerProcedurePanel), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register("Items", typeof(ObservableCollection<TriggerProcessItem>), typeof(TriggerProcedurePanel), new PropertyMetadata((object)null));
+
+	/// <summary>
+	/// 父节点
+	/// </summary>
+	public object ParentNode
+	{
+		get
+		{
+			return GetValue(ParentNodeProperty);
+		}
+		set
+		{
+			SetValue(ParentNodeProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 触发流程集合
+	/// </summary>
+	public ObservableCollection<TriggerProcessItem> Items
+	{
+		get
+		{
+			return (ObservableCollection<TriggerProcessItem>)GetValue(ItemsProperty);
+		}
+		set
+		{
+			SetValue(ItemsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 最大触发流程数
+	/// </summary>
+	public int MaxTriggerCount => 16;
+
+	public TriggerProcedurePanel()
+	{
+		InitializeComponent();
+		Items = new ObservableCollection<TriggerProcessItem>();
+		WeakEventManager<ObservableCollection<TriggerProcessItem>, NotifyCollectionChangedEventArgs>.AddHandler(Items, "CollectionChanged", OnCollectionChanged);
+		Loaded += (object s, RoutedEventArgs e) =>
+		{
+			if (!init)
+			{
+				if (DataContext is LightSourceDevice lightSourceDevice)
+				{
+					CurDeviceIndex = lightSourceDevice.IndexA;
+					CurDeviceIONum = lightSourceDevice.TriggerProcedure_IO_Number;
+				}
+				GetProcessList();
+				init = true;
+			}
+		};
+	}
+
+	/// <summary>
+	/// 添加触发流程
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void AddProcessItem_OnClick(object sender, RoutedEventArgs e)
+	{
+		int count = Items.Count;
+		if (count >= CurDeviceIONum)
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("最多添加") + " : " + CurDeviceIONum, MessageButtons.Normal, MessageIcons.Warning);
+			return;
+		}
+		List<int> usedIONum = Items.Select((TriggerProcessItem p) => p.InputIONum)?.Where((int q) => q > 0 && q <= CurDeviceIONum)?.ToList() ?? new List<int>();
+		AddNewItem(new TriggerProcessItem
+		{
+			ioTotalCount = CurDeviceIONum,
+			usedIONum = usedIONum
+		});
+	}
+
+	/// <summary>
+	/// 删除触发流程
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Delete_OnHandler(object sender, RoutedEventArgs e)
+	{
+		if (!(sender is Button { DataContext: TriggerProcessItem dataContext }))
+		{
+			return;
+		}
+		WeakEventManager<TriggerProcessItem, PropertyChangedEventArgs>.RemoveHandler(dataContext, "PropertyChanged", ValueChanged);
+		if (!Items.Contains(dataContext))
+		{
+			return;
+		}
+		Items.Remove(dataContext);
+		List<TriggerProcessItem> list = new List<TriggerProcessItem>();
+		list = Items.ToList();
+		List<int> usedIONum = list.Select((TriggerProcessItem p) => p.InputIONum)?.Where((int q) => q > 0 && q <= CurDeviceIONum)?.ToList() ?? new List<int>();
+		foreach (TriggerProcessItem item in list)
+		{
+			item.usedIONum = usedIONum;
+			item.needUpdateInputIOList = true;
+			item.UpdateInputIOList(CurDeviceIONum);
+			item.OnPropertyChanged("InputIOList");
+		}
+	}
+
+	/// <summary>
+	/// 值变化事件
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void ValueChanged(object sender, PropertyChangedEventArgs e)
+	{
+		switch (e.PropertyName)
+		{
+		case "TriggerProcessID":
+		case "InputIONum":
+		case "TriggerSignal":
+			SetTriggerProcess(sender as TriggerProcessItem, e.PropertyName);
+			break;
+		}
+	}
+
+	/// <summary>
+	/// 集合变化事件
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action != NotifyCollectionChangedAction.Reset)
+		{
+			for (int i = 0; i < Items.Count; i++)
+			{
+				Items[i].Index = i + 1;
+			}
+			SetProcessList();
+		}
+	}
+
+	/// <summary>
+	/// 获取焦点
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Source_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		controlItem.Focus();
+	}
+
+	/// <summary>
+	/// 添加触发流程
+	/// </summary>
+	/// <param name="item"></param>
+	private void AddNewItem(TriggerProcessItem item)
+	{
+		Items.Add(item);
+		WeakEventManager<TriggerProcessItem, PropertyChangedEventArgs>.AddHandler(item, "PropertyChanged", ValueChanged);
+	}
+
+	/// <summary>
+	/// 设置触发流程
+	/// </summary>
+	private void SetTriggerProcess(TriggerProcessItem item, string propertyName)
+	{
+		if (changeByget || item == null)
+		{
+			return;
+		}
+		string text = CurDeviceIndex + "-";
+		text += item.TriggerProcessData;
+		lock (_lock)
+		{
+			try
+			{
+				ServerSDKManager.serverSDKManager.mModuleManager.SetParamValue((uint)LightSourceManager.Instance.ModuleID, "TriggerProcess", text, bThrowException: true);
+				if (!(propertyName == "InputIONum"))
+				{
+					return;
+				}
+				List<TriggerProcessItem> list = new List<TriggerProcessItem>();
+				list = Items.ToList();
+				List<int> usedIONum = list.Select((TriggerProcessItem p) => p.InputIONum)?.Where((int q) => q > 0 && q <= CurDeviceIONum)?.ToList() ?? new List<int>();
+				foreach (TriggerProcessItem item2 in list)
+				{
+					if (item2 != item)
+					{
+						item2.usedIONum = usedIONum;
+						item2.needUpdateInputIOList = true;
+						item2.UpdateInputIOList(CurDeviceIONum);
+						item2.OnPropertyChanged("InputIOList");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				int result = 0;
+				string text2 = (int.TryParse(ex.Message, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out result) ? ErrorCodeInfo.GetErrorInfo(result) : ex.Message);
+				LogHelper.moduleLog.Error("SetTriggerProcess error: " + text2);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 设置触发流程列表
+	/// </summary>
+	public void SetProcessList()
+	{
+		if (changeByget)
+		{
+			return;
+		}
+		string text = CurDeviceIndex + "-";
+		for (int i = 0; i < Items.Count; i++)
+		{
+			if (i > 0)
+			{
+				text += ",";
+			}
+			text += Items[i].TriggerProcessData;
+		}
+		lock (_lock)
+		{
+			try
+			{
+				ServerSDKManager.serverSDKManager.mModuleManager.SetParamValue((uint)LightSourceManager.Instance.ModuleID, "TriggerProcessList", text, bThrowException: true);
+			}
+			catch
+			{
+			}
+		}
+	}
+
+	/// <summary>
+	/// 获取触发流程列表
+	/// </summary>
+	public void GetProcessList()
+	{
+		lock (_lock)
+		{
+			changeByget = true;
+			try
+			{
+				string strValue = "";
+				ServerSDKManager.serverSDKManager.mModuleManager.GetParamValue((uint)LightSourceManager.Instance.ModuleID, "AllProcessList", ref strValue, bThrowException: true);
+				string[] array = strValue.Split(';');
+				List<TriggerProcessItem> list = new List<TriggerProcessItem>();
+				for (int i = 0; i < array.Length; i++)
+				{
+					string[] array2 = array[i].Split('-');
+					if (array2.Length != 2 || !(array2[0] == CurDeviceIndex.ToString()))
+					{
+						continue;
+					}
+					string[] array3 = array2[1].Split(',');
+					for (int j = 0; j < array3.Length; j++)
+					{
+						string[] array4 = array3[j].Split('#');
+						if (array4.Length == 4)
+						{
+							TriggerProcessItem item = new TriggerProcessItem
+							{
+								ioTotalCount = CurDeviceIONum,
+								InputIONum = int.Parse(array4[1]),
+								TriggerSignal = int.Parse(array4[2]),
+								TriggerProcessID = int.Parse(array4[3])
+							};
+							list.Add(item);
+						}
+					}
+					break;
+				}
+				if (list.Count > 0)
+				{
+					List<int> usedIONum = list.Select((TriggerProcessItem p) => p.InputIONum)?.Where((int q) => q > 0 && q <= CurDeviceIONum)?.ToList() ?? new List<int>();
+					foreach (TriggerProcessItem item2 in list)
+					{
+						item2.usedIONum = usedIONum;
+						AddNewItem(item2);
+					}
+				}
+			}
+			catch
+			{
+			}
+			changeByget = false;
+		}
+	}
+
+	internal void ChangeIOTotalNumber(int num)
+	{
+		if (CurDeviceIONum == num)
+		{
+			return;
+		}
+		int curDeviceIONum = CurDeviceIONum;
+		CurDeviceIONum = num;
+		List<int> usedIONum = Items.Select((TriggerProcessItem p) => p.InputIONum)?.Where((int q) => q > 0 && q <= CurDeviceIONum)?.ToList() ?? new List<int>();
+		List<TriggerProcessItem> list = new List<TriggerProcessItem>();
+		list = Items.ToList();
+		foreach (TriggerProcessItem item in list)
+		{
+			if (item.Index > CurDeviceIONum)
+			{
+				Items.Remove(item);
+				WeakEventManager<TriggerProcessItem, PropertyChangedEventArgs>.RemoveHandler(item, "PropertyChanged", ValueChanged);
+				continue;
+			}
+			item.usedIONum = usedIONum;
+			item.ioTotalCount = CurDeviceIONum;
+			item.needUpdateInputIOList = true;
+			item.UpdateInputIOList(curDeviceIONum);
+			item.OnPropertyChanged("InputIOList");
+		}
+	}
+}

@@ -1,0 +1,277 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.ColorFun;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.UIHelper.Service;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// Connector.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// Connector
+/// </summary>
+public partial class Connector : Control, IComponentConnector
+{
+	/// <summary>
+	/// 自定义形状路径
+	/// </summary>
+	private PathGeometry pathGeometry = null;
+
+	/// <summary>
+	/// 绘笔
+	/// </summary>
+	private Pen drawingPen = null;
+
+	public static readonly DependencyProperty IsHitedProperty = DependencyProperty.Register("IsHited", typeof(bool), typeof(Connector), new PropertyMetadata(false));
+
+	private AdornerPanel adornerPanel;
+
+	private PathFigure figure;
+
+	private UIElement context;
+
+	private DiagramItem oldItem;
+
+	private static DiagramItem DragStartItem;
+
+	private bool IsMouseDown;
+
+	private static Connector oldMinConnector;
+
+	/// <summary>
+	/// 连接方位
+	/// </summary>
+	public ConnectorOrientation Orientation { get; set; }
+
+	/// <summary>
+	/// 被击中
+	/// </summary>
+	public bool IsHited
+	{
+		get
+		{
+			return (bool)GetValue(IsHitedProperty);
+		}
+		set
+		{
+			SetValue(IsHitedProperty, value);
+		}
+	}
+
+	public int Index { get; internal set; }
+
+	public Connector()
+	{
+		InitializeComponent();
+		drawingPen = new Pen(new SolidColorBrush(Color.FromRgb(byte.MaxValue, 167, 15)), 2.0);
+		drawingPen.LineJoin = PenLineJoin.Round;
+		drawingPen.DashStyle = new DashStyle(new double[2] { 5.0, 2.5 }, 0.0);
+	}
+
+	protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+	{
+		DragStartItem = this.GetParent<DiagramItem>();
+		IsMouseDown = true;
+		PreviewMouseMove += ToolItemGrid_PreviewMouseMove;
+		PreviewMouseLeftButtonUp += ToolItemGrid_PreviewMouseUp;
+		e.Handled = true;
+	}
+
+	private void ToolItemGrid_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+	{
+		try
+		{
+			PreviewMouseMove -= ToolItemGrid_PreviewMouseMove;
+			PreviewMouseLeftButtonUp -= ToolItemGrid_PreviewMouseUp;
+			if (context != null)
+			{
+				context.PreviewMouseLeftButtonUp -= ToolItemGrid_PreviewMouseUp;
+				context.PreviewMouseMove -= AttachedDiagramItem_PreviewMouseMove;
+				context.ReleaseMouseCapture();
+				(context as IExtensionProvidePanel)?.AdornerLayer?.Children?.Remove(adornerPanel);
+			}
+			if (oldItem != null && e != null)
+			{
+				int nearestConnectorIndex = GetNearestConnectorIndex(e.GetPosition(oldItem));
+				DragStartItem?.Connect(oldItem, Index, nearestConnectorIndex);
+			}
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Info(ex.Message + ex.StackTrace);
+		}
+		finally
+		{
+			adornerPanel = null;
+			figure = null;
+			context = null;
+			oldItem = null;
+			DragStartItem = null;
+			if (IsMouseDown)
+			{
+				IsMouseDown = false;
+			}
+		}
+	}
+
+	private int GetNearestConnectorIndex(Point Connectorhit)
+	{
+		List<Point> allConnectorPosition = oldItem.GetAllConnectorPosition();
+		double num = allConnectorPosition.Min((Point p) => (p - Connectorhit).Length);
+		for (int num2 = 0; num2 < allConnectorPosition.Count; num2++)
+		{
+			if ((allConnectorPosition[num2] - Connectorhit).Length == num)
+			{
+				return num2;
+			}
+		}
+		return 0;
+	}
+
+	private void ToolItemGrid_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		PreviewMouseMove -= ToolItemGrid_PreviewMouseMove;
+		if (IsMouseDown)
+		{
+			if (e.LeftButton != MouseButtonState.Pressed)
+			{
+				ToolItemGrid_PreviewMouseUp(sender, null);
+				return;
+			}
+			context = DragStartItem.ExtensionDecorator.Services.GetService<IExtensionProvidePanel>() as UIElement;
+			context.CaptureMouse();
+			context.PreviewMouseMove += AttachedDiagramItem_PreviewMouseMove;
+			context.PreviewMouseLeftButtonUp += ToolItemGrid_PreviewMouseUp;
+			adornerPanel = new AdornerPanelAttachToWorkArea();
+			adornerPanel.SetAdornedElement(DragStartItem, null);
+			ZoomArea parent = DragStartItem.GetParent<ZoomArea>();
+			adornerPanel.WorkAreaElement = parent;
+			SolidColorBrush stroke = ((ResourceDictionary)(object)ColorThemesResourceDictionary.GetInstance())[(object)"Col_EditProcess_Connecting_Ligature"] as SolidColorBrush;
+			Path path = new Path
+			{
+				StrokeThickness = 2.0,
+				Stroke = stroke,
+				StrokeDashArray = new DoubleCollection { 5.0, 2.5 },
+				StrokeLineJoin = PenLineJoin.Round
+			};
+			PathGeometry pathGeometry = new PathGeometry();
+			figure = new PathFigure();
+			pathGeometry.Figures.Add(figure);
+			path.Data = pathGeometry;
+			path.IsHitTestVisible = false;
+			adornerPanel.Children.Add(path);
+			(context as IExtensionProvidePanel).AdornerLayer.Children.Add(adornerPanel);
+		}
+	}
+
+	private void AttachedDiagramItem_PreviewMouseMove(object sender, MouseEventArgs e)
+	{
+		figure.Segments.Clear();
+		List<Point> connectionLine = PathFinder.GetConnectionLine(DragStartItem, e.GetPosition(DragStartItem.GetParent<ItemsPage>()), Index);
+		ItemsPage page = DragStartItem.GetParent<ItemsPage>();
+		ZoomArea view = DragStartItem.GetParent<ZoomArea>();
+		connectionLine = connectionLine.Select((Point p) => page.TranslatePoint(p, view)).ToList();
+		figure.StartPoint = connectionLine[0];
+		figure.Segments.Add(new PolyLineSegment(connectionLine.Skip(1), isStroked: true));
+		HitTesting(e);
+		SetNearestConnector(oldItem);
+	}
+
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		if (e.Property == UIElement.IsMouseOverProperty)
+		{
+			bool isHited = (bool)e.NewValue;
+			IsHited = isHited;
+		}
+	}
+
+	/// <summary>
+	/// 设置item最近的Connector为击中
+	/// </summary>
+	private void SetNearestConnector(DiagramItem diagramItem)
+	{
+		if (diagramItem != null && diagramItem != DragStartItem)
+		{
+			List<Connector> allConnectors = diagramItem.GetAllConnectors();
+			if (allConnectors.Count <= 0)
+			{
+				return;
+			}
+			Point position = Mouse.GetPosition(diagramItem);
+			double num = double.MaxValue;
+			Connector connector = null;
+			for (int i = 0; i < allConnectors.Count; i++)
+			{
+				Point point = allConnectors[i].TranslatePoint(new Point(0.0, allConnectors[i].Height / 2.0), diagramItem);
+				double num2 = Math.Abs(point.X - position.X);
+				double num3 = Math.Abs(point.Y - position.Y);
+				double num4 = num2 * num2 + num3 * num3;
+				if (num4 < num)
+				{
+					num = num4;
+					connector = allConnectors[i];
+				}
+			}
+			ResetOldMinConnector();
+			oldMinConnector = connector;
+			oldMinConnector.IsHited = true;
+		}
+		else
+		{
+			ResetOldMinConnector();
+		}
+	}
+
+	private void ResetOldMinConnector()
+	{
+		if (oldMinConnector != null)
+		{
+			oldMinConnector.IsHited = false;
+			oldMinConnector = null;
+		}
+	}
+
+	private void HitTesting(MouseEventArgs e)
+	{
+		DiagramItem element = null;
+		VisualTreeHelper.HitTest(context, (DependencyObject potentialHitTestTarget) =>
+		{
+			if (potentialHitTestTarget is AdornerLayer)
+			{
+				return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+			}
+			if (potentialHitTestTarget is DiagramItem diagramItem)
+			{
+				element = diagramItem;
+				return HitTestFilterBehavior.Continue;
+			}
+			return HitTestFilterBehavior.Continue;
+		}, (HitTestResult result) => HitTestResultBehavior.Stop, new PointHitTestParameters(e.GetPosition(context)));
+		if (element != null && element != DragStartItem)
+		{
+			if (oldItem != element)
+			{
+				oldItem?.SetConnectorDisplay(v: false);
+				element.SetConnectorDisplay(v: true);
+				oldItem = element;
+			}
+		}
+		else
+		{
+			oldItem?.SetConnectorDisplay(v: false);
+			oldItem = null;
+		}
+	}
+}

@@ -1,0 +1,867 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Apps.UIHelper.Extern;
+using Mvvm.Commands;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// Connection.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// Connection
+/// </summary>
+public partial class Connection : Shape, INotifyPropertyChanged, IComponentConnector
+{
+	private PathGeometry geometry = new PathGeometry();
+
+	private PathFigure figureOfPolyline = new PathFigure();
+
+	private PathFigure figureOfArrow = new PathFigure();
+
+	private PolyLineSegment polyLineSegment = new PolyLineSegment();
+
+	private PolyLineSegment arrowSegment = new PolyLineSegment();
+
+	public static readonly DependencyProperty SourceIndexProperty;
+
+	public static readonly DependencyProperty TargetIndexProperty;
+
+	public static readonly DependencyProperty SourceItemProperty;
+
+	public static readonly DependencyProperty TargetItemProperty;
+
+	public static readonly DependencyProperty SourceActualWidthProperty;
+
+	public static readonly DependencyProperty TargetActualWidthProperty;
+
+	public static readonly DependencyProperty StartPositionProperty;
+
+	public static readonly DependencyProperty EndPositionProperty;
+
+	public static readonly DependencyProperty PathPointsProperty;
+
+	public static readonly DependencyProperty IsDragOverProperty;
+
+	private bool isInited = false;
+
+	private ObservableCollection<HoverPotData> midPoints = new ObservableCollection<HoverPotData>();
+
+	private HoverPotDelegate hoverPotDelegate = null;
+
+	private int moveStartPointIndex;
+
+	private bool OnLineMove;
+
+	public int SourceIndex
+	{
+		get
+		{
+			return (int)GetValue(SourceIndexProperty);
+		}
+		set
+		{
+			SetValue(SourceIndexProperty, value);
+		}
+	}
+
+	public int TargetIndex
+	{
+		get
+		{
+			return (int)GetValue(TargetIndexProperty);
+		}
+		set
+		{
+			SetValue(TargetIndexProperty, value);
+		}
+	}
+
+	public DiagramItem SourceItem
+	{
+		get
+		{
+			return (DiagramItem)GetValue(SourceItemProperty);
+		}
+		set
+		{
+			SetValue(SourceItemProperty, value);
+		}
+	}
+
+	public DiagramItem TargetItem
+	{
+		get
+		{
+			return (DiagramItem)GetValue(TargetItemProperty);
+		}
+		set
+		{
+			SetValue(TargetItemProperty, value);
+		}
+	}
+
+	public double SourceActualWidth
+	{
+		get
+		{
+			return (double)GetValue(SourceActualWidthProperty);
+		}
+		set
+		{
+			SetValue(SourceActualWidthProperty, value);
+		}
+	}
+
+	public double TargetActualWidth
+	{
+		get
+		{
+			return (double)GetValue(TargetActualWidthProperty);
+		}
+		set
+		{
+			SetValue(TargetActualWidthProperty, value);
+		}
+	}
+
+	public Point StartPosition
+	{
+		get
+		{
+			return (Point)GetValue(StartPositionProperty);
+		}
+		set
+		{
+			SetValue(StartPositionProperty, value);
+		}
+	}
+
+	public Point EndPosition
+	{
+		get
+		{
+			return (Point)GetValue(EndPositionProperty);
+		}
+		set
+		{
+			SetValue(EndPositionProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 自定义连线
+	/// </summary>
+	public IList<Point> PathPoints
+	{
+		get
+		{
+			return (IList<Point>)GetValue(PathPointsProperty);
+		}
+		set
+		{
+			SetValue(PathPointsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否拖拽
+	/// </summary>
+	public bool IsDragOver
+	{
+		get
+		{
+			return (bool)GetValue(IsDragOverProperty);
+		}
+		set
+		{
+			SetValue(IsDragOverProperty, value);
+		}
+	}
+
+	public DiagramPage Page { get; set; }
+
+	public ObservableCollection<HoverPotData> MidPoints
+	{
+		get
+		{
+			return midPoints;
+		}
+		set
+		{
+			if (midPoints != value)
+			{
+				midPoints = value;
+				OnPropertyChanged("MidPoints");
+			}
+		}
+	}
+
+	protected override Geometry DefiningGeometry => geometry;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public event ToolItemGrid.GetToolItemBackgroudData OnInsertItem;
+
+	public void OnPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	private static void OnItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		Connection connection = (Connection)d;
+		if (connection.SourceItem != null && connection.TargetItem != null)
+		{
+			connection.SetBinding(StartPositionProperty, new Binding("Position")
+			{
+				Source = connection.SourceItem,
+				Mode = BindingMode.OneWay
+			});
+			connection.SetBinding(EndPositionProperty, new Binding("Position")
+			{
+				Source = connection.TargetItem,
+				Mode = BindingMode.OneWay
+			});
+			connection.SetBinding(SourceActualWidthProperty, new Binding("ActualWidth")
+			{
+				Source = connection.SourceItem,
+				Mode = BindingMode.OneWay
+			});
+			connection.SetBinding(TargetActualWidthProperty, new Binding("ActualWidth")
+			{
+				Source = connection.TargetItem,
+				Mode = BindingMode.OneWay
+			});
+		}
+	}
+
+	private static void OnPositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		Connection connection = (Connection)d;
+		if (connection.isInited && (e.Property == StartPositionProperty || e.Property == EndPositionProperty || e.Property == SourceIndexProperty || e.Property == TargetIndexProperty))
+		{
+			connection.PathPoints = null;
+		}
+		if (connection.IsFocused && (e.Property == SourceIndexProperty || e.Property == TargetIndexProperty))
+		{
+			connection.MidPoints.Clear();
+		}
+		connection.SetPath();
+	}
+
+	private void SetPath()
+	{
+		if ((PathPoints == null || PathPoints.Count == 0) && SourceIndex >= 0 && TargetIndex >= 0 && SourceActualWidth != 0.0 && TargetActualWidth != 0.0)
+		{
+			SetPath(Page.GetPath(SourceItem, TargetItem, SourceIndex, TargetIndex));
+		}
+	}
+
+	private static void PathPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as Connection).OnPathPointsChanged();
+	}
+
+	private void OnPathPointsChanged()
+	{
+		if (PathPoints != null && PathPoints.Count > 0)
+		{
+			List<Point> list = PathPoints.ToList();
+			PathFinder.Passivation(list);
+			SetPath(list);
+			OnIsSelectedChanged();
+			isInited = true;
+		}
+	}
+
+	static Connection()
+	{
+		SourceIndexProperty = DependencyProperty.Register("SourceIndex", typeof(int), typeof(Connection), new PropertyMetadata(-1, OnPositionChanged));
+		TargetIndexProperty = DependencyProperty.Register("TargetIndex", typeof(int), typeof(Connection), new PropertyMetadata(-1, OnPositionChanged));
+		SourceItemProperty = DependencyProperty.Register("SourceItem", typeof(DiagramItem), typeof(Connection), new PropertyMetadata(null, OnItemChanged));
+		TargetItemProperty = DependencyProperty.Register("TargetItem", typeof(DiagramItem), typeof(Connection), new PropertyMetadata(null, OnItemChanged));
+		SourceActualWidthProperty = DependencyProperty.Register("SourceActualWidth", typeof(double), typeof(Connection), new PropertyMetadata(0.0, OnPositionChanged));
+		TargetActualWidthProperty = DependencyProperty.Register("TargetActualWidth", typeof(double), typeof(Connection), new PropertyMetadata(0.0, OnPositionChanged));
+		StartPositionProperty = DependencyProperty.Register("StartPosition", typeof(Point), typeof(Connection), new PropertyMetadata(default(Point), OnPositionChanged));
+		EndPositionProperty = DependencyProperty.Register("EndPosition", typeof(Point), typeof(Connection), new PropertyMetadata(default(Point), OnPositionChanged));
+		PathPointsProperty = DependencyProperty.Register("PathPoints", typeof(IList<Point>), typeof(Connection), new PropertyMetadata(null, PathPointsChanged));
+		IsDragOverProperty = DependencyProperty.Register("IsDragOver", typeof(bool), typeof(Connection), new PropertyMetadata(false));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(Connection), new FrameworkPropertyMetadata(typeof(Connection)));
+	}
+
+	public Connection(DiagramPage diagramPage)
+	{
+		InitializeComponent();
+		Page = diagramPage;
+		figureOfPolyline.Segments.Add(polyLineSegment);
+		figureOfPolyline.IsClosed = false;
+		figureOfPolyline.IsFilled = false;
+		geometry.Figures.Add(figureOfPolyline);
+		figureOfArrow.Segments.Add(arrowSegment);
+		figureOfArrow.IsClosed = true;
+		geometry.Figures.Add(figureOfArrow);
+		Focusable = true;
+		SetBinding(SourceIndexProperty, "SourceIndex");
+		SetBinding(TargetIndexProperty, "TargetIndex");
+		SetBinding(PathPointsProperty, new Binding("PathPoints")
+		{
+			Mode = BindingMode.TwoWay
+		});
+		hoverPotDelegate = new HoverPotDelegate();
+		hoverPotDelegate.SetBinding(HoverPotDelegate.ItemsSourceProperty, new Binding("MidPoints")
+		{
+			Source = this
+		});
+		RequestBringIntoView += Connection_RequestBringIntoView;
+	}
+
+	/// <summary>
+	/// 阻止元素获得焦点时，导致滚动条自动滚动
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Connection_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+	{
+		e.Handled = true;
+	}
+
+	protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+	{
+		Focus();
+		if (hoverPotDelegate.OwnerPanel == null)
+		{
+			hoverPotDelegate.OwnerPanel = Parent as Canvas;
+		}
+		OnIsSelectedChanged();
+		e.Handled = true;
+	}
+
+	private void OnIsSelectedChanged()
+	{
+		if (IsFocused)
+		{
+			List<Point> list = new List<Point>();
+			GetCleanLinePoint(list);
+			MidPoints.Clear();
+			for (int i = 0; i < list.Count - 1; i++)
+			{
+				Point point = list[i];
+				Point point2 = list[i + 1];
+				if (new Vector(point2.X - point.X, point2.Y - point.Y).Length > 5.0)
+				{
+					HoverPotData hoverPotData = new HoverPotData
+					{
+						StartIndex = i,
+						IsHorizon = (point2.Y == point.Y),
+						point = new Point((point2.X + point.X) / 2.0, (point2.Y + point.Y) / 2.0)
+					};
+					hoverPotData.MouseDownCommand = (ICommand)new DelegateCommand<object>((Action<object>)MouseDownExecute);
+					MidPoints.Add(hoverPotData);
+				}
+			}
+		}
+		else
+		{
+			MidPoints.Clear();
+		}
+	}
+
+	private void connectionUserControl_LostFocus(object sender, RoutedEventArgs e)
+	{
+		OnIsSelectedChanged();
+	}
+
+	private void MouseDownExecute(object ob)
+	{
+		if (ob is HoverPotData hoverPotData)
+		{
+			moveStartPointIndex = hoverPotData.StartIndex;
+			OnLineMove = true;
+			CaptureMouse();
+		}
+	}
+
+	private void connectionUserControl_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (!OnLineMove)
+		{
+			return;
+		}
+		List<Point> list = new List<Point>();
+		GetCleanLinePoint(list);
+		Point position = Mouse.GetPosition(Page);
+		Point point = list[moveStartPointIndex];
+		Point point2 = list[moveStartPointIndex + 1];
+		bool flag = point.Y == point2.Y;
+		double num = 0.0;
+		double num2 = 0.0;
+		double num3 = 0.0;
+		double num4 = 0.0;
+		int num5 = 1;
+		if (flag)
+		{
+			if (Math.Abs(position.Y - point.Y) <= 3.0)
+			{
+				return;
+			}
+			num2 = Math.Round(position.Y / 5.0) * 5.0;
+			num5 = Math.Sign(num2 - point.Y);
+			num3 = point.Y + (double)(num5 * 5);
+			num4 = num2;
+			if (num4 > Page.Height)
+			{
+				num4 = Page.Height;
+			}
+		}
+		else
+		{
+			if (Math.Abs(position.X - point.X) <= 3.0)
+			{
+				return;
+			}
+			num = Math.Round(position.X / 5.0) * 5.0;
+			num5 = Math.Sign(num - point.X);
+			num3 = point.X + (double)(num5 * 5);
+			num4 = num;
+			if (num4 > Page.Width)
+			{
+				num4 = Page.Width;
+			}
+		}
+		if (num4 < 0.0)
+		{
+			num4 = 0.0;
+		}
+		Rect rectWithMargin = SourceItem.GetRectWithMargin(5.0);
+		Rect rectWithMargin2 = TargetItem.GetRectWithMargin(5.0);
+		List<Point> list2 = new List<Point>(list);
+		int num6 = moveStartPointIndex;
+		for (double num7 = num3; (num5 > 0) ? (num7 <= num4) : (num7 >= num4); num7 += (double)(num5 * 5))
+		{
+			point = list[moveStartPointIndex];
+			point2 = list[moveStartPointIndex + 1];
+			if (flag)
+			{
+				if (num7 > rectWithMargin.Y && num7 < rectWithMargin.Y + rectWithMargin.Height && !LineMove(list, rectWithMargin.X, rectWithMargin.Width, point.X, point2.X, point.Y, position.X, isY: false))
+				{
+					list = list2;
+					moveStartPointIndex = num6;
+					return;
+				}
+				if (num7 > rectWithMargin2.Y && num7 < rectWithMargin2.Y + rectWithMargin2.Height && !LineMove(list, rectWithMargin2.X, rectWithMargin2.Width, point.X, point2.X, point.Y, position.X, isY: false))
+				{
+					list = list2;
+					moveStartPointIndex = num6;
+					return;
+				}
+				list[moveStartPointIndex] = new Point(list[moveStartPointIndex].X, num7);
+				list[moveStartPointIndex + 1] = new Point(list[moveStartPointIndex + 1].X, num7);
+			}
+			else
+			{
+				if (num7 > rectWithMargin.X && num7 < rectWithMargin.X + rectWithMargin.Width && !LineMove(list, rectWithMargin.Y, rectWithMargin.Height, point.Y, point2.Y, point.X, position.Y, isY: true))
+				{
+					list = list2;
+					moveStartPointIndex = num6;
+					return;
+				}
+				if (num7 > rectWithMargin2.X && num7 < rectWithMargin2.X + rectWithMargin2.Width && !LineMove(list, rectWithMargin2.Y, rectWithMargin2.Height, point.Y, point2.Y, point.X, position.Y, isY: true))
+				{
+					list = list2;
+					moveStartPointIndex = num6;
+					return;
+				}
+				list[moveStartPointIndex] = new Point(num7, list[moveStartPointIndex].Y);
+				list[moveStartPointIndex + 1] = new Point(num7, list[moveStartPointIndex + 1].Y);
+			}
+			for (int i = 0; i < list.Count - 1; i++)
+			{
+				Point point3 = list[i];
+				Point point4 = list[i + 1];
+				if (point4 == point3)
+				{
+					if (i + 1 <= moveStartPointIndex)
+					{
+						moveStartPointIndex--;
+					}
+					list.RemoveAt(i + 1);
+				}
+			}
+			for (int j = 1; j < list.Count - 1; j++)
+			{
+				Point point5 = list[j - 1];
+				Point point6 = list[j];
+				Point point7 = list[j + 1];
+				Vector vector = new Vector(point5.X - point6.X, point5.Y - point6.Y);
+				Vector vector2 = new Vector(point7.X - point6.X, point7.Y - point6.Y);
+				vector.Normalize();
+				vector2.Normalize();
+				if (vector == vector2)
+				{
+					list = list2;
+					moveStartPointIndex = num6;
+					return;
+				}
+			}
+			bool flag2;
+			do
+			{
+				flag2 = false;
+				for (int k = 0; k < list.Count - 2; k++)
+				{
+					Point point8 = list[k];
+					Point point9 = list[k + 1];
+					Point point10 = list[k + 2];
+					if ((point8.X == point9.X && point8.X == point10.X) || (point8.Y == point9.Y && point8.Y == point10.Y))
+					{
+						if (k + 1 <= moveStartPointIndex)
+						{
+							moveStartPointIndex--;
+						}
+						list.RemoveAt(k + 1);
+						flag2 = true;
+						break;
+					}
+				}
+			}
+			while (flag2);
+		}
+		PathPoints = list;
+	}
+
+	private bool LineMove(List<Point> linePoints, double rectSourceStart, double rectSourceSpread, double sfird, double efird, double X, double Y, bool isY)
+	{
+		double[,] array = new double[4, 2]
+		{
+			{ rectSourceStart, 0.0 },
+			{
+				rectSourceStart + rectSourceSpread,
+				0.0
+			},
+			{ sfird, 1.0 },
+			{ efird, 1.0 }
+		};
+		int startIndexOfLi = 2;
+		int endIndexOfLi = 3;
+		for (int i = 0; i < array.GetLength(0) - 1; i++)
+		{
+			for (int j = 0; j < array.GetLength(0) - i - 1; j++)
+			{
+				if (array[j, 0] > array[j + 1, 0])
+				{
+					ChangSite(array, j, ref startIndexOfLi, ref endIndexOfLi);
+				}
+			}
+		}
+		if (array[1, 0] == array[2, 0] && array[1, 1] != array[0, 1])
+		{
+			ChangSite(array, 1, ref startIndexOfLi, ref endIndexOfLi);
+		}
+		if (array[1, 1] == array[2, 1])
+		{
+			if (array[0, 0] == array[1, 0])
+			{
+				ChangSite(array, 0, ref startIndexOfLi, ref endIndexOfLi);
+			}
+			if (array[2, 0] == array[3, 0])
+			{
+				ChangSite(array, 2, ref startIndexOfLi, ref endIndexOfLi);
+			}
+		}
+		Dictionary<Point, bool> dictionary = new Dictionary<Point, bool>();
+		double num = array[0, 1];
+		bool flag = num == 0.0;
+		bool flag2 = num == 1.0;
+		for (int k = 1; k < 3; k++)
+		{
+			if (num == array[k, 1])
+			{
+				if (num == 0.0)
+				{
+					if (!flag)
+					{
+						flag = true;
+						throw new Exception();
+					}
+					flag = false;
+					if (flag2)
+					{
+						if (isY)
+						{
+							dictionary.Add(new Point(X, array[k, 0]), flag);
+						}
+						else
+						{
+							dictionary.Add(new Point(array[k, 0], X), flag);
+						}
+					}
+				}
+				else
+				{
+					if (!flag2)
+					{
+						flag2 = true;
+						throw new Exception();
+					}
+					flag2 = false;
+				}
+			}
+			else if (num == 0.0)
+			{
+				flag2 = !flag2;
+			}
+			else
+			{
+				flag = !flag;
+				if (flag2)
+				{
+					if (isY)
+					{
+						dictionary.Add(new Point(X, array[k, 0]), flag);
+					}
+					else
+					{
+						dictionary.Add(new Point(array[k, 0], X), flag);
+					}
+				}
+			}
+			num = array[k, 1];
+		}
+		if (array[0, 1] == 0.0 && array[3, 1] == 0.0)
+		{
+			return false;
+		}
+		if (dictionary.Count > 0)
+		{
+			bool flag3 = false;
+			Point key;
+			if (dictionary.Count == 1)
+			{
+				if (array[0, 1] == 0.0)
+				{
+					if (Y <= array[2, 0])
+					{
+						return false;
+					}
+					if (array[2, 0] == array[3, 0])
+					{
+						return false;
+					}
+					if (array[1, 0] == sfird)
+					{
+						flag3 = true;
+					}
+				}
+				else
+				{
+					if (Y >= array[1, 0])
+					{
+						return false;
+					}
+					if (array[1, 0] == array[0, 0])
+					{
+						return false;
+					}
+					if (array[2, 0] == sfird)
+					{
+						flag3 = true;
+					}
+				}
+				key = dictionary.First().Key;
+			}
+			else
+			{
+				if (Y >= array[1, 0] && Y <= array[2, 0])
+				{
+					return false;
+				}
+				if (Y < array[1, 0])
+				{
+					if (array[3, 0] == sfird)
+					{
+						flag3 = true;
+					}
+					key = dictionary.First().Key;
+				}
+				else
+				{
+					if (array[0, 0] == sfird)
+					{
+						flag3 = true;
+					}
+					key = dictionary.Last().Key;
+				}
+			}
+			foreach (KeyValuePair<Point, bool> item in dictionary)
+			{
+				linePoints.Insert(moveStartPointIndex + 1, key);
+				linePoints.Insert(moveStartPointIndex + 2, key);
+				if (flag3)
+				{
+					moveStartPointIndex += 2;
+				}
+			}
+		}
+		return true;
+	}
+
+	private void ChangSite(double[,] li, int j, ref int startIndexOfLi, ref int endIndexOfLi)
+	{
+		double num = li[j, 0];
+		li[j, 0] = li[j + 1, 0];
+		li[j + 1, 0] = num;
+		double num2 = li[j, 1];
+		li[j, 1] = li[j + 1, 1];
+		li[j + 1, 1] = num2;
+		if (j == startIndexOfLi)
+		{
+			startIndexOfLi = j + 1;
+		}
+		if (j + 1 == startIndexOfLi)
+		{
+			startIndexOfLi = j;
+		}
+		if (j == endIndexOfLi)
+		{
+			endIndexOfLi = j + 1;
+		}
+		if (j + 1 == endIndexOfLi)
+		{
+			endIndexOfLi = j;
+		}
+	}
+
+	private void connectionUserControl_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		OnLineMove = false;
+		ReleaseMouseCapture();
+	}
+
+	public void SetPath(IList<Point> linePoints)
+	{
+		figureOfPolyline.StartPoint = linePoints.First();
+		polyLineSegment.Points = new PointCollection(linePoints.Skip(1));
+		double num = 10.0;
+		Vector vector = linePoints[linePoints.Count - 2] - linePoints.Last();
+		List<Point> list = new List<Point>();
+		Point point = linePoints.Last();
+		vector.Normalize();
+		vector *= num;
+		double num2 = Math.Atan2(8.0, 5.0) * 180.0 / Math.PI;
+		double num3 = Math.Sqrt(89.0);
+		vector.Normalize();
+		Point point2 = point + 6.0 * vector;
+		Matrix matrix = default;
+		matrix.Rotate(90.0);
+		figureOfArrow.StartPoint = point2 + 5.0 * vector * matrix;
+		matrix.Rotate(180.0 - num2);
+		list.Add(figureOfArrow.StartPoint + num3 * vector * matrix);
+		matrix.Rotate(2.0 * num2);
+		list.Add(list.First() + num3 * vector * matrix);
+		arrowSegment.Points = new PointCollection(list);
+		InvalidateVisual();
+	}
+
+	/// <summary>
+	/// 去掉拐点的连线
+	/// </summary>
+	/// <param name=""></param>
+	private void GetCleanLinePoint(List<Point> linePoints)
+	{
+		PathFigure pathFigure = geometry.Figures?.First();
+		if (pathFigure == null || !(pathFigure.Segments?.First() is PolyLineSegment polyLineSegment))
+		{
+			return;
+		}
+		linePoints.Add(pathFigure.StartPoint);
+		Point point = pathFigure.StartPoint;
+		for (int i = 0; i < polyLineSegment.Points.Count && i + 1 < polyLineSegment.Points.Count; i += 2)
+		{
+			Point item = polyLineSegment.Points[i];
+			Point item2 = polyLineSegment.Points[i + 1];
+			if (item2.X == item.X && item2.Y == item.Y)
+			{
+				linePoints.Add(item);
+				linePoints.Add(item2);
+				continue;
+			}
+			if (point.X == item.X)
+			{
+				linePoints.Add(new Point(point.X, item.Y + (item2.Y - item.Y)));
+			}
+			else
+			{
+				linePoints.Add(new Point(item.X + (item2.X - item.X), point.Y));
+			}
+			point = linePoints.Last();
+		}
+		linePoints.Add(polyLineSegment.Points.Last());
+	}
+
+	private void Shape_Drop(object sender, DragEventArgs e)
+	{
+		SetDefaultStroke();
+		IDataObject data = e.Data;
+		if (data != null && data.GetData(typeof(Point)) != null)
+		{
+			IsDragOver = false;
+			List<DiagramItem> list = data.GetData(typeof(List<DiagramItem>)) as List<DiagramItem>;
+			if (list.Count == 1)
+			{
+				OnInsertItem(this, new ObjectEventArgs
+				{
+					Param = list[0].DataContext
+				});
+			}
+		}
+	}
+
+	/// <summary>
+	/// 拖拽改色
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Shape_DragEnter(object sender, DragEventArgs e)
+	{
+		IsDragOver = true;
+		IDataObject data = e.Data;
+		if (e.Data != null && data.GetData(typeof(List<DiagramItem>)) is List<DiagramItem>)
+		{
+			SetBlodStroke();
+		}
+	}
+
+	private void Shape_DragLeave(object sender, DragEventArgs e)
+	{
+		IsDragOver = false;
+		IDataObject data = e.Data;
+		if (e.Data != null && data.GetData(typeof(List<DiagramItem>)) is List<DiagramItem>)
+		{
+			SetDefaultStroke();
+		}
+	}
+
+	private void SetBlodStroke()
+	{
+		StrokeThickness = 10.0;
+	}
+
+	private void SetDefaultStroke()
+	{
+		StrokeThickness = 2.0;
+	}
+}

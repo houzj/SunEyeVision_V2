@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListViewItem x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.DiagramItem" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:DataForUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" Focusable="True" FocusVisualStyle="{x:Null}" KeyDown="ListViewItem_KeyDown">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ResourceDictionaries/GlobalResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <UIElement.InputBindings>
+    <KeyBinding Modifiers="Ctrl" Key="M" CommandParameter="M" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Modifiers="Ctrl" Key="C" CommandParameter="C" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Modifiers="Ctrl" Key="F" CommandParameter="F" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Modifiers="Ctrl" Key="A" CommandParameter="A" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="T" CommandParameter="LevelT" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="D" CommandParameter="LevelD" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="I" CommandParameter="LevelI" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="W" CommandParameter="LevelW" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="E" CommandParameter="LevelE" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="R" CommandParameter="LevelC" Command="{Binding KeyDownCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Key="O" CommandParameter="LevelO" Command="{Binding KeyDownCommand}" />
+  </UIElement.InputBindings>
+  <i:Interaction.Triggers>
+    <i:EventTrigger EventName="OnConnect">
+      <UIHelper:ParamsEventCommand Command="{Binding ConnectCommand}" />
+    </i:EventTrigger>
+  </i:Interaction.Triggers>
+</ListViewItem>

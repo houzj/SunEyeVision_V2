@@ -1,0 +1,237 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// ProductionStatistics.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ProductionStatistics
+/// </summary>
+public partial class ProductionStatistics : ContentControl, IComponentConnector
+{
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public string Title
+	{
+		get
+		{
+			return PART_Control.Title;
+		}
+		set
+		{
+			PART_Control.Title = value;
+		}
+	}
+
+	public Brush TitleColor
+	{
+		get
+		{
+			return PART_Control.TitleColor;
+		}
+		set
+		{
+			PART_Control.TitleColor = value;
+		}
+	}
+
+	public Brush TitleTextColor
+	{
+		get
+		{
+			return PART_Control.TitleTextColor;
+		}
+		set
+		{
+			PART_Control.TitleTextColor = value;
+		}
+	}
+
+	public bool ShowTitleBar
+	{
+		get
+		{
+			return PART_Control.ShowTitleBar;
+		}
+		set
+		{
+			PART_Control.ShowTitleBar = value;
+		}
+	}
+
+	public Brush GridHeadColor
+	{
+		get
+		{
+			return PART_Control.GridHeadColor;
+		}
+		set
+		{
+			PART_Control.GridHeadColor = value;
+		}
+	}
+
+	public Brush GridHeadTextColor
+	{
+		get
+		{
+			return PART_Control.GridHeadTextColor;
+		}
+		set
+		{
+			PART_Control.GridHeadTextColor = value;
+		}
+	}
+
+	public Brush GridBackgroud
+	{
+		get
+		{
+			return PART_Control.GridBackgroud;
+		}
+		set
+		{
+			PART_Control.GridBackgroud = value;
+		}
+	}
+
+	public Brush ZebraStripeColor
+	{
+		get
+		{
+			return PART_Control.ZebraStripeColor;
+		}
+		set
+		{
+			PART_Control.ZebraStripeColor = value;
+		}
+	}
+
+	public Brush ForeColor
+	{
+		get
+		{
+			return PART_Control.ForeColor;
+		}
+		set
+		{
+			PART_Control.ForeColor = value;
+		}
+	}
+
+	public object BindingPathSource
+	{
+		get
+		{
+			return PART_Control.BindingPathSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.BindingPathSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("BindingPathSource Type Error!");
+		}
+	}
+
+	public object ShowColsInfoASource
+	{
+		get
+		{
+			return PART_Control.ShowColsInfoASource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ShowColsInfoASource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ShowColsInfoASource Type Error!");
+		}
+	}
+
+	public object DisplayNumSelectSource
+	{
+		get
+		{
+			return PART_Control.DisplayNumSelectSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.DisplayNumSelectSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("DisplayNumSelectSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public ProductionStatistics()
+	{
+		InitializeComponent();
+	}
+}

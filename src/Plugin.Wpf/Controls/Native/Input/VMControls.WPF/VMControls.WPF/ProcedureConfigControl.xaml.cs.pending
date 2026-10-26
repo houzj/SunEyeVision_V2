@@ -1,0 +1,1537 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Forms.Integration;
+using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.Data;
+using Apps.ErrorCode;
+using Apps.Localization;
+using Apps.Log;
+using Apps.PcUI.Controls;
+using Apps.UIHelper.Extern;
+using Hik.Util;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using Mvvm.Commands;
+using VM.AppData;
+using VM.Controls;
+using VM.Controls.Core.Utilities;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.User;
+using VMBaseControls;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// ProcedureConfigControl
+/// </summary>
+[TemplatePart(Name = "PART_View", Type = typeof(Grid))]
+public partial class ProcedureConfigControl : ServiceProvideControl, INotifyPropertyChanged, IComponentConnector, IStyleConnector
+{
+	public static readonly DependencyProperty IsOpenParamsProperty = DependencyProperty.Register("IsOpenParams", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false));
+
+	/// <summary>
+	/// 参数列表编辑状态属性
+	/// </summary>
+	public static readonly DependencyProperty IsParamsEditStateProperty = DependencyProperty.Register("IsParamsEditState", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsLockWorkAreaProperty = DependencyProperty.Register("IsLockWorkArea", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsSupportFunctionProperty = DependencyProperty.Register("IsSupportFunction", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty ZoomIndexProperty = DependencyProperty.Register("ZoomIndex", typeof(double), typeof(ProcedureConfigControl), new PropertyMetadata(1.0));
+
+	public static readonly DependencyProperty IsForSingleModulesetModeProperty = DependencyProperty.Register("IsForSingleModulesetMode", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty SingleModulesetSourceProperty = DependencyProperty.Register("SingleModulesetSource", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null, OnSingleModulesetSourceChanged));
+
+	private string needShowSingleProcedureName = null;
+
+	public static readonly DependencyProperty IsSingleProcedureProperty = DependencyProperty.Register("IsSingleProcedure", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false));
+
+	private DelegateCommand<object> configParamsCommand = null;
+
+	public Window curTabControlBase;
+
+	private DelegateCommand<DiagramEventArgs> searchModuleCommand = null;
+
+	private DelegateCommand<SearchPopupModel> jumpTargetCommand = null;
+
+	public static readonly DependencyProperty BoolOfDisplayTypeProperty = DependencyProperty.Register("BoolOfDisplayType", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false, OnBoolOfDisplayTypeChanged));
+
+	public static readonly DependencyProperty SelectedProProperty = DependencyProperty.Register("SelectedPro", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty SelectedModuleProperty = DependencyProperty.Register("SelectedModule", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsDisposeNotifyProperty = DependencyProperty.Register("IsDisposeNotify", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty DecoratorSelectedTabItemProperty = DependencyProperty.Register("DecoratorSelectedTabItem", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null, OnDecoratorSelectedTabItemChanged));
+
+	public static readonly DependencyProperty DecoratorSelectedSubTabItemProperty = DependencyProperty.Register("DecoratorSelectedSubTabItem", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null, OnDecoratorSelectedSubTabItemChanged));
+
+	public static readonly DependencyProperty DecoratorSelectedItemProperty = DependencyProperty.Register("DecoratorSelectedItem", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null, OnDecoratorSelectedItemChanged));
+
+	public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty SolutionProperty = DependencyProperty.Register("Solution", typeof(object), typeof(ProcedureConfigControl), new PropertyMetadata(null, OnSolutionChanged));
+
+	private object decoratorSolution;
+
+	public static readonly DependencyProperty LoadingFlagProperty = DependencyProperty.Register("LoadingFlag", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false, OnLoadingFlagChanged));
+
+	public static readonly DependencyProperty ProceduresProperty = DependencyProperty.Register("Procedures", typeof(IList), typeof(ProcedureConfigControl), new PropertyMetadata(null, OnProceduresChanged));
+
+	private Grid View;
+
+	private TabControl TabControl;
+
+	private ColumnDefinition columnDefinition1;
+
+	private ColumnDefinition columnDefinition2;
+
+	private ToolBox toolBox;
+
+	private Grid paramControl;
+
+	private double MinExWidth = 30.0;
+
+	private Action<object> DelayAction = null;
+
+	/// <summary>
+	/// 是否滚动
+	/// </summary>
+	private bool CanScroll = true;
+
+	private DelegateCommand openProcedureCommand = null;
+
+	public static readonly DependencyProperty IsShowProgressMaskProperty = DependencyProperty.Register("IsShowProgressMask", typeof(bool), typeof(ProcedureConfigControl), new PropertyMetadata(false, OnIsShowProgressMaskChanged));
+
+	public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register("Progress", typeof(double), typeof(ProcedureConfigControl), new PropertyMetadata(0.0));
+
+	public static readonly DependencyProperty MaskMessageProperty = DependencyProperty.Register("MaskMessage", typeof(string), typeof(ProcedureConfigControl), new PropertyMetadata(null));
+
+	private ProgressMask progressMask;
+
+	private DelegateCommand<object> varConfigParamsCommand = null;
+
+	private DiagramArea DiagramAreaControl { get; set; }
+
+	/// <summary>
+	/// 是否打开参数列表
+	/// </summary>
+	public bool IsOpenParams
+	{
+		get
+		{
+			return (bool)GetValue(IsOpenParamsProperty);
+		}
+		set
+		{
+			SetValue(IsOpenParamsProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 参数列表编辑状态
+	/// </summary>
+	public bool IsParamsEditState
+	{
+		get
+		{
+			return (bool)GetValue(IsParamsEditStateProperty);
+		}
+		set
+		{
+			SetValue(IsParamsEditStateProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否锁定工作区
+	/// </summary>
+	public bool IsLockWorkArea
+	{
+		get
+		{
+			return (bool)GetValue(IsLockWorkAreaProperty);
+		}
+		set
+		{
+			SetValue(IsLockWorkAreaProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否屏蔽右上角功能
+	/// </summary>
+	public bool IsFidSupportFunction
+	{
+		get
+		{
+			return (bool)GetValue(IsSupportFunctionProperty);
+		}
+		set
+		{
+			SetValue(IsSupportFunctionProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 缩放比例
+	/// </summary>
+	public double ZoomIndex
+	{
+		get
+		{
+			return (double)GetValue(ZoomIndexProperty);
+		}
+		set
+		{
+			SetValue(ZoomIndexProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// hu 2021,用于将多流程控件用于组合模块
+	/// </summary>
+	public bool IsForSingleModulesetMode
+	{
+		get
+		{
+			return (bool)GetValue(IsForSingleModulesetModeProperty);
+		}
+		set
+		{
+			SetValue(IsForSingleModulesetModeProperty, value);
+		}
+	}
+
+	public object SingleModulesetSource
+	{
+		get
+		{
+			return GetValue(SingleModulesetSourceProperty);
+		}
+		set
+		{
+			SetValue(SingleModulesetSourceProperty, value);
+		}
+	}
+
+	public bool IsDisplaySingleModulesetSource => IsForSingleModulesetMode && (DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet.DecorateSource == SingleModulesetSource;
+
+	/// <summary>
+	/// 是否单流程显示
+	/// </summary>
+	public bool IsSingleProcedure
+	{
+		get
+		{
+			return (bool)GetValue(IsSingleProcedureProperty);
+		}
+		set
+		{
+			SetValue(IsSingleProcedureProperty, value);
+		}
+	}
+
+	public ICommand ConfigParamsCommand => (ICommand)(configParamsCommand ?? (configParamsCommand = new DelegateCommand<object>((Action<object>)ConfigParamsCommandExecute)));
+
+	public object ROIPartUI => this.GetParent<MainViewControl>()?.ROIPartUI;
+
+	public ICommand SearchModuleCommand => (ICommand)(searchModuleCommand ?? (searchModuleCommand = new DelegateCommand<DiagramEventArgs>((Action<DiagramEventArgs>)SearchModuleCommandExecute)));
+
+	public ICommand JumpTargetCommand => (ICommand)(jumpTargetCommand ?? (jumpTargetCommand = new DelegateCommand<SearchPopupModel>((Action<SearchPopupModel>)JumpTargetCommandExecute)));
+
+	/// <summary>
+	/// Winform窗口句柄
+	/// </summary>
+	public IntPtr WinformHandle { get; set; } = IntPtr.Zero;
+
+	/// <summary>
+	/// 显示为全流程或选项卡的标志
+	/// </summary>
+	public bool BoolOfDisplayType
+	{
+		get
+		{
+			return (bool)GetValue(BoolOfDisplayTypeProperty);
+		}
+		set
+		{
+			SetValue(BoolOfDisplayTypeProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 当前选中流程
+	/// </summary>
+	public object SelectedPro
+	{
+		get
+		{
+			return GetValue(SelectedProProperty);
+		}
+		set
+		{
+			SetValue(SelectedProProperty, value);
+		}
+	}
+
+	public object SelectedModule
+	{
+		get
+		{
+			return GetValue(SelectedModuleProperty);
+		}
+		set
+		{
+			SetValue(SelectedModuleProperty, value);
+		}
+	}
+
+	public bool IsDisposeNotify
+	{
+		get
+		{
+			return (bool)GetValue(IsDisposeNotifyProperty);
+		}
+		set
+		{
+			SetValue(IsDisposeNotifyProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// Tab页选中对象
+	/// </summary>
+	public object DecoratorSelectedTabItem
+	{
+		get
+		{
+			return GetValue(DecoratorSelectedTabItemProperty);
+		}
+		set
+		{
+			SetValue(DecoratorSelectedTabItemProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 实际生成方法
+	/// </summary>
+	public object DecoratorSelectedSubTabItem
+	{
+		get
+		{
+			return GetValue(DecoratorSelectedSubTabItemProperty);
+		}
+		set
+		{
+			SetValue(DecoratorSelectedSubTabItemProperty, value);
+		}
+	}
+
+	public object DecoratorSelectedItem
+	{
+		get
+		{
+			return GetValue(DecoratorSelectedItemProperty);
+		}
+		set
+		{
+			SetValue(DecoratorSelectedItemProperty, value);
+		}
+	}
+
+	public object SelectedItem
+	{
+		get
+		{
+			return GetValue(SelectedItemProperty);
+		}
+		set
+		{
+			SetValue(SelectedItemProperty, value);
+		}
+	}
+
+	public object Solution
+	{
+		get
+		{
+			return GetValue(SolutionProperty);
+		}
+		set
+		{
+			SetValue(SolutionProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 装饰后的solution
+	/// </summary>
+	public object DecoratorSolution
+	{
+		get
+		{
+			return decoratorSolution;
+		}
+		set
+		{
+			if (value != decoratorSolution)
+			{
+				decoratorSolution = value;
+				NotifyPropertyChanged("DecoratorSolution");
+			}
+		}
+	}
+
+	public bool LoadingFlag
+	{
+		get
+		{
+			return (bool)GetValue(LoadingFlagProperty);
+		}
+		set
+		{
+			SetValue(LoadingFlagProperty, value);
+		}
+	}
+
+	public ObservableCollection<VmModuleBaseDecorator> DecoratedProcedures { get; set; } = new ObservableCollection<VmModuleBaseDecorator>();
+
+	public ObservableCollection<VmModuleBaseDecorator> DecoratedModules { get; set; } = new ObservableCollection<VmModuleBaseDecorator>();
+
+	/// <summary>
+	/// 流程列表
+	/// </summary>
+	public IList Procedures
+	{
+		get
+		{
+			return (IList)GetValue(ProceduresProperty);
+		}
+		set
+		{
+			SetValue(ProceduresProperty, value);
+		}
+	}
+
+	protected override int VisualChildrenCount => 2;
+
+	public ICommand OpenProcedureCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = openProcedureCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)OpenProcedureCommandExecute);
+				DelegateCommand val3 = val2;
+				openProcedureCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public bool IsShowProgressMask
+	{
+		get
+		{
+			return (bool)GetValue(IsShowProgressMaskProperty);
+		}
+		set
+		{
+			SetValue(IsShowProgressMaskProperty, value);
+		}
+	}
+
+	public double Progress
+	{
+		get
+		{
+			return (double)GetValue(ProgressProperty);
+		}
+		set
+		{
+			SetValue(ProgressProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 滚动条信息
+	/// </summary>
+	public string MaskMessage
+	{
+		get
+		{
+			return (string)GetValue(MaskMessageProperty);
+		}
+		set
+		{
+			SetValue(MaskMessageProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 局部变量参数配置命令
+	/// </summary>
+	public ICommand VarConfigParamsCommand => (ICommand)(varConfigParamsCommand ?? (varConfigParamsCommand = new DelegateCommand<object>((Action<object>)VarConfigParamsCommandExecute)));
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	private static void OnSingleModulesetSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = d as ProcedureConfigControl;
+		IVmModuleSet vmModuleSet = e.OldValue as IVmModuleSet;
+		if (e.NewValue is IVmModuleSet && procedureConfigControl.IsForSingleModulesetMode && procedureConfigControl.SingleModulesetSource is IVMGroup && procedureConfigControl.DecoratedProcedures.Count > 0 && (procedureConfigControl.DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet.DecorateSource != procedureConfigControl.SingleModulesetSource)
+		{
+			(procedureConfigControl.DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet = new VmGroupDecorator
+			{
+				DecorateSource = procedureConfigControl.SingleModulesetSource
+			};
+		}
+	}
+
+	private void DisplayModuleSetChanged(object sender, PropertyChangedEventArgs e)
+	{
+		NotifyPropertyChanged("IsDisplaySingleModulesetSource");
+	}
+
+	/// <summary>
+	/// 显示单流程
+	/// </summary>
+	/// <param name="name"></param>
+	public void ShowSingleProcedure(string name, bool needPopTip = true)
+	{
+		if (string.IsNullOrEmpty(name))
+		{
+			if (needPopTip)
+			{
+				HikMessageBox.Show("Lang_ProcessNameEmpty", MessageIcons.Error, isTranslate: true);
+			}
+			return;
+		}
+		List<VmProcedureDecorator> list = DecoratedProcedures?.OfType<VmProcedureDecorator>()?.ToList();
+		VmProcedureDecorator vmProcedureDecorator = list?.FirstOrDefault((VmProcedureDecorator p) => p.Name == name);
+		if (vmProcedureDecorator == null)
+		{
+			if (VmSolution.Instance.Modules.Any((VmModule p) => p.Name == name))
+			{
+				needShowSingleProcedureName = name;
+			}
+			else if (needPopTip)
+			{
+				HikMessageBox.Show("Lang_ProcessDontExist", MessageIcons.Error, isTranslate: true);
+			}
+			return;
+		}
+		needShowSingleProcedureName = null;
+		IsSingleProcedure = true;
+		foreach (VmProcedureDecorator item in list)
+		{
+			if (item.Name == name)
+			{
+				item.IsShowAtSingleProcedureMode = true;
+				DecoratorSelectedTabItem = item;
+			}
+			else
+			{
+				item.IsShowAtSingleProcedureMode = false;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 显示全流程
+	/// </summary>
+	public void ShowMultiProcedure()
+	{
+		IsSingleProcedure = false;
+		needShowSingleProcedureName = null;
+	}
+
+	/// <summary>
+	/// 显示部分流程
+	/// </summary>
+	/// <param name="nameList"></param>
+	public void ShowSomeProcedure(List<string> nameList)
+	{
+		if (nameList == null || nameList.Any((string p) => string.IsNullOrEmpty(p)))
+		{
+			HikMessageBox.Show("Lang_ProcessNameEmpty", MessageIcons.Error, isTranslate: true);
+			return;
+		}
+		List<VmProcedureDecorator> list = DecoratedProcedures?.OfType<VmProcedureDecorator>()?.ToList();
+		if (list?.Count((VmProcedureDecorator p) => nameList.Contains(p.Name)) != nameList.Count)
+		{
+			HikMessageBox.Show("Lang_ProcessDontExist", MessageIcons.Error, isTranslate: true);
+			return;
+		}
+		IsSingleProcedure = true;
+		foreach (VmProcedureDecorator item in list)
+		{
+			if (nameList.Contains(item.Name))
+			{
+				item.IsShowAtSingleProcedureMode = true;
+			}
+			else
+			{
+				item.IsShowAtSingleProcedureMode = false;
+			}
+		}
+		DecoratorSelectedTabItem = list.FirstOrDefault((VmProcedureDecorator p) => p.IsShowAtSingleProcedureMode);
+	}
+
+	private void ConfigParamsCommandExecute(object obj)
+	{
+		VmModuleBaseDecorator obj2 = obj as VmModuleBaseDecorator;
+		if (obj2 != null && obj2.IsForbidden)
+		{
+			return;
+		}
+		VmModuleBaseDecorator obj3 = obj as VmModuleBaseDecorator;
+		if (obj3 == null || obj3.IsLoadFailed != true)
+		{
+			if (obj is VmGroupDecorator)
+			{
+				DiagramArea_ItemDoubleClick(this, new ObjectEventArgs
+				{
+					Param = obj
+				});
+			}
+			else
+			{
+				DiagramArea_ItemDoubleClick(this, new ObjectEventArgs
+				{
+					Param = obj
+				});
+			}
+		}
+	}
+
+	private void DiagramArea_ItemDoubleClick(object sender, EventArgs e)
+	{
+		OpenParams((e as ObjectEventArgs)?.Param);
+	}
+
+	public void OpenParams(object data)
+	{
+		if (CanOpenConfigurationInterface(data))
+		{
+			if (curTabControlBase != null)
+			{
+				curTabControlBase.Close();
+			}
+			OpenParamsTabControl(ROIPartUI, data);
+		}
+	}
+
+	private void SearchModuleCommandExecute(DiagramEventArgs ts)
+	{
+		IList<SearchPathInfo> currentPath = (ts.Param as IList<SearchPathInfo>).Reverse().ToList();
+		if (currentPath.Count() > 0)
+		{
+			VmModuleBaseDecorator vmModuleBaseDecorator = DecoratedProcedures.FirstOrDefault((VmModuleBaseDecorator x) => (x.DecorateSource as IVmModule).ID == currentPath[0].nodeID);
+			if (vmModuleBaseDecorator is VmProcedureDecorator vmProcedureDecorator)
+			{
+				vmProcedureDecorator.SearchModuleCommandExecute(ts);
+			}
+		}
+	}
+
+	private void JumpTargetCommandExecute(SearchPopupModel ts)
+	{
+		BoolOfDisplayType = false;
+		string[] pathList = ts.FullPath.Split('.');
+		if (pathList.Length != 0)
+		{
+			VmModuleBaseDecorator vmModuleBaseDecorator = DecoratedProcedures.FirstOrDefault((VmModuleBaseDecorator x) => (x.DecorateSource as IVmModule).Name == pathList[0]);
+			if (vmModuleBaseDecorator is VmProcedureDecorator vmProcedureDecorator)
+			{
+				vmProcedureDecorator.SearchModulePopupCommand(ts);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 能否打开参数配置界面
+	/// [权限]
+	/// </summary>
+	/// <returns></returns>
+	public bool CanOpenConfigurationInterface(object data)
+	{
+		bool flag = true;
+		AccessUser loginUser = CodeManager.Instance.GetLoginUser();
+		IVmModule vmModule = ((data is IDecorate decorate) ? decorate.DecorateSource : data) as IVmModule;
+		if (!vmModule.ConfigAvailable && (loginUser == AccessUser.Tech || loginUser == AccessUser.Operator))
+		{
+			flag = false;
+		}
+		return flag && vmModule.ConfigCheck;
+	}
+
+	[DllImport("user32.dll")]
+	public static extern int SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+	private void OpenParamsTabControl(object partUI, object data)
+	{
+		try
+		{
+			if (curTabControlBase != null)
+			{
+				return;
+			}
+			LogHelper.Info("OpenParamsTabControl start.");
+			IVmModule vmModule = ((data is IDecorate decorate) ? decorate.DecorateSource : data) as IVmModule;
+			if (!CheckModelXmlIntact(vmModule))
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("模块XML缺失"));
+				return;
+			}
+			if (!vmModule.IsGlobalModu)
+			{
+				Ioc.Get<IUnRedoService>()?.Register(new SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI.RootOperation
+				{
+					RootOperType = "ModifyConfig"
+				}, AppLocalizationService.GetLang("修改配置") + ": " + vmModule.Name);
+			}
+			if (ROIPartUI is ModuleResultView { Tag: TabWinBase tag } moduleResultView)
+			{
+				if (tag.Visibility == Visibility.Visible)
+				{
+					tag.Close();
+				}
+				TabWinBase tabWinBase = null;
+				moduleResultView.Tag = null;
+			}
+			TabWinBase tabWinBase2 = GetExternTabWin(vmModule) ?? new ParamsTabControlBase();
+			tabWinBase2.ROIPartUI = partUI;
+			tabWinBase2.IsEditState = IsParamsEditState;
+			LogHelper.Info("ParamsConfig value start.");
+			tabWinBase2.ParamsConfig = vmModule.Params;
+			LogHelper.Info("ParamsConfig value end.");
+			if (Application.Current != null)
+			{
+				Window window = Window.GetWindow(this);
+				tabWinBase2.Owner = window ?? Application.Current.MainWindow;
+				tabWinBase2.AlongParent = this;
+			}
+			else if (PresentationSource.FromDependencyObject(this) is HwndSource hwndSource)
+			{
+				WindowInteropHelper windowInteropHelper = new WindowInteropHelper(tabWinBase2)
+				{
+					Owner = hwndSource.Handle
+				};
+			}
+			ElementHost.EnableModelessKeyboardInterop(tabWinBase2);
+			tabWinBase2.Show();
+			SetCurrentValue(IsOpenParamsProperty, true);
+			curTabControlBase = tabWinBase2;
+			WeakEventManager<Window, EventArgs>.AddHandler(curTabControlBase, "Closed", CurTabControlBase_Closed);
+			if (ROIPartUI is ModuleResultView moduleResultView2)
+			{
+				moduleResultView2.Tag = curTabControlBase;
+				moduleResultView2.SetRoiVisible();
+			}
+			DecoratorSelectedItem = data;
+			LogHelper.Info("OpenParamsTabControl end.");
+		}
+		catch (VmException ex)
+		{
+			string text = AppLocalizationService.GetLang("errCode:") + $"{ex.errorCode:X}" + "\r\n";
+			text = text + AppLocalizationService.GetLang("errInfo:") + ErrorCodeInfo.GetErrorInfo(ex.errorCode);
+			LogHelper.Error("OpenParamsTabControl error: " + text);
+		}
+		catch (Exception ex2)
+		{
+			LogHelper.Error("OpenParamsTabControl error: " + ex2.Message + "\r\n" + ex2.StackTrace);
+		}
+	}
+
+	private bool CheckModelXmlIntact(IVmModule module)
+	{
+		try
+		{
+			if (module == null)
+			{
+				return false;
+			}
+			if (!Directory.Exists(module.ModuleDir) || !File.Exists(module.ModuleDir + "\\" + module.ModuleTypeName + ".xml") || !File.Exists(module.ModuleDir + "\\" + module.ModuleTypeName + "AlgorithmTab.xml") || !File.Exists(module.ModuleDir + "\\" + module.ModuleTypeName + "Display.xml"))
+			{
+				return false;
+			}
+			return true;
+		}
+		catch (Exception ex)
+		{
+			LogHelper.Error("CheckModelXmlIntact error: " + ex.Message + "\r\n" + ex.StackTrace);
+			return false;
+		}
+	}
+
+	private TabWinBase GetExternTabWin(IVmModule vmModule)
+	{
+		string moduleName = vmModule.ModuleTypeName;
+		Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control"));
+		if (assembly == null)
+		{
+			string text = Path.GetDirectoryName(vmModule.Params.XmlPath) + "\\" + moduleName + "Control.dll";
+			if (File.Exists(text))
+			{
+				ActivatorWrap.LoadAssembly(text);
+				assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName + "Control")) ?? AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly p) => string.Equals(p.GetName().Name, moduleName.Remove(moduleName.LastIndexOf('C')) + "Control"));
+			}
+		}
+		if (assembly != null)
+		{
+			List<Type> list = (from p in assembly.GetTypes()
+				where typeof(TabWinBase).IsAssignableFrom(p)
+				select p).ToList();
+			if (list.Count > 0)
+			{
+				return ActivatorWrap.CreateInstance(list[0]) as TabWinBase;
+			}
+		}
+		return null;
+	}
+
+	private void CurTabControlBase_Closed(object sender, EventArgs e)
+	{
+		Dispatcher.Invoke(() =>
+		{
+			curTabControlBase = null;
+			if (ROIPartUI is ModuleResultView moduleResultView)
+			{
+				moduleResultView.Tag = null;
+			}
+			SetCurrentValue(IsOpenParamsProperty, false);
+			SetRoiVisible(v: false);
+		});
+		Ioc.Get<IUnRedoService>()?.RemoveEmptyOperation();
+	}
+
+	/// <summary>
+	/// 设置主界面绘制roi的可见性
+	/// </summary>
+	/// <param name="v"></param>
+	private void SetRoiVisible(bool v)
+	{
+		if (ROIPartUI is ModuleResultView moduleResultView)
+		{
+			moduleResultView.SetRoiVisible();
+		}
+		else if (ROIPartUI is ImageViewBox imageViewBox)
+		{
+			imageViewBox.ROIVisible = v;
+			imageViewBox.IsMulRolModule = false;
+		}
+	}
+
+	private static void OnBoolOfDisplayTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		if (procedureConfigControl != null && (bool)e.NewValue)
+		{
+			procedureConfigControl.ResetDisposeStatus();
+		}
+	}
+
+	private static void OnDecoratorSelectedTabItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+		procedureConfigControl.DecoratorSelectedItem = newValue;
+	}
+
+	private static void OnDecoratorSelectedSubTabItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+	}
+
+	private static void OnDecoratorSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+		if (newValue != null)
+		{
+			object obj = newValue;
+			IDecorate decorate = null;
+			if (obj is IDecorate decorate2)
+			{
+				decorate = decorate2;
+				obj = decorate2.DecorateSource;
+				if (obj is IVmProcedure)
+				{
+					procedureConfigControl.DecoratorSelectedTabItem = decorate2;
+				}
+			}
+			if (!procedureConfigControl.LoadingFlag)
+			{
+				procedureConfigControl.SetCurrentValue(SelectedItemProperty, obj);
+			}
+			if (obj is IVmProcedure)
+			{
+				procedureConfigControl.SetCurrentValue(SelectedModuleProperty, null);
+				procedureConfigControl.SetCurrentValue(SelectedProProperty, obj);
+			}
+			else
+			{
+				procedureConfigControl.SetCurrentValue(SelectedModuleProperty, obj);
+				procedureConfigControl.SetCurrentValue(SelectedProProperty, null);
+			}
+		}
+		else if (oldValue != null)
+		{
+			object obj2 = oldValue;
+			IDecorate decorate3 = null;
+			if (obj2 is IDecorate decorate4)
+			{
+				decorate3 = decorate4;
+				obj2 = decorate4.DecorateSource;
+			}
+			procedureConfigControl.SetCurrentValue(SelectedItemProperty, null);
+			if (obj2 is IVmProcedure)
+			{
+				procedureConfigControl.SetCurrentValue(SelectedProProperty, null);
+			}
+			else
+			{
+				procedureConfigControl.SetCurrentValue(SelectedModuleProperty, null);
+			}
+		}
+	}
+
+	private static void OnSolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		IVmSolution vmSolution = e.OldValue as IVmSolution;
+		IVmSolution vmSolution2 = e.NewValue as IVmSolution;
+		if (procedureConfigControl.curTabControlBase is BaseWindow { IsClosing: false })
+		{
+			procedureConfigControl.curTabControlBase?.Close();
+		}
+		if (vmSolution != null)
+		{
+		}
+		if (vmSolution2 != null)
+		{
+			procedureConfigControl.DecoratorSolution = new VmSolutionDecorator
+			{
+				DecorateSource = vmSolution2
+			};
+		}
+		else
+		{
+			procedureConfigControl.DecoratorSolution = null;
+		}
+	}
+
+	private static void OnLoadingFlagChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		if (!(bool)e.NewValue && (bool)e.OldValue && procedureConfigControl.DecoratorSelectedItem is IDecorate { DecorateSource: var decorateSource })
+		{
+			procedureConfigControl.SetCurrentValue(SelectedItemProperty, decorateSource);
+		}
+	}
+
+	private static void OnProceduresChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		IEnumerable enumerable = (IEnumerable)e.OldValue;
+		IEnumerable enumerable2 = (IEnumerable)e.NewValue;
+		if (enumerable != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(enumerable as INotifyCollectionChanged, procedureConfigControl.Procedures_CollectionChanged);
+			procedureConfigControl.ClearProcedures();
+		}
+		if (enumerable2 != null)
+		{
+			CollectionChangedEventManager.RemoveHandler(enumerable2 as INotifyCollectionChanged, procedureConfigControl.Procedures_CollectionChanged);
+			CollectionChangedEventManager.AddHandler(enumerable2 as INotifyCollectionChanged, procedureConfigControl.Procedures_CollectionChanged);
+			IUnRedoService unRedoService = Ioc.Get<IUnRedoService>();
+			if (unRedoService != null && unRedoService.SetCopyStatus())
+			{
+				procedureConfigControl.AddProcedures(enumerable2);
+				Ioc.Get<IUnRedoService>()?.SetCopyStatus("false");
+			}
+			else
+			{
+				procedureConfigControl.AddProcedures(enumerable2, isInit: true);
+			}
+		}
+	}
+
+	private void ClearProcedures()
+	{
+		ResetDisposeStatus();
+		DecoratedProcedures.Clear();
+		DecoratedModules.Clear();
+	}
+
+	private void ResetDisposeStatus()
+	{
+		IsDisposeNotify = true;
+		IsDisposeNotify = false;
+	}
+
+	private void RemoveProcedures(IEnumerable oldValue)
+	{
+		foreach (object data in oldValue)
+		{
+			VmModuleBaseDecorator vmModuleBaseDecorator = DecoratedModules.FirstOrDefault((VmModuleBaseDecorator p) => p.DecorateSource == data);
+			if (vmModuleBaseDecorator != null)
+			{
+				DecoratedProcedures.Remove(vmModuleBaseDecorator);
+				DecoratedModules.Remove(vmModuleBaseDecorator);
+			}
+		}
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="newValue"></param>
+	/// <param name="isInit">首次添加</param>
+	private void AddProcedures(IEnumerable newValue, bool isInit = false)
+	{
+		IList list;
+		if ((list = newValue as IList) != null && list.Count == 1 && !(list[0] is IVmProcedure))
+		{
+			Dispatcher.BeginInvoke((Action)(() =>
+			{
+				VmModuleDecorator item = new VmModuleDecorator
+				{
+					DecorateSource = list[0]
+				};
+				DecoratedModules.Add(item);
+			}));
+			return;
+		}
+		Dispatcher.Invoke(() =>
+		{
+			if (IsSingleProcedure && !IsForSingleModulesetMode)
+			{
+				needShowSingleProcedureName = (DecoratorSelectedTabItem as VmProcedureDecorator)?.Name;
+				IsSingleProcedure = false;
+			}
+			foreach (object item3 in newValue)
+			{
+				if (item3 is IVmProcedure)
+				{
+					VmProcedureDecorator item = new VmProcedureDecorator
+					{
+						DecorateSource = item3
+					};
+					DecoratedProcedures.Add(item);
+					DecoratedModules.Add(item);
+				}
+				else
+				{
+					VmModuleDecorator item2 = new VmModuleDecorator
+					{
+						DecorateSource = item3
+					};
+					DecoratedModules.Add(item2);
+				}
+			}
+			if (newValue.OfType<object>().Any((object p) => p is IVmProcedure))
+			{
+				if (isInit)
+				{
+					DecoratorSelectedTabItem = DecoratedProcedures.FirstOrDefault();
+				}
+				else
+				{
+					DecoratorSelectedTabItem = DecoratedProcedures.LastOrDefault();
+				}
+			}
+			if (IsForSingleModulesetMode && DecoratedProcedures.Count > 0)
+			{
+				PropertyChangedEventManager.RemoveHandler(DecoratedProcedures.First() as VmProcedureDecorator, DisplayModuleSetChanged, "DisplayModuleSet");
+				PropertyChangedEventManager.AddHandler(DecoratedProcedures.First() as VmProcedureDecorator, DisplayModuleSetChanged, "DisplayModuleSet");
+				if (SingleModulesetSource != null && (DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet.DecorateSource != SingleModulesetSource)
+				{
+					(DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet = new VmGroupDecorator
+					{
+						DecorateSource = SingleModulesetSource
+					};
+				}
+			}
+			if (!string.IsNullOrEmpty(needShowSingleProcedureName))
+			{
+				ShowSingleProcedure(needShowSingleProcedureName, needPopTip: false);
+			}
+		});
+	}
+
+	private void AddModulesAsync(IEnumerable newValue, bool isInit = false)
+	{
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (IsSingleProcedure && !IsForSingleModulesetMode)
+			{
+				needShowSingleProcedureName = (DecoratorSelectedTabItem as VmProcedureDecorator)?.Name;
+				IsSingleProcedure = false;
+			}
+			foreach (object item3 in newValue)
+			{
+				if (item3 is IVmProcedure)
+				{
+					VmProcedureDecorator item = new VmProcedureDecorator
+					{
+						DecorateSource = item3
+					};
+					DecoratedProcedures.Add(item);
+					DecoratedModules.Add(item);
+				}
+				else
+				{
+					VmModuleDecorator item2 = new VmModuleDecorator
+					{
+						DecorateSource = item3
+					};
+					DecoratedModules.Add(item2);
+				}
+			}
+			if (newValue.OfType<object>().Any((object p) => p is IVmProcedure))
+			{
+				if (isInit)
+				{
+					DecoratorSelectedTabItem = DecoratedProcedures.FirstOrDefault();
+				}
+				else
+				{
+					DecoratorSelectedTabItem = DecoratedProcedures.LastOrDefault();
+				}
+			}
+			if (IsForSingleModulesetMode && DecoratedProcedures.Count > 0)
+			{
+				PropertyChangedEventManager.RemoveHandler(DecoratedProcedures.First() as VmProcedureDecorator, DisplayModuleSetChanged, "DisplayModuleSet");
+				PropertyChangedEventManager.AddHandler(DecoratedProcedures.First() as VmProcedureDecorator, DisplayModuleSetChanged, "DisplayModuleSet");
+				if (SingleModulesetSource != null && (DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet.DecorateSource != SingleModulesetSource)
+				{
+					(DecoratedProcedures.First() as VmProcedureDecorator).DisplayModuleSet = new VmGroupDecorator
+					{
+						DecorateSource = SingleModulesetSource
+					};
+				}
+			}
+			if (!string.IsNullOrEmpty(needShowSingleProcedureName))
+			{
+				ShowSingleProcedure(needShowSingleProcedureName, needPopTip: false);
+			}
+		}));
+	}
+
+	private void TabControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (!((DecoratorSelectedTabItem as IDecorate)?.DecorateSource is IVmProcedure))
+		{
+			DecoratorSelectedTabItem = DecoratedProcedures.FirstOrDefault();
+			return;
+		}
+		if ((DecoratorSelectedItem as IDecorate)?.DecorateSource is IVmProcedure)
+		{
+			DecoratorSelectedTabItem = DecoratorSelectedItem;
+		}
+		if (DecoratorSelectedItem != DecoratorSelectedTabItem && (DecoratorSelectedItem as IVmModule)?.Root != (DecoratorSelectedTabItem as IDecorate)?.DecorateSource && ((DecoratorSelectedItem as IDecorate)?.DecorateSource as IVmModule)?.Root != (DecoratorSelectedTabItem as IDecorate)?.DecorateSource)
+		{
+			DecoratorSelectedItem = DecoratorSelectedTabItem;
+		}
+	}
+
+	private void DiagramArea_Loaded(object sender, RoutedEventArgs e)
+	{
+		SelectedItemToSelectedTabItem();
+	}
+
+	/// <summary>
+	/// 当前选中为Tab页的选中
+	/// </summary>
+	private void SelectedItemToSelectedTabItem()
+	{
+		if (DecoratorSelectedTabItem != null)
+		{
+			DecoratorSelectedItem = DecoratorSelectedTabItem;
+		}
+	}
+
+	/// <summary>
+	/// 当前选中为Tab页实际数据的选中
+	/// </summary>
+	private void SelectedItemToSelectedSubTabItem()
+	{
+		if (DecoratorSelectedSubTabItem != null)
+		{
+			DecoratorSelectedItem = DecoratorSelectedSubTabItem;
+		}
+	}
+
+	/// <summary>
+	/// Tab页的流程选中
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void HeadText_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (DecoratorSelectedItem != DecoratorSelectedSubTabItem || DecoratorSelectedSubTabItem == null)
+		{
+			DecoratorSelectedItem = null;
+			DecoratorSelectedSubTabItem = ((sender as FrameworkElement).DataContext as VmProcedureDecorator)?.DisplayModuleSet;
+			SelectedItemToSelectedSubTabItem();
+		}
+	}
+
+	private void ReplaceProcedures(IList oldItems, IList newItems)
+	{
+	}
+
+	private void Procedures_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		switch (e.Action)
+		{
+		case NotifyCollectionChangedAction.Add:
+			AddProcedures(e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Remove:
+		{
+			RemoveProcedures(e.OldItems);
+			object obj = DecoratorSelectedItem;
+			if (obj != null)
+			{
+				if (DecoratorSelectedItem is IDecorate decorate)
+				{
+					obj = decorate.DecorateSource;
+				}
+				if (e.OldItems.Contains(obj))
+				{
+					DecoratorSelectedItem = null;
+				}
+				if (DecoratorSelectedTabItem is IDecorate decorate2)
+				{
+					obj = decorate2.DecorateSource;
+				}
+				if (e.OldItems.Contains(obj))
+				{
+					DecoratorSelectedTabItem = null;
+				}
+			}
+			break;
+		}
+		case NotifyCollectionChangedAction.Move:
+			throw new NotImplementedException();
+		case NotifyCollectionChangedAction.Replace:
+			ReplaceProcedures(e.OldItems, e.NewItems);
+			break;
+		case NotifyCollectionChangedAction.Reset:
+			ClearProcedures();
+			break;
+		}
+	}
+
+	public ProcedureConfigControl()
+	{
+		InitializeComponent();
+		if (!this.IsInDesignMode())
+		{
+			CurrentUIHelper.Instance.Dispatcher.Invoke(() =>
+			{
+			});
+			Loaded += ProcedureConfigControl_Loaded;
+			Unloaded += ProcedureConfigControl_UnLoaded;
+		}
+	}
+
+	public long GetBaseHandle()
+	{
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	private void ProcedureConfigControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		PropertyChanged -= ProcedureConfigControl_PropertyChanged;
+		PropertyChanged += ProcedureConfigControl_PropertyChanged;
+		FunctionCameraManager.Register("OnCloseParamsTabControl", OnCloseParamsTabControl);
+		ToolControl.RegesitGlobalModuleWinAction();
+	}
+
+	private void ProcedureConfigControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == "BoolOfDisplayType" && BoolOfDisplayType)
+		{
+			DiagramAreaControl = this.FindVisualChild<DiagramArea>("DiagramAreaControl");
+		}
+	}
+
+	private void ProcedureConfigControl_UnLoaded(object sender, RoutedEventArgs e)
+	{
+		PropertyChanged -= ProcedureConfigControl_PropertyChanged;
+		FunctionCameraManager.UnRegister("OnCloseParamsTabControl");
+		ToolControl.UnRegesitGlobalModuleWinAction();
+		if (DiagramAreaControl != null)
+		{
+			DiagramArea diagramAreaControl = DiagramAreaControl;
+			diagramAreaControl.ItemDoubleClick = (EventHandler)Delegate.Remove(diagramAreaControl.ItemDoubleClick, new EventHandler(DiagramArea_ItemDoubleClick));
+		}
+	}
+
+	/// <summary>
+	/// 切换语言时要关掉已打开的配置界面
+	/// </summary>
+	public void OnCloseParamsTabControl()
+	{
+		if (curTabControlBase != null)
+		{
+			curTabControlBase.Close();
+		}
+	}
+
+	private void TabControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		View = Template.FindName("PART_View", this) as Grid;
+		TabControl = Template.FindName("tabControl", this) as TabControl;
+		toolBox = Template.FindName("toolBox", this) as ToolBox;
+		paramControl = Template.FindName("paramControl", this) as Grid;
+		columnDefinition1 = Template.FindName("columnDefinition1", this) as ColumnDefinition;
+		columnDefinition2 = Template.FindName("columnDefinition2", this) as ColumnDefinition;
+		if (AppDataFactory.Instance().IsRightLayout && columnDefinition1 != null && columnDefinition1 != null)
+		{
+			columnDefinition1.Width = new GridLength(1.0, GridUnitType.Star);
+			columnDefinition2.Width = GridLength.Auto;
+			Grid.SetColumn(paramControl, 0);
+			Grid.SetColumn(toolBox, 1);
+		}
+	}
+
+	protected override Visual GetVisualChild(int index)
+	{
+		if (index == 0)
+		{
+			return View;
+		}
+		return _adornerLayer;
+	}
+
+	private void m_ProcessTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (!(e.OriginalSource is TabControl))
+		{
+			return;
+		}
+		TabControl tabControl = sender as TabControl;
+		if (e.AddedItems.Count <= 0)
+		{
+			return;
+		}
+		ScrollViewer sv = tabControl.Template.FindName("scroll", tabControl) as ScrollViewer;
+		object item = e.AddedItems[0];
+		TabItem itemControl = tabControl.ItemContainerGenerator.ContainerFromItem(item) as TabItem;
+		if (itemControl != null)
+		{
+			if (Application.Current == null && WinformHandle == IntPtr.Zero)
+			{
+				itemControl.SetValue(TabItem.IsSelectedProperty, true);
+			}
+			else
+			{
+				itemControl.Focus();
+				Keyboard.ClearFocus();
+			}
+			DelayAction = (object s) =>
+			{
+				if (s != sv)
+				{
+					DelayAction = null;
+				}
+				else
+				{
+					double horizontalOffset = sv.HorizontalOffset;
+					Point point = new Point(0.0, horizontalOffset);
+					if (itemControl.FindCommonVisualAncestor(sv) is Visual)
+					{
+						Point point2 = itemControl.TransformToVisual(sv).Transform(default);
+						if (point2.X >= 0.0 && point2.X <= sv.ActualWidth)
+						{
+							CanScroll = false;
+							if (Math.Abs(point2.X - 0.0) < MinExWidth)
+							{
+								sv.ScrollToHorizontalOffset(horizontalOffset - MinExWidth);
+							}
+							if (Math.Abs(point2.X + itemControl.ActualWidth - sv.ActualWidth) < MinExWidth)
+							{
+								sv.ScrollToHorizontalOffset(horizontalOffset + MinExWidth);
+							}
+						}
+					}
+				}
+			};
+		}
+		else
+		{
+			LogHelper.Error("itemControl is null.");
+		}
+	}
+
+	private void Sv_ScrollChanged(object sender, ScrollChangedEventArgs e)
+	{
+		Dispatcher.BeginInvoke((Action)(() =>
+		{
+			if (!CanScroll)
+			{
+				CanScroll = true;
+			}
+			else if (CanScroll)
+			{
+				DelayAction?.Invoke(sender);
+			}
+		}));
+	}
+
+	private void OpenProcedureCommandExecute()
+	{
+		BoolOfDisplayType = false;
+	}
+
+	private static void OnIsShowProgressMaskChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		ProcedureConfigControl procedureConfigControl = (ProcedureConfigControl)d;
+		if ((bool)e.NewValue)
+		{
+			procedureConfigControl.AddMask();
+		}
+		else
+		{
+			procedureConfigControl.RemoveMask();
+		}
+	}
+
+	private void RemoveMask()
+	{
+		if (View != null)
+		{
+			View.Children.Remove(progressMask);
+			progressMask = null;
+		}
+	}
+
+	private void AddMask()
+	{
+		if (View != null)
+		{
+			progressMask = new ProgressMask();
+			progressMask.SetBinding(ProgressMask.MessageProperty, new Binding("MaskMessage")
+			{
+				Source = this
+			});
+			progressMask.SetBinding(ProgressMask.ValueProperty, new Binding("Progress")
+			{
+				Source = this
+			});
+			progressMask.SetValue(Grid.ColumnSpanProperty, 2);
+			View.Children.Add(progressMask);
+		}
+	}
+
+	/// <summary>
+	/// 进入和返回时
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void ContentPresenter_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+	{
+		object newValue = e.NewValue;
+		if (!(newValue is IDecorate decorate))
+		{
+			return;
+		}
+		if (decorate is VmProcedureDecorator vmProcedureDecorator)
+		{
+			if (DecoratorSelectedTabItem == vmProcedureDecorator)
+			{
+				SelectedItemToSelectedTabItem();
+			}
+		}
+		else
+		{
+			DecoratorSelectedSubTabItem = decorate;
+			SelectedItemToSelectedSubTabItem();
+		}
+	}
+
+	private void SuperImageButton_Click(object sender, RoutedEventArgs e)
+	{
+		TabItem parent = (sender as FrameworkElement).GetParent<TabItem>();
+		parent.IsSelected = true;
+		HeadText_MouseDown(sender, null);
+	}
+
+	private void VarConfigParamsCommandExecute(object obj)
+	{
+		VmModuleBaseDecorator obj2 = obj as VmModuleBaseDecorator;
+		if (obj2 != null && obj2.IsForbidden)
+		{
+			return;
+		}
+		VmModuleBaseDecorator obj3 = obj as VmModuleBaseDecorator;
+		if ((obj3 == null || obj3.IsLoadFailed != true) && obj is VmModuleSetDecorator vmModuleSetDecorator)
+		{
+			GlobalVariableDialog globalVariableDialog = new GlobalVariableDialog();
+			if (Application.Current != null)
+			{
+				globalVariableDialog.Owner = Application.Current.MainWindow;
+			}
+			else if (PresentationSource.FromDependencyObject(this) is HwndSource hwndSource)
+			{
+				WindowInteropHelper windowInteropHelper = new WindowInteropHelper(globalVariableDialog)
+				{
+					Owner = hwndSource.Handle
+				};
+			}
+			ElementHost.EnableModelessKeyboardInterop(globalVariableDialog);
+			globalVariableDialog.DecorateSource = vmModuleSetDecorator.LocalVariableModule;
+			globalVariableDialog.ShowDialog();
+		}
+	}
+}

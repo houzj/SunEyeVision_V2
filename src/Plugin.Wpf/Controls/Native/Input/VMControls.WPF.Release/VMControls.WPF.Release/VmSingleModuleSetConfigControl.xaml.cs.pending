@@ -1,0 +1,145 @@
+using System;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Markup;
+using Apps.ColorFun;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release;
+
+/// <summary>
+/// VmSingleModuleSetConfigControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// VmSingleModuleSetConfigControl
+/// </summary>
+public partial class VmSingleModuleSetConfigControl : VMWpfControl, IDisposable, IComponentConnector
+{
+	public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register("ModuleSource", typeof(IVmModuleSet), typeof(VmSingleModuleSetConfigControl), new PropertyMetadata(null));
+
+	private SingleModuleSetControl SingleControl = null;
+
+	private bool isParamTabEditable = true;
+
+	private IntPtr groupInfoPtr = IntPtr.Zero;
+
+	public GroupIndependInfo _independentGro;
+
+	public IVmModuleSet ModuleSource
+	{
+		get
+		{
+			return (IVmModuleSet)GetValue(ModuleSourceProperty);
+		}
+		set
+		{
+			SetValue(ModuleSourceProperty, value);
+		}
+	}
+
+	public VmSingleModuleSetConfigControl()
+	{
+		try
+		{
+			AssemblyResolveHelper.GetInstance();
+			ColorThemesResourceDictionary.GetInstance(this);
+			InitializeComponent();
+		}
+		catch (Exception ex)
+		{
+			VmExceptionUtil.DoneException(ex);
+		}
+	}
+
+	~VmSingleModuleSetConfigControl()
+	{
+		try
+		{
+			if (IntPtr.Zero != groupInfoPtr)
+			{
+				Marshal.FreeCoTaskMem(groupInfoPtr);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		SingleControl = (SingleModuleSetControl)Template.FindName("SingleControl", this);
+		MakeParamTabEditable();
+	}
+
+	private void MakeParamTabEditable()
+	{
+		if (SingleControl != null)
+		{
+			SingleControl.IsParamsEditState = isParamTabEditable;
+		}
+	}
+
+	/// <summary>
+	/// 流程、Group运行参数页中的添加、删除、编辑按钮是否可见
+	/// </summary>
+	/// <param name="isEditable">是否可见 true:按钮可见,false:按钮不可见</param>
+	public void SetParamTabEditable(bool isEditable)
+	{
+		isParamTabEditable = isEditable;
+		MakeParamTabEditable();
+	}
+
+	/// <summary>
+	/// 初始化（COM组件）
+	/// </summary>
+	public long GetBaseHandle()
+	{
+		if (VmSolution.Instance == null)
+		{
+			return 0L;
+		}
+		return (long)VmSolution.Instance.BaseHandle;
+	}
+
+	/// <summary>
+	/// 加载独立Group方案
+	/// </summary>
+	/// <param name="shape"></param>
+	public IntPtr ImportIndependentGroup(string path, string password)
+	{
+		IMVSGroup iMVSGroup = (IMVSGroup)(ModuleSource = VmSolution.LoadIndependentGroup(path, password));
+		_independentGro = default;
+		_independentGro.nId = iMVSGroup.ID;
+		_independentGro.pHandle = VmSolution.Instance.BaseHandle;
+		if (IntPtr.Zero == groupInfoPtr)
+		{
+			groupInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(_independentGro));
+		}
+		Marshal.StructureToPtr(_independentGro, groupInfoPtr, fDeleteOld: true);
+		return groupInfoPtr;
+	}
+
+	/// <summary>
+	/// 释放独立Group
+	/// </summary>
+	public void DestroyIndependentGroup()
+	{
+		if (ModuleSource is IMVSGroup iMVSGroup)
+		{
+			ModuleSource = null;
+			iMVSGroup.Dispose();
+		}
+	}
+
+	/// <summary>
+	/// 释放资源
+	/// </summary>
+	public void Dispose()
+	{
+		ModuleSource = null;
+		Template = null;
+	}
+}

@@ -1,0 +1,538 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Input;
+using Apps.Data;
+using Apps.Localization;
+using Apps.Log;
+using Apps.UIHelper.Extern;
+using Apps.XmlParser.ParamTab;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+using VM.User;
+using VMControls.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 设备管理类，设备列表增删以及数据获取下发
+/// </summary>
+public class LightSourceManager : INotifyPropertyChanged
+{
+	public const int IMVS_Device_Count = 16;
+
+	private List<object> creatingItems = new List<object>();
+
+	private ObservableCollection<object> Items = new ObservableCollection<object>();
+
+	private object CurLightDevice;
+
+	private bool isAddEnabled = true;
+
+	private static readonly LightSourceManager instance;
+
+	private bool needForceRefresh = false;
+
+	/// <summary>
+	/// 对象锁
+	/// </summary>
+	private object _lock = new object();
+
+	private object _lockItems = new object();
+
+	/// <summary>
+	/// 添加光源设备
+	/// </summary>
+	private DelegateCommand addDevCommand = null;
+
+	public int CurDevCount
+	{
+		get
+		{
+			lock (_lockItems)
+			{
+				return Items.Count;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 模块ID
+	/// </summary>
+	public int ModuleID { get; set; }
+
+	public ObservableCollection<object> ItemsA
+	{
+		get
+		{
+			lock (_lockItems)
+			{
+				return Items;
+			}
+		}
+		set
+		{
+			lock (_lockItems)
+			{
+				if (Items != value)
+				{
+					Items = value;
+					OnPropertyChanged("ItemsA");
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// 当前选中的设备
+	/// </summary>
+	public object CurLightDeviceA
+	{
+		get
+		{
+			return CurLightDevice;
+		}
+		set
+		{
+			if (CurLightDevice != value)
+			{
+				if (CurLightDevice is LightSourceDevice lightSourceDevice)
+				{
+					lightSourceDevice.IsParamError = false;
+				}
+				CurLightDevice = value;
+				if (CurLightDevice is LightSourceDevice { IsLight: not false } lightSourceDevice2)
+				{
+					lightSourceDevice2.GetChannelParam();
+				}
+				OnPropertyChanged("CurLightDeviceA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否可增加（用于权限管理）
+	/// </summary>
+	public bool IsAddEnabled
+	{
+		get
+		{
+			return isAddEnabled;
+		}
+		set
+		{
+			if (isAddEnabled != value)
+			{
+				isAddEnabled = value;
+				OnPropertyChanged("IsAddEnabled");
+			}
+		}
+	}
+
+	public static LightSourceManager Instance => instance;
+
+	public ICommand AddDevCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = addDevCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)AddDevCommandExecute);
+				DelegateCommand val3 = val2;
+				addDevCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	static LightSourceManager()
+	{
+		instance = new LightSourceManager();
+	}
+
+	private LightSourceManager()
+	{
+		VmSolution.OnSolutionLoadEndCallBack += VmSolution_OnEndCallBack;
+	}
+
+	/// <summary>
+	/// 通知属性变化
+	/// </summary>
+	/// <param name="name"></param>
+	public virtual void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	/// <summary>
+	/// 获取底层模块的数据
+	/// </summary>
+	public void GetData(bool isInnerModule = false, bool isPopErrorInfo = true)
+	{
+		lock (_lock)
+		{
+			int binaryData = ServerSDKManager.serverSDKManager.mModuleManager.GetBinaryData((uint)ModuleID, "LightDeviceList", out var data);
+			try
+			{
+				if (binaryData > 0)
+				{
+					IMVS_LIGHT_DEVICE_LIST list = Marshal.PtrToStructure<IMVS_LIGHT_DEVICE_LIST>(data);
+					Debugger.Log(0, null, "LightManagerUI：dataLen [" + binaryData + "], Items.Count[" + Items.Count + "], target.Count[" + list.nCount + "]");
+					if (!CheckDeviceList(list))
+					{
+						LogHelper.Info("重新获取控制器列表");
+						needForceRefresh = false;
+						ClearDevices();
+						bool flag = false;
+						for (int i = 0; i < list.nCount; i++)
+						{
+							IMVS_LIGHT_DEVICE item = list.stLightDevice[i];
+							if (AddDevice(item, i))
+							{
+								flag = true;
+							}
+						}
+						if (flag)
+						{
+							ReFreshIndex();
+						}
+						if (Items.Count > 0)
+						{
+							instance.CurLightDeviceA = Items[0];
+						}
+					}
+				}
+				else
+				{
+					ClearDevices();
+					if (isPopErrorInfo)
+					{
+						HikMessageBox.Show(AppLocalizationService.GetLang("Lang_GetGlobalLightListERR"), MessageIcons.Error);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				if (isPopErrorInfo)
+				{
+					HikMessageBox.Show(ex.Message, MessageIcons.Error);
+				}
+			}
+			finally
+			{
+				if (data != IntPtr.Zero)
+				{
+					Marshal.FreeHGlobal(data);
+					data = IntPtr.Zero;
+				}
+			}
+		}
+		if (!isInnerModule && instance.CurLightDeviceA != null && CurLightDeviceA is LightSourceDevice lightSourceDevice)
+		{
+			lightSourceDevice.GetChannelParam();
+		}
+	}
+
+	/// <summary>
+	/// 清空界面设备列表
+	/// </summary>
+	public void ClearDevices()
+	{
+		if (Items.Count > 0)
+		{
+			instance.CurLightDeviceA = null;
+			Items.Clear();
+			creatingItems.Clear();
+		}
+	}
+
+	/// <summary>
+	/// 添加底层返回设备
+	/// </summary>
+	/// <param name="item"></param>
+	/// <param name="index"></param>
+	/// <returns>是否需要刷新设备序号</returns>
+	private bool AddDevice(IMVS_LIGHT_DEVICE item, int index)
+	{
+		LightSourceDevice lightSourceDevice = new LightSourceDevice
+		{
+			NameA = StringUtil.UTF8GetString(item.chszDeviceName),
+			Guid = item.chszDeviceGuid,
+			IndexA = item.nIndex,
+			IsConnected = item.bConnected
+		};
+		lightSourceDevice.IsNeedSetParam = false;
+		EnumEntry enumEntry = lightSourceDevice.Brand.EnumEntrysA.FirstOrDefault((object p) => (p as EnumEntry).StrValue == StringUtil.UTF8GetString(item.chszBrandName)) as EnumEntry;
+		lightSourceDevice.Brand.CurValueA = enumEntry?.ValueA ?? 0;
+		lightSourceDevice.ComName.CurValueA = (int)item.stComParam.nComNum;
+		lightSourceDevice.IsReConnect.CurValueA = item.bReConnect;
+		lightSourceDevice.BaudRate.CurValueA = (int)item.stComParam.nBaudRate;
+		lightSourceDevice.DataBits.CurValueA = (int)item.stComParam.nDataBits;
+		lightSourceDevice.ParityBit.CurValueA = (int)item.stComParam.nParity;
+		lightSourceDevice.StopBit.CurValueA = (int)item.stComParam.nStopBits;
+		lightSourceDevice.IsNeedSetParam = true;
+		lightSourceDevice.GetIOParam(item.stIOPARAM);
+		Items.Add(lightSourceDevice);
+		creatingItems.Add(lightSourceDevice);
+		lightSourceDevice.AddParamValueChangedHandle();
+		if (lightSourceDevice.IndexA != index)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// 加载方案后要重新加载设备列表
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="args"></param>
+	private void VmSolution_OnEndCallBack(object sender, EndEventArgs args)
+	{
+		needForceRefresh = true;
+	}
+
+	/// <summary>
+	/// 校验底层返回设备列表是否与界面一致
+	/// </summary>
+	/// <param name="list"></param>
+	/// <returns></returns>
+	private bool CheckDeviceList(IMVS_LIGHT_DEVICE_LIST list)
+	{
+		if (Items.Count != list.nCount || needForceRefresh)
+		{
+			return false;
+		}
+		for (int i = 0; i < Items.Count; i++)
+		{
+			if ((Items[i] as LightSourceDevice)?.Guid != list.stLightDevice[i].chszDeviceGuid)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 设备列表下发底层
+	/// </summary>
+	/// <returns></returns>
+	public int SetData()
+	{
+		int result = -1;
+		lock (_lock)
+		{
+			IMVS_LIGHT_DEVICE_LIST structure = new IMVS_LIGHT_DEVICE_LIST
+			{
+				nCount = creatingItems.Count,
+				stLightDevice = new IMVS_LIGHT_DEVICE[16],
+				nReserved = new int[4]
+			};
+			for (int i = 0; i < creatingItems.Count; i++)
+			{
+				structure.stLightDevice[i] = (creatingItems[i] as LightSourceDevice).ConvertToIMVS_LIGHT_DEVICE();
+			}
+			int num = Marshal.SizeOf<IMVS_LIGHT_DEVICE_LIST>();
+			IntPtr intPtr = Marshal.AllocHGlobal(num);
+			try
+			{
+				Marshal.StructureToPtr(structure, intPtr, fDeleteOld: true);
+				result = ServerSDKManager.serverSDKManager.mModuleManager.SetBinaryData((uint)ModuleID, "LightDeviceList", intPtr, num, 60000u);
+			}
+			catch (VmException ex)
+			{
+				HikMessageBox.Show(ex.Message, MessageIcons.Error);
+			}
+			catch (Exception message)
+			{
+				LogHelper.objLog.Error(message);
+			}
+			finally
+			{
+				if (intPtr != IntPtr.Zero)
+				{
+					Marshal.FreeHGlobal(intPtr);
+					intPtr = IntPtr.Zero;
+				}
+			}
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// 更新流程内模块设备列表
+	/// </summary>
+	public void UpdateLightModule()
+	{
+		FunctionCameraManager.Execute("DeleteLight");
+		FunctionCameraManager.Execute("DeleteImageConfigLight");
+	}
+
+	/// <summary>
+	/// 清空设备列表
+	/// </summary>
+	public void ClearDeviceList()
+	{
+		lock (_lock)
+		{
+			ItemsA.Clear();
+			creatingItems.Clear();
+			CurLightDeviceA = null;
+		}
+	}
+
+	/// <summary>
+	/// 名称检测
+	/// </summary>
+	/// <param name="name"></param>
+	/// <returns></returns>
+	public bool CheckName(string name, bool isShow = false)
+	{
+		if (string.IsNullOrEmpty(name))
+		{
+			HikMessageBox.Show(AppLocalizationService.GetLang("Lang_NameEmpty"), MessageIcons.Warning);
+			return false;
+		}
+		if (ItemsA != null && ItemsA.FirstOrDefault((object p) => p is LightSourceDevice && (p as LightSourceDevice).NameA == name) != null)
+		{
+			if (isShow)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_PmNameExited"), MessageIcons.Warning);
+			}
+			return false;
+		}
+		byte[] bytes = Encoding.Default.GetBytes(name);
+		if (bytes.Length > 255)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 删除设备
+	/// </summary>
+	/// <param name="light"></param>
+	public void DeleteDevice(LightSourceDevice light)
+	{
+		lock (_lock)
+		{
+			bool flag = light == CurLightDevice;
+			creatingItems.Remove(light);
+			Items.Remove(light);
+			ReFreshIndex();
+			UpdateLightModule();
+			if (flag)
+			{
+				if (Items.Count == 0)
+				{
+					CurLightDeviceA = null;
+				}
+				else
+				{
+					CurLightDeviceA = Items[0];
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// 刷新序列号
+	/// </summary>
+	public void ReFreshIndex()
+	{
+		if (Items.Count > 0)
+		{
+			for (int i = 0; i < Items.Count; i++)
+			{
+				if (Items[i] is LightSourceDevice lightSourceDevice)
+				{
+					lightSourceDevice.IndexA = i;
+				}
+			}
+		}
+		SetData();
+	}
+
+	/// <summary>
+	/// 刷新端口号
+	/// </summary>
+	/// <returns></returns>
+	public void ReFreshComNum()
+	{
+		foreach (object item in Items)
+		{
+			if (item is LightSourceDevice lightSourceDevice)
+			{
+				lightSourceDevice.ComName.InniterBusiness();
+			}
+		}
+	}
+
+	public void GetAuthority()
+	{
+		AccessUser loginUser = CodeManager.GetInstance().GetLoginUser();
+		if (loginUser == AccessUser.Tech || loginUser == AccessUser.Operator || ((IVMRun)VmSolution.Instance).ContinuousRunEnable)
+		{
+			IsAddEnabled = false;
+		}
+		else
+		{
+			IsAddEnabled = true;
+		}
+	}
+
+	private void AddDevCommandExecute()
+	{
+		lock (_lock)
+		{
+			if (ItemsA.Count >= 16)
+			{
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_DevNumLimit"), MessageIcons.Warning);
+				return;
+			}
+			LightSourceDevice lightSourceDevice = new LightSourceDevice
+			{
+				IndexA = ItemsA.Count
+			};
+			for (int i = 0; i <= ItemsA.Count; i++)
+			{
+				lightSourceDevice.NameA = "Light-" + i;
+				if (CheckName(lightSourceDevice.NameA))
+				{
+					break;
+				}
+			}
+			creatingItems.Add(lightSourceDevice);
+			int num = SetData();
+			if (num != 0)
+			{
+				creatingItems.Remove(lightSourceDevice);
+				HikMessageBox.Show(AppLocalizationService.GetLang("Lang_AddLightFailed"), MessageIcons.Error);
+				return;
+			}
+			lightSourceDevice.SetChannelShowStates();
+			lightSourceDevice.AddParamValueChangedHandle();
+			Items.Add(lightSourceDevice);
+			CurLightDeviceA = lightSourceDevice;
+		}
+	}
+}

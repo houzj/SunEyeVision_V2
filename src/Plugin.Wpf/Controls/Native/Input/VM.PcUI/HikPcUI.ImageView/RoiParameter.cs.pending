@@ -1,0 +1,262 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Input;
+using System.Xml;
+using Apps.Interface;
+using Hik.Xml;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class RoiParameter : BaseNode, INotifyPropertyChanged, ITag, IROI, IROIVisible, IROISelectable, IROILabel, IROIPaste, IROIClone, IROIUIType, IROIColor, IROICheck, IROIRegister
+{
+	public byte SaveROISign;
+
+	private bool _IsSelected = false;
+
+	public bool _TIsVisible = true;
+
+	private object _Tag;
+
+	private bool _forceshow;
+
+	private string _Lable;
+
+	private bool? _IsChecked = null;
+
+	public bool _UIType = false;
+
+	private string _RoiColor = "#0F6AF3";
+
+	private bool _IsROIRegister = false;
+
+	public string RoiType => GetType().Name.Replace("Parameter", "");
+
+	public bool IsSelected
+	{
+		get
+		{
+			return _IsSelected;
+		}
+		set
+		{
+			if (_IsSelected != value)
+			{
+				_IsSelected = value;
+				NotifyPropertyChanged("IsSelected");
+			}
+		}
+	}
+
+	public bool TIsVisible
+	{
+		get
+		{
+			return _TIsVisible;
+		}
+		set
+		{
+			if (_TIsVisible != value)
+			{
+				_TIsVisible = value;
+				NotifyPropertyChanged("TIsVisible");
+			}
+		}
+	}
+
+	public new object Tag
+	{
+		get
+		{
+			return _Tag;
+		}
+		set
+		{
+			_Tag = value;
+			NotifyPropertyChanged("Tag");
+		}
+	}
+
+	public bool ForceShowSelected
+	{
+		get
+		{
+			return _forceshow;
+		}
+		set
+		{
+			_forceshow = value;
+			NotifyPropertyChanged("ForceShowSelected");
+		}
+	}
+
+	public string Lable
+	{
+		get
+		{
+			return _Lable;
+		}
+		set
+		{
+			if (_Lable != value)
+			{
+				_Lable = value;
+				NotifyPropertyChanged("Lable");
+			}
+		}
+	}
+
+	public bool? IsChecked
+	{
+		get
+		{
+			return _IsChecked;
+		}
+		set
+		{
+			if (_IsChecked != value)
+			{
+				_IsChecked = value;
+				NotifyPropertyChanged("IsChecked");
+			}
+		}
+	}
+
+	ICommand IROI.DataChangedCommand { get; set; }
+
+	string IROILabel.Label
+	{
+		get
+		{
+			return Lable;
+		}
+		set
+		{
+			Lable = value;
+		}
+	}
+
+	public bool UIType
+	{
+		get
+		{
+			return _UIType;
+		}
+		set
+		{
+			if (_UIType != value)
+			{
+				_UIType = value;
+				NotifyPropertyChanged("UIType");
+			}
+		}
+	}
+
+	bool IROIVisible.IsVisible
+	{
+		get
+		{
+			return TIsVisible;
+		}
+		set
+		{
+			if (TIsVisible != value)
+			{
+				TIsVisible = value;
+				NotifyPropertyChanged("IsVisible");
+			}
+		}
+	}
+
+	public string RoiColor
+	{
+		get
+		{
+			return _RoiColor;
+		}
+		set
+		{
+			if (_RoiColor != value)
+			{
+				_RoiColor = value;
+				NotifyPropertyChanged("RoiColor");
+			}
+		}
+	}
+
+	public bool IsROIRegister
+	{
+		get
+		{
+			return _IsROIRegister;
+		}
+		set
+		{
+			if (_IsROIRegister != value)
+			{
+				_IsROIRegister = value;
+				NotifyPropertyChanged("IsROIRegister");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public virtual void PastROI(Point center)
+	{
+	}
+
+	IROI IROIClone.Clone()
+	{
+		return Clone<IROI>();
+	}
+
+	protected override void BeforSaveBaseNode()
+	{
+		if (this is IROISign { Sign: var sign } iROISign)
+		{
+			if (sign == false)
+			{
+				SaveROISign = 1;
+			}
+			else if (!iROISign.Sign.HasValue)
+			{
+				SaveROISign = 2;
+			}
+			else
+			{
+				SaveROISign = 0;
+			}
+		}
+		base.BeforSaveBaseNode();
+	}
+
+	public override BaseNode Init(XmlNode node)
+	{
+		base.Init(node);
+		if (this is IROISign iROISign)
+		{
+			if (SaveROISign == 1)
+			{
+				iROISign.Sign = false;
+			}
+			else if (SaveROISign == 2)
+			{
+				iROISign.Sign = null;
+			}
+			else
+			{
+				iROISign.Sign = true;
+			}
+		}
+		return this;
+	}
+}

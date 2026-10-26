@@ -1,0 +1,329 @@
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Input;
+using Apps.Localization;
+using Mvvm.Commands;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+public class CrossData : ICross, IShape, IShapeBase, INotifyPropertyChanged, IIsVisible
+{
+	private Point centerPoint = new Point(0.0, 0.0);
+
+	private double opacity = 1.0;
+
+	private string stroke = "#FFF76900";
+
+	private string fill;
+
+	private double strokeThickness = 1.0;
+
+	private bool isVisible = false;
+
+	private bool isLocked = false;
+
+	public int index = 0;
+
+	public int ImageWidth = 0;
+
+	public int ImageHeight = 0;
+
+	/// <summary>
+	/// 居中命令
+	/// </summary>
+	private DelegateCommand centerCommand = null;
+
+	/// <summary>
+	/// 隐藏命令
+	/// </summary>
+	private DelegateCommand hideCommand = null;
+
+	/// <summary>
+	/// 锁定命令
+	/// </summary>
+	private DelegateCommand lockCommand = null;
+
+	/// <summary>
+	/// 解锁命令
+	/// </summary>
+	private DelegateCommand unLockCommand = null;
+
+	public bool needInit = true;
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return centerPoint;
+		}
+		set
+		{
+			if (centerPoint != value)
+			{
+				centerPoint = value;
+				centerPoint.X = Math.Max(0.0, centerPoint.X);
+				centerPoint.Y = Math.Max(0.0, centerPoint.Y);
+				centerPoint.X = Math.Min(100000.0, centerPoint.X);
+				centerPoint.Y = Math.Min(100000.0, centerPoint.Y);
+				OnPropertyChanged("CenterPoint");
+				OnPropertyChanged("CenterX");
+				OnPropertyChanged("CenterY");
+			}
+		}
+	}
+
+	public double CenterX
+	{
+		get
+		{
+			return centerPoint.X;
+		}
+		set
+		{
+			if (centerPoint.X != value)
+			{
+				CenterPoint = new Point(value, centerPoint.Y);
+				OnPropertyChanged("CenterX");
+			}
+		}
+	}
+
+	public double CenterY
+	{
+		get
+		{
+			return centerPoint.Y;
+		}
+		set
+		{
+			if (centerPoint.Y != value)
+			{
+				CenterPoint = new Point(centerPoint.X, value);
+				OnPropertyChanged("CenterY");
+			}
+		}
+	}
+
+	public double Opacity
+	{
+		get
+		{
+			return opacity;
+		}
+		set
+		{
+			if (opacity != value)
+			{
+				opacity = value;
+				OnPropertyChanged("Opacity");
+			}
+		}
+	}
+
+	public string Stroke
+	{
+		get
+		{
+			return stroke;
+		}
+		set
+		{
+			if (stroke != value)
+			{
+				stroke = value;
+				OnPropertyChanged("Stroke");
+			}
+		}
+	}
+
+	public string Fill
+	{
+		get
+		{
+			return fill;
+		}
+		set
+		{
+			if (fill != value)
+			{
+				fill = value;
+				OnPropertyChanged("Fill");
+			}
+		}
+	}
+
+	public double StrokeThickness
+	{
+		get
+		{
+			return strokeThickness;
+		}
+		set
+		{
+			if (strokeThickness != value)
+			{
+				strokeThickness = value;
+				OnPropertyChanged("StrokeThickness");
+			}
+		}
+	}
+
+	public bool IsVisible
+	{
+		get
+		{
+			return isVisible;
+		}
+		set
+		{
+			if (isVisible != value)
+			{
+				isVisible = value;
+				OnPropertyChanged("IsVisible");
+				OnPropertyChanged("CenterPoint");
+				OnPropertyChanged("StrokeThickness");
+			}
+		}
+	}
+
+	public bool IsLocked
+	{
+		get
+		{
+			return isLocked;
+		}
+		set
+		{
+			if (isLocked != value)
+			{
+				isLocked = value;
+				OnPropertyChanged("IsLocked");
+			}
+		}
+	}
+
+	public string Name => AppLocalizationService.GetLang("十字辅助线") + " " + index;
+
+	public ICommand CenterCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = centerCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)CenterCommandExecute);
+				DelegateCommand val3 = val2;
+				centerCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand HideCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = hideCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)HideCommandExecute);
+				DelegateCommand val3 = val2;
+				hideCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand LockCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = lockCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)LockCommandExecute);
+				DelegateCommand val3 = val2;
+				lockCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand UnLockCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = unLockCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)UnLockCommandExecute);
+				DelegateCommand val3 = val2;
+				unLockCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public string ToolTip => null;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private void CenterCommandExecute()
+	{
+		CenterPoint = new Point(ImageWidth / 2, ImageHeight / 2);
+	}
+
+	private void HideCommandExecute()
+	{
+		IsVisible = false;
+	}
+
+	private void LockCommandExecute()
+	{
+		IsLocked = true;
+	}
+
+	private void UnLockCommandExecute()
+	{
+		IsLocked = false;
+	}
+
+	public void Init()
+	{
+		if (needInit && ImageWidth != 0 && ImageHeight != 0)
+		{
+			int num = ((index != 1) ? 1 : (-1));
+			double num2 = (double)num * 0.1;
+			CenterPoint = new Point((double)ImageWidth * (0.5 + num2), (double)ImageHeight * (0.5 + num2));
+			Stroke = ((index == 1) ? "#FFF76900" : "#FFFFFF00");
+			needInit = false;
+		}
+	}
+}

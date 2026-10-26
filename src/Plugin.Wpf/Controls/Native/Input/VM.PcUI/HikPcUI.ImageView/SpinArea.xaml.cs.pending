@@ -1,0 +1,218 @@
+using System.ComponentModel;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class SpinArea : UserControl, IArea, INotifyPropertyChanged, IComponentConnector
+{
+	private static Cursor mycursor = null;
+
+	private double ScaleX = 1.0;
+
+	private bool _IsPressed;
+
+	public static readonly DependencyProperty AngleProperty = DependencyProperty.Register("Angle", typeof(double), typeof(SpinArea), new PropertyMetadata(0.0, OnAngleChanged));
+
+	public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(SpinArea), new PropertyMetadata(double.MinValue, OnXChanged));
+
+	public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(SpinArea), new PropertyMetadata(double.MinValue, OnYChanged));
+
+	private double InitWidth;
+
+	private double InitHeight;
+
+	public int Index { get; set; }
+
+	public System.Windows.Point OldPoint { get; set; }
+
+	public double OldRateX { get; set; }
+
+	public double OldRateY { get; set; }
+
+	public bool IsPressed
+	{
+		get
+		{
+			return _IsPressed;
+		}
+		set
+		{
+			_IsPressed = value;
+			NotifyPropertyChanged("IsPressed");
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return (double)GetValue(AngleProperty);
+		}
+		set
+		{
+			SetValue(AngleProperty, value);
+		}
+	}
+
+	public double X
+	{
+		get
+		{
+			return (double)GetValue(XProperty);
+		}
+		set
+		{
+			SetValue(XProperty, value);
+		}
+	}
+
+	public double Y
+	{
+		get
+		{
+			return (double)GetValue(YProperty);
+		}
+		set
+		{
+			SetValue(YProperty, value);
+		}
+	}
+
+	public System.Windows.Point CurPoint { get; set; }
+
+	public Control Container { get; set; }
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	public SpinArea()
+	{
+		InitializeComponent();
+		Cursor = GetRotateCursor();
+	}
+
+	public static Cursor GetRotateCursor()
+	{
+		if (mycursor == null)
+		{
+			Stream manifestResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VM.PcUI.Resources.鼠标旋转箭头.png");
+			Bitmap cursorBitmap = (Bitmap)System.Drawing.Image.FromStream(manifestResourceStream);
+			manifestResourceStream.Dispose();
+			mycursor = BitmapCursor.CreateBmpCursor(cursorBitmap);
+		}
+		return mycursor;
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		ScaleX = (sender as ScaleTransform).ScaleX * num;
+		SetScaleUI();
+	}
+
+	private void SetScaleUI()
+	{
+		SetScaleUI(ScaleX);
+	}
+
+	public void SetScaleUI(double Scale)
+	{
+		ScaleX = Scale;
+		if (Scale != 0.0)
+		{
+			cview.StrokeThickness = 2.0 / Scale;
+			view.Width = InitWidth / Scale;
+			view.Height = InitHeight / Scale;
+		}
+	}
+
+	private static void OnAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SpinArea).ChangeAngle();
+	}
+
+	private void ChangeAngle()
+	{
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		tlt.Angle = Angle;
+	}
+
+	private static void OnXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SpinArea).ChangeX();
+	}
+
+	private void ChangeX()
+	{
+		double num = X - Width / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+	}
+
+	private static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as SpinArea).ChangeY();
+	}
+
+	private void ChangeY()
+	{
+		double num = Y - Height / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+	}
+
+	private void view_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		if (Container is RectangleRoi)
+		{
+			CurPoint = e.GetPosition(this);
+			(Container as RectangleRoi).Doth(this, e);
+			IsPressed = true;
+		}
+	}
+
+	private void UserControl_Loaded(object sender, RoutedEventArgs e)
+	{
+		InitWidth = Width;
+		InitHeight = Height;
+		if (double.IsInfinity(Width / ScaleX))
+		{
+			view.Width = Width;
+		}
+		else
+		{
+			view.Width = Width / ScaleX;
+		}
+		if (double.IsInfinity(Height / ScaleX))
+		{
+			view.Height = Height;
+		}
+		else
+		{
+			view.Height = Height / ScaleX;
+		}
+	}
+}

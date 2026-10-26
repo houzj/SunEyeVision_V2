@@ -1,0 +1,54 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Common;
+
+public partial class AssistCrossRadioButton : ImageViewControlButton, IComponentConnector
+{
+	private bool CurChecked;
+
+	public override ImageViewController.BarItemenum Itemenum => ImageViewController.BarItemenum.AssistCross;
+
+	public override bool IsSimpleButton => true;
+
+	public AssistCrossRadioButton()
+	{
+		ToolTipString = "辅助线";
+		InitializeComponent();
+		Click += AssistCrossRadioButton_Click;
+		GroupName = GetHashCode().ToString();
+	}
+
+	private void AssistCrossRadioButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (IsChecked.Value && !CurChecked)
+		{
+			CurChecked = true;
+		}
+		else if (CurChecked)
+		{
+			IsChecked = false;
+			CurChecked = false;
+		}
+	}
+
+	protected override void PrepareRawRoi()
+	{
+		ImageView.IsShowAssistCross = true;
+	}
+
+	protected override void UnPrepareRawRoi()
+	{
+		ImageView.IsShowAssistCross = false;
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

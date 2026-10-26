@@ -1,0 +1,339 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using Mvvm.Commands;
+using VM.Controls;
+using VM.Core;
+using VM.PlatformSDKCS;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+internal class OutputconfigManger : INotifyPropertyChanged
+{
+	private enum searchType
+	{
+		AllType,
+		NumberType,
+		IntType,
+		FloatType,
+		StringType,
+		ImageType,
+		PointsetType
+	}
+
+	public static readonly string[] allType = new string[5] { "int", "float", "string", "image", "pointset" };
+
+	public static readonly string[] intType = new string[1] { "int" };
+
+	public static readonly string[] floatType = new string[1] { "float" };
+
+	public static readonly string[] stringType = new string[1] { "string" };
+
+	public static readonly string[] numberType = new string[2] { "int", "float" };
+
+	public static readonly string[] imageType = new string[1] { "image" };
+
+	public static readonly string[] pointsetType = new string[1] { "pointset" };
+
+	private static string searchText = "";
+
+	private static int index = 0;
+
+	private IList EnumEntrys;
+
+	public List<DynamicIO> Filters;
+
+	public List<DynamicIO> FiltersB;
+
+	private DelegateCommand _ClearCommand = null;
+
+	private DelegateCommand<object> _SelectionChangedCommand = null;
+
+	private DelegateCommand _SearchCommand = null;
+
+	private DelegateCommand<object> _SearchTextChangedCommand;
+
+	public static OutputconfigManger Instance { get; private set; } = new OutputconfigManger();
+
+	public IList EnumEntrysA
+	{
+		get
+		{
+			return EnumEntrys;
+		}
+		set
+		{
+			EnumEntrys = value;
+			OnPropertyChanged("EnumEntrysA");
+		}
+	}
+
+	public List<DynamicIO> FiltersA
+	{
+		get
+		{
+			return Filters;
+		}
+		set
+		{
+			Filters = value;
+			OnPropertyChanged("FiltersA");
+		}
+	}
+
+	public ICommand ClearCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _ClearCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)ClearCommandExe);
+				DelegateCommand val3 = val2;
+				_ClearCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand SelectionChangedCommand
+	{
+		get
+		{
+			if (_SelectionChangedCommand == null)
+			{
+				_SelectionChangedCommand = new DelegateCommand<object>((Action<object>)SelectionChangedCommandExe);
+			}
+			return (ICommand)_SelectionChangedCommand;
+		}
+	}
+
+	public ICommand SearchCommand
+	{
+		get
+		{
+			//IL_0017: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001c: Unknown result type (might be due to invalid IL or missing references)
+			//IL_001e: Expected Obj, but got Unknown
+			//IL_0023: Expected Obj, but got Unknown
+			DelegateCommand val = _SearchCommand;
+			if (val == null)
+			{
+				DelegateCommand val2 = new DelegateCommand((Action)SearchCommandExe);
+				DelegateCommand val3 = val2;
+				_SearchCommand = val2;
+				val = val3;
+			}
+			return (ICommand)val;
+		}
+	}
+
+	public ICommand SearchTextChangedCommand
+	{
+		get
+		{
+			if (_SearchTextChangedCommand == null)
+			{
+				_SearchTextChangedCommand = new DelegateCommand<object>((Action<object>)SearchTextChangedCommandExe);
+			}
+			return (ICommand)_SearchTextChangedCommand;
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string proName)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(proName));
+	}
+
+	public OutputconfigManger()
+	{
+		DynamicIO.getName = false;
+		DynamicIO.Filters = null;
+		searchText = "";
+		index = 0;
+		List<DynamicIO> dylist = new List<DynamicIO>();
+		EnumEntrysA = GetAllOutput(ref dylist, allType);
+		FiltersA = dylist;
+		GetOutputInfoFromServer();
+		DynamicIO.Filters = FiltersA;
+		DynamicIO.getName = true;
+	}
+
+	public void GetOutputInfoFromServer(bool isFilter = true)
+	{
+		DynamicIO.outputNumber = 0;
+		DynamicIO.overRun = false;
+		List<VmProcedure> list = VmSolution.Instance.Modules.OfType<VmProcedure>().ToList();
+		foreach (VmProcedure item in list)
+		{
+			uint num = 0u;
+			ImvsSdkDefine.IMVS_GET_CUSTOM_SUBSCRIBE_INFO_LIST value;
+			do
+			{
+				value = ServerSDKManager.serverSDKManager.mVmInterfaceManager.GetCustomOutputSubscribeInfo(item.ID, num).Value;
+				num += (uint)value.nOutputNum;
+				for (int i = 0; i < value.nOutputNum; i++)
+				{
+					string infoKey = StringUtil.UTF8GetString(value.stCustomSubInfo[i].stVariableValue.chParamName);
+					VmModule moduleByID = VmSolution.Instance.GetModuleByID((uint)value.stCustomSubInfo[i].stVariableValue.nModuleId);
+					if (moduleByID == null)
+					{
+						continue;
+					}
+					string text = moduleByID.FullName + "." + AppLocalizationService.GetLang(infoKey);
+					foreach (DynamicIO item2 in FiltersA)
+					{
+						if (item2.FullNameA == text)
+						{
+							item2.CustomName = StringUtil.UTF8GetString(value.stCustomSubInfo[i].chOutputName);
+							item2.OutputEnabled = true;
+							break;
+						}
+					}
+				}
+			}
+			while (value.nTotalNum > num);
+		}
+	}
+
+	private void ClearCommandExe()
+	{
+		DialogResult dialogResult = HikMessageBox.Show(AppLocalizationService.GetLang("Lang_Sure"), AppLocalizationService.GetLang("Lang_ClearOuputList"), MessageButtons.OkOrCancel, MessageIcons.Question);
+		DialogResult dialogResult2 = dialogResult;
+		if (dialogResult2 == DialogResult.Ok)
+		{
+			DisableAllOutput();
+		}
+	}
+
+	private void SelectionChangedCommandExe(object obj)
+	{
+		List<DynamicIO> dylist = new List<DynamicIO>();
+		EnumEntrysA = GetAllOutput(ref dylist, GetSearchValueType((obj as ComboBox).SelectedIndex), searchText);
+		index = (obj as ComboBox).SelectedIndex;
+		SynEnumEntrysA(EnumEntrysA);
+	}
+
+	private void SynEnumEntrysA(IList list)
+	{
+		for (int i = 0; i < list.Count; i++)
+		{
+			if (list[i] is Holder)
+			{
+				if ((list[i] as Holder).EnumEntrysA != null && (list[i] as Holder).EnumEntrysA.Count > 0)
+				{
+					SynEnumEntrysA((list[i] as Holder).EnumEntrysA);
+				}
+				continue;
+			}
+			foreach (DynamicIO item in FiltersA)
+			{
+				if (item.FullNameA == (list[i] as DynamicIO)?.FullNameA)
+				{
+					if ((list[i] as DynamicIO).ParentTree != null)
+					{
+						item.ParentTree = (list[i] as DynamicIO).ParentTree;
+					}
+					list.Remove(list[i]);
+					list.Insert(i, item);
+					break;
+				}
+			}
+		}
+	}
+
+	private void SearchCommandExe()
+	{
+		List<DynamicIO> dylist = new List<DynamicIO>();
+		EnumEntrysA = GetAllOutput(ref dylist, GetSearchValueType(index), searchText);
+		SynEnumEntrysA(EnumEntrysA);
+	}
+
+	private void SearchTextChangedCommandExe(object obj)
+	{
+		searchText = (obj as TextBox).Text;
+		SearchCommandExe();
+	}
+
+	private string[] GetSearchValueType(int index)
+	{
+		return (searchType)index switch
+		{
+			searchType.AllType => allType, 
+			searchType.NumberType => numberType, 
+			searchType.IntType => intType, 
+			searchType.FloatType => floatType, 
+			searchType.StringType => stringType, 
+			searchType.ImageType => imageType, 
+			searchType.PointsetType => pointsetType, 
+			_ => allType, 
+		};
+	}
+
+	public IList GetAllOutput(ref List<DynamicIO> dylist, string[] ValueType, string SearchFilter = "")
+	{
+		List<Holder> list = new List<Holder>();
+		List<VmProcedure> list2 = VmSolution.Instance.Modules.OfType<VmProcedure>().ToList();
+		foreach (VmProcedure item in list2)
+		{
+			List<DynamicIO> dyList = new List<DynamicIO>();
+			Holder parentHolder = new Holder
+			{
+				DisplayNameA = item.FullName
+			};
+			parentHolder.HolderTarget = item;
+			GetAllOutputFilterTree(item, ref parentHolder, ref dyList, ValueType, SearchFilter);
+			list.Add(parentHolder);
+			dylist = dylist.Concat(dyList).ToList();
+		}
+		return list.ToList();
+	}
+
+	public void GetAllOutputFilterTree(VmProcedure pro, ref Holder parentHolder, ref List<DynamicIO> dyList, string[] ValueType, string SearchFilter)
+	{
+		List<VmModule> list = new List<VmModule>();
+		pro.GetAllModule(list);
+		foreach (VmModule item in list)
+		{
+			List<DynamicIO> list2 = new List<DynamicIO>();
+			Holder outputTreeNodeA = item.GetOutputTreeNodeA(list2, ValueType, SearchFilter);
+			if (outputTreeNodeA != null)
+			{
+				outputTreeNodeA.ParentTree = parentHolder;
+				parentHolder.EnumEntrysA.Add(outputTreeNodeA);
+			}
+			FiltersB = list2;
+			dyList = dyList.Concat(list2).ToList();
+		}
+	}
+
+	public void DisableAllOutput()
+	{
+		List<DynamicIO> list = new List<DynamicIO>();
+		list = FiltersA;
+		if (list.Count > 0)
+		{
+			foreach (DynamicIO item in list)
+			{
+				if (item.OutputEnabled)
+				{
+					item.OutputEnabled = false;
+				}
+			}
+		}
+		DynamicIO.Filters = FiltersA;
+	}
+}

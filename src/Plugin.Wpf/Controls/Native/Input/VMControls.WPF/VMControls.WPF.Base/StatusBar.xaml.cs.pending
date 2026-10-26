@@ -1,0 +1,296 @@
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using Apps.Localization;
+using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.TimeDialog;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// StatusBar.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// StatusBar
+/// </summary>
+public partial class StatusBar : Control, INotifyPropertyChanged, IComponentConnector, IStyleConnector
+{
+	public static readonly DependencyProperty StatusSymbolProperty = DependencyProperty.Register("StatusSymbol", typeof(StatusBarSymbol), typeof(StatusBar), new PropertyMetadata(StatusBarSymbol.NOItem));
+
+	public static readonly DependencyProperty StatusInfoProperty = DependencyProperty.Register("StatusInfo", typeof(string), typeof(StatusBar), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsProcedureProperty = DependencyProperty.Register("IsProcedure", typeof(bool), typeof(StatusBar), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsModuleProperty = DependencyProperty.Register("IsModule", typeof(bool), typeof(StatusBar), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty CurDiagramAreaSourceProperty = DependencyProperty.Register("CurDiagramAreaSource", typeof(object), typeof(StatusBar), new PropertyMetadata(null, OnCurDiagramAreaSourceChanged));
+
+	public static readonly DependencyProperty SelectedItemSourceProperty = DependencyProperty.Register("SelectedItemSource", typeof(object), typeof(StatusBar), new PropertyMetadata(null, OnSelectedItemSourceChanged));
+
+	public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(object), typeof(StatusBar), new PropertyMetadata(null, OnSelectedItemChanged));
+
+	public static readonly DependencyProperty ModuleTimeProperty = DependencyProperty.Register("ModuleTime", typeof(float), typeof(StatusBar), new PropertyMetadata(0f));
+
+	public static readonly DependencyProperty AlgorithmTimeProperty = DependencyProperty.Register("AlgorithmTime", typeof(float), typeof(StatusBar), new PropertyMetadata(0f));
+
+	public static readonly DependencyProperty ZoomIndexProperty = DependencyProperty.Register("ZoomIndex", typeof(int), typeof(StatusBar), new PropertyMetadata(-1, ZoomIndexChangeCallback));
+
+	public static List<double> _ZoomTicks = new List<double>
+	{
+		0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+		1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0
+	};
+
+	public StatusBarSymbol StatusSymbol
+	{
+		get
+		{
+			return (StatusBarSymbol)GetValue(StatusSymbolProperty);
+		}
+		set
+		{
+			SetValue(StatusSymbolProperty, value);
+		}
+	}
+
+	public string StatusInfo
+	{
+		get
+		{
+			return (string)GetValue(StatusInfoProperty);
+		}
+		set
+		{
+			SetValue(StatusInfoProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否为流程
+	/// </summary>
+	public bool IsProcedure
+	{
+		get
+		{
+			return (bool)GetValue(IsProcedureProperty);
+		}
+		set
+		{
+			SetValue(IsProcedureProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否为模块
+	/// </summary>
+	public bool IsModule
+	{
+		get
+		{
+			return (bool)GetValue(IsModuleProperty);
+		}
+		set
+		{
+			SetValue(IsModuleProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 当前工作区数据源（流程或Group）
+	/// </summary>
+	public object CurDiagramAreaSource
+	{
+		get
+		{
+			return GetValue(CurDiagramAreaSourceProperty);
+		}
+		set
+		{
+			SetValue(CurDiagramAreaSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 选中模块源
+	/// </summary>
+	public object SelectedItemSource
+	{
+		get
+		{
+			return GetValue(SelectedItemSourceProperty);
+		}
+		set
+		{
+			SetValue(SelectedItemSourceProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 选中模块
+	/// </summary>
+	public object SelectedItem
+	{
+		get
+		{
+			return GetValue(SelectedItemProperty);
+		}
+		set
+		{
+			SetValue(SelectedItemProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 工具耗时
+	/// </summary>
+	public float ModuleTime
+	{
+		get
+		{
+			return (float)GetValue(ModuleTimeProperty);
+		}
+		set
+		{
+			SetValue(ModuleTimeProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 算法耗时
+	/// </summary>
+	public float AlgorithmTime
+	{
+		get
+		{
+			return (float)GetValue(AlgorithmTimeProperty);
+		}
+		set
+		{
+			SetValue(AlgorithmTimeProperty, value);
+		}
+	}
+
+	public int ZoomIndex
+	{
+		get
+		{
+			return (int)GetValue(ZoomIndexProperty);
+		}
+		set
+		{
+			SetValue(ZoomIndexProperty, value);
+		}
+	}
+
+	public double ZoomValueE
+	{
+		get
+		{
+			if (ZoomIndex >= 0 && ZoomIndex <= ZoomTicksCount)
+			{
+				return _ZoomTicks[ZoomIndex] * 100.0;
+			}
+			return 1.0;
+		}
+	}
+
+	public int ZoomTicksCount => _ZoomTicks.Count - 1;
+
+	private ShowTimeDialog TimeDialog { get; set; }
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void OnCurDiagramAreaSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		StatusBar statusBar = d as StatusBar;
+		statusBar.CloseTimeDialog();
+	}
+
+	private static void OnSelectedItemSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		StatusBar statusBar = d as StatusBar;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+		statusBar.IsProcedure = newValue is IVmProcedure;
+		statusBar.IsModule = newValue is IVmModule && !statusBar.IsProcedure;
+	}
+
+	private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		StatusBar statusBar = d as StatusBar;
+		object oldValue = e.OldValue;
+		object newValue = e.NewValue;
+		if (newValue != null)
+		{
+			if (newValue is IDecorate decorate)
+			{
+				statusBar.SelectedItemSource = decorate.DecorateSource;
+			}
+			else
+			{
+				statusBar.SelectedItemSource = newValue;
+			}
+		}
+		else
+		{
+			statusBar.SelectedItemSource = null;
+		}
+	}
+
+	private static void ZoomIndexChangeCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as StatusBar).OnPropertyChanged("ZoomValueE");
+	}
+
+	public StatusBar()
+	{
+		InitializeComponent();
+	}
+
+	private void ZoomCallBackClick(object sender, RoutedEventArgs e)
+	{
+		int num = _ZoomTicks.IndexOf(1.0);
+		if (num >= 0 && num < _ZoomTicks.Count)
+		{
+			ZoomIndex = num;
+		}
+	}
+
+	private void ShowTimeClick(object sender, RoutedEventArgs e)
+	{
+		CloseTimeDialog();
+		if (SelectedItemSource == null)
+		{
+			return;
+		}
+		object curDiagramAreaSource = CurDiagramAreaSource;
+		if (curDiagramAreaSource is IVmModuleSet)
+		{
+			TimeDialog = new ShowTimeDialog();
+			TimeDialog.DataContext = curDiagramAreaSource;
+			TimeDialog.Owner = Application.Current?.MainWindow;
+			if (AppLocalizationService.GetLang("Language") == "English")
+			{
+				TimeDialog.Width = 470.0;
+			}
+			TimeDialog.Show();
+		}
+	}
+
+	public void CloseTimeDialog()
+	{
+		if (TimeDialog != null)
+		{
+			TimeDialog.Close();
+			TimeDialog = null;
+		}
+	}
+}

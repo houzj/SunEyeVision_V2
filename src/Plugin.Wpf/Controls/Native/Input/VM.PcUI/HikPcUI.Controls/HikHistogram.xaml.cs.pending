@@ -1,0 +1,393 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+
+public partial class HikHistogram : Control, RectangleRoi, IComponentConnector, IStyleConnector
+{
+	public delegate void HistogramTypeSelectionChangedHandler();
+
+	public HistogramTypeSelectionChangedHandler HistogramTypeSelectionChanged = null;
+
+	private int _selectedHistogramTypeIndex = -1;
+
+	private double _startPositionX = 0.0;
+
+	public static readonly DependencyProperty HistogramTypesProperty = DependencyProperty.Register("HistogramTypes", typeof(ObservableCollection<MultiLangItem>), typeof(HikHistogram), new PropertyMetadata(new ObservableCollection<MultiLangItem>()));
+
+	public static readonly DependencyProperty DataPointsCollectionProperty = DependencyProperty.Register("DataPointsCollection", typeof(Dictionary<string, PointCollection>), typeof(HikHistogram), new PropertyMetadata(new Dictionary<string, PointCollection>()));
+
+	private string langType;
+
+	public static readonly DependencyProperty TitleTextProperty = DependencyProperty.Register("TitleText", typeof(string), typeof(HikHistogram), new PropertyMetadata(""));
+
+	public static readonly DependencyProperty DataPointsProperty = DependencyProperty.Register("DataPoints", typeof(PointCollection), typeof(HikHistogram), new PropertyMetadata(null, OnDataPointsChanged));
+
+	private PathFigure pathFigure;
+
+	private EllipseGeometry PathCirle;
+
+	private TextBlock PointLable;
+
+	private PolyLineSegment polyLine;
+
+	private SquareArea move;
+
+	private LineGeometry PathLine;
+
+	private Canvas view;
+
+	private Viewbox viewbox;
+
+	private ComboBox cmbHistogramTypes;
+
+	private double maxX;
+
+	private double maxY;
+
+	private PointCollection InnerData = new PointCollection();
+
+	private double oldSize = 5.0;
+
+	private int curImageX = -1;
+
+	private bool isDragging = false;
+
+	private IArea curControl = null;
+
+	private string curType = "";
+
+	private bool isLeft = false;
+
+	private double leftPosition = 0.0;
+
+	public int SelectedHistogramTypeIndex
+	{
+		get
+		{
+			return _selectedHistogramTypeIndex;
+		}
+		set
+		{
+			_selectedHistogramTypeIndex = value;
+		}
+	}
+
+	public double StartPositionX
+	{
+		get
+		{
+			return _startPositionX;
+		}
+		set
+		{
+			if (value >= 0.0 && value <= 255.0)
+			{
+				_startPositionX = value;
+			}
+			else
+			{
+				_startPositionX = 0.0;
+			}
+		}
+	}
+
+	public ObservableCollection<MultiLangItem> HistogramTypes
+	{
+		get
+		{
+			return (ObservableCollection<MultiLangItem>)GetValue(HistogramTypesProperty);
+		}
+		set
+		{
+			SetValue(HistogramTypesProperty, value);
+		}
+	}
+
+	public Dictionary<string, PointCollection> DataPointsCollection
+	{
+		get
+		{
+			return (Dictionary<string, PointCollection>)GetValue(DataPointsCollectionProperty);
+		}
+		set
+		{
+			SetValue(DataPointsCollectionProperty, value);
+		}
+	}
+
+	public string LangType
+	{
+		get
+		{
+			langType = AppLocalizationService.GetLang("Language");
+			if (string.IsNullOrWhiteSpace(langType))
+			{
+				return "DefaultCH";
+			}
+			return langType;
+		}
+	}
+
+	public string TitleText
+	{
+		get
+		{
+			return (string)GetValue(TitleTextProperty);
+		}
+		set
+		{
+			SetValue(TitleTextProperty, value);
+		}
+	}
+
+	public PointCollection DataPoints
+	{
+		get
+		{
+			return (PointCollection)GetValue(DataPointsProperty);
+		}
+		set
+		{
+			SetValue(DataPointsProperty, value);
+		}
+	}
+
+	private static void OnDataPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikHistogram).DoDataPointsChanged();
+	}
+
+	public override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		pathFigure = Template.FindName("pathFigure", this) as PathFigure;
+		PathCirle = Template.FindName("PathCirle", this) as EllipseGeometry;
+		PointLable = Template.FindName("PointLable", this) as TextBlock;
+		polyLine = Template.FindName("polyLine", this) as PolyLineSegment;
+		move = Template.FindName("move", this) as SquareArea;
+		PathLine = Template.FindName("PathLine", this) as LineGeometry;
+		view = Template.FindName("view", this) as Canvas;
+		viewbox = Template.FindName("viewbox", this) as Viewbox;
+		cmbHistogramTypes = Template.FindName("cmbHistogramTypes", this) as ComboBox;
+		move.Container = this;
+		oldSize = PointLable.FontSize;
+		move.Name = "move";
+		cmbHistogramTypes_SelectionChanged();
+	}
+
+	private void DoDataPointsChanged()
+	{
+		if (pathFigure == null)
+		{
+			return;
+		}
+		maxX = 0.0;
+		maxY = 0.0;
+		if (DataPoints != null && DataPoints.Count > 1)
+		{
+			maxX = DataPoints.Max((Point r) => r.X);
+			maxY = DataPoints.Max((Point r) => r.Y);
+			InnerData.Clear();
+			for (int num = 0; num < DataPoints.Count; num++)
+			{
+				InnerData.Add(new Point(DataPoints[num].X * 256.0 / maxX, DataPoints[num].Y * 256.0 / maxY));
+			}
+			pathFigure.StartPoint = InnerData[0];
+			PathCirle.Center = InnerData[0];
+			PointLable.Text = DataPoints[0].ToString();
+			PointLable.SetValue(Canvas.TopProperty, InnerData[0].Y + 5.0);
+			PointLable.SetValue(Canvas.LeftProperty, InnerData[0].X + 5.0);
+			polyLine.Points = InnerData;
+			if (maxX > 0.0)
+			{
+				SetPozision(StartPositionX);
+				StartPositionX = 0.0;
+			}
+		}
+		else
+		{
+			Point point = new Point(0.0, 0.0);
+			pathFigure.StartPoint = point;
+			PathCirle.Center = point;
+			PointLable.Text = point.ToString();
+			PointLable.SetValue(Canvas.TopProperty, point.Y);
+			PointLable.SetValue(Canvas.LeftProperty, point.X);
+			polyLine.Points = null;
+			move.X = 0.0;
+			PathLine.StartPoint = point;
+			PathLine.EndPoint = new Point(0.0, 265.0);
+		}
+	}
+
+	private void SetPozision(double left)
+	{
+		double num = maxX / 256.0;
+		double num2 = Math.Floor((left + 1.0) * num);
+		if (DataPoints == null || InnerData.Count <= 0 || !(PointLable.ActualHeight > 0.0) || !(num2 >= 0.0) || !(num2 <= maxX))
+		{
+			return;
+		}
+		curImageX = (int)num2;
+		if (curImageX < InnerData.Count && curImageX < DataPoints.Count)
+		{
+			move.X = (double)curImageX / num;
+			PathLine.StartPoint = new Point((double)curImageX / num, 0.0);
+			PathLine.EndPoint = new Point((double)curImageX / num, 255.0);
+			PathCirle.Center = InnerData[curImageX];
+			PointLable.Text = DataPoints[curImageX].ToString();
+			int num3 = (from x in view.Children.OfType<UIElement>()
+				where x != PointLable
+				select Panel.GetZIndex(x)).Max();
+			Panel.SetZIndex(PointLable, num3 + 1);
+			leftPosition = InnerData[curImageX].X;
+			PointLable.SetValue(Canvas.LeftProperty, InnerData[curImageX].X + 5.0);
+			isLeft = false;
+			if (InnerData[curImageX].Y + PointLable.ActualHeight > 250.0)
+			{
+				PointLable.SetValue(Canvas.TopProperty, InnerData[curImageX].Y - PointLable.ActualHeight - 5.0);
+			}
+			else
+			{
+				PointLable.SetValue(Canvas.TopProperty, InnerData[curImageX].Y + 5.0);
+			}
+		}
+	}
+
+	public HikHistogram()
+	{
+		InitializeComponent();
+		Init();
+	}
+
+	private void Init()
+	{
+		HistogramTypeSelectionChanged = (HistogramTypeSelectionChangedHandler)Delegate.Combine(HistogramTypeSelectionChanged, new HistogramTypeSelectionChangedHandler(cmbHistogramTypes_SelectionChanged));
+	}
+
+	private void Viewbox_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		double num = 1.0 / (viewbox.ActualWidth / view.Width);
+		double fontSize = oldSize * num;
+		PointLable.FontSize = fontSize;
+		move.Margin = new Thickness(1.0 / num, 0.0, 0.0, 0.0);
+	}
+
+	public void Doth(FrameworkElement rectangleArea, MouseEventArgs e)
+	{
+		isDragging = true;
+		curType = rectangleArea.Name;
+		curControl = rectangleArea as IArea;
+		CaptureMouse();
+	}
+
+	private void userControl_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		if (isDragging)
+		{
+			isDragging = false;
+			ReleaseMouseCapture();
+		}
+	}
+
+	private void userControl_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (!isDragging)
+		{
+			return;
+		}
+		Point position = e.GetPosition(view);
+		double num = 0.0;
+		string text = curType;
+		if (text == "move")
+		{
+			num = position.X - move.CurPoint.X + move.Width / 2.0;
+			if (num < 0.0)
+			{
+				num = 0.0;
+			}
+			if (num > 255.0)
+			{
+				num = 255.0;
+			}
+			if (DataPoints != null && DataPoints.Count > 1 && maxX > 0.0)
+			{
+				SetPozision(num);
+			}
+		}
+	}
+
+	private void cmbHistogramTypes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		string text = string.Empty;
+		if (cmbHistogramTypes.SelectedIndex >= 0)
+		{
+			SelectedHistogramTypeIndex = cmbHistogramTypes.SelectedIndex;
+			text = cmbHistogramTypes.SelectedValue.ToString();
+		}
+		if (DataPointsCollection.Count > 0 && !string.IsNullOrWhiteSpace(text))
+		{
+			DataPoints = DataPointsCollection[text];
+		}
+	}
+
+	private void cmbHistogramTypes_SelectionChanged()
+	{
+		string text = string.Empty;
+		if (SelectedHistogramTypeIndex > 0 && SelectedHistogramTypeIndex >= HistogramTypes.Count)
+		{
+			SelectedHistogramTypeIndex = HistogramTypes.Count - 1;
+		}
+		if (SelectedHistogramTypeIndex >= 0 && SelectedHistogramTypeIndex < HistogramTypes.Count)
+		{
+			text = HistogramTypes[SelectedHistogramTypeIndex].Key;
+			if (cmbHistogramTypes != null)
+			{
+				cmbHistogramTypes.Text = HistogramTypes[SelectedHistogramTypeIndex].DisplayValue;
+			}
+		}
+		if (DataPointsCollection.Count > 0 && !string.IsNullOrWhiteSpace(text))
+		{
+			DataPoints = DataPointsCollection[text];
+		}
+	}
+
+	private void PointLable_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		SetPozision(StartPositionX);
+		PointLable.SizeChanged -= PointLable_SizeChanged;
+	}
+
+	public void DoCallBack()
+	{
+	}
+
+	private void RefreshHistogramTypes()
+	{
+		ObservableCollection<MultiLangItem> observableCollection = new ObservableCollection<MultiLangItem>();
+		ObservableCollection<MultiLangItem> histogramTypes = HistogramTypes;
+		foreach (MultiLangItem item in histogramTypes)
+		{
+			observableCollection.Add(new MultiLangItem(item.Key));
+		}
+		HistogramTypes = observableCollection;
+	}
+
+	private void cmbHistogramTypes_DropDownOpened(object sender, EventArgs e)
+	{
+		RefreshHistogramTypes();
+		if (sender is ComboBox comboBox)
+		{
+			comboBox.SelectedIndex = SelectedHistogramTypeIndex;
+		}
+	}
+}

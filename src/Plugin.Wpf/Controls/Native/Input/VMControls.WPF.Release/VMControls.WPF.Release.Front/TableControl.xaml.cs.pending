@@ -1,0 +1,250 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// TableControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// TableControl
+/// </summary>
+public partial class TableControl : ContentControl, IComponentConnector
+{
+	public bool AutoStrechA
+	{
+		get
+		{
+			return PART_Control.AutoStrechA;
+		}
+		set
+		{
+			PART_Control.AutoStrechA = value;
+		}
+	}
+
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public object ColumnsDataSource
+	{
+		get
+		{
+			return PART_Control.ColumnsDataSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ColumnsDataSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ColumnsDataSource Type Error!");
+		}
+	}
+
+	public string Title
+	{
+		get
+		{
+			return PART_Control.Title;
+		}
+		set
+		{
+			PART_Control.Title = value;
+		}
+	}
+
+	public System.Windows.Media.Brush TitleColor
+	{
+		get
+		{
+			return PART_Control.TitleColor;
+		}
+		set
+		{
+			PART_Control.TitleColor = value;
+		}
+	}
+
+	public System.Windows.Media.Brush TitleTextColor
+	{
+		get
+		{
+			return PART_Control.TitleTextColor;
+		}
+		set
+		{
+			PART_Control.TitleTextColor = value;
+		}
+	}
+
+	/// <summary>
+	/// 标题栏显示控制
+	/// </summary>
+	public bool ShowTitleBar
+	{
+		get
+		{
+			return PART_Control.ShowTitleBar;
+		}
+		set
+		{
+			PART_Control.ShowTitleBar = value;
+		}
+	}
+
+	public object ColumnCountSource
+	{
+		get
+		{
+			return PART_Control.ColumnCountSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ColumnCountSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ColumnCountSource Type Error!");
+		}
+	}
+
+	public object RowCountSource
+	{
+		get
+		{
+			return PART_Control.RowCountSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.RowCountSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("RowCountSource Type Error!");
+		}
+	}
+
+	public string RowTitleName
+	{
+		get
+		{
+			return PART_Control.RowTitleName;
+		}
+		set
+		{
+			PART_Control.RowTitleName = value;
+		}
+	}
+
+	/// <summary>
+	/// 表格内容行背景色
+	/// </summary>
+	public System.Windows.Media.Brush RowBackgroundColor
+	{
+		get
+		{
+			return PART_Control.RowBackgroundColor;
+		}
+		set
+		{
+			PART_Control.RowBackgroundColor = value;
+		}
+	}
+
+	/// <summary>
+	/// 表格内容交替行背景色
+	/// </summary>
+	public System.Windows.Media.Brush AlternatingRowBackgroundColor
+	{
+		get
+		{
+			return PART_Control.AlternatingRowBackgroundColor;
+		}
+		set
+		{
+			PART_Control.AlternatingRowBackgroundColor = value;
+		}
+	}
+
+	/// <summary>
+	/// 表格列头行背景色
+	/// </summary>
+	public System.Windows.Media.Brush DataGridColumnHeaderBackgroundColor
+	{
+		get
+		{
+			return PART_Control.DataGridColumnHeaderBackgroundColor;
+		}
+		set
+		{
+			PART_Control.DataGridColumnHeaderBackgroundColor = value;
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public TableControl()
+	{
+		InitializeComponent();
+	}
+}

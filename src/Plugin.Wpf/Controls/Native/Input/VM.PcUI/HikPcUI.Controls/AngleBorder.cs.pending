@@ -1,0 +1,442 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+
+public sealed class AngleBorder : Decorator
+{
+	public enum EnumPlacement
+	{
+		LeftTop,
+		LeftBottom,
+		LeftCenter,
+		RightTop,
+		RightBottom,
+		RightCenter,
+		TopLeft,
+		TopCenter,
+		TopRight,
+		BottomLeft,
+		BottomCenter,
+		BottomRight
+	}
+
+	public static readonly DependencyProperty PlacementProperty = DependencyProperty.Register("Placement", typeof(EnumPlacement), typeof(AngleBorder), new FrameworkPropertyMetadata(EnumPlacement.RightCenter, FrameworkPropertyMetadataOptions.AffectsRender, OnDirectionPropertyChangedCallback));
+
+	public static readonly DependencyProperty TailWidthProperty = DependencyProperty.Register("TailWidth", typeof(double), typeof(AngleBorder), new PropertyMetadata(10.0));
+
+	public static readonly DependencyProperty TailHeightProperty = DependencyProperty.Register("TailHeight", typeof(double), typeof(AngleBorder), new PropertyMetadata(10.0));
+
+	public static readonly DependencyProperty TailVerticalOffsetProperty = DependencyProperty.Register("TailVerticalOffset", typeof(double), typeof(AngleBorder), new PropertyMetadata(13.0));
+
+	public static readonly DependencyProperty TailHorizontalOffsetProperty = DependencyProperty.Register("TailHorizontalOffset", typeof(double), typeof(AngleBorder), new PropertyMetadata(12.0));
+
+	public static readonly DependencyProperty BackgroundProperty = DependencyProperty.Register("Background", typeof(Brush), typeof(AngleBorder), new PropertyMetadata(new SolidColorBrush(Color.FromRgb(byte.MaxValue, byte.MaxValue, byte.MaxValue))));
+
+	public static readonly DependencyProperty PaddingProperty = DependencyProperty.Register("Padding", typeof(Thickness), typeof(AngleBorder), new PropertyMetadata(new Thickness(10.0, 5.0, 10.0, 5.0)));
+
+	public static readonly DependencyProperty BorderBrushProperty = DependencyProperty.Register("BorderBrush", typeof(Brush), typeof(AngleBorder), new PropertyMetadata((object)null));
+
+	public static readonly DependencyProperty BorderThicknessProperty = DependencyProperty.Register("BorderThickness", typeof(Thickness), typeof(AngleBorder), new PropertyMetadata(new Thickness(1.0)));
+
+	public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register("CornerRadius", typeof(CornerRadius), typeof(AngleBorder), new PropertyMetadata(new CornerRadius(0.0)));
+
+	public EnumPlacement Placement
+	{
+		get
+		{
+			return (EnumPlacement)GetValue(PlacementProperty);
+		}
+		set
+		{
+			SetValue(PlacementProperty, value);
+		}
+	}
+
+	public double TailWidth
+	{
+		get
+		{
+			return (double)GetValue(TailWidthProperty);
+		}
+		set
+		{
+			SetValue(TailWidthProperty, value);
+		}
+	}
+
+	public double TailHeight
+	{
+		get
+		{
+			return (double)GetValue(TailHeightProperty);
+		}
+		set
+		{
+			SetValue(TailHeightProperty, value);
+		}
+	}
+
+	public double TailVerticalOffset
+	{
+		get
+		{
+			return (double)GetValue(TailVerticalOffsetProperty);
+		}
+		set
+		{
+			SetValue(TailVerticalOffsetProperty, value);
+		}
+	}
+
+	public double TailHorizontalOffset
+	{
+		get
+		{
+			return (double)GetValue(TailHorizontalOffsetProperty);
+		}
+		set
+		{
+			SetValue(TailHorizontalOffsetProperty, value);
+		}
+	}
+
+	public Brush Background
+	{
+		get
+		{
+			return (Brush)GetValue(BackgroundProperty);
+		}
+		set
+		{
+			SetValue(BackgroundProperty, value);
+		}
+	}
+
+	public Thickness Padding
+	{
+		get
+		{
+			return (Thickness)GetValue(PaddingProperty);
+		}
+		set
+		{
+			SetValue(PaddingProperty, value);
+		}
+	}
+
+	public Brush BorderBrush
+	{
+		get
+		{
+			return (Brush)GetValue(BorderBrushProperty);
+		}
+		set
+		{
+			SetValue(BorderBrushProperty, value);
+		}
+	}
+
+	public Thickness BorderThickness
+	{
+		get
+		{
+			return (Thickness)GetValue(BorderThicknessProperty);
+		}
+		set
+		{
+			SetValue(BorderThicknessProperty, value);
+		}
+	}
+
+	public CornerRadius CornerRadius
+	{
+		get
+		{
+			return (CornerRadius)GetValue(CornerRadiusProperty);
+		}
+		set
+		{
+			SetValue(CornerRadiusProperty, value);
+		}
+	}
+
+	protected override Size MeasureOverride(Size constraint)
+	{
+		Thickness padding = Padding;
+		Size result = default;
+		if (Child != null)
+		{
+			Child.Measure(constraint);
+			switch (Placement)
+			{
+			case EnumPlacement.LeftTop:
+			case EnumPlacement.LeftBottom:
+			case EnumPlacement.LeftCenter:
+			case EnumPlacement.RightTop:
+			case EnumPlacement.RightBottom:
+			case EnumPlacement.RightCenter:
+				result.Width = Child.DesiredSize.Width + padding.Left + padding.Right + TailWidth;
+				result.Height = Child.DesiredSize.Height + padding.Top + padding.Bottom;
+				break;
+			case EnumPlacement.TopLeft:
+			case EnumPlacement.TopCenter:
+			case EnumPlacement.TopRight:
+			case EnumPlacement.BottomLeft:
+			case EnumPlacement.BottomCenter:
+			case EnumPlacement.BottomRight:
+				result.Width = Child.DesiredSize.Width + padding.Left + padding.Right;
+				result.Height = Child.DesiredSize.Height + padding.Top + padding.Bottom + TailHeight;
+				break;
+			}
+		}
+		return result;
+	}
+
+	protected override Size ArrangeOverride(Size arrangeSize)
+	{
+		Thickness padding = Padding;
+		if (Child != null)
+		{
+			switch (Placement)
+			{
+			case EnumPlacement.LeftTop:
+			case EnumPlacement.LeftBottom:
+			case EnumPlacement.LeftCenter:
+				Child.Arrange(new Rect(new Point(padding.Left + TailWidth, padding.Top), Child.DesiredSize));
+				break;
+			case EnumPlacement.RightTop:
+			case EnumPlacement.RightBottom:
+			case EnumPlacement.RightCenter:
+				ArrangeChildRight(padding);
+				break;
+			case EnumPlacement.TopLeft:
+			case EnumPlacement.TopCenter:
+			case EnumPlacement.TopRight:
+				Child.Arrange(new Rect(new Point(padding.Left, TailHeight + padding.Top), Child.DesiredSize));
+				break;
+			case EnumPlacement.BottomLeft:
+			case EnumPlacement.BottomCenter:
+			case EnumPlacement.BottomRight:
+				Child.Arrange(new Rect(new Point(padding.Left, padding.Top), Child.DesiredSize));
+				break;
+			}
+		}
+		return arrangeSize;
+	}
+
+	private void ArrangeChildRight(Thickness padding)
+	{
+		double left = padding.Left;
+		double y = padding.Top;
+		if (!double.IsNaN(Height) && Height != 0.0 && Child != null)
+		{
+			y = (Height - Child.DesiredSize.Height) / 2.0;
+		}
+		Child.Arrange(new Rect(new Point(left, y), Child.DesiredSize));
+	}
+
+	protected override void OnRender(DrawingContext drawingContext)
+	{
+		if (Child != null)
+		{
+			Geometry geometry = null;
+			Brush brush = null;
+			Pen pen = new Pen();
+			pen.Brush = BorderBrush;
+			pen.Thickness = RoundLayoutValue(BorderThickness.Left, DoubleUtil.DpiScaleX);
+			switch (Placement)
+			{
+			case EnumPlacement.LeftTop:
+			case EnumPlacement.LeftBottom:
+			case EnumPlacement.LeftCenter:
+				geometry = CreateGeometryTailAtLeft();
+				brush = CreateFillBrush();
+				break;
+			case EnumPlacement.RightTop:
+			case EnumPlacement.RightBottom:
+			case EnumPlacement.RightCenter:
+				geometry = CreateGeometryTailAtRight();
+				brush = CreateFillBrush();
+				break;
+			case EnumPlacement.TopLeft:
+			case EnumPlacement.TopCenter:
+			case EnumPlacement.TopRight:
+				geometry = CreateGeometryTailAtTop();
+				brush = CreateFillBrush();
+				break;
+			case EnumPlacement.BottomLeft:
+			case EnumPlacement.BottomCenter:
+			case EnumPlacement.BottomRight:
+				geometry = CreateGeometryTailAtBottom();
+				brush = CreateFillBrush();
+				break;
+			}
+			GuidelineSet guidelines = new GuidelineSet();
+			drawingContext.PushGuidelineSet(guidelines);
+			drawingContext.DrawGeometry(brush, pen, geometry);
+		}
+	}
+
+	private static double RoundLayoutValue(double value, double dpiScale)
+	{
+		double num;
+		if (!AreClose(dpiScale, 1.0))
+		{
+			num = Math.Round(value * dpiScale) / dpiScale;
+			if (double.IsInfinity(num) || AreClose(num, double.MaxValue))
+			{
+				num = value;
+			}
+		}
+		else
+		{
+			num = Math.Round(value);
+		}
+		return num;
+	}
+
+	private static bool AreClose(double value1, double value2)
+	{
+		if (value1 == value2)
+		{
+			return true;
+		}
+		double num = (Math.Abs(value1) + Math.Abs(value2) + 10.0) * 2.220446049250313E-16;
+		double num2 = value1 - value2;
+		return 0.0 - num < num2 && num > num2;
+	}
+
+	private Geometry CreateGeometryTailAtRight()
+	{
+		CombinedGeometry combinedGeometry = new CombinedGeometry();
+		TailVerticalOffset = (ActualHeight - TailHeight) / 2.0;
+		Point startPoint = new Point(ActualWidth - TailWidth, TailVerticalOffset);
+		Point point = new Point(ActualWidth, TailVerticalOffset + TailHeight / 2.0);
+		Point point2 = new Point(ActualWidth - TailWidth, TailVerticalOffset + TailHeight);
+		LineSegment value = new LineSegment(point, isStroked: false);
+		LineSegment value2 = new LineSegment(point2, isStroked: false);
+		PathFigure pathFigure = new PathFigure();
+		pathFigure.IsClosed = false;
+		pathFigure.StartPoint = startPoint;
+		pathFigure.Segments.Add(value);
+		pathFigure.Segments.Add(value2);
+		PathGeometry pathGeometry = new PathGeometry();
+		pathGeometry.Figures.Add(pathFigure);
+		RectangleGeometry geometry = new RectangleGeometry(new Rect(0.0, 0.0, ActualWidth - TailWidth, ActualHeight), CornerRadius.TopLeft, CornerRadius.BottomRight, new TranslateTransform(0.5, 0.5));
+		combinedGeometry.Geometry1 = pathGeometry;
+		combinedGeometry.Geometry2 = geometry;
+		combinedGeometry.GeometryCombineMode = GeometryCombineMode.Union;
+		return combinedGeometry;
+	}
+
+	private Geometry CreateGeometryTailAtLeft()
+	{
+		CombinedGeometry combinedGeometry = new CombinedGeometry();
+		switch (Placement)
+		{
+		case EnumPlacement.LeftBottom:
+			TailVerticalOffset = ActualHeight - TailHeight - TailVerticalOffset;
+			break;
+		case EnumPlacement.LeftCenter:
+			TailVerticalOffset = (ActualHeight - TailHeight) / 2.0;
+			break;
+		}
+		Point startPoint = new Point(TailWidth, TailVerticalOffset);
+		Point point = new Point(0.0, TailVerticalOffset + TailHeight / 2.0);
+		Point point2 = new Point(TailWidth, TailVerticalOffset + TailHeight);
+		LineSegment value = new LineSegment(point, isStroked: false);
+		LineSegment value2 = new LineSegment(point2, isStroked: false);
+		PathFigure pathFigure = new PathFigure();
+		pathFigure.IsClosed = false;
+		pathFigure.StartPoint = startPoint;
+		pathFigure.Segments.Add(value);
+		pathFigure.Segments.Add(value2);
+		PathGeometry pathGeometry = new PathGeometry();
+		pathGeometry.Figures.Add(pathFigure);
+		RectangleGeometry geometry = new RectangleGeometry(new Rect(TailWidth, 0.0, ActualWidth - TailWidth, ActualHeight), CornerRadius.TopLeft, CornerRadius.BottomRight);
+		combinedGeometry.Geometry1 = pathGeometry;
+		combinedGeometry.Geometry2 = geometry;
+		combinedGeometry.GeometryCombineMode = GeometryCombineMode.Union;
+		return combinedGeometry;
+	}
+
+	private Geometry CreateGeometryTailAtTop()
+	{
+		CombinedGeometry combinedGeometry = new CombinedGeometry();
+		switch (Placement)
+		{
+		case EnumPlacement.TopCenter:
+			TailHorizontalOffset = (ActualWidth - TailWidth) / 2.0;
+			break;
+		case EnumPlacement.TopRight:
+			TailHorizontalOffset = ActualWidth - TailWidth - TailHorizontalOffset;
+			break;
+		}
+		Point startPoint = new Point(TailHorizontalOffset, TailHeight);
+		Point point = new Point(TailHorizontalOffset + TailWidth / 2.0, 0.0);
+		Point point2 = new Point(TailHorizontalOffset + TailWidth, TailHeight);
+		LineSegment value = new LineSegment(point, isStroked: true);
+		LineSegment value2 = new LineSegment(point2, isStroked: true);
+		PathFigure pathFigure = new PathFigure();
+		pathFigure.IsClosed = false;
+		pathFigure.StartPoint = startPoint;
+		pathFigure.Segments.Add(value);
+		pathFigure.Segments.Add(value2);
+		PathGeometry pathGeometry = new PathGeometry();
+		pathGeometry.Figures.Add(pathFigure);
+		RectangleGeometry geometry = new RectangleGeometry(new Rect(0.0, TailHeight, ActualWidth, ActualHeight - TailHeight), CornerRadius.TopLeft, CornerRadius.BottomRight);
+		combinedGeometry.Geometry1 = pathGeometry;
+		combinedGeometry.Geometry2 = geometry;
+		combinedGeometry.GeometryCombineMode = GeometryCombineMode.Union;
+		return combinedGeometry;
+	}
+
+	private Geometry CreateGeometryTailAtBottom()
+	{
+		CombinedGeometry combinedGeometry = new CombinedGeometry();
+		switch (Placement)
+		{
+		case EnumPlacement.BottomCenter:
+			TailHorizontalOffset = (ActualWidth - TailWidth) / 2.0;
+			break;
+		case EnumPlacement.BottomRight:
+			TailHorizontalOffset = ActualWidth - TailWidth - TailHorizontalOffset;
+			break;
+		}
+		Point startPoint = new Point(TailHorizontalOffset, ActualHeight - TailHeight);
+		Point point = new Point(TailHorizontalOffset + TailWidth / 2.0, ActualHeight);
+		Point point2 = new Point(TailHorizontalOffset + TailWidth, ActualHeight - TailHeight);
+		LineSegment value = new LineSegment(point, isStroked: true);
+		LineSegment value2 = new LineSegment(point2, isStroked: true);
+		PathFigure pathFigure = new PathFigure();
+		pathFigure.IsClosed = false;
+		pathFigure.StartPoint = startPoint;
+		pathFigure.Segments.Add(value);
+		pathFigure.Segments.Add(value2);
+		PathGeometry pathGeometry = new PathGeometry();
+		pathGeometry.Figures.Add(pathFigure);
+		RectangleGeometry geometry = new RectangleGeometry(new Rect(0.0, 0.0, ActualWidth, ActualHeight - TailHeight), CornerRadius.TopLeft, CornerRadius.BottomRight);
+		combinedGeometry.Geometry1 = pathGeometry;
+		combinedGeometry.Geometry2 = geometry;
+		combinedGeometry.GeometryCombineMode = GeometryCombineMode.Union;
+		return combinedGeometry;
+	}
+
+	private Brush CreateFillBrush()
+	{
+		Brush brush = null;
+		GradientStopCollection gradientStopCollection = new GradientStopCollection();
+		gradientStopCollection.Add(new GradientStop(((SolidColorBrush)Background).Color, 0.0));
+		return new LinearGradientBrush(gradientStopCollection, new Point(0.0, 0.0), new Point(0.0, 1.0));
+	}
+
+	public static void OnDirectionPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		AngleBorder angleBorder = d as AngleBorder;
+		angleBorder.HorizontalAlignment = (((EnumPlacement)e.NewValue == EnumPlacement.RightCenter) ? HorizontalAlignment.Right : HorizontalAlignment.Left);
+	}
+}

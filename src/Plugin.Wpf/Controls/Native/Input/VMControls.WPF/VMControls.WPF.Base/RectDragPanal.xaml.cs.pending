@@ -1,0 +1,213 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// RectDragPanal.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// RectDragPanal
+/// </summary>
+public partial class RectDragPanal : RectDragPanalBase, IComponentConnector
+{
+	public event EventHandler OnDeleteItems;
+
+	public event EventHandler OnCopyItems;
+
+	public event EventHandler OnForbiddenItems;
+
+	public event EventHandler OnActivateItems;
+
+	public RectDragPanal()
+	{
+		InitializeComponent();
+	}
+
+	private void RectDragPanalBase_KeyDown(object sender, KeyEventArgs e)
+	{
+		if (e.Key == Key.Delete)
+		{
+			menuDeleteClick(null, null);
+		}
+		else if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.C)
+		{
+			OnCopyItems?.Invoke(this, null);
+		}
+		else if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.F)
+		{
+			OnForbiddenItems?.Invoke(this, null);
+		}
+		else if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.A)
+		{
+			OnActivateItems?.Invoke(this, null);
+		}
+	}
+
+	private void menuDeleteClick(object sender, RoutedEventArgs e)
+	{
+		OnDeleteItems?.Invoke(this, null);
+		this.GetParent<UIElement>()?.Focus();
+	}
+
+	private void menuCopyClick(object sender, RoutedEventArgs e)
+	{
+		OnCopyItems?.Invoke(this, null);
+	}
+
+	private void menuForbiddenClick(object sender, RoutedEventArgs e)
+	{
+		OnForbiddenItems?.Invoke(this, null);
+		this.GetParent<UIElement>()?.Focus();
+	}
+
+	private void menuActivateClick(object sender, RoutedEventArgs e)
+	{
+		OnActivateItems?.Invoke(this, null);
+		this.GetParent<UIElement>()?.Focus();
+	}
+
+	/// <summary>
+	/// 对齐
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void menuAlgClick(object sender, RoutedEventArgs e)
+	{
+		DiagramPage parent = this.GetParent<DiagramPage>();
+		if (parent.IsLockWorkArea)
+		{
+			return;
+		}
+		List<DiagramItem> curBoxOfItems = parent.CurBoxOfItems;
+		foreach (DiagramItem item in curBoxOfItems.OfType<DiagramItem>())
+		{
+			Point point = new Point(0.0, 0.0);
+			bool flag = false;
+			switch ((sender as FrameworkElement).Name)
+			{
+			case "LeftAlg":
+				flag = true;
+				point = new Point(Canvas.GetLeft(this) + 10.0, item.Position.Y);
+				break;
+			case "HorizonCenterAlg":
+				flag = true;
+				point = new Point(Canvas.GetLeft(this) + Math.Round((ActualWidth - item.ActualWidth) / 2.0 / 5.0) * 5.0, item.Position.Y);
+				break;
+			case "RightAlg":
+				flag = true;
+				point = new Point(Canvas.GetLeft(this) + ActualWidth - item.ActualWidth - 10.0, item.Position.Y);
+				break;
+			case "TopAlg":
+				flag = true;
+				point = new Point(item.Position.X, Canvas.GetTop(this) + 10.0);
+				break;
+			case "VerticalCenterAlg":
+				flag = true;
+				point = new Point(item.Position.X, Canvas.GetTop(this) + Math.Round((ActualHeight - item.ActualHeight) / 2.0 / 5.0) * 5.0);
+				break;
+			case "BtmAlg":
+				flag = true;
+				point = new Point(item.Position.X, Canvas.GetTop(this) + ActualHeight - item.ActualHeight - 10.0);
+				break;
+			}
+			if (flag)
+			{
+				item.SetCurrentValue(DiagramItem.PositionProperty, point);
+				if (item.DataContext is VmModuleBaseDecorator vmModuleBaseDecorator)
+				{
+					vmModuleBaseDecorator.Position = point;
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// 分布
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void menuLayoutClick(object sender, RoutedEventArgs e)
+	{
+		DiagramPage parent = this.GetParent<DiagramPage>();
+		if (parent.IsLockWorkArea)
+		{
+			return;
+		}
+		List<DiagramItem> curBoxOfItems = parent.CurBoxOfItems;
+		if (curBoxOfItems.Count() <= 1)
+		{
+			return;
+		}
+		double num = curBoxOfItems.OfType<FrameworkElement>().Sum((FrameworkElement p) => p.ActualWidth + 5.0) + 15.0;
+		double num2 = curBoxOfItems.OfType<FrameworkElement>().Sum((FrameworkElement p) => p.ActualHeight + 5.0) + 15.0;
+		List<DiagramItem> list;
+		if ((sender as FrameworkElement).Name == "HorLay")
+		{
+			if (ActualWidth < num)
+			{
+				Area = new Rect(Area.Location, new Size(num, Area.Height));
+			}
+			list = curBoxOfItems.ToList();
+			list.Sort((DiagramItem p0, DiagramItem p1) => p0.Position.X.CompareTo(p1.Position.X));
+		}
+		else
+		{
+			if (ActualHeight < num2)
+			{
+				Area = new Rect(Area.Location, new Size(Area.Width, num2));
+			}
+			list = curBoxOfItems.ToList();
+			list.Sort((DiagramItem p0, DiagramItem p1) => p0.Position.Y.CompareTo(p1.Position.Y));
+		}
+		double num3 = Canvas.GetLeft(this) + Width / 2.0;
+		double num4 = Canvas.GetTop(this) + Height / 2.0;
+		double num5 = Math.Max(0.0, (Width - num) / (double)(curBoxOfItems.Count() - 1));
+		double num6 = Math.Max(0.0, (Height - num2) / (double)(curBoxOfItems.Count() - 1));
+		double num7 = Math.Max(Math.Round((Canvas.GetLeft(this) + 10.0) / 5.0), 2.0) * 5.0;
+		double num8 = Math.Max(Math.Round((Canvas.GetTop(this) + 10.0) / 5.0), 2.0) * 5.0;
+		foreach (DiagramItem item in list)
+		{
+			Point point = new Point(0.0, 0.0);
+			bool flag = false;
+			string name = (sender as FrameworkElement).Name;
+			if (!(name == "HorLay"))
+			{
+				if (name == "VerLay")
+				{
+					flag = true;
+					point = new Point(Math.Max(Math.Round((num3 - item.ActualWidth / 2.0) / 5.0), 1.0) * 5.0, num8);
+					item.SetCurrentValue(DiagramItem.PositionProperty, point);
+					num8 += Math.Round((item.ActualHeight + 5.0 + num6) / 5.0) * 5.0;
+				}
+			}
+			else
+			{
+				flag = true;
+				point = new Point(num7, Math.Max(Math.Round((num4 - item.ActualHeight / 2.0) / 5.0), 1.0) * 5.0);
+				item.SetCurrentValue(DiagramItem.PositionProperty, point);
+				num7 += Math.Round((item.ActualWidth + 5.0 + num5) / 5.0) * 5.0;
+			}
+			if (flag && item.DataContext is VmModuleBaseDecorator vmModuleBaseDecorator)
+			{
+				vmModuleBaseDecorator.Position = point;
+			}
+		}
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

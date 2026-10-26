@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls">
+  <Style x:Key="{x:Type controls:ZoomInButton}" TargetType="{x:Type controls:ZoomInButton}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Image Name="ImageBackground" Width="34" Height="34" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomin.png" />
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn_1.png" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn_1.png" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn.png" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Padding" Value="0" />
+  </Style>
+  <Style x:Key="{x:Type controls:ZoomOutButton}" TargetType="{x:Type controls:ZoomOutButton}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Image Name="ImageBackground" Width="34" Height="34" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomout.png" />
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut_1.png" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut_1.png" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut.png" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Padding" Value="0" />
+  </Style>
+</ResourceDictionary>

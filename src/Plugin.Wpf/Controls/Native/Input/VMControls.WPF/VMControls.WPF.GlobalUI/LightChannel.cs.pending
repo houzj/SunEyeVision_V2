@@ -1,0 +1,426 @@
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+/// <summary>
+/// 光源设备通道参数
+/// </summary>
+public class LightChannel : INotifyPropertyChanged
+{
+	private int ChannelNum;
+
+	private bool ChannelEnable;
+
+	private Integer LightBrightness;
+
+	public Enumeration LightState;
+
+	private Enumeration TriggerEdge;
+
+	private Integer DurationTime;
+
+	private Enumeration LightSource;
+
+	private bool isShow = true;
+
+	private bool isShowLightState = false;
+
+	private bool isShowTriggerEdge = false;
+
+	private bool isShowDurationTime = false;
+
+	private bool isShowLightSource = false;
+
+	/// <summary>
+	/// 所属设备
+	/// </summary>
+	public object Parent { get; set; }
+
+	/// <summary>
+	/// 是否在界面显示
+	/// </summary>
+	public bool IsShow
+	{
+		get
+		{
+			return isShow;
+		}
+		set
+		{
+			if (isShow != value)
+			{
+				isShow = value;
+				OnPropertyChanged("IsShow");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否在界面显示光源状态
+	/// </summary>
+	public bool IsShowLightState
+	{
+		get
+		{
+			return isShowLightState;
+		}
+		set
+		{
+			if (isShowLightState != value)
+			{
+				isShowLightState = value;
+				OnPropertyChanged("IsShowLightState");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否在界面显示沿定义
+	/// </summary>
+	public bool IsShowTriggerEdge
+	{
+		get
+		{
+			return isShowTriggerEdge;
+		}
+		set
+		{
+			if (isShowTriggerEdge != value)
+			{
+				isShowTriggerEdge = value;
+				OnPropertyChanged("IsShowTriggerEdge");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否在界面显示持续时间
+	/// </summary>
+	public bool IsShowDurationTime
+	{
+		get
+		{
+			return isShowDurationTime;
+		}
+		set
+		{
+			if (isShowDurationTime != value)
+			{
+				isShowDurationTime = value;
+				OnPropertyChanged("IsShowDurationTime");
+			}
+		}
+	}
+
+	public bool IsShowLightSource
+	{
+		get
+		{
+			return isShowLightSource;
+		}
+		set
+		{
+			if (isShowLightSource != value)
+			{
+				isShowLightSource = value;
+				OnPropertyChanged("IsShowLightSource");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 通道号
+	/// </summary>
+	public int ChannelNumA
+	{
+		get
+		{
+			return ChannelNum;
+		}
+		set
+		{
+			if (ChannelNum != value)
+			{
+				ChannelNum = value;
+				OnPropertyChanged("ChannelNumA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 是否使能
+	/// </summary>
+	public bool ChannelEnableA
+	{
+		get
+		{
+			return ChannelEnable;
+		}
+		set
+		{
+			if (ChannelEnable != value)
+			{
+				ChannelEnable = value;
+				OnPropertyChanged("ChannelEnableA");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 亮度
+	/// </summary>
+	public Integer LightBrightnessA
+	{
+		get
+		{
+			if (LightBrightness == null)
+			{
+				LightBrightness = new Integer
+				{
+					DisplayName = "RunParam_Channel Brightness",
+					Description = "RunParam_Channel Brightness",
+					AccessMode = "O",
+					SubscribeVisible = false,
+					CurValue = 0,
+					DefaultValue = 0,
+					IncValue = 1,
+					MinValue = 0,
+					MaxValue = 255
+				};
+				LightBrightness.OnCurValueChanged += ParamChanged;
+			}
+			return LightBrightness;
+		}
+	}
+
+	/// <summary>
+	/// 光源状态：0-触发后常亮,1-触发后常灭
+	/// </summary>
+	public Enumeration LightStateA
+	{
+		get
+		{
+			if (LightState == null)
+			{
+				LightState = new Enumeration
+				{
+					DisplayName = "光源状态",
+					Description = "光源状态",
+					AccessMode = "O",
+					CurValue = 1,
+					DefaultValue = 1
+				};
+				LightState.OnCurValueChanged += ParamChanged;
+			}
+			return LightState;
+		}
+	}
+
+	/// <summary>
+	/// 沿定义：0-未知,1-上升沿触发,2-下降沿触发
+	/// </summary>
+	public Enumeration TriggerEdgeA
+	{
+		get
+		{
+			if (TriggerEdge == null)
+			{
+				TriggerEdge = new Enumeration
+				{
+					DisplayName = "沿定义",
+					Description = "沿定义",
+					AccessMode = "O",
+					CurValue = 1,
+					DefaultValue = 1
+				};
+				TriggerEdge.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "RunParam_EdgeTypeRising",
+						DisplayName = "RunParam_EdgeTypeRising",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_EdgeTypeFalling",
+						DisplayName = "RunParam_EdgeTypeFalling",
+						Value = 2
+					}
+				};
+				TriggerEdge.OnCurValueChanged += ParamChanged;
+			}
+			return TriggerEdge;
+		}
+	}
+
+	/// <summary>
+	/// 持续时间
+	/// </summary>
+	public Integer DurationTimeA
+	{
+		get
+		{
+			if (DurationTime == null)
+			{
+				DurationTime = new Integer
+				{
+					DisplayName = "Duration(ms)",
+					Description = "Duration(ms)",
+					AccessMode = "O",
+					SubscribeVisible = false,
+					CurValue = 0,
+					DefaultValue = 0,
+					IncValue = 1,
+					MinValue = 0,
+					MaxValue = 65535
+				};
+				DurationTime.OnCurValueChanged += ParamChanged;
+			}
+			return DurationTime;
+		}
+	}
+
+	/// <summary>
+	/// 光源输入源： On : 1,  In1~In12: 2~13,  Timer1~Timer12: 14~25 , Off:255
+	/// </summary>
+	public Enumeration LightSourceA
+	{
+		get
+		{
+			if (LightSource == null)
+			{
+				LightSource = new Enumeration
+				{
+					DisplayName = "RunParam_LightSource",
+					Description = "RunParam_LightSource",
+					AccessMode = "O",
+					CurValue = 1,
+					DefaultValue = 1
+				};
+				LightSource.EnumEntrysA = new ObservableCollection<object>
+				{
+					new EnumEntry
+					{
+						Description = "On",
+						DisplayName = "On",
+						Value = 1
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input0",
+						DisplayName = "RunParam_Input0",
+						Value = 2
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input1",
+						DisplayName = "RunParam_Input1",
+						Value = 3
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input2",
+						DisplayName = "RunParam_Input2",
+						Value = 4
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Input3",
+						DisplayName = "RunParam_Input3",
+						Value = 5
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer0",
+						DisplayName = "RunParam_Timer0",
+						Value = 14
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer1",
+						DisplayName = "RunParam_Timer1",
+						Value = 15
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer2",
+						DisplayName = "RunParam_Timer2",
+						Value = 16
+					},
+					new EnumEntry
+					{
+						Description = "RunParam_Timer3",
+						DisplayName = "RunParam_Timer3",
+						Value = 17
+					},
+					new EnumEntry
+					{
+						Description = "Off",
+						DisplayName = "Off",
+						Value = 255
+					}
+				};
+				LightSource.OnCurValueChanged += ParamChanged;
+			}
+			return LightSource;
+		}
+	}
+
+	public string EnableString => AppLocalizationService.GetLang("Lang_Channel") + " " + ChannelNumA + " " + AppLocalizationService.GetLang("Enabled");
+
+	public string BrightString => AppLocalizationService.GetLang("Lang_Channel") + " " + ChannelNumA + " " + AppLocalizationService.GetLang("Intensity");
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	/// <summary>
+	/// 通知属性变化
+	/// </summary>
+	/// <param name="name"></param>
+	public void OnPropertyChanged(string name)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
+
+	/// <summary>
+	/// 通道参数改变时下发底层
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	public void ParamChanged(object sender, EventArgs e)
+	{
+		if (Parent is LightSourceDevice { IsNeedSetParam: not false } lightSourceDevice && lightSourceDevice.SetChannelConfig() != 0 && sender is Integer integer)
+		{
+			integer.OnCurValueChanged -= ParamChanged;
+			int curValueA = integer.DefaultValueA;
+			if (integer.OldValue != null)
+			{
+				curValueA = int.Parse(integer.OldValue);
+			}
+			integer.CurValueA = curValueA;
+			integer.OnCurValueChanged += ParamChanged;
+		}
+	}
+
+	/// <summary>
+	/// 将从底层获取的参数设置到界面数据源
+	/// </summary>
+	/// <param name="param"></param>
+	public void InitParamValue(LIGHT_CHANNEL_PARAM param)
+	{
+		ChannelNumA = param.nChannelNum;
+		ChannelEnableA = param.bChannelEnable;
+		LightBrightnessA.CurValueA = param.nLightBrightness;
+		LightStateA.CurValueA = param.nLightState;
+		TriggerEdgeA.CurValueA = param.nTriggerEdge;
+		DurationTimeA.CurValueA = param.nDurationTime;
+		LightSourceA.CurValueA = param.nLightSource;
+	}
+}

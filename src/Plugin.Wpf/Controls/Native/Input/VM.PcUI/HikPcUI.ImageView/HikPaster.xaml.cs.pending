@@ -1,0 +1,321 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikPaster : UserControl, IDisposable, IComponentConnector
+{
+	public delegate void CheckedChange(object Param);
+
+	public CheckedChange OnCheckedChange;
+
+	public static readonly DependencyProperty AngleProperty = DependencyProperty.Register("Angle", typeof(double), typeof(HikPaster), new PropertyMetadata(0.0, OnTAngleChanged));
+
+	public static readonly DependencyProperty TWidthProperty = DependencyProperty.Register("TWidth", typeof(double), typeof(HikPaster), new PropertyMetadata(0.0, OnTWidthChanged));
+
+	public static readonly DependencyProperty THeightProperty = DependencyProperty.Register("THeight", typeof(double), typeof(HikPaster), new PropertyMetadata(0.0, OnTHeightChanged));
+
+	public static readonly DependencyProperty TSkewAngleXProperty = DependencyProperty.Register("TSkewAngleX", typeof(double), typeof(HikPaster), new PropertyMetadata(0.0, OnTSkewAngleXChanged));
+
+	public static readonly DependencyProperty OriginPointProperty = DependencyProperty.Register("OriginPoint", typeof(Point), typeof(HikPaster), new PropertyMetadata(new Point(0.0, 0.0), OnOriginPointChanged));
+
+	public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register("IsSelected", typeof(bool), typeof(HikPaster), new PropertyMetadata(false, OnIsSelectedChanged));
+
+	public static readonly DependencyProperty StateProperty = DependencyProperty.Register("State", typeof(ROIState), typeof(HikPaster), new PropertyMetadata(ROIState.Default, OnStateChanged));
+
+	public static readonly DependencyProperty SubContentProperty = DependencyProperty.Register("SubContent", typeof(string), typeof(HikPaster), new PropertyMetadata("", OnSubContentChanged));
+
+	public static readonly DependencyProperty GroupNameProperty = DependencyProperty.Register("GroupName", typeof(string), typeof(HikPaster), new PropertyMetadata(""));
+
+	public HikImageView owner { get; set; }
+
+	public double Angle
+	{
+		get
+		{
+			return (double)GetValue(AngleProperty);
+		}
+		set
+		{
+			SetValue(AngleProperty, value);
+		}
+	}
+
+	public double TWidth
+	{
+		get
+		{
+			return (double)GetValue(TWidthProperty);
+		}
+		set
+		{
+			SetValue(TWidthProperty, value);
+		}
+	}
+
+	public double THeight
+	{
+		get
+		{
+			return (double)GetValue(THeightProperty);
+		}
+		set
+		{
+			SetValue(THeightProperty, value);
+		}
+	}
+
+	public double TSkewAngleX
+	{
+		get
+		{
+			return (double)GetValue(TSkewAngleXProperty);
+		}
+		set
+		{
+			SetValue(TSkewAngleXProperty, value);
+		}
+	}
+
+	public Point OriginPoint
+	{
+		get
+		{
+			return (Point)GetValue(OriginPointProperty);
+		}
+		set
+		{
+			SetValue(OriginPointProperty, value);
+		}
+	}
+
+	public bool IsSelected
+	{
+		get
+		{
+			return (bool)GetValue(IsSelectedProperty);
+		}
+		set
+		{
+			SetValue(IsSelectedProperty, value);
+		}
+	}
+
+	public ROIState State
+	{
+		get
+		{
+			return (ROIState)GetValue(StateProperty);
+		}
+		set
+		{
+			SetValue(StateProperty, value);
+		}
+	}
+
+	public string SubContent
+	{
+		get
+		{
+			return (string)GetValue(SubContentProperty);
+		}
+		set
+		{
+			SetValue(SubContentProperty, value);
+		}
+	}
+
+	public string GroupName
+	{
+		get
+		{
+			return (string)GetValue(GroupNameProperty);
+		}
+		set
+		{
+			SetValue(GroupNameProperty, value);
+		}
+	}
+
+	public void Dispose()
+	{
+		DeInit();
+	}
+
+	private static void OnTAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).OnChangeAngle();
+	}
+
+	private void OnChangeAngle()
+	{
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+		tlt.Angle = Angle;
+	}
+
+	private static void OnTWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).OnChangeWidth();
+	}
+
+	private void OnChangeWidth()
+	{
+		if (TWidth >= 0.0)
+		{
+			Width = TWidth * owner.Radio;
+			tlt.CenterX = Width / 2.0;
+			skewTransf.CenterX = Width / 2.0;
+		}
+	}
+
+	private static void OnTHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).OnChangHeight();
+	}
+
+	private void OnChangHeight()
+	{
+		if (THeight >= 0.0)
+		{
+			Height = THeight * owner.Radio;
+			tlt.CenterY = Height / 2.0;
+			skewTransf.CenterY = Height / 2.0;
+		}
+	}
+
+	private static void OnTSkewAngleXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).OnChangSkewAngleX();
+	}
+
+	private void OnChangSkewAngleX()
+	{
+		skewTransf.CenterX = Width / 2.0;
+		skewTransf.CenterY = Height / 2.0;
+		skewTransf.AngleX = TSkewAngleX;
+	}
+
+	private static void OnOriginPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).OnChangOriginPoint();
+	}
+
+	private void OnChangOriginPoint()
+	{
+		SetValue(Canvas.LeftProperty, OriginPoint.X * owner.Radio);
+		SetValue(Canvas.TopProperty, OriginPoint.Y * owner.Radio);
+	}
+
+	private static void OnIsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).ChangeIsSelected();
+	}
+
+	private void ChangeIsSelected()
+	{
+		if (IsSelected)
+		{
+			DoCallBack();
+		}
+	}
+
+	private static void OnStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).ChangeState();
+	}
+
+	private void ChangeState()
+	{
+		ROIState state = State;
+	}
+
+	private static void OnSubContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikPaster).OnSubContentChange();
+	}
+
+	private void OnSubContentChange()
+	{
+		DoCallBack();
+	}
+
+	public void DoCallBack()
+	{
+		if (OnCheckedChange != null)
+		{
+			OnCheckedChange(DataContext);
+		}
+	}
+
+	public HikPaster()
+	{
+		InitializeComponent();
+		SetValue(Canvas.LeftProperty, 0.0);
+		SetValue(Canvas.TopProperty, 0.0);
+		SetValue(Panel.ZIndexProperty, 1);
+		Width = 0.0;
+		Height = 0.0;
+	}
+
+	public void Init()
+	{
+		if (owner != null)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+		}
+	}
+
+	public void DeInit()
+	{
+		if (owner != null)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(OnScaleChange));
+		}
+	}
+
+	public void OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = 1.0 / ((sender as ScaleTransform).ScaleX * num);
+		toggle.BorderThickness = new Thickness(num2);
+		subText.FontSize = 16.0 * num2;
+	}
+
+	private void userControl_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		tlt.CenterX = Width / 2.0;
+		tlt.CenterY = Height / 2.0;
+	}
+
+	private void userControl_PreviewKeyDown(object sender, KeyEventArgs e)
+	{
+	}
+
+	private void toggle_MouseMove(object sender, MouseEventArgs e)
+	{
+	}
+
+	private void userControl_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		toggle.IsChecked = true;
+	}
+
+	private void hideText_KeyUp(object sender, KeyEventArgs e)
+	{
+		if (OnCheckedChange != null)
+		{
+			OnCheckedChange("next");
+		}
+	}
+}

@@ -1,0 +1,617 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;
+
+/// <summary>
+/// ZoomArea.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ZoomArea
+/// </summary>
+[ContentProperty("Child")]
+public partial class ZoomArea : UserControl, INotifyPropertyChanged, IComponentConnector
+{
+	public static List<double> _ZoomTicks = new List<double>
+	{
+		0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+		1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0
+	};
+
+	public static readonly DependencyProperty DiagramZoomIndexProperty = DependencyProperty.Register("DiagramZoomIndex", typeof(int), typeof(ZoomArea), new PropertyMetadata(_ZoomTicks.IndexOf(1.0), DiagramZoomIndexChanged));
+
+	public static readonly DependencyProperty SearchModuleInfoProperty = DependencyProperty.Register("SearchModuleInfo", typeof(object), typeof(ZoomArea), new PropertyMetadata(null, OnSearchModuleInfoChanged));
+
+	public static readonly DependencyProperty IsEyeSpreadProperty = DependencyProperty.Register("IsEyeSpread", typeof(bool), typeof(ZoomArea), new PropertyMetadata(true));
+
+	public static readonly DependencyProperty IsSearchShowModelProperty = DependencyProperty.Register("IsSearchShowModel", typeof(bool), typeof(ZoomArea), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsCommentShowModelProperty = DependencyProperty.Register("IsCommentShowModel", typeof(bool), typeof(ZoomArea), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty IsEditCommentModelProperty = DependencyProperty.Register("IsEditCommentModel", typeof(bool), typeof(ZoomArea), new PropertyMetadata(false));
+
+	public static readonly DependencyProperty ChildProperty = DependencyProperty.Register("Child", typeof(UIElement), typeof(ZoomArea), new PropertyMetadata(null));
+
+	private Point? lastDragPoint;
+
+	private Rect viewArea = default;
+
+	public static Rect viewAreaCopy = default;
+
+	private static double scrollViewerCopyActualHeight;
+
+	private static double scrollViewerCopyActualWidth;
+
+	private static double scrollViewerCopyViewportWidth;
+
+	private static double scrollViewerCopyViewportHeight;
+
+	private static double gridCopyActualWidth;
+
+	private static double gridCopyActualHeight;
+
+	private static Thickness gridContentCopyMargin;
+
+	private static double gridContentCopyActualWidth;
+
+	private static double gridContentCopyActualHeight;
+
+	private bool needScroll = true;
+
+	private Point startMousePoint = default;
+
+	private double startRegionTop;
+
+	private double startRegionLeft;
+
+	private bool isMouseDown = false;
+
+	/// <summary>
+	/// 缩放比例
+	/// </summary>
+	public int DiagramZoomIndex
+	{
+		get
+		{
+			return (int)GetValue(DiagramZoomIndexProperty);
+		}
+		set
+		{
+			SetValue(DiagramZoomIndexProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 搜索完成后将目标模块的信息传递给ZoomArea控制滚动条
+	/// </summary>
+	public object SearchModuleInfo
+	{
+		get
+		{
+			return GetValue(SearchModuleInfoProperty);
+		}
+		set
+		{
+			SetValue(SearchModuleInfoProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 是否展开鹰眼
+	/// </summary>
+	public bool IsEyeSpread
+	{
+		get
+		{
+			return (bool)GetValue(IsEyeSpreadProperty);
+		}
+		set
+		{
+			SetValue(IsEyeSpreadProperty, value);
+		}
+	}
+
+	public bool IsSearchShowModel
+	{
+		get
+		{
+			return (bool)GetValue(IsSearchShowModelProperty);
+		}
+		set
+		{
+			SetValue(IsSearchShowModelProperty, value);
+		}
+	}
+
+	public bool IsCommentShowModel
+	{
+		get
+		{
+			return (bool)GetValue(IsCommentShowModelProperty);
+		}
+		set
+		{
+			SetValue(IsCommentShowModelProperty, value);
+		}
+	}
+
+	public bool IsEditCommentModel
+	{
+		get
+		{
+			return (bool)GetValue(IsEditCommentModelProperty);
+		}
+		set
+		{
+			SetValue(IsEditCommentModelProperty, value);
+		}
+	}
+
+	/// <summary>
+	/// 缩放对象
+	/// </summary>
+	public UIElement Child
+	{
+		get
+		{
+			return (UIElement)GetValue(ChildProperty);
+		}
+		set
+		{
+			SetValue(ChildProperty, value);
+		}
+	}
+
+	public double Scale
+	{
+		get
+		{
+			return scaleTransform.ScaleX;
+		}
+		set
+		{
+			scaleTransform.ScaleX = value;
+			scaleTransform.ScaleY = value;
+		}
+	}
+
+	public Rect ViewArea
+	{
+		get
+		{
+			return viewArea;
+		}
+		set
+		{
+			if (grid.ActualWidth != 0.0)
+			{
+				gridCopyActualWidth = grid.ActualWidth;
+				gridCopyActualHeight = grid.ActualHeight;
+			}
+			if (scrollViewer.ActualWidth != 0.0)
+			{
+				scrollViewerCopyActualHeight = scrollViewer.ActualHeight;
+				scrollViewerCopyActualWidth = scrollViewer.ActualWidth;
+				scrollViewerCopyViewportWidth = scrollViewer.ViewportWidth;
+				scrollViewerCopyViewportHeight = scrollViewer.ViewportHeight;
+			}
+			if (GridContent.ActualWidth != 0.0)
+			{
+				gridContentCopyMargin = GridContent.Margin;
+				gridContentCopyActualWidth = GridContent.ActualWidth;
+				gridContentCopyActualHeight = GridContent.ActualHeight;
+			}
+			if (viewAreaCopy.Width == 0.0 || gridCopyActualWidth == 0.0 || scrollViewerCopyActualWidth == 0.0)
+			{
+				viewArea = value;
+				return;
+			}
+			double num = scrollViewerCopyViewportWidth / viewAreaCopy.Width;
+			if (num == 0.0)
+			{
+				return;
+			}
+			double scale = Scale;
+			Scale = num;
+			Thickness margin = gridContentCopyMargin;
+			if (viewAreaCopy.X < 0.0)
+			{
+				viewAreaCopy.X = 0.0;
+			}
+			if (scrollViewerCopyViewportWidth > gridCopyActualWidth * scale - viewAreaCopy.X * Scale)
+			{
+				double num2 = 0.0;
+				if (margin.Left + margin.Right + gridContentCopyActualWidth < gridCopyActualWidth * scale / Scale)
+				{
+					num2 = gridCopyActualWidth * scale / Scale - (margin.Left + margin.Right + gridContentCopyActualWidth);
+				}
+				margin.Right = margin.Right + num2 + (scrollViewerCopyViewportWidth - gridCopyActualWidth * scale + viewAreaCopy.X * Scale) / Scale;
+			}
+			else
+			{
+				double num3 = 0.0;
+				if (margin.Left + margin.Right + gridContentCopyActualWidth < gridCopyActualWidth * scale / Scale)
+				{
+					num3 = gridCopyActualWidth * scale / Scale - (margin.Left + margin.Right + gridContentCopyActualWidth);
+					margin.Right = margin.Right + num3 + (scrollViewerCopyViewportWidth - gridCopyActualWidth * scale + viewAreaCopy.X * Scale) / Scale;
+					if (margin.Right < 0.0)
+					{
+						margin.Right = 0.0;
+					}
+				}
+			}
+			if (viewAreaCopy.Y < 0.0)
+			{
+				viewAreaCopy.Y = 0.0;
+			}
+			if (scrollViewerCopyViewportHeight > gridCopyActualHeight * scale - viewAreaCopy.Y * Scale)
+			{
+				double num4 = 0.0;
+				if (margin.Top + margin.Bottom + gridContentCopyActualHeight < gridCopyActualHeight * scale / Scale)
+				{
+					num4 = gridCopyActualHeight * scale / Scale - (margin.Top + margin.Bottom + gridContentCopyActualHeight);
+				}
+				margin.Bottom = margin.Bottom + num4 + (scrollViewerCopyViewportHeight - gridCopyActualHeight * scale + viewAreaCopy.Y * Scale) / Scale;
+			}
+			else
+			{
+				double num5 = 0.0;
+				if (margin.Top + margin.Bottom + gridContentCopyActualHeight < gridCopyActualHeight * scale / Scale)
+				{
+					num5 = gridCopyActualHeight * scale / Scale - (margin.Top + margin.Bottom + gridContentCopyActualHeight);
+					margin.Bottom = margin.Bottom + num5 + (scrollViewerCopyViewportHeight - gridCopyActualHeight * scale + viewAreaCopy.Y * Scale) / Scale;
+					if (margin.Bottom < 0.0)
+					{
+						margin.Bottom = 0.0;
+					}
+				}
+			}
+			double num6 = viewAreaCopy.X * Scale - margin.Right;
+			if (margin.Left > 0.0 && num6 > 0.0)
+			{
+				double num7 = Math.Min(margin.Left * Scale, num6);
+				margin.Left -= num7 / Scale;
+				num6 -= num7;
+			}
+			double num8 = viewAreaCopy.Y * Scale - margin.Bottom;
+			if (margin.Top > 0.0 && num8 > 0.0)
+			{
+				double num9 = Math.Min(margin.Top * Scale, num8);
+				margin.Top -= num9 / Scale;
+				num8 -= num9;
+			}
+			if ((margin.Left + margin.Right + gridContentCopyActualWidth) * Scale > num6 + scrollViewerCopyViewportWidth)
+			{
+				double num10 = (margin.Left + margin.Right + gridContentCopyActualWidth) * Scale - (num6 + scrollViewerCopyViewportWidth);
+				if (num10 > margin.Right * Scale)
+				{
+					margin.Right = 0.0;
+				}
+				else
+				{
+					margin.Right -= num10 / Scale;
+				}
+			}
+			if ((margin.Top + margin.Bottom + gridContentCopyActualHeight) * Scale > num8 + scrollViewerCopyViewportHeight)
+			{
+				double num11 = (margin.Top + margin.Bottom + gridContentCopyActualHeight) * Scale - (num8 + scrollViewerCopyViewportHeight);
+				if (num11 > margin.Bottom * Scale)
+				{
+					margin.Bottom = 0.0;
+				}
+				else
+				{
+					margin.Bottom -= num11 / Scale;
+				}
+			}
+			GridContent.Margin = margin;
+			scrollViewer.ScrollToHorizontalOffset(num6);
+			scrollViewer.ScrollToVerticalOffset(num8);
+			OnScrollViewerScrollChanged(null, null);
+		}
+	}
+
+	public bool IsWheelRoll { get; set; }
+
+	public double SelectRegionWidth
+	{
+		get
+		{
+			return Math.Min(scrollViewer.ActualWidth / scrollViewer.ExtentWidth * RectEagleEye.ActualWidth, GridEagleEye.Width);
+		}
+		set
+		{
+		}
+	}
+
+	public double SelectRegionHeight
+	{
+		get
+		{
+			return Math.Min(scrollViewer.ActualHeight / scrollViewer.ExtentHeight * RectEagleEye.ActualHeight, GridEagleEye.Height);
+		}
+		set
+		{
+		}
+	}
+
+	public double SelectRegionTop
+	{
+		get
+		{
+			return scrollViewer.VerticalOffset / scrollViewer.ExtentHeight * RectEagleEye.ActualHeight;
+		}
+		set
+		{
+			if (needScroll)
+			{
+				scrollViewer.ScrollToVerticalOffset(value / RectEagleEye.ActualHeight * scrollViewer.ExtentHeight);
+			}
+			OnPropertyChanged("SelectRegionTop");
+		}
+	}
+
+	public double SelectRegionLeft
+	{
+		get
+		{
+			return scrollViewer.HorizontalOffset / scrollViewer.ExtentWidth * RectEagleEye.ActualWidth;
+		}
+		set
+		{
+			if (needScroll)
+			{
+				scrollViewer.ScrollToHorizontalOffset(value / RectEagleEye.ActualWidth * scrollViewer.ExtentWidth);
+			}
+			OnPropertyChanged("SelectRegionLeft");
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected virtual void OnPropertyChanged(string proName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(proName));
+		}
+	}
+
+	private static void DiagramZoomIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as ZoomArea).OnDiagramZoomIndexChange();
+	}
+
+	private void OnDiagramZoomIndexChange()
+	{
+		if (!IsWheelRoll)
+		{
+			DoChangeZoom(new Point(ViewArea.X + ViewArea.Width / 2.0, ViewArea.Y + ViewArea.Height / 2.0));
+		}
+		IsWheelRoll = false;
+	}
+
+	private static void OnSearchModuleInfoChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is ZoomArea zoomArea && e.NewValue != null && e.NewValue is SearchModel searchModel)
+		{
+			double num = searchModel.targetPosition.X - zoomArea.ActualWidth * 0.5 + 50.0;
+			double num2 = searchModel.targetPosition.Y - zoomArea.ActualHeight * 0.5 + 15.0;
+			(d as ZoomArea).scrollViewer.ScrollToHorizontalOffset(((num > 0.0) ? num : 0.0) * zoomArea.Scale);
+			(d as ZoomArea).scrollViewer.ScrollToVerticalOffset(((num2 > 0.0) ? num2 : 0.0) * zoomArea.Scale);
+		}
+	}
+
+	public ZoomArea()
+	{
+		InitializeComponent();
+		scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
+		GridContent.MouseLeftButtonDown += OnMouseLeftButtonDown;
+		scrollViewer.MouseMove += ScrollViewer_MouseMove;
+		scrollViewer.PreviewMouseLeftButtonUp += OnMouseLeftButtonUp;
+		scrollViewer.PreviewMouseWheel += OnPreviewMouseWheel;
+		ZoomInFull();
+		VisualBrush fill = new VisualBrush
+		{
+			Visual = cp
+		};
+		RectEagleEye.Fill = fill;
+	}
+
+	private void ScrollViewer_MouseMove(object sender, MouseEventArgs e)
+	{
+		if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && lastDragPoint.HasValue)
+		{
+			Point position = e.GetPosition(scrollViewer);
+			double num = position.X - lastDragPoint.Value.X;
+			double num2 = position.Y - lastDragPoint.Value.Y;
+			lastDragPoint = position;
+			Rect rect = ViewArea;
+			rect.X -= num / Scale;
+			rect.Y -= num2 / Scale;
+			ViewArea = rect;
+		}
+	}
+
+	private void ZoomInFull()
+	{
+		ViewArea = new Rect(0.0, 0.0, GridContent.ActualWidth, GridContent.ActualHeight);
+	}
+
+	private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+		{
+			Point position = e.GetPosition(scrollViewer);
+			if (position.X <= scrollViewer.ViewportWidth && position.Y < scrollViewer.ViewportHeight)
+			{
+				lastDragPoint = position;
+				Mouse.Capture(scrollViewer);
+			}
+		}
+	}
+
+	private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		IsWheelRoll = true;
+		OnHoriScroll(sender, e);
+		OnChangeZoom(e, e.GetPosition(grid));
+	}
+
+	private void OnChangeZoom(MouseWheelEventArgs e, Point pos)
+	{
+		if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+		{
+			if (e.Delta < 0 && DiagramZoomIndex > 0)
+			{
+				DiagramZoomIndex--;
+			}
+			if (e.Delta > 0 && DiagramZoomIndex < _ZoomTicks.Count - 1)
+			{
+				DiagramZoomIndex++;
+			}
+			DoChangeZoom(pos);
+		}
+	}
+
+	private static void OnHoriScroll(object sender, MouseWheelEventArgs e)
+	{
+		if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift && sender is ScrollViewer scrollViewer)
+		{
+			int delta = e.Delta;
+			if (delta < 0)
+			{
+				scrollViewer.LineRight();
+			}
+			if (delta > 0)
+			{
+				scrollViewer.LineLeft();
+			}
+			e.Handled = true;
+		}
+	}
+
+	private void DoChangeZoom(Point pos)
+	{
+		double num = _ZoomTicks[DiagramZoomIndex];
+		Rect rect = ViewArea;
+		double num2 = rect.Width * Scale / num;
+		double num3 = rect.Height * Scale / num;
+		double num4 = (pos.X - rect.X) / rect.Width;
+		rect.X -= (num2 - rect.Width) * num4;
+		double num5 = (pos.Y - rect.Y) / rect.Height;
+		rect.Y -= (num3 - rect.Height) * num5;
+		rect.Width = num2;
+		rect.Height = num3;
+		viewAreaCopy = rect;
+		ViewArea = rect;
+	}
+
+	private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		scrollViewer.ReleaseMouseCapture();
+		lastDragPoint = null;
+	}
+
+	private void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
+	{
+		OnSelectRegionChanged();
+		double scale = Scale;
+		if (scale != 0.0)
+		{
+			viewArea.X = scrollViewer.HorizontalOffset / scale;
+			viewArea.Y = scrollViewer.VerticalOffset / scale;
+			viewArea.Width = scrollViewer.ViewportWidth / scale;
+			viewArea.Height = scrollViewer.ViewportHeight / scale;
+			viewAreaCopy.X = scrollViewer.HorizontalOffset / scale;
+			viewAreaCopy.Y = scrollViewer.VerticalOffset / scale;
+			viewAreaCopy.Width = scrollViewer.ViewportWidth / scale;
+			viewAreaCopy.Height = scrollViewer.ViewportHeight / scale;
+		}
+	}
+
+	private void OnSelectRegionChanged()
+	{
+		needScroll = false;
+		OnPropertyChanged("SelectRegionWidth");
+		OnPropertyChanged("SelectRegionHeight");
+		OnPropertyChanged("SelectRegionTop");
+		OnPropertyChanged("SelectRegionLeft");
+		needScroll = true;
+	}
+
+	private void SelectRegionRect_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		RecordCurPos(e.GetPosition(GridEagleEye), new Point(SelectRegionLeft, SelectRegionTop));
+	}
+
+	private void RecordCurPos(Point mousePos, Point selectRegionLeftTop)
+	{
+		startMousePoint = mousePos;
+		startRegionLeft = selectRegionLeftTop.X;
+		startRegionTop = selectRegionLeftTop.Y;
+	}
+
+	private void GridEagleEye_MouseDown(object sender, MouseButtonEventArgs e)
+	{
+		isMouseDown = true;
+		Point position = e.GetPosition(GridEagleEye);
+		Rect rect = new Rect(new Point(SelectRegionLeft, SelectRegionTop), new Size(SelectRegionWidth, SelectRegionHeight));
+		if (!rect.Contains(position))
+		{
+			rect.X = position.X - rect.Width / 2.0;
+			rect.Y = position.Y - rect.Height / 2.0;
+			MoveSelectRegion(rect.Location);
+			RecordCurPos(position, rect.Location);
+		}
+	}
+
+	private void GridEagleEye_MouseUp(object sender, MouseButtonEventArgs e)
+	{
+		isMouseDown = false;
+		(sender as Grid)?.ReleaseMouseCapture();
+	}
+
+	private void GridEagleEye_MouseMove(object sender, MouseEventArgs e)
+	{
+		Point position = e.GetPosition(GridEagleEye);
+		if (e.LeftButton == MouseButtonState.Pressed && !startMousePoint.Equals(position) && isMouseDown)
+		{
+			(sender as Grid)?.CaptureMouse();
+			MoveSelectRegionByPosChange(position, startMousePoint);
+		}
+	}
+
+	private void MoveSelectRegionByPosChange(Point curPos, Point LastPos)
+	{
+		curPos.Offset(0.0 - LastPos.X, 0.0 - LastPos.Y);
+		MoveSelectRegion(new Point(startRegionLeft + curPos.X, startRegionTop + curPos.Y));
+	}
+
+	private void MoveSelectRegion(Point selectRegionLeftTop)
+	{
+		SelectRegionLeft = selectRegionLeftTop.X;
+		SelectRegionTop = selectRegionLeftTop.Y;
+	}
+
+	private void GridEagleEye_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		OnHoriScroll(scrollViewer, e);
+		OnChangeZoom(e, new Point(e.GetPosition(GridEagleEye).X * grid.ActualWidth / GridEagleEye.ActualWidth, e.GetPosition(GridEagleEye).Y * grid.ActualHeight / GridEagleEye.ActualHeight));
+	}
+
+	[DebuggerNonUserCode]
+	[GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
+	internal Delegate _CreateDelegate(Type delegateType, string handler)
+	{
+		return Delegate.CreateDelegate(delegateType, this, handler);
+	}
+}

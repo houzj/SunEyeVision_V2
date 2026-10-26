@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.MainViewControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:localUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI" xmlns:localParamTab="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <localUI:AntiBoolToVisibleConverter x:Key="antiBoolToVisibleConverter" />
+      <localParamTab:LogManageTypeImageConvert x:Key="logTypeImageConvert" />
+      <local:TimeConvertor x:Key="timeConvert" />
+      <local:RealLengthConverter x:Key="realLengConvert" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid Name="PART_View">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Name="workarea" Column="1" Background="{DynamicResource Col_DisplayImage_Background}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Name="columnDefinition1" Width="*" />
+            <ColumnDefinition Name="columnDefinition2" Width="Auto" />
+            <ColumnDefinition Name="columnDefinition3" Width="1.0000001*" MinWidth="400" />
+          </Grid.ColumnDefinitions>
+          <Grid Name="workareaConfig" Column="0">
+            <local:ProcedureConfigControl x:Name="m_ProcedureConfig" IsLockWorkArea="{Binding IsLockWorkArea, RelativeSource={RelativeSource TemplatedParent}}" IsOpenParams="{Binding IsOpenParams, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Solution="{Binding Solution, RelativeSource={RelativeSource TemplatedParent}}" LoadingFlag="{Binding Path=IsLoadingFlag, RelativeSource={RelativeSource TemplatedParent}}" Procedures="{Binding Path=Solution.(VMInterface:IChildren.Children), RelativeSource={RelativeSource TemplatedParent}}" SelectedModule="{Binding SelectedModule, Mode=TwoWay}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" ZoomIndex="{Binding ZoomIndex, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsParamsEditState="{Binding IsParamsEditState, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+          </Grid>
+          <Grid Name="ModuleViewHost" Column="2" Background="{DynamicResource Col_DisplayImage_Background}">
+            <local:ModuleResultView x:Name="m_ModuleView" ModuleSource="{Binding SelectedItem, Mode=OneWay}" IsOpenParams="{Binding IsOpenParams, RelativeSource={RelativeSource TemplatedParent}}" />
+            <local:LogView x:Name="m_LogView" Margin="4,0,4,30" VerticalAlignment="Bottom" Background="#FF3B3B3B" Height="180" Visibility="{Binding IsLogFold, Converter={StaticResource antiBoolToVisibleConverter}, RelativeSource={RelativeSource TemplatedParent}}" LogSource="{Binding LogData, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Grid Background="{DynamicResource Col_LogBar_Background}" VerticalAlignment="Bottom" Height="28">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0" Margin="10,1,0,1" Orientation="Horizontal" Visibility="{Binding IsLogFold, Converter={StaticResource antiBoolToVisibleConverter}, RelativeSource={RelativeSource TemplatedParent}}">
+                <RadioButton Name="logAllBtn" GroupName="log" Content="{DynamicResource All}" Style="{StaticResource btnLogStyle}" CommandParameter="1" Command="{Binding LogTypeCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                <RadioButton Name="logAwardBtn" GroupName="log" Content="{DynamicResource Lang_Award}" Style="{StaticResource btnLogStyle}" CommandParameter="2" Command="{Binding LogTypeCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                <RadioButton Name="logErrorBtn" GroupName="log" Content="{DynamicResource Lang_Err}" Style="{StaticResource btnLogStyle}" CommandParameter="3" Command="{Binding LogTypeCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                <RadioButton Name="logTipsBtn" GroupName="log" Content="{DynamicResource Lang_LogTips}" Style="{StaticResource btnLogStyle}" CommandParameter="4" Command="{Binding LogTypeCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+              </StackPanel>
+              <StackPanel Name="logContent" Grid.Column="0" Margin="0,1,10,1" Orientation="Horizontal" Visibility="{Binding IsLogFold, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource TemplatedParent}}">
+                <Image Margin="9,0,8,0" Width="20" Height="20" Source="{Binding CurrentLogType, Converter={StaticResource logTypeImageConvert}, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Label Width="62" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource Col_LogBar_Foreground}" FontSize="12" Content="{Binding CurrentLogTime, Converter={StaticResource timeConvert}, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="{Binding Content, RelativeSource={RelativeSource self}}" />
+                <Border Margin="2,0,0,0">
+                  <TextBlock TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource Col_LogBar_Foreground}" FontSize="12" MaxWidth="{Binding ActualWidth, ElementName=logContent, Converter={StaticResource realLengConvert}}" Text="{Binding CurrentLogContent, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="{Binding Text, RelativeSource={RelativeSource self}}" />
+                </Border>
+              </StackPanel>
+              <StackPanel Name="logShow" Grid.Column="1" Margin="2,1,2,1" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Label VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource Col_LogBar_Foreground}" FontSize="10" Content="{Binding VersionInfo, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="{Binding Content, RelativeSource={RelativeSource self}}" Visibility="{Binding IsSdkMode, Converter={StaticResource antiBoolToVisibleConverter}, RelativeSource={RelativeSource TemplatedParent}}" />
+                <ToggleButton Name="LogBtn" Style="{StaticResource LogButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right" Width="20" Height="20" Margin="6,0,8,0" Command="{Binding LogCommand, RelativeSource={RelativeSource TemplatedParent}}" CommandParameter="{Binding IsChecked, ElementName=LogBtn}" />
+              </StackPanel>
+            </Grid>
+          </Grid>
+          <GridSplitter Name="workareaSplitter" Grid.Column="1" Background="{DynamicResource MainviewBaground}" Width="5" BorderThickness="1,0" BorderBrush="#FF000000" Opacity="0.5" HorizontalAlignment="Stretch" DragStarted="GridSplitter_DragStarted" />
+        </Grid>
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

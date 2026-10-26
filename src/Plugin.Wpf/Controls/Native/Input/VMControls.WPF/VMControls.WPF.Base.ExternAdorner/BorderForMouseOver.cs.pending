@@ -1,0 +1,25 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Apps.UIHelper.Service;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base.ExternAdorner;
+
+public class BorderForMouseOver : AdornerProvider
+{
+	private readonly AdornerPanel adornerPanel;
+
+	public BorderForMouseOver()
+	{
+		adornerPanel = new AdornerPanel();
+		Adorners.Add(adornerPanel);
+		Border border = new Border
+		{
+			BorderThickness = new Thickness(2.0),
+			BorderBrush = Brushes.DodgerBlue,
+			Margin = new Thickness(-2.0)
+		};
+		AdornerPanel.SetPlacement(border, AdornerPlacement.FillContent);
+		adornerPanel.Children.Add(border);
+	}
+}

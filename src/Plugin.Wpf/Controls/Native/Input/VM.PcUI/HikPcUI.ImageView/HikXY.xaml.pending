@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:HikROIBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView.HikXY" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" x:Name="userControl" Loaded="UserControl_Loaded" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave" MouseUp="UserControl_MouseUp" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" Focusable="True">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <sys:Double x:Key="dwidth">8</sys:Double>
+      <local:HikCoverCircleStyleConverter x:Key="hccStyleConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Canvas>
+    <Path Name="PathFillColor" Stretch="None" StrokeThickness="1" Style="{StaticResource TransparentPath}" Opacity="1" Visibility="Visible">
+      <Path.Data>
+        <GeometryGroup>
+          <PathGeometry>
+            <PathFigure StartPoint="{Binding ElementName=userControl, Path=XPointE}">
+              <LineSegment Point="0,0" />
+              <LineSegment Point="{Binding ElementName=userControl, Path=YPointE}" />
+            </PathFigure>
+            <PathFigure x:Name="a1" StartPoint="{Binding ElementName=userControl, Path=XMPoint1}">
+              <LineSegment Point="{Binding ElementName=userControl, Path=XPointE}" />
+              <LineSegment Point="{Binding ElementName=userControl, Path=XMPoint2}" />
+            </PathFigure>
+            <PathFigure x:Name="a2" StartPoint="{Binding ElementName=userControl, Path=YMPoint1}">
+              <LineSegment Point="{Binding ElementName=userControl, Path=YPointE}" />
+              <LineSegment Point="{Binding ElementName=userControl, Path=YMPoint2}" />
+            </PathFigure>
+          </PathGeometry>
+        </GeometryGroup>
+      </Path.Data>
+    </Path>
+    <TextBlock Name="t1" Text="X" Foreground="{StaticResource ROIBaseColor}">
+      <UIElement.RenderTransform>
+        <RotateTransform x:Name="r1" />
+      </UIElement.RenderTransform>
+    </TextBlock>
+    <TextBlock Name="t2" Text="Y" Foreground="{StaticResource ROIBaseColor}">
+      <UIElement.RenderTransform>
+        <RotateTransform x:Name="r2" />
+      </UIElement.RenderTransform>
+    </TextBlock>
+    <local:SquareArea x:Name="moveRec" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" X="0" Y="0" Cursor="SizeAll" />
+    <local:SquareArea x:Name="XRec" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="YellowGreen" />
+    <local:SquareArea x:Name="YRec" Opacity="0" Height="{DynamicResource dwidth}" Width="{DynamicResource dwidth}" VerticalAlignment="Center" HorizontalAlignment="Center" SquareBordbrush="YellowGreen" />
+  </Canvas>
+</local:HikROIBase>

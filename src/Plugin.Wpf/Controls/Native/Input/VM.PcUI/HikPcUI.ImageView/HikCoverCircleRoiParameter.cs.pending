@@ -1,0 +1,231 @@
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Media;
+using VMControls.RenderInterface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCoverCircleRoiParameter : RoiParameter, ICircleROI, IROI, INotifyPropertyChanged, IROISign
+{
+	public double _StartAngle = 0.0;
+
+	public double _EndAngle = 0.0;
+
+	protected double _AngleRange;
+
+	public Point _CenterPoint = new Point(0.0, 0.0);
+
+	public double _Radius = 0.0;
+
+	public double _MinRadius = 0.0;
+
+	private string _Name = "Circle";
+
+	public bool? _Sign = true;
+
+	public double StartAngle
+	{
+		get
+		{
+			return _StartAngle;
+		}
+		set
+		{
+			if (_StartAngle != value)
+			{
+				_StartAngle = value;
+				NotifyPropertyChanged("StartAngle");
+				NotifyPropertyChanged("AngleRange");
+				NotifyPropertyChanged("BeginAngle");
+			}
+		}
+	}
+
+	public double EndAngle
+	{
+		get
+		{
+			return _EndAngle;
+		}
+		set
+		{
+			if (_EndAngle != value)
+			{
+				_EndAngle = value;
+				NotifyPropertyChanged("EndAngle");
+				NotifyPropertyChanged("AngleRange");
+				NotifyPropertyChanged("BeginAngle");
+			}
+		}
+	}
+
+	public virtual double AngleRange
+	{
+		get
+		{
+			double num = StartAngle * 2.0 * Math.PI / 360.0;
+			double num2 = EndAngle * 2.0 * Math.PI / 360.0;
+			Vector vector = new Vector(Math.Cos(num), Math.Sin(num));
+			Vector vector2 = new Vector(Math.Cos(num2), Math.Sin(num2));
+			double num3 = Vector.AngleBetween(vector2, vector);
+			_AngleRange = 360.0 - ((num3 < 0.0) ? (360.0 + num3) : num3);
+			return _AngleRange;
+		}
+		set
+		{
+			if (_AngleRange != value)
+			{
+				RotateTransform rotateTransform = new RotateTransform();
+				rotateTransform.Angle = value;
+				double num = StartAngle * 2.0 * Math.PI / 360.0;
+				Point point = new Point(Math.Cos(num), Math.Sin(num));
+				Point point2 = rotateTransform.Transform(point);
+				double num2 = Math.Atan2(point2.Y, point2.X) * 180.0 / Math.PI;
+				if (Math.Abs(num2 - StartAngle) < 0.0009)
+				{
+					EndAngle = StartAngle;
+				}
+				else
+				{
+					EndAngle = num2;
+				}
+				NotifyPropertyChanged("AngleRange");
+			}
+		}
+	}
+
+	public double BeginAngle
+	{
+		get
+		{
+			return _StartAngle;
+		}
+		set
+		{
+			double angleRange = AngleRange;
+			StartAngle = value;
+			AngleRange = angleRange;
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return _CenterPoint;
+		}
+		set
+		{
+			if (_CenterPoint != value)
+			{
+				_CenterPoint = value;
+				NotifyPropertyChanged("CenterPoint");
+				NotifyPropertyChanged("CenterX");
+				NotifyPropertyChanged("CenterY");
+			}
+		}
+	}
+
+	public double CenterX
+	{
+		get
+		{
+			return CenterPoint.X;
+		}
+		set
+		{
+			CenterPoint = new Point(value, CenterPoint.Y);
+			NotifyPropertyChanged("CenterX");
+		}
+	}
+
+	public double CenterY
+	{
+		get
+		{
+			return CenterPoint.Y;
+		}
+		set
+		{
+			CenterPoint = new Point(CenterPoint.X, value);
+			NotifyPropertyChanged("CenterY");
+		}
+	}
+
+	public virtual double Radius
+	{
+		get
+		{
+			return _Radius;
+		}
+		set
+		{
+			if (_Radius != value)
+			{
+				if (_MinRadius > value)
+				{
+					MinRadius = value;
+				}
+				_Radius = value;
+				NotifyPropertyChanged("Radius");
+			}
+		}
+	}
+
+	public virtual double MinRadius
+	{
+		get
+		{
+			return _MinRadius;
+		}
+		set
+		{
+			if (_MinRadius != value)
+			{
+				if (value > _Radius)
+				{
+					_MinRadius = _Radius;
+				}
+				else
+				{
+					_MinRadius = value;
+				}
+				NotifyPropertyChanged("MinRadius");
+			}
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public bool? Sign
+	{
+		get
+		{
+			return _Sign;
+		}
+		set
+		{
+			if (_Sign != value)
+			{
+				_Sign = value;
+				NotifyPropertyChanged("Sign");
+			}
+		}
+	}
+
+	public override void PastROI(Point center)
+	{
+		CenterPoint = center;
+	}
+}

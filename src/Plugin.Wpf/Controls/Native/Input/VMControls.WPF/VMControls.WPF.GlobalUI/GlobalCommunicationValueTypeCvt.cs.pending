@@ -1,0 +1,78 @@
+using System;
+using System.Collections;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using Apps.Localization;
+using Apps.XmlParser.ParamTab;
+using GateWayServer;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;
+
+public sealed class GlobalCommunicationValueTypeCvt : IMultiValueConverter
+{
+	public static GlobalCommunicationValueTypeCvt Cvt = new GlobalCommunicationValueTypeCvt();
+
+	public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+	{
+		bool result = default;
+		bool result2 = default;
+		if ((values != null && values.Length == 4 && bool.TryParse(values[0].ToString(), out result)) & result)
+		{
+			if (values[2] is EnumeraionComDevice { CurValueA: var curValueA } enumeraionComDevice)
+			{
+				string text = ((curValueA != null) ? curValueA.Split('.')[0] : null);
+				if (string.IsNullOrEmpty(enumeraionComDevice.CurValueA) || enumeraionComDevice.CurValueA == AppLocalizationService.GetLang("Lang_PlzChoose"))
+				{
+					return Visibility.Collapsed;
+				}
+				IList enumEntrysA = enumeraionComDevice.EnumEntrysA;
+				if (enumEntrysA != null && enumEntrysA.Count > 0)
+				{
+					foreach (object item in enumeraionComDevice.EnumEntrysA)
+					{
+						if (!(item is EnumEntry enumEntry) || !(enumEntry.DisplayNameA == text))
+						{
+							continue;
+						}
+						object reservedProperty = (item as EnumEntry).ReservedProperty;
+						if (object.Equals((object)(MODULE_DEVICE_TYPE)5, reservedProperty) || object.Equals((object)(MODULE_DEVICE_TYPE)6, reservedProperty))
+						{
+							if (values[1].ToString() == "string")
+							{
+								return Visibility.Visible;
+							}
+							return Visibility.Collapsed;
+						}
+					}
+				}
+				return Visibility.Visible;
+			}
+		}
+		else if (((values != null && values.Length == 3 && bool.TryParse(values[0].ToString(), out result2)) & result2) && values[1] is EnumeraionComDevice { CurValueA: var curValueA2 } enumeraionComDevice2)
+		{
+			string text2 = ((curValueA2 != null) ? curValueA2.Split('.')[0] : null);
+			IList enumEntrysA2 = enumeraionComDevice2.EnumEntrysA;
+			if (enumEntrysA2 != null && enumEntrysA2.Count > 0)
+			{
+				foreach (object item2 in enumeraionComDevice2.EnumEntrysA)
+				{
+					if (item2 is EnumEntry enumEntry2 && enumEntry2.DisplayNameA == text2)
+					{
+						object reservedProperty2 = (item2 as EnumEntry).ReservedProperty;
+						if (object.Equals((object)(MODULE_DEVICE_TYPE)5, reservedProperty2) || object.Equals((object)(MODULE_DEVICE_TYPE)6, reservedProperty2))
+						{
+							return Visibility.Visible;
+						}
+					}
+				}
+			}
+		}
+		return Visibility.Collapsed;
+	}
+
+	public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}

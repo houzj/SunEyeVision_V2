@@ -1,0 +1,37 @@
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Markup;
+using VM.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;
+
+/// <summary>
+/// SearchModuleDialog.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// SearchModuleView
+/// </summary>
+public partial class SearchModuleView : BaseWindow, IComponentConnector
+{
+	private SearchModuleModel model;
+
+	public SearchModuleView(IList<SearchPathInfo> path)
+	{
+		InitializeComponent();
+		model = new SearchModuleModel();
+		DataContext = model;
+		model.searchPath = path;
+	}
+
+	private void SearchClick(object sender, RoutedEventArgs e)
+	{
+		model.Search();
+		if (model.IsSuccess)
+		{
+			model.searchPath = null;
+			model = null;
+			DialogResult = true;
+			Close();
+		}
+	}
+}

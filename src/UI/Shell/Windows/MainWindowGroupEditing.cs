@@ -44,7 +44,15 @@ public partial class MainWindowViewModel
         var session=DocumentManager.Session??throw new InvalidOperationException("Group编辑文档已经关闭。");
         var child=session.Document.Workflows.Single(w=>w.Id==((WorkflowNodeBase)context.FormalNode).SubroutineId);
         var page=new GroupRunParametersControl(new GroupRunParameterSession(context,session.Document,
-            (id,node)=>WorkflowOwnership.IsInternalNode(session.Document,child,context.Identity.WorkflowId,id,node)),()=>GetMainImageControl?.Invoke());
+            (id,node)=>WorkflowOwnership.IsInternalNode(session.Document,child,context.Identity.WorkflowId,id,node),queryFactory:(workflowId,nodeId)=>
+            {
+                var query=CreateDataSourceQueryService(workflowId);query.CurrentNodeId=nodeId;
+                var flow=session.Document.Workflows.Single(w=>w.Id==workflowId);
+                // A Group editor must not read the currently selected parent tab's results.
+                query.SetSootReader(id=>ReferenceEquals(DocumentManager.Session,session)
+                    ?_workflowContextService.GetOrCreate(flow.Id,flow.Name).GetNodeResult(id)?.Result:null);
+                return query;
+            }),()=>GetMainImageControl?.Invoke());
         groupEditor.SetRunParameterEditor(page);
         ToolEditorCommit.AttachDraftContext(control,context);
         context.PrepareView=()=>!ToolEditorCommit.TryPrepare(control,out var error)?error:page.TryPrepare(out error)?null:error;

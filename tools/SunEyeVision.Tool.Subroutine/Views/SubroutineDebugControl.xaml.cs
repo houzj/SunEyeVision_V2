@@ -49,6 +49,15 @@ namespace SunEyeVision.Tool.Subroutine.Views
             if(RunParameterContent.Content is IDisposable previous)previous.Dispose();
             RunParameterContent.Content=editor;
         }
+        private void OnLoopBindingChanged(object sender,RoutedEventArgs e)
+        {
+            if(sender is not SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding binding||ViewModel is null)return;
+            binding.GetBindingExpression(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceProperty)?.UpdateSource();
+            var selectedSource=e is SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs selected?selected.DataSource:binding.ResolveSelectedDataSource();
+            var source=ImageSourceReference.FromDataSource(selectedSource);
+            if(Equals(binding.Tag,"SourceCompareBinding")){ViewModel.LoopConfig.SourceCompareReference=source;ViewModel.LoopConfig.SourceCompareBindingDisplayText=selectedSource?.DropdownDisplayText??"";}
+            else if(Equals(binding.Tag,"TargetCompareBinding")){ViewModel.LoopConfig.TargetCompareReference=source;ViewModel.LoopConfig.TargetCompareBindingDisplayText=selectedSource?.DropdownDisplayText??"";}
+        }
         public void Dispose()
         {
             ViewModel?.Dispose();

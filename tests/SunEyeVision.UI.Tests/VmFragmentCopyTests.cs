@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -63,6 +63,7 @@ public sealed class VmFragmentCopyTests
         var parameters=new SubroutineParameters {SubroutineId="child"};
         parameters.Outputs.Add(new SubroutineOutputConfig {Name="out",BindingSource="inner.Out",Source=new AvailableDataSource { SourceNodeId="inner",PropertyName="Out" }});
         parameters.LoopConfig.SourceCompareBinding="inner.Out";
+        parameters.LoopConfig.TargetCompareReference=new ImageSourceReference("inner","Out","内部","输出"){SourceWorkflowId=child.Id};
         var owner=Make("owner",parameters);owner.SubroutineId="child";var flow=new Flow("source","root");flow.Nodes.Add(owner);
         var result=Copy(flow,new[]{"owner"},child);var copiedChild=Assert.Single(result.OwnedWorkflows);var copiedOwner=result.Nodes[0];
         Assert.NotEqual(child.Id,copiedChild.Id);Assert.Equal(copiedChild.Id,copiedOwner.SubroutineId);
@@ -70,6 +71,7 @@ public sealed class VmFragmentCopyTests
         Assert.Equal(copiedChild.Nodes[0].Id+".Out",p.Outputs[0].BindingSource);
         Assert.Equal(copiedChild.Nodes[0].Id,p.Outputs[0].Source!.SourceNodeId);Assert.Equal(copiedChild.Id,p.Outputs[0].Source!.SourceWorkflowId);
         Assert.Equal(copiedChild.Nodes[0].Id+".Out",p.LoopConfig.SourceCompareBinding);
+        Assert.Equal(copiedChild.Id,p.LoopConfig.TargetCompareReference!.SourceWorkflowId);Assert.Equal(copiedChild.Nodes[0].Id+".Out",p.LoopConfig.TargetCompareBinding);Assert.Equal("child",parameters.LoopConfig.TargetCompareReference!.SourceWorkflowId);
         var input=BindingReferenceSerializer.Deserialize(copiedChild.Nodes[0].ParamSettings["image"]!.ReferenceExpression!);
         Assert.Equal(copiedChild.Id,input.ScopeId);Assert.Equal("__SubroutineInputs__",input.NodeId);
         Assert.Equal("inner.Out",parameters.Outputs[0].BindingSource);

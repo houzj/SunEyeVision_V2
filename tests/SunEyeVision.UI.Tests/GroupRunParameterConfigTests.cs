@@ -25,16 +25,75 @@ public sealed class GroupRunParameterConfigTests
         public readonly Solution Model=new();public readonly SunEyeVision.Workflow.Workflow Parent=new("parent","流程"),Child=new("child","内部"){IsSubroutine=true};
         public readonly WorkflowNodeBase Group=new("group","Group1","Group1","Subroutine"){SubroutineId="child",Parameters=new SubroutineParameters{SubroutineId="child"}};
         public readonly ProductionEditorContext Context;public readonly GroupRunParameterSession Editor;
-        public Fixture(int maximum=32,Action<SunEyeVision.Workflow.Workflow>? configure=null)
+        public Fixture(int maximum=32,Action<SunEyeVision.Workflow.Workflow>? configure=null,Func<string,string,IDataSourceQueryService>? queryFactory=null)
         {
             Parent.Nodes.Add(Group);Child.Nodes.Add(new("a","解析1","解析1","ProtocolParse"){Parameters=new ProtocolParseParameters()});Child.Nodes.Add(new("b","解析2","解析2","ProtocolParse"){Parameters=new ProtocolParseParameters()});Model.Workflows.Add(Parent);Model.Workflows.Add(Child);
             configure?.Invoke(Child);
             bool Allowed(string id,WorkflowNodeBase node)=>WorkflowOwnership.IsInternalNode(Model,Child,Parent.Id,id,node);
-            Context=new(new NodeConfigurationEditHost(Model),Parent.Id,Group,()=>true,_=>{},allowRelated:Allowed);Editor=new(Context,Model,Allowed,maximum);
+            Context=new(new NodeConfigurationEditHost(Model),Parent.Id,Group,()=>true,_=>{},allowRelated:Allowed);Editor=new(Context,Model,Allowed,maximum,queryFactory);
         }
         public AvailableGroupParameter Source(string node,string name)=>Editor.Available().Single(s=>s.Target.NodeId==node&&s.Target.PropertyName==name);
         public void Dispose()=>Context.Discard();
     }
+    private sealed class RegionQuery : IDataSourceQueryService
+    {
+        public List<AvailableDataSource> Sources=new();public object? Matrix;
+        public string? CurrentNodeId{get;set;}
+        public List<ParentNodeInfo> GetParentNodes(string nodeId)=>new();
+        public List<ParentNodeInfo> GetChildNodes(string nodeId)=>new();
+        public List<AvailableDataSource> GetAvailableDataSources(string nodeId,Type? targetType=null)=>Sources;
+        public List<AvailableDataSource> GetNodeOutputProperties(string nodeId)=>Sources;
+        public List<AvailableDataSource> GetWorkflowNodeDataSources()=>Sources;
+        public NodeExecutionContext? GetNodeContext(string nodeId)=>null;
+        public object? GetPropertyValue(string nodeId,string property)=>Matrix;
+        public bool HasNodeExecuted(string nodeId)=>Matrix!=null;
+        public bool IsNodeRegistered(string nodeId)=>true;
+    }
+    [Fact]
+    public void Region_context_intersects_complete_source_identity_and_resolves_live_correction_in_internal_scope()
+    {
+        var calls=new List<(string,string)>();var first=new RegionQuery();var second=new RegionQuery();
+        AvailableDataSource Source(string flow,string node)=>new(){SourceWorkflowId=flow,SourceNodeId=node,PropertyName="geometry",DisplayName=node};
+        first.Sources.AddRange(new[]{Source("child","common"),Source("child","only-a"),Source("other","same-name")});
+        second.Sources.AddRange(new[]{Source("child","common"),Source("child","only-b"),Source("child","same-name")});
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.ImageThreshold","SunEyeVision.Tool.ImageThreshold.dll"));
+        SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(plugin.GetType("SunEyeVision.Tool.ImageThreshold.ImageThresholdTool",true)!);
+        using var f=new Fixture(configure:child=>{foreach(var node in child.Nodes){node.ToolType="ImageThreshold";node.Parameters=(ToolParameters)Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters",true)!)!;}},
+            queryFactory:(flow,node)=>{calls.Add((flow,node));return node=="a"?first:second;});
+        var item=f.Editor.Add(f.Editor.AddGroup(),f.Source("a",nameof(RoiParameters.InspectionRois)));f.Editor.AddTarget(item,f.Source("b",nameof(RoiParameters.InspectionRois)));
+        var parameters=f.Editor.Resolve(item)[0].Node.Parameters;parameters.GetType().GetProperty("IsPositionCorrectionEnabled")!.SetValue(parameters,true);
+        parameters.GetType().GetProperty("PositionCorrectionBindingSource")!.SetValue(parameters,new AvailableDataSource{SourceWorkflowId="child",SourceNodeId="correction",PropertyName="matrix",CurrentValue=new SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix(1,0,0,1,999,999)});
+        first.Matrix=new SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix(1,0,0,1,12,24);
+        var context=f.Editor.RegionContext(item);Assert.Equal("common",Assert.Single(context.Sources).SourceNodeId);
+        Assert.Equal(new[]{("child","a"),("child","b")},calls);Assert.True(context.Correction.CanUse);Assert.Equal(12,context.Correction.Matrix!.OffsetX);
+        first.Matrix=null;Assert.False(f.Editor.RegionContext(item).Correction.CanUse);
+        Assert.Equal(SunEyeVision.Plugin.SDK.Execution.Helpers.PositionCorrectionState.WaitingForSource,f.Editor.RegionContext(item).Correction.State);
+    }
+    [Fact]
+    public void Actual_Group_loop_page_filters_types_and_keeps_selected_workflow_identity_for_same_path()=>Sta(()=>
+    {
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
+        var p=new SubroutineParameters{SubroutineId="child",LoopConfig=new(){EnableLoop=true,EnableBreak=true,DataType="string"}};
+        AvailableDataSource Source(string scope)=>new(){SourceWorkflowId=scope,SourceNodeId="same",SourceNodeName=scope,PropertyName="Text",DisplayName="文本",PropertyType=typeof(string),VariableType="String"};
+        var parent=Source("parent");var child=Source("child");var query=new RegionQuery{Sources=new(){parent}};
+        var control=(UserControl)Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl",true)!,new object?[]{"child","Group","owner",query,new List<AvailableDataSource>{child},p,null})!;
+        var window=new Window{Content=control,Width=1100,Height=680,Left=-10000,ShowActivated=false};
+        try
+        {
+            foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})window.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+            window.Show();Visual<TabControl>(control).First().SelectedIndex=4;window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);window.UpdateLayout();
+            var comparisons=Visual<SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding>(control).Where(b=>b.Tag is string).ToArray();Assert.Equal(2,comparisons.Length);
+            Assert.All(comparisons,b=>Assert.Equal(typeof(string),b.DataType));
+            var source=comparisons.Single(b=>Equals(b.Tag,"SourceCompareBinding"));source.BindingSource="same.Text";
+            source.RaiseEvent(new SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent,child));
+            Assert.Equal("child",p.LoopConfig.SourceCompareReference!.SourceWorkflowId);
+            p.LoopConfig.DataType="float";window.UpdateLayout();Assert.All(comparisons,b=>Assert.Equal(typeof(double),b.DataType));Assert.Null(p.LoopConfig.SourceCompareReference);Assert.Empty(p.LoopConfig.SourceCompareBinding);Assert.All(comparisons,b=>Assert.Empty(b.BindingSource));Assert.All(comparisons,b=>Assert.True(System.Windows.Data.BindingOperations.IsDataBound(b,SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingDisplayTextProperty)));Assert.All(comparisons,b=>Assert.Empty(b.BindingDisplayText));
+            var bitmap=new RenderTargetBitmap(1100,680,96,96,PixelFormats.Pbgra32);bitmap.Render(control);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"group-loop-Dark.png")))encoder.Save(file);
+        }
+        finally{window.Close();((ISubroutineParameterEditor)control).Dispose();}
+    });
     [Fact]
     public void Native_relation_policy_matches_module_kind_and_parameter_key_instead_of_only_CLR_type()
     {

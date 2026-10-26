@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Workflow;
 
@@ -12,20 +13,22 @@ namespace SunEyeVision.UI.Services.Editing;
 
 internal sealed record AvailableGroupParameter(string Label, SubroutineParameterTarget Target, Type ValueType, GroupParameterEditorKind EditorKind = GroupParameterEditorKind.Auto)
 { public override string ToString()=>Label; }
-internal sealed record GroupParameterSlot(WorkflowNodeBase Node, PropertyInfo Property);
+internal sealed record GroupParameterSlot(string WorkflowId,WorkflowNodeBase Node, PropertyInfo Property);
+internal sealed record GroupRegionContext(IReadOnlyList<AvailableDataSource> Sources,PositionCorrectionResolution Correction);
 /// <summary>One Group page edits only the existing formal document's private candidates.</summary>
 internal sealed class GroupRunParameterSession
 {
     private readonly ProductionEditorContext _context;
     private readonly Solution _document;
     private readonly Func<string, WorkflowNodeBase, bool> _allowed;
+    private readonly Func<string,string,IDataSourceQueryService>? _queryFactory;
     public SubroutineParameters Parameters => (SubroutineParameters)_context.DraftNode.Parameters;
     public int MaximumParameters { get; }
     public bool IsValid => _context.IsValid;
     private void EnsureCurrent(){if(!IsValid)throw new InvalidOperationException("Group编辑作用域已经失效。");}
     public GroupRunParameterSession(ProductionEditorContext context, Solution document,
-        Func<string, WorkflowNodeBase, bool> allowed, int maximumParameters = 32)
-    { _context=context; _document=document; _allowed=allowed; MaximumParameters=maximumParameters; }
+        Func<string, WorkflowNodeBase, bool> allowed, int maximumParameters = 32,Func<string,string,IDataSourceQueryService>? queryFactory=null)
+    { _context=context; _document=document; _allowed=allowed; MaximumParameters=maximumParameters;_queryFactory=queryFactory; }
     private WorkflowNodeBase Node(SubroutineParameterTarget target, bool edit)
     {
         var node=_document.Workflows.SingleOrDefault(w=>w.Id==target.WorkflowId)?.Nodes.SingleOrDefault(n=>n.Id==target.NodeId)
@@ -102,7 +105,7 @@ internal sealed class GroupRunParameterSession
             if(!GroupParameterCatalog.Describe(node.Parameters).Any(p=>p.PropertyName==target.PropertyName))
                 throw new InvalidOperationException("工具不再声明此曝光参数。");
             var property=node.Parameters.GetType().GetProperty(target.PropertyName)!;
-            if(unique.Add((target.WorkflowId,target.NodeId,target.PropertyName)))result.Add(new(node,property));
+            if(unique.Add((target.WorkflowId,target.NodeId,target.PropertyName)))result.Add(new(target.WorkflowId,node,property));
         }
         foreach(var relation in parameter.Targets)Visit(relation);
         if(result.Count==0)throw new InvalidOperationException("该参数没有有效关联。");
@@ -112,6 +115,16 @@ internal sealed class GroupRunParameterSession
             throw new InvalidOperationException("关联必须来自同一种模块的同一个参数。");
         if(result.Any(s=>s.Property.PropertyType!=result[0].Property.PropertyType))throw new InvalidOperationException("关联参数的CLR类型不一致。");
         return result;
+    }
+    public GroupRegionContext RegionContext(SubroutineRunParameter item)
+    {
+        EnsureCurrent();var slots=Resolve(item);var queries=slots.Select(s=>_queryFactory?.Invoke(s.WorkflowId,s.Node.Id)).ToArray();
+        var candidates=slots.Select((slot,index)=>(queries[index]?.GetAvailableDataSources(slot.Node.Id)??new List<AvailableDataSource>()).ToArray()).ToArray();
+        static (string,string,string,Guid?) Key(AvailableDataSource source,string workflow)=>
+            (source.SourceWorkflowId??workflow,source.SourceNodeId,source.GetBindingPath(),source.SourceFieldId);
+        var common=candidates[0].Where(source=>slots.Select((slot,index)=>candidates[index].Any(other=>Key(other,slot.WorkflowId)==Key(source,slots[0].WorkflowId))).All(match=>match)).ToArray();
+        var primary=slots[0];var correction=PositionCorrectionResolution.Capture(primary.Node.Parameters,queries[0],ToolExecutionPreparation.RequiresConformalCorrection(primary.Node.Parameters));
+        return new(common,correction);
     }
     public string TargetLabel(SubroutineParameterTarget target)
     {

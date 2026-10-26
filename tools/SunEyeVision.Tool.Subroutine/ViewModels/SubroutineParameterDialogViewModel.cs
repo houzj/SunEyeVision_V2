@@ -32,6 +32,11 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         public ObservableCollection<SubroutineOutputConfig> Outputs => _parameters.Outputs;
         public ObservableCollection<SubroutineDisplayItem> DisplayItems => _parameters.DisplayConfigs;
         public SubroutineLoopConfig LoopConfig => _parameters.LoopConfig;
+        public Type LoopIndexType=>typeof(long);
+        public Type LoopComparisonType=>LoopConfig.DataType switch{"int"=>typeof(long),"float"=>typeof(double),"string"=>typeof(string),_=>throw new InvalidOperationException("循环比较类型无效。")};
+        public ObservableCollection<AvailableDataSource> LoopComparisonSources{get;}=new();
+        private void LoopChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
+        {if(e.PropertyName==nameof(SubroutineLoopConfig.DataType))OnPropertyChanged(nameof(LoopComparisonType));}
 
         public ObservableCollection<AvailableDataSource> AvailableSources { get; } = new();
 
@@ -61,10 +66,10 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         public List<DisplayTypeOption> AvailableDisplayTypes { get; } = SubroutineDisplayTypeExtensions.GetAllOptions();
 
         /// <summary>循环设置：可用数据类型</summary>
-        public List<string> AvailableLoopDataTypes { get; } = new() { "int", "double", "float", "string" };
+        public List<string> AvailableLoopDataTypes { get; } = new() { "int", "float", "string" };
 
         /// <summary>循环设置：比较运算符</summary>
-        public List<string> ComparisonOperators { get; } = new() { ">", ">=", "<", "<=", "==", "!=" };
+        public List<string> ComparisonOperators { get; } = new() { ">", "<", "==", "!=", ">=", "<=" };
 
         public ICommand AddInputCommand { get; }
         public ICommand AddOutputCommand { get; }
@@ -87,6 +92,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             _dataSourceQueryService = dataSourceQueryService;
             _subroutineInternalSources = subroutineInternalSources;
             _parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
+            LoopConfig.PropertyChanged+=LoopChanged;
             _onOutputsChanged = onOutputsChanged;
 
             AddInputCommand = new RelayCommand(AddInput);
@@ -114,6 +120,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
                 output.PropertyChanged += OnOutputPropertyChanged;
 
             LoadAvailableSources();
+            foreach(var source in AvailableSources.Concat(SubroutineInternalSources).Distinct())LoopComparisonSources.Add(source);
         }
 
         /// <summary>
@@ -124,6 +131,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             if (_isDisposed) return;
             _isDisposed = true;
             _parameters.Outputs.CollectionChanged -= OnOutputsCollectionChanged;
+            LoopConfig.PropertyChanged-=LoopChanged;
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged -= OnOutputPropertyChanged;
         }

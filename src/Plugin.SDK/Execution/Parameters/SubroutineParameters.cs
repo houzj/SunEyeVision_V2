@@ -16,6 +16,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public override SunEyeVision.Plugin.SDK.Validation.ValidationResult Validate()
         {
             var result = base.Validate();
+            if(LoopConfig is null)result.AddError("循环配置缺失。");
+            else
+            {
+                if(LoopConfig.LoopInterval is <0 or >10000)result.AddError("循环间隔应为0到10000毫秒。");
+                if(LoopConfig.EnableLoop&&LoopConfig.EnableBreak)
+                {
+                    if(LoopConfig.DataType is not ("int" or "float" or "string"))result.AddError("循环比较类型必须为int、float或string。");
+                    if(LoopConfig.ComparisonOperator is not (">" or "<" or "==" or "!=" or ">=" or "<="))result.AddError("循环比较运算符无效。");
+                }
+            }
             if (RunParameterGroups is null) { result.AddError("运行参数分组缺失。"); return result; }
             var groups = RunParameterGroups.ToArray();
             if (groups.Any(g => g is null || g.Id == Guid.Empty || string.IsNullOrWhiteSpace(g.Name) || g.Name.Length > SubroutineRunParameterGroup.MaximumNameLength || g.Parameters is null))

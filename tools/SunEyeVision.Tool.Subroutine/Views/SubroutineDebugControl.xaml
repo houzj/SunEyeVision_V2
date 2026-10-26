@@ -434,6 +434,7 @@
                                     <TextBlock Grid.Column="0" Text="循环起始值:" VerticalAlignment="Center" FontSize="13"/>
                                     <controls:ParamBinding Grid.Column="1"
                                         AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        DataType="{Binding DataContext.LoopIndexType, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         BindingSource="{Binding LoopConfig.StartValueBinding, Mode=TwoWay}"
                                         BindingDisplayText="{Binding LoopConfig.StartValueBindingDisplayText, Mode=OneWay}"
                                         Height="26"/>
@@ -448,6 +449,7 @@
                                     <TextBlock Grid.Column="0" Text="循环结束值:" VerticalAlignment="Center" FontSize="13"/>
                                     <controls:ParamBinding Grid.Column="1"
                                         AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        DataType="{Binding DataContext.LoopIndexType, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         BindingSource="{Binding LoopConfig.EndValueBinding, Mode=TwoWay}"
                                         BindingDisplayText="{Binding LoopConfig.EndValueBindingDisplayText, Mode=OneWay}"
                                         Height="26"/>
@@ -460,7 +462,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="循环间隔(ms):" VerticalAlignment="Center" FontSize="13"/>
-                                    <TextBox Grid.Column="1" Text="{Binding LoopConfig.LoopInterval}"
+                                    <TextBox Grid.Column="1" Text="{Binding LoopConfig.LoopInterval, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                              Height="26" VerticalContentAlignment="Center"
                                              Width="120" HorizontalAlignment="Left"/>
                                 </Grid>
@@ -505,7 +507,9 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="源比较值:" VerticalAlignment="Center" FontSize="13"/>
                                         <controls:ParamBinding Grid.Column="1"
-                                            AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            AvailableDataSources="{Binding DataContext.LoopComparisonSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            DataType="{Binding DataContext.LoopComparisonType, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Tag="SourceCompareBinding" BindingSourceSelected="OnLoopBindingChanged"
                                             BindingSource="{Binding LoopConfig.SourceCompareBinding, Mode=TwoWay}"
                                             BindingDisplayText="{Binding LoopConfig.SourceCompareBindingDisplayText, Mode=OneWay}"
                                             Height="26"/>
@@ -523,7 +527,9 @@
                                                   SelectedItem="{Binding LoopConfig.ComparisonOperator}"
                                                   Width="50" Height="26" Margin="0,0,4,0"/>
                                         <controls:ParamBinding Grid.Column="2"
-                                            AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            AvailableDataSources="{Binding DataContext.LoopComparisonSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            DataType="{Binding DataContext.LoopComparisonType, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Tag="TargetCompareBinding" BindingSourceSelected="OnLoopBindingChanged"
                                             BindingSource="{Binding LoopConfig.TargetCompareBinding, Mode=TwoWay}"
                                             BindingDisplayText="{Binding LoopConfig.TargetCompareBindingDisplayText, Mode=OneWay}"
                                             Height="26"/>

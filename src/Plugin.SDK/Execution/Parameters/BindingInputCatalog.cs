@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,11 +106,22 @@ public static class BindingInputCatalog
             var loop = subroutine.LoopConfig;
             foreach (var key in new[] { "StartValueBinding", "EndValueBinding", "SourceCompareBinding", "TargetCompareBinding" })
             {
-                var property = loop.GetType().GetProperty(key)!; var inner = key.Contains("Compare");
-                var type = inner ? loop.DataType switch { "double" => typeof(double), "string" => typeof(string), _ => typeof(long) } : typeof(long);
-                inputs.Add(new("Loop:" + key, key, () => (string)property.GetValue(loop)!, text => { property.SetValue(loop, text); if (text.Length == 0) loop.GetType().GetProperty(key + "DisplayText")?.SetValue(loop, ""); },
-                    new[] { type }, ReadWorkflowId: inner ? () => subroutine.SubroutineId : null, ReferenceOnly: true,
-                    Active: loop.EnableLoop && (!inner || loop.EnableBreak), InternalProjection: inner));
+                var property=loop.GetType().GetProperty(key)!;var compare=key.Contains("Compare");
+                var referenceProperty=loop.GetType().GetProperty(key.Replace("Binding","Reference"));
+                var reference=referenceProperty?.GetValue(loop) as ImageSourceReference;
+                var inner=compare&&(reference?.SourceWorkflowId is null||reference.SourceWorkflowId==subroutine.SubroutineId);
+                var type=compare?loop.DataType switch{"float"=>typeof(double),"string"=>typeof(string),_=>typeof(long)}:typeof(long);
+                inputs.Add(new("Loop:"+key,key,()=>(string)property.GetValue(loop)!,text=>
+                {
+                    property.SetValue(loop,text);
+                    if(reference is not null&&text.Length!=0)
+                    {
+                        var dot=text.IndexOf('.');referenceProperty!.SetValue(loop,new ImageSourceReference(text[..dot],text[(dot+1)..],reference.SourceNodeName,reference.DisplayName)
+                            {SourceWorkflowId=reference.SourceWorkflowId,SourceFieldId=reference.SourceFieldId});
+                    }
+                    if(text.Length==0)loop.GetType().GetProperty(key+"DisplayText")?.SetValue(loop,"");
+                },new[]{type},ReadWorkflowId:()=>reference?.SourceWorkflowId??(inner?subroutine.SubroutineId:null),ReferenceOnly:true,
+                    Active:loop.EnableLoop&&(!compare||loop.EnableBreak),InternalProjection:inner,ReadFieldId:()=>reference?.SourceFieldId));
             }
         }
         return inputs.GroupBy(i => i.Key, StringComparer.Ordinal).Select(g => g.First())

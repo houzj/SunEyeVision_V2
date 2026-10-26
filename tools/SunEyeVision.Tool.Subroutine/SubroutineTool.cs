@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -86,6 +88,9 @@ namespace SunEyeVision.Tool.Subroutine
                 if (parameters.Outputs.Count == 0)
                     throw new InvalidOperationException($"子程序 \"{parameters.SubroutineName}\" 至少需要一个输出参数");
 
+                var validation=parameters.Validate();
+                if(!validation.IsValid)throw new InvalidOperationException(string.Join("；",validation.Errors));
+                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();
                 var inputImage = parameters.ResolvedInputImage;
 
                 parameters.LogInfo($"开始执行子程序: {parameters.SubroutineName}, 工作流ID: {parameters.SubroutineId}, 输入图像: {(inputImage != null ? $"{inputImage.Width}x{inputImage.Height}" : "null")}");
@@ -172,6 +177,8 @@ namespace SunEyeVision.Tool.Subroutine
                     parameters.LogSuccess($"子程序执行完成: {result.ExecutedNodeCount} 个节点, 耗时 {result.SubWorkflowExecutionTimeMs}ms");
                 }
             }
+            catch(OperationCanceledException) when(parameters.Context?.CancellationToken.IsCancellationRequested==true)
+            {result.Resources?.Dispose();throw;}
             catch (Exception ex)
             {
                 sw.Stop();
@@ -368,11 +375,15 @@ namespace SunEyeVision.Tool.Subroutine
             // 非累积显示项不在此处理（由 Run() 基于最后轮节点结果统一构建）。
             var accumulatedDisplay = new DisplayCollector();
 
+            try
+            {
             for (int i = start; i < end; i++)
             {
+                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();
                 parameters.CurrentIteration = i;
                 using var iterResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);
                 result.Merge(iterResult);
+                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();
 
                 if (!iterResult.Success)
                     break;
@@ -413,9 +424,12 @@ namespace SunEyeVision.Tool.Subroutine
                 }
 
                 // ===== 循环间隔 =====
-                if (config.LoopInterval > 0)
-                    Task.Delay(config.LoopInterval).GetAwaiter().GetResult();
+                if (config.LoopInterval > 0&&i<end-1)
+                    Task.Delay(config.LoopInterval,parameters.Context?.CancellationToken??CancellationToken.None).GetAwaiter().GetResult();
             }
+
+            }
+            catch{result.Dispose();throw;}
 
             return (result, accumulatedOutputs, accumulatedDisplay);
         }
@@ -713,82 +727,41 @@ namespace SunEyeVision.Tool.Subroutine
         {
             if (!config.EnableBreak) return false;
 
-            // 源比较值：从绑定源解析（当前迭代结果）
-            string? sourceStr = null;
-            if (!string.IsNullOrEmpty(config.SourceCompareBinding) && iterResult.NodeResults != null)
+            var internalResults=ExtractToolResults(iterResult);
+            var type=config.DataType switch{"int"=>typeof(long),"float"=>typeof(double),"string"=>typeof(string),_=>throw new InvalidOperationException("循环比较类型无效。")};
+            object Resolve(string path,string name,ImageSourceReference? reference)
             {
-                var dotIndex = config.SourceCompareBinding.IndexOf('.');
-                if (dotIndex >= 0)
+                var dot=path.IndexOf('.');if(dot<=0||dot==path.Length-1)throw new InvalidOperationException(name+"未配置有效绑定源。");
+                var node=path[..dot];var sources=new Dictionary<string,ToolResults>(StringComparer.Ordinal);
+                if(reference?.SourceWorkflowId is {} workflow)
                 {
-                    var binding = new ParamSetting
-                    {
-                        ParameterName = "源比较值",
-                        BindingType = BindingType.Binding,
-                        SourceNodeId = config.SourceCompareBinding[..dotIndex],
-                        SourceProperty = config.SourceCompareBinding[(dotIndex + 1)..],
-                        TargetType = typeof(double)
-                    };
-                    var iterToolResults = iterResult.NodeResults
-                        .Where(kvp => kvp.Value?.Result != null)
-                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
-                    var resolveResult = resolver.Resolve(binding, iterToolResults);
-                    if (resolveResult.IsSuccess && resolveResult.Value != null)
-                    {
-                        sourceStr = resolveResult.Value.ToString();
-                    }
+                    var selected=workflow==parameters.SubroutineId?internalResults:nodeResults;
+                    if(selected is not null&&selected.TryGetValue(node,out var value))sources.Add(node,value);
                 }
-            }
-            if (string.IsNullOrEmpty(sourceStr))
-            {
-                parameters.LogWarning("中断条件: 源比较值未配置有效绑定源，不触发中断");
-                return false;
-            }
-
-            // 目的比较值：从绑定源解析（父工作流）
-            string? targetStr = null;
-            if (!string.IsNullOrEmpty(config.TargetCompareBinding) && nodeResults != null)
-            {
-                var dotIndex = config.TargetCompareBinding.IndexOf('.');
-                if (dotIndex >= 0)
+                else
                 {
-                    var binding = new ParamSetting
-                    {
-                        ParameterName = "目的比较值",
-                        BindingType = BindingType.Binding,
-                        SourceNodeId = config.TargetCompareBinding[..dotIndex],
-                        SourceProperty = config.TargetCompareBinding[(dotIndex + 1)..],
-                        TargetType = typeof(double)
-                    };
-                    var resolveResult = resolver.Resolve(binding, nodeResults);
-                    if (resolveResult.IsSuccess && resolveResult.Value != null)
-                    {
-                        targetStr = resolveResult.Value.ToString();
-                    }
+                    if(nodeResults?.TryGetValue(node,out var parentValue)==true)sources.Add(node,parentValue);
+                    if(internalResults.TryGetValue(node,out var innerValue)&&!sources.TryAdd(node,innerValue))throw new InvalidOperationException("循环比较来源节点身份重复，需要明确流程作用域。");
                 }
+                try
+                {
+                    var resolved=resolver.Resolve(new ParamSetting{ParameterName=name,BindingType=BindingType.Binding,SourceNodeId=node,SourceProperty=path[(dot+1)..],SourceWorkflowId=reference?.SourceWorkflowId,SourceFieldId=reference?.SourceFieldId,TargetType=type},sources);
+                    if(!resolved.IsSuccess||resolved.Value is null)throw new InvalidOperationException(resolved.ErrorMessage??"值为空。");
+                    return resolved.Value;
+                }
+                catch(Exception ex){throw new InvalidOperationException(name+"解析失败："+ex.Message,ex);}
             }
-            if (string.IsNullOrEmpty(targetStr))
+            var source=Resolve(config.SourceCompareBinding,"源比较值",config.SourceCompareReference);var target=Resolve(config.TargetCompareBinding,"目的比较值",config.TargetCompareReference);
+            int comparison;
+            if(config.DataType=="string")comparison=StringComparer.Ordinal.Compare((string)source,(string)target);
+            else if(config.DataType=="int")comparison=Convert.ToInt64(source,CultureInfo.InvariantCulture).CompareTo(Convert.ToInt64(target,CultureInfo.InvariantCulture));
+            else
             {
-                parameters.LogWarning("中断条件: 目的比较值未配置有效绑定源，不触发中断");
-                return false;
+                var left=Convert.ToDouble(source,CultureInfo.InvariantCulture);var right=Convert.ToDouble(target,CultureInfo.InvariantCulture);
+                if(!double.IsFinite(left)||!double.IsFinite(right))throw new InvalidOperationException("循环比较值必须为有限数值。");
+                comparison=left.CompareTo(right);
             }
-
-            // 类型转换后比较
-            if (!double.TryParse(sourceStr, out var sourceVal) || !double.TryParse(targetStr, out var targetVal))
-                return false;
-
-            bool conditionMet = config.ComparisonOperator switch
-            {
-                ">" => sourceVal > targetVal,
-                ">=" => sourceVal >= targetVal,
-                "<" => sourceVal < targetVal,
-                "<=" => sourceVal <= targetVal,
-                "==" => Math.Abs(sourceVal - targetVal) < 1e-9,
-                "!=" => Math.Abs(sourceVal - targetVal) >= 1e-9,
-                _ => false
-            };
-
-            parameters.LogInfo($"  中断判断: {sourceStr} {config.ComparisonOperator} {targetStr} = {conditionMet}");
-            return conditionMet;
+            return config.ComparisonOperator switch{">"=>comparison>0,"<"=>comparison<0,"=="=>comparison==0,"!="=>comparison!=0,">="=>comparison>=0,"<="=>comparison<=0,_=>throw new InvalidOperationException("循环比较运算符无效。")};
         }
 
         /// <summary>

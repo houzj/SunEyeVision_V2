@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView" xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore" x:Name="UserControl" Height="32">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Shared/CommomDictionary.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Border Name="ControlBorder" BorderThickness="1,1,1,1" Margin="0,2" CornerRadius="2" Background="{Binding ElementName=UserControl, Path=TBackground}" BorderBrush="{Binding ElementName=UserControl, Path=TBorderBrush}">
+    <Grid Name="ValueGrid" Width="Auto">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Name="C0" Width="{Binding ElementName=UserControl, Path=SymbolWidth}" />
+        <ColumnDefinition />
+        <ColumnDefinition Width="20" />
+      </Grid.ColumnDefinitions>
+      <Grid>
+        <Path Fill="#FF5A5A5A" Margin="0,0,0,0" Stretch="Fill" Data="M140,0 L130,5 L140,10 L142,9 L132,5 L142,1" Width="6" Height="8" HorizontalAlignment="Center" VerticalAlignment="Center" Stroke="{x:Null}" />
+        <UIElement.RenderTransform>
+          <ScaleTransform ScaleY="1" CenterX="5" ScaleX="{Binding ElementName=UserControl, Path=SymbolDir}" />
+        </UIElement.RenderTransform>
+      </Grid>
+      <TextBox Name="ValueText" Background="#00FFFFFF" Margin="7,4,2,3" Grid.Column="1" input:InputMethod.IsInputMethodEnabled="False" BorderThickness="0,0,0,0" VerticalContentAlignment="Center" IsReadOnly="{Binding ElementName=UserControl, Path=IsReadOnly}" Foreground="{Binding ElementName=UserControl, Path=Foreground}" BorderBrush="{x:Null}" Text="{Binding Path=Text, ElementName=UserControl, UpdateSourceTrigger=LostFocus}" MouseWheel="ValueText_MouseWheel" />
+      <Grid Grid.Column="2">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <RepeatButton Name="UpButton" HorizontalAlignment="Right" Style="{StaticResource ArrowButtonStyle}" Width="20" Grid.Row="0" Margin="0,0,0,0" Height="15" VerticalAlignment="Bottom" Focusable="False" Click="UpButton_Click" />
+        <RepeatButton Name="DownButton" HorizontalAlignment="Right" Style="{StaticResource ArrowButtonStyle}" VerticalAlignment="Top" Width="20" Height="15" RenderTransformOrigin="0.5,0.5" Grid.Row="1" Margin="0,0,0,0" Focusable="False" Click="DownButton_Click">
+          <UIElement.RenderTransform>
+            <TransformGroup>
+              <ScaleTransform ScaleX="1" ScaleY="-1" />
+              <SkewTransform AngleX="0" AngleY="0" />
+              <RotateTransform Angle="0" />
+              <TranslateTransform X="0" Y="0" />
+            </TransformGroup>
+          </UIElement.RenderTransform>
+        </RepeatButton>
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Grid}">
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding ElementName=UserControl, Path=IsReadOnly}">
+                <Setter Property="Visibility" Value="Collapsed" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>

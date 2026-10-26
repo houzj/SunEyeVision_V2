@@ -1,0 +1,164 @@
+using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.VMControls.WPF.Release.Front;
+
+/// <summary>
+/// NumbericParamControl.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// NumbericParamControl
+/// </summary>
+public partial class NumbericParamControl : ContentControl, IComponentConnector
+{
+	public Font Font
+	{
+		get
+		{
+			return PART_Control.Font;
+		}
+		set
+		{
+			PART_Control.Font = value;
+		}
+	}
+
+	public Font Fontsize
+	{
+		get
+		{
+			return PART_Control.Fontsize;
+		}
+		set
+		{
+			PART_Control.Fontsize = value;
+		}
+	}
+
+	public bool FitSize
+	{
+		get
+		{
+			return PART_Control.FitSize;
+		}
+		set
+		{
+			PART_Control.FitSize = value;
+		}
+	}
+
+	public System.Windows.Size Size
+	{
+		get
+		{
+			return PART_Control.Size;
+		}
+		set
+		{
+			PART_Control.Size = value;
+		}
+	}
+
+	public object NumbericParamSource
+	{
+		get
+		{
+			return PART_Control.NumbericParamSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.NumbericParamSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("NumbericParamSource Type Error!");
+		}
+	}
+
+	public object ParamTypeSource
+	{
+		get
+		{
+			return PART_Control.ParamTypeSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.ParamTypeSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("ParamTypeSource Type Error!");
+		}
+	}
+
+	public string CellAlign
+	{
+		get
+		{
+			return PART_Control.CellAlign;
+		}
+		set
+		{
+			PART_Control.CellAlign = value;
+		}
+	}
+
+	public string ParamName
+	{
+		get
+		{
+			return PART_Control.ParamName;
+		}
+		set
+		{
+			PART_Control.ParamName = value;
+		}
+	}
+
+	public object TheNumberOfDecimalPlacesSource
+	{
+		get
+		{
+			return PART_Control.TheNumberOfDecimalPlacesSource;
+		}
+		set
+		{
+			if (value != null)
+			{
+				if (true)
+				{
+					PART_Control.TheNumberOfDecimalPlacesSource = value;
+					return;
+				}
+			}
+			throw new ArgumentException("TheNumberOfDecimalPlacesSource Type Error!");
+		}
+	}
+
+	public NumbericParamControl()
+	{
+		InitializeComponent();
+	}
+
+	/// <summary>
+	///             高永远为自动
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+	{
+		base.OnRenderSizeChanged(sizeInfo);
+		Height = double.NaN;
+	}
+}

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<local:SliderArrangeBase x:Class="SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView" x:Name="UC_Arrange">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/VmFieldStyles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="SliderStyle1" TargetType="{x:Type Slider}">
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Foreground" Value="#FFC4C4C4" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Slider}">
+              <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="True">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" MinHeight="{TemplateBinding FrameworkElement.MinHeight}" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <TickBar Name="TopTick" Fill="{TemplateBinding Control.Foreground}" Height="4" Placement="Top" Grid.Row="0" Visibility="Hidden" />
+                  <TickBar Name="BottomTick" Fill="{TemplateBinding Control.Foreground}" Height="4" Placement="Bottom" Grid.Row="2" Visibility="Visible" Opacity="0" />
+                  <Border Name="TrackBackground" BorderThickness="1" CornerRadius="1" Height="4.0" Margin="5,0" Grid.Row="1" VerticalAlignment="center" BorderBrush="{StaticResource HorizontalSliderTrackNormalBorder}" Background="{StaticResource HorizontalSliderTrackNormalBackground}">
+                    <Canvas Margin="-6,-1">
+                      <Rectangle Name="PART_SelectionRange" Height="4.0" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" StrokeThickness="0" Visibility="Hidden" Fill="#FF4C4C4C" OpacityMask="{x:Null}" />
+                    </Canvas>
+                  </Border>
+                  <Track Name="PART_Track" Grid.Row="1">
+                    <Track.DecreaseRepeatButton>
+                      <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Background="#FFD6CFCF" BorderBrush="#FFB8ADAD" Foreground="#FF807C7C" Visibility="Visible" BorderThickness="0" Cursor="Arrow" ClipToBounds="False" Style="{StaticResource SliderRepeatButtonStyle}" OpacityMask="{x:Null}" Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}" Click="RepeatButton_Click" />
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                      <RepeatButton Command="{x:Static Slider.IncreaseLarge}" ClickMode="Press" Opacity="1" Visibility="Visible" Style="{StaticResource SliderRepeatButtonStyle}" Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}" Click="RepeatButton_Click" />
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                      <Thumb Name="Thumb" Visibility="Visible" Opacity="1" BorderThickness="2" Style="{StaticResource HorizontalSliderThumbStyle}" BorderBrush="{x:Null}" Foreground="{x:Null}" OpacityMask="{x:Null}" Background="{x:Null}" Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}" PreviewMouseLeftButtonUp="Thumb_MouseLeftButtonUp" PreviewMouseLeftButtonDown="Thumb_MouseLeftButtonDown" />
+                    </Track.Thumb>
+                  </Track>
+                </Grid>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="Slider.TickPlacement" Value="TopLeft">
+                  <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                  <Setter TargetName="Thumb" Property="Style" Value="{StaticResource HorizontalSliderUpThumbStyle}" />
+                  <Setter TargetName="TrackBackground" Property="Margin" Value="5,2,5,0" />
+                </Trigger>
+                <Trigger Property="Slider.TickPlacement" Value="BottomRight">
+                  <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+                  <Setter TargetName="Thumb" Property="Style" Value="{StaticResource HorizontalSliderDownThumbStyle}" />
+                  <Setter TargetName="TrackBackground" Property="Margin" Value="5,0,5,2" />
+                </Trigger>
+                <Trigger Property="Slider.TickPlacement" Value="Both">
+                  <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                  <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+                </Trigger>
+                <Trigger Property="Slider.IsSelectionRangeEnabled" Value="True">
+                  <Setter TargetName="PART_SelectionRange" Property="Visibility" Value="Visible" />
+                </Trigger>
+                <Trigger Property="UIElement.IsKeyboardFocused" Value="True">
+                  <Setter TargetName="Thumb" Property="Foreground" Value="#FF0000FF" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+          <Trigger Property="Slider.Orientation" Value="Vertical">
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Slider}">
+                  <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="True">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition MinWidth="{TemplateBinding FrameworkElement.MinWidth}" Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TickBar Name="TopTick" Grid.Column="0" Fill="{TemplateBinding Control.Foreground}" Placement="Left" Visibility="Collapsed" Width="4" />
+                      <TickBar Name="BottomTick" Grid.Column="2" Fill="{TemplateBinding Control.Foreground}" Placement="Right" Visibility="Collapsed" Width="4" />
+                      <Border Name="TrackBackground" BorderThickness="1" Grid.Column="1" CornerRadius="1" HorizontalAlignment="center" Margin="0,5" Width="4.0" BorderBrush="{StaticResource VerticalSliderTrackNormalBorder}" Background="{StaticResource HorizontalSliderTrackNormalBackground}">
+                        <Canvas Margin="-1,-6">
+                          <Rectangle Name="PART_SelectionRange" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" StrokeThickness="1.0" Visibility="Hidden" Width="4.0" />
+                        </Canvas>
+                      </Border>
+                      <Track Name="PART_Track" Grid.Column="1">
+                        <Track.DecreaseRepeatButton>
+                          <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Style="{StaticResource SliderRepeatButtonStyle}" />
+                        </Track.DecreaseRepeatButton>
+                        <Track.IncreaseRepeatButton>
+                          <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Style="{StaticResource SliderRepeatButtonStyle}" />
+                        </Track.IncreaseRepeatButton>
+                        <Track.Thumb>
+                          <Thumb Name="Thumb" Style="{StaticResource VerticalSliderThumbStyle}" />
+                        </Track.Thumb>
+                      </Track>
+                    </Grid>
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="Slider.TickPlacement" Value="TopLeft">
+                      <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                      <Setter TargetName="Thumb" Property="Style" Value="{StaticResource VerticalSliderLeftThumbStyle}" />
+                      <Setter TargetName="TrackBackground" Property="Margin" Value="2,5,0,5" />
+                    </Trigger>
+                    <Trigger Property="Slider.TickPlacement" Value="BottomRight">
+                      <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+                      <Setter TargetName="Thumb" Property="Style" Value="{StaticResource VerticalSliderRightThumbStyle}" />
+                      <Setter TargetName="TrackBackground" Property="Margin" Value="0,5,2,5" />
+                    </Trigger>
+                    <Trigger Property="Slider.TickPlacement" Value="Both">
+                      <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                      <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="Slider.IsSelectionRangeEnabled" Value="True">
+                      <Setter TargetName="PART_SelectionRange" Property="Visibility" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsKeyboardFocused" Value="True">
+                      <Setter TargetName="Thumb" Property="Foreground" Value="#FF0000FF" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Trigger>
+        </Style.Triggers>
+      </Style>
+      <Style x:Key="NumStyle" TargetType="{x:Type local:NumericControl}">
+        <Setter Property="Visibility" Value="Visible" />
+        <Style.Triggers>
+          <DataTrigger Value="true" Binding="{Binding ElementName=UC_Arrange, Path=IsReadOnly}">
+            <Setter Property="Focusable" Value="False" />
+          </DataTrigger>
+          <DataTrigger Value="True" Binding="{Binding ElementName=UC_Arrange, Path=IsSubscribeRight}">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <ComboBox Name="CBox" IsEditable="True" PreviewMouseDown="CBox_PreviewMouseDown">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type ComboBox}">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ComboBox}">
+                <Grid Name="MainGrid" SnapsToDevicePixels="True">
+                  <Popup Name="PART_Popup" AllowsTransparency="True" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom" IsOpen="{Binding IsDropDownOpen, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" Opened="PART_Popup_Opened" Closed="PART_Popup_Closed">
+                    <Control>
+                      <Control.Template>
+                        <ControlTemplate TargetType="{x:Type Control}">
+                          <Border Margin="3" BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Visibility="{Binding ElementName=UC_Arrange, Path=SliderVisibility}">
+                            <Border VerticalAlignment="Center" BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Height="{Binding ElementName=UC_Arrange, Path=SilderHeight}">
+                              <Canvas Name="canvas" Background="#FFFFFFFF" Width="{Binding ElementName=UC_Arrange, Path=SilderWidth}">
+                                <Slider Name="SL_Bat1" KeyboardNavigation.DirectionalNavigation="None" IsSelectionRangeEnabled="True" TickPlacement="BottomRight" IsSnapToTickEnabled="True" VerticalAlignment="Center" Style="{DynamicResource SliderStyle1}" Background="#FFFFFFFF" Visibility="{Binding ElementName=UC_Arrange, Path=IsLeftSliderVisible}" Value="{Binding ElementName=UC_Arrange, Path=StartValue}" Minimum="{Binding ElementName=UC_Arrange, Path=Minimum}" Maximum="{Binding ElementName=UC_Arrange, Path=Maximum}" SelectionStart="{Binding ElementName=UC_Arrange, Path=StartValueE}" SelectionEnd="{Binding ElementName=UC_Arrange, Path=EndValueE}" Width="{Binding ElementName=UC_Arrange, Path=SilderWidth}" TickFrequency="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" FocusVisualStyle="{x:Null}" SmallChange="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" LargeChange="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Clip="{Binding ElementName=UC_Arrange, Path=StartRectClip}" ValueChanged="SL_Bat1_ValueChanged" />
+                                <Slider Name="SL_Bat2" IsSelectionRangeEnabled="True" TickPlacement="BottomRight" IsSnapToTickEnabled="True" VerticalAlignment="Center" Style="{DynamicResource SliderStyle1}" Background="#FFFFFFFF" Visibility="{Binding ElementName=UC_Arrange, Path=IsRightSliderVisible}" Value="{Binding ElementName=UC_Arrange, Path=EndValue}" Minimum="{Binding ElementName=UC_Arrange, Path=Minimum}" Maximum="{Binding ElementName=UC_Arrange, Path=Maximum}" SelectionStart="{Binding ElementName=UC_Arrange, Path=StartValueF}" SelectionEnd="{Binding ElementName=UC_Arrange, Path=EndValueF}" Width="{Binding ElementName=UC_Arrange, Path=SilderWidth}" TickFrequency="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" FocusVisualStyle="{x:Null}" SmallChange="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" LargeChange="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Clip="{Binding ElementName=UC_Arrange, Path=EndRectClip}" ValueChanged="SL_Bat2_ValueChanged" />
+                                <FrameworkElement.Style>
+                                  <Style TargetType="{x:Type Canvas}">
+                                    <Setter Property="Height" Value="{Binding ElementName=SL_Bat1, Path=ActualHeight}" />
+                                    <Style.Triggers>
+                                      <DataTrigger Value="Collapsed" Binding="{Binding ElementName=UC_Arrange, Path=IsLeftSliderVisible}">
+                                        <Setter Property="Height" Value="{Binding ElementName=SL_Bat2, Path=ActualHeight}" />
+                                      </DataTrigger>
+                                    </Style.Triggers>
+                                  </Style>
+                                </FrameworkElement.Style>
+                              </Canvas>
+                            </Border>
+                            <UIElement.Effect>
+                              <DropShadowEffect Color="Gray" BlurRadius="6" Direction="321" ShadowDepth="2" Opacity="0.5" />
+                            </UIElement.Effect>
+                          </Border>
+                        </ControlTemplate>
+                      </Control.Template>
+                    </Control>
+                  </Popup>
+                  <Grid Name="GT" Height="Auto">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="{Binding ElementName=UC_Arrange, Path=Gr0}" />
+                      <ColumnDefinition Width="{Binding ElementName=UC_Arrange, Path=Gr1}" />
+                      <ColumnDefinition Width="{Binding ElementName=UC_Arrange, Path=Gr2}" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                      </Grid.ColumnDefinitions>
+                      <local:NumericControl x:Name="T1" Loaded="T1_Loaded" LostFocus="T1_LostFocus" OnNumericClick="T1_OnNumericClick" VerticalContentAlignment="Center" TBtnBgNormal="{Binding ElementName=UC_Arrange, Path=TBtnBgNormal}" Foreground="{Binding ElementName=UC_Arrange, Path=Foreground}" TBackground="{Binding ElementName=UC_Arrange, Path=TBackground}" TBorderBrush="{Binding ElementName=UC_Arrange, Path=TBorderBrush}" Increment="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Symbol="{Binding ElementName=UC_Arrange, Path=LeftSymbol}" Text="{Binding ElementName=UC_Arrange, Path=StartValue, Mode=TwoWay}" Maximum="{Binding ElementName=UC_Arrange, Path=EndValueF}" Minimum="{Binding ElementName=UC_Arrange, Path=Minimum}" MaxValue="{Binding ElementName=UC_Arrange, Path=MaximumLeft}" MinValue="{Binding ElementName=UC_Arrange, Path=MinimumLeft}" IsNeedCheckExtremumByXML="{Binding ElementName=UC_Arrange, Path=IsNeedCheckExtremumByXML}" IsFocusedP="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsReadOnly="{Binding ElementName=UC_Arrange, Path=IsReadOnly}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type local:NumericControl}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                              <DataTrigger Value="True" Binding="{Binding ElementName=UC_Arrange, Path=IsSubscribeLeft}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </local:NumericControl>
+                      <ContentControl ContentTemplate="{Binding ElementName=UC_Arrange, Path=SubscribeTemplate}" Content="{Binding ElementName=UC_Arrange, Path=SubscribeDataLeft}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type ContentControl}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Value="True" Binding="{Binding ElementName=UC_Arrange, Path=IsSubscribeLeft}">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ContentControl>
+                      <ToggleButton Grid.Column="1" Style="{StaticResource EditLinkButton}" IsChecked="{Binding ElementName=UC_Arrange, Path=IsSubscribeLeft}" Visibility="{Binding ElementName=UC_Arrange, Path=IsSubscribeVisible}" Click="TypeChangeLeft_Click" />
+                    </Grid>
+                    <Label Name="label" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Content="—" FontStretch="Expanded" Foreground="#FFCECCCB" Visibility="{Binding ElementName=UC_Arrange, Path=IsVisibleOfLable}" />
+                    <Grid Grid.Column="2" Visibility="{Binding ElementName=UC_Arrange, Path=IsVisibleOfChild}">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                      </Grid.ColumnDefinitions>
+                      <local:NumericControl x:Name="T2" Loaded="T2_Loaded" LostFocus="T2_LostFocus" OnNumericClick="T2_OnNumericClick" VerticalContentAlignment="Center" Style="{StaticResource NumStyle}" TBtnBgNormal="{Binding ElementName=UC_Arrange, Path=TBtnBgNormal}" Foreground="{Binding ElementName=UC_Arrange, Path=Foreground}" TBackground="{Binding ElementName=UC_Arrange, Path=TBackground}" TBorderBrush="{Binding ElementName=UC_Arrange, Path=TBorderBrush}" Increment="{Binding ElementName=UC_Arrange, Path=SliderTickFrequency}" Symbol="{Binding ElementName=UC_Arrange, Path=RightSymbol}" Text="{Binding ElementName=UC_Arrange, Path=EndValue, Mode=TwoWay}" Maximum="{Binding ElementName=UC_Arrange, Path=Maximum}" Minimum="{Binding ElementName=UC_Arrange, Path=StartValueE}" MaxValue="{Binding ElementName=UC_Arrange, Path=MaximumRight}" MinValue="{Binding ElementName=UC_Arrange, Path=MinimumRight}" IsNeedCheckExtremumByXML="{Binding ElementName=UC_Arrange, Path=IsNeedCheckExtremumByXML}" IsFocusedP="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsReadOnly="{Binding ElementName=UC_Arrange, Path=IsReadOnly}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+                      <ContentControl ContentTemplate="{Binding ElementName=UC_Arrange, Path=SubscribeTemplate}" Content="{Binding ElementName=UC_Arrange, Path=SubscribeDataRight}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type ContentControl}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Value="True" Binding="{Binding ElementName=UC_Arrange, Path=IsSubscribeRight}">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ContentControl>
+                      <ToggleButton Grid.Column="1" Style="{StaticResource EditLinkButton}" IsChecked="{Binding ElementName=UC_Arrange, Path=IsSubscribeRight}" Visibility="{Binding ElementName=UC_Arrange, Path=IsSubscribeVisible}" Click="TypeChangeRight_Click" />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </FrameworkElement.Style>
+    </ComboBox>
+  </Grid>
+</local:SliderArrangeBase>

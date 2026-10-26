@@ -1,0 +1,1339 @@
+{
+  "group": "numeric",
+  "base_commit": "b87fb685",
+  "phase": "source_migration_no_build_or_tests",
+  "source_roots": [
+    "D:\\MyWork\\REA逆向测试\\analysis\\decompiled",
+    "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui"
+  ],
+  "ownership": {
+    "worktree": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\numeric",
+    "branch": "codex/vm-controls-numeric",
+    "shared_project_files_modified": false,
+    "formal_release_modified": false,
+    "handoff": "root integrates these exact types/resources before unified build; central CURRENT_TASK remains owned by root"
+  },
+  "entries": [
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\NumericControl.xaml",
+      "source_sha256": "71C9174DED1F0CB77749F554AA1C5909D759CCB4826748511AEF4780C25981F5",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\NumericControl.xaml",
+      "target_sha256": "CBBC988726DE1AFE5EC095D81113747BDC941778F2AC3F7D60CEB4215D2A87AC",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resources\\combo_ic_top_normal.png",
+      "source_sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Apps.XmlUI\\combo_ic_top_normal.png",
+      "target_sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resources\\combo_ic_top_click.png",
+      "source_sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Apps.XmlUI\\combo_ic_top_click.png",
+      "target_sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\NumericControl.xaml.cs",
+      "source_sha256": "4A685FAB058AFA2276CAFEB62CED030295CC3D03C5635FA2D2669068607ACBA7",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\NumericControl.xaml.cs",
+      "target_sha256": "AA5517D36CE980416E40F9ED3849DD21422F4EE1EBF43D6D4D0CCAD95BCD00A0",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\NumbericTextBox.cs",
+      "source_sha256": "D1017F0A8149E925081D47B3C3D5ECA36BE065E3E5036E99F6DE08B6B4A63507",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\NumbericTextBox.cs",
+      "target_sha256": "0A7AFCB5D52D87A05CFE460FB872DAD36FA2B1EA720A0FE7C28B83A239A8221B",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrange.xaml",
+      "source_sha256": "BE1A19C9B34259C22F9CE00FB69BED8CAEF3D9245E247CEE9E9BCB9FD6D7E4AE",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrange.xaml",
+      "target_sha256": "63537090DD6E72505581BC9BB26973DB73716183214262BB009D0B3A39FDA8BC",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrange.xaml.cs",
+      "source_sha256": "2C74CA56C22488365B426625BBA1E6BC7E84DF79F836323E3480A026B6BECC4E",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrange.xaml.cs",
+      "target_sha256": "589B3BF5B24934EA3BEAECC0B16EF0C13C4DED76B315FD1022ED3FBE6DCAF49D",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeFloat.xaml",
+      "source_sha256": "DBA2157AFA376E92142F7FA862FE5F82D182AAD60D93E926FC6A6D6ED8713251",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeFloat.xaml",
+      "target_sha256": "04B0025B0939D741FCD105F58E09C08C6F4ABCD7667E0491A89CD5BFE3E92C31",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeFloat.xaml.cs",
+      "source_sha256": "10E549D1D9E5446D5218B4FCD939E8D22E75A9C579967E89BEEE6448F310873A",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeFloat.xaml.cs",
+      "target_sha256": "54674CB67E14BCD98A6B1F51DAD6FBC9D9BD3A25CAB3E6B649B79029A21B4F76",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeBase.cs",
+      "source_sha256": "C0CE5F2E2D27151DB5D68E1884A69C80156F10168DA2B4D628CFD55D834B2662",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeBase.cs",
+      "target_sha256": "BBA2C7A80C5D3B9E7F759F192C00634646BBA400DF1F964C543B701F1D18AAC1",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resources\\滑块_normal.png",
+      "source_sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Apps.XmlUI\\滑块_normal.png",
+      "target_sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resources\\滑块_click.png",
+      "source_sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\Apps.XmlUI\\滑块_click.png",
+      "target_sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeDictionary.xaml",
+      "source_sha256": "0C62860D1B06D343F1E8EA8CBE6745FD7FA5DC575329F3611C088B5EFADCCA05",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\AppsXmlUi\\SliderArrangeDictionary.xaml",
+      "target_sha256": "7B1D58B0132CAE5DF2283176C39186E5F25964DE60B9617AE7C1E31C7E327521",
+      "kind": "xaml_dictionary",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeDictionary.xaml.cs",
+      "source_sha256": "0589FD29FE5847D1C08DF6B54366F7A3D2DC409DBDB71CBD35EC7E36DAB31523",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeDictionary.xaml.cs",
+      "target_sha256": "B568280168EFAD2E11CA05D90E4E714598C311971B40D5B44E281EF0E63FE44C",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\RangeRule.cs",
+      "source_sha256": "E2A085ECE2124BEE2C2F6B3F1EB076FCBBE2683608E87FD1DAD0A74C598B0FD3",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\RangeRule.cs",
+      "target_sha256": "79B7862BCBBEB47D51EE354CA4D131EF4292AC16FF6C3DFB5DC03BFF80583D26",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SymbolType.cs",
+      "source_sha256": "1B9C02F14BD5E121B4EA20AD29306AECB3237BC330BBA25247FB5CBDFF0D7150",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SymbolType.cs",
+      "target_sha256": "9BD496984EB4DDD0536AA72F50DFDCDF698A4B875563C917E2BB70925CFCF2FE",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeType.cs",
+      "source_sha256": "84E9FD89ECFA79BBF5EBD3AB740A2797F4AEC1AE4A37C07799B71FE9562D750A",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeType.cs",
+      "target_sha256": "E4E20260090F115F468957C10D55D9FA00F0F389D412ACAF8428ED759F8E31A3",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml",
+      "source_sha256": "07559F91B61D308375BBF3CA404227C783D45DD77D85FA03034DA4C600AAA794",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangePoint.xaml",
+      "target_sha256": "C90C384DA2BD170EC263F8FF27A35BD9FD595A05DB71F74EF179B6ABC0AD4A1F",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml.cs",
+      "source_sha256": "9BF26A80723344A306FA6A7070BDBB0EC10B5D51673C870EA48FF1737CD26D84",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangePoint.xaml.cs",
+      "target_sha256": "722B149ACBE09A223C9A7084EC1B5C88CDF7198DF50456F92ABA9A8DFDD122E3",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\PopupWithTopmost.cs",
+      "source_sha256": "5B4FE4D54E2186DC1B0F5CCA23E9D19BF970B7BCAA977C497CA9B89FB6A37762",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\PopupWithTopmost.cs",
+      "target_sha256": "84E4FA7EC0481FF3AD446755CCA95EF2C52C75A0F196FB0E28120BDA681C4783",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
+      "source_sha256": "6D0A82850FDD0E98F4182FDA7C6AACD08F135BD20FC37068729BF3075AF72F63",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml",
+      "target_sha256": "D4F848D9A56CCB9DC769E689713A7094E0F0680B997DF970DF00CD610B9F7480",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\combo_ic_top_normal.png",
+      "source_sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\combo_ic_top_normal.png",
+      "target_sha256": "C4C2008512FAE8DEBCDFBC0C48B069E934B8AE699B63727712D023BF55A6A319",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\combo_ic_top_click.png",
+      "source_sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\combo_ic_top_click.png",
+      "target_sha256": "86169298F16CA824208E030E67BACB24CEDEB9C150F8F450AAF6CFFAF7E6F993",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
+      "source_sha256": "7FA31754DF042FAD31AE5E16A9149484C4956C1164FF7FED9F688FBE9FB4B7EF",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml.cs",
+      "target_sha256": "A6CA7336155BBBADF851BF614547FDDE9159F6E541B19F78CFFCB4B92BC77E63",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumbericTextBox.cs",
+      "source_sha256": "33CE253ED592613C7945F89EB34B8E25F258346CB19B0AD98AF0B07FEA09C33B",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumbericTextBox.cs",
+      "target_sha256": "7A5CD47217CBB5283C90A53BFB11064268D94E7A54A3AF26C7BFB95AD0B3D502",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+      "source_sha256": "D396ABA95014BE30B78CAFEFC199F85FE1BE41AF5910E9D9B36333F640B985FB",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrange.xaml",
+      "target_sha256": "D3341B658B8531350522EFCA9C8A201C4B2DAC4274A590E7D52F75923B9A1ECC",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml.cs",
+      "source_sha256": "40E9DDC63A2E3CFD5B9670DD59E1FBEEA249590AD74C5B540418B8EAB17C8BE3",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrange.xaml.cs",
+      "target_sha256": "16A23E2293C22B7E06EB7AF8F74F8A8490A24B4E079411D322248A4BC1448865",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml",
+      "source_sha256": "07784584F38D02CD288E65B4CE2AE66C3DDF170C795404FEAC042E7E83D94A00",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeFloat.xaml",
+      "target_sha256": "9C7FF32A6F190C46E0FF5BAD2F0B1BBB2482763B1D8A3AF933A39275431B373E",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml.cs",
+      "source_sha256": "88A03646B37396016244A42224773301B10F318620AAD5D114905CBEBDA7FF80",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeFloat.xaml.cs",
+      "target_sha256": "0E897D5D94063F763146718288D562A80078B57473DB532150BFD09DF0ED8F9A",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
+      "source_sha256": "CDCE54E608EEE5421A2863C700B28DDBE89242514EF44690B7B1EC83544C8FF2",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeBase.cs",
+      "target_sha256": "39D610A11D5043528182825C3E7CB7F78859871508329893D422E9F6E8AE6280",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\滑块_normal.png",
+      "source_sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\滑块_normal.png",
+      "target_sha256": "54528C314447BC7FBA57EE0606333242720F6A40B033789BC83985CCF3818DE2",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\滑块_click.png",
+      "source_sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\滑块_click.png",
+      "target_sha256": "3F197D0F354F0FB1EA8EE7C336626366BAA6345BB2EFBC4F9181ED42D31E56D2",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml",
+      "source_sha256": "6C2787ADE4865CABBFB28C8FC015C905A744C94EA6D21E782337D9E07F67E9B2",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\PcUi\\SliderArrangeDictionary.xaml",
+      "target_sha256": "3437BC43530C35DBE8C5FFCC8B5074362B067C8148083C7459BEACBCCB065EAD",
+      "kind": "xaml_dictionary",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml.cs",
+      "source_sha256": "A873816DEF89BB8A5059A67FF8492623C0A34DD560D144D9F9BC63F6130476A2",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeDictionary.xaml.cs",
+      "target_sha256": "EA80AB1795FBE68C54EEA234F077D50F43A73B5B9A51502D5D6C2ECB86B02BDF",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
+      "source_sha256": "B5CAC6BC7A5DB08954C29AC8C342BBA39CB4DC1A999A737845591017B51EEAED",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\RangeRule.cs",
+      "target_sha256": "364F7F645FAEF3FE2D9529DD815DA9F8BDE91787569C523E36E78ECB3AA5DFDC",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SymbolType.cs",
+      "source_sha256": "0E459CE0F463A3079213891692172780A31958D2A90FB36DEC94C6646578BEA4",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SymbolType.cs",
+      "target_sha256": "0930B9C4FF6617EA70EF1F1F821A780F6297F96C31350334850ADC902136B42C",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeType.cs",
+      "source_sha256": "2109FF8DBDD75C4346B31550E56BEA7399C3494FED7960F3E621D120B6295D26",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeType.cs",
+      "target_sha256": "E1BF1D0E4119355BAEC59AD4C9A164977EFA35E081B6384029C3B22967C1E842",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\microup.png",
+      "source_sha256": "DB59B2B74065FD41243A360F9A670BC882791FB50A7EAAA0A118B10591B644E7",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\microup.png",
+      "target_sha256": "DB59B2B74065FD41243A360F9A670BC882791FB50A7EAAA0A118B10591B644E7",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\microup_click.png",
+      "source_sha256": "A0EF21C84C6468E4A2A787D11E2692327DA5ED2C16D4915C98BE1DA7AB7A2571",
+      "target": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Numeric\\VM.PcUI\\microup_click.png",
+      "target_sha256": "A0EF21C84C6468E4A2A787D11E2692327DA5ED2C16D4915C98BE1DA7AB7A2571",
+      "kind": "original_asset",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml",
+      "source_sha256": "B94A312665B864A0DA9CE8A60E27A6B0F00D12B267DCDDB6D5B55E4934C9495D",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\NumericUpDown.xaml",
+      "target_sha256": "317E69933A006B4CDC30A44D0EDC9898B637BAD776165BAC1C22F21ABA82FD2C",
+      "kind": "xaml_control",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml.cs",
+      "source_sha256": "560EA2A7A2C95A8256C39B0DB8E8CDF300F5C0097C2E3338E620F11D5D64CA17",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\NumericUpDown.xaml.cs",
+      "target_sha256": "F51719B3648E8A0D42533182AAC76EFBF5DC00178303867C254BD71CBEABABB9",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\SliderArrangeType.cs",
+      "source_sha256": "E3EE210B2A09D6BEC8674709EE10740B3D814C4C78192712C28D3B6FC8ACF5C1",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\SliderArrangeType.cs",
+      "target_sha256": "8D0651E26EDE133EF9C73026690759F4F76EE68352CAD6DCDFCAC69407E2BB68",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnHeightConverter.cs",
+      "source_sha256": "BCB9824A4A8B60FCA482D34E02BE12EDA46A5CB0AFB2D5E64C30744AB6500435",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnHeightConverter.cs",
+      "target_sha256": "86C5AA74B3B2FD26E42E113AFDB13387A27FAAA0C6A82C237B9ED8AE0EC922CA",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnShowConverter.cs",
+      "source_sha256": "9C5B34FEA848E22AD83606390653562F25C2D73188A494D3CB2D3B7CF2A68F13",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowConverter.cs",
+      "target_sha256": "8ED8FAB866080BDF02AEC426B6B190E8F023B150F7A4A8FDECEF708A9766FC4D",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\BtnShowGridConverter.cs",
+      "source_sha256": "AB02E23D6C369B4F82EA81E5BCEAF8DE77D94142E325B587510EEBD4DCEF9964",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowGridConverter.cs",
+      "target_sha256": "D09D5865E268EB391BDAA4EB351EF23A5FEC60DCA8DFF448702B6C6C943A0B87",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\controls\\commomdictionary.xaml",
+      "source_sha256": "0DB0AE196D61B8DD3A717478BA571344958D9200ABAC364074FFBF42FF31DA4F",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\Shared\\CommomDictionary.xaml",
+      "target_sha256": "60454E2F6B841E667C15EBFC4DF5902959C9A60141E6F77CAB77F5F75B4DAD61",
+      "kind": "original_resource_dictionary",
+      "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\ByteUpDown.cs",
+      "source_sha256": "ADADAD84EF6549DDE1BFBEC2E895A4D9DF4841E3BB4688F1BF5EBF86DAEB97E7",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\ByteUpDown.cs",
+      "target_sha256": "4197316EA377D0CE13E53EAF877322932141F1F9139715BAE4F597E22E4014D9",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\CommonNumericUpDown.cs",
+      "source_sha256": "8DB776E0F36669F3E85A422E0CABED71E724E5594E84F54A88A2CF33E906A412",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\CommonNumericUpDown.cs",
+      "target_sha256": "FBCE0A68E8F2BF990F950911C6E05A8D2B56E68326909A857974F0E005811FFC",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\DecimalUpDown.cs",
+      "source_sha256": "5F96E2130880A31383519B7A48AD304F49FD2B9B48AD88898EBC636E921A5101",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\DecimalUpDown.cs",
+      "target_sha256": "08CA842E551C557E995CC72388867DDE78D0F280D89844E32D03AE062CAB82F6",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\DoubleUpDown.cs",
+      "source_sha256": "21A0EA4CF6D0EC146931B1B9BADE2C124BE2164B2B308E25B08677DE2E8B0E47",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\DoubleUpDown.cs",
+      "target_sha256": "2C958E1BF646D7AFEE257486E21FC248B568B1CCBE84ACC1671EA855A563B072",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\IntegerUpDown.cs",
+      "source_sha256": "C3AAA70C2D16330D69AA64AA72BF507F669F97AB07D1B8DA13FC2A7DA8EC5336",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\IntegerUpDown.cs",
+      "target_sha256": "DFA5615EACC7004420556F877531F03E5FDED153CF454DC753AA88FBEADC399F",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\LongUpDown.cs",
+      "source_sha256": "D057F94513CBA78FA15F9DFCA6C7845B79518B0CF23BBFD468F272B3EAE90A35",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\LongUpDown.cs",
+      "target_sha256": "2D1BCDEF051E3D7A8C1FF237FE61DFEC68D1B1ADCC80D065C90FF99657A4AB0B",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\NumericUpDown.cs",
+      "source_sha256": "3C1AC7BB28B068313AFDEB90D4FE824EEF281D365279C3E49B9ADA289C3E3BF1",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\NumericUpDown.cs",
+      "target_sha256": "6A0503EDC2227D1EBC3E9C03BCA2959EFF59D8E8B2B8AEF54060EA10FE4EB5DB",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\SByteUpDown.cs",
+      "source_sha256": "778FBFE8CA35AA17B3B86DF50F94A455B3DA6C799974053822C5E35B387F291E",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\SByteUpDown.cs",
+      "target_sha256": "E8782E8A248B4F184B8582E3A223A418781486809E2E206D40B1028D0CC5CB6F",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\ShortUpDown.cs",
+      "source_sha256": "2C8218B2C6DB9DEC2FAC695D392CC0757B929B576B5A897B13EBB41A83167244",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\ShortUpDown.cs",
+      "target_sha256": "25774A6154697FBFEB7C33842098518B354EED18F8F5139FBA30C0B6C1645B11",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\SingleUpDown.cs",
+      "source_sha256": "F5E71045189768C62951EC4A845B36AA43C0D3214DEE7AA6D2A71030C773DF3F",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\SingleUpDown.cs",
+      "target_sha256": "65C52B17F6BF17EA533DEDEF6B9256CD034B61F6A7F2F48B76B797CA4FA0C15A",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\UIntegerUpDown.cs",
+      "source_sha256": "A6525B9D727E2DD815B66BEE9A7C3E14D69300E9BBE7A0BCC254D6F2C2411866",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\UIntegerUpDown.cs",
+      "target_sha256": "C5DF21760B920DE6950EC4941D8B0C7BC3209F772F2FEC1A97067508D451A07B",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\ULongUpDown.cs",
+      "source_sha256": "8A4170BFB63E330E51601F6B02D1DE26E466AF08058EA6580F7BBC68E64C9015",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\ULongUpDown.cs",
+      "target_sha256": "D8C5615566CE319A90108B70715C1A3249B02DD82C7DDE3C1124A37930828A55",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\UShortUpDown.cs",
+      "source_sha256": "6423F628CC29A32C0A50536E3D575A4AAD676E8EB9D6D4DBEDD7A88A983568D0",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\UShortUpDown.cs",
+      "target_sha256": "F1DF5C3946B854C4CBA5F7671B9C913FA1F8A4BD47570A66E317F1F90E71ECF8",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\ByteUpDownEditor.cs",
+      "source_sha256": "1ED00BF4E048FFD5E52A2CAA6EFABFAA59E8B9138A28FEA6C879D5EDB56C1CD4",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ByteUpDownEditor.cs",
+      "target_sha256": "784DC54F7EE8387BCCF8D5AF7103E9C461D46A9CB5330CC3DEFF2F3337E743DB",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\DecimalUpDownEditor.cs",
+      "source_sha256": "38EBE5C85E0D26330221311FDC257571E55356B2BAC610527453C35FAE5A8217",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\DecimalUpDownEditor.cs",
+      "target_sha256": "86437A15E9DC604564F89A6F6802EDB09002659F0F46B4193A1BE50DCDAC3C20",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\DoubleUpDownEditor.cs",
+      "source_sha256": "28511E14C838CCB099D5A2AF6677D21A0CADB120AFF8545D22B3881926D3DC03",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\DoubleUpDownEditor.cs",
+      "target_sha256": "32C1394074DBAE361711B66BB0E0B6FCB2B451C5238753FA33F9A5DD4059B1E5",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\IntegerUpDownEditor.cs",
+      "source_sha256": "F8F838D27DD8B80E7E2A0877439BC5C46E59547729C3BB546E47A06ED1BC873A",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\IntegerUpDownEditor.cs",
+      "target_sha256": "E3AD63BC5CE75FDAE3DB68B0431B455B3F4B6043490C2A26A763DF74566E07AC",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\LongUpDownEditor.cs",
+      "source_sha256": "51D9C56808AD4448340660574FA8F0F61DF3998F58149D93A2CE018AB5624B70",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\LongUpDownEditor.cs",
+      "target_sha256": "7DB7786FBF038D23FD423CB3E3BD8E85D95B9CBDE315660FAA7D8B5F1295AF11",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorByteUpDown.cs",
+      "source_sha256": "6D8EFE36626BC64ACE8E74BAD7661A459A261DF065BFB16B2647F7C8F0BB0831",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorByteUpDown.cs",
+      "target_sha256": "5D54EFAB6D6CEF7B53F35E0EA984A9D1FE58936655279A25800031C077FBCBA5",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorDecimalUpDown.cs",
+      "source_sha256": "592F40A9BA1810E49CE1F505EF9F19A48011467BBE754735F6BB1658E8253C00",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorDecimalUpDown.cs",
+      "target_sha256": "B185EF7D5ED5006A97FFB690724B0558D67A45BAFDA42E7C0ABBF5AF240AB9F7",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorDoubleUpDown.cs",
+      "source_sha256": "42EF8937751951829C18C7815F128276C3AAA02E93C9B733424D3D2B6CE01104",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorDoubleUpDown.cs",
+      "target_sha256": "F772CC7EA60E88E1E09E001E571C845C723C969F04CEE7BD78E9F58016C77172",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorIntegerUpDown.cs",
+      "source_sha256": "EE8D94A3A9C647DE3B2C7D2C51651CC2AB3F20A1CAD1300F8F913E664FBEECED",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorIntegerUpDown.cs",
+      "target_sha256": "6470EAD933075B5B01FE65330DBC3D3A03DBA3917C867D1A6DC9F1F228D2B766",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorLongUpDown.cs",
+      "source_sha256": "33D195D6E8C24DD84EA491FCFA99C5B20725531ED91DB8EA61643CA90E0F2B6D",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorLongUpDown.cs",
+      "target_sha256": "2DEA755607D1925BA671046E06B9B82FE406FAE97B3A214043B0FA1AD26C83F7",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorSByteUpDown.cs",
+      "source_sha256": "E09A975E73AF520DA949ED14E88A823702467F2AC9E634744DB1627883A08D2B",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorSByteUpDown.cs",
+      "target_sha256": "360BA4674676C834B954CBDCC96B752C8E8DC9B248017B751D3BD31321EE3290",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorShortUpDown.cs",
+      "source_sha256": "BEBF4CEBF9BFF96660E3D4B3F79AF0D22FB91941949617B7EAB6C7A174A216E9",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorShortUpDown.cs",
+      "target_sha256": "09A43C93899431863ED212BEB7F8E3B55CCD204F145CA04FB6FBB75BF710EB97",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorSingleUpDown.cs",
+      "source_sha256": "B823D9CA86A9FD777F09BE70F1E46F648737F7A9150884FC2C0A951E01E134E4",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorSingleUpDown.cs",
+      "target_sha256": "0E9F16A4477535CC91F87D12D74AF0C18D10AA03532CEA07885EF3D2BBAE1833",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorUIntegerUpDown.cs",
+      "source_sha256": "2C3C4651A73DAD2DA19B46384737894204B23651B5C7C86122FB8932A814CFD5",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorUIntegerUpDown.cs",
+      "target_sha256": "FEA96C5B4033A9254036F3668FC840BBB9FE7529387B0596F1AA0BCBF260FB7B",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorULongUpDown.cs",
+      "source_sha256": "077D095F0FFA3AFC8FD37C374E7D345133E36C664D76CA77C02F9E2CEDF49136",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorULongUpDown.cs",
+      "target_sha256": "DA9CADA9EEB6613348CD90D97EC019FDB14207427FCB2C3F9F95484701249845",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorUShortUpDown.cs",
+      "source_sha256": "BFF52A3360320043E1B2D4AD61E1F09033078D49521DA227041C5ACCB87BDFD1",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorUShortUpDown.cs",
+      "target_sha256": "EE5FF106D8D22607C1369FFE3D00E306FC5FD2176E6048BB2A690F71630522EC",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\SByteUpDownEditor.cs",
+      "source_sha256": "9CCEAEC85CA1F112732D9D086D74013177FD16FC736D038F727898EB90259A72",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\SByteUpDownEditor.cs",
+      "target_sha256": "A1D70E2FF01CF1FF5A0A532BF31DF5F3CC110A986853FCD2B572F0F898FBE269",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\ShortUpDownEditor.cs",
+      "source_sha256": "2AAB085C5765B6A2B69B95106A4E03A2CEE52CA183CEF5CF77C9D23AACAE6DD5",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ShortUpDownEditor.cs",
+      "target_sha256": "25B160AD3F9850FD6B45D39AE8DBFBEB3C68B90BF7CE4A21D02AB03F1ADD69AA",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\SingleUpDownEditor.cs",
+      "source_sha256": "2AC54ECC32C9AA0DF184FC657988AAA4F779C91554D2403226AC8CCA18AD860E",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\SingleUpDownEditor.cs",
+      "target_sha256": "E8A538BDDBB31DB691CA7BC3492D213D68C8079FBC9B4B347B851F38C8B77FD9",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\UIntegerUpDownEditor.cs",
+      "source_sha256": "28DA723C72E234FCB12071585EB5EC536CA4A0583489303A109F2AE6F654A1C7",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UIntegerUpDownEditor.cs",
+      "target_sha256": "7407F33FE1F0BFFCDEA4E7C8399EAC030833BA18595C45172C5FA2CB3991B1E9",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\ULongUpDownEditor.cs",
+      "source_sha256": "389296AA21E30F7186334C5BA60FB4AF2DCB7D9DBA6B11FE4199256769455D0A",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ULongUpDownEditor.cs",
+      "target_sha256": "BA8506A1D0B926B44949E872E616363EEAD5208A9165514CB95A5EE86B9E4F52",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\UpDownEditor.cs",
+      "source_sha256": "9D030726F16DE19E5E72ABBD30859EEAE46B4A85289CF2C14A0E86F337A56277",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UpDownEditor.cs",
+      "target_sha256": "89618B5CBBD425D6EFA6C94CD4C5E83CA491A0C7CB0FEB31F061F96AD0A14D3B",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\UShortUpDownEditor.cs",
+      "source_sha256": "82242E6AF4F8606966F2213BE8756CFA6C3FAF4E8BEA26D32637F93CE364C61D",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UShortUpDownEditor.cs",
+      "target_sha256": "A0217D17DA1711EF5D2194C1CFC99B2089C41634C4CDDBBE34761104C3511C22",
+      "kind": "csharp",
+      "adaptations": [
+        "namespace/pack URI only",
+        "restore attached property qualification where exported shorthand"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\numericupdown\\themes\\generic.xaml",
+      "source_sha256": "AFF7B5673D1EA28E849B0A23094C1845C7D1F0E033560A9E991151F570F0942B",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\VMControls\\controls\\numericupdown\\themes\\generic.xaml",
+      "target_sha256": "3FB63057BC4227AEB73CE5D9ED310468531BBCB2A80A4D0EAB7AE799E6C7E4EE",
+      "kind": "numeric_updown_theme",
+      "adaptations": [
+        "numeric namespace; display support namespace"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\numericupdown\\themes\\aero2.normalcolor.xaml",
+      "source_sha256": "4CDF579250DC77F3E4E0128612118FA221A65DBB0CC0EAFA58BDA0157B20FCDB",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\VMControls\\controls\\numericupdown\\themes\\aero2.normalcolor.xaml",
+      "target_sha256": "B908EF8B4B7D3D8BB4A73CA969B0F7800A8C1A84661BB902B554B60D4628C63C",
+      "kind": "numeric_updown_theme",
+      "adaptations": [
+        "numeric namespace; display support namespace"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF.Release\\VMControls.WPF.Release.Front\\NumbericParamControl.xaml",
+      "source_sha256": "1B22AB1C1A7CBF4C6D25E5B09EC882BC13F46D79BA5DBA8AF17253A92F3EE51C",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\WpfRelease\\NumbericParamControl.xaml.pending",
+      "target_sha256": "0B5B2EE511BF44DA0F15A0E318DF5DB50C33067D0CAF8EA1889BA01698727E25",
+      "kind": "pending_vendor_wrapper",
+      "adaptations": [
+        "namespace only; original vendor dependency retained explicitly"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF.Release\\VMControls.WPF.Release.Front\\NumbericParamControl.xaml.cs",
+      "source_sha256": "B57C011C6C68CA04C736F825A23E6F8F7A3533D7927F89D6460D819DC2F26DEA",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\WpfRelease\\NumbericParamControl.xaml.cs.pending",
+      "target_sha256": "10F719124B5FDCF117122811CBA75FC75841418BFB6055A980723E7CBE659F21",
+      "kind": "pending_vendor_wrapper",
+      "adaptations": [
+        "namespace only; original vendor dependency retained explicitly"
+      ]
+    }
+  ],
+  "type_map": [
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.NumericControl",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\NumericControl.xaml.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.NumbericTextBox",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumbericTextBox",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\NumbericTextBox.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SliderArrange",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrange",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrange.xaml.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SliderArrangeFloat",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeFloat.xaml.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SliderArrangeBase",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeBase",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeBase.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SliderArrangeDictionary",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeDictionary",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeDictionary.xaml.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.RangeRule",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.RangeRule",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\RangeRule.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SymbolType",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SymbolType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SymbolType.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SliderArrangeType",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeType.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.SliderArrangePoint",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangePoint.xaml.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.PopupWithTopmost",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.PopupWithTopmost",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\PopupWithTopmost.cs"
+    },
+    {
+      "source_type": "Apps.XmlUI.ParamTabControl.PopupWithTopmost.RECT",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.PopupWithTopmost.RECT",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\PopupWithTopmost.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.NumericControl",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.NumbericTextBox",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumbericTextBox",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumbericTextBox.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.SliderArrange",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrange.xaml.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.SliderArrangeFloat",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeFloat.xaml.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.SliderArrangeBase",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeBase.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.SliderArrangeDictionary",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeDictionary",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeDictionary.xaml.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.RangeRule",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\RangeRule.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.SymbolType",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SymbolType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SymbolType.cs"
+    },
+    {
+      "source_type": "HikPcUI.ListView.SliderArrangeType",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeType.cs"
+    },
+    {
+      "source_type": "HikPcUI.Controls.NumericUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.NumericUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\NumericUpDown.xaml.cs"
+    },
+    {
+      "source_type": "HikPcUI.Controls.SliderArrangeType",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.SliderArrangeType",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\SliderArrangeType.cs"
+    },
+    {
+      "source_type": "HikPcUI.Controls.BtnHeightConverter",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnHeightConverter",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnHeightConverter.cs"
+    },
+    {
+      "source_type": "HikPcUI.Controls.BtnShowConverter",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowConverter",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowConverter.cs"
+    },
+    {
+      "source_type": "HikPcUI.Controls.BtnShowGridConverter",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls.BtnShowGridConverter",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUiControls\\BtnShowGridConverter.cs"
+    },
+    {
+      "source_type": "VM.Controls.ByteUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.ByteUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\ByteUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.CommonNumericUpDown<T>",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.CommonNumericUpDown<T>",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\CommonNumericUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.DecimalUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.DecimalUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\DecimalUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.DoubleUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.DoubleUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\DoubleUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.IntegerUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.IntegerUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\IntegerUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.LongUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.LongUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\LongUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.NumericUpDown<T>",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.NumericUpDown<T>",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\NumericUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.SByteUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.SByteUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\SByteUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.ShortUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.ShortUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\ShortUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.SingleUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.SingleUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\SingleUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.UIntegerUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.UIntegerUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\UIntegerUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.ULongUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.ULongUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\ULongUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.UShortUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.UShortUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\UpDown\\UShortUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.ByteUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.ByteUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ByteUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.DecimalUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.DecimalUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\DecimalUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.DoubleUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.DoubleUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\DoubleUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.IntegerUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.IntegerUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\IntegerUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.LongUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.LongUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\LongUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorByteUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorByteUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorByteUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorDecimalUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorDecimalUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorDecimalUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorDoubleUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorDoubleUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorDoubleUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorIntegerUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorIntegerUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorIntegerUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorLongUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorLongUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorLongUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorSByteUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorSByteUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorSByteUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorShortUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorShortUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorShortUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorSingleUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorSingleUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorSingleUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorUIntegerUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorUIntegerUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorUIntegerUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorULongUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorULongUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorULongUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.PropertyGridEditorUShortUpDown",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.PropertyGridEditorUShortUpDown",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorUShortUpDown.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.SByteUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.SByteUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\SByteUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.ShortUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.ShortUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ShortUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.SingleUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.SingleUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\SingleUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.UIntegerUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.UIntegerUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UIntegerUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.ULongUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.ULongUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ULongUpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.UpDownEditor<TEditor, TType>",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.UpDownEditor<TEditor, TType>",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UpDownEditor.cs"
+    },
+    {
+      "source_type": "VM.Controls.PropertyGrid.Editors.UShortUpDownEditor",
+      "target_type": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors.UShortUpDownEditor",
+      "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UShortUpDownEditor.cs"
+    }
+  ],
+  "cross_group_dependencies": [
+    "display:SunEyeVision.Plugin.Wpf.Native.Display.VMControls.ButtonSpinner/Spinner/WatermarkTextBox",
+    "display:SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives.InputBase",
+    "display:SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives.UpDownBase<T>",
+    "display:SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors.TypeEditor<T>",
+    "display:controls/themes/{Common,Generic/Glyphs,Aero2/Common,Aero2/Glyphs}.xaml",
+    "framework:Microsoft.Windows.Themes.ListBoxChrome from PresentationFramework.Aero (VM.PcUI NumericUpDown original template; root resolves modern WPF theme assembly)",
+    "input:HikPcUI.ListView.BooleanControl/PopupWithTopmost (numeric XAML source references must use input map)",
+    "root:Themes/VmFieldStyles.xaml#EditLinkButton and original theme resource keys"
+  ],
+  "blocked": [
+    {
+      "source_library": "VMControls.WPF.Release",
+      "source_files": [
+        "VMControls.WPF.Release.Front/NumbericParamControl.xaml",
+        "VMControls.WPF.Release.Front/NumbericParamControl.xaml.cs"
+      ],
+      "status": "pending_real_dependency_not_compiled",
+      "dependency": "FrontendUI.Design.Controls.NumbericParamControl; source export absent",
+      "reason": "Wrapper forwards actual Font/behavior API to vendor control; no empty substitute introduced.",
+      "pending_targets": [
+        "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\WpfRelease\\NumbericParamControl.xaml.pending",
+        "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\WpfRelease\\NumbericParamControl.xaml.cs.pending"
+      ]
+    }
+  ],
+  "not_claimed": [
+    "compilation",
+    "runtime usability",
+    "visual acceptance",
+    "full-library completion"
+  ],
+  "resource_uri_map": [
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\NumericControl.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrange.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/AppsXmlUi/SliderArrange.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeFloat.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/AppsXmlUi/SliderArrangeFloat.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeDictionary.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/AppsXmlUi/SliderArrangeDictionary.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUi/NumericControl.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUi/SliderArrange.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Controls\\NumericUpDown.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Controls/Native/Numeric/PcUiControls/NumericUpDown.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\controls\\commomdictionary.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Shared/CommomDictionary.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\numericupdown\\themes\\generic.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/generic.xaml"
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\numericupdown\\themes\\aero2.normalcolor.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/aero2.normalcolor.xaml"
+    }
+  ],
+  "library_coverage": {
+    "Apps.XmlUI": "NumericControl/NumbericTextBox; scalar/between/point sliders and original support",
+    "VM.PcUI": "separate NumericControl/sliders plus NumericUpDown with three original converters",
+    "VM.Controls": "13 numeric UpDown declarations and numeric PropertyGrid editors; display supplies common control bases",
+    "VMBaseControls": "no Numeric/Number/Digit/Decimal/Slider/RangeRule/SymbolType declaration in existing export; nonnumeric controls belong to display",
+    "VMControls.WPF": "AdditionRangeResultSelector is workflow/business selection, input group owns; not a numeric editor",
+    "VMControls.WPF.Release": "complete NumbericParamControl wrapper retained .pending, blocked on genuine missing FrontendUI.Design implementation",
+    "Apps.Style": "root owns all original style dictionaries; numeric references original EditLinkButton via VmFieldStyles"
+  },
+  "generation_notes": [
+    "XAML Page generation must supply InitializeComponent/named fields/IComponentConnector/IStyleConnector; exported code does not duplicate generated methods.",
+    "Do not merge the two libraries solely by short class names: AppsXmlUi and PcUi variants retain separate target namespaces.",
+    "Shared csproj, Generic.xaml and Contracts intentionally untouched; root integrates resource build items and dictionaries."
+  ]
+}

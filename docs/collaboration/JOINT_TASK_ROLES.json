@@ -4,8 +4,19 @@
   "mode": "仅总监，所有工作与对话集中在当前对话",
   "activeConversation": "01a1528e-6c4c-7663-8f2e-d2f243a1ed84",
   "otherRoleAssignmentsEnabled": false,
-  "crossConversationDispatchEnabled": false,
+  "crossConversationDispatchEnabled": true,
   "subagentDelegationEnabled": false,
-  "productWork": "停止，持续目标暂停，等待用户明确恢复",
-  "historicalDefinition": "history/JOINT_TASK_ROLES_retired_20261025-174406.json"
+  "productWork": "以用户当前指令和CURRENT_TASK.md为准；本轮仅证据/方案/HTML，不改产品代码",
+  "historicalDefinition": "history/JOINT_TASK_ROLES_retired_20261025-174406.json",
+  "crossConversationDispatchScope": "仅用户已授权的逆向只读取证；不恢复旧产品岗位、转发审批链或子智能体",
+  "reverseEvidenceException": {
+    "agreement": "EVIDENCE_AGREEMENT.md",
+    "roles": [
+      "逆向负责人｜VM取证统筹",
+      "逆向工程师｜VM源码分析",
+      "验证工程师｜VM实机取证"
+    ],
+    "ownership": "逆向项目三岗，集中由统筹对接；本项目仍由当前对话单产品写者",
+    "authority": "用户在当前主对话明确授权本次补证及三岗成果核收"
+  }
 }

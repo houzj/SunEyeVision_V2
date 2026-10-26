@@ -27,6 +27,7 @@
 - 全量 Release：`dotnet build SunEyeVision.slnx -c Release --no-restore`
 - 涉及工具插件或发布规则时必须做全量 Release 构建并运行 Release 程序验证。
 - 涉及 UI 时应分别验证 Visual Studio 设计时与运行时；记录用户人工验收结果。
+- UI方案须给出实际需求、双方源码/资源或运行证据、窗口完整组装链和可审核预览，明确独立设计及未确认项。UI阶段须另核布局、控件组合、状态与主题效果；功能测试通过、截图映射或HTML原型不能替代WPF外观达标及人工验收。
 
 ## 交接
 

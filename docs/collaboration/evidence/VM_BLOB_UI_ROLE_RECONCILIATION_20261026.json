@@ -1,0 +1,208 @@
+{
+  "reportId": "blob-ui-three-role-reconciliation-20261026",
+  "parentTask": "O06 / supplemental Blob configuration-window dependency audit",
+  "date": "2026-10-26",
+  "author": "逆向统筹（本对话）",
+  "authority": "User explicitly authorized contacting the existing source-analysis and VM-runtime-verification conversations and reconciling their actual deliverables.",
+  "projectBaseline": {
+    "repo": "D:/MyWork/REA逆向测试",
+    "branch": "main",
+    "commit": "babbd9d8a8291de6841cf7c39a72caa417fc5f61",
+    "trackedWorktree": "clean"
+  },
+  "roles": {
+    "sourceAnalysis": {
+      "thread": {
+        "title": "逆向工程师｜VM源码分析",
+        "id": "01a160ff-e34e-7670-90a4-55194265f8a3",
+        "replyMessageId": "msg_0b70f64a6c792e1e016adea2b475cc8193bf2076f12d754919"
+      },
+      "previousO06TaskReceived": true,
+      "actualBlobUiDeliverables": [
+        {
+          "path": "D:/MyWork/SunEyeVision_V2/artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/vm-screenshot-control-map.json",
+          "sha256": "3CC32436DEB492873776F083C7D66E43662A6719DD9A021DD72219088EBE43FE",
+          "roleMetadata": "reported by source-analysis role; path/hash verified read-only",
+          "content": "VM screenshot/control map. This is UI screenshot mapping; source role explicitly says it is not Blob parameter-window source-call-chain evidence."
+        }
+      ],
+      "currentRequestNewDeliverable": false,
+      "sourceRoleCurrentReply": "Role confirms its own vm-screenshot-control-map artifact only; source-findings.json carries matching role metadata but this role cannot confirm authorship. No new Blob-specific source-body deliverable in this request.",
+      "sourceLimits": [
+        "Source report is static and bounded; it is not runtime-window evidence.",
+        "The extension-vs-generic branch depends on AppDomain loaded assemblies; missing module-directory Control DLL alone cannot determine the selected runtime type.",
+        "Native final release timing remains unknown."
+      ],
+      "reviewedStaticArtifacts": [
+        {
+          "authorshipStatus": "unverified; source role explicitly cannot confirm authorship",
+          "use": "Readable static evidence (18 findings, 53 source evidence entries, 5 unknowns); do not attribute to the source role.",
+          "roleField": "逆向工程师｜VM源码分析",
+          "sha256": "BA52428728B7C3254D65125FA49E096E417643D61DD44B7398E036C989673E8F",
+          "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/source/source-findings.json"
+        },
+        {
+          "authorshipStatus": "not independently confirmed in this reconciliation",
+          "use": "Bounded candidate audit; BlobDataAnalysisControl remains pending, no global no-source claim.",
+          "roleField": "VM static source auditor",
+          "sha256": "F17B9621A748AE51CCEEF71E5938961B5EF1AB63726B84AC8FEB141DF3D7BAA6",
+          "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/interface-deepening/o06-no-source-candidate-review-20261025.json"
+        }
+      ],
+      "authorshipCorrection": {
+        "supersedesDraftSha256": "872AC375DA84A2619BE6B0218F086E90FA3858952A8979860DDD00796BAAA5DD",
+        "correction": "The initial draft treated a matching role metadata field as authorship. The source-role reply corrected this: only the screenshot map is confirmed as its own deliverable; source-findings authorship is unverified."
+      },
+      "previousRoleReplyAuthorshipCorrection": "The current source-analysis role explicitly cannot confirm that this role produced source/source-findings.json; its role metadata is not authorship proof.",
+      "confirmedRoleDeliverables": [
+        {
+          "path": "D:/MyWork/SunEyeVision_V2/artifacts/analysis/vm-blob-control-architecture-review-20261024/interface-deepening/vm-screenshot-control-map.json",
+          "sha256": "3CC32436DEB492873776F083C7D66E43662A6719DD9A021DD72219088EBE43FE",
+          "roleMetadata": "reported by source-analysis role; path/hash verified read-only",
+          "content": "VM screenshot/control map. This is UI screenshot mapping; source role explicitly says it is not Blob parameter-window source-call-chain evidence."
+        }
+      ]
+    },
+    "runtimeVerification": {
+      "thread": {
+        "title": "验证工程师｜VM实机取证",
+        "id": "01a159e5-6571-7ab2-a12d-6ece9db18e69",
+        "replyMessageId": "msg_0d3e0686cd5599b2016adea26ee0448196adf78aef7bc9532f"
+      },
+      "previousO06TaskReceived": true,
+      "currentBlobSupplementReceived": true,
+      "actualPriorDeliverables": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/runtime-capability-2216.snapshot.json",
+          "sha256": "3E452A8D9B315FE6ED5B7C0D2D1A1637F01056374E0F0E7EBD78A47B5C49311A",
+          "status": "finite-static-review-delivered-runtime-unverified",
+          "owner": "verifier thread 01a159e5-6571-7ab2-a12d-6ece9db18e69"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/assisted-verification-plan.json",
+          "sha256": "BD158297662CEF1D3A90E3A6DF89EADA570A17421EF5B2827C3D68CD0061ED6D",
+          "status": "ready-for-human-assisted-observation-not-executed"
+        }
+      ],
+      "currentRuntimeObservation": {
+        "supportedWindowsNativeChannel": false,
+        "cuaApps": [],
+        "surfaces": "browser tabs only",
+        "visionMasterStartedOrInteracted": false,
+        "otherProcessesTouched": false,
+        "reply": "Current session has no supported native Windows desktop control API; no shell/UIA/hidden desktop workaround used."
+      },
+      "runtimeEvidenceInventory": {
+        "runningVersion": null,
+        "loadedAssemblyIdentity": null,
+        "parameterWindowClrType": null,
+        "runtimeBlobDisplayTypeValues": null,
+        "runtimeMatchedDataTemplateKeys": null,
+        "runtimeThemeObserved": null,
+        "threePageScreenshots": [],
+        "runtimeMediaInAssistedEvidence": false,
+        "onlyImage": "circle-sample.bmp sample, not UI capture"
+      },
+      "installedFileIdentityOnly": {
+        "VisionMaster.exe": {
+          "fileVersion": "4.4.1.1334440",
+          "sha256": "42E2437780EC21C9D1ADE2D07ACE0A26635961F5C90559934A7FDE7E233E0C23"
+        },
+        "Apps.XmlUI.dll": {
+          "fileVersion": "4.4.2.1533753",
+          "sha256": "639D0FB9DFCA81E38DF690E201B73874CE006D1361B689DDC6D5F41F7B0B04FD"
+        },
+        "Apps.XmlParser.dll": {
+          "fileVersion": "4.4.2.1532435",
+          "sha256": "78EC7AE1E5ADEFFF29197099C7109B153A3F75D092B7C3E9DC253D8C1B25A8D1"
+        },
+        "VMBaseControls.dll": {
+          "fileVersion": "4.3.0.1066097",
+          "sha256": "D3ED7CE6CCA860AC89D671DC0FE4EE239A97063D18BED94D3AD97595D5D52555"
+        },
+        "IMVSBlobFindModu.dll": {
+          "sha256": "4DE695D8C3051045C9010739686F94C32D66A36EE486207FE749FB183FFF4C9A"
+        }
+      },
+      "blocker": "No supported Windows native interactive desktop channel in the current session. Human-assisted observation may proceed only after the platform exposes a supported channel and the target window can be confirmed as owned by this task; there is no ETA until then."
+    },
+    "reverseCoordination": {
+      "thread": {
+        "title": "逆向负责人｜VM取证统筹",
+        "id": "01a15280-de08-7361-80d8-92d9b1ddeb25"
+      },
+      "previousPackageOwnership": {
+        "libraryLayeringTemplateGroupIdentity": "coordinator/root",
+        "blobOpenRunCloseOwnership": "source analyst thread",
+        "runtimeCapabilityRoiInteraction": "runtime verifier thread"
+      },
+      "ownCurrentDeliverables": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/blob-ui-dependency-closure-20261026.json",
+          "sha256": "583EDA7AFFE076B7C5F0889848F7AAB9F804F1EE70BBB8D5B5A71B2C16656585"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/blob-ui-dependency-closure-20261026.md",
+          "sha256": "CC8F72D44F643A2E5C44CE7B9FE818C7CD52919ADAE5ED50B02115D5388E4E07"
+        }
+      ],
+      "核收": "The source-findings artifact contains a useful static chain, but current source-role authorship is unverified despite its role field. Source role confirms only the screenshot/control map as its own output. Runtime role has no supported desktop channel and no actual window/field/template/theme/screenshot capture. Coordinator independently cross-checked the readable static chain and resource closure. No algorithm ownership or product decision is made here.",
+      "implementationComparator": "Previously confirmed reconstructed tool appearance may be compared for project-internal UI consistency, but has reconstruction authority only and is not evidence of original Blob runtime rendering."
+    }
+  },
+  "remainingEvidenceGaps": [
+    {
+      "id": "BLOB-UI-R1",
+      "gap": "Actual loaded extension vs generic fallback and Window CLR type",
+      "unblock": "Supported user-visible Windows desktop session with task-owned original VM instance or debugger instrumentation permitted by project protocol."
+    },
+    {
+      "id": "BLOB-UI-R2",
+      "gap": "Runtime DisplayType -> matched DataTemplate for Blob fields and active visibility/subscription conditions",
+      "unblock": "Same supported session plus safe observation of Blob Params collection and selected resource keys."
+    },
+    {
+      "id": "BLOB-UI-R3",
+      "gap": "Actual theme and three-page visuals linked to exact install/loaded assembly identity",
+      "unblock": "Same supported session; capture the three views and record file identities/config SHA."
+    },
+    {
+      "id": "BLOB-UI-R4",
+      "gap": "Native release/late callback behavior after closing parameter window",
+      "unblock": "Separate bounded static/native evidence and approved safe runtime condition; do not induce callback-miss failures."
+    }
+  ],
+  "scopeAndSafety": {
+    "productChanged": false,
+    "toolPluginsWorktreeTouched": false,
+    "visionMasterLaunched": false,
+    "otherProcessInteracted": false,
+    "buildOrCommit": false,
+    "allThreeRolesAccounted": true,
+    "evidenceStatus": "source role = screenshot map confirmed; source-findings static artifact is readable but authorship unverified; runtime role = blocked/not executed; coordinator = static resource closure and reconciliation",
+    "implementationComparator": "User explicitly confirmed that several reconstructed tools have reviewed appearance and authorized referencing their implementation approach. This applies only as a project-internal implementation comparator; it is not original Blob rendering evidence."
+  },
+  "reconstructedToolComparators": [
+    {
+      "path": "docs/plugins/N-POINT-UI-ARCHITECTURE.md",
+      "use": "Use the self-reviewed public configuration host/template, AlgorithmTab/Group bindings, command routing, and editor lifecycle as a project implementation comparator.",
+      "limits": "Does not prove Blob uses the same control types, templates, theme, or original pixels; its report retains native/display interaction boundaries."
+    },
+    {
+      "path": "docs/plugins/MAP-CALIBRATION-UI-COVERAGE.md",
+      "use": "Compare parser-backed parameter visibility, image-source selectors, ROI groups, teaching controls, and file-operation integration patterns.",
+      "limits": "The report explicitly leaves the original dynamic candidate popup pixel comparison unverified; do not treat it as Blob evidence."
+    },
+    {
+      "path": "docs/plugins/CALIBRATION-BOARD-WHOLE-TOOL-EXIT.md",
+      "use": "Compare the self-reviewed tool configuration and result-display implementation patterns where they overlap Blob host controls.",
+      "limits": "Tool-specific controls and algorithm behavior are not Blob contracts."
+    },
+    {
+      "path": "docs/plugins/READ-CALIB-FILE-IMPLEMENTATION-EXIT.md",
+      "use": "Compare source-to-implementation treatment of file controls, error retention, dynamic IO, and configuration lifecycle when relevant.",
+      "limits": "Loader-specific source semantics cannot be transferred to Blob without matching Blob source paths."
+    }
+  ],
+  "comparisonPolicy": "Use confirmed reconstructed tool implementations to accelerate implementation review and identify reusable UI/host patterns. Keep source-confirmed VM Blob behavior, runtime-observed Blob behavior, and project implementation comparator as separate evidence classes; comparator similarity cannot close a Blob source or runtime gap."
+}

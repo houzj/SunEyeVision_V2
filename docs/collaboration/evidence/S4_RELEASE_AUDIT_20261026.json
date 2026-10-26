@@ -114,7 +114,7 @@
   "priorFunctionalStatus": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED_MANUAL_PENDING",
   "uiReview": {
     "path": "docs/collaboration/evidence/S4_UI_REVIEW_20261026.json",
-    "sha256": "63e642e59414432853e39952ecee90d93ed136d6588f05042d73fdfdfea1e7d4",
+    "sha256": "e72a4453557c0fa2bcc08913d1bc7a60ff279abe86b00d835ac69757b5110c4e",
     "effect": "保留功能证据；不再据此宣布S4完成或当前界面适合验收。"
   }
 }

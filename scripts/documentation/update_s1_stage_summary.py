@@ -259,8 +259,29 @@ def render_s4_stage(page):
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
+             + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　原型未实施；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链对照。自动渲染受本机file协议策略限制，尚未视觉核收。</p>' if review and 'preview' in s4['uiReview'] else '')
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
-             + (table(['对照项','VM实际依据','当前实现与差距','本轮处理'],s4['uiReview']['comparison']) if review else '')
+             + (('<h4>S4哪些重做，哪些复用（推荐，待整体审核）</h4>'
+                  + ('<p><b>'+escape(s4['uiReview']['uiArchitectureDecision']['principle'])+'</b></p>'+table(['层次','现有基础','明确处理'],s4['uiReview']['uiArchitectureDecision']['rows']) if s4['uiReview'].get('uiArchitectureDecision') else '')
+                  + table(['处理','本方对象','VM依据与本方差距','功能承接及工程调整'],s4['uiReview']['decisions'])
+                  + ('<h4 id="o06-algorithm-ui-differences">算法职责、参数与输出怎样对应三页</h4>'
+                     + '<p>以下为结合最新需求的调整推荐，尚未实施。预处理优先交上游专用工具；形态学推荐经外部分割和专用工具处理，再由Blob不二值化接入。VM原件已有不二值化声明，但本方尚未实现；不能直接挪用ROI端口或原样搬用现有固定128阈值的形态学工具。</p>'
+                     + table(['差异','双方实际证据','推荐取舍','UI承接','未确认/实施边界'],s4['uiReview']['algorithmDifferences'])
+                     + '<h4>窗口完整组装链：VM与当前实现并排</h4>'
+                     + table(['环节','VM静态链','本方当前链','推荐调整'],s4['uiReview']['chainComparison'])
+                     + '<p>VM原件模式存在不证明native公式；本方窗口链有源码不证明外观合格。下表核收源码/实机/统筹的实际回件，不把三种状态合成完成百分比。</p>'
+                     + table(['核收对象','实际成果与限制'],[[label,s4['uiReview']['threeRoleReceipt'][key]] for key,label in (('source','源码岗'),('runtime','实机岗'),('coordinator','逆向统筹'))])
+                     + (table(['用户新截图补证','画面直接支持的结论','本方处理'],s4['uiReview']['userScreenshotFindings']) if s4['uiReview'].get('userScreenshotFindings') else '')
+                     if 'algorithmDifferences' in s4['uiReview'] else '')
+                  + ('<h4 id="o06-control-style-comparison">全部可见控件逐项对照</h4><p>'+escape(s4['uiReview']['controlStyleScope'])+'</p>'+table(['控件','VM定位','实际依据','推荐处理','未确认边界'],s4['uiReview']['controlStyleComparison']) if s4['uiReview'].get('controlStyleComparison') else '')
+                  + ('<details><summary>查看控件样式的完整源码定位</summary>'+table(['源码路径','行','模板或定位键'],[[q['path'],str(q['line']),q['key']] for q in json.loads((ROOT / 'docs/collaboration/evidence/S4_UI_REVIEW_20261026.json').read_text(encoding='utf-8-sig')).get('controlStyleSources',[])])+ '</details>' if s4['uiReview'].get('controlStyleComparison') else '')
+                  + ('<details><summary>输入源已有本地还原，如何适配</summary><p>'+escape(s4['uiReview']['inputSourceCorrection']['vmChain'])+'</p><p>'+escape(s4['uiReview']['inputSourceCorrection']['localRestoration'])+'</p><p>'+escape(s4['uiReview']['inputSourceCorrection']['engineering'])+'</p></details>' if s4['uiReview'].get('inputSourceCorrection') else '')
+                  + ('<h4>参数交互与开关布局</h4>'+table(['状态','依据与处理'],[[label,s4['uiReview']['subscriptionModeReview'][key]] for key,label in (('facts','数值与订阅'),('range','单值与范围滑条'),('focus','焦点与收起'),('layout','开关与参数排布'),('proposal','本方推荐行为'),('limits','仍需验证'))]) if s4['uiReview'].get('subscriptionModeReview') else '')
+                  + '<details><summary>查看VM实际组装链、六项差距与视觉核收标准</summary>'
+                  + table(['链路','实际消费关系','证据边界'],s4['uiReview']['assemblyChain'])
+                  + table(['对照项','VM实际依据','当前实现与差距','本轮处理'],s4['uiReview']['comparison'])
+                  + table(['核收门','检查范围','通过依据'],s4['uiReview']['acceptance'])
+                  + '<p>'+escape(s4['uiReview']['boundary'])+'</p></details>') if review and 'decisions' in s4['uiReview'] else '')
              + ('<details><summary>查看当前真实页面</summary><p>正式Release的自动检查宿主渲染，尚未人工验收。</p><img alt="当前Blob默认编辑页" style="max-width:100%;height:auto" src="'
                 + quote(os.path.relpath(ROOT / s4['uiPreview']['path'], PAGE.parent).replace('\\', '/')) + '"></details>' if s4.get('uiPreview') else '')
              + '<p><b>接下来：</b>' + escape(s4['next']) + '</p><p>' + escape(s4['estimate']) + '</p>'
@@ -307,6 +328,10 @@ def render_s4_stage(page):
     if review:
         for key in ('configsetting','roieditorcontrol','blobanalysistooldebugcontrol'):
             updates[key] += ' UI复核：对应源只支持职责参考，不证明外观达标；当前通用五页表单、纵向字段和文字ROI工具条未还原VM三页及同排模板组合，S4不能据功能检查宣布完成。'
+        updates['configsetting'] += ' 推荐重做正常页渲染；VM实际主链为ParamUserControl.DisplayType→UserTempConverter→ParamUserControlDataTemplate，不是PointF专用选择器。拆出并复用已有输入校验/非法原文/绑定行为，不默认保留DeclaredFieldEditor整类。'
+        updates['imagesourceselector'] += ' UI推荐重做同排来源/订阅模板；复用候选查询、稳定引用、索引和类型校验，不原样保留应用/清除/撤销按钮排布。'
+        updates['roisubscribepanel'] += ' UI推荐纳入绘制/继承及折叠几何组合；复用模式/引用和底稿，不另立第二参数存储。'
+        updates['blobdataanalysiscontrol'] += ' 与结果显示配置页区分：本轮重做的是配置对象列表及文本模板；现行只读结果表保留并回归，不声称已做S5通用化。'
     for key, note in updates.items():
         pattern = r'(<tr id="o06-control-' + key + r'"[^>]*>)(.*?)(</tr>)'
         def update_row(match):
@@ -329,6 +354,13 @@ def render_s4_stage(page):
         trial_intro=('<div class="br-note" id="o06-blob-final-review"><h3>'+('S4外观未达标，先补UI对标' if review else 'S1—S4可以集中试用了')+'</h3>'
                      '<p><b>'+state+'</b></p><p>固定程序：<code>'+release_path+'</code></p>'
                      '<p><a href="#s4-implementation-status">直接看当前差距与处理范围</a>。功能自动验证不代表UI达标；人工验收尚未通过。</p></div>')
+        # The summary marker also owns the stage overview and S3/S4 sections.
+        # Replacing it with the short intro alone silently deletes those deliverables.
+        overview_match=re.search(r'<section id="o06-stage-overview">.*?</section>',page,re.S)
+        s3_match=re.search(r'<section id="s3-implementation-status">.*?</section>',page,re.S)
+        if overview_match is None or s3_match is None:
+            raise ValueError('Missing stage overview or S3 section before S4 summary replacement')
+        trial_intro=trial_intro[:-6]+overview_match.group()+block+s3_match.group()+'</div>'
         page=re.sub(r'<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->.*?<!-- O06-BLOB-FINAL-REVIEW:END -->',
                     lambda _: '<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->\n'+trial_intro+'\n<!-- O06-BLOB-FINAL-REVIEW:END -->',page,count=1,flags=re.S)
         a=page.index('<h3 id="blob-verification-steps">')
@@ -345,6 +377,8 @@ def render_s4_stage(page):
                 '<details><summary>查看S1早期实施与原验证记录（历史，不是当前待办）</summary>'+historical+'</details>\n')
         page=page[:a]+manual+page[b:]
         if review:
+            page=page.replace('<p>固定程序：<code>'+release_path+'</code></p>',
+                              '<p><a href="optimization-o06-ui-preview.html"><b>先打开HTML预览，审核界面与职责调整 ↗</b></a>　产品程序本轮不改，原功能检查保留。</p>')
             page=page.replace('⑤ S1—S4集中试用：改了什么、怎么验证','⑤ 人工验证安排：先补齐UI，再集中验证')
             page=page.replace('已完成同提交正式Release构建、真实宿主连续链和关联自动回归；等待你的实际试用反馈。',
                               '同提交功能链与关联自动检查已通过，但当前外观被用户明确指出不符合要求。先补齐VM窗口布局、模板组合和样式对标；下列功能清单保留供修正后集中验证，现在不催用户测试。')
@@ -358,6 +392,23 @@ def render_s4_stage(page):
             page=page.replace('架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈','架构方案与阶段进度 · S1—S3自动核收 · S4功能链通过、外观未达标')
             page=page.replace('S4完整窗口/ROI交互、S5通用结果及正式性能仍未完成；S1—S4人工测试待S4形成明显体验变化后集中进行。','S4功能链已通过自动检查，但页面组织与模板外观未达标，须先修正；S5通用结果及正式性能尚未实施。')
             page=page.replace('S4/S5仍待实施，原候选及源码快照保留在历史证据中。','S4功能链通过、UI对标未达标，S5尚未实施；原候选及源码快照保留在历史证据中。')
+            current_tree='''tools/SunEyeVision.BlobAnalysis/（实际文件）
+├─ BlobAnalysisTool / BlobSdkAdapter / BlobInputAdapter：现行SDK入口适配
+├─ BlobInputContract / BlobConfigurationFields / 参数、结果及输出合同
+├─ Runtime/：BlobDefinition / BlobSettings / BlobSchema / BlobSession* / BlobOutput
+└─ Wpf/：可选只读结果扩展
+   ├─ BlobEditorFactory.cs
+   ├─ Views/BlobDataAnalysisControl.xaml(.cs)
+   └─ Presentation/BlobAnalysisRow.cs
+已删除：Views/BlobAnalysisToolDebugControl.xaml(.cs)、Converters/BlobAnalysisConverters.cs
+宿主→现行入口适配→唯一Runtime算法；Runtime不反向依赖Wpf/宿主。
+
+'''+s4['uiReview']['engineeringBefore']+'\n\n'+s4['uiReview']['engineeringAfter']
+            marker='<!-- O06-ENGINEERING-CLASS-MAP:END -->'
+            end=page.index(marker);start=page.rfind('<pre',0,end)
+            page=page[:start]+'<pre>'+escape(current_tree)+'</pre>'+page[end:]
+            page=page.replace('现行设置/结果通过SDK适配承接，原界面移到Wpf；S4完成编辑交互，S5通用结果呈现不自动启动。',
+                              '运行内核与可选结果Wpf已拆分；旧参数整页已删除。S4功能接线通过，但三页/行模板/样式未达标，修正结构见上图；S5未启动。')
     return page
 
 
@@ -383,7 +434,8 @@ def main():
     ids = parsed.ids
     if len(ids) != len(set(ids)):
         raise ValueError('Duplicate document anchors')
-    for key in ('o06-blob-final-review', 'blob-verification-steps', 'implementation-live-status'):
+    for key in ('o06-blob-final-review', 'blob-verification-steps', 'implementation-live-status',
+                'o06-stage-overview','s3-implementation-status','s4-implementation-status'):
         if ids.count(key) != 1:
             raise ValueError('Missing primary anchor: ' + key)
     PAGE.write_text(page, encoding='utf-8', newline='')

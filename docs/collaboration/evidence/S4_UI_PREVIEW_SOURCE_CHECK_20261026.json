@@ -1,0 +1,12 @@
+{
+  "scope": "仅源文件与模板字符串生成核查，未运行浏览器或WPF",
+  "styleCategories": 15,
+  "sourceLocators": 32,
+  "previewIds": 130,
+  "localAssetLinks": 17,
+  "uniqueIds": true,
+  "ariaTargetsExist": true,
+  "syntax": "node --check单独执行",
+  "actualRendering": "NOT_VERIFIED",
+  "productCodeChangedByThisTask": false
+}

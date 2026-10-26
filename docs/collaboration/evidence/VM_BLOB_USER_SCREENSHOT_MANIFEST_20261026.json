@@ -1,0 +1,73 @@
+{
+  "source": "用户本主对话提供并声明为实际VM Blob截图",
+  "date": "2026-10-26",
+  "images": [
+    {
+      "number": 1,
+      "source": "D:\\Temp\\codex-clipboard-9b7c2bc0-985d-4828-b3a7-82d8b9ed3d12.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS01_20261026.png",
+      "sha256": "985068d9129ad7bef7fd8ce5a3db3d3545f7ce42aeb2a35287c7941017467d70",
+      "caption": "基本参数：按矩形区域继承",
+      "duplicate": false
+    },
+    {
+      "number": 2,
+      "source": "D:\\Temp\\codex-clipboard-b85f7053-a91d-4f4b-a6b3-c5a01e4ee90f.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS01_20261026.png",
+      "sha256": "985068d9129ad7bef7fd8ce5a3db3d3545f7ce42aeb2a35287c7941017467d70",
+      "caption": "基本参数：同状态补充图",
+      "duplicate": true
+    },
+    {
+      "number": 3,
+      "source": "D:\\Temp\\codex-clipboard-fdb6c9ac-9467-4359-9a4d-7da7e8eea1e3.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS03_20261026.png",
+      "sha256": "cc51e4c08858ee55cf1480b7b1feb12f4468b42fcf3d09ac062712796a047d84",
+      "caption": "基本参数：按矩形参数继承，展开X/Y/宽/高/角度绑定",
+      "duplicate": false
+    },
+    {
+      "number": 4,
+      "source": "D:\\Temp\\codex-clipboard-fd36ff37-37cd-438d-80c1-bc2239e608cf.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS04_20261026.png",
+      "sha256": "9add41c687d1b8337ed3e898d373291589952330a7be19666bb56995b78d6c80",
+      "caption": "运行参数：单阈值、极性、数量、填孔、面积、输出",
+      "duplicate": false
+    },
+    {
+      "number": 5,
+      "source": "D:\\Temp\\codex-clipboard-e58f7fd0-bc73-4935-959c-0a846a788ae5.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS05_20261026.png",
+      "sha256": "04d1d561bfe905c594ce9ef5243b5807afab1277693a7f21834f7b5af9542900",
+      "caption": "运行参数：高级特征使能组",
+      "duplicate": false
+    },
+    {
+      "number": 6,
+      "source": "D:\\Temp\\codex-clipboard-b4e56de8-aaef-44c5-8311-0c13d802ab59.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS06_20261026.png",
+      "sha256": "13ecaa05001acb782a6872af3d138a56238bb0a13a06c8f43931af3fa78ec9b2",
+      "caption": "结果显示：基本及高级判定项",
+      "duplicate": false
+    },
+    {
+      "number": 7,
+      "source": "D:\\Temp\\codex-clipboard-03d79ab4-d5a3-413d-b4eb-be592e31c75f.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS07_20261026.png",
+      "sha256": "0abb031bfd35cff82ab251cdf3fb7e1c7c421ac395f555c394e83bc0e0fd5a95",
+      "caption": "结果显示：显示对象可见/编辑操作",
+      "duplicate": false
+    },
+    {
+      "number": 8,
+      "source": "D:\\Temp\\codex-clipboard-84a27473-03fc-4e04-adae-35701adda1dd.png",
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_UI_SS08_20261026.png",
+      "sha256": "4f04f073e607c562d5093f3dc04d23f3a1aca48793e574d379b30fe2212ba0f4",
+      "caption": "结果显示：文本内容、颜色、字号、透明度及位置",
+      "duplicate": false
+    }
+  ],
+  "coverage": "三页及若干展开状态，包括矩形区域/参数继承；截图5左侧部分被菜单遮挡；部分页面滚动截断，不推定未显示内容不存在。",
+  "limits": "证明用户提交的可见界面状态，不单独证明动作时序、loaded程序集身份、Window CLR类型、运行DisplayType或算法公式。",
+  "uniqueImages": 7
+}

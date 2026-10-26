@@ -1,0 +1,102 @@
+{
+  "reportId": "blob-ui-dependency-closure-20261026",
+  "scope": "Static UI/resource closure for VisionMaster Blob configuration surface; no product edits, no tool-plugins edits, no target execution",
+  "createdLocalDate": "2026-10-26",
+  "baseline": {
+    "branch": "main",
+    "commit": "babbd9d8a8291de6841cf7c39a72caa417fc5f61",
+    "trackedWorktree": "clean"
+  },
+  "evidenceAuthority": "Original installed artifact identity and static source/resource paths are primary evidence. Existing reconstructed tools may be used as a visual/implementation comparator only, never as proof of Blob original behavior.",
+  "originalArtifacts": [
+    {"name":"IMVSBlobFindModu.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModu.dll","sha256":"4DE695D8C3051045C9010739686F94C32D66A36EE486207FE749FB183FFF4C9A","bytes":248832,"reaEvidenceId":"ev_2438c3859462a4920d4ae64ed8c5b86a78fe880056c0bc4c97f78602fab15705","manifestResources":[]},
+    {"name":"IMVSBlobFindModuCs.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuCs.dll","sha256":"3106AF2E9344A97288553BFBBFA86AFD81E2384188B452734F56825F63E0A78D","bytes":37376,"mvid":"1d550689-0379-4822-8b69-8713d2324342","assembly":"IMVSBlobFindModuCs, Version=1.0.0.0","references":["mscorlib","VM.Core","VM.PlatformSDKCS"],"manifestResources":[],"reaEvidenceId":"ev_9af527f6d0dd76bf57a954dece44ff7240f59d6569eb6bcc1f7bacd79053587b"},
+    {"name":"IMVSBlobFindModu.xml","sha256":"F1B2F279717DCE3EC61C11C41F858BD100359095BCF13672422A3C73EFE47F6C","bytes":15873},
+    {"name":"IMVSBlobFindModuAlgorithm.xml","sha256":"D5DE2D5888D0767552C3077457EADD796171B4447F1C92F93BC9BB60854A7B2B","bytes":10827},
+    {"name":"IMVSBlobFindModuAlgorithmTab.xml","sha256":"34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC","bytes":123949},
+    {"name":"IMVSBlobFindModuDisplay.xml","sha256":"B3BC63E6CF7C8CA120BAF5B632BBE1359843138CF77CB5A64FC698EF22465112","bytes":10611},
+    {"name":"IMVSBlobFindModuCs.xml","sha256":"C3C46D0DD1CF4765034791783B6085478F26928F2D86BF5C50AB8D5FD3B205F4","bytes":42157}
+  ],
+  "sourceCallPath": [
+    {
+      "step": 1,
+      "source": "analysis/decompiled/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs:708-839",
+      "member": "ProcedureConfigControl.OpenParamsTabControl(object, object) -> GetExternTabWin(IVmModule)",
+      "confirmed": "Returns if a parameter window is already open; checks module XML files; searches loaded AppDomain for <ModuleTypeName>Control; otherwise probes <module dir>/<ModuleTypeName>Control.dll; if a TabWinBase type is found it instantiates it, otherwise falls back to ParamsTabControlBase. Then sets ROI part/edit state/Params, owner, shows modelessly, and tracks close.",
+      "unknown": "Which branch ran for the target Blob window and whether an extension assembly was already loaded in that runtime."
+    },
+    {
+      "step": 2,
+      "source": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/current-xmlui/Apps.XmlUI/ParamsTabUserControl.xaml:1-35",
+      "member": "ParamsTabUserControl template",
+      "confirmed": "Binds TabControlFx.ItemsSource to TabsA and SelectedIndex two-way to TabIndex; selection change invokes ChangeSelectedSubParamCommand; each visible tab is filtered via IsVisible; default content template is listTab -> ParamListView, with Panal tabs using gridPanal -> ParamUserControl.",
+      "unknown": "Runtime tab/data values after SDK/provider callbacks."
+    },
+    {
+      "step": 3,
+      "source": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/current-xmlui/Apps.XmlUI/ParamUserControl.xaml.cs:28-76 and UserTempConverter.cs:10-43",
+      "member": "ParamUserControl.SetDefaultBinding / OnPropertyChanged / UserTempConverter.Convert",
+      "confirmed": "Default ContentTemplate is bound to DisplayType through UserTempConverter. Converter returns a DataTemplate at the matching key, or Default if absent. When Content comes from an assembly other than Apps.XmlParser/WindowsBase, the control attempts to merge that assembly's DataTemplate/ParamUserControlDataTemplate.xaml once per assembly.",
+      "unknown": "Exact runtime Content CLR types and selected DisplayType keys for each Blob field; no Blob-specific Control DLL exists in its module folder, but AppDomain-loaded extensions are not ruled out."
+    }
+  ],
+  "resourceGraph": [
+    {"from":"Blob module XML / parsed Params","to":"Apps.XmlUI ParamsTabUserControl","edge":"consumed as Params/TabsA and ParamUserControl content","evidence":"static decompiled WPF source + original Blob XML hashes"},
+    {"from":"Apps.XmlUI ParamsTabUserControl.xaml","to":"Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml","edge":"merged dictionary","evidence":"XAML URI literal"},
+    {"from":"Apps.XmlUI ParamsTabUserControl.xaml","to":"Apps.XmlUI;component/ResourceDictionaries/GlobalResources.xaml","edge":"merged dictionary; declares userTempConverter and ParamListView templates","evidence":"XAML URI literal"},
+    {"from":"Apps.XmlUI ParamsTabUserControl.xaml","to":"Apps.ColorFun ColorThemesResourceDictionary.Instance","edge":"static extension singleton merged in FrameworkElement resources","evidence":"XAML x:StaticExtension literal + ColorThemesResourceDictionary source"},
+    {"from":"Apps.XmlUI ParamUserControl","to":"Apps.XmlUI Styles/ParamUserControlDataTemplate.xaml","edge":"default template dictionary loaded by UserTempConverter","evidence":"UserTempConverter.ResourceDictionary getter"},
+    {"from":"Apps.XmlUI ParamUserControl","to":"Content.Assembly/DataTemplate/ParamUserControlDataTemplate.xaml","edge":"conditional external dictionary load for non-Apps.XmlParser/non-WindowsBase content assembly","evidence":"ParamUserControl.OnPropertyChanged"},
+    {"from":"ParamUserControlDataTemplate.xaml","to":"Apps.Style dictionaries","edge":"direct merged ComboBox/ListViewComboBox, bottom/normal/toggle button, RecScrollBar, RadioButton, TextBlock and TextBox styles","evidence":"resource URI literals at lines 5-12"},
+    {"from":"ParamUserControlDataTemplate.xaml","to":"Apps.PcUI;component/Styles/PcUIStyle.xaml","edge":"direct merged control style dictionary","evidence":"resource URI literal in recovered dictionary"},
+    {"from":"ParamUserControlDataTemplate.xaml","to":"Apps.ColorFun theme resources","edge":"merged theme singleton; style dictionaries also request Col_Theme and Col_ModuleConfig_* dynamic keys","evidence":"XAML + color key references"},
+    {"from":"Apps.Style ListViewComboBoxStyle","to":"Apps.Style RecScrollBarStyle and Apps.Style ResourceDictionaries/GlobalResources","edge":"nested merged dictionaries","evidence":"decompiled Apps.Style XAML URI literals"},
+    {"from":"Apps.Style TextBoxStyle","to":"Apps.Style NormalButtonStyle","edge":"nested merged dictionary","evidence":"decompiled Apps.Style XAML URI literal"},
+    {"from":"Apps.Style style dictionaries","to":"Apps.ColorFun ColorThemesResourceDictionary.Instance","edge":"dynamic theme resource lookup","evidence":"decompiled selected style XAML references"},
+    {"from":"Apps.Style ButtonStyle/ToggleButtonStyle and NormalButtonStyle and BottomButtonStyle","to":"Apps.Localization LocalizationResourceDictionary.Instance","edge":"static extension dictionary reference","evidence":"decompiled selected style XAML references"},
+    {"from":"Apps.ColorFun ColorThemesResourceDictionary","to":"Applications/ColorCFG/ColorStyleSet.cfg -> Applications/ColorStyle/<name>.xaml -> Apps.ColorFun/ColorStyle.xaml","edge":"loads external active theme then overlays embedded base dictionary","evidence":"exact decompiled ColorThemesResourceDictionary constructor/LoadColorStyle/SetColorResource"},
+    {"from":"LocalizationResourceDictionary","to":"Applications/LangCFG/LanguageSet.cfg -> Applications/Lang/zh-cn.xaml","edge":"configured locale asset path observed; runtime loading behavior not source-closed in this supplement","evidence":"installed config identity + original Lang file identity; no embedded Apps.Localization manifest resource"}
+  ],
+  "resourceIdentities": {
+    "frameworkAssemblies": [
+      {"name":"Apps.Style.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll","sha256":"8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63","bytes":952832,"resource":"Apps.Style.g.resources","resourceBytes":948156,"resourceSha256":"334960b6bdb8c3b56182a94e06b8e8a900eba925e9d9a327be868fc07f8cb689","reaEvidenceId":"ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"},
+      {"name":"Apps.ColorFun.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.ColorFun.dll","sha256":"22C277C4E2D384593265EE0D40830252F8317C60A7EBE782D31AEE426C5D8688","bytes":80384,"resource":"Apps.ColorFun.g.resources","resourceBytes":72093,"resourceSha256":"baf7a571596f0714db5d5e4f14db71690c094537766f54b3e10faba5879f4d9e","reaEvidenceId":"ev_4bc1aac2d20a7f3eacc50b2143e5fe9cd5363dab9c094a9d6dd449562f0ee520"},
+      {"name":"Apps.Localization.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Localization.dll","sha256":"EF43C79E30AAA5DB98775569D7FE5F9B23F41AF6280C7E4ED7CF5A902FCF2381","bytes":19456,"manifestResources":[],"reaEvidenceId":"ev_79e938568eff432f2c7586b309ece8f216d4bf6cc3367e6cf08cb32b3185f2e1"},
+      {"name":"Apps.PcUI.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.PcUI.dll","sha256":"BC47626C5064CF4A28E0CFA8344C07C4D186C5A9EFD321988DE9482DFB10FD74","bytes":74240,"resource":"Apps.PcUI.g.resources","resourceBytes":30260,"resourceSha256":"362fb217c8f41faabbcc36f6bf18bc63e199132055133feaef197546e8e1d487","reaEvidenceId":"ev_7673496c714579796c86694e8a46d245cd7a157a26f19c0eaeadd6d1fd516070"},
+      {"name":"VM.PcUI.dll","path":"D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.PcUI.dll","sha256":"87D21004FD3807213247623212F93C5F15A784DA78C4BC2C890A7906C3C92B42","bytes":937984,"resources":[{"name":"VM.PcUI.g.resources","bytes":304064,"sha256":"6e551979a7340381d8f32dfeeda199820fe3879ec1a9cafdf2858840897aae42"},{"name":"VM.PcUI.Properties.Resources.resources","bytes":180,"sha256":"e13ed2c59366d0eea74863fd71a81f0cb977cce1edfde304fc538690a4f6ac89"},{"name":"VM.PcUI.Resources.鼠标旋转箭头.png","bytes":1418,"sha256":"1662c0a1871f70d5563813864e7d263fc01e4efb7098bfeaec036ea0e0b60488"},{"name":"VM.PcUI.Resources.鼠标双向箭头.png","bytes":1143,"sha256":"a99108913dcda4764ec893d3f85f3ed3fe546210aeb0601281dfffbf5d093da3"}],"reaEvidenceId":"ev_8b57c1e30085a01fd63b7296293cbb020c791ab60437c9f4fbe4b079464aff4e"}
+    ],
+    "configuredTheme": {"path":"D:/Program Files/VisionMaster4.4.0/Applications/ColorCFG/ColorStyleSet.cfg","value":"ColorStyle1","bytes":124,"sha256":"65ECAECF554908D8AEFA901A1C9F50DF207EB125E83DB27960E0CFFF4D4255A1"},
+    "themeFiles": [
+      {"path":"D:/Program Files/VisionMaster4.4.0/Applications/ColorStyle/ColorStyle1.xaml","bytes":21887,"sha256":"CDB6B591131FAB5FAF59067C015F8AD66CDDEC21F266430C932E1233202C2F19"},
+      {"path":"D:/Program Files/VisionMaster4.4.0/Applications/ColorStyle/ColorStyle2.xaml","bytes":22309,"sha256":"6999914DA1BA8A8527C9DC78E3C3086BC93136633ACCF20F15420BF3F1CB0F39"},
+      {"path":"D:/Program Files/VisionMaster4.4.0/Applications/ColorStyle/ColorStyle3.xaml","bytes":20614,"sha256":"E8C20E7D25FFE2B04F3776ED072F061E8BD2B8AC3FAD86AD4D5E09241CDD3491"}
+    ],
+    "configuredLanguage": {"path":"D:/Program Files/VisionMaster4.4.0/Applications/LangCFG/LanguageSet.cfg","value":"zh-cn","bytes":116,"sha256":"93479F84DD7BFC6AD7362CAA061B013321AD472EF6DB3DE995FD4040E618AC05"},
+    "languageFile": {"path":"D:/Program Files/VisionMaster4.4.0/Applications/Lang/zh-cn.xaml","bytes":839881,"sha256":"8DBABDC771FC81174D02C40E37843EF4CCCE97133F41988FF976A5BD556B8B7E"}
+  },
+  "branchAssessment": {
+    "moduleDirectoryHasIMVSBlobFindModuControlDll": false,
+    "staticControlFactoryBehavior": "If no already-loaded <ModuleTypeName>Control assembly exists and no module-directory Control DLL is found, generic ParamsTabControlBase is selected.",
+    "observedRuntimeBranch": false,
+    "runtimeObservation": "No VisionMaster/VisionEditor process or visible parameter window was available in the current session when checked; AppDomain contents could not be observed.",
+    "result": "The generic fallback is source-proven conditionally, not proven as the branch selected in the prior Blob screenshot/runtime."
+  },
+  "implementationReference": {
+    "role": "Existing, visually confirmed reconstructed tools are useful comparative baselines for layout/styling/control behavior already implemented in this project.",
+    "authority": "reconstructed implementation, not original VM proof",
+    "comparisonRule": "Reuse known implementation patterns when the original static/runtime evidence does not contradict them; keep any unexplained difference marked unknown pending source/runtime evidence."
+  },
+  "verification": {
+    "staticSourceTrace": "complete for the generic parameter window entry -> tab host -> template binding/resource loader path listed above",
+    "resourceIdentity": "REA authenticated identities and embedded resource hashes recorded for 5 primary framework assemblies; installed config/theme/language file hashes rechecked against extracted/decompiled theme files",
+    "blobModuleControlDirectoryInventory": "module directory enumerated; no *Control.dll present",
+    "runtimeWindowType": "not observed",
+    "pixelAppearance": "not compared in this supplement",
+    "targetExecution": "not performed"
+  },
+  "openEvidence": [
+    {"id":"BLOB-UI-001","question":"Was a module-specific Control assembly already loaded when the original Blob parameter window opened?","minimumProof":"On a controlled original VM session, record AppDomain assembly names before the node double-click and the actual Window CLR type after open, or capture the relevant breakpoint/trace at ProcedureConfigControl.GetExternTabWin."},
+    {"id":"BLOB-UI-002","question":"Which Blob parameter template keys, hidden/subscribe predicates, locale resource lookups and dynamic style keys were actually active?","minimumProof":"Capture the runtime Params collection (Type/DisplayType/IsVisible/subscribe state) plus resolved resource dictionary keys for selected Blob tabs; compare with existing confirmed tool UI implementation only as secondary reference."},
+    {"id":"BLOB-UI-003","question":"Does the screenshot appearance correspond to the current installed binaries/assets?","minimumProof":"Use an interactive desktop session with the authenticated installed build and capture the actual parameter window; this session had no VisionMaster/VisionEditor process, so no visual result is claimed."}
+  ]
+}

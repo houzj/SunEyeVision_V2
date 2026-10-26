@@ -55,53 +55,6 @@
   ],
   "sources": [
     {
-      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
-      "kind": "安装原件XML",
-      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
-      "anchors": [
-        {
-          "line": 4,
-          "text": "<Tab Name=\"Tab_Basic Params\">"
-        },
-        {
-          "line": 41,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 64,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 124,
-          "text": "<Tab Name=\"Tab_Run Params\">"
-        },
-        {
-          "line": 135,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 443,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 548,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 639,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 706,
-          "text": "<Triggers>"
-        },
-        {
-          "line": 770,
-          "text": "<Triggers>"
-        }
-      ]
-    },
-    {
       "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
       "kind": "反编译C#",
       "sha256": "a1c233068db35667f7dd49b05839701364cc2ebe9ca699f5f413317abbe4dfb4",
@@ -471,16 +424,1859 @@
           "text": "var restore=new Button{Content=\"恢复有效值\",Margin=new Thickness(2)};restore.Click+=(_,_)=>RenderNumbers();actions.Children.Add(restore);"
         }
       ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamsTabUserControl.xaml",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "521817a08e66898ba9acbcce6753716713149c878270c524e1e3ce9550f3c8c7",
+      "anchors": [
+        {
+          "line": 16,
+          "text": "<DataTemplate x:Key=\"listTab\">"
+        },
+        {
+          "line": 17,
+          "text": "<local:ParamListView CustomParamENWidth=\"{Binding CustomParamENWidthA}\" ChildMargin=\"{Binding ChildMargin, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ParamsTabUserControl}}}\" ChildHeader"
+        },
+        {
+          "line": 38,
+          "text": "<local:TabControlFx x:Name=\"tab\" VirtualizingPanel.VirtualizationMode=\"Recycling\" BorderThickness=\"0,0,0,1\" BorderBrush=\"{DynamicResource GlobalBorderBrush}\" Style=\"{StaticResource TabControlStyle}\" ItemsSource=\"{Binding"
+        },
+        {
+          "line": 45,
+          "text": "<Style BasedOn=\"{StaticResource TopTabItemStyle}\" TargetType=\"{x:Type TabItem}\">"
+        },
+        {
+          "line": 56,
+          "text": "<ContentPresenter Name=\"con\" ContentTemplate=\"{StaticResource listTab}\" Content=\"{Binding}\" />"
+        },
+        {
+          "line": 95,
+          "text": "<ItemsControl Height=\"32\" HorizontalAlignment=\"Left\" ItemsSource=\"{Binding BottomExcuteButtonsLeftA}\">"
+        },
+        {
+          "line": 113,
+          "text": "<DataTrigger Binding=\"{Binding BottomExcuteButtonsLeftA}\" Value=\"{x:Null}\">"
+        },
+        {
+          "line": 120,
+          "text": "<ItemsControl Height=\"32\" HorizontalAlignment=\"Right\" ItemsSource=\"{Binding BottomExcuteButtonsA}\">"
+        },
+        {
+          "line": 134,
+          "text": "<DataTrigger Binding=\"{Binding BottomExcuteButtonsA}\" Value=\"{x:Null}\">"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamListView.xaml",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "ea16ea5a97987f088f620507da79570e36393f692ea75469aec79f50df1b9484",
+      "anchors": [
+        {
+          "line": 2,
+          "text": "<ItemsControl x:Class=\"Apps.XmlUI.ParamListView\" xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:mc=\"http://schemas.openxmlformats.org/markup"
+        },
+        {
+          "line": 16,
+          "text": "<GroupStyle ContainerStyle=\"{StaticResource ResourceKey=ParamGroupItemStyle}\" />"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamUserControl.xaml.cs",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "bc8443f696d7c0fd41e38ddcd5df950c78d8f87485b348cd507b99b8565bfc0a",
+      "anchors": [
+        {
+          "line": 12,
+          "text": "public static readonly DependencyProperty ExternDisplayTypeProperty = DependencyProperty.Register(\"ExternDisplayType\", typeof(string), typeof(ParamUserControl), new PropertyMetadata(null, ExternDisplayTypeChanged));"
+        },
+        {
+          "line": 14,
+          "text": "private static UserTempConverter userTempConverter = new UserTempConverter();"
+        },
+        {
+          "line": 16,
+          "text": "public string ExternDisplayType"
+        },
+        {
+          "line": 20,
+          "text": "return (string)GetValue(ExternDisplayTypeProperty);"
+        },
+        {
+          "line": 24,
+          "text": "SetValue(ExternDisplayTypeProperty, value);"
+        },
+        {
+          "line": 28,
+          "text": "private static void ExternDisplayTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)"
+        },
+        {
+          "line": 33,
+          "text": "paramUserControl.SetBinding(ContentControl.ContentTemplateProperty, new Binding(\"ExternDisplayType\")"
+        },
+        {
+          "line": 35,
+          "text": "Converter = userTempConverter,"
+        },
+        {
+          "line": 41,
+          "text": "paramUserControl.SetDefaultBinding();"
+        },
+        {
+          "line": 45,
+          "text": "private void SetDefaultBinding()"
+        },
+        {
+          "line": 47,
+          "text": "SetBinding(ContentControl.ContentTemplateProperty, new Binding(\"DisplayType\")"
+        },
+        {
+          "line": 49,
+          "text": "Converter = userTempConverter"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\UserTempConverter.cs",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "4187efb8b1163ccc62fbf061b01b6b260b2bb2e6e9e3a9599595d5488e160e21",
+      "anchors": [
+        {
+          "line": 22,
+          "text": "Uri resourceLocator = new Uri(\"/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml\", UriKind.Relative);"
+        },
+        {
+          "line": 35,
+          "text": "return (!ResourceDictionary.Contains((string)value)) ? (ResourceDictionary[\"Default\"] as DataTemplate) : (ResourceDictionary[(string)value] as DataTemplate);"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\resourcedictionaries\\globalresources.xaml",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "45563434e28ca75dcba0967a7b9c60dcd6865f982bd0dfa22dc15cd27d06a637",
+      "anchors": [
+        {
+          "line": 21,
+          "text": "<DataTemplate x:Key=\"ParamItemTemplate\">"
+        },
+        {
+          "line": 22,
+          "text": "<Border Name=\"bd\" BorderThickness=\"1\" BorderBrush=\"{Binding MyItemState, Converter={StaticResource CheckConverter}}\" IsEnabled=\"{Binding EnableA}\">"
+        },
+        {
+          "line": 33,
+          "text": "<Setter Property=\"localParamTab:LeftRightControl.ChildLeftWidth\" Value=\"{Binding ChildLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:ParamListView}}}\" />"
+        },
+        {
+          "line": 36,
+          "text": "<Setter Property=\"localParamTab:LeftRightControl.ChildLeftWidth\" Value=\"{Binding Converter={StaticResource LeftWidthConverter}}\" />"
+        },
+        {
+          "line": 40,
+          "text": "<Style x:Key=\"ParamGroupItemStyle\" TargetType=\"{x:Type GroupItem}\">"
+        },
+        {
+          "line": 68,
+          "text": "<DataTrigger Value=\"False\" Binding=\"{Binding Name.CustomVisibleA}\">"
+        },
+        {
+          "line": 78,
+          "text": "<DataTrigger Value=\"false\" Binding=\"{Binding CustomVisibleA}\">"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "e8c7c8ccb10faf3691e7ef786920c3a2cee49522aafe2053e1b6bce11c4190b3",
+      "anchors": [
+        {
+          "line": 2,
+          "text": "<Grid x:Class=\"Apps.XmlUI.ParamTab.LeftRightControl\" xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:mc=\"http://schemas.openxmlformats.org/ma"
+        },
+        {
+          "line": 11,
+          "text": "<Grid.ColumnDefinitions>"
+        },
+        {
+          "line": 12,
+          "text": "<ColumnDefinition Width=\"{Binding ChildLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type paramTab:LeftRightControl}}}\" />"
+        },
+        {
+          "line": 13,
+          "text": "<ColumnDefinition Width=\"*\" />"
+        },
+        {
+          "line": 14,
+          "text": "</Grid.ColumnDefinitions>"
+        },
+        {
+          "line": 15,
+          "text": "<TextBlock Name=\"PartText\" TextTrimming=\"CharacterEllipsis\" Foreground=\"{DynamicResource Col_ModuleConfig_List_Foreground}\" VerticalAlignment=\"Center\" Visibility=\"{Binding IsDisplayLeft, Converter={StaticResource bool2Vi"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml.cs",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "80d64fbd024bf2b135c220525c9cbf97327353c5104a040ed3ef8464d941bb86",
+      "anchors": [
+        {
+          "line": 14,
+          "text": "public static readonly DependencyProperty ChildLeftWidthProperty = DependencyProperty.Register(\"ChildLeftWidth\", typeof(double), typeof(LeftRightControl), new PropertyMetadata(89.0));"
+        },
+        {
+          "line": 46,
+          "text": "return (double)GetValue(ChildLeftWidthProperty);"
+        },
+        {
+          "line": 50,
+          "text": "SetValue(ChildLeftWidthProperty, value);"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.NameValueItem.cs",
+      "kind": "恢复XAML/反编译代码，静态",
+      "sha256": "90b4742e79243f46c46fd6b38187ee7f5be49d4c6677f994133215a3796fed46",
+      "anchors": [
+        {
+          "line": 315,
+          "text": "public virtual string DisplayType"
+        },
+        {
+          "line": 319,
+          "text": "return GetType().Name;"
+        },
+        {
+          "line": 326,
+          "text": "public object GroupName => GetParentNode();"
+        },
+        {
+          "line": 861,
+          "text": "return DisplayType + \" \" + Name + \" \" + DisplayName;"
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\ColorCFG\\ColorStyleSet.cfg",
+      "kind": "安装原件配置；不证明运行中主题",
+      "sha256": "65ecaecf554908d8aefa901a1c9f50df207eb125e83db27960e0cfff4d4255a1",
+      "anchors": [
+        {
+          "line": 3,
+          "text": "<ColorSet>ColorStyle1</ColorSet>"
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\ColorStyle\\ColorStyle1.xaml",
+      "kind": "安装原件主题字典；不证明运行中已选择",
+      "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19",
+      "anchors": [
+        {
+          "line": 17,
+          "text": "<SolidColorBrush x:Key=\"Col_SubForm_Background\" Color=\"#F2F3F5\"/>"
+        },
+        {
+          "line": 293,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_BorderBrush\" Color=\"#CCC7C6\"/>"
+        },
+        {
+          "line": 295,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_Foreground\" Color=\"#3D3D3D\"/>"
+        },
+        {
+          "line": 297,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_Selected_Foreground\" Color=\"#1F0E01\"/>"
+        },
+        {
+          "line": 299,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_List_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 301,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Background\" Color=\"#FFFFFF\"/>"
+        },
+        {
+          "line": 303,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 305,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_BorderBrush\" Color=\"#CCC7C6\"/>"
+        },
+        {
+          "line": 307,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Selected_Background\" Color=\"#E6E6E6\"/>"
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\ColorStyle\\ColorStyle2.xaml",
+      "kind": "安装原件主题字典；不证明运行中已选择",
+      "sha256": "6999914da1ba8a8527c9dc78e3c3086bc93136633accf20f15420bf3f1cb0f39",
+      "anchors": [
+        {
+          "line": 17,
+          "text": "<SolidColorBrush x:Key=\"Col_SubForm_Background\" Color=\"#F5F5F5\"/>"
+        },
+        {
+          "line": 302,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_BorderBrush\" Color=\"#CCC7C6\"/>"
+        },
+        {
+          "line": 304,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 306,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_Selected_Foreground\" Color=\"#4D4D4D\"/>"
+        },
+        {
+          "line": 308,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_List_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 310,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Background\" Color=\"#FFFFFF\"/>"
+        },
+        {
+          "line": 312,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 314,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_BorderBrush\" Color=\"#CCC7C6\"/>"
+        },
+        {
+          "line": 316,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Selected_Background\" Color=\"#E6E6E6\"/>"
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\ColorStyle\\ColorStyle3.xaml",
+      "kind": "安装原件主题字典；不证明运行中已选择",
+      "sha256": "e8c20e7d25ffe2b04f3776ed072f061e8bd2b8ac3fad86ad4d5e09241cdd3491",
+      "anchors": [
+        {
+          "line": 13,
+          "text": "<SolidColorBrush x:Key=\"Col_SubForm_Background\" Color=\"#F5F5F5\"/>"
+        },
+        {
+          "line": 277,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_BorderBrush\" Color=\"#CCC7C6\"/>"
+        },
+        {
+          "line": 279,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 281,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_Title_Selected_Foreground\" Color=\"#4D4D4D\"/>"
+        },
+        {
+          "line": 283,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_List_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 285,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Background\" Color=\"#FFFFFF\"/>"
+        },
+        {
+          "line": 287,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Foreground\" Color=\"#666666\"/>"
+        },
+        {
+          "line": 289,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_BorderBrush\" Color=\"#CCC7C6\"/>"
+        },
+        {
+          "line": 291,
+          "text": "<SolidColorBrush x:Key=\"Col_ModuleConfig_ComboBox_Selected_Background\" Color=\"#E6E6E6\"/>"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Contracts\\FieldPresentation.cs",
+      "kind": "本方当前源码",
+      "sha256": "bac5e1f548b50e52593f99021eb1df57d98df5b26ae3b56bb2a8000c12c96595",
+      "anchors": [
+        {
+          "line": 19,
+          "text": "public sealed record RegionFieldGroup(string Role, string ModeFieldId, string LocalGeometryFieldId,"
+        },
+        {
+          "line": 20,
+          "text": "string GeometrySourceFieldId, string RegionSourceFieldId);"
+        },
+        {
+          "line": 23,
+          "text": "public sealed class FieldPresentation"
+        },
+        {
+          "line": 29,
+          "text": "FieldId=fieldId;DisplayName=displayName??throw new ArgumentNullException(nameof(displayName));Group=group??\"\";Order=order;Editor=editor;"
+        },
+        {
+          "line": 40,
+          "text": "public string FieldId{get;} public string DisplayName{get;} public string Group{get;} public int Order{get;}"
+        },
+        {
+          "line": 44,
+          "text": "public sealed class ToolPresentation"
+        },
+        {
+          "line": 46,
+          "text": "public ToolPresentation(IEnumerable<FieldPresentation> fields,bool hasProfessionalView=false,IEnumerable<RegionFieldGroup>? regions=null)"
+        },
+        {
+          "line": 48,
+          "text": "Fields=Array.AsReadOnly(fields.ToArray());Regions=Array.AsReadOnly((regions??Array.Empty<RegionFieldGroup>()).ToArray());HasProfessionalView=hasProfessionalView;"
+        },
+        {
+          "line": 49,
+          "text": "if(Fields.Any(field=>field is null)||Fields.Select(field=>field.FieldId).Distinct(StringComparer.Ordinal).Count()!=Fields.Count)"
+        },
+        {
+          "line": 52,
+          "text": "public IReadOnlyList<FieldPresentation> Fields{get;} public IReadOnlyList<RegionFieldGroup> Regions{get;} public bool HasProfessionalView{get;}"
+        },
+        {
+          "line": 58,
+          "text": "if(!ports.TryGetValue(field.FieldId,out var port))throw new ArgumentException(\"Presentation references an undeclared input.\");"
+        },
+        {
+          "line": 77,
+          "text": "var ids=new[]{region.ModeFieldId,region.LocalGeometryFieldId,region.GeometrySourceFieldId,region.RegionSourceFieldId};"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Runtime\\BlobSettings.cs",
+      "kind": "本方当前源码：证明现行行为，不证明新方案已实现",
+      "sha256": "744f9add961318b77a2431d901ddf90b3fe06d71f93fe9e40d9e1b26bf09b6c0",
+      "anchors": [
+        {
+          "line": 5,
+          "text": "public enum BlobThresholdMode { Binary, BinaryInv }"
+        },
+        {
+          "line": 16,
+          "text": "public int Threshold { get; init; } = 128;"
+        },
+        {
+          "line": 17,
+          "text": "public int MaxValue { get; init; } = 255;"
+        },
+        {
+          "line": 18,
+          "text": "public BlobThresholdMode Type { get; init; }"
+        },
+        {
+          "line": 20,
+          "text": "public bool IsPreprocessingEnabled { get; init; }"
+        },
+        {
+          "line": 23,
+          "text": "public bool IsMorphologyEnabled { get; init; }"
+        },
+        {
+          "line": 51,
+          "text": "Check(Threshold >= 0 && Threshold <= MaxValue && MaxValue <= 255, \"阈值必须满足0≤Threshold≤MaxValue≤255。\");"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Runtime\\BlobSession.cs",
+      "kind": "本方当前源码：证明现行行为，不证明新方案已实现",
+      "sha256": "8338d0770878a80ed7caf5201efa19fc13d84d1849f3685d6c6bbb157de540a5",
+      "anchors": [
+        {
+          "line": 83,
+          "text": "using var processed = settings.IsPreprocessingEnabled && settings.PreprocessMethod != BlobPreprocess.None ? ApplyPreprocessing(cropped, settings) : cropped.Clone();"
+        },
+        {
+          "line": 84,
+          "text": "using var threshold = processed.Threshold((double)settings.Threshold, (double)settings.MaxValue);"
+        },
+        {
+          "line": 86,
+          "text": "using var morphed = settings.IsMorphologyEnabled ? ApplyMorphology(initial, settings) : initial.Clone();"
+        },
+        {
+          "line": 89,
+          "text": "HalconBlobExecutionScope.RequireUnlimitedConnection();"
+        },
+        {
+          "line": 90,
+          "text": "using var connected = binary.Connection();"
+        },
+        {
+          "line": 91,
+          "text": "HalconBlobExecutionScope.RequireUnlimitedConnection();"
+        },
+        {
+          "line": 92,
+          "text": "using var selected = SelectFeatures(connected, settings);"
+        },
+        {
+          "line": 94,
+          "text": "var final = Sort(candidates, settings.SortMode);"
+        },
+        {
+          "line": 95,
+          "text": "if (settings.IsBlobCountFilterEnabled) final = final.Take(settings.BlobCountLimit);"
+        },
+        {
+          "line": 117,
+          "text": "var grayOutput = settings.OutputGrayImage || requested.HasFlag(BlobOutputRequest.GrayImage) ? HalImageSnapshotSource.Capture(gray, frame, outputResources) : null;"
+        },
+        {
+          "line": 121,
+          "text": "HOperatorSet.RegionToBin(binary, out var binObject, 255, 0, width, height);"
+        },
+        {
+          "line": 126,
+          "text": "double whiteRatio = whiteCount.D / ((double)width * height) * 100;"
+        },
+        {
+          "line": 140,
+          "text": "\"output-not-empty\" => ordered.Length > 0 ? 1 : 0, \"white-ratio\" => whiteRatio, \"blob-count\" => ordered.Length,"
+        },
+        {
+          "line": 152,
+          "text": "var output = new BlobOutput(settings, measurements, grayOutput, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources });"
+        },
+        {
+          "line": 174,
+          "text": "private static HRegion SelectFeatures(HRegion regions, BlobSettings s)"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Runtime\\BlobSchema.cs",
+      "kind": "本方当前源码：证明现行行为，不证明新方案已实现",
+      "sha256": "15fe73e4c10a3997d63c0225d3f929fc396e3628a3281a0ecf5e7e6a25ce0781",
+      "anchors": [
+        {
+          "line": 16,
+          "text": "new Port(\"element-id\", DataType.Integer), new Port(\"label\", DataType.Integer), new Port(\"area\", DataType.Number), new Port(\"perimeter\", DataType.Number),"
+        },
+        {
+          "line": 17,
+          "text": "new Port(\"centroid-x\", DataType.Number), new Port(\"centroid-y\", DataType.Number), new Port(\"centroid\", PointType),"
+        },
+        {
+          "line": 18,
+          "text": "new Port(\"circularity\", DataType.Number), new Port(\"rectangularity\", DataType.Number), new Port(\"bounds\", BoundsType),"
+        },
+        {
+          "line": 21,
+          "text": "new Port(\"boundary\", BoundaryType, false), new Port(\"region\", TypeRef.ResourceOf(ResourceKind.Region)) });"
+        },
+        {
+          "line": 23,
+          "text": "public static IReadOnlyList<Port> Outputs { get; } = Array.AsReadOnly(new[] {"
+        },
+        {
+          "line": 43,
+          "text": "[\"element-id\"] = blob.ElementId, [\"label\"] = (long)blob.Label, [\"area\"] = blob.Area, [\"perimeter\"] = blob.Perimeter,"
+        },
+        {
+          "line": 44,
+          "text": "[\"centroid-x\"] = blob.CentroidX, [\"centroid-y\"] = blob.CentroidY, [\"centroid\"] = new PointGeometry(ImageFrame, new(blob.CentroidX, blob.CentroidY)),"
+        },
+        {
+          "line": 45,
+          "text": "[\"circularity\"] = blob.Circularity, [\"rectangularity\"] = blob.Rectangularity,"
+        },
+        {
+          "line": 53,
+          "text": "// Explicit legacy projection: one unsmoothed outer path. Complete paths/holes remain in boundary."
+        },
+        {
+          "line": 63,
+          "text": "var boundary = new RecordValue(BoundaryType, new Dictionary<string, object?> { [\"paths\"] = new SequenceValue(TypeRef.SequenceOf(pathType), paths) });"
+        },
+        {
+          "line": 64,
+          "text": "SpatialDeclarations.ValidateBoundary(boundary, ImageFrame);"
+        },
+        {
+          "line": 65,
+          "text": "values[\"boundary\"] = boundary;"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Runtime\\BlobOutput.cs",
+      "kind": "本方当前源码：证明现行行为，不证明新方案已实现",
+      "sha256": "70c15194268a8f802fdcf35c547bba2dc465022efe1359c56899d184357c451d",
+      "anchors": [
+        {
+          "line": 23,
+          "text": "Region = region; OkRegion = ok; NgRegion = ng; WhitePixelRatio = whiteRatio;"
+        },
+        {
+          "line": 24,
+          "text": "Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());"
+        },
+        {
+          "line": 36,
+          "text": "public double WhitePixelRatio { get; }"
+        },
+        {
+          "line": 37,
+          "text": "public IReadOnlyList<double> Histogram { get; }"
+        },
+        {
+          "line": 38,
+          "text": "public IReadOnlyList<double> ChannelMeans { get; }"
+        },
+        {
+          "line": 46,
+          "text": "public IReadOnlyDictionary<string, object?> ToValues()"
+        },
+        {
+          "line": 55,
+          "text": "[BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,"
+        },
+        {
+          "line": 59,
+          "text": "[BlobSchema.Field(17)] = Histogram.ToArray(), [BlobSchema.Field(18)] = ChannelMeans.ToArray(),"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Services\\Editing\\Nodes\\NodeOpenDecisionChain.cs",
+      "kind": "本方当前源码",
+      "sha256": "a32c7a7691ca0ca15e1056531db182477f46da94e8c285f2225589463dc26606",
+      "anchors": [
+        {
+          "line": 27,
+          "text": "public bool Execute(WorkflowNodeBase node, NodeOpenContext context, Func<System.Windows.FrameworkElement?>? createEditor = null)"
+        },
+        {
+          "line": 48,
+          "text": "if (createEditor is null) CreateDebugControl(context);"
+        },
+        {
+          "line": 107,
+          "text": "private void CreateDebugControl(NodeOpenContext context)"
+        },
+        {
+          "line": 124,
+          "text": "var debugControl = ToolConfigurationEditors.CreateControl(toolInstance);"
+        },
+        {
+          "line": 143,
+          "text": "/// 默认打开窗口逻辑 - 使用 DefaultDebugWindow 包装调试控件"
+        },
+        {
+          "line": 170,
+          "text": ": new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(control);"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Services\\Editing\\Nodes\\DeclaredToolConfigurationControl.cs",
+      "kind": "本方当前源码",
+      "sha256": "557fc8185dbd4f60e0c4e45a130afa06fbbf0c2ad61b5e480cc53f88d80159b3",
+      "anchors": [
+        {
+          "line": 24,
+          "text": "private DeclaredFieldsView? _fields;"
+        },
+        {
+          "line": 28,
+          "text": "public override void SetParameters(ToolParameters parameters)"
+        },
+        {
+          "line": 30,
+          "text": "base.SetParameters(parameters);_parameters=parameters;"
+        },
+        {
+          "line": 33,
+          "text": "_accessors=provider.GetConfigurationFields();"
+        },
+        {
+          "line": 36,
+          "text": "SetEditorContent(_fields);BuildRegionEditors(provider);BuildSourceEditors(provider);return;"
+        },
+        {
+          "line": 84,
+          "text": "{base.SetDataProvider(dataProvider);if(_parameters is not null)SetParameters(_parameters);}"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "kind": "本方当前源码",
+      "sha256": "1c1e583f1d1ff7056b0ea69c7a0bd87337df78ce7eb1c421aa860f10e5a58ffd",
+      "anchors": [
+        {
+          "line": 927,
+          "text": "// 订阅控制流节点打开事件（由 NodeOpenDecisionChain 统一路由）"
+        },
+        {
+          "line": 928,
+          "text": "NodeOpenDecisionChain.OnControlFlowNodeOpen += OnControlFlowNodeOpen;"
+        },
+        {
+          "line": 1624,
+          "text": "ReleaseProductionEditors();"
+        },
+        {
+          "line": 2756,
+          "text": "var decisionChain = new NodeOpenDecisionChain();"
+        },
+        {
+          "line": 2825,
+          "text": "await InitializeToolControlAsync(_openDebugWindow, node);"
+        },
+        {
+          "line": 2840,
+          "text": "/// 控制流节点打开事件处理 - 由 NodeOpenDecisionChain 通过事件触发"
+        },
+        {
+          "line": 3885,
+          "text": "private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, SunEyeVision.UI.Shared.WorkflowNode node)"
+        },
+        {
+          "line": 3890,
+          "text": "SunEyeVision.UI.Services.Editing.ProductionEditorContext? editorContext = null;"
+        },
+        {
+          "line": 3901,
+          "text": "editorContext = CreateProductionEditorContext(target, node, out var editorDataProvider);"
+        },
+        {
+          "line": 4007,
+          "text": "if (_productionEditors.Count == 0) ClearProductionEditorHost();"
+        },
+        {
+          "line": 4049,
+          "text": "IDataSourceQueryService dataProvider, ProductionEditorContext? editorContext = null)"
+        },
+        {
+          "line": 5781,
+          "text": "GetProductionEditorHost(session), () => ReferenceEquals(DocumentManager.Session, session), session.Editing);"
+        },
+        {
+          "line": 5793,
+          "text": "ClearProductionEditorHost();"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs",
+      "kind": "本方当前源码",
+      "sha256": "33a9e9c9c08fbf5739ea17aa209ce819c9236a28fdeb3b01a9bccffcf0bd4db0",
+      "anchors": [
+        {
+          "line": 17,
+          "text": "private readonly HashSet<ProductionEditorContext> _productionEditors = new();"
+        },
+        {
+          "line": 20,
+          "text": "private NodeConfigurationEditHost GetProductionEditorHost(SolutionSession session)"
+        },
+        {
+          "line": 22,
+          "text": "if (!ReferenceEquals(_productionEditorSession, session)) ReleaseProductionEditors();"
+        },
+        {
+          "line": 31,
+          "text": "private ProductionEditorContext? CreateProductionEditorContext(object target, SunEyeVision.UI.Shared.WorkflowNode node,"
+        },
+        {
+          "line": 46,
+          "text": "var host = GetProductionEditorHost(session);"
+        },
+        {
+          "line": 48,
+          "text": "var context = new ProductionEditorContext(host, flow.Id, node,"
+        },
+        {
+          "line": 76,
+          "text": "TrackProductionEditor(_productionEditors, context, target, ClearProductionEditorHost);"
+        },
+        {
+          "line": 80,
+          "text": "private void ClearProductionEditorHost()"
+        },
+        {
+          "line": 85,
+          "text": "private void ReleaseProductionEditors()"
+        },
+        {
+          "line": 87,
+          "text": "_productionEditorSession?.Editing.Close();"
+        },
+        {
+          "line": 88,
+          "text": "ReleaseProductionEditorContexts(_productionEditors);"
+        },
+        {
+          "line": 116,
+          "text": "internal static void ReleaseProductionEditorContexts(ISet<ProductionEditorContext> active)"
+        },
+        {
+          "line": 120,
+          "text": "// Unloaded can be temporary (reparenting/template changes), so only Closed/Discard releases."
+        },
+        {
+          "line": 121,
+          "text": "internal static void TrackProductionEditor(ISet<ProductionEditorContext> active, ProductionEditorContext context,"
+        },
+        {
+          "line": 128,
+          "text": "void Closed(object? sender, EventArgs e) => context.Discard();"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.SDK\\UI\\Windows\\DefaultDebugWindow.xaml.cs",
+      "kind": "本方当前源码",
+      "sha256": "f03e74395518fb4a3bb324deb6c3552b86d4a822c6cec385cf291cbe77bade34",
+      "anchors": [
+        {
+          "line": 115,
+          "text": "Closed += OnWindowClosed;"
+        },
+        {
+          "line": 164,
+          "text": "private void OnExecuteCommand(object sender, ExecutedRoutedEventArgs e)"
+        },
+        {
+          "line": 174,
+          "text": "// 显式将 Execute 命令路由到工具控件执行（按钮在 Window 底部栏，"
+        },
+        {
+          "line": 176,
+          "text": "ToolCommands.Execute.Execute(null, _control);"
+        },
+        {
+          "line": 182,
+          "text": "private void CanExecuteCommand(object sender, CanExecuteRoutedEventArgs e)"
+        },
+        {
+          "line": 184,
+          "text": "e.CanExecute = !_isExecuting;"
+        },
+        {
+          "line": 190,
+          "text": "private void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)"
+        },
+        {
+          "line": 192,
+          "text": "if (!TryConfirm(out var error))"
+        },
+        {
+          "line": 196,
+          "text": "public bool TryConfirm(out string error)"
+        },
+        {
+          "line": 206,
+          "text": "private void OnContinuousExecuteCommand(object sender, ExecutedRoutedEventArgs e)"
+        },
+        {
+          "line": 223,
+          "text": "TriggerExecute();"
+        },
+        {
+          "line": 253,
+          "text": "(e.Results as IDisposable)?.Dispose();"
+        },
+        {
+          "line": 268,
+          "text": "TriggerExecute();"
+        },
+        {
+          "line": 279,
+          "text": "private void TriggerExecute()"
+        },
+        {
+          "line": 287,
+          "text": "// 显式将 Execute 命令路由到工具控件执行"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.ImageFilter\\ImageFilterTool.cs",
+      "kind": "本方当前源码",
+      "sha256": "02677227120662e2d5ae2ecd7007e6cb79d274e1d66ceb25a2660a54be8f16b3",
+      "anchors": [
+        {
+          "line": 158,
+          "text": "filteredImage = HalconLinearFilters.Apply(filterInput, kernelWidth, kernelHeight,"
+        },
+        {
+          "line": 162,
+          "text": "filteredImage = HalconLinearFilters.Apply(filterInput, kernelWidth, kernelHeight,"
+        },
+        {
+          "line": 167,
+          "text": "HOperatorSet.MedianRect(filterInput, out var medianImg, kernelWidth, kernelHeight);"
+        },
+        {
+          "line": 175,
+          "text": "HOperatorSet.BilateralFilter(filterInput, filterInput,"
+        },
+        {
+          "line": 188,
+          "text": "filteredImage = HalconLinearFilters.ApplyKernel(filterInput, kernelWidth, kernelHeight,"
+        },
+        {
+          "line": 194,
+          "text": "filteredImage = HalconLinearFilters.Sharpen(filterInput, (int)parameters.BorderTypeValue);"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Morphology\\MorphologyTool.cs",
+      "kind": "本方当前源码",
+      "sha256": "d05abb83f07475fda981008cac8b55c34ccbffb41ed72e5c2162b623abb4a85e",
+      "anchors": [
+        {
+          "line": 147,
+          "text": "HOperatorSet.Threshold(reducedImage, out var binRegion,"
+        },
+        {
+          "line": 148,
+          "text": "128, \"max\");"
+        },
+        {
+          "line": 173,
+          "text": "// 输出图像：RegionToBin"
+        },
+        {
+          "line": 174,
+          "text": "HOperatorSet.RegionToBin(morphRegion, out var binObj,"
+        },
+        {
+          "line": 176,
+          "text": "result.OutputImage = new HalImage(new HImage(binObj.Clone()));"
+        },
+        {
+          "line": 177,
+          "text": "result.BinaryMask = new HalImage(new HImage(binObj));"
+        },
+        {
+          "line": 380,
+          "text": "\"output-not-empty\" => result.OutputImage is { IsEmpty: false } ? 1 : 0,"
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "kind": "VM安装XML：模式声明，不证明native公式",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+      "anchors": [
+        {
+          "line": 235,
+          "text": "<Description>Already binarized</Description>"
+        },
+        {
+          "line": 236,
+          "text": "<DisplayName>RunParam_No Binarization</DisplayName>"
+        },
+        {
+          "line": 240,
+          "text": "<EnumEntry Name=\"SingleThreshold\">"
+        },
+        {
+          "line": 246,
+          "text": "<EnumEntry Name=\"DoubleThreshold\">"
+        },
+        {
+          "line": 252,
+          "text": "<EnumEntry Name=\"AutoThreshold\">"
+        },
+        {
+          "line": 258,
+          "text": "<EnumEntry Name=\"FixedSoftThreshold\">"
+        },
+        {
+          "line": 264,
+          "text": "<EnumEntry Name=\"RelativeSoftThreshold\">"
+        }
+      ]
     }
   ],
   "conclusion": "已有大量窗口C#/XML/模板/ROI及样式导出，但当前本方仅采用部分职责与绑定参考，没有完成VM外观对应实现；功能自动通过不能宣告S4完成，不能将缺口归给S5/S6。",
   "unconfirmed": [
-    "Apps.Style/ColorFun等导出与当前安装原件的逐项身份及资源依赖闭包未全部核验。",
-    "本轮未运行VM；同版本、尺寸、主题和控件状态的实机视觉核对未完成。",
-    "未用恢复源码构建运行完整VM Blob窗口，不能声称已有可重建完整项目。",
-    "原注释、原始工程目录及构建信息不能据反编译存在宣称恢复。"
+    "VM实际窗口是通用回退还是已加载Control扩展、运行时字段DisplayType与活动DataTemplate key。",
+    "实机岗无受支持Windows原生桌面通道，未独立执行；用户已补交三页画面，但运行身份/实际加载主题仍无记录。",
+    "逐活动资源key的完整闭包仍partial；语言加载函数体尚未完整恢复。",
+    "HALCON新分割/二值输入模式与处理职责调整是待审设计；VM native公式及逐值等价未证。",
+    "HTML自动渲染受file://策略阻止，视觉与真实WPF均未核收。"
   ],
   "productChanged": false,
   "automaticChecks": "既有功能证据保留，仅覆盖其记录范围，不是视觉达标或用户验收。",
-  "externalRequest": "初次消息被自动审批拒绝；用户随后明确授权“授权既有逆向对话补证”，再次请求已成功送达既有取证统筹。已通过状态快照确认其正在读取现有导出；尚未核收本次补证交付。"
+  "externalRequest": "初次消息被自动审批拒绝；用户随后明确授权“授权既有逆向对话补证”，再次请求已成功送达既有取证统筹。已通过状态快照确认其正在读取现有导出；尚未核收本次补证交付。",
+  "groupLinks": {
+    "xml": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+    "groupXml": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+    "edges": [
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "ImageSourceGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "OutputMaskImageGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "InputMaskImageGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "RoiSelectGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "InheritWayGroup2"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "ExternROITypeGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "AssistGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "TextDisplayGroup"
+      },
+      {
+        "from": "BlobAlgorithmTab",
+        "group": "BottomCommandGroup"
+      }
+    ],
+    "missing": [],
+    "scope": "仅安装XML的GroupLink递归；不是所有动态模板/运行依赖闭包。"
+  },
+  "assemblyChain": [
+    [
+      "节点打开",
+      "ProcedureConfigControl.OpenParamsTabControl → GetExternTabWin；优先查已加载或模块目录Control扩展，否则ParamsTabControlBase。",
+      "静态分支已确认；当前VM实例实际分支未确认。"
+    ],
+    [
+      "窗口与参数",
+      "ParamsTabControlBase → ParamsConfigControlBase；ParamsConfig赋值 → ModuleParam.GetParamRoot或AlgorithmTabRoot → DoIniter/GetItemsValueUnit → DataContext。",
+      "源码与BAML恢复确认；不是一份Blob整页UserControl。"
+    ],
+    [
+      "页面与分组",
+      "Blob AlgorithmTab XML + Group.xml → TabsA/Collection → ParamsTabUserControl → ParamListView → ParamItemTemplate/ParamGroupItemStyle。",
+      "三页、Group链接、分组与启用/可见状态的实际消费点已确认。"
+    ],
+    [
+      "模板选择",
+      "NameValueItem.DisplayType默认类型名；ParamUserControl将ContentTemplate绑定DisplayType → UserTempConverter → ParamUserControlDataTemplate按键取模板，缺键用Default；外部模型可合入程序集自己的字典。",
+      "不能把PointF专用MyDataTemplateSelector误写成Blob主选择链；覆写DisplayType和动态扩展仍须按具体类型核对。"
+    ],
+    [
+      "局部控件与资源",
+      "模板 → LeftRightControl、BooleanControl、Numeric/范围、来源选择、RoiSelectControl和显示对象组合 → Apps.Style及图标/转换器。",
+      "外观需要同排结构、控件模板、组样式一起落实，不能只换颜色。"
+    ],
+    [
+      "主题与语言",
+      "ColorThemesResourceDictionary按SDKMode选择根目录 → ColorCFG/ColorStyleSet.cfg → ColorStyle/*.xaml，再叠加Apps.ColorFun内置ColorStyle；文本经Localization字典/ResourceBinding。",
+      "安装配置当前ColorStyle1，三个主题字典存在；运行主题、动态改换及语言资源完整闭包仍待核。"
+    ],
+    [
+      "动作与图像",
+      "BottomExcuteButtonsA/LeftA → ParamUserControl模板/命令；ROIPartUI → AlgorithmTabRoot/ROISelecter →宿主图像交互。",
+      "静态入口已确认；不据此宣称VM实际关闭/连续执行时序已验证。"
+    ]
+  ],
+  "decisions": [
+    [
+      "重做",
+      "BlobConfigurationFields.Group + DeclaredFieldsView页面组装",
+      "VM Tabs/Category/Group与ParamsTabUserControl；当前把Group当Tab，缺少页/组/行/折叠层级。",
+      "重做页/组/行/条件/折叠；页内参数来自重审后的Blob职责，不把旧预处理/形态学继续塞进高级分组。"
+    ],
+    [
+      "重组字段模板；提取基础部件",
+      "DeclaredFieldEditor",
+      "LeftRightControl + Boolean/Integer/FloatBettween/ColorConfig模板。当前上下堆叠和递归属性展开不适合作正常Blob页。",
+      "保留新草稿、常量/引用/未设置及校验；现行普通TextBox/CheckBox呈现重组。旧NumericUpDown/RangeInputControl按对应VM基础控件核后提取，旧ConfigSetting/ParamBinding不整类搬用或带回字符串来源。"
+    ],
+    [
+      "重做视图组合，复用几何与作用域",
+      "RegionGeometryEditor",
+      "RoiSelectControl、ROISelecter模板、BoxROIStack数值行；当前文字动作与常驻列表外观不同。",
+      "重做图标形状、绘制/继承、折叠数值/多ROI管理呈现；复用RoiGeometryEditing和RoiViewportEditScope，不把Canvas/全局结果权限交回工具。"
+    ],
+    [
+      "按对应源适配选择视图",
+      "SourceSelectionField/ReferenceSelectionControl的Blob呈现",
+      "EnumerationG/ButtonSelecter_sub/SubTreeView组合；现有应用/清除/撤销按钮与整窗选择不能仅凭职责相似宣称对标完成。",
+      "输入图像按EnumerationG整行下拉，优先核收本地还原SourceComboBoxes资源；参数订阅按SliderArrange+ButtonSelecter_sub组合。宿主提供类型过滤/稳定引用，通用控件只呈现选择；不新增平行执行或资源解析。"
+    ],
+    [
+      "重做配置组合",
+      "图形样式/文本样式Tab",
+      "ImageViewConfig显示对象列表 + TextDisplayGroup；两者是参数窗口结果显示页中的配置。",
+      "在结果显示页组织对象可见/编辑及文本样式，颜色用本方主题令牌承接；不提前做S5通用结果平台。"
+    ],
+    [
+      "复用职责，重做窗口皮肤/布局",
+      "DeclaredToolConfigurationControl + DefaultDebugWindow",
+      "通用窗口与ParamsConfigControlBase的宿主组合，底部按钮由声明/命令组组织。",
+      "保留S2唯一草稿、执行、确定取消、保存退出接线；统一紧凑窗口与底部操作区，不保留双套页面或调度。"
+    ],
+    [
+      "复用，按新视图回归",
+      "Runtime/HALCON、输出合同、绑定计划、DocumentSession、ROI作用域、当前专用结果表",
+      "本轮差异是编辑呈现；这些运行/事务能力有本方实际证据，不能因UI失败一并推倒，也不能用它们证明UI通过。",
+      "原算法与资源生命周期不重写；UI换模板后复测绑定/ROI/表图/保存关闭。当前结果表通用化仍属于未授权S5。"
+    ],
+    [
+      "不恢复",
+      "旧BlobAnalysisToolDebugControl及专用转换器",
+      "VM通用声明→模板→宿主链，不支持把工具整页重新写回旧目录。",
+      "删除事实在原工程图标明；新页面由有限声明与共享模板组装，专业视图仍可选且不持有调度。"
+    ],
+    [
+      "重审算法职责，待批准后重做",
+      "BlobSession中的预处理/形态学与分割策略；关联ImageFilter/Morphology",
+      "实际源码证明当前职责混在Blob，VM已有不二值化模式可承接外部分割结果。",
+      "推荐移出通用处理；单/双阈值与严格二值输入模式独立定义。现行MorphologyTool固定128阈值须同时调整，不原样搬用。"
+    ]
+  ],
+  "engineeringBefore": "当前（实际存在）\nBlobConfigurationFields：字段→Group字符串\nPlugin.Wpf/Fields/DeclaredFieldsView：Group→Tab→StackPanel\n  DeclaredFieldEditor：标签在上、通用输入在下\nPlugin.Wpf/Regions/RegionGeometryEditor：文字按钮＋集合列表\nUI/DeclaredToolConfigurationControl*：另行插入来源和ROI\nSDK/DefaultDebugWindow：通用壳与执行/确认接线\n缺口：页/组/行/条件/折叠/模板资源没有形成完整展示声明。",
+  "engineeringAfter": "S4修正推荐（待整体审核，尚未实施）\nPlugin.Contracts/FieldPresentation.cs及同目录展示声明\n  稳定字段引用＋页/组/行/条件/折叠；不含WPF、HALCON或任意脚本\ntools/SunEyeVision.BlobAnalysis/BlobConfigurationFields.cs及展示声明文件\n  三页布局、有限可见规则、ROI角色、显示对象/文本组合；引用同一字段合同\nPlugin.Wpf/\n  Fields/：页组渲染、行编辑行为；Regions/：局部ROI视图与数值行为\n  Themes/：行/开关/数值范围/来源/ROI/显示对象模板，主题资源及图标\nUI/Services/Editing/Nodes/DeclaredToolConfigurationControl*\n  只提供草稿、候选、命令和受限视口，消费同一展示声明\nUI/Services/Editing/Regions/RoiViewportEditScope：复用独占交互边界\nPlugin.SDK/UI/Windows/DefaultDebugWindow：统一窗口和底部命令接线\nBlob Runtime：不变；Blob Wpf：当前只读结果视图可选，不重建旧参数整页。",
+  "acceptance": [
+    [
+      "外观门",
+      "先记录VM和本方相同主题/缩放/窗口尺寸/状态，逐页并排检查三页、分组、字段顺序、同排对齐、间距、图标、按钮及滚动；任何差异都说明依据。",
+      "必须保留截图与对照记录，功能PASS不能替代。"
+    ],
+    [
+      "状态门",
+      "检查启用/禁用、绑定/常量、不同来源、ROI绘制/继承、折叠/展开、错误输入、无结果和执行失败。",
+      "模板/显隐须符合声明；对VM未证行为标未知，不猜测补齐。"
+    ],
+    [
+      "工程门",
+      "模板类型和资源key、ThemeInfo/Generic.xaml与pack URI、构建/正式部署、设计时与运行时、缺可选Wpf的配置入口。",
+      "源码目录图与真实文件一致，旧删除页不再列为现存；不出现宿主程序集反向依赖。"
+    ],
+    [
+      "功能门",
+      "新呈现接同一草稿/字段和ROI作用域，再跑绑定、执行、下游、确定取消、保存重开及释放。",
+      "保留既有有效检查，但更换视图后验证受影响链，不能沿用旧截图宣布新UI通过。"
+    ],
+    [
+      "用户门",
+      "UI对标与功能门通过后，交同一正式Release和简明变化清单集中试用。",
+      "只有用户实际反馈可记人工通过；目前外观明确不符合要求。"
+    ]
+  ],
+  "boundary": "静态通用窗口组装路线已逐段查明；具体Blob类型DisplayType覆写、动态扩展/字典、运行窗口与资源闭包仍需补证。推荐是本方独立架构设计，不声称直接复刻VM原工程，也不声称当前新UI已实施。",
+  "vmSegmentationModes": {
+    "names": [
+      "BinaryImage",
+      "SingleThreshold",
+      "DoubleThreshold",
+      "AutoThreshold",
+      "FixedSoftThreshold",
+      "RelativeSoftThreshold"
+    ],
+    "alreadyBinarizedDescription": "Already binarized / RunParam_No Binarization",
+    "boundary": "声明支持不二值化；实际native前景/极性与运行行为未证，不能据此宣称本方模式逐值等价。"
+  },
+  "chainComparison": [
+    [
+      "节点与窗口选择",
+      "ProcedureConfigControl.OpenParamsTabControl → GetExternTabWin，扩展优先，否则ParamsTabControlBase。",
+      "MainWindowViewModel → NodeOpenDecisionChain → ToolConfigurationEditors；Blob专业factory不提供参数页，走声明页。",
+      "复用窗口决策职责；核VM实际窗口分支，不能把通用路线说成已观测。"
+    ],
+    [
+      "参数与草稿",
+      "ParamsConfigControlBase.ParamsConfig → ModuleParam.GetParamRoot/AlgorithmTabRoot → 初始化/DataContext。",
+      "ProductionEditorContext + IConfigurationFieldProvider → DeclaredToolConfigurationControl.SetParameters。",
+      "复用本方私有草稿/发布事务；不猜VM使用同样事务。"
+    ],
+    [
+      "页、组、字段",
+      "XML Tabs/Category/Group → TabsA/Collection → ParamsTabUserControl/ParamListView。",
+      "BlobConfigurationFields.Group → DeclaredFieldsView按组直接生成Tab和StackPanel。",
+      "重做展示声明层级：页/组/行/有限条件/折叠，不能把业务字段组直接当页。"
+    ],
+    [
+      "模板与绑定",
+      "DisplayType → ParamUserControl → UserTempConverter → 字典key/Default；外部内容程序集可合字典。",
+      "DeclaredFieldEditor按标量/记录类型直接创建CheckBox/TextBox等，引用选择回调归宿主。",
+      "重做同排模板与复合行；复用有效值/非法原文和引用行为，不复制任意反射/操作脚本。"
+    ],
+    [
+      "资源、主题与语言",
+      "Apps.XmlUI/Apps.Style/PcUI → ColorFun/Localization → 外置配置和XAML；活动key仍partial。",
+      "UI AppResources及现有SDK资源；Plugin.Wpf以代码创建元素，未形成该套共享模板主题闭包。",
+      "补Plugin.Wpf主题资源、图标与pack URI部署；所有同状态外观截图重新核收。"
+    ],
+    [
+      "ROI和图像",
+      "ROIPartUI → ROISelecter/模板 → 宿主交互；具体运行实例未观测。",
+      "RegionGeometryEditor → IRoiEditViewport → RoiViewportEditScope，草稿更新与资源受限。",
+      "重做ROI视图组合；保留宿主独占scope、换帧/pose校验及关闭只释放自己。"
+    ],
+    [
+      "执行、确定与退出",
+      "BottomCommandGroup → 命令/托管执行边界，Closed/DoFinish；native释放时机未知。",
+      "DefaultDebugWindow + ToolDebugControlBase + S2编辑作用域，确定/取消/保存重开及释放已有功能检查。",
+      "复用职责与单链；换视图/算法流程后回归，不能用旧PASS证明新UI完成。"
+    ]
+  ],
+  "algorithmDifferences": [
+    [
+      "图像预处理归属",
+      "当前BlobSession先做滤波/均衡；ImageFilterTool已存在；VM Blob XML无同类独立配置组。",
+      "推荐从Blob移出，由上游图像处理工具承担；先核均衡等具体能力是否完整承接。",
+      "基本参数仍选输入图像；Blob运行页删除通用预处理组。",
+      "推荐调整，未实施；VM native内部是否有隐式处理未知。"
+    ],
+    [
+      "形态学与工具链",
+      "当前Blob阈值后对Region操作；现有MorphologyTool自己固定阈值128并输出0/255。VM ThresholdType明确不二值化模式。",
+      "推荐上游分割→专用二值形态学→Blob不二值化；形态学工具改为消费明确二值输入，不再隐藏固定128分割。",
+      "Blob删除通用形态学组；阈值方式增加有证据来源的不二值化入口；不把ROI端口当对象输入。",
+      "关联工具与Blob输入模式均需调整和回归，不能说现有工具已可直接接替。"
+    ],
+    [
+      "单/双阈值与极性",
+      "VM声明Single/Double/AlreadyBinarized及极性；本方当前Binary/BinaryInv只是区间内/外。",
+      "推荐HALCON分割策略重构：单阈值明确边界/极性；双阈值明确区间内外；不二值化校验0/255并构建前景Region。",
+      "显示随模式变化：单阈值隐藏上限；双阈值显示两端；不二值化隐藏阈值，说明输入约束。",
+      "模式及前景定义是本方待审合同，不宣称VM native公式一致。"
+    ],
+    [
+      "自动/软阈值、填孔和连通性",
+      "VM声明有相关模式；本轮FD05明确未新增软阈值/填孔/4邻域，本方当前8连通。",
+      "不放未实现的参数；若业务需要，另按证据补算法/合同/样本，纳入原方案待审范围。",
+      "当前预览不显示为可用能力，8连通固定说明；不为外观一致造假选项。",
+      "未纳入当前实施；声明存在不等于算法已迁移。"
+    ],
+    [
+      "筛选、排序、限数与判定",
+      "本方SelectFeatures→特征记录→稳定Sort→Take，NG记录保留，最终集合产出表/数组/Region。",
+      "推荐复用同一集合与判定边界；不照搬VM查找个数名称而改变本方排序后截断语义。",
+      "运行页分组顺序体现实际流水线，数量上限说明生效阶段。",
+      "更改输入/分割后须再验证空/触边/孔洞/斜接目标与NG。"
+    ],
+    [
+      "灰度、分割图与最终区域",
+      "FD07灰度是本节点分割前输入灰度；二值图在特征筛选前；最终Region在筛选排序限数后。",
+      "保留显式输出口径和帧/Domain；新不二值化输出来自已验证二值输入，不伪造原始相机图。",
+      "输出名称分清；显示对象只绑定真实声明资源，不把VM BlobImage映射为灰度图。",
+      "迁出形态学时校验二值生产者/输出来源，不能静默改字段含义。"
+    ],
+    [
+      "统计、公式与测量列",
+      "FD06白像素比例是筛选前分割白像素/全图；HALCON特征与VM同名不证明公式一致。",
+      "明确统计阶段/分母/单位，复用当前真实测量合同；新口径另定义字段，不用零或假列补齐。",
+      "结果列按实际声明；面积/周长/质心等注明本方定义，角度/长短轴缺合同不展示成现成输出。",
+      "native公式未证，保留容差与样本对照待项；禁止逐值等价承诺。"
+    ],
+    [
+      "完整边界与资源",
+      "BlobSchema区分有损单contour与完整boundary/Region；独立reader及下游显式资源需求已有证据。",
+      "复用中立合同及生命周期，不能为了迁移流程重新暴露HALCON类型或丢孔洞。",
+      "完整边界输出与显示分离；下游需求不受显示开关误伤。",
+      "资源/流程变更需受影响回归，旧功能PASS不覆盖新实现。"
+    ]
+  ],
+  "algorithmRecommendation": {
+    "current": "灰度→可选预处理→区间分割→可选Region形态学→8连通→筛选→特征/判定→稳定排序/限数→同集合输出",
+    "recommendedDefault": "上游图像处理（可选）→Blob：输入/ROI有效域→HALCON显式分割策略→连通→筛选/测量→排序/限数→判定/输出",
+    "recommendedMorphology": "上游分割→专用二值形态学→Blob不二值化：校验二值输入→有效域前景→连通及同一后续分析链",
+    "scope": "算法职责与分割模式属于对既有S3/S4方案的再审核；不是已实施功能。本轮仅文档与HTML，产品源码不改。",
+    "binaryContract": "推荐仅接受Gray8的0/255二值输入并以非零为前景，拒绝任意灰度静默代分割；帧、Domain及ROI约束沿用同一中立合同。这是本方待审定义，不是已证实的VM native行为。"
+  },
+  "threeRoleReceipt": {
+    "files": [
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-ui-dependency-closure-20261026.json",
+        "path": "docs/collaboration/evidence/VM_BLOB_UI_STATIC_SUPPLEMENT_20261026.json",
+        "sha256": "583eda7affe076b7c5f0889848f7aab9f804f1ee70bbb8d5b5a71b2c16656585"
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-ui-three-role-reconciliation-20261026.json",
+        "path": "docs/collaboration/evidence/VM_BLOB_UI_ROLE_RECONCILIATION_20261026.json",
+        "sha256": "e4b7e726c08c04dff6e8f11163eeb122192997f6deac9b16e625b145deb23295"
+      }
+    ],
+    "acceptance": "静态链文件与安装身份已核；实机未执行；三岗是否完成不得合成一个百分比。",
+    "source": "源码岗当前明确能确认自己产出的为截图映射，本次无新增源码；source-findings有role元数据但作者归属未确认，静态文件本身已由主对话逐段读取。",
+    "runtime": "实机岗已收到任务，确认无受支持Windows桌面通道，未启动原版；无窗口CLR/已加载身份/运行DisplayType与key/实际主题/三页截图。 用户随后在主对话提交8张三页截图，已归档用于可见状态对照；不是实机岗新增执行成果，也不补足运行身份。",
+    "coordinator": "统筹已集中核对并更正：role元数据不能证明当前源码岗本人作者；静态文件可引用、实机未执行，活动资源key闭包仍partial。不采用83%作为完成或核收结论。"
+  },
+  "protocolFinding": "AGENTS已指向现行取证约定且旧协议停用，但JOINT_TASK_ROLES.json仍写所有跨对话禁用和产品停止，未反映逆向只读例外；本轮纠正入口与核收要求，不恢复旧多岗。",
+  "preview": {
+    "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06-ui-preview.html",
+    "status": "SOURCE_CHECK_ONLY_RENDER_UNVERIFIED",
+    "scope": "HTML/SVG呈现推荐与浏览器内矩形示意，不运行HALCON，不修改Release，不证明WPF外观/交互。",
+    "browserBlock": "CUA不允许file://协议，自动视觉检查被拒绝；未使用本地服务器/其他浏览器/原始CDP绕过。",
+    "sha256": "c352d57ba4f0ba23fde90ddfbc387ac437a653a67916ec5044c72bd09a25b81a",
+    "checks": {
+      "javascriptSyntax": "node --check通过",
+      "sourceGeneration": "三页/四种继承分支/编辑按钮能力的字符串生成检查通过；非浏览器执行",
+      "actualRendering": "未核收；CUA file://协议拒绝，未绕过",
+      "realAlgorithm": "未运行"
+    },
+    "verification": "JS语法与静态模板生成/锚点/本地资产路径检查；非浏览器渲染。file协议被策略拒绝，未绕过；视觉与真实交互未核收。",
+    "sourceCheck": {
+      "path": "docs/collaboration/evidence/S4_UI_PREVIEW_SOURCE_CHECK_20261026.json",
+      "sha256": "9dfd09d7835fe919a247345f742c1ec92bf4ebf60e546cbc3438f31ae7db479d"
+    }
+  },
+  "userScreenshotEvidence": {
+    "manifest": "docs/collaboration/evidence/VM_BLOB_USER_SCREENSHOT_MANIFEST_20261026.json",
+    "sha256": "ba3f5ebf101f85cdc62f06ad7c5123d3a01f6e62a94e06d82d56eb7f3b92f783",
+    "count": 8,
+    "uniqueImages": 7,
+    "scope": "三页及若干展开状态，包括矩形区域/参数继承；截图5左侧部分被菜单遮挡；部分页面滚动截断，不推定未显示内容不存在。",
+    "limits": "证明用户提交的可见界面状态，不单独证明动作时序、loaded程序集身份、Window CLR类型、运行DisplayType或算法公式。"
+  },
+  "userScreenshotFindings": [
+    [
+      "ROI继承不是一个通用来源框",
+      "截图1/3：按矩形区域、矩形参数、圆形区域、圆形参数四种方式；按参数时展开具体可绑定字段。",
+      "重做继承组合；区分几何对象、几何参数构造和像素区域，不能都映射成同一个Region端口。当前成员级几何参数绑定尚未实现。"
+    ],
+    [
+      "输出掩膜独立于分割二值图",
+      "截图1可见输出掩膜；截图4单独有二值化图输出。",
+      "本方当前无同名明确掩膜输出合同，不能用BinaryImage冒充；作为待审能力缺项，预览禁用并注明。"
+    ],
+    [
+      "高级特征及判定的条件展示",
+      "截图5为运行特征高级展开；截图6为高级质心/角度等判定展开。",
+      "只展示本方真实能力；VM已见但本方缺项列入差异，不以空值/零值补齐。"
+    ],
+    [
+      "显示对象列表与文本组",
+      "截图7/8明确眼睛/编辑并存，轮廓点和文本只有可见入口；文本样式在下方。",
+      "按对象能力声明编辑入口，不能每个对象统一造编辑按钮。最大内接矩形/扇环等本方输出不足时不得假装可用。"
+    ]
+  ],
+  "controlStyleComparison": [
+    [
+      "窗口标题与尺寸",
+      "ParamsTabUserControl.xaml.cs:22 · ChildMargin；Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs:37 · CustomTabWidth",
+      "静态默认窗口420×500；中文页边距32，标题/关闭/帮助见用户图。",
+      "按源默认尺寸提供查看按钮，默认预览留足滚动高度。",
+      "默认值不等于实机最终尺寸；用户630×750截图不能单独证明DPI。"
+    ],
+    [
+      "三页标签",
+      "ParamsTabUserControl.xaml:38 · TabControlFx / TabsA",
+      "基本参数/运行参数/结果显示；橙色选中线及浅色选中底见用户图。",
+      "保留三页，重做页声明与选中样式。",
+      "悬停、键盘焦点和运行活动主题未实机核收。"
+    ],
+    [
+      "组标题与标签行",
+      "LeftRightControl.xaml:12 · ChildLeftWidth；LeftRightControl.xaml.cs:14 · 89",
+      "LeftRightControl左右布局，标签列默认89；字段行常用32高度。",
+      "标签与值同行、统一列宽；中文边距32，字段字号14。",
+      "长度超出时不得遮挡，最终需WPF同尺寸核收。"
+    ],
+    [
+      "整数数值框",
+      "paramusercontroldatatemplate.xaml:550 · x:Key=\"Integer_Sub\"；NumericControl.xaml:23 · UpdateSourceTrigger=",
+      "Integer_Sub→VM.PcUI/HikPcUI.ListView.SliderArrange→NumericControl；32高、20宽上下微调；文本LostFocus更新。 非订阅显示数值/微调与单值滑条；订阅改显示关系框。模式按钮与关系选择按钮分开。",
+      "重做数值模板/订阅组合；HTML改自绘上下按钮，去掉系统默认步进。",
+      "HTML即时联动仅演示，不证明失焦提交/长按重复/滚轮等价。"
+    ],
+    [
+      "小数与范围框",
+      "paramusercontroldatatemplate.xaml:576 · x:Key=\"IntegerBettween_Sub\"；paramusercontroldatatemplate.xaml:822 · PCListView:SliderArrangeFloat SliderType=\"between\"",
+      "范围左右独立值、边界与订阅；小数另有精度声明。 双端滑条与左右独立订阅；任端订阅不得借隐藏本地值参与执行。",
+      "每端保留独立输入与绑定能力；判定范围不挤压为一个字符串。",
+      "HTML范围示意未完整模拟订阅和小数校验。"
+    ],
+    [
+      "输入源与枚举下拉",
+      "Group.xml:9 → ParamUserControlDataTemplate.xaml:846 EnumerationG；本地VisionUi/SourceComboBoxes.xaml ListViewComboBoxStyle",
+      "输入源是整行ComboBox，不带独立链形按钮。原Group提供IMAGE候选/当前InputImage引用并处理选择；本地已有WPF模板和图标。",
+      "优先核收已有还原资源再适配，HTML改整行下拉和本地三角图标；来源候选由宿主提供，不重新猜一个控件。",
+      "本地还原工程本轮未运行；HTML是示例候选，不证明真实订阅、执行与原版状态等价。"
+    ],
+    [
+      "来源与订阅按钮",
+      "paramusercontroldatatemplate.xaml:255 · x:Key=\"ButtonSelecter_sub\"",
+      "PopupButton/DeleteTextBox/SubTreeView组合；右列32，LinkPopButton。 外侧EditLinkButton切换模式，内侧LinkPopButton选关系，不是一个按钮兼任。",
+      "链形SVG替换文字箭头；输入来源与数值订阅职责区分。",
+      "HTML来源对话框仅演示；不声称等价VM树弹层/解绑行为。"
+    ],
+    [
+      "开关",
+      "paramusercontroldatatemplate.xaml:63 · x:Key=\"Boolean_sub\"",
+      "BooleanControl与swith_off/on资源；橙色表示开启，灰色关闭。",
+      "保留滑块视觉，补禁用与焦点可见状态。",
+      "CSS近似不冒充原位图；禁用画面需实机复核。"
+    ],
+    [
+      "单选项",
+      "paramusercontroldatatemplate.xaml:1373 · x:Key=\"RadioSelecter3\"；radiobuttonstyle.xaml:6 · NormalRadioButton",
+      "NormalRadioButton，源中图标24×24；图中橙色圆环选中。",
+      "重做圆环与圆点状态，四种继承按声明切换。",
+      "交互因果只据静态绑定，不由截图推定。"
+    ],
+    [
+      "ROI形状与参数",
+      "RoiSelectControl.xaml:15 · UserControl；BoxROIStack.xaml:2 · ROIStackControl",
+      "共享ROI选择/几何参数组合，继承按对象或成员分别呈现。",
+      "图标、选中态及参数展开一起重做；复用宿主交互作用域。",
+      "HTML只有矩形演示，不算其他形状运行通过。"
+    ],
+    [
+      "高级折叠与滚动",
+      "recscrollbarstyle.xaml:6 · VerticalScrollBarThumb",
+      "用户图有高级展开/收起；滚动条资源含圆角Thumb。",
+      "高级项按能力折叠，页面独立滚动，底栏固定。",
+      "展开/收起采用HTML details；VM每个活动触发key仍待实机确认。"
+    ],
+    [
+      "图形可见与编辑",
+      "paramusercontroldatatemplate.xaml:2544 · x:Key=\"ImageViewConfig\"",
+      "可见与编辑为独立操作，编辑由PanVisibleA控制；轮廓点/文本截图只有眼睛。",
+      "按对象声明提供眼睛/编辑，不能统一补笔图标。",
+      "不支持的最大内接矩形等不得伪造输出。"
+    ],
+    [
+      "颜色及文本",
+      "paramusercontroldatatemplate.xaml:2608 · x:Key=\"ColorConfig\"",
+      "颜色块+RGB文字；文本内容/字号/透明度/X/Y逐行配置。",
+      "重做同行组合，保留文本位置绑定；颜色选择目前为浏览器示意。",
+      "颜色弹窗/校验没有VM实机证据；不声称等价。"
+    ],
+    [
+      "底部执行按钮",
+      "bottombuttonstyle.xaml:79 · BottomButtonStyle",
+      "底栏固定；连续执行、执行、确定，主题资源有普通/悬停/按下/禁用触发。 左侧恢复默认图标由用户截图支持，行为未核。",
+      "底栏独立于滚动区，补状态样式；复用产品唯一执行/草稿提交。",
+      "HTML执行合成方块，不调用HALCON，不代替关闭释放验证。"
+    ],
+    [
+      "明暗主题与异常状态",
+      "commomdictionary.xaml:2 · ResourceDictionary",
+      "模板跨Apps.Style、VM.PcUI、ColorFun等资源；磁盘资源不证明活动主题。",
+      "集中资源映射；焦点/非法值提供明确提示，避免静默截断。",
+      "HTML深色与错误样式是本方设计建议，不能算VM已取证样式。"
+    ]
+  ],
+  "controlStyleSources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamsTabUserControl.xaml.cs",
+      "line": 22,
+      "key": "ChildMargin",
+      "sha256": "895eb5c20f494cba01e919b0c40722296a8cc3ad975ddbda6040059eebc2f2bd"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs",
+      "line": 37,
+      "key": "CustomTabWidth",
+      "sha256": "31c8aafdbccd0e034316a54e2959f451e135298fad9f618e8234bc6cbc1bc72e"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI\\ParamsTabUserControl.xaml",
+      "line": 38,
+      "key": "TabControlFx / TabsA",
+      "sha256": "521817a08e66898ba9acbcce6753716713149c878270c524e1e3ce9550f3c8c7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml",
+      "line": 12,
+      "key": "ChildLeftWidth",
+      "sha256": "e8c7c8ccb10faf3691e7ef786920c3a2cee49522aafe2053e1b6bce11c4190b3"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml.cs",
+      "line": 14,
+      "key": "89",
+      "sha256": "80d64fbd024bf2b135c220525c9cbf97327353c5104a040ed3ef8464d941bb86"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 550,
+      "key": "x:Key=\"Integer_Sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
+      "line": 23,
+      "key": "UpdateSourceTrigger=",
+      "sha256": "6d0a82850fdd0e98f4182fda7c6aacd08f135bd20fc37068729bf3075af72f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 576,
+      "key": "x:Key=\"IntegerBettween_Sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 822,
+      "key": "PCListView:SliderArrangeFloat SliderType=\"between\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 370,
+      "key": "x:Key=\"Enumeration_Sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\comboboxstyle\\listviewcomboboxstyle.xaml",
+      "line": 18,
+      "key": "combo_ic_triangle_normal",
+      "sha256": "e29b9d9fdb7fcf4f91ea3c7140a04a762b68ad3341d0dcaf84a5cb6769289a97"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 255,
+      "key": "x:Key=\"ButtonSelecter_sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 63,
+      "key": "x:Key=\"Boolean_sub\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 1373,
+      "key": "x:Key=\"RadioSelecter3\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\radiobuttonstyle\\radiobuttonstyle.xaml",
+      "line": 6,
+      "key": "NormalRadioButton",
+      "sha256": "7f886b12556a96cdd53d991c68dbba7078c5a8a566fd41e7bac91aef2226d5ca"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
+      "line": 15,
+      "key": "UserControl",
+      "sha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+      "line": 2,
+      "key": "ROIStackControl",
+      "sha256": "2c55fe06bb710704155c77f0f0ae1eb0f7eb8a01a9cdb3c667ee54d9da93d893"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\scrollbarstyle\\recscrollbarstyle.xaml",
+      "line": 6,
+      "key": "VerticalScrollBarThumb",
+      "sha256": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 2544,
+      "key": "x:Key=\"ImageViewConfig\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 2608,
+      "key": "x:Key=\"ColorConfig\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+      "line": 79,
+      "key": "BottomButtonStyle",
+      "sha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\controls\\commomdictionary.xaml",
+      "line": 2,
+      "key": "ResourceDictionary",
+      "sha256": "0db0ae196d61b8dd3a717478ba571344958d9200abac364074ffbf42ff31da4f"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "line": 9,
+      "key": "EnumerationG Name=\"ImageSource\"",
+      "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "line": 846,
+      "key": "x:Key=\"EnumerationG\"",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceComboBoxes.xaml",
+      "line": 124,
+      "key": "x:Key=\"ListViewComboBoxStyle\"",
+      "sha256": "f1b3d8ca08b433d1c41ba715e04d53021e97198e221d61e456958b8186249984"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlResources.cs",
+      "line": 3,
+      "key": "SourceControlStyles.xaml",
+      "sha256": "3ae9e64355c345ed685c60c0d8546f9607fa68e1331393457ab4e53405610e8e"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
+      "line": 1,
+      "key": "SourceComboBoxes.xaml",
+      "sha256": "05a35c93f09f66d11584261b5558d8ad47fc0467b0fa4fb040f42510f883f16f"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\NativeCompoundSourceSelector.cs",
+      "line": 17,
+      "key": "public sealed class NativeCompoundSourceSelector",
+      "sha256": "cc13f638924acf566d855a74e7aead1b0ec054c1160d19b502fbc5ff58628838"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+      "line": 201,
+      "key": "<ContentControl ContentTemplate=\"{Binding ElementName=UC_Arrange, Path=SubscribeTemplate}\"",
+      "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+      "line": 213,
+      "key": "<ToggleButton Grid.Column=\"1\" Style=\"{StaticResource EditLinkButton}\"",
+      "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
+      "line": 1220,
+      "key": "protected void TypeChangeLeft_Click",
+      "sha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+      "line": 2106,
+      "key": "x:Key=\"EditLinkButton\"",
+      "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+    }
+  ],
+  "controlStyleScope": "全部可见控件按15类逐项对照；静态源/用户截图支持的状态与未观察状态分开；不是31类总控件复审的替代。",
+  "inputSourceCorrection": {
+    "finding": "已有本地WPF还原工程，前版HTML误将图像输入源用文本框+订阅按钮表示，现纠正为整行ComboBox。",
+    "vmChain": "Blob XML ImageSourceGroup → Group.xml EnumerationG(ImageSource) → GetFrontParamItemsOperation(IMAGE)/GetSelectedCombinationOperation(InputImage) → EnumerationG DataTemplate → ListViewComboBoxStyle；选择触发SetCombinationSourceOperation(InputImage)。",
+    "localRestoration": "VisionUi SourceControlResources → SourceControlStyles.xaml → SourceComboBoxes.xaml（ListViewComboBoxStyle/ComboxStyleBtn）及SourceAssets图标；存在源文件不等于本轮已运行核收。",
+    "distinction": "NativeCompoundSourceSelector对应ButtonSelecter_sub的订阅树，不能替代EnumerationG输入源下拉。",
+    "engineering": "共享WPF资源承接源模板与状态；宿主按真实IMAGE端口提供候选与当前引用，选择进入私有草稿，执行仍通过冻结输入；工具插件不依赖VisionUi/产品UI宿主程序集。先评估资源和主题依赖再移植，不直接引用逆向项目DLL。",
+    "sources": [
+      {
+        "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+        "line": 9,
+        "key": "EnumerationG Name=\"ImageSource\"",
+        "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+        "line": 846,
+        "key": "x:Key=\"EnumerationG\"",
+        "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceComboBoxes.xaml",
+        "line": 124,
+        "key": "x:Key=\"ListViewComboBoxStyle\"",
+        "sha256": "f1b3d8ca08b433d1c41ba715e04d53021e97198e221d61e456958b8186249984"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlResources.cs",
+        "line": 3,
+        "key": "SourceControlStyles.xaml",
+        "sha256": "3ae9e64355c345ed685c60c0d8546f9607fa68e1331393457ab4e53405610e8e"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
+        "line": 1,
+        "key": "SourceComboBoxes.xaml",
+        "sha256": "05a35c93f09f66d11584261b5558d8ad47fc0467b0fa4fb040f42510f883f16f"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\NativeCompoundSourceSelector.cs",
+        "line": 17,
+        "key": "public sealed class NativeCompoundSourceSelector",
+        "sha256": "cc13f638924acf566d855a74e7aead1b0ec054c1160d19b502fbc5ff58628838"
+      }
+    ],
+    "notVerified": "该本地还原项目本轮未运行，不能声称与原版每个状态一致；当前HTML候选仅示例，不接工作流。",
+    "userScreenshot": {
+      "path": "docs/collaboration/evidence/VM_BLOB_INPUT_SOURCE_USER_20261026.png",
+      "sha256": "83fa32dd7156843c1633a32ec26c0db52a145b5cba53db4404d973ec13f7abb4"
+    }
+  },
+  "subscriptionModeReview": {
+    "facts": "IsSubscribeLeft/Right切换NumericControl与SubscribeTemplate可见性；右侧EditLinkButton为模式切换，订阅框内部LinkPopButton为来源选择；Integer_Sub的OnLeftTypeChange→TypeChangeCommand，值事件另走ValueChangedCommand。",
+    "range": "IntegerBettween_Sub独立绑定左右端点；SliderArrange的CBox Popup包含SL_Bat1/SL_Bat2与StartValue/EndValue，订阅时滑条不提供数值编辑。单值模式也存在对应Slider弹层。",
+    "proposal": "本方草稿将本地值、来源引用和模式分开；切回保留草稿本地值是本方推荐，VM切换后旧值保留/清除及失败回退尚未继续追到参数操作层，不冒称同义。执行时按所选模式冻结唯一来源，订阅失效不能静默回退本地值。",
+    "preview": "已实现浏览器双模式/示例选择与单/双端滑条；订阅执行明确拒绝，不能用隐藏本地值冒充绑定结果。",
+    "limits": "HTML未真实运行核收；拖动节流、边界校验、失焦提交和真实绑定消费须WPF实施及独测。",
+    "sources": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+        "line": 201,
+        "key": "<ContentControl ContentTemplate=\"{Binding ElementName=UC_Arrange, Path=SubscribeTemplate}\"",
+        "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+        "line": 213,
+        "key": "<ToggleButton Grid.Column=\"1\" Style=\"{StaticResource EditLinkButton}\"",
+        "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
+        "line": 1220,
+        "key": "protected void TypeChangeLeft_Click",
+        "sha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+        "line": 2106,
+        "key": "x:Key=\"EditLinkButton\"",
+        "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+      }
+    ],
+    "userScreenshots": [
+      {
+        "path": "docs/collaboration/evidence/VM_BLOB_SUBSCRIBED_USER_20261026.png",
+        "sha256": "6651d159ec8d83212740500ba1c5d7ff26d3f9aa549a6b6746b76c264802852a",
+        "label": "SUBSCRIBED"
+      },
+      {
+        "path": "docs/collaboration/evidence/VM_BLOB_LOCAL_VALUE_USER_20261026.png",
+        "sha256": "f4f8013f32672c62c70b09114aaba1c1d16595ce737c34d21fc2f4ab54ad21f2",
+        "label": "LOCAL_VALUE"
+      },
+      {
+        "path": "docs/collaboration/evidence/VM_BLOB_RANGE_SLIDER_USER_20261026.png",
+        "sha256": "3b0ed8bd4c93f1cf573251e6bf6b26d76220c289912ecfec59980357373792ab",
+        "label": "RANGE_SLIDER"
+      },
+      {
+        "path": "docs/collaboration/evidence/VM_BLOB_SINGLE_SLIDER_USER_20261026.png",
+        "sha256": "fcb3b509015fb7f8767f3b859dcf80efdc109837fa2c4655e01073c2b0c64490",
+        "label": "SINGLE_SLIDER"
+      },
+      {
+        "path": "docs/collaboration/evidence/VM_BLOB_RANGE_UNFOCUSED_USER_20261026.png",
+        "sha256": "e86ffe1f7ef1224e69d1629ce4c32359e3f9e8128b2b73d04a68f8ab808e00fe",
+        "label": "RANGE_UNFOCUSED"
+      },
+      {
+        "path": "docs/collaboration/evidence/VM_BLOB_SWITCH_RANGE_LAYOUT_USER_20261026.png",
+        "sha256": "8c91e1b97fb391e5caff2cf19ca44b1a1377708a5057240990ccd253a7e181be",
+        "label": "SWITCH_RANGE_LAYOUT"
+      }
+    ],
+    "focus": "用户明确滑条无焦点不显示；HTML离开完整复合控件焦点、Esc、切页收起。焦点在控件内部滑条或按钮间移动不算离开；源码Popup开关与实机完整键盘/鼠标状态仍需核收。",
+    "layout": "用户开关/总面积图：开关独立一行，启用后范围下一行；该判定范围无订阅按钮。预览纠正原同排布局，范围是否订阅/是否滑条须由字段声明决定。"
+  },
+  "uiArchitectureDecision": {
+    "status": "方案范围明确，待用户整体审核；未实施",
+    "principle": "按职责与组合层次决定去留。可运行证明功能基础，不直接证明旧类细分与新架构一致；提取复用不等于整类保留，重组不等于从零重写。",
+    "rows": [
+      [
+        "基础输入部件",
+        "NumericUpDown、RangeInputControl已有单/双滑条与焦点代码；不因新架构全部废弃。",
+        "对照VM NumericControl/SliderArrange，提取核实的输入、微调与焦点逻辑，修正模板和状态。现有命名/注释不等于实际视觉已达标。"
+      ],
+      [
+        "参数组合",
+        "旧ConfigSetting把BindingType、BindingSource、Value和来源列表等组合；新DeclaredFieldEditor用常量/引用草稿，但呈现是普通控件。",
+        "重做组合接口和模板，复用新草稿/校验逻辑；以ConstantSetting/ReferenceSetting/UnsetSetting表达，不能把旧字符串来源带回新合同。"
+      ],
+      [
+        "输入源",
+        "VM EnumerationG整行ComboBox；逆向本地VisionUi已有模板/资源。",
+        "作为样式与交互基准核收、适配到本方宿主候选；不引用逆向工程DLL，不等同参数订阅树。"
+      ],
+      [
+        "来源订阅",
+        "旧ParamBinding有字符串BindingSource、AvailableDataSource和全局变量策略。",
+        "树展示和选中反馈可提取；候选、类型检查、稳定引用由宿主/新合同提供。删除旧来源解释职责，不让控件解析执行来源。"
+      ],
+      [
+        "范围和开关",
+        "旧RangeInputControl有核心双滑条；用户VM截图明确开关一行、范围下一行且部分不可订阅。",
+        "独立基础范围、订阅组合和显隐布局；字段声明决定是否可绑定/是否有滑条，不能每个范围强套同一业务控件。"
+      ],
+      [
+        "ROI与结果显示",
+        "已有几何、宿主交互作用域和结果消费能力；VM以ROI组合和显示对象行呈现。",
+        "复用核实的几何与作用域，重组视图和绑定适配；不保留旧Manager对全局画布的控制权。对象列表按实际能力配眼睛/编辑。"
+      ],
+      [
+        "窗口组装",
+        "VM参数根→页组→字段模板；本方现有打开、草稿、执行、释放链已跑通，但字段页面直接生成五页。",
+        "复用打开与事务链，重组为三页/组/行/条件/折叠；工具只声明能力，通用UI按声明组装。"
+      ],
+      [
+        "工程组织",
+        "Plugin.Wpf目前只依赖Plugin.Contracts；旧Plugin.SDK控件依赖旧Execution.Parameters及日志等。",
+        "拟在Plugin.Wpf分Controls基础部件、Fields/Templates参数组合、Themes资源；UI宿主保留候选/草稿/ROI接线，Definition/Runtime不引入WPF。迁移前拆旧SDK依赖，不整包搬运。"
+      ]
+    ],
+    "sourceEvidence": [
+      {
+        "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "line": 108,
+        "sha256": "6099fc47b03e207bfa6d8e3d9d052bb5804f23933354ad4766196e4f82dbd8c7",
+        "key": "var input = new TextBox"
+      },
+      {
+        "path": "src/Plugin.SDK/UI/Controls/ConfigSetting.cs",
+        "line": 50,
+        "sha256": "c82d7d8c0bd0c9fc31770ffb12bd7323053e16523830fa9e77a3314c725a7af3",
+        "key": "BindingSourceProperty"
+      },
+      {
+        "path": "src/Plugin.SDK/UI/Controls/ParamBinding.cs",
+        "line": 130,
+        "sha256": "75ea710cf6ed1d8e8e15d43d13b4ed904dc3732fe149efe5b0931010d148968d",
+        "key": "AllowGlobalVariableBindingProperty"
+      },
+      {
+        "path": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
+        "line": 34,
+        "sha256": "bd68a00584440e1bd9ec1b01ed5fef1001894290ebc0c41ea1f5ea2f62e79ccb",
+        "key": "PART_SliderPopup"
+      },
+      {
+        "path": "src/Plugin.SDK/UI/Controls/RangeInputControl.cs",
+        "line": 32,
+        "sha256": "ff8f728897fc5c70bc90b9402f94bbd2fb09b8e419c15e7432001b1008d0893a",
+        "key": "PART_RangeSlider"
+      },
+      {
+        "path": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+        "line": 1,
+        "sha256": "3ccab4274f8f217158f196672e7f01040ccfb67fe554361ca2d02a37bbfc0773",
+        "key": "ProjectReference"
+      }
+    ],
+    "acceptance": "使用相同字段和相同状态对照VM：输入源、数值/订阅、范围、焦点、开关显隐；再验证新草稿/执行/释放链。HTML效果和功能PASS都不能单独代UI通过。"
+  }
 }

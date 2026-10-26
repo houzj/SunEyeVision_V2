@@ -1,5 +1,5 @@
 {
-  "status": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED_MANUAL_PENDING",
+  "status": "FUNCTIONAL_AUTOMATION_PASSED_UI_REJECTED",
   "productCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
   "artifactVersion": "2.0.0.8_alpha",
   "runtimeProbeCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
@@ -95,12 +95,26 @@
     "changes": "仅改方案名和固定图片引用；数据和图像来自同版已通过连续链方案。"
   },
   "manual": {
-    "status": "AWAITING_USER_FEEDBACK",
-    "results": []
+    "status": "UI_REJECTED_FUNCTIONAL_TRIAL_NOT_STARTED",
+    "results": [
+      {
+        "date": "2026-10-26",
+        "scope": "当前UI外观",
+        "result": "不符合要求",
+        "source": "用户本对话反馈；不是自动观察或代签。",
+        "functionalTrial": "尚未进行"
+      }
+    ]
   },
   "limitations": [
     "实际物理鼠标手感和用户自己的图像/流程待人工反馈。",
     "实际VS设计器未打开；已检查设计时编译路径。",
     "未声称VM native逐值等价；S5通用结果平台及正式性能基准不在本阶段自动结论内。"
-  ]
+  ],
+  "priorFunctionalStatus": "IMPLEMENTATION_AND_AUTOMATED_CHECKS_CLOSED_MANUAL_PENDING",
+  "uiReview": {
+    "path": "docs/collaboration/evidence/S4_UI_REVIEW_20261026.json",
+    "sha256": "63e642e59414432853e39952ecee90d93ed136d6588f05042d73fdfdfea1e7d4",
+    "effect": "保留功能证据；不再据此宣布S4完成或当前界面适合验收。"
+  }
 }

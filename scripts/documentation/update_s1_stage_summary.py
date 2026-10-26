@@ -249,15 +249,18 @@ def render_s4_stage(page):
     if not path.exists():
         return page
     s4 = json.loads(path.read_text(encoding='utf-8-sig'))
-    if s4['status'] not in ('ACTIVE_IMPLEMENTATION', 'READY_FOR_MANUAL'):
+    if s4['status'] not in ('ACTIVE_IMPLEMENTATION', 'READY_FOR_MANUAL', 'UI_REVIEW_REQUIRED'):
         return page
     ready = s4['status'] == 'READY_FOR_MANUAL'
+    review = s4['status'] == 'UI_REVIEW_REQUIRED'
     state = escape(s4['current'])
     page = re.sub(r'(<div class="br-note" id="o06-blob-final-review"><h3>当前做到哪里？</h3><p><b>).*?(</b></p>)',
                   lambda m: m[1] + state + m[2], page, count=1, flags=re.S)
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
+             + '<p><b>' + state + '</b></p>'
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
+             + (table(['对照项','VM实际依据','当前实现与差距','本轮处理'],s4['uiReview']['comparison']) if review else '')
              + ('<details><summary>查看当前真实页面</summary><p>正式Release的自动检查宿主渲染，尚未人工验收。</p><img alt="当前Blob默认编辑页" style="max-width:100%;height:auto" src="'
                 + quote(os.path.relpath(ROOT / s4['uiPreview']['path'], PAGE.parent).replace('\\', '/')) + '"></details>' if s4.get('uiPreview') else '')
              + '<p><b>接下来：</b>' + escape(s4['next']) + '</p><p>' + escape(s4['estimate']) + '</p>'
@@ -276,7 +279,7 @@ def render_s4_stage(page):
     live_start = page.index('<section id="implementation-live-status"')
     live_end = page.index('<details><summary>历史实施与独测记录', live_start)
     page = page[:live_start] + re.sub(r'<h2>.*?</h2><p>.*?</p>',
-        lambda _: '<h2>' + ('当前状态：S1—S4集中试用，人工结果待反馈' if ready else '当前实施状态：S1—S3自动闭合，S4实施中') + '</h2><p>' + state + '</p>',
+        lambda _: '<h2>' + ('当前状态：S4外观未达标，先补UI对标' if review else '当前状态：S1—S4集中试用，人工结果待反馈' if ready else '当前实施状态：S1—S3自动闭合，S4实施中') + '</h2><p>' + state + '</p>',
         page[live_start:live_end], count=1, flags=re.S) + page[live_end:]
     old = ('Plugin.Wpf真实存在，但目前只有PluginFoundation样例消费者，未进入主slnx且无src/UI/tools生产消费者；'
            'OutDir指向artifacts/validation/plugin-foundation-01/bin；ParameterEditorControl自称Minimal editor contract consumer，'
@@ -299,8 +302,11 @@ def render_s4_stage(page):
         'imagesourceselector': 'S4当前：Plugin.Wpf/Fields/SourceSelectionField仅展示宿主提供的声明候选；UI/Sources适配持久引用、当前作用域和显式集合序号，禁止猜默认来源。VM对应ButtonSelecter_sub:255→SubTreeView:296–302选择组合链。现行SDK矩阵缺完整中立空间元数据，保留明确适配而不伪造坐标标识；同帧校验继续生效。',
         'blobdataanalysiscontrol': 'S4关联修复：保留现有专用表格和列；Wpf/Presentation/BlobAnalysisRow将同一Runtime声明记录投影为无资源句柄的标量行，不再强转隔离加载的SDK门面结果，Wpf工程改引Runtime而非门面项目。主窗口真实调试、表/摘要、选中高亮及失败清理已有连续链验证。VM当前结果声明/宿主链作为本行对标证据；S5通用声明结果平台未启动。',
     }
-    if ready:
+    if ready or review:
         updates['configsetting'] = updates['configsetting'].replace('整链尚未核收；不能把新默认页局部通过算成完整交付。', '真实宿主连续链和同提交自动回归已核收，人工体验仍待用户反馈。')
+    if review:
+        for key in ('configsetting','roieditorcontrol','blobanalysistooldebugcontrol'):
+            updates[key] += ' UI复核：对应源只支持职责参考，不证明外观达标；当前通用五页表单、纵向字段和文字ROI工具条未还原VM三页及同排模板组合，S4不能据功能检查宣布完成。'
     for key, note in updates.items():
         pattern = r'(<tr id="o06-control-' + key + r'"[^>]*>)(.*?)(</tr>)'
         def update_row(match):
@@ -316,13 +322,13 @@ def render_s4_stage(page):
         page, count = re.subn(pattern, update_row, page, count=1, flags=re.S)
         if count != 1:
             raise ValueError('Missing original control row: ' + key)
-    if ready:
+    if ready or review:
         trial=s4['trial']
         release_path=escape(trial['program'])
         sample_path=escape(trial['sample'])
-        trial_intro=('<div class="br-note" id="o06-blob-final-review"><h3>S1—S4可以集中试用了</h3>'
+        trial_intro=('<div class="br-note" id="o06-blob-final-review"><h3>'+('S4外观未达标，先补UI对标' if review else 'S1—S4可以集中试用了')+'</h3>'
                      '<p><b>'+state+'</b></p><p>固定程序：<code>'+release_path+'</code></p>'
-                     '<p><a href="#blob-verification-steps">直接看试用步骤、预期效果和反馈清单</a>。自动验证已完成，人工结果尚未确认。</p></div>')
+                     '<p><a href="#s4-implementation-status">直接看当前差距与处理范围</a>。功能自动验证不代表UI达标；人工验收尚未通过。</p></div>')
         page=re.sub(r'<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->.*?<!-- O06-BLOB-FINAL-REVIEW:END -->',
                     lambda _: '<!-- O06-BLOB-FINAL-REVIEW:BEGIN -->\n'+trial_intro+'\n<!-- O06-BLOB-FINAL-REVIEW:END -->',page,count=1,flags=re.S)
         a=page.index('<h3 id="blob-verification-steps">')
@@ -338,10 +344,20 @@ def render_s4_stage(page):
                 '目前人工状态为“待反馈”，不会代你填写通过。'+escape(trial['limitations'])+'</p>'
                 '<details><summary>查看S1早期实施与原验证记录（历史，不是当前待办）</summary>'+historical+'</details>\n')
         page=page[:a]+manual+page[b:]
+        if review:
+            page=page.replace('⑤ S1—S4集中试用：改了什么、怎么验证','⑤ 人工验证安排：先补齐UI，再集中验证')
+            page=page.replace('已完成同提交正式Release构建、真实宿主连续链和关联自动回归；等待你的实际试用反馈。',
+                              '同提交功能链与关联自动检查已通过，但当前外观被用户明确指出不符合要求。先补齐VM窗口布局、模板组合和样式对标；下列功能清单保留供修正后集中验证，现在不催用户测试。')
+            page=page.replace('目前人工状态为“待反馈”，不会代你填写通过。','目前UI状态为“未达标、待修正”，不是只等用户验收；不会代你填写通过。')
         page=re.sub(r'<div class="br-note"><b>当前S1状态：</b>.*?</div>',
                     '<div class="br-note"><b>当前总状态：</b>'+state+' <a href="#blob-verification-steps">集中试用与反馈</a>。</div>',page,flags=re.S)
         page=page.replace('架构方案与阶段进度 · S1实施及本轮自动验证已闭合 · 完整Blob交互链仍待后续实施',
                           '架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈')
+        if review:
+            page=re.sub(r'<div class="br-note"><b>当前总状态：</b>.*?</div>',lambda _: '<div class="br-note"><b>当前总状态：</b>'+state+' <a href="#s4-implementation-status">UI差距与修正范围</a>。</div>',page,flags=re.S)
+            page=page.replace('架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈','架构方案与阶段进度 · S1—S3自动核收 · S4功能链通过、外观未达标')
+            page=page.replace('S4完整窗口/ROI交互、S5通用结果及正式性能仍未完成；S1—S4人工测试待S4形成明显体验变化后集中进行。','S4功能链已通过自动检查，但页面组织与模板外观未达标，须先修正；S5通用结果及正式性能尚未实施。')
+            page=page.replace('S4/S5仍待实施，原候选及源码快照保留在历史证据中。','S4功能链通过、UI对标未达标，S5尚未实施；原候选及源码快照保留在历史证据中。')
     return page
 
 

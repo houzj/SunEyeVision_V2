@@ -1,0 +1,486 @@
+{
+  "date": "2026-10-26",
+  "status": "UI_NOT_ACCEPTABLE_S4_NOT_CLOSED",
+  "productCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
+  "userFeedback": "当前外观就不符合要求，更别说测试实际的功能了",
+  "observed": {
+    "vmTabs": [
+      "Tab_Basic Params",
+      "Tab_Run Params",
+      "ResultShow"
+    ],
+    "currentTabCount": 5,
+    "currentPreview": "D:\\MyWork\\SunEyeVision_V2\\docs\\collaboration\\evidence\\S4-default-editor-20261026.png",
+    "currentPreviewSha256": "66138a2b8bda2983596efd37f5321a199c2e67c2cedd3315c32f9676d19b41f4",
+    "vmScreenshot": "D:\\Temp\\codex-clipboard-92a0eac5-b28c-4737-94eb-53fd6228bfe6.png",
+    "vmScreenshotSha256": "e34e2ead719fca77bf1f7aab3ccadb612aa6846c2c86453354f3062237fb96f5"
+  },
+  "comparison": [
+    [
+      "页面组织",
+      "Blob模块XML明确基本参数、运行参数、结果显示三页，共享Group插入各页。",
+      "本方基本、运行、结果判定、图形样式、文本样式五页，不是VM页面组织。",
+      "S4重做页面声明与组装；HALCON额外选项单列依据，不把全部字段平铺。"
+    ],
+    [
+      "字段布局与控件",
+      "ParamUserControlDataTemplate使用LeftRightControl同排标签/输入；开关、数值及范围有专用模板。",
+      "本方标签/输入上下堆叠，CheckBox、TextBox及复合值递归展开；外观与密度不符。",
+      "按对应模板实现局部控件、统一行布局和范围编辑，不能只换颜色。"
+    ],
+    [
+      "条件显隐与折叠",
+      "XML包含ThresholdType触发显隐及Expert/高级分组，截图与声明相互支持。",
+      "本方字段视图按组遍历生成，未形成VM完整条件展示与高级折叠链。",
+      "补展示规则；不复制第二字段或执行合同；静态与运行证据分清。"
+    ],
+    [
+      "ROI组合",
+      "RoiSelectControl有形状图标模板及展开数值；BoxROIStack按行组织几何数值。",
+      "当前文字形状/动作按钮和集合列表；可编辑不等于VM组合与布局。",
+      "S4重做呈现与模板组合，保留经验证的私有草稿及独占交互边界。"
+    ],
+    [
+      "结果显示配置",
+      "ImageViewConfig与模块声明组织眼睛/编辑操作及文本设置。",
+      "当前拆图形/文本Tab，按属性展开，与对象列表组织不同。",
+      "配置侧归S4补齐；S5通用当前结果表另计，不推迟本项。"
+    ],
+    [
+      "样式与窗口资源",
+      "模板直接依赖Apps.Style、ColorFun、Localization、窗口与图标。",
+      "旧覆盖报告明确不是依赖闭包；已有资源导出但未完成全部身份、资源链及同状态视觉核对。",
+      "补实际消费的资源闭包与同尺寸/主题/状态截图，停止扩查算法native。"
+    ]
+  ],
+  "sources": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "kind": "安装原件XML",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+      "anchors": [
+        {
+          "line": 4,
+          "text": "<Tab Name=\"Tab_Basic Params\">"
+        },
+        {
+          "line": 41,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 64,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 124,
+          "text": "<Tab Name=\"Tab_Run Params\">"
+        },
+        {
+          "line": 135,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 443,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 548,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 639,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 706,
+          "text": "<Triggers>"
+        },
+        {
+          "line": 770,
+          "text": "<Triggers>"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ProcedureConfigControl.cs",
+      "kind": "反编译C#",
+      "sha256": "a1c233068db35667f7dd49b05839701364cc2ebe9ca699f5f413317abbe4dfb4",
+      "anchors": [
+        {
+          "line": 743,
+          "text": "TabWinBase tabWinBase2 = GetExternTabWin(vmModule) ?? new ParamsTabControlBase();"
+        },
+        {
+          "line": 808,
+          "text": "private TabWinBase GetExternTabWin(IVmModule vmModule)"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\VMControls.WPF.ParamsConfigControlBase.cs",
+      "kind": "反编译C#",
+      "sha256": "c5c43aa489ff393a4f1810ad3157f90ac903245321529e8d32038bba426f1a5b",
+      "anchors": [
+        {
+          "line": 52,
+          "text": "public static readonly DependencyProperty ParamsConfigProperty = DependencyProperty.Register(\"ParamsConfig\", typeof(IParamsConfig), typeof(ParamsConfigControlBase), new PropertyMetadata(null, OnParamsConfigChanged));"
+        },
+        {
+          "line": 211,
+          "text": "private static void OnParamsConfigChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)"
+        },
+        {
+          "line": 228,
+          "text": "algorithmTabRoot2 = ((!(paramsConfig2 is ModuleParam param)) ? new AlgorithmTabRoot(paramsConfig2) : param.GetParamRoot());"
+        },
+        {
+          "line": 262,
+          "text": "paramsConfigControlBase.DataContext = algorithmTabRoot2;"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\source\\wpf-resources\\paramsconfigcontrolbase.xaml",
+      "kind": "恢复BAML",
+      "sha256": "48e61504b406d8fde65e8f20539acc6780871132cd684288d72668b7bdc4e409",
+      "anchors": [
+        {
+          "line": 5,
+          "text": "<AppsxmlUI:ParamsTabUserControl Name=\"paramstab\" ROIPartUI=\"{Binding ROIPartUI, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}\" IsEditState=\"{Binding IsEditState, Mode=OneWay, RelativeSource={RelativeSource Mode=Template"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+      "kind": "恢复BAML",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+      "anchors": [
+        {
+          "line": 3,
+          "text": "<ResourceDictionary.MergedDictionaries>"
+        },
+        {
+          "line": 14,
+          "text": "</ResourceDictionary.MergedDictionaries>"
+        },
+        {
+          "line": 63,
+          "text": "<DataTemplate x:Key=\"Boolean_sub\">"
+        },
+        {
+          "line": 113,
+          "text": "<DataTemplate x:Key=\"Boolean\">"
+        },
+        {
+          "line": 562,
+          "text": "<DataTemplate x:Key=\"Integer\">"
+        },
+        {
+          "line": 2544,
+          "text": "<DataTemplate x:Key=\"ImageViewConfig\">"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
+      "kind": "恢复BAML",
+      "sha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb",
+      "anchors": [
+        {
+          "line": 5,
+          "text": "<ResourceDictionary.MergedDictionaries>"
+        },
+        {
+          "line": 12,
+          "text": "<ResourceDictionary Source=\"/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml\" />"
+        },
+        {
+          "line": 17,
+          "text": "</ResourceDictionary.MergedDictionaries>"
+        },
+        {
+          "line": 23,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.FullScreen}\" ToolTip=\"{DynamicResource 全屏}\" Background=\"#00FFFFFF\" Style=\"{StaticResource fullscreenRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding F"
+        },
+        {
+          "line": 26,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.SectorRing}\" ToolTip=\"{DynamicResource SectorRing}\" Background=\"#00FFFFFF\" Style=\"{StaticResource RingRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding"
+        },
+        {
+          "line": 29,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.Sector}\" ToolTip=\"{DynamicResource Sector}\" Background=\"#00FFFFFF\" Style=\"{StaticResource SectorRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding Secto"
+        },
+        {
+          "line": 32,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.OverSector}\" ToolTip=\"{DynamicResource OverSector}\" Background=\"#00FFFFFF\" Style=\"{StaticResource OverSectorRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{B"
+        },
+        {
+          "line": 35,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.Box}\" ToolTip=\"{DynamicResource Box}\" Background=\"#00FFFFFF\" Style=\"{StaticResource BoxRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding BoxA, Mode=Two"
+        },
+        {
+          "line": 38,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.UroBox}\" ToolTip=\"{DynamicResource UroBox}\" Background=\"#00FFFFFF\" Style=\"{StaticResource UroBoxRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding BoxA,"
+        },
+        {
+          "line": 41,
+          "text": "<ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.LineBox}\" ToolTip=\"{DynamicResource LineBox}\" Background=\"#00FFFFFF\" Style=\"{StaticResource LineBoxRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding Bo"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+      "kind": "恢复BAML",
+      "sha256": "2c55fe06bb710704155c77f0f0ae1eb0f7eb8a01a9cdb3c667ee54d9da93d893",
+      "anchors": [
+        {
+          "line": 15,
+          "text": "<localParamTab:LeftRightControl Height=\"32\">"
+        },
+        {
+          "line": 26,
+          "text": "<Binding Path=\"ROIData.CenterX\" Mode=\"TwoWay\" RelativeSource=\"{RelativeSource Mode=TemplatedParent}\" />"
+        },
+        {
+          "line": 38,
+          "text": "<localParamTab:LeftRightControl Height=\"32\">"
+        },
+        {
+          "line": 61,
+          "text": "<localParamTab:LeftRightControl Height=\"32\">"
+        },
+        {
+          "line": 84,
+          "text": "<localParamTab:LeftRightControl Height=\"32\">"
+        },
+        {
+          "line": 107,
+          "text": "<localParamTab:LeftRightControl Height=\"32\" Visibility=\"{Binding IsRotatable, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource Mode=TemplatedParent}}\">"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\coverage-boundary.json",
+      "kind": "历史明确覆盖边界",
+      "sha256": "785723398b50d97e96186cfba41137f6ed5dd6dba2f4c1251431c76724838ed4",
+      "anchors": [
+        {
+          "line": 20,
+          "text": "\"isDependencyClosure\": false,"
+        },
+        {
+          "line": 23,
+          "text": "\"name\": \"Apps.Style\","
+        },
+        {
+          "line": 26,
+          "text": "\"path\": \"D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll\","
+        },
+        {
+          "line": 35,
+          "text": "\"excerpt\": \"    <ResourceDictionary Source=\\\"/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml\\\" />\\n    <ResourceDictionary Source=\\\"/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml\\\" />\\n    <ResourceDictionary Source"
+        },
+        {
+          "line": 37,
+          "text": "\"coverage\": \"Reference confirmed; library internals excluded\""
+        },
+        {
+          "line": 54,
+          "text": "\"coverage\": \"Reference confirmed; library internals excluded\""
+        },
+        {
+          "line": 71,
+          "text": "\"coverage\": \"Reference confirmed; library internals excluded\""
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+      "kind": "已有反编译资源，原件身份及闭包未全部重核",
+      "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
+      "anchors": [
+        {
+          "line": 3,
+          "text": "<ResourceDictionary.MergedDictionaries>"
+        },
+        {
+          "line": 6,
+          "text": "</ResourceDictionary.MergedDictionaries>"
+        },
+        {
+          "line": 13,
+          "text": "<ControlTemplate TargetType=\"{x:Type ToggleButton}\">"
+        },
+        {
+          "line": 17,
+          "text": "<ControlTemplate.Triggers>"
+        },
+        {
+          "line": 25,
+          "text": "</ControlTemplate.Triggers>"
+        },
+        {
+          "line": 26,
+          "text": "</ControlTemplate>"
+        },
+        {
+          "line": 38,
+          "text": "<ControlTemplate TargetType=\"{x:Type ToggleButton}\">"
+        },
+        {
+          "line": 42,
+          "text": "<ControlTemplate.Triggers>"
+        },
+        {
+          "line": 46,
+          "text": "</ControlTemplate.Triggers>"
+        },
+        {
+          "line": 47,
+          "text": "</ControlTemplate>"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\Apps.ColorFun\\ColorThemesResourceDictionary.cs",
+      "kind": "已有反编译C#，原件身份及闭包未全部重核",
+      "sha256": "cdce993856644808919089ed910837b450043b8678ac069ed3678bb33a9d53ff",
+      "anchors": [
+        {
+          "line": 49,
+          "text": "private Uri LoadColorStyle(string rootPath)"
+        },
+        {
+          "line": 51,
+          "text": "string text = $\"{rootPath}\\\\ColorCFG\\\\ColorStyleSet.cfg\";"
+        },
+        {
+          "line": 56,
+          "text": "return new Uri($\"{rootPath}/ColorStyle/{innerText}.xaml\", UriKind.RelativeOrAbsolute);"
+        },
+        {
+          "line": 66,
+          "text": "Source = LoadColorStyle(currentPath);"
+        },
+        {
+          "line": 71,
+          "text": "Source = LoadColorStyle(baseDirectory);"
+        },
+        {
+          "line": 95,
+          "text": "Uri source = new Uri($\"{currentPath}/ColorStyle/{colorStyle}.xaml\", UriKind.RelativeOrAbsolute);"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\BlobConfigurationFields.cs",
+      "kind": "本方当前源码",
+      "sha256": "1bfc785680dba5165c5dfc3ca347c934a8ca1b745a398d1602d6f65dfcb716cd",
+      "anchors": [
+        {
+          "line": 58,
+          "text": "private static string Group(BlobInputField field)=>field.LogicalKey.StartsWith(\"presentation.judgments.\")?\"结果判定\":"
+        },
+        {
+          "line": 59,
+          "text": "field.LogicalKey.StartsWith(\"presentation.graphics.\")?\"图形样式\":field.LogicalKey.StartsWith(\"presentation.texts.\")?\"文本样式\":"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Fields\\DeclaredFieldsView.cs",
+      "kind": "本方当前源码",
+      "sha256": "57b48e6a5baef29307a9b01370c9802d5c5e41ed7060c1325aa0a43eb85d1287",
+      "anchors": [
+        {
+          "line": 11,
+          "text": "private readonly Dictionary<string,StackPanel> _groups=new(StringComparer.Ordinal);"
+        },
+        {
+          "line": 21,
+          "text": "var tabs = new TabControl();"
+        },
+        {
+          "line": 22,
+          "text": "foreach (var group in fields.OrderBy(field => field.Presentation.Order).GroupBy(field => field.Presentation.Group))"
+        },
+        {
+          "line": 24,
+          "text": "var body = new StackPanel { Margin = new Thickness(12) };"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Fields\\DeclaredFieldEditor.cs",
+      "kind": "本方当前源码",
+      "sha256": "6099fc47b03e207bfa6d8e3d9d052bb5804f23933354ad4766196e4f82dbd8c7",
+      "anchors": [
+        {
+          "line": 55,
+          "text": "panel.Children.Add(header); panel.Children.Add(_body); panel.Children.Add(_error); Content = panel;"
+        },
+        {
+          "line": 93,
+          "text": "var input = new CheckBox { IsChecked = value as bool? }; input.Click += (_, _) => Set(new ConstantSetting(input.IsChecked == true)); InputElement = input; _body.Children.Add(input);"
+        },
+        {
+          "line": 108,
+          "text": "var input = new TextBox { Text = Convert.ToString(value, CultureInfo.InvariantCulture) ?? \"\", MinWidth = 90 };"
+        },
+        {
+          "line": 127,
+          "text": "else if (_port.Type.Shape == ValueShape.Record && value is RecordValue record)"
+        },
+        {
+          "line": 159,
+          "text": "ValueShape.Record => new RecordValue(type, type.Fields.Where(field => field.Required).ToDictionary(field => field.Id, field => Default(field.Type))),"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Regions\\RegionGeometryEditor.cs",
+      "kind": "本方当前源码",
+      "sha256": "8f9f5a5739679b4532376240022a0966fb056ffa10e201c2e042050c2be0d6a2",
+      "anchors": [
+        {
+          "line": 17,
+          "text": "private readonly StackPanel _numbers=new();"
+        },
+        {
+          "line": 31,
+          "text": "var body=new StackPanel();var shapes=new WrapPanel();"
+        },
+        {
+          "line": 34,
+          "text": "var button=new Button{Content=RoiGeometryEditing.Label(kind),Margin=new Thickness(2),Padding=new Thickness(5,3,5,3)};"
+        },
+        {
+          "line": 39,
+          "text": "{var button=new Button{Content=labelText,Margin=new Thickness(2),Padding=new Thickness(5,2,5,2)};button.Click+=(_,_)=>{if(HasInvalidText){_status.Text=\"请先修正区域数值或恢复有效值。\";return;}_viewport?.Select(_group,SelectedId);_viewport?.SetAction(actio"
+        },
+        {
+          "line": 40,
+          "text": "var delete=new Button{Content=\"删除\",Margin=new Thickness(2)};delete.Click+=(_,_)=>{if(SelectedId is { } id){_write(id,null);Refresh();ModelChanged?.Invoke();}};actions.Children.Add(delete);"
+        },
+        {
+          "line": 41,
+          "text": "var cancel=new Button{Content=\"取消绘制\",Margin=new Thickness(2)};cancel.Click+=(_,_)=>_viewport?.CancelGesture();actions.Children.Add(cancel);"
+        },
+        {
+          "line": 42,
+          "text": "var restore=new Button{Content=\"恢复有效值\",Margin=new Thickness(2)};restore.Click+=(_,_)=>RenderNumbers();actions.Children.Add(restore);"
+        }
+      ]
+    }
+  ],
+  "conclusion": "已有大量窗口C#/XML/模板/ROI及样式导出，但当前本方仅采用部分职责与绑定参考，没有完成VM外观对应实现；功能自动通过不能宣告S4完成，不能将缺口归给S5/S6。",
+  "unconfirmed": [
+    "Apps.Style/ColorFun等导出与当前安装原件的逐项身份及资源依赖闭包未全部核验。",
+    "本轮未运行VM；同版本、尺寸、主题和控件状态的实机视觉核对未完成。",
+    "未用恢复源码构建运行完整VM Blob窗口，不能声称已有可重建完整项目。",
+    "原注释、原始工程目录及构建信息不能据反编译存在宣称恢复。"
+  ],
+  "productChanged": false,
+  "automaticChecks": "既有功能证据保留，仅覆盖其记录范围，不是视觉达标或用户验收。",
+  "externalRequest": "初次消息被自动审批拒绝；用户随后明确授权“授权既有逆向对话补证”，再次请求已成功送达既有取证统筹。已通过状态快照确认其正在读取现有导出；尚未核收本次补证交付。"
+}

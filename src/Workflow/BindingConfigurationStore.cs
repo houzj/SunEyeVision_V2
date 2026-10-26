@@ -125,7 +125,12 @@ public sealed class BindingConfigurationStore
                 foreach (var flow in projected.Workflows)
                     foreach (var node in flow.Nodes)
                         if (retained.Contains(new(flow.Id, node.Id)) && oldNodes.TryGetValue(new(flow.Id, node.Id), out var saved))
-                        { node.Parameters = ToolParameterSnapshot.Create(saved.Parameters); node.ParamSettings = CopySettings(saved.ParamSettings); }
+                        {
+                            node.RuntimeConfiguration = saved.RuntimeConfiguration?.Copy();
+                            node.Parameters = saved.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(saved.Parameters)
+                                : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
+                            node.ParamSettings = CopySettings(saved.ParamSettings);
+                        }
                 projected.GlobalVariables.Clear(); projected.GlobalVariables.AddRange(old.GlobalVariables);
                 var historyValidator = new OutputBindingChangeService(); historyValidator.Reset(projected); historyValidator.ReconcileAll();
                 return new(historical.Version, projected, SolutionExecutionDependencyGraph.Compile(projected, checkReadiness: false));
@@ -246,7 +251,8 @@ public sealed class BindingConfigurationStore
     internal static string NodeSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
         node.Name, node.DispName, node.ToolType, node.SubroutineId, node.IsEnabled,
-        Parameters = JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact),
+        Runtime = node.RuntimeConfiguration,
+        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null,
         node.ParamSettings, node.SelectedDisplaySource, node.ImageSourceConfig
     }, WorkflowSerializationOptions.Compact);
 
@@ -310,14 +316,21 @@ public sealed class BindingConfigurationStore
         {
             var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine };
             foreach (var node in workflow.Nodes)
+            {
+                if (node.RuntimeConfiguration is { } runtime && runtime.ToolId != node.ToolType)
+                    throw new InvalidOperationException("Runtime配置与节点工具身份不符。");
                 flow.Nodes.Add(new WorkflowNodeBase(node.Id, node.Name, node.DispName, node.ToolType)
                 {
                     SubroutineId = node.SubroutineId, GlobalIndex = node.GlobalIndex, LocalIndex = node.LocalIndex,
                     IsEnabled = node.IsEnabled, PositionX = node.PositionX, PositionY = node.PositionY,
-                    Width = node.Width, Height = node.Height, Parameters = ToolParameterSnapshot.Create(node.Parameters),
+                    Width = node.Width, Height = node.Height,
+                    RuntimeConfiguration = node.RuntimeConfiguration?.Copy(),
+                    Parameters = node.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(node.Parameters)
+                        : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters(),
                     ParamSettings = CopySettings(node.ParamSettings), SelectedDisplaySource = JsonCopy(node.SelectedDisplaySource),
                     ImageSourceConfig = JsonCopy(node.ImageSourceConfig)
                 });
+            }
             foreach (var connection in workflow.Connections)
                 flow.Connections.Add(new WorkflowConnection { Id = connection.Id, SourceNodeId = connection.SourceNodeId,
                     TargetNodeId = connection.TargetNodeId, SourcePort = connection.SourcePort, TargetPort = connection.TargetPort });

@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using SunEyeVision.Core.Services.Serialization;
 
 namespace SunEyeVision.Workflow
@@ -51,6 +52,7 @@ namespace SunEyeVision.Workflow
                     if(!ReferenceEquals(_defaultSource,source))
                     {
                         var options=new JsonSerializerOptions(source){WriteIndented=true};
+                        ConfigureNodeSettings(options);
                         options.Converters.Add(new WorkflowJsonConverter());
                         _default=options;_defaultSource=source;
                     }
@@ -84,12 +86,23 @@ namespace SunEyeVision.Workflow
                     if(!ReferenceEquals(_compactSource,source))
                     {
                         var options=new JsonSerializerOptions(source){WriteIndented=false};
+                        ConfigureNodeSettings(options);
                         options.Converters.Add(new WorkflowJsonConverter());
                         _compact=options;_compactSource=source;
                     }
                     return _compact!;
                 }
             }
+        }
+        private static void ConfigureNodeSettings(JsonSerializerOptions options)
+        {
+            options.TypeInfoResolver = (options.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver()).WithAddedModifier(info =>
+            {
+                if (!typeof(WorkflowNodeBase).IsAssignableFrom(info.Type)) return;
+                foreach (var property in info.Properties)
+                    if (property.Name == nameof(WorkflowNodeBase.Parameters))
+                        property.ShouldSerialize = (owner, _) => ((WorkflowNodeBase)owner).RuntimeConfiguration is null;
+            });
         }
     }
 }

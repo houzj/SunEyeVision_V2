@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
@@ -40,11 +42,15 @@ internal static class S2DocumentEditingCases
             {
                 manager.LoadPlugins(Path.Combine(product,"plugins"));
                 manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(x=>x.Id));
+                // Match App.OnStartup: publish readiness only after the actual
+                // manager admitted and checked the complete formal tool set.
+                PluginLoader.MarkAsLoaded();
             }
             var components=ToolRegistry.GetComponentMetadata();
             Require(components.Count(c=>c.ToolId=="BlobAnalysis"&&c.Role==ToolComponentRole.Runtime)==1,"Blob没有唯一Runtime");
             Require(components.Count(c=>c.ToolId=="BlobAnalysis"&&c.Role==ToolComponentRole.Editor)==(expectEditor?1:0),"可选Editor登记不符");
             Console.WriteLine("通过：正式PluginManager发现/准入/注册，单ToolId及组件角色正确");
+            VerifyRuntimeConfiguration();
             var parameters=ToolRegistry.CreateParameters("BlobAnalysis");
             void Set(string name,object value)=>parameters.GetType().GetProperty(name)!.SetValue(parameters,value);
             Set("Threshold",100);Set("IsAreaFilterEnabled",false);Set("IsBlobCountFilterEnabled",false);Set("OutputBlobImage",true);
@@ -213,7 +219,7 @@ internal static class S2DocumentEditingCases
             using(var recovered=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image))))
                 Require(recovered.Success,"取消清理后无法开始下一次运行");
             Console.WriteLine("通过：已取消请求在无UI消息泵时返回Cancelled并清理，下一次真实运行成功");
-            Console.WriteLine($"S3组件消费：{(expectEditor?7:8)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
+            Console.WriteLine($"S3组件消费：{(expectEditor?8:9)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
     }
@@ -242,10 +248,94 @@ internal static class S2DocumentEditingCases
             if(child is DependencyObject dependency)
                 foreach(var found in Find<T>(dependency))yield return found;
     }
-    private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
-    private sealed class DirectRuntimeContext(IOutputResources resources):IToolExecutionContext
+    private static void VerifyRuntimeConfiguration()
     {
-        public RunIdentity Identity{get;}=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"direct-runtime",Guid.NewGuid());
+        var initial=RuntimeToolConfiguration.Create("BlobAnalysis");
+        RuntimeToolConfiguration Change(RuntimeToolConfiguration source,int threshold)
+        {
+            var value=JsonSerializer.SerializeToNode(source)!;
+            value["Settings"]!["Threshold"]=threshold;
+            return value.Deserialize<RuntimeToolConfiguration>()!;
+        }
+        int Threshold(RuntimeToolConfiguration source)
+        {var settings=source.CaptureSettings();return (int)settings.GetType().GetProperty("Threshold")!.GetValue(settings)!;}
+        void Reject(Action action)
+        {
+            try{action();}
+            catch(Exception error) when(error is JsonException or InvalidOperationException or ArgumentException){return;}
+            throw new Exception("非法中立Runtime配置未被拒绝");
+        }
+        var flow=new Workflow("runtime-configuration-flow","Runtime配置");
+        var node=new WorkflowNodeBase("runtime-config","runtime-config","Runtime配置","BlobAnalysis"){RuntimeConfiguration=initial};
+        flow.Nodes.Add(node);var solution=new Solution{Name="Runtime配置验证"};solution.Workflows.Add(flow);
+        var host=new NodeConfigurationEditHost(solution);
+        var stale=host.BeginEdit(flow.Id,node.Id);var draft=host.BeginEdit(flow.Id,node.Id);
+        draft.Node.RuntimeConfiguration=Change(draft.Node.RuntimeConfiguration!,73);
+        Require(host.HasPendingChanges(draft)&&Threshold(node.RuntimeConfiguration!)==128,"中立设置草稿提前污染正式配置或签名未识别变更");
+        var frozen=host.Freeze(draft);
+        draft.Node.RuntimeConfiguration=Change(draft.Node.RuntimeConfiguration!,99);
+        Require(Threshold(frozen.Node.RuntimeConfiguration!)==73,"编辑冻结共享了后续设置修改");
+        var run=WorkflowRunConfiguration.Capture(new[]{flow});
+        host.Commit(frozen);
+        Require(Threshold(node.RuntimeConfiguration!)==73&&Threshold(run.CopyWorkflow(flow.Id)!.Nodes[0].RuntimeConfiguration!)==128,
+            "Runtime设置未发布或修改污染执行配置快照");
+        stale.Node.RuntimeConfiguration=Change(stale.Node.RuntimeConfiguration!,66);
+        Reject(()=>host.Commit(stale));
+        host.Undo();Require(Threshold(node.RuntimeConfiguration!)==128,"撤销丢失Runtime设置");
+        host.Redo();Require(Threshold(node.RuntimeConfiguration!)==73,"重做丢失Runtime设置");
+        var rollback=host.BeginEdit(flow.Id,node.Id);rollback.Node.RuntimeConfiguration=Change(rollback.Node.RuntimeConfiguration!,88);
+        var revision=host.Capture().Version;
+        var injection=typeof(NodeConfigurationEditHost).GetField("_acceptanceFailureAfterRawMutation",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+        injection.SetValue(host,0);
+        try{Reject(()=>host.Commit(rollback));}finally{injection.SetValue(host,-1);}
+        Require(host.Capture().Version==revision&&Threshold(node.RuntimeConfiguration!)==73&&host.HasPendingChanges(rollback),
+            "接受失败后Runtime设置/历史版本未回滚或私有编辑被丢失");
+        var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"runtime-config.solution");
+        var repository=new SolutionRepository();Require(repository.Save(solution,path),"Runtime配置无法经过正式方案保存门："+repository.LastError);
+        var json=File.ReadAllText(path);var stored=JsonNode.Parse(json)!["Workflows"]![0]!["Nodes"]![0]!;
+        Require(stored["Parameters"] is null&&stored["RuntimeConfiguration"]!["ToolId"]!.GetValue<string>()=="BlobAnalysis",
+            "中立节点仍同时保存SDK参数或使用CLR类型名作为工具身份");
+        var loaded=repository.LoadCandidate(path).Candidate??throw new Exception("Runtime配置保存后不能重新读取");
+        Require(Threshold(loaded.Workflows[0].Nodes[0].RuntimeConfiguration!)==73,"XML默认值覆盖保存的Runtime设置");
+        var restoredNode=loaded.Workflows[0].Nodes[0];var definition=ToolRegistry.CreateRuntime(restoredNode.ToolType);
+        var schema=definition.Describe(restoredNode.RuntimeConfiguration!.CaptureSettings());
+        using(var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)100,64).ToArray(),8,8,1))
+        using(var input=image.CaptureSnapshot(new(Guid.NewGuid(),"runtime-node-config-input")))
+        using(var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources())
+        {
+            var imagePort=schema.Inputs.Single(port=>port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image);
+            var inputs=new InputValues(schema.Inputs,new Dictionary<string,object?>{{imagePort.Id,input}});
+            var task=restoredNode.ExecuteRuntimeAsync(inputs,new DirectRuntimeContext(resources,restoredNode.Id)).AsTask();
+            Require(task.Wait(TimeSpan.FromSeconds(30)),"中立节点执行等待UI回调");
+            var outcome=task.GetAwaiter().GetResult();using var output=outcome.Output as IDisposable;
+            Require(outcome.Success&&outcome.Output?.GetType()==definition.OutputType,"重开后的中立节点未返回真实Runtime模型");
+            var values=new InputValues(schema.Outputs,outcome.Output!.ToValues());
+            var projection=((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)definition).ResultProjection;
+            var rows=values.Get<SequenceValue>(projection.Rows!.PortId);
+            Require(rows.Count==1&&((RecordValue)rows[0]!).Get<double>("area")==64,"节点执行忽略保存的阈值73，或回退XML默认128");
+            Reject(()=>restoredNode.ExecuteRuntimeAsync(inputs,new DirectRuntimeContext(resources,"another-node")));
+        }
+        Reject(()=>JsonSerializer.Deserialize<RuntimeToolConfiguration>(JsonSerializer.Serialize(initial).Replace("\"Threshold\":128","\"Threshold\":128,\"Threshold\":2")));
+        foreach(var mutation in new Action<JsonNode>[] {
+            value=>value["Settings"]!.AsObject().Remove("Threshold"),
+            value=>value["Settings"]!["unknown"]=1,
+            value=>value["Settings"]!["Threshold"]="100",
+            value=>value["Settings"]!["Judgments"]![0]!.AsObject().Remove("Kind"),
+            value=>value["ToolId"]="missing-runtime"
+        })
+        {var value=JsonSerializer.SerializeToNode(initial)!;mutation(value);Reject(()=>value.Deserialize<RuntimeToolConfiguration>());}
+        var both=JsonNode.Parse(json)!;both["Workflows"]![0]!["Nodes"]![0]!["Parameters"]=new JsonObject();
+        Reject(()=>both.Deserialize<Solution>(WorkflowSerializationOptions.Default));
+        var mismatch=JsonNode.Parse(json)!;mismatch["Workflows"]![0]!["Nodes"]![0]!["ToolType"]="ImageLoad";
+        Reject(()=>mismatch.Deserialize<Solution>(WorkflowSerializationOptions.Default));
+        var absent=JsonNode.Parse(json)!;absent["Workflows"]![0]!["Nodes"]![0]!["RuntimeConfiguration"]=null;
+        Reject(()=>absent.Deserialize<Solution>(WorkflowSerializationOptions.Default));
+        Console.WriteLine("通过：中立Runtime设置进入实际节点编辑/冻结/冲突/撤销重做/接受回滚、正式保存重开及节点直接HALCON执行，拒绝缺失/重复/错型和双模型；工具箱默认创建及调度器入口尚未切换");
+    }
+    private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
+    private sealed class DirectRuntimeContext(IOutputResources resources,string nodeId="direct-runtime"):IToolExecutionContext
+    {
+        public RunIdentity Identity{get;}=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),nodeId,Guid.NewGuid());
         public CancellationToken Cancellation=>default;public IOutputResources Resources=>resources;public void Log(string message){}
     }
     private sealed class CheckLogger:ILogger

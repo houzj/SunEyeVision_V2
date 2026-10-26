@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
@@ -6,7 +7,13 @@ public enum BlobThresholdMode { Binary, BinaryInv }
 public enum BlobSort { None, AreaAsc, AreaDesc, CircularityAsc, CircularityDesc, RectangularityAsc, RectangularityDesc, XAsc, XDesc, YAsc, YDesc }
 public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None }
 public enum BlobJudgmentKind { Range, Empty, Boolean }
-public sealed record BlobJudgment(string Key, bool PerItem, bool Enabled, double Minimum, double Maximum, BlobJudgmentKind Kind = BlobJudgmentKind.Range);
+public sealed record BlobJudgment(
+    [property: JsonRequired] string Key,
+    [property: JsonRequired] bool PerItem,
+    [property: JsonRequired] bool Enabled,
+    [property: JsonRequired] double Minimum,
+    [property: JsonRequired] double Maximum,
+    [property: JsonRequired] BlobJudgmentKind Kind = BlobJudgmentKind.Range);
 
 /// <summary>Business settings only: no bindings, brushes, view state, backend handles or writable globals.</summary>
 public sealed record BlobSettings : IToolSettings<BlobSettings>
@@ -37,26 +44,47 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Judgments=definition.CreateJudgments();
     }
 
+    [JsonRequired]
     public int Threshold { get; init; }
+    [JsonRequired]
     public int UpperThreshold { get; init; }
+    [JsonRequired]
     public BlobSegmentationMode SegmentationMode { get; init; }
+    [JsonRequired]
     public BlobThresholdMode Type { get; init; }
+    [JsonRequired]
     public bool IsPositionCorrectionEnabled { get; init; }
+    [JsonRequired]
     public bool IsAreaFilterEnabled { get; init; }
+    [JsonRequired]
     public double FilterAreaMin { get; init; }
+    [JsonRequired]
     public double FilterAreaMax { get; init; }
+    [JsonRequired]
     public bool IsCircularityFilterEnabled { get; init; }
+    [JsonRequired]
     public double FilterCircularityMin { get; init; }
+    [JsonRequired]
     public double FilterCircularityMax { get; init; }
+    [JsonRequired]
     public bool IsRectangularityFilterEnabled { get; init; }
+    [JsonRequired]
     public double FilterRectangularityMin { get; init; }
+    [JsonRequired]
     public double FilterRectangularityMax { get; init; }
+    [JsonRequired]
     public bool IsBlobCountFilterEnabled { get; init; }
+    [JsonRequired]
     public int BlobCountLimit { get; init; }
+    [JsonRequired]
     public bool OutputGrayImage { get; init; }
+    [JsonRequired]
     public bool OutputBinaryImage { get; init; }
+    [JsonRequired]
     public bool OutputBoundary { get; init; }
+    [JsonRequired]
     public BlobSort SortMode { get; init; }
+    [JsonRequired]
     public IReadOnlyList<BlobJudgment> Judgments { get; init; }
     public BlobSettings Freeze()
     {

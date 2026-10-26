@@ -164,6 +164,25 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public ToolParameters Parameters { get; set; }
 
+        /// <summary>Neutral Runtime settings. A Runtime node persists this payload
+        /// instead of SDK Parameters; the host owns bindings in ParamSettings.</summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public RuntimeToolConfiguration? RuntimeConfiguration { get; set; }
+
+        /// <summary>Invoke this node's neutral settings with already frozen inputs and
+        /// an admitted context. Scheduling and input/resource ownership stay with the caller.</summary>
+        public System.Threading.Tasks.ValueTask<SunEyeVision.Plugin.Contracts.ToolOutcome> ExecuteRuntimeAsync(
+            SunEyeVision.Plugin.Contracts.InputValues inputs,
+            SunEyeVision.Plugin.Contracts.IToolExecutionContext context,
+            IEnumerable<SunEyeVision.Plugin.Contracts.OutputValueRequest>? outputRequests = null)
+        {
+            var configuration = RuntimeConfiguration ?? throw new InvalidOperationException("节点没有Runtime配置。");
+            if (configuration.ToolId != ToolType || context.Identity.NodeId != Id)
+                throw new InvalidOperationException("Runtime配置或执行上下文与节点身份不符。");
+            return SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(ToolRegistry.CreateRuntime(configuration.ToolId),
+                configuration.CaptureSettings(), inputs, context, outputRequests);
+        }
+
         /// <summary>
         /// 参数绑定配置
         /// </summary>
@@ -651,6 +670,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public virtual IToolPlugin? CreateInstance()
         {
+            if (RuntimeConfiguration is not null)
+                throw new InvalidOperationException("Runtime配置必须由中立运行入口消费，不能创建SDK工具并忽略其设置。");
             // 从工具注册表创建工具实例
             var instance = ToolRegistry.CreateToolInstance(ToolType);
             
@@ -761,6 +782,7 @@ namespace SunEyeVision.Workflow
                 IsEnabled = IsEnabled,
             AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
                 Parameters = Parameters,
+                RuntimeConfiguration = RuntimeConfiguration?.Copy(),
                 ParamSettings = ParamSettings?.Clone(),
                 PositionX = PositionX,
                 PositionY = PositionY,

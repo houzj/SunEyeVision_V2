@@ -932,6 +932,8 @@ namespace SunEyeVision.Workflow
 
             foreach (var node in source.Nodes)
             {
+                if (node.RuntimeConfiguration is not null)
+                    throw new InvalidOperationException("Runtime节点尚未接通工作流执行适配，拒绝忽略Runtime设置后执行SDK工具。");
                 // 运行开始时冻结参数。UI 后续编辑原对象只影响下一次运行。
                 var executionParameters = ToolParameterSnapshot.Create(node.Parameters);
                 ApplyNodeParameterOverrides(executionParameters, node.Id, request);

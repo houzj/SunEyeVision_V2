@@ -139,3 +139,17 @@
 - 证据docs/collaboration/evidence/O06_SETTINGS_AUTHORITY_CHECKPOINT_20261027.json：10份源码增量、768发布项和182加载记录SHA核对一致。Core/清单仍14eb5f5e加记录增量，不可用随后的提交号改写编译身份。原O06同步保留全部未完成条件。
 - 尚未删除重复参数存储/根SDK工程/设置及输入转换；节点配置、编辑事务、快照与方案持久化仍SDK绑定。下一步应直接改公共宿主的中立配置入口及这些消费者，不再给旧Blob参数加一层Runtime包装；最终删除旧入口/模型。参数Wpf视图、VM原件替换/交互和图形文本XML完整消费仍待实施。
 - M1/M2/M3均未完成，目标保持active。无新用户人工验收，VS设计时未验证，原视觉未通过反馈保留。本批功能PASS不等于VM视觉或整体交付完成。
+
+## 2026-10-27 中立Runtime节点配置、事务及直接执行（最新）
+
+- Codex/main，基线d749dc815d7f06377a840e64bba5edd1d0a2601d，单产品写者。本轮推进真实公共宿主配置，未建立Blob参数包装或新旧Blob转换模型。
+- Workflow内RuntimeToolConfiguration只持有实际Runtime设置类型；Create按已注册Runtime读XML默认，WithSettings/Copy先冻结校验，不持有图像或ROI资源。持久化只存稳定ToolId与真实设置，不从JSON CLR类型名加载类型；拒绝未知/重复/缺失/错型字段和错误Runtime。BlobSettings/BlobJudgment字段标记JsonRequired，保存重开不因缺字段悄悄回填XML默认。
+- WorkflowNodeBase新增RuntimeConfiguration；相应节点的方案JSON不写SDK Parameters，读取拒绝双模型、显式null、重复Runtime配置及ToolId与节点不符。BindingConfigurationStore复制/结构历史与NodeConfigurationEditHost签名、冻结、提交、撤销重做、接受回滚均携带此状态。ValueGate内仍只赋值准备好的引用，无新增序列化、插件调用或UI回调。
+- 节点新增ExecuteRuntimeAsync，校验ToolId/NodeId，使用配置快照经公共ToolRuntimeExecutor执行。正式组件检查实际保存阈值73→重开节点→灰度100图像HALCON执行面积64，证明未忽略用户值回退XML默认128；该调用不创建SDK Blob参数/结果。
+- 重要未完成：工具箱仍默认旧SDK Blob；完整工作流调度器、绑定/ROI输入、参数页尚未改用新配置。为防忽略Runtime设置后误执行SDK工具，CreateInstance/当前调度器对RuntimeConfiguration节点明确拒绝；后续必须接通新消费并移除此缺口。本轮FullChain分数为原SDK链回归，不证明新调度器入口已完成。
+- 最终UI002构建0错误/879警告41.86秒，全量001为0错误/6527警告99.97秒（blob-runtime-configuration前缀）。UI001为添加节点直接入口前构建，虽0错误但不作本批最终源码证据。
+- 正式RuntimeKernel022十四组、Components110八组/无Wpf108九组、S2 DocumentEditing030二十八项、FullChain049/050各九组通过；ComponentDeployment033十二项通过，真实EXE准入正常，3文件及清单原SHA恢复。768发布项和160加载记录同源；证据docs/collaboration/evidence/O06_RUNTIME_CONFIGURATION_CHECKPOINT_20261027.json。
+- 新配置测试含私有草稿、冻结、并发冲突拒绝、Undo/Redo、原始接受失败回滚/草稿保留、正式保存重开、节点直接HALCON以及缺/重/错字段、双模型和身份错误负向检查。104/105失败保留：新增保存检查宿主未按App启动流程发布已完成状态；105明确为插件元数据未加载完成。按App.xaml.cs真实顺序在完整PluginManager准入和清单检查后MarkAsLoaded，106及后续通过；未放宽产品保存门。
+- 样式核对纠正：现有Themes/Combo.xaml与Native/Input/VisionUi/SourceComboBoxes.xaml仅资源URI重定位不同（逐字比较为true），不能把前者称自绘模板。本轮未改视觉控件，也不据此声称VM交互或视觉通过。
+- 下一步从WorkflowExecutionEngine的RuntimeConfiguration拒绝位置接通实际节点执行与结果发布，并同步绑定/输入/帧与资源准入、工具箱默认创建及中立参数编辑；不要再把旧Blob参数包进新设置或新增Blob兼容转换。最终删除根SDK工程/旧参数和结果后才能满足两工程目标。
+- Core/清单编译身份d749dc81加证据所列9份源码增量，不可用随后提交号改写该产物。目标树未改，M1/M2/M3均未完成/目标active。VS设计时未验证，新候选无人工验收，原视觉未通过反馈保留。

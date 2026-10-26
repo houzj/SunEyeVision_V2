@@ -24,6 +24,12 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
             int nodeIndex = 0;
             foreach (var element in nodes.EnumerateArray())
             {
+                var runtimeMembers = element.EnumerateObject().Where(p => p.Name.Equals("RuntimeConfiguration", StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (runtimeMembers.Length > 1) throw new JsonException("Duplicate RuntimeConfiguration.");
+                if (runtimeMembers.Length != 0 && runtimeMembers[0].Value.ValueKind != JsonValueKind.Object)
+                    throw new JsonException("RuntimeConfiguration must be an object when present.");
+                if (runtimeMembers.Length != 0 && element.EnumerateObject().Any(p => p.Name.Equals("Parameters", StringComparison.OrdinalIgnoreCase)))
+                    throw new JsonException("A Runtime node cannot also persist SDK Parameters.");
                 WorkflowNodeBase node;
                 try { node = JsonSerializer.Deserialize<WorkflowNodeBase>(element.GetRawText(), options) ?? throw new JsonException("Null workflow node."); }
                 catch (Exception ex)
@@ -34,6 +40,8 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
                     throw error;
                 }
                 if (string.IsNullOrWhiteSpace(node.Id) || !ids.Add(node.Id)) throw new JsonException("Empty or duplicate node Id.");
+                if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
+                    throw new JsonException("Runtime configuration ToolId differs from the node identity.");
                 workflow.Nodes.Add(node);
                 nodeIndex++;
             }
@@ -53,6 +61,9 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
     }
     public override void Write(Utf8JsonWriter writer, Workflow value, JsonSerializerOptions options)
     {
+        foreach (var node in value.Nodes)
+            if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
+                throw new JsonException("Runtime configuration ToolId differs from the node identity.");
         writer.WriteStartObject();
         writer.WriteString("Id", value.Id); writer.WriteString("Name", value.Name); writer.WriteBoolean("IsSubroutine", value.IsSubroutine);
         writer.WritePropertyName("Nodes"); JsonSerializer.Serialize(writer, value.Nodes, options);

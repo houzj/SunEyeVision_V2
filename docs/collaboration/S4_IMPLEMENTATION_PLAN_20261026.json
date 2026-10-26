@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27继续向Runtime单一模型收敛：Blob外层重复分割/极性/排序枚举已删除，参数及消费者使用Runtime真实类型；Runtime数值与判定准入读取参数XML边界。UI/全量构建0错误，本批正式产物定向回归通过；SDK参数存储/发现/持久化仍未退出，M1未完成。",
-  "summaryStatus": "模型和XML准入增量：UI/全量0错误；Runtime14、组件7/8、有无Wpf整链各9、关联算法9、发布12通过。",
+  "current": "2026-10-27中立Runtime配置已进入真实节点存储、编辑事务、快照和方案保存；新节点直接入口用重开后的真实设置执行HALCON。工具箱默认创建、完整工作流调度器、绑定/ROI输入与参数页尚未切换；根SDK工程仍在，M1未完成。",
+  "summaryStatus": "配置链增量：最终UI/全量0错误；Runtime14、组件8/9（含新配置及节点直接HALCON）、原文档事务28、原工作流有无Wpf整链各9、部署12通过。",
   "rows": [
+    [
+      "中立Runtime配置与节点直接执行",
+      "现有Workflow内增加RuntimeToolConfiguration，持有真实强类型设置；节点序列化不同时写出SDK Parameters，读取严格拒绝双模型和错/缺字段。配置复制、签名、冻结、提交、撤销重做、结构历史与接受回滚均携带中立状态；节点直接调用公共Runtime执行器。",
+      "正式保存阈值73→重开→灰度100真实HALCON面积64通过；有/无Wpf组件8/9、原文档事务28及原SDK工作流整链9/9通过。工具箱/调度器/绑定与ROI准入尚未切换，不能把旧工作流回归算新调度消费完成。"
+    ],
     [
       "Runtime枚举单一来源与XML准入",
       "已删除外层ThresholdType/BlobSortMode/BlobSegmentationMode；实际参数、描述与消费者直接使用Runtime类型，不留兼容类型或枚举数值转换。Runtime按参数XML拒绝启用字段越界、未知判定键及类型/作用范围伪造；空判定集合明确拒绝。",
@@ -5067,5 +5072,14 @@
     "implementation": "已删除外层ThresholdType/BlobSortMode/BlobSegmentationMode；实际参数、描述与消费者直接使用Runtime类型，不留兼容类型或枚举数值转换。Runtime按参数XML拒绝启用字段越界、未知判定键及类型/作用范围伪造；空判定集合明确拒绝。",
     "verification": "本批正式产物Runtime14、组件7/8、有无Wpf整链各9、关联算法9和发布12通过，768发布项/182加载记录身份一致。SDK节点/参数存储/发现/持久化未退出；不是M1完成，也不冒充VM外观或人工验收。",
     "remaining": "直接替换SDK工作流配置/快照/编辑/方案持久化与发现，移除根工具工程及剩余转换；完成参数编辑器和全部Blob所需VM原件。"
+  },
+  "runtimeConfigurationCheckpoint": {
+    "status": "SCOPED_CONFIGURATION_AND_DIRECT_NODE_INVOCATION_VERIFIED_NOT_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_RUNTIME_CONFIGURATION_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "d749dc815d7f06377a840e64bba5edd1d0a2601d",
+    "implementation": "现有Workflow内增加RuntimeToolConfiguration，持有真实强类型设置；节点序列化不同时写出SDK Parameters，读取严格拒绝双模型和错/缺字段。配置复制、签名、冻结、提交、撤销重做、结构历史与接受回滚均携带中立状态；节点直接调用公共Runtime执行器。",
+    "verification": "正式保存阈值73→重开→灰度100真实HALCON面积64通过；有/无Wpf组件8/9、原文档事务28及原SDK工作流整链9/9通过。工具箱/调度器/绑定与ROI准入尚未切换，不能把旧工作流回归算新调度消费完成。",
+    "remaining": "接通工具箱默认创建、参数Wpf编辑及完整调度器/输入快照/绑定/ROI/输出发布；去掉临时拒绝检查，再删除旧Blob SDK工程和模型。",
+    "visualCorrection": "现有Combo.xaml与迁入SourceComboBoxes仅资源URI不同，不能称为自绘；本轮无模板改动。"
   }
 }

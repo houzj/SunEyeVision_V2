@@ -428,8 +428,17 @@ public sealed class NodeConfigurationEditHost
                 throw new InvalidOperationException(batchIssue.Message);
             foreach (var node in flow.Nodes.Where(n => participants.Contains(new(flow.Id, n.Id))))
             {
-                var result = node.Parameters.Validate();
-                if (!result.IsValid) throw new InvalidOperationException(result.Errors.FirstOrDefault() ?? "节点参数无效。");
+                if (node.RuntimeConfiguration is { } runtime)
+                {
+                    if (runtime.ToolId != node.ToolType) throw new InvalidOperationException("Runtime配置与节点工具身份不符。");
+                    var diagnostics = runtime.Validate();
+                    if (diagnostics.Count != 0) throw new InvalidOperationException(diagnostics[0].Message);
+                }
+                else
+                {
+                    var result = node.Parameters.Validate();
+                    if (!result.IsValid) throw new InvalidOperationException(result.Errors.FirstOrDefault() ?? "节点参数无效。");
+                }
                 if (issues.TryGetValue(node.Id, out var inputIssues) && inputIssues.Count > 0)
                     throw new InvalidOperationException(inputIssues[0].Message);
             }
@@ -508,7 +517,7 @@ public sealed class NodeConfigurationEditHost
         internal bool Applied;
         internal List<GlobalVariable>? PreviousOrder;
         internal readonly List<(WorkflowNodeBase Node, SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters Parameters,
-            SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSettingContainer Settings)> Nodes = new();
+            SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSettingContainer Settings, RuntimeToolConfiguration? Runtime)> Nodes = new();
         internal readonly List<(GlobalVariable Variable, GlobalVariable.ConfigurationState Configuration, GlobalVariable.ValueState Value)> Variables = new();
         internal readonly List<string> AddedInstances = new();
         internal readonly List<(GlobalVariable Variable, bool ValueChanged)> Notifications = new();
@@ -516,7 +525,7 @@ public sealed class NodeConfigurationEditHost
         internal void Restore(NodeConfigurationEditHost host)
         {
             if (!Applied) return;
-            foreach (var node in Nodes) { node.Node.Parameters = node.Parameters; node.Node.ParamSettings = node.Settings; }
+            foreach (var node in Nodes) { node.Node.Parameters = node.Parameters; node.Node.ParamSettings = node.Settings; node.Node.RuntimeConfiguration = node.Runtime; }
             foreach (var variable in Variables)
             {
                 variable.Variable.ApplyConfigurationRaw(variable.Configuration);
@@ -551,7 +560,7 @@ public sealed class NodeConfigurationEditHost
         {
             var target = _nodeInstances[pair.Key];
             if (ParametersSignature(target) != ParametersSignature(pair.Value))
-                projection.Nodes.Add((target, target.Parameters, target.ParamSettings));
+                projection.Nodes.Add((target, target.Parameters, target.ParamSettings, target.RuntimeConfiguration));
         }
         var configChanged = plans.ToDictionary(p => p.Next.Id,
             p => VariableConfigurationSignature(p.Target) != VariableConfigurationSignature(p.Next), StringComparer.Ordinal);
@@ -574,6 +583,7 @@ public sealed class NodeConfigurationEditHost
             {
                 _nodeInstances[pair.Key].Parameters = pair.Value.Parameters;
                 _nodeInstances[pair.Key].ParamSettings = pair.Value.ParamSettings;
+                _nodeInstances[pair.Key].RuntimeConfiguration = pair.Value.RuntimeConfiguration;
                 RawMutationCompleted();
             }
         foreach (var plan in plans)
@@ -689,8 +699,9 @@ public sealed class NodeConfigurationEditHost
     }, WorkflowSerializationOptions.Compact);
     private static string ParametersSignature(WorkflowNodeBase node) => JsonSerializer.Serialize(new
     {
-        Type = node.Parameters.GetType().FullName,
-        Parameters = JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact), node.ParamSettings
+        Type = node.RuntimeConfiguration?.SettingsType.FullName ?? node.Parameters.GetType().FullName,
+        Runtime = node.RuntimeConfiguration,
+        Parameters = node.RuntimeConfiguration is null ? JsonSerializer.Serialize(node.Parameters, node.Parameters.GetType(), WorkflowSerializationOptions.Compact) : null, node.ParamSettings
     }, WorkflowSerializationOptions.Compact);
     private static string VariableConfigurationSignature(GlobalVariable variable) => JsonSerializer.Serialize(new
     {
@@ -720,7 +731,12 @@ public sealed class NodeConfigurationEditHost
         configuration.Workflows.SingleOrDefault(w => w.Id == identity.WorkflowId)?.Nodes.SingleOrDefault(n => n.Id == identity.NodeId)
         ?? throw new InvalidOperationException("编辑来源节点已删除。");
     private static void SetParameters(WorkflowNodeBase target, WorkflowNodeBase source)
-    { target.Parameters = ToolParameterSnapshot.Create(source.Parameters); target.ParamSettings = BindingConfigurationStore.CopySettings(source.ParamSettings); }
+    {
+        target.RuntimeConfiguration = source.RuntimeConfiguration?.Copy();
+        target.Parameters = source.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(source.Parameters)
+            : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
+        target.ParamSettings = BindingConfigurationStore.CopySettings(source.ParamSettings);
+    }
     private static T Copy<T>(T value) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value, WorkflowSerializationOptions.Compact), WorkflowSerializationOptions.Compact)
         ?? throw new InvalidOperationException("无法复制编辑绑定设置。");
 }

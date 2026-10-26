@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -4361,10 +4361,7 @@ SplitterPosition = position;
 
         private void RefreshStatusBarExecutionSnapshot()
         {
-            var tab = WorkflowTabViewModel.SelectedTab;
-            _statusBar.SetExecutionSnapshot(tab == null || string.IsNullOrWhiteSpace(tab.RootWorkflowId)
-                ? null
-                : _executionManager.EnsureExecutionSnapshot(tab.RootWorkflowId, tab.Name, tab.WorkflowNodes));
+            _statusBar.SetExecutionSnapshot(_executionManager.EnsureRootExecutionSnapshot(WorkflowTabViewModel.SelectedTab));
         }
 
         private void ShowExecutionSnapshot(Services.Workflow.WorkflowExecutionSnapshot? snapshot)
@@ -4374,10 +4371,7 @@ SplitterPosition = position;
             var currentTab = WorkflowTabViewModel.SelectedTab;
             if (currentTab != null && !string.IsNullOrWhiteSpace(currentTab.RootWorkflowId))
             {
-                snapshot = _executionManager.EnsureExecutionSnapshot(
-                    currentTab.RootWorkflowId,
-                    currentTab.Name,
-                    currentTab.WorkflowNodes);
+                snapshot = _executionManager.EnsureRootExecutionSnapshot(currentTab);
                 _statusBar.SetExecutionSnapshot(snapshot);
             }
 

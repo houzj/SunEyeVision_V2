@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 namespace SunEyeVision.UI.Shell.Controls.Shell;
 /// <summary>流程工作区状态与缩放入口；实际视口变换由宿主执行。</summary>
 public partial class WorkspaceStatusBarControl : UserControl
 {
  public static readonly DependencyProperty ScaleProperty=DependencyProperty.Register(nameof(Scale),typeof(double),typeof(WorkspaceStatusBarControl),new PropertyMetadata(1d));
  public static readonly DependencyProperty StatusTextProperty=DependencyProperty.Register(nameof(StatusText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("等待添加模块"));
+ public static readonly DependencyProperty ExecutionTextProperty=DependencyProperty.Register(nameof(ExecutionText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("尚未运行"));
+ public static readonly DependencyProperty ExecutionDetailsCommandProperty=DependencyProperty.Register(nameof(ExecutionDetailsCommand),typeof(ICommand),typeof(WorkspaceStatusBarControl),new PropertyMetadata(null));
+ public string ExecutionText {get=>(string)GetValue(ExecutionTextProperty);set=>SetValue(ExecutionTextProperty,value);}
+ public ICommand? ExecutionDetailsCommand {get=>(ICommand?)GetValue(ExecutionDetailsCommandProperty);set=>SetValue(ExecutionDetailsCommandProperty,value);}
  public double Scale {get=>(double)GetValue(ScaleProperty);set=>SetValue(ScaleProperty,value);}
  public string StatusText {get=>(string)GetValue(StatusTextProperty);set=>SetValue(StatusTextProperty,value);}
  public event Action<double>? ScaleRequested;

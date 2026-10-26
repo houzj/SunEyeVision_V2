@@ -81,6 +81,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public void Initialize(MainWindowViewModel viewModel)
         {
             _viewModel = viewModel;
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionTextProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.WorkflowExecutionText)){Source=viewModel.StatusBar});
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionDetailsCommandProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.ShowExecutionSnapshotCommand)){Source=viewModel.StatusBar});
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.StatusTextProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.StatusText)){Source=viewModel});
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ScaleProperty,new System.Windows.Data.Binding("SelectedTab.CurrentScale"){Source=viewModel.WorkflowTabViewModel,Mode=System.Windows.Data.BindingMode.OneWay});
         }

@@ -133,6 +133,14 @@ namespace SunEyeVision.UI.Services.Workflow
             return snapshot;
         }
 
+        /// <summary>根流程详情只读取根定义；Group画布的可见节点不构成根流程清单。</summary>
+        internal WorkflowExecutionSnapshot? EnsureRootExecutionSnapshot(WorkflowTabViewModel? tab)
+        {
+            if(tab==null||string.IsNullOrWhiteSpace(tab.RootWorkflowId))return null;
+            var root=_workflowEngine.GetWorkflowById(tab.RootWorkflowId);
+            return root==null?null:EnsureExecutionSnapshot(root.Id,root.Name,root.Nodes);
+        }
+
         public WorkflowExecutionManager(
             IInputProvider inputProvider,
             WorkflowEngine workflowEngine,

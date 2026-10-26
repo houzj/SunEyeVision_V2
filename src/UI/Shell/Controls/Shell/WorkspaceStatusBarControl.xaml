@@ -18,6 +18,12 @@
  <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ThemeBorderBrush}" Background="{DynamicResource ThemeStatusBarBackgroundBrush}" MinHeight="26">
   <DockPanel TextBlock.FontSize="13" TextBlock.Foreground="{DynamicResource ThemeTextSecondaryBrush}">
    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,5,0">
+    <Button x:Name="ExecutionDetailsButton" Padding="4,0" Margin="0,0,12,0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextSecondaryBrush}" ToolTip="查看根流程最近运行状态与耗时详情" Command="{Binding ExecutionDetailsCommand,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}" AutomationProperties.Name="根流程耗时详情">
+     <Button.Style><Style TargetType="Button"><Style.Triggers><DataTrigger Binding="{Binding ExecutionDetailsCommand,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
+     <StackPanel Orientation="Horizontal"><TextBlock Text="根流程" Margin="0,0,5,0"/><TextBlock x:Name="ExecutionTextBlock" Text="{Binding ExecutionText,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}"/></StackPanel>
+    </Button>
+    <Rectangle Width="1" Margin="0,3,12,3" Fill="{DynamicResource ThemeBorderBrush}"/>
+
     <Slider x:Name="ZoomSlider" Width="80" Minimum="0.1" Maximum="2" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" Style="{StaticResource WorkspaceZoomSlider}" Value="{Binding Scale,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl},Mode=OneWay}" ValueChanged="ZoomSlider_ValueChanged" AutomationProperties.Name="流程画布缩放"/>
     <Button x:Name="ResetZoomButton" Width="48" Margin="4,0,0,0" Padding="0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Click="ResetZoomButton_Click" ToolTip="恢复100%缩放" AutomationProperties.Name="恢复流程画布原始比例"><TextBlock Text="{Binding Scale,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl},StringFormat={}{0:P0}}"/></Button>
    </StackPanel>

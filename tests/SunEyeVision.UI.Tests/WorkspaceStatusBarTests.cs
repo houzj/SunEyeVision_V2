@@ -28,9 +28,44 @@ public sealed class WorkspaceStatusBarTests
    Assert.Contains(Visual<TextBlock>(reset),t=>t.Text.Contains("140"));
    reset.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);Assert.Equal(1d,control.Scale);Assert.Equal(1d,slider.Value);Assert.Equal(2,requests.Count);
    Assert.Equal("等待添加模块",((TextBlock)control.FindName("StatusTextBlock")).Text);
+   var details=(Button)control.FindName("ExecutionDetailsButton");Assert.False(details.IsEnabled);
+   var opened=0;control.ExecutionDetailsCommand=new SunEyeVision.UI.Core.RelayCommand(()=>opened++);control.ExecutionText="12.34 ms";
+   window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);Assert.True(details.IsEnabled);Assert.Equal("12.34 ms",((TextBlock)control.FindName("ExecutionTextBlock")).Text);
+   typeof(ButtonBase).GetMethod("OnClick",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.Invoke(details,null);Assert.Equal(1,opened);
+
    var image=new RenderTargetBitmap(900,28,96,96,PixelFormats.Pbgra32);image.Render(control);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(image));using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"workspace-footer-"+theme+".png"));encoder.Save(file);
   }
   finally{window.Close();}
+ });
+ [Fact]
+ public void Footer_follows_published_root_snapshot_and_details_command_when_selection_changes()=>Sta(()=>
+ {
+  var vm=new SunEyeVision.UI.Shell.Controls.StatusBarViewModel(NSubstitute.Substitute.For<SunEyeVision.UI.Core.IRootCoordinator>());
+  try
+  {
+   var control=new WorkspaceStatusBarControl();
+   control.SetBinding(WorkspaceStatusBarControl.ExecutionTextProperty,new System.Windows.Data.Binding(nameof(vm.WorkflowExecutionText)){Source=vm});
+   control.SetBinding(WorkspaceStatusBarControl.ExecutionDetailsCommandProperty,new System.Windows.Data.Binding(nameof(vm.ShowExecutionSnapshotCommand)){Source=vm});
+   var first=new SunEyeVision.UI.Services.Workflow.WorkflowExecutionSnapshot("first","第一流程");
+   first.Complete(new SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult{Status=SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success,Success=true,ExecutionTime=TimeSpan.FromMilliseconds(12.34)},id=>id);
+   vm.SetExecutionSnapshot(first);System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);Assert.Equal(first.StatusBarText,control.ExecutionText);
+   var second=new SunEyeVision.UI.Services.Workflow.WorkflowExecutionSnapshot("second","第二流程");vm.SetExecutionSnapshot(second);System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);Assert.Equal("尚未运行",control.ExecutionText);
+   first.Begin("第一流程");first.Complete(new SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult{Status=SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success,Success=true,ExecutionTime=TimeSpan.FromMilliseconds(99)},id=>id);
+   System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);Assert.Equal("尚未运行",control.ExecutionText);
+   SunEyeVision.UI.Services.Workflow.WorkflowExecutionSnapshot? opened=null;vm.ShowExecutionSnapshotRequested=snapshot=>opened=snapshot;control.ExecutionDetailsCommand!.Execute(null);Assert.Same(second,opened);
+   vm.SetExecutionSnapshot(null);System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);Assert.Equal("--",control.ExecutionText);
+  }
+  finally{vm.Shutdown();}
+ });
+ [Fact]
+ public void Group_view_uses_root_definition_for_time_details_instead_of_visible_child_nodes()=>Sta(()=>
+ {
+  var engine=new SunEyeVision.Workflow.WorkflowEngine(NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Logging.ILogger>());var root=engine.CreateWorkflow("root","根流程");var child=engine.CreateWorkflow("child","内部");
+  root.Nodes.Add(new("owner","Group","Group","Subroutine"){SubroutineId=child.Id});child.Nodes.Add(new("inside","内部节点","内部节点","ProtocolParse"));
+  var tab=new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel{Id=root.Id,Name=root.Name};tab.SetContent(root.Nodes,root.Connections);tab.NavigateToSubroutine(child.Id,"Group",null,"owner");tab.SetContent(child.Nodes,child.Connections);
+  var manager=new SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager(NSubstitute.Substitute.For<SunEyeVision.UI.Services.Interaction.IInputProvider>(),engine,new SunEyeVision.UI.Services.RuntimeInputSnapshotService());
+  try{var snapshot=manager.EnsureRootExecutionSnapshot(tab)!;Assert.Equal(root.Id,snapshot.WorkflowId);Assert.Equal("owner",Assert.Single(snapshot.Nodes).NodeId);Assert.DoesNotContain(snapshot.Nodes,n=>n.NodeId=="inside");Assert.Null(manager.EnsureRootExecutionSnapshot(null));}
+  finally{manager.Dispose();}
  });
  [Fact]
  public void Shell_places_status_footer_below_canvas_and_minimap()=>Sta(()=>

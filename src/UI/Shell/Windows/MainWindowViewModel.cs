@@ -2963,9 +2963,7 @@ SplitterPosition = position;
             // 恢复上层工作流的画布内容
             NavigateToWorkflowCanvas(tab.CurrentWorkflowId);
 
-            // 恢复上层工作流名称
-            var parentWorkflow = _workflowEngine.GetWorkflow(tab.CurrentWorkflowId);
-            tab.SetCurrentWorkflowName(parentWorkflow?.Name ?? tab.Name);
+            // 导航帧已恢复父容器的显示名称和图标，不用定义旧名称覆盖节点标题。
 
             AddLog($"↩️ 返回上层工作流: {tab.EffectiveDisplayName}");
             return true;

@@ -58,8 +58,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellWorkspaceControl()
         {
             InitializeComponent();
-            Loaded += (_, _) => { if (_viewModel != null) RefreshMiniMap(); };
-            Unloaded += (_, _) => { _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
+            Loaded += (_, _) => { if (_viewModel != null) { RefreshMiniMap(); QueueRestoreWorkspaceView(); } };
+            Unloaded += (_, _) => { CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
             // 小地图重绘节流定时器：单次触发，Tick 时重绘一次后停止
             _miniMapThrottleTimer = new System.Windows.Threading.DispatcherTimer
@@ -178,7 +178,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     UpdateCanvasSizingGridSize();
-                    CenterOnWorkflowNodes();
+                    QueueRestoreWorkspaceView();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
@@ -308,9 +308,12 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (removed is WorkflowTabViewModel oldTab)
                 {
+                    CaptureWorkspaceView(oldTab);
                     oldTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
                 }
             }
+
+            ++_viewRestoreGeneration; _restoringContainerView=true;
 
             // 用户切换 Tab 时通过唯一写入口 SetSelectedTab 更新，避免双向绑定回写重入
             if (e.AddedItems.Count > 0
@@ -348,6 +351,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 UpdateZoomDisplay();
                 // 刷新小地图
                 RefreshMiniMap();
+                QueueRestoreWorkspaceView();
             }), System.Windows.Threading.DispatcherPriority.Render);
         }
 
@@ -1002,7 +1006,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private System.Collections.Specialized.INotifyCollectionChanged? _miniMapObservedNodes, _miniMapObservedEdges;
         private void UnbindMiniMapContent()
         {
-            if (_miniMapObservedTab != null) _miniMapObservedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
+            if (_miniMapObservedTab != null)
+            { _miniMapObservedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged; _miniMapObservedTab.WorkflowContentChanging -= WorkspaceContentChanging; }
             if (_miniMapObservedNodes != null) _miniMapObservedNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
             if (_miniMapObservedEdges != null) _miniMapObservedEdges.CollectionChanged -= MiniMapContent_CollectionChanged;
             foreach (var node in _miniMapSubscribedNodes.Values) node.PropertyChanged -= MiniMapNode_PropertyChanged;
@@ -1021,6 +1026,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _miniMapObservedNodes=selectedTab.WorkflowNodes;
             _miniMapObservedEdges=selectedTab.WorkflowConnections;
             _miniMapObservedTab.WorkflowContentChanged += MiniMap_WorkflowContentChanged;
+            _miniMapObservedTab.WorkflowContentChanging += WorkspaceContentChanging;
             _miniMapObservedNodes.CollectionChanged += MiniMapContent_CollectionChanged;
             _miniMapObservedEdges.CollectionChanged += MiniMapContent_CollectionChanged;
 
@@ -1038,6 +1044,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void MiniMap_WorkflowContentChanged(object? sender, EventArgs e)
         {
             RefreshMiniMap();
+            QueueRestoreWorkspaceView();
         }
 
         /// <summary>
@@ -1224,6 +1231,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void CanvasScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab);
             UpdateCanvasSizingGridSize();   // 视口尺寸变化时同步画布容器尺寸
             if (_isDraggingMiniMapView)
                 return;  // 拖动跳转期间由跳转逻辑统一重绘，避免拉扯

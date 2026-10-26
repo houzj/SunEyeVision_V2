@@ -50,4 +50,39 @@ public sealed class VmContainerHistoryTests
         }catch(Exception ex){failure=ex;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure!=null)throw failure;
     }
 
+    [Fact]
+    public void Containers_restore_independent_scale_and_canvas_origin_and_navigation_restores_parent_metadata()
+    {
+        Exception? failure=null;var thread=new Thread(()=>{try{
+            var tab=new WorkflowTabViewModel{Id="root",Name="根流程"};
+            var rootNodes=new ObservableCollection<WorkflowNodeBase>();var rootEdges=new ObservableCollection<WorkflowConnection>();
+            var childNodes=new ObservableCollection<WorkflowNodeBase>();var childEdges=new ObservableCollection<WorkflowConnection>();
+            tab.SetContent(rootNodes,rootEdges);tab.CurrentScale=.5;tab.CaptureViewport(125,75);
+            tab.NavigateToSubroutine("child","外层Group","outer-icon");tab.SetContent(childNodes,childEdges);
+            Assert.Equal(1,tab.CurrentScale);Assert.False(tab.HasSavedViewport);
+            tab.CurrentScale=1.5;tab.CaptureViewport(300,150);
+            tab.NavigateToSubroutine("grand","内层Group","inner-icon");
+            Assert.Equal(new[]{"根流程","外层Group","内层Group"},tab.GetNavigationPath());Assert.Equal(new[]{"child","root"},tab.NavigationAncestorIds);
+            Assert.Throws<InvalidOperationException>(()=>tab.NavigateToSubroutine("root","错误"));
+            Assert.True(tab.NavigateBack());Assert.Equal("外层Group",tab.EffectiveDisplayName);Assert.Equal("outer-icon",tab.SubroutineIcon);
+            Assert.True(tab.NavigateBack());tab.SetContent(rootNodes,rootEdges);
+            Assert.Equal(.5,tab.CurrentScale);Assert.Equal(new System.Windows.Point(250,150),tab.ViewportCanvasOrigin);Assert.True(tab.HasSavedViewport);Assert.Null(tab.SubroutineIcon);
+            tab.NavigateToSubroutine("child","外层Group","outer-icon");tab.SetContent(childNodes,childEdges);
+            Assert.Equal(1.5,tab.CurrentScale);Assert.Equal(new System.Windows.Point(200,100),tab.ViewportCanvasOrigin);
+        }catch(Exception ex){failure=ex;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure!=null)throw failure;
+    }
+
+    [Fact]
+    public void Restored_canvas_origin_drives_real_scroll_viewer_at_saved_scale()
+    {
+        Exception? failure=null;var thread=new Thread(()=>{try{
+            var tab=new WorkflowTabViewModel{CurrentScale=.5};tab.CaptureViewport(125,75);
+            var viewer=new System.Windows.Controls.ScrollViewer{HorizontalScrollBarVisibility=System.Windows.Controls.ScrollBarVisibility.Auto,VerticalScrollBarVisibility=System.Windows.Controls.ScrollBarVisibility.Auto,Width=200,Height=100,Content=new System.Windows.Controls.Canvas{Width=5000,Height=5000}};
+            viewer.Measure(new System.Windows.Size(200,100));viewer.Arrange(new System.Windows.Rect(0,0,200,100));viewer.UpdateLayout();
+            var restore=typeof(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl).GetMethod("RestoreSavedViewport",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!;
+            restore.Invoke(null,new object[]{tab,viewer});viewer.UpdateLayout();
+            Assert.Equal(125,viewer.HorizontalOffset);Assert.Equal(75,viewer.VerticalOffset);
+        }catch(Exception ex){failure=ex;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure!=null)throw failure;
+    }
+
 }

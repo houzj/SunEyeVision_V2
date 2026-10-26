@@ -21,28 +21,30 @@ public sealed class ToolboxPresentationTests
     [Fact]
     public void Category_catalog_matches_confirmed_workflow_order()
     {
-        Assert.Equal(new[] { "图像采集", "图像预处理", "特征定位", "区域分析", "几何测量", "坐标标定", "通信工具", "流程控制", "脚本工具" }, ToolCategories.Definitions.Select(d => d.Name));
+        Assert.Equal(new[] { "采集", "定位", "测量", "识别", "缺陷检测", "标定", "运算", "图像处理", "颜色处理", "拆分组合", "图形生成", "逻辑工具", "通信", "自定义组工具", "自定义工具" }, ToolCategories.Definitions.Select(d => d.Name));
         Assert.Equal(ToolCategories.Definitions.OrderBy(d => d.Order), ToolCategories.Definitions);
         Assert.All(ToolCategories.Definitions, d => Assert.True(ToolIconGeometry.Contains(d.IconKey)));
         Assert.Equal(1000, ToolCategories.GetDefinition("扩展分类").Order);
     }
 
     [Fact]
-    public void Toolbox_order_does_not_depend_on_plugin_registration_order()
+    public void Toolbox_reads_deployed_directory_without_loading_tool_types()
     {
-        foreach (var type in new[] { typeof(Script), typeof(Control), typeof(Communication), typeof(Calibration), typeof(Measurement), typeof(Region), typeof(Location), typeof(Preprocessing), typeof(Acquisition), typeof(SecondMeasure), typeof(FirstMeasure) })
-            ToolRegistry.RegisterTool(type);
-        ToolRegistry.RegisterTool(typeof(ProtocolAssembleTool)); ToolRegistry.RegisterTool(typeof(ProtocolParseTool));
-        var model = new ToolboxViewModel();
-        Assert.Equal(ToolCategories.Definitions.Select(d => d.Name), model.Categories.Where(c => ToolCategories.Definitions.Any(d => d.Name == c.Name)).Select(c => c.Name));
-        var measured = model.AllTools.Where(t => t.ToolId is "_presentation_first" or "_presentation_second").Select(t => t.ToolId);
-        Assert.Equal(new[] { "_presentation_first", "_presentation_second" }, measured);
-        model.SelectedCategory = ToolCategories.Communication;
-        Assert.Equal(new[] { "ProtocolParse", "ProtocolAssemble" }, model.SelectedCategoryTools.Where(t => t.ToolId.StartsWith("Protocol")).Select(t => t.ToolId));
-        Assert.Equal("exchange", model.SelectedCategoryIcon);
-        Assert.All(model.Categories.Where(c => ToolCategories.Definitions.Any(d => d.Name == c.Name)), c => Assert.True(ToolIconGeometry.Contains(c.Icon)));
+        var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","ToolboxCases")),Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root,"plugins","sample"));
+        File.WriteAllText(Path.Combine(root,"ToolGroups.xml"),"<ToolGroups SchemaVersion='1'><Group Name='通信' Order='14' Icon='CommunicationImageEnable.png' HoverIcon='CommunicationImageHover.png'/><Tool Id='first' Category='通信' Directory='sample'/><Tool Id='second' Category='通信' Directory='sample'/></ToolGroups>");
+        File.WriteAllText(Path.Combine(root,"plugins","sample","ToolItemInfo.xml"),"<ToolItems SchemaVersion='1' Assembly='missing.dll'><Tool Id='second' DisplayName='发送' Category='通信' Order='40' Icon='send' EntryType='Missing.Second'/><Tool Id='first' DisplayName='接收' Category='通信' Order='10' Icon='receive' EntryType='Missing.First'/></ToolItems>");
+        var directory=new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog(Path.Combine(root,"plugins"),Path.Combine(root,"ToolGroups.xml"));
+        var model=new ToolboxViewModel(directory);
+        Assert.Null(Assert.Single(model.Categories).Tools);
+        model.SelectedCategory="通信";
+        Assert.Equal(new[]{"first","second"},model.SelectedCategoryTools.Select(t=>t.ToolId));
+        Assert.True(model.IsCompactModePopupOpen);
+        model.IsCompactMode=false;
+        Assert.False(model.IsCompactModePopupOpen);
+        Assert.Equal(230,model.PreferredWidth);
+        Assert.False(File.Exists(Path.Combine(root,"plugins","sample","missing.dll")));
     }
-
     [Fact]
     public void Communication_nodes_and_metadata_share_icon_keys_without_changing_saved_identity()
     {
@@ -123,12 +125,12 @@ public sealed class ToolboxPresentationTests
     [Tool("_presentation_acquisition", "采集", Category = ToolCategories.Acquisition, Icon = "image")] public sealed class Acquisition : Dummy { }
     [Tool("_presentation_preprocessing", "预处理", Category = ToolCategories.Preprocessing, Icon = "sliders")] public sealed class Preprocessing : Dummy { }
     [Tool("_presentation_location", "定位", Category = ToolCategories.Location, Icon = "locate")] public sealed class Location : Dummy { }
-    [Tool("_presentation_region", "区域", Category = ToolCategories.Region, Icon = "region")] public sealed class Region : Dummy { }
+    [Tool("_presentation_region", "区域", Category = ToolCategories.Location, Icon = "region")] public sealed class Region : Dummy { }
     [Tool("_presentation_measurement", "测量", Category = ToolCategories.Measurement, Icon = "ruler")] public sealed class Measurement : Dummy { }
     [Tool("_presentation_calibration", "标定", Category = ToolCategories.Calibration, Icon = "axes")] public sealed class Calibration : Dummy { }
     [Tool("_presentation_communication", "通信", Category = ToolCategories.Communication, Icon = "exchange")] public sealed class Communication : Dummy { }
     [Tool("_presentation_control", "控制", Category = ToolCategories.Control, Icon = "branch")] public sealed class Control : Dummy { }
-    [Tool("_presentation_script", "脚本", Category = ToolCategories.Script, Icon = "code")] public sealed class Script : Dummy { }
+    [Tool("_presentation_script", "脚本", Category = ToolCategories.Control, Icon = "code")] public sealed class Script : Dummy { }
     [Tool("_presentation_first", "后字母名称", Category = ToolCategories.Measurement, Icon = "ruler", Order = 1)] public sealed class FirstMeasure : Dummy { }
     [Tool("_presentation_second", "前字母名称", Category = ToolCategories.Measurement, Icon = "ruler", Order = 2)] public sealed class SecondMeasure : Dummy { }
 }

@@ -1,4 +1,4 @@
-﻿using SunEyeVision.UI.Services.Startup;
+using SunEyeVision.UI.Services.Startup;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -119,7 +119,7 @@ public partial class App : Application
                 if (inspectToolbox)
                     probePluginManager!.LoadPlugins(Path.Combine(AppContext.BaseDirectory, "plugins"));
                 var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel() : null;
-                if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(toolbox!.AllTools.Select(t=>t.ToolId));
+                if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
                 var info = new
                 {
                     releaseVersion = SunEyeVision.Core.Versioning.AppVersionInfo.Product,
@@ -131,6 +131,7 @@ public partial class App : Application
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
                     toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),
                     toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon }).ToArray(),
+                    loadedDirectoryToolAssemblies = inspectToolbox ? AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().Name).Intersect(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog!.Tools.Select(t=>Path.GetFileNameWithoutExtension(t.AssemblyPath))).ToArray() : null,
                     toolComponents = inspectToolbox ? SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetComponentMetadata() : null
                 };
                 File.WriteAllText(e.Args[1], System.Text.Json.JsonSerializer.Serialize(info));
@@ -224,14 +225,14 @@ public partial class App : Application
         // 解决：在任何可能触发序列化操作之前加载插件
 
         // 1. 初始化插件管理器（在任何其他初始化之前）
-        _splashScreen?.UpdateStage("正在加载模块", 10, "扫描并加载视觉、通讯和设备插件");
+        _splashScreen?.UpdateStage("正在加载模块", 10, "校验发布文件并读取工具目录");
         var pluginManager = new PluginManager(VisionLogger.Instance);
         string pluginsPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         LogStartupStage("Plugin.Load begin", $"path={pluginsPath}");
         pluginManager.LoadPlugins(pluginsPath);
         try
         {
-            pluginManager.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetAllToolMetadata().Select(tool => tool.Id));
+            pluginManager.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
         }
         catch (Exception ex)
         {
@@ -240,7 +241,7 @@ public partial class App : Application
             ThemeMessageDialog.Show("模块加载不完整：" + ex.Message, "启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             Shutdown(1); return;
         }
-        _splashScreen?.UpdateStage("正在加载模块", 35, "插件加载完成");
+        _splashScreen?.UpdateStage("正在加载模块", 35, "工具目录读取完成");
         LogStartupStage("Plugin.Load completed");
 
         // 2. 标记插件已加载（全局状态）

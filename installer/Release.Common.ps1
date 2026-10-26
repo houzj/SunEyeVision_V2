@@ -105,6 +105,8 @@ namespace SunEyeVision {
         public string Id {get;set;}
         public string TypeName {get;set;}
         public string RuntimeComponentId {get;set;}
+        public bool IsVisible {get;set;} = true; public string DisplayName {get;set;} public string Description {get;set;} = "";
+        public string Icon {get;set;} = "generic"; public string Category {get;set;} public int Order {get;set;} = 1000;
     }
     public sealed class ReleasedComponentDeclaration {
         public string ComponentId {get;set;} public string ToolId {get;set;} public string Role {get;set;}
@@ -219,7 +221,8 @@ namespace SunEyeVision {
                         var blob=reader.GetBlobReader(attribute.Value);
                         if(blob.ReadUInt16()!=1)throw new InvalidDataException("Invalid Tool attribute prolog.");
                         var id=blob.ReadSerializedString();
-                        if(blob.ReadSerializedString()==null)throw new InvalidDataException("Tool display name is null.");
+                        var displayName=blob.ReadSerializedString()??throw new InvalidDataException("Tool display name is null.");
+                        var directoryTool=new ReleasedToolDeclaration{Id=id,DisplayName=displayName,TypeName=TypeName(reader,handle)};
                         if(String.IsNullOrWhiteSpace(id))throw new InvalidDataException("A tool declaration has no identity.");
                         string runtimeComponentId=null;
                         var named=blob.ReadUInt16();var seen=new HashSet<string>(StringComparer.Ordinal);
@@ -229,14 +232,19 @@ namespace SunEyeVision {
                             var property=blob.ReadSerializedString();
                             if(property==null||!seen.Add(property))throw new InvalidDataException("Duplicate Tool attribute property.");
                             if(property=="RuntimeComponentId"&&kind==0x0e)runtimeComponentId=blob.ReadSerializedString();
-                            else if(new[]{"Description","Icon","Category","Version","Author"}.Contains(property)&&kind==0x0e)blob.ReadSerializedString();
-                            else if(property=="Order"&&kind==0x08)blob.ReadInt32();
-                            else if(property=="HasDebugWindow"&&kind==0x02){if(blob.ReadByte()>1)throw new InvalidDataException("Invalid Tool Boolean.");}
+                                                        else if(new[]{"Description","Icon","Category","Version","Author"}.Contains(property)&&kind==0x0e) {
+                                var value=blob.ReadSerializedString();
+                                if(property=="Description")directoryTool.Description=value;
+                                else if(property=="Icon")directoryTool.Icon=value;
+                                else if(property=="Category")directoryTool.Category=value;
+                            }
+                            else if(property=="Order"&&kind==0x08)directoryTool.Order=blob.ReadInt32();
+                            else if(new[]{"HasDebugWindow","IsVisible"}.Contains(property)&&kind==0x02){var value=blob.ReadByte();if(value>1)throw new InvalidDataException("Invalid Tool Boolean.");if(property=="IsVisible")directoryTool.IsVisible=value==1;}
                             else if(property=="DebugWindowStyle"&&kind==0x55&&enumType=="SunEyeVision.Plugin.SDK.Core.DebugWindowStyle, "+approvedSdkIdentity)blob.ReadInt32();
                             else throw new InvalidDataException("Unsupported Tool attribute property: "+property);
                         }
                         if(blob.RemainingBytes!=0)throw new InvalidDataException("Trailing Tool attribute bytes.");
-                        tools.Add(new ReleasedToolDeclaration{Id=id,TypeName=TypeName(reader,handle),RuntimeComponentId=runtimeComponentId});
+                        directoryTool.RuntimeComponentId=runtimeComponentId; tools.Add(directoryTool);
                     }
                 }
                 return tools.ToArray();
@@ -261,6 +269,28 @@ function New-ReleasePayload {
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
     $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName
     $contractsIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.Contracts.dll')).FullName
+    [xml]$directoryGroups=Get-Content (Join-Path $PSScriptRoot '../src/Plugin.SDK/Metadata/ToolGroups.xml') -Raw
+    # 与工具PE声明同源生成分类索引和目录清单；均先于逐文件SHA封存。
+    foreach($name in $ExpectedPluginAssemblies) {
+        $main=Join-Path $appRoot "plugins/$name/$name.dll"
+        $declarations=@([SunEyeVision.ReleaseToolMetadataReader]::Read($main,$sdkIdentity))
+        if($declarations.Count -eq 0){throw "工具目录没有Tool声明：$name"}
+        $document=[Xml.XmlDocument]::new()
+        $catalog=$document.CreateElement('ToolItems');$catalog.SetAttribute('SchemaVersion','1');$catalog.SetAttribute('Assembly',"$name.dll")
+        $null=$document.AppendChild($catalog)
+        foreach($tool in $declarations) {
+            $item=$document.CreateElement('Tool')
+            foreach($field in @('Id','DisplayName','Description','Icon','Category','Order')) {$item.SetAttribute($field,[string]$tool.$field)}
+            $item.SetAttribute('EntryType',$tool.TypeName);$item.SetAttribute('IsVisible',$tool.IsVisible.ToString().ToLowerInvariant());$null=$catalog.AppendChild($item)
+        }
+        foreach($tool in $declarations) {
+            $index=$directoryGroups.CreateElement('Tool');$index.SetAttribute('Id',$tool.Id)
+            $index.SetAttribute('Category',$tool.Category);$index.SetAttribute('Directory',$name)
+            $index.SetAttribute('IsVisible',$tool.IsVisible.ToString().ToLowerInvariant());$null=$directoryGroups.ToolGroups.AppendChild($index)
+        }
+        $document.Save((Join-Path (Split-Path $main) 'ToolItemInfo.xml'))
+    }
+    $directoryGroups.Save((Join-Path $appRoot 'ToolGroups.xml'))
     $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
         $relative=[IO.Path]::GetRelativePath($appRoot,$_.FullName).Replace('\','/')
         if($relative -ne 'release-payload.json') {

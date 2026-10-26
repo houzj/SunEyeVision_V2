@@ -33,6 +33,7 @@
     <Compile Include="Managers\Plugin\ReleasePayloadAuthority.cs" />
     <Compile Include="Managers\Plugin\PluginLoader.cs" />
     <Compile Include="Managers\Plugin\PluginManager.cs" />
+    <Compile Include="Managers\Plugin\ToolDirectoryCatalog.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.Components.cs" />
     <Compile Include="Managers\Tool\IToolCatalog.cs" />

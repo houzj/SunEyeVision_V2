@@ -118,10 +118,10 @@ internal sealed class ReleasePayloadAuthority
         if(!_frameworkNames.Contains("Microsoft.NETCore.App"))throw new InvalidDataException("Core framework declaration is missing.");
     }
 
-    internal IReadOnlyList<ToolComponentRegistration> LoadToolComponents()
+    internal IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds=null)
     {
         var result=new List<ToolComponentRegistration>();
-        foreach(var group in _components.GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
+        foreach(var group in _components.Where(c=>toolIds==null||toolIds.Contains(c.Metadata.ToolId)).GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
         {
             var path=Resolve(group.Key);
             if(!File.Exists(path)&&group.All(c=>c.Metadata.Role==ToolComponentRole.Editor))continue;

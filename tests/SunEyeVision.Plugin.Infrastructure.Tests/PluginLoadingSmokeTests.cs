@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -61,7 +61,12 @@ public class PluginLoadingSmokeTests
 
         var lines = new List<string>();
         var manager = new PluginManager(new CapturingLogger(lines));
+        var registeredBefore=ToolRegistry.GetToolCount();
         manager.LoadPlugins(pluginDirectory);
+        Assert.Equal(registeredBefore,ToolRegistry.GetToolCount());
+        var catalog=Assert.IsType<ToolDirectoryCatalog>(ToolRegistry.DirectoryCatalog);
+        manager.AssertCompleteReleaseToolSet(catalog.ToolIds);
+        foreach(var id in catalog.ToolIds) Assert.NotNull(ToolRegistry.GetToolMetadata(id));
 
         foreach (var line in lines)
             _output.WriteLine(line);
@@ -71,7 +76,7 @@ public class PluginLoadingSmokeTests
 
         // 冒烟判据 1「拷进即用」：发现的插件**全部**注册成功。
         // 少一个 ⇒ 工具箱少一个工具 + 该工具的参数类型未注册（后续加载含它的解决方案会失败）
-        Assert.Equal(discoveredCount, ToolRegistry.GetToolCount());
+        Assert.Equal(catalog.ToolIds.Count, ToolRegistry.GetToolCount());
 
         // 取证：脚本参数类型上的 [JsonDerivedType] 特性来自**哪个程序集**（判别符注册的读取依据）
         DumpScriptParameterAttributeIdentity();

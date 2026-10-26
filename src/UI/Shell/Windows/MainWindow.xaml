@@ -48,7 +48,7 @@
         <!-- ========== 主内容区域 ========== -->
         <Grid x:Name="MainContentGrid" Loaded="MainContentGrid_Loaded">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" x:Name="ToolboxColumn" MinWidth="60" MaxWidth="260"/>
+                <ColumnDefinition Width="Auto" x:Name="ToolboxColumn" MinWidth="52" MaxWidth="230"/>
                 <ColumnDefinition Width="*" x:Name="WorkflowColumn" MinWidth="400"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="700" x:Name="RightPanelColumn" MinWidth="40" MaxWidth="900"/>

@@ -27,7 +27,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         displayName: "Blob分析",
         Description = "连通域分析与特征提取",
         Icon = "blob", Order = 10,
-        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Region,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Location,
         Version = "3.1.0",
         RuntimeComponentId = "SunEyeVision.Tool.BlobAnalysis.Runtime",
         HasDebugWindow = true

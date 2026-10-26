@@ -1,335 +1,81 @@
 <UserControl x:Class="SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Controls"
-             xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
-             xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
-             xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
-             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
-             xmlns:icons="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Icons;assembly=SunEyeVision.Plugin.SDK"
-             mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="260">
-
-    <UserControl.Resources>
-        <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <convertersVisibility:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-        <convertersVisibility:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
-        <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter"/>
-        <convertersVisibility:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-        <convertersUI:ExpandIconConverter x:Key="ExpandIconConverter"/>
-
-        <!-- ========== 紧凑模式样式 ========== -->
-
-        <!-- 分类项样式（紧凑模式） -->
-        <Style x:Key="CompactCategoryItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Width" Value="44"/>
-            <Setter Property="Height" Value="44"/>
-            <Setter Property="Margin" Value="0,8"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryHoverBrush}}"/>
-                </Trigger>
-                <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- 工具项样式（紧凑模式） -->
-        <Style x:Key="CompactToolItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBgBrush}}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="Margin" Value="0,4"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- ========== 展开模式样式 ========== -->
-
-        <!-- 分类标题样式（展开模式） -->
-        <Style x:Key="ExpandedCategoryHeaderStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryBgBrush}}"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,4,0,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryHoverBrush}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- 工具项样式（展开模式） -->
-        <Style x:Key="ExpandedToolItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBgBrush}}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemHoverBrush}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- 通用工具图标样式 -->
-        <Style x:Key="ToolIconStyle" TargetType="icons:ToolIcon">
-            <Setter Property="Width" Value="24"/>
-            <Setter Property="Height" Value="24"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
-        </Style>
-
-        <!-- 工具名称样式 -->
-        <Style x:Key="ToolNameStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="MaxWidth" Value="180"/>
-            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-        </Style>
-    </UserControl.Resources>
-
-    <!-- 主容器 -->
-    <Border Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxBackgroundBrush}}">
-        <Grid>
-            <!-- ========== 紧凑模式 ========== -->
-            <DockPanel Visibility="{Binding IsCompactMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                <!-- 左侧分类侧边栏(60px宽) -->
-                <Border x:Name="CategorySidebar"
-                        DockPanel.Dock="Left" Width="60" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBgBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}" BorderThickness="0,0,1,0"
-                        MouseLeave="CategorySidebar_MouseLeave">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>  <!-- 上部：分类图标列表 -->
-                            <RowDefinition Height="Auto"/>  <!-- 底部：切换按钮 -->
-                        </Grid.RowDefinitions>
-
-                        <!-- 上部：分类图标列表 -->
-                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
-                            <ItemsControl x:Name="CategoryItemsControl" ItemsSource="{Binding Categories}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Style="{StaticResource CompactCategoryItemStyle}"
-                                                Tag="{Binding}"
-                                                MouseEnter="CategoryItem_MouseEnter">
-                                            <Grid>
-                                                <icons:ToolIcon Key="{Binding Icon}" Width="26" Height="26"
-                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Grid.ToolTip><TextBlock><TextBlock.Text><MultiBinding StringFormat="{}{0}（{1}个工具）"><Binding Path="Name"/><Binding Path="ToolCount"/></MultiBinding></TextBlock.Text></TextBlock></Grid.ToolTip>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-
-                        <!-- 底部：切换按钮 -->
-                        <Button x:Name="CompactModeToggleBtn"
-                                Grid.Row="1"
-                                Width="16" Height="16"
-                                Margin="0,8,8,16"
-                                HorizontalAlignment="Right"
-                                Click="ToggleModeButton_Click"
-                                ToolTip="{Binding DisplayModeTooltip}"
-                                Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBgBrush}}"
-                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBorderBrush}}"
-                                BorderThickness="1">
-                            <TextBlock Text="{Binding DisplayModeIcon}"
-                                       FontSize="12"
-                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
-                        </Button>
-                    </Grid>
-                </Border>
-            </DockPanel>
-
-            <!-- Popup 用于紧凑模式下显示工具（移到DockPanel外部，作为Grid的直接子元素） -->
-            <Popup x:Name="CompactModePopup"
-                   Placement="Right"
-                   PopupAnimation="Slide"
-                   AllowsTransparency="False"
-                   StaysOpen="True"
-                   Visibility="{Binding IsCompactMode, Converter={StaticResource BoolToVisibilityConverter}}"
-                   PlacementTarget="{Binding ElementName=CategorySidebar}">
-                <Border x:Name="CompactModePopupBorder"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBgBrush}}"
-                        BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        MinWidth="340"
-                        MaxWidth="500"
-                        Padding="16"
-                        MouseEnter="CompactModePopupBorder_MouseEnter"
-                        MouseLeave="CompactModePopupBorder_MouseLeave">
-                    <StackPanel>
-                        <!-- 分类标题栏 -->
-                        <Border Padding="0,0,0,12" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}" BorderThickness="0,0,0,1" Margin="-16,-16,-16,0">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <icons:ToolIcon Grid.Column="0" Key="{Binding SelectedCategoryIcon}" Width="24" Height="24"
-                                            Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}" Margin="0,0,12,0" VerticalAlignment="Center"/>
-
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding SelectedCategory}"
-                                           FontSize="14" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"
-                                           VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <!-- 工具列表（每行3列） -->
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0" MaxHeight="500">
-                            <ItemsControl ItemsSource="{Binding SelectedCategoryTools}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="3"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Style="{StaticResource CompactToolItemStyle}"
-                                                Tag="{Binding}"
-                                                PreviewMouseLeftButtonDown="ToolItem_PreviewMouseLeftButtonDown"
-                                                Margin="0,0,8,8">
-                                            <StackPanel>
-                                                <icons:ToolIcon Key="{Binding Icon}" Style="{StaticResource ToolIconStyle}"/>
-                                                <TextBlock Text="{Binding Name}" Style="{StaticResource ToolNameStyle}"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </StackPanel>
-                </Border>
-            </Popup>
-
-            <!-- ========== 展开模式（传统工具箱样式，使用水平 WrapPanel） ========== -->
-            <DockPanel Visibility="{Binding IsCompactMode, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                <!-- 分类和工具列表 -->
-                <Grid DockPanel.Dock="Top">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- 分类和工具滚动区域 -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0">
-                        <ItemsControl ItemsSource="{Binding Categories}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <!-- 分类标题 -->
-                                        <Border Style="{StaticResource ExpandedCategoryHeaderStyle}"
-                                                MouseLeftButtonUp="ExpandCategory_MouseLeftButtonUp"
-                                                Tag="{Binding}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <!-- 展开/折叠图标 -->
-                                                <TextBlock Grid.Column="0"
-                                                           Text="{Binding IsExpanded, Converter={StaticResource ExpandIconConverter}}"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,8,0"/>
-
-                                                <!-- 分类图标和名称 -->
-                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                    <icons:ToolIcon Key="{Binding Icon}" Width="20" Height="20" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                    <TextBlock Text="{Binding Name}"
-                                                               FontSize="13"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"
-                                                               VerticalAlignment="Center"/>
-                                                </StackPanel>
-
-                                                <!-- 工具数量 -->
-                                                <TextBlock Grid.Column="2"
-                                                           Text="{Binding ToolCount, StringFormat='({0})'}"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextTertiaryBrush}}"
-                                                           VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-
-                                        <!-- 工具列表（仅当展开时显示，使用水平 WrapPanel） -->
-                                        <ItemsControl ItemsSource="{Binding Tools}"
-                                                      Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <WrapPanel Orientation="Horizontal"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border Style="{StaticResource CompactToolItemStyle}"
-                                                            Tag="{Binding}"
-                                                            PreviewMouseLeftButtonDown="ToolItem_PreviewMouseLeftButtonDown">
-                                                        <StackPanel>
-                                                            <icons:ToolIcon Key="{Binding Icon}" Style="{StaticResource ToolIconStyle}"/>
-                                                            <TextBlock Text="{Binding Name}" Style="{StaticResource ToolNameStyle}"/>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-
-                    <!-- 底部：切换按钮 -->
-                    <Button x:Name="ExpandedModeToggleBtn"
-                            Grid.Row="1"
-                            Width="16" Height="16"
-                            Margin="0,8,0,16"
-                            HorizontalAlignment="Right"
-                            Click="ToggleModeButton_Click"
-                            ToolTip="{Binding DisplayModeTooltip}"
-                            Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBgBrush}}"
-                            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBorderBrush}}"
-                            BorderThickness="1">
-                        <TextBlock Text="{Binding DisplayModeIcon}"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
-                    </Button>
-                </Grid>
-            </DockPanel>
-        </Grid>
-    </Border>
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base" xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Controls.Toolbox" mc:Ignorable="d" d:DesignWidth="230" d:DesignHeight="650" d:DataContext="{d:DesignInstance Type=local:ToolboxDesignData,IsDesignTimeCreatable=True}"
+ Width="{Binding PreferredWidth}">
+ <UserControl.Resources>
+  <BooleanToVisibilityConverter x:Key="Visible"/>
+  <Style x:Key="Tile" TargetType="Border">
+   <Setter Property="Width" Value="68"/><Setter Property="Height" Value="90"/>
+   <Setter Property="CornerRadius" Value="2"/><Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="BorderBrush" Value="Transparent"/><Setter Property="Background" Value="Transparent"/>
+   <Setter Property="Cursor" Value="SizeAll"/><Setter Property="Focusable" Value="True"/>
+   <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemHoverBrush}}"/><Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}"/></Trigger></Style.Triggers>
+  </Style>
+  <DataTemplate x:Key="ToolTile">
+   <Border Style="{StaticResource Tile}" Tag="{Binding}" ToolTip="{Binding Name}"
+    PreviewMouseLeftButtonDown="ToolDown" PreviewMouseLeftButtonUp="ToolUp" PreviewMouseMove="ToolMove" LostMouseCapture="ToolLostCapture">
+    <StackPanel Margin="1,7,1,0"><Image Source="{Binding IconSource}" Width="36" Height="36" Margin="0,5,0,4"/>
+     <TextBlock Text="{Binding Name}" Height="35" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" TextAlignment="Center" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
+    </StackPanel>
+   </Border>
+  </DataTemplate>
+  <Style x:Key="Category" TargetType="Border">
+   <Setter Property="Width" Value="52"/><Setter Property="Height" Value="50"/><Setter Property="Background" Value="Transparent"/>
+   <Setter Property="Focusable" Value="True"/>
+   <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryHoverBrush}}"/></Trigger>
+    <DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryBgBrush}}"/></DataTrigger>
+   </Style.Triggers>
+  </Style>
+  <Style TargetType="Expander" x:Key="Group">
+   <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Expander"><StackPanel>
+    <ToggleButton IsChecked="{Binding IsExpanded,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}" Height="38" Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}" Foreground="{TemplateBinding Foreground}" HorizontalContentAlignment="Stretch">
+     <Grid Margin="12,0,16,0"><TextBlock Text="{TemplateBinding Header}" FontSize="16" VerticalAlignment="Center"/><Image x:Name="Arrow" Source="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-category-closed.png" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+    </ToggleButton><ContentPresenter x:Name="Body" Visibility="Collapsed"/>
+   </StackPanel><ControlTemplate.Triggers><Trigger Property="IsExpanded" Value="True"><Setter TargetName="Body" Property="Visibility" Value="Visible"/><Setter TargetName="Arrow" Property="Source" Value="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-category-open.png"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+  </Style>
+ </UserControl.Resources>
+ <Border Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}" BorderThickness="0,0,1,0">
+  <Grid ToolTip="{Binding StatusMessage}"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="22"/></Grid.RowDefinitions>
+   <ScrollViewer x:Name="Compact" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer.Style><Style TargetType="ScrollViewer"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></ScrollViewer.Style>
+    <ItemsControl ItemsSource="{Binding Categories}"><ItemsControl.ItemTemplate><DataTemplate>
+     <Border Style="{StaticResource Category}" Tag="{Binding}" ToolTip="{Binding Name}" MouseEnter="CategoryEnter" MouseLeave="CategoryLeave" GotKeyboardFocus="CategoryFocus">
+      <Image Source="{Binding IconSource}" Width="52" Height="50" Stretch="Uniform"/>
+     </Border>
+    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+   </ScrollViewer>
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer.Style><Style TargetType="ScrollViewer"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ScrollViewer.Style>
+    <ItemsControl ItemsSource="{Binding Categories}"><ItemsControl.ItemTemplate><DataTemplate>
+     <Expander Header="{Binding Name}" IsExpanded="{Binding IsExpanded,Mode=TwoWay}" Width="230" Style="{StaticResource Group}">
+      <StackPanel><ItemsControl ItemsSource="{Binding Tools}" ItemTemplate="{StaticResource ToolTile}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Width="204"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+       <TextBlock Text="当前部署目录无工具" Margin="12" FontSize="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding ToolCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+      </StackPanel>
+     </Expander>
+    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+   </ScrollViewer>
+      <Button Grid.Row="1" Command="{Binding ToggleDisplayModeCommand}" ToolTip="{Binding DisplayModeTooltip}" Height="22" HorizontalContentAlignment="Right" Padding="0,0,8,0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBgBrush}}" BorderThickness="0">
+    <Image Stretch="None" RenderTransformOrigin="0.5,0.5"><Image.Style><Style TargetType="Image">
+     <Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-expand-normal.png"/>
+     <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Toolbox/toolbox-expand-hover.png"/></Trigger>
+      <DataTrigger Binding="{Binding IsCompactMode}" Value="False"><Setter Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="-1"/></Setter.Value></Setter></DataTrigger>
+     </Style.Triggers>
+    </Style></Image.Style></Image>
+   </Button>
+   <Popup x:Name="ToolPopup" IsOpen="{Binding IsCompactModePopupOpen,Mode=TwoWay}" Placement="Right" StaysOpen="True" AllowsTransparency="True">
+    <Grid x:Name="PopupHitArea" Width="235" Background="#02FFFFFF" MouseEnter="PopupEnter" MouseLeave="PopupLeave">
+     <Border Margin="6,8,8,8" CornerRadius="4" BorderThickness="2" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorderBrush}}" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxBackgroundBrush}}">
+      <DockPanel Margin="0,10,0,10"><Grid DockPanel.Dock="Top" Margin="12,0,0,8"><Border Width="2" Height="15" Background="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}" HorizontalAlignment="Left"/><TextBlock Text="{Binding SelectedCategory}" FontSize="16" Margin="10,0,0,0" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/></Grid>
+       <ScrollViewer x:Name="PopupScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel><TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="12" Margin="8" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}}"/>
+        <ItemsControl ItemsSource="{Binding SelectedCategoryTools}" ItemTemplate="{StaticResource ToolTile}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+        <TextBlock Text="当前部署目录无工具" Margin="12" Foreground="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}}"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedCategoryTools.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+       </StackPanel></ScrollViewer>
+      </DockPanel>
+     </Border>
+    </Grid>
+   </Popup>
+  </Grid>
+ </Border>
 </UserControl>

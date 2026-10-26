@@ -29,6 +29,18 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         private static Dictionary<string, ToolMetadata> _metadataCache = new();
         private static readonly object _lock = new();
         private static long _registrationGeneration;
+        public static SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog? DirectoryCatalog { get; private set; }
+        private static Action<string>? _ensureDirectoryTool;
+        public static void ConfigureDirectory(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog catalog, Action<string> ensureLoaded)
+        {
+            lock(_lock) { DirectoryCatalog=catalog; _ensureDirectoryTool=ensureLoaded; }
+        }
+        private static void EnsureDirectoryTool(string id)
+        {
+            Action<string>? ensure;
+            lock(_lock) { if(_toolTypes.ContainsKey(id))return; ensure=_ensureDirectoryTool; }
+            ensure?.Invoke(id);
+        }
 
         // ========================================
         // 缓存结构：基于具体类型的缓存池（优化方案）
@@ -164,6 +176,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         }
         public static ToolMetadata? GetToolMetadata(string toolId)
         {
+            EnsureDirectoryTool(toolId);
             // Every visible type and its metadata are prepared together. Readers
             // never run reflection or attribute constructors inside the catalog gate.
             lock (_lock) return _metadataCache.TryGetValue(toolId,out var metadata)?metadata:null;
@@ -174,7 +187,9 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>所有工具元数据列表</returns>
         public static List<ToolMetadata> GetAllToolMetadata()
         {
-            lock (_lock) return _metadataCache.Values.ToList();
+            lock (_lock) return DirectoryCatalog is { } directory
+                ? directory.Tools.Select(t=>_metadataCache.TryGetValue(t.Id,out var loaded)?loaded:t.ToMetadata()).ToList()
+                : _metadataCache.Values.ToList();
         }
         /// <summary>
         /// 获取指定分类的工具元数据
@@ -193,6 +208,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>工具实例，未找到则返回null</returns>
         public static IToolPlugin? CreateToolInstance(string toolId)
         {
+            EnsureDirectoryTool(toolId);
             Type? type;
             lock (_lock) _toolTypes.TryGetValue(toolId,out type);
             return type is null?null:Activator.CreateInstance(type) as IToolPlugin;
@@ -249,7 +265,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             lock (_lock)
             {
-                return _toolTypes.ContainsKey(toolId);
+                return _toolTypes.ContainsKey(toolId) || DirectoryCatalog?.ToolIds.Contains(toolId)==true;
             }
         }
 
@@ -325,6 +341,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             string toolId, 
             Type propertyType)
         {
+            EnsureDirectoryTool(toolId);
             if (propertyType == null)
                 return new List<ToolPropertyMetadata>();
             
@@ -381,6 +398,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             lock (_lock)
             {
+                DirectoryCatalog=null; _ensureDirectoryTool=null;
                 _toolTypes.Clear();
                 _runtimeComponents.Clear();_editorComponents.Clear();
                 _metadataCache.Clear();
@@ -453,6 +471,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         }
         public static ToolPropertyMetadata? GetPropertyMetadata(string toolId, string propertyName)
         {
+            EnsureDirectoryTool(toolId);
             lock (_lock)
             {
                 // 从所有类型缓存中查找属性
@@ -479,6 +498,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <returns>属性元数据列表，未找到返回空列表</returns>
         public static List<ToolPropertyMetadata> GetAllPropertyMetadata(string toolId)
         {
+            EnsureDirectoryTool(toolId);
             lock(_lock)return _typeCache.Values.Where(cache=>cache.ContainsKey(toolId)).SelectMany(cache=>cache[toolId]).ToList();
         }
         private static bool IsSpecialProperty(string propertyName)

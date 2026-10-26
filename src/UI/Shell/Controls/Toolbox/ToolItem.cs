@@ -11,20 +11,17 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         public string Name { get; set; }
         public string Category { get; set; }
         public string Icon { get; set; }
+        public string IconSource => "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/tool-" + Icon + ".png";
         public string Description { get; set; }
         public string ToolId { get; set; }
-        public string AlgorithmType { get; set; }
-        public bool HasDebugInterface { get; set; }
 
-        public ToolItem(string name, string category, string icon, string description, string algorithmType = null, bool hasDebugInterface = true)
+        public ToolItem(string name, string category, string icon, string description, string toolId)
         {
             Name = name;
             Category = category;
             Icon = icon;
             Description = description;
-            ToolId = algorithmType; // 向后兼容：如果没有显式设置ToolId，使用algorithmType
-            AlgorithmType = algorithmType;
-            HasDebugInterface = hasDebugInterface;
+            ToolId = toolId;
         }
     }
 
@@ -39,6 +36,8 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
 
         public string Name { get; set; }
         public string Icon { get; set; }
+        public string HoverIcon { get; set; } = string.Empty;
+        public string IconSource => "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + (IsSelected ? HoverIcon : Icon);
         public string Description { get; set; }
         public int ToolCount { get; set; }
 
@@ -51,7 +50,7 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         public bool IsSelected
         {
             get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
+            set { if(SetProperty(ref _isSelected,value)) OnPropertyChanged(nameof(IconSource)); }
         }
 
         public System.Collections.ObjectModel.ObservableCollection<ToolItem>? Tools

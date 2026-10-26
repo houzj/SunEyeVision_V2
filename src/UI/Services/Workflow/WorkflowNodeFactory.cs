@@ -26,6 +26,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 throw new ArgumentException("Algorithm type cannot be null or empty.", nameof(algorithmType));
             }
 
+            // 先完成组件/参数创建，再申请显示序号；失败不消耗编辑身份。
+            var preparedParameters = ToolRegistry.ToolExists(algorithmType) ? ToolRegistry.CreateParameters(algorithmType) : null;
             string workflowIdSafe = workflowId ?? Guid.NewGuid().ToString();
 
             // 获取全局索引（跨所有工作流共享）
@@ -33,7 +35,7 @@ namespace SunEyeVision.UI.Services.Workflow
             // 获取局部序号（优先从空洞池获取）
             int localIndex = _sequenceManager.GetNextLocalIndex(workflowIdSafe, algorithmType);
 
-            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe);
+            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe, preparedParameters);
         }
 
         public NodeModel CreateIndexedNode(string algorithmType, int localIndex, string? name = null, string? workflowId = null)
@@ -43,18 +45,20 @@ namespace SunEyeVision.UI.Services.Workflow
                 throw new ArgumentException("Algorithm type cannot be null or empty.", nameof(algorithmType));
             }
 
+            // 先完成组件/参数创建，再申请显示序号；失败不消耗编辑身份。
+            var preparedParameters = ToolRegistry.ToolExists(algorithmType) ? ToolRegistry.CreateParameters(algorithmType) : null;
             string workflowIdSafe = workflowId ?? Guid.NewGuid().ToString();
 
             // 获取全局索引（跨所有工作流共享）
             int globalIndex = _sequenceManager.GetNextGlobalIndex();
 
-            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe);
+            return CreateIndexedNodeInternal(algorithmType, globalIndex, localIndex, name, workflowIdSafe, preparedParameters);
         }
 
         /// <summary>
         /// 创建节点的内部实现
         /// </summary>
-        private NodeModel CreateIndexedNodeInternal(string algorithmType, int globalIndex, int localIndex, string? name, string workflowId)
+        private NodeModel CreateIndexedNodeInternal(string algorithmType, int globalIndex, int localIndex, string? name, string workflowId, ToolParameters? preparedParameters)
         {
             if (string.IsNullOrWhiteSpace(algorithmType))
             {
@@ -87,24 +91,10 @@ namespace SunEyeVision.UI.Services.Workflow
             node.LocalIndex = localIndex;
 
             // 初始化节点参数
-            InitializeNodeParameters(node, algorithmType);
+            if (preparedParameters != null) node.Parameters = preparedParameters;
 
             return node;
         }
 
-        /// <summary>
-        /// 初始化节点参数（基于 AlgorithmType 创建默认参数）
-        /// </summary>
-        private void InitializeNodeParameters(NodeModel node, string algorithmType)
-        {
-            // 所有节点（含 Condition、Subroutine）统一从 ToolRegistry 创建参数
-            if (!ToolRegistry.ToolExists(algorithmType))
-            {
-                return;
-            }
-
-            var defaultParams = ToolRegistry.CreateParameters(algorithmType);
-            node.Parameters = defaultParams;
-        }
     }
 }

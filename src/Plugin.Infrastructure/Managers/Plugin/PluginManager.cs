@@ -25,7 +25,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private readonly IToolCatalog _toolCatalog;
         private readonly Dictionary<Type, List<object>> _plugins = new();
         private ReleasePayloadAuthority? _releaseAuthority;
-        private IReadOnlyList<ToolComponentRegistration> _components=Array.Empty<ToolComponentRegistration>();
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
@@ -88,14 +87,14 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
             _logger.LogInfo($"开始从目录加载插件: {pluginDirectory}");
             LastAdmissionError=null;_lastRejectedCount=0;_releaseAuthority=null;_admissionFailures.Clear();
-            try{_releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);_components=_releaseAuthority.LoadToolComponents();}
+            try{_releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);}
             catch(Exception ex)
             {
                 LastAdmissionError=ex.GetType().Name+": "+ex.Message;
                 _logger.LogError("[发布准入] "+LastAdmissionError);
                 return;
             }
-            
+
             if (!Directory.Exists(pluginDirectory))
             {
                 LastAdmissionError="Plugin directory does not exist: "+pluginDirectory;
@@ -103,49 +102,37 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 return;
             }
 
-            // 插件发现走**唯一策略源**（PluginAssemblyPolicy）：只认「与目录同名的主程序集」。
-            // 自包含改造后插件目录里还有契约 / 框架模块 / 第三方副本，逐个载入会把它们也带进宿主
-            // ⇒ 契约副本一旦被独立载入，即埋下「两套同名类型」的隐患。
-            var pluginAssemblies = PluginAssemblyPolicy.DiscoverPluginAssemblies(pluginDirectory);
-            if (pluginAssemblies.Count == 0)
+            // 目录发现不触发工具构造、WPF组件加载或参数类型注册。
+            try
             {
-                LastAdmissionError="No plugin assemblies were discovered: "+pluginDirectory;
-                _logger.LogWarning($"未发现插件程序集（约定：plugins/<工具名>/<工具名>.dll）: {pluginDirectory}");
-                return;
+                var directory=new ToolDirectoryCatalog(pluginDirectory,Path.Combine(AppContext.BaseDirectory,"ToolGroups.xml"),_releaseAuthority.VerifyApprovedFile);
+
+                ToolRegistry.ConfigureDirectory(directory,EnsureToolLoaded);
+                _logger.LogInfo($"目录发现完成：{directory.Groups.Count}个分类、{directory.ToolIds.Count}个工具；组件将在使用时加载。");
             }
-
-            _logger.LogInfo($"发现 {pluginAssemblies.Count} 个插件程序集");
-
-            var loadedCount = 0;
-            var rejectedCount = 0;
-            foreach (var assemblyPath in pluginAssemblies)
-            {
-                var deployment = PluginDeploymentInspector.Inspect(assemblyPath);
-                if (!deployment.IsDeployable)
-                {
-                    _logger.LogWarning($"[插件交付] {Path.GetFileName(assemblyPath)} 缺少必需文件: "
-                        + string.Join(", ", deployment.MissingRequiredFiles));
-                }
-                if (deployment.RedundantHostAssemblies.Count > 0)
-                {
-                    _logger.LogWarning($"[插件交付] {Path.GetFileName(assemblyPath)} 包含 "
-                        + $"{deployment.RedundantHostAssemblies.Count} 个不会被加载的宿主程序集副本: "
-                        + string.Join(", ", deployment.RedundantHostAssemblies));
-                }
-
-                if (LoadPlugin(assemblyPath) == PluginLoadOutcome.Loaded)
-                    loadedCount++;
-                else
-                    rejectedCount++;
-            }
-
-            // 加载结果**必须可见**（方案 §十一 防御机制 #3/#4）：
-            // 多人协作下「插件没生效却不知为何」是最难排查的一类问题。
-            _lastRejectedCount=rejectedCount;
-            _logger.LogInfo($"插件加载完成：成功 {loadedCount} 个，未加载 {rejectedCount} 个，"
-                + $"共注册工具 {_toolCatalog.Count} 个");
+            catch(Exception ex) { LastAdmissionError=ex.Message; _logger.LogError("工具目录读取失败："+ex.Message); }
         }
 
+        private readonly object _loadGate=new();
+        private readonly HashSet<string> _loadedPaths=new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _loadingPaths=new(StringComparer.OrdinalIgnoreCase);
+        private void EnsureToolLoaded(string toolId)
+        {
+            lock(_loadGate)
+            {
+                var tool=ToolRegistry.DirectoryCatalog?.Find(toolId);
+                if(tool is null)return;
+                if(_loadedPaths.Contains(tool.AssemblyPath))return;
+                if(!_loadingPaths.Add(tool.AssemblyPath))throw new InvalidOperationException("工具加载发生递归："+toolId);
+                try
+                {
+                    if(LoadPlugin(tool.AssemblyPath)!=PluginLoadOutcome.Loaded)
+                        throw new InvalidOperationException("工具组件创建准备失败："+toolId+"；"+_admissionFailures.LastOrDefault());
+                    _loadedPaths.Add(tool.AssemblyPath);
+                }
+                finally { _loadingPaths.Remove(tool.AssemblyPath); }
+            }
+        }
         /// <summary>单个插件的加载结果（用于汇总"成功 / 未加载"计数）。</summary>
         private enum PluginLoadOutcome
         {
@@ -215,9 +202,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 }
 
                 _releaseAuthority.VerifyToolSet(dllPath,toolTypes);
+                var components=_releaseAuthority.LoadToolComponents(toolTypes.Select(t=>t.GetCustomAttribute<ToolAttribute>()!.Id).ToHashSet(StringComparer.Ordinal));
 
                 // Prepare the whole assembly before any tool, serializer or WPF bridge becomes visible.
-                var registration=_toolCatalog.PrepareRegistration(toolTypes,_components);
+                var registration=_toolCatalog.PrepareRegistration(toolTypes,components);
                 var bridge=context.PrepareBridge();
                 using(var catalogCommit=registration.EnterCommit())
                 using(var bridgeCommit=bridge.EnterCommit())
@@ -249,6 +237,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         public void UnloadPlugins()
         {
             _logger.LogInfo("开始卸载插件...");
+            lock(_loadGate) { _loadedPaths.Clear(); _loadingPaths.Clear(); }
             _plugins.Clear();
             _toolCatalog.Clear();
             _logger.LogInfo("插件卸载完成");
@@ -337,7 +326,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     internal class NullLogger : ILogger
     {
         public void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI) { }
-        
+
         public ILogger ForSource(string source) => this;
     }
 }

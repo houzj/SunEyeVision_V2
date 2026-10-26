@@ -81,6 +81,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public void Initialize(MainWindowViewModel viewModel)
         {
             _viewModel = viewModel;
+            SetBinding(WorkflowEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditWorkflowCanvas)) { Source = viewModel });
+            SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
             WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;
             WorkflowSearch.SetBinding(WorkflowSearchControl.ScopeIdentityProperty,new System.Windows.Data.Binding("SelectedTab.CurrentWorkflowId"){Source=viewModel.WorkflowTabViewModel});
             WorkflowSearch.SetBinding(WorkflowSearchControl.DefinitionIdentityProperty,new System.Windows.Data.Binding("SelectedTab.WorkflowNodes"){Source=viewModel.WorkflowTabViewModel});
@@ -387,6 +389,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void AddWorkflow_Click(object sender, RoutedEventArgs e)
         {
+            if (_viewModel?.CanEditWorkflowCanvas != true) return;
             _viewModel.WorkflowTabViewModel.AddWorkflow();
             _viewModel.StatusText = "已添加新工作流";
             // 自动滚动到新添加的TabItem，使其居中显示
@@ -545,6 +548,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 // 设置选中的工作流（唯一写入口，避免双向绑定回写重入）
                 _viewModel.SetSelectedTab(workflow);
                 // 触发 RunWorkflowCommand 的 Execute 方法
+                if (!_viewModel.RunWorkflowCommand.CanExecute(null)) return;
                 _viewModel.RunWorkflowCommand.Execute(null);
                 _viewModel.StatusText = $"单次运行: {workflow.Name}";
             }

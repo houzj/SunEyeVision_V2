@@ -198,6 +198,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 if (SetProperty(ref _isRunning, value))
                 {
                     Status = _isRunning ? "运行中" : "已停止";
+                    OnPropertyChanged(nameof(CanEditWorkflowCanvas));
                 }
             }
         }
@@ -1007,6 +1008,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnSelectedTabChanged(object? sender, EventArgs e)
         {
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));
             CloseExecutionSnapshotDetails();
             RefreshStatusBarExecutionSnapshot();
             // 更新命令管理器
@@ -1066,6 +1068,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowStatusChanged(object? sender, EventArgs e)
         {
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));
             // 所有工作流状态
             IsAllWorkflowsRunning = WorkflowTabViewModel.IsAnyWorkflowRunning;
             AllWorkflowsRunButtonText = IsAllWorkflowsRunning ? "停止" : "运行";
@@ -5558,12 +5561,13 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         private bool _transitionPreparationInProgress;
         internal bool CanAcceptExternalActivation => _solutionTransitionLease == null && !_transitionPreparationInProgress
             && (Application.Current is not App app || !app.HasPendingWorkspaceDeviceRestore);
-        public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; }
+        public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; OnPropertyChanged(nameof(CanEditWorkflowCanvas)); }
         public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync(bool reload = false, Window? owner = null)
         {
             if (_transitionPreparationInProgress) return false;
             owner = ResolveSolutionDialogOwner(owner);
             _transitionPreparationInProgress = true;
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));
             try
             {
                 var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
@@ -5594,7 +5598,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
                 return false;
             }
-            finally { _transitionPreparationInProgress = false; }
+            finally { _transitionPreparationInProgress = false; OnPropertyChanged(nameof(CanEditWorkflowCanvas)); }
         }
 
         /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>

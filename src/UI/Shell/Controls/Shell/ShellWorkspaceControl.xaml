@@ -9,6 +9,10 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900">
 
+  <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.UI;component/Shell/Controls/Shell/WorkflowTabButtonStyles.xaml"/>
+  </ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+
   <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
   <Grid>
     <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -62,38 +66,7 @@
                                                 Background="Transparent" Padding="0,1,6,0"
                                                 Margin="2,1,0,0"
                                                 VerticalAlignment="Center">
-                        <Button Width="26" Height="26"
-                                                    Padding="0"
-                                                    BorderThickness="0"
-                                                    Background="Transparent"
-                                                    Cursor="Hand"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                                                    ToolTip="添加工作流"
-                                                    Click="AddWorkflow_Click">
-                          <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                              <Border x:Name="ButtonBorder"
-                                                                Background="Transparent"
-                                                                CornerRadius="4"
-                                                                Width="{TemplateBinding Width}"
-                                                                Height="{TemplateBinding Height}">
-                                <!-- 与 TopBar emoji 图标语言一致：➕ -->
-                                <TextBlock x:Name="IconText"
-                                                                      Text="➕"
-                                                                      FontSize="14"
-                                                                      HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"/>
-                              </Border>
-                              <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
-                                  <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                                </Trigger>
-                              </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                          </Button.Template>
-                        </Button>
+                        <Button Style="{StaticResource WorkflowAddButton}" Click="AddWorkflow_Click"/>
                       </Border>
                     </StackPanel>
                   </ScrollViewer>
@@ -106,38 +79,7 @@
                                         Visibility="Collapsed"
                                         Background="Transparent" Padding="0,1,6,0"
                                         VerticalAlignment="Center">
-                    <Button Width="26" Height="26"
-                                            Padding="0"
-                                            BorderThickness="0"
-                                            Background="Transparent"
-                                            Cursor="Hand"
-                                            VerticalAlignment="Center"
-                                            Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                                            ToolTip="添加工作流"
-                                            Click="AddWorkflow_Click">
-                      <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                          <Border x:Name="ButtonBorder"
-                                                        Background="Transparent"
-                                                        CornerRadius="4"
-                                                        Width="{TemplateBinding Width}"
-                                                        Height="{TemplateBinding Height}">
-                            <!-- 与 TopBar emoji 图标语言一致：➕ -->
-                            <TextBlock x:Name="IconText"
-                                                          Text="➕"
-                                                          FontSize="14"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center"/>
-                          </Border>
-                          <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                              <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
-                              <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                            </Trigger>
-                          </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                      </Button.Template>
-                    </Button>
+                    <Button Style="{StaticResource WorkflowAddButton}" Click="AddWorkflow_Click"/>
                   </Border>
                 </Grid>
               </Border>
@@ -155,7 +97,7 @@
           <Style TargetType="TabItem">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Margin" Value="4,1,0,0"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="Template">
               <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
@@ -278,94 +220,10 @@
                                                          LostFocus="TabRenameTextBox_LostFocus"/>
                         </Grid>
 
-                        <!-- 单次运行按钮 - 仅在选中时显示（克制风格：透明底，hover 才高亮） -->
-                        <Button x:Name="SingleRunBtn"
-                                                    Grid.Column="3"
-                                                    Padding="6,4"
-                                                    Margin="0"
-                                                    BorderThickness="0"
-                                                    Tag="{Binding}"
-                                                    Click="TabItem_SingleRun_Click"
-                                                    Cursor="Hand"
-                                                    Width="26" Height="26"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                                                    ToolTip="单次运行"
-                                                    Visibility="Collapsed">
-                          <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                              <Border x:Name="Bd"
-                                                                Background="Transparent"
-                                                                CornerRadius="4"
-                                                                Width="{TemplateBinding Width}"
-                                                                Height="{TemplateBinding Height}">
-                                <!-- 与 TopBar 单次运行图标保持一致：Segoe MDL2 播放 E768 -->
-                                <TextBlock x:Name="IconText"
-                                                                      Text="&#xE768;"
-                                                                      FontSize="13" FontFamily="{StaticResource Mdl2IconFont}"
-                                                                      HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"/>
-                              </Border>
-                              <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
-                                  <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                                </Trigger>
-                              </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                          </Button.Template>
-                        </Button>
-
-                        <!-- 连续运行/停止按钮 - 仅在选中时显示（克制风格：透明底，运行中图标高亮） -->
-                        <Button x:Name="ContinuousRunBtn"
-                                                    Grid.Column="4"
-                                                    Padding="6,4"
-                                                    Margin="6,0,0,0"
-                                                    BorderThickness="0"
-                                                    Tag="{Binding}"
-                                                    Click="TabItem_ContinuousRun_Click"
-                                                    Cursor="Hand"
-                                                    Width="26" Height="26"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                                                    ToolTip="连续运行 / 停止"
-                                                    Visibility="Collapsed">
-                          <Button.Style>
-                            <Style TargetType="Button">
-                              <Setter Property="Template">
-                                <Setter.Value>
-                                  <ControlTemplate TargetType="Button">
-                                    <Border x:Name="Bd"
-                                                            Background="Transparent"
-                                                            CornerRadius="4"
-                                                            Width="{TemplateBinding Width}"
-                                                            Height="{TemplateBinding Height}">
-                                      <!-- 与 TopBar 连续运行图标保持一致：Segoe MDL2 循环播放 EF3B，运行中切换为 E71A 停止 -->
-                                      <!-- 图标颜色不再从按钮一次性取值(TemplateBinding)，改为触发器直接给 IconText 上色，绕开局部值优先级坑 -->
-                                      <TextBlock x:Name="IconText"
-                                                                    Text="&#xEF3B;"
-                                                                    FontSize="13" FontFamily="{StaticResource Mdl2IconFont}"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                      <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
-                                        <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                                      </Trigger>
-                                      <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                        <Setter TargetName="IconText" Property="Text" Value="&#xE71A;"/>
-                                        <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
-                                        <!-- 与 TopBar 一致：运行中图标变红色 #FF5252（直接给图标上色，绕开局部值优先级坑） -->
-                                        <Setter TargetName="IconText" Property="Foreground" Value="#FF5252"/>
-                                      </DataTrigger>
-                                    </ControlTemplate.Triggers>
-                                  </ControlTemplate>
-                                </Setter.Value>
-                              </Setter>
-                            </Style>
-                          </Button.Style>
-                        </Button>
+                        <Button x:Name="SingleRunBtn" Grid.Column="3" Tag="{Binding}" Click="TabItem_SingleRun_Click"
+                                Style="{StaticResource WorkflowSingleButton}" Visibility="Collapsed"/>
+                        <Button x:Name="ContinuousRunBtn" Grid.Column="4" Tag="{Binding}" Click="TabItem_ContinuousRun_Click"
+                                Style="{StaticResource WorkflowContinuousButton}" Visibility="Collapsed"/>
 
                       </Grid>
                       </Grid>

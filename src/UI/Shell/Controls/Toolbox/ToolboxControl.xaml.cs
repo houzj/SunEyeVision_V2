@@ -25,6 +25,14 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         {
             InitializeComponent();
             Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            CompactModePopup.IsOpen = false;
+            CompactModePopup.Opened -= OnPopupOpened;
+            CompactModePopup.Closed -= OnPopupClosed;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -45,6 +53,8 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
             CompactModePopup.PlacementTarget = CategorySidebar;  // 相对于CategorySidebar
             CompactModePopup.CustomPopupPlacementCallback = null;  // 移除自定义回调
 
+            CompactModePopup.Opened -= OnPopupOpened;
+            CompactModePopup.Closed -= OnPopupClosed;
             CompactModePopup.Opened += OnPopupOpened;
             CompactModePopup.Closed += OnPopupClosed;
 

@@ -125,18 +125,21 @@ public sealed class OutputBindingChangeService
         if (!flow.Nodes.Any(node => node.Id == targetId)) return Array.Empty<string>();
         var graph = SolutionExecutionDependencyGraph.Compile(_solution!, checkReadiness: false);
         var target = SolutionExecutionDependencyGraph.GetScopedNodeId(workflowId, targetId);
-        bool DependsOnTarget(string candidate)
+        // 候选不能是目标或其下游。一次遍历整个方案的后继边，保留经全局变量跨流程再返回的依赖。
+        var successors = graph.Dependencies.GroupBy(edge => edge.SourceScopedNodeId, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(edge => edge.TargetScopedNodeId).ToArray(), StringComparer.Ordinal);
+        var excluded = new HashSet<string>(StringComparer.Ordinal);
+        var pending = new Stack<string>();
+        pending.Push(target);
+        while (pending.Count > 0)
         {
-            var pending = new Stack<string>(); var seen = new HashSet<string>(StringComparer.Ordinal);
-            pending.Push(SolutionExecutionDependencyGraph.GetScopedNodeId(workflowId, candidate));
-            while (pending.Count > 0)
-            {
-                var node = pending.Pop(); if (node == target) return true;
-                if (seen.Add(node)) foreach (var predecessor in graph.GetPredecessors(node)) pending.Push(predecessor);
-            }
-            return false;
+            var current = pending.Pop();
+            if (!excluded.Add(current)) continue;
+            if (successors.TryGetValue(current, out var children))
+                foreach (var child in children) pending.Push(child);
         }
-        return flow.Nodes.Select(node => node.Id).Where(id => id != targetId && !DependsOnTarget(id)).ToArray();
+        return flow.Nodes.Select(node => node.Id)
+            .Where(id => !excluded.Contains(SolutionExecutionDependencyGraph.GetScopedNodeId(workflowId, id))).ToArray();
     }
 
     public IReadOnlyList<string> GetExistingBindingSourceNodeIds(string workflowId, string targetId)

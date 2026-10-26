@@ -1,4 +1,4 @@
-using SunEyeVision.Workflow;
+﻿using SunEyeVision.Workflow;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -82,4 +82,24 @@ public class WorkflowRunSessionTests
         Assert.Equal(child.RunId, grandchild.ParentRunId);
         Assert.Equal(3, session.Scopes.Count);
     }
-}
+    [Fact]
+    public void AncestorCallIsRejectedWithoutRegisteringAnotherScope()
+    {
+        using var session = new WorkflowRunSession("root");
+        var child = session.CreateChildScope("child", session.RunId);
+        var error = Assert.Throws<InvalidOperationException>(() => session.CreateChildScope("root", child.RunId));
+        Assert.Contains("root → child → root", error.Message);
+        Assert.Equal(2, session.Scopes.Count);
+        Assert.Throws<InvalidOperationException>(() => session.CreateChildScope("child", child.RunId));
+        Assert.Equal(2, session.Scopes.Count);
+    }
+
+    [Fact]
+    public void SiblingCallsMayReuseTheSameWorkflow()
+    {
+        using var session = new WorkflowRunSession("root");
+        var first = session.CreateChildScope("shared", session.RunId);
+        var second = session.CreateChildScope("shared", session.RunId);
+        Assert.NotEqual(first.RunId, second.RunId);
+        Assert.Equal(3, session.Scopes.Count);
+    }}

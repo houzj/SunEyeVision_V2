@@ -185,6 +185,33 @@ public sealed class BindingAdaptationB2Tests
     }
 
     [Fact]
+    public void Candidates_exclude_transitive_descendants_and_preserve_definition_order()
+    {
+        var flow = Flow("f", Node("first", new SourceParameters()), Node("a", new SourceParameters()),
+            Node("b", new SourceParameters()), Node("c", new SourceParameters()), Node("last", new SourceParameters()));
+        flow.AddConnection(new WorkflowConnection("ab", "a", "b"));
+        flow.AddConnection(new WorkflowConnection("bc", "b", "c"));
+        var (_, service) = Setup(flow, Flow("other", Node("a", new SourceParameters())));
+        Assert.Equal(new[] { "first", "last" }, service.GetCandidateNodeIds("f", "a"));
+        Assert.Equal(new[] { "first", "a", "b", "last" }, service.GetCandidateNodeIds("f", "c"));
+        Assert.Empty(service.GetCandidateNodeIds("f", "missing"));
+    }
+
+    [Fact]
+    public void Candidates_exclude_descendants_reached_through_other_workflows()
+    {
+        var flow = Flow("f", Node("a", new SourceParameters()), Node("returned", new SourceParameters()), Node("free", new SourceParameters()));
+        var (solution, service) = Setup(flow, Flow("other", Node("bridge", new SourceParameters())));
+        solution.GlobalVariables.Add(new() { Id = "out", Name = "out", Type = "String",
+            ProducerBinding = new() { WorkflowId = "f", NodeId = "a", ResultName = "value" },
+            ConsumerBindings = new() { new() { WorkflowId = "other", NodeId = "bridge", ParameterName = "Value" } } });
+        solution.GlobalVariables.Add(new() { Id = "back", Name = "back", Type = "String",
+            ProducerBinding = new() { WorkflowId = "other", NodeId = "bridge", ResultName = "value" },
+            ConsumerBindings = new() { new() { WorkflowId = "f", NodeId = "returned", ParameterName = "Value" } } });
+        service.Reset(solution);
+        Assert.Equal(new[] { "free" }, service.GetCandidateNodeIds("f", "a"));
+    }
+    [Fact]
     public void Subroutine_inputs_and_internal_output_mappings_have_separate_scope()
     {
         var source = new SourceParameters(); var sub = new SubroutineParameters { SubroutineId = "inner" };

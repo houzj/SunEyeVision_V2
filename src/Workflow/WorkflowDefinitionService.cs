@@ -180,6 +180,48 @@ public static class WorkflowDefinitionValidator
         if (errors.Count == 0 && workflow.DetectCycles().Count > 0)
             errors.Add("工作流连接存在循环依赖。");
 
+        if (workflowResolver != null)
+            ValidateSubroutineCalls(workflow, workflowResolver, errors);
+
         return errors;
+    }
+
+    private static void ValidateSubroutineCalls(
+        Workflow root, Func<string, Workflow?> resolve, List<string> errors)
+    {
+        // 按当前路径判环，已完成的共享子图可以合法复用；使用显式栈避免深层定义耗尽调用栈。
+        var completed = new HashSet<string>(StringComparer.Ordinal);
+        var active = new Dictionary<string, int>(StringComparer.Ordinal);
+        var path = new List<string>();
+        var pending = new Stack<(Workflow Flow, bool Exit)>();
+        pending.Push((root, false));
+        while (pending.Count > 0)
+        {
+            var (flow, exit) = pending.Pop();
+            if (exit)
+            {
+                active.Remove(flow.Id);
+                path.RemoveAt(path.Count - 1);
+                completed.Add(flow.Id);
+                continue;
+            }
+            if (active.TryGetValue(flow.Id, out var start))
+            {
+                errors.Add($"子程序调用存在循环依赖：{string.Join(" → ", path.Skip(start).Append(flow.Id))}。");
+                continue;
+            }
+            if (completed.Contains(flow.Id)) continue;
+            active.Add(flow.Id, path.Count);
+            path.Add(flow.Id);
+            pending.Push((flow, true));
+            foreach (var id in flow.Nodes.Select(n => n.SubroutineId)
+                .Where(id => !string.IsNullOrWhiteSpace(id)).Distinct(StringComparer.Ordinal).Reverse())
+            {
+                var child = string.Equals(id, root.Id, StringComparison.Ordinal) ? root : resolve(id!);
+                if (child != null) pending.Push((child, false));
+                else if (!ReferenceEquals(flow, root))
+                    errors.Add($"工作流 {flow.Id} 引用了不存在的子程序工作流 {id}。");
+            }
+        }
     }
 }

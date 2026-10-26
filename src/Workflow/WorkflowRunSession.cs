@@ -70,6 +70,19 @@ public sealed class WorkflowRunSession : IDisposable
             if (!_scopes.ContainsKey(parentRunId))
                 throw new ArgumentException("父运行作用域不属于当前会话。", nameof(parentRunId));
 
+            var ancestors = new List<string>();
+            for (var ancestor = _scopes[parentRunId]; ; ancestor = _scopes[ancestor.ParentRunId!.Value])
+            {
+                ancestors.Add(ancestor.WorkflowId);
+                if (string.Equals(ancestor.WorkflowId, workflowId, StringComparison.Ordinal))
+                {
+                    ancestors.Reverse();
+                    throw new InvalidOperationException(
+                        $"子程序调用存在循环依赖：{string.Join(" → ", ancestors.Append(workflowId))}。");
+                }
+                if (!ancestor.ParentRunId.HasValue) break;
+            }
+
             var scope = new WorkflowRunScope(workflowId, parentRunId);
             scope.ConsumerScope = _scopes[parentRunId].ConsumerScope + "/" + (callerNodeId ?? workflowId) + "/" + workflowId;
             _scopes.Add(scope.RunId, scope);

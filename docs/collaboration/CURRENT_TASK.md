@@ -1,4 +1,4 @@
-# 当前任务：落实O06 Blob与原31类控件方案，交付真实Release
+# 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
 ## 写入与版本
 
@@ -209,3 +209,18 @@
 - 证据docs/collaboration/evidence/O06_RUNTIME_CATALOG_CHECKPOINT_20261027.json：12份源码增量（包含installer/Release.Common.ps1）、768发布项、293加载记录SHA核对一致。Core/清单编译身份仍b249e7f0加列明增量，不用随后提交号改写产物。原O06/目标JSON同步、硬性树未改，697锚点与幂等成立。
 - 下一步直接接UI自己的节点创建、NodeOpenDecisionChain与真实窗口的文档/调试生命周期。现有ProductionEditorContext已经基于NodeConfigurationEditDraft/DocumentEditSession并携带Runtime配置，可评估直接复用事务能力；不要将BlobSettings转成SDK ToolParameters。同步来源选择/本地ROI/全局变量后删除根SDK工程与旧模型/转换，不能把独立目录作为M1完成。
 - 全部所需VM原件、显示XML完整图形文本消费、VS设计时和真实人工验收仍未完成；本轮没有视觉控件修改。保留原视觉未通过反馈，不将旧窗口回归或目录语义图标键等同于VM图标/外观验收。M1/M2/M3均未完成，目标active。
+
+## 2026-10-27 Runtime节点实际参数窗口与文档事务（最新）
+
+- Codex/main，基线2c58251b，单工作树单产品写者。本轮继续既有active新目标，硬性两工程目标树未改；未另建目标或缩减范围。原31类仅历史功能核对，不能恢复为当前实施范围。
+- 跨模块影响已核：UI节点投影、真实节点打开链、生产文档草稿参与者、公共设置视图和输入元数据；不改算法调度/执行，不新增项目。WorkflowNode.FromBase现在复制实际RuntimeConfiguration，避免UI投影丢失配置。
+- NodeOpenDecisionChain对Runtime配置创建RuntimeNodeConfigurationControl，MainWindow实际打开命令接ProductionEditorContext/文档编辑范围；不创建SDK Blob工具/参数，不转BlobSettings为旧参数。复用现有通用窗口及宿主事务，Runtime/Wpf插件仍无UI宿主依赖。
+- XML新增4个输入的稳定标识/标签/页签分组，严格拒绝缺重错声明；与既有54设置字段组成实际58字段视图。来源弹窗从正式声明候选选择图像/区域/位置引用，仅写私有节点；设置常量只存真实强类型设置，保留原引用转换。位置常量编辑和本地ROI仍待接通。
+- 真实主窗口保存命令接受未失焦有效编辑，保存重开保留用户值；隐藏非法输入阻断保存/确定，关闭取消保留正式值，重新打开读取正式值，确定发布并退出编辑范围。保存重绑后旧来源控件迟到事件按代次拒绝；卸载/取消退订并释放视图。
+- 来源按钮实际渲染曾为空白：先修正误用的纯色资源，再改为绝对pack URI、即时加载并冻结原迁入位图。最终实际WPF图中显示，4个来源按钮可视树均含有效图像和布局尺寸；此项局部显示核对不等于全部VM外观验收。基础页仍有输入组合/重复分组等未完成布局。
+- 最终串行UI006为0错误/6613警告97.16秒，全量004为0错误/6621警告86.06秒（blob-runtime-editor前缀）。早期构建/候选成绩不套本产物；清单buildId=o06-runtime-editor-20261027-004，编译身份仍2c58251b加列明16份源码增量，不用随后提交号改写产物。
+- 正式RuntimeEditor011/012有SDK与无SDK/Wpf各六组，RuntimeCatalog007四组、RuntimeKernel028十六组、RuntimeWorkflow015十组、Components143九组/141无Wpf十组、Algorithm014九组、DocumentEditing036二十八组、FieldEditing015八组、原SDK窗口FullChain064九组通过。新Runtime窗口与原窗口回归分开记录。
+- ComponentDeployment041十六项通过，实际EXE缺件/恢复准入正常，临时4文件及清单按原SHA恢复；768发布项/330加载记录同源校验。证据docs/collaboration/evidence/O06_RUNTIME_EDITOR_CHECKPOINT_20261027.json；原O06/目标JSON已同步，697锚点且幂等。
+- 失败保留：UI001同名ParameterSetting冲突、UI002属性lambda的field关键字误用；RuntimeEditor001测试调用错层CreateNode，002测试绕过真实保存命令而误判。改用实际SelectedTab.CreateNode和SaveCurrentSolutionCommand后通过；不把002当产品保存故障。009来源图标空白图保留，旧六组功能成绩不作视觉通过。
+- 下一步接新Runtime窗口单次/连续调试的真实冻结输入与结果生命周期，再切UI自身默认节点工厂和输入自动绑定；不得伪造来源执行身份、隐式重跑有副作用上游或增加SDK Blob参数包装。当前新窗口运行按钮未显示，不能称调试链已完成；默认UI工具箱仍SDK。
+- 本地ROI/位置常量、新Runtime全局变量、根SDK Blob工程/旧模型/转换删除、全部所需VM原件、显示XML完整图形文本消费、VS设计时和真实人工验收仍待完成。原视觉未通过反馈保留，M1/M2/M3均未完成，目标active。

@@ -101,7 +101,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         try
         {
             EnsureCurrent();
-            EditorDraftAdapter.ForProduction(_draft.Node.Parameters).Validate();
+            ValidateDraftModel(prepareView:true);
             _host.Validate(_draft);
             error = ""; return true;
         }
@@ -112,7 +112,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         try
         {
             EnsureCurrent();
-            EditorDraftAdapter.ForProduction(_draft.Node.Parameters).Validate();
+            ValidateDraftModel(prepareView:false);
             error = ""; return true;
         }
         catch (Exception ex) { error = ex.Message; return false; }
@@ -129,6 +129,16 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         catch (Exception ex) { LastRefreshError = ex.Message; Discard(); }
         try { if (notify && _active && _isCurrent()) _published?.Invoke(publication); }
         catch (Exception ex) { LastRefreshError = ex.Message; }
+    }
+    private void ValidateDraftModel(bool prepareView)
+    {
+        if(_draft.Node.RuntimeConfiguration is not null)
+        {
+            if(prepareView&&PrepareView?.Invoke() is {Length:>0} viewError)throw new InvalidOperationException(viewError);
+            var errors=_draft.Node.RuntimeConfiguration.Validate();
+            if(errors.Count!=0)throw new InvalidOperationException(errors[0].Message);
+        }
+        else EditorDraftAdapter.ForProduction(_draft.Node.Parameters).Validate();
     }
     public bool TryCommitEditor(out string error)
     {

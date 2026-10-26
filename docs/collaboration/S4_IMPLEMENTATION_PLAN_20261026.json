@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27 Runtime现独立提供并登记Blob目录，公共后端节点工厂默认创建强类型Runtime；正式EXE在旧SDK Blob DLL及Wpf同时缺席时发现、执行与保存重开通过。UI自己的节点创建及实际参数窗口尚未切换，旧根工程未删，M1/M2/M3均未完成。",
-  "summaryStatus": "本批Runtime目录正常/无SDK和Wpf各4、部署15、新Runtime工作流10/10、纯Runtime16、组件9/10、关联算法9、文档事务28、原窗口整链9/9通过；串行UI/全量0错误。",
+  "current": "2026-10-27 Runtime节点实际参数窗口/来源选择/文档草稿及保存重开已接通，有无旧SDK入口和专属Wpf各六组通过；默认UI创建、调试运行和最终两工程尚未完成。",
+  "summaryStatus": "真实Runtime参数窗口六组/六组及组件部署十六项通过；最终串行UI/全量0错误。旧SDK窗口回归与新Runtime窗口证据分开，未代签VM视觉或人工验收。",
   "rows": [
+    [
+      "Runtime节点实际参数窗口与文档事务",
+      "Runtime配置节点通过真实MainWindow打开命令进入中立参数窗口，UI投影保留实际配置。XML四个输入与54设置字段共同进入视图；来源选择直接引用正式声明候选，强类型设置及引用只写文档私有草稿，不创建SDK Blob参数。保存/确定/取消复用生产文档参与者，保存重绑后旧来源事件按代次拒绝。",
+      "最终串行UI006为0错误/6613警告97.16秒，全量004为0错误/6621警告86.06秒；正式RuntimeEditor有SDK及无SDK/Wpf各六组，真实打开/来源选择/未失焦编辑/主窗口保存重开/非法隐藏输入阻断/关闭取消/确定发布/迟到事件拒绝通过。来源按钮pack资源即时加载后实际渲染显示，定向可视树图像检查通过；不计全部VM视觉或人工验收。部署扩为16项，四文件及清单原SHA还原。 UI工具箱节点工厂仍SDK；新Runtime窗口的单次/连续调试、本地ROI/位置常量和全局变量仍待接通，再删除根SDK Blob工程/模型/转换。全部所需VM原件、显示XML完整图形文本、VS设计时及真实用户验收未完成；M1/M2/M3均未完成。"
+    ],
     [
       "Runtime独立目录与公共节点工厂",
       "Runtime通过中立目录声明提供名称/描述/语义图标键/分类/排序，在SDK工具扫描前独立登记。发布准入区分SDK声明与Runtime生产者，拒绝冲突，Runtime不再要求旧SDK消费声明。公共后端WorkflowNodeFactory无参数创建默认Runtime配置；目录角色及身份准备后原子发布，失败提案不污染目录。",
@@ -5136,6 +5141,15 @@
     "sourceBaseCommit": "b249e7f0ca8c2d4a6187e10c5aad869884ba0544",
     "implementation": "Runtime通过中立目录声明提供名称/描述/语义图标键/分类/排序，在SDK工具扫描前独立登记。发布准入区分SDK声明与Runtime生产者，拒绝冲突，Runtime不再要求旧SDK消费声明。公共后端WorkflowNodeFactory无参数创建默认Runtime配置；目录角色及身份准备后原子发布，失败提案不污染目录。",
     "verification": "串行UI001为0错误/6613警告124.19秒，全量001为0错误/6491警告88.49秒。RuntimeCatalog001/002有SDK及无SDK/Wpf各4组；部署038扩为15项，实际EXE在旧Blob SDK DLL与Wpf同时缺席时仍发现22工具，公共节点工厂创建Runtime→真实HALCON→强类型值修改→保存重开通过，未加载旧Blob或其Wpf。Runtime工作流10/10、纯Runtime16、组件9/10、关联算法9、文档事务28、原窗口整链9/9通过。768发布项/293加载记录SHA一致，4文件与清单原身份还原。",
-    "remaining": "UI.Services.Workflow.WorkflowNodeFactory仍从SDK创建参数，实际用户窗口/来源选择/文档及调试生命周期、本地ROI和新Runtime全局变量仍待切换；根SDK Blob工程及模型未删，不能以缺件试验证明最终源码仅两工程。VM原件/显示XML完整消费、VS设计时和真实人工验收仍未闭合。"
+    "remaining": "UI.Services.Workflow.WorkflowNodeFactory仍从SDK创建参数，实际用户窗口/来源选择/文档及调试生命周期、本地ROI和新Runtime全局变量仍待切换；根SDK Blob工程及模型未删，不能以缺件试验证明最终源码仅两工程。VM原件/显示XML完整消费、VS设计时和真实人工验收仍未闭合。",
+    "subsequentProgress": "后续Runtime配置节点已进入真实窗口、来源选择与文档编辑/保存链，见runtimeEditorCheckpoint；UI默认工具箱和调试运行仍未切换，原检查点成绩不改写。"
+  },
+  "runtimeEditorCheckpoint": {
+    "status": "SCOPED_RUNTIME_EDITOR_VERIFIED_NOT_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_RUNTIME_EDITOR_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "2c58251bf28b06db3ccb50aa88c3f91cc53d8979",
+    "implementation": "Runtime配置节点通过真实MainWindow打开命令进入中立参数窗口，UI投影保留实际配置。XML四个输入与54设置字段共同进入视图；来源选择直接引用正式声明候选，强类型设置及引用只写文档私有草稿，不创建SDK Blob参数。保存/确定/取消复用生产文档参与者，保存重绑后旧来源事件按代次拒绝。",
+    "verification": "最终串行UI006为0错误/6613警告97.16秒，全量004为0错误/6621警告86.06秒；正式RuntimeEditor有SDK及无SDK/Wpf各六组，真实打开/来源选择/未失焦编辑/主窗口保存重开/非法隐藏输入阻断/关闭取消/确定发布/迟到事件拒绝通过。来源按钮pack资源即时加载后实际渲染显示，定向可视树图像检查通过；不计全部VM视觉或人工验收。部署扩为16项，四文件及清单原SHA还原。",
+    "remaining": "UI工具箱节点工厂仍SDK；新Runtime窗口的单次/连续调试、本地ROI/位置常量和全局变量仍待接通，再删除根SDK Blob工程/模型/转换。全部所需VM原件、显示XML完整图形文本、VS设计时及真实用户验收未完成；M1/M2/M3均未完成。"
   }
 }

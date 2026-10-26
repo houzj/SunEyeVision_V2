@@ -11,14 +11,24 @@ public sealed partial class BlobParameterDefinition
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
     private readonly XElement[] _judgments;
+    private readonly IReadOnlyDictionary<string,XElement> _inputs;
     public static BlobParameterDefinition Instance { get; } = Load();
     private BlobParameterDefinition(XElement root)
     {
         if(root.Name!="BlobParameters"||(string?)root.Attribute("schemaVersion")!="1")
             throw new InvalidDataException("Unsupported Blob parameter metadata.");
-        Shape(root,["schemaVersion","workflowImageInputId"],["Group","Judgments"]);
+        Shape(root,["schemaVersion","workflowImageInputId"],["Inputs","Group","Judgments"]);
         WorkflowImageInputId=Required(root,"workflowImageInputId");
         if(WorkflowImageInputId!=BlobTool.ImageInput)throw new InvalidDataException("Blob workflow image default must name its declared image input.");
+        if(root.Elements("Inputs").Count()!=1)throw new InvalidDataException("Exactly one Blob input editor declaration is required.");
+        var inputs=root.Element("Inputs")!;Shape(inputs,[],["Input"]);
+        foreach(var input in inputs.Elements())
+        {Shape(input,["id","label","page","section"],[]);Required(input,"id");Required(input,"label");Required(input,"page");Required(input,"section");}
+        if(inputs.Elements().Select(x=>Required(x,"id")).Distinct(StringComparer.Ordinal).Count()!=inputs.Elements().Count())
+            throw new InvalidDataException("Duplicate Blob input editor identity.");
+        _inputs=new ReadOnlyDictionary<string,XElement>(inputs.Elements().ToDictionary(x=>Required(x,"id"),StringComparer.Ordinal));
+        if(!_inputs.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(new[]{BlobTool.ImageInput,BlobTool.InspectionInput,BlobTool.MaskInput,BlobTool.PoseInput}))
+            throw new InvalidDataException("Blob input editor declarations differ from the input model.");
         foreach(var group in root.Elements("Group"))
         {
             Shape(group,["page","section"],["Parameter"]);
@@ -136,6 +146,14 @@ public sealed partial class BlobParameterDefinition
         ?value:throw new InvalidDataException("Invalid Blob Boolean: "+name);
     public bool Contains(string id)=>_fields.ContainsKey(id);
     public string WorkflowImageInputId { get; }
+    public SunEyeVision.Plugin.Contracts.FieldPresentation InputPresentation(SunEyeVision.Plugin.Contracts.Port port,int order)
+    {
+        var input=_inputs[port.Id];
+        return new(port.Id,Required(input,"label"),Required(input,"section"),order,
+            port.Type.Resource==SunEyeVision.Plugin.Contracts.ResourceKind.Image?SunEyeVision.Plugin.Contracts.FieldEditorKind.Image:
+            port.Type.Resource==SunEyeVision.Plugin.Contracts.ResourceKind.Region?SunEyeVision.Plugin.Contracts.FieldEditorKind.Region:SunEyeVision.Plugin.Contracts.FieldEditorKind.Record)
+            {Layout=new(Required(input,"page"),Required(input,"section"))};
+    }
     public string Label(string id)=>Required(_fields[id],"label");
     public string Page(string id)=>Required(_fields[id].Parent!,"page");
     public string Section(string id)=>Required(_fields[id].Parent!,"section");

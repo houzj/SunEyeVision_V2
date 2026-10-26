@@ -91,6 +91,9 @@ try {
         & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeCatalog
         if($LASTEXITCODE -ne 0){throw '移除SDK入口及Wpf后中立目录/默认节点创建/运行/保存失败'}
         $results.Add([ordered]@{name='runtime-without-sdk-frontend-and-editor';passed=$true;scope='正式EXE工具箱→Runtime目录→公共节点工厂→强类型设置→HALCON→保存重开；SDK入口/Wpf均缺席'})
+        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track RuntimeEditor
+        if($LASTEXITCODE -ne 0){throw 'SDK入口及Wpf缺席时真实Runtime参数窗口/文档保存/确认取消失败'}
+        $results.Add([ordered]@{name='runtime-window-without-sdk-frontend-and-editor';passed=$true;scope='实际MainWindow打开→通用Runtime设置视图→来源弹窗→私有输入/隐藏保存→非法阻断→确定取消/释放'})
     } finally {[IO.File]::WriteAllBytes($manifest,$original)}
     Restore-Held
 

@@ -1,9 +1,9 @@
 ﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','RuntimeEditor','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeWorkflow','RuntimeCatalog','Components','Consumption','InputBoundaries','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -39,6 +39,7 @@ if($Stage -eq 'S4' -and $Track -eq 'BindingEditing'){$source='S4BindingEditingCa
 if($Stage -eq 'S4' -and $Track -eq 'RoiEditing'){$source='S4RoiEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'FullChain'){$source='S4FullChainCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'WindowPresentation'){$source='O06WindowPresentationCases.cs'}
+if($Stage -eq 'S4' -and $Track -eq 'RuntimeEditor'){$source='S4RuntimeEditorCases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash

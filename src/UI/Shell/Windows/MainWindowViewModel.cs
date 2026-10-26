@@ -3933,6 +3933,7 @@ SplitterPosition = position;
         /// <param name="node">当前节点</param>
         private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, SunEyeVision.UI.Shared.WorkflowNode node)
         {
+            if(InitializeRuntimeEditor(target,node))return;
             // ★ 性能剪口：首次打开调试窗口的完整耗时
             var perfSw = System.Diagnostics.Stopwatch.StartNew();
 

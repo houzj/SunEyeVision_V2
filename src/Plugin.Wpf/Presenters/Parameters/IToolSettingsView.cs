@@ -6,7 +6,8 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,ReferenceSetting>? References=null,
     Func<Port,ReferenceSetting?>? SelectReference=null,
-    Func<OutputReference,string>? FormatReference=null);
+    Func<OutputReference,string>? FormatReference=null,
+    string? InputSection=null,FrameworkElement? InputContent=null);
 
 public interface IToolSettingsView : IDisposable
 {

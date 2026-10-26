@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <BlobParameters schemaVersion="1" workflowImageInputId="input.image">
+  <Inputs>
+    <Input id="input.image" label="输入源" page="基本参数" section="图像输入" />
+    <Input id="input.inspection.region" label="检测区域来源" page="基本参数" section="ROI区域" />
+    <Input id="input.mask.region" label="屏蔽区域来源" page="基本参数" section="ROI区域" />
+    <Input id="input.pose" label="位置来源" page="基本参数" section="ROI区域" />
+  </Inputs>
   <Group page="基本参数" section="ROI区域">
     <Parameter id="IsPositionCorrectionEnabled" type="Boolean" default="false" label="位置修正" fieldId="field:c95f3a26edf55097863a7ec47d17cce5" allowReference="true" />
   </Group>

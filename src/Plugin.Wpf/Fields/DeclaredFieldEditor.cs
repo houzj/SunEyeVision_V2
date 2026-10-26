@@ -31,6 +31,7 @@ public sealed class DeclaredFieldEditor : UserControl
     private bool _updatingInput;
     private bool _pairedSlider;
     private bool _regionSourceSelector;
+    private readonly bool _allowUnboundReference;
     public void UseRegionSourceSelector(){_regionSourceSelector=true;HideLabel();Render();}
     public UIElement EditorBody => _row;
     public void SetLabel(string text)=>_label.Text=text;
@@ -60,17 +61,19 @@ public sealed class DeclaredFieldEditor : UserControl
     public ParameterSetting Setting => _setting;
     public FrameworkElement? InputElement { get; private set; }
     private string NumericError => _numeric is not null&&!_numeric.TryValidatePendingEdit(out var error)?error:"";
-    public bool HasInvalidText => (_referenceMode && _setting is not ReferenceSetting) || _error.Text.Length != 0 || NumericError.Length!=0 || _children.Any(child => child.HasInvalidText);
-    public string Error => _referenceMode && _setting is not ReferenceSetting ? "请选择订阅来源，或切回数值模式。" : _error.Text.Length != 0 ? _error.Text : NumericError is {Length:>0} numericError?numericError:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    private bool MissingReference=>_referenceMode&&_setting is not ReferenceSetting&&!(_allowUnboundReference&&_setting is UnsetSetting);
+    public bool HasInvalidText => MissingReference || _error.Text.Length != 0 || NumericError.Length!=0 || _children.Any(child => child.HasInvalidText);
+    public string Error => MissingReference ? "请选择订阅来源，或切回数值模式。" : _error.Text.Length != 0 ? _error.Text : NumericError is {Length:>0} numericError?numericError:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     public event Action? Changed;
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
         Func<Port, ReferenceSetting?>? selectReference = null, ConstantSetting? constantBackup = null,
-        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null)
+        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false)
     {
         _port = port; _setting = initial; _constant = initial as ConstantSetting ?? constantBackup; _write = write; _selectReference = selectReference;
         _formatReference=formatReference;_choiceLabels=choiceLabels;
         _presentation=presentation;_referenceMode=initial is ReferenceSetting||port.EditModes==FieldEditModes.Reference;
+        _allowUnboundReference=allowUnboundReference;
         Resources.MergedDictionaries.Add(EditorResources.Create());
         _error.Style=EditorResources.ErrorStyle();
         Tag=port.Id;Margin=new Thickness(0,1,0,1);MinHeight=32;
@@ -115,9 +118,9 @@ public sealed class DeclaredFieldEditor : UserControl
             var clear=new Button {Content="×",Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip="清除可选项"};
             clear.Click+=(_,_)=>{if(Set(new UnsetSetting())){_referenceMode=false;Render();}};_actions.Children.Add(clear);
         }
-        if(_referenceMode||_setting is ReferenceSetting)
+        if(_referenceMode||_setting is ReferenceSetting||_allowUnboundReference&&_port.EditModes==FieldEditModes.Reference)
         {
-            var dock=new DockPanel();var pick=new Button{Content=EditorIcons.Link(),Width=29,Height=30,ToolTip="选择订阅来源"};DockPanel.SetDock(pick,Dock.Right);dock.Children.Add(pick);
+            var dock=new DockPanel();var pick=new Button{Content=EditorIcons.Link(),Width=29,Height=30,Padding=new Thickness(0),ToolTip="选择订阅来源"};DockPanel.SetDock(pick,Dock.Right);dock.Children.Add(pick);
             var label=new TextBox {IsReadOnly=true,Height=30,VerticalContentAlignment=VerticalAlignment.Center,Text=_setting is ReferenceSetting reference?(_formatReference?.Invoke(reference.Reference)??reference.Reference.NodeId+" · "+reference.Reference.PortId):""};dock.Children.Add(label);
             pick.Click+=(_,_)=>{var selected=_selectReference?.Invoke(_port);if(selected is not null&&Set(selected)){_referenceMode=true;Render();}};
             _body.Children.Add(dock);return;

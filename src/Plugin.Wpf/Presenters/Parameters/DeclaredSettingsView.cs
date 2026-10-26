@@ -33,6 +33,8 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             return(port,presentation,initial);
         }),Write,options.SelectReference,id=>new ConstantSetting(_draft.ReadFields().Get<object?>(id)),options.FormatReference);
         foreach(var field in _fields.Fields)field.Changed+=OnChanged;
+        if(options.InputContent is not null)
+            _fields.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),options.InputContent,0);
         Content=_fields;
     }
     private void Write(string id,ParameterSetting value)

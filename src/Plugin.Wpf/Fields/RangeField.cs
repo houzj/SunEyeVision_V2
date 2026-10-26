@@ -21,7 +21,8 @@ internal sealed class RangeField : Grid
   ColumnDefinitions.Add(new());ColumnDefinitions.Add(new(){Width=GridLength.Auto});ColumnDefinitions.Add(new());
   SizeChanged+=(_,_)=>{var inputWidth=Math.Max(0,(ActualWidth-89-26)/2);ColumnDefinitions[0].Width=new GridLength(inputWidth+89);ColumnDefinitions[2].Width=new GridLength(inputWidth);};
   Children.Add(minimum);var separator=new TextBlock{Text="—",Margin=new Thickness(5,0,5,0),VerticalAlignment=VerticalAlignment.Center};SetColumn(separator,1);Children.Add(separator);SetColumn(maximum,2);Children.Add(maximum);
-  _slider=new RangeSlider{Minimum=layout?.Minimum??0,Maximum=layout?.Maximum??9999999,Height=24,MinWidth=200};
+  _slider=new RangeSlider{Minimum=layout?.Minimum??0,Maximum=layout?.Maximum??9999999,
+   SmallChange=layout?.Increment??1,LargeChange=layout?.Increment??1,Height=24,MinWidth=200};
   _popup=new Popup{PlacementTarget=this,Placement=PlacementMode.Bottom,StaysOpen=true,AllowsTransparency=true,
    Child=new Border{Background=System.Windows.Media.Brushes.White,BorderBrush=System.Windows.Media.Brushes.Gray,BorderThickness=new Thickness(1),Padding=new Thickness(8),Child=_slider}};
   GotKeyboardFocus+=(_,_)=>Refresh();LostKeyboardFocus+=(_,_)=>Dispatcher.BeginInvoke(new Action(()=>{if(!IsKeyboardFocusWithin&&!_slider.IsKeyboardFocusWithin)_popup.IsOpen=false;}));

@@ -5,7 +5,8 @@ public sealed record FieldCondition(string FieldId, object? Value, bool Negate =
 public sealed record FieldLayout(string Page, string Section, FieldCondition? VisibleWhen=null,
     string? PairWith=null, bool Advanced=false, double? Minimum=null, double? Maximum=null,
     int DecimalPlaces=2, bool AllowReference=true,
-    string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false);
+    string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false,
+    double Increment=1);
 
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8 }
@@ -88,6 +89,8 @@ public sealed class ToolPresentation
                     throw new ArgumentException("A range requires two distinct declared numeric fields of the same type.");
                 if(layout.Minimum is {} minimum&&!double.IsFinite(minimum)||layout.Maximum is {} maximum&&!double.IsFinite(maximum)||layout.Minimum>layout.Maximum)
                     throw new ArgumentException("Invalid visual numeric bounds.");
+                if(!double.IsFinite(layout.Increment)||layout.Increment<=0)
+                    throw new ArgumentException("A numeric increment must be finite and positive.");
                 if(layout.DialogPrimary&&layout.DialogGroup is null||layout.DialogGroup is not null&&(string.IsNullOrWhiteSpace(layout.DialogGroup)||string.IsNullOrWhiteSpace(layout.DialogTitle)))
                     throw new ArgumentException("A grouped style requires an explicit group and title.");
             }

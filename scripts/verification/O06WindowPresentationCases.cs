@@ -101,6 +101,24 @@ internal static class S2DocumentEditingCases
   var pixels=new byte[8*8*4];bitmap.CopyPixels(pixels,32,0);
   Require(Enumerable.Range(0,64).Any(i=>pixels[i*4+3]>0)&&pixels[3]==0,"原位图绘线未产生笔画或越出端点");
  }
+ static void NativeScalarTemplate()
+ {
+  var original=new Native.Numeric.HikPcUI.ListView.SliderArrangeFloat
+      {Minimum=0,Maximum=1,SliderTickFrequency=.01,StartValue=.5,DecimalDigits=2};
+  Show(original);Pump();
+  var numeric=Visuals<Native.Numeric.HikPcUI.ListView.NumericControl>(original).First(control=>control.IsVisible);
+  var text=(TextBox)numeric.FindName("ValueText");
+  Require(double.Parse(text.Text,CultureInfo.InvariantCulture)==.5,"原浮点模板未显示绑定值");
+  original.StartValue=.37;Pump();
+  Require(double.Parse(text.Text,CultureInfo.InvariantCulture)==.37,"原滑条值没有同步原数值输入框");
+  Click((ButtonBase)numeric.FindName("UpButton"));Pump();
+  Require(Math.Abs(original.StartValue-.38)<1e-12,"原浮点箭头没有消费0.01增量");
+  original.IsSubscribeLeft=true;Pump();
+  Require(original.SliderVisibility==Visibility.Collapsed,"原控件订阅状态未隐藏滑条");
+  original.IsSubscribeLeft=false;Pump();
+  Require(original.SliderVisibility==Visibility.Visible,"原控件数值状态未恢复滑条");
+  Show(new TextBlock());
+ }
  static double Luminance(Color color){double Linear(byte c){var s=c/255d;return s<=.04045?s/12.92:Math.Pow((s+.055)/1.055,2.4);}return .2126*Linear(color.R)+.7152*Linear(color.G)+.0722*Linear(color.B);}
  static void Contrast(Brush foreground,Brush background,string label){Require(foreground is SolidColorBrush&&background is SolidColorBrush,label+"不是可核查纯色");var a=Luminance(((SolidColorBrush)foreground).Color);var b=Luminance(((SolidColorBrush)background).Color);var ratio=(Math.Max(a,b)+.05)/(Math.Min(a,b)+.05);Require(ratio>=4.5,label+"文字对比不足："+ratio.ToString("F2",CultureInfo.InvariantCulture));}
  static void LightText(DependencyObject root,Brush background){foreach(var text in Find<TextBlock>(root).Where(t=>t.IsVisible&&t.Opacity>=1&&!string.IsNullOrWhiteSpace(t.Text)))Contrast(text.Foreground,background,text.Text);foreach(var tab in Find<TabItem>(root))Contrast(tab.Foreground,background,"页签"+tab.Header);}
@@ -156,6 +174,7 @@ internal static class S2DocumentEditingCases
   try
   {
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
+   Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);
    Test("Native视图扩展会话更换卸载释放",NativeSessionLifetime);
    Test("浮点已保存值只聚焦离开保真",()=>
@@ -207,11 +226,27 @@ internal static class S2DocumentEditingCases
     using var context=new ProductionEditorContext(edits.Host,flow.Id,node,()=>true,Bind,documentEdits:edits);Bind(context.DraftNode);ToolEditorCommit.AttachDraftContext(root,context);Show(root);
     var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3,"正式Blob不是三页");tabs.SelectedIndex=2;Pump();Require(Find<DisplayObjectField>(fields).Count()==5,"图像显示没有五组对象");
     var descriptors=((IConfigurationFieldProvider)parameters).GetConfigurationFields();var declaredStyles=descriptors.Where(f=>f.Presentation.Layout?.DialogGroup is not null&&!f.Presentation.Layout.DialogPrimary).Select(f=>f.Port.Id).ToHashSet();var observedStyles=new HashSet<string>();
+    var countLayout=descriptors.Single(field=>field.StoragePath=="BlobCountLimit").Presentation.Layout!;
+    Require(countLayout.Minimum==1&&countLayout.Maximum==20000&&countLayout.Increment==1,"查找数量与VM原件/现行参数校验范围不符");
+    foreach(var name in new[]{"FilterCircularityMin","FilterCircularityMax","FilterRectangularityMin","FilterRectangularityMax"})
+        Require(descriptors.Single(field=>field.StoragePath==name).Presentation.Layout!.Increment==.01,"VM浮点范围步长丢失："+name);
     foreach(var display in Find<DisplayObjectField>(fields)){var primary=Find<DeclaredFieldEditor>(display).Single();var eye=(ButtonBase)primary.InputElement!;var pencil=display.Children.OfType<Button>().Single();var ey=eye.TransformToAncestor(display).Transform(new Point(eye.ActualWidth/2,eye.ActualHeight/2));var pen=pencil.TransformToAncestor(display).Transform(new Point(pencil.ActualWidth/2,pencil.ActualHeight/2));Require(Math.Abs(ey.Y-pen.Y)<=2,"眼笔中心纵差="+Math.Abs(ey.Y-pen.Y));}
     foreach(var editor in fields.Fields){var error=(TextBlock)typeof(DeclaredFieldEditor).GetField("_error",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(editor)!;Require(error.Text.Length>0||error.Visibility==Visibility.Collapsed,"无错误字段仍保留错误空白行");}
     foreach(var source in Find<SourceSelectionField>(fields)){var error=(TextBlock)typeof(SourceSelectionField).GetField("_error",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(source)!;Require(error.Text.Length>0||error.Visibility==Visibility.Collapsed,"无错误来源仍保留错误空白行");}
     foreach(var entry in descriptors.Where(f=>f.StoragePath.StartsWith("ResultPresentation.Judgments")&&f.StoragePath.EndsWith(".Enabled")))Require(!entry.Presentation.DisplayName.Contains("·"),"判定开关仍含冗余后缀："+entry.Presentation.DisplayName);
     foreach(var display in Find<DisplayObjectField>(fields).ToArray())StylePopup(display,surface=>{LightText(surface,new SolidColorBrush(Color.FromRgb(247,247,247)));var editors=Find<DeclaredFieldEditor>(surface).ToArray();Require(editors.Length>0,"样式弹层为空");foreach(var field in editors)Require(observedStyles.Add(field.FieldId),"样式字段重复进入弹层");});Require(declaredStyles.SetEquals(observedStyles),"弹窗字段集合与正式DialogGroup声明不符");
+    var opacityDescriptor=descriptors.Single(field=>field.StoragePath=="ResultPresentation.Graphics[Key=blobs].Style.Opacity");
+    var originalOpacity=Convert.ToDouble(opacityDescriptor.Read(),CultureInfo.InvariantCulture);
+    var opacityEditor=fields.Fields.Single(field=>field.FieldId==opacityDescriptor.Port.Id);
+    var opacityDisplay=Find<DisplayObjectField>(fields).Single(display=>Find<DeclaredFieldEditor>(display.StyleEditorContent).Contains(opacityEditor));
+    StylePopup(opacityDisplay,_=>{
+        var number=Visuals<NumericUpDown>(opacityEditor).Single();var before=number.Value;
+        Require(number.SmallChange==.01&&number.LargeChange==.01,"透明度没有消费VM原模板的0.01步长");
+        Click((ButtonBase)number.Template.FindName("PART_DecreaseButton",number));Pump();
+        Require(Math.Abs(Convert.ToDouble(((ConstantSetting)opacityEditor.Setting).Value,CultureInfo.InvariantCulture)-(before-.01))<1e-12,
+            "透明度箭头没有按0.01写回同一草稿");
+        Require(Convert.ToDouble(opacityDescriptor.Read(),CultureInfo.InvariantCulture)==originalOpacity,"样式箭头提前写入正式参数");
+    });
     var colorDescriptor=descriptors.First(descriptor=>descriptor.StoragePath.StartsWith("ResultPresentation.Graphics")&&descriptor.StoragePath.EndsWith(".Style.OkColor"));
     var originalColor=(RecordValue)colorDescriptor.Read()!;var draftColor=fields.Fields.Single(field=>field.FieldId==colorDescriptor.Port.Id);
     var colorDisplay=Find<DisplayObjectField>(fields).Single(display=>Find<DeclaredFieldEditor>(display.StyleEditorContent).Any(editor=>editor.FieldId==colorDescriptor.Port.Id));StylePopup(colorDisplay,_=>{var colorField=(ColorField)draftColor.InputElement!;colorField.BeginEdit();var picker=(VmColorPicker)colorField.Template.FindName("PART_ColorPicker",colorField);picker.SelectedColor=Color.FromArgb(201,17,34,51);colorField.ApplyEdit();});

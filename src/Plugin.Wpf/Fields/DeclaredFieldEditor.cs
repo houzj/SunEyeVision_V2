@@ -213,6 +213,7 @@ public sealed class DeclaredFieldEditor : UserControl
                         Minimum=layout?.Minimum??-double.MaxValue,Maximum=layout?.Maximum??double.MaxValue,
                         Value=Convert.ToDouble(value,CultureInfo.InvariantCulture),
                         DecimalPlaces=_port.Type.Scalar==ScalarKind.Int64?0:layout?.DecimalPlaces??2,
+                        SmallChange=layout?.Increment??1,LargeChange=layout?.Increment??1,
                         ShowSlider=layout?.Minimum is not null&&layout.Maximum is not null,
                         IntegerType=_port.Type.Scalar==ScalarKind.Int64?TypeCode.Int32:TypeCode.Empty};
                     if(_pairedSlider){input.ShowSlider=false;input.Padding=new Thickness(2,0,2,0);}

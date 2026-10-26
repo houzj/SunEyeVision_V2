@@ -2,13 +2,18 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "全量Release035已通过。用户指出算法不应等待UI后，修正工作流公共入口上下文捕获；三个正式入口在WPF上下文且不泵消息仍完成HALCON及会话清理，预取消和下一次运行通过。新产物整链8组/资源22组/消费7组/发布11项通过；历史034窗口8组与ROI编辑9组/组合6组/绑定12组保留身份，不套作035重验。整库消费、原31项退出、VM同状态外观、样式范围/存量兼容、typed调试新run、VS及人工继续推进。",
-  "summaryStatus": "全量035构建0错误；执行完成不依赖UI消息处理，整链/资源/消费/发布定向回归通过；整库及视觉人工未闭合",
+  "current": "已按用户要求直接逆向VM Blob原件，保留程序集/资源及反编译来源哈希，提取三页/18模板/16显示对象。落实中立数值Increment，透明度/圆度/矩形度.01、数量1..20000；UI036和全量036均0错误，正式窗口013九组/整链034八组通过。原PCUI浮点实例已加载并验证步进、数值联动和订阅显隐；主数值消费替换、全部显示对象、原31退出、样式范围存量兼容、typed调试新run、VM视觉/VS/人工继续推进。",
+  "summaryStatus": "036构建0错误；直接VM原件基线已记录，原浮点实际加载和Blob步进/私有草稿检查通过；整库与视觉未完成",
   "rows": [
     [
       "整套库范围",
       "已定位VM.Controls、VMBaseControls、VMControls.WPF及Release双版、VM.PcUI、Apps.Style、Apps.XmlUI共7目录；不限Blob可见控件或原31行。",
       "去重控件数量待inventory JSON，不以cs文件数或5style/17PNG冒充整库控件数；全库移植尚未完成。"
+    ],
+    [
+      "VM Blob原件直接提取",
+      "REA核Apps.XmlUI原件及资源哈希，配对精确ILSpy导出收据并解析安装Blob XML；三页/18模板/16显示对象，不从截图值推断范围。",
+      "原件样式透明度.01/粗细1及整数/浮点/双端组合有明确来源。当前五显示对象不算VM全量，原生数值全部消费和范围/存量兼容继续。"
     ],
     [
       "本轮真实颜色组合",
@@ -140,6 +145,18 @@
     "原资源首轮运行ResourceDictionary相对URI找不到vmfieldstyles.xaml（roi-native-resources.log/window-native-resources.log）保留；importer与Generic改绝对组件pack URI后native资源002构建及018/007/030回归通过，未用旧006成绩替代。"
   ],
   "checks": [
+    {
+      "name": "全量Release036",
+      "result": "0错误/6626警告86.79秒；本轮中立步长、原件一致的查找数量范围已接；不代整库或人工验收",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-roi-core-036.log",
+      "sha256": "3b27ebf3f47ed6549e334ba1933d6ed4f97c3e8d16e07fedea36dec781e45858"
+    },
+    {
+      "name": "UI Release036",
+      "result": "0错误/6610警告195.20秒；本轮中立步长、原件一致的查找数量范围已接；不代整库或人工验收",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-ui-036.log",
+      "sha256": "579a65036ed83b75d0443c0dd73038199740792cf2c967dad4d34f6148e69bce"
+    },
     {
       "name": "当前源码全量Release（通过，非最终验收）",
       "result": "035：0错误/3560警告81.30秒；修复工作流公共入口捕获调用方上下文，HALCON及会话收尾不等待UI。此前034及033迁移构建通过成绩保留历史；不等于整库/视觉/人工通过。",
@@ -4441,12 +4458,6 @@
     "scope": "实施者对正式Release的定向自动检查，不代VS、物理交互和用户人工验收",
     "checks": [
       {
-        "track": "WindowPresentation",
-        "groups": 8,
-        "result": "PASS",
-        "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-011/receipt.json"
-      },
-      {
         "track": "RoiEditing",
         "groups": 9,
         "path": "Release/_validation/S4-20261025/RoiEditing/attempt-019/receipt.json",
@@ -4490,20 +4501,28 @@
         "exit": 0
       },
       {
-        "track": "FullChain",
-        "groups": 8,
-        "path": "Release/_validation/S4-20261025/FullChain/attempt-033/receipt.json",
-        "sha256": "dd168c2c144e8b5ab2121697b2108ea346e354b1fc59171bcccb778e9a6cf44d",
-        "exit": 0,
-        "note": "最终UI035构建后正式程序集重验"
-      },
-      {
         "track": "Components",
         "groups": 5,
         "path": "Release/_validation/S3-20261025/Components/attempt-066/receipt.json",
         "sha256": "83d860d9068b8636bee15c0fab99ea9731064962c8b2244a84a48450703c858e",
         "exit": 0,
         "note": "最终UI035构建后正式程序集重验"
+      },
+      {
+        "track": "WindowPresentation",
+        "groups": 9,
+        "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-013/receipt.json",
+        "sha256": "5dcd21ed61cc34369aad286f9bbdc91cc835335ab761a120d96d7206b4e9b9e7",
+        "exit": 0,
+        "note": "036正式产物；窗口含原PCUI浮点真实加载/步进/订阅与真实Blob透明度箭头草稿隔离"
+      },
+      {
+        "track": "FullChain",
+        "groups": 8,
+        "path": "Release/_validation/S4-20261025/FullChain/attempt-034/receipt.json",
+        "sha256": "8d160e7cae30f8e6ff95c1a96204255093ee3919631f45c3ebd01ef26d96411b",
+        "exit": 0,
+        "note": "036正式产物；窗口含原PCUI浮点真实加载/步进/订阅与真实Blob透明度箭头草稿隔离"
       }
     ],
     "preservedFailures": [
@@ -4511,9 +4530,10 @@
       "WindowPresentation010：Gray16解码未请求PreservePixelFormat；检查PNG IHDR确为16位灰度后修正解码。生命周期夹具未提供接口要求的模板，补齐最小夹具；未声称3D/profile绘制通过。",
       "ComponentDeployment009：旧用例把NumericUpDown强转TextBox；后续实际显示窗口的布局阶段超时，继续定位，未计通过。",
       "ComponentDeployment009后的Loaded模板/组合Grid查找、测试Application启动及Dispatcher同步等待失败均保留。用户指出算法不应等UI后，进一步发现产品根入口await捕获上下文；已ConfigureAwait(false)，兼容入口直接转发Task。035的正式组件检查移除算法阶段Dispatcher泵，三个入口、已取消请求及取消后重运行均通过。",
-      "Consumption021：旧用例以没有物理帧证明的裸缓冲测试几何继承，被BLOB_ROI_FRAME_UNVERIFIED拒绝；改用两个真实ImageLoad建立可区分来源，继续验证，不放宽产品同帧校验。初次补充用例SourceKind传string而非实际enum，失败日志保留。"
+      "Consumption021：旧用例以没有物理帧证明的裸缓冲测试几何继承，被BLOB_ROI_FRAME_UNVERIFIED拒绝；改用两个真实ImageLoad建立可区分来源，继续验证，不放宽产品同帧校验。初次补充用例SourceKind传string而非实际enum，失败日志保留。",
+      "WindowPresentation012新用例误把现行ConfigurationFieldAccessor.StoragePath写成LegacyPath，检查宿主编译失败，不算产品失败；更正后013九组通过。"
     ],
-    "next": "继续VM同态布局与原31项/整库真实消费迁移，固定中文源码检查点和同源发布身份；解决方案入口清理建议已由旁聊转达，当前验证完成后按实际脚本覆盖范围处理。"
+    "next": "继续用已经实际加载通过的原SliderArrange/SliderArrangeFloat承接字段与范围消费，保持来源/订阅/私有草稿边界及存量值；补齐原件显示对象映射，不以9组PASS代整体VM视觉。"
   },
   "nativeHostAdaptation": {
     "scope": "源码提取/框架适配及已列局部消费验证，不计作整套控件库迁移完成",
@@ -4536,5 +4556,15 @@
     "impact": "不改输入快照、HALCON算法、调度、取消、结果所有权；只解除调用方上下文对完成及会话清理的约束",
     "proof": "最终UI035构建后Components066五组：无Dispatcher消息泵的三入口HALCON、预取消清理及再运行通过；FullChain033真实主窗口整链八组通过。Resources008二十二组、Consumption023七组及发布扰动023十一项为同源码全量035/UI重建前产物，身份分列。",
     "notClaimed": "Workflow项目仍有历史WPF数据类型依赖；本次不称整个Workflow程序集已纯净解耦。"
+  },
+  "vmBlobSourceBaseline": {
+    "path": "docs/collaboration/evidence/VM_BLOB_UI_SOURCE_BASELINE_20261026.json",
+    "sha256": "0530c707fd125b07e7c9e3095ef5c9c163f5d310422a863ccfea5db318a49b9f",
+    "method": "REA核当前Apps.XmlUI身份/资源哈希，校验同原件ILSpy/BAML导出收据、工具及输出哈希，直接解析安装Blob三份XML；未执行VM",
+    "counts": "三页、18相关模板、16显示对象（不是整库控件数）",
+    "verified": "ImageViewConfig四行/宽260/标签列102/高32/偏移-90；透明度0..1步长.01，粗细1..10步长1；Integer/Float/双端值/订阅/命令完整组合",
+    "applied": "FieldLayout追加有限正Increment；DeclaredFieldEditor与RangeField消费；透明度、圆度和矩形度.01，FindNum/现行SDK校验一致1..20000",
+    "remaining": "当前主数值字段仍是提取SDK NumericUpDown；原SliderArrange/Float已实际加载通过，但完整消费替换、样式范围/存量值兼容、显示对象补齐和VM实际主题命中仍未闭合",
+    "memberCoverage": "REA成员全量表示超过64MiB预算，保留unavailable证据，不计成员体成功。原机分支/主题未观测，用户VM截图继续验收。"
   }
 }

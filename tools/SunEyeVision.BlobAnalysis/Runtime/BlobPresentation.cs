@@ -11,7 +11,7 @@ public static class BlobPresentation
   var page=basic?"基本参数":result?"结果显示":"运行参数";
   var section=basic?"ROI区域":key.StartsWith("presentation.judgments.")?"结果判断":key.StartsWith("presentation.graphics.")?"图像显示":key.StartsWith("presentation.texts.")?"文本显示":"运行参数";
   FieldCondition? condition=null;string? paired=null;
-  var minimum=default(double?);var maximum=default(double?);var decimals=2;
+  var minimum=default(double?);var maximum=default(double?);var decimals=2;var increment=1d;
   var advanced=false;var allowReference=!key.EndsWith("Enabled")&&!key.EndsWith("IsVisible")&&!key.EndsWith("IsBold");
   if(key is "setting.pose-enabled" or "setting.SegmentationMode")allowReference=false;
   string? Id(string logical)=>ids.TryGetValue(logical,out var id)?id:null;
@@ -25,11 +25,11 @@ public static class BlobPresentation
    var family=key.Contains("Circularity")?"Circularity":key.Contains("Rectangularity")?"Rectangularity":"Area";
    When("setting.Is"+family+"FilterEnabled",true);
    minimum=0;maximum=family=="Area"?9999999:1;
-   if(family=="Area")decimals=0;
+   if(family=="Area")decimals=0;else increment=.01;
    if(key.EndsWith("Min"))paired=Id(key[..^3]+"Max");
   }
   if(key is "setting.IsAreaFilterEnabled" or "setting.IsCircularityFilterEnabled" or "setting.IsRectangularityFilterEnabled" or "setting.SortMode" or "setting.IsBlobCountFilterEnabled" or "setting.BlobCountLimit")section="Blob筛选";
-  if(key=="setting.BlobCountLimit"){When("setting.IsBlobCountFilterEnabled",true);minimum=1;maximum=1000000;decimals=0;}
+  if(key=="setting.BlobCountLimit"){When("setting.IsBlobCountFilterEnabled",true);minimum=1;maximum=20000;decimals=0;}
   if(key.StartsWith("setting.Output"))section="输出";
   if(key.StartsWith("presentation.judgments."))
   {
@@ -43,6 +43,9 @@ public static class BlobPresentation
    dialog=key[..key.IndexOf('.',"presentation.graphics.".Length)];primary=key.EndsWith(".IsVisible");
    title=dialog["presentation.graphics.".Length..] switch {"blobs"=>"Blob","centroids"=>"质心","contours"=>"轮廓","inspection-roi"=>"检测区域","mask-roi"=>"屏蔽区域",_=>throw new ArgumentException("Unknown declared Blob display group.")};
   }
-  return new(page,section,condition,paired,advanced,minimum,maximum,decimals,allowReference,dialog,title,primary);
+  // Original ImageViewConfig_subContent uses .01 opacity ticks and unit stroke
+  // ticks. Keep stored literals intact; numeric bounds compatibility is separate.
+  if(key.StartsWith("presentation.")&&key.EndsWith(".Style.Opacity"))increment=.01;
+  return new(page,section,condition,paired,advanced,minimum,maximum,decimals,allowReference,dialog,title,primary,increment);
  }
 }

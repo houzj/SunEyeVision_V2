@@ -7,15 +7,15 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/migration-manifest.json",
-      "sha256": "0e6fcc66ca5dc700bccacb00967dee6bf608289570a02c6fd59868b37dd3a520"
+      "sha256": "bb25dff224f92b916fca1394762547d19e769488e0405ba6eed6dd64d4d73bf4"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/display-migration-manifest.json",
-      "sha256": "85601c65eecb1102f92205bd702ecb154a5b31181da9baf40a6121c7e964db98"
+      "sha256": "560e04d67a994c3bb8be0372c98bdbe553db79173fc68bd193c6c5a68029c138"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/composition-migration-manifest.json",
-      "sha256": "fd448d4751b8903c6316fbcf6003501964975fd641281f26c868ebb1aa0dd832"
+      "sha256": "eadb5cc81e94da16d0a98bfdd5556ed97e763beeef2e2de7c1619e7f5ba22846"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Dependencies/dependencies-migration-manifest.json",
@@ -23,16 +23,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Common/localization-host-manifest.json",
-      "sha256": "c4425a598689d3d3ac773db2df1ad3f2468fb9d3a778dc4deb6a4060fa987640"
+      "sha256": "19a10091ebf917ead36b33d97b25b133e713f77718ad2d192c93498e7041b2c9"
     }
   ],
   "types": 1126,
   "namespace_groups": 70,
-  "changed_files": [
-    "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/DelegateCommand.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramItem.xaml.cs.pending"
-  ],
+  "changed_files": [],
   "integrated_files": [
     {
       "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
@@ -180,9 +176,9 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs.pending",
       "sha256": "d995afb5924e967baf766a922e5efb6ccd50313959333260d03e25397408f40a",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.cs.pending",
@@ -200,9 +196,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs.pending",
       "sha256": "9faeef32d2a78c13f30c9768fc7a0c9a52a92d88a1ceb6296e2800bc652eaa1b",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/PasswordBoxBindingHelper.cs",
@@ -270,9 +266,9 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs.pending",
       "sha256": "c4eb8bd62da710c2d21339d1a86bb265e1d197db7d7cd016ef45191fea464016",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
@@ -280,14 +276,14 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs.pending",
       "sha256": "d0c07df97dee94af163d9f043cf58268e238925e47d2e4706d1b8dce03c449e5",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs.pending",
       "sha256": "c80b03b0bd8a6f9ed63aa20f028045a8f4c3c0d5a95bc13bfaee268147e251a4",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ClearButtonTextBoxStyle.cs",
@@ -310,9 +306,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.cs.pending",
       "sha256": "c72f066cab4a11d7ca32e2afd0eacd485378112c9190557aef9b0825d72bca02",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ExportAlgorithmWindow.xaml.cs.pending",
@@ -320,9 +316,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVarDlgHelper.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVarDlgHelper.cs.pending",
       "sha256": "9c1e46fa5c327f11837a2b8c826f356d224deea8eebeb1b53456fe4c1da487f0",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.cs.pending",
@@ -330,14 +326,14 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.cs.pending",
       "sha256": "df3e67125be3077318a61a1061ed33d276b614ae4351c79ed15e72123bd8808d",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs.pending",
       "sha256": "e9e08125ce36b950605166ee19ef1ac0072053780d4ac4e18e6b97812b1dae6f",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ListItemBackgroundConverter.cs",
@@ -370,9 +366,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.cs.pending",
       "sha256": "bffde7fabd036b77cfca25c2711fde5be05fecb3def2c38f90299f54936888dc",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsBaseNode.cs.pending",
@@ -385,9 +381,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs.pending",
       "sha256": "483cb2953def24b51280fb7c5e14039c5bd7a8eeeb852c33fa031ee1703d774e",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/searchType.cs",
@@ -395,9 +391,9 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs.pending",
       "sha256": "4604952f5e930ac3c693e4798510b5a5e71f649e045a3fe80cc534a437b932cc",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs.pending",
@@ -440,14 +436,14 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs.pending",
       "sha256": "552cb5b308af4ea72f90eeb1dea42cc10983c35ec0c170c785b7725fbbaba0a9",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs.pending",
       "sha256": "720a4510d243ba53a20fb4df2339b80283a4c27ca172e6e485853ebc29fa00b8",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ButtonControl.cs",
@@ -455,14 +451,14 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs.pending",
       "sha256": "7d75b50f96c19fac62e4856fc974af231a7ba1eec5a5c71d2bc0eb54fd82475a",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs.pending",
       "sha256": "e4640379e2a9f5c37ee9ae7edb33bd2fc2177502a77bf2f383d938c91642b027",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ClockSourceControl.xaml.cs",
@@ -475,19 +471,19 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs.pending",
       "sha256": "7ff56a75ce37952f7189f9fb8eb9fd7d29cf82e031c1ded821ea1d48da0e0c23",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs.pending",
       "sha256": "a9edb5b4c69c16ad49e5f363537d272ce101b16795adddc9e5c3261120661b1c",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs.pending",
       "sha256": "dca68275797c1e0fc2ffbff1cfbc79e3dec46de51290d3995c2066e95b8875e4",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DataGridControl.cs.pending",
@@ -530,19 +526,19 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs.pending",
       "sha256": "49ae6ee401bf306dd081c133fdddfcf561fe5e3c05215b9ba76754ec1d84de95",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs.pending",
       "sha256": "783ae4e80e12d2c5029759b3c5d3cdb5f847eb48af6388eb41b8236cb9a85e69",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs.pending",
       "sha256": "a10b7924fc6e57859dfae3f68c8c39910d2359a0aab29dfd7bc6ce36e58ac003",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ParamComboBox.cs",
@@ -555,34 +551,34 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs.pending",
       "sha256": "5efafdf56367e71cff2de4dfb30a562e61779653125e1ab476c3538f453f4acd",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs.pending",
       "sha256": "774fa8b476920e5e6262a6c9e795026ef79286047084db5065ca6b621e2ca3c4",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs.pending",
       "sha256": "9958c7b4d3bca7bedbf839cb0a5360da35c7a7f16675e57a7c664e20e8e440a0",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs.pending",
       "sha256": "199434cd6a25b892155f653475050b56594a8df88eae67cd4b075fc3a7fcf164",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs.pending",
       "sha256": "b80d9a93b0a6d00d8b1f20a42f08d8b5e021278f7d0253a2b0ce86dab36f69fa",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs.pending",
       "sha256": "ce2e8174ba697bc64676737185c592250fb995923bac641f9106b7f3a1a8cd98",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs",
@@ -590,19 +586,19 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs.pending",
       "sha256": "e9ffc6d9335593988f946e0eafc1c55d70f677e0013a3ebfaed0673a58e3ea3e",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs.pending",
       "sha256": "f499fed699761bbaf7a1d957d4f445e1412d3e76a1a8036224361ac71a36d43a",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs.pending",
       "sha256": "525f2106889abc6eedfb24f38c02f63a0d88e791218ffe56709a92b2490be38c",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/UserTempConverter.cs",
@@ -620,9 +616,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs.pending",
       "sha256": "220359befb4da5d090de398957c50959a24f609081434b55a99fe95eaa374d04",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNode.cs.pending",
@@ -630,9 +626,9 @@
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNodeCvt.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNodeCvt.cs.pending",
       "sha256": "0d43d725166f980592cc82980edc025c8a2670efe5980cb01f7943582cc1afb8",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/ExportAlgorithmUtil.cs.pending",
@@ -645,14 +641,14 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs.pending",
       "sha256": "0c4654b5cf9efe5356922fedee53a6cac06b7d735cf3ae5542057525bdd01f71",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.cs",
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.cs.pending",
       "sha256": "e3e973e2d553877fa9f2c44ea8112beab61badf8f9f85ee414003ab8f5c74aaf",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/MulParamsMultiplicationConverter.cs",
@@ -781,7 +777,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/DelegateCommand.cs",
-      "sha256": "491c5819285676fa87bcdeca505454496a9b7c71743536526889e32e240acc80",
+      "sha256": "98d99639c4a5436a74a0f8398b66bff05d1d7e8e28b2f60d25255942c2570880",
       "pending": false
     },
     {
@@ -1366,7 +1362,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
-      "sha256": "8e4d649692efb13b9ed7cf5916bdaad15ca7039b7992511e3dd93a6d37df80be",
+      "sha256": "087b755c5ba3bef5dad961c9c56f2300b1e0bbbcb823a5ad9d9284bd78120cc4",
       "pending": false
     },
     {
@@ -1421,7 +1417,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ContainerItem.xaml",
-      "sha256": "02a0cacbdfdc15b262074ac3fc1478fff89eaffd7a2bf61da31f32a84da08f53",
+      "sha256": "f5ca3cfd674e666c3fc106b607877684083abb0c432f0ba9d3385b5f84501cde",
       "pending": false
     },
     {
@@ -1746,7 +1742,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MartrixCircleBackControl.xaml",
-      "sha256": "e1e1a118ad09458442e2b7ac146df4cfa7ec8e72c73ec4a4d0f6d20b169e6e63",
+      "sha256": "2661c96512e8d19123b334d23d07d99264c829371123a5f1a03107368d669801",
       "pending": false
     },
     {
@@ -1781,7 +1777,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
-      "sha256": "947f0ee3f866de53560ab67fa81447fac454841dd93a4233ab5a98f2d52fa647",
+      "sha256": "5d6c65194a79b37ccde75ca3e3c8c4d14728269185fa798b2920fe994802cc9f",
       "pending": false
     },
     {
@@ -1906,7 +1902,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
-      "sha256": "6af8fd825bdc21dc0e3324da51e5eb5f3a37a4bf449ac191ce4cdf8a2aa3fccf",
+      "sha256": "7bc879733062d1a781635f786f6dbdc80ba48af0cef31417c2b0f758bed69c65",
       "pending": false
     },
     {
@@ -1926,7 +1922,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolylineROI.cs",
-      "sha256": "4ba7f6b87af7496b4a6ec9abf831c1d89e0fe5c11fcc2cec19a1794a6fd45ef7",
+      "sha256": "9e9007148aa3752e2022a9178f0ce6cfc25c6a215953b836b78126cb6a8cd23b",
       "pending": false
     },
     {
@@ -2336,7 +2332,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml",
-      "sha256": "0161b61de2de87a7e81a933e8c231f07197595f80d06eb9890ca2719f05e075f",
+      "sha256": "f59175fd49c8734b2c7dd5f42e14a95b9ec09bec38c366de359129b8a1eed471",
       "pending": false
     },
     {
@@ -3586,7 +3582,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/ImageViewController.xaml.pending",
-      "sha256": "f77e3a0b5a99d3f095b50ee2485038d75c2755815d955215a224629ceba805f5",
+      "sha256": "bf56ae39f11d8176a947029b1b2245689fa88fc759c1fe7b32cdf10470245a1b",
       "pending": true
     },
     {
@@ -3711,7 +3707,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/HikHistogram.xaml.pending",
-      "sha256": "4e3081e9acc25111c80272c3e5c641088ee9489628a036e2ccb18f924d86d21e",
+      "sha256": "0bfdb9cf9e1996ed3aa93ba8d5247481cfd7e80c80023ab1892fe2663a6f56a6",
       "pending": true
     },
     {
@@ -4021,7 +4017,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikImageView.xaml.pending",
-      "sha256": "0cee15ddebd66a071804a02a9dd2e067581f5b83e51373bf2253ddbaa0e5bcc3",
+      "sha256": "0ccb9141e89de6cb05be8ddc6dd19b6552c8ac18c9e4585e2c43453cb54a4e0f",
       "pending": true
     },
     {
@@ -4225,9 +4221,9 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/PolygonPoint.cs.pending",
-      "sha256": "9c2da5c622450b46ec4ad921e553a139212a7075c1c47120271c3e29d1f1e9c0",
-      "pending": true
+      "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/PolygonPoint.cs",
+      "sha256": "467b93ca2ec63e385b05e6e4f444f45aca62cc30af83781a9c05654662451064",
+      "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/RectangleArea.xaml.cs.pending",
@@ -4346,7 +4342,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.pending",
-      "sha256": "4b95d7a1a70bb814f692bb57b77488490b621067e6afbbd7a5fa26d2abe1306b",
+      "sha256": "e5b54db99a2eae7d518612be9afc74c0e1ebfc27ffdd5c751cd6572262856674",
       "pending": true
     },
     {
@@ -4466,7 +4462,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ComprehensiveConfigControlBase.xaml.pending",
-      "sha256": "9b62cfb64120c0bc7188100bfb9799d11402d5ed20ad7dd29b45d60f448de461",
+      "sha256": "d5970ba82a9cf1e2b9f254d891bed63701f41a40c32758911894afce71a8ddef",
       "pending": true
     },
     {
@@ -4486,7 +4482,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.pending",
-      "sha256": "5a0ae29700e5c9b814c753225caecfce794ad39b64e8e77623a6e812748241bf",
+      "sha256": "257f3fe5536723c747d06274af01ce1e35cc50b95c87e9e539b44ee72e629b08",
       "pending": true
     },
     {
@@ -4526,7 +4522,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml.pending",
-      "sha256": "8e7a5e5aed61fec0797c3867a711ca0995d240811a0ebb664a08c959dad7815b",
+      "sha256": "bf030b96bd2ac582a8d5058370647d6963b5ce8ac682f153d5123804bb638ee8",
       "pending": true
     },
     {
@@ -4576,7 +4572,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml.pending",
-      "sha256": "014b6eac4af05f36806e5ed5f21cd17402dec75d0f0d92291f59d7b0a91a7605",
+      "sha256": "f393820817d79015922d1a31428a74d9a50705a4ac306e1f82d66c6f26273877",
       "pending": true
     },
     {
@@ -4591,7 +4587,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LogView.xaml.pending",
-      "sha256": "6fe8ef3970acf50cec222757b3414ef9dcf4ce1696a179cda193b16543aef93e",
+      "sha256": "2d37d2fc7cdb65a6c541610ae50a3a708a114682bf9a16d5f2aef7d88ef488fe",
       "pending": true
     },
     {
@@ -4601,7 +4597,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/MainViewControl.xaml.pending",
-      "sha256": "02c0af0176e0b1fe5a7491ad58b3ac2c8b63999cd6f655eb9dd3207823428ade",
+      "sha256": "76d8968a66e965b7f053521e5c6191772c257624c84dea8e24f6530d41243012",
       "pending": true
     },
     {
@@ -4611,7 +4607,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.pending",
-      "sha256": "845e758f00cfde6ad4acccc6eeb5b03d0a59fd603a09ced082cd127c8d41ce95",
+      "sha256": "c263309ebfca9df06247c16db8b91280b952fa46f746cb89d6ab40b36eae2208",
       "pending": true
     },
     {
@@ -4621,7 +4617,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleSetShapesConfig.xaml.pending",
-      "sha256": "f321e404cc63fed82348ecb648cc9b887fa3aeedf41afc6d778907b8bc93df26",
+      "sha256": "4c480db019ec7be5b3778f626e77ed02bc40190cabcf9c8cb04c0760ba5a6d5b",
       "pending": true
     },
     {
@@ -4651,7 +4647,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml.pending",
-      "sha256": "ad5070b32f0eb84e7fece1d99c7d966d69087bc978390e3f1e49080626f848da",
+      "sha256": "ace44565cb00057fabb711e06a16ceebf32c72feb88f0270837f33287eff961d",
       "pending": true
     },
     {
@@ -4671,7 +4667,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.pending",
-      "sha256": "0c26b79cb04781cb7c5521376daae6734c79b3b6176948ede85c2487d30905ee",
+      "sha256": "8a8b223599e3266c6fd2e686977f55f4974b8747f97bd3207d1003df70337ee0",
       "pending": true
     },
     {
@@ -4681,7 +4677,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsTabControlBase.xaml.pending",
-      "sha256": "ce9264e09b0e94550d1a907c3e3bb202c97d29b6f2085c3eb622d9b5ec2f29d7",
+      "sha256": "6daf8f3f993a8bd4b1859e18a2680176d30e327e5d1a8542201f7a4134854611",
       "pending": true
     },
     {
@@ -4751,7 +4747,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.pending",
-      "sha256": "cc9f4267609344e6bc984198a9359b56d0d98974cd3213955b07fc99a377221b",
+      "sha256": "340e3f44d563409ade0ea781ecf05bb5ebc19b06870c1caf9b02d3c190968e45",
       "pending": true
     },
     {
@@ -4781,7 +4777,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RenderControlBase.xaml.pending",
-      "sha256": "786e7b78e2388f5c261effa201440f2c6c45178608692d24a4b33210a4ffff2a",
+      "sha256": "0680fd624fa78e6da0652c2adc25660670d302fcfbba8f1bb6c2aa31224fb949",
       "pending": true
     },
     {
@@ -4816,7 +4812,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/SearchModuleView.xaml.pending",
-      "sha256": "bda6051cdea84a259ac09ef67fcf1e80bee06d94908ebb11e15c07f5e353ba41",
+      "sha256": "482715231848c42e234d71e1aebc36e047e9df8c67c58efecc0a8efbf7d49c93",
       "pending": true
     },
     {
@@ -4831,7 +4827,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/SingleModuleSetControl.xaml.pending",
-      "sha256": "119c7323e6ff156a0660a227aad65f02c6b3fb57560d67296ae40b34c78e25cd",
+      "sha256": "5881a0e92795ac8319ad3c6a9c33127df318f897e0f239f328daab7214a1fded",
       "pending": true
     },
     {
@@ -4866,7 +4862,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ToolBox.xaml.pending",
-      "sha256": "905b68867ee306e660ac75c57018fcdffbd96e688dd14aeaa81773c0448df29c",
+      "sha256": "4616d5befd000032b583dad9135b977c8892ff3f80bcaec35fca60e54087839f",
       "pending": true
     },
     {
@@ -4876,7 +4872,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ToolControl.xaml.pending",
-      "sha256": "86a3fb0f82ffcdde201732020d3fd9a0c892ebf0ec60cbeadc50c7b956a96034",
+      "sha256": "79161a58cd755591a566beee68b256a43eb1ddbc6ee782b38f1aebc97e2f341c",
       "pending": true
     },
     {
@@ -4946,7 +4942,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.pending",
-      "sha256": "2c9275f83b879268d3f1741a539f9481e8945a2fdde87242396f8cfd05b72b61",
+      "sha256": "c5868f53f9741e542d03d6b13812b19d3140ec3891a9452ce03ba098782c8349",
       "pending": true
     },
     {
@@ -4961,7 +4957,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramGroupListUI.xaml.pending",
-      "sha256": "4f8669d416ee6cd0712ebfdac20154e2e801a7a3b3fbb69ce79755aca583444d",
+      "sha256": "c7bb0b21b834c7b26fea5b62d8e8dc7339c08072d0c33e07282bffdac64a43fd",
       "pending": true
     },
     {
@@ -4971,7 +4967,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramItem.xaml.pending",
-      "sha256": "e00a6179d5483d2d7924f1d8f4042e2e1a662d9ee27f48bb66d7c48b79bb5d81",
+      "sha256": "f944dccec06dde554c64feabf7ffbd7472bd17c3dea8abca3a7ac00d7a6d6a39",
       "pending": true
     },
     {
@@ -4996,7 +4992,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml.pending",
-      "sha256": "3acdfdcdd02ce18652f695f0d513960a0c3b3ab3220d7cdb1c62333046d234c0",
+      "sha256": "759917262b69c89714826029aafca64c0d769394e59e33146834502b095b8df4",
       "pending": true
     },
     {
@@ -5016,7 +5012,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/HoverPot.xaml.pending",
-      "sha256": "65a4cb2f2f416512c8213bfc43ad1587d266502f431963ce8ce8f6c12742e0c6",
+      "sha256": "d39457252291e3ccbbf90fae252d9b0f7b770d711a9db6ebe5b8568fab012e62",
       "pending": true
     },
     {
@@ -5051,7 +5047,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ModifyName.xaml.pending",
-      "sha256": "9f052e3fc9661da963b5465a6a42206893f1f0313c239a8b0db949f6df84d5b8",
+      "sha256": "30799bccb004b9e7c591583a12c55027d372d169aeb2105e332de93eb1dca751",
       "pending": true
     },
     {
@@ -5071,7 +5067,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/RectDragPanal.xaml.pending",
-      "sha256": "2faa3d5888cccda5e76bb368e921d8c64cce5ef97b2160930ce654e3eef8144d",
+      "sha256": "5b1f1f76f85d0468bf20e453a9114d6f1614f034dfcbe4943a2e48f439355068",
       "pending": true
     },
     {
@@ -5111,7 +5107,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/StatusBar.xaml.pending",
-      "sha256": "4b4dea8f706bff2a70e14582e7b9fcd9e5afa765f97915da38dfbbe895781cfb",
+      "sha256": "a1df2bb01cf8d942d80655c2955680021207ff5bc788f62ede40c0735be7a72b",
       "pending": true
     },
     {
@@ -5151,7 +5147,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/WindowLockModeTipsView.xaml.pending",
-      "sha256": "5281504b61016cdff59517aa1a900cd5009cf077f90bbef4ba0cbedb90bf59f8",
+      "sha256": "87e87090c1a634014248033095232e454c1d0f7ba64de1b806e884d00f29fa2b",
       "pending": true
     },
     {
@@ -5161,7 +5157,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ZoomArea.xaml.pending",
-      "sha256": "5d0f85932f1b63e304f55229da9c227748d4c945f2d6fa1981d443b979b58ab2",
+      "sha256": "ff39d72b32af3aa2741cca5e273d041bcf948c6c2f738aa1beaca624674d4897",
       "pending": true
     },
     {
@@ -5241,7 +5237,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.CameraAcq/RealTimeAcqControl.xaml.pending",
-      "sha256": "1ea35f0f822be3aeb3164c81a33f666a3604d17e4e9c085200b325bb452b44d1",
+      "sha256": "7bd42d6f1250c6a2564436e4950764507aa67a728ea8af19893380ce69dbe634",
       "pending": true
     },
     {
@@ -5361,7 +5357,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddDeviceType.xaml.pending",
-      "sha256": "38e4f072cf5c5c846fbc23e2e2c24ad3891bcd0a14517794015408dbc53ce614",
+      "sha256": "191028473697b26598548a433fc7cb7f5748fadefbbb745a50762f001532a43a",
       "pending": true
     },
     {
@@ -5371,7 +5367,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.pending",
-      "sha256": "d146cf9f4c803c564666f352b4d7731ca341f433f7313921c2e79f7f2ce7611c",
+      "sha256": "fd0619270bfdd70c115a032ea154cb1d4ddca4258519b05622a898609e5b0143",
       "pending": true
     },
     {
@@ -5461,7 +5457,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GloablTriggleConfigUI.xaml.pending",
-      "sha256": "63ad0f748ed8ae156fbdfdfb2bbf6f3b8aedc58a1c97574e155dcacba05631f0",
+      "sha256": "fb407d2926b03bc2c614ffc485799eb8b3aaa419dca06c3f1183a9f9ecdf1cb2",
       "pending": true
     },
     {
@@ -5476,7 +5472,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.pending",
-      "sha256": "c4bed151234f256dc20b42d578eec34ad2cae02373f9c3bf0439923630f09d57",
+      "sha256": "fd830f4c4345f64b710865b37a4e66b4b48170d1da3ebc928aa4e281e543eaa0",
       "pending": true
     },
     {
@@ -5491,7 +5487,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.pending",
-      "sha256": "b188ad86e317cc2bde3dca64d29a3119910c2591bdf0ee27be62740a69962959",
+      "sha256": "ec113439773098542f694209b0d83e97a7cfcfcb92f552d35373fe7b7478ffe1",
       "pending": true
     },
     {
@@ -5536,7 +5532,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.pending",
-      "sha256": "7ae524cb1894ed4391ea1a8fcb9991b55a6ff32245b523298d3b2156ff31f418",
+      "sha256": "1b1c793a17b63784396ac1734bd042e12828e6735846ee253806232d44f2b649",
       "pending": true
     },
     {
@@ -5556,7 +5552,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.pending",
-      "sha256": "a70d525e42a44642ac276bb828a736a54e6fae8c00c6dc02b2dc4a239ff34b6f",
+      "sha256": "69dada9f71dc239288ff3ce9c7946e1e242b8b920505d965ae3492ab8c5b36fa",
       "pending": true
     },
     {
@@ -5596,7 +5592,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDlg.xaml.pending",
-      "sha256": "df06d7ee50f55b922e51e31594a88b22c52ff6b4ea2f0f4deff7506a0633fed9",
+      "sha256": "ea24ffaa62441eb1f28cb656572befaccf71b1e07934d251f445e1cf2fa4e377",
       "pending": true
     },
     {
@@ -5641,7 +5637,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/OutputConfigWindow.xaml.pending",
-      "sha256": "146bb0735f9862eb20bef947d1a87dfda4357a1cdda72db2126ea4599729cb08",
+      "sha256": "08054374c9d4a105bd2a1295c516a463fd8b548af0243c86d51f1a86ae5f9998",
       "pending": true
     },
     {
@@ -5681,7 +5677,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/TriggerProcedurePanel.xaml.pending",
-      "sha256": "1349e4fe5d00b3c31850864468020e0b7ceb0c0c083dc3648c35f374b61aa18b",
+      "sha256": "8ca70d6eea8296e02a366983b014cf5aede1a55244add909be641ee5a250c76e",
       "pending": true
     },
     {
@@ -5706,7 +5702,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI.GlobalTrigger/GlobalTriggerConfigContent.xaml.pending",
-      "sha256": "43189442ded7d7550402dbec8384f8fce464ea2b7996ccc037db62b9081ddc50",
+      "sha256": "0fa9caad0255fb348da74e55fe71193b789467b88233c32e323a2b4d673db168",
       "pending": true
     },
     {
@@ -5731,7 +5727,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.TimeDialog/ShowTimeDialog.xaml.pending",
-      "sha256": "c9e20482adbd6f85855ae703f80f73492501b9b1d5582567e5fc0e39252e6397",
+      "sha256": "29c6a5288f7f70ae7b9c94144823a5c1cc2ce446ded5dc53bc66e0f8445d7c2e",
       "pending": true
     },
     {
@@ -6521,92 +6517,92 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/bottombuttonstyle.xaml.pending",
-      "sha256": "f97302690231e4d25eee428f3a44a3b69ed810fb1227eba15c767bbbf1a9d3df",
+      "sha256": "b4d0b7c899caa38cd44bac553ddd4c2698d038d12bb73e2ee1df5d7e8e480897",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/normalbuttonstyle.xaml.pending",
-      "sha256": "32b4d737234c216785a200ab480c0652175b9edeab7742677d5ea632d9e0c61d",
+      "sha256": "90b2d4f01fd2371e7744c475d6c6e8c05eaad870a00ab80b8ee9c040bc31664c",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/radiobuttonstyle.xaml.pending",
-      "sha256": "5cebc947247ca78a1aedad66cff73e7b68710ed31227d6ca623c6d1b8f046a91",
+      "sha256": "143e3a431b26b67d8f3890c03e58e4f6eb57d5d93997ae17deade979b3eaccb0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending",
-      "sha256": "3fbdd265b10ec8f4d72e91e79ce1db7b23567c565657578adb1d25930e387305",
+      "sha256": "bae17bb94b71b39cea81543ace71b6c649c11bc638b81f11ee0c3e9cd26cf794",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
-      "sha256": "28986d7fb0b17eed40026b638e985cc80f29e279a8dab46aa20badc49b55accd",
+      "sha256": "01fed8884e12c41d2b501a7b49b450a6e7c923d365ced94cd45182781047a569",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/classicdatagridstyle/classicdatagridstyle.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/classicdatagridstyle/classicdatagridstyle.xaml.pending",
       "sha256": "7fa1575203cb6be7e46a0536cb6c1aed894eab2862409fb0f3491652204c6f82",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/comboboxstyle/comboboxstyle.xaml.pending",
-      "sha256": "48e50f58814239adacc34dc41dc4b07791fc68cbcac5bd901d71bfe59f504ed0",
+      "sha256": "671c5b5d07be08c0041e17ab8078e77144eaa8181121c299bb7c4e8b63a6b487",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/comboboxstyle/listviewcomboboxstyle.xaml.pending",
-      "sha256": "f495530f5b5bcb29a74b933fa2794d3b3565eabb7f51b7907a1a2b9832662cb9",
+      "sha256": "ecd5b2503dc35142287e3775d517b16ee4b8905ab4df11faf994ed083a36ebf3",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/datagridstyle/datagridstyle.xaml.pending",
-      "sha256": "ff8f9f6700081da4f751a0784e6bd886b2950cfaba0b7edc66507dee981e325c",
+      "sha256": "753974f853833aff61b8354a09d91d3ce0545b3663ace3701589f9ecfd21ee44",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/expanderstyle/expanderstyle.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/expanderstyle/expanderstyle.xaml.pending",
       "sha256": "1272207d44f940b58de4276595cf4b5959864397bf08eb53705caa75008c2d9d",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml.pending",
-      "sha256": "def665afe713bcd4620ede1b5b143ee007e95f768e695691380604d2c94964ed",
+      "sha256": "ee9f300017534d716396da771546248bacb3eddd54fb1577b9d8b67d46272405",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/listboxstyle/listboxstyle.xaml.pending",
-      "sha256": "1eae3d38021f69ba1d1fb7a0cb92581c00dce2856271961239f125fd4ac3a4bb",
+      "sha256": "879f4ba83d8c846913e2079f743a2ad1c7cbf6e77bffec8cc697d66b6acf2a63",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/listviewstyle/listviewstyle.xaml.pending",
-      "sha256": "4960a8484c0d214642adaa14017fe5b2900a8193aa285e63362d14f78d86e785",
+      "sha256": "3bd22db49839fa0f056164dd51c52798d62ef0cd0e86a38e735fb3b13788edb4",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/menustyle/menustyle.xaml.pending",
-      "sha256": "1f3de3e14a5f0ff5513b28248c1aaab336d262749a300e0a304b4b0926aeb78d",
+      "sha256": "32d4c28e85dd00038d75c0bc8e1ad36d4f1f104723145adb5a1faf5bea34dbb0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/passwordboxstyle/passwordboxstyle.xaml.pending",
-      "sha256": "08bd3ff0ce4aad5b0e4ace9619327d46640cd437ce99ce861b8cdfd5b49ee680",
+      "sha256": "82de37d9318d61e589a519fd2fb23128747fef25849c4fd98bcebb5498819693",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/progressbarstyle/progressbarstyle.xaml",
-      "sha256": "bc3c2ef9f20070c787188f2f7f1acd9e9fe5a05ca4b3c619c7cc8c6a9474b9ab",
+      "sha256": "33e66cf905f8dfb306f2ec5872ca7176d27ec6999701061956e461c14b39428e",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/radiobuttonstyle/classicalradiobutton.xaml",
-      "sha256": "385fca0975298e66bfecf9c9708e34e2eaf880ce8f21fc6066cd1d6f9d19dc27",
+      "sha256": "b7f8cdffd49c7ca5c0337447c7a9f1275f83899335d43d813d6c1796cec2b66c",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/radiobuttonstyle/radiobuttonstyle.xaml.pending",
-      "sha256": "7a8df596c864f6ec0ba8cf4e2e2c8f777a9ec578ac5027ac133867aa24f321cb",
+      "sha256": "d50173fa4d030cd56aa94c4df210fe61d53d687a571424ab14c28467d66b4b6d",
       "pending": true
     },
     {
@@ -6616,177 +6612,177 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/scrollbarstyle/recscrollbarstyle.xaml.pending",
-      "sha256": "8aea238b3e887455ef185f92334a37d86248d1d0382ac9511dd93e0b66bcfd15",
+      "sha256": "c39b59f8afd0148b8d14b61fef0181e8aac776fcc21c1e981e812760488da5d0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/scrollbarstyle/scrollbarstyle.xaml.pending",
-      "sha256": "31bef557d8c9a64643ba4c01b7cd5b8be5b318a5130a76ebe3fb2f879b75e489",
+      "sha256": "17fe24cf861cdf85983a2e1780658ebc0b8190a532cc9cf2b808b6184527dd9f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/searchtextbox/searchtextboxstyle.xaml.pending",
-      "sha256": "29bc00f6c2717ddc0bf82435b9f4a0ca8afeae5b68c304801046b28a45a10aa7",
+      "sha256": "4722da1a90de8ec9dc2533f033764ad41d1830017c88e2abb11d29a603d95c43",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/separatorstyle/separatorstyle.xaml.pending",
-      "sha256": "f998741e170bf3720b55395c4fdb771d68b892f58fcc8028d4fe1d1ef95962bc",
+      "sha256": "9007529b8060c309ba28771c79e71c5634155fee744e28109c25943bd83ecadb",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/tabcontrolstyle/tabcontrolstyle.xaml.pending",
-      "sha256": "744cf53d7f0ca417d9516b1859c1895173f27dee6d294f425026d333391d30f6",
+      "sha256": "3e863486cf9e46c6a16a43ec1b08c31552038904ed0086a72d92822842ab9279",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/textblockstyle/textblockstyle.xaml.pending",
-      "sha256": "ee8ace896e16a6b46436cc60d3c02a1162b8fa1fdc982f3d7fb6697c93dce93b",
+      "sha256": "66c09c3587da4a24e5710ed8cc4b67ac3661e100a3cb6a76962766e849be1a10",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/textboxstyle/textboxstyle.xaml.pending",
-      "sha256": "1b9f94251b5f8171bde2d7383c6e46ec150502f2bae22504a1d2bf1171bbadf1",
+      "sha256": "b252b143313258a203feb9280444c21f80a2a1a7b6d90369a0337e69a8afe4bc",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/treeviewstyle/treeviewstyle.xaml.pending",
-      "sha256": "44e06e429f93afce6fe17be88fa8333b1efe8a00efedb80dc7353672215266cc",
+      "sha256": "c410703fd5e8df9bd77da641df24864b9ef5db842fbe2c68754c427f78a5e18a",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml.pending",
       "sha256": "06766994bb24690f543c5b7d38a8692e837dedc341cfd90ceefd460690dd4eac",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.pending",
       "sha256": "2c620d3f3986d64039405ea886843176d8c1f9a7ca80a5f0b1e90ba2c284a745",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.pending",
-      "sha256": "69039766ee9c4bb27a9f4f4f175451ff2d4263b911e51731e0d9f3d288101f6a",
+      "sha256": "2ed6851fe643371627b342a3116ef943b582d58435a85b7f7c1cf547272426b3",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.pending",
-      "sha256": "3daf4d61393cf3951a003f2716d60ec09dbc0b6de82be17ecdd69d5bc930d88b",
+      "sha256": "771e616b9fdea9570f8c8f990748fffd908fa618e1d6054a280eefbfe3ed21b4",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.pending",
-      "sha256": "71ba4f0ac558a220bde4d155497729e23635108e91c8df1cbc3baa5917ef3f66",
+      "sha256": "d97d14ad847feca0f9bbcd87b5e731df4e33d1d7773abfe38828bf855161f48e",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.pending",
       "sha256": "64c26c9cf2000c9831e5155ca4a574475b2872d46e7950ec8a0472b179ea9a13",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml.pending",
       "sha256": "a4b8640d0cd30e75243a80060d89afc4ee5f63badf344f4aada0f5de4f313c21",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/UILogManager.xaml.pending",
-      "sha256": "d8bedddc44581ab7f71278276e538c39a844cd21711f75c2500df46e2a9a647a",
+      "sha256": "1a93e2934f00723d1aff5298193da333a5f1d64c8ddf38ba41f82b4da14d5174",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.pending",
       "sha256": "bfa090e0e1f42982c47b651d5e8ea4839c5a1e4e8a2cb170dca13a1e875d4d70",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.pending",
-      "sha256": "5c5978f3a0eae1aaa5b1f49bd15046461ea9bf3bc078c99fe84815fdc11f5a9a",
+      "sha256": "a3765511bbab28780c7e73fee44e399f1a4fb1ec58aafe219f5bb011478b4a0e",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml",
-      "sha256": "2078253d79969a1ff3bb4069d71f25ac4787d9554b5ab5b987f56389ba2eb0aa",
-      "pending": false
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.pending",
+      "sha256": "023760a4bbbb6aa9ef7560086511527cf5740d3eacf45fa34192ca4cd955e06b",
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ComboboxTreeView.xaml.pending",
-      "sha256": "2828c50e90ad5b7aef5b94614613693a211a0cad345233f2c6a670f9f253ee86",
+      "sha256": "a65ec8a86f124062c6d77aa9bbccbaf513e9db6d7485801c65f478f229bcb546",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.pending",
-      "sha256": "cb96fa004af4deb2f99e84ac3a75b98a5c8534f67d94f73b7a512e3ea0a31a96",
+      "sha256": "c52df75c7e01387e1982902552e6a71980a45603c5f5f419b24bd2b942285744",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.pending",
-      "sha256": "7c1042f30d985473b043ae3876dfed70d40b73599e55f0a53ce1f1688218a8d0",
+      "sha256": "7d423d33f97b77211f364c6f095a5ed0cdb450757ca3bf7acd4cb98b2ad096e8",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ExportAlgorithmWindow.xaml.pending",
-      "sha256": "932b571f9b85e39dab13b164c5c62ada1e7769e7307cf224fb6b555a236acdcb",
+      "sha256": "32ba40efba56722b7e9aebdc0050196ede2954c49404ad96727a5ed3b787d6c5",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.pending",
-      "sha256": "bb21dfb9451003604697823bedbb2918c9d50dc16e754b10ec35dd391d8b8adc",
+      "sha256": "cb4e2746dad784e35409742eec7e32751dea50050f8a27f5979aea8036c0677f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.pending",
-      "sha256": "b6f23925f7b2d04d30adb8b7578fc9d4119597db0dafd8f88b831b0e7ad570d2",
+      "sha256": "7edddf57643c455559dc84f1a6bdcae95106a2083fbf81a8b42650cf7c478ea4",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.pending",
-      "sha256": "8c9a87293951b5b529ba6f449461140b7bf27212940702a1578c9ba628fa35f3",
+      "sha256": "5dd3a8fd3f80355cd18959e039b72c8b402bd42cbbcd0b9c5043f4b2f665436c",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml",
-      "sha256": "7294168d9e5afc67c9d56d4343decacc8f9e462d5fcd420e5254ff20cdca212c",
-      "pending": false
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml.pending",
+      "sha256": "046a0860a802cbdfcc5bbd846e1f5ae3c2126481167d854e40ea9d4c3f20af6d",
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/PageNumControl.xaml.pending",
-      "sha256": "511ee1340c5577ea758373144b723f894a6acc9f699ad4ee20aed4da54084edc",
+      "sha256": "2b344209aa0a677502c593b342f61215ea2266b4bc9995d53c7ad583aa05bba5",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.pending",
-      "sha256": "20a062b3370c2e8b008c63ff746ede5a3f3b3042fb23a1f7053e54d2d42f3fb4",
+      "sha256": "906a0c0b97907b3911995d9d1eee707355882317661f8356f0cc062469c1162e",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.pending",
-      "sha256": "d5dcbcf923ddad8aea5401b8482afdc54a09ce78284504e98173c9d8207a61d1",
+      "sha256": "f2e41ec46203922514e0426d8cf47ae182320dec074541ab3e37bec05ac112bc",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml",
-      "sha256": "5286b13872001ff21f231bfe702672f8656e7586bae0653970e170c5f07b7f1f",
-      "pending": false
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.pending",
+      "sha256": "8cb101f219eb7c798e1e0c8177e02690cd09fa44d80debe11730850dca673c9c",
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.pending",
-      "sha256": "25ea010ff370e3e9da175d65312147dbcb17cd751ef2a476be07c6076ad8c463",
+      "sha256": "e73bc1275a7ce24ea763305d2c8bb2968c4df6604cdcb7b0ba426266d76be059",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SysParamSet.xaml.pending",
-      "sha256": "acfb1e007c38c175d75427c13933c9d3aad34da7b17429f78f3b60692aadc41a",
+      "sha256": "2bf20183d25f4a73125c76b2d152b8979409731aaff843a02987652795ef4e47",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TimeOutSet.xaml.pending",
-      "sha256": "25cd89c703a8317ae8f67ce860bb5b80ee2c3edf2c7e31e183469609a80d9271",
+      "sha256": "79ca8a59b2137eea9c2d70e8a5e41729a54b8749353f524f92a4e59b9ae8a278",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TreeViewCombobox.xaml.pending",
-      "sha256": "ece575ad618b0865dbf0dfd2f24f4aaf70b20699f4d22605f3639d83632c9656",
+      "sha256": "00d8b1181d61a23ce500d9034bb5caa68eb794ac4842e5ac65b38910463febf6",
       "pending": true
     },
     {
@@ -6801,22 +6797,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.pending",
-      "sha256": "690d5317284a0bd92025d7f0f4856d93b0f850d5c6830e09bd137792fdbbdf9d",
+      "sha256": "ac683a817c5439b6df8691cc3dad568f313a16dff9e382cb1dfeeeb080babfaf",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.pending",
-      "sha256": "518b3e881f84ee3a198c3bbbc4711ded8ad8251fe696e50f40578da98890d33a",
+      "sha256": "a6c3fc060110b49edd6b99eb28620ac5f63d0cccfaa7e041b4681cdd67d5a8f3",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.pending",
-      "sha256": "a18c6920a2ad350fcc0a274a7b85f9555aad1fe2fd3160f8c196f409b3d33877",
+      "sha256": "0a0cf1cd5dc210fdc339fb714fb757372471a59b5c8d5996f385c2d36b37b317",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.pending",
-      "sha256": "8c40f815e7cbefeffdc789661ec65433f79de5b2978ebd8cc27bec3a36d6085a",
+      "sha256": "e203a622844e555a48867766f9f32ca46d223b2d6d54d92cfe557cb9b81203e8",
       "pending": true
     },
     {
@@ -6826,22 +6822,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.pending",
-      "sha256": "5f6878bfb7ebc6339a59e88fa743ea6546b73bf7f15ea3d22d79ee2a91c4c556",
+      "sha256": "27317c431c0f147482f485f058de84d4d5ad4c5644ddfd7972cfd65c25a2c551",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.pending",
-      "sha256": "5172ec2aebf5c808f6c58532df931370f23c2a147ad19a1d29183fa4d5358df5",
+      "sha256": "c429f5049a0aef760c179a2322b38680c286f897f66962dbdbfe7e355c717f71",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.pending",
       "sha256": "ed96d372be7c79350465bc20c358e1c2f17419c69c914221cf1defb2b2e93fe2",
-      "pending": false
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.pending",
-      "sha256": "71f8b505d016484882e55835d4a81736b1bdb545bd84598116ff22cbae9b1528",
+      "sha256": "240548fa44a8c00d482b96547b2bbb865aa0f4469be0f9884e8c3a2f31c92f80",
       "pending": true
     },
     {
@@ -6851,82 +6847,82 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.pending",
-      "sha256": "2234192b3eecbd3969c5ee12abd9d15307f792c31d8e7389307e859fe7663b49",
+      "sha256": "99ba820d56ac20c1a55bf2e9ed2ace9f48f5820534a944805a0534b463838e9f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.pending",
-      "sha256": "18514c2efe2ed6f5f4122b9ef4b7167e656d991d1fb140688cfc4a2bf6673fef",
+      "sha256": "dd5225018450d33f3b01a666dc6ca6eee430cd8eefd6b8f8f1507bd853cf7c77",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.pending",
-      "sha256": "2bbe1a297e8946f207fff5ce32c0597123bdaa31ef8b0694cdb389d1874a68d1",
+      "sha256": "272d62457ea3189d6f6a4c383bedcfb644ae6b4f3858cef607c9a02cf34a2ee8",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml",
-      "sha256": "3f25dc2bc91df11404b3cedaa0ffa954afa4662abda48690383b6161a7c565d1",
-      "pending": false
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.pending",
+      "sha256": "008f59acc863a4d2c4a1b423714b1bad7a9a1689e0ac0350e8c1965cc98092ec",
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.pending",
-      "sha256": "6f125d1237658a3159f357a715aca23741259a6403b01984409d5bfdf3012ad3",
+      "sha256": "92e8a2466cfebed68693f9932a56f3c024e54772d1c536c9d998c3ee2d8c3a4b",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.pending",
-      "sha256": "eeac5ee302858079290617fe2381b29ec0d3ce387edbf76ed5cb40523c1c7351",
+      "sha256": "0e976bedadb461fab0ce3dc5187179e17459f2d0c5533f8a9bc4ab317fc1cf1d",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.pending",
-      "sha256": "eb4b8cbc7d700ca7e01149709b13442a07c54b56c300ffcf0e405b018f9ab363",
+      "sha256": "eef4984bf52fa9f8d6c88cccc48cafe5977df9bfc4cc0792425d9556381aa822",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.pending",
-      "sha256": "28b3f881ff3fcb95a853a316d34647f4688943944a06b6f86a5a2f2b501a1189",
+      "sha256": "1060e8f4e4a8f7d1c51f0411813d5b2c9f57d2f0e59bd684e2128bec17fb442c",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.pending",
-      "sha256": "8ade410dc6c6ce24e4b23fc9949775b3b3919ea2de17c88c7a27f4cd3fae0659",
+      "sha256": "e766fa875923138de19599b59e0397d0b1d51251f6b10c31b67683b198cc3df0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.pending",
-      "sha256": "cb930b7c43d336f38e11d4db171fc08e8a450472de7a3dba7b1e0ff731ff266a",
+      "sha256": "7bd61c6af969b4b5527dd01c877638cfc1a25fd8aafd55c80402b007d5ae39a0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.pending",
-      "sha256": "6102445e1a5e2f03e194a54cd435712ffd773b1f5fe88fa2eed59cfab1c593ae",
+      "sha256": "654cf3c2be4736add91036222b868c401c576abfab37ed57068100c29b965eec",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.pending",
-      "sha256": "9e866f6ac962b8225bceaed8a1d849b8d49805773e273ae9d554658cfb05c4cf",
+      "sha256": "6e81bbbd3cda4b9693dde007612aa6529238237902ce2066dcc260ae8607bd7b",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/DynamicRunParamDisplayWin.xaml.pending",
-      "sha256": "d7161fda567ebc7e9b280c28eaa774e47530a51f08f4a3bf7af72261de70dc96",
+      "sha256": "a43b8bb24b6b3026b5931b6a1332def2e1d0e47a83bd02f928cca68e54eb4db0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.pending",
-      "sha256": "3715e6a1c92fcd97b853045349d6be586ffd6416aee8fdc5646c6c34d39b27c2",
+      "sha256": "6249aed0facccd9ddaf65e320a6c4b939069000ba783f459cf312cf5a63caf0f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/paramtabcontrol/listview/roiselectdatatemplate.xaml.pending",
-      "sha256": "29b4c16fcf7b12d7f3e06a3366a67b225c8349c5558529ff252e2dc010fcbf6b",
+      "sha256": "97a0a899300e59244c7e19935c7e285bf5b5a9d3276a2ce7080ed0b1130769bc",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/paramtabcontrol/paramtabui/frequentlystyle.xaml.pending",
-      "sha256": "577a9ad54f79b4467fd6bab9c0700b3aaa3087f0d1628eefb3c0af2aa7672f53",
+      "sha256": "02deb076ac9910e6cbad31198f2778a7ffb82f353fc8b482d8f34e200928a4cc",
       "pending": true
     },
     {
@@ -6936,32 +6932,32 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending",
-      "sha256": "f0866b9995918da10d41d599fe6e2d59d07c00bfb26f54be66302df185ff7f67",
+      "sha256": "b95030ddceccc09efb6cd9209bc2c3bcebc3acc7ab83c35ad88d01efd3d1d1eb",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
-      "sha256": "8499c1903f08edb1f91ef4609970d8fbcd0cf64a27c3f6f54db653efb3e59639",
+      "sha256": "11666c08298f665dc920eb325b9cc0b799d730d11b3ad5f63786e4b80e869a3c",
       "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml.pending",
       "sha256": "122cf54921c69292da6e294795836381e0d2860a0adc1999419072d635b36d5c",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/themes/generic.xaml",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/themes/generic.xaml.pending",
       "sha256": "69f8169178cb6cd8589c5d1cc6daf4c7a6b04e1205bfa7b8c247f942466dd681",
-      "pending": false
+      "pending": true
     },
     {
-      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml",
-      "sha256": "2483fe0d8323084276b372a15d11c94798b12a0a85a651582cf8b9497b185538",
-      "pending": false
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.pending",
+      "sha256": "2b887eaee4e7a643261e4feff19fcd1c71d089ea66e00241e23b829e0489a7d0",
+      "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.pending",
-      "sha256": "3d34405921b7765f3607d1ede6376ed816643fe80917763cafad0575b210b8b6",
+      "sha256": "b33c4ceb6cb34b53679e65b51ab7ebae3ac6f5a769234f01e9b9905f9ee0c9e3",
       "pending": true
     },
     {
@@ -7001,132 +6997,132 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedcirclecaliperroi/normalizedcirclecaliperroistyle.xaml",
-      "sha256": "dc11f3e5c4f2ecb65dffcbfd2624688eba4154bb07d42b3b648cd586114622a5",
+      "sha256": "2864ecffbe023ee03ba23fe0052282bd5b08a77446994ce6c20b0f88ab199e79",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedcirclemesroi/normalizedcirclemesroistyle.xaml",
-      "sha256": "0386d4afed983452e7ff934e756d4cf3e72a01c2b79ae5f8a9377ab960a83f40",
+      "sha256": "1d27257873331aaa864c62e8268ceb30ef96d420383d9b6ae12478bb599544b2",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedcircleroi/normalizedcircleroistyle.xaml",
-      "sha256": "a082847eefbc8470567d8008012c6604e3fc3c0d7c9804cc1843c8ac4798250b",
+      "sha256": "f346ec7fbd76dfcddfa7660dad5d69ce32aa904708bbfcefdf48b9329d541162",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedlinecaliperroi/normalizedlinecaliperroistyle.xaml",
-      "sha256": "5a7c72b6e9ecc716fde4002c39c25ff429e1330a52926a49144f10f40beca14b",
+      "sha256": "d40480b62c3e80acae0fc5cd256013fd6758bbb2af5f688262d987080ddd9bce",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedlineroi/normalizedlineroistyle.xaml",
-      "sha256": "60bd8893e257ab6810a03c66635830a07d0b307eb0fe1d98a8ffd2df66c9de4b",
+      "sha256": "f8c4773b0ba70ec41283513a33bc56fd9b25d1e5ee0e5bf6095564fe33f626c4",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedmatrixcircleroi/normalizedmatrixcircleroistyle.xaml",
-      "sha256": "49daea12cc8900bb6c5ef95fe007332d0213cd79002747ae9a42bd48162b9dc2",
+      "sha256": "1c543fe0ef1b9e455ab0610bf4f018bcb34cdb01077e0e6cce6a11c55c5044c8",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedoversectorroi/normalizedoversectorroistyle.xaml",
-      "sha256": "5167dbb343f7ed4ea540389343a71c92605c0887aead0fa3be839140aa7941f1",
+      "sha256": "48b55bdfe38451063fda63941d194cb6c550369fb7914c26a8dd085436bdf031",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedpointroi/normalizedpointroistyle.xaml",
-      "sha256": "8d736d1456a8bb150cddcda4fce53ed11eabbbfcb9f7f8db02bc6db9a5d932b1",
+      "sha256": "001d2072fa9cbe9425f47f93b1fc1b4fc86ad1263b289e57ef7c8cf6dc5a272d",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedpolygonroi/normalizedpolygonroistyle.xaml",
-      "sha256": "37aebdb30572f8e3dac8e08116c59468a443242f8f29e6eefcba8c41f5a9cc9c",
+      "sha256": "e04c42a7ef7e5fffbc6921fc6fe13ec0f44fb06ae958068958174ef221077a8e",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedrectroi/normalizedrectroistyle.xaml",
-      "sha256": "a250d82b91c438191b6993ade012132ce1caeb2c9e1db5b83914483851e60041",
+      "sha256": "69a55bd9a25bf447706127ac014dd8d4d9bb5acb62e246b5784cfde1906618ca",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedsectorcaliperroi/normalizedsectorcaliperroistyle.xaml",
-      "sha256": "b4635df5af255dbabaddb5df16a15c1a837c09995990d0930eeb566cfeea7d21",
+      "sha256": "e2abbb11213949ebca92ef80f122c50bd0ec42e0b4096705d4965fea5043afea",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedsectorroi/normalizedsectorroistyle.xaml",
-      "sha256": "4a001f096ebdfb308aae60fea1db067108ac1cdc7c60c280700047e0370c398e",
+      "sha256": "6725eb2be6295c207d5d8b14eef6a27bfc6d4144fd82220c6cd424c93a85918d",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/circlecaliperroi/circlecaliperroistyle.xaml",
-      "sha256": "c0d8231cb414c739de6b4ab0c17e1560dff5df8d0eab5cb1992675a102875a3c",
+      "sha256": "0c1ee7100945fe253be116de5c264d338263a64594545aaf28fc74231546504c",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/circlemesroi/circlemesroistyle.xaml",
-      "sha256": "9d05b5f002e389c937c527da8c70c111f0db50ba2bd90d441a56be2312b35c41",
+      "sha256": "06955b14ad31d4ac0645b218fa1df3a96a209744d55086419173245eed286581",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/circleroi/circleroistyle.xaml",
-      "sha256": "f101bd49fb8c6fb5005ffa2c96fe4ed3f782d7229c96333352cf63d31175e472",
+      "sha256": "f55bf690150cdc654a1a61f7409b34f7640d3a2e9cb284bc23e3e8eaaf0ce26d",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/coordinateroi/coordinateroistyle.xaml",
-      "sha256": "67aa61427619d1d35aad0acb950da5e05ad059575cf72f2c0cec2968f2a0a55d",
+      "sha256": "2091a302710b9832533239e63f5ab08fc614377887cd1ce9e96bdce7e095af5e",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/ellipseroi/ellipseroistyle.xaml",
-      "sha256": "b883f1eb1af7c1991f7a6f0944e967ccbc457c0c82aefb3ff98b11848f7c1e04",
+      "sha256": "5ea2fbee8b0489231b6be1a8d4becf4a18802e1038ba56578e899f62dfdedd5a",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/linecaliperroi/linecaliperroistyle.xaml",
-      "sha256": "ef0fc71a97e920646249fe2fd8b5f1795da058d0afaeaad86f288dcbad9ab5ed",
+      "sha256": "84d91020ca53fe8efbd3c91ec9cfdd0ccf465b4253e0a301e3fd6e3e792261f5",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/lineroi/lineroistyle.xaml",
-      "sha256": "3be1169854f10d1dbe8e7b5565e80840cd17b13f905fb137a359d5a22531d69a",
+      "sha256": "7c238ed27a5f8e449942a1e577e869ca946618d92e3d28c2e2b9f07ae56c2d77",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/multilineroi/multilineroistyle.xaml",
-      "sha256": "471a116a73037f709ab1a305368e56fc134a0b95a8392cfae8c066d143c2d2b3",
+      "sha256": "ee10b08624a70dcaea03ab49733751faa823546c867f388786b534b31febc3e8",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/oversectorroi/oversectorroistyle.xaml",
-      "sha256": "82b44cd19363615aeab0a042661f656dac91e68136d377a559e9f977424a7ac3",
+      "sha256": "a6e66d2e26963edbd66701330f084c905bd766f7a51adbfc6bcfe9e05b2e5dfc",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/pointroi/pointroistyle.xaml",
-      "sha256": "0ed5e632c469b4db0c3a8ffad72b9ebc3c77a7f5212ebdc26dcadc999520e435",
+      "sha256": "1c171eb22ecc8580a71303188fbbb51a1d42f466322c875a8e37236a81028586",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/polygonroi/polygonroistyle.xaml",
-      "sha256": "e4583ec478581603219a8128a3f6b925862e803a8c9246ff53b7f7b53220942e",
+      "sha256": "151b9c057a3e73e8f40ae6109804b540c07876cfa02abfe384ed1aa0a2291873",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/polylineroi/polylineroistyle.xaml",
-      "sha256": "7bb5c046ce2f867760899924999bc7e1e5f154eed8599b7b0cb9b16236bc8573",
+      "sha256": "612045e73fef3728cbcd160c25d3f03d1935568ed4a176b3a9cb949905b3a1e4",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
-      "sha256": "403ee5beb6ba2849bbbce9da9711f4413487cdfad1ef73a6dc96402210ba8dee",
+      "sha256": "54e9ba1fbec17ac0ee35685757f1af1901914fc8e3d7b47654744ad071accbbf",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml",
-      "sha256": "d57ef99d81d75de7833739702c57399e261408e659bf12b9e585dac7fc2d89ab",
+      "sha256": "50ea233cc238b9af5df1cecee857ca57b677a0fecd0ed048a36d0a69e9e02f88",
       "pending": false
     },
     {
@@ -7136,92 +7132,92 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roundedrectroi/roundedrectroistyle.xaml",
-      "sha256": "1549c16de1468583a63dc1b03e155d3e96c3fd9945a856dd00d51bde621b0654",
+      "sha256": "3519595621072a5b1fef6e8095e89fb6d00a2d8ae9fab69015e4496ffcdb010c",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorcaliperroi/sectorcaliperroistyle.xaml",
-      "sha256": "d43727ddc69d9062f79c05164f3afbc597fe797b7c3d2e76abf34967d47fe4c3",
+      "sha256": "52c3914d50b3fffa0319d8e013c695fa19449014445d7994e7837b330f551229",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml",
-      "sha256": "2a910fcee9ed56afd1dfdbd9c10b188b1af06585943eacf2c2bd84942926548d",
+      "sha256": "f97a0c77a92bb3266975cdde1f6631c50ad39da018ac844d051efd73367eb30a",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml",
-      "sha256": "14c59afea7ef28987eacc2cc6e70e959dacfcaebffeda1c728eb45e045e0edcd",
+      "sha256": "288e189cb525857d00bba940cb51beb6220e981b2f4b601fba44fdd1480cdd0d",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml",
-      "sha256": "0b943a500ae82ab0edc1295f357f69ba70445dc4281256655ff1e17fb42a2248",
+      "sha256": "8b41463f4d69a834c0c03bb698dfff97212150eae39f54634e1cd64323d2029d",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/arrowpathshape/arrowpathshapestyle.xaml",
-      "sha256": "433a0e552392b510d20653c9a44c30a18250b14a0dcf94f7479182c07ac0124c",
+      "sha256": "dd29d06fae9ff69431b1a0c8d4b570399d82926ea5d41aa8121c95089dad1135",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/circleshape/circelshapestyle.xaml",
-      "sha256": "17ae7b82fb1547c02a01e1116bff503126cc0f6089a527dc6ef33f459626c21e",
+      "sha256": "b954193ff8f302b4d822d7cd2034ea9af8edbb8f376acdcff839779c8bbf5470",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/coordinateshape/coordinateshapestyle.xaml",
-      "sha256": "33d076a6ca70a0444fd19f7c0894178dff9fbb9767435aee36849c62bbac9fb1",
+      "sha256": "4adfcd99f80a3bd015b7d26fb143e9040b92c93643ab5c435320b8c2111ba355",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml",
-      "sha256": "0956facda94144f7627bd4d2a74303a3c982e1053cade51a53275dd9352db753",
+      "sha256": "abfb8f8fbbddc50fb0d0ad25aa317c57b31268c14dcd6780040caa1dd7ac0515",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/lineangleshape/lineangleshapestyle.xaml",
-      "sha256": "d14b9ef63a8355798d5a036e67b0a099b708809814b326f3cd7feaebd0398f68",
+      "sha256": "5ceaf81e3ecf6267ca643b94f67e22fc5747d0b3a5bd7d14c8961ec13871d0f2",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/lineshape/lineshapestyle.xaml",
-      "sha256": "7e25c4b4d9adf25395b6e380eb5f5cc5f7219cb7178c9071e352caadcb94ff9e",
+      "sha256": "56a208d1198db7c695c7ef8828ba1a43774e7c22440c71a9d54fc99c4df97f1d",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/multipointshape/multipointshapestyle.xaml",
-      "sha256": "eec8b53c8d6702e1baa5f285272436eb08544824e8dadc880b4de70cd12f55d3",
+      "sha256": "a4d12d5cb0862ee4ded93d5d9b28c8faa279a3206ffd67f606e7a99d1a2d889a",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/pointshape/pointshapestyle.xaml",
-      "sha256": "50f386c6e8b195100fed0a1d68de29f31d900037addc0bffc63460b649202a90",
+      "sha256": "6008cfccd1a027c5c152428194881465862124c884fed6f13682464fcbf62ce1",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/polygonshape/polygonshapestyle.xaml",
-      "sha256": "9fc3583590cbf1bc831bc7553784110ad5451cbc96fd9579b499e23dbc835500",
+      "sha256": "7d7604bbb68efa60f4c6636ee88593d19f8cd2aac97d286763552f5ea4cf3f43",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/polylineshape/polylinestyle.xaml",
-      "sha256": "1574aaad96ff4a0d76afb69a6650d8014dc1610d3b9af4f79214dbd2fb55d123",
+      "sha256": "522f754202f35e18cc75ad2c3985620bd808ba34f888c7becbae71ee9c4619d5",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/rectshape/rectshapestyle.xaml",
-      "sha256": "01a15ce6b1e20e9429825fe63ee33f3d819009e3e99bf923af6e1ccfbad760e5",
+      "sha256": "36088aeb16f78241fc96c667abe68f275a01eecb3a4c482eec58b3cb689301b2",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml",
-      "sha256": "56ed02edbc7f5b3475146e9f34241cf59bd3e9f3fbe3e57648a102ce001d4167",
+      "sha256": "071dcf6085610d260d0d1b0eaa08b94b4fadebafcfde7940163f54a9fdcc103b",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontrolbasestyle.xaml",
-      "sha256": "11fb46d8bcd0cd123ca9dfb0b771dabbc88283aba42f60479a0fefd11c6c6435",
+      "sha256": "6915c1f4a6cc6688ab5e331350ea155b228637721b33b2e218c74a15fe4bb5fb",
       "pending": false
     },
     {
@@ -7231,12 +7227,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/textshape/textshapestyle.xaml",
-      "sha256": "d602b34c0b21658391952b9820027bb946f79c51b9a5b0470cb33fdbdddcbbee",
+      "sha256": "e6c4ada80abc2076b7e5a13fa0e76b9c0f7b0b54324a87adcb7ceb3b7e2139b5",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/specialroi/crossroi/crossroistyle.xaml",
-      "sha256": "ce6f4aa104268f71b6bcd49fa6d18d1ba2ef6f23f3b38d12c513e431853920d0",
+      "sha256": "6f81d06f075c8dd6439ad9ac9c882d5198a60f3ac618a0b1ad59a981fda1b09e",
       "pending": false
     },
     {
@@ -7531,7 +7527,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml.pending",
-      "sha256": "28ee8399964a78f59ae505fd694a271660914ab70e4e4c5f8d43155ca9367fe4",
+      "sha256": "230999b07d92f5f80babf20e3331c38491e885dd2ceb44129ba480d33b61d28e",
       "pending": true
     },
     {
@@ -7541,22 +7537,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxsetting/commentsetting.xaml.pending",
-      "sha256": "488de3f35b0ade7a0219e23c66eb6665275ba3d458fe8f59bf074c780cbf7933",
+      "sha256": "b3bd34220ff2e7e23a4a98f22c685562299b7817f4637df90d6d888cfe597974",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxstyle.xaml.pending",
-      "sha256": "cb85e859029a6b2302012bdb201aabc9f0b8c4d6765cb9e589ebf08481c4576f",
+      "sha256": "fd16ccd23916600b7c43a87c8db4995ba31a17bba01ebafe780c11c7398dc388",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/connection/connectionstyle.xaml.pending",
-      "sha256": "0f54eb68b61e563421fca34dc2a02840c21717eb6e3430e5c32e6e52d7a4f823",
+      "sha256": "f5dbc645bf4ae8dcc4ad982ae7a730c4fe286bb6527b0f08a1a149a637714c72",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/diagramitemtemplate.xaml.pending",
-      "sha256": "6103ca7eab3afccdb08f28624ae7b5b31cb017903c4c356d363a73d4bfb231c0",
+      "sha256": "dedab78e8ecb14cf518adabd416302a364cf206f3ff3dba22e574df41e17e55c",
       "pending": true
     },
     {
@@ -7571,7 +7567,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/searchmodulepopup/searchdrypopup.xaml.pending",
-      "sha256": "3e31198f6e17dea4070f83157f0dacc761ce88389b8bf9408195bca91c7f1d14",
+      "sha256": "197eebe9472a4556bedd06e7fcd5b507dde49c6a72e167dcaa50104b6e08b34b",
       "pending": true
     },
     {
@@ -7581,7 +7577,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml.pending",
-      "sha256": "00176f934410ae1da7f73fdf776f5fba79756fbcb6af14cf0341f25005149051",
+      "sha256": "b1669121bc0a94d4702d538fed3745714b45a2b7ccb0754609392d5c494fbfdd",
       "pending": true
     },
     {
@@ -8007,7 +8003,7 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.TargetedTriggerAction.TargetObject"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml": [
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.pending": [
       "Microsoft.Windows.Themes.ListBoxChrome",
       "Microsoft.Windows.Themes.ListBoxChrome.Background"
     ],

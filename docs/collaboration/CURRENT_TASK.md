@@ -18,12 +18,17 @@
 
 ## 验证事实
 
-- 最新全量：`dotnet build SunEyeVision.slnx -c Release --no-restore`，日志 `Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-024.log`：95错误、136警告、20.62秒。当前候选未编译通过，未可试用；正式目录已有部分基础工程新输出，不当作历史b87的完整二进制快照。
+- 最新全量：`dotnet build SunEyeVision.slnx -c Release --no-restore`，日志 `Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-027.log`：9错误、132警告、27.96秒。当前候选未编译通过，未可试用；正式目录已有部分基础工程新输出，不当作历史b87的完整二进制快照。
 - 6个当前C#文件使用可用Roslyn 5.0解析无语法错误，记录 `popup-numeric-syntax-check-003.json`；不是完整语义编译或运行验收。额外加载SDK解析器曾绑定冲突，未计通过。
 - 现有O06WindowPresentationCases已补同实例草稿、嵌套逐层Escape、数值同步/Enter、卸载关闭及真实ProductionEditorContext颜色不污染正式节点/Discard检查；本候选尚未执行这些用例。
 - 预览资源按.gitattributes统一LF，SHA版本链接和连续再生稳定性检查通过；不是渲染/视觉验证。
 - 原HTML已含数值双向同步、数量滑条、Enter失焦、就地样式/二层色板及内侧焦点提示；浏览器file协议被策略拒绝，未绕过，不称浏览器视觉通过。
 - 基础三工程Release路径及Tool.Kernels解决方案归属已修；实际日志确认正式Release路径。新候选不复用旧构建/回归PASS。所有后续运行/验收基于D盘Release。
+
+- 本轮导入器纠正C#/XAML及依赖准入闭包；50份源码保留为.pending，正文与HEAD逐份核对一致，证据composition-source-preservation-001.json。这些仍是迁移待办，不计作已完成功能。PolygonPoint保留原坐标/通知正文，脱离未使用的厂商XML基类；运行未验。
+- 027剩余诊断集中图像视图接口与转换。三处ROI日志已接Trace；无引用的旧XAML CLR命名空间已清理，整合器重跑0变更。不得用空接口或旧全局模型凑编译。
+
+- 静态核对：实际Byte2ImageSource在Apps.BaseData，不是旧VM.PcUI版本；IImageViewAddition经3D扩展涉及IVmModule/IVmIO，Apps.Data.ImageData涉及厂商XML/VisionDesigner。继续做有限视觉/图像缓冲适配，未复制厂商DLL、Ioc或工作流模型。6份适配哈希/169份已跟踪变更XAML解析通过，source-integration-check-027.json；不是运行验收。
 
 ## 下一步与未完成
 

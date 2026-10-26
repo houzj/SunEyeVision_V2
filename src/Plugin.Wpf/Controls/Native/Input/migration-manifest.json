@@ -103,10 +103,11 @@
   ],
   "summary": {
     "files": 1194,
-    "active_source_or_xaml": 172,
-    "pending_source_or_xaml": 403,
+    "active_source_or_xaml": 173,
+    "pending_source_or_xaml": 402,
     "assets": 598,
-    "numeric_other_group": 21
+    "numeric_other_group": 21,
+    "coordinate_activation": "PolygonPoint visual carrier activated with explicit host persistence boundary; root source/build receipts determine current counts."
   },
   "files": [
     {
@@ -21281,22 +21282,21 @@
       "original_relative": "HikPcUI.ImageView/PolygonPoint.cs",
       "kind": "source",
       "source_sha256": "51FDF900C7EBFD981DBA2FC6C6F1AAE978400FB29C0FD2BD07609DFEA6A6C1E2",
-      "reasons": [
-        "External namespace/interface closure not in this group: Hik.Xml"
-      ],
+      "reasons": [],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
       "namespace": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView",
       "types": [
         "HikPcUI.ImageView.PolygonPoint"
       ],
-      "status": "transplanted_pending_real_dependency",
-      "external_namespaces": [
-        "Hik.Xml"
-      ],
+      "status": "transplanted_unbuilt",
+      "external_namespaces": [],
       "empty_void_method_sites": [],
-      "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/PolygonPoint.cs.pending",
-      "output_sha256": "BB1F99207A36FAADAB62D1BA24B148D80C4135338860562ACBDE00C8C5001424"
+      "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/PolygonPoint.cs",
+      "output_sha256": "467B93CA2EC63E385B05E6E4F444F45ACA62CC30AF83781A9C05654662451064",
+      "host_adaptations": [
+        "Coordinate/index/INotifyPropertyChanged bodies retained; vendor Hik.Xml.BaseNode inheritance removed; typed host contracts own persistence, no vendor XML compatibility claimed"
+      ]
     },
     {
       "library": "VM.PcUI",
@@ -40764,5 +40764,12 @@
     "WindowsForms wrappers require the original unavailable FrontendUI/VMControls.Winform behavior and host interface adaptation",
     "PopupEx.UpdateWindow original export is empty; do not claim topmost behavior",
     "Runtime/designer/native/visual verification deliberately deferred to root integration"
-  ]
+  ],
+  "summary_before_coordinate_activation": {
+    "files": 1194,
+    "active_source_or_xaml": 172,
+    "pending_source_or_xaml": 403,
+    "assets": 598,
+    "numeric_other_group": 21
+  }
 }

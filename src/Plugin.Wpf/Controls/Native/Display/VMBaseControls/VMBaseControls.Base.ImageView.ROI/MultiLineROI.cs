@@ -16,7 +16,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
-using Apps.Log;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
@@ -428,12 +427,12 @@ public class MultiLineROI : ROIControlBase
 		}
 		catch (Exception ex)
 		{
-			LogHelper.Debug(ex.StackTrace);
-			LogHelper.Debug((DataContext == null) ? "数据源不在" : "数据源在");
+			Trace.WriteLine(ex.StackTrace);
+			Trace.WriteLine((DataContext == null) ? "数据源不在" : "数据源在");
 			if (DataContext != null)
 			{
 				ImageViewBox imageViewBox = this.GetParent<ImageViewBox>();
-				LogHelper.Debug((imageViewBox == null) ? "父控件不在" : "父控件在");
+				Trace.WriteLine((imageViewBox == null) ? "父控件不在" : "父控件在");
 				IList rOIList;
 				if (imageViewBox != null && (rOIList = imageViewBox.ROIList) != null && rOIList.Count > 0)
 				{
@@ -441,7 +440,7 @@ public class MultiLineROI : ROIControlBase
 					{
 						if (rOIList[i] is IList list)
 						{
-							LogHelper.Debug((!list.Contains(this)) ? "数据不在" : "数据在");
+							Trace.WriteLine((!list.Contains(this)) ? "数据不在" : "数据在");
 						}
 					}
 				}

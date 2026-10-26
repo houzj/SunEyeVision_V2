@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Apps.Style.ProcessBarStyle">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <SolidColorBrush x:Key="ControlBorderBrush" Color="#999C9F" />
   <SolidColorBrush x:Key="FocusBorderBrush" Color="#EBCECE" />
   <Style x:Key="SimpleProgressBar" TargetType="{x:Type ProgressBar}">

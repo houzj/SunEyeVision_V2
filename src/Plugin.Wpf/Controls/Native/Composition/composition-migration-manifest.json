@@ -47,10 +47,15 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ContainerFidScroller.xaml",
       "source_sha256": "b033ce10740c1499f23be39f23ad9177a0ad86b6c792df01f076d7c1479c7ec9",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml.pending",
       "target_sha256": "06766994bb24690f543c5b7d38a8692e837dedc341cfd90ceefd460690dd4eac",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ContainerFidScroller.xaml.cs",
@@ -210,18 +215,29 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamCategoryUI.xaml",
       "source_sha256": "56259a5733e871b90a8b075a810714c404a2326507b7ac44e5aa9e5470874ef1",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.pending",
       "target_sha256": "2c620d3f3986d64039405ea886843176d8c1f9a7ca80a5f0b1e90ba2c284a745",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamCategoryUI.xaml.cs",
       "source_sha256": "37ca142e0f86266e9c0eecd6eaf1d8e069d3cfd98b0933be543cff925830378b",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs.pending",
       "target_sha256": "d995afb5924e967baf766a922e5efb6ccd50313959333260d03e25397408f40a",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamListView.xaml",
@@ -290,18 +306,27 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml",
       "source_sha256": "d2d700f12d7e09ba19f43ec88678e14f7d4643e90d9a1c81d2476902b2fd10c5",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.pending",
       "target_sha256": "64c26c9cf2000c9831e5155ca4a574475b2872d46e7950ec8a0472b179ea9a13",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml.cs",
       "source_sha256": "bc8443f696d7c0fd41e38ddcd5df950c78d8f87485b348cd507b99b8565bfc0a",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs.pending",
       "target_sha256": "9faeef32d2a78c13f30c9768fc7a0c9a52a92d88a1ceb6296e2800bc652eaa1b",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\PasswordBoxBindingHelper.cs",
@@ -380,10 +405,17 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\TextEditingControl.xaml",
       "source_sha256": "cfd8e363a188c0569a6fc0550d55257e8f35e6dfd7d45ec8fae4e216d2d958be",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml.pending",
       "target_sha256": "a4b8640d0cd30e75243a80060d89afc4ee5f63badf344f4aada0f5de4f313c21",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/textboxstyle/textboxstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\TextEditingControl.xaml.cs",
@@ -437,18 +469,30 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\AddListControl.xaml",
       "source_sha256": "83abc5786140aa0fbe3946dd602f42db7b9b6390c4e2d27c37e7a23afcfc5f9d",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.pending",
       "target_sha256": "bfa090e0e1f42982c47b651d5e8ea4839c5a1e4e8a2cb170dca13a1e875d4d70",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/normalbuttonstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\AddListControl.xaml.cs",
       "source_sha256": "e8e32dc6c59c090bde27f646af58d1b0ef148a161ff0d64301f6e203e6b1b9fe",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs",
-      "target_sha256": "895cd0f762348bb4e28d57e1c6fc90fdac835d8157b73c9f5ac05bdd7eb74d94",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs.pending",
+      "target_sha256": "c4eb8bd62da710c2d21339d1a86bb265e1d197db7d7cd016ef45191fea464016",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\AddListControlBase.cs",
@@ -475,26 +519,40 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ArrayDisplayWindow.xaml.cs",
       "source_sha256": "719e69ca8a58343698ae1c7bd5443d9455172f17942a848cb62827e18924bfd3",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs",
-      "target_sha256": "56dbe3fa03489cd5214177a5c16befb8e7cf5ec09733a53055a73ef33aea41d9",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs.pending",
+      "target_sha256": "d0c07df97dee94af163d9f043cf58268e238925e47d2e4706d1b8dce03c449e5",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\CheckBoxConfigTreeView.xaml",
       "source_sha256": "0bc8f4b83d243ab6b7cb27867f76984b12246b221ce3497a7f294b2328ead3ec",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml",
-      "target_sha256": "75a02f502cc37f3311b5d19cb9361e1383aca9c3eb1a42265d3ccd228c4ef013",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.pending",
+      "target_sha256": "2078253d79969a1ff3bb4069d71f25ac4787d9554b5ab5b987f56389ba2eb0aa",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/treeviewstyle/treeviewstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\CheckBoxConfigTreeView.xaml.cs",
       "source_sha256": "0dbef2431015a66f483a0152fc75101f72e610d4628721c8f17751080a7f5fb9",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs.pending",
       "target_sha256": "c80b03b0bd8a6f9ed63aa20f028045a8f4c3c0d5a95bc13bfaee268147e251a4",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ClearButtonTextBoxStyle.cs",
@@ -569,10 +627,15 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\EdgeInspGroupPanel.xaml.cs",
       "source_sha256": "7942e0de47b9341ade2ecb2a8a4300ca0b309059cce85eb642d1a914e68261fb",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.cs.pending",
       "target_sha256": "c72f066cab4a11d7ca32e2afd0eacd485378112c9190557aef9b0825d72bca02",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ExportAlgorithmWindow.xaml",
@@ -603,10 +666,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVarDlgHelper.cs",
       "source_sha256": "389a4ed6302a4a278d3737792b95f5a8aa4a55da84afdc0ed03767bd79a2b2c5",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVarDlgHelper.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVarDlgHelper.cs.pending",
       "target_sha256": "9c1e46fa5c327f11837a2b8c826f356d224deea8eebeb1b53456fe4c1da487f0",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.cs.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVarDlgHelper.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVariableSelectDlg.xaml",
@@ -646,10 +713,15 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ImageStitchPanel.xaml.cs",
       "source_sha256": "ddbc67be15e26217bfea7c6b136e91dced1b4aaccd7722f2cb509cae6424bd29",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.cs.pending",
       "target_sha256": "df3e67125be3077318a61a1061ed33d276b614ae4351c79ed15e72123bd8808d",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml",
@@ -664,10 +736,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml.cs",
       "source_sha256": "80d64fbd024bf2b135c220525c9cbf97327353c5104a040ed3ef8464d941bb86",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs.pending",
       "target_sha256": "e9e08125ce36b950605166ee19ef1ac0072053780d4ac4e18e6b97812b1dae6f",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ListItemBackgroundConverter.cs",
@@ -700,10 +776,15 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\OutputConfigTreeView.xaml",
       "source_sha256": "6188428c556b72a66e01d46f140f789a47efaac12da46f68c1fb6a7d1c1cc7fd",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml",
-      "target_sha256": "08b82b17f84170031f6deae8fd62eb00c331b549bdb5578b5aac8c70dce8e442",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml.pending",
+      "target_sha256": "7294168d9e5afc67c9d56d4343decacc8f9e462d5fcd420e5254ff20cdca212c",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml.cs.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\OutputConfigTreeView.xaml.cs",
@@ -759,10 +840,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ReverseLeftRightControl.xaml.cs",
       "source_sha256": "a4f6ca74919a8f82d5586be60993471ed6c7a1a4175f35797d3f7e68958cdfcf",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.cs.pending",
       "target_sha256": "bffde7fabd036b77cfca25c2711fde5be05fecb3def2c38f90299f54936888dc",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\RunParamsBaseNode.cs",
@@ -802,10 +887,16 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\RunParamsSelectWindow.xaml.cs",
       "source_sha256": "f89893bcb5d845419d50ce910996193c1e82bf967c12e626337568d99c1920b2",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs",
-      "target_sha256": "a475a4c3e83c9587fe1082bd98e4fa5326117629861fdb1925f42363765341b0",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs.pending",
+      "target_sha256": "483cb2953def24b51280fb7c5e14039c5bd7a8eeeb852c33fa031ee1703d774e",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsBaseNode.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectData.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\searchType.cs",
@@ -818,18 +909,28 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ShapesConfigTreeView.xaml",
       "source_sha256": "683dfe0acd526dadfd27727d2a3d85b10fe5cbf5596a0e10d728dfc9b51d9820",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml",
-      "target_sha256": "9a54fd4447eb91af09d6aebd6c41dcf98601c01c5c260356a1fbba155c4a82b9",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.pending",
+      "target_sha256": "5286b13872001ff21f231bfe702672f8656e7586bae0653970e170c5f07b7f1f",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/treeviewstyle/treeviewstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ShapesConfigTreeView.xaml.cs",
       "source_sha256": "ce2a132893e4cfe39aca78ab431bdecbe3ba4e92aa6385e05054fdaf4c6d330b",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs.pending",
       "target_sha256": "4604952f5e930ac3c693e4798510b5a5e71f649e045a3fe80cc534a437b932cc",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml",
@@ -986,10 +1087,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\Box3DROIStack.xaml.cs",
       "source_sha256": "9b4e4c0bcfacc499a9e068e357782c439fc9e392c42cd48dfffea78530adebbe",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs",
-      "target_sha256": "bd59f36bb7afa09b052ac147db60e33e6efe6590326cdb13125069d5e7db4f19",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs.pending",
+      "target_sha256": "552cb5b308af4ea72f90eeb1dea42cc10983c35ec0c170c785b7725fbbaba0a9",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
@@ -1006,10 +1111,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml.cs",
       "source_sha256": "16b010837e5be76d454a4115c36ded2919885bc186e472a201dfaf46a4fedb38",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs",
-      "target_sha256": "71e8ea8e467fb485b37a05dfbfc3e4faad603aa2e416fa02ea45beaa941071aa",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs.pending",
+      "target_sha256": "720a4510d243ba53a20fb4df2339b80283a4c27ca172e6e485853ebc29fa00b8",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ButtonControl.cs",
@@ -1034,10 +1143,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CircleCaliperROIStack.xaml.cs",
       "source_sha256": "fc3bdca5564c8f013b5c1c4af7874726d651b669a91b1c0f0fe0adc39a625656",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs",
-      "target_sha256": "9e872090fff129c87e8e6ef0ada3bd9c95d0f6d9075e3a9b67b8636c69bd517e",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs.pending",
+      "target_sha256": "7d75b50f96c19fac62e4856fc974af231a7ba1eec5a5c71d2bc0eb54fd82475a",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CircleMesROIStack.xaml",
@@ -1054,10 +1167,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CircleMesROIStack.xaml.cs",
       "source_sha256": "f108e1956ff5680bd0921f697d3560e17e432874539cd75ca8756527c9daf89a",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs",
-      "target_sha256": "917309e00dbb7c5c248a6c1921f9319c4eb3091f2ee50f87191fa0c634329260",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs.pending",
+      "target_sha256": "e4640379e2a9f5c37ee9ae7edb33bd2fc2177502a77bf2f383d938c91642b027",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ClockSourceControl.xaml",
@@ -1111,26 +1228,39 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerFirstItem.xaml.cs",
       "source_sha256": "223399d1a9e1bf39e7c35b1d9d9cb5c9b6f70780369f9da0f86dc7f3c8066259",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs",
-      "target_sha256": "970045fccc547be9e65a0017aad31684821fe5a6af3c9f4cd5509229ae0cf913",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs.pending",
+      "target_sha256": "7ff56a75ce37952f7189f9fb8eb9fd7d29cf82e031c1ded821ea1d48da0e0c23",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerSecondItem.xaml",
       "source_sha256": "9abd846057a68b7fa8bd37fea207bf8081de59234d04c7525fe558085e72dfb3",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.pending",
       "target_sha256": "ed96d372be7c79350465bc20c358e1c2f17419c69c914221cf1defb2b2e93fe2",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerSecondItem.xaml.cs",
       "source_sha256": "619772887f43f33f785d2bff47d3b828306f598cb9286a68d982fe3d89d15054",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs",
-      "target_sha256": "1cd2bf711e5d06aeb24b6b6d88ac2a7cbbea47c1f6a6de0d4574e6ac3072f177",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs.pending",
+      "target_sha256": "a9edb5b4c69c16ad49e5f363537d272ce101b16795adddc9e5c3261120661b1c",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CoordinateROIStack.xaml",
@@ -1147,10 +1277,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CoordinateROIStack.xaml.cs",
       "source_sha256": "57f198eedbe27964a4a82c511bb8573c4846b7d92a78dc5049e4dcfd3b98f38b",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs",
-      "target_sha256": "c79a2d3e9248cd90ea1cb5ccfed3157c3dd1651967fc6be7c080e4ac5b450d10",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs.pending",
+      "target_sha256": "dca68275797c1e0fc2ffbff1cfbc79e3dec46de51290d3995c2066e95b8875e4",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\DataGridControl.cs",
@@ -1241,10 +1375,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\LineCaliperROIStack.xaml.cs",
       "source_sha256": "f3bf68a55b7bf3b922cb2055ddc7842692510666b8d30809771aab7a53e403e2",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs",
-      "target_sha256": "6ee5e5aa77e0960b894988e86df1a2e865852d2227896e9e7b3e2a46b17cb713",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs.pending",
+      "target_sha256": "49ae6ee401bf306dd081c133fdddfcf561fe5e3c05215b9ba76754ec1d84de95",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\LineROIStack.xaml",
@@ -1261,10 +1399,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\LineROIStack.xaml.cs",
       "source_sha256": "0468d555df71ff216e760d6814885e6a868c5aa058748ed72318e63e9d138960",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs",
-      "target_sha256": "80994853c9ae86926abe931e49b8493d1defe18001223ba4f429cfce99fd2a63",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs.pending",
+      "target_sha256": "783ae4e80e12d2c5029759b3c5d3cdb5f847eb48af6388eb41b8236cb9a85e69",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\MatrixCircleROIStack.xaml",
@@ -1281,10 +1423,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\MatrixCircleROIStack.xaml.cs",
       "source_sha256": "e6a06c512e7dd78cddd195b13f9aa2e0558dda86ebb4583e3e6f0f518addd68f",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs",
-      "target_sha256": "80979c14ae8df0666d7589f2b38d5fe7af3630ca9ab8f65593086a406ca8558c",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs.pending",
+      "target_sha256": "a10b7924fc6e57859dfae3f68c8c39910d2359a0aab29dfd7bc6ce36e58ac003",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ParamComboBox.cs",
@@ -1308,18 +1454,27 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PasswordTextBox.xaml",
       "source_sha256": "f20c61a053aec2a5eb2b76fa78fba9b153b09117db96e68d8c65814bdf41cfb0",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml",
-      "target_sha256": "41328cd01ae52b144e8a6551684ce3b8d0481d814476e80507be4b9790c571bb",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.pending",
+      "target_sha256": "3f25dc2bc91df11404b3cedaa0ffa954afa4662abda48690383b6161a7c565d1",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PasswordTextBox.xaml.cs",
       "source_sha256": "c9472873a9368efc172c9ef03729a94293a859f3abfda4686c1e52cd000b095e",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs",
-      "target_sha256": "41d1f2289716a65ccb9b8be9b940bb14613f6e0ef0889f60781266b248fc31a8",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs.pending",
+      "target_sha256": "5efafdf56367e71cff2de4dfb30a562e61779653125e1ab476c3538f453f4acd",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PointROIStack.xaml",
@@ -1336,10 +1491,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PointROIStack.xaml.cs",
       "source_sha256": "a54c2d67d20797d358a6a9f24e12b6b38f9b0671834f91ca8120837576b92d3b",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs",
-      "target_sha256": "8784ebea68ba86a3da3ba7a4c8ae8ec0892fdbddde6056b7550fc4900b9db580",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs.pending",
+      "target_sha256": "774fa8b476920e5e6262a6c9e795026ef79286047084db5065ca6b621e2ca3c4",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml",
@@ -1356,10 +1515,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml.cs",
       "source_sha256": "1960be508e7c79f60c6a0d57d58c9160431441abb52d3f75ba3e0416f77ccd94",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
-      "target_sha256": "c105acf587844422a9946e2bdabd2b9ac111f3287aeb65d546f3ccc11a73e4de",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs.pending",
+      "target_sha256": "9958c7b4d3bca7bedbf839cb0a5360da35c7a7f16675e57a7c664e20e8e440a0",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PreLoadPage.xaml",
@@ -1375,10 +1538,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PreLoadPage.xaml.cs",
       "source_sha256": "0cbb41a9b2bc72c3dbe71441809360e11865a10713f245c0cf1fc079c2562182",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs",
-      "target_sha256": "0580b95c5813c91babcd2e8b2b32d806aa7be0c7a22bb17d3d2d2cc666ec04d2",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs.pending",
+      "target_sha256": "199434cd6a25b892155f653475050b56594a8df88eae67cd4b075fc3a7fcf164",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
@@ -1396,10 +1563,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml.cs",
       "source_sha256": "dccfea1f6206cbbccaac11e788fa8fe57c78a9f5e2f52274c9017dc5f219a7df",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs",
-      "target_sha256": "725629981d47fa17016f35c1ec329e4bfcf4ca9a3e097ba63eea5c1eabd909ca",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs.pending",
+      "target_sha256": "b80d9a93b0a6d00d8b1f20a42f08d8b5e021278f7d0253a2b0ce86dab36f69fa",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelecterCombine.xaml",
@@ -1415,10 +1586,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelecterCombine.xaml.cs",
       "source_sha256": "cff1890ca41ac631c1f96711de43802bcb1ce1be0cfd6e777438683bfb2ca772",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs",
-      "target_sha256": "224c8804c4e3c1e7653174e942c1d0de04218cbc4bada8648c60007385a702cc",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs.pending",
+      "target_sha256": "ce2e8174ba697bc64676737185c592250fb995923bac641f9106b7f3a1a8cd98",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ROIStackControl.cs",
@@ -1447,10 +1622,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorCaliperStack.xaml.cs",
       "source_sha256": "146439b5791933f8e6ac29ac222d7fcf6b74eae73884387c510e2c15be65d229",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs",
-      "target_sha256": "a387565eb11862f3a7e222f85628f4ee5f460a092af519f66ced009bd97a10e6",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs.pending",
+      "target_sha256": "e9ffc6d9335593988f946e0eafc1c55d70f677e0013a3ebfaed0673a58e3ea3e",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorRingROIStack.xaml",
@@ -1467,10 +1646,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorRingROIStack.xaml.cs",
       "source_sha256": "6b650c5b37be0c5587a57931dfce5e517f74d148549859406c5584ff7edb3f1f",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs",
-      "target_sha256": "c847c7e03c786fa4cedb0708faaf6c2dfc487bf72236665fd94945d61d7de5cc",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs.pending",
+      "target_sha256": "f499fed699761bbaf7a1d957d4f445e1412d3e76a1a8036224361ac71a36d43a",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorROIStack.xaml",
@@ -1487,10 +1670,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorROIStack.xaml.cs",
       "source_sha256": "60c805b694dbb0e8315535a0e0a3ccee588f6dfbc5fd9677b685efe27b5c169c",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs",
-      "target_sha256": "21c53e09df94b0e7359f994cce165a00f5e8676bda8fd7b28e87cdfc19e64956",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs.pending",
+      "target_sha256": "525f2106889abc6eedfb24f38c02f63a0d88e791218ffe56709a92b2490be38c",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\UserTempConverter.cs",
@@ -1546,10 +1733,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.DisplayForGroupControl\\ROIConfigControl.xaml.cs",
       "source_sha256": "32d482054548c7e0a7001f59236d907c9c68b2c8a5f2f0796a465359927c469f",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs",
-      "target_sha256": "e29d0ebadd79a9c8e6b86d4f1b3319198d78af4f5ca039b680f52966ab65b9c0",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs.pending",
+      "target_sha256": "220359befb4da5d090de398957c50959a24f609081434b55a99fe95eaa374d04",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm\\EaVmModuleTreeNode.cs",
@@ -1564,10 +1755,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm\\EaVmModuleTreeNodeCvt.cs",
       "source_sha256": "2c09fc420e1e6aecc4112bd5a9cd3331ad0f8e2f8992f8940372f2bea658402b",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNodeCvt.cs",
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNodeCvt.cs.pending",
       "target_sha256": "0d43d725166f980592cc82980edc025c8a2670efe5980cb01f7943582cc1afb8",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNode.cs.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNodeCvt.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm\\ExportAlgorithmUtil.cs",
@@ -4139,34 +4334,51 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\treeviewcomboboxstyle.xaml",
       "source_sha256": "8090e0fd18c6a60da763663e6febd7be14c5bbb1234737f7b00e36a77155352d",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml.pending",
       "target_sha256": "122cf54921c69292da6e294795836381e0d2860a0adc1999419072d635b36d5c",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TreeViewCombobox.xaml.cs.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\themes\\generic.xaml",
       "source_sha256": "39d7da5d3def3dbb2dfd969d770b0dc7e3f294cc57c7ee9e3d48d6f2cc8ec2e9",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/themes/generic.xaml.pending",
       "target_sha256": "69f8169178cb6cd8589c5d1cc6daf4c7a6b04e1205bfa7b8c247f942466dd681",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/themes/generic.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControl.xaml",
       "source_sha256": "118f81ea7ebfd4fbc491ceff0cc73d76c73d981322c3c939141606866b37885c",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml",
-      "target_sha256": "2a1fb3692d530c588b6b879c28755b83f53a87b2db5cb49026f61fc83c98ed17",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.pending",
+      "target_sha256": "2483fe0d8323084276b372a15d11c94798b12a0a85a651582cf8b9497b185538",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.cs.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControl.xaml.cs",
       "source_sha256": "55f281a262083c11a76832a717fa921326910e9c3fa5b3970615dd7569e45a14",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs",
-      "target_sha256": "5512f2cc3bfa22c1658bb7bf6e792d335f3451ec42d128d3493881bb9c6e4a09",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs.pending",
+      "target_sha256": "0c4654b5cf9efe5356922fedee53a6cac06b7d735cf3ae5542057525bdd01f71",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControlPanal.xaml",
@@ -4182,10 +4394,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControlPanal.xaml.cs",
       "source_sha256": "85e4a65d27b5425c6f5f9f75fe31ad898d9d62feb3c4fdb7b081225281a4a86e",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.cs",
-      "target_sha256": "d10c3595cfdd0dd440885d97d44338dc4a2e46c774db7fa128a756981d843316",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.cs.pending",
+      "target_sha256": "e3e973e2d553877fa9f2c44ea8112beab61badf8f9f85ee414003ab8f5c74aaf",
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.cs"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
@@ -4245,10 +4461,14 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\classicdatagridstyle\\classicdatagridstyle.xaml",
       "source_sha256": "82732f7d58e2f9104c05724499cc88cc886e562064777b6fd188c55fc16fa927",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/classicdatagridstyle/classicdatagridstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/classicdatagridstyle/classicdatagridstyle.xaml.pending",
       "target_sha256": "7fa1575203cb6be7e46a0536cb6c1aed894eab2862409fb0f3491652204c6f82",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/scrollbarstyle/recscrollbarstyle.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/classicdatagridstyle/classicdatagridstyle.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\comboboxstyle\\comboboxstyle.xaml",
@@ -4283,10 +4503,15 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\expanderstyle\\expanderstyle.xaml",
       "source_sha256": "848eff670758bb94885ec23ea3f980e966d31d71001880962717c9d0425e0288",
-      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/expanderstyle/expanderstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/expanderstyle/expanderstyle.xaml.pending",
       "target_sha256": "1272207d44f940b58de4276595cf4b5959864397bf08eb53705caa75008c2d9d",
-      "kind": "source_port",
-      "unresolved_dependencies": []
+      "kind": "pending_vendor_contract",
+      "unresolved_dependencies": [
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending",
+        "Dependency closure unavailable: src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/textblockstyle/textblockstyle.xaml.pending"
+      ],
+      "admission_seed_dependencies": [],
+      "admission_previous_target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/expanderstyle/expanderstyle.xaml"
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\itemscontrolstyle\\itemscontrolstyle.xaml",
@@ -10410,5 +10635,388 @@
     "source port is not a runtime result",
     "not full VM visual acceptance"
   ],
-  "next": "Merge all lane type/resource maps, resolve cross-lane references and vendor contracts, then unified build/test/fix."
+  "next": "Merge all lane type/resource maps, resolve cross-lane references and vendor contracts, then unified build/test/fix.",
+  "admission_audit": {
+    "scope": "static admission closure; NOT feature migration, compilation, runtime or visual acceptance",
+    "newly_pending": 50,
+    "static_external_consumers": [],
+    "movements": [
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\classicdatagridstyle\\classicdatagridstyle.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/classicdatagridstyle/classicdatagridstyle.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/scrollbarstyle/recscrollbarstyle.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\expanderstyle\\expanderstyle.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/expanderstyle/expanderstyle.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/textblockstyle/textblockstyle.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.DisplayForGroupControl\\ROIConfigControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm\\EaVmModuleTreeNodeCvt.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNodeCvt.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/EaVmModuleTreeNode.cs.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\Box3DROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CircleCaliperROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CircleMesROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerFirstItem.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerSecondItem.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.cs.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ColorPickerSecondItem.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\CoordinateROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\LineCaliperROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\LineROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\MatrixCircleROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PasswordTextBox.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PasswordTextBox.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PointROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PreLoadPage.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelecterCombine.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorCaliperStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SectorRingROIStack.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\AddListControl.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/normalbuttonstyle.xaml.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\AddListControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControl.xaml",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ArrayDisplayWindow.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\CheckBoxConfigTreeView.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/treeviewstyle/treeviewstyle.xaml.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\CheckBoxConfigTreeView.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/CheckBoxConfigTreeView.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\EdgeInspGroupPanel.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVarDlgHelper.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVarDlgHelper.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.cs.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ImageStitchPanel.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ImageStitchPanel.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\OutputConfigTreeView.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/OutputConfigTreeView.xaml.cs.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ReverseLeftRightControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\RunParamsSelectWindow.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsBaseNode.cs.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectData.cs.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ShapesConfigTreeView.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/treeviewstyle/treeviewstyle.xaml.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\ShapesConfigTreeView.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ShapesConfigTreeView.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ContainerFidScroller.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml.cs.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamCategoryUI.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamCategoryUI.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamCategoryUI.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamUserControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\TextEditingControl.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/textboxstyle/textboxstyle.xaml.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/TextEditingControl.xaml.cs.pending",
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControl.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.cs.pending",
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControl.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\VisionMaster.ParamTab\\ParamsTabControlPanal.xaml.cs",
+        "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.cs",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\treeviewcomboboxstyle.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TreeViewCombobox.xaml.cs.pending"
+        ]
+      },
+      {
+        "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\themes\\generic.xaml",
+        "target": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/themes/generic.xaml",
+        "direct_blocked_dependencies": [
+          "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/treeviewcomboboxstyle.xaml"
+        ]
+      }
+    ],
+    "not_claimed": "Pending source is preserved, not an implemented feature or an exited old consumer."
+  }
 }

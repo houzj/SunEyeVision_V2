@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface">
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml" />
   </ResourceDictionary.MergedDictionaries>

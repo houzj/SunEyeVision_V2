@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView">
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml" />
   </ResourceDictionary.MergedDictionaries>

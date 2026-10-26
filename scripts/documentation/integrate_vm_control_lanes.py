@@ -185,6 +185,20 @@ for folder in roots:
                         head=head[:-1]+' xmlns:'+alias+'="'+uri+'">'
                     tail=re.sub(r'\s+xmlns:'+re.escape(alias)+r'="'+re.escape(uri)+'"','',tail)
                 text=text[:opening.start()]+head+tail
+            # After concrete QName remapping the old vendor alias may be unused.
+            # WPF still imports its CLR namespace into generated C#, so retain
+            # aliases only when referenced (including markup compatibility lists).
+            for alias, uri in re.findall(r'xmlns:(\w+)="(clr-namespace:[^"]+)"', text):
+                if not uri.startswith(('clr-namespace:Apps.', 'clr-namespace:VMControls',
+                                       'clr-namespace:VM.', 'clr-namespace:HikPcUI')):
+                    continue
+                declaration = r'\s+xmlns:' + re.escape(alias) + r'="' + re.escape(uri) + '"'
+                without_declaration = re.sub(declaration, '', text)
+                qualified_reference = re.search(r'(?<![\w.])' + re.escape(alias) + r':', without_declaration)
+                compatibility_reference = any(alias in value.split() for value in re.findall(
+                    r'\b(?:Ignorable|MustUnderstand|ProcessContent|PreserveAttributes|PreserveElements)="([^"]*)"', text))
+                if not qualified_reference and not compatibility_reference:
+                    text = without_declaration
         if text != old_text:
             file.write_text(text, encoding='utf-8')
             changed.append(file.relative_to(ROOT).as_posix())

@@ -1,9 +1,9 @@
 using System.ComponentModel;
-using Hik.Xml;
+
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
 
-public class PolygonPoint : BaseNode, INotifyPropertyChanged
+public class PolygonPoint : INotifyPropertyChanged
 {
 	public float x;
 

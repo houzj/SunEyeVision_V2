@@ -19,14 +19,19 @@ entries = []
 type_map = {}
 manifest_path = DEST / 'Controls/Native/Composition/composition-migration-manifest.json'
 previous = json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else {}
+previous_by_source = {row['source']:row for row in previous.get('entries',[])}
 numeric_manifest = json.loads((DEST / 'Controls/Native/Numeric/numeric-migration-manifest.json').read_text(encoding='utf-8-sig'))
 numeric_types = {entry['source_type'] for entry in numeric_manifest['type_map']}
 delegated = []
 
 def record(source, target, kind, dependencies=()):
-    entries.append({'source': str(source), 'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+    row = {'source': str(source), 'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
                     'target': target.relative_to(ROOT).as_posix(), 'target_sha256': hashlib.sha256(target.read_bytes()).hexdigest(),
-                    'kind': kind, 'unresolved_dependencies': sorted(set(dependencies))})
+                    'kind': kind, 'unresolved_dependencies': sorted(set(dependencies))}
+    prior = previous_by_source.get(str(source),{})
+    for key in ('admission_seed_dependencies','admission_previous_target'):
+        if key in prior:row[key]=prior[key]
+    entries.append(row)
 
 def namespace(value):
     return PREFIX + value if value.startswith(('Apps.XmlUI', 'VisionMaster.ParamTab')) else value
@@ -83,6 +88,10 @@ for library in ('Apps.XmlUI', 'Apps.Style'):
             old_registration = 'DependencyProperty.Register("IsShow", typeof(IROI), typeof(ROIStackControl), new PropertyMetadata(null))'
             assert old_registration in text, 'ROIStackControl来源已变化，先复核布尔依赖属性适配'
             text = text.replace(old_registration, 'DependencyProperty.Register("IsShow", typeof(bool), typeof(ROIStackControl), new PropertyMetadata(false))')
+        prior=previous_by_source.get(str(source),{})
+        if 'admission_previous_target' in prior:
+            # A previous closure block needs an explicit adapter/promotion, not a silent reactivation on import.
+            external.update(prior.get('unresolved_dependencies',[]))
         if external:
             target = Path(str(target) + '.pending')
         for assembly in ('Apps.XmlUI', 'Apps.Style'):
@@ -100,6 +109,7 @@ manifest = {'group': 'composition', 'baseline': 'b87fb685', 'phase': 'source_mig
             'namespace_prefix': PREFIX, 'entries': entries, 'type_map': type_map, 'delegated_to_numeric': delegated,
             'not_claimed': ['pending is not compiled', 'source port is not a runtime result', 'not full VM visual acceptance'],
             'next': 'Merge all lane type/resource maps, resolve cross-lane references and vendor contracts, then unified build/test/fix.'}
+if 'admission_audit' in previous:manifest['admission_audit']=previous['admission_audit']
 current_targets = {entry['target'] for entry in entries}
 for old in previous.get('entries', []):
     if old['target'] in current_targets:
@@ -112,4 +122,7 @@ for old in previous.get('entries', []):
 path = manifest_path
 path.parent.mkdir(parents=True, exist_ok=True)
 path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-print(json.dumps({'files': len(entries), 'declared_types': len(type_map), 'pending_vendor_contract_files': sum(e['kind'] == 'pending_vendor_contract' for e in entries)}, ensure_ascii=False))
+from audit_vm_composition_closure import audit
+audit(apply=True)
+admitted_manifest = json.loads(path.read_text(encoding='utf-8'))
+print(json.dumps({'files': len(admitted_manifest['entries']), 'declared_types': len(type_map), 'pending_vendor_contract_files': sum(e['kind'] == 'pending_vendor_contract' for e in admitted_manifest['entries'])}, ensure_ascii=False))

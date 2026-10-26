@@ -32,6 +32,16 @@ def sha(data: bytes) -> str:
 def text(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
 
+def adapt_host_source(path: Path, content: str) -> str:
+    if path.name == "PolygonPoint.cs" and path.parent.name == "HikPcUI.ImageView":
+        # This visual coordinate carrier uses no BaseNode members. Typed host contracts own persistence.
+        assert "public class PolygonPoint : BaseNode, INotifyPropertyChanged" in content
+        assert "using Hik.Xml;" in content
+        return content.replace("using Hik.Xml;", "").replace(
+            "public class PolygonPoint : BaseNode, INotifyPropertyChanged",
+            "public class PolygonPoint : INotifyPropertyChanged")
+    return content
+
 def declared_types(content: str, namespace: str) -> list[str]:
     # Preserve nested type identity; a regex-only flat name list would alias e.g. PopupEx.RECT.
     stripped = re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|\x27(?:\\.|[^\x27\\])*\x27', lambda m: " " * len(m.group(0)), content)
@@ -141,9 +151,11 @@ def main() -> None:
             if source.name == "AssemblyInfo.cs":
                 continue  # Assembly identity is owned by the host project.
             kind = "asset" if source.suffix.lower() in IMAGE_EXT else "source" if source.suffix == ".cs" else "xaml"
-            content = None if kind == "asset" else text(source)
+            content = None if kind == "asset" else adapt_host_source(source, text(source))
             entry = {"library": library, "source": str(source), "original_relative": relative.as_posix(), "kind": kind,
                      "source_sha256": sha(source.read_bytes()), "reasons": [], "cross_group_dependencies": []}
+            if source.name == "PolygonPoint.cs":
+                entry["host_adaptations"] = ["Coordinate/index/INotifyPropertyChanged bodies retained; vendor Hik.Xml.BaseNode inheritance removed; typed host contracts own persistence, no vendor XML compatibility claimed"]
             if kind == "source":
                 namespace = re.search(r"\bnamespace\s+([\w.]+)", content)
                 if namespace:
@@ -188,7 +200,7 @@ def main() -> None:
     for record in records:
         if record["kind"] == "asset" or record["status"] == "other_group_numeric":
             continue
-        content = text(Path(record["source"]))
+        content = adapt_host_source(Path(record["source"]), text(Path(record["source"])))
         if record["kind"] == "source":
             uses = re.findall(r"^using\s+(?:static\s+)?([\w.]+)\s*;", content, re.M)
             externals = [name for name in uses if not name.startswith("System") and not any(name == internal or name.startswith(internal + ".") for internal in namespaces)]
@@ -336,7 +348,7 @@ def main() -> None:
         if record["kind"] == "asset":
             data = source.read_bytes()
         else:
-            content = text(source)
+            content = adapt_host_source(source, text(source))
             if record["kind"] == "xaml":
                 # Rewrite namespaces and assembly ownership, preserving the actual original template body.
                 content = re.sub(r'clr-namespace:([^;"\']+)(?:;assembly=([^"\']+))?', lambda match: "clr-namespace:" + namespace_map(match.group(1)) + (";assembly=SunEyeVision.Plugin.Wpf" if match.group(2) in LIBRARIES else ";assembly=" + match.group(2) if match.group(2) else ""), content)

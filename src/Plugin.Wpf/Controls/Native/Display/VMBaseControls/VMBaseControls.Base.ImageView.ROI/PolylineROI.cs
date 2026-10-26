@@ -15,7 +15,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
-using Apps.Log;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
@@ -248,8 +247,8 @@ public class PolylineROI : ROIControlBase
 			{
 				text += $"({point.X},{point.Y})";
 			}
-			LogHelper.Error(text);
-			LogHelper.Error($"X={ROISubstitute.Points.Last().X},Y={ROISubstitute.Points.Last().Y}");
+			Trace.TraceError(text);
+			Trace.TraceError($"X={ROISubstitute.Points.Last().X},Y={ROISubstitute.Points.Last().Y}");
 			ROISubstitute.Points.Add(ROISubstitute.Points.Last());
 			PolygonPointCount++;
 		}

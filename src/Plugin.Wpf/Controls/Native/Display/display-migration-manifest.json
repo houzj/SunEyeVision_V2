@@ -5836,11 +5836,12 @@
       "sourceRelative": "VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
       "sourceSha256": "EC39211D4CF5D18BA1AB11750FE69597AC7ABB6E29E65E8839C3EDFB8EA16F2E",
-      "targetSha256": "BC447CA1085C70E157684F756A2BAC85D91A7119BF41DFC4E57D49CD0F035DD1",
+      "targetSha256": "5d6c65194a79b37ccde75ca3e3c8c4d14728269185fa798b2920fe994802cc9f",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Host diagnostics only: original catch paths/messages retained; Apps.Log calls mapped to System.Diagnostics.Trace, no vendor logger or model restored."
       ],
-      "gitNormalizedTargetSha256": "0FB5DB941F2D4AB44630FDF26EE72A0F2F241BB2B7680675DBDCB886AC3519AF"
+      "gitNormalizedTargetSha256": "e7645ea23a9ee5cb113fb1091892581649ab24679f3347e92b1f52cd21abe545"
     },
     {
       "library": "VMBaseControls",
@@ -6014,12 +6015,12 @@
       "sourceRelative": "VMBaseControls.Base.ImageView.ROI/NormalizedPolygonROI.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPolygonROI.cs",
       "sourceSha256": "3FAD5480E8D34FBDF1D0441587B26857FEAE02DC09689B76414C620F32CD9957",
-      "targetSha256": "99B4515C79CB1F475E5A47D2946C31D6DA31605D6C2A936272E03DB929387860",
+      "targetSha256": "5f4f96b0d5af58a8b7dc41363fac3c591bfb7187c9152060a30d17bbc07343de",
       "adaptations": [
         "assembly component URI",
         "namespace/assembly and cross-group numeric import"
       ],
-      "gitNormalizedTargetSha256": "7F77C2A3640DB79F806853911A4F57A03DFC0E94B4C1A2988699BA14E0860020"
+      "gitNormalizedTargetSha256": "a4b132a9c74658662e55d4e37baeeb3040c7d4163e6a7f2aada65ce9f9d0b6b7"
     },
     {
       "library": "VMBaseControls",
@@ -6150,11 +6151,12 @@
       "sourceRelative": "VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
       "sourceSha256": "B40603DBEC7355829739A55225C0C470B83BB2E9D072C13A4F2A2F13A0D894C5",
-      "targetSha256": "212FD90637CB9596D7C59609975F10BA867DC5C63E5428FF60708A41D527E491",
+      "targetSha256": "7bc879733062d1a781635f786f6dbdc80ba48af0cef31417c2b0f758bed69c65",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Host diagnostics only: original catch paths/messages retained; Apps.Log calls mapped to System.Diagnostics.Trace, no vendor logger or model restored."
       ],
-      "gitNormalizedTargetSha256": "8985662ECA6A36D8C32AFFA503BC4EA8AAD33FFD2B78CCE23B64103105342440"
+      "gitNormalizedTargetSha256": "0bd71a776fe8750bb36840affbefa48144c7451b1f12c8d74ab055df57fa3171"
     },
     {
       "library": "VMBaseControls",
@@ -6199,11 +6201,12 @@
       "sourceRelative": "VMBaseControls.Base.ImageView.ROI/PolylineROI.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolylineROI.cs",
       "sourceSha256": "CFDCC897A1AF7E762DEDDCCF6923F1D27B9850034AA53E88000DF73AC0415ECB",
-      "targetSha256": "ABBAF66FA2D7E53501BBB813603775C506052E732D9EDCBB569D3716E355821B",
+      "targetSha256": "9e9007148aa3752e2022a9178f0ce6cfc25c6a215953b836b78126cb6a8cd23b",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Host diagnostics only: original catch paths/messages retained; Apps.Log calls mapped to System.Diagnostics.Trace, no vendor logger or model restored."
       ],
-      "gitNormalizedTargetSha256": "13306A0927026855FFC4439C7FA38B0D5532640B50ACE0DA912D682D5928A7C6"
+      "gitNormalizedTargetSha256": "997880dc9d6e08b1a4a45955643c8d66592221b1d3699b233299ec0f927182de"
     },
     {
       "library": "VMBaseControls",

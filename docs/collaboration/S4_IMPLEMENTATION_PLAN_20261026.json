@@ -2,8 +2,8 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "真实DisplayObjectField已从子modal重组为就地弹层：VM四行主区与-90横偏移、102列起点和原渐变承接，现有十字/线型放在更多；字段直接写外层窗口草稿，保留外层确定/取消职责。嵌套Popup归属和逐层Escape、卸载/失活关闭及输入监听解除已有代码。数值有效键入即时同步滑条，Enter校验后失焦；非法输入/Enter保留待校验文本，初始显示不作用户改值，非聚焦滚轮不改值。024全量Release仍95错误/136警告20.62秒，未运行或人工验收。图形数值范围/步长和存量值兼容仍待对齐，不能称VM完整等价。按用户要求构建通过前不推送。",
-  "summaryStatus": "就地样式弹层与数值交互代码已接；完整构建仍95错误，真实运行验收未开始",
+  "current": "真实DisplayObjectField已从子modal重组为就地弹层：VM四行主区与-90横偏移、102列起点和原渐变承接，现有十字/线型放在更多；字段直接写外层窗口草稿，保留外层确定/取消职责。嵌套Popup归属和逐层Escape、卸载/失活关闭及输入监听解除已有代码。数值有效键入即时同步滑条，Enter校验后失焦；非法输入/Enter保留待校验文本，初始显示不作用户改值，非聚焦滚轮不改值。027全量Release仍9错误/132警告27.96秒，未运行或人工验收。图形数值范围/步长和存量值兼容仍待对齐，不能称VM完整等价。按用户要求构建通过前不推送。",
+  "summaryStatus": "ROI诊断依赖和未使用的旧XAML命名空间已修；全量当前9个错误，未进入运行或人工验收",
   "rows": [
     [
       "整套库范围",
@@ -142,9 +142,9 @@
   "checks": [
     {
       "name": "当前源码候选全量Release（未通过）",
-      "result": "024：95错误/136警告20.62秒；就地弹层、逐层Escape、数值同步/Enter及滚轮焦点代码在当前候选内，未运行或人工验收。",
-      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-024.log",
-      "sha256": "7ce4c63bd945369df6a812b7b5b3c51dec62269d6ce7248501fa33afaf0661ee"
+      "result": "027：9错误/132警告27.96秒；修复3处ROI日志依赖，并移除重映射后已无引用的旧XAML CLR命名空间；未改变控件正文或模板行为。9个诊断不是后续所有语义问题的上限。当前候选未运行或人工验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-027.log",
+      "sha256": "c0d8bd27ab81ab7a7866e4117ba76ee9908f4ba7fb83cbfea03947aa02dcca22"
     },
     {
       "name": "本轮C#语法解析（有限范围）",
@@ -205,8 +205,8 @@
       "result": "四继承backend12/面板9等原成绩保各候选；当前5style/17PNG不等于全库完成，typed调试新run、布局/弹窗、旧消费者、VS和人工仍未闭合。"
     }
   ],
-  "sourceBaseline": "8a82648b + 当前就地样式弹层/数值交互增量；构建通过前只留本地",
-  "productIdentity": "交付目标目录固定为 D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision。当前完整构建未通过，目录含本轮部分基础工程输出和历史文件，尚未标记为可试用候选，也不再视作b87历史完整二进制快照。源码只保留本地；成功构建、依赖与实际回归闭合后再记录可交付产物身份。",
+  "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
+  "productIdentity": "当前候选027全量构建失败（9错误/132警告27.96秒）。正式Release目录混有部分新输出与历史文件，不能作为可试用版本，也不能视作b87的完整二进制快照。所有改动留本地，构建通过前不推送。",
   "next": "闭合剩余厂商视觉/参数依赖及源码-XAML配对，补齐样式范围/步长与存量值兼容；构建通过后运行新弹层/数值回归和Blob完整链，继续typed调试同run及原31项消费者退出，不以HTML或旧PASS替代本候选验收。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
@@ -4387,6 +4387,41 @@
       "result": "023：95错误/136警告16.94秒；本轮就地弹层、嵌套关闭、数值同步/Enter与字段校验代码在候选内，未执行当前候选运行/人工验收。",
       "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-023.log",
       "sha256": "3bcd25103ee5ab860bb0eee734d468525ce2cca46cb34e1289ef6317f2d337bf"
+    },
+    {
+      "name": "当前源码候选全量Release（未通过）",
+      "result": "024：95错误/136警告20.62秒；就地弹层、逐层Escape、数值同步/Enter及滚轮焦点代码在当前候选内，未运行或人工验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-024.log",
+      "sha256": "7ce4c63bd945369df6a812b7b5b3c51dec62269d6ce7248501fa33afaf0661ee"
+    },
+    {
+      "name": "当前源码候选全量Release（未通过）",
+      "result": "026：17错误/132警告37.04秒；PolygonPoint纯坐标模型已脱离厂商XML基类。50份配对或依赖未闭合源码保留为.pending，正文逐份与HEAD核对一致；属于编译准入纠正，不计作功能迁移完成。未作当前候选运行或人工验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-026.log",
+      "sha256": "d6e43c1be63e52b728e4621bfc1d5822a1557d4d408f089aa3bde37e55c51c79"
     }
-  ]
+  ],
+  "admissionCorrection": {
+    "scope": "只纠正导入准入，不缩减整套库、原31项或消费者退出目标",
+    "preservedFiles": 50,
+    "preservationReport": "Release/_validation/O06-RoiCore-20261026/composition-source-preservation-001.json",
+    "dependencyAudit": "Release/_validation/O06-RoiCore-20261026/composition-admission-audit-001.json",
+    "remainingBuildDependencies": [
+      "ImageViewBox及其Addition模板依赖VMControls.Interface/IAdditionService/厂商Ioc与模块IO合同",
+      "实际新版Byte2ImageSource在Apps.BaseData，依赖MemoryHelper与ExternalCallHelper；不能误用旧VM.PcUI版本",
+      "Apps.Data.ImageData及图像保存依赖厂商XML/VisionDesigner/OpenCvSharp，须按现有图像/输出合同承接"
+    ],
+    "policy": "用户要求构建通过前只保留本地、不推送；完整运行与人工验收仍待执行"
+  },
+  "dependencyInvestigation": {
+    "kind": "静态证据，不是运行结果",
+    "Apps.Data": {
+      "sha256": "2ad51c179d4a5cf7e0c0373cd1526de8a75d53a3ea6cbe3ef73c0c5268e1c55c",
+      "reaEvidence": "ev_970fd3b2fb725ff4327a86c3bc509319418ab2a28c54df1f38a460d415a49832"
+    },
+    "finding": "原IImageViewBox为空标记接口；IImageViewAddition经InnerImageViewAddition.RenderByActive关联IVmModule/IVmIO。已静态核对，未导入空替身或恢复厂商调度模型。",
+    "next": "根单写者继续拆分视觉、图像缓冲与外部扩展适配；完整候选构建通过后运行正式目录组件与Blob整链。",
+    "verification": "Release/_validation/O06-RoiCore-20261026/source-integration-check-027.json",
+    "integratorIdempotency": "再次执行changed_files=0；仅源码整合稳定性，非功能通过"
+  }
 }

@@ -115,7 +115,8 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 是否启用
         /// </summary>
-        public bool IsEnabled { get; set; } = true;
+        private bool _isEnabled = true;
+        public bool IsEnabled { get => _isEnabled; set => SetProperty(ref _isEnabled, value); }
 
         private double _positionX = 0;
         /// <summary>

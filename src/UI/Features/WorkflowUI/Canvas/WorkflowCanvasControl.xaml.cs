@@ -982,6 +982,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             InitializeVmWireEditing();
             InitializeVmNodeGestures();
             InitializeVmGeometryTracking();
+            InitializeVmGroupSelection();
 
 
 
@@ -1536,6 +1537,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             if (e.ClickCount == 2)
 
             {
+                _vmBoxSelectionActive = false; ClearVmSelectionFrame();
 
                 if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
 
@@ -2242,7 +2244,7 @@ _viewModel.SelectedNode = targetNode;
             DependencyObject? current = e.OriginalSource as DependencyObject;
             while (current != null && current != WorkflowCanvas)
             {
-                if (current is VmExecutionPort ||
+                if (ReferenceEquals(current, _vmSelectionFrame) || current is VmExecutionPort ||
                     current is Border { Tag: WorkflowNode } ||
                     current is Rectangle handle && _vmWireHandles.Contains(handle) ||
                     current is FrameworkElement { DataContext: WorkflowConnection }) return;
@@ -2316,7 +2318,9 @@ _viewModel.SelectedNode = targetNode;
             if (_isDraggingConnection) { FinishVmConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; return; }
             if (_isPanning || _isBoxSelecting)
             {
+                if (_isBoxSelecting) _vmBoxSelectionActive = VmSelectedNodes().Length > 0;
                 _isPanning = false; _isBoxSelecting = false;
+                DrawVmSelectionFrame();
                 SelectionBox?.EndSelection(); Cursor = Cursors.Arrow;
                 WorkflowCanvas.ReleaseMouseCapture(); e.Handled = true;
             }
@@ -2334,6 +2338,7 @@ _viewModel.SelectedNode = targetNode;
         private void ClearAllSelections()
 
         {
+            _vmBoxSelectionActive = false; ClearVmSelectionFrame();
 
             if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
 

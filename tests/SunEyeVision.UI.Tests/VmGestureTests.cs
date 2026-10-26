@@ -183,6 +183,45 @@ public sealed class VmGestureTests
         Assert.Equal(new Point(105, 115), a.Position); history.Undo(); Assert.Equal(new Point(80, 90), a.Position);
         a.Position = new Point(999, 999); history.Redo(); Assert.Equal(new Point(105, 115), a.Position); Assert.Equal(new Point(205, 315), b.Position);
     }
+    [Fact] public void Group_frame_alignment_updates_wires_and_undo_restores_positions() => Sta(() =>
+    {
+        var control = Create(out var a); var tab = (WorkflowTabViewModel)control.DataContext;
+        var b = tab.WorkflowNodes.OfType<WorkflowNode>().Single(n => n.Id == "b");
+        var oldA = a.Position; var oldB = b.Position;
+        a.IsSelected = b.IsSelected = true;
+        typeof(WorkflowCanvasControl).GetField("_vmBoxSelectionActive", Private)!.SetValue(control, true);
+        Call(control, "DrawVmSelectionFrame");
+        var frame = Assert.IsType<Rectangle>(Field(control, "_vmSelectionFrame"));
+        Assert.Equal(330, frame.Width); Assert.Equal(250, frame.Height);
+        Down(frame); Assert.False((bool)Field(control, "_isBoxSelecting")!); Assert.False((bool)Field(control, "_isPanning")!);
+        Call(control, "AlignVmSelection", SunEyeVision.UI.Services.Interaction.VmNodeAlignment.Left);
+        control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Equal(a.Position.X, b.Position.X);
+        Assert.Equal(b.TopPortPosition, tab.WorkflowConnections.Single().PathPoints.Last());
+        tab.CommandManager.Undo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Equal(oldA, a.Position); Assert.Equal(oldB, b.Position);
+        tab.CommandManager.Redo(); Assert.Equal(a.Position.X, b.Position.X);
+        a.IsSelected = b.IsSelected = false;
+        control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Null(Field(control, "_vmSelectionFrame"));
+        control.DataContext = null; Assert.Null(Field(control, "_vmSelectionFrame"));
+    });
+    [Fact] public void Group_disable_changes_original_baml_fill_and_undo_restores_it() => Sta(() =>
+    {
+        var control = Create(out var a); var tab = (WorkflowTabViewModel)control.DataContext;
+        a.IsSelected = true; int notifications = 0;
+        a.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(a.IsEnabled)) notifications++; };
+        Call(control, "SetVmSelectionEnabled", false);
+        control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        var card = Children<Border>(control).Single(b => b.Name == "NodeBorder" && ReferenceEquals(b.Tag, a));
+        Assert.False(a.IsEnabled); Assert.Equal(1, notifications);
+        Assert.Equal(ColorConverter.ConvertFromString("#D3D3D3F5"), Assert.IsType<LinearGradientBrush>(card.Background).GradientStops[0].Color);
+        tab.CommandManager.Undo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.True(a.IsEnabled); Assert.Equal(2, notifications);
+        Assert.Equal(ColorConverter.ConvertFromString("#FAF7F5"), Assert.IsType<LinearGradientBrush>(card.Background).GradientStops[0].Color);
+        control.DataContext = null;
+    });
+
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
 public sealed class VmCanvasUiCollection { }

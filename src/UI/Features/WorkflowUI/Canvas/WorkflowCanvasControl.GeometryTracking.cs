@@ -65,6 +65,15 @@ public partial class WorkflowCanvasControl
     }
     private void VmNodeGeometryChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(WorkflowNode.IsSelected))
+        {
+            var generation = _vmGeometryGeneration;
+            Dispatcher.BeginInvoke(DispatcherPriority.DataBind, new Action(() =>
+            {
+                if (generation == _vmGeometryGeneration) DrawVmSelectionFrame();
+            }));
+            return;
+        }
         if (e.PropertyName is nameof(WorkflowNode.Position) or nameof(WorkflowNode.Width) or nameof(WorkflowNode.Height))
             QueueVmGeometryRefresh();
     }
@@ -82,7 +91,7 @@ public partial class WorkflowCanvasControl
             if (_vmGeometryTab == null) return;
             foreach (var connection in _vmGeometryTab.WorkflowConnections) connection.InvalidatePath();
             if (_vmSelectedWire != null) DrawVmWireHandles();
-            UpdateBoundingRectangle();
+            UpdateBoundingRectangle(); DrawVmSelectionFrame();
         }));
     }
 }

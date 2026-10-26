@@ -1,4 +1,4 @@
-<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -236,9 +236,7 @@
 
                                     Tag="{Binding}"
                                     x:Name="NodeBorder">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FAF7F5" Offset="0"/><GradientStop Color="#EBE6E2" Offset="1"/></LinearGradientBrush>
-                                </Border.Background>
+
                                 <Grid>
                             <!-- 节点内容 -->
                             <Grid Margin="{DynamicResource NodeContentMargin}">
@@ -375,11 +373,12 @@
 
                         <Border.Style>
                             <Style TargetType="Border">
+                                <Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FAF7F5" Offset="0"/><GradientStop Color="#EBE6E2" Offset="1"/></LinearGradientBrush></Setter.Value></Setter>
                                 <Setter Property="BorderThickness" Value="0.7"/><Setter Property="CornerRadius" Value="4"/>
                                 <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
                                 <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45"/></Setter.Value></Setter>
 
-                            <Style.Triggers><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding ToolType}" Value="ImageLoad"><Setter Property="CornerRadius" Value="15"/></DataTrigger></Style.Triggers></Style>
+                            <Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding ToolType}" Value="ImageLoad"><Setter Property="CornerRadius" Value="15"/></DataTrigger></Style.Triggers></Style>
                         </Border.Style>
                     </Border>
                             <!-- 连接点 - 上 -->

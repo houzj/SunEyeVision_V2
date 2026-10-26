@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27中立Runtime配置已进入实际WorkflowExecutionEngine：冻结设置/图像Domain、编译稳定输入引用和依赖/输出需求、HALCON执行及原输出发布、保存重开、取消与租约均有正式证据。工具箱/参数Wpf默认入口、设置订阅/全局变量和本地ROI编辑仍待接入，根SDK Blob工程未删，M1未完成。",
-  "summaryStatus": "新Runtime调度8/8、有无Wpf组件8/9、纯Runtime15、原文档事务28、关联算法9、原UI整链9/9和部署13通过；最终UI/全量0错误。",
+  "current": "2026-10-27新Runtime实际调度已有证据，现又接通XML设置字段和可选Wpf编辑创建API，直接编辑唯一强类型模型。工具箱和参数窗口默认入口仍SDK，输入/设置订阅、本地ROI和文档编辑适配尚待接通，最终两工程及M1/M2/M3均未完成。",
+  "summaryStatus": "本批纯Runtime16、设置/组件有无Wpf9/10、Runtime工作流8、原文档事务28、原窗口整链9、发布扰动13通过；最终串行UI/全量0错误。",
   "rows": [
+    [
+      "XML强类型设置编辑及可选Wpf入口",
+      "BlobParameters.xml声明54个稳定设置字段（20运行值/12判定开关/22判定端点）的分组、选项、显隐、范围和配对；IToolSettingsFields直接读写实际BlobSettings，私有编辑会话整批冻结校验，拒绝提案不污染原配置。BlobParameterEditor/工厂和公共注册表接同一合同，缺专属Wpf用通用声明视图。",
+      "最终UI003为0错误/6471警告，全量002为0错误/6632警告；正式目录RuntimeKernel024共16组，组件有/无Wpf9/10组，RuntimeWorkflow8组、DocumentEditing28组、原窗口FullChain9组和部署036十三项通过。768发布项/158加载记录同源。设置字段经真实事务、保存重开及HALCON执行；新增设置视图为定向API检查，不冒充完整交互/视觉验收。 节点打开/文档编辑参与者与工具箱默认入口、设置订阅/全局变量、本地ROI和调试生命周期仍待切换；旧SDK Blob工程/参数与转换未退出；全部所需VM原件/显示XML完整消费、VS设计时及真实用户验收未完成。"
+    ],
     [
       "中立Runtime实际工作流调度与发布",
       "实际调度器直接创建中立AlgorithmNode，使用保存设置/本次覆盖、冻结工作流图像与实际Domain，按稳定端口编译输入引用并收集下游输出需求。宿主通用结果信封持有同一Runtime输出，发布不再重捕获图像；保存门按Runtime声明端口校验。",
@@ -5094,6 +5099,15 @@
     "sourceBaseCommit": "3ef07588ad4f9a9c902965a180ceee0bfc2c5348",
     "implementation": "实际调度器直接创建中立AlgorithmNode，使用保存设置/本次覆盖、冻结工作流图像与实际Domain，按稳定端口编译输入引用并收集下游输出需求。宿主通用结果信封持有同一Runtime输出，发布不再重捕获图像；保存门按Runtime声明端口校验。",
     "verification": "新RuntimeWorkflow有/无Wpf各8组：真实双Blob、SDK图像来源、跨帧ROI拒绝、设置隔离/覆盖、保存重开、取消重跑、租约/清理异常通过。最终UI/全量0错误，768发布项/262加载记录一致。工具箱和参数页默认入口、设置/全局订阅与本地ROI编辑仍待切换；不计M1或整体完成。",
-    "remaining": "接中立参数编辑及工具箱默认创建、设置字段/全局变量和本地ROI编辑，再删除SDK Blob工程/模型/适配；继续全部所需VM原件、显示XML完整消费和真实验收。"
+    "remaining": "接中立参数编辑及工具箱默认创建、设置字段/全局变量和本地ROI编辑，再删除SDK Blob工程/模型/适配；继续全部所需VM原件、显示XML完整消费和真实验收。",
+    "subsequentProgress": "后续设置字段及编辑视图创建API已接入，见runtimeSettingsCheckpoint；工具箱、实际参数窗口/文档适配及设置订阅仍未切换，不改写原调度证据。"
+  },
+  "runtimeSettingsCheckpoint": {
+    "status": "SCOPED_XML_SETTINGS_VIEW_VERIFIED_NOT_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_RUNTIME_SETTINGS_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "5674ff75bb6d0130f06cce949a0f768b3f0e19c6",
+    "implementation": "BlobParameters.xml声明54个稳定设置字段（20运行值/12判定开关/22判定端点）的分组、选项、显隐、范围和配对；IToolSettingsFields直接读写实际BlobSettings，私有编辑会话整批冻结校验，拒绝提案不污染原配置。BlobParameterEditor/工厂和公共注册表接同一合同，缺专属Wpf用通用声明视图。",
+    "verification": "最终UI003为0错误/6471警告，全量002为0错误/6632警告；正式目录RuntimeKernel024共16组，组件有/无Wpf9/10组，RuntimeWorkflow8组、DocumentEditing28组、原窗口FullChain9组和部署036十三项通过。768发布项/158加载记录同源。设置字段经真实事务、保存重开及HALCON执行；新增设置视图为定向API检查，不冒充完整交互/视觉验收。",
+    "remaining": "节点打开/文档编辑参与者与工具箱默认入口、设置订阅/全局变量、本地ROI和调试生命周期仍待切换；旧SDK Blob工程/参数与转换未退出；全部所需VM原件/显示XML完整消费、VS设计时及真实用户验收未完成。"
   }
 }

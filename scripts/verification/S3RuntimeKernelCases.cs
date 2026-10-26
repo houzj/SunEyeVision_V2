@@ -15,6 +15,26 @@ internal static class S2DocumentEditingCases
     {
         try
         {
+            Case("XML设置编辑操作唯一强类型模型，非法整批提案不污染草稿",()=>{
+                var definition=new BlobTool();var provider=(IToolSettingsFields)definition;
+                var original=new BlobSettings();var draft=new ToolSettingsEditSession(definition,original);
+                Require(provider.SettingsSchema.Inputs.Count==54&&provider.SettingsSchema.Outputs.Count==0,"设置字段数或职责错误");
+                string Field(string label)=>provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==label).FieldId;
+                var threshold=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
+                var upper=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
+                var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
+                draft.ApplyFields(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}});
+                Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&original.Threshold==128
+                    &&draft.ReadFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,300L}}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{mode,"undefined"}}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{"unknown",1L}}));
+                Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==211,"拒绝提案污染私有状态");
+                var rule=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.Layout?.Page=="结果显示"&&f.Layout.PairWith is not null&&f.DisplayName=="Blob数量下限");
+                draft.ApplyFields(new Dictionary<string,object?>{{rule.FieldId,19d}});
+                Require(draft.ReadFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
+            });
             Case("宿主中立入口保留模型身份、冻结参数并在无UI回调时清理",()=>{
                 using var resources=new FrozenOutputResources();
                 foreach(var asynchronous in new[]{false,true})

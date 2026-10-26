@@ -18,4 +18,7 @@ public interface IToolResultView : IDisposable
 public interface IToolPresentationFactory
 {
     IToolResultView CreateResultView(ToolSchema schema, ResultProjectionDescriptor projection);
+    SunEyeVision.Plugin.Wpf.Presenters.Parameters.IToolSettingsView CreateSettingsView(IToolSettingsDraft draft,
+        SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions options)
+        =>new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView(draft,options);
 }

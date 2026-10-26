@@ -59,6 +59,7 @@ internal static class S2DocumentEditingCases
             var editor=ToolRegistry.CreateEditorFactory(tool);
             Require(editor is null,"Blob结果页仍依赖旧SDK视图工厂");
             EnsurePresentationApplication();
+            VerifySettingsView(expectEditor);
             using var resultView=ToolRegistry.CreateResultView("BlobAnalysis")??throw new Exception("Runtime声明没有结果视图");
             if(expectEditor)
             {
@@ -219,7 +220,7 @@ internal static class S2DocumentEditingCases
             using(var recovered=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image))))
                 Require(recovered.Success,"取消清理后无法开始下一次运行");
             Console.WriteLine("通过：已取消请求在无UI消息泵时返回Cancelled并清理，下一次真实运行成功");
-            Console.WriteLine($"S3组件消费：{(expectEditor?8:9)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
+            Console.WriteLine($"S3组件消费：{(expectEditor?9:10)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
     }
@@ -248,14 +249,33 @@ internal static class S2DocumentEditingCases
             if(child is DependencyObject dependency)
                 foreach(var found in Find<T>(dependency))yield return found;
     }
+    private static void VerifySettingsView(bool expectEditor)
+    {
+        var configuration=RuntimeToolConfiguration.Create("BlobAnalysis");
+        var provider=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");
+        using var view=ToolRegistry.CreateSettingsView("BlobAnalysis",configuration.CaptureSettings());
+        Require(view.View.GetType().Assembly.GetName().Name==(expectEditor?"SunEyeVision.Tool.BlobAnalysis.Wpf":"SunEyeVision.Plugin.Wpf"),"设置编辑器有无Wpf回退错误");
+        var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>(view.View).ToArray();
+        Require(fields.Length==54,"设置编辑器未消费完整XML字段");
+        var id=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName=="阈值").FieldId;
+        var editor=fields.Single(f=>f.FieldId==id);var changed=0;view.Changed+=()=>changed++;
+        Require(editor.TrySetConstant(73L)&&view.TryCapture(out var candidate,out var references,out var error),"有效设置编辑未捕获");
+        view.TryCapture(out candidate,out references,out error);
+        int Threshold(object settings)=>(int)settings.GetType().GetProperty("Threshold")!.GetValue(settings)!;
+        Require(Threshold(candidate)==73&&changed==1&&references.Count==0
+            &&Threshold(configuration.CaptureSettings())==128,"私有编辑污染正式配置或未发事件");
+        Require(!editor.TrySetConstant(300L)&&!view.TryCapture(out _,out _,out _),"非法设置可提交");
+        Console.WriteLine("通过：实际Runtime设置模型经XML生成54字段，有无专属Wpf均提供私有编辑和非法提交阻断");
+    }
+
     private static void VerifyRuntimeConfiguration()
     {
         var initial=RuntimeToolConfiguration.Create("BlobAnalysis");
         RuntimeToolConfiguration Change(RuntimeToolConfiguration source,int threshold)
         {
-            var value=JsonSerializer.SerializeToNode(source)!;
-            value["Settings"]!["Threshold"]=threshold;
-            return value.Deserialize<RuntimeToolConfiguration>()!;
+            var fields=(IToolSettingsFields)ToolRegistry.CreateRuntime(source.ToolId);
+            var id=fields.SettingsSchema.Presentation!.Fields.Single(field=>field.DisplayName=="阈值").FieldId;
+            return source.WithSettings(fields.ApplySettings(source.CaptureSettings(),new Dictionary<string,object?>{{id,(long)threshold}}));
         }
         int Threshold(RuntimeToolConfiguration source)
         {var settings=source.CaptureSettings();return (int)settings.GetType().GetProperty("Threshold")!.GetValue(settings)!;}

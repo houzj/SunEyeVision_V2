@@ -168,3 +168,17 @@
 - 工具箱/参数页默认入口仍为旧SDK Blob，RuntimeConfiguration节点当前须由公共模型/API创建。WorkflowNodeBase.CreateInstance的SDK接口拒绝Runtime配置是防止走错接口，不能让UI用此接口忽略新设置。设置字段订阅/全局变量、本地ROI编辑及参数Wpf视图仍待接入；根SDK工程/BlobAnalysisParameters/Results/适配尚未删除，最终两工程未完成。
 - 下一步优先中立设置编辑元数据和实际Wpf参数编辑/工具箱默认创建；同步输入订阅/本地ROI与调试生命周期，再删除根SDK Blob入口与旧模型。不要为继续保留旧Blob参数新增包装/兼容转换；宿主通用输出信封不是另一套Blob结果。之后继续全部Blob所需VM原件及完整交互与显示XML图形文本消费。
 - 新Runtime调度证据与旧UI FullChain回归分开记录；本轮未改控件视觉，不计VM视觉、物理鼠标操作或人工验收。原视觉未通过反馈保留，VS设计时未验证，目标/M1/M2/M3继续未完成/active。
+
+## 2026-10-27 XML强类型设置编辑与可选Wpf入口（最新）
+
+- Codex/main，基线5674ff75bb6d0130f06cce949a0f768b3f0e19c6，单产品写者。新目标继续active；没有另建目标、缩减硬性目标树或代签人工验收。
+- BlobParameters.xml现在声明54个稳定设置字段：20运行值、12判定开关、22判定端点，包含选项标签、显隐条件、范围配对、边界/步进和页签分组；这是字段数，不是VM控件数量。现有字段身份保留为稳定身份，生产路径不读取旧BlobInputContract或转换旧参数。
+- Contracts增加IToolSettingsFields/IToolSettingsDraft；Runtime的ToolSettingsEditSession只保留一份实际强类型设置，先冻结并检查整批提案，再替换私有状态。Blob直接投影/应用BlobSettings及其判定记录，没有第二套业务DTO。未知字段/越界/非法枚举/交叉范围错误明确拒绝，不污染原设置或已接受草稿。
+- Wpf新增目标Views/BlobParameterEditor.xaml及工厂设置入口，公共DeclaredSettingsView复用字段组合；ToolRegistry准入时实际检查设置声明，并按有无可选Wpf创建专属入口或通用声明视图。视图保持私有模型与订阅提案，不提交文档、不执行算法、不持有图像资源。
+- 正式组件检查通过设置字段合同改真实模型，沿既有事务验证冻结/冲突/撤销重做/回滚、保存重开及HALCON。设置视图54字段的有效修改/非法提交阻断及原配置隔离有有无Wpf定向证据，但真实节点打开/文档参与者和默认工具箱还未消费该编辑入口，不能称用户窗口已全面使用新链。
+- 最终串行UI003：0错误/6471警告122.58秒；全量002：0错误/6632警告69.62秒，blob-settings前缀。UI001误用不存在的DeclaredValueReader.Value导致编译失败，改为InputValues.Get；UI002/全量001曾重叠，停止后串行重跑，不计最终产物。一次封存校验参数名错误已按函数真实签名纠正，未伪造校验成功。
+- 正式RuntimeKernel024十六组、RuntimeWorkflow004/006有无Wpf各八组、Components123九组/121无Wpf十组、DocumentEditing032二十八组、FullChain055九组通过；ComponentDeployment036十三项通过，实际EXE准入，3文件和清单原SHA还原。原SDK窗口整链回归与新设置API证据分开，不混算新参数窗口完成。
+- 部署035失败保留：新增测试静态引用Runtime类型，在移除Runtime的负向场景导致检查宿主编译失败（Components119）；产品缺件探针已正确拒绝。测试改为公共合同/实际类型反射检查后036全通过，没有放宽产品准入。
+- 证据docs/collaboration/evidence/O06_RUNTIME_SETTINGS_CHECKPOINT_20261027.json：15份源码增量、768发布项、158加载记录SHA核对一致；清单/Core仍5674ff75加所列增量，不用随后提交号改写已编译身份。原S4 JSON/O06已同步；目标树未改，生成器697锚点/幂等成立。
+- 下一步直接把节点打开/文档编辑参与者与默认工具箱接入中立编辑视图，同步设置订阅/全局变量、本地ROI、调试生命周期，随后删除根SDK Blob工程/旧参数/转换。不要加SDK参数包装桥。全部所需VM原件和显示XML完整消费仍待完成。
+- M1/M2/M3均未完成。VS设计时未验证，新候选无真实人工验收；原视觉未通过反馈保留。新设置页定向API检查不冒充完整焦点/物理鼠标/VM视觉通过。

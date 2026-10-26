@@ -6,6 +6,8 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
@@ -57,6 +59,18 @@ public static partial class ToolRegistry
         return (IToolDefinition)Activator.CreateInstance(component.EntryType)!;
     }
 
+    public static IToolSettingsView CreateSettingsView(string toolId,object settings,ToolSettingsViewOptions? options=null)
+    {
+        var draft=new ToolSettingsEditSession(CreateRuntime(toolId),settings);
+        ToolComponentRegistration? editor;
+        lock(_lock)_editorComponents.TryGetValue(toolId,out editor);
+        options??=new();
+        if(editor is null)return new DeclaredSettingsView(draft,options);
+        var factory=Activator.CreateInstance(editor.EntryType) as IToolPresentationFactory
+            ??throw new InvalidOperationException("Runtime settings require a neutral WPF presentation factory.");
+        return factory.CreateSettingsView(draft,options)??throw new InvalidOperationException("Settings view factory returned null.");
+    }
+
     private static void ValidateComponentEntry(ToolComponentRegistration component)
     {
         var type=component.EntryType;
@@ -81,6 +95,8 @@ public static partial class ToolRegistry
                 throw new InvalidOperationException("Runtime settings/output identities differ from their declaration.");
             if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
             _=definition.Describe(definition.FreezeSettings(settings));
+            if(definition is IToolSettingsFields)
+                _=new ToolSettingsEditSession(definition,settings).ReadFields();
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Xml.Linq;
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Versioned tool metadata. It initializes new settings, never patches saved settings.</summary>
-public sealed class BlobParameterDefinition
+public sealed partial class BlobParameterDefinition
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
     private readonly XElement[] _judgments;
@@ -26,8 +26,10 @@ public sealed class BlobParameterDefinition
             if(!group.HasElements)throw new InvalidDataException("Empty Blob parameter group.");
             foreach(var field in group.Elements())
             {
-                Shape(field,["id","type","default","label","minimum","maximum","decimals","increment"],[]);
+                Shape(field,["id","fieldId","allowReference","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
                 Required(field,"id");Required(field,"type");Required(field,"default");Required(field,"label");
+                Required(field,"fieldId");Boolean(field,"allowReference");
+                foreach(var choice in field.Elements("Choice")){Shape(choice,["key","label"],[]);Required(choice,"key");Required(choice,"label");}
             }
         }
         var ids=root.Elements("Group").Elements("Parameter").Select(x=>Required(x,"id")).ToArray();
@@ -42,6 +44,9 @@ public sealed class BlobParameterDefinition
         {
             var expected=type==typeof(int)?"Integer":type==typeof(double)?"Number":type==typeof(bool)?"Boolean":type.IsEnum?"Enum":throw new InvalidDataException("Unsupported Blob setting type.");
             if(Required(_fields[id],"type")!=expected)throw new InvalidDataException("Blob XML field type differs: "+id);
+            var choices=_fields[id].Elements("Choice").Select(x=>Required(x,"key")).ToArray();
+            if(type.IsEnum?!choices.ToHashSet(StringComparer.Ordinal).SetEquals(Enum.GetNames(type))||choices.Distinct().Count()!=choices.Length:choices.Length!=0)
+                throw new InvalidDataException("Blob XML choices differ from the declared enum: "+id);
             var minimum=Minimum(id);var maximum=Maximum(id);var step=Increment(id);
             if(minimum>maximum||!double.IsFinite(step)||step<=0)throw new InvalidDataException("Invalid Blob editor bounds: "+id);
             var raw=Required(_fields[id],"default");
@@ -67,7 +72,8 @@ public sealed class BlobParameterDefinition
             {throw new InvalidDataException("Invalid Blob default: "+id,e);}
         }
         if(root.Elements("Judgments").Count()!=1)throw new InvalidDataException("Exactly one Blob Judgments element is required.");
-        Shape(root.Element("Judgments")!,[],["Judgment"]);
+        Shape(root.Element("Judgments")!,["page","section"],["Judgment"]);
+        _judgmentPage=Required(root.Element("Judgments")!,"page");_judgmentSection=Required(root.Element("Judgments")!,"section");
         _judgments=root.Element("Judgments")?.Elements("Judgment").ToArray()
             ??throw new InvalidDataException("Blob judgment definitions are missing.");
         if(_judgments.Select(x=>Required(x,"key")).Distinct(StringComparer.Ordinal).Count()!=_judgments.Length)
@@ -75,7 +81,7 @@ public sealed class BlobParameterDefinition
         var orders=new HashSet<int>();
         foreach(var item in _judgments)
         {
-            Shape(item,["key","name","kind","perItem","enabled","minimum","maximum","allowedMinimum","allowedMaximum","unit","decimals","order"],[]);
+            Shape(item,["key","name","kind","perItem","enabled","minimum","maximum","allowedMinimum","allowedMaximum","unit","decimals","order","enabledFieldId","minimumFieldId","maximumFieldId"],[]);
             var key=Required(item,"key");Required(item,"name");
             var perItem=Boolean(item,"perItem");Boolean(item,"enabled");
             if(!Enum.TryParse<BlobJudgmentKind>(Required(item,"kind"),false,out var kind)||!Enum.IsDefined(kind))
@@ -93,6 +99,9 @@ public sealed class BlobParameterDefinition
             if(item.Attribute("unit") is null)throw new InvalidDataException("Missing Blob judgment unit: "+key);
         }
         if(_judgments.Length!=12)throw new InvalidDataException("Missing Blob judgment definitions.");
+        _bindings=BuildSettingsBindings();
+        SettingsSchema=new(_bindings.Select(x=>x.Port),Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),
+            new SunEyeVision.Plugin.Contracts.ToolPresentation(_bindings.Select(x=>x.Presentation)));
     }
     private static BlobParameterDefinition Load()
     {

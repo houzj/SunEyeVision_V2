@@ -1,0 +1,5 @@
+<UserControl x:Class="SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ContentControl x:Name="EditorHost"/>
+</UserControl>

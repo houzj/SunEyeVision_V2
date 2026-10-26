@@ -6,6 +6,28 @@
     "D:\\MyWork\\REA逆向测试\\analysis\\decompiled",
     "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui"
   ],
+  "dependency_manifests": [
+    {
+      "group": "Display",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\display\\src\\Plugin.Wpf\\Controls\\Native\\Display\\display-migration-manifest.json",
+      "sha256": "71E5132029A5B145D065C2521E3FA2804CE82674B25F3773C50B5A8FE2CF698B"
+    },
+    {
+      "group": "Input",
+      "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\input\\src\\Plugin.Wpf\\Controls\\Native\\Input\\migration-manifest.json",
+      "sha256": "F50632E5F51667990F0CCB7A4547FF5F2B3A491E64C9D6F49FDA36085BB76178"
+    }
+  ],
+  "resolved_cross_group_types": {
+    "VM.Controls.PropertyGrid.PropertyItem": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.PropertyItem",
+    "VM.Controls.PropertyGrid.PropertyGridUtilities": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.PropertyGridUtilities",
+    "VM.Controls.PropertyGrid.Editors.TypeEditor": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors.TypeEditor",
+    "VM.Controls.Primitives.InputBase": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives.InputBase",
+    "VM.Controls.Primitives.UpDownBase": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Primitives.UpDownBase",
+    "VM.Controls.ButtonSpinner": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.ButtonSpinner",
+    "VM.Controls.WatermarkTextBox": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.WatermarkTextBox",
+    "VMControls.WPF.Release.Convert.BindingPropertyConvert": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Convert.BindingPropertyConvert"
+  },
   "ownership": {
     "worktree": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\numeric",
     "branch": "codex/vm-controls-numeric",
@@ -634,7 +656,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\ByteUpDownEditor.cs",
       "source_sha256": "1ED00BF4E048FFD5E52A2CAA6EFABFAA59E8B9138A28FEA6C879D5EDB56C1CD4",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ByteUpDownEditor.cs",
-      "target_sha256": "784DC54F7EE8387BCCF8D5AF7103E9C461D46A9CB5330CC3DEFF2F3337E743DB",
+      "target_sha256": "BEC3C662E840BAD99906CDF25F93BCCF8DA9C81DC58729FD6FF31B0554A43C5F",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -645,7 +667,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\DecimalUpDownEditor.cs",
       "source_sha256": "38EBE5C85E0D26330221311FDC257571E55356B2BAC610527453C35FAE5A8217",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\DecimalUpDownEditor.cs",
-      "target_sha256": "86437A15E9DC604564F89A6F6802EDB09002659F0F46B4193A1BE50DCDAC3C20",
+      "target_sha256": "694D51373D51B4D7864862FF09A61B990FCCEF533AC40F795B5883560F2D1F1A",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -656,7 +678,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\DoubleUpDownEditor.cs",
       "source_sha256": "28511E14C838CCB099D5A2AF6677D21A0CADB120AFF8545D22B3881926D3DC03",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\DoubleUpDownEditor.cs",
-      "target_sha256": "32C1394074DBAE361711B66BB0E0B6FCB2B451C5238753FA33F9A5DD4059B1E5",
+      "target_sha256": "7FF1F3D0D8270B552F8499165C6B559F149D1875CC1CBD24C733E87F6AC34053",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -667,7 +689,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\IntegerUpDownEditor.cs",
       "source_sha256": "F8F838D27DD8B80E7E2A0877439BC5C46E59547729C3BB546E47A06ED1BC873A",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\IntegerUpDownEditor.cs",
-      "target_sha256": "E3AD63BC5CE75FDAE3DB68B0431B455B3F4B6043490C2A26A763DF74566E07AC",
+      "target_sha256": "AA988582D89BB856573A27723B906C9852B257BA92C220511EA3EE79783D4B60",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -678,7 +700,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\LongUpDownEditor.cs",
       "source_sha256": "51D9C56808AD4448340660574FA8F0F61DF3998F58149D93A2CE018AB5624B70",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\LongUpDownEditor.cs",
-      "target_sha256": "7DB7786FBF038D23FD423CB3E3BD8E85D95B9CBDE315660FAA7D8B5F1295AF11",
+      "target_sha256": "0F5385B62A3B26E325B066E47F67D2560B7CA314535C7E1E9F40F5DAA5D25F39",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -689,7 +711,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorByteUpDown.cs",
       "source_sha256": "6D8EFE36626BC64ACE8E74BAD7661A459A261DF065BFB16B2647F7C8F0BB0831",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorByteUpDown.cs",
-      "target_sha256": "5D54EFAB6D6CEF7B53F35E0EA984A9D1FE58936655279A25800031C077FBCBA5",
+      "target_sha256": "5D0DB5E498045E248CE8BBC49DAB12061466ADC1FCFB2189791570F869FCCAA5",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -700,7 +722,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorDecimalUpDown.cs",
       "source_sha256": "592F40A9BA1810E49CE1F505EF9F19A48011467BBE754735F6BB1658E8253C00",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorDecimalUpDown.cs",
-      "target_sha256": "B185EF7D5ED5006A97FFB690724B0558D67A45BAFDA42E7C0ABBF5AF240AB9F7",
+      "target_sha256": "0CC6536793E7C4861ED1CC98F925FB3CC042D7DE2B9C66E97764FE51FDA446D2",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -711,7 +733,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorDoubleUpDown.cs",
       "source_sha256": "42EF8937751951829C18C7815F128276C3AAA02E93C9B733424D3D2B6CE01104",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorDoubleUpDown.cs",
-      "target_sha256": "F772CC7EA60E88E1E09E001E571C845C723C969F04CEE7BD78E9F58016C77172",
+      "target_sha256": "4F5EF2FF4B10E6FFB8100FD7110072B2FBD2912697052EBF2CDEE4AF7893161E",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -722,7 +744,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorIntegerUpDown.cs",
       "source_sha256": "EE8D94A3A9C647DE3B2C7D2C51651CC2AB3F20A1CAD1300F8F913E664FBEECED",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorIntegerUpDown.cs",
-      "target_sha256": "6470EAD933075B5B01FE65330DBC3D3A03DBA3917C867D1A6DC9F1F228D2B766",
+      "target_sha256": "27855CD366D09ABB20C6267D2C23582EECB4AF7C631159989B0FA670FE7AF4A3",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -733,7 +755,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorLongUpDown.cs",
       "source_sha256": "33D195D6E8C24DD84EA491FCFA99C5B20725531ED91DB8EA61643CA90E0F2B6D",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorLongUpDown.cs",
-      "target_sha256": "2DEA755607D1925BA671046E06B9B82FE406FAE97B3A214043B0FA1AD26C83F7",
+      "target_sha256": "653B4B104071EE4D3170C7430E030B0E1B19044F99AFA61B0A7359F63802B31C",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -744,7 +766,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorSByteUpDown.cs",
       "source_sha256": "E09A975E73AF520DA949ED14E88A823702467F2AC9E634744DB1627883A08D2B",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorSByteUpDown.cs",
-      "target_sha256": "360BA4674676C834B954CBDCC96B752C8E8DC9B248017B751D3BD31321EE3290",
+      "target_sha256": "BA5DD644CB51CC79ABF9B0320C6359F09CFE66E5836935F3BC300F5A0B6C406C",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -755,7 +777,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorShortUpDown.cs",
       "source_sha256": "BEBF4CEBF9BFF96660E3D4B3F79AF0D22FB91941949617B7EAB6C7A174A216E9",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorShortUpDown.cs",
-      "target_sha256": "09A43C93899431863ED212BEB7F8E3B55CCD204F145CA04FB6FBB75BF710EB97",
+      "target_sha256": "D7777260D0BC53C738BEE09CF7DC66433389D97D2F3C74687F7263F688DBBBC3",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -766,7 +788,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorSingleUpDown.cs",
       "source_sha256": "B823D9CA86A9FD777F09BE70F1E46F648737F7A9150884FC2C0A951E01E134E4",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorSingleUpDown.cs",
-      "target_sha256": "0E9F16A4477535CC91F87D12D74AF0C18D10AA03532CEA07885EF3D2BBAE1833",
+      "target_sha256": "F09A941C9FD26CDD27F69808E40242D7F96155108F411365B0D637AD9EC270BF",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -777,7 +799,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorUIntegerUpDown.cs",
       "source_sha256": "2C3C4651A73DAD2DA19B46384737894204B23651B5C7C86122FB8932A814CFD5",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorUIntegerUpDown.cs",
-      "target_sha256": "FEA96C5B4033A9254036F3668FC840BBB9FE7529387B0596F1AA0BCBF260FB7B",
+      "target_sha256": "6E8C7C9A87148E3A050E3960957F3386DF7FAE11D2BA1C2F68E714AAC4980C5F",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -788,7 +810,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorULongUpDown.cs",
       "source_sha256": "077D095F0FFA3AFC8FD37C374E7D345133E36C664D76CA77C02F9E2CEDF49136",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorULongUpDown.cs",
-      "target_sha256": "DA9CADA9EEB6613348CD90D97EC019FDB14207427FCB2C3F9F95484701249845",
+      "target_sha256": "3920DB7147D14819117D091D478ED4E619A0FCB9C5F59C561C7F7F04BDA9F3A8",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -799,7 +821,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\PropertyGridEditorUShortUpDown.cs",
       "source_sha256": "BFF52A3360320043E1B2D4AD61E1F09033078D49521DA227041C5ACCB87BDFD1",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\PropertyGridEditorUShortUpDown.cs",
-      "target_sha256": "EE5FF106D8D22607C1369FFE3D00E306FC5FD2176E6048BB2A690F71630522EC",
+      "target_sha256": "B25C2550FAFD5720ECAC585DA924B09A290A5261AB9D6ED0E287374DA50066D8",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -810,7 +832,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\SByteUpDownEditor.cs",
       "source_sha256": "9CCEAEC85CA1F112732D9D086D74013177FD16FC736D038F727898EB90259A72",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\SByteUpDownEditor.cs",
-      "target_sha256": "A1D70E2FF01CF1FF5A0A532BF31DF5F3CC110A986853FCD2B572F0F898FBE269",
+      "target_sha256": "B8EA87B4D066901713430298917EF661CD83E68C9A0DF9ECC3FE6ED9288D6003",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -821,7 +843,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\ShortUpDownEditor.cs",
       "source_sha256": "2AAB085C5765B6A2B69B95106A4E03A2CEE52CA183CEF5CF77C9D23AACAE6DD5",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ShortUpDownEditor.cs",
-      "target_sha256": "25B160AD3F9850FD6B45D39AE8DBFBEB3C68B90BF7CE4A21D02AB03F1ADD69AA",
+      "target_sha256": "E2D88B5062701FEDAB2DB1DE4D1E21513EE6E02772C6BD4A95A812F9ECA5B97D",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -832,7 +854,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\SingleUpDownEditor.cs",
       "source_sha256": "2AC54ECC32C9AA0DF184FC657988AAA4F779C91554D2403226AC8CCA18AD860E",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\SingleUpDownEditor.cs",
-      "target_sha256": "E8A538BDDBB31DB691CA7BC3492D213D68C8079FBC9B4B347B851F38C8B77FD9",
+      "target_sha256": "2003B5B5F73415719287047DEF456A4581A286E01C763CC50296424BA1750876",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -843,7 +865,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\UIntegerUpDownEditor.cs",
       "source_sha256": "28DA723C72E234FCB12071585EB5EC536CA4A0583489303A109F2AE6F654A1C7",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UIntegerUpDownEditor.cs",
-      "target_sha256": "7407F33FE1F0BFFCDEA4E7C8399EAC030833BA18595C45172C5FA2CB3991B1E9",
+      "target_sha256": "54DAFF78C6D665231EE489BA9E330B5D89F6651E385AE1597E97A1573B80BAF9",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -854,7 +876,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\ULongUpDownEditor.cs",
       "source_sha256": "389296AA21E30F7186334C5BA60FB4AF2DCB7D9DBA6B11FE4199256769455D0A",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\ULongUpDownEditor.cs",
-      "target_sha256": "BA8506A1D0B926B44949E872E616363EEAD5208A9165514CB95A5EE86B9E4F52",
+      "target_sha256": "1DE56CD73EB925B6B0F3E6332AAAA0E2B7C92029E70BD51D107D8A5B2D68DABF",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -865,7 +887,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\UpDownEditor.cs",
       "source_sha256": "9D030726F16DE19E5E72ABBD30859EEAE46B4A85289CF2C14A0E86F337A56277",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UpDownEditor.cs",
-      "target_sha256": "89618B5CBBD425D6EFA6C94CD4C5E83CA491A0C7CB0FEB31F061F96AD0A14D3B",
+      "target_sha256": "112928AF6DF00FD2E9835BEF6F12E6D2A4043E9A45368D37DF3E2051744C70ED",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -876,7 +898,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.PropertyGrid.Editors\\UShortUpDownEditor.cs",
       "source_sha256": "82242E6AF4F8606966F2213BE8756CFA6C3FAF4E8BEA26D32637F93CE364C61D",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\VMControls\\Editors\\UShortUpDownEditor.cs",
-      "target_sha256": "A0217D17DA1711EF5D2194C1CFC99B2089C41634C4CDDBBE34761104C3511C22",
+      "target_sha256": "0B2E8161E94BF7431834B7A1CB3F6B992E94EDF335656A4B385CCF401486B35B",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",

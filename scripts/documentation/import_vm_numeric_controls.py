@@ -24,6 +24,26 @@ numeric_editors = {name+'Editor' for name in numeric_names} | {'PropertyGridEdit
 entries = []
 types = []
 dependencies = set()
+dependency_manifests = []
+dependency_types = {}
+dependency_resources = {}
+for group, filename in [('Display','display-migration-manifest.json'),('Input','migration-manifest.json')]:
+    relative=Path('src/Plugin.Wpf/Controls/Native')/group/filename
+    candidates=[ROOT/relative,ROOT.parent/group.lower()/relative]
+    selected=next((candidate for candidate in candidates if candidate.is_file()),None)
+    if selected is None:
+        raise FileNotFoundError('The actual '+group+' migration manifest is required: '+str(relative))
+    data=json.loads(selected.read_text(encoding='utf-8-sig'))
+    dependency_manifests.append({'group':group,'path':str(selected),'sha256':hashlib.sha256(selected.read_bytes()).hexdigest().upper()})
+    mapping=data['type_map']
+    if isinstance(mapping,dict):dependency_types.update(mapping)
+    else:dependency_types.update({item['original_full_type']:item['target_full_type'] for item in mapping})
+    dependency_resources.update({key.lower():value for key,value in data.get('component_uri_map',{}).items()})
+    if group=='Input':
+        for item in data['files']:
+            if item.get('output') and item.get('original_relative'):
+                dependency_resources[('/'+item['library']+';component/'+item['original_relative']).lower()]=PACK+item['output'].replace('src/Plugin.Wpf/','')
+dependency_namespaces={original.rsplit('.',1)[0]:target.rsplit('.',1)[0] for original,target in dependency_types.items() if original.count('.')>0}
 old_manifest = CODE/'numeric-migration-manifest.json'
 previous_entries = json.loads(old_manifest.read_text(encoding='utf-8'))['entries'] if old_manifest.exists() else []
 
@@ -34,6 +54,7 @@ def record(source, target, kind, adaptations=()):
                     'target_sha256':digest(target),'kind':kind,'adaptations':list(adaptations)})
 
 def map_namespace(namespace):
+    if namespace in dependency_namespaces:return dependency_namespaces[namespace]
     if namespace.startswith('VM.Controls'):
         suffix = namespace[len('VM.Controls'):]
         return 'SunEyeVision.Plugin.Wpf.Native.Display.VMControls'+suffix
@@ -79,6 +100,9 @@ def transform(value, source, original_namespace, target_namespace):
                        PACK+'Themes/Native/Numeric/'+('AppsXmlUi' if original_namespace.startswith('Apps.') else 'PcUi')+'/SliderArrangeDictionary.xaml',value)
         value = value.replace('/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml',PACK+'Themes/VmFieldStyles.xaml')
         value = re.sub(r'(clr-namespace:SunEyeVision\.Plugin\.Wpf\.Native\.Numeric\.[^";]+);assembly=[\w.]+',r'\1',value)
+        value = re.sub(r'clr-namespace:([\w.]+)(?:;assembly=[\w.]+)?',
+                       lambda m:'clr-namespace:'+map_namespace(m.group(1)) if m.group(1) in dependency_namespaces and not m.group(1).startswith('SunEyeVision.') else m.group(0),value)
+    value=re.sub(r'/[\w.]+;component/[^"\s<>]+',lambda m:dependency_resources.get(m.group(0).lower(),m.group(0)),value)
     return value
 
 def import_source(source, family, original_namespace, target_namespace=None):
@@ -94,6 +118,11 @@ def import_source(source, family, original_namespace, target_namespace=None):
             value = ('using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;\n'
                      'using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;\n'
                      'using '+NS+'VM.Controls;\n'+value)
+            if 'PropertyGrid.Editors' in original_namespace:
+                # These names originally resolved through the enclosing VM.Controls.PropertyGrid
+                # namespace. Moving only editors loses that parent scope; use the actual owner map.
+                property_item_namespace=dependency_types['VM.Controls.PropertyGrid.PropertyItem'].rsplit('.',1)[0]
+                value='using '+property_item_namespace+';\n'+value
         nesting=[]
         for found in re.finditer(r'^(\s*)(?:(?:public|internal|private|protected|sealed|abstract|static|partial|readonly)\s+)+(?:class|enum|struct)\s+(\w+)(\s*<[^\n>{}]+>)?',text(source),re.M):
             indent=len(found.group(1).rsplit('\n',1)[-1].expandtabs(4))
@@ -161,10 +190,13 @@ for filename in ['NumbericParamControl.xaml','NumbericParamControl.xaml.cs']:
     source=EXPORT/'VMControls.WPF.Release/VMControls.WPF.Release.Front'/filename
     target=CODE/'WpfRelease'/(filename+'.pending');target.parent.mkdir(parents=True,exist_ok=True)
     value=text(source).replace('VMControls.WPF.Release.Front',NS+'VMControls.WPF.Release.Front')
-    value=value.replace('VMControls.WPF.Release.Convert','SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Convert')
+    binding_converter_namespace=dependency_types['VMControls.WPF.Release.Convert.BindingPropertyConvert'].rsplit('.',1)[0]
+    value=value.replace('VMControls.WPF.Release.Convert',binding_converter_namespace)
     target.write_text(value,encoding='utf-8');record(source,target,'pending_vendor_wrapper',['namespace only; original vendor dependency retained explicitly'])
     blocked[0].setdefault('pending_targets',[]).append(str(target.relative_to(ROOT)))
 manifest={'group':'numeric','base_commit':'b87fb685','phase':'source_migration_no_build_or_tests','source_roots':[str(EXPORT),str(CURRENT)],
+ 'dependency_manifests':dependency_manifests,
+ 'resolved_cross_group_types':{name:dependency_types[name] for name in ['VM.Controls.PropertyGrid.PropertyItem','VM.Controls.PropertyGrid.PropertyGridUtilities','VM.Controls.PropertyGrid.Editors.TypeEditor','VM.Controls.Primitives.InputBase','VM.Controls.Primitives.UpDownBase','VM.Controls.ButtonSpinner','VM.Controls.WatermarkTextBox','VMControls.WPF.Release.Convert.BindingPropertyConvert']},
  'ownership':{'worktree':str(ROOT),'branch':'codex/vm-controls-numeric','shared_project_files_modified':False,'formal_release_modified':False,'handoff':'root integrates these exact types/resources before unified build; central CURRENT_TASK remains owned by root'},
  'entries':entries,'type_map':types,'cross_group_dependencies':sorted(dependencies),'blocked':blocked,
  'not_claimed':['compilation','runtime usability','visual acceptance','full-library completion'],

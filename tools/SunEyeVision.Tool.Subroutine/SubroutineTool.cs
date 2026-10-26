@@ -849,8 +849,16 @@ namespace SunEyeVision.Tool.Subroutine
             // 真实类型分发：优先匹配解析出的运行时类型
             switch (value)
             {
+                case Arc2d arc:
+                    result.Display.AddArc(style, arc, isPass);
+                    break;
+
                 case Circle2d circle:
                     result.Display.AddCircle(style, circle, isPass);
+                    break;
+
+                case Arc2d[] arcs:
+                    foreach(var arc in arcs)result.Display.AddArc(style, arc, isPass);
                     break;
 
                 case Circle2d[] circles:
@@ -961,6 +969,10 @@ namespace SunEyeVision.Tool.Subroutine
             var style = displayItem.GraphicsStyle;
             switch (sp.Geometry)
             {
+                case Arc2d arc:
+                    result.Display.AddArc(style, arc, isPass);
+                    break;
+
                 case Circle2d circle:
                     result.Display.AddCircle(style, circle, isPass);
                     break;

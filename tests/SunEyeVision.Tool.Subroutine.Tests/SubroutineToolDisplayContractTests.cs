@@ -186,4 +186,35 @@ public class SubroutineToolDisplayContractTests
             .Where(i => i.Type == GraphicsType.Contour);
         Assert.Single(rrContours.SelectMany(i => i.Geometries).OfType<ContourGeometry>());
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Arc_output_preserves_true_geometry_and_major_arc_flag(bool array)
+    {
+        var arc=new Arc2d(new Point(13,17),9,0.2,1.1,true);
+        var source=new GenericToolResults();source.AddResultItem("Arcs",array?new[]{arc,arc}:(object)arc);
+        var parameters=MakeParams(p=>p.DisplayConfigs.Add(new(){DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc,BindingSource="internalNode.Arcs[]"}),source);
+        var result=Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess,result.ErrorMessage);
+            var item=Assert.IsType<GraphicsDisplayItem>(Assert.Single(result.Display.Items));
+            Assert.Equal(GraphicsType.Arc,item.Type);
+            Assert.Equal(array?2:1,item.Geometries.Length);
+            foreach(var geometry in item.Geometries)Assert.Equal(arc,Assert.IsType<Arc2d>(geometry));
+        }
+        finally{result.Resources?.Dispose();}
+    }
+
+    [Fact]
+    public void Arc_ROI_is_rendered_as_arc_without_polygon_approximation()
+    {
+        var arc=new Arc2d(new Point(13,17),9,0.2,1.1,true);
+        var source=new GenericToolResults();source.AddResultItem("Shapes",new[]{new RoiShape{Geometry=arc}});
+        var parameters=MakeParams(p=>p.DisplayConfigs.Add(new(){DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc,BindingSource="internalNode.Shapes[]"}),source);
+        var result=Run(parameters);
+        try{Assert.True(result.IsSuccess,result.ErrorMessage);var item=Assert.IsType<GraphicsDisplayItem>(Assert.Single(result.Display.Items));Assert.Equal(GraphicsType.Arc,item.Type);Assert.Equal(arc,Assert.IsType<Arc2d>(Assert.Single(item.Geometries)));}
+        finally{result.Resources?.Dispose();}
+    }
+
 }

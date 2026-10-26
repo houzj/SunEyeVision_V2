@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -70,12 +70,13 @@ namespace SunEyeVision.Plugin.SDK.Models
         /// <summary>
         /// 显示项可绑定的数据源类型。绑定控件 ParamBindingBase.FilterDataSourcesByType 依据此类型
         /// 过滤数据源列表（标量 T 与数组 T[] 经 SdkTypeVocabulary 归并到同一词汇）。
-        /// 圆弧/箭头/坐标系当前渲染不支持，不过滤（返回 null = 显示全部，保持遗留行为）。
+        /// 箭头/坐标系当前渲染不支持，不过滤（返回 null = 显示全部，保持遗留行为）。
         /// </summary>
         [JsonIgnore]
         public Type? ParamType => DisplayType switch
         {
             SubroutineDisplayType.Circle => typeof(Circle2d[]),
+            SubroutineDisplayType.Arc => typeof(Arc2d[]),
             SubroutineDisplayType.Point => typeof(Geometry.Point2d[]),
             SubroutineDisplayType.Cross => typeof(Geometry.Point2d[]),
             SubroutineDisplayType.Line => typeof(Line2d[]),

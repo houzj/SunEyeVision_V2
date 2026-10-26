@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -59,8 +59,8 @@ public class SubroutineDisplayItemTypeContractTests
     [Fact]
     public void ParamType_UnsupportedDisplayType_IsNull()
     {
-        // 圆弧/箭头/坐标系渲染不支持，不过滤（null = 显示全部，保持遗留行为）
-        Assert.Null(new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arc }.ParamType);
+        // 箭头/坐标系渲染不支持，不过滤（null = 显示全部，保持遗留行为）
+        Assert.Equal(typeof(Arc2d[]),new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arc }.ParamType);
         Assert.Null(new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arrow }.ParamType);
         Assert.Null(new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.CoordinateSystem }.ParamType);
     }
@@ -131,10 +131,19 @@ public class SubroutineDisplayItemTypeContractTests
     [Fact]
     public void UnsupportedDisplayType_Filter_ShowsAllSources()
     {
-        // 圆弧（ParamType=null）不过滤，列表包含全部数据源（遗留行为）
-        var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arc };
+        // 箭头尚无已声明源类型，暂不过滤；圆弧另验。
+        var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arrow };
         var filtered = ParamBindingBase.FilterDataSourcesByType(MakeAllSources(), item.ParamType!);
         Assert.Equal(MakeAllSources().Count, filtered.Count);
+    }
+
+    [Fact]
+    public void ArcDisplayItem_filters_out_unrelated_sources()
+    {
+        var sources=MakeAllSources();sources.Add(new AvailableDataSource{SourceNodeId="arc",PropertyName="Arc",PropertyType=typeof(Arc2d[]),VariableType="Arc"});
+        var item=new SubroutineDisplayItem{DisplayType=SubroutineDisplayType.Arc};
+        var filtered=ParamBindingBase.FilterDataSourcesByType(sources,item.ParamType!);
+        Assert.Equal("Arc",Assert.Single(filtered).PropertyName);
     }
 
     #endregion

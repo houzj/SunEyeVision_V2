@@ -47,6 +47,8 @@ public sealed class BlobOutput : IToolOutput, IDisposable
     public double AverageArea => Count == 0 ? 0 : TotalArea / Count;
     public double MinimumArea => Count == 0 ? 0 : Measurements.Min(x => x.Area);
     public double MaximumArea => Count == 0 ? 0 : Measurements.Max(x => x.Area);
+    public double AverageCircularity => Count == 0 ? 0 : Measurements.Average(x => x.Circularity);
+    public double AverageRectangularity => Count == 0 ? 0 : Measurements.Average(x => x.Rectangularity);
     public IReadOnlyDictionary<string, object?> ToValues()
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
@@ -58,8 +60,8 @@ public sealed class BlobOutput : IToolOutput, IDisposable
             [BlobSchema.Field(11)] = (long)Count, [BlobSchema.Field(12)] = TotalArea,
             [BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,
             [BlobSchema.Field(30)] = MinimumArea, [BlobSchema.Field(31)] = MaximumArea,
-            [BlobSchema.Field(14)] = Count==0?0:Measurements.Average(x=>x.Circularity),
-            [BlobSchema.Field(15)] = Count==0?0:Measurements.Average(x=>x.Rectangularity),
+            [BlobSchema.Field(14)] = AverageCircularity,
+            [BlobSchema.Field(15)] = AverageRectangularity,
             [BlobSchema.Field(17)] = Histogram.ToArray(), [BlobSchema.Field(18)] = ChannelMeans.ToArray(),
             [BlobSchema.Field(19)] = Measurements.Select(x=>x.Area).ToArray(), [BlobSchema.Field(20)] = Measurements.Select(x=>x.Perimeter).ToArray(),
             [BlobSchema.Field(21)] = Measurements.Select(x=>x.CentroidX).ToArray(), [BlobSchema.Field(22)] = Measurements.Select(x=>x.CentroidY).ToArray(),

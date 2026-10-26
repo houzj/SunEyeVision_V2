@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27已接通Runtime结果声明→宿主中立结果视图→可选Blob.Wpf/无Wpf通用表的真实生产链；Blob.Wpf已移除SDK引用，旧BlobDataAnalysisControl已删除。根SDK工具发现/参数持久化/执行入口和双模型仍在，G1/G2/M1未完成。",
-  "summaryStatus": "结果视图增量：UI/全量0错误；有/无Wpf整链各9、Runtime11、组件6/7、发布12通过；非最终VM视觉/人工验收。",
+  "current": "2026-10-27宿主中立Runtime入口与单次执行器已接正式注册/生产调用，冻结参数与异步清理边界已验；BlobResult和逐项结果复制已删，现行外壳直接转发Runtime数据。Runtime/Wpf工程文件名及引用已按目标修改。仍3工程，节点参数/持久化/SDK工具发现入口未替换，M1未完成。",
+  "summaryStatus": "中立运行入口增量：UI/全量0错误；Runtime13、组件7/8、有无Wpf整链各9、关联算法9、发布12通过。",
   "rows": [
+    [
+      "中立运行入口与重复结果退出",
+      "现有Contracts公开宿主IToolDefinition/Session调用，泛型实现保留真实参数/结果实例；Plugin.Runtime单次执行器负责冻结、准入、会话清理，不调度工作流或拥有输入资源。注册表直接创建Runtime并校验XML默认；旧逐Blob DTO及复制已删除。",
+      "宿主直接调用正式注册Runtime→真实HALCON通过；无UI回调的同步/异步会话与释放、双异常保留已验。当前工作流节点/方案参数仍依赖SDK外壳；不是G1/G2/M1整体完成。"
+    ],
     [
       "中立结果视图生产链",
       "Runtime提供ResultSchema/ResultProjection；公共Plugin.Wpf提供结果视图合同、字段Sources和通用表；BlobResultView/Factory不引用SDK。宿主只借用视图所需发布值，不在UI捕获图像或登记算法资源；关闭/切换退订并释放。",
@@ -161,6 +166,11 @@
   ],
   "checks": [
     {
+      "name": "2026-10-27 中立Runtime入口与重复结果删除",
+      "result": "模型身份和冻结、未知输入输出/错型/取消拒绝、同步/异步清理无UI等待、双异常保留通过；注册Runtime直接HALCON通过，逐Blob模型无副本。构建0错误，768文件和182加载记录核对。",
+      "path": "docs/collaboration/evidence/O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json"
+    },
+    {
       "name": "2026-10-27 中立结果视图与可选Wpf生产消费",
       "result": "Runtime结果声明实际驱动工厂；Blob.Wpf无SDK引用。正式有/无Wpf整链各9、组件6/7、Runtime11、发布12项通过；768发布项和147加载记录核对一致。",
       "path": "docs/collaboration/evidence/O06_NEUTRAL_RESULT_VIEW_20261027.json"
@@ -254,8 +264,8 @@
     }
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
-  "productIdentity": "正式Release Core及清单为dc5112e4加O06_NEUTRAL_RESULT_VIEW_20261027.json列明的源码增量；768项发布SHA和147条实际加载记录匹配。不同候选按各自身份保存，不将后续检查点号直接改入清单。",
-  "next": "继续替换公共Runtime直接发现、配置/方案持久化和执行入口，删除Blob根SDK工程及双模型/转换桥接；落实最终两工程命名、参数Views/Factory及全部所需VM原模板。",
+  "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
+  "next": "替换WorkflowNodeBase.Parameters的SDK约束、AlgorithmNode的SDK Tool/参数执行入口，以及SolutionSession/NodeConfigurationEditHost的SDK参数多态持久化；编辑器直接编辑Runtime设置，删除根SDK工程及剩余参数/资源桥接，不新增Blob转换模型。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -4614,7 +4624,7 @@
   "blobFileStructure": {
     "status": "已纳入正式执行目标G2：以本处文件树为唯一结构定义，按G2Acceptance硬性验收；实现尚未完成。",
     "decision": "Runtime必需、Wpf可选；XML为新工具默认值及编辑/显示元数据唯一来源，C#属性保存当前值，用户值随方案保存。新建读取XML，恢复方案不覆盖用户值；不保留旧项目兼容链。",
-    "currentFacts": "仍3个工程。Runtime有BlobTool/Input/Settings/Output及两份XML；Wpf已用BlobResultViewFactory和Views/BlobResultView.xaml替换旧SDK结果页，引用Runtime与公共Plugin.Wpf，不再引用Plugin.SDK。根SDK入口、双套参数/结果和转换桥接尚在，工程最终命名/参数Views仍未闭合。",
+    "currentFacts": "仍3工程。Runtime/Wpf工程文件现为SunEyeVision.BlobAnalysis.Runtime.csproj、SunEyeVision.BlobAnalysis.Wpf.csproj，解决方案/引用已同步，程序集身份尚未改。BlobResult.cs与逐Blob结果复制删除；BlobAnalysisResults外壳直接转发Runtime测量、统计、阈值及判定信息。BlobAnalysisParameters、根SDK入口、输入/资源边界及参数Views仍待替换。",
     "tree": "tools/SunEyeVision.BlobAnalysis/\n├─ Runtime/\n│  ├─ SunEyeVision.BlobAnalysis.Runtime.csproj\n│  ├─ BlobTool.cs                 # 本工具单次执行入口，不调度工作流\n│  ├─ Parameters/\n│  │  ├─ BlobSettings.cs          # 当前运行参数及判定配置\n│  │  └─ BlobInput.cs             # 冻结的图像/ROI/位置输入\n│  ├─ Results/\n│  │  └─ BlobOutput.cs            # 唯一结果及资源所有权\n│  ├─ Algorithms/                 # 分割/连通域/特征/筛选/判定\n│  └─ Resources/\n│     ├─ BlobParameters.xml       # 默认值、参数分组、编辑元数据\n│     └─ BlobDisplay.xml          # 图形/文本/表格定义与结果字段映射\n└─ Wpf/\n   ├─ SunEyeVision.BlobAnalysis.Wpf.csproj\n   ├─ BlobEditorFactory.cs\n   ├─ BlobResultViewFactory.cs\n   └─ Views/\n      ├─ BlobParameterEditor.xaml\n      └─ BlobResultView.xaml",
     "fileRows": [
       [
@@ -4732,14 +4742,14 @@
       [
         "G1",
         "公共架构与宿主新合同",
-        "结果声明/视图合同及生产链已接；发现/配置/持久化/执行入口仍待替换",
+        "中立运行入口与结果视图已接；工作流配置/持久化及SDK工具发现仍待替换",
         "按Blob实际需求收敛工程职责，调整发现、工具箱、配置、方案、执行及结果消费者；取消旧项目兼容。",
         "生产链直接接新合同；受影响其他工具同步回归，不增加无实际边界中间工程。"
       ],
       [
         "G2",
         "Blob目标结构",
-        "Runtime目录/Input及Wpf结果工厂/Views已推进；最终两工程/旧入口删除未完成",
+        "工程文件名及Runtime目录/结果重复模型已清理；仍3工程，参数视图和根入口删除未完",
         "严格落实本页唯一Runtime/Wpf目标树、唯一Settings/Input/Output、两份XML和G2Acceptance。",
         "两工程依赖、指定路径、旧入口/模型/桥接删除及真实加载运行全部成立，不以搬目录算完成。"
       ],
@@ -4753,7 +4763,7 @@
       [
         "G4",
         "Runtime与完整宿主链",
-        "已有算法，需接新合同重验",
+        "注册Runtime直调/现行工作流通过；节点参数与执行配置源仍需替换",
         "完成输入快照、HALCON、ROI/掩膜/位置、分割/特征/筛选/判定、输出及下游；取消/异常/重跑/资源释放。",
         "创建→编辑→执行→结果及下游→保存重开贯通；无UI消息泵也完成算法和收尾；Runtime必需、Wpf可选。"
       ],
@@ -4774,7 +4784,7 @@
       [
         "G7",
         "正式Release构建与回归",
-        "本轮UI/全量、有无Wpf整链和发布回归通过；最终完整架构待复验",
+        "本轮构建/13组Runtime/有无Wpf整链/关联算法/发布通过；最终新架构仍待复验",
         "串行UI与全量Release构建；正式目录运行真实Blob整链、组件/发布、有无Wpf、缺Runtime拒绝及受影响工具回归；记录VS设计时和运行时。",
         "两项构建0错误；源码/程序集/发布清单同源；创建/编辑/ROI/订阅/执行/保存/取消/资源与关联回归通过。"
       ],
@@ -5034,5 +5044,15 @@
     "host": "ToolRegistry选择实际工厂/通用视图；MainWindow消费相同中立接口，借用已发布值并按Sources限制读取；UI不发明图像帧或新资源。",
     "verified": "UI005：0错误/6612警告84.28秒，全量003：0错误/6525警告53.71秒；FullChain042/044各9、Components093/091为6/7、RuntimeKernel019为11、ComponentDeployment030为12通过。",
     "remaining": "根SDK入口及双模型、配置/持久化/执行消费者、最终两工程/参数Views、VM原结果模板及全部控件/交互、VS设计时和用户真实验收仍未完。"
+  },
+  "runtimeEntryCheckpoint": {
+    "date": "2026-10-27",
+    "status": "运行入口与结果单一来源增量通过，非M1",
+    "evidence": "docs/collaboration/evidence/O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json",
+    "contracts": "Contracts的宿主入口与泛型入口为同一实现、同一模型；Runtime执行器冻结/校验调用并负责会话异步清理，执行与清理异常均保留。",
+    "production": "现行真实执行已走公共入口；注册表可直接创建实际Runtime及XML默认设置，测试直调HALCON不创建SDK参数/结果。",
+    "removed": "BlobResult.cs与逐Blob复制、SDK统计/阈值/直方图/判定数据副本已删，输出以Runtime为权威。",
+    "verified": "UI002为0错误/6612警告107.86秒，全量001为0错误/6589警告99.08秒；RuntimeKernel020十三、Components098/096七/八、FullChain045/046各九、Algorithm010九、ComponentDeployment031十二均通过。",
+    "remaining": "不能据此称工具箱/节点配置/持久化已直接使用Runtime；旧根SDK工程、参数模型、输入/资源边界、参数Views、VM原件/完整交互和真实验收仍未完成。"
   }
 }

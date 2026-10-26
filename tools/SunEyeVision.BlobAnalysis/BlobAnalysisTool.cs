@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -58,7 +58,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 var mask = BlobInputAdapter.ResolveRegion(parameters,true,input,resources,correction);
                 var settings = BlobSdkAdapter.Settings(parameters);
                 result.RuntimeOutput = BlobSdkAdapter.Execute(parameters, settings, input, resources, inspection, mask);
-                BlobSdkAdapter.CopyResult(result.RuntimeOutput, result, settings, input.Width, input.Height);
+                BlobSdkAdapter.PopulateHostResources(result.RuntimeOutput, result, input.Width, input.Height);
                 BuildDisplay(parameters, result);
                 if(parameters.InspectionMode!=RegionFieldMode.InheritedRegion)
                     ToolRegionHelper.ExtractInspectionGeometries(result, parameters.GetActiveRois(), parameters.NodeResults, correction);
@@ -88,7 +88,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             // 轮廓：仅对有轮廓数据的 blob（通过 Tab4 判断的 blob 有轮廓）
             var displayBlobs = result.FilteredBlobs;
             var contourBlobs = displayBlobs
-                .Where(b => b.HasContour)
+                .Where(b => b.Boundary.Any(path=>path.Role=="outer"&&path.ParentId is null))
                 .ToList();
             var contourStyle = parameters.ResultPresentation.GetGraphicsStyle("contours");
             // 可见性由渲染层按样式控制，执行期不过滤 —— 否则"隐藏后执行、再显示"时几何根本不存在
@@ -100,22 +100,22 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 var ngContours = contourBlobs
                     .Where(b => !b.JudgmentPassed)
                     .ToList();
-                display.AddContourBatch(contourStyle, okContours.Select(b => b.Contour!).ToList(), true,
+                display.AddContourBatch(contourStyle, okContours.Select(b => b.Boundary.First(path=>path.Role=="outer"&&path.ParentId is null).Points.Select(point=>new WpfPoint(point.X,point.Y)).ToArray()).ToList(), true,
                     sourceElements: okContours.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "contour" })).ToList());
-                display.AddContourBatch(contourStyle, ngContours.Select(b => b.Contour!).ToList(), false,
+                display.AddContourBatch(contourStyle, ngContours.Select(b => b.Boundary.First(path=>path.Role=="outer"&&path.ParentId is null).Points.Select(point=>new WpfPoint(point.X,point.Y)).ToArray()).ToList(), false,
                     sourceElements: ngContours.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "contour" })).ToList());
             }
 
             // 外接矩形（根据 JudgmentPassed 显示 OK/NG 颜色）
             // 可见性由渲染层按样式控制，执行期不过滤 —— 否则"隐藏后执行、再显示"时几何根本不存在
             var blobStyle = parameters.ResultPresentation.GetGraphicsStyle("blobs");
-            var okBoxes = displayBlobs.Where(b => b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
+            var okBoxes = displayBlobs.Where(b => b.JudgmentPassed && b.RotatedBounds.Count >= 4)
                 .ToList();
-            var ngBoxes = displayBlobs.Where(b => !b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
+            var ngBoxes = displayBlobs.Where(b => !b.JudgmentPassed && b.RotatedBounds.Count >= 4)
                 .ToList();
-            display.AddContourBatch(blobStyle, okBoxes.Select(b => b.RotatedBoundingBox!).ToList(), true,
+            display.AddContourBatch(blobStyle, okBoxes.Select(b => b.RotatedBounds.Select(point=>new WpfPoint(point.X,point.Y)).ToArray()).ToList(), true,
                 sourceElements: okBoxes.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "rotated-bounds" })).ToList());
-            display.AddContourBatch(blobStyle, ngBoxes.Select(b => b.RotatedBoundingBox!).ToList(), false,
+            display.AddContourBatch(blobStyle, ngBoxes.Select(b => b.RotatedBounds.Select(point=>new WpfPoint(point.X,point.Y)).ToArray()).ToList(), false,
                 sourceElements: ngBoxes.Select(b => new DeclaredElementAddress(BlobOutputContract.BlobsPortId, b.ElementId, new[] { "rotated-bounds" })).ToList());
 
             // 质心十字（根据 JudgmentPassed 显示 OK/NG 颜色）

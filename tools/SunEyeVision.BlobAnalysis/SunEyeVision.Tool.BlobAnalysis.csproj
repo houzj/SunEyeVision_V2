@@ -15,7 +15,7 @@
     <Compile Remove="Runtime\**\*.cs" />
     <Compile Remove="Wpf\**\*.cs" />
     <Page Remove="Wpf\**\*.xaml" />
-    <ProjectReference Include="Runtime\SunEyeVision.Tool.BlobAnalysis.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="Runtime\SunEyeVision.BlobAnalysis.Runtime.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
       <Private>false</Private>
     </ProjectReference>

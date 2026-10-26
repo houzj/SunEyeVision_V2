@@ -137,12 +137,33 @@ internal static class S2DocumentEditingCases
                 Console.WriteLine("通过：缺专用编辑器时，真实节点打开基础配置窗口并按声明编辑参数");
             }
             using var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)200,64).ToArray(),8,8,1);
+            {
+                var runtime=ToolRegistry.CreateRuntime("BlobAnalysis");var state=runtime.CreateSettings();var schema=runtime.Describe(state);
+                Require(state.GetType()==runtime.SettingsType,"注册入口未创建真实运行参数类型");
+                var imagePort=schema.Inputs.Single(port=>port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image);
+                using var frozen=image.CaptureSnapshot(new(Guid.NewGuid(),"registered-runtime-input"));
+                using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+                var inputs=new InputValues(schema.Inputs,new Dictionary<string,object?>{{imagePort.Id,frozen}});
+                var task=SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(runtime,state,inputs,new DirectRuntimeContext(resources)).AsTask();
+                Require(task.Wait(TimeSpan.FromSeconds(30)),"注册Runtime直接执行等待UI消息");
+                var outcome=task.GetAwaiter().GetResult();using var owned=outcome.Output as IDisposable;
+                Require(outcome.Success&&outcome.Output?.GetType()==runtime.OutputType,"注册入口没有返回真实运行结果类型");
+                var values=new InputValues(schema.Outputs,outcome.Output!.ToValues());
+                var projection=((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)runtime).ResultProjection;
+                var rows=values.Get<SequenceValue>(projection.Rows!.PortId);
+                Require(rows.Count==1&&((RecordValue)rows[0]!).Get<double>("area")==64,"非泛型宿主入口未运行真实HALCON或复制了不同结果");
+                Console.WriteLine("通过：宿主从正式注册表直接取得Runtime/强类型参数，经公共入口执行真实HALCON，未创建SDK参数或结果模型");
+            }
             var engine=new WorkflowEngine(new CheckLogger());var flow=engine.CreateWorkflow("S3-component-flow","组件验证");flow.Nodes.Add(node);
             var executor=new WorkflowExecutionEngine(engine,manager,new CheckLogger());
             System.Threading.SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher));
             using var execution=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image)));
             Require(execution.Success&&execution.NodeResults.TryGetValue("blob",out var nodeResult),"正式工作流失败："+string.Join(";",execution.Errors??new()));
             var result=execution.NodeResults["blob"].Result??throw new Exception("工作流没有Blob结果");
+            var runtimeOutput=result.GetType().GetProperty("RuntimeOutput",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.GetValue(result)!;
+            Require(ReferenceEquals(runtimeOutput.GetType().GetProperty("Measurements")!.GetValue(runtimeOutput),result.GetType().GetProperty("FilteredBlobs")!.GetValue(result))
+                &&result.GetType().Assembly.GetType("SunEyeVision.Tool.BlobAnalysis.BlobResult") is null,
+                "现行外壳仍复制逐Blob结果，或旧BlobResult模型未删除");
             Require(result.IsSuccess&&Convert.ToInt32(result.GetType().GetProperty("FilteredBlobCount")!.GetValue(result))==1&&Convert.ToDouble(result.GetType().GetProperty("FilteredTotalArea")!.GetValue(result))==64,"真实节点结果不符");
             Require(execution.DeclaredOutputs.Count==1,"正式执行未发布声明结果");
             Console.WriteLine("通过：正式节点与WorkflowExecutionEngine真实HALCON执行、声明结果发布，Blob面积64");
@@ -186,7 +207,7 @@ internal static class S2DocumentEditingCases
             using(var recovered=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image))))
                 Require(recovered.Success,"取消清理后无法开始下一次运行");
             Console.WriteLine("通过：已取消请求在无UI消息泵时返回Cancelled并清理，下一次真实运行成功");
-            Console.WriteLine($"S3组件消费：{(expectEditor?6:7)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
+            Console.WriteLine($"S3组件消费：{(expectEditor?7:8)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
     }
@@ -216,6 +237,11 @@ internal static class S2DocumentEditingCases
                 foreach(var found in Find<T>(dependency))yield return found;
     }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
+    private sealed class DirectRuntimeContext(IOutputResources resources):IToolExecutionContext
+    {
+        public RunIdentity Identity{get;}=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"direct-runtime",Guid.NewGuid());
+        public CancellationToken Cancellation=>default;public IOutputResources Resources=>resources;public void Log(string message){}
+    }
     private sealed class CheckLogger:ILogger
     {
         public ILogger ForSource(string source)=>this;

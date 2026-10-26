@@ -113,3 +113,18 @@
 - 证据docs/collaboration/evidence/O06_NEUTRAL_RESULT_VIEW_20261027.json，含源码/锁文件、构建/测试源码、147实际加载记录和768发布项SHA。有/无Wpf最终产物同源。Core/清单仍为dc5112e4加记录增量，不可只改清单冒充后续提交构建。
 - 已查看FullChain042真实截图：数据、摘要和高亮可见；表头紧凑，未按VM原模板核收，不计VM视觉通过。VS设计时未验证；用户此前未通过反馈保留，新候选无人工验收。
 - 下一步直接替换公共Runtime发现、配置编辑/持久化和执行消费，删除Blob根SDK工程/双模型/转换桥接；之后完成最终两工程命名、参数Views/Factory和全部所需VM原件及交互。G1/G2/M1及整体目标均保持未完成/active。
+
+## 2026-10-27 宿主Runtime入口与重复结果删除（最新）
+
+- Codex/main，基线df06496cbd8efc11e525441ae4eba1f26b001f7e，单产品写者。上轮为真实进展；本轮已继续改实际注册/执行和删除重复模型，不重置目标。
+- 缺口已核：IToolDefinition原来只有泛型入口，宿主用反射核ToolId且无法直接创建/调用设置；WorkflowNodeBase.Parameters仍为SDK ToolParameters，AlgorithmNode.Tool为IToolPlugin，方案/编辑事务也绑定SDK多态参数。后几项尚未替换。
+- 现有Contracts新增非泛型宿主入口与调用信封，泛型接口默认实现仅保留/转接真实强类型实例，不做新旧模型转换；Plugin.Runtime的ToolRuntimeExecutor负责一次调用冻结/输入及请求校验/取消准入/session清理，不做调度、不拥有借入输入资源。执行与异步清理均ConfigureAwait(false)，双异常保留。
+- ToolRegistry直接创建已注册Runtime，准入通过接口核类型/ToolId/XML默认值/Schema，不再反射读取Runtime ToolId。当前Blob生产调用已经走公共执行器；但外层仍SDK输入/参数/资源边界，未称工作流节点或持久化直连完成。
+- 删除BlobResult.cs、逐Blob DTO复制、SDK另算统计及阈值/直方图/判定信息副本。BlobAnalysisResults的FilteredBlobs与Runtime.Measurements为同一引用，现行外壳只转发数据及准备宿主资源；渲染时才把中立点投影成WPF点。BlobAnalysisResults/Parameters和根SDK工程仍需最终删除。
+- Runtime/Wpf工程文件改为批准名称SunEyeVision.BlobAnalysis.Runtime.csproj、SunEyeVision.BlobAnalysis.Wpf.csproj；Slnx、UI及工具引用已同步并用原包缓存还原。程序集身份未重命名，当前仍3工程，不把文件改名算G2完成。
+- 最终UI002构建0错误/6612警告107.86秒，全量001为0错误/6589警告99.08秒（日志blob-runtime-entry前缀）。RuntimeKernel020十三组通过含假同步上下文无消息泵、同步/异步会话/异步Dispose、参数冻结/同一结果、错误准入/取消/双异常；真实进程无SDK/WPF。
+- Components098七组、无Wpf096八组通过：注册表直接创建Runtime默认强类型参数并真实HALCON执行（该调用不创建SDK参数/结果），且旧BlobResult类型不存在、测量集合为同一引用。现行工作流三个入口无UI消息泵、取消后恢复、资源释放后视图选择仍通过。
+- FullChain045/046有无Wpf各九组、Algorithm010九组通过（包含滤波/形态学→Blob真实链）；ComponentDeployment031十二项通过，正式EXE22工具准入、缺Runtime及坏元数据拒绝，3文件及清单原SHA恢复。768发布项与182加载记录匹配，证据docs/collaboration/evidence/O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json。
+- Core/清单编译身份df06496c加证据记录的源码增量，不可把后续提交号只改进清单；旧成绩按旧身份保留。测试已直接改用Runtime测量，不为旧BlobResult保留兼容类型或旧接口。
+- 下一步优先替换WorkflowNodeBase.Parameters/AlgorithmNode.Tool和执行参数来源、SolutionSession/NodeConfigurationEditHost的SDK多态持久化、DeclaredToolConfigurationControl的SDK ToolDebugControlBase边界。直接使用Runtime设置与现有中立绑定/编辑合同，不再新增Blob旧/新转换桥；随后删根SDK工程/参数及资源边界，并完成参数Views/工厂、全部所需VM原控件/模板/交互。
+- 仍未验证VS设计时，新候选无真实用户验收；原视觉未通过反馈保留。M1/M2/M3、G1/G2及整体目标均未完成，继续active。

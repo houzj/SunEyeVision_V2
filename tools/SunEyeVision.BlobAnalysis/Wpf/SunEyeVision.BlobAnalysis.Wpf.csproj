@@ -14,7 +14,7 @@
     <ToolComponentCompanionToolId>BlobAnalysis</ToolComponentCompanionToolId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Runtime/SunEyeVision.Tool.BlobAnalysis.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
   </ItemGroup>
 </Project>

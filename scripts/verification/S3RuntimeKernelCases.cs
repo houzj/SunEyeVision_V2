@@ -15,6 +15,45 @@ internal static class S2DocumentEditingCases
     {
         try
         {
+            Case("宿主中立入口保留模型身份、冻结参数并在无UI回调时清理",()=>{
+                using var resources=new FrozenOutputResources();
+                foreach(var asynchronous in new[]{false,true})
+                {
+                    var implementation=new RunnerDefinition(asynchronous);IToolDefinition definition=implementation;
+                    Require(definition.SettingsType==typeof(RunnerSettings)&&definition.OutputType==typeof(RunnerOutput)
+                        &&definition.CreateSettings() is RunnerSettings,"宿主入口未公开实际强类型身份");
+                    var settings=new RunnerSettings{Values=new[]{7}};var inputs=new InputValues(Array.Empty<Port>(),new Dictionary<string,object?>());
+                    var previous=SynchronizationContext.Current;var blocked=new NoPostContext();SynchronizationContext.SetSynchronizationContext(blocked);
+                    ToolOutcome outcome;
+                    try
+                    {
+                        var task=ToolRuntimeExecutor.ExecuteAsync(definition,settings,inputs,new RunnerContext(resources)).AsTask();
+                        settings.Values[0]=99;
+                        Require(task.Wait(TimeSpan.FromSeconds(3)),"宿主入口或异步session释放等待UI回调");
+                        outcome=task.GetAwaiter().GetResult();
+                    }
+                    finally{SynchronizationContext.SetSynchronizationContext(previous);}
+                    Require(blocked.Posts==0&&outcome.Success&&outcome.Output is RunnerOutput {Value:7}
+                        &&ReferenceEquals(outcome.Output,implementation.Session!.Output)&&implementation.Session.Disposed,
+                        "入口转换了结果模型、未冻结参数或未清理会话");
+                }
+            });
+            Case("宿主入口拒绝错型/非法参数/未知输入输出与取消，执行和清理异常均保留",()=>{
+                using var resources=new FrozenOutputResources();var definition=new RunnerDefinition(false);
+                var inputs=new InputValues(Array.Empty<Port>(),new Dictionary<string,object?>());var context=new RunnerContext(resources);
+                Throws<ArgumentException>(()=>ToolRuntimeExecutor.ExecuteAsync(definition,new object(),inputs,context).GetAwaiter().GetResult());
+                var invalid=ToolRuntimeExecutor.ExecuteAsync(definition,new RunnerSettings{Values=Array.Empty<int>()},inputs,context).GetAwaiter().GetResult();
+                Require(!invalid.Success&&definition.Session is null,"非法参数仍创建算法会话");
+                Throws<ArgumentException>(()=>ToolRuntimeExecutor.ExecuteAsync(definition,new RunnerSettings(),inputs,context,new[]{new OutputValueRequest("unknown")}).GetAwaiter().GetResult());
+                var extra=new InputValues(new[]{new Port("unknown",DataType.Integer)},new Dictionary<string,object?>{{"unknown",1L}});
+                Throws<ArgumentException>(()=>ToolRuntimeExecutor.ExecuteAsync(definition,new RunnerSettings(),extra,context).GetAwaiter().GetResult());
+                using var cancelled=new CancellationTokenSource();cancelled.Cancel();
+                var stopped=ToolRuntimeExecutor.ExecuteAsync(definition,new RunnerSettings(),inputs,new RunnerContext(resources,cancelled.Token)).GetAwaiter().GetResult();
+                Require(!stopped.Success&&definition.Session is null,"已取消调用仍创建会话");
+                var broken=new RunnerDefinition(false,true);
+                try{ToolRuntimeExecutor.ExecuteAsync(broken,new RunnerSettings(),inputs,context).GetAwaiter().GetResult();throw new Exception("异常未传播");}
+                catch(AggregateException errors){Require(errors.InnerExceptions.Count==2&&broken.Session!.Disposed,"执行/清理异常丢失或会话未释放");}
+            });
             Case("XML唯一默认、用户设置重开及强类型读取",()=>{
                 var settings=new BlobSettings();
                 Require(settings.Threshold==128&&settings.UpperThreshold==255&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999
@@ -206,6 +245,40 @@ internal static class S2DocumentEditingCases
         public IOutputResources Resources=>resources;
         public void Log(string message) { }
     }
+    private sealed record RunnerSettings:IToolSettings<RunnerSettings>
+    {
+        public RunnerSettings(){}public int[] Values{get;init;}=new[]{7};
+        public RunnerSettings Freeze()=>this with{Values=Values.ToArray()};
+    }
+    private sealed record RunnerOutput(int Value):IToolOutput
+    {public IReadOnlyDictionary<string,object?> ToValues()=>new Dictionary<string,object?>{{"value",(long)Value}};}
+    private sealed class RunnerDefinition(bool asynchronous,bool fail=false):IToolDefinition<RunnerSettings,RunnerOutput>
+    {
+        public RunnerSession? Session;public string ToolId=>"runner";
+        public ToolSchema Describe(RunnerSettings settings)=>new(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
+        public IReadOnlyList<Diagnostic> Validate(RunnerSettings settings)=>settings.Values.Length==1?Array.Empty<Diagnostic>():new[]{new Diagnostic("invalid","one value required")};
+        public ToolCapabilities Capabilities(RunnerSettings settings)=>ToolCapabilities.None;
+        public IToolSession<RunnerSettings,RunnerOutput> CreateSession()=>Session=new(asynchronous,fail);
+    }
+    private sealed class RunnerSession(bool asynchronous,bool fail):IToolSession<RunnerSettings,RunnerOutput>
+    {
+        public bool Disposed;public RunnerOutput? Output;
+        public ValueTask<ToolOutcome<RunnerOutput>> ExecuteAsync(ToolInvocation<RunnerSettings> invocation)
+        {
+            if(fail)throw new InvalidOperationException("execute");
+            return asynchronous?CompleteAsync(invocation):ValueTask.FromResult(ToolOutcome<RunnerOutput>.Completed(Output=new(invocation.Settings.Values[0])));
+        }
+        private async ValueTask<ToolOutcome<RunnerOutput>> CompleteAsync(ToolInvocation<RunnerSettings> invocation)
+        {await Task.Delay(15).ConfigureAwait(false);return ToolOutcome<RunnerOutput>.Completed(Output=new(invocation.Settings.Values[0]));}
+        public async ValueTask DisposeAsync(){await Task.Delay(15).ConfigureAwait(false);Disposed=true;if(fail)throw new InvalidOperationException("cleanup");}
+    }
+    private sealed class RunnerContext(IOutputResources resources,CancellationToken cancellation=default):IToolExecutionContext
+    {
+        public RunIdentity Identity{get;}=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"runner",Guid.NewGuid());
+        public CancellationToken Cancellation=>cancellation;public IOutputResources Resources=>resources;public void Log(string message){}
+    }
+    private sealed class NoPostContext:SynchronizationContext
+    {public int Posts;public override void Post(SendOrPostCallback callback,object? state)=>Interlocked.Increment(ref Posts);}
     private static bool Forbidden(string name)=>name is "SunEyeVision.Plugin.SDK" or "SunEyeVision.UI" or "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml";
     private static void Case(string name,Action run){run();_passed++;Console.WriteLine("通过："+name);}
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}

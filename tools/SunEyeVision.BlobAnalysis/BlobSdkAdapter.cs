@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Windows;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.Contracts;
@@ -16,23 +15,20 @@ internal static class BlobSdkAdapter
     internal static BlobRuntime.BlobOutput Execute(BlobAnalysisParameters parameters, BlobRuntime.BlobSettings settings,
         IReadOnlyImage image, IOutputResources resources, IReadOnlyRegion? inspection, IReadOnlyRegion? mask)
     {
-        var definition=new BlobRuntime.BlobTool();
+        IToolDefinition definition=new BlobRuntime.BlobTool();
         var values=new Dictionary<string,object?> { [BlobRuntime.BlobTool.ImageInput]=image };
         if(inspection is not null)values[BlobRuntime.BlobTool.InspectionInput]=inspection;
         if(mask is not null)values[BlobRuntime.BlobTool.MaskInput]=mask;
         var context=new SdkContext(parameters,resources);
-        var invocation=new ToolInvocation<BlobRuntime.BlobSettings>(settings,new InputValues(definition.Describe(settings).Inputs,values),context,
-            BlobOutputContract.ToRuntimeRequests(parameters.Context?.OutputRequests??Array.Empty<OutputValueRequest>()));
-        var session=definition.CreateSession();
-        try
-        {
-            // Runtime is synchronous so thread-local HALCON settings cannot move across an await.
-            var outcome=session.ExecuteAsync(invocation).GetAwaiter().GetResult();
-            if(!outcome.Success||outcome.Output is null)throw new InvalidOperationException(string.Join("; ",outcome.Diagnostics.Select(d=>d.Message)));
-            foreach(var diagnostic in outcome.Diagnostics)parameters.LogWarning(diagnostic.Code+": "+diagnostic.Message);
-            return outcome.Output;
-        }
-        finally { session.DisposeAsync().GetAwaiter().GetResult(); }
+        // The current caller still supplies SDK inputs/settings; actual invocation
+        // and session ownership now use the same neutral host entry as other consumers.
+        var outcome=SunEyeVision.Plugin.Runtime.ToolRuntimeExecutor.ExecuteAsync(definition,settings,
+            new InputValues(definition.Describe(settings).Inputs,values),context,
+            BlobOutputContract.ToRuntimeRequests(parameters.Context?.OutputRequests??Array.Empty<OutputValueRequest>())).GetAwaiter().GetResult();
+        if(!outcome.Success||outcome.Output is not BlobRuntime.BlobOutput output)
+            throw new InvalidOperationException(string.Join("; ",outcome.Diagnostics.Select(d=>d.Message)));
+        foreach(var diagnostic in outcome.Diagnostics)parameters.LogWarning(diagnostic.Code+": "+diagnostic.Message);
+        return output;
     }
 
     private sealed class SdkContext : IToolExecutionContext
@@ -63,7 +59,7 @@ internal static class BlobSdkAdapter
         Judgments=Array.AsReadOnly(p.ResultPresentation.Judgments.Select(j=>new BlobRuntime.BlobJudgment(j.Key,j.Scope==JudgmentScope.PerItem,j.Enabled,j.Min,j.Max,(BlobRuntime.BlobJudgmentKind)j.RuleKind)).ToArray())
     };
 
-    internal static void CopyResult(BlobRuntime.BlobOutput source, BlobAnalysisResults target, BlobRuntime.BlobSettings settings, int width, int height)
+    internal static void PopulateHostResources(BlobRuntime.BlobOutput source, BlobAnalysisResults target, int width, int height)
     {
         if(source.GrayImage is { } gray)target.GrayImage=new HalImage(HalconResourceBridge.CopyImage(gray));
         if(source.BinaryImage is { } binary)target.BinaryMask=new HalImage(HalconResourceBridge.CopyImage(binary));
@@ -71,16 +67,6 @@ internal static class BlobSdkAdapter
         target.BlobRegions=new HalRegion(HalconResourceBridge.CopyRegion(source.Region,reader.SourceFrame,width,height));
         target.OkBlobRegions=new HalRegion(HalconResourceBridge.CopyRegion(source.OkRegion,reader.SourceFrame,width,height));
         target.NgBlobRegions=new HalRegion(HalconResourceBridge.CopyRegion(source.NgRegion,reader.SourceFrame,width,height));
-        target.FilteredBlobs=source.Measurements.Select(b=>new BlobResult {
-            ElementId=b.ElementId,Label=b.Label,Area=b.Area,Perimeter=b.Perimeter,CentroidX=b.CentroidX,CentroidY=b.CentroidY,
-            Circularity=b.Circularity,Rectangularity=b.Rectangularity,JudgmentPassed=b.JudgmentPassed,
-            BoundingBox=new Rect(b.Bounds.X,b.Bounds.Y,b.Bounds.Width,b.Bounds.Height),
-            RotatedBoundingBox=b.RotatedBounds.Select(p=>new Point(p.X,p.Y)).ToArray(),
-            // Current single-contour display projection is explicitly lossy: one outer path, no smoothing. Full topology stays in RuntimeOutput.
-            Contour=b.Boundary.FirstOrDefault(p=>p.Role=="outer"&&p.ParentId is null)?.Points.Select(p=>new Point(p.X,p.Y)).ToArray()
-        }).ToList();
-        target.ThresholdMinUsed=source.ThresholdMinUsed;target.ThresholdMaxUsed=source.ThresholdMaxUsed;target.TypeUsed=source.TypeUsed;target.SegmentationModeUsed=source.SegmentationModeUsed;
-        target.HistogramData=source.Histogram.ToArray();target.ChannelMeans=source.ChannelMeans.ToArray();
-        target.WhitePixelRatio=source.WhitePixelRatio;target.IsPass=source.IsPass;target.JudgmentMessages=source.JudgmentMessages.ToList();target.ProcessedAt=DateTime.Now;
+        target.IsPass=source.IsPass;target.ProcessedAt=DateTime.Now;
     }
 }

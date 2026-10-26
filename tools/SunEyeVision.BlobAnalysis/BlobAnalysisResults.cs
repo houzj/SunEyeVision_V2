@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -77,28 +77,28 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 阈值分割实际使用的下限。
         /// </summary>
-        public int? ThresholdMinUsed { get; set; }
+        public int? ThresholdMinUsed => RuntimeOutput?.ThresholdMinUsed;
 
         /// <summary>
         /// 阈值分割实际使用的上限。
         /// </summary>
-        public int? ThresholdMaxUsed { get; set; }
+        public int? ThresholdMaxUsed => RuntimeOutput?.ThresholdMaxUsed;
 
         /// <summary>
         /// 实际阈值极性；不二值化时为NotApplied
         /// </summary>
-        public string TypeUsed { get; set; } = string.Empty;
-        public string SegmentationModeUsed { get; set; } = string.Empty;
+        public string TypeUsed => RuntimeOutput?.TypeUsed ?? string.Empty;
+        public string SegmentationModeUsed => RuntimeOutput?.SegmentationModeUsed ?? string.Empty;
 
         /// <summary>
         /// 灰度直方图数据（256个bin）
         /// </summary>
-        public double[] HistogramData { get; set; } = Array.Empty<double>();
+        public double[] HistogramData => RuntimeOutput?.Histogram.ToArray() ?? Array.Empty<double>();
 
         /// <summary>
         /// 通道均值
         /// </summary>
-        public double[] ChannelMeans { get; set; } = Array.Empty<double>();
+        public double[] ChannelMeans => RuntimeOutput?.ChannelMeans.ToArray() ?? Array.Empty<double>();
 
         /// <summary>
         /// 处理时间戳
@@ -108,46 +108,46 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 所有检测到的Blob（经过面积筛选和Per-Blob判断的最终集合）
         /// </summary>
-        public List<BlobResult> FilteredBlobs { get; set; } = new();
+        public IReadOnlyList<Runtime.BlobMeasurement> FilteredBlobs => RuntimeOutput?.Measurements ?? Array.Empty<Runtime.BlobMeasurement>();
 
         /// <summary>
         /// 筛选后Blob数量
         /// </summary>
-        public int FilteredBlobCount => FilteredBlobs?.Count ?? 0;
+        public int FilteredBlobCount => RuntimeOutput?.Count ?? 0;
 
         /// <summary>
         /// 筛选后Blob总面积
         /// </summary>
-        public double FilteredTotalArea => FilteredBlobs?.Sum(b => b.Area) ?? 0;
+        public double FilteredTotalArea => RuntimeOutput?.TotalArea ?? 0;
 
         /// <summary>
         /// 筛选后平均面积
         /// </summary>
-        public double AverageArea => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Area) : 0;
+        public double AverageArea => RuntimeOutput?.AverageArea ?? 0;
         public double MinimumArea => RuntimeOutput?.MinimumArea ?? 0;
         public double MaximumArea => RuntimeOutput?.MaximumArea ?? 0;
 
         /// <summary>
         /// 筛选后平均圆度
         /// </summary>
-        public double AverageCircularity => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Circularity) : 0;
+        public double AverageCircularity => RuntimeOutput?.AverageCircularity ?? 0;
 
         /// <summary>
         /// 筛选后平均矩形度
         /// </summary>
-        public double AverageRectangularity => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Rectangularity) : 0;
+        public double AverageRectangularity => RuntimeOutput?.AverageRectangularity ?? 0;
 
         /// <summary>
         /// 白色像素比例(%)
         /// </summary>
-        public double WhitePixelRatio { get; set; }
+        public double WhitePixelRatio => RuntimeOutput?.WhitePixelRatio ?? 0;
 
         #region 判断结果
 
         /// <summary>
         /// 判断消息列表（每条判断的结果描述）
         /// </summary>
-        public List<string> JudgmentMessages { get; set; } = new();
+        public IReadOnlyList<string> JudgmentMessages => RuntimeOutput?.JudgmentMessages ?? Array.Empty<string>();
 
         #endregion
 
@@ -185,17 +185,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         /// <summary>各Blob边框数组（宽×高格式）</summary>
         public string[] BlobBoundingRects => FilteredBlobs != null
-            ? FilteredBlobs.Select(b => b.BoundingRectText).ToArray()
+            ? FilteredBlobs.Select(b => $"{(int)b.Bounds.Width}×{(int)b.Bounds.Height}").ToArray()
             : Array.Empty<string>();
 
         /// <summary>各Blob边框宽度数组</summary>
         public double[] BlobBoundingWidths => FilteredBlobs != null
-            ? FilteredBlobs.Select(b => b.BoundingBox.Width).ToArray()
+            ? FilteredBlobs.Select(b => b.Bounds.Width).ToArray()
             : Array.Empty<double>();
 
         /// <summary>各Blob边框高度数组</summary>
         public double[] BlobBoundingHeights => FilteredBlobs != null
-            ? FilteredBlobs.Select(b => b.BoundingBox.Height).ToArray()
+            ? FilteredBlobs.Select(b => b.Bounds.Height).ToArray()
             : Array.Empty<double>();
 
         #endregion

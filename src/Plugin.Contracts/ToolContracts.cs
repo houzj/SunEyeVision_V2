@@ -32,19 +32,34 @@ public sealed record ToolCapabilities(IReadOnlyList<string> ResourceKeys)
 {
     public static ToolCapabilities None { get; } = new(Array.Empty<string>());
 }
-public interface IToolDefinition<TSettings,TOutput>
-    where TSettings : IToolSettings<TSettings> where TOutput : class, IToolOutput
+public interface IToolDefinition<TSettings,TOutput> : IToolDefinition
+    where TSettings : IToolSettings<TSettings>, new() where TOutput : class, IToolOutput
 {
-    string ToolId { get; }
     ToolSchema Describe(TSettings committedSettings);
     IReadOnlyList<Diagnostic> Validate(TSettings settings);
     ToolCapabilities Capabilities(TSettings settings);
-    IToolSession<TSettings,TOutput> CreateSession();
+    new IToolSession<TSettings,TOutput> CreateSession();
+    Type IToolDefinition.SettingsType=>typeof(TSettings);
+    Type IToolDefinition.OutputType=>typeof(TOutput);
+    object IToolDefinition.CreateSettings()=>new TSettings();
+    object IToolDefinition.FreezeSettings(object settings)=>RequireSettings(settings).Freeze()!;
+    ToolSchema IToolDefinition.Describe(object settings)=>Describe(RequireSettings(settings));
+    IReadOnlyList<Diagnostic> IToolDefinition.Validate(object settings)=>Validate(RequireSettings(settings));
+    ToolCapabilities IToolDefinition.Capabilities(object settings)=>Capabilities(RequireSettings(settings));
+    IToolSession IToolDefinition.CreateSession()=>CreateSession();
+    private static TSettings RequireSettings(object settings)=>settings is TSettings typed?typed:
+        throw new ArgumentException("Runtime settings must be "+typeof(TSettings).FullName,nameof(settings));
 }
-public interface IToolSession<TSettings,TOutput> : IAsyncDisposable
+public interface IToolSession<TSettings,TOutput> : IToolSession
     where TSettings : IToolSettings<TSettings> where TOutput : class, IToolOutput
 {
     ValueTask<ToolOutcome<TOutput>> ExecuteAsync(ToolInvocation<TSettings> invocation);
+    async ValueTask<ToolOutcome> IToolSession.ExecuteAsync(ToolInvocation invocation)
+    {
+        if(invocation.Settings is not TSettings settings)throw new ArgumentException("Runtime invocation settings type differs.",nameof(invocation));
+        var result=await ExecuteAsync(new ToolInvocation<TSettings>(settings,invocation.Inputs,invocation.Context,invocation.OutputRequests)).ConfigureAwait(false);
+        return new(result.Success,result.Output,result.Judgment,result.Diagnostics);
+    }
 }
 public sealed class ToolInvocation<TSettings> where TSettings : IToolSettings<TSettings>
 {

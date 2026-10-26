@@ -1,8 +1,8 @@
 <Solution>
   <Folder Name="/Src/" />
   <Folder Name="/Tools/BlobComponents/">
-    <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.Tool.BlobAnalysis.Wpf.csproj" />
-    <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.Tool.BlobAnalysis.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
+    <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
   </Folder>
   <Folder Name="/Src/CommonControl/">
     <Project Path="Src/CommonControl/CommonControl.csproj" />

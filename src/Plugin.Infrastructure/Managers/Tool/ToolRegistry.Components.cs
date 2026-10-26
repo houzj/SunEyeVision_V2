@@ -49,6 +49,14 @@ public static partial class ToolRegistry
         lock(_lock)return _runtimeComponents.Values.Concat(_editorComponents.Values).Select(x=>x.Metadata).ToArray();
     }
 
+    public static IToolDefinition CreateRuntime(string toolId)
+    {
+        ToolComponentRegistration component;
+        lock(_lock)component=_runtimeComponents.TryGetValue(toolId,out var found)?found:
+            throw new InvalidOperationException("Required runtime is not registered: "+toolId);
+        return (IToolDefinition)Activator.CreateInstance(component.EntryType)!;
+    }
+
     private static void ValidateComponentEntry(ToolComponentRegistration component)
     {
         var type=component.EntryType;
@@ -63,11 +71,16 @@ public static partial class ToolRegistry
         {
             if(type.Assembly.GetReferencedAssemblies().Any(a=>a.Name is "SunEyeVision.Plugin.SDK" or "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml"))
                 throw new InvalidOperationException("Neutral runtime component cannot depend on SDK/WPF.");
-            if(!type.GetInterfaces().Any(i=>i.IsGenericType&&i.GetGenericTypeDefinition()==typeof(IToolDefinition<,>)))
+            if(!typeof(IToolDefinition).IsAssignableFrom(type))
                 throw new InvalidOperationException("Runtime must implement the neutral tool definition.");
-            var definition=Activator.CreateInstance(type)!;
-            if(type.GetProperty("ToolId")?.GetValue(definition) is not string id||id!=component.Metadata.ToolId)
+            var definition=(IToolDefinition)Activator.CreateInstance(type)!;
+            if(definition.ToolId!=component.Metadata.ToolId)
                 throw new InvalidOperationException("Runtime entry ToolId differs from its component declaration.");
+            var settings=definition.CreateSettings();
+            if(settings.GetType()!=definition.SettingsType||!typeof(IToolOutput).IsAssignableFrom(definition.OutputType))
+                throw new InvalidOperationException("Runtime settings/output identities differ from their declaration.");
+            if(definition.Validate(settings).Count!=0)throw new InvalidOperationException("Runtime default settings are invalid.");
+            _=definition.Describe(definition.FreezeSettings(settings));
         }
     }
 }

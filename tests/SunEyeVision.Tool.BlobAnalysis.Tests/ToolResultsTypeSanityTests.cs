@@ -66,8 +66,8 @@ public class ToolResultsTypeSanityTests
     }
 
     [Fact]
-    public void BlobResult_NoConcreteTypeLeak()
+    public void RuntimeBlobMeasurement_NoConcreteTypeLeak()
     {
-        AssertNoConcreteTypeLeak(typeof(BlobResult));
+        AssertNoConcreteTypeLeak(typeof(Runtime.BlobMeasurement));
     }
 }

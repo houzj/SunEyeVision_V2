@@ -23,7 +23,7 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
     private ToolParameters? _parameters;
     private DeclaredFieldsView? _fields;
     private IReadOnlyList<ConfigurationFieldAccessor> _accessors=Array.Empty<ConfigurationFieldAccessor>();
-    public bool HasPendingEdits=>_fields?.HasInvalidActiveFields==true||HasPendingRegions||HasPendingSources;
+    public bool HasPendingEdits=>_fields?.HasInvalidActiveFields==true||HasPendingRegions||HasPendingSources||HasPendingInheritedRegions;
     public override Size PreferredDebugWindowSize=>new(420,500);
     public DeclaredToolConfigurationControl(IToolPlugin tool)
     {
@@ -78,8 +78,9 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
     }
     public bool TryValidateEditor(out string error)
     {
-        if(HasPendingSources){error=_sourceFields.First(view=>view.HasPendingEdits).Error; if(string.IsNullOrEmpty(error))error="请先应用来源选择，或撤销尚未应用的选择。";return false;}
+        if(HasPendingSources){error=ActiveSourceFields.First(view=>view.HasPendingEdits).Error; if(string.IsNullOrEmpty(error))error="请先应用来源选择，或撤销尚未应用的选择。";return false;}
         if(!ValidateRegionEditors(out error))return false;
+        if(!ValidateInheritedRegionEditors(out error))return false;
         if(_fields is not null&&!_fields.TryValidate(out error))return false;
         var validation=_parameters?.Validate();
         error=validation is null?"配置尚未初始化。":validation.IsValid?"":string.Join("；",validation.Errors);
@@ -123,14 +124,18 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
         RefreshRegionScene();
     }
     private ParamSetting ToSetting(ConfigurationFieldAccessor field,OutputReference reference)
+        =>ToSetting(field.StoragePath,reference);
+    private ParamSetting ToSetting(string path,OutputReference reference)
     {
         var source=(DataProvider as DataSourceQueryService)?.FormalOutputContractReader?.Invoke(reference.NodeId)
             ?.SingleOrDefault(output=>BindingClrAdapter.OutputPortId(output)==reference.PortId);
-        return new ParamSetting {ParameterName=field.StoragePath,BindingType=BindingType.Binding,
+        return new ParamSetting {ParameterName=path,BindingType=BindingType.Binding,
             ReferenceExpression=BindingReferenceSerializer.Serialize(reference),SourceNodeId=reference.NodeId,
             SourceWorkflowId=reference.ScopeId,SourceFieldId=source?.FieldId,SourceProperty=source?.Name??reference.PortId};
     }
     private ReferenceSetting? SelectReference(Port target)
+        =>SelectReference(target,null);
+    private ReferenceSetting? SelectReference(Port target,Func<OutputReference,Port>? roiTarget)
     {
         var candidates=new List<DeclaredReferenceCandidate>();
         if(DataProvider is DataSourceQueryService query&&CurrentNode is WorkflowNodeBase node)
@@ -160,6 +165,28 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
         }
         var picker=new ReferenceSelectionControl(candidates,reference=>
         {
+            if(roiTarget is not null)
+            {
+                if(!RegionScopeCurrent()||CurrentNode is not WorkflowNodeBase consumer)return "当前节点编辑范围已失效。";
+                if(DataProvider is not DataSourceQueryService currentQuery)return "当前来源声明不可用。";
+                var scopeId=currentQuery.WorkflowId??"";
+                var visible=currentQuery.BindingCandidateNodeIds?.Invoke(consumer.Id)??candidates.Select(candidate=>candidate.NodeId).Distinct().ToArray();
+                IEnumerable<Port> CurrentPorts(string id)
+                {
+                    foreach(var output in currentQuery.FormalOutputContractReader?.Invoke(id)??Array.Empty<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable>())
+                    {
+                        if(output.Kind!=SunEyeVision.Plugin.SDK.Execution.Results.OutputVariableKind.Data)continue;
+                        Port port;
+                        try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
+                        yield return port;
+                    }
+                }
+                var sources=visible.Where(id=>id!=consumer.Id).Select(id=>new BindingSource(new(scopeId,id),Guid.Empty,
+                    new ToolSchema(Array.Empty<Port>(),CurrentPorts(id)),0)).ToArray();
+                var scope=new BindingScopeSnapshot(new(scopeId,consumer.Id),Guid.Empty,0,sources,sources.Select(source=>source.Node),Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
+                var result=new ParameterBindingService().CompileBinding(reference,roiTarget(reference),scope);
+                return result.Plan is not null?null:result.Diagnostic?.Message??"来源声明与区域参数不匹配。";
+            }
             if(CurrentNode is not WorkflowNodeBase current||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext context)
                 return "当前节点编辑范围尚未就绪。";
             var field=_accessors.Single(field=>field.Port.Id==target.Id);var prior=current.ParamSettings.GetSetting(field.StoragePath)?.Clone();

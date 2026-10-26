@@ -14,7 +14,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 关键架构语义（rule: 最终使用的区域几何永远只有一个）：
     /// 一个 <see cref="Roi"/> 的三种配置（<c>LocalGeometry</c>/<c>Binding</c>/<c>ParameterBindings</c>）允许并存保留、
     /// 互不删除；当前激活的解析方式由 <see cref="Roi.Source"/> 显式表达，切换主/子模式只改 <see cref="Roi.Source"/>
-    /// 并保留其它配置。仅主模式"订阅→绘制"按用户语义清空全部订阅配置并回到 <see cref="Drawing"/>。
+    /// 并保留其它配置。模式切换不删除私有底稿，外层取消统一丢弃本次编辑。
     /// </summary>
     public enum RoiGeometrySource
     {
@@ -47,10 +47,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         private Dictionary<string, ParamSetting>? _parameterBindings;
         private ShapeType _declaredShapeType = ShapeType.None;
         private ShapeType _composeShapeType = ShapeType.None;
+        private ShapeType _inheritedShapeType = ShapeType.None;
+        /// <summary>Persisted finite shape selection for whole-geometry inheritance; None retains an unrestricted legacy slot.</summary>
+        public ShapeType InheritedShapeType { get=>_inheritedShapeType;set=>SetProperty(ref _inheritedShapeType,value); }
         private RoiGeometrySource _source = RoiGeometrySource.Drawing;
         private bool _isEnabled = true;
         private bool _isVisible = true;
         private bool _isEditable = true;
+        private readonly Dictionary<string,object?> _runtimeBindings=new();
+        private readonly Dictionary<string,string> _runtimeSources=new();
+
+        /// <summary>Invocation-only values written by the admitted typed binding resolver, never serialized or cloned.</summary>
+        public void SetRuntimeBinding(string? parameter,object? value,string? sourceNodeId=null)
+        {
+            var key=parameter??"$geometry";_runtimeBindings[key]=value;
+            if(sourceNodeId is not null)_runtimeSources[key]=sourceNodeId;else _runtimeSources.Remove(key);
+        }
+        public bool HasRuntimeBinding(string? parameter)=>_runtimeBindings.ContainsKey(parameter??"$geometry");
+        public string? GetRuntimeSource(string? parameter)=>_runtimeSources.GetValueOrDefault(parameter??"$geometry");
 
         /// <summary>唯一标识符</summary>
         public Guid Id
@@ -224,6 +238,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     : null,
                 DeclaredShapeType = _declaredShapeType,
                 ComposeShapeType = ComposeShapeType,
+                InheritedShapeType = InheritedShapeType,
                 IsEnabled = IsEnabled,
                 IsVisible = IsVisible,
                 IsEditable = IsEditable,
@@ -257,7 +272,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             switch (Source)
             {
                 case RoiGeometrySource.WholeRegionSub:
-                    if (context == null)
+                    if (context == null && !HasRuntimeBinding(null))
                         throw new InvalidOperationException(
                             $"无法解析整对象订阅区域 '{Name}': 未提供节点结果上下文（IParameterContext）");
                     if (Binding == null)
@@ -267,20 +282,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
                 case RoiGeometrySource.GeometricSub:
                 {
-                    if (context == null)
+                    if (context == null && ParameterBindings?.Any(pair=>pair.Value.BindingType==BindingType.Binding&&!HasRuntimeBinding(pair.Key))==true)
                         throw new InvalidOperationException(
                             $"无法解析参数订阅区域 '{Name}': 未提供节点结果上下文（IParameterContext）");
 
                     // 向量化多实例拼装（"有几个解析几个"）：逐扁平参数取原始值（标量广播 / double[] 数组按颗），
                     // 由 RoiComposeResolver 按数组长度 N 合成 N 颗几何；1 颗与 N 颗走同一条批量路径。
                     var rawValues = new Dictionary<string, object?>();
-                    if (ParameterBindings != null)
-                    {
-                        foreach (var kv in ParameterBindings)
-                        {
-                            rawValues[kv.Key] = ResolveFlatParameterRaw(context, kv.Key);
-                        }
-                    }
+                    foreach(var key in RoiComposeResolver.RequiredParameters(DeclaredShapeType))
+                        rawValues[key]=ResolveFlatParameterRaw(context,key);
 
                     var geometries = RoiComposeResolver.ComposeAllByTemplate(DeclaredShapeType, rawValues);
                     return geometries
@@ -297,12 +307,22 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>整对象订阅：经上下文按契约路径取上游几何（RoiShape[]/RoiShape/Rect）并规范化。</summary>
-        private IReadOnlyList<RoiShape> ResolveSubscription(IParameterContext context)
+        private IReadOnlyList<RoiShape> ResolveSubscription(IParameterContext? context)
         {
             object? value;
+            if(_runtimeBindings.TryGetValue("$geometry",out value))
+            {
+                var shapes=RoiGeometryValueAdapter.Materialize(value);
+                if(InheritedShapeType!=ShapeType.None&&shapes.Any(shape=>shape.ShapeType!=InheritedShapeType))
+                    throw new InvalidOperationException("ROI_SOURCE_SHAPE: 来源几何与所选继承类型不一致。");
+                return shapes;
+            }
+            if(Binding!.ReferenceExpression is not null)
+                throw new InvalidOperationException("ROI_BINDING_PLAN: 正式几何来源必须消费本次绑定计划，不能回退名称路径。");
             try
             {
-                value = context.GetNodeOutputValue(Binding!.SourceNodeId!, Binding.SourceProperty!);
+                value = (context??throw new InvalidOperationException("ROI_SOURCE_CONTEXT: 缺少区域来源上下文。"))
+                    .GetNodeOutputValue(Binding!.SourceNodeId!, Binding.SourceProperty!);
             }
             catch (Exception ex)
             {
@@ -312,10 +332,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             return value switch
             {
-                RoiShape[] shapes => shapes.Where(s => s?.Geometry != null).ToArray(),
+                RoiShape[] shapes when shapes.All(shape=>shape?.Geometry is not null) => shapes,
                 RoiShape shape when shape?.Geometry != null => new[] { shape },
                 System.Windows.Rect rect => new[] { new RoiShape { Geometry = rect } },
-                null => Array.Empty<RoiShape>(),
+                null => throw new InvalidOperationException("ROI_SOURCE_NULL: 区域来源返回空值，不是有效的空集合。"),
                 _ => throw new NotSupportedException(
                     $"整对象订阅 '{Name}' 的解析值类型 {value.GetType().Name} 不支持（仅支持 RoiShape[]/RoiShape/Rect）"),
             };
@@ -327,10 +347,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <c>double[]</c> = 该类型全部图形该字段）；未知/失败 → null（走模板默认）。
         /// 数值收敛与逐颗取值由 <see cref="RoiComposeResolver.ToScalar"/> 统一处理（不在此收敛，防数组被吞）。
         /// </summary>
-        private object? ResolveFlatParameterRaw(IParameterContext context, string parameterName)
+        private object? ResolveFlatParameterRaw(IParameterContext? context, string parameterName)
         {
+            if(_runtimeBindings.TryGetValue(parameterName,out var resolved))return resolved;
             if (ParameterBindings == null || !ParameterBindings.TryGetValue(parameterName, out var setting) || setting == null)
-                return null;
+                throw new InvalidOperationException("ROI_COMPOSE_REQUIRED: 缺少必需参数 "+parameterName);
 
             switch (setting.BindingType)
             {
@@ -339,18 +360,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
                 case BindingType.Binding:
                     if (string.IsNullOrEmpty(setting.SourceNodeId) || string.IsNullOrEmpty(setting.SourceProperty))
-                        return null;
-                    try
-                    {
-                        return context.GetNodeOutputValue(setting.SourceNodeId!, setting.SourceProperty!);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                        throw new InvalidOperationException("ROI_COMPOSE_SOURCE: 参数来源未配置："+parameterName);
+                    if(setting.ReferenceExpression is not null)
+                        throw new InvalidOperationException("ROI_BINDING_PLAN: 正式区域参数必须消费本次绑定计划，不能回退名称路径。");
+                    return (context??throw new InvalidOperationException("ROI_COMPOSE_CONTEXT: 缺少区域参数上下文。"))
+                        .GetNodeOutputValue(setting.SourceNodeId!, setting.SourceProperty!);
 
                 default:
-                    return null;
+                    throw new InvalidOperationException("ROI_COMPOSE_SOURCE: 未知区域参数来源方式。");
             }
         }
     }

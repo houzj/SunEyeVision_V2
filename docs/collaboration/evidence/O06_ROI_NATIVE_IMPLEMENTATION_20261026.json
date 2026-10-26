@@ -1,0 +1,76 @@
+{
+  "baseline": "a6f58334ac9eb4bd67cdfd74896798681d0f1ed5",
+  "state": "未提交实施检查点，整体UI未验收",
+  "nativeResources": {
+    "originalImages": 17,
+    "styles": 5,
+    "provenance": "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
+  },
+  "build": {
+    "log": "Release/_validation/O06-RoiCore-20261026/build-vm-native-resources-002.log",
+    "errors": 0,
+    "seconds": 30.25,
+    "warnings": 881
+  },
+  "tests": [
+    {
+      "log": "roi-inheritance-mask-typed.log",
+      "scope": "四模式typed与mask实际扣面积",
+      "candidate": "原资源导入之前的ROI实现",
+      "passed": 12
+    },
+    {
+      "log": "roi-native-resources-002.log",
+      "scope": "原资源ROI窗口",
+      "candidate": "当前原资源候选",
+      "passed": 9
+    },
+    {
+      "log": "window-native-resources-002.log",
+      "scope": "原资源窗口呈现",
+      "candidate": "当前原资源候选",
+      "passed": 4
+    },
+    {
+      "log": "fullchain-vm-native-resources.log",
+      "scope": "原资源完整宿主链",
+      "candidate": "当前原资源候选",
+      "passed": 8
+    }
+  ],
+  "independent": {
+    "receipt": "Release/_validation/O06-Window-20261026/roi-ui-frozen-independent/receipt-roi-ui-006-independent.json",
+    "candidate": "006，原资源替换之前",
+    "passed": 7
+  },
+  "remaining": [
+    "VM全控件库去重及整套移植",
+    "按VM完整窗口布局/弹层组装",
+    "typed调试同run执行",
+    "旧类消费者迁移",
+    "完整同态视觉及VS设计器",
+    "用户真实人工反馈"
+  ],
+  "payload": [
+    {
+      "path": "SunEyeVision.UI.dll",
+      "sha256": "1E22326AA9C60A69D18A2573DEFDECD78B9839B97A99CFCBE4C8EB160FC939F9"
+    },
+    {
+      "path": "SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "BB181C608D9FDC1E8D1214EBD337F57A137CF7FB4ACAAC1F7A6128ADC10D322E"
+    },
+    {
+      "path": "SunEyeVision.Plugin.SDK.dll",
+      "sha256": "E39055D85874B17F49D50B7500AF70AAF1635A49A6076E694DF6D815AC32F4BD"
+    },
+    {
+      "path": "SunEyeVision.Workflow.dll",
+      "sha256": "C3416F57CDB8568B688E09EA0074206EE7B0340A1A6EDA40FD86675BC0953853"
+    },
+    {
+      "path": "plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll",
+      "sha256": "E1137C34CE5A5BD1C1AFC5C89A63F34D14F4705DEC8A1D62C9DB3D228B2A50C8"
+    }
+  ]
+}

@@ -57,7 +57,8 @@ internal sealed class WorkflowBindingContext : IDisposable
         var explicitReference=setting.ReferenceExpression is not null;
         var property=node.Parameters.GetType().GetProperty(setting.ParameterName);
         var declared=(node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields().SingleOrDefault(field=>field.StoragePath==setting.ParameterName);
-        if(declared is null&&(property is not {CanWrite:true} || !BindingClrAdapter.TryDescribe(property.PropertyType,out _,out _)))
+        var roi=RoiBindingInputs.Describe(node.Parameters).SingleOrDefault(slot=>slot.Key==setting.ParameterName);
+        if(declared is null&&roi is null&&(property is not {CanWrite:true} || !BindingClrAdapter.TryDescribe(property.PropertyType,out _,out _)))
             return explicitReference?Unavailable("target-declaration","This input has no canonical writable-property declaration."):null;
         if(declared is not null&&(declared.Port.EditModes&FieldEditModes.Reference)==0)
             return Unavailable("target-mode","This declared field does not allow a reference.");
@@ -83,7 +84,7 @@ internal sealed class WorkflowBindingContext : IDisposable
                     :BindingSelection.All;
                 reference=new(setting.SourceNodeId,port.Id,port.Type,path.Skip(1).Select(part=>part.propertyName),selection,scope.Consumer.ScopeId,port.Storage);
             }
-            var target=declared?.Port??BindingClrAdapter.DescribePort(setting.ParameterName,property!.PropertyType);
+            var target=roi?.Target(reference)??declared?.Port??BindingClrAdapter.DescribePort(setting.ParameterName,property!.PropertyType);
             return new ParameterBindingService().CompileBinding(reference,target,scope,setting.Conversion);
         }
         catch(Exception fault) when(fault is System.Text.Json.JsonException or ArgumentException or InvalidOperationException or FormatException)
@@ -128,8 +129,12 @@ internal sealed class WorkflowBindingContext : IDisposable
                 _declarations.Values.Select(d=>d.Source),_declarations.Values.Select(d=>d.Source.Node),predecessors);
             var plans=new Dictionary<string,BindingPlan>(StringComparer.Ordinal);
             var errors=new List<ExecutionInputIssue>();
-            foreach(var setting in node.ParamSettings.Settings.Where(s=>BindingInputCatalog.IsInputActive(node.Parameters,s.ParameterName)))
+            var settings=node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).GroupBy(setting=>setting.ParameterName,StringComparer.Ordinal);
+            foreach(var candidates in settings)
             {
+                if(candidates.Count()!=1)throw new InvalidOperationException("ROI_BINDING_DUPLICATE: 参数绑定存在重复存储："+candidates.Key);
+                var setting=candidates.Single();
+                if(!BindingInputCatalog.IsInputActive(node.Parameters,setting.ParameterName))continue;
                 if(graph.InputIssues.TryGetValue(node.Id,out var existingIssues)&&existingIssues.Any(i=>i.InputKey==setting.ParameterName))continue;
                 var compiled=CompileSetting(node,setting,_declarations,compilationScope);
                 if(compiled is null)continue;
@@ -150,7 +155,7 @@ internal sealed class WorkflowBindingContext : IDisposable
             // writable canonical property. Their frozen relation descriptors are still real consumers.
             foreach(var input in BindingRelationCatalog.Describe(consumer).Where(i=>i.Active&&!i.InternalProjection))
             {
-                if(consumer.ParamSettings.GetSetting(input.Key)?.ReferenceExpression is not null)continue;
+                if(BindingRelationCatalog.GetSetting(consumer,input.Key)?.ReferenceExpression is not null)continue;
                 if(BindingRelationCatalog.SourceWorkflowId(consumer,input,_scope)!=_scope)continue;
                 if(BindingInputCatalog.TryReference(input.Read(),_nodes.Keys,input.ReferenceOnly,out var sourceId,out var path))
                     CollectDeclaredDemand(sourceId,path,input.ReadFieldId?.Invoke());

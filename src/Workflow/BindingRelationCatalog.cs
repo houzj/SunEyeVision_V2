@@ -10,6 +10,11 @@ public sealed record ScopedBindingRelation(ScopedNodeIdentity Target, WorkflowNo
 
 public static class BindingRelationCatalog
 {
+    /// <summary>Typed settings live in their owning model slot; a name projection must not hide an ROI reference.</summary>
+    public static ParamSetting? GetSetting(WorkflowNodeBase node,string key)
+        =>node.ParamSettings.GetSetting(key)??RoiBindingInputs.Settings(node.Parameters).SingleOrDefault(setting=>setting.ParameterName==key);
+    public static IReadOnlyList<ParamSetting> Settings(WorkflowNodeBase node)
+        =>node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).ToArray();
     public static IReadOnlyList<BindingInputReference> Describe(WorkflowNodeBase node)
     {
         var inputs = BindingInputCatalog.Describe(node.Parameters).ToList();

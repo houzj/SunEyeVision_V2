@@ -15,15 +15,18 @@ namespace SunEyeVision.UI.Services.Editing;
 public sealed partial class DeclaredToolConfigurationControl
 {
     private readonly List<SourceSelectionField> _sourceFields=new();
+    private readonly Dictionary<SourceSelectionField,Func<bool>> _sourceActivity=new();
     private enum SourceKind { Image,Pose,Geometry,Region }
     private sealed record SdkSource(string Identity,AvailableDataSource Source,bool Many);
-    private bool HasPendingSources=>_sourceFields.Any(view=>view.HasPendingEdits);
+    private IEnumerable<SourceSelectionField> ActiveSourceFields=>_sourceFields.Where(view=>!_sourceActivity.TryGetValue(view,out var active)||active());
+    private bool HasPendingSources=>ActiveSourceFields.Any(view=>view.HasPendingEdits);
+    private void RegisterSource(SourceSelectionField view,Func<bool> active){_sourceFields.Add(view);_sourceActivity.Add(view,active);}
 
     // Current SDK integration only: image/pose reference storage stays owned by the model.
     // In particular, a CLR AffineMatrix is not advertised as a canonical affine value with invented frame names.
     private void BuildSourceEditors(IConfigurationFieldProvider provider)
     {
-        _sourceFields.Clear();
+        _sourceFields.Clear();_sourceActivity.Clear();
         if(_parameters is not MeasureGuideParameters guide||_fields is null||provider.ConfigurationSchema is not { } schema)return;
         var image=schema.Inputs.SingleOrDefault(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image));
         var pose=schema.Inputs.SingleOrDefault(port=>port.Type==SpatialDeclarations.Affine2D);
@@ -41,7 +44,7 @@ public sealed partial class DeclaredToolConfigurationControl
             var view=new SourceSelectionField(title,()=>SdkSources(correction).Select(source=>new SourceChoice(source.Identity,
                 source.Source.DropdownDisplayText,source.Many)).ToArray(),Read,choice=>ApplySdkSource(correction,choice)){Tag=port.Id};
             view.ToolTip=correction?"位置修正来源；集合必须明确选择序号。":"输入图像来源，仅列出当前作用域的声明输出。";
-            _sourceFields.Add(view);
+            RegisterSource(view,()=>!correction||guide.IsPositionCorrectionEnabled);
             if(correction&&_accessors.SingleOrDefault(field=>field.StoragePath==nameof(guide.IsPositionCorrectionEnabled)) is {} enabled)
                 _fields.AddAfterField(enabled.Port.Id,view,new(enabled.Port.Id,true));
             else _fields.AddToGroup("基本参数",view,leading++);
@@ -66,7 +69,7 @@ public sealed partial class DeclaredToolConfigurationControl
                 var accepted=kind switch {
                     SourceKind.Image=>!many&&typeof(IVisionImage).IsAssignableFrom(element),
                     SourceKind.Pose=>element==typeof(AffineMatrix),
-                    SourceKind.Geometry=>type==typeof(RoiShape[]),
+                    SourceKind.Geometry=>element==typeof(RoiShape)||RoiGeometryValueAdapter.Declaration(element) is not null,
                     SourceKind.Region=>!many&&element==typeof(IReadOnlyRegion),_=>false};
                 if(!accepted)continue;
                 var identity=id+"/"+BindingClrAdapter.OutputPortId(output);

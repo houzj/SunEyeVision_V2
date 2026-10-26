@@ -13,6 +13,7 @@ public sealed class DeclaredFieldsView : UserControl
  private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
  public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText);
  public IReadOnlyList<DeclaredFieldEditor> Fields=>_fields.AsReadOnly();
+ public event Action? PageChanged;
  public void AddToGroup(string group,UIElement content,int? index=null)
  {if(!_groups.TryGetValue(group,out var panel))throw new ArgumentException("Unknown declared presentation group.");if(index.HasValue)panel.Children.Insert(index.Value,content);else panel.Children.Add(content);}
  public void AddAfterField(string fieldId,FrameworkElement content,FieldCondition? condition=null)
@@ -37,6 +38,7 @@ public sealed class DeclaredFieldsView : UserControl
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
   var tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
+  tabs.SelectionChanged+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,tabs))PageChanged?.Invoke();};
   foreach(var page in all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group))
   {
    // The scrollbar occupies its own 12 px column; retain 32 px left / 32 px total right inset.

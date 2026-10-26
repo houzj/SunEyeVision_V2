@@ -72,7 +72,7 @@ public sealed class OutputBindingChangeService
                 void Add(string reason) => nodeIssues.Add(new(input.Key, input.Name, $"{node.Name}.{input.Name} [{input.Key}]：{reason}"));
                 if (node.Parameters.RebindingRequired.TryGetValue(input.Key, out var required)) { Add("需要重新绑定：" + required); continue; }
                 if (node.Parameters.BindingValidationPending.TryGetValue(input.Key, out var pending)) { Add("待校验：" + pending); continue; }
-                if(node.ParamSettings.GetSetting(input.Key) is {ReferenceExpression:not null} typed)
+                if(BindingRelationCatalog.GetSetting(node,input.Key) is {ReferenceExpression:not null} typed)
                 {
                     var validation=WorkflowBindingContext.ValidateTyped(workflow,node,typed,sourceWorkflowId??workflow.Id);
                     if(validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)Add(validation.Reason);
@@ -95,7 +95,7 @@ public sealed class OutputBindingChangeService
                 try
                 {
                     var validation = nodes.TryGetValue(id, out var upstream) ? BindingContractValidator.Validate(reader.ReadContract(upstream), path, input.AllowedTypes,
-                        node.ParamSettings.GetSetting(input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic)
+                        BindingRelationCatalog.GetSetting(node,input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic)
                         : new BindingValidation(BindingCompatibility.Incompatible, "来源节点不存在");
                     if (validation.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved) Add(validation.Reason);
                 }
@@ -224,7 +224,7 @@ public sealed class OutputBindingChangeService
         {
             var input = relation.Input; var expression = input.Read();
             var parameters = relation.Node.Parameters;
-            if(relation.Node.ParamSettings.GetSetting(input.Key) is {ReferenceExpression:not null} typed)
+            if(BindingRelationCatalog.GetSetting(relation.Node,input.Key) is {ReferenceExpression:not null} typed)
             {
                 var workflow=_solution.Workflows.Single(w=>w.Id==relation.Target.WorkflowId);
                 var typedValidation=WorkflowBindingContext.ValidateTyped(workflow,relation.Node,typed,workflow.Id);
@@ -304,7 +304,7 @@ public sealed class OutputBindingChangeService
                     validation = fieldId != null && nextOutput == null && current[source] != null
                         ? new(BindingCompatibility.Incompatible, "原输出身份已删除，请重新绑定")
                         : BindingContractValidator.Validate(current[source], path, input.AllowedTypes,
-                            relation.Node.ParamSettings.GetSetting(input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic);
+                            BindingRelationCatalog.GetSetting(relation.Node,input.Key)?.Conversion??SunEyeVision.Plugin.Contracts.BindingConversion.Automatic);
                     if ((validation.State is BindingCompatibility.Compatible or BindingCompatibility.Conditional) && !input.AllowsTypeChange && oldOutput != null && nextOutput != null && oldOutput.VariableType != nextOutput.VariableType)
                         validation = new(BindingCompatibility.Incompatible, "上游输出类型已变化，请重新绑定");
                 }

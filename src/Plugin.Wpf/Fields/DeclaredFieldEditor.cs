@@ -30,6 +30,8 @@ public sealed class DeclaredFieldEditor : UserControl
     private NumericUpDown? _numeric;
     private bool _updatingInput;
     private bool _pairedSlider;
+    private bool _regionSourceSelector;
+    public void UseRegionSourceSelector(){_regionSourceSelector=true;HideLabel();Render();}
     public UIElement EditorBody => _row;
     public void SetLabel(string text)=>_label.Text=text;
     internal DeclaredFieldEditor CreateStagedCopy(string label)=>new(_port,label,_setting,_=>{},_selectReference,_constant,_formatReference,_choiceLabels,_presentation);
@@ -62,7 +64,7 @@ public sealed class DeclaredFieldEditor : UserControl
     {
         _port = port; _setting = initial; _constant = initial as ConstantSetting ?? constantBackup; _write = write; _selectReference = selectReference;
         _formatReference=formatReference;_choiceLabels=choiceLabels;
-        _presentation=presentation;_referenceMode=initial is ReferenceSetting;
+        _presentation=presentation;_referenceMode=initial is ReferenceSetting||port.EditModes==FieldEditModes.Reference;
         Resources.MergedDictionaries.Add(EditorResources.Create());
         _error.Style=EditorResources.ErrorStyle();
         Tag=port.Id;Margin=new Thickness(0,1,0,1);MinHeight=32;
@@ -96,9 +98,10 @@ public sealed class DeclaredFieldEditor : UserControl
     {
         _body.Children.Clear();_children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         var canReference=_selectReference is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
-        if(canReference)
+        if(canReference&&(_port.EditModes&FieldEditModes.Constant)!=0)
         {
             var mode=new ToggleButton {Content=_referenceMode?"✎":"⇄",IsChecked=_referenceMode,Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip=_referenceMode?"切换为数值编辑":"切换为订阅"};
+            mode.SetResourceReference(StyleProperty,"EditLinkButton");
             mode.Click+=(_,_)=>{if(_referenceMode){if(_port.Type.Shape!=ValueShape.Resource&&Set(_constant??new ConstantSetting(Default(_port.Type))))_referenceMode=false;}else _referenceMode=true;Render();Changed?.Invoke();};_actions.Children.Add(mode);
         }
         if(!_port.Required&&_setting is not UnsetSetting)
@@ -131,14 +134,20 @@ public sealed class DeclaredFieldEditor : UserControl
             {
                 if(_presentation?.Layout?.DialogPrimary==true)
                 {
-                    var eye=new Button{Content=EditorIcons.Eye(value as bool?==true),ToolTip="显示 / 隐藏",Width=29,Height=29,Background=Brushes.Transparent,BorderThickness=new Thickness(0)};
-                    eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.Content=EditorIcons.Eye(visible);};
+                    var eye=new ToggleButton{IsChecked=value as bool?==true,ToolTip="显示 / 隐藏",Width=36,Height=30};
+                    eye.SetResourceReference(StyleProperty,"eyeToggleButton");
+                    eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
                 var input = new ToggleSwitch { IsChecked = value as bool? == true, SwitchWidth=40,SwitchHeight=22,CornerRadius=2 }; input.CheckedChanged += (_, _) => Set(new ConstantSetting(input.IsChecked)); InputElement = input; _body.Children.Add(input);
             }
             else if (_port.Choices is { } choices)
             {
+                if(_regionSourceSelector)
+                {
+                    var selector=new RegionSourceModeSelector((string)value!,key=>Set(new ConstantSetting(key)));
+                    InputElement=selector;_body.Children.Add(selector);return;
+                }
                 var input = new ComboBox { ItemsSource = choices.Keys, SelectedItem = value };
                 {
                     var label=new FrameworkElementFactory(typeof(TextBlock));

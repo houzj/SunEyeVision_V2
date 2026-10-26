@@ -21,6 +21,14 @@ namespace SunEyeVision.Tool.CircleDetect
         | ToolCapabilities.RoiInput | ToolCapabilities.MeasureGuide)]
     public class CircleDetectResults : ToolResults
     {
+        public override IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var outputs=base.GetOutputVariables();
+            // The two declared modes may legitimately omit the other fitted geometry, independently of live values.
+            foreach(var output in outputs)
+                if(output.Name is nameof(Circle) or nameof(Arc))output.AllowsNull=true;
+            return outputs;
+        }
         public EdgeFitDiagnostics FitDiagnostics1 { get; set; } = new();
         public string FitDiagnostic1 => FitDiagnostics1.Summary;
         public Point2d[] RawDiagnosticPoints1 => FitDiagnostics1.RawPoints;

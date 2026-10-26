@@ -1,6 +1,6 @@
 {
   "date": "2026-10-26",
-  "status": "已批准并部分实际落地；算法/上游职责和本轮资源缺口已核收，完整ROI、旧消费者、整体UI/VS/人工未闭合",
+  "status": "首批原VM style/PNG已直接移植并回归；用户总范围为整套VM控件库，全部移植/Blob原样组装、typed调试新run及整体验收未闭合",
   "baseline": "101bb36a3fad4e0f2096a47469989db610083cdc",
   "scope": "原31类逐项重新划职责与文件组织；不是31个新类，也不按旧继承树搬迁",
   "counts": {
@@ -372,13 +372,19 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "Blob声明字段及有限布局已承接，模式Constant-only与逻辑活动验证已实施；隐藏Upper保pending且非活动不阻塞，修订actual View/Host及其他Tab/折叠错误定向通过。",
+      "currentState": "声明字段已承接算法活动规则及本轮ROI Radio/四面板，HasPendingEdits沿活动来源/参数校验；Window004旧Combo fixture失败经入口适配005通过，非产品修复。 本轮已改原NormalRadioButton/眼睛/模式style和原PNG，必要pack URI/两态适配；整体布局/弹窗仍须同态核收。",
       "actualFiles": [
         "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
         "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
         "src/Plugin.Wpf/Fields/RangeField.cs",
         "src/Plugin.Wpf/Fields/ColorField.cs",
-        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
+        "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
       ],
       "consumerState": "Blob正常配置已不用旧ConfigSetting整页；旧ConfigSetting及其他工具消费者仍在。"
     },
@@ -458,11 +464,13 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
       ],
-      "currentState": "字段呈现稳定引用，宿主提供候选与选择；不复制旧字符串来源解释逻辑。",
+      "currentState": "字段呈现稳定引用，宿主提供候选与选择；不复制旧字符串来源解释逻辑。 本轮数值模式动作已引用原EditLinkButton六状态style，来源笔链用原PNG；typed执行职责不随资源移植迁回控件。",
       "actualFiles": [
         "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs",
         "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs"
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
       ],
       "consumerState": "Blob新字段订阅已承接；ImageFilter/Morphology等XAML仍使用旧ParamBinding。"
     },
@@ -547,7 +555,7 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "图像来源整行Combo已接宿主正式候选、稳定引用及序号；与数值订阅区分。",
+      "currentState": "图像来源整行Combo已接宿主正式候选、稳定引用及序号；与数值订阅区分。 本轮typed ROI来源弹窗取消/确认及明确索引已有窗口定向覆盖；输入图像Combo与几何订阅继续分工。",
       "actualFiles": [
         "src/Plugin.Wpf/Fields/SourceSelectionField.cs",
         "src/Plugin.Wpf/Themes/Combo.xaml",
@@ -587,11 +595,13 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "5类实际显示对象已配眼睛/编辑与私有样式草稿；不新增拟DisplayObjectField.xaml或虚造VM对象。",
+      "currentState": "5类实际显示对象已配眼睛/编辑与私有样式草稿；不新增拟DisplayObjectField.xaml或虚造VM对象。 眼睛改用原eyeToggleButton，编辑图用原PNG状态；全部VM显示对象及整页组装仍未完成。",
       "actualFiles": [
         "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
         "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
       ],
       "consumerState": "Blob对象配置已由新字段承接；旧GraphicsDisplayEditorControl多工具消费者仍在。"
     },
@@ -787,11 +797,15 @@
         "src\\UI\\Services\\Workflow\\NodeResultManager.cs",
         "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs"
       ],
-      "currentState": "本地七类几何的形状、数值和编辑意图已由中立局部视图承接，宿主适配现行模型。",
+      "currentState": "本地七形状/数值和受限交互保留；本轮新增矩形/圆来源及参数面板、活动错误/非法草稿与明确序号，后台及窗口定向通过，非完整ROI交付。",
       "actualFiles": [
         "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
         "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs",
-        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs"
+        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
+        "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs"
       ],
       "consumerState": "Blob本地编辑已承接；旧RoiEditorControl/其他工具链仍在，VM四继承与外观未完成。"
     },
@@ -825,11 +839,15 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "Blob主图交互已交宿主独占scope，局部编辑只消费受限视口；不清主结果或其他scope。",
+      "currentState": "Blob图像交互仍由宿主scope独占；四继承面板接同持久模型及正式计划真实来源核帧；typed调试新run未闭合，其他工具旧Manager仍在。",
       "actualFiles": [
         "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs",
         "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
-        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs"
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
+        "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs"
       ],
       "consumerState": "Blob已退出旧Manager接线；ImageFilter/Morphology等工具仍直接使用旧Manager，不能删旧类。"
     },
@@ -862,13 +880,19 @@
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml",
         "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml.cs"
       ],
-      "currentState": "按现行本地/继承几何/继承像素Region条件附着来源，保留底稿；未实现矩形/圆区域与参数四种继承。",
+      "currentState": "四种继承来源/参数真实面板已由RoiInheritance.cs+Radio接原Binding/ParameterBindings存储；正式typed计划及本次缓存接入，backend12/ROI窗口9分层通过；调试新run未接。 本轮已改原NormalRadioButton/眼睛/模式style和原PNG，必要pack URI/两态适配；整体布局/弹窗仍须同态核收。",
       "actualFiles": [
         "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
         "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs",
-        "src/Plugin.Wpf/Fields/SourceSelectionField.cs"
+        "src/Plugin.Wpf/Fields/SourceSelectionField.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
+        "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
       ],
-      "consumerState": "Blob现行来源已由宿主承接；旧RoiSubscribePanel仍在旧ROI链使用，四继承迁移未完成。"
+      "consumerState": "Blob四继承来源/参数面板已由宿主承接；旧RoiSubscribePanel仍在其他工具旧ROI链使用，typed调试新run与全消费者迁移尚未闭合。"
     },
     {
       "id": "shapetoolbar",
@@ -892,7 +916,7 @@
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml",
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\ShapeToolBar.xaml"
       ],
-      "currentState": "当前形状选择由RegionGeometryEditor文字按钮调用受限绘制意图；不是拟RoiShapeSelector.xaml或已达VM图标工具条。",
+      "currentState": "当前形状选择由RegionGeometryEditor文字按钮调用受限绘制意图；不是拟RoiShapeSelector.xaml或已达VM图标工具条。 本轮ROI窗口9组补参数焦点Esc/切页取消及原7形状回归；仍未把局部文字工具条称作VM图标外观达标。",
       "actualFiles": [
         "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
         "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs"
@@ -923,13 +947,17 @@
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\DrawingParameterPanel.xaml",
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml"
       ],
-      "currentState": "本地几何参数由实际记录字段生成数值行并回写同一草稿；未创建GeometryFields.xaml。",
+      "currentState": "本地几何参数与矩形五参数/mask圆三参数面板已用原ROI存储；常量/引用、活动性和非法草稿分支保留已定向验证；整体外观未核收。",
       "actualFiles": [
         "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
         "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs",
-        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs"
+        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
+        "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiBindingInputs.cs",
+        "src/Plugin.SDK/Execution/Parameters/RoiGeometryValueAdapter.cs"
       ],
-      "consumerState": "Blob本地几何数值已承接；旧DrawingParameterPanel/旧ViewModel链仍在，四继承参数未接新UI。"
+      "consumerState": "Blob本地数值及四继承参数面板已承接；旧DrawingParameterPanel/旧ViewModel链仍在，typed继承调试新run和全消费者迁移未闭合。"
     },
     {
       "id": "toolbarcontrol",
@@ -960,7 +988,7 @@
         "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
         "tests\\SunEyeVision.Plugin.SDK.Tests\\ToolItemContractTests.cs"
       ],
-      "currentState": "Blob局部选择/移动/缩放/旋转和取消意图已有宿主链；未新建拟共用RoiShapeSelector.xaml。",
+      "currentState": "Blob局部选择/移动/缩放/旋转和取消意图已有宿主链；未新建拟共用RoiShapeSelector.xaml。 本轮ROI窗口9组补参数焦点Esc/切页取消及原7形状回归；仍未把局部文字工具条称作VM图标外观达标。",
       "actualFiles": [
         "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
         "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs"
@@ -1357,10 +1385,12 @@
         "src\\UI\\Shell\\Controls\\Toolbox\\ToolboxControl.xaml",
         "tests\\SunEyeVision.UI.Tests\\ToolboxPresentationTests.cs"
       ],
-      "currentState": "旧工具图标元数据控件仍在；新字段眼睛/笔/链由EditorIcons局部矢量提供，不能当ToolIcon职责全部替代。",
+      "currentState": "旧工具元数据ToolIcon仍在；EditorIcons.cs已由手画Geometry改原PNG hover/normal映射，字段眼睛/笔链/模式动作使用本批原资源。整套库/图标资源尚未全部迁入，不能称旧ToolIcon已退出。",
       "actualFiles": [
         "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs",
-        "src/Plugin.Wpf/EditorIcons.cs"
+        "src/Plugin.Wpf/EditorIcons.cs",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+        "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json"
       ],
       "consumerState": "旧ToolIcon及元数据/工具消费者仍在；仅局部字段图标独立，旧类未退出。"
     }
@@ -1606,8 +1636,8 @@
   "deletionGate": "先迁实际消费者、资源与合同，再核无生产调用、构建发布及释放回归，最后删除旧文件。Blob旧专页已删除；其余按各行consumerState逐项核收，不以词法0或新类同名证明可删。",
   "notApprovedByProxy": "原版运行身份、完整活动主题与未观察交互仍未证；不把HTML或功能PASS算WPF外观验收。",
   "history": "docs/collaboration/history/O06_CONTROL_RECORDS_BEFORE_REORGANIZATION_20261026.json",
-  "engineeringNote": "Runtime/BlobDefinition.cs与BlobPresentation.cs已存在；有限声明由Contracts承载，Plugin.Wpf实际Controls/Fields/Regions/Themes仅依赖Contracts。BlobConfigurationFields门面隔离现行SDK槽位适配；UI宿主组织草稿/候选/ROI/窗口。各行actualFiles为当前已核用途文件，target保留批准目标，二者不混用。",
-  "buildAndVerification": "算法三模式/上游承接/nullable模式输出/精确旧槽拒绝/活动校验已实施；ABDE8D独评Strict6+Window4及hiddenUpper/Morph通过。旧资源12FAIL→owner修复，7481E3独评18/4诊断FAIL→F28E同fixture22/0；最终全量0错误/1087警告47.52秒、41源/666payload/33正式装载。作者Resources12/FullChain8、根持久Resources004的22项分别记录。产品c2a3d6c8已保存，完整ROI/消费者/整体UI/VS/人工未完成。",
+  "engineeringNote": "Runtime/BlobDefinition.cs与BlobPresentation.cs已存在；有限声明由Contracts承载，Plugin.Wpf实际Controls/Fields/Regions/Themes仅依赖Contracts。BlobConfigurationFields门面隔离现行SDK槽位适配；UI宿主组织草稿/候选/ROI/窗口。各行actualFiles为当前已核用途文件，target保留批准目标，二者不混用。 本轮新增RoiBindingInputs/GeometryValueAdapter与Workflow正式计划缓存，RoiInheritance.cs/RegionSourceModeSelector实际接四面板；原目标目录仍只作目标，不当已建文件。 样式/图标优先直接移植原VM资源或VisionUi/SourceControlStyles.xaml→SourceComboBoxes.xaml及SourceAssets还原链；仅适配资源加载/主题键与现行中立合同，不依赖逆向工程DLL。当前Radio已用NormalRadioButton原style，首批5style/17PNG已实际导入；全库资源仍待清点移植。 本次VmFieldStyles/provenance/Assets可由import_vm_field_resources.py复现，EditorIcons.cs保留为原PNG映射助手，已去手画实现；总范围已扩整套7目录，原目标和当前实际路径仍分开。",
+  "buildAndVerification": "本轮原style候选native资源002全量0错误/881警告30.25秒；RoiEditing018九组/Window007四组/FullChain030八组实际exit0。006独评7PASS只保旧候选身份；原资源相对URI运行失败及所有旧失败保留。本批5style17PNG不是控件总数或整库完成，typed调试新run/完整视觉/旧消费者/VS/人工未完成。",
   "implementationHistory": {
     "date": "2026-10-26",
     "sourceSha256BeforeUpdate": "17da73821fec6ac2dbf2622b6a624dae140b5ffff40693ad3f92b46b9c598a93",
@@ -1653,7 +1683,7 @@
       "toolicon": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
     }
   },
-  "implementationBaseline": "产品检查点c2a3d6c8200e06070aa9c424481c90871e8b3aa4；payload仍F28E诊断候选，提交不代表另行重建版本",
+  "implementationBaseline": "当前为HEAD a6f58334+未提交ROI与原资源增量；本轮native资源002全量0/881/30.25秒，RoiEditing018/Window007/FullChain030实跑通过。006独评7组只对应006旧候选，F28算法资源成绩仅保历史；不是最终已提交交付版本。",
   "consumerEvidence": {
     "path": "Release/_validation/O06-Window-20261026/control-consumer-inventory-current.json",
     "scope": "同名词法线索，仅辅助定位，非类型绑定/运行迁移或删除证明；另已核部分XAML与继承链",
@@ -1667,29 +1697,73 @@
   },
   "implementationEvidence": [
     {
-      "path": "docs/collaboration/evidence/O06_ALGORITHM_IMPLEMENTATION_CHECKPOINT_20261026.json",
-      "sha256": "30028f2846c01651499650896746b48b1ad724202a315ad2a136e309366a2a4d"
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-native-resources-002.log",
+      "sha256": "df1611265ba4c4e4917692989bbb20badfd8e8e73ac981b72ba4df3eaf1b91fc"
     },
     {
-      "path": "Release/_validation/O06-Window-20261026/receipt-algorithm-revised-independent.json",
-      "sha256": "3bb274b0e0903c7dd803dc82627afc53ef956de6929d395ae65493e02f87ea82"
+      "path": "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json",
+      "sha256": "e801dc2803f36f188e7f129db932b4f54c4de21735550f65a2f174e929c2c124"
     },
     {
-      "path": "Release/_validation/O06-Window-20261026/receipt-resource-independent.json",
-      "sha256": "ae276bdd0b1cf540efd3867c47c35a3cdc81d8bd4b3dc8f1aa4101c67bee3c61"
+      "path": "scripts/documentation/import_vm_field_resources.py",
+      "sha256": "bdaaa4426ee877dd52fbe84891bec6df75fe8e4084783041ff93c0838da5a1ba"
     },
     {
-      "path": "Release/_validation/O06-Window-20261026/receipt-resource-diagnostics-independent.json",
-      "sha256": "2980a7d220f8330d103197f041680017de1eca479524670d989eabdce4451787"
+      "path": "Release/_validation/S4-20261025/RoiEditing/attempt-018/receipt.json",
+      "sha256": "d1286029587cf98bb1f37d926128abbdd64d103b0fabd6ff657cb6fe34d8612e"
     },
     {
-      "path": "Release/_validation/O06-Algorithm-20261026/frozen-resource-diagnostics-candidate.json",
-      "sha256": "f28e361c85eb7bf15130e3ce1acf995a832ae066f315757e541786b1a9f4e0a2"
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-007/receipt.json",
+      "sha256": "29fa57d0b70ae24933ebf98d3f51c18167c3c72f1fc77c7e811474bd4190e4bb"
     },
     {
-      "path": "docs/collaboration/evidence/O06_ALGORITHM_RESOURCE_CHECKPOINT_20261026.zip",
-      "sha256": "e87df6c54753fbb7b2f9e07e444ca5abada14b4a8d00eb5b0ad526bcf256b3c2"
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-030/receipt.json",
+      "sha256": "8a157d949e8a20011bc547f61ccea39579d709bff5f38b53ae9ac94ebb83d95e"
+    },
+    {
+      "path": "Release/_validation/O06-Window-20261026/roi-ui-frozen-independent/receipt-roi-ui-006-independent.json",
+      "sha256": "8787cf73d16513f883f7adc3a312d91a18cd501abdfb9194aeb73465613c82d1"
     }
   ],
-  "visualAcceptance": "原方案用户VM实际截图同页同态核布局/样式，源码/模板/消费链支撑职责与交互，功能独测单列；不因缺原机通道忽略实图、不以PASS代整体UI。ROI层级/四继承、滑条/订阅动作、长精度/来源/文本和标题差距保留。"
+  "visualAcceptance": "用户最新范围：整套VM控件库有哪些就移植全部，不限Blob当前可见控件或原31类；样式/模板/图标优先直接移植原资源及已核本地还原，不再近似自画。保留原目录/版本/依赖与来源，仅作pack URI、现行中立合同和必要两态绑定适配，不依赖逆向工程DLL；正式去重控件数以inventory为准，不用cs文件数冒充。 原实图同页同态核最终布局/样式；本轮资源已来自原件，不等于整套库/整体组装达标，旧006近似Radio图保其历史身份。",
+  "resourceTransitionHistory": [
+    {
+      "scope": "原style移植前的临时Radio/手画图标描述",
+      "statesById": {
+        "configsetting": {
+          "currentState": "声明字段已承接算法活动规则及本轮ROI Radio/四面板，HasPendingEdits沿活动来源/参数校验；Window004旧Combo fixture失败经入口适配005通过，非产品修复。 当前橙色Radio为本方模板，并非原VM资源直接复用；样式须按源资源/实图再核，功能通过不代表最终外观。",
+          "consumerState": "Blob正常配置已不用旧ConfigSetting整页；旧ConfigSetting及其他工具消费者仍在。"
+        },
+        "parambinding": {
+          "currentState": "字段呈现稳定引用，宿主提供候选与选择；不复制旧字符串来源解释逻辑。",
+          "consumerState": "Blob新字段订阅已承接；ImageFilter/Morphology等XAML仍使用旧ParamBinding。"
+        },
+        "graphicsdisplayeditorcontrol": {
+          "currentState": "5类实际显示对象已配眼睛/编辑与私有样式草稿；不新增拟DisplayObjectField.xaml或虚造VM对象。",
+          "consumerState": "Blob对象配置已由新字段承接；旧GraphicsDisplayEditorControl多工具消费者仍在。"
+        },
+        "roisubscribepanel": {
+          "currentState": "四种继承来源/参数真实面板已由RoiInheritance.cs+Radio接原Binding/ParameterBindings存储；正式typed计划及本次缓存接入，backend12/ROI窗口9分层通过；调试新run未接。 当前橙色Radio为本方模板，并非原VM资源直接复用；样式须按源资源/实图再核，功能通过不代表最终外观。",
+          "consumerState": "Blob四继承来源/参数面板已由宿主承接；旧RoiSubscribePanel仍在其他工具旧ROI链使用，typed调试新run与全消费者迁移尚未闭合。"
+        },
+        "toolicon": {
+          "currentState": "旧工具图标元数据控件仍在；新字段眼睛/笔/链由EditorIcons局部矢量提供，不能当ToolIcon职责全部替代。 后续图标按用户指令优先原资源/本地还原复用，不再扩展手画近似图标；旧源路径与实际局部图标事实均保留。",
+          "consumerState": "旧ToolIcon及元数据/工具消费者仍在；仅局部字段图标独立，旧类未退出。"
+        }
+      }
+    }
+  ],
+  "libraryScope": {
+    "requirement": "用户最新范围：整套VM控件库有哪些就移植全部，不限Blob当前可见控件或原31类；样式/模板/图标优先直接移植原资源及已核本地还原，不再近似自画。保留原目录/版本/依赖与来源，仅作pack URI、现行中立合同和必要两态绑定适配，不依赖逆向工程DLL；正式去重控件数以inventory为准，不用cs文件数冒充。",
+    "locatedDirectories": [
+      "VM.Controls",
+      "VMBaseControls",
+      "VMControls.WPF",
+      "VMControls.WPF/Release",
+      "VM.PcUI",
+      "Apps.Style",
+      "Apps.XmlUI"
+    ],
+    "inventoryStatus": "去重控件数待inventory JSON，不以cs数计数；本31类仅既有责任映射，不是整套控件库总数"
+  }
 }

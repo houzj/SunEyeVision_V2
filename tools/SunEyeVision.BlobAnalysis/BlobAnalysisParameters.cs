@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Windows.Media;
 using System.Collections.Generic;
@@ -81,8 +82,22 @@ namespace SunEyeVision.Tool.BlobAnalysis
             if(!key.StartsWith(name+":",System.StringComparison.Ordinal))return null;
             if(mode==SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRegion)return false;
             var roi=collection.Rois.FirstOrDefault(r=>key==name+":"+r.Id||key.StartsWith(name+":"+r.Id+":",System.StringComparison.Ordinal));
-            return roi is not null&&(mode==SunEyeVision.Plugin.Contracts.RegionFieldMode.LocalGeometry?roi.IsLocal:!roi.IsLocal);
+            if(roi is null||!ActiveRoi(roi,mode))return false;
+            if(roi.IsComposed&&key.StartsWith(name+":"+roi.Id+":",StringComparison.Ordinal))
+                return RoiComposeResolver.RequiredParameters(roi.DeclaredShapeType).Contains(key[(name+":"+roi.Id+":").Length..],StringComparer.Ordinal);
+            return true;
         }
+        private static bool ActiveRoi(Roi roi,SunEyeVision.Plugin.Contracts.RegionFieldMode mode)=>mode switch
+        {
+            SunEyeVision.Plugin.Contracts.RegionFieldMode.LocalGeometry=>roi.IsLocal,
+            SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedGeometry=>!roi.IsLocal,
+            SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRectangle=>roi.IsSubscribed&&roi.InheritedShapeType==ShapeType.RotatedRectangle,
+            SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedCircle=>roi.IsSubscribed&&roi.InheritedShapeType==ShapeType.Circle,
+            SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedRectangleParameters=>roi.IsComposed&&roi.DeclaredShapeType==ShapeType.RotatedRectangle,
+            SunEyeVision.Plugin.Contracts.RegionFieldMode.InheritedCircleParameters=>roi.IsComposed&&roi.DeclaredShapeType==ShapeType.Circle,
+            _=>false
+        };
+        public IEnumerable<Roi> GetActiveRois(bool mask=false)=>(mask?MaskRois:InspectionRois).Rois.Where(roi=>roi.IsEnabled&&ActiveRoi(roi,mask?MaskMode:InspectionMode));
         public IReadOnlyList<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable> GetOutputContract()=>BlobOutputContract.Describe();
         /// <summary>
         /// Blob 分析的输入与运行参数契约。

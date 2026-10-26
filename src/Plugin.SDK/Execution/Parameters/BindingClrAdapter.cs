@@ -30,16 +30,18 @@ public static class BindingClrAdapter
             return new(OutputPortId(output),TypeRef.ResourceOf(ResourceKind.Image),Nullable:output.AllowsNull);
         if(declared==typeof(RoiShape[]))return new(OutputPortId(output),RoiShapeValueAdapter.SequenceDeclaration);
         if(declared is null||declared==typeof(object))throw new ArgumentException("Output type is not formally declared.");
-        return DescribePort(OutputPortId(output),declared,output.FixedCount,output.IsCollection);
+        var port=DescribePort(OutputPortId(output),declared,output.FixedCount,output.IsCollection);
+        return port with {Nullable=port.Nullable||output.AllowsNull};
     }
     public static bool TryDescribe(Type clrType,out TypeRef type,out NumericStorage? storage)
     {
         var plain=Nullable.GetUnderlyingType(clrType)??clrType;
+        if(RoiGeometryValueAdapter.Declaration(plain) is {} geometry){type=geometry;storage=null;return true;}
         if(plain==typeof(IReadOnlyImage)){type=TypeRef.ResourceOf(ResourceKind.Image);storage=null;return true;}
         if(plain==typeof(IReadOnlyRegion)){type=TypeRef.ResourceOf(ResourceKind.Region);storage=null;return true;}
         if(plain.IsArray&&plain.GetArrayRank()==1)
         {
-            if(TryDescribe(plain.GetElementType()!,out var element,out storage)&&element.Shape==ValueShape.Scalar)
+            if(TryDescribe(plain.GetElementType()!,out var element,out storage)&&element.Shape is ValueShape.Scalar or ValueShape.Geometry)
             {type=TypeRef.SequenceOf(element);return true;}
             type=null!;storage=null;return false;
         }
@@ -76,6 +78,8 @@ public static class BindingClrAdapter
     public static object? NormalizeValue(Port port,object? value,ImageFrameAddress? frame=null,Action<IDisposable>? registerResource=null)
     {
         if(value is null)return ValueRules.Freeze(port,null);
+        if(port.Type.Shape==ValueShape.Geometry&&value is not GeometryValue)
+            return ValueRules.Freeze(port,RoiGeometryValueAdapter.Freeze(value));
         if(port.Type==RoiShapeValueAdapter.Declaration&&value is RoiShape shape)return RoiShapeValueAdapter.Freeze(shape);
         if(value is RecordValue or SequenceValue or GeometryValue)return ValueRules.Freeze(port,value);
         if(port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image&&value is SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage image)

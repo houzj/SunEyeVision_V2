@@ -61,9 +61,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 BlobSdkAdapter.CopyResult(result.RuntimeOutput, result, settings, input.Width, input.Height);
                 BuildDisplay(parameters, result);
                 if(parameters.InspectionMode!=RegionFieldMode.InheritedRegion)
-                    ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois, parameters.NodeResults, correction);
+                    ToolRegionHelper.ExtractInspectionGeometries(result, parameters.GetActiveRois(), parameters.NodeResults, correction);
                 if(parameters.MaskMode!=RegionFieldMode.InheritedRegion)
-                    ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois, parameters.NodeResults, correction);
+                    ToolRegionHelper.ExtractMaskGeometries(result, parameters.GetActiveRois(true), parameters.NodeResults, correction);
                 result.SetSuccess(elapsed.Elapsed.TotalMilliseconds);
                 parameters.LogInfo($"Blob运行层执行完成：{result.FilteredBlobCount}个，面积{result.FilteredTotalArea:G}，{elapsed.Elapsed.TotalMilliseconds:F1}ms");
             }

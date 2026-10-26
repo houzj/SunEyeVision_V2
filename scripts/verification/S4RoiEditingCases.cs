@@ -14,6 +14,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.Wpf.Regions;
+using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.UI.Services.Editing.Regions;
 using SunEyeVision.Workflow;
@@ -40,7 +41,10 @@ internal static class S2DocumentEditingCases
             var solutions=new SolutionManager(folder);var document=solutions.CreateUntitledSolution();document.Workflows.Clear();document.Workflows.Add(flow);
             var root=(DeclaredToolConfigurationControl)(ToolConfigurationEditors.CreateControl(ToolRegistry.CreateToolInstance("BlobAnalysis")!)
                 ??throw new Exception("正常Blob入口没有默认声明配置"));
-            var query=new DataSourceQueryService();
+            var contractReader=new OutputBindingChangeService();
+            var query=new DataSourceQueryService{WorkflowId=flow.Id,
+                BindingCandidateNodeIds=consumer=>flow.Nodes.Where(item=>item.Id!=consumer).Select(item=>item.Id).ToArray(),
+                FormalOutputContractReader=id=>flow.Nodes.FirstOrDefault(item=>item.Id==id) is {} source?contractReader.ReadContract(source):null};
             void Bind(WorkflowNodeBase draft){root.SetCurrentNode(draft);root.SetParameters(draft.Parameters);root.SetDataProvider(query);}
             using var context=new ProductionEditorContext(solutions.Session!.Editing.Host,flow.Id,node,()=>true,Bind,documentEdits:solutions.Session.Editing);
             Bind(context.DraftNode);ToolEditorCommit.AttachDraftContext(root,context);
@@ -53,6 +57,13 @@ internal static class S2DocumentEditingCases
             panel.Children.Add(image);Grid.SetColumn(root,1);panel.Children.Add(root);
             var window=new Window{Title="S4区域宿主检查",Content=panel,Width=880,Height=700,ShowActivated=false,ShowInTaskbar=false,Left=-10000};
             window.Show();Pump();
+            void Capture(string name,FrameworkElement target)
+            {
+                target.BringIntoView();window.UpdateLayout();Pump();
+                var frame=new RenderTargetBitmap((int)Math.Ceiling(root.ActualWidth),(int)Math.Ceiling(root.ActualHeight),96,96,PixelFormats.Pbgra32);
+                var visual=new DrawingVisual();using(var drawing=visual.RenderOpen())drawing.DrawRectangle(new VisualBrush(root),null,new Rect(0,0,root.ActualWidth,root.ActualHeight));frame.Render(visual);
+                var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(frame));using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png"));png.Save(stream);
+            }
             var scope=(RoiViewportEditScope)root.RegionViewport!;
             RoiParameters Draft()=>(RoiParameters)context.DraftNode.Parameters;
             RegionGeometryEditor Editor()=>Descendants(root).OfType<RegionGeometryEditor>().First();
@@ -103,6 +114,76 @@ internal static class S2DocumentEditingCases
             Require(!scope.BeginDraw("inspection","circle",out _)&&Draft().InspectionRois.Rois.Count==originalCount,"继承模式仍写入或清除了本地底稿");mode.Write("LocalGeometry");root.OnExternalResultArrived();
             Console.WriteLine("通过：换帧取消未完成手势；继承模式保留本地底稿并拒绝写入");
 
+            var declaredView=Descendants(root).OfType<DeclaredFieldsView>().Single();
+            var modeEditor=declaredView.Fields.Single(field=>field.FieldId==mode.Port.Id);
+            Require(modeEditor.InputElement is RegionSourceModeSelector,"真实宿主模式未接新Radio组合");
+            var circleNode=new WorkflowNodeBase("circle-source","Circle","Circle","CircleDetect"){Parameters=ToolRegistry.CreateParameters("CircleDetect")};flow.Nodes.Add(circleNode);
+            Require(modeEditor.TrySetConstant("InheritedCircle"),modeEditor.Error);window.UpdateLayout();Pump();
+            var wholeEditor=Descendants(root).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId=="inspection:InheritedCircle");
+            void Pick(bool accept)
+            {
+                Exception? failure=null;
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,new Action(()=>
+                {
+                    var dialog=Application.Current.Windows.Cast<Window>().Single(item=>item!=window);
+                    try
+                    {
+                        if(!accept){dialog.Close();return;}
+                        var picker=Descendants(dialog).OfType<ReferenceSelectionControl>().Single();
+                        var choices=Descendants(picker).OfType<ListBox>().Single().Items.Cast<DeclaredReferenceCandidate>().ToArray();
+                        picker.SelectedCandidate=choices.Single(choice=>choice.NodeId==circleNode.Id&&choice.Output.Type.Shape==ValueShape.Sequence&&choice.Output.Type.Element!.Geometry==GeometryKind.Circle);
+                        picker.SelectionMode=1;picker.IndexText="1";
+                        Require(picker.TryGetReference(out _),"实际圆集合声明未通过正式选择器验证："+string.Join("；",Descendants(picker).OfType<TextBlock>().Select(text=>text.Text)));
+                        Descendants(dialog).OfType<Button>().Single(button=>Equals(button.Content,"确定")).RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                    }
+                    catch(Exception error){failure=error;if(dialog.IsVisible)dialog.Close();}
+                }));
+                Descendants(wholeEditor).OfType<Button>().Single(button=>Equals(button.ToolTip,"选择订阅来源")).RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                if(failure is not null)throw failure;
+            }
+            var beforePick=Draft().InspectionRois.Rois.Count;Pick(false);Require(Draft().InspectionRois.Rois.Count==beforePick,"取消来源选择创建了ROI");
+            Pick(true);var inherited=Draft().InspectionRois.Rois.Single(roi=>roi.IsSubscribed);
+            var reference=SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(inherited.Binding!.ReferenceExpression!);
+            Require(reference.NodeId==circleNode.Id&&reference.Selection is BindingSelection.AtConstant{Index:1}&&inherited.InheritedShapeType==ShapeType.Circle,"圆来源或明确序号未写回同一合同");
+            Capture("roi-inherit-circle-source",wholeEditor);
+            Draft().InspectionRois.Rois.Remove(inherited);flow.Nodes.Remove(circleNode);
+            Console.WriteLine("通过：真实整圆来源弹窗取消不写入，确认保留正式声明及明确元素序号");
+            Require(modeEditor.TrySetConstant("InheritedRectangleParameters"),modeEditor.Error);Pump();
+            var rectangleFields=Descendants(root).OfType<DeclaredFieldEditor>().Where(field=>field.FieldId.StartsWith("inspection:InheritedRectangleParameters:")).ToArray();
+            Require(rectangleFields.Length==5&&rectangleFields.All(field=>field.IsVisible),"矩形五参数没有在实际活动面板呈现");
+            Require(!root.TryValidateEditor(out var unset)&&unset.Contains("继承"),"未设置参数时确认未被拒绝");
+            foreach(var field in rectangleFields)Require(field.TrySetConstant(field.FieldId.EndsWith(":Width")||field.FieldId.EndsWith(":Height")?6d:0d),field.Error);
+            var composed=Draft().InspectionRois.Rois.Single(roi=>roi.IsComposed);var composedId=composed.Id;
+            var configured="";Require(composed.ParameterBindings!.Count==5&&root.TryValidateEditor(out configured),configured);
+            var width=rectangleFields.Single(field=>field.FieldId.EndsWith(":Width"));
+            window.UpdateLayout();Pump();
+            var widthText=width.InputElement as TextBox??(width.InputElement as SunEyeVision.Plugin.Wpf.Controls.NumericUpDown)?.TextEditor??throw new Exception("数值编辑模板尚未加载");
+            widthText.Text="invalid";Require(!root.TryValidateEditor(out _),"活动参数非法文本未阻止确认");
+            Require(modeEditor.TrySetConstant("LocalGeometry")&&root.TryValidateEditor(out _),"非活动非法草稿仍阻塞本地模式");
+            Require(modeEditor.TrySetConstant("InheritedRectangleParameters")&&!root.TryValidateEditor(out _),"切回未保留参数非法原文");
+            widthText.Text="7";Require(root.TryValidateEditor(out configured),configured);
+            Capture("roi-inherit-rectangle-parameters",rectangleFields.Last());
+            Require(composed.Id==composedId&&Convert.ToDouble(composed.ParameterBindings["Width"].ConstantValue)==7,"数值没有写回同一持久化ROI");
+            var maskMode=((IConfigurationFieldProvider)context.DraftNode.Parameters).GetConfigurationFields().Single(field=>field.StoragePath=="MaskMode");
+            var maskModeEditor=declaredView.Fields.Single(field=>field.FieldId==maskMode.Port.Id);Require(maskModeEditor.TrySetConstant("InheritedCircleParameters"),maskModeEditor.Error);
+            var circleFields=Descendants(root).OfType<DeclaredFieldEditor>().Where(field=>field.FieldId.StartsWith("mask:InheritedCircleParameters:")).ToArray();
+            Require(circleFields.Length==3&&circleFields.All(field=>field.IsVisible),"屏蔽圆三参数未呈现");
+            foreach(var field in circleFields)Require(field.TrySetConstant(field.FieldId.EndsWith(":Radius")?2d:3d),field.Error);
+            Require(Draft().MaskRois.Rois.Single().IsComposed&&root.TryValidateEditor(out configured),configured);
+            Capture("roi-inherit-mask-circle-parameters",circleFields.Last());
+            Require(((RoiParameters)node.Parameters).MaskRois.Rois.Count==0,"继承参数编辑污染正式节点");
+            Require(modeEditor.TrySetConstant("LocalGeometry")&&maskModeEditor.TrySetConstant("LocalGeometry"),"不能恢复本地模式");
+            Draft().InspectionRois.Rois.Remove(composed);Draft().MaskRois.Rois.Clear();
+            Console.WriteLine("通过：实际矩形五参数与屏蔽圆三参数面板、活动校验、非法草稿切换保留、同ROI写回及正式参数隔离");
+
+            Require(scope.BeginDraw("inspection","circle",out _),"不能启动Esc检查");scope.PointerDown(new(10,10));
+            modeEditor.Focus();window.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,PresentationSource.FromVisual(window),0,System.Windows.Input.Key.Escape){RoutedEvent=System.Windows.Input.Keyboard.PreviewKeyDownEvent});
+            Require(!scope.HasPendingGesture,"焦点位于参数栏时Esc未取消绘制");
+            Require(scope.BeginDraw("inspection","circle",out _),"不能启动切页检查");scope.PointerDown(new(10,10));
+            Descendants(declaredView).OfType<TabControl>().Single().SelectedIndex=1;Pump();Require(!scope.HasPendingGesture,"切页未取消绘制");
+            Descendants(declaredView).OfType<TabControl>().Single().SelectedIndex=0;Pump();
+            Console.WriteLine("通过：参数栏焦点Esc和页面切换取消当前区域手势");
+
             foreach(var roi in Draft().InspectionRois.Rois)roi.IsEnabled=roi.Id==rectangle;
             Require(context.TryCommitEditor(out var confirmError),confirmError);
             using var native=HalImage.CreateFromBytes(pixels,64,64,1);
@@ -134,7 +215,7 @@ internal static class S2DocumentEditingCases
             var writes=0;other.GeometryChanged+=_=>writes++;other.BeginDraw("mask","rectangle",out _);other.PointerDown(new(2,2));other.PointerMove(new(8,8));current=false;other.PointerUp(new(8,8));
             Require(writes==0&&!other.HasPendingGesture,"编辑范围失效后仍提交迟到手势");
             Console.WriteLine("通过：关闭只释放自身覆盖与订阅；保留其他编辑范围和正式结果，失效范围拒绝迟到提交");
-            Console.WriteLine("S4区域编辑：6组通过；正常入口配置已使用新页面。实际鼠标手感及拖入到关闭的完整窗口链尚未验收。");return 0;
+            Console.WriteLine("S4区域编辑：9组通过；正常入口配置已使用新页面。实际鼠标手感及VM同态外观尚未验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }

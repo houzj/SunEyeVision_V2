@@ -294,7 +294,10 @@ namespace SunEyeVision.Plugin.SDK.Core
         {
             ArgumentNullException.ThrowIfNull(request);
             var inputs = BindingInputCatalog.Describe(request.Parameters);
-            if (!string.IsNullOrEmpty(request.WorkflowId) && request.ParameterBindings.Bindings.Any(b => b.BindingType == BindingType.Binding &&
+            var roiSlots=RoiBindingInputs.Describe(request.Parameters);
+            var allBindings=new ParameterBindingSet(request.ParameterBindings.Bindings.Concat(
+                RoiBindingInputs.Settings(request.Parameters).Select(ParameterBindingDefinition.FromSetting)));
+            if (!string.IsNullOrEmpty(request.WorkflowId) && allBindings.Bindings.Any(b => b.BindingType == BindingType.Binding &&
                 !string.IsNullOrEmpty(b.SourceWorkflowId) && b.SourceNodeId?.StartsWith("__", StringComparison.Ordinal) != true && b.SourceWorkflowId != request.WorkflowId))
             {
                 var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { "绑定来源跨出当前工作流作用域，请使用全局变量。" });
@@ -317,7 +320,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var invalid = new RuntimeParameterSnapshot(new Dictionary<string, object?>(), new[] { $"输入 {input?.Name ?? pending.Key} [{pending.Key}] 需要重新绑定：{pending.Value}" });
                 request.RuntimeParameters = invalid; return invalid;
             }
-            if (request.ParameterBindings.Bindings.Count == 0)
+            if (allBindings.Bindings.Count == 0)
             {
                 var empty = new RuntimeParameterSnapshot(
                     new Dictionary<string, object?>(StringComparer.Ordinal));
@@ -340,26 +343,38 @@ namespace SunEyeVision.Plugin.SDK.Core
                             SunEyeVision.Plugin.Contracts.ScalarKind.Int64=>typeof(long),
                             SunEyeVision.Plugin.Contracts.ScalarKind.Float64=>typeof(double),
                             SunEyeVision.Plugin.Contracts.ScalarKind.Text=>typeof(string),_=>typeof(object)};
+            var targetPorts=declaredFields?.ToDictionary(field=>field.Key,field=>field.Value.Port,StringComparer.Ordinal)
+                ??new Dictionary<string,SunEyeVision.Plugin.Contracts.Port>(StringComparer.Ordinal);
+            foreach(var slot in roiSlots.Where(slot=>slot.Setting?.BindingType==BindingType.Binding))
+            {
+                if(request.BindingPlans?.TryGetValue(slot.Key,out var roiPlan)!=true)
+                {
+                    var invalid=new RuntimeParameterSnapshot(new Dictionary<string,object?>(),new[]{"ROI_BINDING_PLAN: 区域来源尚未在本次执行编译，请在完整工作流或受准入的草稿执行中运行："+slot.Key});
+                    request.RuntimeParameters=invalid;return invalid;
+                }
+                targetTypes[slot.Key]=typeof(object);targetPorts[slot.Key]=roiPlan.Target;
+            }
 
             // ParamSettings 可能包含调试控件的展示绑定（例如“位置修正”）。
             // 这类名称不是 ToolParameters 的可写属性，运行时由对应的
             // AvailableDataSource/ImageSourceReference 链路处理，不能进入普通
             // 参数转换，否则会把 AffineMatrix 等对象错误地走 Convert.ChangeType。
-            var executableBindings = request.ParameterBindings.Bindings
+            var executableBindings = allBindings.Bindings
                 .Where(binding => targetTypes.ContainsKey(binding.ParameterName) && BindingInputCatalog.IsInputActive(request.Parameters, binding.ParameterName))
                 .ToList();
-            if (executableBindings.Count != request.ParameterBindings.Bindings.Count)
+            if (executableBindings.Count != allBindings.Bindings.Count)
             {
                 _logger?.Log(
                     LogLevel.Debug,
-                    $"已跳过 {request.ParameterBindings.Bindings.Count - executableBindings.Count} 个非参数绑定，交由专用数据源链路处理",
+                    $"已跳过 {allBindings.Bindings.Count - executableBindings.Count} 个非参数绑定，交由专用数据源链路处理",
                     request.NodeName ?? nameof(ToolExecutor));
             }
 
             var snapshot = resolver.Resolve(
                 new ParameterBindingSet(executableBindings),
                 request.NodeResults ?? new Dictionary<string, ToolResults>(),
-                targetTypes,request.BindingPlans,request.BindingSnapshot,declaredFields?.ToDictionary(field=>field.Key,field=>field.Value.Port,StringComparer.Ordinal));
+                targetTypes,request.BindingPlans,request.BindingSnapshot,targetPorts);
+            RoiBindingInputs.Apply(request.Parameters,snapshot,request.BindingPlans);
             request.RuntimeParameters = snapshot;
             return snapshot;
         }

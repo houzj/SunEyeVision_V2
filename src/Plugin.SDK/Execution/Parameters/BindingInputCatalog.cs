@@ -122,7 +122,7 @@ public static class BindingInputCatalog
             var original = get();
             inputs.Add(new(key, name, () => get() is { BindingType: BindingType.Binding } s ? s.SourceNodeId + "." + s.SourceProperty : "",
                 text => { if (text.Length == 0) set(null); else { var s = get() ?? original!; var dot = text.IndexOf('.'); s.SourceNodeId = text[..dot]; s.SourceProperty = text[(dot + 1)..]; set(s); } },
-                type == typeof(double[]) ? new[] { type, typeof(long[]) } : new[] { type }, ReadWorkflowId: () => get()?.SourceWorkflowId, ReferenceOnly: true, Active: active,
+                type == typeof(double[]) ? new[] { type, typeof(long[]), typeof(double), typeof(long), typeof(float), typeof(int) } : new[] { type }, ReadWorkflowId: () => get()?.SourceWorkflowId, ReferenceOnly: true, Active: active,
                 ReadFieldId:()=>get()?.SourceFieldId));
         }
     }

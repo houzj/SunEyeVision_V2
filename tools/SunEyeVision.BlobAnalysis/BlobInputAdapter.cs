@@ -73,21 +73,30 @@ internal static class BlobInputAdapter
             return resources.RetainRegion(region); // Already in current image coordinates: no second pose transform.
         }
         var collection=mask?parameters.MaskRois:parameters.InspectionRois;
-        var rois=collection.Rois.Where(r=>r.IsEnabled&&(mode==RegionFieldMode.LocalGeometry?r.IsLocal:!r.IsLocal)).ToArray();
+        var rois=parameters.GetActiveRois(mask).ToArray();
         var context=parameters.NodeResults is null?null:new NodeResultsParameterContext(parameters.NodeResults);
         // Collection-level bindings must be explicit rather than silently ignored by the old geometry path.
         if(collection.BindingConfig is not null)throw new InvalidOperationException("BLOB_ROI_SOURCE_INVALID: 集合订阅应使用明确的几何项或像素区域输入。");
         if(rois.Length==0)
         {
-            if(mode==RegionFieldMode.InheritedGeometry)throw new InvalidOperationException("BLOB_ROI_SOURCE_INVALID: 已选择几何订阅，但没有明确来源。");
+            if(mode!=RegionFieldMode.LocalGeometry)throw new InvalidOperationException("BLOB_ROI_SOURCE_INVALID: 已选择几何继承，但没有明确来源。");
             return null; // Local Unset; distinct from a subscribed valid empty sequence below.
         }
         var shapeCount=0;
         foreach(var roi in rois)
         {
-            if(roi.IsSubscribed)ValidateBinding(roi.Binding,parameters.NodeResults);
+            if(roi.IsSubscribed)
+            {
+                if(!roi.HasRuntimeBinding(null))throw new InvalidOperationException("BLOB_ROI_BINDING_PLAN: 继承几何没有本次正式解析值。");
+                ValidateBinding(roi.GetRuntimeSource(null),parameters);
+            }
             if(roi.IsComposed&&roi.ParameterBindings is { } fields)
-                foreach(var binding in fields.Values.Where(b=>b.BindingType==BindingType.Binding))ValidateBinding(binding,parameters.NodeResults);
+                foreach(var key in RoiComposeResolver.RequiredParameters(roi.DeclaredShapeType))
+                    if(fields.TryGetValue(key,out var binding)&&binding.BindingType==BindingType.Binding)
+                    {
+                        if(!roi.HasRuntimeBinding(key))throw new InvalidOperationException("BLOB_ROI_BINDING_PLAN: 继承参数没有本次正式解析值："+key);
+                        ValidateBinding(roi.GetRuntimeSource(key),parameters);
+                    }
             var shapes=roi.ResolveRuntime(context);
             shapeCount+=shapes.Count;
             if(roi.IsLocal&&shapes.Count==0)throw new InvalidOperationException("BLOB_ROI_GEOMETRY_INVALID: 已启用的本地几何没有有效形状。");
@@ -120,16 +129,18 @@ internal static class BlobInputAdapter
         }
     }
 
-    private static void ValidateBinding(ParamSetting? binding,IDictionary<string,ToolResults>? results)
+    private static void ValidateBinding(string? sourceNodeId,BlobAnalysisParameters parameters)
     {
-        if(binding is null||binding.BindingType!=BindingType.Binding||string.IsNullOrWhiteSpace(binding.SourceNodeId)
-            ||string.IsNullOrWhiteSpace(binding.SourceProperty)||results is null
-            ||!results.TryGetValue(binding.SourceNodeId,out var result)||!result.IsSuccess)
+        var results=parameters.NodeResults;
+        // The admitted plan owns source identity; duplicate persisted display fields are not authoritative.
+        if(string.IsNullOrWhiteSpace(sourceNodeId)||results is null
+            ||!results.TryGetValue(sourceNodeId,out var result)||!result.IsSuccess)
             throw new InvalidOperationException("BLOB_ROI_SOURCE_INVALID: 区域绑定的本次来源无效。");
-        var value=OutputVariableResolver.Resolve(result,binding.SourceProperty,binding.SourceNodeId);
-        if(value is null)
-            throw new InvalidOperationException("BLOB_ROI_SOURCE_INVALID: 区域绑定返回null，不能当作有效空区域。");
-        if(value is RoiShape[] shapes&&shapes.Any(shape=>shape?.Geometry is null))
-            throw new InvalidOperationException("BLOB_ROI_SOURCE_INVALID: 区域序列包含无效形状，不能当作有效空区域。");
+        var inputFrame=ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
+        var sourceFrame=ImageFrameProvenance.GetInputFrame(result);
+        if(inputFrame is null||sourceFrame is null)
+            throw new InvalidOperationException("BLOB_ROI_FRAME_UNVERIFIED: 无法证明区域来源与当前图像是相同物理帧。");
+        if(inputFrame!=sourceFrame)
+            throw new InvalidOperationException("BLOB_ROI_FRAME_MISMATCH: 区域来源与当前图像不是同一物理帧。");
     }
 }

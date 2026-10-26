@@ -16,10 +16,13 @@ public sealed partial class DeclaredToolConfigurationControl
     private void BuildRegionSourceEditors(IConfigurationFieldProvider provider)
     {
         if(_parameters is not RoiParameters parameters||_fields is null||CurrentNode is not WorkflowNodeBase node)return;
+        _inheritedRegionEditors.Clear();_inheritedRegionChecks.Clear();
         foreach(var group in provider.ConfigurationSchema?.Presentation?.Regions??Array.Empty<RegionFieldGroup>())
         {
             var collection=group.Role switch {"inspection"=>parameters.InspectionRois,"mask"=>parameters.MaskRois,_=>throw new ArgumentException("未知区域角色。")};
             var title=group.Role=="mask"?"屏蔽区域":"检测区域";
+            _fields.Fields.Single(field=>field.FieldId==group.ModeFieldId).UseRegionSourceSelector();
+            BuildInheritancePanels(group,collection,title);
             var rows=new StackPanel{Margin=new Thickness(0,4,0,8)};
             _fields.AddAfterField(group.ModeFieldId,rows,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedGeometry)));
             foreach(var item in collection.Rois.Where(item=>item.IsSubscribed).ToArray())AddGeometry(item);
@@ -38,7 +41,7 @@ public sealed partial class DeclaredToolConfigurationControl
                         return Change(()=>{if(candidate is null)node.ParamSettings.RemoveSetting(slot);else node.ParamSettings.SetSetting(Setting(slot,candidate));},
                             ()=>{if(previous is null)node.ParamSettings.RemoveSetting(slot);else node.ParamSettings.SetSetting(previous);},choice is not null);
                     }){Tag=group.RegionSourceFieldId};
-                _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedRegion)));_sourceFields.Add(view);
+                _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedRegion)));RegisterSource(view,()=>Mode()==nameof(RegionFieldMode.InheritedRegion));
             }
             void AddGeometry(Roi? existing)
             {
@@ -61,8 +64,9 @@ public sealed partial class DeclaredToolConfigurationControl
                         item=previous;if(item is not null){item.Binding=binding;if(!collection.Rois.Contains(item))collection.Rois.Insert(Math.Min(index,collection.Rois.Count),item);}
                     },choice is not null);
                 }){Tag=group.GeometrySourceFieldId};
-                rows.Children.Add(view);_sourceFields.Add(view);
+                rows.Children.Add(view);RegisterSource(view,()=>Mode()==nameof(RegionFieldMode.InheritedGeometry));
             }
+            string? Mode()=>_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString();
         }
     }
     private SourceChoice[] Choices(SourceKind kind)=>SdkSources(kind).Select(source=>new SourceChoice(source.Identity,source.Source.DropdownDisplayText,false)).ToArray();

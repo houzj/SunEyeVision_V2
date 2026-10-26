@@ -112,7 +112,7 @@ public sealed class WorkflowExecutionDependencyGraph
         {
             foreach (var input in BindingRelationCatalog.Describe(node).Where(i => i.Active))
             {
-                if(node.ParamSettings.GetSetting(input.Key)?.ReferenceExpression is not null)continue;
+                if(BindingRelationCatalog.GetSetting(node,input.Key)?.ReferenceExpression is not null)continue;
                 if (input.InternalProjection) continue; // Runs within the called workflow, not the caller's local DAG.
                 if (inputIssues?.TryGetValue(node.Id, out var failures) == true && failures.Any(f => f.InputKey == input.Key)) continue;
                 if (!BindingInputCatalog.TryReference(input.Read(), knownNodes, input.ReferenceOnly, out var sourceId, out var path)) continue;
@@ -130,7 +130,7 @@ public sealed class WorkflowExecutionDependencyGraph
                     throw new InvalidOperationException("节点绑定跨出工作流作用域，请使用全局变量。");
                 AddDependency(sourceId, node.Id, WorkflowDependencyKind.ParameterBinding, input.Key);
             }
-            foreach(var setting in node.ParamSettings.Settings.Where(s=>s.BindingType==BindingType.Binding&&s.ReferenceExpression is not null&&BindingInputCatalog.IsInputActive(node.Parameters,s.ParameterName)))
+            foreach(var setting in BindingRelationCatalog.Settings(node).Where(s=>s.BindingType==BindingType.Binding&&s.ReferenceExpression is not null&&BindingInputCatalog.IsInputActive(node.Parameters,s.ParameterName)))
             {
                 if(inputIssues?.TryGetValue(node.Id,out var failures)==true&&failures.Any(f=>f.InputKey==setting.ParameterName))continue;
                 SunEyeVision.Plugin.Contracts.OutputReference reference;

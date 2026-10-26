@@ -19,7 +19,8 @@ public sealed partial class DeclaredToolConfigurationControl
     private ImageControl? _regionImage;
     private Window? _regionWindow;
     private ProductionEditorContext? _regionContext;
-    private bool HasPendingRegions=>_roiViewport?.HasPendingGesture==true||_regionParts.Any(part=>part.View.HasInvalidText);
+    private bool IsLocalRegion(RegionPart part)=>_accessors.Single(field=>field.Port.Id==part.Definition.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry);
+    private bool HasPendingRegions=>_roiViewport?.HasPendingGesture==true||_regionParts.Any(part=>IsLocalRegion(part)&&part.View.HasInvalidText);
     public IRoiEditViewport? RegionViewport=>_roiViewport;
     private bool RegionScopeCurrent()=>ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context?context.IsValid:_parameters is not null;
     private void BuildRegionEditors(IConfigurationFieldProvider provider)
@@ -34,6 +35,7 @@ public sealed partial class DeclaredToolConfigurationControl
             _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.LocalGeometry)));
             _regionParts.Add(new(group,model,view));
         }
+        _fields.PageChanged+=()=>_roiViewport?.CancelGesture();
         RefreshRegionScene();AttachRegionLifetime();
     }
     public override void SetMainImageControl(ImageControl? imageControl)
@@ -49,17 +51,26 @@ public sealed partial class DeclaredToolConfigurationControl
     {
         var window=Window.GetWindow(this);
         if(!ReferenceEquals(window,_regionWindow))
-        {if(_regionWindow is not null)_regionWindow.Closed-=OnRegionWindowClosed;_regionWindow=window;if(window is not null)window.Closed+=OnRegionWindowClosed;}
+        {
+            if(_regionWindow is not null){_regionWindow.Closed-=OnRegionWindowClosed;_regionWindow.PreviewKeyDown-=OnRegionWindowKey;}
+            _regionWindow=window;
+            if(window is not null){window.Closed+=OnRegionWindowClosed;window.PreviewKeyDown+=OnRegionWindowKey;}
+        }
         if(ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context&&!ReferenceEquals(context,_regionContext))
         {if(_regionContext is not null)_regionContext.Deactivated-=ReleaseRegionViewport;_regionContext=context;context.Deactivated+=ReleaseRegionViewport;}
     }
     private void OnRegionWindowClosed(object? sender,EventArgs args)=>ReleaseRegionViewport();
+    private void OnRegionWindowKey(object sender,System.Windows.Input.KeyEventArgs args)
+    {
+        if(args.Key==System.Windows.Input.Key.Escape&&_roiViewport is {IsActive:true,HasPendingGesture:true})
+        {_roiViewport.CancelGesture();args.Handled=true;}
+    }
     private void ReleaseRegionViewport()
     {
         _roiViewport?.Dispose();_roiViewport=null;_regionImage=null;
         foreach(var part in _regionParts)part.View.SetViewport(null);
         if(_regionContext is not null)_regionContext.Deactivated-=ReleaseRegionViewport;_regionContext=null;
-        if(_regionWindow is not null)_regionWindow.Closed-=OnRegionWindowClosed;_regionWindow=null;
+        if(_regionWindow is not null){_regionWindow.Closed-=OnRegionWindowClosed;_regionWindow.PreviewKeyDown-=OnRegionWindowKey;}_regionWindow=null;
     }
     private void RefreshRegionScene()
     {
@@ -84,7 +95,7 @@ public sealed partial class DeclaredToolConfigurationControl
     public override void OnExternalResultArrived(){base.OnExternalResultArrived();RefreshRegionScene();}
     private bool ValidateRegionEditors(out string error)
     {
-        error=_regionParts.FirstOrDefault(part=>part.View.HasInvalidText)?.View.Error??"";
+        error=_regionParts.FirstOrDefault(part=>IsLocalRegion(part)&&part.View.HasInvalidText)?.View.Error??"";
         if(error.Length>0)return false;
         if(_roiViewport?.HasPendingGesture==true){error="请先完成区域绘制或按Esc取消，再确认或保存。";return false;}
         try

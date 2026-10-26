@@ -235,17 +235,26 @@ internal sealed class GroupRunParameterSession
     public void Write(SubroutineRunParameter item,object? value)
     {
         var slots=Resolve(item);
-        if(!Scalar(slots[0].Property.PropertyType))throw new InvalidOperationException("此参数需接入专用编辑器。");
+        var valueType=slots[0].Property.PropertyType;
+        if(!Scalar(valueType)&&valueType!=typeof(RoiCollection))throw new InvalidOperationException("此参数需接入专用编辑器。");
         if(slots.Any(s=>s.Node.ParamSettings.GetSetting(s.Property.Name) is {BindingType:not BindingType.Constant}))
             throw new InvalidOperationException("关联参数已有动态绑定，请先在原工具中调整绑定。");
-        var next=ConvertValue(value,slots[0].Property.PropertyType);
+        if(valueType==typeof(RoiCollection)&&slots.Any(s=>Read(s) is RoiCollection roi&&roi.IsBinding))
+            throw new InvalidOperationException("关联区域已有集合订阅，请先在原工具中调整绑定。");
+        var next=ConvertValue(value,valueType);
+        if(valueType==typeof(RoiCollection)&&next is not RoiCollection)throw new InvalidOperationException("区域集合不能为空。");
+        // Each target and its constant setting own independent mutable geometry and binding objects.
+        object? Copy(object? source)=>source is RoiCollection roi
+            ? JsonSerializer.Deserialize<RoiCollection>(JsonSerializer.Serialize(roi,WorkflowSerializationOptions.Compact),WorkflowSerializationOptions.Compact)
+            : source;
+        var copies=slots.Select(_=>(Value:Copy(next),Constant:Copy(next))).ToArray();
         var choices=Choices(slots);
         if(choices is not null&&!choices.Any(c=>Equals(c.Value,next)))throw new InvalidOperationException("该值不是关联参数共同支持的选项。");
         var previous=slots.Select(s=>(Slot:s,Value:s.Property.GetValue(s.Node.Parameters),Setting:s.Node.ParamSettings.GetSetting(s.Property.Name),Constant:s.Node.ParamSettings.GetSetting(s.Property.Name)?.ConstantValue)).ToArray();
         try
         {
-            foreach(var entry in previous)
-            { entry.Slot.Property.SetValue(entry.Slot.Node.Parameters,next);if(entry.Setting is not null)entry.Setting.ConstantValue=next; }
+            for(var index=0;index<previous.Length;index++)
+            {var entry=previous[index];entry.Slot.Property.SetValue(entry.Slot.Node.Parameters,copies[index].Value);if(entry.Setting is not null)entry.Setting.ConstantValue=copies[index].Constant;}
         }
         catch
         {

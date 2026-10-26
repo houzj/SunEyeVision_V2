@@ -20,12 +20,14 @@ internal sealed class GroupRunParametersControl : UserControl, ISubroutineRunPar
     private readonly TextBlock _error=new(){Foreground=Brushes.OrangeRed,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(8,2,8,4)};
     private readonly Button _edit=new(){Content="编辑",Width=80,Height=28};
     private bool _rebuilding;
+    private readonly Func<SunEyeVision.Plugin.SDK.UI.Controls.ImageControl?>? _image;
+    private GroupRegionParameterControl? _region;
     private GroupRunParameterConfigWindow? _configurationWindow;
     private TreeViewItem? _previous;
     private object? Selection => (_tree.SelectedItem as TreeViewItem)?.Tag;
-    internal GroupRunParametersControl(GroupRunParameterSession session)
+    internal GroupRunParametersControl(GroupRunParameterSession session,Func<SunEyeVision.Plugin.SDK.UI.Controls.ImageControl?>? image=null)
     {
-        Session=session;
+        Session=session;_image=image;
         SetResourceReference(Control.ForegroundProperty,"ThemeTextPrimaryBrush");
         _tree.SetResourceReference(Control.ForegroundProperty,"ThemeTextPrimaryBrush");
         var root=new Grid();root.SetResourceReference(Panel.BackgroundProperty,"ThemePanelBackgroundBrush");
@@ -42,7 +44,7 @@ internal sealed class GroupRunParametersControl : UserControl, ISubroutineRunPar
         _tree.SelectedItemChanged+=(_,_)=>
         {
             if(_rebuilding)return;
-            if(HasErrors(_details)&&_previous is not null)
+            if((HasErrors(_details)||!PrepareRegion(out _))&&_previous is not null)
             { _rebuilding=true;_previous.IsSelected=true;_rebuilding=false;_error.Text="请先修正当前参数的输入错误。";return; }
             _previous=_tree.SelectedItem as TreeViewItem;ShowDetails();
         };
@@ -50,17 +52,19 @@ internal sealed class GroupRunParametersControl : UserControl, ISubroutineRunPar
     }
     internal void OpenConfiguration()
     {
-        if(HasErrors(_details)){_error.Text="请先修正当前参数输入。";return;}
+        if(HasErrors(_details)||!PrepareRegion(out _)){_error.Text="请先修正当前参数输入。";return;}
         var dialog=new GroupRunParameterConfigWindow(Session,Window.GetWindow(this));_configurationWindow=dialog;
         try{dialog.ShowDialog();}finally{_configurationWindow=null;Rebuild();}
     }
     internal bool TryPrepare(out string error)
     {
+        if(!PrepareRegion(out error))return false;
         if(_configurationWindow is {} dialog)return dialog.TryPrepare(out error);
         error="";return true;
     }
-    internal bool HasPendingConfigurationEdits=>_configurationWindow?.HasPendingEdits==true;
-    internal void Deactivate()=>_configurationWindow?.ForceClose();
+    private bool PrepareRegion(out string error){error="";return _region?.TryPrepare(out error)??true;}
+    internal bool HasPendingConfigurationEdits=>_configurationWindow?.HasPendingEdits==true||_region?.HasPendingEdits==true;
+    internal void Deactivate(){_configurationWindow?.ForceClose();_region?.Dispose();}
     private static bool HasErrors(DependencyObject parent)
     {
         if(Validation.GetHasError(parent))return true;
@@ -99,7 +103,11 @@ internal sealed class GroupRunParametersControl : UserControl, ISubroutineRunPar
     }
     private void ShowDetails()
     {
-        _details.Children.Clear();
+        // A publication may replace the root candidate while a newer raw ROI edit is pending.
+        // Keep that shadow for the same exposure rather than silently rebuilding it from the frozen value.
+        if(_region is {HasPendingEdits:true} pending&&Selection is SubroutineRunParameter selected&&pending.ParameterId==selected.Id)
+        {pending.Rebind(selected);return;}
+        _region?.Dispose();_region=null;_details.Children.Clear();
         if(Selection is SubroutineRunParameterGroup group){_details.Children.Add(new TextBlock{Text=group.Name,FontWeight=FontWeights.Bold});return;}
         if(Selection is not SubroutineRunParameter item)
         { _details.Children.Add(new TextBlock{Text="选择运行参数；点击编辑可配置内部模块参数。",TextWrapping=TextWrapping.Wrap});return; }
@@ -109,7 +117,9 @@ internal sealed class GroupRunParametersControl : UserControl, ISubroutineRunPar
         {
             var slots=Session.Resolve(item);var type=slots[0].Property.PropertyType;
             var title=new TextBlock{FontWeight=FontWeights.Bold,Margin=new Thickness(0,0,0,10)};title.SetBinding(TextBlock.TextProperty,new Binding(nameof(item.Name)){Source=item});_details.Children.Add(title);
-            if(!GroupRunParameterSession.Scalar(type))
+            if(type==typeof(RoiCollection))
+            { _region=new GroupRegionParameterControl(Session,item,_image);_details.Children.Add(_region); }
+            else if(!GroupRunParameterSession.Scalar(type))
                 _details.Children.Add(new TextBlock{Text="此复合参数的专用编辑器尚未接入。",TextWrapping=TextWrapping.Wrap});
             else
             {

@@ -25,9 +25,10 @@ public sealed class GroupRunParameterConfigTests
         public readonly Solution Model=new();public readonly SunEyeVision.Workflow.Workflow Parent=new("parent","流程"),Child=new("child","内部"){IsSubroutine=true};
         public readonly WorkflowNodeBase Group=new("group","Group1","Group1","Subroutine"){SubroutineId="child",Parameters=new SubroutineParameters{SubroutineId="child"}};
         public readonly ProductionEditorContext Context;public readonly GroupRunParameterSession Editor;
-        public Fixture(int maximum=32)
+        public Fixture(int maximum=32,Action<SunEyeVision.Workflow.Workflow>? configure=null)
         {
             Parent.Nodes.Add(Group);Child.Nodes.Add(new("a","解析1","解析1","ProtocolParse"){Parameters=new ProtocolParseParameters()});Child.Nodes.Add(new("b","解析2","解析2","ProtocolParse"){Parameters=new ProtocolParseParameters()});Model.Workflows.Add(Parent);Model.Workflows.Add(Child);
+            configure?.Invoke(Child);
             bool Allowed(string id,WorkflowNodeBase node)=>WorkflowOwnership.IsInternalNode(Model,Child,Parent.Id,id,node);
             Context=new(new NodeConfigurationEditHost(Model),Parent.Id,Group,()=>true,_=>{},allowRelated:Allowed);Editor=new(Context,Model,Allowed,maximum);
         }
@@ -69,6 +70,70 @@ public sealed class GroupRunParameterConfigTests
         f.Editor.Synchronize(item);Assert.All(slots,s=>Assert.Equal(",",((ProtocolParseParameters)s.Node.Parameters).Separator));
         Assert.Empty(((SubroutineParameters)f.Group.Parameters).RunParameterGroups);
     }
+    [Fact]
+    public void Roi_sync_clones_each_target_and_binding_graph_and_commits_with_Group_without_overwriting_subscriptions()
+    {
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.ImageThreshold","SunEyeVision.Tool.ImageThreshold.dll"));
+        SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(plugin.GetType("SunEyeVision.Tool.ImageThreshold.ImageThresholdTool",true)!);
+        using var f=new Fixture(configure:child=>{foreach(var node in child.Nodes){node.ToolType="ImageThreshold";node.Parameters=(ToolParameters)Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters",true)!)!;}});
+        var group=f.Editor.AddGroup();var source=f.Source("a",nameof(RoiParameters.InspectionRois));
+        Assert.Equal(GroupParameterEditorKind.Region,source.EditorKind);
+        var item=f.Editor.Add(group,source);f.Editor.AddTarget(item,f.Source("b",nameof(RoiParameters.InspectionRois)));
+        var slots=f.Editor.Resolve(item);var original=((RoiParameters)slots[0].Node.Parameters).InspectionRois;
+        original.Rois.Add(new Roi{Name="原区域",LocalGeometry=new RoiShape{Geometry=new SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d(10,20,5)},
+            ParameterBindings=new(){["Radius"]=ParamSetting.CreateBinding("Radius","source","radius")}});
+        f.Editor.Synchronize(item);
+        var first=((RoiParameters)slots[0].Node.Parameters).InspectionRois;var second=((RoiParameters)slots[1].Node.Parameters).InspectionRois;
+        Assert.NotSame(original,first);Assert.NotSame(first,second);Assert.NotSame(first.Rois[0],second.Rois[0]);
+        Assert.NotSame(first.Rois[0].ParameterBindings,second.Rois[0].ParameterBindings);
+        Assert.NotSame(first.Rois[0].ParameterBindings!["Radius"],second.Rois[0].ParameterBindings!["Radius"]);
+        Assert.Equal(original.Rois[0].Id,second.Rois[0].Id);Assert.Equal(5,second.Rois[0].LocalGeometry!.Radius);
+        first.Rois[0].Name="独立区域";Assert.Equal("原区域",second.Rois[0].Name);Assert.Equal("原区域",original.Rois[0].Name);
+        Assert.All(f.Child.Nodes,n=>Assert.Empty(((RoiParameters)n.Parameters).InspectionRois.Rois));
+        Assert.True(f.Context.TryCommitEditor(out var error),error);
+        Assert.Equal("独立区域",((RoiParameters)f.Child.Nodes[0].Parameters).InspectionRois.Rois[0].Name);
+        var secondSlot=f.Editor.Resolve(((SubroutineParameters)f.Context.DraftNode.Parameters).RunParameterGroups[0].Parameters[0])[1];
+        ((RoiParameters)secondSlot.Node.Parameters).InspectionRois.BindingConfig=ParamSetting.CreateBinding("InspectionRois","upstream","roi");
+        Assert.Throws<InvalidOperationException>(()=>f.Editor.Synchronize(((SubroutineParameters)f.Context.DraftNode.Parameters).RunParameterGroups[0].Parameters[0]));
+        Assert.Equal("原区域",((RoiParameters)f.Child.Nodes[1].Parameters).InspectionRois.Rois[0].Name);
+    }
+    [Fact]
+    public void Real_roi_editor_prepares_private_geometry_and_releases_only_its_shared_image_overlay()=>Sta(()=>
+    {
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.ImageThreshold","SunEyeVision.Tool.ImageThreshold.dll"));
+        SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(plugin.GetType("SunEyeVision.Tool.ImageThreshold.ImageThresholdTool",true)!);
+        using var f=new Fixture(configure:child=>{foreach(var node in child.Nodes){node.ToolType="ImageThreshold";node.Parameters=(ToolParameters)Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters",true)!)!;}});
+        var group=f.Editor.AddGroup();var item=f.Editor.Add(group,f.Source("a",nameof(RoiParameters.InspectionRois)));
+        var image=new SunEyeVision.Plugin.SDK.UI.Controls.ImageControl();var sentinel=new System.Windows.Shapes.Rectangle{Width=2,Height=2};image.InteractionOverlayCanvasControl.Children.Add(sentinel);
+        using var editor=new GroupRegionParameterControl(f.Editor,item,()=>image);
+        var panel=new Grid();panel.ColumnDefinitions.Add(new(){Width=new GridLength(400)});panel.ColumnDefinitions.Add(new());panel.Children.Add(image);Grid.SetColumn(editor,1);panel.Children.Add(editor);
+        var window=new Window{Content=panel,Width=1000,Height=680,Left=-10000,ShowActivated=false};
+        try
+        {
+            foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})window.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+            window.Show();window.UpdateLayout();Assert.Equal(2,image.InteractionOverlayCanvasControl.Children.Count);
+            Assert.Single(Visual<SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views.RoiEditorControl>(editor),c=>c.IsVisible);
+            editor.Value.Rois.Add(new Roi{Name="候选区域",LocalGeometry=new RoiShape{Geometry=new SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d(10,20,5)}});
+            Assert.True(editor.HasPendingEdits);Assert.True(editor.TryPrepare(out var error),error);Assert.False(editor.HasPendingEdits);
+            Assert.Single(((RoiParameters)f.Editor.Resolve(item)[0].Node.Parameters).InspectionRois.Rois);
+            Assert.Empty(((RoiParameters)f.Child.Nodes[0].Parameters).InspectionRois.Rois);
+            window.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);window.UpdateLayout();var bitmap=new RenderTargetBitmap(1000,680,96,96,PixelFormats.Pbgra32);bitmap.Render(panel);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"group-roi-editor-Dark.png")))encoder.Save(file);
+            editor.Visibility=Visibility.Collapsed;Assert.Single(image.InteractionOverlayCanvasControl.Children);Assert.Same(sentinel,image.InteractionOverlayCanvasControl.Children[0]);
+            editor.Visibility=Visibility.Visible;window.UpdateLayout();Assert.Equal(2,image.InteractionOverlayCanvasControl.Children.Count);
+            editor.Value.Rois[0].Name="尚未确认";editor.Dispose();Assert.Single(image.InteractionOverlayCanvasControl.Children);
+            Assert.Equal("候选区域",((RoiParameters)f.Editor.Resolve(item)[0].Node.Parameters).InspectionRois.Rois[0].Name);
+            panel.Children.Remove(editor);
+            using var page=new GroupRunParametersControl(f.Editor,()=>image);Grid.SetColumn(page,1);panel.Children.Add(page);window.UpdateLayout();
+            var tree=Visual<TreeView>(page).First();((TreeViewItem)((TreeViewItem)tree.Items[0]).Items[0]).IsSelected=true;window.UpdateLayout();
+            var active=Assert.Single(Visual<GroupRegionParameterControl>(page));active.Value.Rois[0].Name="重绑定后保留";
+            page.BindParameters(f.Editor.Parameters);window.UpdateLayout();Assert.Same(active,Assert.Single(Visual<GroupRegionParameterControl>(page)));Assert.True(active.HasPendingEdits);
+            Assert.True(page.TryPrepare(out error),error);Assert.Equal("重绑定后保留",((RoiParameters)f.Editor.Resolve(item)[0].Node.Parameters).InspectionRois.Rois[0].Name);
+            Assert.Empty(((RoiParameters)f.Child.Nodes[0].Parameters).InspectionRois.Rois);
+        }
+        finally{window.Close();}
+    });
     [Fact]
     public void File_save_reopen_preserves_Group_metadata_and_all_related_values_and_rejects_invalid_draft_before_rewrite()
     {

@@ -44,7 +44,7 @@ public partial class MainWindowViewModel
         var session=DocumentManager.Session??throw new InvalidOperationException("Group编辑文档已经关闭。");
         var child=session.Document.Workflows.Single(w=>w.Id==((WorkflowNodeBase)context.FormalNode).SubroutineId);
         var page=new GroupRunParametersControl(new GroupRunParameterSession(context,session.Document,
-            (id,node)=>WorkflowOwnership.IsInternalNode(session.Document,child,context.Identity.WorkflowId,id,node)));
+            (id,node)=>WorkflowOwnership.IsInternalNode(session.Document,child,context.Identity.WorkflowId,id,node)),()=>GetMainImageControl?.Invoke());
         groupEditor.SetRunParameterEditor(page);
         ToolEditorCommit.AttachDraftContext(control,context);
         context.PrepareView=()=>!ToolEditorCommit.TryPrepare(control,out var error)?error:page.TryPrepare(out error)?null:error;

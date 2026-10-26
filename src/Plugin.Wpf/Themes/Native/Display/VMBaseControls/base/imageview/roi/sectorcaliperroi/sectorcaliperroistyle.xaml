@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <BooleanToVisibilityConverter x:Key="bv" />
+  <Style x:Key="{x:Type local:SectorCaliperROI}" TargetType="{x:Type local:SectorCaliperROI}" BasedOn="{StaticResource ROIControlBaseStyle}">
+    <Setter Property="local:SectorCaliperROI.IsClockwise" Value="{Binding Path=IsClockwise, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.IsLargeArc" Value="{Binding Path=IsLargeArc, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.StartPoint" Value="{Binding Path=StartPoint, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.EndPoint" Value="{Binding Path=EndPoint, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.CaliperNum" Value="{Binding Path=CaliperNum, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.CaliperWidth" Value="{Binding Path=CaliperWidth, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.CaliperHeight" Value="{Binding Path=CaliperHeight, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.Radius" Value="{Binding Path=Radius, Mode=TwoWay}" />
+    <Setter Property="local:SectorCaliperROI.IsLimitFlag" Value="{Binding Path=IsLimitFlag, Mode=TwoWay}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <FrameworkTemplate.Resources>
+            <ResourceDictionary>
+              <DataTemplate x:Key="tbTemplate">
+                <Canvas>
+                  <TextBlock IsHitTestVisible="False" FontWeight="Bold" Margin="3,3,0,0" Foreground="{StaticResource ROITextColor}" Text="{Binding DataContext.Label}" FontSize="{Binding LabelFontSize}" Canvas.Left="{Binding Path=Start, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=X}" Canvas.Top="{Binding Path=Start, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=Y}" />
+                </Canvas>
+              </DataTemplate>
+            </ResourceDictionary>
+          </FrameworkTemplate.Resources>
+          <Canvas Name="move" Cursor="SizeAll">
+            <Path Stroke="{StaticResource ROIBaseColor}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <Path.Data>
+                <PathGeometry>
+                  <PathFigure x:Name="PFigure">
+                    <ArcSegment x:Name="ASegment" />
+                  </PathFigure>
+                </PathGeometry>
+              </Path.Data>
+            </Path>
+            <Path Stroke="{StaticResource ROIBaseColor}" Visibility="{Binding Path=IsCircle, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource bv}}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <Path.Data>
+                <EllipseGeometry x:Name="Eg" />
+              </Path.Data>
+            </Path>
+            <Grid RenderTransformOrigin="0.5,0.5" Canvas.Left="{Binding Path=RectTopLeft, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=X, RelativeSource={RelativeSource Mode=TemplatedParent}}" Canvas.Top="{Binding Path=RectTopLeft, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=Y, RelativeSource={RelativeSource Mode=TemplatedParent}}" Width="{Binding RectWidth, RelativeSource={RelativeSource Mode=TemplatedParent}}" Height="{Binding RectHeight, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <Rectangle Fill="#00FFFFFF" Stroke="{StaticResource ROIBaseColor}" Margin="{Binding NegativeStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              <Grid Width="0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                <local:AreaLeft x:Name="left" Style="{StaticResource leftRightAreaStyle}" AreaAngle="{Binding CaliperRotateAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              </Grid>
+              <Grid Height="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                <local:AreaTop x:Name="top" Style="{StaticResource leftRightAreaStyle}" AreaAngle="{Binding CaliperRotateAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              </Grid>
+              <Grid Width="0" HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                <local:AreaLeft x:Name="right" Style="{StaticResource leftRightAreaStyle}" AreaAngle="{Binding CaliperRotateAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              </Grid>
+              <Grid Height="0" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+                <local:AreaTop x:Name="bottom" Style="{StaticResource leftRightAreaStyle}" AreaAngle="{Binding CaliperRotateAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              </Grid>
+              <UIElement.RenderTransform>
+                <RotateTransform x:Name="RT" Angle="{Binding CaliperRotateAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              </UIElement.RenderTransform>
+            </Grid>
+            <local:DrawingCanvas x:Name="drawCanvas" ZIndex="-1" IsHitTestVisible="True" />
+            <local:AreaRightTopRect x:Name="caliperRect" Style="{StaticResource TopAreaStyle}" AreaAngle="{Binding CaliperRotateAngle, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+            <local:AreaTopRect x:Name="arcRect" Style="{StaticResource TopAreaStyle}" AreaAngle="{Binding ArcRectAngle, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+            <Ellipse Name="startPoint" Style="{StaticResource EllipseStyle}" Canvas.Left="{Binding Path=Start, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=X, RelativeSource={RelativeSource Mode=TemplatedParent}}" Canvas.Top="{Binding Path=Start, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=Y, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+            <Ellipse Name="endPoint" Style="{StaticResource EllipseStyle}" Canvas.Left="{Binding Path=End, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=X, RelativeSource={RelativeSource Mode=TemplatedParent}}" Canvas.Top="{Binding Path=End, Converter={x:Static base:PointCvt.Cvt}, ConverterParameter=Y, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+            <ContentPresenter Name="cp" />
+          </Canvas>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IROILabel}}">
+              <Setter TargetName="cp" Property="ContentPresenter.Content" Value="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              <Setter TargetName="cp" Property="ContentPresenter.ContentTemplate" Value="{StaticResource tbTemplate}" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

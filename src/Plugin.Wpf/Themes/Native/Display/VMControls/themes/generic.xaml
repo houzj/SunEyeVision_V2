@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/scrollbarstyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/scrollviewstyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/menuitemstyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/editabletextblockstyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/tabcontrol.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/expanderbutton.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/iconmenustyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/themes/generic.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}">
+    <Setter Property="FrameworkElement.ContextMenu">
+      <Setter.Value>
+        <controls:HikContextMenu>
+          <MenuItem Command="Copy" />
+          <MenuItem Command="Cut" />
+          <MenuItem Command="Paste" />
+        </controls:HikContextMenu>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

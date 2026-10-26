@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <BooleanToVisibilityConverter x:Key="bv" />
+  <Style x:Key="{x:Type local:CrossShape}" TargetType="{x:Type local:CrossShape}" BasedOn="{StaticResource ShapeContainerStyle}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Canvas Name="container">
+            <local:CrossControl ImageSourceWidth="{Binding ImageSourceWidth, RelativeSource={RelativeSource Mode=TemplatedParent}}" ImageSourceHeight="{Binding ImageSourceHeight, RelativeSource={RelativeSource Mode=TemplatedParent}}" ControlToImageRadio="{Binding ControlToImageRadio, RelativeSource={RelativeSource Mode=TemplatedParent}}" ThicknessScale="{Binding ThicknessScale, RelativeSource={RelativeSource Mode=TemplatedParent}}" CenterPoint="{Binding CenterPoint, Mode=TwoWay}" Stroke="{Binding Path=(Interface:IShapeBase.Stroke)}" StrokeThickness="{Binding Path=(Interface:IShape.StrokeThickness)}" Visibility="{Binding IsVisible, Converter={StaticResource bv}}" IsLocked="{Binding IsLocked, Mode=TwoWay}" />
+          </Canvas>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

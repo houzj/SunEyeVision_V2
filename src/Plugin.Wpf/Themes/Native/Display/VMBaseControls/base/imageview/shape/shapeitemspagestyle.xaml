@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:shape="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape">
+  <Style x:Key="{x:Type local:ShapeItemsPage}" TargetType="{x:Type local:ShapeItemsPage}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid Name="shapeGrid">
+            <shape:ShapeCanvas x:Name="visualcanvas" IsHitTestVisible="True" />
+            <Canvas Name="maincanvas" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="{x:Type shape:ShapeCanvas}" TargetType="{x:Type shape:ShapeCanvas}">
+    <Setter Property="FrameworkElement.ToolTip">
+      <Setter.Value>
+        <ToolTip Content="{Binding PlacementTarget.ToolTipContent, RelativeSource={RelativeSource Mode=Self}}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type ToolTip}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding PlacementTarget.ToolTipContent, RelativeSource={RelativeSource Mode=Self}}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </ToolTip>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

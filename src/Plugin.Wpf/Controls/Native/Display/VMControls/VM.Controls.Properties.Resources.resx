@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+<resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>1.3</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader><data name="windowClose" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABVTeXN0
+ZW0uRHJhd2luZy5CaXRtYXABAAAABERhdGEHAgIAAAAJAwAAAA8DAAAAdQEAAAKJUE5HDQoaCgAA
+AA1JSERSAAAAIAAAACAIBgAAAHN6evQAAAABc1JHQgCuzhzpAAAABGdBTUEAALGPC/xhBQAAABl0
+RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAD6SURBVFhHxdRRCsJADEVRd6L734Tu
+QfRXdzIm0sBleiuoGD8OyHN4CdPS3RjjrzTspGEnDTtp2EnDThp20rCThnS9nL9inaQhWek7rJM0
+JJTtwzEckM1WZ6yTNKQqCqcwwi3YEjk8/8szefaZWydpSFUUcmgNmJfg8Hv4yQ0kW2JzeLJO0pBY
+tpiX2ByerJM0pLlwwSU2hyfrJA3JSgOvvW6ibYH5mddvXcI6SUOaCu2F4+NYLWGdpCGh7NXbvrmE
+dZKGVEUhv3A2vHCJn32IstiGl9UZ6yQNqYo+ZZ2kIVnpO6yTNOykYScNO2nYScNOGnbSsJOGfcbu
+ASQAr+5MT7o2AAAAAElFTkSuQmCCCw==</value></data><data name="windowBG_Click" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABVTeXN0
+ZW0uRHJhd2luZy5CaXRtYXABAAAABERhdGEHAgIAAAAJAwAAAA8DAAAAJwEAAAKJUE5HDQoaCgAA
+AA1JSERSAAAAIAAAACAIBgAAAHN6evQAAAABc1JHQgCuzhzpAAAABGdBTUEAALGPC/xhBQAAABl0
+RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAACsSURBVFhH7dc7DsIwEITh5AJcgVNE
+okBIFH5XbsNxnXs5s0jYFKl3XLj4Inma/dss99tKdTlqks8OBaoyublLQDHvV805q5KbclsCakqp
+xhhVyU25/Q0IGBh6QMBA0AI8HgwtwOHB0AKsjxQtwODB0AMcBoIZ0AMsBoKBAgwGghkwUkCgmAF/
+AZ5ipABHMVKApfgFlOdjw2BUyU3cPiSA9Wt2wEcCqC5HPetyAhOgMQ4rJ8IrAAAAAElFTkSuQmCC
+Cw==</value></data><data name="windowBG_Hover" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABVTeXN0
+ZW0uRHJhd2luZy5CaXRtYXABAAAABERhdGEHAgIAAAAJAwAAAA8DAAAAJgEAAAKJUE5HDQoaCgAA
+AA1JSERSAAAAIAAAACAIBgAAAHN6evQAAAABc1JHQgCuzhzpAAAABGdBTUEAALGPC/xhBQAAABl0
+RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAACrSURBVFhH7dc7CsMwEIRh+wK5Qo4S
+SJE66LEC6QK6p3wvZScQWYXaaFyo+AxeDPO33u63nWp4nAmPqIqqk2EzIqAE+64556mwiW0E1JhS
+lRCmwia2vwEieiRoAV6EogU4fWFoAdYLRQsw+sJwBjg9EFwowOqB4AwweiBYAV2Ap1gBK6ALcBQr
+oAuwFCugCzAUv4Dyej6GH/wTNnX7QADr1+xQCQFUw+M8+/YB+BKmXP+8NH0AAAAASUVORK5CYIIL</value></data></root>

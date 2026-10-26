@@ -1,0 +1,8 @@
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core;
+
+public interface IAspectRatio
+{
+	double AspectRatio { get; }
+}

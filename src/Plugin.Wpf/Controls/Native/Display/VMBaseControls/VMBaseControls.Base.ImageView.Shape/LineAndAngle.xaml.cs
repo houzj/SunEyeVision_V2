@@ -1,0 +1,595 @@
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
+
+public partial class LineAndAngle : Control, INotifyPropertyChanged, IComponentConnector
+{
+	private const double offset = 0.5;
+
+	private const double VectorLenth = 25.0;
+
+	private const double TextFontSize = 14.0;
+
+	private bool IsOnLine1 = true;
+
+	private bool IsOnLine2 = true;
+
+	private int Line1NearPoint = 0;
+
+	private int Line2NearPoint = 0;
+
+	public static readonly DependencyProperty RatioProperty = DependencyProperty.Register("Ratio", typeof(double), typeof(LineAndAngle), new PropertyMetadata(1.0, RatioChanged));
+
+	public static readonly DependencyProperty ScaleRatioProperty = DependencyProperty.Register("ScaleRatio", typeof(double), typeof(LineAndAngle), new PropertyMetadata(1.0, ScaleRatioChanged));
+
+	public static readonly DependencyProperty StrokeProperty = DependencyProperty.Register("Stroke", typeof(Brush), typeof(LineAndAngle), new PropertyMetadata((object)null));
+
+	public static readonly DependencyProperty StrokeThicknessProperty = DependencyProperty.Register("StrokeThickness", typeof(double), typeof(LineAndAngle), new PropertyMetadata(1.0));
+
+	public static readonly DependencyProperty AngleProperty = DependencyProperty.Register("Angle", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, AngleChanged));
+
+	private Size arcSize;
+
+	private Vector line1Vector = new Vector(0.0, 0.0);
+
+	private Vector line2Vector = new Vector(0.0, 0.0);
+
+	private Vector textVector = new Vector(0.0, 0.0);
+
+	private Point line1ArcPoint;
+
+	private Point line2ArcPoint;
+
+	private Point textPoint;
+
+	private double textAngle;
+
+	private SweepDirection sD;
+
+	public static readonly DependencyProperty Line1Point1XProperty = DependencyProperty.Register("Line1Point1X", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line1Point1YProperty = DependencyProperty.Register("Line1Point1Y", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line1Point2XProperty = DependencyProperty.Register("Line1Point2X", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line1Point2YProperty = DependencyProperty.Register("Line1Point2Y", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line2Point1XProperty = DependencyProperty.Register("Line2Point1X", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line2Point1YProperty = DependencyProperty.Register("Line2Point1Y", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line2Point2XProperty = DependencyProperty.Register("Line2Point2X", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty Line2Point2YProperty = DependencyProperty.Register("Line2Point2Y", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty IntersectionXProperty = DependencyProperty.Register("IntersectionX", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public static readonly DependencyProperty IntersectionYProperty = DependencyProperty.Register("IntersectionY", typeof(double), typeof(LineAndAngle), new PropertyMetadata(0.0, PositionChanged));
+
+	public double Ratio
+	{
+		get
+		{
+			return (double)GetValue(RatioProperty);
+		}
+		set
+		{
+			SetValue(RatioProperty, value);
+		}
+	}
+
+	public double ScaleRatio
+	{
+		get
+		{
+			return (double)GetValue(ScaleRatioProperty);
+		}
+		set
+		{
+			SetValue(ScaleRatioProperty, value);
+		}
+	}
+
+	public Brush Stroke
+	{
+		get
+		{
+			return (Brush)GetValue(StrokeProperty);
+		}
+		set
+		{
+			SetValue(StrokeProperty, value);
+		}
+	}
+
+	public double StrokeThickness
+	{
+		get
+		{
+			return (double)GetValue(StrokeThicknessProperty);
+		}
+		set
+		{
+			SetValue(StrokeThicknessProperty, value);
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return (double)GetValue(AngleProperty);
+		}
+		set
+		{
+			SetValue(AngleProperty, value);
+		}
+	}
+
+	public double FSize => 14.0 / ScaleRatio;
+
+	public Size ArcSize
+	{
+		get
+		{
+			return arcSize;
+		}
+		set
+		{
+			if (arcSize != value)
+			{
+				arcSize = value;
+				OnPropertyChanged("ArcSize");
+			}
+		}
+	}
+
+	public double StrokeThicknessR => StrokeThickness / ScaleRatio;
+
+	public double Line1Point1XR
+	{
+		get
+		{
+			if (!IsOnLine1 && Line2NearPoint == 1)
+			{
+				return (IntersectionX + 0.5) * Ratio;
+			}
+			return (Line1Point1X + 0.5) * Ratio;
+		}
+	}
+
+	public double Line1Point1YR
+	{
+		get
+		{
+			if (!IsOnLine1 && Line2NearPoint == 1)
+			{
+				return (IntersectionY + 0.5) * Ratio;
+			}
+			return (Line1Point1Y + 0.5) * Ratio;
+		}
+	}
+
+	public double Line1Point2XR
+	{
+		get
+		{
+			if (!IsOnLine1 && Line2NearPoint == 2)
+			{
+				return (IntersectionX + 0.5) * Ratio;
+			}
+			return (Line1Point2X + 0.5) * Ratio;
+		}
+	}
+
+	public double Line1Point2YR
+	{
+		get
+		{
+			if (!IsOnLine1 && Line2NearPoint == 2)
+			{
+				return (IntersectionY + 0.5) * Ratio;
+			}
+			return (Line1Point2Y + 0.5) * Ratio;
+		}
+	}
+
+	public double Line2Point1XR
+	{
+		get
+		{
+			if (!IsOnLine2 && Line2NearPoint == 1)
+			{
+				return (IntersectionX + 0.5) * Ratio;
+			}
+			return (Line2Point1X + 0.5) * Ratio;
+		}
+	}
+
+	public double Line2Point1YR
+	{
+		get
+		{
+			if (!IsOnLine2 && Line2NearPoint == 1)
+			{
+				return (IntersectionY + 0.5) * Ratio;
+			}
+			return (Line2Point1Y + 0.5) * Ratio;
+		}
+	}
+
+	public double Line2Point2XR
+	{
+		get
+		{
+			if (!IsOnLine2 && Line2NearPoint == 2)
+			{
+				return (IntersectionX + 0.5) * Ratio;
+			}
+			return (Line2Point2X + 0.5) * Ratio;
+		}
+	}
+
+	public double Line2Point2YR
+	{
+		get
+		{
+			if (!IsOnLine2 && Line2NearPoint == 2)
+			{
+				return (IntersectionY + 0.5) * Ratio;
+			}
+			return (Line2Point2Y + 0.5) * Ratio;
+		}
+	}
+
+	public double IntersectionXR => (IntersectionX + 0.5) * Ratio;
+
+	public double IntersectionYR => (IntersectionY + 0.5) * Ratio;
+
+	public Point Line1ArcPoint
+	{
+		get
+		{
+			return line1ArcPoint;
+		}
+		set
+		{
+			if (line1ArcPoint != value)
+			{
+				line1ArcPoint = value;
+				OnPropertyChanged("Line1ArcPoint");
+			}
+		}
+	}
+
+	public Point Line2ArcPoint
+	{
+		get
+		{
+			return line2ArcPoint;
+		}
+		set
+		{
+			if (line2ArcPoint != value)
+			{
+				line2ArcPoint = value;
+				OnPropertyChanged("Line2ArcPoint");
+			}
+		}
+	}
+
+	public Point TextPoint
+	{
+		get
+		{
+			return textPoint;
+		}
+		set
+		{
+			if (textPoint != value)
+			{
+				textPoint = value;
+				OnPropertyChanged("TextPointX");
+				OnPropertyChanged("TextPointY");
+			}
+		}
+	}
+
+	public double TextPointX => TextPoint.X;
+
+	public double TextPointY => TextPoint.Y;
+
+	public double TextAngle
+	{
+		get
+		{
+			return textAngle;
+		}
+		set
+		{
+			if (textAngle != value)
+			{
+				textAngle = value;
+				OnPropertyChanged("TextAngle");
+			}
+		}
+	}
+
+	public SweepDirection SD
+	{
+		get
+		{
+			return sD;
+		}
+		set
+		{
+			if (sD != value)
+			{
+				sD = value;
+				OnPropertyChanged("SD");
+			}
+		}
+	}
+
+	public double Line1Point1X
+	{
+		get
+		{
+			return (double)GetValue(Line1Point1XProperty);
+		}
+		set
+		{
+			SetValue(Line1Point1XProperty, value);
+		}
+	}
+
+	public double Line1Point1Y
+	{
+		get
+		{
+			return (double)GetValue(Line1Point1YProperty);
+		}
+		set
+		{
+			SetValue(Line1Point1YProperty, value);
+		}
+	}
+
+	public double Line1Point2X
+	{
+		get
+		{
+			return (double)GetValue(Line1Point2XProperty);
+		}
+		set
+		{
+			SetValue(Line1Point2XProperty, value);
+		}
+	}
+
+	public double Line1Point2Y
+	{
+		get
+		{
+			return (double)GetValue(Line1Point2YProperty);
+		}
+		set
+		{
+			SetValue(Line1Point2YProperty, value);
+		}
+	}
+
+	public double Line2Point1X
+	{
+		get
+		{
+			return (double)GetValue(Line2Point1XProperty);
+		}
+		set
+		{
+			SetValue(Line2Point1XProperty, value);
+		}
+	}
+
+	public double Line2Point1Y
+	{
+		get
+		{
+			return (double)GetValue(Line2Point1YProperty);
+		}
+		set
+		{
+			SetValue(Line2Point1YProperty, value);
+		}
+	}
+
+	public double Line2Point2X
+	{
+		get
+		{
+			return (double)GetValue(Line2Point2XProperty);
+		}
+		set
+		{
+			SetValue(Line2Point2XProperty, value);
+		}
+	}
+
+	public double Line2Point2Y
+	{
+		get
+		{
+			return (double)GetValue(Line2Point2YProperty);
+		}
+		set
+		{
+			SetValue(Line2Point2YProperty, value);
+		}
+	}
+
+	public double IntersectionX
+	{
+		get
+		{
+			return (double)GetValue(IntersectionXProperty);
+		}
+		set
+		{
+			SetValue(IntersectionXProperty, value);
+		}
+	}
+
+	public double IntersectionY
+	{
+		get
+		{
+			return (double)GetValue(IntersectionYProperty);
+		}
+		set
+		{
+			SetValue(IntersectionYProperty, value);
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public virtual void OnPropertyChanged(string name)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	}
+
+	private static void RatioChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		LineAndAngle lineAndAngle = d as LineAndAngle;
+		double num = 25.0 * (double)e.NewValue;
+		lineAndAngle.ArcSize = new Size(num, num);
+		lineAndAngle.OnPropertyChanged("Line1Point1XR");
+		lineAndAngle.OnPropertyChanged("Line1Point1YR");
+		lineAndAngle.OnPropertyChanged("Line1Point2XR");
+		lineAndAngle.OnPropertyChanged("Line1Point2YR");
+		lineAndAngle.OnPropertyChanged("Line2Point1XR");
+		lineAndAngle.OnPropertyChanged("Line2Point1YR");
+		lineAndAngle.OnPropertyChanged("Line2Point2XR");
+		lineAndAngle.OnPropertyChanged("Line2Point2YR");
+		lineAndAngle.OnPropertyChanged("IntersectionXR");
+		lineAndAngle.OnPropertyChanged("IntersectionYR");
+		lineAndAngle.OnPositionChanged();
+	}
+
+	private static void ScaleRatioChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as LineAndAngle).OnScaleRatioChanged();
+	}
+
+	private void OnScaleRatioChanged()
+	{
+		OnPropertyChanged("StrokeThicknessR");
+		OnPropertyChanged("FSize");
+		ChangeTextPosition();
+	}
+
+	private void ChangeTextPosition()
+	{
+		Size textDisplayWidth = DrawShapeHelper.GetTextDisplayWidth(Angle + "°", FontFamily, FontStyle, FontWeight, FontStretch, 14.0);
+		Point point = new Point(IntersectionXR, IntersectionYR);
+		TextPoint = point + textVector - new Vector(0.0, textDisplayWidth.Height * 3.0) / 2.0 * Ratio / ScaleRatio;
+	}
+
+	private static void AngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+	}
+
+	private static void PositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		LineAndAngle lineAndAngle = d as LineAndAngle;
+		lineAndAngle.OnPositionChanged(e);
+	}
+
+	private void OnPositionChanged()
+	{
+		if (double.IsNaN(IntersectionXR) || double.IsNaN(IntersectionYR))
+		{
+			return;
+		}
+		line1Vector = new Vector(Line1Point2X - Line1Point1X, Line1Point2Y - Line1Point1Y);
+		line1Vector.Normalize();
+		line1Vector *= Ratio * 25.0;
+		if (double.IsNaN(line1Vector.X) || double.IsNaN(line1Vector.Y))
+		{
+			return;
+		}
+		line2Vector = new Vector(Line2Point2X - Line2Point1X, Line2Point2Y - Line2Point1Y);
+		line2Vector.Normalize();
+		line2Vector *= Ratio * 25.0;
+		if (!double.IsNaN(line2Vector.X) && !double.IsNaN(line2Vector.Y))
+		{
+			Point point = new Point(IntersectionXR, IntersectionYR);
+			Line1ArcPoint = point + line1Vector;
+			Line2ArcPoint = point + line2Vector;
+			textVector = line1Vector + line2Vector;
+			textVector.Normalize();
+			textVector *= Ratio * 25.0;
+			TextAngle = Vector.AngleBetween(new Vector(1.0, 0.0), textVector);
+			ChangeTextPosition();
+			if (Vector.CrossProduct(line1Vector, line2Vector) < 0.0)
+			{
+				SD = SweepDirection.Counterclockwise;
+			}
+			else
+			{
+				SD = SweepDirection.Clockwise;
+			}
+			CheckExtendLine();
+		}
+	}
+
+	private void CheckExtendLine()
+	{
+		double num = Math.Min(Line1Point1X, Line1Point2X);
+		double num2 = Math.Max(Line1Point1X, Line1Point2X);
+		IsOnLine1 = num <= IntersectionX && num2 >= IntersectionX;
+		if (!IsOnLine1)
+		{
+			if (IntersectionX < num)
+			{
+				Line1NearPoint = ((Line1Point1X < Line1Point2X) ? 1 : 2);
+			}
+			else
+			{
+				Line1NearPoint = ((Line1Point1X > Line1Point2X) ? 1 : 2);
+			}
+		}
+		num = Math.Min(Line2Point1X, Line2Point2X);
+		num2 = Math.Max(Line2Point1X, Line2Point2X);
+		IsOnLine2 = num <= IntersectionX && num2 >= IntersectionX;
+		if (!IsOnLine2)
+		{
+			if (IntersectionX < num)
+			{
+				Line2NearPoint = ((Line2Point1X < Line2Point2X) ? 1 : 2);
+			}
+			else
+			{
+				Line2NearPoint = ((Line2Point1X > Line2Point2X) ? 1 : 2);
+			}
+		}
+	}
+
+	private void OnPositionChanged(DependencyPropertyChangedEventArgs e)
+	{
+		OnPropertyChanged(e.Property.Name + "R");
+		OnPositionChanged();
+	}
+
+	public LineAndAngle()
+	{
+		InitializeComponent();
+	}
+}

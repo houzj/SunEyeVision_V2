@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:chrome="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Chromes" xmlns:themes="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Themes">
+  <Style x:Key="{ComponentResourceKey ResourceId=SpinnerButtonStyleKey, TypeInTargetAssembly={x:Type themes:ResourceKeys}}" TargetType="{x:Type RepeatButton}">
+    <Setter Property="Background" Value="{DynamicResource {x:Static themes:ResourceKeys.ButtonNormalBackgroundKey}}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:ResourceKeys.ButtonNormalOuterBorderKey}}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="2,2" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type RepeatButton}">
+          <Grid>
+            <chrome:ButtonChrome x:Name="Chrome" BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" CornerRadius="{DynamicResource {x:Static themes:ResourceKeys.SpinButtonCornerRadiusKey}}" RenderEnabled="{TemplateBinding UIElement.IsEnabled}" RenderMouseOver="{TemplateBinding UIElement.IsMouseOver}" RenderNormal="True" RenderPressed="{TemplateBinding ButtonBase.IsPressed}" SnapsToDevicePixels="True" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" Margin="{TemplateBinding Control.Padding}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

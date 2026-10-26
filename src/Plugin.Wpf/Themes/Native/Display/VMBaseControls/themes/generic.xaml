@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roiitemspagestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/linecaliperroi/linecaliperroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/circleroi/circleroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/ellipseroi/ellipseroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/polygonroi/polygonroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/oversectorroi/oversectorroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/circlecaliperroi/circlecaliperroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorcaliperroi/sectorcaliperroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/pointroi/pointroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/lineroi/lineroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/circlemesroi/circlemesroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/coordinateroi/coordinateroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/multilineroi/multilineroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/specialroi/crossroi/crossroistyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/rectshape/rectshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/circleshape/circelshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/polygonshape/polygonshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/lineshape/lineshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/pointshape/pointshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/arrowpathshape/arrowpathshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/coordinateshape/coordinateshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/textshape/textshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/lineangleshape/lineangleshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/multipointshape/multipointshapestyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

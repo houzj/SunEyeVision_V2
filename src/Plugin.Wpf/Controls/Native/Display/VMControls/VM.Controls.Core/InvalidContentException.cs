@@ -1,0 +1,18 @@
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using System;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core;
+
+public class InvalidContentException : Exception
+{
+	public InvalidContentException(string message)
+		: base(message)
+	{
+	}
+
+	public InvalidContentException(string message, Exception innerException)
+		: base(message, innerException)
+	{
+	}
+}

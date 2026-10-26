@@ -1,0 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.Input;
+
+public delegate void InputValidationErrorEventHandler(object sender, InputValidationErrorEventArgs e);

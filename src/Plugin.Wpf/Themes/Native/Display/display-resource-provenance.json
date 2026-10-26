@@ -1,0 +1,2161 @@
+{
+  "files": [
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\buttonspinner\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/buttonspinner/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/buttonspinner/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "D475B5CE05128FB42D3299B44FF4A46D4569C867C3E42A8F9C324A567E7F8CAB",
+      "targetSha256": "A93DAEBAC4001DD4F1CEDD986DADADEB2B8B50C9FC61F1A0983D34B393A153BC",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "96D404065340F4C637DE5F38FEDCD8F1BE3BBC2AD406B92F2D6FAEB72F5E0AEB"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\buttonspinner\\themes\\generic.xaml",
+      "sourceRelative": "controls/buttonspinner/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/buttonspinner/themes/generic.xaml",
+      "sourceSha256": "304D9309E8732627AB62A3CB87DE30296760DA38D91CAD538727514024875E87",
+      "targetSha256": "E8DEB5FCF2F9142C7AE5470267705F9EEEE8A5ED73B948BE45FC5C9CD548C65D",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "B6E1A80CBDA8D068330AC9F2D02A1C21F3F4F7D282206C184CB31AFBDF93041A"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\chromes\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/chromes/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/chromes/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "FFC47D23B9AC0045F9BE061E804EDDB02C96424EEC740D50F9E50CE1B514C47A",
+      "targetSha256": "0C915F9E389CA39C4F8B11D814AA67D5088588068411D837429464998D32DF99",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "672E31C9155BED5517173FBBC3B706D1DEE2A641F0B6D2EAE97C612115B896B7"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\chromes\\themes\\generic.xaml",
+      "sourceRelative": "controls/chromes/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/chromes/themes/generic.xaml",
+      "sourceSha256": "C01C152D133B2FB3A76A0E81BC3EA07E721C26EFA1B1A009A371199F67E4F2A2",
+      "targetSha256": "651194B8F6C912653CC618ED968AF94E2C95F52DB2272EC22C337B0061898FD2",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "AF9E3C73A50A0CF4F657E12D40D6D1FE5530DF24FFAF50CDBB153591369A3827"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\collectioncontrol\\images\\delete16.png",
+      "sourceRelative": "controls/collectioncontrol/images/delete16.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/collectioncontrol/images/delete16.png",
+      "sourceSha256": "10009CF8854C08F93496707A728757786BDB7AF3DBBD4E9FEC4BBE09417DF016",
+      "targetSha256": "10009CF8854C08F93496707A728757786BDB7AF3DBBD4E9FEC4BBE09417DF016",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\collectioncontrol\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/collectioncontrol/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/collectioncontrol/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "7B57B61F78DDB1B8F8A21358F5F9E1DBB9F34EE801D60E343C75439B47BFE70E",
+      "targetSha256": "F6EE355CA86BE319B006E8EB5A15668134AD99F41B348FED0BE264F437FEEF79",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "3EF4410EAB7D8022DEC14A9CF1EA47756398FFB6DB2FBC101293CE0695CD4657"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\collectioncontrol\\themes\\generic.xaml",
+      "sourceRelative": "controls/collectioncontrol/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/collectioncontrol/themes/generic.xaml",
+      "sourceSha256": "A699DD150418B8F2811E35E5F75CF764AD7E2A48BF3C6668AC2BEFE2093009C2",
+      "targetSha256": "0F94625F6BE497E7702D204CC59D6E51FB5C5AF823635FA5BBE3C7555ADA86AE",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "FD18F38EDA8DF6E63B551EF9EEA3A481840D84EDE2CF4526361C9E59E1306648"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\colorcanvas\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/colorcanvas/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/colorcanvas/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "ABD8391DF533D4EC830E384F690A186CCD80745044E4A59CEA75DD1D784A14B1",
+      "targetSha256": "BEF820E48D6F8EAC67EFEB8371C35ABA106D8ED64ECAB298642E011ECE6135E9",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "B686191FEE4590339E28F5770ED161A8A097AAA71FE40F51936CEA1992B46DBD"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\colorcanvas\\themes\\generic.xaml",
+      "sourceRelative": "controls/colorcanvas/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/colorcanvas/themes/generic.xaml",
+      "sourceSha256": "AA940B6A8EBF2326EACF49A9DA55C67F4AFCCE184F26FAECE782C86104680925",
+      "targetSha256": "4A5FB9F15DFA5F7C74B30905BA9DCFB9319EFB7DAD4A6AA7B9EAE1A5C22E1948",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "7BDCB16B2F09E6F5DF565B120E4CE0C156B84DF9DAB6BBD122BC47675BD29163"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\colorpicker\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/colorpicker/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/colorpicker/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "BF3A199EB890A72FFA38A25BD60B1A44BB4F0D03545F828D3F8D90100BE34C0C",
+      "targetSha256": "88CB622FDF136ED0C251C1BA7B0C72B77883418DB184D767501A0CF253387813",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "3B63C752D13AC4318EEACE84BC6E80D2AC401359B754D136D79BB8FEBEC79C89"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\colorpicker\\themes\\generic.xaml",
+      "sourceRelative": "controls/colorpicker/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/colorpicker/themes/generic.xaml",
+      "sourceSha256": "414D257CC71CF84F561F7D68C2C33978B8EF978C3A59D484C9A07F7ECD518143",
+      "targetSha256": "BE4BF270610CD3F65832A8644546806B9E612837F176166AE6DA31395CE8D24A",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "D47A779AF4544C1117C241A8177C9C5EBFF6B66EFEBFB5B8B3647937D9DCC3D2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\datetimepicker\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/datetimepicker/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/datetimepicker/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "BF4FBDC2312667008EFAC33C445E63E27A7CD0EF501763E9BCDD6C889FF078BE",
+      "targetSha256": "844C9B102CD8D3114A26AA198C8E0A7215E9307BA9E78D9DC4D71C5BEFAB52F2",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "931A6DEBED8515E1969BF88CB42F3569F8933A6BBF4FCE4EE7A272DD40A04D0A"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\datetimepicker\\themes\\generic.xaml",
+      "sourceRelative": "controls/datetimepicker/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/datetimepicker/themes/generic.xaml",
+      "sourceSha256": "4B472B387CD7F38B9E5B282BF030D9C515BEEA2BB45AB969C021D43147070D8B",
+      "targetSha256": "0F5BA2BB6AF290BA76AD272971EF1842BED99387ACFF1C355B5ACCFDEF37C5D1",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "A6D54D9156DF4AA2FE70F37F93B91882A9FD331A4FA704198EDF81B39084D175"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\datetimeupdown\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/datetimeupdown/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/datetimeupdown/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "7C9DFEF65F93CFDD799A2614ADA7B1FF3A8A7000C3914B49BCE7F98DE1ED4974",
+      "targetSha256": "B3A635A5AC71C4C90906B6881439C40E997423699D021050CC42ED56D7F220A1",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1F0956EC210B82B87B8237F2AE8D7F9CAB7C2F8AC38EFC9053418D194BEB23D8"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\datetimeupdown\\themes\\generic.xaml",
+      "sourceRelative": "controls/datetimeupdown/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/datetimeupdown/themes/generic.xaml",
+      "sourceSha256": "0A9306775AB822FA2DC6903DF5CDA6E23672BA587866E9E9F952D227AA979754",
+      "targetSha256": "81640D1A57E4EE36425ADEEAC3153242E2D798C8EA7B8D3F6916A33BD8D6B775",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "FD62146A9C5045E6AA89D4FD69EDE454A097974BF0D9B46ED8E9662AC8FCFEEA"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\multilinetexteditor\\images\\notes16.png",
+      "sourceRelative": "controls/multilinetexteditor/images/notes16.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/multilinetexteditor/images/notes16.png",
+      "sourceSha256": "970237AE6D9062675404702C7BAEED40320A0F90AB87AF36F541983DF0D1BCE8",
+      "targetSha256": "970237AE6D9062675404702C7BAEED40320A0F90AB87AF36F541983DF0D1BCE8",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\multilinetexteditor\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/multilinetexteditor/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/multilinetexteditor/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "2FA0874A155200C9AE0A6362E5582528C87EFCAA6C5F91BF9C21981CD45053C3",
+      "targetSha256": "A03EF3D8C81A7A2D460B87F0A5B8253CD2396521B37CF15AEEF99F2057E2B072",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "D8334B9080B2571FD4EEB662FEEBE7B12F219E67BD8BED97E5B6C34AC482A692"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\multilinetexteditor\\themes\\generic.xaml",
+      "sourceRelative": "controls/multilinetexteditor/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/multilinetexteditor/themes/generic.xaml",
+      "sourceSha256": "033431B50E40BEEC6EA05078790FDC8214E6473B527A7A87B730B592DCD95B12",
+      "targetSha256": "58CED9F76C4881F78B853FFAC56627C7006EF8D7DFB4BAB3E195950B2AFCD4FA",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "045FE4DECE36438FE0CFF2DA9C93FBB5235934D20A96490E125BC9141499FB35"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\advancedproperties11.png",
+      "sourceRelative": "controls/propertygrid/images/advancedproperties11.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/advancedproperties11.png",
+      "sourceSha256": "B16A17E3DA790F0EFBED6F88DEF96613954AC5128D0F264D16FE3F9CA8DE1752",
+      "targetSha256": "B16A17E3DA790F0EFBED6F88DEF96613954AC5128D0F264D16FE3F9CA8DE1752",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\categorize16.png",
+      "sourceRelative": "controls/propertygrid/images/categorize16.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/categorize16.png",
+      "sourceSha256": "416EE39246B98E377D04475687BB74E24E70D14EDD0D33764284378C3F33CD2A",
+      "targetSha256": "416EE39246B98E377D04475687BB74E24E70D14EDD0D33764284378C3F33CD2A",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\clearfilter16.png",
+      "sourceRelative": "controls/propertygrid/images/clearfilter16.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/clearfilter16.png",
+      "sourceSha256": "6610C7A62AA1B639F443D292F3C0630A0668A8D662234AD27100AE54D83D6895",
+      "targetSha256": "6610C7A62AA1B639F443D292F3C0630A0668A8D662234AD27100AE54D83D6895",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\database11.png",
+      "sourceRelative": "controls/propertygrid/images/database11.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/database11.png",
+      "sourceSha256": "7F1FCB6CE0B050B83FC46E807D9E86F7B3FAA41417D09896237FB0196C14FF39",
+      "targetSha256": "7F1FCB6CE0B050B83FC46E807D9E86F7B3FAA41417D09896237FB0196C14FF39",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\inheritance11.png",
+      "sourceRelative": "controls/propertygrid/images/inheritance11.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/inheritance11.png",
+      "sourceSha256": "517A0B269F697C39D4752E0AD4CF36F550C4A1B914B2A0854EE80636C60A373D",
+      "targetSha256": "517A0B269F697C39D4752E0AD4CF36F550C4A1B914B2A0854EE80636C60A373D",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\local11.png",
+      "sourceRelative": "controls/propertygrid/images/local11.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/local11.png",
+      "sourceSha256": "5F6635731289C823563CEA1A40E4388ABA88A1D27D8C9BD842F5ACF8B84D4146",
+      "targetSha256": "5F6635731289C823563CEA1A40E4388ABA88A1D27D8C9BD842F5ACF8B84D4146",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\resource11.png",
+      "sourceRelative": "controls/propertygrid/images/resource11.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/resource11.png",
+      "sourceSha256": "B9782BFBD52E9D090A2AEF54A4BA875D0090D71631058EAAF6C108F30A9D252F",
+      "targetSha256": "B9782BFBD52E9D090A2AEF54A4BA875D0090D71631058EAAF6C108F30A9D252F",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\sortascending16.png",
+      "sourceRelative": "controls/propertygrid/images/sortascending16.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/sortascending16.png",
+      "sourceSha256": "40B5E67231DD0129C92AC9DB03D5AB08E149A123447B022D2ACB3D0644EAB884",
+      "targetSha256": "40B5E67231DD0129C92AC9DB03D5AB08E149A123447B022D2ACB3D0644EAB884",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\images\\style11.png",
+      "sourceRelative": "controls/propertygrid/images/style11.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/controls/propertygrid/images/style11.png",
+      "sourceSha256": "2F37285C6126731FF7C127D6D8D00F885741885619C538F2FCB666305AD14990",
+      "targetSha256": "2F37285C6126731FF7C127D6D8D00F885741885619C538F2FCB666305AD14990",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/propertygrid/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/propertygrid/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "C73E7BE7617DCB5AF550ADD09A5405F448775D3E88D5D0FD5034FEF03B2A6600",
+      "targetSha256": "084E8FC907984C062B2AD67A8300EA83E10E281C0957E4951A2CF41A41E6EECB",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "2076FD641EAF5158670ABCB447FE52C1C24640F488EAA903A19EE5B55DC2576C"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\propertygrid\\themes\\generic.xaml",
+      "sourceRelative": "controls/propertygrid/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/propertygrid/themes/generic.xaml",
+      "sourceSha256": "79D2B65B106763CAAEF3E32359CFB632F791CEC8F6111CA7E145E9429C02FB6E",
+      "targetSha256": "CEAD76A9AB6B87AE149B39E0458D7BA7D77775F0F6C6EB3DC7ECE901AB087E4C",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "F62207639CC4BC6BCEBE706D29E33CFA3627CEB22A0724BB288666DBF512784D"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero\\brushes_normalcolor.xaml",
+      "sourceRelative": "controls/themes/aero/brushes_normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero/brushes_normalcolor.xaml",
+      "sourceSha256": "57FFA43A0C87E0E055D669259D397278F4A1D810CE37CCC5CAE8411856AC12CA",
+      "targetSha256": "9BB1408EC8357E917CC555179A6F6B2E9362D35A962D98F0E358A858774CB0C9",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "62779F3508F21FF99D5E6D625A536442DD0B7A5508E13538CD07071F9674423A"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero\\buttons_normalcolor.xaml",
+      "sourceRelative": "controls/themes/aero/buttons_normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero/buttons_normalcolor.xaml",
+      "sourceSha256": "E8C7878DF60413BC2DA83E49179654ED60308A606AC2CA045EDBB4638BF965F0",
+      "targetSha256": "3C1232FC316EBD53782282A43A3442A2F2DBDC618085691791A51757470D784F",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "D61A02353B2AE7F8F092AF978A9B3CBAB0522EAEDCB96BA83462F81B7F8216EB"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero.normalcolor.xaml",
+      "sourceRelative": "controls/themes/aero.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero.normalcolor.xaml",
+      "sourceSha256": "ABAC909AFCA1CB414E80BD770A26128DB338CD6EB0247947831FB5317F9AFF78",
+      "targetSha256": "177123AF1387D939D6094FDEC72F08BD06F876DB0AB5C4403FD9EC7E1AE7AAFD",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "26F14FAB3D12E6B23F413E472E4A091F67F1D326C9589FDB747EE6FCEF066071"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\brushes.xaml",
+      "sourceRelative": "controls/themes/aero2/brushes.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero2/brushes.xaml",
+      "sourceSha256": "1028FFC5D8087D3F5081F64EA0D38B4DA75464B032C86ABB681659B93C3E0E21",
+      "targetSha256": "FE3EF0B29F0E7F09554734137729BE2CD781AD5BAC3ED0F9E773CF2E1B0BFDB3",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "EE2DD7CCD5F65A1D12F7E05C89E58E24836145EA04522B5A77EC17DB0FF36912"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\buttons.xaml",
+      "sourceRelative": "controls/themes/aero2/buttons.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero2/buttons.xaml",
+      "sourceSha256": "F12A059E0835BB0F378388D34D16DDC74DCE1B8374FBD3845FE264BDF88B8185",
+      "targetSha256": "5B047DA3A55DA715BDC68895706FBB6395AC3F07950E51FD7359E93A21FBFD75",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "DB014FFC5A06C53281773307965889F030CC8CFEBA1A2F613B69FCE1711F9A5D"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\common.xaml",
+      "sourceRelative": "controls/themes/aero2/common.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero2/common.xaml",
+      "sourceSha256": "FFC09DC99AB25EAA90F8A3FAE3B2B0FAD9EBFE99FEDB19E86765837A27B8AD22",
+      "targetSha256": "C9ED01A9876D25F1AC345CDE30E10234471D3297BCEA9B886800CB64837A50A0",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1B458174F8C0DC9DF2C1B362369DA63DA32FEAE5687A171695E57F1F15735F79"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2\\glyphs.xaml",
+      "sourceRelative": "controls/themes/aero2/glyphs.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero2/glyphs.xaml",
+      "sourceSha256": "AAE144139380916F567DCC5D8B9B6DC5332F291A18DFBD195CEA34504CE868A0",
+      "targetSha256": "1D8127309F338AEBC447BE0B9626BCDC7AFC6E7163CB441DF3BBC4450C302AC1",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "9475D12B95C2378843FF0E1CC352673126DF214D9A3BBCD11AB1554370B3794E"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "49C07679B70F4F855FBF964BDCF5C19EA90E4C2520FE0E122D9554EE0910FB56",
+      "targetSha256": "88C71727DEA3E333E629095FF0822395E0C0AB66EC335FEA5D2765720202B4AF",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "23A505F15FAC95F4AB04E08FF963310AA26B6F7064C55964A380BC7D12ED0B85"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\classic.xaml",
+      "sourceRelative": "controls/themes/classic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/classic.xaml",
+      "sourceSha256": "48E66A2105CE488F11C7F174D6142FD594F63159F48B90DD38D34553D9911966",
+      "targetSha256": "6B9ACBF91EF65072A7AD77A8257F7C838CEBAF58842091AA148F65A4317FD5DE",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "33E851370E9ECD45E7752FEF25A448276134647EE90FDC9733CA015CB163C4D2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\common.xaml",
+      "sourceRelative": "controls/themes/common.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/common.xaml",
+      "sourceSha256": "3A4307B61C9A84B8DF9314F7B769D5B3C78E79DECDB3CC8380EE4B6548E30864",
+      "targetSha256": "87F838A7C4B7097BB3204328E589A1E140FC6928AB7A0A22BF530DB9E5205540",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "0BEBAD2216DB69B0DFAC2C7AB20DBED41B0CA8794B01800D33F77D49262227EA"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\generic\\brushes.xaml",
+      "sourceRelative": "controls/themes/generic/brushes.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/generic/brushes.xaml",
+      "sourceSha256": "009DE17A5E054323847B0B9A74E5CE65DC9A375C09C9F349DCC59A076CCBE331",
+      "targetSha256": "8C83D983C6CC8A6CC2185BC317CD77EA588EDEB15E514EFEAA650A53B95B42B9",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "31F8B9EA421ED54567AC7D738DAE193699E1C50558A722EEAC590945321A0B32"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\generic\\buttons.xaml",
+      "sourceRelative": "controls/themes/generic/buttons.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/generic/buttons.xaml",
+      "sourceSha256": "D81AB1892B6C273ED2B2048C6A1CB0921B5D788D7F295A9D6F699F24806267AF",
+      "targetSha256": "E1B5D986FF42C0A184BA310890D34EAB6C3AD37B20F1F68FE8B7E7A1BB0F678B",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "43738619F91A4A5E1CFD8C6E492F373A6B3B621A6B966D2831E7A17AC1EC5352"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\generic\\glyphs.xaml",
+      "sourceRelative": "controls/themes/generic/glyphs.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/generic/glyphs.xaml",
+      "sourceSha256": "AAE144139380916F567DCC5D8B9B6DC5332F291A18DFBD195CEA34504CE868A0",
+      "targetSha256": "1D8127309F338AEBC447BE0B9626BCDC7AFC6E7163CB441DF3BBC4450C302AC1",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "9475D12B95C2378843FF0E1CC352673126DF214D9A3BBCD11AB1554370B3794E"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\generic.xaml",
+      "sourceRelative": "controls/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/generic.xaml",
+      "sourceSha256": "7FD65D602A8096740B39AB27EB447542395776C795363D50018C803C22F564D4",
+      "targetSha256": "6AC2E598E7BFB0E958E54CD850652A6A010B88FE967F3D45C8118C69D3A64CEC",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "5B34985A60CFB6AA83157C70FD8A99F835657F5FDB8199E013915AE6DE3EC25F"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\luna.homestead.xaml",
+      "sourceRelative": "controls/themes/luna.homestead.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/luna.homestead.xaml",
+      "sourceSha256": "48E66A2105CE488F11C7F174D6142FD594F63159F48B90DD38D34553D9911966",
+      "targetSha256": "6B9ACBF91EF65072A7AD77A8257F7C838CEBAF58842091AA148F65A4317FD5DE",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "33E851370E9ECD45E7752FEF25A448276134647EE90FDC9733CA015CB163C4D2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\luna.metallic.xaml",
+      "sourceRelative": "controls/themes/luna.metallic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/luna.metallic.xaml",
+      "sourceSha256": "48E66A2105CE488F11C7F174D6142FD594F63159F48B90DD38D34553D9911966",
+      "targetSha256": "6B9ACBF91EF65072A7AD77A8257F7C838CEBAF58842091AA148F65A4317FD5DE",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "33E851370E9ECD45E7752FEF25A448276134647EE90FDC9733CA015CB163C4D2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\luna.normalcolor.xaml",
+      "sourceRelative": "controls/themes/luna.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/luna.normalcolor.xaml",
+      "sourceSha256": "48E66A2105CE488F11C7F174D6142FD594F63159F48B90DD38D34553D9911966",
+      "targetSha256": "6B9ACBF91EF65072A7AD77A8257F7C838CEBAF58842091AA148F65A4317FD5DE",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "33E851370E9ECD45E7752FEF25A448276134647EE90FDC9733CA015CB163C4D2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\themes\\royale.normalcolor.xaml",
+      "sourceRelative": "controls/themes/royale.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/themes/royale.normalcolor.xaml",
+      "sourceSha256": "48E66A2105CE488F11C7F174D6142FD594F63159F48B90DD38D34553D9911966",
+      "targetSha256": "6B9ACBF91EF65072A7AD77A8257F7C838CEBAF58842091AA148F65A4317FD5DE",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "33E851370E9ECD45E7752FEF25A448276134647EE90FDC9733CA015CB163C4D2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\timepicker\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/timepicker/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/timepicker/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "AECAB95587DA67468561E308B1AB0AE1DB9A6995A4A2B81CE5387705EA4CB2B8",
+      "targetSha256": "C5348D1B5DF7020425B63CEA9E31388876B65364C0D29B63CD82D6C45ADD3833",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "50B04D53B7FDA161B5AC84622AEE987C3133D6F0439AB568B4A5B4A9FEFC0C14"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\timepicker\\themes\\generic.xaml",
+      "sourceRelative": "controls/timepicker/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/timepicker/themes/generic.xaml",
+      "sourceSha256": "4665BEBC98A65EB7E73276509ECC643F25EF326837ABCBBB71F4BA80D25AC7A6",
+      "targetSha256": "5F7085B5B728B2E1E249B2156E6567A02EBCA3F7E9F9E34AA0DF39AA09DA63D8",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "2516C9AB0A121FA7F95E8AA4E8ED5541DAFF2BF2926D1CEEDFBD74DA28E61F23"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\timespanupdown\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/timespanupdown/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/timespanupdown/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "755074E5AB5CBA15321E6B3FC6E39EFE97447EAC765287C6B86F8346B4725732",
+      "targetSha256": "E200C64B667D56786AB480F5AAF68F00465FC9830853A577D49206D4A687D2E6",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "0982B2D6B00C465043E5C3F0603C8BF54DA16C82E04783C15BA4539FEDA76E5C"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\timespanupdown\\themes\\generic.xaml",
+      "sourceRelative": "controls/timespanupdown/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/timespanupdown/themes/generic.xaml",
+      "sourceSha256": "6D6E7C1AB4EA5A326072C7E1475741E7073686BA99BF68B4E49FA1019E49C319",
+      "targetSha256": "AAF415BB1B81D39BCF57697F1E96A48DDB7F8EB0795D592ABDA66E0E5E4BDF87",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "EEBA5798AADA786BEF29FED677C31245F28C1541B527C46DED32BDF1FFB11D00"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\watermarktextbox\\themes\\aero2.normalcolor.xaml",
+      "sourceRelative": "controls/watermarktextbox/themes/aero2.normalcolor.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/watermarktextbox/themes/aero2.normalcolor.xaml",
+      "sourceSha256": "8C410E96CCCA43D3D5CC586B7E742347DE612A38C77C1DEE37B939136439DFE0",
+      "targetSha256": "2AA023C6A2BF7423C414015C7BB2E62B9CE22641EA5020D332280C3508D6A943",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "9F4FD5190327B864E1C9DF542BE686EF5A7CE3BD09A96583187CD00FA69F0186"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\watermarktextbox\\themes\\generic.xaml",
+      "sourceRelative": "controls/watermarktextbox/themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/controls/watermarktextbox/themes/generic.xaml",
+      "sourceSha256": "0F34E444F8B4DCB904501BCDEA34337CA2B52538DA6C118C86F6FC58F4FF5969",
+      "targetSha256": "F1A46208CD95FF930B150671364E792A080A299836965B3F57D0A56550AA2831",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "AAAE08A7B4F9EF5455FE8594E706B491FA92B7F8392792778DD78EA9545CE5A3"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\arrow_down.png",
+      "sourceRelative": "resources/arrow_down.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/arrow_down.png",
+      "sourceSha256": "8BEB2C22CF6F94CDE60D62861BF71B2108C5E0FFFAB1685AED78D288A6BEEE97",
+      "targetSha256": "8BEB2C22CF6F94CDE60D62861BF71B2108C5E0FFFAB1685AED78D288A6BEEE97",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\arrow_left.png",
+      "sourceRelative": "resources/arrow_left.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/arrow_left.png",
+      "sourceSha256": "8A18F7685215D5DDD566530C054DE4B12217D43C3DD8D7C76CD6F71C2AF036DF",
+      "targetSha256": "8A18F7685215D5DDD566530C054DE4B12217D43C3DD8D7C76CD6F71C2AF036DF",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ask.png",
+      "sourceRelative": "resources/ask.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ask.png",
+      "sourceSha256": "37BC6A989B13FDBF8D4DB14887DF8EB412F0665D476D71DF208B97A07839AE22",
+      "targetSha256": "37BC6A989B13FDBF8D4DB14887DF8EB412F0665D476D71DF208B97A07839AE22",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\close.png",
+      "sourceRelative": "resources/close.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/close.png",
+      "sourceSha256": "3A6F55CF733368B9CD8D3C7422016D70B1A0D08B4E47F9588C785D701989192C",
+      "targetSha256": "3A6F55CF733368B9CD8D3C7422016D70B1A0D08B4E47F9588C785D701989192C",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\close_dis.png",
+      "sourceRelative": "resources/close_dis.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/close_dis.png",
+      "sourceSha256": "47CBC91A16B77AC8EC3DC3CDC5775EFAC0D3E8A8FDF6995BF433C4716B47811A",
+      "targetSha256": "47CBC91A16B77AC8EC3DC3CDC5775EFAC0D3E8A8FDF6995BF433C4716B47811A",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\default.png",
+      "sourceRelative": "resources/default.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/default.png",
+      "sourceSha256": "8DB5346BA6741B8B4133F737E4CA3690C9E30FA88D4BD7162B0FB79D09B52344",
+      "targetSha256": "8DB5346BA6741B8B4133F737E4CA3690C9E30FA88D4BD7162B0FB79D09B52344",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\error.png",
+      "sourceRelative": "resources/error.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/error.png",
+      "sourceSha256": "B358C47D10D75B7EF58A9E08854C48F404AFC869AF46048384861851F42D4D3A",
+      "targetSha256": "B358C47D10D75B7EF58A9E08854C48F404AFC869AF46048384861851F42D4D3A",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ic_log_fold_click.png",
+      "sourceRelative": "resources/ic_log_fold_click.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_click.png",
+      "sourceSha256": "D1E361ED29FA554E1CE8165177C43873F51471B92200C4663932FE24B65220D9",
+      "targetSha256": "D1E361ED29FA554E1CE8165177C43873F51471B92200C4663932FE24B65220D9",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ic_log_fold_disable.png",
+      "sourceRelative": "resources/ic_log_fold_disable.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_disable.png",
+      "sourceSha256": "238B5D4EAA7B47B6DB73EAC9989B64E98F8EF10B207A704DD5D8C551125FD959",
+      "targetSha256": "238B5D4EAA7B47B6DB73EAC9989B64E98F8EF10B207A704DD5D8C551125FD959",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ic_log_fold_normal.png",
+      "sourceRelative": "resources/ic_log_fold_normal.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_normal.png",
+      "sourceSha256": "14903B71FDAC11766316FE3A283A6FA88B1D03E25EBFD5F6254EFAB7E9A6D4DD",
+      "targetSha256": "14903B71FDAC11766316FE3A283A6FA88B1D03E25EBFD5F6254EFAB7E9A6D4DD",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\max.png",
+      "sourceRelative": "resources/max.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/max.png",
+      "sourceSha256": "5E2EC405B17730F464282B2ECC4DB1FD50EAD73D614BDD720C9FE47FA8321C6A",
+      "targetSha256": "5E2EC405B17730F464282B2ECC4DB1FD50EAD73D614BDD720C9FE47FA8321C6A",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\max_dis.png",
+      "sourceRelative": "resources/max_dis.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/max_dis.png",
+      "sourceSha256": "EFAFB788F896A096BAE1179D6284B5F31EA9D22F81014B4892141022FAEE227C",
+      "targetSha256": "EFAFB788F896A096BAE1179D6284B5F31EA9D22F81014B4892141022FAEE227C",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\min.png",
+      "sourceRelative": "resources/min.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/min.png",
+      "sourceSha256": "5F0D9A6C02D10C080D34F1E5FF8D4261950AC9BC553D4CE5A09D3E699A0ABBB1",
+      "targetSha256": "5F0D9A6C02D10C080D34F1E5FF8D4261950AC9BC553D4CE5A09D3E699A0ABBB1",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\min_dis.png",
+      "sourceRelative": "resources/min_dis.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/min_dis.png",
+      "sourceSha256": "45354F61EF2113BB1C1C9D68EC6B32FE8613A55393AC0D096BF3E3B33E9A5B18",
+      "targetSha256": "45354F61EF2113BB1C1C9D68EC6B32FE8613A55393AC0D096BF3E3B33E9A5B18",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\msg_close_click.png",
+      "sourceRelative": "resources/msg_close_click.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/msg_close_click.png",
+      "sourceSha256": "24B406738080B8D424FDDCB529C140D0DBE32184D762D0AA83B631804D65E037",
+      "targetSha256": "24B406738080B8D424FDDCB529C140D0DBE32184D762D0AA83B631804D65E037",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\msg_close_normal.png",
+      "sourceRelative": "resources/msg_close_normal.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/msg_close_normal.png",
+      "sourceSha256": "0F4714EAB21FED1C6A1C39B8E9842668BAB55572101CED871E5C199DC04C739E",
+      "targetSha256": "0F4714EAB21FED1C6A1C39B8E9842668BAB55572101CED871E5C199DC04C739E",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ok.png",
+      "sourceRelative": "resources/ok.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ok.png",
+      "sourceSha256": "CBD19E0D971CB6A314CE5CA03FFE1B900C582B0D02CB7FB6994F2D646BF08EEE",
+      "targetSha256": "CBD19E0D971CB6A314CE5CA03FFE1B900C582B0D02CB7FB6994F2D646BF08EEE",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\waring.png",
+      "sourceRelative": "resources/waring.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/waring.png",
+      "sourceSha256": "81AD52443294990CDD4C1D779DEAF1508FF9F4E138CA90C99A69EFC6FA28FB27",
+      "targetSha256": "81AD52443294990CDD4C1D779DEAF1508FF9F4E138CA90C99A69EFC6FA28FB27",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\win_close_hov.png",
+      "sourceRelative": "resources/win_close_hov.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/win_close_hov.png",
+      "sourceSha256": "D44E14B566346A43C76F67A5526A8EC783F5DB5C684EDA791560F0812DF34A45",
+      "targetSha256": "D44E14B566346A43C76F67A5526A8EC783F5DB5C684EDA791560F0812DF34A45",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\win_close_sel.png",
+      "sourceRelative": "resources/win_close_sel.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/win_close_sel.png",
+      "sourceSha256": "35FD60663844FA39BC2A06ED9AFFED17F89D76699AFA7BF977C37416F1EDC6AC",
+      "targetSha256": "35FD60663844FA39BC2A06ED9AFFED17F89D76699AFA7BF977C37416F1EDC6AC",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\win_max_hov.png",
+      "sourceRelative": "resources/win_max_hov.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/win_max_hov.png",
+      "sourceSha256": "E06A94B049F78663231E1BC612B01A6661686A6E440C4CBF557A9490EA8CFEE2",
+      "targetSha256": "E06A94B049F78663231E1BC612B01A6661686A6E440C4CBF557A9490EA8CFEE2",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\win_max_sel.png",
+      "sourceRelative": "resources/win_max_sel.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/win_max_sel.png",
+      "sourceSha256": "B5BEBD2976D05BDC2DC8B716581654D1626428E257545C00BE274B602C20E655",
+      "targetSha256": "B5BEBD2976D05BDC2DC8B716581654D1626428E257545C00BE274B602C20E655",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\win_min_hov.png",
+      "sourceRelative": "resources/win_min_hov.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/win_min_hov.png",
+      "sourceSha256": "20A6CC01EBCFDDBB661E5CA8233BF2D1F7C8BEC2BD4857BA52B8D10296B51DD2",
+      "targetSha256": "20A6CC01EBCFDDBB661E5CA8233BF2D1F7C8BEC2BD4857BA52B8D10296B51DD2",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\win_min_sel.png",
+      "sourceRelative": "resources/win_min_sel.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/win_min_sel.png",
+      "sourceSha256": "51004A63F479C3BBABB98C04225D80749DB5CE8B811F2DAD9A733F4B362ACF0F",
+      "targetSha256": "51004A63F479C3BBABB98C04225D80749DB5CE8B811F2DAD9A733F4B362ACF0F",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\windowbg_click.png",
+      "sourceRelative": "resources/windowbg_click.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_click.png",
+      "sourceSha256": "A212F228CDC4884DDAFCB3E080AFC39E430E628C2059A4E6A5428A1E15DB5DBD",
+      "targetSha256": "A212F228CDC4884DDAFCB3E080AFC39E430E628C2059A4E6A5428A1E15DB5DBD",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\windowbg_hover.png",
+      "sourceRelative": "resources/windowbg_hover.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_hover.png",
+      "sourceSha256": "C519D84F60507E99A4C2BDE44FCA676134E020865D1CABA73469405FE282465D",
+      "targetSha256": "C519D84F60507E99A4C2BDE44FCA676134E020865D1CABA73469405FE282465D",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\windowclose.png",
+      "sourceRelative": "resources/windowclose.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowclose.png",
+      "sourceSha256": "216ECC027B94D9D136D836A9126F0CB18F74E4AB4F7288DBD7193CB7EF7A0A40",
+      "targetSha256": "216ECC027B94D9D136D836A9126F0CB18F74E4AB4F7288DBD7193CB7EF7A0A40",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\windowshift_ic_maximize.png",
+      "sourceRelative": "resources/windowshift_ic_maximize.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_maximize.png",
+      "sourceSha256": "CDF32474ED06BB4E1781D7BB85C001827D470DB5A76AB94CBBBEA30DAAB68150",
+      "targetSha256": "CDF32474ED06BB4E1781D7BB85C001827D470DB5A76AB94CBBBEA30DAAB68150",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\windowshift_ic_minimize.png",
+      "sourceRelative": "resources/windowshift_ic_minimize.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_minimize.png",
+      "sourceSha256": "303C4DC69EA1459E3BD19719A6F91F9634DCCC7E74BC9312238076EEBA7DEF3C",
+      "targetSha256": "303C4DC69EA1459E3BD19719A6F91F9634DCCC7E74BC9312238076EEBA7DEF3C",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\windowshift_ic_normal.png",
+      "sourceRelative": "resources/windowshift_ic_normal.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_normal.png",
+      "sourceSha256": "1D7BB61823DD336C0DA0F470F61E058CCA8618E6F0BC05D3071A9192E4D7E0C4",
+      "targetSha256": "1D7BB61823DD336C0DA0F470F61E058CCA8618E6F0BC05D3071A9192E4D7E0C4",
+      "adaptations": []
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\basewindowstyle.xaml",
+      "sourceRelative": "styles/basewindowstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+      "sourceSha256": "46989E854D2DC8F66C9E05B06AAD8F48995A0D8F963566371EFAAB0DD71A1E27",
+      "targetSha256": "E337599D133EF9D38B9174FDBA79218D1E9A923B5CF6644873B6A63294151D51",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "0003E92B678928B7A88C4AAFFD0D7ABAC7A98FE866B77B2E6E292D280C57A64E"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\buttonsstyle.xaml",
+      "sourceRelative": "styles/buttonsstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/buttonsstyle.xaml",
+      "sourceSha256": "238781DFFA6780F1C2209D19BCF283F35882AAB95F1B0E98767DD61362AC5B0E",
+      "targetSha256": "7F467F0D8DE5262A7DA1EA6D0498609FF93B356F29F6593455A78046F7369C96",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "35C63C411578056C3D74993A515F946F1D7CA11FF5700689EBDB3513C984ECC8"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\editabletextblockstyle.xaml",
+      "sourceRelative": "styles/editabletextblockstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/editabletextblockstyle.xaml",
+      "sourceSha256": "EDE2FBF6DEFF597B76C623D67DEA5007EE01E7228FDBADF3E6C85E062DE958E7",
+      "targetSha256": "A3A3278F2682AD6BF77729C58CCBD62F00FF4174598D350B268CB352BDE6A5A6",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A104F831290965C99645E030B661875F8638F1B91F604A87010228521301C740"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\expanderbutton.xaml",
+      "sourceRelative": "styles/expanderbutton.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/expanderbutton.xaml",
+      "sourceSha256": "9C297A16DDDB111D164A2DDC96A4DB2964F7CE4EE250BA7CDCEC9EF33D6AED98",
+      "targetSha256": "041E67B0A382C4622E013F4F8E87C4445FD1383B1D454852DC01A1CA5E1F7AAC",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "FD5FF8773C92EF19770BC8572672945AC871D058F44EE202D18D0445247C59F6"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\iconmenustyle.xaml",
+      "sourceRelative": "styles/iconmenustyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/iconmenustyle.xaml",
+      "sourceSha256": "E38D78E6AF9D3A44279ECE62D13F76E8DCFC4D26C5A9EFE92B22D8D248088DAA",
+      "targetSha256": "FBFAB325D09B8AC696E7185E58F18638D45D476ADC55D305E662530E761149E9",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "3DC5EFA4E4404EF9C339D99662539A893791B1E3C873D915EA1866C9F57C9856"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\menuitemstyle.xaml",
+      "sourceRelative": "styles/menuitemstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/menuitemstyle.xaml",
+      "sourceSha256": "D798A7F8F9E30E7862C07148F1E4611C103CEF1847AB93660CB58AF8044A1829",
+      "targetSha256": "2023BB6FABDD3DA2D74B9A0D16A9A0FF4B1CA752E30B7A6E7EB6375ADB6427D6",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "36574F6E1ABD55CCA961E8720D6CB8732920DC417C67A0C433E3D701C3D6AB09"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\scrollbarstyle.xaml",
+      "sourceRelative": "styles/scrollbarstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/scrollbarstyle.xaml",
+      "sourceSha256": "779A5808F89FA7969153C5F6035EC3F50E6FC382DD57461B89612E8F7467A3CF",
+      "targetSha256": "34F9D492DA87B5C778DB37B89C23548A50171053CA0F0BF97B0105F3FC06DDFB",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "4395E397659671A6BC79167ABC6FF5750B17B992D26EBFC67849DE799A54B407"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\scrollviewstyle.xaml",
+      "sourceRelative": "styles/scrollviewstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/scrollviewstyle.xaml",
+      "sourceSha256": "05AEABA62C1BE94D05F5AE9399C32ACBE039B622CA95A58C14D6C3BF6CB33B05",
+      "targetSha256": "4D52CD1D3724EB5EE2F45C035401D562D498E12797241D6A190D3184A5AFA974",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "315DD60B3297525C118790EEAE94919095ABC0CCB99AF5BACF86BA1A12F19999"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\tabcontrol.xaml",
+      "sourceRelative": "styles/tabcontrol.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/tabcontrol.xaml",
+      "sourceSha256": "DE20B1E3309BBE4EBFD31485F4DA869D5C312A7CAE1F7F416ECFFE92280E2BB2",
+      "targetSha256": "ED2FE6D6ABD875399E691A25C61796DDC87BA47CE2E1C339AA15D7AAE3A05C57",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "93417A559B2166AA4D7399194A43584A874103850C6AF25AA03D7EAAE83B51E2"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\themes\\generic.xaml",
+      "sourceRelative": "themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMControls/themes/generic.xaml",
+      "sourceSha256": "50068EEBEAD174954A5B5D6F4E5C96F2B1CE2F11DC816E76F243FFD961B6748E",
+      "targetSha256": "25D08877263B170DFF1B1B6FF25568D8DBDB4073729D2439CAB7F12AB440AB21",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "F859A09EC50D4525388902805BD8F8B382CC997D2F42B134EA0863C4A6A6D042"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\CollectionControlDialog.xaml",
+      "sourceRelative": "VM.Controls/CollectionControlDialog.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlDialog.xaml",
+      "sourceSha256": "E63203560B877A8269A63959ECC96634FA89F71C5698959E5BB0AFDEF88CAD64",
+      "targetSha256": "DFB3DAF8866C7E0686804D4E256A924736B1D961F5FCB787F1411411087A77C7",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A42E765FA9A09B1F586052345A27E0E46103679579A79C967ED86D04B648BDB8"
+    },
+    {
+      "library": "VM.Controls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\HikMessageBox.xaml",
+      "sourceRelative": "VM.Controls/HikMessageBox.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml",
+      "sourceSha256": "85B1D9D829D9C76A3EE06DB41EB468F40C4C60C552FB4FF094397CE9CA0A4DF3",
+      "targetSha256": "F5EBC94262CA9537039FF8CB831BFC45A7FA77B44392D856E94026FA8FF7A943",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "C7D4BF342CD4959BFDE66E6C284E2A6F8E84C67773C8762950D93A4A0AB65A64"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\imageviewitemspagestyle.xaml",
+      "sourceRelative": "base/imageview/imageviewitemspagestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/imageviewitemspagestyle.xaml",
+      "sourceSha256": "7473C830B540D56950A7E82E91FB1510DE3F75C079268C2037BF41844CB0B827",
+      "targetSha256": "8519415990200CAF7F310FE7BBACA316EFDAE3087568CA3E80C2F5D6DCED210F",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "11206ECFE3C665B16A03275192206E193CA22A9011C7EA9DA78EFEE2F98D305C"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedcirclecaliperroi\\normalizedcirclecaliperroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedcirclecaliperroi/normalizedcirclecaliperroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedcirclecaliperroi/normalizedcirclecaliperroistyle.xaml",
+      "sourceSha256": "B0134133F5C98390C49C7960CB140772AA2E9C8E12C99D2ACF0396A891EFB929",
+      "targetSha256": "A5C65ED84E45D1FFE1A740188DA726FE7E66D21BD10DD390C2539014C2C8F2D6",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "05DDF1928CC6260C64BF389729B323F10F7F1172C73C6B131CD54922858FCAEA"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedcirclemesroi\\normalizedcirclemesroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedcirclemesroi/normalizedcirclemesroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedcirclemesroi/normalizedcirclemesroistyle.xaml",
+      "sourceSha256": "5FCFAF537780CA6D34D0BC92984FDEA245AA044931EDBBAFB9FC20D232CE2A4A",
+      "targetSha256": "5A8E4AA899BE99AE16790677D1C2BB8AA7A1E7A835C352E8CAFD6DE5CAF0E4B1",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A96DA6FC794C356B121FABD86E540B32A4C8B5CF3EB9ECF1C8C689CDB714F9B0"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedcircleroi\\normalizedcircleroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedcircleroi/normalizedcircleroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedcircleroi/normalizedcircleroistyle.xaml",
+      "sourceSha256": "536D9FA30EDE39B8E0D37BBD43EA5D1FF4D539021826E50EBCE8EBA39ACB1E56",
+      "targetSha256": "1F6BFAD7A5CA50875A3AACA55F60E9F7FED629F65E691314A2CA5BFE77526445",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "DA439EE14F1EEF279B1689E8A879779272B516EA701F5A6D20FC7DD7123A1B4E"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedlinecaliperroi\\normalizedlinecaliperroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedlinecaliperroi/normalizedlinecaliperroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedlinecaliperroi/normalizedlinecaliperroistyle.xaml",
+      "sourceSha256": "CB2A34B762CA879D29310A355F4F1470AE8006D1AAEC72BE23E941EFC532494D",
+      "targetSha256": "B05E4430117BD2FAA965FF1E61474E3FF8540A83989F1BC78F52667D2D10741E",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1B23D1968EB0EE9E7C9F4D819DA1423C559D4A352B46321FE64DDA1992945BB3"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedlineroi\\normalizedlineroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedlineroi/normalizedlineroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedlineroi/normalizedlineroistyle.xaml",
+      "sourceSha256": "3B6556295A5520805D1E49B7B54234C1325993BC6EC4B858C5C9D26F66C73229",
+      "targetSha256": "61CA0BABD698C5D8EA103FD346BDA4C3437004663ECC1FB3B63C9A7B6481DCF4",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "68C378FE6AE31F066C0B4F0DDA57EE3CA1421265BC30022EDBEE5C77DDDFC259"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedmatrixcircleroi\\normalizedmatrixcircleroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedmatrixcircleroi/normalizedmatrixcircleroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedmatrixcircleroi/normalizedmatrixcircleroistyle.xaml",
+      "sourceSha256": "B9FFCE64BAC4B33BBA3BBD0EA0232BADD12D3B485869CC7A49A7A2577779AC6C",
+      "targetSha256": "5F3C86D9979FC0071906EFAF8926CF2D2F63F3F1BF2F483A3CFB6D54FF1FFF87",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "B6968C4AA82607744A9A9614869BE526292AF748EE77CFE5A65865E9E249AC7C"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedoversectorroi\\normalizedoversectorroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedoversectorroi/normalizedoversectorroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedoversectorroi/normalizedoversectorroistyle.xaml",
+      "sourceSha256": "03E70D3137D296C981D55BD0C2B16F04ABAE9478EDF0CCF62C3A0D5A06B9294F",
+      "targetSha256": "93EEE753219A33439CEB41754AD92B870A3E5A5BE04777F19309B00CD0116780",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "603B9EB36DD0CEECA352DC1446E097D6264E370604DC753823E9F583B1E1B2CE"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedpointroi\\normalizedpointroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedpointroi/normalizedpointroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedpointroi/normalizedpointroistyle.xaml",
+      "sourceSha256": "8479639E20987F7C278F0BD79C503869B822E56BB2339EE9AC512FEE1DB091A7",
+      "targetSha256": "AB0AAB3EECB822C02B47CD20C263F60F5686C139FFEADEBD1C5AA698E286063B",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1626A3CEB8159EC495015FC54FF9D5463402204AE5CE04DD65CE4EDC99B5FB9F"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedpolygonroi\\normalizedpolygonroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedpolygonroi/normalizedpolygonroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedpolygonroi/normalizedpolygonroistyle.xaml",
+      "sourceSha256": "951B75EB9C8EA7A50703F36464233345F47D30DD978C1E3B7B995C634DB8A16B",
+      "targetSha256": "8998F7BB7508F95AB8A9C6B6EFFB85F238580A0DFBCF25B2139AA35EBC2AC29C",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "F5FCA9085ACC0AD0E4029001476C3517596079CE3BE578F4B741A29C307169CF"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedrectroi\\normalizedrectroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedrectroi/normalizedrectroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedrectroi/normalizedrectroistyle.xaml",
+      "sourceSha256": "D77422DE1C35B15E9819714A2181249A74D52F197F51E398AC001B2C36EC9DDE",
+      "targetSha256": "F5FC2684C2EF03ECB9999F41BEC6D5B9C545AFBF5ACD7D92A5C80AA5A0DF8EF4",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "4BB09E74F3038134E528EF5206280DBF89A39D23898F01D69F638495F19A94F7"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedsectorcaliperroi\\normalizedsectorcaliperroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedsectorcaliperroi/normalizedsectorcaliperroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedsectorcaliperroi/normalizedsectorcaliperroistyle.xaml",
+      "sourceSha256": "D614D56155E7ED061D2E0682D5511F3A17C6BAE078D6D34671EA71F548C38643",
+      "targetSha256": "EFB7038F2474F22D47FAEA733E2330F4739EF4DE35748973C9EFC42C4DE9515E",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "8E4569C74CF435A6C9FFC24BE38C909ED7DFACC46B1D6CE946C764A23422E2AA"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedsectorroi\\normalizedsectorroistyle.xaml",
+      "sourceRelative": "base/imageview/normalizedroi/normalizedsectorroi/normalizedsectorroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedsectorroi/normalizedsectorroistyle.xaml",
+      "sourceSha256": "D6200B2102E112674F7CA1A24ED71005F2FD68AE6C753A38AEDBC49919FA7486",
+      "targetSha256": "DB8F08786D2414B2DC309B6DE9DCBD2BF5DE9BD3B0013EA2D4F390462321CEAC",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "972920AFFEFABB8109396541CC12E24164B31B9E66451AD2010F3692512D72CD"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\circlecaliperroi\\circlecaliperroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/circlecaliperroi/circlecaliperroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/circlecaliperroi/circlecaliperroistyle.xaml",
+      "sourceSha256": "E810943710AA6A95C2519E425D0789F1E0A5F4774F4A6880FBC8A0EEB6479CC0",
+      "targetSha256": "A8BF14394638B6CC9F74150672F0C39E8BB96041E11506E2670755AD660A8E08",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "008BDA2D9B56E2F5AB4117A23375ECC1B762A577B1FFA66948453C19FDB87007"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\circlemesroi\\circlemesroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/circlemesroi/circlemesroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/circlemesroi/circlemesroistyle.xaml",
+      "sourceSha256": "0BA45A04EAD1582ED9F48D4A29340E2890F91A58D6E968DF6CB902FF68BE4C0E",
+      "targetSha256": "A0E9FB36FA00EB8C25A2C34039A4CAEFFA7B3D8422B197EC31993C7B36807AD3",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "58589245287F344500F7A4D66BCBABEE0E56486EC62AE8260D11D2425D8B5C10"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\circleroi\\circleroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/circleroi/circleroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/circleroi/circleroistyle.xaml",
+      "sourceSha256": "6766CF506EE9CFA67ACCB28D59A27B0F61EB7228913CE7D5C0DB1E13159D9896",
+      "targetSha256": "B7C54F4A38AE7FC430F76B3956F88387C082493D1C7DA463E3FBD5D529120DB9",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "B85E03D6EB18B8A107D41545699004C1DEA56E353993D80D19060F6D6AC867EE"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\coordinateroi\\coordinateroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/coordinateroi/coordinateroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/coordinateroi/coordinateroistyle.xaml",
+      "sourceSha256": "5AFF3C03FEFCE71E0D2AF8DFDD96700F3574E59A6F57A223DC879B5AAD372C19",
+      "targetSha256": "D4B346465064582CA818D195FC2147DB8250C7F366CDF38F74547626F5051CC9",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "33324AB99CBDF83DB68CBAD263BD869B9009E2BE5F6B620B178EC3B2E897CDB8"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\ellipseroi\\ellipseroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/ellipseroi/ellipseroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/ellipseroi/ellipseroistyle.xaml",
+      "sourceSha256": "52EC8700A11556C0533589285145DC0E3202E024D2F1B0A9374BF8B331BFE990",
+      "targetSha256": "F0E995DFBB42AF456F3377B7B2E2E9C3A6FD50087670D15A89BCC7C5E9989DF3",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "DEE047146D1EEC698BD58BE326145FA62202EADB68BC578F567583D7DDD98FCF"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\linecaliperroi\\linecaliperroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/linecaliperroi/linecaliperroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/linecaliperroi/linecaliperroistyle.xaml",
+      "sourceSha256": "79585A54774B1B6809B0644020310F72AD8F2210F9C11D82021D4C69F4040145",
+      "targetSha256": "5653E200491753556A88E95CDE9EF7BE33ED952D75668341034541FA896868B1",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "4251ADE015B0C9665DA11A257A98AF3A229554EE00443F2D49665079D3B78E81"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\lineroi\\lineroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/lineroi/lineroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/lineroi/lineroistyle.xaml",
+      "sourceSha256": "7F0022D4A70F1EDC29178F1C054396DD06C2AF8520B109D2000CD05BED7CAF37",
+      "targetSha256": "D7ACE5163DFA3945B9464D2A9FAD9FE814D05F06FF191853160B7F500225A22E",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "82404D43AC6021B0F562DC5B5DFA2963ECA4679194AD62062B98A5EEB83EF228"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\multilineroi\\multilineroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/multilineroi/multilineroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/multilineroi/multilineroistyle.xaml",
+      "sourceSha256": "7DBD68995E0536B87CE63ECDFC45CDEC6E33BEE3FD65E991BC47A80742A1E96A",
+      "targetSha256": "DFF02DB8988263501D5FBBA790B1313E18A2424780284038B842C57AE7534A78",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A81E8C563008FEFD82B7B97657954800C397A53ED988E1A8D39B665BC00687E9"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\oversectorroi\\oversectorroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/oversectorroi/oversectorroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/oversectorroi/oversectorroistyle.xaml",
+      "sourceSha256": "DA67E2C318AF6ACD72C2AE23E11594176921093BD251501BD705A2FC96918AFF",
+      "targetSha256": "5D864BBF0405809D9F6AE9033DCAE400F84BB534FCE9001621F65B8E0F2A2B21",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "85FB0DE3BDD582D17FB5BC385E2D066A987DEE4B8B93B2C09D45809FFBD7BC02"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\pointroi\\pointroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/pointroi/pointroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/pointroi/pointroistyle.xaml",
+      "sourceSha256": "74309FE0108DE1D96B41B587E9C9A91BF98C5E431059801A8CC1510350A5637B",
+      "targetSha256": "E9D4A59CB1E2179772460C257F7E84F41420610CB5FDF389AF53D3DE1C4CD2A4",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "360C66135590A58BC9FF4C6EFE1EF16064420087FE04A7E32EB52798F3642C91"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\polygonroi\\polygonroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/polygonroi/polygonroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/polygonroi/polygonroistyle.xaml",
+      "sourceSha256": "6AEA687B461081648DA832E7552FD07FCF01C195F0F6698675F318B7BEB3CED2",
+      "targetSha256": "F29329D8A45F49300201CA0C92DD2F3C9393F92FD330F2620B583D8AE35EE26F",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "DD9994D97F9A1636834EDCB9F01D0885C80DBEB489CD5807ED1F1E1B79837707"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\polylineroi\\polylineroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/polylineroi/polylineroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/polylineroi/polylineroistyle.xaml",
+      "sourceSha256": "2307F1D891B67074CF1898F122FF4E618ED8C05F0DB090B21611E93535A5F6FB",
+      "targetSha256": "7BB5C046CE2F867760899924999BC7E1E5F154EED8599B7B0CB9B16236BC8573",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "29A76AF79D3B9506DED38A9D29A6891BA319EA08F6EA5111D1EA6E37A3714683"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\rectroi\\rectroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/rectroi/rectroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
+      "sourceSha256": "819B7E5A26BA66318DA1F851539D6111DED55D2AC3A8C087B277C2BE478041EA",
+      "targetSha256": "F5D7B76202B9D4C69407AF84756B64194FF45435014766ADA5F4FF894D35F4C2",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1B945658CB4AC129CF632C8285AB2F2B618FAFEB1F12D34A9B9446A2C51600B5"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\roicontrolbasestyle.xaml",
+      "sourceRelative": "base/imageview/roi/roicontrolbasestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml",
+      "sourceSha256": "A321D94A3FFA56005153A4395E35D4EC5C9667E57587F9412859B14F529E6A1F",
+      "targetSha256": "0697BB89639E88DC6896FF64A8BAB5420DD8C6407E693FE1C0442A53AF858039",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A24DD0A3EBCD7A3971B4A9B5E7BB25E1332576DA54C52205D592A9B80930CC2F"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\roiitemspagestyle.xaml",
+      "sourceRelative": "base/imageview/roi/roiitemspagestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roiitemspagestyle.xaml",
+      "sourceSha256": "FF0B678ABF2FB7B1A3F526EBB978605B44BEDED1B3949FA83EB4901139E37E95",
+      "targetSha256": "CEA774B3F426941A610CD457C329A029F7E132A23C98831A78AE39E4099413D7",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "BC7B9D496277981A052BA63140FA6C6F1E2862FA4E213C700453FDC7D3CB8E1D"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\roundedrectroi\\roundedrectroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/roundedrectroi/roundedrectroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roundedrectroi/roundedrectroistyle.xaml",
+      "sourceSha256": "80A4F635257186A11B64513FCB12AB64B06EECE34078663605A3BE499889B8EC",
+      "targetSha256": "1549C16DE1468583A63DC1B03E155D3E96C3FD9945A856DD00D51BDE621B0654",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "74DE58D266F5B487C627FCCF898C8BE86FC5FEA13E268EF32ABD9587F8F321DF"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\sectorcaliperroi\\sectorcaliperroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/sectorcaliperroi/sectorcaliperroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorcaliperroi/sectorcaliperroistyle.xaml",
+      "sourceSha256": "6C57391036B9360F044B0802A42CFD88ED228447FCD0C2C45D32CC8A11307912",
+      "targetSha256": "77461032AB8DC477AED5164BE557993D298A4794539CB5FDE3B69FE900F746E2",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "42AD65EE68B1A1E7745370405310CFDA8AC8E6B32D656CE847FA467631111ED3"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\sectorroi\\sectorroistyle.xaml",
+      "sourceRelative": "base/imageview/roi/sectorroi/sectorroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml",
+      "sourceSha256": "E8D432BE711169551DF93DB6E166B5480FAE251798625A59C7F0B70EE7DFE297",
+      "targetSha256": "0DB2411BC4A21C31686BB71FC9DDA92132EDCD9F7CDD96A4F386760B01D5346E",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "B3D41E399092E0C62A0E35697174957AE65EBCE8DD62B65A86296C7207622D26"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\subroiitemspagestyle.xaml",
+      "sourceRelative": "base/imageview/roi/subroiitemspagestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml",
+      "sourceSha256": "8CD7525542410BF9C2B94E93E3CF074D52D88529098DEEBF7D5153DCA50F464C",
+      "targetSha256": "B7C28B2ED8B064067D14B955626BE89526157F20D3D8B47A535E035D85662FE5",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "ABC9AF096EC7415FA1D92D3287DF20BFD00F6E192BA2D25B851A0BBF82DB7161"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\annularsectorshape\\annularsectorshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml",
+      "sourceSha256": "DCA860643DC1C81DCC6CC67137DF411121AC0625CF1639FEC36F8C6B8272DE69",
+      "targetSha256": "0B943A500AE82AB0EDC1295F357F69BA70445DC4281256655FF1E17FB42A2248",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "56FC1D20C3D1A6C42B58320C888B6F8DEAD3E78C27F5E3B2F2A0CB6AC0A96411"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\arrowpathshape\\arrowpathshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/arrowpathshape/arrowpathshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/arrowpathshape/arrowpathshapestyle.xaml",
+      "sourceSha256": "5D9873E5203685888D34789C0E921ADBAD180CA4271EBE7174DF64D13E35E394",
+      "targetSha256": "433A0E552392B510D20653C9A44C30A18250B14A0DCF94F7479182C07AC0124C",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "FDF60CBE8EC14580318A618CBA86EB2105AD3C429030F621E5F24583AEB5FA8C"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\circleshape\\circelshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/circleshape/circelshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/circleshape/circelshapestyle.xaml",
+      "sourceSha256": "A62A92A7B8446D240AD504F93EDF861B3EB7EFE190C9B4692EBB6EB62C0B54CE",
+      "targetSha256": "17AE7B82FB1547C02A01E1116BFF503126CC0F6089A527DC6EF33F459626C21E",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "CAEB2729B3E12E235439D4DB54D561F7F0DA7905D3611724FA4CD22AF1F39D23"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\coordinateshape\\coordinateshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/coordinateshape/coordinateshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/coordinateshape/coordinateshapestyle.xaml",
+      "sourceSha256": "FA7DB831B635A4334DC94D609C75FD49B28F04E8ABC9AD1D0A02368C33ED815D",
+      "targetSha256": "33D076A6CA70A0444FD19F7C0894178DFF9FBB9767435AEE36849C62BBAC9FB1",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "31C45609965AD3136673FEE8FAE9BE07DE3004A2D193318F10441B0230A2D321"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\crossshape\\crossshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/crossshape/crossshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml",
+      "sourceSha256": "0DDDA55E7379DADFF6081E665D2C7BE2F1898D56F18EF9620A0B5F045E13E3FE",
+      "targetSha256": "EE0EBC926A99A7096747967E77AAE3FFCC98F1383C5A465862496865EFE224FA",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "C84E0F643196B5712457FB1ECE83F033223DA32E8CBF366E697222AD08701F2B"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\lineangleshape\\lineangleshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/lineangleshape/lineangleshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/lineangleshape/lineangleshapestyle.xaml",
+      "sourceSha256": "672ADF0B0AA38B398D5948186243F7588F24F245822A1D7B94756D17D0D0DDC3",
+      "targetSha256": "B0F5833CDFFB1C0DABDA8FB419ED35DA28039B56B4EA04A47582739FB671082B",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "709BAAC3DBFC2A603139C6E82C0E8EBF848BF4DE61E96F19C90C3964D2F5F073"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\lineshape\\lineshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/lineshape/lineshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/lineshape/lineshapestyle.xaml",
+      "sourceSha256": "D72BEAA67C2314F132BF9045215FE85FB709AE5C661C827A638CB0E5F09AAD81",
+      "targetSha256": "7E25C4B4D9ADF25395B6E380EB5F5CC5F7219CB7178C9071E352CAADCB94FF9E",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "757232139B4602D410C57A91A00A93BDB7847B2CAF575AC9F2DB7CC0C281E456"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\multipointshape\\multipointshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/multipointshape/multipointshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/multipointshape/multipointshapestyle.xaml",
+      "sourceSha256": "BE276FBB6F0AF030DB3DDFF6FC932B5D9661B427955C9D045434488A7C518756",
+      "targetSha256": "031A7D4CCAD5B926AF2E2064F9F0B9328B3B9B203F9BD283D0D71963B8E7A4F1",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "DA8A0A69F2E07602410176B556E5C30949BF7386C597DD6BE8A306EAE41FECDB"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\pointshape\\pointshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/pointshape/pointshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/pointshape/pointshapestyle.xaml",
+      "sourceSha256": "2A665288207812BF988C3A72979F96C9E0884497D2F8DA38907E8A4CF58ADCEA",
+      "targetSha256": "50F386C6E8B195100FED0A1D68DE29F31D900037ADDC0BFFC63460B649202A90",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "5FA7FCDDC47604BE0826521AA2D7AEE2B40F8AF659AFABEC967151F21BCECA6B"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\polygonshape\\polygonshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/polygonshape/polygonshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/polygonshape/polygonshapestyle.xaml",
+      "sourceSha256": "46352CED2EBDA78D2D2DB3E22BB9180AC8F50322E0E8331026F27B1CCF3F5E21",
+      "targetSha256": "9FC3583590CBF1BC831BC7553784110AD5451CBC96FD9579B499E23DBC835500",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1E3DA94CF6280A4ACC33D1F80FFDA4F593C6CA74E2C7DFCEC96CE20DFC18CFB0"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\polylineshape\\polylinestyle.xaml",
+      "sourceRelative": "base/imageview/shape/polylineshape/polylinestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/polylineshape/polylinestyle.xaml",
+      "sourceSha256": "D2E72298CFF63D87684C18A6A716B924B726989EB7C5519C341B28A740E4A9A0",
+      "targetSha256": "1574AAAD96FF4A0D76AFB69A6650D8014DC1610D3B9AF4F79214DBD2FB55D123",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "4300F29A0425A5BED0764AEE1EC5BC130B97052B9655058B4749B476B005D5C9"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\rectshape\\rectshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/rectshape/rectshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/rectshape/rectshapestyle.xaml",
+      "sourceSha256": "4F889317497A899F4244655FA8F367C75B38ECBE8E74832824BD956BAC8EF57A",
+      "targetSha256": "01A15CE6B1E20E9429825FE63EE33F3D819009E3E99BF923AF6E1CCFBAD760E5",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "2FE8B961743771CBF0089AB3339772DB572E1B480A07A55EEC86F7740005F198"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\shapecontainerstyle.xaml",
+      "sourceRelative": "base/imageview/shape/shapecontainerstyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml",
+      "sourceSha256": "F01BB84F738C373DB61672CA957CBF0B75D6E931F76EDE94172C40671B509B28",
+      "targetSha256": "9E144578172DFD8BD3DA0989B7716229D1F4A5958AEB56DECF0FB83B932B523D",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "D9745A81FBD19298D1D3F9D7E5AB0EC4FF615AAF477BF20572A6387AA3998A67"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\shapecontrolbasestyle.xaml",
+      "sourceRelative": "base/imageview/shape/shapecontrolbasestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontrolbasestyle.xaml",
+      "sourceSha256": "6B4B647BFBD31FF46C74DFC09DF40A42A5B44C83891C0354EA641CFD721992C6",
+      "targetSha256": "11FB46D8BCD0CD123CA9DFB0B771DABBC88283ABA42F60479A0FEFD11C6C6435",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "707BB7B7B90BFCA3E81638241BE708032FF41C0AA779503A0C9D765D3DE9AA05"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\shapeitemspagestyle.xaml",
+      "sourceRelative": "base/imageview/shape/shapeitemspagestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+      "sourceSha256": "1E4105F1F190BA6E8A26437A087F66E0C74282CB817993EB39F5ACC2D05BF4D8",
+      "targetSha256": "644E0853747FBE516A0C7B51205E9099C2D4A4AEC0E2981946C9C92B280FFC17",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1C9F02AB4B3D61803A278FF4058BCDE10EBB3869296FD8AFCC26BA545AB5DC1D"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\textshape\\textshapestyle.xaml",
+      "sourceRelative": "base/imageview/shape/textshape/textshapestyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/textshape/textshapestyle.xaml",
+      "sourceSha256": "1CEF1E56595A332AEF238A4D119DC55B1574D758A8319575D9347A07186F5F73",
+      "targetSha256": "D602B34C0B21658391952B9820027BB946F79C51B9A5B0470CB33FDBDDDCBBEE",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "F90F8C5EB5DF6B9754D12909555315FDF469A4BC09FCB8E284B388772BEC6EF8"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\specialroi\\crossroi\\crossroistyle.xaml",
+      "sourceRelative": "base/imageview/specialroi/crossroi/crossroistyle.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/specialroi/crossroi/crossroistyle.xaml",
+      "sourceSha256": "A64A0A1727A638D495910E9DC723243E2D377C656C1003120F0652DC228C41A1",
+      "targetSha256": "3C124F6A36BFD23E4133C0B49EDC2E8B9211E57E6CF8FA7DF4DC24D62E457375",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "5DFD8E89AA3BDB7B7FE42E0EECF527F5FF7E92ACF2E9B1357F2EE87B4EE2E3C1"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\themes\\generic.xaml",
+      "sourceRelative": "themes/generic.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/themes/generic.xaml",
+      "sourceSha256": "6ABDADDE23CF07748D65B34FAC1FE67C833083BA8172D8953AE6A38423D8AF26",
+      "targetSha256": "29D1D92061C6D157323D94BBE561887F7A4F362C85E8F26F69634683F850AC14",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "9932AC06E17DBDEC69759466D0B5A5CA46624DD55186DDC1F2110E963BFE27C1"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml",
+      "sourceRelative": "VMBaseControls/ImageViewBox.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
+      "sourceSha256": "1A376CF7ED4516A4E3E15402FA2A99EAC6820D9905081339EE763E0E5920E68C",
+      "targetSha256": "7C6F588AB4C8A70D81BA802BD926C06AAA7D1253A213566C7BE821F91E3D73EC",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "D2D4B24B772ACE342E76CADF31A26BB64FEC9C14187C2AFFE48C471AB5679904"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\ContainerItem.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView/ContainerItem.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ContainerItem.xaml",
+      "sourceSha256": "A150C02F92E540FADB8422BBAD5E3E12C21574C1667E34875D967576B75888FE",
+      "targetSha256": "9B91593383F65A8EA300DA8E2D76A93CA49DA7D4B8B559BCD52B1AE98127C164",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1AE477AEADE3519D1D3BBA4F5ADF8FE44F61C3ABEBB77B3FDF6B28E0001AA011"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\ROIItem.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView/ROIItem.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROIItem.xaml",
+      "sourceSha256": "90815A3894402E95832D24A89706EDF94E27F2488855BC91F90AEC4D3A54A8D8",
+      "targetSha256": "C117BB5EAF47C01554C154F1C3D20944C766E6FE05A2AE068ED0D988845AA457",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "C5B86E3FF85976EDB23E6A4D201E7D74803AA8E3308D5B6CBC597FC7E2772158"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\RubberControl.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView/RubberControl.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/RubberControl.xaml",
+      "sourceSha256": "08E85BCA2E24E7534EB92D09171B3A7A7F45A6447EBC91BC561EF36C3EF5BBA0",
+      "targetSha256": "7B2B486CC667C6DCF94C38E4E3576B887FE9ED381B3D27D8FF28B53D1583A1B5",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "EDB124743ED1AC9EAC0EA8664B54C9766F82A301D5B82D4ACCB3DCFA24CFE882"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\ShapeItem.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView/ShapeItem.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItem.xaml",
+      "sourceSha256": "34C1E9E504843EC32C0628B73470AEB84A6E175B97055974769412786BA3F233",
+      "targetSha256": "6E4923E3A1CD6CDA36156CF45190C4701ECF99A55F0438153EC081A5855627D9",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "B853AAF71B277E296CB2B4712599E8544FE12CF3582AEC789BCF49AB450F8B23"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaLeft.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaLeft.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeft.xaml",
+      "sourceSha256": "AA7B1BCEC1C5B2B9DD8BDECCC15848BAADF2A2D782B0AA356B1BD3DE3E5FF035",
+      "targetSha256": "0EDBEE3E526705572029D05015473504113361457BEBD086904EA824068014D8",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "224587D9D23901A7BF447ECF823185CC3EF0E9CAE20981C6ECAB2465B044400F"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaLeftRect.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaLeftRect.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftRect.xaml",
+      "sourceSha256": "30EFDB45478C4C54704E78F71C0506983475B44C99C090E93FF31C97F93181EF",
+      "targetSha256": "399ABFFEEDB49DEC141FA4DA210A2C326FDEB46E663A7C3697E2CF6530D6F545",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "F55DCA60C2CCECB3C1850253BDEA0B7EC29ABC8585909E738EF463B138F91EEF"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaLeftTop.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaLeftTop.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftTop.xaml",
+      "sourceSha256": "81997670A960E23672782D29C030A4B05B00EAC80D3902DC3E282B6C1E86B3B2",
+      "targetSha256": "FE3926BC5C60546B4B79A0563160062853C26D24EB8ADA6F3EA430A36AE86683",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "F54112984E511331A2174FFED80BA1C602F345B19C184E488835FE905894FA79"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaLeftTopRect.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaLeftTopRect.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftTopRect.xaml",
+      "sourceSha256": "A62CBF9F5EA1961CC8C2D39700B809D08841E5E4BCA4321D7E52D44A3DB1DA3E",
+      "targetSha256": "F2049AC10372A6ED1A5996CC50260BF30AA4097A5A2EAE9FA1B54349BE488DE6",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "EEBC59C22853B43470BB7A1DDA36DB79B49F5E40817715535280621AC31C06DF"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaRightTop.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaRightTop.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaRightTop.xaml",
+      "sourceSha256": "00687C07C861AACDE81E79DF408D7ECB7326770699AEA614C1B2E0CED8D0CAF2",
+      "targetSha256": "515FA61B7318ED686FD3B0F0668D22F8CF4F0B0A43C1A89DD17B5AB0472BD1B8",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A59BD960F4A7B6FCD2041530ABA2223C856D97734158E88DE0E70055E387949D"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaRightTopRect.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaRightTopRect.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaRightTopRect.xaml",
+      "sourceSha256": "DB5E1C28DBFDB08AD25EE578378D56376A80580C6261282F65A7EB50964F891D",
+      "targetSha256": "12D550F3262EB3D9AEC8EFEBE372F63F23E78013D61CC11C0D18AD04435594F9",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "4B30FFFCFB5D2F63B45A8EFE3FDDBE6DEF47DF25C7714C0F5BFF98A8F5BBC5FF"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaTop.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaTop.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaTop.xaml",
+      "sourceSha256": "41C7B2A3326FE291B4393C0CD5821FF278E84516A45D5DB08C4321748801CDCF",
+      "targetSha256": "2FDE22866FD6B2BB44D95B047E57491DE8C48AE419D9C5834C0DACAF5A4C4D9F",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "F4B56711623FDD4BE2EED5CDD8A6A00BD00BE4B6BE7AA205250BA1BF523F345A"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\AreaTopRect.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/AreaTopRect.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaTopRect.xaml",
+      "sourceSha256": "2FAF4D531E30DE37BC3A33C6F4E89884693157451052D1BF154EE90117FDF701",
+      "targetSha256": "913DF66CF4D2AEC23A1492FCCD0E51E441F52765ABF035A9D3656EE33E9E3ED4",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "C3A9BB0E4941AC4BCF0EC7D55038D21AA0F23E7CFB4AC40BEF770CDDAE9B354D"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\BottomLeftRotateArea.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/BottomLeftRotateArea.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/BottomLeftRotateArea.xaml",
+      "sourceSha256": "D9B75DB74F9FB9179C8D7AEDD8697D62A6D68ECBDF51121F4F7599F8DD5D6743",
+      "targetSha256": "A136BD12FE4593AF4F57C223F3188E1C0CBD657B5404C5B621EBB10266F84F00",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "C52FC36D46312EA7BAA5B86AD16471630EB95F9B2C5A38354E23337F50868E01"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\BottomRightRotateArea.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/BottomRightRotateArea.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/BottomRightRotateArea.xaml",
+      "sourceSha256": "CD7836F7167D707CB61C2291FF9E2EC207CB1CCCB95FB4F5404BD1310EFD612A",
+      "targetSha256": "F70C368311DC41AFF83D0B92A93637E8D133629DEF18948729C5321ED2C5199F",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "A7FB39DA3737DE277A821BB493C2F7B989B3BD82223035325BB3CDC9FA2B36AE"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\CircleCaliperROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/CircleCaliperROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleCaliperROISubstitute.xaml",
+      "sourceSha256": "D29F844520BAB5844B0CDF3964377227DBDBD13A87F90026F93D39A26D01170F",
+      "targetSha256": "727C03DAA9D9D9B8491FE97246FF6AA66D1897C3C89354CE555E23357CF9B730",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "210F12485764A3EB2DC7FD41384CB7E1E13CF9C448D110C74D72F8C482EE721F"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\CircleROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/CircleROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROISubstitute.xaml",
+      "sourceSha256": "39B96BD478BC8EE9AB4DDD89A9621B2AB46B61F7DC85AC37C25093419906D427",
+      "targetSha256": "26764F20A27A2128B9091E1C965CAB43138E08CDFD82C5DECBD172D8BA41ED39",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "73D2AF0E310D902E16F3EDEB811719434460DF2B98516E766279F07A1224C876"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\EditRoundedWindow.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml",
+      "sourceSha256": "E6BA881C6230E601D2042C3947A58B54263042AA7758BAFCABA126B20E61F97A",
+      "targetSha256": "3317630267F2CB5E63B312EFCEA39AA843A1ED805A0514240ECEBE5E1729DE35",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import",
+        "relative dictionary URI relocated to exact component path"
+      ],
+      "gitNormalizedTargetSha256": "75A76104A60E924AE4653ECB66D76BF6041A5F1B17DE791D602F7FB3487BAE4A"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\EllipseROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/EllipseROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EllipseROISubstitute.xaml",
+      "sourceSha256": "EF69533F8947CEC947E0FF857F1C9B12C52750759D2F277BFB0BF4CFEA1647AD",
+      "targetSha256": "E8A9D2906C241053684BBDE9F9AE76F4EB2EA718A48C4508062EED6A10BAF40F",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "E475E90A34C231B0A86FE5E91C8A54168B1302BDFE5CDEA1C815F19CAB292847"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\LineCaliperROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/LineCaliperROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineCaliperROISubstitute.xaml",
+      "sourceSha256": "880E38F3B67CCCDB2A7014B88F52215251469B02C4915BD59CED7269AA56BA8B",
+      "targetSha256": "35D4B6D7D4E81BCE57145C00FC1098E5E68118C7727EAFB144E07FD5E99BCE21",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "D9A4F7500727095BF9D0512A8EA22FF8C782BFEFB985E00F17CD997E6A679088"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\LineROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/LineROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineROISubstitute.xaml",
+      "sourceSha256": "7141951066FC49DC0813A323A8FED3FDD75DF989EF5E062E67CD3B42F6F13AC1",
+      "targetSha256": "1596529074FDCBA664C890E32DD1D42A8FDB0A752D9A652306330ACCFC81C147",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "96B16323BE013EFAFF28268325B76A577CB369690EA838350274A3D6746EB513"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MartrixCircleBackControl.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/MartrixCircleBackControl.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MartrixCircleBackControl.xaml",
+      "sourceSha256": "1A7A445065D5E603191F6AB90AEEF7C419431B15403B6A190D5553978244A09B",
+      "targetSha256": "3EDE1F963B1E381440037D9A00F74BEC9DB93B7CAA972D1311D59BD93A919DF3",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "1A24247DC16B9933058968C4D52E8006E8FBE271712AD9E8F0F0ABDEE9625624"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MoveArea.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/MoveArea.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveArea.xaml",
+      "sourceSha256": "7459444914232EA5D58A3EF2AAD98D545D642616FC08554297ECC8A1B7638C86",
+      "targetSha256": "9EBCF279489EEE3E4E035E544D808E002966EF48B71DF9276ADBA4A642F37DF5",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "67B0D1960F1F0EF59F88AA4AC16465F338FBB610F7B78F52D4478CDF91511E7A"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MoveAreaPage.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/MoveAreaPage.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveAreaPage.xaml",
+      "sourceSha256": "1EB5EFDC44C8D5EAA37C7695451FAB2C2F6F4F372A41B499EEFB5588968B8258",
+      "targetSha256": "56BD829CDEB11F83F1405EE01134E2ED6F49FD0B81FC5DC8C9355D2F01A313D0",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "81B2C2DB4C90184675C888A8E2A63F4A01C5D9F62BF5743859E4F418D6889DC0"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MultiLineROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/MultiLineROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROISubstitute.xaml",
+      "sourceSha256": "892912A5F1D4EC14E749F8F096239CB7B623865AC652CFDAC63EAEAB6D3DDEE8",
+      "targetSha256": "53CAE65C54BDF5803AA96EB79D2FFD656DD85C6E7C3E4879A2735168DA9E6211",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "7C9888F351713E1FDE94497F1E028C79F6DE7828EBC6C939325CEAB33FFA8C4B"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolygonROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/PolygonROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROISubstitute.xaml",
+      "sourceSha256": "E6FF9DEAA52B5BC72F2FA09706871326442DFF055FEB713573D461E672987D23",
+      "targetSha256": "AF1E032138900668E3CF909A952F49F5EDBF8B3417BCCD06533C470F99DC3BD5",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "BBA80B844A2CB3BBF229C1DF29D7FCBCC3F50FFDE70906A3D2ABF2457867AF99"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolylineROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/PolylineROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolylineROISubstitute.xaml",
+      "sourceSha256": "041DD65E825E4CC5AF42FBDBD837FB0C35728CE57DF9350BFE905718D7540667",
+      "targetSha256": "F50C803CA51EBD9BD65C134C03C5C8AB3B05C072355680336AA413DBD0B454EA",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "AB1AF9641979D72A270ECE3A30088277D40FC44E13387213E6C1322E021EC691"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RectROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/RectROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROISubstitute.xaml",
+      "sourceSha256": "1300E4345A8AFAD8F91316903B757BC61ED4AB9B46B74BD5FA6C25BBC42B00EC",
+      "targetSha256": "0EE0C6A724869ABEF147844E77D885F2962F485461D1C3F991AA2832BBEEECFB",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "0F3F740AB78DF6D9228CA1935735A761E30401631E6600E7FC969AB5C9CBD921"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RightRotateArea.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/RightRotateArea.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RightRotateArea.xaml",
+      "sourceSha256": "7AB3C62C5AA286B563874024E182E3B80AE1B2D995C9EE7085188E735A6AC417",
+      "targetSha256": "129648CA1277026A148D82241A327BEFAAF63578B73ED77146BB685E67C369F5",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "766D69FB9C28C22BB1A5F497B8EB2D0764DC6D17F2DAC94B7B1C5E1D4B2F1DD5"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\SectorCaliperROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/SectorCaliperROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorCaliperROISubstitute.xaml",
+      "sourceSha256": "BC7A98E6AC59059DFEB64364F61AADF26843E9C171D9ABDEE2ABCD5283494094",
+      "targetSha256": "3D8B8A82F72E70802B9172CBAD4CDDE05DC1EBBC932725B0B6602D92FA7598C5",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "58EB856069260D381D6E7E743B052591AEA2B16AB79A00A81E1D64B851828D03"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\SectorROISubstitute.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/SectorROISubstitute.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROISubstitute.xaml",
+      "sourceSha256": "7B261E1AB57E67736F99EF8F2B8DEE944882254842684C7ECF5A327F742C8566",
+      "targetSha256": "39A2DD4F5DF9D98256AABFDD23E877168540C53904C210BB4B4990C2C0F0FDAD",
+      "adaptations": [
+        "assembly component URI",
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "457A21FAEDFBA62E2CCD55ED9D75A215C86699CC8D972BF864290ABD2BCD7E28"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\TopLeftRotateArea.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/TopLeftRotateArea.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/TopLeftRotateArea.xaml",
+      "sourceSha256": "A26EBA99E1AEFAA495F5FA93B642661D742B43FDA66220C5765FA6ADF056111E",
+      "targetSha256": "3AFF20E2463C7214C63C9EC94797592B41FB4462FA2DBD3D0282E65368D69D16",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "2DD468E5DEEE68E0156EC7608EA61089EEDF202EE92AA468CC7AC98C8D73575E"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\TopRightRotateArea.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.ROI/TopRightRotateArea.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/TopRightRotateArea.xaml",
+      "sourceSha256": "43E8B19C869B7A07808D432439E7F35CC573098DFB17A4EEB72A78AE757B33F2",
+      "targetSha256": "9152378ACED4B1ED7944EA1BE87B929115A4124E9DE9A1D7BFAF8642BC7B8ACD",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "4EF3B5F9C8AE4E7E54EFBEBB7374CE24E271E16752909C31E097D2016A49163B"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\CrossControl.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.Shape/CrossControl.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml",
+      "sourceSha256": "EBB83EDA038FC50B60F9B4B1D6280B40C2DC827290D1C6066A3F999337BD2BC4",
+      "targetSha256": "AC8377055AA8AC1BBDAB2B69471C346C7ADB40F743B0E98DA6A1D12736773F80",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "B45921F87BBE8311BAFB36F4812E7D69472D03EDD9E16472D908EF4664F82ADB"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\LineAndAngle.xaml",
+      "sourceRelative": "VMBaseControls.Base.ImageView.Shape/LineAndAngle.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/LineAndAngle.xaml",
+      "sourceSha256": "00394AEB4DED180CA9F67FE842727213EAEAAC00E5C31893D799835F5BB9A1C8",
+      "targetSha256": "58786FF38E697AB8E15B2F876692A89EC12CBBA3375F12898F2FE1E039BFED6C",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "3BE82167E88E639F1CA38B9C82D812E29BFF56F21A53C86105A835CAE35F681B"
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Resources.旋转光标.png",
+      "sourceRelative": "VMBaseControls.Resources.旋转光标.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.旋转光标.png",
+      "sourceSha256": "CD963C430184793CE839258F1DF71C4135F269C6B56AD18CFACE6D451D241A17",
+      "targetSha256": "CD963C430184793CE839258F1DF71C4135F269C6B56AD18CFACE6D451D241A17",
+      "adaptations": []
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Resources.鼠标双向箭头.png",
+      "sourceRelative": "VMBaseControls.Resources.鼠标双向箭头.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标双向箭头.png",
+      "sourceSha256": "A99108913DCDA4764EC893D3F85F3ED3FE546210AEB0601281DFFFBF5D093DA3",
+      "targetSha256": "A99108913DCDA4764EC893D3F85F3ED3FE546210AEB0601281DFFFBF5D093DA3",
+      "adaptations": []
+    },
+    {
+      "library": "VMBaseControls",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Resources.鼠标旋转箭头.png",
+      "sourceRelative": "VMBaseControls.Resources.鼠标旋转箭头.png",
+      "target": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标旋转箭头.png",
+      "sourceSha256": "1662C0A1871F70D5563813864E7D263FC01E4EFB7098BFEAEC036EA0E0B60488",
+      "targetSha256": "1662C0A1871F70D5563813864E7D263FC01E4EFB7098BFEAEC036EA0E0B60488",
+      "adaptations": []
+    },
+    {
+      "library": "VisionUi",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAdvancedColorPicker.xaml",
+      "sourceRelative": "SourceAdvancedColorPicker.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml",
+      "sourceSha256": "F39C8CDE4E6C91878815E9BFE992EC58A363B8289D99F79ED02F92817CB90C86",
+      "targetSha256": "E54608336B3F32A30BA6F6EDDE8C7308A31D7E96AD1A3525405828C6E855FDB4",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "3E0C5B1FE37869C7310D09C860602CF542EFD45F88EE74C70ADE81282ED7F815"
+    },
+    {
+      "library": "VisionUi",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceColorPalette.xaml",
+      "sourceRelative": "SourceColorPalette.xaml",
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceColorPalette.xaml",
+      "sourceSha256": "0B951849B8DAE8AFBE15AD39835BE310CE4FDBC669151C82FA85C53FC8C4AC99",
+      "targetSha256": "A5803E4F9E05289031ADA655F1EBFF440D18E94EF940D1B8E83E5F10F8230655",
+      "adaptations": [
+        "namespace/assembly and cross-group numeric import"
+      ],
+      "gitNormalizedTargetSha256": "5525B5F9D0FA806C041E443673FAA2DB9C242994DBC6BF969CBC422B1EB27881"
+    },
+    {
+      "library": "VisionUi",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceColorPickerStyles.xaml",
+      "sourceRelative": "SourceColorPickerStyles.xaml",
+      "target": "src/Plugin.Wpf/Themes/Native/Display/VisionUi/SourceColorPickerStyles.xaml",
+      "sourceSha256": "CBC5F35A098B8FA94ECE3A8A3A74F2D6ED9D1B9A7A5E5B65B1A67A9E4BD2391D",
+      "targetSha256": "CBC5F35A098B8FA94ECE3A8A3A74F2D6ED9D1B9A7A5E5B65B1A67A9E4BD2391D",
+      "adaptations": [],
+      "gitNormalizedTargetSha256": "CAD9A78952982EE93A3E4153F7D415A8906B68F5EE0D8B13A2FB0747D7182AD9"
+    }
+  ],
+  "adaptation": "namespace and exact component URI only; no redrawn resources"
+}

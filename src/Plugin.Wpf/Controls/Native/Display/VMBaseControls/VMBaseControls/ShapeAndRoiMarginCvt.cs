@@ -1,0 +1,40 @@
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+
+public class ShapeAndRoiMarginCvt : IValueConverter
+{
+	public static ShapeAndRoiMarginCvt Cvt;
+
+	private static bool ImageROIOffsetEnable { get; set; }
+
+	static ShapeAndRoiMarginCvt()
+	{
+		Cvt = new ShapeAndRoiMarginCvt();
+		if (bool.TryParse(ConfigurationHelper.GetConfig("ImageROIOffsetEnable"), out var result))
+		{
+			ImageROIOffsetEnable = result;
+		}
+	}
+
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (ImageROIOffsetEnable && double.TryParse(value?.ToString(), out var result))
+		{
+			double num = result * 0.5;
+			return new Thickness(num, num, 0.0, 0.0);
+		}
+		return new Thickness(0.0);
+	}
+
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		return Binding.DoNothing;
+	}
+}

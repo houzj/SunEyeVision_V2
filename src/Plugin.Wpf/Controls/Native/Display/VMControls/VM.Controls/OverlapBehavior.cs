@@ -1,0 +1,11 @@
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+
+public enum OverlapBehavior
+{
+	Stack,
+	Stretch,
+	Hide,
+	None
+}

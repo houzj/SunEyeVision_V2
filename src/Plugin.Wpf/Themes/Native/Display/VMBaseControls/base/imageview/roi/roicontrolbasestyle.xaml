@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:image="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData">
+  <BooleanToVisibilityConverter x:Key="bv" />
+  <local:Bool2CollapesdConverter x:Key="nbv" />
+  <BaseData:TypeFilterConverter x:Key="typeFilterConverter" />
+  <SolidColorBrush x:Key="ROIBaseColor" Color="#0F6AF3" />
+  <SolidColorBrush x:Key="ROITextColor" Color="#3585FD" />
+  <SolidColorBrush x:Key="AnchorBaseColor" Color="#F76900" />
+  <SolidColorBrush x:Key="AnchorFreeColor" Color="White" />
+  <sys:Double x:Key="ROIFontSize">14</sys:Double>
+  <BaseData:MulParamsMultiplicationConverter x:Key="MC" />
+  <BaseData:NormalMultiplicationConverter x:Key="normalMultiplicationConverter" />
+  <BaseData:NULLJudgeConverter x:Key="nullJudgeConverter" />
+  <ContextMenu x:Key="MulOperateMenu">
+    <MenuItem Header="{DynamicResource Lang_Delet}" Command="{Binding PlacementTarget.DeleteRoiCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}">
+      <MenuItem.CommandParameter>
+        <MultiBinding Converter="{StaticResource MC}">
+          <Binding Path="PlacementTarget.DataContext" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}" />
+          <Binding Path="PlacementTarget.ParenPage.DataContext" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}" />
+        </MultiBinding>
+      </MenuItem.CommandParameter>
+    </MenuItem>
+    <MenuItem Header="{DynamicResource Lang_Copy}" Command="{Binding PlacementTarget.CopyRoiCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}">
+      <MenuItem.CommandParameter>
+        <MultiBinding Converter="{StaticResource MC}">
+          <Binding Path="PlacementTarget.DataContext" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}" />
+          <Binding Path="PlacementTarget.ParenPage.DataContext" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}" />
+        </MultiBinding>
+      </MenuItem.CommandParameter>
+    </MenuItem>
+  </ContextMenu>
+  <Style x:Key="TopAreaStyle" TargetType="{x:Type local:Area}">
+    <Setter Property="Margin" Value="{Binding MoveRectMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Visibility" Value="{Binding IsSelected, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource bv}}" />
+  </Style>
+  <Style x:Key="leftRightAreaStyle" TargetType="{x:Type local:Area}">
+    <Setter Property="Margin" Value="{Binding MoveRectMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+  </Style>
+  <Style x:Key="RectAreaStyle" TargetType="{x:Type Rectangle}">
+    <Setter Property="Stroke" Value="{StaticResource AnchorBaseColor}" />
+    <Setter Property="Fill" Value="{StaticResource AnchorBaseColor}" />
+    <Setter Property="Margin" Value="{Binding MoveRectMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="StrokeThickness" Value="{Binding HotStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Visibility" Value="{Binding IsSelected, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource bv}}" />
+  </Style>
+  <Style x:Key="EllipseStyle" TargetType="{x:Type Ellipse}">
+    <Setter Property="Stroke" Value="{StaticResource ROIBaseColor}" />
+    <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+    <Setter Property="Fill" Value="{StaticResource AnchorFreeColor}" />
+    <Setter Property="Margin" Value="{Binding MoveEllipseMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="StrokeThickness" Value="{Binding HotStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Visibility" Value="{Binding IsSelected, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource bv}}" />
+  </Style>
+  <Style x:Key="RectStyle" TargetType="{x:Type Rectangle}">
+    <Setter Property="Stroke" Value="{StaticResource AnchorBaseColor}" />
+    <Setter Property="FrameworkElement.Cursor" Value="Arrow" />
+    <Setter Property="Fill" Value="{StaticResource AnchorBaseColor}" />
+    <Setter Property="Margin" Value="{Binding MoveRectMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="StrokeThickness" Value="{Binding HotStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Visibility" Value="{Binding IsSelected, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource bv}}" />
+  </Style>
+  <SolidColorBrush x:Key="ROIBaseFeaSignColor" Color="#EC0000" Opacity="0.45" />
+  <SolidColorBrush x:Key="ROIBaseFeaSignSpecialColor" Color="#60FF00" Opacity="0.3" />
+  <SolidColorBrush x:Key="ROIBaseFeaBackgroundColor" Color="#3884FF" Opacity="0.25" />
+  <Style x:Key="leftRightRectStyle" TargetType="{x:Type Rectangle}">
+    <Setter Property="FrameworkElement.Cursor" Value="Arrow" />
+    <Setter Property="Fill" Value="#00FFFFFF" />
+    <Setter Property="Margin" Value="{Binding MoveRectMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="StrokeThickness" Value="0" />
+  </Style>
+  <Style x:Key="VerticalArrowStyle" TargetType="{x:Type Path}">
+    <Setter Property="Stroke" Value="{StaticResource ROIBaseColor}" />
+    <Setter Property="UIElement.IsHitTestVisible" Value="False" />
+    <Setter Property="Fill" Value="{StaticResource ROIBaseColor}" />
+    <Setter Property="StrokeThickness" Value="{Binding HotStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Shape.Stretch" Value="Fill" />
+    <Setter Property="Data">
+      <Setter.Value>
+        <GeometryGroup>
+          <PathGeometry>
+            <PathFigure StartPoint="0,0" IsClosed="True">
+              <LineSegment Point="-6,6" />
+              <LineSegment Point="-12,0" />
+            </PathFigure>
+          </PathGeometry>
+        </GeometryGroup>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="HorizontalArrowStyle" TargetType="{x:Type Path}">
+    <Setter Property="Stroke" Value="{StaticResource ROIBaseColor}" />
+    <Setter Property="UIElement.IsHitTestVisible" Value="False" />
+    <Setter Property="Fill" Value="{StaticResource ROIBaseColor}" />
+    <Setter Property="StrokeThickness" Value="{Binding HotStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Shape.Stretch" Value="Fill" />
+    <Setter Property="Data">
+      <Setter.Value>
+        <GeometryGroup>
+          <PathGeometry>
+            <PathFigure StartPoint="0,0" IsClosed="True">
+              <LineSegment Point="-6,-6" />
+              <LineSegment Point="-6,6" />
+            </PathFigure>
+          </PathGeometry>
+        </GeometryGroup>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="ROIControlBaseStyle" TargetType="{x:Type local:ROIControlBase}">
+    <Setter Property="local:ROIControlBase.DataChangedCommand" Value="{Binding Path=(Interface:IROI.DataChangedCommand), Mode=OneWay}" />
+    <Setter Property="local:ROIControlFrame.ControlToImageRadio" Value="{Binding ControlToImageRadio, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ROIItem}}" />
+    <Setter Property="local:ROIControlFrame.ThicknessScale" Value="{Binding ThicknessScale, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ROIItem}}" />
+    <Setter Property="local:ROIControlFrame.IsSelected" Value="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}}" />
+    <Setter Property="Visibility" Value="{Binding Path=(Interface:IROIVisible.IsVisible), Converter={StaticResource bv}}" />
+    <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource MulOperateMenu}" />
+    <Setter Property="local:ROIControlBase.DeleteRoiCommand" Value="{Binding DeleteRoiCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=image:ImageViewBox}}" />
+    <Setter Property="local:ROIControlBase.CopyRoiCommand" Value="{Binding CopyRoiCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=image:ImageViewBox}}" />
+    <Setter Property="local:ROIControlBase.MoveCommand" Value="{Binding MoveCommand, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ContainerItem}}" />
+    <Style.Triggers />
+  </Style>
+</ResourceDictionary>

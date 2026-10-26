@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.MartrixCircleBackControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="RectStyle" TargetType="{x:Type Rectangle}">
+        <Setter Property="Stroke" Value="{StaticResource AnchorBaseColor}" />
+        <Setter Property="FrameworkElement.Cursor" Value="Arrow" />
+        <Setter Property="Fill" Value="{StaticResource AnchorBaseColor}" />
+        <Setter Property="Margin" Value="{Binding MoveRectMargin, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ROIControlBase}}" />
+        <Setter Property="StrokeThickness" Value="{Binding HotStrokeThickness, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ROIControlBase}}" />
+      </Style>
+      <Style x:Key="RotateStyle" TargetType="{x:Type local:RotateArea}">
+        <Setter Property="Margin" Value="{Binding MoveRotateMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+        <Setter Property="local:RotateArea.RectAngle" Value="{Binding RectAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+        <Style.Triggers>
+          <DataTrigger Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IAngleEnable}}">
+            <Setter Property="Visibility" Value="{Binding Path=(Interface:IAngleEnable.IsAngleEnable), Converter={StaticResource bv}}" />
+          </DataTrigger>
+          <DataTrigger Value="False" Binding="{Binding IsRotatable, RelativeSource={RelativeSource AncestorType=local:RectROI}}">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Canvas Name="Cv">
+        <Path Stroke="{StaticResource ROIBaseColor}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+          <Path.Data>
+            <GeometryGroup x:Name="Gt" />
+          </Path.Data>
+        </Path>
+        <Grid Name="RadiusRect" Width="0" Height="0" Background="#FFFF0000" ZIndex="10">
+          <Rectangle Name="SizeRect" Style="{StaticResource RectStyle}" Cursor="{Binding LeftTopCursor, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+          <local:TopLeftRotateArea x:Name="topLeftRotate" Style="{StaticResource RotateStyle}" />
+        </Grid>
+        <Grid Name="InnerRadiusRect">
+          <Rectangle Name="InnerSizeRect" Style="{StaticResource RectStyle}" Cursor="{Binding LeftTopCursor, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+          <local:TopLeftRotateArea Style="{StaticResource RotateStyle}" />
+        </Grid>
+      </Canvas>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.LineAndAngle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape" xmlns:win="clr-namespace:System.Windows.Media;assembly=PresentationCore">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <win:DoubleCollection x:Key="strokeDashArray">3,2</win:DoubleCollection>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate TargetType="{x:Type Control}">
+      <Canvas IsHitTestVisible="False" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+        <Line StrokeDashArray="{StaticResource strokeDashArray}" X1="{Binding Line1Point1XR}" Y1="{Binding Line1Point1YR}" X2="{Binding Line1Point2XR}" Y2="{Binding Line1Point2YR}" Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThicknessR}" />
+        <Line StrokeDashArray="{StaticResource strokeDashArray}" X1="{Binding Line2Point1XR}" Y1="{Binding Line2Point1YR}" X2="{Binding Line2Point2XR}" Y2="{Binding Line2Point2YR}" Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThicknessR}" />
+        <Path Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThicknessR}">
+          <Path.Data>
+            <win:GeometryGroup>
+              <win:PathGeometry>
+                <win:PathFigure StartPoint="{Binding Line1ArcPoint}">
+                  <win:ArcSegment IsLargeArc="False" Size="{Binding ArcSize}" Point="{Binding Line2ArcPoint}" SweepDirection="{Binding SD}" />
+                </win:PathFigure>
+              </win:PathGeometry>
+            </win:GeometryGroup>
+          </Path.Data>
+        </Path>
+        <TextBlock RenderTransformOrigin="0,0.5" Foreground="{Binding Stroke}" FontSize="{Binding FSize}" Text="{Binding Angle, StringFormat='{}{0:F1}°'}" Canvas.Left="{Binding TextPointX}" Canvas.Top="{Binding TextPointY}">
+          <UIElement.RenderTransform>
+            <win:RotateTransform Angle="{Binding TextAngle}" />
+          </UIElement.RenderTransform>
+        </TextBlock>
+      </Canvas>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

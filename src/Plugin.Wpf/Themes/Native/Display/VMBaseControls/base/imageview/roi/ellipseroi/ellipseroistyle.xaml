@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:baseControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <BooleanToVisibilityConverter x:Key="bv" />
+  <Style x:Key="RotateStyle" TargetType="{x:Type local:RotateArea}">
+    <Setter Property="Margin" Value="{Binding MoveRotateMargin, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="local:RotateArea.RectAngle" Value="{Binding EllipseAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+  </Style>
+  <Style x:Key="EllipseBaseStyle" TargetType="{x:Type Ellipse}">
+    <Setter Property="Margin" Value="{Binding NegativeStrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="StrokeThickness" Value="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+    <Setter Property="Stroke" Value="#0F6AF3" />
+    <Setter Property="Fill" Value="#00FFFFFF" />
+  </Style>
+  <Style x:Key="EllipseStyle" TargetType="{x:Type Ellipse}" BasedOn="{StaticResource EllipseBaseStyle}">
+    <Style.Triggers>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="true" Binding="{Binding Sign}" />
+          <Condition Value="true" Binding="{Binding UIType}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Fill" Value="{StaticResource ROIBaseFeaBackgroundColor}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="false" Binding="{Binding Sign}" />
+          <Condition Value="true" Binding="{Binding UIType}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Fill" Value="{StaticResource ROIBaseFeaSignColor}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding Sign}" Value="{x:Null}" />
+          <Condition Value="true" Binding="{Binding UIType}" />
+        </MultiDataTrigger.Conditions>
+        <Setter Property="Fill" Value="{StaticResource ROIBaseFeaSignSpecialColor}" />
+      </MultiDataTrigger>
+      <DataTrigger Value="false" Binding="{Binding UIType}">
+        <Setter Property="Fill" Value="#00FFFFFF" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="{x:Type local:EllipseROI}" TargetType="{x:Type local:EllipseROI}" BasedOn="{StaticResource ROIControlBaseStyle}">
+    <Setter Property="local:EllipseROI.ContainerWidth" Value="{Binding Width, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ContainerItem}}" />
+    <Setter Property="local:EllipseROI.ContainerHeight" Value="{Binding Height, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ContainerItem}}" />
+    <Setter Property="local:ROIControlBase.ContainerPosition" Value="{Binding Position, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ContainerItem}}" />
+    <Setter Property="local:EllipseROI.ContainerAngle" Value="{Binding Angle, Mode=OneWayToSource, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseControl:ContainerItem}}" />
+    <Setter Property="local:EllipseROI.EllipseRadiusX" Value="{Binding Path=(Interface:IEllipseROI.RadiusX), Mode=TwoWay}" />
+    <Setter Property="local:EllipseROI.EllipseRadiusY" Value="{Binding Path=(Interface:IEllipseROI.RadiusY), Mode=TwoWay}" />
+    <Setter Property="local:EllipseROI.EllipseCenterPoint" Value="{Binding Path=(Interface:IEllipseROI.CenterPoint), Mode=TwoWay}" />
+    <Setter Property="local:EllipseROI.EllipseAngle" Value="{Binding Path=(Interface:IEllipseROI.Angle), Mode=TwoWay}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid Name="move" Cursor="SizeAll">
+            <Ellipse Name="ellipse" Style="{StaticResource EllipseBaseStyle}" />
+            <Grid Width="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Center">
+              <local:AreaLeftRect x:Name="SizeRectX" Style="{StaticResource TopAreaStyle}" AreaAngle="{Binding EllipseAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+              <local:RightRotateArea x:Name="rightRotate" Style="{StaticResource RotateStyle}" />
+              <Ellipse IsHitTestVisible="False" ClipToBounds="True" Stroke="{StaticResource AnchorBaseColor}" Margin="{Binding StrokeThickness, ConverterParameter=-20, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource normalMultiplicationConverter}}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" Height="{Binding StrokeThickness, ConverterParameter=10, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource normalMultiplicationConverter}}" Width="{Binding Height, RelativeSource={RelativeSource Mode=Self}}">
+                <UIElement.Clip>
+                  <RectangleGeometry x:Name="eRect" />
+                </UIElement.Clip>
+              </Ellipse>
+            </Grid>
+            <Grid Width="0" Height="0" VerticalAlignment="Bottom">
+              <local:AreaTopRect x:Name="SizeRectY" Style="{StaticResource TopAreaStyle}" AreaAngle="{Binding EllipseAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+            </Grid>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IROIUIType}}" />
+                <Condition Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type Interface:IROISign}}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="ellipse" Property="Style" Value="{StaticResource EllipseStyle}" />
+            </MultiDataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

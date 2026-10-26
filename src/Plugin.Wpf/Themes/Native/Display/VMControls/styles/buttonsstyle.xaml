@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+  <ResourceDictionary.MergedDictionaries>
+    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="BlueButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Background" Value="{DynamicResource btnEditTemplateBorderBG}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LogicTypeButtonBB}" />
+    <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2" />
+            <ContentPresenter RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+              <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+              <Setter Value="{DynamicResource ListViewComboBoxBackground}" Property="Foreground" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="WhiteButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Background" Value="{DynamicResource GlobalMouseOverBg}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WhiteButtonBB}" />
+    <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2" />
+            <ContentPresenter RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+              <Setter Property="Background" Value="#FFFFFFFF" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="LockWindowApplyButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <Border Name="bk" BorderBrush="{DynamicResource Col_FrontendUI_BorderBrush}" Background="{DynamicResource TitleColor}" BorderThickness="1" CornerRadius="2" />
+            <TextBlock Name="lable" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{TemplateBinding ContentControl.Content}" Foreground="#FFC0C0C0" FontSize="12" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" TargetName="bk" Property="Border.Background" />
+              <Setter TargetName="lable" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" TargetName="bk" Property="Border.Background" />
+              <Setter TargetName="lable" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="FontSize" Value="16" />
+  </Style>
+  <Style x:Key="LockWindowNumberButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <Border Name="bk" BorderBrush="{DynamicResource LockWindowNumberButtonBB}" Background="{DynamicResource LockWindowNumberButtonBB}" BorderThickness="1" CornerRadius="2" />
+            <TextBlock Name="lable" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{TemplateBinding ContentControl.Content}" Foreground="{DynamicResource TextBox.Foreground}" FontSize="12" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" TargetName="bk" Property="Border.BorderBrush" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" TargetName="bk" Property="Border.BorderBrush" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="FontSize" Value="16" />
+  </Style>
+</ResourceDictionary>

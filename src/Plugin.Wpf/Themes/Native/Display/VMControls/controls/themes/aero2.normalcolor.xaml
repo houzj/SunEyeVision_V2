@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/Themes/Aero2/Brushes.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/Themes/Aero2/Buttons.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/Themes/Aero2/Common.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/Chromes/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/ButtonSpinner/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/CollectionControl/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/ColorCanvas/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/ColorPicker/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/DateTimeUpDown/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/DateTimePicker/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/MultiLineTextEditor/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/NumericUpDown/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/PropertyGrid/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/TimePicker/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/TimeSpanUpDown/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/HikVisionControl;component/Controls/WatermarkTextBox/Themes/Aero2.NormalColor.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

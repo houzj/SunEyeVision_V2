@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/themes/generic/brushes.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/themes/generic/buttons.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/chromes/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/buttonspinner/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/watermarktextbox/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/propertygrid/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/colorcanvas/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/colorpicker/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/collectioncontrol/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/datetimeupdown/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/datetimepicker/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/multilinetexteditor/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/timepicker/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/controls/timespanupdown/themes/generic.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

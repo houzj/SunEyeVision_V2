@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:convert="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/scrollbarstyle.xaml" />
+    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <convert:CheckedConvert x:Key="NullConvert" />
+  <Style x:Key="topItemPopuStyle" TargetType="{x:Type Border}">
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Border.Padding" Value="0,6,0,6" />
+    <Setter Property="Background" Value="{DynamicResource ListViewComboBoxBackground}" />
+    <Setter Property="Border.CornerRadius" Value="4" />
+  </Style>
+  <Style x:Key="topmasknormalStyle" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="Border.CornerRadius" Value="2" />
+  </Style>
+  <Style x:Key="tophoverStyle" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="{Color:ColorResourceBinding Col_Theme_Light}" />
+    <Setter Property="Border.CornerRadius" Value="2" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListViewComboBoxBordBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style x:Key="topclickStyle" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="Border.CornerRadius" Value="2" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListViewComboBoxBordBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style x:Key="submasknormalStyle" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="MinWidth" Value="170" />
+    <Setter Property="Border.Padding" Value="9,0,0,0" />
+  </Style>
+  <Style x:Key="subhoverStyle" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="{DynamicResource ListViewComboBoxIsSelected}" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="MinWidth" Value="170" />
+    <Setter Property="Border.Padding" Value="9,0,0,0" />
+  </Style>
+  <Style x:Key="subclickStyle" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="{DynamicResource ListViewComboBoxIsSelected}" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="MinWidth" Value="170" />
+    <Setter Property="Border.Padding" Value="9,0,0,0" />
+  </Style>
+  <Style x:Key="IconMenuItemBase" TargetType="{x:Type controls:IconMenuItem}" BasedOn="{StaticResource {x:Type MenuItem}}">
+    <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="FontFamily" Value="Microsoft YaHei" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBox.Normal.Forground}" />
+    <Setter Property="controls:IconMenuItem.IconPadding" Value="0" />
+    <Setter Property="controls:IconMenuItem.ShowMask" Value="True" />
+    <Setter Property="controls:IconMenuItem.PopupStyle" Value="{StaticResource topItemPopuStyle}" />
+    <Setter Property="controls:IconMenuItem.TopMaskNormal" Value="{StaticResource topmasknormalStyle}" />
+    <Setter Property="controls:IconMenuItem.TopMaskClick" Value="{StaticResource topclickStyle}" />
+    <Setter Property="controls:IconMenuItem.TopMaskHover" Value="{StaticResource tophoverStyle}" />
+    <Setter Property="controls:IconMenuItem.SubMaskNormal" Value="{StaticResource submasknormalStyle}" />
+    <Setter Property="controls:IconMenuItem.SubMaskClick" Value="{StaticResource subclickStyle}" />
+    <Setter Property="controls:IconMenuItem.SubMaskHover" Value="{StaticResource subhoverStyle}" />
+    <Setter Property="controls:IconMenuItem.ScrollViewerStyle" Value="{StaticResource RecScrollViewer}" />
+    <Style.Triggers>
+      <Trigger Property="MenuItem.Role" Value="TopLevelHeader">
+        <Setter Property="Margin" Value="8,0,8,0" />
+        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=TopLevelHeaderTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}}" />
+      </Trigger>
+      <Trigger Property="MenuItem.Role" Value="TopLevelItem">
+        <Setter Property="Margin" Value="8,0,8,0" />
+        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=TopLevelItemTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}}" />
+      </Trigger>
+      <Trigger Property="MenuItem.Role" Value="SubmenuHeader">
+        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}}" />
+      </Trigger>
+      <Trigger Property="MenuItem.Role" Value="SubmenuItem">
+        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuItemTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}}" />
+      </Trigger>
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter Property="Foreground" Value="{DynamicResource IconMenuItemFg}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="{x:Type controls:IconMenuItem}" TargetType="{x:Type controls:IconMenuItem}" BasedOn="{StaticResource IconMenuItemBase}" />
+  <ControlTemplate x:Key="{ComponentResourceKey ResourceId=TopLevelItemTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}" TargetType="{x:Type controls:IconMenuItem}">
+    <Grid SnapsToDevicePixels="True" Background="#00FFFFFF">
+      <Border Name="bg" Style="{Binding TopMaskNormal, RelativeSource={RelativeSource TemplatedParent}}" />
+      <DockPanel VerticalAlignment="Center">
+        <Image Name="image" Stretch="None" Margin="{TemplateBinding controls:IconMenuItem.IconPadding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="Center" Visibility="Visible" Source="{Binding NormalIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+        <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+      </DockPanel>
+    </Grid>
+    <ControlTemplate.Triggers>
+      <Trigger SourceName="image" Property="Image.Source" Value="{x:Null}">
+        <Setter TargetName="image" Property="UIElement.Visibility" Value="Collapsed" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsChecked" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsPressed" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="UIElement.IsMouseOver" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding HoverIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="UIElement.IsEnabled" Value="False">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding DisableIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding TopMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsPressed, Converter={StaticResource NullConvert}, RelativeSource={RelativeSource Self}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding TopMaskClick, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding TopMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <ControlTemplate x:Key="{ComponentResourceKey ResourceId=TopLevelHeaderTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}" TargetType="{x:Type controls:IconMenuItem}">
+    <Grid SnapsToDevicePixels="True" Background="#00FFFFFF">
+      <Border Name="bg" Style="{Binding TopMaskNormal, RelativeSource={RelativeSource TemplatedParent}}" />
+      <DockPanel VerticalAlignment="Center">
+        <Image Name="image" Stretch="None" Margin="{TemplateBinding controls:IconMenuItem.IconPadding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="Center" Visibility="Visible" Source="{Binding NormalIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+        <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+      </DockPanel>
+      <Popup AllowsTransparency="True" Focusable="False" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" Placement="Bottom" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+        <Border Background="#00FFFFFF" Padding="0,5,0,0">
+          <Border Name="DropDown" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" Style="{Binding PopupStyle, RelativeSource={RelativeSource TemplatedParent}}">
+            <ScrollViewer Name="SubMenuScrollViewer" Style="{Binding ScrollViewerStyle, RelativeSource={RelativeSource TemplatedParent}}">
+              <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+            </ScrollViewer>
+          </Border>
+        </Border>
+      </Popup>
+    </Grid>
+    <ControlTemplate.Triggers>
+      <Trigger SourceName="image" Property="Image.Source" Value="{x:Null}">
+        <Setter TargetName="image" Property="UIElement.Visibility" Value="Collapsed" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsChecked" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsPressed" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="UIElement.IsMouseOver" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding HoverIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="UIElement.IsEnabled" Value="False">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding DisableIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding TopMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsPressed, Converter={StaticResource NullConvert}, RelativeSource={RelativeSource Self}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding TopMaskClick, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding TopMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <ControlTemplate x:Key="{ComponentResourceKey ResourceId=SubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}" TargetType="{x:Type controls:IconMenuItem}">
+    <Grid SnapsToDevicePixels="True" Background="#00FFFFFF">
+      <Border Name="bg" Style="{Binding SubMaskNormal, RelativeSource={RelativeSource TemplatedParent}}">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" />
+          </Grid.ColumnDefinitions>
+          <Image Name="image" Stretch="None" Margin="{TemplateBinding controls:IconMenuItem.IconPadding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="Center" Visibility="Visible" Source="{Binding NormalIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+          <ContentPresenter Name="HeaderHost" Grid.Column="2" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" VerticalAlignment="Center" ContentSource="Header" HorizontalAlignment="Left" />
+          <ContentPresenter Name="Shortcuts" Margin="0,0,12,0" Grid.Column="3" ContentSource="InputGestureText" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+          <Path Grid.Column="4" Data="M0,7 L4,4 L0,0" HorizontalAlignment="Right" Margin="0,0,5,0" StrokeThickness="1" Stroke="{TemplateBinding Control.Foreground}" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+      <Popup AllowsTransparency="True" Focusable="False" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" Placement="Right" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+        <Border Background="#00FFFFFF" Padding="3,0,0,0">
+          <Border Name="DropDown" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" Style="{Binding PopupStyle, RelativeSource={RelativeSource TemplatedParent}}">
+            <ScrollViewer Name="SubMenuScrollViewer" Style="{StaticResource RecScrollViewer}">
+              <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+            </ScrollViewer>
+          </Border>
+        </Border>
+      </Popup>
+    </Grid>
+    <ControlTemplate.Triggers>
+      <Trigger SourceName="image" Property="Image.Source" Value="{x:Null}">
+        <Setter TargetName="image" Property="UIElement.Visibility" Value="Collapsed" />
+      </Trigger>
+      <Trigger Value="{x:Static system:String.Empty}" Property="MenuItem.InputGestureText">
+        <Setter TargetName="Shortcuts" Property="FrameworkElement.Margin" Value="0" />
+        <Setter TargetName="Shortcuts" Property="UIElement.Visibility" Value="Collapsed" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsChecked" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+        <Setter Value="{DynamicResource TitleColor}" Property="Control.Foreground" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsPressed" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+        <Setter Value="{DynamicResource TitleColor}" Property="Control.Foreground" />
+      </Trigger>
+      <Trigger Property="UIElement.IsMouseOver" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding HoverIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="UIElement.IsEnabled" Value="False">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding DisableIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding SubMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsPressed, Converter={StaticResource NullConvert}, RelativeSource={RelativeSource Self}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding SubMaskClick, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding SubMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <ControlTemplate x:Key="{ComponentResourceKey ResourceId=SubmenuItemTemplateKey, TypeInTargetAssembly={x:Type controls:IconMenuItem}}" TargetType="{x:Type controls:IconMenuItem}">
+    <Border Background="#00FFFFFF">
+      <Border Name="bg" SnapsToDevicePixels="True" Style="{Binding SubMaskNormal, RelativeSource={RelativeSource TemplatedParent}}">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
+          </Grid.ColumnDefinitions>
+          <Image Name="image" Margin="{TemplateBinding controls:IconMenuItem.IconPadding}" Stretch="None" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="Center" Visibility="Visible" Source="{Binding NormalIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+          <ContentPresenter Name="HeaderHost" Grid.Column="2" ContentSource="Header" Margin="{TemplateBinding Control.Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+          <ContentPresenter Name="Shortcuts" Margin="0,0,12,0" Grid.Column="3" ContentSource="InputGestureText" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger SourceName="image" Property="Image.Source" Value="{x:Null}">
+        <Setter TargetName="image" Property="UIElement.Visibility" Value="Collapsed" />
+      </Trigger>
+      <Trigger Value="{x:Static system:String.Empty}" Property="MenuItem.InputGestureText">
+        <Setter TargetName="Shortcuts" Property="FrameworkElement.Margin" Value="0" />
+        <Setter TargetName="Shortcuts" Property="UIElement.Visibility" Value="Collapsed" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsChecked" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+        <Setter Value="{DynamicResource TitleColor}" Property="Control.Foreground" />
+      </Trigger>
+      <Trigger Property="MenuItem.IsPressed" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding ClickIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+        <Setter Value="{DynamicResource TitleColor}" Property="Control.Foreground" />
+      </Trigger>
+      <Trigger Property="UIElement.IsMouseOver" Value="True">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding HoverIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <Trigger Property="UIElement.IsEnabled" Value="False">
+        <Setter TargetName="image" Property="Image.Source" Value="{Binding DisableIcon, RelativeSource={RelativeSource TemplatedParent}}" />
+      </Trigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding SubMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsPressed, Converter={StaticResource NullConvert}, RelativeSource={RelativeSource Self}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding SubMaskClick, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Value="True" Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}, Converter={StaticResource NullConvert}}" />
+          <Condition Value="True" Binding="{Binding ShowMask, RelativeSource={RelativeSource Self}}" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="bg" Property="FrameworkElement.Style" Value="{Binding SubMaskHover, RelativeSource={RelativeSource TemplatedParent}}" />
+      </MultiDataTrigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+</ResourceDictionary>

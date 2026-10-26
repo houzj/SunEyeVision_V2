@@ -2,49 +2,54 @@
   "stage": "S4",
   "status": "UI_REVIEW_REQUIRED",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "用户已批准按31类与Blob三页方案实施，持续目标active。已提取数值、范围、开关和取色基础控件，接通中立页面/条件/配对范围、输入源Combo与颜色草稿；正式目录实际WPF交互26项通过。ROI、完整窗口/显示组合与算法职责迁移仍在实施，不能交作完整试用，UI尚未核收达标。",
-  "summaryStatus": "已授权实施；基础交互已实测，完整Blob UI与整链未闭合",
+  "current": "31类方案继续实施：三页、显示对象眼睛/私有样式草稿、ROI条件附着与420×500通用壳已接，局部字色/布局/七位范围裁切已修。最终正式候选独立窗口4组和现行完整链8组通过；ROI确认后二次下游错帧失败已修并复测，失败记录保留。VM截图同状态对照仍有ROI层级、运行首屏、图标和文本区差距；新算法/四种ROI继承、旧消费者、最终版本回归、VS和人工未完成。",
+  "summaryStatus": "窗口4组/现行链8组独测通过；整体UI及算法/ROI迁移仍未完成",
   "rows": [
     [
-      "基础控件与资源",
-      "数值、范围、开关、取色器从旧SDK提取至独立Wpf层；接入已还原Combo模板。",
-      "运行时发现并修复主题相对路径和色板资源遗漏；26项实际WPF验证通过。"
+      "基础字段与交互",
+      "已提取数值/范围/开关/取色与Combo；修复浮点失焦截断、文化格式和DialogGroup跨高级分组丢字段。",
+      "旧26项保留历史；本轮四组独测覆盖实际字段、显示草稿与正式Blob窗口，不外推所有逐态视觉。"
     ],
     [
-      "参数页面与订阅",
-      "已接入三页、使能后下一行范围、单/双滑条、宿主选源和颜色确定/取消。",
-      "通用交互通过；Blob完整三页尚需ROI/显示对象组合，不能据此宣称UI完成。"
+      "显示对象与窗口",
+      "5类实际显示声明配眼睛/铅笔、私有样式弹窗；ROI按本地/继承模式条件附着；420×500通用壳保留原命令和关闭链。",
+      "最终独立WindowPresentation attempt003：4组通过；页滚动条12px、七位范围三态完整、页滚底回顶。整体VM外观仍未达标。"
     ],
     [
-      "ROI与窗口",
-      "原七类几何、同帧/pose/局部范围和草稿保留。",
-      "图标工具条、继承组合、显示弹层和紧凑窗口继续实施。"
+      "VM截图与外观差距",
+      "以用户归档VM三页/展开状态为实际外观参考，与本方三页PNG并排核对；截图验证可见外观/状态，源码验证组装/职责。",
+      "仍有ROI层级与四种继承、运行算法首屏、绑定图标、滑条/错误逐态、文本长标签及通用标题差异；不能因对比度或功能PASS宣称整体UI达标。"
     ],
     [
-      "算法及交付",
-      "原执行与结果合同基础保留；预处理/形态学尚未移出Blob。",
-      "分割模式、关联工具适配、全量回归和完整链重验尚未完成；旧测试不作本轮全通过。"
+      "算法与阶段交付",
+      "算法迁移清单及VM多层结构证据已收；现行生产链ROI确认后二次下游错帧已修，独立FullChain attempt020八组通过。",
+      "算法/四种继承仍未实施，旧SDK消费者未迁完；当前链通过不覆盖未来新能力、最终同提交回归、实际VS或用户人工。"
     ]
   ],
   "remaining": [
     {
-      "item": "Blob完整组合",
-      "scope": "三页实际来源/ROI/显示对象/窗口与焦点草稿交互",
-      "state": "当前对话实施中"
+      "item": "VM实际截图外观对照",
+      "scope": "按相同页面与状态核ROI层级、来源/绑定图标、范围滑条/焦点/错误、文本区和标题；保留独立设计说明",
+      "state": "窗口局部修复已核，整体外观未通过"
+    },
+    {
+      "item": "ROI四种继承",
+      "scope": "矩形区域/矩形参数/圆区域/圆参数的真实typed来源、参数完整性、执行及保存；像素Region不得改名充数",
+      "state": "当前仅三模式条件附着，不等于四种继承完成"
     },
     {
       "item": "HALCON职责与关联适配",
-      "scope": "批准的上游预处理/二值形态学、不二值化与单/双阈值及输出口径",
-      "state": "未完成"
+      "scope": "上游滤波/均衡化、严格二值形态学、Blob单/双阈值与不二值化；输出和保存消费者同步",
+      "state": "分析交付完成，产品迁移未完成"
     },
     {
-      "item": "正式完整链与人工试用",
-      "scope": "同一正式Release全量构建、配置执行结果/下游、保存重开与关闭释放；版本身份；用户反馈",
-      "state": "基础交互已测，不代整链或人工验收"
+      "item": "消费者、最终版本回归与人工",
+      "scope": "旧类实际消费者承接；新算法/ROI改动后的同版完整链及关联回归；最终源码/正式Release身份、实际VS设计器和用户反馈",
+      "state": "现行生产链独立8组通过；整体目标、UI和新能力未闭合"
     }
   ],
   "projectOrganization": [
-    "src/Plugin.Wpf/Fields：DeclaredFieldEditor、DeclaredFieldsView、ReferenceSelectionControl、SourceSelectionField；仅依赖Contracts，枚举展示中文、持久键不变。",
+    "src/Plugin.Wpf/Controls、Fields与Themes：提取基础控件，DeclaredFieldEditor/DeclaredFieldsView、RangeField、SourceSelectionField、DisplayObjectField私有样式草稿和局部主题；仅依赖Contracts。",
     "src/Plugin.Wpf/Regions：RoiEditContracts、RoiGeometryEditing、RegionGeometryEditor；沿用RoiDeclarations，局部编辑意图不拥有画布。",
     "src/UI/Services/Editing/Nodes：DeclaredToolConfigurationControl及Sources/RegionSources/Regions分部；负责正常窗口组装、私有草稿和正式声明来源。",
     "src/UI/Services/Editing/Regions：RoiViewportEditScope持有独占交互范围、换帧及pose校验；RoiParameterEditingAdapter桥接当前SDK几何模型。",
@@ -53,7 +58,10 @@
     "tools/SunEyeVision.BlobAnalysis/BlobConfigurationFields：同一原117字段合同的109项常量读写与中文展示；不新增第二套算法或合同。",
     "S4关联修复：Plugin.SDK/BindingClrAdapter准入IVisionImage输出声明；UI/WorkflowExecutionManager以本次正式UI实例回送执行快照结果，NodeResultManager按激活输入合同过滤显示。",
     "tools/SunEyeVision.BlobAnalysis/Wpf/Presentation/BlobAnalysisRow.cs：只投影同一Runtime记录的标量和边框，不保留Region/图像句柄；Wpf工程已改引Runtime，取消门面项目引用。原专用表列保留，未扩建S5通用平台。",
-    "Plugin.SDK/UI/Windows/DefaultDebugWindow：声明页使用完整通用壳；失败事件如实携带状态与原因，窗口显示错误，停止连续重试，修正后可继续。"
+    "Plugin.SDK/UI/Windows/DefaultDebugWindow：声明页使用完整通用壳；失败事件如实携带状态与原因，窗口显示错误，停止连续重试，修正后可继续。",
+    "Plugin.Contracts/FieldPresentation：有限页/组/条件、配对范围和DialogGroup声明；验证主项唯一及同组显示边界，不允许任意脚本。",
+    "UI/DeclaredToolConfigurationControl：420×500通用壳与本地/继承几何/像素Region条件附着；未新增四种参数继承。DefaultDebugWindow保留命令、错误及关闭链。",
+    "Plugin.Wpf/Themes与SDK窗口局部资源：纯WPF String DataTemplate及SDK语义色边界，恢复生成文本可读性；TextBox滚动条设置和独立页面滚动条12px防止范围裁切。"
   ],
   "vmMappings": [
     [
@@ -90,9 +98,14 @@
       "当前结果消费与高亮",
       "IMVSBlobFindModuDisplay.xml:109–113；ModuleResultView.xaml:292–304及.xaml.cs:1475–1593,1786–1813",
       "本轮保留Blob专用列，修复实际生产/调试结果的中立记录消费与高亮；不宣称已移植VM通用XML表格宿主，S5仍未启动。"
+    ],
+    [
+      "VM Blob Runtime/WPF交付结构",
+      "VM_BLOB_RUNTIME_WPF_STRUCTURE_20261026.json/md：native PE + 无WPF引用的托管SDK适配 + XML通用WPF；可选已加载Control分支。",
+      "本方Runtime/Wpf分离为独立职责设计，不声称原厂恰为两个源码工程；原厂native ABI/实际加载及当前窗口分支未证。"
     ]
   ],
-  "manual": "用户先前尚未试用，本轮明确反馈外观不合格；当前不是只等待验收，须先修正S4。",
+  "manual": "用户先前对UI外观反馈不符合要求、功能试用未开始，该反馈保留；本轮自动截图和四组通过不代替用户新反馈或人工验收。",
   "failuresPreserved": [
     "首次共享默认页编译的同名ParameterSetting命名空间冲突已修复；初次恢复旧事务夹具时旧算法兼任工厂假设及混合ALC模型已纠正。",
     "窗口夹具误启动完整App导致超时，改成同生产资源的专用WPF检查宿主；未杀其他进程。",
@@ -107,308 +120,162 @@
     "窗口事务夹具初次错误假定Content就是字段页、随后错误依赖隐藏窗口视觉树，分别改查实际逻辑树；同时修复动态重绑替换宿主错误摘要的问题。",
     "真实主窗口整链发现IVisionImage冻结目录缺项、模型快照误作UI节点、隔离ALC结果强转失败，均已修复并保留原失败记录。",
     "整链夹具的布局、图像面板配置、同步上下文、生产绑定/选中状态及末个窗口未初始化超时已修正；不以夹具修正掩盖产品失败。",
-    "显示层原旧集合模式与新激活模式不一致，已沿同一输入合同过滤；失败事件误报成功及连续重复失败已修，完整链反例与恢复通过。"
+    "显示层原旧集合模式与新激活模式不一致，已沿同一输入合同过滤；失败事件误报成功及连续重复失败已修，完整链反例与恢复通过。",
+    "本轮独评发现浮点失焦截断、文化格式与DialogGroup跨Advanced丢字段，已修复；旧失败不删除。",
+    "先前4组功能PASS后增强VisualTree检查为3PASS/1主题FAIL；后续范围、三态和页面空间候选亦有3PASS/1可视宽FAIL，均保留原回执。最后receipt-scrollbar-minwidth为4PASS/0FAIL，只覆盖列明窗口检查点。",
+    "最终首轮栏宽日志误取输入框隐藏ScrollBar0；夹具改取页面精确PART_VerticalScrollBar后重新完整四组通过，不能用错误日志证明12px。",
+    "持久WindowPresentation attempt001实际4组PASS但Windows PowerShell启动器ExitCode为空；runner改持Process句柄并异步收输出后attempt002真实exit0，当前独测attempt003复验通过；不把runner失败作产品失败。",
+    "FullChain attempt018真实产品失败：ROI确认后再次执行下游BLOB_REGION_FRAME_MISMATCH。恢复HEAD既有canonical override保留Runtime图像Frame，未修改严格校验；attempt019根复跑和attempt020独立复跑均8组PASS。原FAIL日志和SHA留存，不用旧成绩覆盖。"
   ],
   "checks": [
     {
-      "name": "同提交全量正式Release",
-      "result": "0错误/1281警告，产品提交69d844e2",
-      "path": "Release/_validation/S4-release-69d844e2-build.log",
-      "sha256": "2fa3260c54d626f48447cbc627f65582aaa4fbcdf381c13f2c8599f997de6e8b"
+      "name": "当前全量正式Release",
+      "result": "o06-canonical-frame-full-build：0错误/786警告，31.90秒；24cd4ffd上未提交候选，构建含3项既有外部改动，非最终同提交交付身份。",
+      "path": "Release/_validation/o06-canonical-frame-full-build.log",
+      "sha256": "D2235BF716C4F4DCCA0F74D801AC9CC17178457AC4206C32CFB527D23368D38D"
     },
     {
-      "name": "真实宿主连续链8组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S4-20261025/FullChain/attempt-017/receipt.json",
-      "sha256": "5e54160b3566c2b777c944323cd11092b4ebc4e5b2f340a59dfb82b980f520b9"
+      "name": "独立窗口4组",
+      "result": "WindowPresentation attempt003 exit0/4组PASS；真实420×500、显示私有草稿/确认取消、模式条件、七位三态视区58.5≥字符57.47且offset0、精确12px页滚动条与滚底回顶通过。",
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/receipt.json",
+      "sha256": "6C0C8FDF64F196F75DFD87EC7ECCF59C1A4586339C5F56EF9427F52F2EDC566C"
     },
     {
-      "name": "字段编辑8组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-009/receipt.json",
-      "sha256": "04be602c184d2d9a5c8a74ab56a9cd32c00fe58b07ff93cd7c70c7a5b4d488a3"
+      "name": "独立现行完整链8组",
+      "result": "FullChain attempt020 exit0/8组PASS：MainWindow生产及下游、ROI调试确认后二次生产、保存重开和关闭释放；首轮/确认后检Gray.Frame==Region.SourceFrame并保持SDK IVisionImage消费。不是新算法、四种ROI继承或整体UI验收。",
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-020/receipt.json",
+      "sha256": "BC320E8E18CA386824D3AFE73132DA8A8AD85CA27C59B489F2F6FF994C08F1CB"
     },
     {
-      "name": "来源与绑定10组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S4-20261025/BindingEditing/attempt-017/receipt.json",
-      "sha256": "4838b71043852603a337345af7f23d69a4d44eaaf41b2d9eb10cd03498b4b160"
+      "name": "错帧失败与修复",
+      "result": "attempt018确认ROI后二次生产下游BLOB_REGION_FRAME_MISMATCH失败；恢复HEAD既有canonical override以保持Runtime图像Frame，不放宽Frame校验、不改SDK图像类型或所有权。根attempt019及独立attempt020八组通过；原FAIL保留。",
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-018/receipt.json",
+      "sha256": "3C139E90EF11A2DC8EAE4B3BB16428640D7F5C39593E7CA316FC32C158C6473C"
     },
     {
-      "name": "区域编辑6组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S4-20261025/RoiEditing/attempt-008/receipt.json",
-      "sha256": "579c302f07c0b7fe0f5bcab162ced1f8e331e4b59b4ff53fc5fc87fbede7a195"
+      "name": "串行独测与装载身份",
+      "result": "窗口结束后才跑完整链；70条装载记录均来自正式目录且SHA一致。两轨源码与捕获用例一致；最终综合回执限定本次范围。",
+      "path": "Release/_validation/O06-Window-20261026/receipt-final-window-fullchain-independent.json",
+      "sha256": "c99c8897c0cc5722da34cddc74dd3c7dad4aa2fceb05146985bf9eeb9f815311"
     },
     {
-      "name": "窗口和文档事务28项",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-029/receipt.json",
-      "sha256": "ed1d7f673d1b79b27e760d8e84e6354124b09f4ca89c566643f3fd2fc61250b4"
+      "name": "VM实际截图外观门",
+      "result": "用户VM三页/展开截图与本方同页同态核差距；已修字色/眼笔/底栏/范围裁切，ROI层级、运行首屏、图标、滑条/错误逐态、文本区与通用标题仍有差异。4+8组功能通过不代整体外观或人工。",
+      "path": "Release/_validation/O06-Window-20261026/vm-visual-gap-scrollbar-minwidth.md",
+      "sha256": "b2c0228b3f25e379462a2a73f364755153c70c9e0902bbeeedc765ad31764842"
     },
     {
-      "name": "关联回归52项",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S2-20261025/Related/attempt-022/receipt.json",
-      "sha256": "383b84e630a037916c2674425cd395fe35477c9a2ccb39b818d5f416c4880598"
-    },
-    {
-      "name": "真实内核8组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-015/receipt.json",
-      "sha256": "0db344ea05a03d0a60e550d582d18f72f18694116ccc967c3a21bbd464d817b6"
-    },
-    {
-      "name": "输入边界4组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S3-20261025/InputBoundaries/attempt-014/receipt.json",
-      "sha256": "469cd0b2992e444ceb5a682ffda7eeb16e4f2e0da4068bf751e5ec19759c1aee"
-    },
-    {
-      "name": "真实消费链7组",
-      "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
-      "path": "Release/_validation/S3-20261025/Consumption/attempt-018/receipt.json",
-      "sha256": "2f7155c57652a4dbcb0c3f3c8630008119b510fdeb42011070ae014d14668ba8"
-    },
-    {
-      "name": "S1完整轨道",
-      "result": "Contracts/Owner/Fields/Native/Workflow/Snapshot/Dialog均exit0",
-      "path": "Release/_validation/S4-release-69d844e2-S1.log",
-      "sha256": "afee4c780873ed7360394af5deb36f82982ef219dab6fa076a274dc8c49cc141"
-    },
-    {
-      "name": "组件部署11项",
-      "result": "有/无Wpf均可配置并执行；拒绝缺失/重复/错误组件；3文件及清单原SHA还原",
-      "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-008/results.json",
-      "sha256": "b1a075968f20c8f7a93b7eace0e4b9bda2c4c21b69122f9fd02cb84637d4accb"
-    },
-    {
-      "name": "设计时路径",
-      "result": "UI设计时Compile路径通过；实际VS设计器未打开",
-      "path": "Release/_validation/S4-ui-design-time-check.log",
-      "sha256": "244e20da43b002af2dd95dc97a732f648ad5a0523ef181cf94b3bae63ca14367"
-    },
-    {
-      "name": "新职责基础交互（2026-10-26）",
-      "result": "Release/_validation/O06-Controls-20261026 实际WPF 26项通过；数值边界/重复加载、焦点、颜色RGBA草稿、订阅切换、清空来源、三页使能/双滑条/切页与无宿主依赖。仅基础交互，不代完整Blob或UI人工验收。"
-    },
-    {
-      "name": "本轮全量Release构建",
-      "result": "o06-controls-full-release.log：0错误/1378警告，1分07秒；随后正式目录重跑26项。尚未本轮完整链/VS实际设计器/人工验收。"
+      "name": "历史与未验范围",
+      "result": "旧69d844e2整链/关联/组件/设计时、基础26项、881构建和各轮主题/宽度FAIL保留历史；二值输出单独Frame断言/跨释放reader专测、新能力回归、实际VS及用户人工未由本次独测完成。"
     }
   ],
-  "sourceBaseline": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
-  "productIdentity": "当前是0d8a416b基线上的未提交候选；正式目录已增量构建，尚未固定最终交付提交。包含原有Results/锁文件工作区改动，不将其算成本轮实现。",
-  "next": "继续ROI/窗口/显示配置接线，完成算法和关联工具适配，随后核收同一正式Release完整链。",
-  "estimate": "下一实际检查点预计30分钟内报告ROI/窗口接线及真实页面验证结果；完整试用时间待算法和窗口组合验证后据实更新，不把检查点当停工点。",
+  "sourceBaseline": "24cd4ffd5993ad31582c81a0b11a82663b013ec2",
+  "productIdentity": "当前受测为24cd4ffd加未提交阶段增量；canonical-frame全量Release 0错误/786警告31.90秒，独立窗口attempt003与完整链attempt020均通过，70条正式装载身份一致。包含原有Results及两锁文件外部改动（canonical override恢复原实现，其他外部差异保留），不将其算本轮实现；最终提交后同版重建和关联回归尚待固定。",
+  "next": "保存本阶段中文检查点并按明确写权交接继续算法职责迁移及关联工具适配、四种ROI继承和旧消费者承接；完成新能力后的同版完整链与关联回归。继续按VM实际截图修整体外观，达可试用状态后集中人工验证。",
+  "estimate": "本次是窗口交互检查点，不是整体完成或停工点；后续实际进展、阻塞负责人和下一检查点时间由主对话主动报告，待算法/ROI实施及回归结果据实更新完整试用时间。",
   "evidence": {
-    "archive": "docs/collaboration/evidence/S4-release-69d844e2-20261026.zip",
-    "sha256": "2d64a340643c974612cf88479a4e62998e8598bee1b0882c38bc6388ecd8990f",
-    "bytes": 922227,
-    "scope": "同提交正式Release的完整Blob宿主连续链与关联自动核收；保留失败，不含产品/native副本；人工验收等待用户。"
+    "path": "Release/_validation/O06-Window-20261026/receipt-final-window-fullchain-independent.json",
+    "sha256": "c99c8897c0cc5722da34cddc74dd3c7dad4aa2fceb05146985bf9eeb9f815311",
+    "checkpointPath": "docs/collaboration/evidence/O06_WINDOW_IMPLEMENTATION_CHECKPOINT_20261026.json",
+    "checkpointSha256": "783d0f0fbcb60bf1f407c6ca5e96782a15497a5026fb8938371bf633f99938c8",
+    "scope": "当前正式候选独立窗口4组及现行链8组通过；整体UI、新算法/四ROI、VS和人工未闭合",
+    "tracks": [
+      {
+        "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/receipt.json",
+        "sha256": "6C0C8FDF64F196F75DFD87EC7ECCF59C1A4586339C5F56EF9427F52F2EDC566C",
+        "loadedPath": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/loaded-product.tsv",
+        "loadedSha256": "CA441B5FF60C688A2F1A5573B2C1E7320E239374C5F63BADB49B2C9621B3C55D"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/FullChain/attempt-020/receipt.json",
+        "sha256": "BC320E8E18CA386824D3AFE73132DA8A8AD85CA27C59B489F2F6FF994C08F1CB",
+        "loadedPath": "Release/_validation/S4-20261025/FullChain/attempt-020/loaded-product.tsv",
+        "loadedSha256": "AEE3E60759A286E6FD80FA94D530EDBD649013EF0D1D3BA8A1F3A5E53FFCF8FF"
+      }
+    ]
   },
   "currentSourceManifest": [
     {
-      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
-      "sha256": "ab751f77d7a9f9ba0b59a2f93bcc98429996f0d82fa6872e128d577d5da3efab"
-    },
-    {
-      "path": "scripts/verification/S2DocumentEditingCases.cs",
-      "sha256": "7eaba6eabdc0c815ecc728eaa615a815120a52f191162ec71a194a9b4511b744"
-    },
-    {
-      "path": "scripts/verification/S3ComponentCases.cs",
-      "sha256": "f7bcae1b4682089e5eb077dee2ddb6634a648e04025b0cce73c34e982c816861"
-    },
-    {
-      "path": "scripts/verification/S4BindingEditingCases.cs",
-      "sha256": "7a0c5ab8442fdf9a80224dc6316d27848cff490a48ee3bb2c40c04ddf776c3bf"
-    },
-    {
-      "path": "scripts/verification/S4FieldEditingCases.cs",
-      "sha256": "a9d6322f1348dbedcedcf7f6abfcb9cdd8bb4b1c3643b766c5475b35952b1f8e"
-    },
-    {
-      "path": "scripts/verification/S4FullChainCases.cs",
-      "sha256": "4d6edb77eb97dd021c5899d064263e1283e1821035b8302a5394d847bce9cc43"
-    },
-    {
-      "path": "scripts/verification/S4RoiEditingCases.cs",
-      "sha256": "22160345fb88448f2fca0b6bddcc334292ab36f3a03d668bbf509a54a120546e"
-    },
-    {
       "path": "src/Plugin.Contracts/FieldPresentation.cs",
-      "sha256": "bac5e1f548b50e52593f99021eb1df57d98df5b26ae3b56bb2a8000c12c96595"
-    },
-    {
-      "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
-      "sha256": "9cb2b50bd8eae27a458c8aac418ac6c67ca8b6b85d27e5edb6c4aaba615bd95a"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/BindingClrAdapter.cs",
-      "sha256": "be2d1cf62121a89932941e8305f3d59ef3120dce4254ef655d896d2d66bb1a25"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs",
-      "sha256": "7dcc95db7a2c740e92bb19dcb82990a4d5d0fe4312137ba8d51ba868c2734893"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/IConfigurationFieldProvider.cs",
-      "sha256": "61aaf8123dd5fa043da3baf9156688e6ce1c9ff66baf6c2433b062ae73b7251c"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/RoiShapeValueAdapter.cs",
-      "sha256": "2378a7385775c8040432204fb1cb9393da5d3f8480ed7c82644db81635f77bcc"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshotResolver.cs",
-      "sha256": "6cf873f1234a2313e62703689aa789114d3cff001cf2987d6a51511c354ab22b"
-    },
-    {
-      "path": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
-      "sha256": "3ab1b95ddddeb19507cf26984555b18e188d841a8b9d3c191f09d6882d1e1368"
-    },
-    {
-      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.BindingIssues.cs",
-      "sha256": "5e64bcd6a944da931811c2f9a853817c6f82705c1f7270b168fd605026850983"
-    },
-    {
-      "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
-      "sha256": "eca5c295b715afe63d449c5bded7bce278f75cf7313f1daf804b23da8c264f04"
-    },
-    {
-      "path": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
-      "sha256": "bbef52d84333709da0d582c9ddb2029844633ff04edf9811af8c7f93b0fa0ec8"
-    },
-    {
-      "path": "src/Plugin.SDK/UI/Events/ToolExecutionCompletedEvent.cs",
-      "sha256": "b95a7bfca341d36a94f4ce1744b839f6906a974f41ed4e0d09a80c25e3042de6"
+      "sha256": "7e33668679881d5ea5e7ec8c499569093315ee5ea4d6935fe93549db031ef7dd"
     },
     {
       "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
-      "sha256": "e51489e9ea694d6ed7eb956c3bda5cae6d353264fc680b8a75ad54d3df018acd"
+      "sha256": "bfe414d9f9df0c43d03e4207bcf8cadad2466ba40bb15085c61ff70a79c1bf85"
     },
     {
       "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
-      "sha256": "f03e74395518fb4a3bb324deb6c3552b86d4a822c6cec385cf291cbe77bade34"
+      "sha256": "04e90afe0c8b0bc59bc0356607c88d8d5164ab8687b7ee3743aee188ef716c03"
     },
     {
-      "path": "src/Plugin.Wpf/Directory.Build.props",
-      "sha256": "3e63ebca828097d1cb8037201654c053f2ebdc0387386201b45020baa4d96423"
+      "path": "src/Plugin.Wpf/Controls/NumericUpDown.cs",
+      "sha256": "7ff2ba17cdc02638ca4293ccbfc959fd0e2224e467be343846b26fcb6b4bef92"
     },
     {
       "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-      "sha256": "6099fc47b03e207bfa6d8e3d9d052bb5804f23933354ad4766196e4f82dbd8c7"
+      "sha256": "274f09bcec76dfb8385317eadad6711b2d247c453e220657363bbbc3f88cf529"
     },
     {
       "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-      "sha256": "57b48e6a5baef29307a9b01370c9802d5c5e41ed7060c1325aa0a43eb85d1287"
+      "sha256": "3c0d68a9908470b3be4799a9e1bb191f93f89be1d7dd55966bfebf36ff6eb35e"
     },
     {
-      "path": "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs",
-      "sha256": "3901e1577638076b97b9cc0df4589b48da68fa911df8dcd947d7ff0fb31d9f12"
+      "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+      "sha256": "af9cab1043f55e0d71d95c6057a48013d94a20dff8fd9e78a9043da3fbdbecef"
     },
     {
-      "path": "src/Plugin.Wpf/Fields/SourceSelectionField.cs",
-      "sha256": "2060148bad1b639f83493cd7bd1d65fa8ca3f1a83bc5bc1f0352d3514c275d25"
+      "path": "src/Plugin.Wpf/Themes/Generic.xaml",
+      "sha256": "c1c84c39f11c21990b6370a2638b999dce2e7902021a318e2a97779481217eb3"
     },
     {
-      "path": "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
-      "sha256": "8f9f5a5739679b4532376240022a0966fb056ffa10e201c2e042050c2be0d6a2"
-    },
-    {
-      "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs",
-      "sha256": "38f410ea84af1db33cac06fbee5ab261626efa6721ebe215f5c1a67439a34be4"
-    },
-    {
-      "path": "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs",
-      "sha256": "eac144eede78eaa4a1bbde0e7be4a5e52c0fd6072bb9c87ac62710314f9c25df"
-    },
-    {
-      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
-      "sha256": "395e15efec4c22249580d66a8c50b08aaf1c4285b87f172c142db775415ac3d9"
-    },
-    {
-      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
-      "sha256": "2509f01203f13274c0cbb562db8bae1f5a99771d2542266ef00628b883c96112"
-    },
-    {
-      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs",
-      "sha256": "afa4d04ea9d5830be8ff7dca3497bfdbec7f0d2e5e32b9d0293586ae6f84233a"
+      "path": "src/Plugin.Wpf/EditorIcons.cs",
+      "sha256": "04c64e708c092a1f22127a35423eb584862f7793177626887de522428e84c342"
     },
     {
       "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
-      "sha256": "557fc8185dbd4f60e0c4e45a130afa06fbbf0c2ad61b5e480cc53f88d80159b3"
+      "sha256": "1fcb96162b4732514fe0622c7312831b5e79fffc78f4e8623e02fb5ca60f1e59"
     },
     {
-      "path": "src/UI/Services/Editing/Nodes/NodeOpenDecisionChain.cs",
-      "sha256": "a32c7a7691ca0ca15e1056531db182477f46da94e8c285f2225589463dc26606"
+      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
+      "sha256": "9c80a6050cb47ede43453297763b34ac24e638a585c39ce0927a1095ca31960d"
     },
     {
-      "path": "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
-      "sha256": "5ab31926e3cc7ca6c5adf9c74114302b436eab670af1e260ad57ba2e1049fc36"
-    },
-    {
-      "path": "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs",
-      "sha256": "244e3f7f31291f218864aba0afa1f0f5ac54a31c8b7af972df0afc1b2dfeb378"
-    },
-    {
-      "path": "src/UI/Services/Workflow/NodeResultManager.cs",
-      "sha256": "315acb47cc14517272555116c966f9e65beb3db0aa442b26b14f45dc2dd86707"
-    },
-    {
-      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
-      "sha256": "59201ebcff41c8ac24086fa49f40cd502367b1ffbb5ee4e25d616269fb8cda6c"
-    },
-    {
-      "path": "src/UI/SunEyeVision.UI.csproj",
-      "sha256": "ad48b49c6df4fbd2653d7ec0a7d3399066001d97d727daa45a1012f0de623fb4"
-    },
-    {
-      "path": "src/Workflow/Persistence/SolutionLegacyBindingMigration.cs",
-      "sha256": "1655226d980e6ce8a11de74dc3a5270d20eddd190318bd1cb3c8ce57c6c5ea00"
-    },
-    {
-      "path": "src/Workflow/WorkflowBindingContext.cs",
-      "sha256": "d755276d6b2aa462d8a2ee80d3af642ee13869f524fffe2e6d62e9d19ae41833"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs",
-      "sha256": "37424b695ed9ceb8f8c1d56797fa15d7ce50361eb89adc08df587a4595d040bf"
-    },
-    {
-      "path": "tools/SunEyeVision.BlobAnalysis/BlobConfigurationFields.cs",
-      "sha256": "1bfc785680dba5165c5dfc3ca347c934a8ca1b745a398d1602d6f65dfcb716cd"
+      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
+      "sha256": "143125f215d3b1c54c0920aa6e90ade0d77a356a926fc118d2ee4a6d208a911b"
     },
     {
       "path": "tools/SunEyeVision.BlobAnalysis/BlobInputContract.cs",
-      "sha256": "8bb1f633c6c079d70f51173de53007705c3778f04503b88a43016e5e1794908b"
+      "sha256": "724ffc51fab342f415a334b942b6922c8bcc27adca8560e4a7ded847953eb870"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs",
-      "sha256": "b223bfc5a771c2b76fec09476a28a12fa3904b09ccc2b331d7e29c213efd8484"
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobConfigurationFields.cs",
+      "sha256": "392d6f30adb4f28db1a2db0f0d6871f97358e94ff368fd721c393de076c149dd"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Presentation/BlobAnalysisRow.cs",
-      "sha256": "f661238031b344afc79e659f35d324d84d4b154c81e430c29ade44cc7920e89e"
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs",
+      "sha256": "35b10f743d68a5ed4741a221aea43d72d6348e4d8617170fefc2a7b356b6e52f"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.Tool.BlobAnalysis.Wpf.csproj",
-      "sha256": "26b32565a611f7a20a6b9da98f0740aa9232177c831324805d2e8870fcad796d"
+      "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisResults.cs",
+      "sha256": "b393d786bf384d4f20af9f99d4de238bfcbb2a9500ff430014106bf044dbccb1"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDataAnalysisControl.xaml.cs",
-      "sha256": "76be1642452814d2ce5b60e5b96c04aa0134d4ddee426cad71d01a0234bb1006"
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "9fcadda7f49f075cec5d71ecd2b948efacb1e10fe9f9193864e51e048acb9e8b"
     },
     {
-      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/packages.lock.json",
-      "sha256": "a4fa75f573c359cede5ab30243d3cccb387fa2f0b79e14dcb5e00c999e32e3f3"
+      "path": "scripts/verification/S4FullChainCases.cs",
+      "sha256": "6fc0e4491133cec349d6ff7a890307c602c51089b50a6bb684a7144a61b7c131"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "10082a18523a924121b77b64e59dc818c1657ec4184ed2f80de6dd8c6446bf1c"
     }
   ],
   "uiPreview": {
-    "path": "docs/collaboration/evidence/S4-blob-full-chain-20261026.png",
-    "sha256": "f4affc27d33d1de1df5bcdb6c7a40ee3c989be81b1d85dfaaaafc932cd3bac6b",
-    "scope": "同版真实WPF宿主的图像、结果和高亮渲染，非物理鼠标或用户验收。"
+    "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/scrollbar-minwidth-window-page-1.png",
+    "sha256": "65ad897feb3d55cd1c380094115b70035afca6b84b75528a2cbc15c33b8909ef",
+    "scope": "最终canonical-frame正式候选WindowPresentation attempt003运行页；局部视觉检查点，不代表整体VM外观或用户验收"
   },
   "previousEvidence": {
     "archive": "docs/collaboration/evidence/S4-fields-binding-checkpoint-20261026.zip",
@@ -468,7 +335,8 @@
         "明确显示失败并停止连续重试，旧表/摘要不冒充本次结果；修正后无需重启。"
       ]
     ],
-    "limitations": "自动检查不替代物理鼠标手感和你自己的图像/流程。实际VS设计器尚未打开；S5通用结果平台及正式性能基准不在本轮交付中。"
+    "limitations": "自动检查不替代物理鼠标手感和你自己的图像/流程。实际VS设计器尚未打开；S5通用结果平台及正式性能基准不在本轮交付中。",
+    "status": "历史69d844e2试用说明，非本轮新候选完整试用交付；待新整链后重新确认"
   },
   "manualAcceptance": {
     "status": "UI_REJECTED_FUNCTIONAL_TRIAL_NOT_STARTED",
@@ -485,40 +353,28 @@
   "uiReview": {
     "comparison": [
       [
-        "页面组织",
-        "Blob模块XML明确基本参数、运行参数、结果显示三页，共享Group插入各页。",
-        "本方基本、运行、结果判定、图形样式、文本样式五页，不是VM页面组织。",
-        "S4重做页面声明与组装；HALCON额外选项单列依据，不把全部字段平铺。"
+        "基本参数与ROI",
+        "用户VM截图SS01/SS03：ROI类型、绘制/继承、矩形区域/参数与圆区域/参数的层级和条件字段。",
+        "本方最终page-0是三模式Combo与本地多形状编辑；继承像素Region未指定来源是测试草稿态，不是默认配置或执行成功。",
+        "四种继承真实typed来源及参数完整性尚未接入；不能将三模式改标签充数。"
       ],
       [
-        "字段布局与控件",
-        "ParamUserControlDataTemplate使用LeftRightControl同排标签/输入；开关、数值及范围有专用模板。",
-        "本方标签/输入上下堆叠，CheckBox、TextBox及复合值递归展开；外观与密度不符。",
-        "按对应模板实现局部控件、统一行布局和范围编辑，不能只换颜色。"
+        "运行参数与范围",
+        "SS04/SS05：阈值方式/极性、数量、使能后范围及高级特征，同排订阅/滑条。",
+        "最终page-1七位样本3态完整可见；仍有现行预处理/形态学组，分割策略未迁移。",
+        "局部范围宽度与滚动已核；算法职责、绑定图标与单/双滑条/错误逐态继续实施核收。"
       ],
       [
-        "条件显隐与折叠",
-        "XML包含ThresholdType触发显隐及Expert/高级分组，截图与声明相互支持。",
-        "本方字段视图按组遍历生成，未形成VM完整条件展示与高级折叠链。",
-        "补展示规则；不复制第二字段或执行合同；静态与运行证据分清。"
+        "结果显示与样式",
+        "SS06/SS07/SS08：判定、眼睛/铅笔对象行及文本内容/OK-NG色/字号。",
+        "最终page-2有5类实际声明对象、私有样式弹层与判定短标签；不虚造VM对象；文本区长标签仍有差距。",
+        "窗口局部交互通过；文本短标签组合、整体层级/图标/标题及完整状态外观未通过。"
       ],
       [
-        "ROI组合",
-        "RoiSelectControl有形状图标模板及展开数值；BoxROIStack按行组织几何数值。",
-        "当前文字形状/动作按钮和集合列表；可编辑不等于VM组合与布局。",
-        "S4重做呈现与模板组合，保留经验证的私有草稿及独占交互边界。"
-      ],
-      [
-        "结果显示配置",
-        "ImageViewConfig与模块声明组织眼睛/编辑操作及文本设置。",
-        "当前拆图形/文本Tab，按属性展开，与对象列表组织不同。",
-        "配置侧归S4补齐；S5通用当前结果表另计，不推迟本项。"
-      ],
-      [
-        "样式与窗口资源",
-        "模板直接依赖Apps.Style、ColorFun、Localization、窗口与图标。",
-        "旧覆盖报告明确不是依赖闭包；已有资源导出但未完成全部身份、资源链及同状态视觉核对。",
-        "补实际消费的资源闭包与同尺寸/主题/状态截图，停止扩查算法native。"
+        "窗口与证据",
+        "用户VM三页/展开实际截图为可见外观参考；截图5菜单遮挡、滚动截断不推定缺项不存在。",
+        "实际420×500、关闭X、眼笔行、无空错误占高及完整底栏已核；标题仍为通用工具调试窗口。",
+        "源码证组装/职责，截图证可见外观/状态；对比度、编译或功能PASS均不能单独代表整体UI与人工验收。"
       ]
     ],
     "assemblyChain": [
@@ -574,20 +430,20 @@
       [
         "页、组、字段",
         "XML Tabs/Category/Group → TabsA/Collection → ParamsTabUserControl/ParamListView。",
-        "BlobConfigurationFields.Group → DeclaredFieldsView按组直接生成Tab和StackPanel。",
-        "重做展示声明层级：页/组/行/有限条件/折叠，不能把业务字段组直接当页。"
+        "BlobPresentation有限布局→BlobInputContract.Presentation→DeclaredFieldsView三页/组/条件/配对范围与DialogGroup。",
+        "当前三页局部交互已有正式窗口验证；余下ROI继承层级和算法参数职责继续按VM截图与本方合同落地。"
       ],
       [
         "模板与绑定",
         "DisplayType → ParamUserControl → UserTempConverter → 字典key/Default；外部内容程序集可合字典。",
-        "DeclaredFieldEditor按标量/记录类型直接创建CheckBox/TextBox等，引用选择回调归宿主。",
+        "DeclaredFieldEditor组合基础数值/开关/颜色/范围/订阅；DisplayObjectField私有样式草稿，候选回调归宿主。",
         "重做同排模板与复合行；复用有效值/非法原文和引用行为，不复制任意反射/操作脚本。"
       ],
       [
         "资源、主题与语言",
         "Apps.XmlUI/Apps.Style/PcUI → ColorFun/Localization → 外置配置和XAML；活动key仍partial。",
-        "UI AppResources及现有SDK资源；Plugin.Wpf以代码创建元素，未形成该套共享模板主题闭包。",
-        "补Plugin.Wpf主题资源、图标与pack URI部署；所有同状态外观截图重新核收。"
+        "Plugin.Wpf独立Generic/Combo与纯WPF字符串模板；SDK语义色局部边界防暗色宿主白字泄漏；实际截图及宽度断言已检查。",
+        "同页面/同状态对照用户VM实际截图；可读性、层级、图标、布局与密度分别核收，不能只检对比度。"
       ],
       [
         "ROI和图像",
@@ -598,8 +454,8 @@
       [
         "执行、确定与退出",
         "BottomCommandGroup → 命令/托管执行边界，Closed/DoFinish；native释放时机未知。",
-        "DefaultDebugWindow + ToolDebugControlBase + S2编辑作用域，确定/取消/保存重开及释放已有功能检查。",
-        "复用职责与单链；换视图/算法流程后回归，不能用旧PASS证明新UI完成。"
+        "DefaultDebugWindow + ToolDebugControlBase + 编辑scope保留单链；当前独立FullChain attempt020实际8组覆盖ROI确认后二次生产、下游、保存重开和关闭释放。",
+        "本次现行链复测通过；新算法/四种ROI继承实施后须再回归，不能据现行链通过声称未来能力或整体外观完成。"
       ]
     ],
     "decisions": [
@@ -659,8 +515,13 @@
       ]
     ],
     "engineeringBefore": "当前（实际存在）\nBlobConfigurationFields：字段→Group字符串\nPlugin.Wpf/Fields/DeclaredFieldsView：Group→Tab→StackPanel\n  DeclaredFieldEditor：标签在上、通用输入在下\nPlugin.Wpf/Regions/RegionGeometryEditor：文字按钮＋集合列表\nUI/DeclaredToolConfigurationControl*：另行插入来源和ROI\nSDK/DefaultDebugWindow：通用壳与执行/确认接线\n缺口：页/组/行/条件/折叠/模板资源没有形成完整展示声明。",
-    "engineeringAfter": "S4修正推荐（待整体审核，尚未实施）\nPlugin.Contracts/FieldPresentation.cs及同目录展示声明\n  稳定字段引用＋页/组/行/条件/折叠；不含WPF、HALCON或任意脚本\ntools/SunEyeVision.BlobAnalysis/BlobConfigurationFields.cs及展示声明文件\n  三页布局、有限可见规则、ROI角色、显示对象/文本组合；引用同一字段合同\nPlugin.Wpf/\n  Fields/：页组渲染、行编辑行为；Regions/：局部ROI视图与数值行为\n  Themes/：行/开关/数值范围/来源/ROI/显示对象模板，主题资源及图标\nUI/Services/Editing/Nodes/DeclaredToolConfigurationControl*\n  只提供草稿、候选、命令和受限视口，消费同一展示声明\nUI/Services/Editing/Regions/RoiViewportEditScope：复用独占交互边界\nPlugin.SDK/UI/Windows/DefaultDebugWindow：统一窗口和底部命令接线\nBlob Runtime：不变；Blob Wpf：当前只读结果视图可选，不重建旧参数整页。\n算法职责调整（待审）：Blob移除通用预处理/形态学；ImageFilter/Morphology工具承接，Blob添加明确的单/双阈值及不二值化策略，仍是唯一HALCON分析内核，不增加第二套算法。",
+    "engineeringAfter": "当前实际组织\nPlugin.Contracts/FieldPresentation.cs：页/组/条件/配对范围/DialogGroup有限声明，无WPF/HALCON。\nBlobInputContract/BlobConfigurationFields/Runtime.BlobPresentation：同一字段合同的三页和显示对象组合；算法仍用现行实现。\nPlugin.Wpf/Controls：数值、范围、开关、取色器；Fields：声明页、来源、显示对象私有样式草稿；Themes：Generic/Combo/模板与主题。\nUI/DeclaredToolConfigurationControl*：宿主草稿、候选、条件ROI与420×500开窗；RoiViewportEditScope保留受限交互所有权。\nPlugin.SDK/UI/Windows/DefaultDebugWindow：通用壳与底部命令/关闭链。\nBlob Runtime仍是唯一算法；Blob.Wpf保留可选只读结果视图。\n后续：按算法迁移清单移出预处理/形态学并补单/双阈值与严格二值策略；四种ROI继承、旧消费者和完整链待实施/核收。",
     "acceptance": [
+      [
+        "VM实际截图同状态外观门",
+        "按SS01/03基本页、SS04/05运行页、SS06/07/08结果页，与本方最终三页/展开/焦点/错误状态并排对照；核层级/密度/尺寸/图标/主题/文字截断。",
+        "已有截图必须使用，不以缺原机通道跳过；每项注明已修/差距/独立设计/未确认，4组功能PASS和对比度不代外观或人工通过。"
+      ],
       [
         "外观门",
         "先记录VM和本方相同主题/缩放/窗口尺寸/状态，逐页并排检查三页、分组、字段顺序、同排对齐、间距、图标、按钮及滚动；任何差异都说明依据。",
@@ -691,23 +552,23 @@
       [
         "图像预处理归属",
         "当前BlobSession先做滤波/均衡；ImageFilterTool已存在；VM Blob XML无同类独立配置组。",
-        "推荐从Blob移出，由上游图像处理工具承担；先核均衡等具体能力是否完整承接。",
+        "已批准方向：从Blob移出，由上游图像处理工具承担；先核均衡等具体能力是否完整承接。",
         "基本参数仍选输入图像；Blob运行页删除通用预处理组。",
-        "推荐调整，未实施；VM native内部是否有隐式处理未知。"
+        "已批准调整，未实施；VM native内部是否有隐式处理未知。"
       ],
       [
         "形态学与工具链",
         "当前Blob阈值后对Region操作；现有MorphologyTool自己固定阈值128并输出0/255。VM ThresholdType明确不二值化模式。",
-        "推荐上游分割→专用二值形态学→Blob不二值化；形态学工具改为消费明确二值输入，不再隐藏固定128分割。",
+        "已批准方向：上游分割→专用二值形态学→Blob不二值化；形态学工具改为消费明确二值输入，不再隐藏固定128分割。",
         "Blob删除通用形态学组；阈值方式增加有证据来源的不二值化入口；不把ROI端口当对象输入。",
         "关联工具与Blob输入模式均需调整和回归，不能说现有工具已可直接接替。"
       ],
       [
         "单/双阈值与极性",
         "VM声明Single/Double/AlreadyBinarized及极性；本方当前Binary/BinaryInv只是区间内/外。",
-        "推荐HALCON分割策略重构：单阈值明确边界/极性；双阈值明确区间内外；不二值化校验0/255并构建前景Region。",
+        "已批准方向：HALCON分割策略重构：单阈值明确边界/极性；双阈值明确区间内外；不二值化校验0/255并构建前景Region。",
         "显示随模式变化：单阈值隐藏上限；双阈值显示两端；不二值化隐藏阈值，说明输入约束。",
-        "模式及前景定义是本方待审合同，不宣称VM native公式一致。"
+        "模式及前景定义是本方明确设计合同，产品未完成，不宣称VM native公式一致。"
       ],
       [
         "自动/软阈值、填孔和连通性",
@@ -719,7 +580,7 @@
       [
         "筛选、排序、限数与判定",
         "本方SelectFeatures→特征记录→稳定Sort→Take，NG记录保留，最终集合产出表/数组/Region。",
-        "推荐复用同一集合与判定边界；不照搬VM查找个数名称而改变本方排序后截断语义。",
+        "已批准方向：复用同一集合与判定边界；不照搬VM查找个数名称而改变本方排序后截断语义。",
         "运行页分组顺序体现实际流水线，数量上限说明生效阶段。",
         "更改输入/分割后须再验证空/触边/孔洞/斜接目标与NG。"
       ],
@@ -783,7 +644,7 @@
         "realAlgorithm": "未运行"
       }
     },
-    "boundary": "VM通用静态组装链已查明，实际窗口/活动模板与视觉未证；算法职责与新分割模式待整体审核，不是已实施。",
+    "boundary": "三页、范围和显示对象等已按批准方案局部实施；用户VM实际截图用于同页面/状态外观验收，不因缺原机通道忽略。源码支持职责/组装，不能代可见外观。VM交付物为多层结构，不能确认原厂Runtime+WPF两个源码工程；native ABI与进程所选UI分支仍未知。算法迁移、四种ROI继承、旧消费者、新能力整链/最终版本关联回归、VS及人工均未完成；现行生产链独立8组已通过。",
     "evidencePath": "docs/collaboration/evidence/S4_UI_REVIEW_20261026.json",
     "userScreenshotFindings": [
       [
@@ -914,7 +775,7 @@
         "HTML深色与错误样式是本方设计建议，不能算VM已取证样式。"
       ]
     ],
-    "controlStyleScope": "全部可见控件按15类逐项对照；静态源/用户截图支持的状态与未观察状态分开；不是31类总控件复审的替代。",
+    "controlStyleScope": "原VM控件源码与模板定位继续保留；用户VM实际截图是同页面/同状态外观验收参考。本轮只核窗口交互和已列局部修复，整体布局、ROI四种继承、图标和逐态外观仍待核。",
     "inputSourceCorrection": {
       "finding": "已有本地WPF还原工程，前版HTML误将图像输入源用文本框+订阅按钮表示，现纠正为整行ComboBox。",
       "vmChain": "Blob XML ImageSourceGroup → Group.xml EnumerationG(ImageSource) → GetFrontParamItemsOperation(IMAGE)/GetSelectedCombinationOperation(InputImage) → EnumerationG DataTemplate → ListViewComboBoxStyle；选择触发SetCombinationSourceOperation(InputImage)。",
@@ -1033,7 +894,7 @@
       "layout": "用户开关/总面积图：开关独立一行，启用后范围下一行；该判定范围无订阅按钮。预览纠正原同排布局，范围是否订阅/是否滑条须由字段声明决定。"
     },
     "uiArchitectureDecision": {
-      "status": "方案范围明确，待用户整体审核；未实施",
+      "status": "已批准，基础控件和窗口交互局部落地；剩余职责及VM外观差距继续实施",
       "principle": "按职责与组合层次决定去留。可运行证明功能基础，不直接证明旧类细分与新架构一致；提取复用不等于整类保留，重组不等于从零重写。",
       "rows": [
         [
@@ -1043,7 +904,7 @@
         ],
         [
           "参数组合",
-          "旧ConfigSetting把BindingType、BindingSource、Value和来源列表等组合；新DeclaredFieldEditor用常量/引用草稿，但呈现是普通控件。",
+          "新DeclaredFieldEditor已组合数值/范围/常量订阅及私有草稿；不是旧ConfigSetting整包复用。",
           "重做组合接口和模板，复用新草稿/校验逻辑；以ConstantSetting/ReferenceSetting/UnsetSetting表达，不能把旧字符串来源带回新合同。"
         ],
         [
@@ -1063,17 +924,17 @@
         ],
         [
           "ROI与结果显示",
-          "已有几何、宿主交互作用域和结果消费能力；VM以ROI组合和显示对象行呈现。",
+          "已有几何/宿主scope；显示对象5类已配眼睛/铅笔和私有样式弹窗，ROI仅按现行模式条件附着。",
           "复用核实的几何与作用域，重组视图和绑定适配；不保留旧Manager对全局画布的控制权。对象列表按实际能力配眼睛/编辑。"
         ],
         [
           "窗口组装",
-          "VM参数根→页组→字段模板；本方现有打开、草稿、执行、释放链已跑通，但字段页面直接生成五页。",
+          "通用壳已420×500，三页/有限条件/配对范围/显示弹层已接；保留既有打开与事务链。",
           "复用打开与事务链，重组为三页/组/行/条件/折叠；工具只声明能力，通用UI按声明组装。"
         ],
         [
           "工程组织",
-          "Plugin.Wpf目前只依赖Plugin.Contracts；旧Plugin.SDK控件依赖旧Execution.Parameters及日志等。",
+          "Plugin.Wpf已按Controls/Fields/Regions/Themes组织且仅依赖Contracts；旧SDK其他消费者仍待逐项迁出。",
           "拟在Plugin.Wpf分Controls基础部件、Fields/Templates参数组合、Themes资源；UI宿主保留候选/草稿/ROI接线，Definition/Runtime不引入WPF。迁移前拆旧SDK依赖，不整包搬运。"
         ]
       ],
@@ -1131,7 +992,1179 @@
         "path": "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_CHECK_20261026.json",
         "sha256": "5741c4df2480566f1e93a9f92fa2bf3d1ef89cca0cbcadeb7182297bbf37925b"
       }
+    },
+    "userScreenshotEvidence": {
+      "manifest": "docs/collaboration/evidence/VM_BLOB_USER_SCREENSHOT_MANIFEST_20261026.json",
+      "sha256": "ba3f5ebf101f85cdc62f06ad7c5123d3a01f6e62a94e06d82d56eb7f3b92f783",
+      "count": 8,
+      "uniqueImages": 7,
+      "scope": "三页及若干展开状态，包括矩形区域/参数继承；截图5左侧部分被菜单遮挡；部分页面滚动截断，不推定未显示内容不存在。",
+      "limits": "证明用户提交的可见界面状态，不单独证明动作时序、loaded程序集身份、Window CLR类型、运行DisplayType或算法公式。"
     }
   },
-  "implementationApproved": true
+  "implementationApproved": true,
+  "stageHistory": [
+    {
+      "date": "2026-10-26",
+      "scope": "窗口交互检查点前的原S4方案及历史验证；其中69d844e2整链与旧26项不能外推为新候选通过",
+      "snapshot": {
+        "current": "用户已批准按31类与Blob三页方案实施，持续目标active。已提取数值、范围、开关和取色基础控件，接通中立页面/条件/配对范围、输入源Combo与颜色草稿；正式目录实际WPF交互26项通过。ROI、完整窗口/显示组合与算法职责迁移仍在实施，不能交作完整试用，UI尚未核收达标。",
+        "summaryStatus": "已授权实施；基础交互已实测，完整Blob UI与整链未闭合",
+        "rows": [
+          [
+            "基础控件与资源",
+            "数值、范围、开关、取色器从旧SDK提取至独立Wpf层；接入已还原Combo模板。",
+            "运行时发现并修复主题相对路径和色板资源遗漏；26项实际WPF验证通过。"
+          ],
+          [
+            "参数页面与订阅",
+            "已接入三页、使能后下一行范围、单/双滑条、宿主选源和颜色确定/取消。",
+            "通用交互通过；Blob完整三页尚需ROI/显示对象组合，不能据此宣称UI完成。"
+          ],
+          [
+            "ROI与窗口",
+            "原七类几何、同帧/pose/局部范围和草稿保留。",
+            "图标工具条、继承组合、显示弹层和紧凑窗口继续实施。"
+          ],
+          [
+            "算法及交付",
+            "原执行与结果合同基础保留；预处理/形态学尚未移出Blob。",
+            "分割模式、关联工具适配、全量回归和完整链重验尚未完成；旧测试不作本轮全通过。"
+          ]
+        ],
+        "remaining": [
+          {
+            "item": "Blob完整组合",
+            "scope": "三页实际来源/ROI/显示对象/窗口与焦点草稿交互",
+            "state": "当前对话实施中"
+          },
+          {
+            "item": "HALCON职责与关联适配",
+            "scope": "批准的上游预处理/二值形态学、不二值化与单/双阈值及输出口径",
+            "state": "未完成"
+          },
+          {
+            "item": "正式完整链与人工试用",
+            "scope": "同一正式Release全量构建、配置执行结果/下游、保存重开与关闭释放；版本身份；用户反馈",
+            "state": "基础交互已测，不代整链或人工验收"
+          }
+        ],
+        "checks": [
+          {
+            "name": "同提交全量正式Release",
+            "result": "0错误/1281警告，产品提交69d844e2",
+            "path": "Release/_validation/S4-release-69d844e2-build.log",
+            "sha256": "2fa3260c54d626f48447cbc627f65582aaa4fbcdf381c13f2c8599f997de6e8b"
+          },
+          {
+            "name": "真实宿主连续链8组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S4-20261025/FullChain/attempt-017/receipt.json",
+            "sha256": "5e54160b3566c2b777c944323cd11092b4ebc4e5b2f340a59dfb82b980f520b9"
+          },
+          {
+            "name": "字段编辑8组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S4-20261025/FieldEditing/attempt-009/receipt.json",
+            "sha256": "04be602c184d2d9a5c8a74ab56a9cd32c00fe58b07ff93cd7c70c7a5b4d488a3"
+          },
+          {
+            "name": "来源与绑定10组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S4-20261025/BindingEditing/attempt-017/receipt.json",
+            "sha256": "4838b71043852603a337345af7f23d69a4d44eaaf41b2d9eb10cd03498b4b160"
+          },
+          {
+            "name": "区域编辑6组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S4-20261025/RoiEditing/attempt-008/receipt.json",
+            "sha256": "579c302f07c0b7fe0f5bcab162ced1f8e331e4b59b4ff53fc5fc87fbede7a195"
+          },
+          {
+            "name": "窗口和文档事务28项",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S2-20261025/DocumentEditing/attempt-029/receipt.json",
+            "sha256": "ed1d7f673d1b79b27e760d8e84e6354124b09f4ca89c566643f3fd2fc61250b4"
+          },
+          {
+            "name": "关联回归52项",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S2-20261025/Related/attempt-022/receipt.json",
+            "sha256": "383b84e630a037916c2674425cd395fe35477c9a2ccb39b818d5f416c4880598"
+          },
+          {
+            "name": "真实内核8组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S3-20261025/RuntimeKernel/attempt-015/receipt.json",
+            "sha256": "0db344ea05a03d0a60e550d582d18f72f18694116ccc967c3a21bbd464d817b6"
+          },
+          {
+            "name": "输入边界4组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S3-20261025/InputBoundaries/attempt-014/receipt.json",
+            "sha256": "469cd0b2992e444ceb5a682ffda7eeb16e4f2e0da4068bf751e5ec19759c1aee"
+          },
+          {
+            "name": "真实消费链7组",
+            "result": "同版正式产物通过；当前实施者自动检查，不是用户签收",
+            "path": "Release/_validation/S3-20261025/Consumption/attempt-018/receipt.json",
+            "sha256": "2f7155c57652a4dbcb0c3f3c8630008119b510fdeb42011070ae014d14668ba8"
+          },
+          {
+            "name": "S1完整轨道",
+            "result": "Contracts/Owner/Fields/Native/Workflow/Snapshot/Dialog均exit0",
+            "path": "Release/_validation/S4-release-69d844e2-S1.log",
+            "sha256": "afee4c780873ed7360394af5deb36f82982ef219dab6fa076a274dc8c49cc141"
+          },
+          {
+            "name": "组件部署11项",
+            "result": "有/无Wpf均可配置并执行；拒绝缺失/重复/错误组件；3文件及清单原SHA还原",
+            "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-008/results.json",
+            "sha256": "b1a075968f20c8f7a93b7eace0e4b9bda2c4c21b69122f9fd02cb84637d4accb"
+          },
+          {
+            "name": "设计时路径",
+            "result": "UI设计时Compile路径通过；实际VS设计器未打开",
+            "path": "Release/_validation/S4-ui-design-time-check.log",
+            "sha256": "244e20da43b002af2dd95dc97a732f648ad5a0523ef181cf94b3bae63ca14367"
+          },
+          {
+            "name": "新职责基础交互（2026-10-26）",
+            "result": "Release/_validation/O06-Controls-20261026 实际WPF 26项通过；数值边界/重复加载、焦点、颜色RGBA草稿、订阅切换、清空来源、三页使能/双滑条/切页与无宿主依赖。仅基础交互，不代完整Blob或UI人工验收。"
+          },
+          {
+            "name": "本轮全量Release构建",
+            "result": "o06-controls-full-release.log：0错误/1378警告，1分07秒；随后正式目录重跑26项。尚未本轮完整链/VS实际设计器/人工验收。"
+          }
+        ],
+        "sourceBaseline": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
+        "productIdentity": "当前是0d8a416b基线上的未提交候选；正式目录已增量构建，尚未固定最终交付提交。包含原有Results/锁文件工作区改动，不将其算成本轮实现。",
+        "currentSourceManifest": [
+          {
+            "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+            "sha256": "ab751f77d7a9f9ba0b59a2f93bcc98429996f0d82fa6872e128d577d5da3efab"
+          },
+          {
+            "path": "scripts/verification/S2DocumentEditingCases.cs",
+            "sha256": "7eaba6eabdc0c815ecc728eaa615a815120a52f191162ec71a194a9b4511b744"
+          },
+          {
+            "path": "scripts/verification/S3ComponentCases.cs",
+            "sha256": "f7bcae1b4682089e5eb077dee2ddb6634a648e04025b0cce73c34e982c816861"
+          },
+          {
+            "path": "scripts/verification/S4BindingEditingCases.cs",
+            "sha256": "7a0c5ab8442fdf9a80224dc6316d27848cff490a48ee3bb2c40c04ddf776c3bf"
+          },
+          {
+            "path": "scripts/verification/S4FieldEditingCases.cs",
+            "sha256": "a9d6322f1348dbedcedcf7f6abfcb9cdd8bb4b1c3643b766c5475b35952b1f8e"
+          },
+          {
+            "path": "scripts/verification/S4FullChainCases.cs",
+            "sha256": "4d6edb77eb97dd021c5899d064263e1283e1821035b8302a5394d847bce9cc43"
+          },
+          {
+            "path": "scripts/verification/S4RoiEditingCases.cs",
+            "sha256": "22160345fb88448f2fca0b6bddcc334292ab36f3a03d668bbf509a54a120546e"
+          },
+          {
+            "path": "src/Plugin.Contracts/FieldPresentation.cs",
+            "sha256": "bac5e1f548b50e52593f99021eb1df57d98df5b26ae3b56bb2a8000c12c96595"
+          },
+          {
+            "path": "src/Plugin.SDK/Core/ToolExecutor.cs",
+            "sha256": "9cb2b50bd8eae27a458c8aac418ac6c67ca8b6b85d27e5edb6c4aaba615bd95a"
+          },
+          {
+            "path": "src/Plugin.SDK/Execution/Parameters/BindingClrAdapter.cs",
+            "sha256": "be2d1cf62121a89932941e8305f3d59ef3120dce4254ef655d896d2d66bb1a25"
+          },
+          {
+            "path": "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs",
+            "sha256": "7dcc95db7a2c740e92bb19dcb82990a4d5d0fe4312137ba8d51ba868c2734893"
+          },
+          {
+            "path": "src/Plugin.SDK/Execution/Parameters/IConfigurationFieldProvider.cs",
+            "sha256": "61aaf8123dd5fa043da3baf9156688e6ce1c9ff66baf6c2433b062ae73b7251c"
+          },
+          {
+            "path": "src/Plugin.SDK/Execution/Parameters/RoiShapeValueAdapter.cs",
+            "sha256": "2378a7385775c8040432204fb1cb9393da5d3f8480ed7c82644db81635f77bcc"
+          },
+          {
+            "path": "src/Plugin.SDK/Execution/Parameters/RuntimeParameterSnapshotResolver.cs",
+            "sha256": "6cf873f1234a2313e62703689aa789114d3cff001cf2987d6a51511c354ab22b"
+          },
+          {
+            "path": "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+            "sha256": "3ab1b95ddddeb19507cf26984555b18e188d841a8b9d3c191f09d6882d1e1368"
+          },
+          {
+            "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.BindingIssues.cs",
+            "sha256": "5e64bcd6a944da931811c2f9a853817c6f82705c1f7270b168fd605026850983"
+          },
+          {
+            "path": "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+            "sha256": "eca5c295b715afe63d449c5bded7bce278f75cf7313f1daf804b23da8c264f04"
+          },
+          {
+            "path": "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs",
+            "sha256": "bbef52d84333709da0d582c9ddb2029844633ff04edf9811af8c7f93b0fa0ec8"
+          },
+          {
+            "path": "src/Plugin.SDK/UI/Events/ToolExecutionCompletedEvent.cs",
+            "sha256": "b95a7bfca341d36a94f4ce1744b839f6906a974f41ed4e0d09a80c25e3042de6"
+          },
+          {
+            "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+            "sha256": "e51489e9ea694d6ed7eb956c3bda5cae6d353264fc680b8a75ad54d3df018acd"
+          },
+          {
+            "path": "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+            "sha256": "f03e74395518fb4a3bb324deb6c3552b86d4a822c6cec385cf291cbe77bade34"
+          },
+          {
+            "path": "src/Plugin.Wpf/Directory.Build.props",
+            "sha256": "3e63ebca828097d1cb8037201654c053f2ebdc0387386201b45020baa4d96423"
+          },
+          {
+            "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+            "sha256": "6099fc47b03e207bfa6d8e3d9d052bb5804f23933354ad4766196e4f82dbd8c7"
+          },
+          {
+            "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+            "sha256": "57b48e6a5baef29307a9b01370c9802d5c5e41ed7060c1325aa0a43eb85d1287"
+          },
+          {
+            "path": "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs",
+            "sha256": "3901e1577638076b97b9cc0df4589b48da68fa911df8dcd947d7ff0fb31d9f12"
+          },
+          {
+            "path": "src/Plugin.Wpf/Fields/SourceSelectionField.cs",
+            "sha256": "2060148bad1b639f83493cd7bd1d65fa8ca3f1a83bc5bc1f0352d3514c275d25"
+          },
+          {
+            "path": "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
+            "sha256": "8f9f5a5739679b4532376240022a0966fb056ffa10e201c2e042050c2be0d6a2"
+          },
+          {
+            "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs",
+            "sha256": "38f410ea84af1db33cac06fbee5ab261626efa6721ebe215f5c1a67439a34be4"
+          },
+          {
+            "path": "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs",
+            "sha256": "eac144eede78eaa4a1bbde0e7be4a5e52c0fd6072bb9c87ac62710314f9c25df"
+          },
+          {
+            "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
+            "sha256": "395e15efec4c22249580d66a8c50b08aaf1c4285b87f172c142db775415ac3d9"
+          },
+          {
+            "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
+            "sha256": "2509f01203f13274c0cbb562db8bae1f5a99771d2542266ef00628b883c96112"
+          },
+          {
+            "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs",
+            "sha256": "afa4d04ea9d5830be8ff7dca3497bfdbec7f0d2e5e32b9d0293586ae6f84233a"
+          },
+          {
+            "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+            "sha256": "557fc8185dbd4f60e0c4e45a130afa06fbbf0c2ad61b5e480cc53f88d80159b3"
+          },
+          {
+            "path": "src/UI/Services/Editing/Nodes/NodeOpenDecisionChain.cs",
+            "sha256": "a32c7a7691ca0ca15e1056531db182477f46da94e8c285f2225589463dc26606"
+          },
+          {
+            "path": "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
+            "sha256": "5ab31926e3cc7ca6c5adf9c74114302b436eab670af1e260ad57ba2e1049fc36"
+          },
+          {
+            "path": "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs",
+            "sha256": "244e3f7f31291f218864aba0afa1f0f5ac54a31c8b7af972df0afc1b2dfeb378"
+          },
+          {
+            "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+            "sha256": "315acb47cc14517272555116c966f9e65beb3db0aa442b26b14f45dc2dd86707"
+          },
+          {
+            "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+            "sha256": "59201ebcff41c8ac24086fa49f40cd502367b1ffbb5ee4e25d616269fb8cda6c"
+          },
+          {
+            "path": "src/UI/SunEyeVision.UI.csproj",
+            "sha256": "ad48b49c6df4fbd2653d7ec0a7d3399066001d97d727daa45a1012f0de623fb4"
+          },
+          {
+            "path": "src/Workflow/Persistence/SolutionLegacyBindingMigration.cs",
+            "sha256": "1655226d980e6ce8a11de74dc3a5270d20eddd190318bd1cb3c8ce57c6c5ea00"
+          },
+          {
+            "path": "src/Workflow/WorkflowBindingContext.cs",
+            "sha256": "d755276d6b2aa462d8a2ee80d3af642ee13869f524fffe2e6d62e9d19ae41833"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs",
+            "sha256": "37424b695ed9ceb8f8c1d56797fa15d7ce50361eb89adc08df587a4595d040bf"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/BlobConfigurationFields.cs",
+            "sha256": "1bfc785680dba5165c5dfc3ca347c934a8ca1b745a398d1602d6f65dfcb716cd"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/BlobInputContract.cs",
+            "sha256": "8bb1f633c6c079d70f51173de53007705c3778f04503b88a43016e5e1794908b"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs",
+            "sha256": "b223bfc5a771c2b76fec09476a28a12fa3904b09ccc2b331d7e29c213efd8484"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Presentation/BlobAnalysisRow.cs",
+            "sha256": "f661238031b344afc79e659f35d324d84d4b154c81e430c29ade44cc7920e89e"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.Tool.BlobAnalysis.Wpf.csproj",
+            "sha256": "26b32565a611f7a20a6b9da98f0740aa9232177c831324805d2e8870fcad796d"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDataAnalysisControl.xaml.cs",
+            "sha256": "76be1642452814d2ce5b60e5b96c04aa0134d4ddee426cad71d01a0234bb1006"
+          },
+          {
+            "path": "tools/SunEyeVision.BlobAnalysis/Wpf/packages.lock.json",
+            "sha256": "a4fa75f573c359cede5ab30243d3cccb387fa2f0b79e14dcb5e00c999e32e3f3"
+          }
+        ],
+        "uiPreview": {
+          "path": "docs/collaboration/evidence/S4-blob-full-chain-20261026.png",
+          "sha256": "f4affc27d33d1de1df5bcdb6c7a40ee3c989be81b1d85dfaaaafc932cd3bac6b",
+          "scope": "同版真实WPF宿主的图像、结果和高亮渲染，非物理鼠标或用户验收。"
+        },
+        "trial": {
+          "program": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe",
+          "sample": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\BlobTrial\\Blob试用.solution",
+          "version": "2.0.0.8_alpha",
+          "productCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
+          "example": "示例有两块白色区域。检测框先圈住左上块，运行后父Blob和下游都应是1颗、面积16；将检测框中心移到另一块（X=32、Y=32），重新执行后应为1颗、面积25。灰度图仍保留原始两块图像，检测结果只取有效区域。",
+          "checklist": [
+            [
+              "配置与来源",
+              "打开Blob窗口，修改阈值/来源；也试一次无效输入再修正。",
+              "中文字段可读；错误原文保留且阻止错误保存，修正后可继续。"
+            ],
+            [
+              "ROI操作",
+              "画矩形或圆及你常用形状，拖动/缩放/旋转，再改数值；试Esc取消。",
+              "图形和数值一致；取消未完成手势不落参，切换来源不删本地底稿。"
+            ],
+            [
+              "执行与结果",
+              "先运行整条流程，再在窗口调试，点结果行；切换节点后再回来。",
+              "表格数量/面积与图像高亮一致；调试不提前修改正式配置，不残留其他节点结果。"
+            ],
+            [
+              "确定与取消",
+              "修改ROI后直接关窗口重开；另一次点确定后再执行流程。",
+              "关闭未确认窗口保留原配置；确定后主流程与显式Region下游采用新区域。"
+            ],
+            [
+              "保存与重开",
+              "确定后保存方案，关闭重开再执行。",
+              "参数、绑定、ROI和再次计算结果保持一致；关闭编辑器不清共享正式结果。"
+            ],
+            [
+              "失败后恢复",
+              "试一次激活但未选择有效Region来源的执行，再补来源或切回本地。",
+              "明确显示失败并停止连续重试，旧表/摘要不冒充本次结果；修正后无需重启。"
+            ]
+          ],
+          "limitations": "自动检查不替代物理鼠标手感和你自己的图像/流程。实际VS设计器尚未打开；S5通用结果平台及正式性能基准不在本轮交付中。"
+        },
+        "evidence": {
+          "archive": "docs/collaboration/evidence/S4-release-69d844e2-20261026.zip",
+          "sha256": "2d64a340643c974612cf88479a4e62998e8598bee1b0882c38bc6388ecd8990f",
+          "bytes": 922227,
+          "scope": "同提交正式Release的完整Blob宿主连续链与关联自动核收；保留失败，不含产品/native副本；人工验收等待用户。"
+        },
+        "projectOrganization": [
+          "src/Plugin.Wpf/Fields：DeclaredFieldEditor、DeclaredFieldsView、ReferenceSelectionControl、SourceSelectionField；仅依赖Contracts，枚举展示中文、持久键不变。",
+          "src/Plugin.Wpf/Regions：RoiEditContracts、RoiGeometryEditing、RegionGeometryEditor；沿用RoiDeclarations，局部编辑意图不拥有画布。",
+          "src/UI/Services/Editing/Nodes：DeclaredToolConfigurationControl及Sources/RegionSources/Regions分部；负责正常窗口组装、私有草稿和正式声明来源。",
+          "src/UI/Services/Editing/Regions：RoiViewportEditScope持有独占交互范围、换帧及pose校验；RoiParameterEditingAdapter桥接当前SDK几何模型。",
+          "src/Plugin.SDK：IConfigurationFieldProvider提供原合同/当前模型存储映射；BindingInputCatalog保留几何稳定字段ID；RoiShapeValueAdapter显式中立记录↔当前几何转换。",
+          "tools/SunEyeVision.BlobAnalysis/Wpf：删除旧BlobAnalysisToolDebugControl.xaml/.cs及Converters/BlobAnalysisConverters.cs；BlobEditorFactory当前只提供BlobDataAnalysisControl只读结果视图。",
+          "tools/SunEyeVision.BlobAnalysis/BlobConfigurationFields：同一原117字段合同的109项常量读写与中文展示；不新增第二套算法或合同。",
+          "S4关联修复：Plugin.SDK/BindingClrAdapter准入IVisionImage输出声明；UI/WorkflowExecutionManager以本次正式UI实例回送执行快照结果，NodeResultManager按激活输入合同过滤显示。",
+          "tools/SunEyeVision.BlobAnalysis/Wpf/Presentation/BlobAnalysisRow.cs：只投影同一Runtime记录的标量和边框，不保留Region/图像句柄；Wpf工程已改引Runtime，取消门面项目引用。原专用表列保留，未扩建S5通用平台。",
+          "Plugin.SDK/UI/Windows/DefaultDebugWindow：声明页使用完整通用壳；失败事件如实携带状态与原因，窗口显示错误，停止连续重试，修正后可继续。"
+        ],
+        "vmMappings": [
+          [
+            "ConfigSetting（模板）",
+            "Apps.XmlUI/styles/paramusercontroldatatemplate.xaml Integer:562、Enumeration:379、Boolean:113、ColorConfig:2608、FloatConfig:2618",
+            "DeclaredFieldEditor按同一Port类型选择局部编辑，不复制旧ConfigSetting整类；颜色成员遵守RGBA合同。"
+          ],
+          [
+            "ParamBinding（组合链）",
+            "Integer_Sub:550–560→ButtonSelecter_sub:255→SubTreeView:296–302；StringConfig_sub:2589–2595",
+            "ReferenceSelectionControl呈现声明来源与数量选择；宿主负责窗口与当前草稿，正式绑定计划仍由原执行层编译。"
+          ],
+          [
+            "ParamBindingBase（局部有源组合）",
+            "上述订阅选择链只证明局部视图；未证VM存在相同过滤/错误基类。",
+            "不新建同名万能基类；错误/非法原文保留由声明字段与宿主范围承担。旧SDK入口因其他消费者尚存，暂不全局删除。"
+          ],
+          [
+            "来源选择组合链",
+            "paramusercontroldatatemplate.xaml ButtonSelecter_sub:255→SubTreeView:296–302",
+            "SourceSelectionField仅呈现宿主正式候选；现行SDK图像/pose存储明确适配，Region写入正式类型引用。"
+          ],
+          [
+            "ROI字段/形状模板",
+            "Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml:15–16,23–79,101–121；paramtabcontrol/listview/roiselectdatatemplate.xaml:27–35,76–132",
+            "RegionGeometryEditor呈现形状与数值；RoiGeometryEditing沿既有七类声明，未证VM每个鼠标手势等价。"
+          ],
+          [
+            "ROI宿主组合链",
+            "Apps.XmlUI.ParamTabControl/BoxROIStack.xaml:15–115；ROISelecter模板→宿主桥",
+            "RoiViewportEditScope承接交互、局部覆盖和范围退出；不保留旧Blob页面持主画布权限。"
+          ],
+          [
+            "当前结果消费与高亮",
+            "IMVSBlobFindModuDisplay.xml:109–113；ModuleResultView.xaml:292–304及.xaml.cs:1475–1593,1786–1813",
+            "本轮保留Blob专用列，修复实际生产/调试结果的中立记录消费与高亮；不宣称已移植VM通用XML表格宿主，S5仍未启动。"
+          ]
+        ],
+        "uiReview": {
+          "comparison": [
+            [
+              "页面组织",
+              "Blob模块XML明确基本参数、运行参数、结果显示三页，共享Group插入各页。",
+              "本方基本、运行、结果判定、图形样式、文本样式五页，不是VM页面组织。",
+              "S4重做页面声明与组装；HALCON额外选项单列依据，不把全部字段平铺。"
+            ],
+            [
+              "字段布局与控件",
+              "ParamUserControlDataTemplate使用LeftRightControl同排标签/输入；开关、数值及范围有专用模板。",
+              "本方标签/输入上下堆叠，CheckBox、TextBox及复合值递归展开；外观与密度不符。",
+              "按对应模板实现局部控件、统一行布局和范围编辑，不能只换颜色。"
+            ],
+            [
+              "条件显隐与折叠",
+              "XML包含ThresholdType触发显隐及Expert/高级分组，截图与声明相互支持。",
+              "本方字段视图按组遍历生成，未形成VM完整条件展示与高级折叠链。",
+              "补展示规则；不复制第二字段或执行合同；静态与运行证据分清。"
+            ],
+            [
+              "ROI组合",
+              "RoiSelectControl有形状图标模板及展开数值；BoxROIStack按行组织几何数值。",
+              "当前文字形状/动作按钮和集合列表；可编辑不等于VM组合与布局。",
+              "S4重做呈现与模板组合，保留经验证的私有草稿及独占交互边界。"
+            ],
+            [
+              "结果显示配置",
+              "ImageViewConfig与模块声明组织眼睛/编辑操作及文本设置。",
+              "当前拆图形/文本Tab，按属性展开，与对象列表组织不同。",
+              "配置侧归S4补齐；S5通用当前结果表另计，不推迟本项。"
+            ],
+            [
+              "样式与窗口资源",
+              "模板直接依赖Apps.Style、ColorFun、Localization、窗口与图标。",
+              "旧覆盖报告明确不是依赖闭包；已有资源导出但未完成全部身份、资源链及同状态视觉核对。",
+              "补实际消费的资源闭包与同尺寸/主题/状态截图，停止扩查算法native。"
+            ]
+          ],
+          "assemblyChain": [
+            [
+              "节点打开",
+              "ProcedureConfigControl.OpenParamsTabControl → GetExternTabWin；优先查已加载或模块目录Control扩展，否则ParamsTabControlBase。",
+              "静态分支已确认；当前VM实例实际分支未确认。"
+            ],
+            [
+              "窗口与参数",
+              "ParamsTabControlBase → ParamsConfigControlBase；ParamsConfig赋值 → ModuleParam.GetParamRoot或AlgorithmTabRoot → DoIniter/GetItemsValueUnit → DataContext。",
+              "源码与BAML恢复确认；不是一份Blob整页UserControl。"
+            ],
+            [
+              "页面与分组",
+              "Blob AlgorithmTab XML + Group.xml → TabsA/Collection → ParamsTabUserControl → ParamListView → ParamItemTemplate/ParamGroupItemStyle。",
+              "三页、Group链接、分组与启用/可见状态的实际消费点已确认。"
+            ],
+            [
+              "模板选择",
+              "NameValueItem.DisplayType默认类型名；ParamUserControl将ContentTemplate绑定DisplayType → UserTempConverter → ParamUserControlDataTemplate按键取模板，缺键用Default；外部模型可合入程序集自己的字典。",
+              "不能把PointF专用MyDataTemplateSelector误写成Blob主选择链；覆写DisplayType和动态扩展仍须按具体类型核对。"
+            ],
+            [
+              "局部控件与资源",
+              "模板 → LeftRightControl、BooleanControl、Numeric/范围、来源选择、RoiSelectControl和显示对象组合 → Apps.Style及图标/转换器。",
+              "外观需要同排结构、控件模板、组样式一起落实，不能只换颜色。"
+            ],
+            [
+              "主题与语言",
+              "ColorThemesResourceDictionary按SDKMode选择根目录 → ColorCFG/ColorStyleSet.cfg → ColorStyle/*.xaml，再叠加Apps.ColorFun内置ColorStyle；文本经Localization字典/ResourceBinding。",
+              "安装配置当前ColorStyle1，三个主题字典存在；运行主题、动态改换及语言资源完整闭包仍待核。"
+            ],
+            [
+              "动作与图像",
+              "BottomExcuteButtonsA/LeftA → ParamUserControl模板/命令；ROIPartUI → AlgorithmTabRoot/ROISelecter →宿主图像交互。",
+              "静态入口已确认；不据此宣称VM实际关闭/连续执行时序已验证。"
+            ]
+          ],
+          "chainComparison": [
+            [
+              "节点与窗口选择",
+              "ProcedureConfigControl.OpenParamsTabControl → GetExternTabWin，扩展优先，否则ParamsTabControlBase。",
+              "MainWindowViewModel → NodeOpenDecisionChain → ToolConfigurationEditors；Blob专业factory不提供参数页，走声明页。",
+              "复用窗口决策职责；核VM实际窗口分支，不能把通用路线说成已观测。"
+            ],
+            [
+              "参数与草稿",
+              "ParamsConfigControlBase.ParamsConfig → ModuleParam.GetParamRoot/AlgorithmTabRoot → 初始化/DataContext。",
+              "ProductionEditorContext + IConfigurationFieldProvider → DeclaredToolConfigurationControl.SetParameters。",
+              "复用本方私有草稿/发布事务；不猜VM使用同样事务。"
+            ],
+            [
+              "页、组、字段",
+              "XML Tabs/Category/Group → TabsA/Collection → ParamsTabUserControl/ParamListView。",
+              "BlobConfigurationFields.Group → DeclaredFieldsView按组直接生成Tab和StackPanel。",
+              "重做展示声明层级：页/组/行/有限条件/折叠，不能把业务字段组直接当页。"
+            ],
+            [
+              "模板与绑定",
+              "DisplayType → ParamUserControl → UserTempConverter → 字典key/Default；外部内容程序集可合字典。",
+              "DeclaredFieldEditor按标量/记录类型直接创建CheckBox/TextBox等，引用选择回调归宿主。",
+              "重做同排模板与复合行；复用有效值/非法原文和引用行为，不复制任意反射/操作脚本。"
+            ],
+            [
+              "资源、主题与语言",
+              "Apps.XmlUI/Apps.Style/PcUI → ColorFun/Localization → 外置配置和XAML；活动key仍partial。",
+              "UI AppResources及现有SDK资源；Plugin.Wpf以代码创建元素，未形成该套共享模板主题闭包。",
+              "补Plugin.Wpf主题资源、图标与pack URI部署；所有同状态外观截图重新核收。"
+            ],
+            [
+              "ROI和图像",
+              "ROIPartUI → ROISelecter/模板 → 宿主交互；具体运行实例未观测。",
+              "RegionGeometryEditor → IRoiEditViewport → RoiViewportEditScope，草稿更新与资源受限。",
+              "重做ROI视图组合；保留宿主独占scope、换帧/pose校验及关闭只释放自己。"
+            ],
+            [
+              "执行、确定与退出",
+              "BottomCommandGroup → 命令/托管执行边界，Closed/DoFinish；native释放时机未知。",
+              "DefaultDebugWindow + ToolDebugControlBase + S2编辑作用域，确定/取消/保存重开及释放已有功能检查。",
+              "复用职责与单链；换视图/算法流程后回归，不能用旧PASS证明新UI完成。"
+            ]
+          ],
+          "decisions": [
+            [
+              "重做",
+              "BlobConfigurationFields.Group + DeclaredFieldsView页面组装",
+              "VM Tabs/Category/Group与ParamsTabUserControl；当前把Group当Tab，缺少页/组/行/折叠层级。",
+              "重做页/组/行/条件/折叠；页内参数来自重审后的Blob职责，不把旧预处理/形态学继续塞进高级分组。"
+            ],
+            [
+              "重组字段模板；提取基础部件",
+              "DeclaredFieldEditor",
+              "LeftRightControl + Boolean/Integer/FloatBettween/ColorConfig模板。当前上下堆叠和递归属性展开不适合作正常Blob页。",
+              "保留新草稿、常量/引用/未设置及校验；现行普通TextBox/CheckBox呈现重组。旧NumericUpDown/RangeInputControl按对应VM基础控件核后提取，旧ConfigSetting/ParamBinding不整类搬用或带回字符串来源。"
+            ],
+            [
+              "重做视图组合，复用几何与作用域",
+              "RegionGeometryEditor",
+              "RoiSelectControl、ROISelecter模板、BoxROIStack数值行；当前文字动作与常驻列表外观不同。",
+              "重做图标形状、绘制/继承、折叠数值/多ROI管理呈现；复用RoiGeometryEditing和RoiViewportEditScope，不把Canvas/全局结果权限交回工具。"
+            ],
+            [
+              "按对应源适配选择视图",
+              "SourceSelectionField/ReferenceSelectionControl的Blob呈现",
+              "EnumerationG/ButtonSelecter_sub/SubTreeView组合；现有应用/清除/撤销按钮与整窗选择不能仅凭职责相似宣称对标完成。",
+              "输入图像按EnumerationG整行下拉，优先核收本地还原SourceComboBoxes资源；参数订阅按SliderArrange+ButtonSelecter_sub组合。宿主提供类型过滤/稳定引用，通用控件只呈现选择；不新增平行执行或资源解析。"
+            ],
+            [
+              "重做配置组合",
+              "图形样式/文本样式Tab",
+              "ImageViewConfig显示对象列表 + TextDisplayGroup；两者是参数窗口结果显示页中的配置。",
+              "在结果显示页组织对象可见/编辑及文本样式，颜色用本方主题令牌承接；不提前做S5通用结果平台。"
+            ],
+            [
+              "复用职责，重做窗口皮肤/布局",
+              "DeclaredToolConfigurationControl + DefaultDebugWindow",
+              "通用窗口与ParamsConfigControlBase的宿主组合，底部按钮由声明/命令组组织。",
+              "保留S2唯一草稿、执行、确定取消、保存退出接线；统一紧凑窗口与底部操作区，不保留双套页面或调度。"
+            ],
+            [
+              "复用，按新视图回归",
+              "Runtime/HALCON、输出合同、绑定计划、DocumentSession、ROI作用域、当前专用结果表",
+              "本轮差异是编辑呈现；这些运行/事务能力有本方实际证据，不能因UI失败一并推倒，也不能用它们证明UI通过。",
+              "原算法与资源生命周期不重写；UI换模板后复测绑定/ROI/表图/保存关闭。当前结果表通用化仍属于未授权S5。"
+            ],
+            [
+              "不恢复",
+              "旧BlobAnalysisToolDebugControl及专用转换器",
+              "VM通用声明→模板→宿主链，不支持把工具整页重新写回旧目录。",
+              "删除事实在原工程图标明；新页面由有限声明与共享模板组装，专业视图仍可选且不持有调度。"
+            ],
+            [
+              "重审算法职责，待批准后重做",
+              "BlobSession中的预处理/形态学与分割策略；关联ImageFilter/Morphology",
+              "实际源码证明当前职责混在Blob，VM已有不二值化模式可承接外部分割结果。",
+              "推荐移出通用处理；单/双阈值与严格二值输入模式独立定义。现行MorphologyTool固定128阈值须同时调整，不原样搬用。"
+            ]
+          ],
+          "engineeringBefore": "当前（实际存在）\nBlobConfigurationFields：字段→Group字符串\nPlugin.Wpf/Fields/DeclaredFieldsView：Group→Tab→StackPanel\n  DeclaredFieldEditor：标签在上、通用输入在下\nPlugin.Wpf/Regions/RegionGeometryEditor：文字按钮＋集合列表\nUI/DeclaredToolConfigurationControl*：另行插入来源和ROI\nSDK/DefaultDebugWindow：通用壳与执行/确认接线\n缺口：页/组/行/条件/折叠/模板资源没有形成完整展示声明。",
+          "engineeringAfter": "S4修正推荐（待整体审核，尚未实施）\nPlugin.Contracts/FieldPresentation.cs及同目录展示声明\n  稳定字段引用＋页/组/行/条件/折叠；不含WPF、HALCON或任意脚本\ntools/SunEyeVision.BlobAnalysis/BlobConfigurationFields.cs及展示声明文件\n  三页布局、有限可见规则、ROI角色、显示对象/文本组合；引用同一字段合同\nPlugin.Wpf/\n  Fields/：页组渲染、行编辑行为；Regions/：局部ROI视图与数值行为\n  Themes/：行/开关/数值范围/来源/ROI/显示对象模板，主题资源及图标\nUI/Services/Editing/Nodes/DeclaredToolConfigurationControl*\n  只提供草稿、候选、命令和受限视口，消费同一展示声明\nUI/Services/Editing/Regions/RoiViewportEditScope：复用独占交互边界\nPlugin.SDK/UI/Windows/DefaultDebugWindow：统一窗口和底部命令接线\nBlob Runtime：不变；Blob Wpf：当前只读结果视图可选，不重建旧参数整页。\n算法职责调整（待审）：Blob移除通用预处理/形态学；ImageFilter/Morphology工具承接，Blob添加明确的单/双阈值及不二值化策略，仍是唯一HALCON分析内核，不增加第二套算法。",
+          "acceptance": [
+            [
+              "外观门",
+              "先记录VM和本方相同主题/缩放/窗口尺寸/状态，逐页并排检查三页、分组、字段顺序、同排对齐、间距、图标、按钮及滚动；任何差异都说明依据。",
+              "必须保留截图与对照记录，功能PASS不能替代。"
+            ],
+            [
+              "状态门",
+              "检查启用/禁用、绑定/常量、不同来源、ROI绘制/继承、折叠/展开、错误输入、无结果和执行失败。",
+              "模板/显隐须符合声明；对VM未证行为标未知，不猜测补齐。"
+            ],
+            [
+              "工程门",
+              "模板类型和资源key、ThemeInfo/Generic.xaml与pack URI、构建/正式部署、设计时与运行时、缺可选Wpf的配置入口。",
+              "源码目录图与真实文件一致，旧删除页不再列为现存；不出现宿主程序集反向依赖。"
+            ],
+            [
+              "功能门",
+              "新呈现接同一草稿/字段和ROI作用域，再跑绑定、执行、下游、确定取消、保存重开及释放。",
+              "保留既有有效检查，但更换视图后验证受影响链，不能沿用旧截图宣布新UI通过。"
+            ],
+            [
+              "用户门",
+              "UI对标与功能门通过后，交同一正式Release和简明变化清单集中试用。",
+              "只有用户实际反馈可记人工通过；目前外观明确不符合要求。"
+            ]
+          ],
+          "algorithmDifferences": [
+            [
+              "图像预处理归属",
+              "当前BlobSession先做滤波/均衡；ImageFilterTool已存在；VM Blob XML无同类独立配置组。",
+              "推荐从Blob移出，由上游图像处理工具承担；先核均衡等具体能力是否完整承接。",
+              "基本参数仍选输入图像；Blob运行页删除通用预处理组。",
+              "推荐调整，未实施；VM native内部是否有隐式处理未知。"
+            ],
+            [
+              "形态学与工具链",
+              "当前Blob阈值后对Region操作；现有MorphologyTool自己固定阈值128并输出0/255。VM ThresholdType明确不二值化模式。",
+              "推荐上游分割→专用二值形态学→Blob不二值化；形态学工具改为消费明确二值输入，不再隐藏固定128分割。",
+              "Blob删除通用形态学组；阈值方式增加有证据来源的不二值化入口；不把ROI端口当对象输入。",
+              "关联工具与Blob输入模式均需调整和回归，不能说现有工具已可直接接替。"
+            ],
+            [
+              "单/双阈值与极性",
+              "VM声明Single/Double/AlreadyBinarized及极性；本方当前Binary/BinaryInv只是区间内/外。",
+              "推荐HALCON分割策略重构：单阈值明确边界/极性；双阈值明确区间内外；不二值化校验0/255并构建前景Region。",
+              "显示随模式变化：单阈值隐藏上限；双阈值显示两端；不二值化隐藏阈值，说明输入约束。",
+              "模式及前景定义是本方待审合同，不宣称VM native公式一致。"
+            ],
+            [
+              "自动/软阈值、填孔和连通性",
+              "VM声明有相关模式；本轮FD05明确未新增软阈值/填孔/4邻域，本方当前8连通。",
+              "不放未实现的参数；若业务需要，另按证据补算法/合同/样本，纳入原方案待审范围。",
+              "当前预览不显示为可用能力，8连通固定说明；不为外观一致造假选项。",
+              "未纳入当前实施；声明存在不等于算法已迁移。"
+            ],
+            [
+              "筛选、排序、限数与判定",
+              "本方SelectFeatures→特征记录→稳定Sort→Take，NG记录保留，最终集合产出表/数组/Region。",
+              "推荐复用同一集合与判定边界；不照搬VM查找个数名称而改变本方排序后截断语义。",
+              "运行页分组顺序体现实际流水线，数量上限说明生效阶段。",
+              "更改输入/分割后须再验证空/触边/孔洞/斜接目标与NG。"
+            ],
+            [
+              "灰度、分割图与最终区域",
+              "FD07灰度是本节点分割前输入灰度；二值图在特征筛选前；最终Region在筛选排序限数后。",
+              "保留显式输出口径和帧/Domain；新不二值化输出来自已验证二值输入，不伪造原始相机图。",
+              "输出名称分清；显示对象只绑定真实声明资源，不把VM BlobImage映射为灰度图。",
+              "迁出形态学时校验二值生产者/输出来源，不能静默改字段含义。"
+            ],
+            [
+              "统计、公式与测量列",
+              "FD06白像素比例是筛选前分割白像素/全图；HALCON特征与VM同名不证明公式一致。",
+              "明确统计阶段/分母/单位，复用当前真实测量合同；新口径另定义字段，不用零或假列补齐。",
+              "结果列按实际声明；面积/周长/质心等注明本方定义，角度/长短轴缺合同不展示成现成输出。",
+              "native公式未证，保留容差与样本对照待项；禁止逐值等价承诺。"
+            ],
+            [
+              "完整边界与资源",
+              "BlobSchema区分有损单contour与完整boundary/Region；独立reader及下游显式资源需求已有证据。",
+              "复用中立合同及生命周期，不能为了迁移流程重新暴露HALCON类型或丢孔洞。",
+              "完整边界输出与显示分离；下游需求不受显示开关误伤。",
+              "资源/流程变更需受影响回归，旧功能PASS不覆盖新实现。"
+            ]
+          ],
+          "algorithmRecommendation": {
+            "current": "灰度→可选预处理→区间分割→可选Region形态学→8连通→筛选→特征/判定→稳定排序/限数→同集合输出",
+            "recommendedDefault": "上游图像处理（可选）→Blob：输入/ROI有效域→HALCON显式分割策略→连通→筛选/测量→排序/限数→判定/输出",
+            "recommendedMorphology": "上游分割→专用二值形态学→Blob不二值化：校验二值输入→有效域前景→连通及同一后续分析链",
+            "scope": "算法职责与分割模式属于对既有S3/S4方案的再审核；不是已实施功能。本轮仅文档与HTML，产品源码不改。",
+            "binaryContract": "推荐仅接受Gray8的0/255二值输入并以非零为前景，拒绝任意灰度静默代分割；帧、Domain及ROI约束沿用同一中立合同。这是本方待审定义，不是已证实的VM native行为。"
+          },
+          "threeRoleReceipt": {
+            "files": [
+              {
+                "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-ui-dependency-closure-20261026.json",
+                "path": "docs/collaboration/evidence/VM_BLOB_UI_STATIC_SUPPLEMENT_20261026.json",
+                "sha256": "583eda7affe076b7c5f0889848f7aab9f804f1ee70bbb8d5b5a71b2c16656585"
+              },
+              {
+                "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\blob-ui-three-role-reconciliation-20261026.json",
+                "path": "docs/collaboration/evidence/VM_BLOB_UI_ROLE_RECONCILIATION_20261026.json",
+                "sha256": "e4b7e726c08c04dff6e8f11163eeb122192997f6deac9b16e625b145deb23295"
+              }
+            ],
+            "acceptance": "静态链文件与安装身份已核；实机未执行；三岗是否完成不得合成一个百分比。",
+            "source": "源码岗当前明确能确认自己产出的为截图映射，本次无新增源码；source-findings有role元数据但作者归属未确认，静态文件本身已由主对话逐段读取。",
+            "runtime": "实机岗已收到任务，确认无受支持Windows桌面通道，未启动原版；无窗口CLR/已加载身份/运行DisplayType与key/实际主题/三页截图。 用户随后在主对话提交8张三页截图，已归档用于可见状态对照；不是实机岗新增执行成果，也不补足运行身份。",
+            "coordinator": "统筹已集中核对并更正：role元数据不能证明当前源码岗本人作者；静态文件可引用、实机未执行，活动资源key闭包仍partial。不采用83%作为完成或核收结论。"
+          },
+          "preview": {
+            "path": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06-ui-preview.html",
+            "status": "SOURCE_CHECK_ONLY_RENDER_UNVERIFIED",
+            "scope": "HTML/SVG呈现推荐与浏览器内矩形示意，不运行HALCON，不修改Release，不证明WPF外观/交互。",
+            "browserBlock": "CUA不允许file://协议，自动视觉检查被拒绝；未使用本地服务器/其他浏览器/原始CDP绕过。",
+            "sha256": "eb5aa0963a7dc535df844f1f743211a757339d134cd5ce7789148af78cc17c09",
+            "checks": {
+              "javascriptSyntax": "node --check通过",
+              "sourceGeneration": "三页/四种继承分支/编辑按钮能力的字符串生成检查通过；非浏览器执行",
+              "actualRendering": "未核收；CUA file://协议拒绝，未绕过",
+              "realAlgorithm": "未运行"
+            }
+          },
+          "boundary": "VM通用静态组装链已查明，实际窗口/活动模板与视觉未证；算法职责与新分割模式待整体审核，不是已实施。",
+          "evidencePath": "docs/collaboration/evidence/S4_UI_REVIEW_20261026.json",
+          "userScreenshotFindings": [
+            [
+              "ROI继承不是一个通用来源框",
+              "截图1/3：按矩形区域、矩形参数、圆形区域、圆形参数四种方式；按参数时展开具体可绑定字段。",
+              "重做继承组合；区分几何对象、几何参数构造和像素区域，不能都映射成同一个Region端口。当前成员级几何参数绑定尚未实现。"
+            ],
+            [
+              "输出掩膜独立于分割二值图",
+              "截图1可见输出掩膜；截图4单独有二值化图输出。",
+              "本方当前无同名明确掩膜输出合同，不能用BinaryImage冒充；作为待审能力缺项，预览禁用并注明。"
+            ],
+            [
+              "高级特征及判定的条件展示",
+              "截图5为运行特征高级展开；截图6为高级质心/角度等判定展开。",
+              "只展示本方真实能力；VM已见但本方缺项列入差异，不以空值/零值补齐。"
+            ],
+            [
+              "显示对象列表与文本组",
+              "截图7/8明确眼睛/编辑并存，轮廓点和文本只有可见入口；文本样式在下方。",
+              "按对象能力声明编辑入口，不能每个对象统一造编辑按钮。最大内接矩形/扇环等本方输出不足时不得假装可用。"
+            ]
+          ],
+          "controlStyleComparison": [
+            [
+              "窗口标题与尺寸",
+              "ParamsTabUserControl.xaml.cs:22 · ChildMargin；Apps.XmlParser.ParamTab.AlgorithmTabRoot.cs:37 · CustomTabWidth",
+              "静态默认窗口420×500；中文页边距32，标题/关闭/帮助见用户图。",
+              "按源默认尺寸提供查看按钮，默认预览留足滚动高度。",
+              "默认值不等于实机最终尺寸；用户630×750截图不能单独证明DPI。"
+            ],
+            [
+              "三页标签",
+              "ParamsTabUserControl.xaml:38 · TabControlFx / TabsA",
+              "基本参数/运行参数/结果显示；橙色选中线及浅色选中底见用户图。",
+              "保留三页，重做页声明与选中样式。",
+              "悬停、键盘焦点和运行活动主题未实机核收。"
+            ],
+            [
+              "组标题与标签行",
+              "LeftRightControl.xaml:12 · ChildLeftWidth；LeftRightControl.xaml.cs:14 · 89",
+              "LeftRightControl左右布局，标签列默认89；字段行常用32高度。",
+              "标签与值同行、统一列宽；中文边距32，字段字号14。",
+              "长度超出时不得遮挡，最终需WPF同尺寸核收。"
+            ],
+            [
+              "整数数值框",
+              "paramusercontroldatatemplate.xaml:550 · x:Key=\"Integer_Sub\"；NumericControl.xaml:23 · UpdateSourceTrigger=",
+              "Integer_Sub→VM.PcUI/HikPcUI.ListView.SliderArrange→NumericControl；32高、20宽上下微调；文本LostFocus更新。 非订阅显示数值/微调与单值滑条；订阅改显示关系框。模式按钮与关系选择按钮分开。",
+              "重做数值模板/订阅组合；HTML改自绘上下按钮，去掉系统默认步进。",
+              "HTML即时联动仅演示，不证明失焦提交/长按重复/滚轮等价。"
+            ],
+            [
+              "小数与范围框",
+              "paramusercontroldatatemplate.xaml:576 · x:Key=\"IntegerBettween_Sub\"；paramusercontroldatatemplate.xaml:822 · PCListView:SliderArrangeFloat SliderType=\"between\"",
+              "范围左右独立值、边界与订阅；小数另有精度声明。 双端滑条与左右独立订阅；任端订阅不得借隐藏本地值参与执行。",
+              "每端保留独立输入与绑定能力；判定范围不挤压为一个字符串。",
+              "HTML范围示意未完整模拟订阅和小数校验。"
+            ],
+            [
+              "输入源与枚举下拉",
+              "Group.xml:9 → ParamUserControlDataTemplate.xaml:846 EnumerationG；本地VisionUi/SourceComboBoxes.xaml ListViewComboBoxStyle",
+              "输入源是整行ComboBox，不带独立链形按钮。原Group提供IMAGE候选/当前InputImage引用并处理选择；本地已有WPF模板和图标。",
+              "优先核收已有还原资源再适配，HTML改整行下拉和本地三角图标；来源候选由宿主提供，不重新猜一个控件。",
+              "本地还原工程本轮未运行；HTML是示例候选，不证明真实订阅、执行与原版状态等价。"
+            ],
+            [
+              "来源与订阅按钮",
+              "paramusercontroldatatemplate.xaml:255 · x:Key=\"ButtonSelecter_sub\"",
+              "PopupButton/DeleteTextBox/SubTreeView组合；右列32，LinkPopButton。 外侧EditLinkButton切换模式，内侧LinkPopButton选关系，不是一个按钮兼任。",
+              "链形SVG替换文字箭头；输入来源与数值订阅职责区分。",
+              "HTML来源对话框仅演示；不声称等价VM树弹层/解绑行为。"
+            ],
+            [
+              "开关",
+              "paramusercontroldatatemplate.xaml:63 · x:Key=\"Boolean_sub\"",
+              "BooleanControl与swith_off/on资源；橙色表示开启，灰色关闭。",
+              "保留滑块视觉，补禁用与焦点可见状态。",
+              "CSS近似不冒充原位图；禁用画面需实机复核。"
+            ],
+            [
+              "单选项",
+              "paramusercontroldatatemplate.xaml:1373 · x:Key=\"RadioSelecter3\"；radiobuttonstyle.xaml:6 · NormalRadioButton",
+              "NormalRadioButton，源中图标24×24；图中橙色圆环选中。",
+              "重做圆环与圆点状态，四种继承按声明切换。",
+              "交互因果只据静态绑定，不由截图推定。"
+            ],
+            [
+              "ROI形状与参数",
+              "RoiSelectControl.xaml:15 · UserControl；BoxROIStack.xaml:2 · ROIStackControl",
+              "共享ROI选择/几何参数组合，继承按对象或成员分别呈现。",
+              "图标、选中态及参数展开一起重做；复用宿主交互作用域。",
+              "HTML只有矩形演示，不算其他形状运行通过。"
+            ],
+            [
+              "高级折叠与滚动",
+              "recscrollbarstyle.xaml:6 · VerticalScrollBarThumb",
+              "用户图有高级展开/收起；滚动条资源含圆角Thumb。",
+              "高级项按能力折叠，页面独立滚动，底栏固定。",
+              "展开/收起采用HTML details；VM每个活动触发key仍待实机确认。"
+            ],
+            [
+              "图形可见与编辑",
+              "paramusercontroldatatemplate.xaml:2544 · x:Key=\"ImageViewConfig\"",
+              "可见与编辑为独立操作，编辑由PanVisibleA控制；轮廓点/文本截图只有眼睛。",
+              "按对象声明提供眼睛/编辑，不能统一补笔图标。",
+              "不支持的最大内接矩形等不得伪造输出。"
+            ],
+            [
+              "颜色及文本",
+              "paramusercontroldatatemplate.xaml:2608 · x:Key=\"ColorConfig\"",
+              "颜色块+RGB文字；文本内容/字号/透明度/X/Y逐行配置。",
+              "重做同行组合，保留文本位置绑定；颜色选择目前为浏览器示意。",
+              "颜色弹窗/校验没有VM实机证据；不声称等价。"
+            ],
+            [
+              "底部执行按钮",
+              "bottombuttonstyle.xaml:79 · BottomButtonStyle",
+              "底栏固定；连续执行、执行、确定，主题资源有普通/悬停/按下/禁用触发。 左侧恢复默认图标由用户截图支持，行为未核。",
+              "底栏独立于滚动区，补状态样式；复用产品唯一执行/草稿提交。",
+              "HTML执行合成方块，不调用HALCON，不代替关闭释放验证。"
+            ],
+            [
+              "明暗主题与异常状态",
+              "commomdictionary.xaml:2 · ResourceDictionary",
+              "模板跨Apps.Style、VM.PcUI、ColorFun等资源；磁盘资源不证明活动主题。",
+              "集中资源映射；焦点/非法值提供明确提示，避免静默截断。",
+              "HTML深色与错误样式是本方设计建议，不能算VM已取证样式。"
+            ]
+          ],
+          "controlStyleScope": "全部可见控件按15类逐项对照；静态源/用户截图支持的状态与未观察状态分开；不是31类总控件复审的替代。",
+          "inputSourceCorrection": {
+            "finding": "已有本地WPF还原工程，前版HTML误将图像输入源用文本框+订阅按钮表示，现纠正为整行ComboBox。",
+            "vmChain": "Blob XML ImageSourceGroup → Group.xml EnumerationG(ImageSource) → GetFrontParamItemsOperation(IMAGE)/GetSelectedCombinationOperation(InputImage) → EnumerationG DataTemplate → ListViewComboBoxStyle；选择触发SetCombinationSourceOperation(InputImage)。",
+            "localRestoration": "VisionUi SourceControlResources → SourceControlStyles.xaml → SourceComboBoxes.xaml（ListViewComboBoxStyle/ComboxStyleBtn）及SourceAssets图标；存在源文件不等于本轮已运行核收。",
+            "distinction": "NativeCompoundSourceSelector对应ButtonSelecter_sub的订阅树，不能替代EnumerationG输入源下拉。",
+            "engineering": "共享WPF资源承接源模板与状态；宿主按真实IMAGE端口提供候选与当前引用，选择进入私有草稿，执行仍通过冻结输入；工具插件不依赖VisionUi/产品UI宿主程序集。先评估资源和主题依赖再移植，不直接引用逆向项目DLL。",
+            "sources": [
+              {
+                "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+                "line": 9,
+                "key": "EnumerationG Name=\"ImageSource\"",
+                "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+                "line": 846,
+                "key": "x:Key=\"EnumerationG\"",
+                "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceComboBoxes.xaml",
+                "line": 124,
+                "key": "x:Key=\"ListViewComboBoxStyle\"",
+                "sha256": "f1b3d8ca08b433d1c41ba715e04d53021e97198e221d61e456958b8186249984"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlResources.cs",
+                "line": 3,
+                "key": "SourceControlStyles.xaml",
+                "sha256": "3ae9e64355c345ed685c60c0d8546f9607fa68e1331393457ab4e53405610e8e"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
+                "line": 1,
+                "key": "SourceComboBoxes.xaml",
+                "sha256": "05a35c93f09f66d11584261b5558d8ad47fc0467b0fa4fb040f42510f883f16f"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\NativeCompoundSourceSelector.cs",
+                "line": 17,
+                "key": "public sealed class NativeCompoundSourceSelector",
+                "sha256": "cc13f638924acf566d855a74e7aead1b0ec054c1160d19b502fbc5ff58628838"
+              }
+            ],
+            "notVerified": "该本地还原项目本轮未运行，不能声称与原版每个状态一致；当前HTML候选仅示例，不接工作流。",
+            "userScreenshot": {
+              "path": "docs/collaboration/evidence/VM_BLOB_INPUT_SOURCE_USER_20261026.png",
+              "sha256": "83fa32dd7156843c1633a32ec26c0db52a145b5cba53db4404d973ec13f7abb4"
+            }
+          },
+          "subscriptionModeReview": {
+            "facts": "IsSubscribeLeft/Right切换NumericControl与SubscribeTemplate可见性；右侧EditLinkButton为模式切换，订阅框内部LinkPopButton为来源选择；Integer_Sub的OnLeftTypeChange→TypeChangeCommand，值事件另走ValueChangedCommand。",
+            "range": "IntegerBettween_Sub独立绑定左右端点；SliderArrange的CBox Popup包含SL_Bat1/SL_Bat2与StartValue/EndValue，订阅时滑条不提供数值编辑。单值模式也存在对应Slider弹层。",
+            "proposal": "本方草稿将本地值、来源引用和模式分开；切回保留草稿本地值是本方推荐，VM切换后旧值保留/清除及失败回退尚未继续追到参数操作层，不冒称同义。执行时按所选模式冻结唯一来源，订阅失效不能静默回退本地值。",
+            "preview": "已实现浏览器双模式/示例选择与单/双端滑条；订阅执行明确拒绝，不能用隐藏本地值冒充绑定结果。",
+            "limits": "HTML未真实运行核收；拖动节流、边界校验、失焦提交和真实绑定消费须WPF实施及独测。",
+            "sources": [
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+                "line": 201,
+                "key": "<ContentControl ContentTemplate=\"{Binding ElementName=UC_Arrange, Path=SubscribeTemplate}\"",
+                "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+                "line": 213,
+                "key": "<ToggleButton Grid.Column=\"1\" Style=\"{StaticResource EditLinkButton}\"",
+                "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
+                "line": 1220,
+                "key": "protected void TypeChangeLeft_Click",
+                "sha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2"
+              },
+              {
+                "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+                "line": 2106,
+                "key": "x:Key=\"EditLinkButton\"",
+                "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+              }
+            ],
+            "userScreenshots": [
+              {
+                "path": "docs/collaboration/evidence/VM_BLOB_SUBSCRIBED_USER_20261026.png",
+                "sha256": "6651d159ec8d83212740500ba1c5d7ff26d3f9aa549a6b6746b76c264802852a",
+                "label": "SUBSCRIBED"
+              },
+              {
+                "path": "docs/collaboration/evidence/VM_BLOB_LOCAL_VALUE_USER_20261026.png",
+                "sha256": "f4f8013f32672c62c70b09114aaba1c1d16595ce737c34d21fc2f4ab54ad21f2",
+                "label": "LOCAL_VALUE"
+              },
+              {
+                "path": "docs/collaboration/evidence/VM_BLOB_RANGE_SLIDER_USER_20261026.png",
+                "sha256": "3b0ed8bd4c93f1cf573251e6bf6b26d76220c289912ecfec59980357373792ab",
+                "label": "RANGE_SLIDER"
+              },
+              {
+                "path": "docs/collaboration/evidence/VM_BLOB_SINGLE_SLIDER_USER_20261026.png",
+                "sha256": "fcb3b509015fb7f8767f3b859dcf80efdc109837fa2c4655e01073c2b0c64490",
+                "label": "SINGLE_SLIDER"
+              },
+              {
+                "path": "docs/collaboration/evidence/VM_BLOB_RANGE_UNFOCUSED_USER_20261026.png",
+                "sha256": "e86ffe1f7ef1224e69d1629ce4c32359e3f9e8128b2b73d04a68f8ab808e00fe",
+                "label": "RANGE_UNFOCUSED"
+              },
+              {
+                "path": "docs/collaboration/evidence/VM_BLOB_SWITCH_RANGE_LAYOUT_USER_20261026.png",
+                "sha256": "8c91e1b97fb391e5caff2cf19ca44b1a1377708a5057240990ccd253a7e181be",
+                "label": "SWITCH_RANGE_LAYOUT"
+              }
+            ],
+            "focus": "用户明确滑条无焦点不显示；HTML离开完整复合控件焦点、Esc、切页收起。焦点在控件内部滑条或按钮间移动不算离开；源码Popup开关与实机完整键盘/鼠标状态仍需核收。",
+            "layout": "用户开关/总面积图：开关独立一行，启用后范围下一行；该判定范围无订阅按钮。预览纠正原同排布局，范围是否订阅/是否滑条须由字段声明决定。"
+          },
+          "uiArchitectureDecision": {
+            "status": "方案范围明确，待用户整体审核；未实施",
+            "principle": "按职责与组合层次决定去留。可运行证明功能基础，不直接证明旧类细分与新架构一致；提取复用不等于整类保留，重组不等于从零重写。",
+            "rows": [
+              [
+                "基础输入部件",
+                "NumericUpDown、RangeInputControl已有单/双滑条与焦点代码；不因新架构全部废弃。",
+                "对照VM NumericControl/SliderArrange，提取核实的输入、微调与焦点逻辑，修正模板和状态。现有命名/注释不等于实际视觉已达标。"
+              ],
+              [
+                "参数组合",
+                "旧ConfigSetting把BindingType、BindingSource、Value和来源列表等组合；新DeclaredFieldEditor用常量/引用草稿，但呈现是普通控件。",
+                "重做组合接口和模板，复用新草稿/校验逻辑；以ConstantSetting/ReferenceSetting/UnsetSetting表达，不能把旧字符串来源带回新合同。"
+              ],
+              [
+                "输入源",
+                "VM EnumerationG整行ComboBox；逆向本地VisionUi已有模板/资源。",
+                "作为样式与交互基准核收、适配到本方宿主候选；不引用逆向工程DLL，不等同参数订阅树。"
+              ],
+              [
+                "来源订阅",
+                "旧ParamBinding有字符串BindingSource、AvailableDataSource和全局变量策略。",
+                "树展示和选中反馈可提取；候选、类型检查、稳定引用由宿主/新合同提供。删除旧来源解释职责，不让控件解析执行来源。"
+              ],
+              [
+                "范围和开关",
+                "旧RangeInputControl有核心双滑条；用户VM截图明确开关一行、范围下一行且部分不可订阅。",
+                "独立基础范围、订阅组合和显隐布局；字段声明决定是否可绑定/是否有滑条，不能每个范围强套同一业务控件。"
+              ],
+              [
+                "ROI与结果显示",
+                "已有几何、宿主交互作用域和结果消费能力；VM以ROI组合和显示对象行呈现。",
+                "复用核实的几何与作用域，重组视图和绑定适配；不保留旧Manager对全局画布的控制权。对象列表按实际能力配眼睛/编辑。"
+              ],
+              [
+                "窗口组装",
+                "VM参数根→页组→字段模板；本方现有打开、草稿、执行、释放链已跑通，但字段页面直接生成五页。",
+                "复用打开与事务链，重组为三页/组/行/条件/折叠；工具只声明能力，通用UI按声明组装。"
+              ],
+              [
+                "工程组织",
+                "Plugin.Wpf目前只依赖Plugin.Contracts；旧Plugin.SDK控件依赖旧Execution.Parameters及日志等。",
+                "拟在Plugin.Wpf分Controls基础部件、Fields/Templates参数组合、Themes资源；UI宿主保留候选/草稿/ROI接线，Definition/Runtime不引入WPF。迁移前拆旧SDK依赖，不整包搬运。"
+              ]
+            ],
+            "sourceEvidence": [
+              {
+                "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+                "line": 108,
+                "sha256": "6099fc47b03e207bfa6d8e3d9d052bb5804f23933354ad4766196e4f82dbd8c7",
+                "key": "var input = new TextBox"
+              },
+              {
+                "path": "src/Plugin.SDK/UI/Controls/ConfigSetting.cs",
+                "line": 50,
+                "sha256": "c82d7d8c0bd0c9fc31770ffb12bd7323053e16523830fa9e77a3314c725a7af3",
+                "key": "BindingSourceProperty"
+              },
+              {
+                "path": "src/Plugin.SDK/UI/Controls/ParamBinding.cs",
+                "line": 130,
+                "sha256": "75ea710cf6ed1d8e8e15d43d13b4ed904dc3732fe149efe5b0931010d148968d",
+                "key": "AllowGlobalVariableBindingProperty"
+              },
+              {
+                "path": "src/Plugin.SDK/UI/Controls/NumericUpDown.cs",
+                "line": 34,
+                "sha256": "bd68a00584440e1bd9ec1b01ed5fef1001894290ebc0c41ea1f5ea2f62e79ccb",
+                "key": "PART_SliderPopup"
+              },
+              {
+                "path": "src/Plugin.SDK/UI/Controls/RangeInputControl.cs",
+                "line": 32,
+                "sha256": "ff8f728897fc5c70bc90b9402f94bbd2fb09b8e419c15e7432001b1008d0893a",
+                "key": "PART_RangeSlider"
+              },
+              {
+                "path": "src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj",
+                "line": 1,
+                "sha256": "3ccab4274f8f217158f196672e7f01040ccfb67fe554361ca2d02a37bbfc0773",
+                "key": "ProjectReference"
+              }
+            ],
+            "acceptance": "使用相同字段和相同状态对照VM：输入源、数值/订阅、范围、焦点、开关显隐；再验证新草稿/执行/释放链。HTML效果和功能PASS都不能单独代UI通过。"
+          },
+          "controlReorganization": {
+            "path": "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json",
+            "sha256": "17da73821fec6ac2dbf2622b6a624dae140b5ffff40693ad3f92b46b9c598a93",
+            "controls": 31,
+            "counts": {
+              "提取复用": 8,
+              "重组": 15,
+              "删除": 8
+            },
+            "scope": "按六组职责原位更新主清单、去留总览、工程前后结构；删除为方案退出，未改产品。",
+            "check": {
+              "path": "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_CHECK_20261026.json",
+              "sha256": "5741c4df2480566f1e93a9f92fa2bf3d1ef89cca0cbcadeb7182297bbf37925b"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "checkpointEvidence": [
+    {
+      "path": "docs/collaboration/evidence/O06_ALGORITHM_TRANSFER_20261026.md",
+      "sha256": "8b3fbef74570c45abd683433dc8f3579af5f85d780ee3db6be8306b539d982e9"
+    },
+    {
+      "path": "docs/collaboration/evidence/VM_BLOB_RUNTIME_WPF_STRUCTURE_20261026.json",
+      "sha256": "85bdc98ae5a17878e0bcc7d310c56cdfd4057b7f256e39d08f453d3b3f4c2c2e"
+    },
+    {
+      "path": "docs/collaboration/evidence/VM_BLOB_RUNTIME_WPF_STRUCTURE_20261026.md",
+      "sha256": "64e9d9eee79332f070bac6f2aaa85676add17403a41f1b5a1179cc75776e5c53"
+    },
+    {
+      "path": "docs/collaboration/evidence/VM_BLOB_USER_SCREENSHOT_MANIFEST_20261026.json",
+      "sha256": "ba3f5ebf101f85cdc62f06ad7c5123d3a01f6e62a94e06d82d56eb7f3b92f783"
+    },
+    {
+      "path": "docs/collaboration/evidence/O06_WINDOW_IMPLEMENTATION_CHECKPOINT_20261026.json",
+      "sha256": "783d0f0fbcb60bf1f407c6ca5e96782a15497a5026fb8938371bf633f99938c8"
+    },
+    {
+      "path": "Release/_validation/O06-Window-20261026/receipt-final-window-fullchain-independent.json",
+      "sha256": "c99c8897c0cc5722da34cddc74dd3c7dad4aa2fceb05146985bf9eeb9f815311"
+    }
+  ],
+  "windowCheckpointHistory": [
+    {
+      "scope": "881警告/37.05秒窗口候选；被当前canonical-frame全量候选及独立双轨复测取代，局部截图检查仍保留",
+      "checks": [
+        {
+          "name": "本轮全量正式Release",
+          "result": "0错误/881警告，37.05秒；24cd4ffd上未提交窗口候选，非最终交付提交。构建结果由主对话核收。",
+          "path": "Release/_validation/o06-scrollbar-minwidth-full-build.log"
+        },
+        {
+          "name": "独立窗口与实际可视宽度4组",
+          "result": "receipt-scrollbar-minwidth：4组PASS/0FAIL；实际420×500、显示样式RGBA私有草稿/确认取消、正式Blob模式条件、外层Discard及模板文字核收。仅窗口交互检查点。",
+          "path": "Release/_validation/O06-Window-20261026/receipt-scrollbar-minwidth.json",
+          "sha256": "91b9b21e568d7e2c824a2b310fd3e400c7072a364532abf6f1f100bd53e10cab"
+        },
+        {
+          "name": "七位范围与页面滚动",
+          "result": "指定9999999样本（非改默认值）：Loaded/聚焦失焦/订阅回常量3态TextBoxView58.5px≥字符57.47px、offset0；页面滚动条精确12px，滚底末行可见且回顶成功。"
+        },
+        {
+          "name": "正式装载身份",
+          "result": "实际加载程序集均来自正式Release，回执所列SHA与受测产物相符；旧候选PASS不可覆盖新候选失败。",
+          "path": "Release/_validation/O06-Window-20261026/loaded-product-scrollbar-minwidth.tsv",
+          "sha256": "ee0f568495ea7cfc5b2cdd96a1cc10f8f46ef93aa9c749eb282b5887c2585e6c"
+        },
+        {
+          "name": "VM截图并排外观复核",
+          "result": "三页PNG与用户VM实际截图核差距；前序4功能PASS后增强VisualTree为3PASS/1主题FAIL、范围候选3PASS/1FAIL均保留，最后候选上述局部问题修复。ROI/运行职责/图标/文本区/逐态差距仍未闭合。",
+          "path": "Release/_validation/O06-Window-20261026/vm-visual-gap-scrollbar-minwidth.md",
+          "sha256": "b2c0228b3f25e379462a2a73f364755153c70c9e0902bbeeedc765ad31764842"
+        },
+        {
+          "name": "历史验证范围",
+          "result": "原69d844e2完整链/关联/组件/设计时编译，以及基础控件26项完整保存在本JSON.stageHistory和既有证据；不是本轮新候选整链成绩。"
+        },
+        {
+          "name": "尚未执行的验收",
+          "result": "本轮新完整Workflow保存重开与释放链、实际VS设计器、用户人工验收均未通过；S5未启动。"
+        }
+      ],
+      "evidence": {
+        "path": "Release/_validation/O06-Window-20261026/receipt-scrollbar-minwidth.json",
+        "sha256": "91b9b21e568d7e2c824a2b310fd3e400c7072a364532abf6f1f100bd53e10cab",
+        "scope": "正式窗口交互检查点；完整算法/Workflow/VS/人工未核收",
+        "loadedProduct": "Release/_validation/O06-Window-20261026/loaded-product-scrollbar-minwidth.tsv",
+        "loadedSha256": "ee0f568495ea7cfc5b2cdd96a1cc10f8f46ef93aa9c749eb282b5887c2585e6c"
+      },
+      "productIdentity": "本轮受测为24cd4ffd上的未提交窗口候选；全量正式Release 0错误/881警告37.05秒，身份见receipt-scrollbar-minwidth及loaded-product-scrollbar-minwidth.tsv。包含既有Results/两锁文件工作区改动，不算本轮成果；最终提交后重建身份尚待主对话固定。"
+    }
+  ]
 }

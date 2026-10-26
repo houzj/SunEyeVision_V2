@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-26",
+  "baseline": "24cd4ffd5993ad31582c81a0b11a82663b013ec2",
+  "status": "窗口重组检查点，整体目标继续实施",
+  "implemented": [
+    "Contracts有限显示对象分组，独立WPF眼睛/私有样式草稿与确定取消",
+    "三页通用420×500窗口，来源与ROI条件附着，浅色资源边界",
+    "浮点焦点保真、文化格式、跨高级分组校验、布局及范围七位裁切修复",
+    "持久化窗口测试入口；整链新增SDK图像消费类型及冻结图像/区域同帧断言"
+  ],
+  "build": {
+    "path": "Release/_validation/o06-canonical-frame-full-build.log",
+    "sha256": "D2235BF716C4F4DCCA0F74D801AC9CC17178457AC4206C32CFB527D23368D38D",
+    "errors": 0,
+    "warnings": 786,
+    "elapsed": "00:00:31.90"
+  },
+  "independentRuns": [
+    {
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-003/receipt.json",
+      "sha256": "6C0C8FDF64F196F75DFD87EC7ECCF59C1A4586339C5F56EF9427F52F2EDC566C",
+      "groups": 4,
+      "exit": 0
+    },
+    {
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-020/receipt.json",
+      "sha256": "BC320E8E18CA386824D3AFE73132DA8A8AD85CA27C59B489F2F6FF994C08F1CB",
+      "groups": 8,
+      "exit": 0
+    }
+  ],
+  "failureAndRepair": {
+    "failure": {
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-018/receipt.json",
+      "sha256": "3C139E90EF11A2DC8EAE4B3BB16428640D7F5C39593E7CA316FC32C158C6473C"
+    },
+    "reason": "canonical图像override缺失导致冻结阶段重新捕获IVisionImage，Region保留原Frame；ROI确认后二次生产下游严格拒绝错帧。",
+    "repair": "恢复HEAD既有canonical override，不改严格同帧校验，不改变SDK RuntimeValue IVisionImage消费合同或所有权；其他外部Results改动未回退。",
+    "rootRerun": {
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-019/receipt.json",
+      "sha256": "F9EC3F000098DEF030929B97CA3140B6BCC43AB6475348EDDAEDFBFC1AD9ACC0"
+    }
+  },
+  "runnerFix": "首个持久窗口运行4组PASS但Windows PowerShell Start-Process返回ExitCode null；改自有Process持句柄/异步读输出后attempt002真实exit0，保留attempt001，不当作产品失败。",
+  "visualEvidence": {
+    "path": "Release/_validation/O06-Window-20261026/receipt-scrollbar-minwidth.json",
+    "sha256": "91B9B21E568D7E2C824A2B310FD3E400C7072A364532ABF6F1F100BD53E10CAB"
+  },
+  "visualLimits": "VM截图是同页同态外观验收参考。当前ROI层级、运行算法首屏、绑定图标、逐态滑条/错误、文本标签及通用标题仍有差距，不宣称整体外观达标。截图中的ROI是独测草稿状态，不是执行成功或默认态。",
+  "candidateIdentity": "基线+当前未提交增量，构建含Results及两锁文件原外部改动；不是已提交版本的完全复现或最终交付身份。",
+  "remaining": [
+    "Blob单/双/不二值化与上游预处理/严格二值形态学承接",
+    "四种ROI继承的真实合同、UI、严格参数执行和保存",
+    "31类全部消费者迁移后旧类退出",
+    "最终源码同版Release及关联回归",
+    "实际VS设计器及用户试用反馈"
+  ],
+  "acceptance": {
+    "overallUi": "未达标",
+    "designer": "未执行",
+    "user": "未试用，不代判",
+    "goal": "active"
+  },
+  "independentReceipt": {
+    "path": "Release/_validation/O06-Window-20261026/receipt-final-window-fullchain-independent.json",
+    "sha256": "C99C8897C0CC5722DA34CDDC74DD3C7DAD4AA2FCEB05146985BF9EEB9F815311"
+  }
+}

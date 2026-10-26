@@ -1,3 +1,53 @@
+## 当前接续点：窗口4组与实际宿主整链8组独测通过，算法与完整ROI继续实施（2026-10-26）
+
+真实新阻塞已修复并独立复验：FullChain attempt018在ROI确认后二次生产下游报BLOB_REGION_FRAME_MISMATCH；恢复BlobAnalysisResults的HEAD既有canonical图像override，保SDK RuntimeValue为IVisionImage，冻结输出不重新捕获新Frame，不放宽帧检查。Results其他原外部min/max删除及label改动保留。全量o06-canonical-frame-full-build.log终态0错误/786警告31.90秒。实际8组整链涵盖工具箱项Drop、HALCON、ROI私有调试、确认二次生产/下游、保存重开和关闭释放；新增首次/再次冻结Gray.Frame==Region.SourceFrame及SDK消费类型断言。
+
+独评顺序复跑WindowPresentation attempt003（4组）和FullChain attempt020（8组）exit0；70条加载记录均来自正式Release且SHA一致。总回执Release/_validation/O06-Window-20261026/receipt-final-window-fullchain-independent.json SHA C99C8897C0CC5722DA34CDDC74DD3C7DAD4AA2FCEB05146985BF9EEB9F815311。独测已明确释放正式产物冻结。七位范围三态和滚底回顶通过；VM整体外观、算法迁移、四ROI继承、旧消费者、VS及人工仍未完成。持久runner首轮ExitCode null为Windows PowerShell Start-Process句柄问题，已用自有Process持句柄/异步读输出修复，保留失败记录。
+
+阶段证据docs/collaboration/evidence/O06_WINDOW_IMPLEMENTATION_CHECKPOINT_20261026.json。文档路正用最终回执统一原S4/原O06，之后根保存中文检查点并正式交算法路唯一产品写权，未给基线/释放前根仍产品写者。不得把历史截图/4组/8组局部范围合成整体UI或新算法完成；目标active。
+
+---
+
+## 上一接续点：VM实图作为外观验收依据，范围宽度末次修复独测（2026-10-26）
+
+用户再次明确方案内VM实际截图也是验收参考，已落实到当前四路协议；按相同页面/状态检查布局、控件、焦点和条件展开，功能PASS不能代替外观达标。原机通道缺失不影响使用已归档实图。
+
+最新独测receipt-page-space.json（SHA F33C9FB26981F47EAC5AF114F85609EDB305F69E99B542699D8A868896BEABC4）3组通过/1组失败：页滚底、末行PositionY完整显示、回顶通过；七位数范围三状态仍差1.64px，实际字符边界与文字测量一致。已保留失败，没有报UI通过。独测释放后主对话仅补O06.PageScrollBarStyle MinWidth=0，防系统17.33最小宽覆盖预期12宽。全量Release o06-scrollbar-minwidth-full-build.log终态0错误/881警告37.05秒；现正式产物再次冻结给blob_ui_independent_review最后复测，主对话不得覆盖。当前身份仍24cd4ffd+未提交增量，含三项原外部改动，不是最终交付提交。
+
+已收上轮独测Cases到scripts/verification/O06WindowPresentationCases.cs并接入Run-S2ReleaseValidation.ps1 -Stage S4 -Track WindowPresentation；待独测释放后验证此持久入口，不能与焦点测试同时运行。文档岗等最后回执集中更新原方案。后续算法职责迁移/完整ROI继承/旧消费者/整链/设计器和用户验收仍未闭合，原目标active，不因本轮布局检查停止。
+
+以下为此前阶段记录，旧冻结和构建数字不代表当前状态。
+
+---
+
+## 前一接续点：VM截图纳入外观门，布局候选独测（2026-10-26）
+
+用户补充要求四路并行并优化职责/协议，已实际运行三路专项＋主对话；两个协议入口已更正并通知，原目标不缩小、active。文档路独占S4_IMPLEMENTATION_PLAN_20261026.json和生成后的原O06，等主对话提供最后receipt后一次集中编辑；主对话已集中修生成器“未实施/五页/旧整链当前”等过时口径，不能再覆盖成旧状态。
+
+窗口/显示组合当前产品都在24cd4ffd之上未提交：DialogGroup/Primary声明及同页/分组验证，DisplayObjectField眼睛+私有样式弹窗，ROI按实际模式附着，紧凑420×500 DefaultDebugWindow命令壳。独评找到浮点失焦截断/文化和跨Advanced丢字段并修；真实运行又发现深色宿主白字浅底，前后两轮失败证据保留；第三候选正式DLL4组通过且实际模板文字对比已闭合，但截图仍有眼笔错位/短标签/关闭X/底栏截字/首屏密度问题。
+
+最新已修：空错误区Collapsed，眼笔主列138，判断开关去·启用后缀，关闭X显式白色，底栏64宽padding2/font12，输入源短标签，修正来源只在开关启用时出现。全量构建o06-window-layout-full-build.log终态0错误/1222警告00:45.06（session78316已结束，不再轮询）。受测身份仍基线+未提交增量含原外部Results/锁文件，不能说最终交付版本。
+
+当前Release冻结给blob_ui_independent_review：允许仅在Release/_validation/O06-Window-20261026构建/运行自己的引用正式DLL的fixture；正在产生fixture-run-layout.log、receipt-layout.json、layout-fixed-window-page-N.png，主对话勿覆盖Release。其上轮receipt-template.json SHA 2769EF61170854BDB2FF03B2694FA9D848BEA7E6CD9BA9DE05A6998B95397751，4组PASS不是整体外观/整链PASS。19项VM截图差距在vm-visual-gap-template.md，7张唯一VM截图和订阅/滑条/无焦点/开关补图均已逐图核读。
+
+接续：等独测最后回执并亲看三页PNG，必要修复；将最终回执通知blob_evidence_docs，令其一次集中更新原方案/协议并跑既有生成器幂等693锚点等检查。然后核收产品/ docs，中文有意义检查点提交推送（排除三项原外部改动），下一阶段继续算法职责与完整ROI继承/旧消费者迁移及整链。独测与文档路可继续接受现有任务，不新增代理。建议将新测试源码收进scripts/verification并提供正式Release可复验入口，尚未做；不能丢原用例和失败证据。
+
+VM截图明确作为外观验收参考，与源码职责/状态证据并用；图上看不到的不猜不存在，算法差异要明示。当前三个ROI模式Combo还未实现VM类型/绘制继承/四继承层级；运行页仍含待迁出的预处理/形态学；结果对象清单按真实本方声明不虚造VM对象。不能宣布整体UI达标或可完整试用。VS实际设计器和用户验收未执行。下一算法改造逐文件清单见O06_ALGORITHM_TRANSFER_20261026.md，不可原样搬固定128阈值Morphology或混用ROI端口。
+
+---
+
+## 四路并行执行中：用户最新授权（2026-10-26）
+
+四路包含/root：主对话产品实施/集成；blob_algorithm_scope算法适配核查；blob_ui_independent_review独立评审和正式Release测试；blob_evidence_docs协议与证据文档口径。当前协议和JOINT_TASK_ROLES已原位纠正旧暂停/禁子代理状态，三路均已通知；不恢复旧经理体系。仍单产品写者，不建副本/Worktree；独测冻结正式产物。
+
+本轮产品候选在24cd4ffd上新增：中立显示对象分组/眼睛与样式弹层私有草稿；ROI本地/继承按实际字段模式附着；420×500紧凑通用窗且保留原命令与关闭链。独评发现并已修：浮点失焦截断/文化格式、DialogGroup跨Advanced可能丢字段；UI Release构建0错误/1360警告（o06-window-ui-build.log，1:57）。独测路正在Release/_validation/O06-Window-20261026验证固定候选，首轮3组通过，正式Blob/窗口组合尚待该路最终回执；冻结中不覆盖Release。
+
+算法路已完成真实承接核查并写evidence/O06_ALGORITHM_TRANSFER_20261026.md（SHA 8B3FBEF74570C45ABD683433DC8F3579AF5F85D780EE3DB6BE8306B539D982E9），明确MaxValue上下限语义、Morphology固定128阈值、上游均衡化缺失、枚举/尺寸差异及严格二值链。算法尚未迁移，不能据此报通过。VM结构补证JSON/MD已核SHA归档为evidence/VM_BLOB_RUNTIME_WPF_STRUCTURE_20261026：多层交付不等于两个原厂源码工程，native ABI/进程选中UI分支仍未知。
+
+后续：核收独测并修缺陷→全量Release及必要整链→保存有意义中文检查点→继续算法/完整ROI承接与旧类消费者迁移。基础检查点不等于完整试用或人工验收，目标保持active。原Results及两锁文件外部改动继续保留、不混提交。
+
+---
+
 ## 实施检查点：基础控件真实WPF 26项通过，持续目标active（2026-10-26）
 
 已按批准方案提取NumericUpDown、RangeSlider、RangeInputControl、ToggleSwitch、ColorPicker/HSV/调色板至独立Plugin.Wpf，重组ColorField为确定/取消草稿；资源闭合到本程序集。三页中立布局、条件展开、配对范围、常量/订阅和输入源Combo已接线。修复实际装载发现的Combo相对路径和ColorPickerButtonStyle遗漏；补回可选字段清除/重设，配对滑条不会同时弹单值滑条。

@@ -259,14 +259,14 @@ def render_s4_stage(page):
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
-             + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　原型未实施；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链对照。自动渲染受本机file协议策略限制，尚未视觉核收。</p>' if review and 'preview' in s4['uiReview'] else '')
+             + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if review and 'preview' in s4['uiReview'] else '')
              + ('<p><a href="#o06-current-control-mapping"><b>直接审核31类新职责、VM源、去留与文件组织</b></a> · 8项提取复用 / 15项重组 / 8项旧类退出；完整交互见同段下方。</p>' if (ROOT/'docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json').exists() else '')
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
              + (('<h4>S4哪些重做，哪些复用（' + ('已批准，实施中' if s4.get('implementationApproved') else '推荐，待整体审核') + '）</h4>'
                   + ('<p><b>'+escape(s4['uiReview']['uiArchitectureDecision']['principle'])+'</b></p>'+table(['层次','现有基础','明确处理'],s4['uiReview']['uiArchitectureDecision']['rows']) if s4['uiReview'].get('uiArchitectureDecision') else '')
                   + table(['处理','本方对象','VM依据与本方差距','功能承接及工程调整'],s4['uiReview']['decisions'])
                   + ('<h4 id="o06-algorithm-ui-differences">算法职责、参数与输出怎样对应三页</h4>'
-                     + '<p>以下为结合最新需求的调整推荐，尚未实施。预处理优先交上游专用工具；形态学推荐经外部分割和专用工具处理，再由Blob不二值化接入。VM原件已有不二值化声明，但本方尚未实现；不能直接挪用ROI端口或原样搬用现有固定128阈值的形态学工具。</p>'
+                     + '<p>以下为已批准的调整方向，尚未完成的算法与关联适配继续实施。预处理交上游专用工具；形态学经外部分割和专用工具处理，再由Blob不二值化接入。VM原件已有不二值化声明，不能因此推断其原生公式；不能挪用ROI端口或原样搬用现有固定128阈值的形态学工具。</p>'
                      + table(['差异','双方实际证据','推荐取舍','UI承接','未确认/实施边界'],s4['uiReview']['algorithmDifferences'])
                      + '<h4>窗口完整组装链：VM与当前实现并排</h4>'
                      + table(['环节','VM静态链','本方当前链','推荐调整'],s4['uiReview']['chainComparison'])
@@ -324,11 +324,11 @@ def render_s4_stage(page):
         'imagesourceselector': 'S4当前：Plugin.Wpf/Fields/SourceSelectionField仅展示宿主提供的声明候选；UI/Sources适配持久引用、当前作用域和显式集合序号，禁止猜默认来源。VM对应ButtonSelecter_sub:255→SubTreeView:296–302选择组合链。现行SDK矩阵缺完整中立空间元数据，保留明确适配而不伪造坐标标识；同帧校验继续生效。',
         'blobdataanalysiscontrol': 'S4关联修复：保留现有专用表格和列；Wpf/Presentation/BlobAnalysisRow将同一Runtime声明记录投影为无资源句柄的标量行，不再强转隔离加载的SDK门面结果，Wpf工程改引Runtime而非门面项目。主窗口真实调试、表/摘要、选中高亮及失败清理已有连续链验证。VM当前结果声明/宿主链作为本行对标证据；S5通用声明结果平台未启动。',
     }
-    if ready or review:
+    if ready:
         updates['configsetting'] = updates['configsetting'].replace('整链尚未核收；不能把新默认页局部通过算成完整交付。', '真实宿主连续链和同提交自动回归已核收，人工体验仍待用户反馈。')
     if review:
         for key in ('configsetting','roieditorcontrol','blobanalysistooldebugcontrol'):
-            updates[key] += ' UI复核：对应源只支持职责参考，不证明外观达标；当前通用五页表单、纵向字段和文字ROI工具条未还原VM三页及同排模板组合，S4不能据功能检查宣布完成。'
+            updates[key] += ' UI复核：按批准方案实施三页、同排字段、样式弹层及ROI条件组合；当前真实实现和新产物验证以本页实施表为准，旧五页外观问题属于历史。VM实机截图是外观验收参考，源码支持职责和状态依据；功能通过不代外观或整链。'
         updates['configsetting'] += ' 推荐重做正常页渲染；VM实际主链为ParamUserControl.DisplayType→UserTempConverter→ParamUserControlDataTemplate，不是PointF专用选择器。拆出并复用已有输入校验/非法原文/绑定行为，不默认保留DeclaredFieldEditor整类。'
         updates['imagesourceselector'] += ' UI推荐重做同排来源/订阅模板；复用候选查询、稳定引用、索引和类型校验，不原样保留应用/清除/撤销按钮排布。'
         updates['roisubscribepanel'] += ' UI推荐纳入绘制/继承及折叠几何组合；复用模式/引用和底稿，不另立第二参数存储。'
@@ -390,9 +390,9 @@ def render_s4_stage(page):
                           '架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈')
         if review:
             page=re.sub(r'<div class="br-note"><b>当前总状态：</b>.*?</div>',lambda _: '<div class="br-note"><b>当前总状态：</b>'+state+' <a href="#s4-implementation-status">UI差距与修正范围</a>。</div>',page,flags=re.S)
-            page=page.replace('架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈','架构方案与阶段进度 · S1—S3自动核收 · S4功能链通过、外观未达标')
-            page=page.replace('S4完整窗口/ROI交互、S5通用结果及正式性能仍未完成；S1—S4人工测试待S4形成明显体验变化后集中进行。','S4功能链已通过自动检查，但页面组织与模板外观未达标，须先修正；S5通用结果及正式性能尚未实施。')
-            page=page.replace('S4/S5仍待实施，原候选及源码快照保留在历史证据中。','S4功能链通过、UI对标未达标，S5尚未实施；原候选及源码快照保留在历史证据中。')
+            page=page.replace('架构方案与阶段进度 · S1—S4实施及自动验证完成 · 集中人工试用待反馈','架构方案与阶段进度 · S1—S3历史自动核收 · S4优化实施中，当前结果见验证表')
+            page=page.replace('S4完整窗口/ROI交互、S5通用结果及正式性能仍未完成；S1—S4人工测试待S4形成明显体验变化后集中进行。','S4窗口、算法与ROI正在按批准方案优化，当前完整链和外观结论以本页验证表为准；S5通用结果及正式性能尚未实施。')
+            page=page.replace('S4/S5仍待实施，原候选及源码快照保留在历史证据中。','S4优化实施中、UI对标未达标，S5尚未实施；原候选及源码快照保留在历史证据中。')
             current_tree='''tools/SunEyeVision.BlobAnalysis/（实际文件）
 ├─ BlobAnalysisTool / BlobSdkAdapter / BlobInputAdapter：现行SDK入口适配
 ├─ BlobInputContract / BlobConfigurationFields / 参数、结果及输出合同
@@ -409,7 +409,7 @@ def render_s4_stage(page):
             end=page.index(marker);start=page.rfind('<pre',0,end)
             page=page[:start]+'<pre>'+escape(current_tree)+'</pre>'+page[end:]
             page=page.replace('现行设置/结果通过SDK适配承接，原界面移到Wpf；S4完成编辑交互，S5通用结果呈现不自动启动。',
-                              '运行内核与可选结果Wpf已拆分；旧参数整页已删除。S4功能接线通过，但三页/行模板/样式未达标，修正结构见上图；S5未启动。')
+                              '运行内核与可选结果Wpf已拆分；旧参数整页已删除。S4正在优化，当前整链结果见验证表，UI尚未整体达标；S5未启动。')
     return page
 
 
@@ -439,7 +439,7 @@ def render_control_architecture(page):
                 paths+'<p>'+escape(row['currentState'])+'</p>'+consumers,
                 '<b>'+escape(row['evidenceKind'])+'</b><p>'+'<br>'.join(vm_ref(k) for k in row['sourceRefs'])+'</p><small>'+escape(row['limits'])+'</small>',
                 '<b>'+escape(row['action'])+'</b><p>提取/承接：'+escape(row['reuse'])+'</p><p>退出/剥离：'+escape(row['retire'])+'</p><p>目标文件（拟）：<code>'+escape(row['target'])+'</code></p>',
-                '<a href="#o06-control-interactions">'+escape(row['interaction'])+' 交互与验收</a><p>先迁消费者，再核资源、发布与关闭释放，最后退出旧文件。本轮不执行产品迁移。</p>'
+                '<a href="#o06-control-interactions">'+escape(row['interaction'])+' 交互与验收</a><p>先迁消费者，再核资源、发布与关闭释放，最后退出旧文件。已批准持续实施；实际进度见当前实施表，未迁完不算删除完成。</p>'
             ]
             body.append('<tr id="o06-control-'+row['id']+'" data-control-name="'+escape(row['name'])+'" data-control-group="'+escape(row['group'])+'">'+''.join('<td>'+v+'</td>' for v in cells)+'</tr>')
     first=page.index('id="o06-control-labeledcontrol"')
@@ -453,10 +453,10 @@ def render_control_architecture(page):
     a=page.index('id="o06-current-control-mapping"');b=page.index('<div id="o06-control-migration-gate"',a)
     intro_end=page.index('</h5>',a)+len('</h5>')
     intro=('<p><b>8项提取复用、15项重组、8项旧类退出。</b>不是重新写31个控件，也不是将旧SDK目录整体搬到Wpf。按基础输入、字段模板、ROI交互、宿主装配、工具视图、图标资源分六组；每行单列VM来源形态。删除旧类后原功能由本行目标承接，不因无同名CLR就判功能无源。确认全局无源0项。</p>'
-           '<p>当前产品已跑通的草稿/执行/关闭链作为基础；基础数值/范围等提取复用，旧绑定和画布职责按新合同拆分。完整历史不丢：<a href="../../../../../../../collaboration/history/O06_CONTROL_RECORDS_BEFORE_REORGANIZATION_20261026.json">原31行来源、候选与历史记录</a>；<a href="../../../../../../../collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json">当前逐行来源与完整文件清单</a>。以下为本轮设计供审核，尚未实施迁移/删除。</p>')
+           '<p>现有草稿/执行/关闭链作为基础；数值/范围等提取复用，绑定和画布职责按新合同拆分。完整历史不丢：<a href="../../../../../../../collaboration/history/O06_CONTROL_RECORDS_BEFORE_REORGANIZATION_20261026.json">原31行来源、候选与历史记录</a>；<a href="../../../../../../../collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json">当前逐行来源与完整文件清单</a>。以下为已批准的目标职责和去留，正在分项实施；当前成果见同页实施表，不把目标文件当成已完成迁移。</p>')
     page=page[:intro_end]+intro+page[b:]
     page=page.replace('最终31项分组为4控件/8模板/19组合链/0待核/0确认无源；四项归类以v2为准，局部未知留在对应行。','当前31项按六组职责组织，VM证据形态单列；旧4控件/8模板/19组合链为历史分组，不能当工程分层。局部运行未知不冒充已确认。')
-    page=re.sub(r'<div id="o06-control-migration-gate".*?</div>', '<div id="o06-control-migration-gate" class="br-note"><b>工程与迁移边界：</b>旧Plugin.SDK仍含WPF与运行依赖，不能视为中立合同。Plugin.Wpf当前仅依赖Contracts且已进入主构建；拟提取基础输入、字段模板与主题，UI宿主保留候选、窗口、ROI作用域与调度，工具Definition/Runtime不得依赖UI宿主。资源需统一Generic.xaml/ThemeInfo及构建发布注册，不能只复制cs。<p>'+escape(data['deletionGate'])+'</p><p>迁移/产品删除未实施；当前文件、全部静态提及与VM源码行号逐行列出。旧工程候选与取证路径保存在本表历史记录，当前决策以本表为准。</p></div>',page,count=1,flags=re.S)
+    page=re.sub(r'<div id="o06-control-migration-gate".*?</div>', '<div id="o06-control-migration-gate" class="br-note"><b>工程与迁移边界：</b>旧Plugin.SDK仍含WPF与运行依赖，不能视为中立合同。Plugin.Wpf当前仅依赖Contracts且已进入主构建，已提取部分基础输入并接入字段模板和主题，旧消费者迁移仍在实施；UI宿主保留候选、窗口、ROI作用域与调度，工具Definition/Runtime不得依赖UI宿主。资源需统一Generic.xaml/ThemeInfo及构建发布注册，不能只复制cs。<p>'+escape(data['deletionGate'])+'</p><p>迁移正在实施，旧类型须完成消费者承接和回归再删除；当前文件、静态提及与VM源码行号逐行列出。旧工程候选与取证路径保存在本表历史记录，当前决策以本表为准。</p></div>',page,count=1,flags=re.S)
     # Original disposition location becomes navigation to the same authoritative rows.
     a=page.index('id="o06-shared-control-disposition"');start=page.index('</h6>',a)+len('</h6>');end=page.index('<p class="br-note"><b>工程结论',start)
     nav=[]
@@ -474,7 +474,9 @@ def render_control_architecture(page):
     marker='<!-- O06-ENGINEERING-CLASS-MAP:END -->';end=page.index(marker);start=page.rfind('<pre',0,end)
     tree='''现在（真实文件；旧SDK与新字段层并存）
 src/Plugin.SDK/UI/Controls/          旧31类中的基础控件、绑定组合、ROI协调及主题依赖
-src/Plugin.Wpf/Fields/              新DeclaredFieldEditor/DeclaredFieldsView/SourceSelectionField/ReferenceSelectionControl
+src/Plugin.Wpf/Controls/            已提取数值、范围、开关、取色器及纯交互
+src/Plugin.Wpf/Fields/              声明页/字段/来源/显示对象私有样式草稿
+src/Plugin.Wpf/Themes/              独立Generic/Combo/资源与局部主题边界
 src/Plugin.Wpf/Regions/             RegionGeometryEditor、RoiGeometryEditing与受限交互合同
 src/UI/Services/Editing/Nodes/      正常开窗、来源、ROI与私有草稿装配
 src/UI/Services/Editing/Regions/    独占RoiViewportEditScope
@@ -498,13 +500,13 @@ src/UI/Services/Editing/            窗口、草稿、候选、ROI scope、唯�
 src/UI/Shell/Controls/Panels/       主界面图像源组合，不塞入Blob或共享SDK
 tools/SunEyeVision.BlobAnalysis/Runtime/
   BlobDefinition.cs                 现中立入口；不另建Definition工程
-  BlobPresentation.cs（拟新增）      用Contracts有限页/组/显隐描述声明界面，不引WPF
+  BlobPresentation.cs               已实现Contracts页/组/显隐描述，后续随算法与ROI继续适配，不引WPF
 BlobConfigurationFields.cs（门面）   当前含WPF Color/旧SDK槽位，只作隔离适配，不搬入中立控件
-Blob.Runtime/                       HALCON唯一算法；分割与预处理/形态学调整另按原方案审核
+Blob.Runtime/                       HALCON唯一算法；分割与预处理/形态学调整已批准，尚待实施完成
 Blob.Wpf/Views + Presentation/      当前只读表/标量投影继续使用；S5通用结果尚未实施
 
 依赖：工具Definition/Runtime → Contracts/算法基础；Plugin.Wpf → Contracts；UI宿主 → Plugin.Wpf+运行服务。
-退出旧SDK类：先迁实际消费者和资源，再完整Release与设计时/运行时回归，最后删除；本轮不改产品。'''
+退出旧SDK类：先迁实际消费者和资源，再完整Release与设计时/运行时回归，最后删除；当前已批准实施，未迁完的旧类继续保留。'''
     page=page[:start]+'<pre>'+escape(tree)+'</pre>'+page[end:]
     page=page.replace('现有41类逐件映射','本轮31类按新职责逐件映射（早期41类范围为历史）')
     page=page.replace('<span id="shared-control-design-inventory"></span>','')

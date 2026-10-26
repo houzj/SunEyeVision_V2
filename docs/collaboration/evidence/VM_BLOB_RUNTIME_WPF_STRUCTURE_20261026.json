@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "question": "Does the shipped Blob component prove a two-project Runtime+WPF source design?",
+  "conclusion": "Artifact and call-chain evidence supports a native x64 module plus a managed VM SDK adapter and XML-driven common WPF configuration/display. It does not prove the original source repository/project split; a custom Blob WPF extension remains conditionally possible via an already-loaded assembly.",
+  "evidenceClasses": {
+    "observed": [
+      "IMVSBlobFindModu.dll is x64 PE without CLI directory.",
+      "IMVSBlobFindModuCs.dll is AnyCPU .NET Framework 4.6.1, MVID 1d550689-0379-4822-8b69-8713d2324342, refs mscorlib/VM.Core/VM.PlatformSDKCS.",
+      "Cs wrapper type IMVSBlobFindModuTool extends VM.Core.VmModule; Run calls ModuleManager.SyncSelfRun(ID); result routes through QueryModuleOneResult and SetModuleResult.",
+      "VM.Core.VmModule module creation places typeName in IMVS_SYNC_ADD_ONE_MODULE_INFO.strModuleDllName and calls SyncAddOneModule.",
+      "ModuleManager.SyncSelfRun calls ServerSDKAPI.IMVS_SelfExecuteOneModule(handle, moduleId).",
+      "WPF GetExternTabWin tries loaded module+Control assembly and same-directory Control.dll, then caller falls back to ParamsTabControlBase.",
+      "Blob module directory inventory has 11 files and no IMVSBlobFindModuControl.dll."
+    ],
+    "inferred": [
+      "IMVSBlobFindModu.dll is the Blob native Runtime implementation candidate based on exact module identity and SDK registration/execution path.",
+      "The normal UI likely uses common WPF metadata rendering if there is no already-loaded module-specific Control assembly."
+    ],
+    "unknown": [
+      "Original source .sln/.csproj project boundaries.",
+      "Native Blob exports/entry points and exact SDK-to-module ABI.",
+      "Whether SDK loads the exact native file selected by strModuleDllName.",
+      "Whether the task VM process preloaded a Blob Control assembly.",
+      "Actual runtime WPF window type/template/theme and visual state."
+    ]
+  },
+  "identities": [
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModu.dll",
+      "sha256": "4DE695D8C3051045C9010739686F94C32D66A36EE486207FE749FB183FFF4C9A",
+      "architecture": "x86_64",
+      "cli": "absent",
+      "reaEvidence": "ev_866e95cb49d1fddb99cf32ea154ae8b76be2b58321d8abd0044674d972ad55e7"
+    },
+    {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuCs.dll",
+      "sha256": "3106AF2E9344A97288553BFBBFA86AFD81E2384188B452734F56825F63E0A78D",
+      "mvid": "1d550689-0379-4822-8b69-8713d2324342",
+      "runtime": ".NET Framework 4.6.1",
+      "managedArchitecture": "AnyCPU",
+      "references": [
+        "mscorlib",
+        "VM.Core",
+        "VM.PlatformSDKCS"
+      ],
+      "reaManagedEvidence": "ev_22697cccc2f26bd806da658c3f0a7217a16a9f900a5ac474834b84a33f904f6d",
+      "reaMembersEvidence": "ev_e2d94e338072eadedce0ed9e7457dd6c1ba8a132cde53efffa114c40611eb364",
+      "reaBoundaryEvidence": "ev_a1bbcd0b2da30907939ee67db0a8e259852640d4d97f5bcadbf3fb72a94caecd",
+      "pinvokeCount": 0,
+      "moduleRefCount": 0,
+      "nativeImplementationCount": 0
+    }
+  ],
+  "sourceAnchors": [
+    {
+      "path": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/IMVSBlobFindModuTool.decompiled.20261026.cs",
+      "sha256": "08AF033551889B440AD4CBCCF1921C5C1C6144C2547B77F3A39A6FECC6BF1F74",
+      "originBinarySha256": "3106AF2E9344A97288553BFBBFA86AFD81E2384188B452734F56825F63E0A78D",
+      "tool": "ilspycmd 11.1.0.9782"
+    },
+    {
+      "path": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/source/VM.Core.VmModule.cs",
+      "sha256": "53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE",
+      "members": [
+        "VmModule(object,string)",
+        "CreateToModuleSet"
+      ]
+    },
+    {
+      "path": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/source/VM.PlatformSDKCS.ModuleManager.cs",
+      "sha256": "783A45B1518F713223ECA2B5E59291BE973552C3E08FEF0EA0D4BFCCC2FBD922",
+      "member": "SyncSelfRun"
+    },
+    {
+      "path": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/source/VMControls.WPF.ProcedureConfigControl.cs",
+      "sha256": "A1C233068DB35667F7DD49B05839701364CC2EBE9CA699F5F413317ABBE4DFB4",
+      "member": "GetExternTabWin"
+    },
+    {
+      "path": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/blob-group-links.json",
+      "sha256": "DF5B9B7AF06470823AAD5B27BD713825429DA8B799482ED6F811CB8CA8F71E46"
+    }
+  ],
+  "analysisBoundary": {
+    "staticOnly": true,
+    "visionMasterLaunched": false,
+    "toolPluginsTouched": false,
+    "nativeProvider": "unavailable",
+    "providerFailures": [
+      "Ghidra not configured",
+      "Hopper unsupported on Windows",
+      "IDA not configured"
+    ]
+  },
+  "outputMarkdown": "analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/blob-runtime-wpf-structure-recovery-20261026.md",
+  "outputMarkdownSha256": "64E9D9EEE79332F070BAC6F2AAA85676ADD17403A41F1B5A1179CC75776E5C53"
+}

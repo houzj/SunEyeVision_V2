@@ -15,7 +15,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using Apps.Log;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 

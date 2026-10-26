@@ -1,6 +1,6 @@
 using System;
 using Apps.ErrorCode;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using Apps.Log;
 using VM.PlatformSDKCS;
 

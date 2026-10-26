@@ -2,7 +2,7 @@ using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
 

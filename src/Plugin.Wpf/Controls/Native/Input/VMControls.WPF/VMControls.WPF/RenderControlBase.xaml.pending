@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.RenderControlBase" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:HikpcUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:xmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:imagecontrol="clr-namespace:VMBaseControls;assembly=VMBaseControls" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="us" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface" xmlns:vm_port_1_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData">
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.RenderControlBase" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:HikpcUI="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView" xmlns:xmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:imagecontrol="clr-namespace:VMBaseControls;assembly=VMBaseControls" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="us" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface" xmlns:vm_port_1_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData" xmlns:vm_port_0__="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <x:StaticExtension Member="vm_port_2:ColorThemesResourceDictionary.Instance" />
-        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0__:LocalizationResourceDictionary.Instance" />
         <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
         <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml" />
       </ResourceDictionary.MergedDictionaries>
@@ -29,7 +29,7 @@
           <FrameworkElement.ToolTip>
             <MultiBinding Converter="{StaticResource multiBindingConverter}">
               <Binding Path="SelectedInputImage.DisplayObject.Owner.Name" />
-              <Lang:ResourceBinding Path="SelectedInputImage.DisplayObject.NameA" />
+              <vm_port_0__:ResourceBinding Path="SelectedInputImage.DisplayObject.NameA" />
             </MultiBinding>
           </FrameworkElement.ToolTip>
         </ComboBox>
@@ -48,7 +48,7 @@
           <FrameworkElement.ToolTip>
             <MultiBinding Converter="{StaticResource multiBindingConverter}">
               <Binding Path="SelectedImage.DisplayObject.Owner.Name" />
-              <Lang:ResourceBinding Path="SelectedImage.DisplayObject.NameA" />
+              <vm_port_0__:ResourceBinding Path="SelectedImage.DisplayObject.NameA" />
             </MultiBinding>
           </FrameworkElement.ToolTip>
         </ComboBox>

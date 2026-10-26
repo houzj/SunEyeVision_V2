@@ -99,7 +99,7 @@ rows = [
     ('数值与范围','NumericControl / SliderArrange / SliderArrangeFloat','src/Plugin.Wpf/Controls/Native/Numeric/numeric-migration-manifest.json','步进、聚焦弹滑条、失焦或Esc收起、双端不交叉'),
     ('眼睛与编辑','eyeToggleButton / NativeDisplayPopupButton','src/Plugin.Wpf/Themes/VmFieldStyles.xaml','原显隐/编辑图标，控制示意叠加层及样式弹窗'),
     ('页签与底部按钮','TopTabItemStyle / Orange_ButtonStyle','src/Plugin.Wpf/Themes/VmFieldStyles.xaml','按原模板对应规则呈现选中、悬停与三按钮布局'),
-    ('ROI及颜色组合','RoiSelectControl / ROIStack / ColorPickerControlView / ImageViewConfig_subContent','src/Plugin.Wpf/Controls/Native/Composition/composition-migration-manifest.json','颜色已按原模板重组为就地样式面板、默认/更多色板及原像素色谱；复杂ROI工具图标仍为示意'),
+    ('ROI及颜色组合','RoiSelectControl / ROIStack / VmColorPicker / ImageViewConfig_subContent','src/Plugin.Wpf/Controls/VmColorPicker.cs','预览含就地样式面板及默认/更多色板；真实ColorField已接原色板、页签及高级算法，尚未运行验收。真实图形样式父层仍待从modal重组为就地四行面板；复杂ROI图标仍为示意'),
 ]
 table = '<table class="migration-table"><thead><tr><th>部件</th><th>对应迁入对象</th><th>本次呈现和边界</th></tr></thead><tbody>'
 for label, kind, path, state in rows:

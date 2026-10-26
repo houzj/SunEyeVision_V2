@@ -5,8 +5,6 @@ using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
 using System.Windows;
 using System.Windows.Markup;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI;
 

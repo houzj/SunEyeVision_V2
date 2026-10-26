@@ -259,7 +259,7 @@ def render_s4_stage(page):
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
-             + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if review and 'preview' in s4['uiReview'] else '')
+             + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if 'preview' in s4.get('uiReview', {}) else '')
              + ('<p><a href="#o06-current-control-mapping"><b>直接审核31类新职责、VM源、去留与文件组织</b></a> · 8项提取复用 / 15项重组 / 8项旧类退出；完整交互见同段下方。</p>' if (ROOT/'docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json').exists() else '')
              + table(['优化项', '现在已实现', '验证与剩余'], s4['rows'])
              + (('<h4>S4哪些重做，哪些复用（' + ('已批准，实施中' if s4.get('implementationApproved') else '推荐，待整体审核') + '）</h4>'

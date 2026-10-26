@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <ResourceDictionary.MergedDictionaries>
     <x:StaticExtension Member="vm_port_1:ColorThemesResourceDictionary.Instance" />
-    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+    <x:StaticExtension Member="vm_port_0_:LocalizationResourceDictionary.Instance" />
   </ResourceDictionary.MergedDictionaries>
   <Style x:Key="{x:Type local:Connection}" TargetType="{x:Type local:Connection}">
     <Setter Property="Stroke" Value="{DynamicResource Col_EditProcess_Ligature}" />

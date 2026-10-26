@@ -56,6 +56,16 @@ public partial class SourceAdvancedColorPicker : UserControl
 		brightnessSlider.Value = 0.5;
 	}
 
+    // 宿主组合适配：重开色板时同步原算法的基色，避免亮度仍沿用上次取色。
+    public void SynchronizeSelection(Color color)
+    {
+        _pixels = new[] { color.B, color.G, color.R, color.A };
+        CurrentColor = color;
+        brightnessSlider.Value = 0.5;
+        SetCurrentValue(SelectedCurrentColorProperty, new SolidColorBrush(color));
+        UpdateSlider();
+    }
+
 	private void Image_MouseDown(object sender, MouseButtonEventArgs e)
 	{
 		if(e.Source is not Image sourceImage)return;
@@ -132,6 +142,11 @@ public partial class SourceAdvancedColorPicker : UserControl
 		float b = 1f * color.ScB;
 		Border border = brightnessSliderBorder;
 		if(border.Background is not LinearGradientBrush linearGradientBrush)return;
+        if (linearGradientBrush.IsFrozen)
+        {
+            linearGradientBrush = linearGradientBrush.Clone();
+            border.Background = linearGradientBrush;
+        }
 		linearGradientBrush.StartPoint = new Point(0.0, 1.0);
 		linearGradientBrush.EndPoint = new Point(0.0, 0.0);
 		linearGradientBrush.GradientStops[0].Color = Color.FromScRgb(1f, 0f, 0f, 0f);

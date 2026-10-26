@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ToolBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="us" AllowDrop="True" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ToolBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:user="clr-namespace:VM.User;assembly=VM.User" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="us" AllowDrop="True" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <x:StaticExtension Member="vm_port_1:ColorThemesResourceDictionary.Instance" />
-        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0_:LocalizationResourceDictionary.Instance" />
         <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
@@ -16,7 +16,7 @@
         <Setter Property="base:ToolItemGrid.DisplayType" Value="{Binding DisplayType}" />
         <Setter Property="FrameworkElement.ContextMenu" Value="{x:Null}" />
         <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource btv}}" />
-        <Setter Property="FrameworkElement.ToolTip" Value="{Lang:ResourceBinding ToolTip}" />
+        <Setter Property="FrameworkElement.ToolTip" Value="{vm_port_0_:ResourceBinding ToolTip}" />
         <Setter Property="FrameworkElement.Cursor" Value="SizeAll" />
       </Style>
       <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}">
@@ -136,7 +136,7 @@
                   </Grid.RowDefinitions>
                   <Grid Margin="12,0,0,0">
                     <Rectangle Width="2" Height="15" StrokeThickness="1" Stroke="{DynamicResource Col_Toolbar_PopupTile_Line}" HorizontalAlignment="Left" Margin="0,2,0,0" />
-                    <TextBlock FontSize="16" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap" Foreground="{DynamicResource Col_Toolbar_PopupTile_Foreground}" Margin="10,0,0,0" Text="{Lang:ResourceBinding Name.Name, Mode=OneWay}" />
+                    <TextBlock FontSize="16" FontWeight="Normal" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap" Foreground="{DynamicResource Col_Toolbar_PopupTile_Foreground}" Margin="10,0,0,0" Text="{vm_port_0_:ResourceBinding Name.Name, Mode=OneWay}" />
                   </Grid>
                   <ScrollViewer Grid.Row="1" Style="{StaticResource RecScrollViewer}">
                     <StackPanel>
@@ -170,7 +170,7 @@
       <ControlTemplate x:Key="unFoldGroupItemTemplate" TargetType="{x:Type GroupItem}">
         <Expander Style="{StaticResource ExpanderStyle1}">
           <HeaderedContentControl.Header>
-            <TextBlock FontSize="14" FontWeight="Normal" Foreground="{DynamicResource Col_Toolbar_Expand_Foreground}" Text="{Lang:ResourceBinding Name.Name}" />
+            <TextBlock FontSize="14" FontWeight="Normal" Foreground="{DynamicResource Col_Toolbar_Expand_Foreground}" Text="{vm_port_0_:ResourceBinding Name.Name}" />
           </HeaderedContentControl.Header>
           <StackPanel Orientation="Vertical">
             <ItemsPresenter Margin="9,-9,0,0" />
@@ -207,7 +207,7 @@
               </UIElement.Effect>
             </Border>
             <Image Name="bg" Grid.Row="0" Margin="0,5,0,0" Width="36" Height="36" Source="{Binding ImageEnablePath}" />
-            <TextBlock x:XmlAttributeProperties.XmlSpace="preserve" Name="tx" Height="35" Grid.Row="2" VerticalAlignment="Top" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource Col_Toolbar_PopupModular_Selected_ForeBackground}" TextTrimming="CharacterEllipsis" Text="{Lang:ResourceBinding Name}" />
+            <TextBlock x:XmlAttributeProperties.XmlSpace="preserve" Name="tx" Height="35" Grid.Row="2" VerticalAlignment="Top" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource Col_Toolbar_PopupModular_Selected_ForeBackground}" TextTrimming="CharacterEllipsis" Text="{vm_port_0_:ResourceBinding Name}" />
           </Grid>
         </base:ToolItemGrid>
         <DataTemplate.Triggers>

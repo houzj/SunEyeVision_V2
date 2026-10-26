@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
 using Apps.Interface;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using Apps.Log;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.XmlParser.ItemInterface;

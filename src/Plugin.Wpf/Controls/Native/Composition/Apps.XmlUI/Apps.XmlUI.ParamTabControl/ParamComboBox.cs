@@ -6,8 +6,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
 

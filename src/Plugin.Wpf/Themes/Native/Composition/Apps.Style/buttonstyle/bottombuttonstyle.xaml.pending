@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <ResourceDictionary.MergedDictionaries>
     <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
-    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+    <x:StaticExtension Member="vm_port_0_:LocalizationResourceDictionary.Instance" />
   </ResourceDictionary.MergedDictionaries>
   <Style x:Key="Orange_ButtonStyle" TargetType="{x:Type Button}">
     <Setter Property="Background" Value="{DynamicResource btnEditTemplateBorderBG}" />

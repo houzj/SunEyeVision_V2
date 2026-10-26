@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<controls:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" x:Name="messagebox" Title="" Height="156" Width="290" FontSize="15" FontWeight="Normal" BorderThickness="1" BorderBrush="#8f8b88" ShowInTaskbar="False" CloseButtonVisibility="Collapsed" Background="#f2f3f5" CornerRadius="0" HeaderBrush="#f2f3f5" Topmost="True">
+<controls:BaseWindow x:Class="SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" x:Name="messagebox" Title="" Height="156" Width="290" FontSize="15" FontWeight="Normal" BorderThickness="1" BorderBrush="#8f8b88" ShowInTaskbar="False" CloseButtonVisibility="Collapsed" Background="#f2f3f5" CornerRadius="0" HeaderBrush="#f2f3f5" Topmost="True" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/buttonsstyle.xaml" />
-        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0:LocalizationResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
       <Style x:Key="ScrollBarLineButton" TargetType="{x:Type RepeatButton}">
         <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />

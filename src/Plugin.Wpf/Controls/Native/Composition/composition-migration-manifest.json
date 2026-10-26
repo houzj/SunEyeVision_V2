@@ -1423,11 +1423,13 @@
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ROIStackControl.cs",
       "source_sha256": "a2042dee4151fe4551b50846b54995add1d4e4bff5d8fa8c269e64d2baa1008c",
-      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs.pending",
-      "target_sha256": "d8a1bfc4355e7d35e08c2139af15d4d0c459fbd917c50ccb19ee50bc5bd6d00d",
-      "kind": "pending_vendor_contract",
-      "unresolved_dependencies": [
-        "Mvvm.Commands"
+      "target": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs",
+      "target_sha256": "b061acf10ba6e5ee599dc6738030a66f9b0d5f76dec6e161758c422c54cdbfbb",
+      "kind": "source_port",
+      "unresolved_dependencies": [],
+      "adaptations": [
+        "Mvvm.Commands restored from authenticated installed artifact; not a vendor workflow model",
+        "IsShow DP bool registration aligned with its bool CLR wrapper; false default, original source retained"
       ]
     },
     {

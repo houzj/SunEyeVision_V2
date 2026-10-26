@@ -12,7 +12,7 @@ using Apps.PcUI.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
-using Mvvm.Commands;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using VM.AppData;
 using VM.PlatformSDKCS;
 using VMControls.Data;

@@ -4,7 +4,9 @@
     "资源固定使用项目内原colorstyle1/2/3及colorstyle.xaml，默认light colorstyle1是本方选择，不推断VM运行主题",
     "不再读取厂商CurrentPathHelper、外置ColorCFG；不将插件字典注入Application.Current",
     "窗口按GetInstance(framework)显式合并；原ColorResourceBinding取值语义保留，日志用Trace",
-    "先加载新主题完整字典后再切换，失败保留当前主题并输出真实错误；不部署VM DLL"
+    "先加载新主题完整字典后再切换，失败保留当前主题并输出真实错误；不部署VM DLL",
+    "SourceAdvancedColorPicker新增宿主基色同步入口，重开/选预设色时重置亮度基色；原scRGB亮度公式保留。原模板渐变冻结时先Clone，避免修改共享冻结画刷。VmColorPicker组合原70色色板、原默认/更多页签及原高级色图，ColorField直接更新外层窗口草稿，移除独立确定/取消按钮；未作本候选运行验收。",
+    "ColorResourceBinding正文复核后更新整合输出哈希；查询和ColorViewModel绑定保持原逻辑，日志使用Trace。先前静态哈希检查发现记录过期，未计通过。"
   ],
   "files": [
     {
@@ -17,7 +19,13 @@
       "target": "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorResourceBinding.cs",
       "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\Apps.ColorFun\\ColorResourceBinding.cs",
       "original_source_sha256": "6962a8de01b376780a2ac905ae20c99c063e583209cd7564dd85d111b8a4767f",
-      "adapted_sha256": "7f26fa841ab64755698608c4101b1b07562dc65aa05c00b998165d3616e9efcf"
+      "adapted_sha256": "2074ef18f9f7d91b8f365a51fc0f80712d3c9c6ff774354c1246ceb521e88e59"
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAdvancedColorPicker.xaml.cs",
+      "original_source_sha256": "cd54932cc65c00c8f6401083ff43b895554c52c2e06b996e588fa020bc95a3e4",
+      "adapted_sha256": "9f0eac1c8c5214a3e1d47dd3be94ecc8df816425d10c95160992bf470ed26b55"
     }
   ],
   "cross_module_impact": "限制在Native颜色与调用GetInstance的窗口；不修改宿主全局主题、工作流、算法或SDK契约。运行、设计时和三主题资源加载待构建通过后验证。"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.VisionMaster.ParamTab.ParamsTabControlPanal" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:appsLocal="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:appData="clr-namespace:Apps.Data;assembly=Apps.Data" xmlns:paramtab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.VisionMaster.ParamTab">
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.VisionMaster.ParamTab.ParamsTabControlPanal" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:appsLocal="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:appData="clr-namespace:Apps.Data;assembly=Apps.Data" xmlns:paramtab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.VisionMaster.ParamTab" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -223,7 +223,7 @@
     <local:TabControlFx x:Name="tab" Loaded="Tab_Loaded" VirtualizingPanel.VirtualizationMode="Recycling" BorderThickness="0,0,0,1" BorderBrush="#FFC8C4C1" SelectedIndex="0" ItemContainerStyle="{StaticResource TopTabItemStyle}" Style="{StaticResource TabControlStyle}" Grid.Row="0" ItemsSource="{Binding VisibleTabsA}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <Label Height="28" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#00FFFFFF" Content="{appsLocal:ResourceBinding NameA}" />
+          <Label Height="28" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#00FFFFFF" Content="{vm_port_0:ResourceBinding NameA}" />
         </DataTemplate>
       </ItemsControl.ItemTemplate>
       <TabControl.ContentTemplate>

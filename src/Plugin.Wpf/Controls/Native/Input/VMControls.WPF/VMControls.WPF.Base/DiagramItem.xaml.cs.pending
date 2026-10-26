@@ -518,7 +518,7 @@ public partial class DiagramItem : ListViewItem, IExtensionItem, IComponentConne
 
 	private void ItemBorder_MouseUp(object sender, MouseButtonEventArgs e)
 	{
-		DiagramPage parent = Apps.UIHelper.Extern.UIHelper.GetParent<DiagramPage>(sender as FrameworkElement);
+		DiagramPage parent = SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper.GetParent<DiagramPage>(sender as FrameworkElement);
 		if (parent != null && parent.IsMouseCaptured)
 		{
 			parent.ReleaseMouseCapture();

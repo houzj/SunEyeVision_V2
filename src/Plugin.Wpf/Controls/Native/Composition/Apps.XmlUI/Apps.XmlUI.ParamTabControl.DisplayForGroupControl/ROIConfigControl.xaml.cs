@@ -3,8 +3,6 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.DisplayForGroupControl;

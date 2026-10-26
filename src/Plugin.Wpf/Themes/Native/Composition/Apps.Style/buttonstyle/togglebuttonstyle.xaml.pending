@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:convert1="clr-namespace:VM.Utility.Convert;assembly=VM.Controls" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:core="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:convert1="clr-namespace:VM.Utility.Convert;assembly=VM.Controls" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMUtility.Convert" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:core="clr-namespace:Microsoft.Xaml.Behaviors.Core;assembly=Microsoft.Xaml.Behaviors" xmlns:vm_port_0__="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <ResourceDictionary.MergedDictionaries>
     <x:StaticExtension Member="vm_port_0_:ColorThemesResourceDictionary.Instance" />
-    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+    <x:StaticExtension Member="vm_port_0__:LocalizationResourceDictionary.Instance" />
   </ResourceDictionary.MergedDictionaries>
   <vm_port_0:CheckedConvert x:Key="CheckedConvert" />
   <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
@@ -2078,9 +2078,9 @@
           <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Background="#D6D5D4" BorderBrush="#A9A9A9" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2,0,0,2">
             <TextBlock Name="tx" FontSize="12" Foreground="#666666" VerticalAlignment="Center" HorizontalAlignment="Center">
               <TextBlock.Text>
-                <Lang:ResourceBinding RelativeSource="{RelativeSource TemplatedParent}">
+                <vm_port_0__:ResourceBinding RelativeSource="{RelativeSource TemplatedParent}">
                   <Ctor xmlns="https://github.com/icsharpcode/ILSpy">Content</Ctor>
-                </Lang:ResourceBinding>
+                </vm_port_0__:ResourceBinding>
               </TextBlock.Text>
             </TextBlock>
           </Border>

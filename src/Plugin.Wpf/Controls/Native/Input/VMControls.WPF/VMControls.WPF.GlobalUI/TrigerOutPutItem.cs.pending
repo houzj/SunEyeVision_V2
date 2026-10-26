@@ -6,7 +6,7 @@ using Apps.Data;
 using Apps.Log;
 using Apps.XmlParser.ParamTab;
 using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
-using Mvvm.Commands;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using VM.Core;
 using VMControls.Interface;
 

@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using Mvvm.Commands;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using VM.Core;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Base;

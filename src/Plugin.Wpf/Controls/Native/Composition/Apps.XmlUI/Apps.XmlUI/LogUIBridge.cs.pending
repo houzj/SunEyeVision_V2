@@ -1,5 +1,5 @@
 using System;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using Apps.Log;
 using VMControls.Interface;
 

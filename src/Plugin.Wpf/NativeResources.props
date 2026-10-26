@@ -21,5 +21,8 @@
     <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标旋转箭头.png">
       <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.鼠标旋转箭头.png</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Update="Controls/Native/Dependencies/Mvvm/Mvvm.Properties.Resources.resx">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Properties.Resources.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

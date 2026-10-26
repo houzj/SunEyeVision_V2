@@ -135,9 +135,9 @@
     },
     {
       "label": "ROI及颜色组合",
-      "type": "RoiSelectControl / ROIStack / ColorPickerControlView / ImageViewConfig_subContent",
-      "source": "src/Plugin.Wpf/Controls/Native/Composition/composition-migration-manifest.json",
-      "scope": "颜色已按原模板重组为就地样式面板、默认/更多色板及原像素色谱；复杂ROI工具图标仍为示意"
+      "type": "RoiSelectControl / ROIStack / VmColorPicker / ImageViewConfig_subContent",
+      "source": "src/Plugin.Wpf/Controls/VmColorPicker.cs",
+      "scope": "预览含就地样式面板及默认/更多色板；真实ColorField已接原色板、页签及高级算法，尚未运行验收。真实图形样式父层仍待从modal重组为就地四行面板；复杂ROI图标仍为示意"
     }
   ],
   "remaining": [
@@ -164,15 +164,15 @@
       },
       {
         "path": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs",
-        "sha256": "84dc67e1c9956a80ae014a17067acc5a51faa7f23379fc71dc550a4cec34a7c9"
+        "sha256": "9f0eac1c8c5214a3e1d47dd3be94ecc8df816425d10c95160992bf470ed26b55"
       },
       {
         "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.pending",
-        "sha256": "ecfc316ca32898b28728f11600ab363088946ccfa97d87a5cf6bc6e25189f1af"
+        "sha256": "5f6878bfb7ebc6339a59e88fa743ea6546b73bf7f15ea3d22d79ee2a91c4c556"
       },
       {
         "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
-        "sha256": "009d05f0dfd17f50bf7dc3ebff372249b4e3c8426485c5c65d1ffc0607be0683"
+        "sha256": "8499c1903f08edb1f91ef4609970d8fbcd0cf64a27c3f6f54db653efb3e59639"
       }
     ]
   },
@@ -191,7 +191,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml.cs",
-      "sha256": "38f5ce70411e0cdd7802adadb86d1f0f066ef8e5b1fec4de4ed9394eba74c62c"
+      "sha256": "a2537d232bb89ea75dceddf6c46445af93d14de107591466d007c551cf52751b"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrange.xaml",
@@ -199,15 +199,15 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrange.xaml.cs",
-      "sha256": "96657a227b50bd085e5343648a031ae67d034b21a63b39f2f64df916a4fdd0bc"
+      "sha256": "6d5e7b4665ab4e804e50f7df1c97aaecde40fc789fd30af663d53f5c9169fb58"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeBase.cs",
-      "sha256": "9cfdf444863e45f25c9ec9a51e0b750b28fc7eacaf80b9ac1b567e937ea783c7"
+      "sha256": "bb0d32c663b4d10d7ddfb711fe05dd764ffd77a8cbe72cf8e89b9fd4d0f1d3de"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/RangeRule.cs",
-      "sha256": "bc06d7bd096d29cc70c09052103c315e29c80ad4f4bb12ea3906f0c83169b7a6"
+      "sha256": "b26670d07c91f2dd468ad6d33e26bba5bd9820eb7fd4dfbef649274e85139317"
     }
   ],
   "quantity_slider_range": {

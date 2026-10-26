@@ -15,15 +15,13 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Apps.Data;
 using Apps.ErrorCode;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using Apps.Log;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.XmlParser.ParamTab;
 using DirectoryBrowser;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.Core;
@@ -737,7 +735,7 @@ public class ImageListPanelBase : UserControl, INotifyPropertyChanged
 			string filter = (openFileDialog.Filter = AppLocalizationService.GetLang("图像文件") + text);
 			openFileDialog.Filter = filter;
 			string path = ConfigurationHelper.INIGetDefaultOpenPath(GetVMModule()?.ModuleDir);
-			Apps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, path);
+			SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, path);
 			if (openFileDialog.ShowDialog() == false)
 			{
 				return;
@@ -760,7 +758,7 @@ public class ImageListPanelBase : UserControl, INotifyPropertyChanged
 		openFileDialog.Multiselect = true;
 		openFileDialog.Filter = AppLocalizationService.GetLang("图像文件") + "|*.bmp;*.jpeg;*.jpg;*.png;*.tif;*.tiff";
 		string path = ConfigurationHelper.INIGetDefaultOpenPath(GetVMModule()?.ModuleDir);
-		Apps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, path);
+		SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper.CheckInitDirectory(openFileDialog, path);
 		if (openFileDialog.ShowDialog() != false)
 		{
 			DoAddImages(openFileDialog.FileNames);
@@ -1445,7 +1443,7 @@ public class ImageListPanelBase : UserControl, INotifyPropertyChanged
 			}
 			if (scrollViewer == null)
 			{
-				ScrollViewer child = Apps.UIHelper.Extern.UIHelper.GetChild<ScrollViewer>(this);
+				ScrollViewer child = SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper.GetChild<ScrollViewer>(this);
 				if (child != null)
 				{
 					scrollViewer = child;

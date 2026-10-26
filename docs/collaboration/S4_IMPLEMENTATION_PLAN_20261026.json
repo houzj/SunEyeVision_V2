@@ -1,14 +1,19 @@
 {
   "stage": "S4",
-  "status": "UI_REVIEW_REQUIRED",
+  "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "主仓已合入数值、输入和显示三路原源码，基线244f69a0；公共样式、组合层和依赖归一仍为未提交候选。真实视觉依赖按5个安装原件SHA迁入114个源码文件/类型映射（含接口、事件、转换器，并非113种控件）。007通过XAML阶段，015全量Release仍有121错误/233警告，主要为厂商依赖及源码/XAML配对，尚未进入本候选运行验收。原预览已补数值双向同步、Enter确认失焦、数量滑条、图形四行配置/二层默认更多色板及内侧焦点提示；仅静态和DOM替身检查通过。历史可运行检查点b87fb685的成绩不代表当前候选。 本轮另修复基础三工程Release输出路径、补齐Tool.Kernels解决方案项；主题颜色改为窗口级加载原资源，移除厂商路径与全局注入。",
-  "summaryStatus": "三路源码已合并；全量Release构建修复中，当前候选未可试用，整体UI未验收",
+  "current": "本地检查点602cf8a1后继续实施：接入实际Mvvm命令源码与原资源，恢复ROIStackControl并修正IsShow布尔DP类型。新增窗口级本地化适配、原中英文词条及两个原标记扩展；引用归一已去重，连续再生无源码变化。真实ColorField已从旧手绘取色器接到VmColorPicker，组合原70色色板、原默认/更多模板及原高级取色算法，直接编辑外层窗口草稿；已加重开基色同步及冻结渐变Clone。019全量Release仍有95错误/445警告23.80秒，尚未运行/视觉/人工验收；图形样式父层仍为modal，需继续改就地四行弹层，不能按HTML已实现认定产品完成。用户明确要求构建通过前只保留本地提交，不推送主仓。",
+  "summaryStatus": "原命令与本地化依赖已接，ColorField开始消费原色板；全量构建仍95错误，未可试用",
   "rows": [
     [
       "整套库范围",
       "已定位VM.Controls、VMBaseControls、VMControls.WPF及Release双版、VM.PcUI、Apps.Style、Apps.XmlUI共7目录；不限Blob可见控件或原31行。",
       "去重控件数量待inventory JSON，不以cs文件数或5style/17PNG冒充整库控件数；全库移植尚未完成。"
+    ],
+    [
+      "本轮真实颜色组合",
+      "ColorField → VmColorPicker → SourceColorPalette / SourceAdvancedColorPicker及SourceColorPickerStyles；选色修改窗口草稿，外层确定/取消承担保存；旧ColorPicker类尚未删除。",
+      "本候选尚未编译运行通过；图形样式父层modal仍待重组；仅资源/源码身份及模板静态检查通过。"
     ],
     [
       "原资源实际导入",
@@ -30,7 +35,7 @@
     {
       "item": "整套VM控件库移植",
       "scope": "按7目录与双版本inventory去重逐项移植全部控件/模板/样式/图标及资源依赖，原31类不再作为总范围上限",
-      "state": "当前仅5原style/17PNG首批落地，正式控件数待inventory，不能按cs数计数"
+      "state": "三路源码和公共组合已导入并统一依赖；源码、模板和图标有来源记录，真实消费链及完整构建未闭合，不以源码数代替控件数或验收。"
     },
     {
       "item": "Blob原样组装与typed调试",
@@ -137,9 +142,15 @@
   "checks": [
     {
       "name": "当前源码候选全量Release（未通过）",
-      "result": "015：121错误/233警告14.01秒；真实原件依赖、已映射using的追加分组与窗口级主题适配已接，基础三工程正式Release路径已在日志确认；缺厂商模型/本地化和XAML配对仍未闭合，未作当前候选运行验收。",
-      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-015.log",
-      "sha256": "33c76eb0ff58506767a1cd08244766fe9526c04f46caa088e9136afb57b779c9"
+      "result": "019：95错误/445警告23.80秒；命令/本地化/ROI基类及ColorField原色板组合已修改，未作本候选运行或视觉验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-019.log",
+      "sha256": "28b2aef55152d8784f71f2ff3d10116bf1e119cad1811512cb901ec4d4131605"
+    },
+    {
+      "name": "本轮颜色资源及消费模板静态检查",
+      "result": "受保护源码/适配哈希、两套原语言数据哈希和ColorField消费VmColorPicker且无独立确认按钮/焦点加粗的静态检查通过；不是WPF运行证明。",
+      "path": "Release/_validation/O06-RoiCore-20261026/native-color-source-check-001.json",
+      "sha256": "6f3a7939deab9e8df3d98b54276b838be3f76944364e6b17890048846c6d7072"
     },
     {
       "name": "历史检查点：当前原资源全量Release",
@@ -182,9 +193,9 @@
       "result": "四继承backend12/面板9等原成绩保各候选；当前5style/17PNG不等于全库完成，typed调试新run、布局/弹窗、旧消费者、VS和人工仍未闭合。"
     }
   ],
-  "sourceBaseline": "244f69a0 + 当前未提交归一与依赖适配；不能复用历史PASS",
+  "sourceBaseline": "602cf8a1 + 本轮命令/本地化、ROI基类及ColorField组合增量；只保留本地，构建通过前不推送",
   "productIdentity": "当前为HEAD a6f58334+未提交ROI与原资源增量；本轮native资源002全量0/881/30.25秒，RoiEditing018/Window007/FullChain030实跑通过。006独评7组只对应006旧候选，F28算法资源成绩仅保历史；不是最终已提交交付版本。",
-  "next": "先闭合跨组类型、真实依赖及成对XAML编译；接通Blob实际字段/ROI/显示组合和typed调试同run；全量Release成功后，在正式发布目录执行控件、完整链及关联回归，再集中收集用户实测，按31项完成消费者退出。",
+  "next": "处理剩余厂商参数/多边形模型及源码-XAML配对，完成图形四行就地弹层、typed调试同run与31项消费者退出；全量构建通过后才推送，并在正式Release目录运行当前候选、关联回归及集中人工验收。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",

@@ -12,6 +12,8 @@ SPECS = [NATIVE / 'Numeric/numeric-migration-manifest.json', NATIVE / 'Input/mig
          NATIVE / 'Display/display-migration-manifest.json', NATIVE / 'Composition/composition-migration-manifest.json']
 if (NATIVE / 'Dependencies/dependencies-migration-manifest.json').exists():
     SPECS.append(NATIVE / 'Dependencies/dependencies-migration-manifest.json')
+if (NATIVE / 'Common/localization-host-manifest.json').exists():
+    SPECS.append(NATIVE / 'Common/localization-host-manifest.json')
 types = {}
 namespaces = defaultdict(set)
 reverse = defaultdict(set)
@@ -86,6 +88,17 @@ for folder in roots:
                 missing = [peer for peer in sorted(peers) if not re.search(r'^using\s+' + re.escape(peer) + r'\s*;', text, re.M)]
                 if missing:
                     text = ''.join('using ' + peer + ';\n' for peer in missing) + text
+            # 两个已拆分的using再次展开时会得到同一组namespace；只保留文件头的一份。
+            # 不跨namespace作用域去重，也不改alias/static using。
+            namespace_start = re.search(r'\bnamespace\s+[\w.]+', text)
+            header_end = namespace_start.start() if namespace_start else len(text)
+            seen_imports = set()
+            def unique_import(match):
+                name = match[1]
+                if name in seen_imports:return ''
+                seen_imports.add(name)
+                return match[0]
+            text = re.sub(r'^using\s+([\w.]+);[^\S\n]*\n', unique_import, text[:header_end], flags=re.M) + text[header_end:]
             directives=re.findall(r'^#(?:define|undef)\s+\w+[^\S\n]*\n?',text,re.M)
             if directives and not re.search(r'^\s*#(?:if|elif|else)\b',text[:text.rfind(directives[-1])+len(directives[-1])],re.M):
                 text=''.join(line.rstrip()+'\n' for line in directives)+re.sub(r'^#(?:define|undef)\s+\w+[^\S\n]*\n?','',text,flags=re.M)

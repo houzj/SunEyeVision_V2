@@ -15,616 +15,45 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/composition-migration-manifest.json",
-      "sha256": "a80065b40a8f8ed47ec8cf84410191304cbf560e0edf1e9c891ec15cd3f3441e"
+      "sha256": "fd448d4751b8903c6316fbcf6003501964975fd641281f26c868ebb1aa0dd832"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Dependencies/dependencies-migration-manifest.json",
-      "sha256": "36a7cf89f5b906db97c513bdd3c167d795c8690e63ed43e701503ff5ee8ef614"
+      "sha256": "0967c22c1d4dc7cdc70d9f7d7d9ecd430baea0a6e59c3df8778e781c2ae3df52"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Common/localization-host-manifest.json",
+      "sha256": "c4425a598689d3d3ac773db2df1ad3f2468fb9d3a778dc4deb6a4060fa987640"
     }
   ],
-  "types": 1109,
-  "namespace_groups": 66,
+  "types": 1126,
+  "namespace_groups": 70,
   "changed_files": [
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/UILogManager.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ExportAlgorithmWindow.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ModuleInputSelectData.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectData.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SysParamSet.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TimeOutSet.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/AdvancedColorPickerDialog.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ButtonControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ClockSourceControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerSecondItem.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DataGridControl.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DataGridExtension.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DialogEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DialogResult.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IImageSizeControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IndexConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IPTextBox.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ItemsControlExtension.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ParamComboBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ParamGroup.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PasswordTextBox.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/UserTempConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs",
     "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/DelegateCommand.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceColorPalette.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/AppsColorFun/Apps.ColorFun/ColorResourceBinding.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AdditionTemplateSelector.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AdditionWTemplateSelector.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AttachBinding.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/Bool2CollapesdConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/Brush2ColorConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/Cor2PhysicalVisibleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/Cor2PixelVisibleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/DependencyPropertyExtensions.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/Hex2ColorConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/IndexConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/MatrixHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/NegateConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/NegateDoubleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/NegateThicknessConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ShapeAndRoiMarginCvt.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/Thickness2DoubleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base/BitmapCursor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base/PointCvt.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ContainerItem.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/DisplayForInterfaceTypeAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/DynamicItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ImageViewItemsPage.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROIDisplayForInterfaceTypeAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROIItem.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROIItemsPage.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROIMoveDirection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROITempConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/RubberControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeDisplayForInterfaceTypeAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItem.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeTempConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/SubROIItemsPage.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/Area.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeft.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftRect.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftTop.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaLeftTopRect.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaRightTop.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaRightTopRect.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaTop.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/AreaTopRect.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/Arrow.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/Bool2CollapesdConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/BottomLeftRotateArea.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/BottomRightRotateArea.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleCaliperROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleMesROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CoordinateROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CrossROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/DrawingCanvas.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EllipseROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EllipseROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/GetRectConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineCaliperROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/LineROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MartrixCircleBackControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MatrixCircleROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveArea.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveAreaPage.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedCircleCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedCircleMesROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedCircleROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedLineCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedLineRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedLineROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedMatrixCircleROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedOverSectorROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPointROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPolygonCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPolygonMaskROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPolygonROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedSectorCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedSectorROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedSeqRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedUroRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/OverSectorROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PointFillConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PointROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonMaskROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROIAttach.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolylineROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolylineROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RightRotateArea.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlFrame.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROISubstitute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RotateArea.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RoundedRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorCaliperROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorCaliperROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROISubstitute.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SeqRectROI.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/TopLeftRotateArea.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/TopRightRotateArea.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/AnnularSectorShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/ArrowPathShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CircleShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CoordinateShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/DrawShapeHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/LineAndAngle.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/LineAngleShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/LineShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/MultiPointShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/PointShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/PolygonShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/PolylineShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/RectShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/ShapeCanvas.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/ShapeContainer.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/ShapeControlBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/TagDrawingVisual.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/TextShape.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/HikVision.Styles/HikColors.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AllowedSpecialValues.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AutoCompletingMaskEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AutoSelectBehavior.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/AutoSelectTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ButtonSpinner.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlButton.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlDialog.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/CollectionControlDialogBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorCanvas.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorMode.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorPicker.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorPickerTabItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorSorter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorSortingMode.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ColorSpectrumSlider.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateElement.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeFormat.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeInfo.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeParser.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimePart.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimePicker.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DateTimeUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DialogResult.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DoubleUtil.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/EditableTextBlock.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ExpandDirection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ExpanderButton.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikContextMenu.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMenuItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikScrollBar.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikScrollViewer.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikTabControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/IconMenuItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/InsertKeyMode.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ItemAddingEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ItemDeletingEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ItemEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Location.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MaskedTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MaskFormat.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MessageButtons.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MessageIcons.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MultiLineTextEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/OverlapBehavior.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/PasswordBoxWaterMark.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/PrimitiveTypeCollectionControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/QueryMoveFocusEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/QueryMoveFocusEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SelectAbleTextBlock.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SpinDirection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SpinEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/Spinner.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimeItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimelinePanel.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimePicker.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TimeSpanUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert2.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/UlementEx.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/ValidSpinDirections.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WatermarkTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WindowHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/WNDPROC.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.AttachedProperties/GroupBehavior.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.AttachedProperties/MenuItemBehavior.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Chromes/ButtonChrome.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Converters/NewItemTypesComboBoxConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/CancelRoutedEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/CancelRoutedEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/EditableKeyValuePair.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/ErrorMessages.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/IAspectRatio.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/IndexChangedEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/IndexChangedEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/InvalidContentException.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/InvalidTemplateException.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/Location.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/PropertyChangedEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/PropertyChangedEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/QueryTextFromValueEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/QueryValueFromTextEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/UIElementAdorner.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core/WeakCollectionChangedWrapper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/AdditionConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/BorderThicknessToStrokeThicknessConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/CalculatorMemoryToVisibilityConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/CenterTitleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ColorBlendConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ColorModeToTabItemSelectedConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ColorToSolidColorBrushConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/CornerRadiusToDoubleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/HalfConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/IntToThicknessConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/InverseBoolConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/NullToBoolConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ObjectTypeToNameConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/RoundedValueConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/SolidColorBrushToColorConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ThicknessSideRemovalConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/ThicknessToDoubleConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Converters/VisibilityToBoolConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/InputValidationErrorEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/InputValidationErrorEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/IValidateInput.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/KeyModifier.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/KeyModifierCollection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Input/KeyModifierCollectionConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media/WindowColors.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/AnimationRate.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/AnimationRateConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/IterativeAnimationEquationDelegate.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/IterativeEquation.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/IterativeEquationConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/PennerEquation.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Media.Animation/PennerEquations.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ChangeTypeHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ColorUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ContextMenuUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/DateTimeUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/DoubleHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/EllipseHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/FontUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/GeneralUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/KeyboardUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ListUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/PointHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/PropertyChangedExt.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/RectHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ReflectionHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ResourceHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/RoutedEventHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/Segment.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/TreeHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/ValueChangeHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/VisualTreeHelperEx.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/WeakEventListener.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Core.Utilities/WindowUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/CachedTextInfo.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/DateTimePickerBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/DateTimeUpDownBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/HsvColor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/InputBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ItemSelectionChangedEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ItemSelectionChangedEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/MouseWheelActiveTrigger.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/Selector.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/SelectorItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ShapeBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/UpDownBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Primitives/ValueRangeTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Properties/Resources.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Properties/Settings.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/CategoryGroupStyleSelector.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/CommonPropertyExceptionValidationRule.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ContainerHelperBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/CustomPropertyItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DefinitionCollectionBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DescriptorPropertyDefinition.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DescriptorPropertyDefinitionBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/EditorDefinition.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/EditorDefinitionCollection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/FilterInfo.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/IPropertyContainer.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/IsPropertyBrowsableArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/IsPropertyBrowsableHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ObjectContainerHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ObjectContainerHelperBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyDefinition.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyDefinitionBaseCollection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyDefinitionCollection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyGrid.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyGridUtilities.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItem.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemCollection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyItemsControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyValueChangedEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyValueChangedEventHandler.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/StringConstants.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/TargetPropertyType.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/TrimmedTextBlock.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/CategoryOrderAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/ExpandableObjectAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/IItemsSource.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/Item.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/ItemCollection.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/ItemsSourceAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/NewItemTypesAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/PropertyOrderAttribute.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Attributes/UsageContextEnum.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Commands/PropertyGridCommands.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Commands/PropertyItemCommands.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/EditorTimeSpanConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/ExpandableObjectMarginConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/IsDefaultCategoryConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/IsStringEmptyConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/ListConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/ObjectToUIElementConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Converters/SelectedObjectConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/DefinitionBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/EditorDefinitionBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/EditorTemplateDefinition.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Definitions/PropertyDefinitionBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/CheckBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/CollectionEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ColorEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ComboBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/DateTimeUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/EnumComboBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/FontComboBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ItemsSourceAttributeEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/ITypeEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/MaskedTextBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PrimitiveTypeCollectionEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorCheckBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorCollectionControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorColorPicker.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorComboBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorDateTimeUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorPrimitiveTypeCollectionControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorTextBlock.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/PropertyGridEditorTimeSpanUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/SourceComboBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/SourceComboBoxEditorConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TextBlockEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TextBoxEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TimeSpanUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid.Editors/TypeEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Themes/ResourceKeys.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Utility/HelpDocumentUtil.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/ListBoxBehavior.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MathHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/MeasureText.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/TreeViewScrollToBottomBehavior.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/UIHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/CheckedConvert.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LongTextConvert.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/OrMultiValueConvertor.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/ToolTipShowConvert.cs",
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VisionUi/SourceControlResources.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/ImageViewController.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/AngleBorder.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/Arrow.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ArrowBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ArrowEnds.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ArrowLine.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ArrowLineH.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ArrowTreeViewControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/BindingHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ChromaticDiagram.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ClientOriginScaleButton.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ComboxVisbileConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/CrossLine.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/DecimationConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/DependencyPropertyExtensions.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/HikCheckBox.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/HikHistogram.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/HikHistogramSingle.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/HikTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ImageButton.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/LightnessBar.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/LineAndAngle.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/MultiLangItem.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/NotificationBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/PathsItemControl.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/PopupButton.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ResultOverviewPopupButton.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/TreeHelper.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ZoomInButton.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/ZoomOutButton.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/Byte2ImageSource.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikImageView.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikPath.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/BooleanControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/DialogEventArgs.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/DialogResult.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/IPTextBox.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/PopupWithTopmost.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/UserTempConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Utility/ToolTipShowConvert.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ComprehensiveConfigControlBase.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs.pending",
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleSetShapesConfig.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsTabControlBase.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RenderControlBase.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RenderThreadPool.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/SearchModuleView.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/TabWinBase.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ToolControl.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramItem.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ModifyName.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base.ExternAdorner/ConnectorForMouseOver.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base.ExternAdorner/DrawDottedLineForMouseDrag.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base.ExternAdorner/VirtualForGragDrop.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.CameraAcq/RealTimeAcqControl.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/DecoratorBase.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/DisplayImageListDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmGroupDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleSetDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmProcedureDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmSolutionDecorator.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddDeviceType.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/ComprehensiveConfigManager.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/ComTriggerItem.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/Device_IO.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GloablTriggleConfigUI.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerStrItem.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableItem.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDevice.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDlg.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceManager.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/OutputconfigManger.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/OutputConfigWindow.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/TriggerProcedurePanel.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/VarGroupItem.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI.GlobalTrigger/GlobalTriggerConfigContent.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.TimeDialog/ShowTimeDialog.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release/VmMainViewConfigControl.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release/VmProcedureConfigControl.xaml.cs.pending",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumbericTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/PopupWithTopmost.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/RangeRule.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrange.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeDictionary.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeFloat.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeType.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SymbolType.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumbericTextBox.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeType.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SymbolType.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUiControls/BtnHeightConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUiControls/BtnShowConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUiControls/BtnShowGridConverter.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUiControls/NumericUpDown.xaml.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/PcUiControls/SliderArrangeType.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/ByteUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/DecimalUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/DoubleUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/IntegerUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/LongUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorByteUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorDecimalUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorDoubleUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorIntegerUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorLongUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorSByteUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorShortUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorSingleUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorUIntegerUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorULongUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorUShortUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/SByteUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/ShortUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/SingleUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/UIntegerUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/ULongUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/UpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/UShortUpDownEditor.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/ByteUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/CommonNumericUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/DecimalUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/DoubleUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/IntegerUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/LongUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/NumericUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/SByteUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/ShortUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/SingleUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/UIntegerUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/ULongUpDown.cs",
-    "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/UShortUpDown.cs"
+    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramItem.xaml.cs.pending"
   ],
   "integrated_files": [
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "sha256": "2813f0172c485f3b1edf5cb85f953f5eab07b11daff90f8d916123c803d59928",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/LangResource.cs",
+      "sha256": "40b4332a78f8d802c214ac62b661f247cb364667731cc7986e4315356ed3717b",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "sha256": "ec26255bb5112a91defd4b334ef239ddaf7e466bce847fea558bf6a3ee235dd8",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "sha256": "cd3944f83b4027ae03f98f49c5b7aab6985d81f6335f3bf97ba8d97583680688",
+      "pending": false
+    },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Common/SourceBooleanToggle.xaml",
       "sha256": "684a5736c2513db4076b0a441ec47b18541ffd28f7121b0d65eeb47b70ffea82",
@@ -662,7 +91,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ContainerFidScroller.xaml.cs.pending",
-      "sha256": "e6b3af4f16476330a84801f8f6d670935575de6380fe5dc2678965af22a59eb3",
+      "sha256": "918eee4a2005870cab994e386d4df1956c6c6484b09e51ae789c5bdd761af987",
       "pending": true
     },
     {
@@ -707,7 +136,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LeftWidthConverter.cs.pending",
-      "sha256": "f70c2996747f67197cfe259b99b806cd67caa04ae722caf9b9b826ce0389213d",
+      "sha256": "2386382b47de826c39719d7ed0c37404c5bf1106e50c7b88869f73804d82a49e",
       "pending": true
     },
     {
@@ -732,7 +161,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LogUIBridge.cs.pending",
-      "sha256": "7d0791c447cf6f38477bd2e887b2cd69ab82da6a299fa2fa2a8bde3d498379df",
+      "sha256": "cbbe80d1824b2d1e61e7c5494c0794ae9a78757b7477179da08d2ff2348e6c53",
       "pending": true
     },
     {
@@ -757,17 +186,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.cs.pending",
-      "sha256": "d13b9fb4edbd0170deddb2c60eacf562db60be8e0983df865e921f3d473a0249",
+      "sha256": "be93e4724783e76f4c2f0d029b737670dccb3fe0570e22a7bb6eebc382501a1a",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.cs.pending",
-      "sha256": "2d4c436871e7b2267f9e6c7e6c4ca361f0bba93952af625ee1383f6bd8466fe9",
+      "sha256": "6a2eafa272fcedd3e73f51db7fae31010a307e99099edcce25f2ac8fe364f424",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs.pending",
-      "sha256": "e3cf08124995ce71c5a81ffead8e557b1b81f980f61a7e25cda69095f483ecb9",
+      "sha256": "bc7f934370c90d79a4a4500073917e9c9046c4901df5e6535af4ed4e36fee510",
       "pending": true
     },
     {
@@ -827,7 +256,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/UILogManager.xaml.cs.pending",
-      "sha256": "0bbbe6280baa2ab5553437c33bca722dddbeb5a6414aef5e6ed835481b6ae03d",
+      "sha256": "f7044486cef9a0b2c4919f2661634d10765ec3bdeada8e7cc170cf2a2cfc4fef",
       "pending": true
     },
     {
@@ -847,12 +276,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/AddListControlBase.cs.pending",
-      "sha256": "9577cc6d9fb958e372a734f7e54433485fd80a730e9c5baae9652274d08ce08c",
+      "sha256": "5c9f8c3a1a8ea16225b9155875587aa892285595a477148f00f42664f1f5371c",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ArrayDisplayWindow.xaml.cs",
-      "sha256": "6051d2a9d883a2f63af614e206e27d7eb59630b45180fc68e36ca6e9b16808e1",
+      "sha256": "d0c07df97dee94af163d9f043cf58268e238925e47d2e4706d1b8dce03c449e5",
       "pending": false
     },
     {
@@ -887,7 +316,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ExportAlgorithmWindow.xaml.cs.pending",
-      "sha256": "3596224c98f26b06eaf76ac6d6d546dca4a70ede83815e328c37766bb01567d3",
+      "sha256": "b46f23d4709af6138e7d8551de4cede858b6a8125d96d4550f8bfdb42c09412a",
       "pending": true
     },
     {
@@ -897,7 +326,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.cs.pending",
-      "sha256": "8a4b86b32bca62bd80ae311039e96fc9921f9132a0ce2b3b0907c2c61adc1254",
+      "sha256": "1ac9ec6ce9d37cfa0a844fbf6e22d5bf07126f097ddb7e7e6f1b5354776e2823",
       "pending": true
     },
     {
@@ -917,7 +346,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ModuleInputSelectData.cs.pending",
-      "sha256": "62fec35d442395ca6f55764e28b83478099c3fa691c4fc4d5c816b4008a09f2c",
+      "sha256": "848218f1fdba80606d98ee8c76dfa43b829265733936f8a508e2485dda90f72b",
       "pending": true
     },
     {
@@ -932,12 +361,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/PageCountInfo.cs.pending",
-      "sha256": "ffdfe11c636f65e4dbcc0301d054e0149a0d01d8a59a6c05f99415259b250c79",
+      "sha256": "f9e185c79655b4f3597a1e254c4b2aae4b4f81e9468a3dfdb7e1a9f494c7ffed",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/PageNumControl.xaml.cs.pending",
-      "sha256": "b5bb79b2e50cfb85599c3dfdb6aeebd7bb569cc4b04c2f89a47c070d595bc5bf",
+      "sha256": "7ba0a4d8b3f1ba1df6f4c37c3bdb4d32c99007c6747967be6099e7201b3bd26e",
       "pending": true
     },
     {
@@ -952,12 +381,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectData.cs.pending",
-      "sha256": "c95e958140edd262c6547320cf68dbf5246a0d00ea11933f18b236be90ade300",
+      "sha256": "22afb63fec172c6ea42bc9f46b7a67c267a7bd1ec0d6ce0280ac43960384f348",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.cs",
-      "sha256": "a146ec417efd22f32f3e98f99230fd2d6a48add2b3e15046b480c0f40d81a847",
+      "sha256": "483cb2953def24b51280fb7c5e14039c5bd7a8eeeb852c33fa031ee1703d774e",
       "pending": false
     },
     {
@@ -977,12 +406,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SysParamSet.xaml.cs.pending",
-      "sha256": "d58554a02cb7f1e1f9f27e6e299101a1235ec55f72337680d84bf3dce6c29a9f",
+      "sha256": "adc134aa99968e5aa7eefbd7396b70f8c0603a04ff2bf9e57524596513ca7815",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TimeOutSet.xaml.cs.pending",
-      "sha256": "7cfa11973d298f3db9271351491d88115e61111556ab728e5415667557ed5d60",
+      "sha256": "e1d805a176334ed1badce78752e31e0b3e652e27f6fc14e8388bc4cf885577cf",
       "pending": true
     },
     {
@@ -1022,7 +451,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ButtonControl.cs",
-      "sha256": "4197c0df01cbaf3156cde68490f1c7a98b7d0d82b6b7f31e90e4cfe2d47e5ffe",
+      "sha256": "c274aabec40c5ba5dee3aec72de8007f7278467f8878add6768a88ef2fc502e9",
       "pending": false
     },
     {
@@ -1062,7 +491,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/DataGridControl.cs.pending",
-      "sha256": "71436e7d3ce143274fe51f835532cdd82621698187d7848dbbfa39e0d47f64f2",
+      "sha256": "2184596e764a21b81709a71782f02fde57933985ae2ab1a5d31d4dcf892d83a1",
       "pending": true
     },
     {
@@ -1097,7 +526,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ItemsControlExtension.cs",
-      "sha256": "d3f09c5df4f6885c7c15483d8f38ae0ecdc24d3ae546a2a2b8e9b025669d7dba",
+      "sha256": "da3af8377dc9c19f0769467e75582df40fc9d020512b5a2459b7ca40fd8aa8aa",
       "pending": false
     },
     {
@@ -1117,12 +546,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ParamComboBox.cs",
-      "sha256": "3abb5c51a1fa2979f38e27d258c588b5c55d7b54411723e466a27de2b368ed94",
+      "sha256": "a4c3a77d9e7e2aaccfc8f755942670d5b34e37d630bd8981a1670140e6e79fdc",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ParamGroup.cs.pending",
-      "sha256": "66b9e4a622cbdc863d9c5ae8b2101a0fb11a192c58ebcfcaaf05628c3f9c248d",
+      "sha256": "c5b058391af4362cdc61ec2094af7728878fb794629703102b051112fc1ed9de",
       "pending": true
     },
     {
@@ -1142,7 +571,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.cs",
-      "sha256": "c714788a5e476c186bc9c18f40b0993ed3c5a8b1e67d56659b6971caea51d232",
+      "sha256": "199434cd6a25b892155f653475050b56594a8df88eae67cd4b075fc3a7fcf164",
       "pending": false
     },
     {
@@ -1156,9 +585,9 @@
       "pending": false
     },
     {
-      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs.pending",
-      "sha256": "41a709a55d445db97230121f8321fabe247477092438bca62fdcce163317152e",
-      "pending": true
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs",
+      "sha256": "26e5d6afc35a954083ae46accf3b6e0bc5afcd5e1cf2d8ac592faefa799cfac6",
+      "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.cs",
@@ -1192,7 +621,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.cs",
-      "sha256": "f79072920dc9f17b21905940328c290ed8225e946e41e8bc97e4006ed84d4801",
+      "sha256": "220359befb4da5d090de398957c50959a24f609081434b55a99fe95eaa374d04",
       "pending": false
     },
     {
@@ -1207,7 +636,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.ParamTabUI.SubUI.ExportAlgorithm/ExportAlgorithmUtil.cs.pending",
-      "sha256": "0695a7dcb6bcb2096c7c54429ab1c06299efd24167315e3ae57c16f69371bd02",
+      "sha256": "9c4331baee213f85017783a9717d0a38ec85d2cd1c7d800f1889e4c00dfde2c5",
       "pending": true
     },
     {
@@ -1217,7 +646,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml.cs",
-      "sha256": "95fb6dc045a030babf987c0c0f547678324c9b6d8bba0b9ff45f4d9ccc1eefee",
+      "sha256": "0c4654b5cf9efe5356922fedee53a6cac06b7d735cf3ae5542057525bdd01f71",
       "pending": false
     },
     {
@@ -1286,8 +715,73 @@
       "pending": false
     },
     {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "sha256": "f9b1b3ced27f78a164ce01b6775ab77c08924d04089a5cc8efa946589c200212",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/BindableBase.cs",
+      "sha256": "26c583999803b8eceb01112c3842cb5ed1b4a859c37060974b5ba3763f776a3b",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/ErrorsContainer.cs",
+      "sha256": "e50fdcda183169e83bba66dbb92259a7c3225c9a97e3b52821339fa190356a70",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/IActiveAware.cs",
+      "sha256": "57d3b04d1684ddaed07bca912cbf4eea565a22c5cb929f9fe405c05bd2cbdea6",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/IView.cs",
+      "sha256": "caf1239c94331c9661b3c5e31a9cee8a161bb4f2195ed93e7cf39d94690dbd14",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/PropertySupport.cs",
+      "sha256": "c609236252ce5186625e29caca96bced7fce3796bdc1b0aebeec1002a241d9b2",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/ViewModelLocationProvider.cs",
+      "sha256": "da9b9b9fe3f853c37db5ddbe9761ccea410de8622977902fe4d9561ab02ac686",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/ViewModelLocator.cs",
+      "sha256": "53edda11b8d1c7b08e22377099445372132fc1ed6a0d2fae8e56a46f27fecb68",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/CompositeCommand.cs",
+      "sha256": "7018b881b5253c234e6c8101d8522c71454d0aa0426efff25ca6393ef62573c5",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/DelegateCommand.cs",
+      "sha256": "112c85bf0e6845d088b6fa8c189aee25870e9edf718c37b0e4501f06f6686cca",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/DelegateCommandBase.cs",
+      "sha256": "60e5028a853c6f672e79dc216b527f867d696831c035f327773afbd391140da5",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/WeakEventHandlerManager.cs",
+      "sha256": "62778a332db90c5749ee1c7b24117a2900053d9bd8b4227f46ddbb16c8cda707",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Properties/Resources.cs",
+      "sha256": "ab3d3b6d95a118d54d8e2420d2585194477be67a5de76d179d1529971f6003b6",
+      "pending": false
+    },
+    {
       "path": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/DelegateCommand.cs",
-      "sha256": "98d99639c4a5436a74a0f8398b66bff05d1d7e8e28b2f60d25255942c2570880",
+      "sha256": "491c5819285676fa87bcdeca505454496a9b7c71743536526889e32e240acc80",
       "pending": false
     },
     {
@@ -1812,7 +1306,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs",
-      "sha256": "f656c7afeb837d774414555abcc6a060c82354ec5811d5b010cf1436ada4d8f8",
+      "sha256": "9f0eac1c8c5214a3e1d47dd3be94ecc8df816425d10c95160992bf470ed26b55",
       "pending": false
     },
     {
@@ -1872,12 +1366,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
-      "sha256": "2c536ca7acab90d9bf3825b69e084fbdd2f66b183087da5709f93f2922862113",
+      "sha256": "8e4d649692efb13b9ed7cf5916bdaad15ca7039b7992511e3dd93a6d37df80be",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-      "sha256": "b1f6f5c7907ef723322cadb3ff36b9457aece4b19969ef3be30ac402335313da",
+      "sha256": "24487e0ae9a4d6c0b68409120e5ae01b5ceabc919fbc96a3a8272a05b6656756",
       "pending": false
     },
     {
@@ -2192,7 +1686,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml.cs",
-      "sha256": "89987caf747cbc5737092793128e2138a4c29f69b99a45d8d8481dae5baca76c",
+      "sha256": "e553b292c8b8bfee3d59c27842644f4e02a2f15df4928a65fe7d62e19295378a",
       "pending": false
     },
     {
@@ -2287,7 +1781,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
-      "sha256": "afcfbe7baa84a46d553899fc7c3a4dd5d229d5660feadec6989bea65f377aae7",
+      "sha256": "947f0ee3f866de53560ab67fa81447fac454841dd93a4233ab5a98f2d52fa647",
       "pending": false
     },
     {
@@ -2412,7 +1906,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
-      "sha256": "c2aef17de0fa9efb410d458feba687d26fb4d64785d744f304016db6187bd193",
+      "sha256": "6af8fd825bdc21dc0e3324da51e5eb5f3a37a4bf449ac191ce4cdf8a2aa3fccf",
       "pending": false
     },
     {
@@ -2432,7 +1926,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolylineROI.cs",
-      "sha256": "1646dd2e8434ebf4464abcb8773537a7b488e4d0aade0357b91cb815d6cb780a",
+      "sha256": "4ba7f6b87af7496b4a6ec9abf831c1d89e0fe5c11fcc2cec19a1794a6fd45ef7",
       "pending": false
     },
     {
@@ -2472,7 +1966,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs",
-      "sha256": "e91bbb4ecd29efbab2b988cb68f685da5c615dad8bfb90aa0dd8d81adb5c9e73",
+      "sha256": "0811240eea9b2567b556fcad487d07a6083b220f515001486212300f640d24c6",
       "pending": false
     },
     {
@@ -2492,7 +1986,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RoundedRectROI.cs",
-      "sha256": "ccd1e0cbec7d470ea95755147e214efa06d1540bf478a8c4ca8ac9945bb427b1",
+      "sha256": "bef95a30ca341a70221c409d3851709dd42860a57bb045a4a3bb23127a903fae",
       "pending": false
     },
     {
@@ -2687,7 +2181,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
-      "sha256": "b7072ecf1c99875c284f0007db1d93855edce8e4d37c26da59392305e1298921",
+      "sha256": "cdee0461c2cfd98580012dbaea90e077006dff32a78828a9dbce53330dbb640b",
       "pending": false
     },
     {
@@ -2842,12 +2336,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml",
-      "sha256": "1881fa300121770f2cf286f29be40d0b2558d66dd1f53319ecb2b3330877f1b8",
+      "sha256": "0161b61de2de87a7e81a933e8c231f07197595f80d06eb9890ca2719f05e075f",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
-      "sha256": "a6df5530e82e8806e80e13f01c5a3f7e12e98c8ae09d6efd19dce07b339d9b08",
+      "sha256": "044c31e689acbbbd630b57dcc97e5c2d8d40c9517799db30398297cc6aa7a504",
       "pending": false
     },
     {
@@ -2947,7 +2441,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SelectAbleTextBlock.cs",
-      "sha256": "d3fc34869396dadde2608574c056e9281adc7be9ea99e15a0bc7f9017080af97",
+      "sha256": "a358aa85dc46e27dced419f38db9a50cb8c6730a4de57e5aedc8cb53b6869390",
       "pending": false
     },
     {
@@ -3497,12 +2991,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DescriptorPropertyDefinition.cs",
-      "sha256": "f630abe456d7f67105ed103bed6aa6c123502a8bb624a5f2da6bef2a7690a5c1",
+      "sha256": "ad93f2eaa88bc6dda2197ffacf4307bc8dd846710e1c70dc52ab47c6e28b7bf5",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/DescriptorPropertyDefinitionBase.cs",
-      "sha256": "9f1a9a3cd0a20f85702ea8e252105197115ad5660cb28d91eecefe095588306a",
+      "sha256": "a015ca2a8c663a8d29f779787cfc2315b008a7db3dcbf25b8071eb1a53f7344e",
       "pending": false
     },
     {
@@ -3542,7 +3036,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/ObjectContainerHelperBase.cs",
-      "sha256": "a3bfe6086a44e0be4e6367770e527617e40fd9bd9d93547d7ea54e563ed24fbf",
+      "sha256": "781087077700f227a41ecacb0b44731921c403769ac0b5b191e06e3f77ef1d4c",
       "pending": false
     },
     {
@@ -3567,7 +3061,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.PropertyGrid/PropertyGridUtilities.cs",
-      "sha256": "c13b5f71fbcfe6b37d10c18f1ff0488dc5ec196c5352073ab0912f2178629161",
+      "sha256": "132c3c087ba3f74bf3cc7867a2d517aa4c12b05d09abe9b374af1d5ab7f01420",
       "pending": false
     },
     {
@@ -3872,7 +3366,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Utility/HelpDocumentUtil.cs",
-      "sha256": "7049d2cc5cfc3aa06d8acdadcc31e27ebcd9bc7fe82837f1923196a1476128b4",
+      "sha256": "23da6c7de1435ce70decd1954ff68c2f59349294ed3eda9e48da7f6c07cedf90",
       "pending": false
     },
     {
@@ -4092,7 +3586,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/ImageViewController.xaml.pending",
-      "sha256": "b378714baa1e95df9d5a93902e5d5a9c1d12bd3a5e1fd5e4aa5aeafa56cb9e2b",
+      "sha256": "f77e3a0b5a99d3f095b50ee2485038d75c2755815d955215a224629ceba805f5",
       "pending": true
     },
     {
@@ -4117,7 +3611,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/AngleBorder.cs.pending",
-      "sha256": "21ea6d7ea4b804589bda4f42dc95a36c10ad28d41c2eeb3a0bc8ba53eff5e171",
+      "sha256": "fd7c6fc1aacb75dab9dbce779bad9fbf4ee0aef8880469ce46543250ee9a096e",
       "pending": true
     },
     {
@@ -4212,7 +3706,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/HikHistogram.xaml.cs.pending",
-      "sha256": "d7b91166a3633064005042535c98f51b774e0df381449dadb371770fcbcc17af",
+      "sha256": "e78851e323a57f58f2f549fe1c27f08131b3d97cd4be278020b12567ea00f642",
       "pending": true
     },
     {
@@ -4267,7 +3761,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/MultiLangItem.cs.pending",
-      "sha256": "510e7369163bad215f118cfcab0cb398053a3596e5ba1854dc357dec9ac8cf97",
+      "sha256": "4122cdcfb0876bde244d9092d7647e8f2cc6f09beedd31d9adece8042ad2ea82",
       "pending": true
     },
     {
@@ -4522,12 +4016,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikImageView.xaml.cs.pending",
-      "sha256": "ca51f07fa29b6fd53fdac627bf6a70e7a504c17e1db18f689f342b9137a1d903",
+      "sha256": "5f61e0c16afc8afbd08463796505dc6f2fc52967c02e78e7214545bc957b0ae6",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikImageView.xaml.pending",
-      "sha256": "416ed233be250c925ee567237c4419d52c46206f9c9fdc3e3801436b3512fd69",
+      "sha256": "0cee15ddebd66a071804a02a9dd2e067581f5b83e51373bf2253ddbaa0e5bcc3",
       "pending": true
     },
     {
@@ -4597,7 +4091,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikPath.xaml.cs.pending",
-      "sha256": "6d1c75f7a57c0e4d541b67341bd11b28daed2fc67eca1c2430b5324acb8d77c4",
+      "sha256": "5232c3d7eeff52cba1da06a8504e541c27dee64bceafc79a985b2ad37c81938c",
       "pending": true
     },
     {
@@ -4622,7 +4116,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikPolygon.xaml.cs.pending",
-      "sha256": "bc352943c45169f31932da31ebac22da424ad814cc014002698d45c10b077ab6",
+      "sha256": "afac67f7ffd64d170e99c77cb2b345b2c94194524f3b082b78ccad337820bcd2",
       "pending": true
     },
     {
@@ -4662,7 +4156,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikROIBase.cs.pending",
-      "sha256": "61713f9fe34b2d2bcfcb66bccfb6e23089be53c368239c70aec3ec7dde1cce46",
+      "sha256": "aaf9c60cbac09a06c0e4f0acc19d0bd2b6e461fba762cb66437d30065a2b04d7",
       "pending": true
     },
     {
@@ -4852,7 +4346,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.pending",
-      "sha256": "7004963dc546f92802aa7227fad6280617ae31c444a3fcd2925b693b2997fd40",
+      "sha256": "4b95d7a1a70bb814f692bb57b77488490b621067e6afbbd7a5fa26d2abe1306b",
       "pending": true
     },
     {
@@ -4967,7 +4461,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ComprehensiveConfigControlBase.xaml.cs.pending",
-      "sha256": "764505030909ca63c60b133fad19077a28593b6ca6902ac7eaa417144e44b4fc",
+      "sha256": "9bfcb6ed222b15adce28634e47cd4d5e663d8a1e8a777f005573ce4dc339c925",
       "pending": true
     },
     {
@@ -4987,7 +4481,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs.pending",
-      "sha256": "b26a8c1f75aa88121a01551c926743ede68487f66011c40dc67ce21ffe3e34d6",
+      "sha256": "cc6a49c5a2830ab9af3e87eea2b06038245d778602582940902734d5727dc1a7",
       "pending": true
     },
     {
@@ -4997,7 +4491,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossData.cs.pending",
-      "sha256": "d01e88a8d0fba47fe5a521dbf0ff7dff34398e72196e2376f7575ae56b7016da",
+      "sha256": "d275133fcea776d323c998d8eb5d6bb6ed2335e4dda24b2d3b9591fad1e8d0ac",
       "pending": true
     },
     {
@@ -5032,12 +4526,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml.pending",
-      "sha256": "f1e1c06b61ff0a21990548ddc5ba73f149e0cc300e704acf018aa1fb5ad4a482",
+      "sha256": "8e7a5e5aed61fec0797c3867a711ca0995d240811a0ebb664a08c959dad7815b",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ImageListPanelBase.cs.pending",
-      "sha256": "f1a779d3d901913dc21e9863b3800cadf49ceb83e1a5c2f6b853645eb925a286",
+      "sha256": "7d491f082b592306155fee8c8eaad8ae85f797d07a73d20ee2251b13d1ac1409",
       "pending": true
     },
     {
@@ -5062,7 +4556,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LanguageConverter.cs.pending",
-      "sha256": "02850ca6a42310ff34501936f52b1e00ac868c582e8b8329d9f3919945f0facd",
+      "sha256": "084f10ea18ba9a1f150cc223229d36a65fdbf6fb1430d05bed2890a780491185",
       "pending": true
     },
     {
@@ -5077,12 +4571,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml.cs.pending",
-      "sha256": "65703e1f40ac19fe866151d76db72de5e68c8cfb1110dade0f8c1b2d64b5a798",
+      "sha256": "29cf89303f5302194fe2fccce4be11c915be2c6e5321da29331450673457d7d7",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml.pending",
-      "sha256": "2aed44ae5dc67cd43604b21418aabc8b94d41ece9dc79e7a1e51a5c967399e9f",
+      "sha256": "014b6eac4af05f36806e5ed5f21cd17402dec75d0f0d92291f59d7b0a91a7605",
       "pending": true
     },
     {
@@ -5097,12 +4591,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LogView.xaml.pending",
-      "sha256": "eaf46d830f50a7b45fdb159cb339f1bb1a3a00f5c0b5b41b69531d273298250f",
+      "sha256": "6fe8ef3970acf50cec222757b3414ef9dcf4ce1696a179cda193b16543aef93e",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/MainViewControl.xaml.cs.pending",
-      "sha256": "d905cd3b03cfca65ccf0bcd265db5bf1dcf5daa427e4163554d4bdb9129929dd",
+      "sha256": "05aa094bced6df71f44bbdec6512da28b19d44bfad4f6400b4d71b0ce7bf385c",
       "pending": true
     },
     {
@@ -5112,22 +4606,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs.pending",
-      "sha256": "8004b81722fcc7f85abbae029143a911742cff343cae93da5f82963a0cb8fc2e",
+      "sha256": "5da1703831c1484980c4fbff9910216f58db3742b9eefe21c9d5f1fb243a7272",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.pending",
-      "sha256": "c6b37b6896d0d708a4fb85c72d79c18e98243b2c376b33d5ce7c047622fedf29",
+      "sha256": "845e758f00cfde6ad4acccc6eeb5b03d0a59fd603a09ced082cd127c8d41ce95",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleSetShapesConfig.xaml.cs.pending",
-      "sha256": "7dec12e2b72a2b1470f92eb5eaaa779e5805634e1d6ee9fbed23c57915c51390",
+      "sha256": "c85834b7635cc16fdc7873b9b09b5d08f14f7e542644da67a3d8bd187f6b70ce",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleSetShapesConfig.xaml.pending",
-      "sha256": "c99efd56c01702bd9aae0d1b17b2725d1d03376e21eb0bcfd014c0b265d2e7c9",
+      "sha256": "f321e404cc63fed82348ecb648cc9b887fa3aeedf41afc6d778907b8bc93df26",
       "pending": true
     },
     {
@@ -5152,7 +4646,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml.cs.pending",
-      "sha256": "b58d9ba90e4fe59522701ab12abb90f36d248b67ed534fd8df6024187f37541e",
+      "sha256": "e7833879a5194064494c8033451480fbc1726d9af4c15a9246830c881dc2307b",
       "pending": true
     },
     {
@@ -5162,7 +4656,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigWithRenderControlBase.xaml.cs.pending",
-      "sha256": "aa1e1f19725bcae3a2fe9752159d79a8366758bf5fd393104097562d152f3575",
+      "sha256": "3ac0e33b00d629f5d7bafefb95506540ebb12ebc82e636faf272a09c452ad8d2",
       "pending": true
     },
     {
@@ -5172,7 +4666,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs.pending",
-      "sha256": "a658ce22456cc61a5b1c8b0d01346278fe1a248fa393f01ccf8a7716e3df68be",
+      "sha256": "1e4b05c4a0285ca245aef9d3030b947ec04496e6f784b7f5c003a179c6249c84",
       "pending": true
     },
     {
@@ -5182,12 +4676,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsTabControlBase.xaml.cs.pending",
-      "sha256": "dabefe249500b90bfdc29fa3ccaa9a07006db3063b9ecd216fb360af71c4e198",
+      "sha256": "a571c63fcecb1468c429f95ccf463f1cfdc7b0786281c02249567a79eee8be0e",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsTabControlBase.xaml.pending",
-      "sha256": "4bffa0fe9b3d9b11e4cb28d0d13a8180e8dd8510b3ee3c5920ce63bda1ee97fe",
+      "sha256": "ce9264e09b0e94550d1a907c3e3bb202c97d29b6f2085c3eb622d9b5ec2f29d7",
       "pending": true
     },
     {
@@ -5252,12 +4746,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.cs.pending",
-      "sha256": "787eae7e30dce007d943f6749bdaf0cb2303e37ac6b39a5bbacbe6fedee46609",
+      "sha256": "c00d99765a1d27ab70fb4afd1403058ae67343dab9c7291b64e318c5a3048a4e",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.pending",
-      "sha256": "6e3411a56cd760f83dea79d66ef055eb0c7577fa8b6d651a969a13afdb2856e4",
+      "sha256": "cc9f4267609344e6bc984198a9359b56d0d98974cd3213955b07fc99a377221b",
       "pending": true
     },
     {
@@ -5282,12 +4776,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RenderControlBase.xaml.cs.pending",
-      "sha256": "9b039c218e1c1d27ffccad59082aed4bd6ab66a4890178f9a60e6776f0aad5b1",
+      "sha256": "d6d2ed00d2cc5a49f2210969a849ba8bba9d2d2b5c984a125557ea48cab6e7cf",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RenderControlBase.xaml.pending",
-      "sha256": "855a71d047ecfff551e82af01cff6dd52e06b76167b09a41bee69e59fb9aeaf3",
+      "sha256": "786e7b78e2388f5c261effa201440f2c6c45178608692d24a4b33210a4ffff2a",
       "pending": true
     },
     {
@@ -5317,12 +4811,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/SearchModuleView.xaml.cs.pending",
-      "sha256": "e7266ed6933e2d86fed666766e7b436432f61e794189c80c8693df9259ef8873",
+      "sha256": "fcd5f0f89d7b0c9cb867586ccfc39f2d8ba3523c3ae94bb556b1c00b73539865",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/SearchModuleView.xaml.pending",
-      "sha256": "b17423c8c1783986c87160625affc5159a9816ca81aabe7e87e6358b30b2af5b",
+      "sha256": "bda6051cdea84a259ac09ef67fcf1e80bee06d94908ebb11e15c07f5e353ba41",
       "pending": true
     },
     {
@@ -5342,7 +4836,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/TabWinBase.cs.pending",
-      "sha256": "47a599baf7b4eabb218656507da44910f28ee9aaab3605a8a6962e883c29a6a7",
+      "sha256": "4282c5de5b9bbc28943143c2e39631a647c1a1eed21fb79a860d0a77d86bec40",
       "pending": true
     },
     {
@@ -5372,12 +4866,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ToolBox.xaml.pending",
-      "sha256": "6eaacbefff408f764979f0ca01a28aae89d7103a9baf28ab5a91bb39ce7ca830",
+      "sha256": "905b68867ee306e660ac75c57018fcdffbd96e688dd14aeaa81773c0448df29c",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ToolControl.xaml.cs.pending",
-      "sha256": "5fc4445d14e798d4bb52f97ced92d67712f7fd9690229bd32b679db9d906e850",
+      "sha256": "506999cbdb3cd7a3ba08f3c22810cd549b29733d3d53f9ca0c8f3345d00544fc",
       "pending": true
     },
     {
@@ -5402,7 +4896,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/CommentBox.cs.pending",
-      "sha256": "9fb4c91a1e764750f4c04f326d7d47c73eea8ea5d8e67559e5704b31c20f194b",
+      "sha256": "18d008560bd8194359e9ed7e2985d68e3f604b1cdf9ee4c9c683965b98637251",
       "pending": true
     },
     {
@@ -5412,7 +4906,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/Connection.xaml.cs.pending",
-      "sha256": "7c802bddc2e058489b36d63196447bccad73bdf61c0b41ff1d52fe56f3460625",
+      "sha256": "b9e5e49bd5ee75a4cfa388fe1b6cb22ffe3be554e320c0fdb34f7d6c9be10398",
       "pending": true
     },
     {
@@ -5447,12 +4941,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.cs.pending",
-      "sha256": "f0cc03ec38b95612ce3f57824a3747f01839d11f11a4de5cca9c179c9757ad22",
+      "sha256": "ac3c134f186526c566c21d1224153b8c0c1a64f349e7e3912959d8ea73ec2988",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.pending",
-      "sha256": "285299bf9ad06351b88cbfd528d0888f613eb32381f5c7429a84d22b64d705ba",
+      "sha256": "2c9275f83b879268d3f1741a539f9481e8945a2fdde87242396f8cfd05b72b61",
       "pending": true
     },
     {
@@ -5472,7 +4966,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramItem.xaml.cs.pending",
-      "sha256": "307d7294912c48cbfb6988f0ee7413c67af8f375ca109593258377e6bfd4196e",
+      "sha256": "976aaa8e4a23acadb4c8e4a49e59db3ca652bad0261ba8975ac2e9f36202625d",
       "pending": true
     },
     {
@@ -5497,12 +4991,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml.cs.pending",
-      "sha256": "3aac839b06727cf0e8724ead8a2fddaab0d10c8d488d9e47d2d30b7ab0b8271f",
+      "sha256": "27ed05b47bdf1173a47c06f6e42a968229579209c2689d147537ca6cf34225fb",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml.pending",
-      "sha256": "24ac433acdcf2f75a0d732ba872d85cdd62686f790763cef9abb6de7e7898480",
+      "sha256": "3acdfdcdd02ce18652f695f0d513960a0c3b3ab3220d7cdb1c62333046d234c0",
       "pending": true
     },
     {
@@ -5527,7 +5021,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/HoverPotData.cs.pending",
-      "sha256": "410d700fb7c5b91904d03e43dc87f2277c132794d0d7ac66020754f826db2069",
+      "sha256": "2f6267eb0b878f42b86d4e0d3b14727f947d29050d395c5be83e25958bc8a8cb",
       "pending": true
     },
     {
@@ -5547,17 +5041,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ItemsPage.cs.pending",
-      "sha256": "0df9b2c0745df88386668e392f86939125e48a8b38fb606bcabc3bf188fca52f",
+      "sha256": "2136d7b0d6139ccb9889e7b0cbd48f000a4a2b34131a89c939789e401688d9f8",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ModifyName.xaml.cs.pending",
-      "sha256": "da03782e47a383d93914b9743f1b040cdc68a0f7aaf36bad2d121bfa3f70336f",
+      "sha256": "0c36c3eb7cfdf0a6f8629b5abefa3845d88d34b44047270ee5b62d048bb3e49a",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ModifyName.xaml.pending",
-      "sha256": "9ea331ee9381c93cde149022fe1360d48de168b84ca6cc30dbe4137d3d4065d7",
+      "sha256": "9f052e3fc9661da963b5465a6a42206893f1f0313c239a8b0db949f6df84d5b8",
       "pending": true
     },
     {
@@ -5577,7 +5071,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/RectDragPanal.xaml.pending",
-      "sha256": "009c376b5cbfece45c6ec9359833c30bc4f40e75c3268391e3d3cb76e6c0b7db",
+      "sha256": "2faa3d5888cccda5e76bb368e921d8c64cce5ef97b2160930ce654e3eef8144d",
       "pending": true
     },
     {
@@ -5592,12 +5086,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ROISelecterHolder.cs.pending",
-      "sha256": "ee35b73736706dda0deb83196e7ffc7233683c0c32363a504ded07d358668ef1",
+      "sha256": "baba6f89db0b8b5c7607eaf2fc509e67edf0cad3df0bac5905b0d75f671ab655",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/SearchDryPopup.cs.pending",
-      "sha256": "a7485671eb5f2044f4cc230a86070e7bed5b0602e5b303cbb2acbf4f6c593719",
+      "sha256": "77c285bc216840ba304445ad0f70dbcbad1a4b69c7bc4909190d10d102501597",
       "pending": true
     },
     {
@@ -5612,12 +5106,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/StatusBar.xaml.cs.pending",
-      "sha256": "780da3f36c2eae27ec59ba347f06ef9e5d13a9aa999b6f5fca5b37e65a24a128",
+      "sha256": "9295f672c7d5c6428a6ac382919f6c85618e57a84eee61958b20a2264c9db417",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/StatusBar.xaml.pending",
-      "sha256": "0aff8797155223172c1e1a669c9e165cb47dfb6b7e4dcdb84cc38a3d3c8fbd51",
+      "sha256": "4b4dea8f706bff2a70e14582e7b9fcd9e5afa765f97915da38dfbbe895781cfb",
       "pending": true
     },
     {
@@ -5657,7 +5151,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/WindowLockModeTipsView.xaml.pending",
-      "sha256": "6c51a3ef411df52e22120e0d78213b5cae334c6e99b69791c9ff248bad15202c",
+      "sha256": "5281504b61016cdff59517aa1a900cd5009cf077f90bbef4ba0cbedb90bf59f8",
       "pending": true
     },
     {
@@ -5742,12 +5236,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.CameraAcq/RealTimeAcqControl.xaml.cs.pending",
-      "sha256": "a56a35181823ff13a62d374bc34ac1885b1ff5d67883d0a33b46465fe49bca0a",
+      "sha256": "033d36e6413a7bddefc470847de96f40da7718511f6cc3f8740f30690996a70b",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.CameraAcq/RealTimeAcqControl.xaml.pending",
-      "sha256": "0edb2db8e3aeb41e28e14881e90d292f67c53b16d27a87dab14b1e1f75dc2da5",
+      "sha256": "1ea35f0f822be3aeb3164c81a33f666a3604d17e4e9c085200b325bb452b44d1",
       "pending": true
     },
     {
@@ -5757,12 +5251,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/DecoratorBase.cs.pending",
-      "sha256": "19ec1deb1932c96a1cdd18e879cb1a1c9705e99b75fe9e972137b2bde6ba9a9a",
+      "sha256": "84a1b7802585b526172001a124d385ec833f091a616b7f653707debb8568b275",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/DisplayImageListDecorator.cs.pending",
-      "sha256": "a7b85368af5f066ab4d6a074f36439623849df198eb6d7ce1ab52af31ffa557e",
+      "sha256": "d6e8a2840829b0d07f74acf3b4d4aafd60bd9baae32505805d583a83ae106845",
       "pending": true
     },
     {
@@ -5777,7 +5271,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs.pending",
-      "sha256": "92bc3d1f7451f489b5f35e6a0f4f909deb8bcfe475511cc3e36f425d420cdc75",
+      "sha256": "70a98418906d4d57ff148be341048318fe8606a351202f79df896aff3da7f8d2",
       "pending": true
     },
     {
@@ -5792,7 +5286,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/RenderDataCenter.cs.pending",
-      "sha256": "c5d7ff4a3d09911c4deca36af0644771347699a768b6a8cea5bc0deb2a2b900f",
+      "sha256": "66be34124f4dd026edc57d3d13f666b19afe24288f3b2ddbf5df266320f21685",
       "pending": true
     },
     {
@@ -5817,42 +5311,42 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmCommentDecorator.cs.pending",
-      "sha256": "6707a79bbfa79cf06aab502db0a4a167d4043cf73e74250718335c9f46cd6720",
+      "sha256": "7a7464fc02901118bf5ffc4d02e9aa4965c884c6bececbeab8ed6d0361188f12",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmConnectionDecorator.cs.pending",
-      "sha256": "3295c610b3c8d6da1ce7ea6436e6d3fc5fa6dd058e07331684969625cfb7e58b",
+      "sha256": "09a5236e28caf15c154d53e065847eb051557f3c2052eb0942231d77703d5559",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmGroupDecorator.cs.pending",
-      "sha256": "9e8187a377753b9694049cda993b31a13ed18438b26dad890295c4286aba546e",
+      "sha256": "e9e62eff4c88fc42ff90d71b71e0f5d2d6ea757843c4d97aebe645947baaa51b",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs.pending",
-      "sha256": "588fd94eb6a6a0ae345132948ebc16aa47f35491bde1f03beb94984204ace999",
+      "sha256": "37c0ecb08617760898f6c6bf418eae157ff5e5d0c46456601726b5e609b6d551",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleDecorator.cs.pending",
-      "sha256": "80d32a0e5db80223f8345ae9eeac2171bbb5a08133ee5bfc400d34f5c2419d1d",
+      "sha256": "c55584679a2730bc981be91f223d13e1c64240e7d7bd9d77a210baec27c3d9de",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleSetDecorator.cs.pending",
-      "sha256": "e9ba6125de3b192dc36893899e60f9bf42188918e2013ff58e2809e59535a3ef",
+      "sha256": "113292bb8b795a1e6ecc6f90adef7bd7a5f1500dbcd3581731db56e78b738e8f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmProcedureDecorator.cs.pending",
-      "sha256": "9826d2fdc27dc33df04d8a544cbe359989714a9c92381142a957df02c1084fd3",
+      "sha256": "9de3908b2840747204ce2d5cf7c603701877672b84cc08db94d8310f0c880fb5",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.DataForUI/VmSolutionDecorator.cs.pending",
-      "sha256": "c5f49ae79029654e729af2130c4eb10e540e23c141097bd884f334ef6851f5f6",
+      "sha256": "c94a83a2f6f139611f6dac064875432f73188d8aed18c0766ba8bd47b751b74c",
       "pending": true
     },
     {
@@ -5862,17 +5356,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddDeviceType.xaml.cs.pending",
-      "sha256": "91e18ecefa977c636a63d9e3e06ead8d75717614859494841ddbc68bd79104f8",
+      "sha256": "c024cfb2e0476e2e1431ee31269174a556a0fb13d255950e334d6c0ef375c527",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddDeviceType.xaml.pending",
-      "sha256": "617311cea7e3d5303a1e142b2e5a54b830de8fca6ae4f81632b61fc583c2dd73",
+      "sha256": "38e4f072cf5c5c846fbc23e2e2c24ad3891bcd0a14517794015408dbc53ce614",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.cs.pending",
-      "sha256": "4fed0b8ab186253bd5f29e70cdafe05f02f6e6bd02694eb2dc259cdcb840ffee",
+      "sha256": "e1982b45e35a332c780cd33433c0f376d964180dc4359a475147abc452457ee2",
       "pending": true
     },
     {
@@ -5917,12 +5411,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/ComprehensiveConfigManager.cs.pending",
-      "sha256": "d8152d87ab2c1a282041eb57e43873c2ba6e808c3db3452d7eb44206456c8c0a",
+      "sha256": "d341bbf95d28a4bfcfe50a7645a701ca6352265de1199b37928e4b226330429f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/ComTriggerItem.cs.pending",
-      "sha256": "f9e6e5a66939b768589fe6f7d3d8bafe7cc1bf8b9e8b89422ff2b8a6b440a357",
+      "sha256": "314b24db098c1e4d9b55145df84349413039ebd22051de8bd2ff0ba8ec81fcad",
       "pending": true
     },
     {
@@ -5932,7 +5426,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/Device_IO.cs.pending",
-      "sha256": "084e25f7a8d11fce2962e37c116c96d88cb7bc2199d47f73c3a5ccc361c24366",
+      "sha256": "5df9ccdbd443d40d73b0b60a420b54ad130b8d9a924f5f28695033aca26ae726",
       "pending": true
     },
     {
@@ -5962,12 +5456,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GloablTriggleConfigUI.xaml.cs.pending",
-      "sha256": "6b0a33d30a0aae29140901ef5992e6026be14f1657a95087af79c9a2ea35ba0c",
+      "sha256": "b6196c0c1ee6ccf273e6ef6f912a864eb0733d4159b2eff990dac2d228b399f7",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GloablTriggleConfigUI.xaml.pending",
-      "sha256": "1929865d9b21655dd8b67db50df9f883d949d13938eebc406ce41dd2313938cc",
+      "sha256": "63ad0f748ed8ae156fbdfdfb2bbf6f3b8aedc58a1c97574e155dcacba05631f0",
       "pending": true
     },
     {
@@ -5977,27 +5471,27 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.cs.pending",
-      "sha256": "cb872964f020f3c8fb1ae981d3ae3ac5166c314352a4e0fbf8d861d4675ba7ee",
+      "sha256": "90fcb5aee3546ecac1577e82d07c75a03eb91e9b736b881c7f39219cf035cb95",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.pending",
-      "sha256": "903bb347a890afd3e86fac033a1754bf2ace61774b830a15abaa73e071769ae4",
+      "sha256": "c4bed151234f256dc20b42d578eec34ad2cae02373f9c3bf0439923630f09d57",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraManager.cs.pending",
-      "sha256": "d740c10cc909fae8a542d20ffe2b03a733d6138605291f7c6eccb9c08e509977",
+      "sha256": "cf4f7f6d277d897729c191968be8b35a28aad9699085b545f5e507ff5d2f6c72",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.cs.pending",
-      "sha256": "11622fb88253f73789cecc355fffb2504bb619d3add9bedc0ba2755aaf8e31d1",
+      "sha256": "b947cab1531d6b141d098c3b762d5c825c9d7c77e82099f100a032608c57a6d2",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.pending",
-      "sha256": "56b1dab98ef24b7bef988c42b7208b85c15e8f74842c4b579b731bd7f853aab2",
+      "sha256": "b188ad86e317cc2bde3dca64d29a3119910c2591bdf0ee27be62740a69962959",
       "pending": true
     },
     {
@@ -6007,7 +5501,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationValueTypeCvt.cs.pending",
-      "sha256": "e75d674a54038a3dea053263a9f066ee3b1f7097b54d8729790febcec785662e",
+      "sha256": "82f1eebbb77fb44d93181be3e4aee6f6740152bdbd03f8fd160295d356b2830f",
       "pending": true
     },
     {
@@ -6022,7 +5516,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs.pending",
-      "sha256": "1ae9e139ca1a84b66e2e9ec0ad830bf75191aa64107c5c48aeb832c6d0182699",
+      "sha256": "6f2b6d596e1fa0424d4d29a6b7726b73aa6d3d99695f882c9d0b40c5e300f69c",
       "pending": true
     },
     {
@@ -6032,22 +5526,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerEventItem.cs.pending",
-      "sha256": "639b1ecd24873dfb54afff5cc53bf0ffedfcae0947d0f02631141477c86c3a32",
+      "sha256": "1a838bf94b685c093574bfae6140eb7488b3fe6a4937b4b32cb1b7adfa21746e",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.cs.pending",
-      "sha256": "008c1d0056ec942acf14af4f292fb642f4c28d921499d6d8422389956607e9b7",
+      "sha256": "4128f74172da5e9fc82328406af06d4db7bf7ea06f1ea0a443a74b758f4f93e7",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.pending",
-      "sha256": "6c67dd2ddcd1ce24f05adce6e04df83f1a9e34ac64e169cdbce02ff7a3b7fec8",
+      "sha256": "7ae524cb1894ed4391ea1a8fcb9991b55a6ff32245b523298d3b2156ff31f418",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerStrItem.cs.pending",
-      "sha256": "e3fb9e4ac2a22f5f12b2424de2e4a70dd83f38df7f6d918cf4ad792334e75f73",
+      "sha256": "3306759a09e10412ea6d4f6a726f4e69b467951a4d13944d0bc4e7b9d5d5dfcf",
       "pending": true
     },
     {
@@ -6057,17 +5551,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs.pending",
-      "sha256": "fe48403c651167ca6a4568a7ced7162cbcd652c41df0643088b9aaf39be73ce7",
+      "sha256": "02055734f9114c1280dfb07c71ecc0d132a02cccb7d56580a593ab37870f3907",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.pending",
-      "sha256": "8f179454c1496e73e4103bf6a0dcaf3223603b301569544b89d8ccdacb850d33",
+      "sha256": "a70d525e42a44642ac276bb828a736a54e6fae8c00c6dc02b2dc4a239ff34b6f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableItem.cs.pending",
-      "sha256": "fb2838755dd7b7f0f34faa09abf9680b6306b7ebeca2a6bbc35b6f49c9f7bb1a",
+      "sha256": "8c1c9d31aa0d4ac0847c8188a36ff7bb2e8a1f974ab6d62b79bb5fd2639dc200",
       "pending": true
     },
     {
@@ -6087,27 +5581,27 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightChannel.cs.pending",
-      "sha256": "848d9503f5f3d6fc7fe7ea571a679dc0ba2221d30320f1b2686eb62a648ea6a2",
+      "sha256": "5d6bfd7f1385c17c28b0d4059a756e3697d0a515bdc6179c07b816d0642c7414",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDevice.cs.pending",
-      "sha256": "6210199140735abef1f321ee1e0a4951a19245ccb356c36d1c6914411908adc5",
+      "sha256": "51d29cb6284ecbe787ab5491bb35a6835d90014c76b67955e2eb587effce1627",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDlg.xaml.cs.pending",
-      "sha256": "461cadc0068abeb642a7f0959ff1e9b7b695d1089e314b53d5d1692de602550e",
+      "sha256": "16b692a3c896958103cf115be35c8a2c328b59ed710442aaf090d95e95d232d1",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDlg.xaml.pending",
-      "sha256": "e42e27b06912961a77d52de2f5478c04cf08ad2e72e70d6cb063ccf21026086e",
+      "sha256": "df06d7ee50f55b922e51e31594a88b22c52ff6b4ea2f0f4deff7506a0633fed9",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceManager.cs.pending",
-      "sha256": "10cc4dcdb8ef8b7b0eab423ad9ddbf697f5af4aaf7a8a4bce08365c8afd02724",
+      "sha256": "c3927f30ca0377d19258ff51ed8e6cedbed121a74cc122a995049dfc28131502",
       "pending": true
     },
     {
@@ -6137,12 +5631,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/OutputconfigManger.cs.pending",
-      "sha256": "cdc0a7cd63b98548770a0a53aae2f8dc97373ea077934a3ae1a5a8a56dc86ebd",
+      "sha256": "2670d654a7b86adf0287ca5c432ae315ce451bcb3310b597e622b35957239973",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/OutputConfigWindow.xaml.cs.pending",
-      "sha256": "01bdb52288f1c7f988cbecdbcf7ac149f4acc5878426373e14b565dd823e1d85",
+      "sha256": "b67c7ab482dfbfade6ffa887a8e592f702f8fc73c8f0bf4e712e92024541a1a9",
       "pending": true
     },
     {
@@ -6152,7 +5646,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/RelationSelector.cs.pending",
-      "sha256": "8ec0ac50132c29b8970ce48e0c3eed01d5bd7e702aa235dce7576bb307b0cce1",
+      "sha256": "86dd5197696a357742632083031f3d2f4abbd0e803bcd6dd0b426518d4b355b7",
       "pending": true
     },
     {
@@ -6177,12 +5671,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/TrigerOutPutItem.cs.pending",
-      "sha256": "fdef0300f7192c97becd16ce1b847f8e635eef00928dcc819854e2446c998fe8",
+      "sha256": "d51f8802fcabed09df1b3362afb852b8bc5d357d2bced98d9bb92edf9c69aa09",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/TriggerProcedurePanel.xaml.cs.pending",
-      "sha256": "0b1c9e1c0be2ce3f62d02f2a5a1793a7a856734af2f34cb70403cf9668006ddf",
+      "sha256": "d1cd044c2d43ef2f080d0fb3d8b323d822737153e39734e6a2c026c56d178f50",
       "pending": true
     },
     {
@@ -6192,12 +5686,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/TriggerProcessItem.cs.pending",
-      "sha256": "6ac96ce390db4e2682732cdd286b2a789ba2523796025d41770f99b544ede1dd",
+      "sha256": "3e1b47c261ef30d0a2803f340c5704443488e9779c4b4815f219e43964be392e",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/VarGroupItem.cs.pending",
-      "sha256": "39a1659cd2fcb7a4af736bee7e802aae2c2d8727c687d5b6f76710ab75348174",
+      "sha256": "04506579dd2eec1317cd1a1aeb57679df64d22cec69a7e2bf0443faf5eb50c71",
       "pending": true
     },
     {
@@ -6207,7 +5701,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI.GlobalTrigger/GlobalTriggerConfigContent.xaml.cs.pending",
-      "sha256": "c88de804366929b8939e5c277e1598b8303be90686565bc89b192b7d4e0a8faa",
+      "sha256": "943e713d45cb215b621e9cc9ceb3571c6b52ae3b033eadb116122661942195c1",
       "pending": true
     },
     {
@@ -6217,7 +5711,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI.GlobalTrigger/LocalModuleToFullNameConverter.cs.pending",
-      "sha256": "13e5abddd1f6baba5e2824e8e4331e7fef8f846e67d87b369e710f74f6b174b0",
+      "sha256": "37736a0bf1548167bd0e76e6e55d03dbf0ed47e4dd5fd6684847a7064df2f175",
       "pending": true
     },
     {
@@ -6232,12 +5726,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.TimeDialog/ShowTimeDialog.xaml.cs.pending",
-      "sha256": "7fa5cea1eda24d1961ccbdd688c92ce1e18b734401f3207668e105890b4c5521",
+      "sha256": "4fa1f299cb679b046c02fbf630a1ab6eba218ba79844bc437474f68986b91cae",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.TimeDialog/ShowTimeDialog.xaml.pending",
-      "sha256": "cb37b1d4bde0745a6f34aa4af816625bf07c37ebe7d0b4d1a1cc2949edf1b0cb",
+      "sha256": "c9e20482adbd6f85855ae703f80f73492501b9b1d5582567e5fc0e39252e6397",
       "pending": true
     },
     {
@@ -6252,7 +5746,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release/VmExceptionUtil.cs.pending",
-      "sha256": "fc83970cdece91c86a9e31ba16ac89c371e877a7bb6e7f4d0e8ded49adcdfe76",
+      "sha256": "3c22ed1878a2a089b461ba74830b0140836c22d2ca25302b9a6205dd289005d1",
       "pending": true
     },
     {
@@ -6277,7 +5771,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release/VmMainViewConfigControl.xaml.cs.pending",
-      "sha256": "d7fdd76d05f3092d1f85a2a7384205123f9b713b24e1a98899c5d9996a1d0bd0",
+      "sha256": "7b0fc7831111485c46cb71c13374aa2bce3a5ca5e3d7b3ce77bed3bcd304dd32",
       "pending": true
     },
     {
@@ -6307,7 +5801,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release/VmProcedureConfigControl.xaml.cs.pending",
-      "sha256": "28392b10508e52f3ffa77068c29a1aff5f537e4c7cb5fbe0f84ba0625f6f4391",
+      "sha256": "545b3f2c8552f0905efe9b6711bb7d225028a48308aa32c35b413ab7cbc2d498",
       "pending": true
     },
     {
@@ -6837,182 +6331,182 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/ByteUpDownEditor.cs",
-      "sha256": "fb16d2eba67df6c30f817e72527d896ce5d134cf3b4ab8b7fb8b488a9dfe9168",
+      "sha256": "a70d8b4e68e261f8a06573a854a95c38287b2a84dbb6759a88a101f0467581e6",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/DecimalUpDownEditor.cs",
-      "sha256": "596e3804f92e0d46a1c9e58d0137b1ac7f27d18fa7a617d72cc216372f2dc76c",
+      "sha256": "4330d997ed28a4f6c02581d85fe7a95d2b7b4edf724269dce33aec49eaab96ca",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/DoubleUpDownEditor.cs",
-      "sha256": "86ccd33badb69c24ef958b4af318a1519cad6a322a19da0165bbc5457eee7ed8",
+      "sha256": "ef97d2e78f8e2902e24240957b449f42b35c69dfe16a300d62910bc7283b2925",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/IntegerUpDownEditor.cs",
-      "sha256": "d32cbb299393c483722f27a6deb2fa397a8e21d4ffc2fd582cb61cce6534db3b",
+      "sha256": "2c5b7b8e4e4055bbf5c97fb202b40e355c3fa7ff490e1683950ed92b3625edd9",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/LongUpDownEditor.cs",
-      "sha256": "737502adf439ceec96b9e26caefa6afce69e5ecab8f01f61174de883385cf778",
+      "sha256": "2a829dea83a2d4a61ad35dbc79251987897ab180e85511f649ae2e70a39af830",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorByteUpDown.cs",
-      "sha256": "38e87f104a3db4b1547b62807c6888aa708683ae8fa657d1bfb4fb5716bdff89",
+      "sha256": "5b4c9eb3c02409f75aa8b36f4850756abcf97bdf60b7f1895341c4a48c9c2431",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorDecimalUpDown.cs",
-      "sha256": "de6bd09eee46a283d7ff364bb4089846980529c51da9d87629077892d786b756",
+      "sha256": "730c40e784ae91b171433d42bffb29e52790ba485ebb6007e653636869042885",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorDoubleUpDown.cs",
-      "sha256": "b4ff16336dc615110031b89ef3be84a711703fd6aabc50d068c8f1411b4071b8",
+      "sha256": "4e54c704f8871d7fd611549234e3a98b97ed443800b5c979128dc61526ac0205",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorIntegerUpDown.cs",
-      "sha256": "94e39bce986fef15c8b700f2879412713d16858b51fa4f8bf77529442036dc33",
+      "sha256": "c92dd150c0edf4b633bd0c6cc637ef2ef0164f2b1f034a950b1f42c9a0006d54",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorLongUpDown.cs",
-      "sha256": "6ee5ab5eb8b877563ce64113db5e97ed15d5e26f3f4a11cd9c6292908fc7e09c",
+      "sha256": "b9501830e5ceaf4078a427a706a2846324f080eda8ff2b1748d385b273855ab3",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorSByteUpDown.cs",
-      "sha256": "cfc1222ebff36128bbc2e58b14f77ef7eae8443bcfe7b040ff0cf17b23f17382",
+      "sha256": "a8ab470a88e59011dfcbe82e24531625a129dcb3528d78c44b2dda51aac64509",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorShortUpDown.cs",
-      "sha256": "33ae9126ca20bf1a71f86e24554dfde5acab44955c7c1f277eabbab504b13c4a",
+      "sha256": "07c6dfd6c13515023085eafa530873e5bc6de8810aa27b6abc709747a4f88263",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorSingleUpDown.cs",
-      "sha256": "f49306383c7a212e7b0f64e2d54bda5b8683f154d98ecdcb643c281c2272cbe4",
+      "sha256": "26af89d9cde6b5c5c26de924ed8357e99d84573c5707aad16d4a882381ab1992",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorUIntegerUpDown.cs",
-      "sha256": "5c46e14adc46d3268aa42a5f198a1100641864416e5bcf2014381cd8f73baa07",
+      "sha256": "e045c308c8cde33529eb1a2a125d0c32b9048f95bb14190bd5c46aae76dcd73b",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorULongUpDown.cs",
-      "sha256": "a0c7b29ef37ab55c53618c3257db5ae506e8493615a0f31bafdc6c0cf894301f",
+      "sha256": "85870fbd0e46c07d548349533af8d6774f028bbedbe0fb6c513ec8e8d6d31490",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/PropertyGridEditorUShortUpDown.cs",
-      "sha256": "25e56e478afa2bdd863c64304d1519c1628d5ea7aee516f1ca33160bbb8ff1f3",
+      "sha256": "92a38e569de7b19450444a2ae32268e8f133311ab01c5ca306d7a785a67e5733",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/SByteUpDownEditor.cs",
-      "sha256": "d1183c9baa731742aae98b738ced5e0cd707324a91e9de0d8ffea9f0717f8ef3",
+      "sha256": "bb360611a09f879acef720f56de1d742fffdd5b2e847644b14b2a3534e996d28",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/ShortUpDownEditor.cs",
-      "sha256": "b03471fdd0a60e3e5c5716ab3e453e7e3c11093ba1aedad8367cb8bc529e297c",
+      "sha256": "1b520fd37e8a7e95f026d76b2d2759e31ab6a426b8f078164b52de3ff03f9647",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/SingleUpDownEditor.cs",
-      "sha256": "626ac4cbefcd3b8fa04e4f4b6a9cc451a0d8cde8665d1f0999ce108f3bc0b600",
+      "sha256": "15aa65ec3067c8d3941fd9f00a7408b67eaa711f2e3cd7990aa604849822cec7",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/UIntegerUpDownEditor.cs",
-      "sha256": "3930ec1956d8a5508294f2484d34819a8a829e46983349f6bb133b942560529b",
+      "sha256": "bc12cc6828ea92ccf9d47a36a44e08aae4832b2f4a95fc48cb57a2e03c66c1b8",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/ULongUpDownEditor.cs",
-      "sha256": "652d8b48d8100d8ea89e61a6cbe26242863090fe5362f8021efdae198fe69bb8",
+      "sha256": "71c85afe51bf3438e0772320b2e380597d6678b1fc3a4ab8cbb33b5cca718a75",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/UpDownEditor.cs",
-      "sha256": "ee2e29eeee11e24541c4514d41d6e434fa75a547ed721d0e8d53528802baebb1",
+      "sha256": "c99e260d58610164d440da82acf80a20a9ca274b990093fe83ae8a6db0d0c0bf",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/Editors/UShortUpDownEditor.cs",
-      "sha256": "6bad72c5346216a162e0e4ed622d1b5669ceae432c2c7c9c912ddc9ef43f6c1b",
+      "sha256": "bfab10f10c8c09c237071951294e7cdd53f8c47c429d27141abb1abebc6bfdd6",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/ByteUpDown.cs",
-      "sha256": "ba6fc3324c19b08a7fb583b8a1e22ace97098f1f7a0f4e572f1eec21ef3a893a",
+      "sha256": "fab2ceb9824f403fa73b7bf82a2a082b333b5e87da99606803b73be14effaf19",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/CommonNumericUpDown.cs",
-      "sha256": "1837e037d5ab5aafb800fbaf07aac43ea78308d2820408850f99153f98a89444",
+      "sha256": "50a3c29b691ed5d823c8c18674c55aa45589bb27920f3fde028ee1959400d7b4",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/DecimalUpDown.cs",
-      "sha256": "41f775424d025fb64feda63b872385248a1fe2da3f0fefa1ea90665aca361929",
+      "sha256": "c0a4c3c25906eec95514be6e0f5be2c51c6d262598e43918ff8b70f75481bd4b",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/DoubleUpDown.cs",
-      "sha256": "ceda00d5783cec0374df20925010518b7d4ee0303e294b86b89eb3bdeddcc6af",
+      "sha256": "783b6ff31f9f6579967b144db269e7e35b97c7f7fbb47132659e27b440132808",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/IntegerUpDown.cs",
-      "sha256": "4c0418c0b932c7a119f3c5b418d95b31d614ec11274b17a92586b7cb641ab2ec",
+      "sha256": "48f6a49fb4b3d1b8785aa0f78724984c68590c3335245e9712a7b3d5a18c2c6b",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/LongUpDown.cs",
-      "sha256": "d5498e8ad8be50efd392fb1b576056b69cd9f82c0fbc6bcac791408a4ccb9168",
+      "sha256": "1c4f23062baca27f3cbcf9238c4c26e2aa4160ba524d9a33a700f07da11db1e9",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/NumericUpDown.cs",
-      "sha256": "779a9158567bfefc86de06f2b40768d52e1fbd56b178df1c04ac579267d17c55",
+      "sha256": "7551ff0d740aa16e8d123c10ba777e36da7cb2f327cc0cc38830f068c1d50398",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/SByteUpDown.cs",
-      "sha256": "a09c1979e9bceb9db8236b3c4a96080da0cbf7154552af3590789652a59905b6",
+      "sha256": "a0ae0cd02304cdd4f926236ad6b861d39acf46ca19a3aab056eccf85ea28b8de",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/ShortUpDown.cs",
-      "sha256": "9cfbb42bf2306cf3ff0abbd306284efe7ae6004c937187855735dc5a3f62cc5b",
+      "sha256": "43b61dab1e16b3bae459ea35066604a3ff90b389992fb8fcb82f8a6e81f2e3e9",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/SingleUpDown.cs",
-      "sha256": "20c69fdb0791865ad0ae96f9ec281bc17a7f607f37bc79ef602cd5139d2712ed",
+      "sha256": "c67291517afe538763d2c2ce3df14187a0323c96d8a78ea560d04e9f73d04fe5",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/UIntegerUpDown.cs",
-      "sha256": "f101d679c8b741592c83e109eaeffd3ecea9ff9e0aec3b22b7aa4903642c8884",
+      "sha256": "80f432320733280a0c46c88213a9f9f5fbbf4c6520569a83134f0650bbeb4fde",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/ULongUpDown.cs",
-      "sha256": "17a0823686eaebb930e170d19b3866075cf5a236cd53dd079e9f77caee8aa66a",
+      "sha256": "8e9b96212c2438c8a37ea2f43a32944545b5839a45ff978f397aded0eea1b932",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/VMControls/UpDown/UShortUpDown.cs",
-      "sha256": "a89f4ca1b876b4eb569690d3762929bedc853e960e2f2eb08fb401be113746c5",
+      "sha256": "2d4d2807c18b2ccc8d3d5fca49400ea507cb61a2e5142cc214efbaa8cf09c22f",
       "pending": false
     },
     {
@@ -7027,12 +6521,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/bottombuttonstyle.xaml.pending",
-      "sha256": "eb8639196e994554c824655a6e9eeb30b3cb666bbd30f2c0f6e7189e083c68a0",
+      "sha256": "f97302690231e4d25eee428f3a44a3b69ed810fb1227eba15c767bbbf1a9d3df",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/normalbuttonstyle.xaml.pending",
-      "sha256": "60335666255a7aadcc7dcd64c9ddad9f047294e90256a527c3cf800490728c79",
+      "sha256": "32b4d737234c216785a200ab480c0652175b9edeab7742677d5ea632d9e0c61d",
       "pending": true
     },
     {
@@ -7042,7 +6536,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending",
-      "sha256": "600258b6ff7ad2e369ddfc31ef9eb1bbca5ccd2dda3b58aea622bb609d3d0cb6",
+      "sha256": "3fbdd265b10ec8f4d72e91e79ce1db7b23567c565657578adb1d25930e387305",
       "pending": true
     },
     {
@@ -7077,7 +6571,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml.pending",
-      "sha256": "1879496578acf23a274483245570481a67c9a733fef4e64ccefdd85b920b689d",
+      "sha256": "def665afe713bcd4620ede1b5b143ee007e95f768e695691380604d2c94964ed",
       "pending": true
     },
     {
@@ -7177,12 +6671,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.pending",
-      "sha256": "c370333f131e99e4b1f720198e494ba7c1f510197d6ea0bbfd9b43aede695206",
+      "sha256": "3daf4d61393cf3951a003f2716d60ec09dbc0b6de82be17ecdd69d5bc930d88b",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.pending",
-      "sha256": "7b3af931a63df6b1964c17c8605fdd2f86b922ea88eebdd92c5b20781a6cd594",
+      "sha256": "71ba4f0ac558a220bde4d155497729e23635108e91c8df1cbc3baa5917ef3f66",
       "pending": true
     },
     {
@@ -7197,7 +6691,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/UILogManager.xaml.pending",
-      "sha256": "1d4fcf3279a48685ab63f0088bb33dee5a5e8f0c63849a35bc39804709b3a898",
+      "sha256": "d8bedddc44581ab7f71278276e538c39a844cd21711f75c2500df46e2a9a647a",
       "pending": true
     },
     {
@@ -7227,17 +6721,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.pending",
-      "sha256": "b266b532409c1d43b2a9ffdf6be1ff9224233cce3a657875ebe7342af58954ca",
+      "sha256": "7c1042f30d985473b043ae3876dfed70d40b73599e55f0a53ce1f1688218a8d0",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ExportAlgorithmWindow.xaml.pending",
-      "sha256": "b9e912fa327257067a60e9a8f21d02b49656ecc5ad85c402682e2ff8eda3daf7",
+      "sha256": "932b571f9b85e39dab13b164c5c62ada1e7769e7307cf224fb6b555a236acdcb",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.pending",
-      "sha256": "f21e3cbdc01b9338e4d4ed188684b319f90195a1ebaf299d1016ee93761e9abc",
+      "sha256": "bb21dfb9451003604697823bedbb2918c9d50dc16e754b10ec35dd391d8b8adc",
       "pending": true
     },
     {
@@ -7247,7 +6741,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.pending",
-      "sha256": "f9aedc7a174b41b48d8949cd9421dac409cb7bfba9e37fcb3119ec3c31f13bd7",
+      "sha256": "8c9a87293951b5b529ba6f449461140b7bf27212940702a1578c9ba628fa35f3",
       "pending": true
     },
     {
@@ -7262,12 +6756,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.pending",
-      "sha256": "4a9cfb1630ad20040ec5c950a94e80b6e7306c4557861841d4d044a9641fd958",
+      "sha256": "20a062b3370c2e8b008c63ff746ede5a3f3b3042fb23a1f7053e54d2d42f3fb4",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.pending",
-      "sha256": "88beb1291d708592c8b66817a3f2b8e13fd2ac5acb20c641f1c963d1fac2285e",
+      "sha256": "d5dcbcf923ddad8aea5401b8482afdc54a09ce78284504e98173c9d8207a61d1",
       "pending": true
     },
     {
@@ -7277,17 +6771,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.pending",
-      "sha256": "980f56bc7295fb1fd2e8ae203c7f55347296a753ba89675bc02ced271cd8118b",
+      "sha256": "25ea010ff370e3e9da175d65312147dbcb17cd751ef2a476be07c6076ad8c463",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SysParamSet.xaml.pending",
-      "sha256": "3a7d27e7f799a6d742bab02246e58b24deaed30386e4210935b6943d3564fc82",
+      "sha256": "acfb1e007c38c175d75427c13933c9d3aad34da7b17429f78f3b60692aadc41a",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TimeOutSet.xaml.pending",
-      "sha256": "e81f96e076a4e9ee864d97dc43c2798c5f08454c76971107445a0cfa0464f1a1",
+      "sha256": "25cd89c703a8317ae8f67ce860bb5b80ee2c3edf2c7e31e183469609a80d9271",
       "pending": true
     },
     {
@@ -7307,22 +6801,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.pending",
-      "sha256": "e605370e09dd8f876c729fb30cbde03a0e885f76d68f39f9bb6565713052e0b9",
+      "sha256": "690d5317284a0bd92025d7f0f4856d93b0f850d5c6830e09bd137792fdbbdf9d",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.pending",
-      "sha256": "804b74cf6c421d88d6fef63ea7622cb6a34ee432bb688bb068e744774de3a410",
+      "sha256": "518b3e881f84ee3a198c3bbbc4711ded8ad8251fe696e50f40578da98890d33a",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.pending",
-      "sha256": "d2413ce69e37aceced50fd497b685afc21c52b0a24ef7a53330b8848804ee7cc",
+      "sha256": "a18c6920a2ad350fcc0a274a7b85f9555aad1fe2fd3160f8c196f409b3d33877",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.pending",
-      "sha256": "82c52176dac762936e074e9334298a1de2fd08afb7cd7b84210be7431e9e5731",
+      "sha256": "8c40f815e7cbefeffdc789661ec65433f79de5b2978ebd8cc27bec3a36d6085a",
       "pending": true
     },
     {
@@ -7332,12 +6826,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.pending",
-      "sha256": "ecfc316ca32898b28728f11600ab363088946ccfa97d87a5cf6bc6e25189f1af",
+      "sha256": "5f6878bfb7ebc6339a59e88fa743ea6546b73bf7f15ea3d22d79ee2a91c4c556",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.pending",
-      "sha256": "4dba45c2ad904897ba896250d8c4f4decc01c9cb5666fa697e96c7ce88f13042",
+      "sha256": "5172ec2aebf5c808f6c58532df931370f23c2a147ad19a1d29183fa4d5358df5",
       "pending": true
     },
     {
@@ -7347,7 +6841,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.pending",
-      "sha256": "557c2700a36d814d2605e177d0d2c5ca4ab6ec3f78baceb587826bdfdb0ebcb1",
+      "sha256": "71f8b505d016484882e55835d4a81736b1bdb545bd84598116ff22cbae9b1528",
       "pending": true
     },
     {
@@ -7357,17 +6851,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.pending",
-      "sha256": "eab1a556c5f4cc54ec2c1ca8161f02119c0300273ed49c03ed22bab468fd9c71",
+      "sha256": "2234192b3eecbd3969c5ee12abd9d15307f792c31d8e7389307e859fe7663b49",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.pending",
-      "sha256": "326832be2e86ee51dbe3caa7e3993202b3cb3f88416e49fc069d46df4e79c63e",
+      "sha256": "18514c2efe2ed6f5f4122b9ef4b7167e656d991d1fb140688cfc4a2bf6673fef",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.pending",
-      "sha256": "f7a8245b5c4e1dfb6be03f48834869c7bfc177dab5cae12edc39a9f5fb4fa16e",
+      "sha256": "2bbe1a297e8946f207fff5ce32c0597123bdaa31ef8b0694cdb389d1874a68d1",
       "pending": true
     },
     {
@@ -7377,17 +6871,17 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.pending",
-      "sha256": "d5f47acd18f8813ccbdc130df27721029b0bb91585e39c45c45248a2fdb6ba08",
+      "sha256": "6f125d1237658a3159f357a715aca23741259a6403b01984409d5bfdf3012ad3",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.pending",
-      "sha256": "0fd8e6fe60da47e65c756411e1789e39fdd1047473d17d2731e2ae8144e050ab",
+      "sha256": "eeac5ee302858079290617fe2381b29ec0d3ce387edbf76ed5cb40523c1c7351",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.pending",
-      "sha256": "a14348af7b16f29ed6321e0c9e5d3cf9f36b5444a6e95220b12b46a0fe92ace6",
+      "sha256": "eb4b8cbc7d700ca7e01149709b13442a07c54b56c300ffcf0e405b018f9ab363",
       "pending": true
     },
     {
@@ -7397,32 +6891,32 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.pending",
-      "sha256": "8451088acad87ba3bfa67d06da13d24d99b9ea94119608d953cfa138ad7de53b",
+      "sha256": "8ade410dc6c6ce24e4b23fc9949775b3b3919ea2de17c88c7a27f4cd3fae0659",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.pending",
-      "sha256": "821d8d047f1f837af233a0da006c48b79e5e1a186ec3bc2d574a1eb5cb9bfad9",
+      "sha256": "cb930b7c43d336f38e11d4db171fc08e8a450472de7a3dba7b1e0ff731ff266a",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.pending",
-      "sha256": "d38ba184fced8837b4752cd895cae9afbbd201c86401767501fb71063010dad6",
+      "sha256": "6102445e1a5e2f03e194a54cd435712ffd773b1f5fe88fa2eed59cfab1c593ae",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.pending",
-      "sha256": "716ad4d5465cf1675ebaf2d9345fbefa8b42597a4dad4ec850c90b1937a802a3",
+      "sha256": "9e866f6ac962b8225bceaed8a1d849b8d49805773e273ae9d554658cfb05c4cf",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/DynamicRunParamDisplayWin.xaml.pending",
-      "sha256": "bca01933ac0629e5e4b21d9e0f5912a6b90613b1e1cb909204ddb2e4a99b3c67",
+      "sha256": "d7161fda567ebc7e9b280c28eaa774e47530a51f08f4a3bf7af72261de70dc96",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.pending",
-      "sha256": "1997d3ef9cf75a22f3f8088a1de38f2e60943bebf4ff0acc31b9c70137039e77",
+      "sha256": "3715e6a1c92fcd97b853045349d6be586ffd6416aee8fdc5646c6c34d39b27c2",
       "pending": true
     },
     {
@@ -7432,7 +6926,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/paramtabcontrol/paramtabui/frequentlystyle.xaml.pending",
-      "sha256": "cb9936148264d3847624c13f96598bdc45efb9edb86084b7fe30fee017a5b4b0",
+      "sha256": "577a9ad54f79b4467fd6bab9c0700b3aaa3087f0d1628eefb3c0af2aa7672f53",
       "pending": true
     },
     {
@@ -7442,12 +6936,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending",
-      "sha256": "046f630316ac513ce4a27764a2429acd6f4ae33138cb6813657ee8ca2625cd09",
+      "sha256": "f0866b9995918da10d41d599fe6e2d59d07c00bfb26f54be66302df185ff7f67",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
-      "sha256": "009d05f0dfd17f50bf7dc3ebff372249b4e3c8426485c5c65d1ffc0607be0683",
+      "sha256": "8499c1903f08edb1f91ef4609970d8fbcd0cf64a27c3f6f54db653efb3e59639",
       "pending": true
     },
     {
@@ -7467,7 +6961,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.pending",
-      "sha256": "b8a43d2ce633cb66afbf49ff159df329ca8690e45fe81052d54e97cff8e27eeb",
+      "sha256": "3d34405921b7765f3607d1ede6376ed816643fe80917763cafad0575b210b8b6",
       "pending": true
     },
     {
@@ -8037,7 +7531,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml.pending",
-      "sha256": "d345aae9fb10c03c7da4820ae537c68a678734c4d30b47ae068626a0e5ae861d",
+      "sha256": "28ee8399964a78f59ae505fd694a271660914ab70e4e4c5f8d43155ca9367fe4",
       "pending": true
     },
     {
@@ -8047,22 +7541,22 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxsetting/commentsetting.xaml.pending",
-      "sha256": "1d2b5e7f2279c1aafd243dda10d09c9b82e36379beed7e47d983054129a83e57",
+      "sha256": "488de3f35b0ade7a0219e23c66eb6665275ba3d458fe8f59bf074c780cbf7933",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxstyle.xaml.pending",
-      "sha256": "b96040636d735941b5313c12955b7cab45eb3f2df922c5dfc34096c2507f3d32",
+      "sha256": "cb85e859029a6b2302012bdb201aabc9f0b8c4d6765cb9e589ebf08481c4576f",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/connection/connectionstyle.xaml.pending",
-      "sha256": "b88e2874daeb6c083e0a6f23851bb5de00e0993ddb44421658f9b7b4f2e3d0ae",
+      "sha256": "0f54eb68b61e563421fca34dc2a02840c21717eb6e3430e5c32e6e52d7a4f823",
       "pending": true
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/diagramitemtemplate.xaml.pending",
-      "sha256": "882f54ac6ccbdcc95ca73c075c605988e3b7e741990b2d727495e79a677a20dd",
+      "sha256": "6103ca7eab3afccdb08f28624ae7b5b31cb017903c4c356d363a73d4bfb231c0",
       "pending": true
     },
     {
@@ -8077,7 +7571,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/searchmodulepopup/searchdrypopup.xaml.pending",
-      "sha256": "73e481909d5bcf490de53996d805cb1c2dd2e3d54847226fe1ce7ca8ff87b7b7",
+      "sha256": "3e31198f6e17dea4070f83157f0dacc761ce88389b8bf9408195bca91c7f1d14",
       "pending": true
     },
     {
@@ -8087,7 +7581,7 @@
     },
     {
       "path": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml.pending",
-      "sha256": "38cb03be499dc80e1a1d0398cc8732a9426cc728c8ee9fcde44afd9d94902bc3",
+      "sha256": "00176f934410ae1da7f73fdf776f5fba79756fbcb6af14cf0341f25005149051",
       "pending": true
     },
     {
@@ -8146,6 +7640,16 @@
       "pending": false
     },
     {
+      "path": "src/Plugin.Wpf/Themes/Native/Localization/en-us.xaml",
+      "sha256": "3e6897213458fa5f1df6dd8a535cd238e6a4ca171ed048a8640d17cf81e7ca89",
+      "pending": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+      "sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e",
+      "pending": false
+    },
+    {
       "path": "src/Plugin.Wpf/Themes/Native/Numeric/AppsXmlUi/SliderArrangeDictionary.xaml",
       "sha256": "7b1d58b0132cae5df2283176c39186e5f25964de60b9617ae7c1e31c7e327521",
       "pending": false
@@ -8177,12 +7681,6 @@
     }
   ],
   "unresolved_xaml_names": {
-    "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/ArrowRadioButton.xaml.pending": [
       "Apps.Data.ResourceBinding"
     ],
@@ -8194,9 +7692,6 @@
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/CrossRadioButton.xaml.pending": [
       "Apps.Data.ResourceBinding"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/ImageViewController.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Common/RectRadioButton.xaml.pending": [
       "Apps.Data.ResourceBinding"
@@ -8219,7 +7714,6 @@
       "Microsoft.Xaml.Behaviors.TargetedTriggerAction.TargetObject"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikImageView.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.Core.CallMethodAction",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
@@ -8238,42 +7732,26 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.TargetedTriggerAction.TargetObject"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ImageListPanel.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "VM.Utility.CheckAdditionManager.Instance",
       "VMControls.Interface.IVMRun.IsRunning"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LocalImageListView.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/LogView.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/MainViewControl.xaml.pending": [
       "VMControls.Interface.IChildren.Children"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding",
       "VM.Core.VmIO",
       "VM.Core.VmModule"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ModuleSetShapesConfig.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Apps.XmlParser.ParamTab.Holder"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsTabControlBase.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Apps.PcUI.HeadReNameTextBox",
       "Microsoft.Xaml.Behaviors.Core.ChangePropertyAction",
       "Microsoft.Xaml.Behaviors.Core.DataTrigger",
@@ -8290,10 +7768,6 @@
       "VMControls.Interface.IVMRun.IsRunning",
       "VMControls.Interface.IVMRun.RunEnable"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RenderControlBase.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/RunButtonControl.xaml.pending": [
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.PerSuperImageButton",
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.PerSuperImageButton.DisableSource",
@@ -8301,12 +7775,7 @@
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.PerSuperImageButton.NormalSource",
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.PerSuperImageButton.PressedSource"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/SearchModuleView.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ToolBox.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction",
@@ -8318,7 +7787,6 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Apps.UIHelper.Extern.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
@@ -8336,8 +7804,6 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding",
       "Apps.UIHelper.Extern.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
@@ -8349,44 +7815,22 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/ModifyName.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/RectDragPanal.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Apps.UIHelper.Extern.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/StatusBar.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "VMControls.Interface.IVMRun.RunEnable"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/WindowLockModeTipsView.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.CameraAcq/RealTimeAcqControl.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/AddDeviceType.xaml.pending": [
-      "Apps.Localization.ResourceBinding"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GloablTriggleConfigUI.xaml.pending": [
-      "Apps.Localization.LangResource"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.pending": [
-      "Apps.Localization.LangResource",
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Xaml.Behaviors.Core.ChangePropertyAction",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.TargetedTriggerAction.TargetObject"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.pending": [
-      "Apps.Localization.LangResource",
       "Apps.Localization.PathResourceBinding",
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.Controls.HikTextBox",
       "Apps.XmlParser.ParamTab.EnumEntry",
       "Apps.XmlParser.ParamTab.EnumeraionComDeviceCvt.Cvt",
@@ -8398,11 +7842,7 @@
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.ParamsEventCommand",
       "VMControls.Interface.IVMRun.IsRunning"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.Controls.ProgressMask",
       "Apps.PcUI.HeadReNameTextBox",
       "Apps.UIHelper.Extern.ParamsEventCommand",
@@ -8419,9 +7859,6 @@
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.SuperImageButton.PressedConnent",
       "VMControls.Interface.IVMRun.IsRunning"
     ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/LightSourceDlg.xaml.pending": [
-      "Apps.Localization.ResourceBinding"
-    ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/OutputConfigWindow.xaml.pending": [
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
@@ -8432,9 +7869,6 @@
       "Microsoft.Xaml.Behaviors.Interaction.Behaviors",
       "VMControls.Interface.IVMRun.IsRunning",
       "VMControls.Interface.IVmModule"
-    ],
-    "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.TimeDialog/ShowTimeDialog.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
     ],
     "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release/VmFrontendControl.xaml.pending": [
       "FrontendUI.Design.FrontendRootControl"
@@ -8543,15 +7977,7 @@
       "FrontendUI.Design.Controls.BaseControl.UserCostomer",
       "FrontendUI.Design.Controls.NumbericParamControl"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/bottombuttonstyle.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/normalbuttonstyle.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/buttonstyle/togglebuttonstyle.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding",
       "Apps.UIHelper.Extern.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.Core.ChangePropertyAction",
       "Microsoft.Xaml.Behaviors.EventTrigger",
@@ -8564,7 +7990,6 @@
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml.pending": [
       "Apps.Data.Common.GroupIndexConverter",
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Windows.Themes.ListBoxChrome",
       "Microsoft.Windows.Themes.ListBoxChrome.Background"
     ],
@@ -8588,62 +8013,39 @@
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.pending": [
       "Apps.Data.TabTypeEnum.Panal",
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.Common.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Apps.PcUI.Common.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "VMControls.Interface.IVmSolution.IsSubscribeInWindow"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/UILogManager.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.pending": [
       "Apps.PcUI.Controls.HikTextBox"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/EdgeInspGroupPanel.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.Common.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.Core.ChangePropertyAction",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.TargetedTriggerAction.TargetObject"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ExportAlgorithmWindow.xaml.pending": [
-      "Apps.Localization.LangResource",
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/GlobalVariableSelectDlg.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Apps.XmlParser.ParamTab.EnumEntry"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.pending": [
-      "Apps.Localization.ResourceBinding"
-    ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/ReverseLeftRightControl.xaml.pending": [
-      "Apps.Localization.ResourceBinding"
-    ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/RunParamsSelectWindow.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.pending": [
-      "Apps.Localization.ResourceBinding"
-    ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SysParamSet.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/TimeOutSet.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
@@ -8654,25 +8056,21 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/Box3DROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleCaliperROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CircleMesROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
@@ -8680,53 +8078,40 @@
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerControlView.xaml.pending": [
       "Apps.Data.Common.Brush2ColorConverter",
       "Apps.Data.Common.NegateConverter",
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Apps.PcUI.Controls.PopupButton",
       "Apps.PcUI.Controls.PopupButton.ButtonStyle",
       "Apps.PcUI.Controls.PopupButton.SubContent"
     ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml.pending": [
-      "Apps.Localization.LangResource"
-    ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/CoordinateROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineCaliperROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/LineROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/MatrixCircleROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PointROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.pending": [
       "Apps.BaseData.GetIndexConverter",
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
-    ],
-    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PreLoadPage.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.pending": [
       "Apps.BaseData.NumCompareConverter",
@@ -8753,7 +8138,6 @@
       "Apps.XmlParser.ParamTab.RoiType.UroBox"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelecterCombine.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Apps.XmlParser.ParamTab.RoiType.Box",
       "Apps.XmlParser.ParamTab.RoiType.CircleCaliper",
       "Apps.XmlParser.ParamTab.RoiType.CircleMes",
@@ -8775,42 +8159,34 @@
       "Apps.XmlParser.ParamTab.RoiType.UroBox"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorCaliperStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorRingROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SectorROIStack.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/DynamicRunParamDisplayWin.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Apps.PcUI.Common.ConfirmBaseWindow"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl.DisplayForGroupControl/ROIConfigControl.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "VMControls.Interface.IDecorate.DecorateSource"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.Common.ParamsEventCommand",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending": [
       "Apps.BaseData.NumCompareConverter",
-      "Apps.Localization.LangResource",
       "Apps.Localization.PathResourceBinding",
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.Common.ParamsEventCommand",
       "Apps.PcUI.Common.PerSuperImageButton",
       "Apps.PcUI.Common.SuperImageButton",
@@ -8835,11 +8211,9 @@
       "VMControls.Interface.IVmSolution.IsContinuousSelfExecute"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControlPanal.xaml.pending": [
-      "Apps.Data.TabTypeEnum.Panal",
-      "Apps.Localization.ResourceBinding"
+      "Apps.Data.TabTypeEnum.Panal"
     ],
     "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/paramtabcontrol/paramtabui/frequentlystyle.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"
@@ -8850,17 +8224,11 @@
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
     "src/Plugin.Wpf/Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.Core.CallMethodAction",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers"
     ],
-    "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxstyle.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/diagramitemtemplate.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
-      "Apps.Localization.ResourceBinding",
       "Apps.PcUI.HeadReNameTextBox",
       "Apps.UIHelper.Attach.AttachedRoutedEvent.Event",
       "Apps.UIHelper.Attach.AttachedRoutedEventBase.Command",
@@ -8879,21 +8247,15 @@
       "VMControls.Interface.IVMRun.IsRunning"
     ],
     "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml.pending": [
-      "Apps.Localization.ResourceBinding",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Common.ParamsEventCommand",
       "VMControls.Interface.IVmIO.DisplayValue"
     ],
-    "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxsetting/commentsetting.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance"
-    ],
     "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/connection/connectionstyle.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "VM.User.CodeManager.Instance"
     ],
     "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/searchmodulepopup/searchdrypopup.xaml.pending": [
-      "Apps.Localization.LocalizationResourceDictionary.Instance",
       "Microsoft.Xaml.Behaviors.EventTrigger",
       "Microsoft.Xaml.Behaviors.Interaction.Triggers",
       "Microsoft.Xaml.Behaviors.InvokeCommandAction"

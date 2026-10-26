@@ -1,6 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
-using Apps.Localization;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
 

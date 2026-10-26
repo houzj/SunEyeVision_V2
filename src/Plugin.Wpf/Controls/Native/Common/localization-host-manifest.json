@@ -1,0 +1,64 @@
+{
+  "phase": "source_and_host_adaptation_not_runtime_acceptance",
+  "artifact": {
+    "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Localization.dll",
+    "sha256": "ef43c79e30aaa5db98775569d7fe5f9b23f41af6280c7e4ed7cf5a902fcf2381",
+    "rea_evidence": "ev_fa75ad7c5a1c32ec3fb63822416d2a6f92a27978e977ed42a3c495a866264a7c"
+  },
+  "entries": [
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.Localization\\ResourceBinding.cs",
+      "source_sha256": "80d0740ce2302b17f73df52e556d94e51a22363715dee3daa3ac1d3944e09318",
+      "target": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+      "target_sha256": "cd3944f83b4027ae03f98f49c5b7aab6985d81f6335f3bf97ba8d97583680688",
+      "kind": "source_port"
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.Localization\\LangResource.cs",
+      "source_sha256": "003fa12e0f7a4891073d5ec2032d9c4a676d75886ad152ceb389c1bc04c2df72",
+      "target": "src/Plugin.Wpf/Controls/Native/Common/Localization/LangResource.cs",
+      "target_sha256": "40b4332a78f8d802c214ac62b661f247cb364667731cc7986e4315356ed3717b",
+      "kind": "source_port"
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.Localization\\AppLocalizationService.cs",
+      "source_sha256": "f4d8b75881fdafcb5620714357fbc821552a5c47fd5e0ff9c6c3f73223db2334",
+      "target": "src/Plugin.Wpf/Controls/Native/Common/Localization/AppLocalizationService.cs",
+      "target_sha256": "2813f0172c485f3b1edf5cb85f953f5eab07b11daff90f8d916123c803d59928",
+      "kind": "explicit_host_adaptation"
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.Localization\\LocalizationResourceDictionary.cs",
+      "source_sha256": "7f770dd233d33bb9a688bebf1003ac19dae708fd891819d5a870d78033635152",
+      "target": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+      "target_sha256": "ec26255bb5112a91defd4b334ef239ddaf7e466bce847fea558bf6a3ee235dd8",
+      "kind": "explicit_host_adaptation"
+    },
+    {
+      "source": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Lang\\zh-cn.xaml",
+      "source_sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e",
+      "target": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+      "target_sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e",
+      "kind": "original_language_data"
+    },
+    {
+      "source": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Lang\\en-us.xaml",
+      "source_sha256": "3e6897213458fa5f1df6dd8a535cd238e6a4ca171ed048a8640d17cf81e7ca89",
+      "target": "src/Plugin.Wpf/Themes/Native/Localization/en-us.xaml",
+      "target_sha256": "3e6897213458fa5f1df6dd8a535cd238e6a4ca171ed048a8640d17cf81e7ca89",
+      "kind": "original_language_data"
+    }
+  ],
+  "type_map": {
+    "Apps.Localization.ResourceBinding": "SunEyeVision.Plugin.Wpf.Native.Common.Localization.ResourceBinding",
+    "Apps.Localization.LangResource": "SunEyeVision.Plugin.Wpf.Native.Common.Localization.LangResource",
+    "Apps.Localization.AppLocalizationService": "SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService",
+    "Apps.Localization.LocalizationResourceDictionary": "SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResourceDictionary"
+  },
+  "boundary": [
+    "ResourceBinding/LangResource原算法仅改namespace；字典与查询服务为明确宿主适配",
+    "仅插件内部读取已迁入语言数据，不读写VM配置、不注入Application资源",
+    "当前迁入控件只承接GetLang/GetLangType/GetInternalLang查询；不宣称VM全局语言切换已恢复",
+    "未命中key保持原文字；内部字段标签可由宿主提供字典覆盖，不恢复厂商业务模型"
+  ]
+}

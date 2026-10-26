@@ -30,6 +30,12 @@
       "sha256": "65ebb5edabf77465fa01f8c6d70efdcbd4b6a87f510911249cd93d73649d1cdf",
       "rea_evidence": "ev_ff90a25ff7174a267deac758048e4cc18f99ed9a1b9aa7d73434aad58f4ed551",
       "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "sha256": "5685c13c79321e7d7ec4ed85e764d00c915ca54401d5ccb6314414d54f76e120",
+      "rea_evidence": "ev_6f9b6761f00a733d4aa20ae8f02e4174b6a42920de912495fe814194616485be",
+      "executed": false
     }
   ],
   "entries": [
@@ -1255,6 +1261,17 @@
       ]
     },
     {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIHelper\\UIHelper.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIHelper.dll",
+      "source_sha256": "3fdf59fa2f15e0e591bef3966b0ef70a8ef99c3c39160ec5424fa30ac2a2178b",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/UIHelper.cs",
+      "target_sha256": "f9b1b3ced27f78a164ce01b6775ab77c08924d04089a5cc8efa946589c200212",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
       "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIHelper\\ObjectEventArgs.cs",
       "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIHelper.dll",
       "source_sha256": "26b6370e89fa6c237e965f19ecac6016f692acfbbd0bf413556b16b401cb151f",
@@ -1286,6 +1303,146 @@
       "adaptations": [
         "namespace only; original converter/interface bodies retained"
       ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\BindableBase.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "1a10092397e0bde6f011e87742c9cd3af5e7444bb3636e9ff856adfba0db6bad",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/BindableBase.cs",
+      "target_sha256": "26c583999803b8eceb01112c3842cb5ed1b4a859c37060974b5ba3763f776a3b",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\ErrorsContainer.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "ffa68fd3146f48ae6f6d89c0715f11b581670b409c08b9e04c443e85c2b3fdec",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/ErrorsContainer.cs",
+      "target_sha256": "e50fdcda183169e83bba66dbb92259a7c3225c9a97e3b52821339fa190356a70",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\IActiveAware.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "5299a4036e8808ade4a823f6195a372f01dee25953f4836be16ad02716852216",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/IActiveAware.cs",
+      "target_sha256": "57d3b04d1684ddaed07bca912cbf4eea565a22c5cb929f9fe405c05bd2cbdea6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\IView.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "1320fc1ca79e9dac940d37157fee94f035b45717f011c3b1522dcac2d3dade31",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/IView.cs",
+      "target_sha256": "caf1239c94331c9661b3c5e31a9cee8a161bb4f2195ed93e7cf39d94690dbd14",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\PropertySupport.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "064dbd949a96cf1b90c66cac3bd5fd5a1214d8569641231e798796e29dc2d6c2",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/PropertySupport.cs",
+      "target_sha256": "c609236252ce5186625e29caca96bced7fce3796bdc1b0aebeec1002a241d9b2",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\ViewModelLocationProvider.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "458dda347e2ab8f4e2d90dae01bfc34228c20758a2ba5e94423fdc1799311151",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/ViewModelLocationProvider.cs",
+      "target_sha256": "da9b9b9fe3f853c37db5ddbe9761ccea410de8622977902fe4d9561ab02ac686",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm\\ViewModelLocator.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "bc5d0449b7c04a572396513589c2ba884c50564eeea5912ed63290d7f4b5bfda",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm/ViewModelLocator.cs",
+      "target_sha256": "53edda11b8d1c7b08e22377099445372132fc1ed6a0d2fae8e56a46f27fecb68",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm.Commands\\CompositeCommand.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "7a34ed2e83f7bc4c680fd774d749d0fb4d46c0891681aaed3f93b657bd2594df",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/CompositeCommand.cs",
+      "target_sha256": "7018b881b5253c234e6c8101d8522c71454d0aa0426efff25ca6393ef62573c5",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm.Commands\\DelegateCommand.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "433b8770776d86476438b64ad6bb5e29192477dd5a94351ee0e46fe4e74962af",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/DelegateCommand.cs",
+      "target_sha256": "112c85bf0e6845d088b6fa8c189aee25870e9edf718c37b0e4501f06f6686cca",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm.Commands\\DelegateCommandBase.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "4f116e0b6632d2480e510bfebb708c7cd26658f5ea1bcaf429984e6376f47c12",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/DelegateCommandBase.cs",
+      "target_sha256": "60e5028a853c6f672e79dc216b527f867d696831c035f327773afbd391140da5",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm.Commands\\WeakEventHandlerManager.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "f5ebba9e8f184b8c5797c661be793080df51c9bcb743525f127494eee0b9e7f1",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Commands/WeakEventHandlerManager.cs",
+      "target_sha256": "62778a332db90c5749ee1c7b24117a2900053d9bd8b4227f46ddbb16c8cda707",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm.Properties\\Resources.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "a92fa661df21adbc255e68a0a566469352e09e374d3bad7801b906e520f27bac",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Properties/Resources.cs",
+      "target_sha256": "ab3d3b6d95a118d54d8e2420d2585194477be67a5de76d179d1529971f6003b6",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Mvvm\\Mvvm.Properties.Resources.resx",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\3rdLib\\MVVM\\Mvvm.dll",
+      "source_sha256": "13228ac7767eb83f06abae1880bd486e9ad9c6689013e03d07d59a8e26bcc8c2",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Properties.Resources.resx",
+      "target_sha256": "13228ac7767eb83f06abae1880bd486e9ad9c6689013e03d07d59a8e26bcc8c2",
+      "kind": "original_embedded_resource"
     }
   ],
   "type_map": {
@@ -1400,10 +1557,29 @@
     "Apps.BaseData.NULLJudgeConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.NULLJudgeConverter",
     "Apps.BaseData.DynamicResourceDictionary": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.DynamicResourceDictionary",
     "Apps.UIHelper.Extern.UIExtern": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIExtern",
+    "Apps.UIHelper.Extern.UIHelper": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper",
     "Apps.UIHelper.Extern.ObjectEventArgs": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventArgs",
     "Apps.UIHelper.Extern.ObjectEventHandler": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventHandler",
-    "VM.Utility.DelegateCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility.DelegateCommand"
+    "VM.Utility.DelegateCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility.DelegateCommand",
+    "Mvvm.BindableBase": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.BindableBase",
+    "Mvvm.ErrorsContainer": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.ErrorsContainer",
+    "Mvvm.IActiveAware": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.IActiveAware",
+    "Mvvm.IView": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.IView",
+    "Mvvm.PropertySupport": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.PropertySupport",
+    "Mvvm.ViewModelLocationProvider": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.ViewModelLocationProvider",
+    "Mvvm.ViewModelLocator": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.ViewModelLocator",
+    "Mvvm.Commands.CompositeCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.CompositeCommand",
+    "Mvvm.Commands.DelegateCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.DelegateCommand",
+    "Mvvm.Commands.DelegateCommandBase": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.DelegateCommandBase",
+    "Mvvm.Commands.WeakEventHandlerManager": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.WeakEventHandlerManager",
+    "Mvvm.Properties.Resources": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Properties.Resources"
   },
+  "embeddedResourcesForRootBuildIntegration": [
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Properties.Resources.resx",
+      "logicalName": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Properties.Resources.resources"
+    }
+  ],
   "not_claimed": [
     "Not a second workflow or algorithm model",
     "No vendor DLL deployed",

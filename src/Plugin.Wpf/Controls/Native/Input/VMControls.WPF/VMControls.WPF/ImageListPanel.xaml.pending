@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<local:ImageListPanelBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ImageListPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:controlls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Unity="clr-namespace:VM.Utility;assembly=VM.Utility" x:Name="ImagePanel" DataContextChanged="ImagePanel_DataContextChanged" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls">
+<local:ImageListPanelBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ImageListPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:controlls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Unity="clr-namespace:VM.Utility;assembly=VM.Utility" x:Name="ImagePanel" DataContextChanged="ImagePanel_DataContextChanged" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Apps.Style;component/CheckBoxStyle/CheckBoxStyle.xaml" />
         <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
-        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0_:LocalizationResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <local:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />

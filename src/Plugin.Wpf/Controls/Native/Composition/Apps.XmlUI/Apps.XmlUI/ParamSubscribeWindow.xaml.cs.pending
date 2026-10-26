@@ -7,8 +7,6 @@ using System.Windows.Interop;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using VM.PlatformSDKCS;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;

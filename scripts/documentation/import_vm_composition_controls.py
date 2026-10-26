@@ -77,6 +77,12 @@ for library in ('Apps.XmlUI', 'Apps.Style'):
             target = DEST / 'Themes/Native/Composition' / library / relative
         # Keep original vendor-contract-bound pages separate from usable standalone controls.
         # A .pending file is explicitly NOT a compiled/migrated/accepted control.
+        if source.name == 'ROIStackControl.cs':
+            # 只开放已按原件补齐命令库的纯视觉组合基类，不放行厂商参数模型。
+            external.discard('Mvvm.Commands')
+            old_registration = 'DependencyProperty.Register("IsShow", typeof(IROI), typeof(ROIStackControl), new PropertyMetadata(null))'
+            assert old_registration in text, 'ROIStackControl来源已变化，先复核布尔依赖属性适配'
+            text = text.replace(old_registration, 'DependencyProperty.Register("IsShow", typeof(bool), typeof(ROIStackControl), new PropertyMetadata(false))')
         if external:
             target = Path(str(target) + '.pending')
         for assembly in ('Apps.XmlUI', 'Apps.Style'):

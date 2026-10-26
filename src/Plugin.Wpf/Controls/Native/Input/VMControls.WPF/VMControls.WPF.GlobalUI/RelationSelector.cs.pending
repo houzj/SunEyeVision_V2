@@ -4,7 +4,7 @@ using System.Windows.Input;
 using Apps.Data;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Apps.XmlParser.ParamTab;
-using Mvvm.Commands;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using VMControls.Interface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.GlobalUI;

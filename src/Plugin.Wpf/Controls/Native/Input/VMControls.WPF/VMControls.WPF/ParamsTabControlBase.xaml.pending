@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<local:TabWinBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ParamsTabControlBase" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="win" Closing="BaseWindow_Closing" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+<local:TabWinBase x:Class="SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.ParamsTabControlBase" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="win" Closing="BaseWindow_Closing" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMControls" xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun" xmlns:vm_port_0_="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <x:StaticExtension Member="vm_port_1:ColorThemesResourceDictionary.Instance" />
-        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="vm_port_0_:LocalizationResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </FrameworkElement.Resources>
@@ -14,7 +14,7 @@
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} {1}">
             <Binding Path="DataContext.Owner.ID" ElementName="paramstab" />
-            <Lang:ResourceBinding Path="DataContext.OwnerTypeName" ElementName="paramstab" />
+            <vm_port_0_:ResourceBinding Path="DataContext.OwnerTypeName" ElementName="paramstab" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>

@@ -13,8 +13,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup.Primitives;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Attributes;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid;
 

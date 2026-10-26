@@ -4,7 +4,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Mvvm.Commands;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
@@ -17,7 +17,7 @@ public class ROIStackControl : Control
 
 	private ICommand _DragingChangedCommand = null;
 
-	public static readonly DependencyProperty IsShowProperty = DependencyProperty.Register("IsShow", typeof(IROI), typeof(ROIStackControl), new PropertyMetadata(null));
+	public static readonly DependencyProperty IsShowProperty = DependencyProperty.Register("IsShow", typeof(bool), typeof(ROIStackControl), new PropertyMetadata(false));
 
 	public IROI ROIData
 	{

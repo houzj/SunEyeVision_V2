@@ -1,0 +1,28 @@
+<UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.WorkflowLocationControl"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+ xmlns:workflow="clr-namespace:SunEyeVision.UI.Services.Workflow" Width="32" Height="32">
+ <Grid>
+  <ToggleButton x:Name="Expand" ToolTip="流程列表" Checked="ExpandChanged" Unchecked="ExpandChanged" Background="Transparent" BorderThickness="0">
+   <ToggleButton.Template><ControlTemplate TargetType="ToggleButton">
+    <Border Background="{TemplateBinding Background}"><Image x:Name="Icon" Stretch="None" Source="/SunEyeVision.UI;component/Resources/Workflow/ic_tab_downarrow_normal.png"/></Border>
+    <ControlTemplate.Triggers>
+     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Icon" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_tab_downarrow_hover.png"/></Trigger>
+     <Trigger Property="IsChecked" Value="True"><Setter TargetName="Icon" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_tab_downarrow_click.png"/></Trigger>
+     <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Icon" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_tab_downarrow_disable.png"/></Trigger>
+    </ControlTemplate.Triggers>
+   </ControlTemplate></ToggleButton.Template>
+  </ToggleButton>
+  <Popup x:Name="LocationsPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=Expand}" StaysOpen="False" AllowsTransparency="True" Closed="PopupClosed">
+   <Border CornerRadius="5" Padding="1" BorderThickness="1" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
+    <TreeView x:Name="Locations" MaxHeight="320" MinWidth="194" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" PreviewMouseLeftButtonDown="LocationClick" PreviewKeyDown="LocationKeyDown">
+     <TreeView.ItemTemplate><HierarchicalDataTemplate ItemsSource="{Binding Children}">
+      <TextBlock Text="{Binding Name}" ToolTip="{Binding Name}" Width="156" Height="30" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Padding="0,6,0,0"/>
+     </HierarchicalDataTemplate></TreeView.ItemTemplate>
+     <TreeView.ItemContainerStyle><Style TargetType="TreeViewItem"><Setter Property="IsExpanded" Value="True"/><Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/></Style></TreeView.ItemContainerStyle>
+    </TreeView>
+   </Border>
+  </Popup>
+ </Grid>
+</UserControl>

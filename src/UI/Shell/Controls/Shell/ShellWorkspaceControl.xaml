@@ -41,7 +41,8 @@
                     <ColumnDefinition Width="*"/>
                     <!-- 左侧:TabItems区域 -->
                     <ColumnDefinition Width="Auto"/>
-                    <!-- 右侧:添加按钮区域 -->
+                    <ColumnDefinition Width="32"/>
+                    <!-- 右侧:添加按钮及流程列表 -->
                   </Grid.ColumnDefinitions>
 
                   <!-- 左侧:ScrollViewer包裹TabPanel和可滚动添加按钮 -->
@@ -96,6 +97,8 @@
                       </Border>
                     </StackPanel>
                   </ScrollViewer>
+
+                  <shell:WorkflowLocationControl Grid.Column="2" Loaded="WorkflowLocationsLoaded"/>
 
                   <!-- 右侧:固定的添加工作流按钮 - 当TabItems多时显示 -->
                   <Border Grid.Column="1"

@@ -14,20 +14,21 @@
   "subagentDelegationScope": "仅本轮三个已授权专项任务；不新增代理或恢复历史岗位",
   "crossConversationDispatchEnabled": true,
   "crossConversationDispatchScope": "仅用户已授权的逆向只读取证；本轮代理协作在当前主对话内完成，不恢复审批转发链",
-  "productCodeWriter": "blob_algorithm_scope（主对话发出基线和放权消息后生效）",
+  "productCodeWriter": "/root",
   "writePolicy": {
     "singleProductWriter": true,
     "explicitHandoffRequired": true,
     "handoff": "主对话先释放并明确授予写权、范围及基线；按AGENTS.md和HANDOFF_TEMPLATE.md记录跨AI代码交接及中文临时提交",
     "parallelProductWritesAllowed": false,
     "newCopiesOrWorktreesAllowed": false,
-    "isolationException": "并行开发及隔离分支或Worktree须用户另行明确授权；单写权交接不构成并行授权"
+    "isolationException": "并行开发及隔离分支或Worktree须用户另行明确授权；单写权交接不构成并行授权",
+    "issueRepair": "其他路报问题由主对话核准后交当前唯一产品写者修复；交接期间不并行写代码"
   },
   "tasks": [
     {
       "task": "/root",
-      "duty": "本阶段只读审查、文档与交付协调，暂将唯一产品写权交算法路；不与算法路同时修改产品或构建覆盖Release",
-      "writeScope": "CURRENT_TASK、ACTIVE_GOAL、协议、原方案/阶段文档及生成器；算法路交回前不写产品或验证源码",
+      "duty": "算法路已明确释放，根于c2a3d6c8检查点接回唯一产品/验证/构建写权，继续完整ROI及统一交付",
+      "writeScope": "产品/验证/构建、CURRENT_TASK、ACTIVE_GOAL及生成器；文档路五文件独占写窗释放前不并行写入",
       "deliverables": [
         "正式Release可运行成果及实际修复验证",
         "原主文档阶段总结与人工安排",
@@ -36,10 +37,8 @@
     },
     {
       "task": "blob_algorithm_scope",
-      "duty": "按明确基线和交接范围实施Blob算法职责迁移及上游承接，唯一产品写者；先保存/识别外部diff",
-      "writeScope": [
-        "HANDOFF_O06_ALGORITHM_20261026.md所列算法/合同/上游工具/必要持久化与回归；主对话实际放权后生效，不改文档路文件，不提交推送"
-      ],
+      "duty": "本阶段产品写权已明确交回根；后续仅只读算法专项审查，接新写权须再次明确交接",
+      "writeScope": "只读产品/源码与证据；不得自行写产品、验证源码或构建覆盖Release",
       "deliverables": [
         "真实分割三模式与严格二值上游链",
         "参数/nullable输出/保存拒绝和资源身份一致",
@@ -65,7 +64,8 @@
         "docs/collaboration/JOINT_COLLABORATION_PROTOCOL.md",
         "docs/collaboration/JOINT_TASK_ROLES.json",
         "docs/collaboration/S4_IMPLEMENTATION_PLAN_20261026.json",
-        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html：仅由现有scripts/documentation/update_s1_stage_summary.py生成；不得改生成器、产品、CURRENT_TASK、ACTIVE_GOAL或其他证据"
+        "docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json",
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o06.html：仅由现有生成器生成；不得改生成器、产品、CURRENT_TASK、ACTIVE_GOAL或其他证据"
       ],
       "deliverables": [
         "一致的轻量协议与角色定义",

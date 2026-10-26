@@ -20,10 +20,13 @@ internal static class S2DocumentEditingCases
     {
         var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
         var plugins=new PluginManager();plugins.LoadPlugins(Path.Combine(product,"plugins"));PluginLoader.MarkAsLoaded();
+        plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));
         Check("真实四工具run/declared/pixel三级所有权与输入保留",()=>WorkflowOwners(plugins));
         foreach(var id in new[]{"ImageFilter","ImageThreshold","Morphology"})Check(id+"失败部分输出释放且输入不释放",()=>PartialFailure(id));
         foreach(var async in new[]{false,true})foreach(var expired in new[]{false,true})foreach(var failedCleanup in new[]{false,true})
             Check($"owned迟到结果 async={async} expired={expired} failedCleanup={failedCleanup}",()=>RejectedOwnedResult(async,expired,failedCleanup));
+        foreach(var id in new[]{"ImageFilter","ImageThreshold","Morphology"}){Check(id+"真实Results同引用去重与多租约",()=>CountedOutputOwner(id,false));Check(id+"真实Results多图异常仍全部清理",()=>CountedOutputOwner(id,true));}
+        foreach(var async in new[]{false,true})foreach(var expired in new[]{false,true})Check($"dual cleanup exceptions async={async} expired={expired}",()=>DualCleanupFailure(async,expired));
         var json=JsonSerializer.Serialize(Outcomes,new JsonSerializerOptions{WriteIndented=true});Console.WriteLine(json);
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"resource-results.json"),json);
         return Outcomes.All(o=>JsonSerializer.SerializeToElement(o).GetProperty("passed").GetBoolean())?0:1;
@@ -43,11 +46,11 @@ internal static class S2DocumentEditingCases
         try
         {
             Require(run.Success,string.Join(";",run.Errors??new()));
-            foreach(var id in new[]{"filter","threshold","morphology"})
+            foreach(var id in new[]{"filter","threshold","morphology","blob"})
             {
                 native.AddRange(run.NodeResults[id].Result!.GetDisplayImages().Values.Where(i=>i is not null).Cast<IVisionImage>());
                 var reader=run.DeclaredOutputs.Single(o=>o.Identity.NodeId==id).AcquireReader();readers.Add(reader);
-                var field=reader.Snapshot.Fields.Single(f=>f.Value.Name=="OutputImage").Key;
+                var field=reader.Snapshot.Fields.Single(f=>f.Value.Name==(id=="blob"?"GrayImage":"OutputImage")).Key;
                 var image=reader.Values!.Get<IReadOnlyImage>(field);typed.Add(image);pixels.Add(image.AcquirePixels());
             }
             run.Dispose();Require(native.All(image=>image.Width==32),"run.Dispose破坏仍持declared reader的原图");
@@ -55,7 +58,7 @@ internal static class S2DocumentEditingCases
             var alive=0;foreach(var image in native){try{if(image.Width==32)alive++;}catch(ObjectDisposedException){}}
             Console.WriteLine($"上游原图总数={native.Count}，run及最后declared reader释放后仍可访问={alive}");
             Require(alive==0,"UPSTREAM_NATIVE_OWNER_LEAK: 原始HalImage未随最后结果租约释放。");
-            Require(input.Width==32,"输出owner错误释放调用者输入");
+            Require(input.Width==32&&input.GetPixelData().SequenceEqual(bytes),"输出owner错误释放或修改调用者输入");
             foreach(var image in typed)Disposed(()=>image.CopyPixels());
             foreach(var lease in pixels)Require(lease.GetRow(0).Length==32,"已取得pixel lease未独立保活");
             foreach(var lease in pixels){lease.Dispose();Disposed(()=>lease.GetRow(0).ToArray());}
@@ -108,12 +111,45 @@ internal static class S2DocumentEditingCases
         finally{if(produced is not null){produced.ThrowOnOwnerRelease=false;produced.Resources?.Dispose();}returned.Resources?.Dispose();}
     }
     public sealed class ProbeParameters:ToolParameters { }
+    // This is an ownership-boundary proxy, not a substitute algorithm/native execution.
+    private sealed class CountingImage(string key,bool throwOnDispose=false):IVisionImage
+    {
+        private readonly HalImage _native=HalImage.CreateFromBytes(new byte[]{255},1,1,1);
+        public int DisposeCount;public bool Released;public Exception Failure{get;}=new InvalidOperationException("COUNTED_DISPOSE_"+key,new IOException("COUNTED_INNER_"+key));
+        public int Width=>_native.Width;public int Height=>_native.Height;public int Channels=>_native.Channels;public bool IsEmpty=>_native.IsEmpty;
+        public byte[] GetPixelData()=>_native.GetPixelData();public IVisionImage Clone()=>throw new NotSupportedException("Ownership probe never clones.");
+        public void Dispose(){DisposeCount++;Released=true;_native.Dispose();if(throwOnDispose)throw Failure;}
+        // Deliberately value-equal instances: ownership must deduplicate by reference identity.
+        public override bool Equals(object? other)=>other is CountingImage;public override int GetHashCode()=>1;
+    }
+    private static void CountedOutputOwner(string id,bool throwOnDispose)
+    {
+        var tool=ToolRegistry.CreateToolInstance(id)!;var result=(ToolResults)Activator.CreateInstance(tool.ResultType)!;
+        var slots=new[]{"OutputImage","GrayImage","BinaryMask"}.Select(name=>result.GetType().GetProperty(name)).Where(p=>p is not null).Cast<PropertyInfo>().ToArray();
+        using var callerInput=HalImage.CreateFromBytes(new byte[]{128},1,1,1);var values=new List<CountingImage>();
+        if(!throwOnDispose){var same=new CountingImage(id+"shared");values.Add(same);foreach(var slot in slots)slot.SetValue(result,same);}
+        else for(var i=0;i<slots.Length;i++){var value=new CountingImage(id+i,i<slots.Length-1);values.Add(value);slots[i].SetValue(result,value);}
+        var first=result.Resources!.Retain();var last=result.Resources.Retain();result.Resources.Dispose();Require(values.All(v=>v.DisposeCount==0),"owner释放提前清理仍有租约输出");first.Dispose();Require(values.All(v=>v.DisposeCount==0),"倒数第二lease提前清理");
+        AggregateException? failure=null;try{last.Dispose();}catch(AggregateException error){failure=error;}
+        Require(values.All(v=>v.DisposeCount==1&&v.Released),"同引用多次Dispose或不同引用误合并/后图未清理");
+        foreach(var value in values)Disposed(()=>value.Width.ToString());Require(callerInput.GetPixelData().Single()==128,"输出owner释放了未拥有的输入");
+        if(throwOnDispose)Require(failure is not null&&failure.Flatten().InnerExceptions.Count==slots.Length-1&&values.Take(slots.Length-1).All(value=>failure.Flatten().InnerExceptions.Any(inner=>ReferenceEquals(inner,value.Failure)&&inner is InvalidOperationException&&inner.InnerException is IOException)),"多图真实清理异常对象/类型/inner聚合丢失");else Require(failure is null,"正常去重释放意外抛错");
+        result.Resources.Dispose();first.Dispose();last.Dispose();Require(values.All(v=>v.DisposeCount==1),"重复Dispose重新清理资源");
+    }
+    private static void DualCleanupFailure(bool async,bool expired)
+    {
+        using var cancellation=new CancellationTokenSource();var owner=new ToolExecutionOwner();OwnedResults? produced=null;
+        OwnedResults Body(){produced=new OwnedResults{Status=ExecutionStatus.Success,ThrowOnOwnerRelease=true,ThrowOnLegacyRelease=true};if(expired)owner.RetireNode("dual-flow/owned");else cancellation.Cancel();return produced;}
+        IToolPlugin tool=async?new AsyncOwnedTool(Body):new OwnedTool(Body);var request=new ToolExecutionRequest(new ProbeParameters()){ExecutionOwner=owner,WorkflowId="dual-flow",NodeId="owned",CancellationToken=cancellation.Token};var executor=new ToolExecutor(new ParameterResolver());var returned=async?executor.ExecuteAsync(tool,request).GetAwaiter().GetResult():executor.Run(tool,request);
+        try{Require(produced is not null&&produced.OwnerReleaseCount==1&&produced.LegacyDisposeCount==1,"owner异常跳过legacy或重复清理");Disposed(()=>produced!.Image.Width.ToString());Require(returned.Status==ExecutionStatus.Failed&&returned.ErrorMessage?.Contains("OWNED_RELEASE_FAILURE")==true&&returned.ErrorMessage.Contains("LEGACY_RELEASE_FAILURE"),"双清理异常被吞/降级取消");Require(owner.ActiveRuns==0,"异常后执行owner未排空");var diagnostics=returned.ErrorMessage+"\n"+returned.ErrorStackTrace;File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,$"dual-cleanup-async{async}-expired{expired}.txt"),diagnostics);Require(new[]{"System.InvalidOperationException","System.IO.IOException","OWNER_INNER_DETAILS","System.ArgumentException","System.FormatException","LEGACY_INNER_DETAILS"}.All(diagnostics.Contains),"清理Failed保留顶层消息但丢失异常类型/完整inner链");}
+        finally{if(produced is not null){produced.ThrowOnOwnerRelease=false;produced.ThrowOnLegacyRelease=false;produced.Resources?.Dispose();}returned.Resources?.Dispose();}
+    }
     public sealed class OwnedResults:ToolResults,IDisposable
     {
         public HalImage Image{get;}=HalImage.CreateFromBytes(new byte[]{255},1,1,1);
-        public bool ThrowOnOwnerRelease;public int OwnerReleaseCount;public int LegacyDisposeCount;
-        public OwnedResults()=>Resources=new ResultResourceOwner(()=>{OwnerReleaseCount++;Image.Dispose();if(ThrowOnOwnerRelease)throw new InvalidOperationException("OWNED_RELEASE_FAILURE");});
-        public void Dispose()=>LegacyDisposeCount++;
+        public bool ThrowOnLegacyRelease;public bool ThrowOnOwnerRelease;public int OwnerReleaseCount;public int LegacyDisposeCount;
+        public OwnedResults()=>Resources=new ResultResourceOwner(()=>{OwnerReleaseCount++;Image.Dispose();if(ThrowOnOwnerRelease)throw new InvalidOperationException("OWNED_RELEASE_FAILURE",new IOException("OWNER_INNER_DETAILS"));});
+        public void Dispose(){LegacyDisposeCount++;if(ThrowOnLegacyRelease)throw new ArgumentException("LEGACY_RELEASE_FAILURE",new FormatException("LEGACY_INNER_DETAILS"));}
     }
     private class OwnedTool(Func<OwnedResults> body):IToolPlugin<ProbeParameters,OwnedResults>{public OwnedResults Run(ProbeParameters parameters)=>body();}
     private sealed class AsyncOwnedTool(Func<OwnedResults> body):OwnedTool(body),IAsyncToolPlugin{public async ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request){await Task.Yield();return Run((ProbeParameters)request.Parameters);}}

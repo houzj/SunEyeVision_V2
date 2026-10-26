@@ -266,7 +266,7 @@ def render_s4_stage(page):
                   + ('<p><b>'+escape(s4['uiReview']['uiArchitectureDecision']['principle'])+'</b></p>'+table(['层次','现有基础','明确处理'],s4['uiReview']['uiArchitectureDecision']['rows']) if s4['uiReview'].get('uiArchitectureDecision') else '')
                   + table(['处理','本方对象','VM依据与本方差距','功能承接及工程调整'],s4['uiReview']['decisions'])
                   + ('<h4 id="o06-algorithm-ui-differences">算法职责、参数与输出怎样对应三页</h4>'
-                     + '<p>以下为已批准的调整方向，尚未完成的算法与关联适配继续实施。预处理交上游专用工具；形态学经外部分割和专用工具处理，再由Blob不二值化接入。VM原件已有不二值化声明，不能因此推断其原生公式；不能挪用ROI端口或原样搬用现有固定128阈值的形态学工具。</p>'
+                     + '<p>已实现Blob单阈值、双阈值和不二值化；内置预处理/形态学已移出，均衡化交ImageFilter，严格二值形态学交Morphology，再由Blob不二值化接入。实际验证与剩余见本段当前检查表。VM原件已有不二值化声明，但不能据此推断其原生公式或数值等价；不能挪用ROI端口。</p>'
                      + table(['差异','双方实际证据','推荐取舍','UI承接','未确认/实施边界'],s4['uiReview']['algorithmDifferences'])
                      + '<h4>窗口完整组装链：VM与当前实现并排</h4>'
                      + table(['环节','VM静态链','本方当前链','推荐调整'],s4['uiReview']['chainComparison'])
@@ -432,13 +432,16 @@ def render_control_architecture(page):
         body.append('<tr class="br-group"><th colspan="5">'+escape(group)+'（'+str(len(group_rows))+'项）</th></tr>')
         for row in group_rows:
             paths='<br>'.join('<code>'+escape(p)+'</code>' for p in row['currentFiles']) or '旧文件已删除；原路径见历史记录。'
+            actual='<br>'.join('<code>'+escape(p)+'</code>' for p in row.get('actualFiles',[]))
+            implementation=('<p><b>实际承接文件：</b><br>'+actual+'</p>' if actual else '<p>尚未落地为新文件。</p>')
+            implementation+='<p><b>旧消费者：</b>'+escape(row.get('consumerState','迁移状态待逐项核收，不能据词法提及删除。'))+'</p>'
             mentions=row['staticMentions']
             consumers='<details><summary>静态提及/消费者候选 '+str(len(mentions))+'处</summary><p>'+ '<br>'.join(escape(p) for p in mentions)+'</p><small>含声明/类型提及，不等于每处均为实际运行调用；迁移时逐处核收。</small></details>'
             cells=[
                 '<code>'+escape(row['name'])+'</code><p>'+escape(row['responsibility'])+'</p>',
-                paths+'<p>'+escape(row['currentState'])+'</p>'+consumers,
+                '<b>当前状态：</b>'+escape(row['currentState'])+implementation+'<details><summary>原文件位置</summary>'+paths+'</details>'+consumers,
                 '<b>'+escape(row['evidenceKind'])+'</b><p>'+'<br>'.join(vm_ref(k) for k in row['sourceRefs'])+'</p><small>'+escape(row['limits'])+'</small>',
-                '<b>'+escape(row['action'])+'</b><p>提取/承接：'+escape(row['reuse'])+'</p><p>退出/剥离：'+escape(row['retire'])+'</p><p>目标文件（拟）：<code>'+escape(row['target'])+'</code></p>',
+                '<b>'+escape(row['action'])+'</b><p>提取/承接：'+escape(row['reuse'])+'</p><p>退出/剥离：'+escape(row['retire'])+'</p><p>原设计目标：<code>'+escape(row['target'])+'</code></p>',
                 '<a href="#o06-control-interactions">'+escape(row['interaction'])+' 交互与验收</a><p>先迁消费者，再核资源、发布与关闭释放，最后退出旧文件。已批准持续实施；实际进度见当前实施表，未迁完不算删除完成。</p>'
             ]
             body.append('<tr id="o06-control-'+row['id']+'" data-control-name="'+escape(row['name'])+'" data-control-group="'+escape(row['group'])+'">'+''.join('<td>'+v+'</td>' for v in cells)+'</tr>')
@@ -481,10 +484,13 @@ src/Plugin.Wpf/Regions/             RegionGeometryEditor、RoiGeometryEditing与
 src/UI/Services/Editing/Nodes/      正常开窗、来源、ROI与私有草稿装配
 src/UI/Services/Editing/Regions/    独占RoiViewportEditScope
 src/UI/Shell/Controls/Panels/       主界面ImagePreviewControl
-Blob.Runtime/                      唯一HALCON执行、测量与输出；当前预处理/形态学尚未移出
+tools/SunEyeVision.BlobAnalysis/Runtime/  HALCON分割三模式、测量与输出；内置预处理/形态学已移出
+tools/SunEyeVision.Tool.ImageFilter/     上游滤波及新增有效域直方图均衡化
+tools/SunEyeVision.Tool.ImageThreshold/  显式二值化与BinaryMask输出
+tools/SunEyeVision.Tool.Morphology/      严格0/255准入、形态学与新增Circle
 Blob.Wpf/Views/                     现只读BlobDataAnalysisControl；旧BlobAnalysisToolDebugControl已删
 
-调整后（拟组织，未实施，不新建31个类）
+保留的目标组织（实际落地见上方及31行文件路径；以下不代表目录均已建立，不新建31个类）
 src/Plugin.Contracts/              中立字段、几何、结果与稳定引用；不含WPF/控件/主题
 src/Plugin.Wpf/
   Controls/                        提取NumericUpDown、RangeSlider、RangeInputControl、ToggleSwitch、ColorPicker
@@ -502,7 +508,7 @@ tools/SunEyeVision.BlobAnalysis/Runtime/
   BlobDefinition.cs                 现中立入口；不另建Definition工程
   BlobPresentation.cs               已实现Contracts页/组/显隐描述，后续随算法与ROI继续适配，不引WPF
 BlobConfigurationFields.cs（门面）   当前含WPF Color/旧SDK槽位，只作隔离适配，不搬入中立控件
-Blob.Runtime/                       HALCON唯一算法；分割与预处理/形态学调整已批准，尚待实施完成
+Blob.Runtime/                       HALCON唯一算法；分割三模式与上游职责承接已实施，完整ROI和整体界面继续适配
 Blob.Wpf/Views + Presentation/      当前只读表/标量投影继续使用；S5通用结果尚未实施
 
 依赖：工具Definition/Runtime → Contracts/算法基础；Plugin.Wpf → Contracts；UI宿主 → Plugin.Wpf+运行服务。

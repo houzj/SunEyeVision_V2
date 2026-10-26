@@ -1,6 +1,6 @@
 {
   "date": "2026-10-26",
-  "status": "方案供整体审核，尚未产品实施",
+  "status": "已批准并部分实际落地；算法/上游职责和本轮资源缺口已核收，完整ROI、旧消费者、整体UI/VS/人工未闭合",
   "baseline": "101bb36a3fad4e0f2096a47469989db610083cdc",
   "scope": "原31类逐项重新划职责与文件组织；不是31个新类，也不按旧继承树搬迁",
   "counts": {
@@ -59,7 +59,12 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob声明页已由字段行/页面组装承接标签、输入与错误位置；未新增拟目标FieldRow.xaml。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs"
+      ],
+      "consumerState": "Blob页已转声明字段；旧LabeledControl及多工具XAML仍在，其他消费者未迁完。"
     },
     {
       "id": "numericupdown",
@@ -106,7 +111,13 @@
         "tools\\SunEyeVision.Tool.NPointCalibration\\Views\\NPointSampleEditor.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "纯数值控件已提取并用于声明字段，浮点保真/文化/单滑条交互已有窗口检查点。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Controls/NumericUpDown.cs",
+        "src/Plugin.Wpf/Themes/Generic.xaml",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs"
+      ],
+      "consumerState": "新声明字段已使用独立Wpf控件；旧SDK数值控件及上游工具消费者仍在。"
     },
     {
       "id": "rangeslider",
@@ -131,7 +142,13 @@
         "src\\Plugin.SDK\\Themes\\Generic.xaml",
         "src\\Plugin.SDK\\UI\\Controls\\RangeInputControl.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "双端滑条已提取，配对范围由RangeField组合；未新建独立Range.xaml。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Controls/RangeSlider.cs",
+        "src/Plugin.Wpf/Fields/RangeField.cs",
+        "src/Plugin.Wpf/Themes/Generic.xaml"
+      ],
+      "consumerState": "新配对范围已承接；旧SDK RangeSlider仍被旧RangeInput/资源链使用，词法外部0不证明可删。"
     },
     {
       "id": "rangeinputcontrol",
@@ -163,7 +180,13 @@
         "tools\\SunEyeVision.Tool.Condition\\Views\\ConditionDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "原范围基础部件已提取；新声明字段的上下限与双滑条由RangeField组合承接。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Controls/RangeInputControl.cs",
+        "src/Plugin.Wpf/Fields/RangeField.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs"
+      ],
+      "consumerState": "Blob字段使用新范围组合；旧SDK范围控件及其工具/资源消费者未全迁。"
     },
     {
       "id": "toggleswitch",
@@ -218,7 +241,13 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "开关基础部件已提取，字段声明控制显隐/活动规则；不在控件计算业务判定。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Controls/ToggleSwitch.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Themes/Generic.xaml"
+      ],
+      "consumerState": "新声明页已使用；旧SDK开关及其他工具消费者仍在。"
     },
     {
       "id": "colorpicker",
@@ -245,7 +274,14 @@
         "src\\Plugin.SDK\\UI\\Converters\\UIntToColorConverter.cs",
         "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "取色器、HSV与调色板已提取到独立Wpf资源闭包，供ColorField草稿使用。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Controls/ColorPicker.cs",
+        "src/Plugin.Wpf/Controls/HsvColor.cs",
+        "src/Plugin.Wpf/Themes/ThemeColorPalette.cs",
+        "src/Plugin.Wpf/Themes/Generic.xaml"
+      ],
+      "consumerState": "Blob取色走独立Wpf；旧SDK取色器和ColorSelector资源链仍在，未作全局删除。"
     },
     {
       "id": "colorselector",
@@ -270,7 +306,13 @@
         "src\\Plugin.SDK\\Themes\\Generic.xaml",
         "src\\Plugin.SDK\\UI\\Previews\\AllControlsPreview.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "色块、RGBA编辑与确定/取消由ColorField承接；实际为cs+Generic模板，不存在拟ColorField.xaml。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/ColorField.cs",
+        "src/Plugin.Wpf/Controls/ColorPicker.cs",
+        "src/Plugin.Wpf/Themes/Generic.xaml"
+      ],
+      "consumerState": "Blob颜色字段已承接；旧ColorSelector/旧SDK内部消费者未核清，词法外部0不等于退休。"
     },
     {
       "id": "configsetting",
@@ -330,7 +372,15 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob声明字段及有限布局已承接，模式Constant-only与逻辑活动验证已实施；隐藏Upper保pending且非活动不阻塞，修订actual View/Host及其他Tab/折叠错误定向通过。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+        "src/Plugin.Wpf/Fields/RangeField.cs",
+        "src/Plugin.Wpf/Fields/ColorField.cs",
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+      ],
+      "consumerState": "Blob正常配置已不用旧ConfigSetting整页；旧ConfigSetting及其他工具消费者仍在。"
     },
     {
       "id": "parambinding",
@@ -408,7 +458,13 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "字段呈现稳定引用，宿主提供候选与选择；不复制旧字符串来源解释逻辑。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs"
+      ],
+      "consumerState": "Blob新字段订阅已承接；ImageFilter/Morphology等XAML仍使用旧ParamBinding。"
     },
     {
       "id": "parambindingbase",
@@ -442,7 +498,12 @@
         "tests\\SunEyeVision.Plugin.SDK.Tests\\SubroutineDisplayItemTypeContractTests.cs",
         "tests\\SunEyeVision.UI.Tests\\BindingUiRegressionTests.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob字段局部错误/原文与宿主候选职责已分开；不新增同名万能基类。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs"
+      ],
+      "consumerState": "旧基类仍由ConfigSetting继承，间接生产消费者仍在；未完成全局退出。"
     },
     {
       "id": "imagesourceselector",
@@ -486,7 +547,13 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "图像来源整行Combo已接宿主正式候选、稳定引用及序号；与数值订阅区分。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/SourceSelectionField.cs",
+        "src/Plugin.Wpf/Themes/Combo.xaml",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs"
+      ],
+      "consumerState": "Blob来源已改用新字段；其他工具旧ImageSourceSelector消费者仍在。"
     },
     {
       "id": "graphicsdisplayeditorcontrol",
@@ -520,7 +587,13 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "5类实际显示对象已配眼睛/编辑与私有样式草稿；不新增拟DisplayObjectField.xaml或虚造VM对象。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+      ],
+      "consumerState": "Blob对象配置已由新字段承接；旧GraphicsDisplayEditorControl多工具消费者仍在。"
     },
     {
       "id": "textdisplayeditorcontrol",
@@ -556,7 +629,14 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "文本/颜色/字号等沿同一声明字段呈现，未创建TextDisplayGroup.xaml；长标签和组合外观仍有VM差距。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+        "src/Plugin.Wpf/Fields/ColorField.cs",
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+      ],
+      "consumerState": "Blob现行文本字段已在新页；旧文本编辑器其他工具仍在，完整视图重组未闭合。"
     },
     {
       "id": "dispitemcolorcontrol",
@@ -585,7 +665,13 @@
         "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob图形样式颜色由共用ColorField与对象私有草稿承接，不保留第二颜色存储。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/ColorField.cs",
+        "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs"
+      ],
+      "consumerState": "Blob局部已承接；旧DispItemColorControl及旧图形编辑器链仍在，未全局删除。"
     },
     {
       "id": "disptextcolorcontrol",
@@ -614,7 +700,13 @@
         "tests\\SunEyeVision.Plugin.SDK.Tests\\SdkDefaultThemeDesignTimeContractTests.cs",
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "文本OK/NG颜色沿同一声明字段由ColorField承接；不是新建同名颜色控件。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/ColorField.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+      ],
+      "consumerState": "Blob颜色字段已承接；旧DispTextColorControl及旧文本组合链仍在，未全局删除。"
     },
     {
       "id": "judgmenteditorcontrol",
@@ -654,7 +746,14 @@
         "tools\\SunEyeVision.Tool.PointPointMeasure\\Views\\PointPointMeasureToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "声明页组合判定开关/条件范围，计算保留Runtime；未创建JudgmentGroup.xaml。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Fields/RangeField.cs",
+        "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs"
+      ],
+      "consumerState": "Blob判定配置已走新页；旧判定编辑器及其他工具消费者仍在。"
     },
     {
       "id": "roieditorcontrol",
@@ -688,7 +787,13 @@
         "src\\UI\\Services\\Workflow\\NodeResultManager.cs",
         "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "本地七类几何的形状、数值和编辑意图已由中立局部视图承接，宿主适配现行模型。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
+        "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs",
+        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs"
+      ],
+      "consumerState": "Blob本地编辑已承接；旧RoiEditorControl/其他工具链仍在，VM四继承与外观未完成。"
     },
     {
       "id": "roieditormanagercontrol",
@@ -720,7 +825,13 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob主图交互已交宿主独占scope，局部编辑只消费受限视口；不清主结果或其他scope。",
+      "actualFiles": [
+        "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs",
+        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs"
+      ],
+      "consumerState": "Blob已退出旧Manager接线；ImageFilter/Morphology等工具仍直接使用旧Manager，不能删旧类。"
     },
     {
       "id": "roisubscribepanel",
@@ -751,7 +862,13 @@
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiSubscribePanel.xaml",
         "tools\\SunEyeVision.Tool.PointCircleMeasure\\Views\\PointCircleMeasureToolDebugControl.xaml.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "按现行本地/继承几何/继承像素Region条件附着来源，保留底稿；未实现矩形/圆区域与参数四种继承。",
+      "actualFiles": [
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs",
+        "src/Plugin.Wpf/Fields/SourceSelectionField.cs"
+      ],
+      "consumerState": "Blob现行来源已由宿主承接；旧RoiSubscribePanel仍在旧ROI链使用，四继承迁移未完成。"
     },
     {
       "id": "shapetoolbar",
@@ -775,7 +892,12 @@
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml",
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\ShapeToolBar.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "当前形状选择由RegionGeometryEditor文字按钮调用受限绘制意图；不是拟RoiShapeSelector.xaml或已达VM图标工具条。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
+        "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs"
+      ],
+      "consumerState": "Blob已用局部形状命令；旧ShapeToolBar及旧ROI资源消费者尚未逐项核清，外部0不证明可删。"
     },
     {
       "id": "drawingparameterpanel",
@@ -801,7 +923,13 @@
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\DrawingParameterPanel.xaml",
         "src\\Plugin.SDK\\UI\\Controls\\Roi\\Views\\RoiEditorControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "本地几何参数由实际记录字段生成数值行并回写同一草稿；未创建GeometryFields.xaml。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
+        "src/Plugin.Wpf/Regions/RoiGeometryEditing.cs",
+        "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs"
+      ],
+      "consumerState": "Blob本地几何数值已承接；旧DrawingParameterPanel/旧ViewModel链仍在，四继承参数未接新UI。"
     },
     {
       "id": "toolbarcontrol",
@@ -832,7 +960,12 @@
         "tests\\SunEyeVision.Plugin.SDK.Tests\\DesignTimeInitializationContractTests.cs",
         "tests\\SunEyeVision.Plugin.SDK.Tests\\ToolItemContractTests.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob局部选择/移动/缩放/旋转和取消意图已有宿主链；未新建拟共用RoiShapeSelector.xaml。",
+      "actualFiles": [
+        "src/Plugin.Wpf/Regions/RegionGeometryEditor.cs",
+        "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs"
+      ],
+      "consumerState": "Blob局部意图已承接；旧ToolBarControl及资源链未核清，不能凭外部词法0删除。"
     },
     {
       "id": "imagecontrol",
@@ -897,7 +1030,13 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchTemplateEditorDialog.xaml",
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "真实宿主仍复用SDK ImageControl承载图像/坐标与子交互层；新Plugin.Wpf只消费受限视口，不是已迁出SDK。",
+      "actualFiles": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml",
+        "src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs",
+        "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs"
+      ],
+      "consumerState": "现行宿主和多工具仍实际使用原ImageControl；属于复用，不是旧消费者已全部迁走。"
     },
     {
       "id": "resultrenderlayer",
@@ -926,7 +1065,12 @@
         "src\\UI\\Services\\Workflow\\NodeResultManager.cs",
         "src\\UI\\Shell\\Windows\\MainWindow.xaml.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "现行结果绘制层继续使用；ROI交互独占子层并与正式结果分开，未新造Wpf结果层。",
+      "actualFiles": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+        "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs"
+      ],
+      "consumerState": "原结果绘制层仍被生产视口使用；未退出，也未宣称完成S5通用化。"
     },
     {
       "id": "imagepreviewcontrol",
@@ -964,7 +1108,13 @@
         "tests\\SunEyeVision.UI.Tests\\ImageSourceSavePersistenceTests.cs",
         "tests\\SunEyeVision.UI.Tests\\SolutionManagerUiTests.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "输入图像源列表/缩略图现由UI宿主现有面板承担，本轮未把它搬入Blob或Plugin.Wpf。",
+      "actualFiles": [
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+        "src/UI/Shell/Controls/Panels/ImagePreviewControl.FileImport.cs"
+      ],
+      "consumerState": "现行宿主消费者继续使用；本轮主要沿用，不将目标职责误报成新迁移。"
     },
     {
       "id": "tooldebugcontrolbase",
@@ -1038,7 +1188,12 @@
         "tools\\SunEyeVision.Tool.ShapeMatch\\Views\\ShapeMatchToolDebugControl.xaml",
         "tools\\SunEyeVision.Tool.Subroutine\\SubroutineTool.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "Blob旧专页已退出，新宿主声明控件仍继承现行ToolDebugControlBase使用编辑/运行/关闭合同；只完成部分职责拆分。",
+      "actualFiles": [
+        "src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs"
+      ],
+      "consumerState": "旧基类仍为新宿主和其他工具实际依赖，不能将旧Blob页删除当基类退休。"
     },
     {
       "id": "defaultdebugwindow",
@@ -1080,7 +1235,13 @@
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml",
         "tools\\SunEyeVision.Tool.Subroutine\\Views\\SubroutineDebugControl.xaml.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "420×500紧凑通用壳已实际接入并保留原命令/错误/关闭链；壳仍位于SDK，不是已迁入UI独立新窗。",
+      "actualFiles": [
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml",
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs"
+      ],
+      "consumerState": "现行宿主和其他工具继续使用SDK窗口；未来壳职责退出/资源迁移未完成。"
     },
     {
       "id": "customdebugwindow",
@@ -1107,7 +1268,11 @@
         "tests\\SunEyeVision.UI.Tests\\ImageThresholdProductionEditorTests.cs",
         "tests\\SunEyeVision.UI.Tests\\NodeEditorRoutingTests.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "现有可选专业窗口壳仍在，支持内容初始化合同；本轮未实施其最终宿主迁移或为Blob恢复专页。",
+      "actualFiles": [
+        "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs"
+      ],
+      "consumerState": "专业壳旧消费者仍有线索，未完成逐条核清；不能宣称已退出或统一替代。"
     },
     {
       "id": "blobanalysistooldebugcontrol",
@@ -1127,7 +1292,15 @@
       "limits": "对应所列子职责，不声称整个旧类或全部运行行为与VM等价。",
       "currentFiles": [],
       "staticMentions": [],
-      "currentState": "旧Blob专用页已在S4删除；本轮不恢复"
+      "currentState": "旧Blob专用配置页文件已在S4删除；正常参数页由UI声明宿主承接，Blob Wpf工厂仅提供只读结果视图。",
+      "actualFiles": [
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Sources.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
+        "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RegionSources.cs",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs"
+      ],
+      "consumerState": "该旧专页本体已删除且现行打开链已有真实验证；不能由此推断其他旧SDK类也可删除。"
     },
     {
       "id": "blobdataanalysiscontrol",
@@ -1151,7 +1324,14 @@
         "tools\\SunEyeVision.BlobAnalysis\\Wpf\\BlobEditorFactory.cs",
         "tools\\SunEyeVision.BlobAnalysis\\Wpf\\Views\\BlobDataAnalysisControl.xaml"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "只读结果表/摘要/标量投影及选择高亮仍由可选Blob Wpf承接；不拥有Region/图像句柄，不是S5平台。",
+      "actualFiles": [
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDataAnalysisControl.xaml",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDataAnalysisControl.xaml.cs",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Presentation/BlobAnalysisRow.cs",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs"
+      ],
+      "consumerState": "现行只读结果视图仍被工厂/宿主使用并复用，未删除或改成共享通用表。"
     },
     {
       "id": "toolicon",
@@ -1177,7 +1357,12 @@
         "src\\UI\\Shell\\Controls\\Toolbox\\ToolboxControl.xaml",
         "tests\\SunEyeVision.UI.Tests\\ToolboxPresentationTests.cs"
       ],
-      "currentState": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+      "currentState": "旧工具图标元数据控件仍在；新字段眼睛/笔/链由EditorIcons局部矢量提供，不能当ToolIcon职责全部替代。",
+      "actualFiles": [
+        "src/Plugin.SDK/UI/Controls/Icons/ToolIcon.cs",
+        "src/Plugin.Wpf/EditorIcons.cs"
+      ],
+      "consumerState": "旧ToolIcon及元数据/工具消费者仍在；仅局部字段图标独立，旧类未退出。"
     }
   ],
   "sources": {
@@ -1418,9 +1603,93 @@
       "window/paramRoot"
     ]
   ],
-  "deletionGate": "先迁消费者/资源与新合同适配，再核无生产调用、构建发布与释放回归，最后删旧文件；本轮只在方案列删除，产品不删。",
+  "deletionGate": "先迁实际消费者、资源与合同，再核无生产调用、构建发布及释放回归，最后删除旧文件。Blob旧专页已删除；其余按各行consumerState逐项核收，不以词法0或新类同名证明可删。",
   "notApprovedByProxy": "原版运行身份、完整活动主题与未观察交互仍未证；不把HTML或功能PASS算WPF外观验收。",
   "history": "docs/collaboration/history/O06_CONTROL_RECORDS_BEFORE_REORGANIZATION_20261026.json",
-  "engineeringNote": "Definition为职责，不新增Blob.Definition工程。现入口是Runtime/BlobDefinition.cs；当前门面BlobConfigurationFields.cs含WPF Color和旧SDK槽位投影。拟在Runtime增加纯中立BlobPresentation.cs，以Contracts有限页/组/显隐描述供Wpf选择模板；保留门面槽位适配隔离，不搬进中立控件。",
-  "buildAndVerification": "实施顺序：中立显示描述→基础资源/控件→字段模式/范围/来源→ROI组合→宿主三页与显示配置→实际消费者迁移→全量Release/设计时与运行时回归→删除旧类。保持工具不依赖UI宿主；迁移未实施前不改发布身份。"
+  "engineeringNote": "Runtime/BlobDefinition.cs与BlobPresentation.cs已存在；有限声明由Contracts承载，Plugin.Wpf实际Controls/Fields/Regions/Themes仅依赖Contracts。BlobConfigurationFields门面隔离现行SDK槽位适配；UI宿主组织草稿/候选/ROI/窗口。各行actualFiles为当前已核用途文件，target保留批准目标，二者不混用。",
+  "buildAndVerification": "算法三模式/上游承接/nullable模式输出/精确旧槽拒绝/活动校验已实施；ABDE8D独评Strict6+Window4及hiddenUpper/Morph通过。旧资源12FAIL→owner修复，7481E3独评18/4诊断FAIL→F28E同fixture22/0；最终全量0错误/1087警告47.52秒、41源/666payload/33正式装载。作者Resources12/FullChain8、根持久Resources004的22项分别记录。产品c2a3d6c8已保存，完整ROI/消费者/整体UI/VS/人工未完成。",
+  "implementationHistory": {
+    "date": "2026-10-26",
+    "sourceSha256BeforeUpdate": "17da73821fec6ac2dbf2622b6a624dae140b5ffff40693ad3f92b46b9c598a93",
+    "scope": "原设计基线及原currentState保留追溯，不再代表当前产品状态",
+    "originalBaseline": "101bb36a3fad4e0f2096a47469989db610083cdc",
+    "originalTopLevel": {
+      "status": "方案供整体审核，尚未产品实施",
+      "deletionGate": "先迁消费者/资源与新合同适配，再核无生产调用、构建发布与释放回归，最后删旧文件；本轮只在方案列删除，产品不删。",
+      "engineeringNote": "Definition为职责，不新增Blob.Definition工程。现入口是Runtime/BlobDefinition.cs；当前门面BlobConfigurationFields.cs含WPF Color和旧SDK槽位投影。拟在Runtime增加纯中立BlobPresentation.cs，以Contracts有限页/组/显隐描述供Wpf选择模板；保留门面槽位适配隔离，不搬进中立控件。",
+      "buildAndVerification": "实施顺序：中立显示描述→基础资源/控件→字段模式/范围/来源→ROI组合→宿主三页与显示配置→实际消费者迁移→全量Release/设计时与运行时回归→删除旧类。保持工具不依赖UI宿主；迁移未实施前不改发布身份。"
+    },
+    "originalCurrentStateById": {
+      "labeledcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "numericupdown": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "rangeslider": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "rangeinputcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "toggleswitch": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "colorpicker": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "colorselector": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "configsetting": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "parambinding": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "parambindingbase": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "imagesourceselector": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "graphicsdisplayeditorcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "textdisplayeditorcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "dispitemcolorcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "disptextcolorcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "judgmenteditorcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "roieditorcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "roieditormanagercontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "roisubscribepanel": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "shapetoolbar": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "drawingparameterpanel": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "toolbarcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "imagecontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "resultrenderlayer": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "imagepreviewcontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "tooldebugcontrolbase": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "defaultdebugwindow": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "customdebugwindow": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "blobanalysistooldebugcontrol": "旧Blob专用页已在S4删除；本轮不恢复",
+      "blobdataanalysiscontrol": "当前文件仍在；本轮只定方案，迁移/删除尚未执行",
+      "toolicon": "当前文件仍在；本轮只定方案，迁移/删除尚未执行"
+    }
+  },
+  "implementationBaseline": "产品检查点c2a3d6c8200e06070aa9c424481c90871e8b3aa4；payload仍F28E诊断候选，提交不代表另行重建版本",
+  "consumerEvidence": {
+    "path": "Release/_validation/O06-Window-20261026/control-consumer-inventory-current.json",
+    "scope": "同名词法线索，仅辅助定位，非类型绑定/运行迁移或删除证明；另已核部分XAML与继承链",
+    "verifiedExamples": [
+      "ImageFilter及Morphology现行XAML仍直接使用旧RoiEditorManagerControl和ParamBinding",
+      "SDK ConfigSetting仍继承ParamBindingBase",
+      "新RoiViewportEditScope仍实际持有SDK ImageControl",
+      "DeclaredToolConfigurationControl仍继承现行ToolDebugControlBase",
+      "BlobEditorFactory仅返回BlobDataAnalysisControl只读结果视图"
+    ]
+  },
+  "implementationEvidence": [
+    {
+      "path": "docs/collaboration/evidence/O06_ALGORITHM_IMPLEMENTATION_CHECKPOINT_20261026.json",
+      "sha256": "30028f2846c01651499650896746b48b1ad724202a315ad2a136e309366a2a4d"
+    },
+    {
+      "path": "Release/_validation/O06-Window-20261026/receipt-algorithm-revised-independent.json",
+      "sha256": "3bb274b0e0903c7dd803dc82627afc53ef956de6929d395ae65493e02f87ea82"
+    },
+    {
+      "path": "Release/_validation/O06-Window-20261026/receipt-resource-independent.json",
+      "sha256": "ae276bdd0b1cf540efd3867c47c35a3cdc81d8bd4b3dc8f1aa4101c67bee3c61"
+    },
+    {
+      "path": "Release/_validation/O06-Window-20261026/receipt-resource-diagnostics-independent.json",
+      "sha256": "2980a7d220f8330d103197f041680017de1eca479524670d989eabdce4451787"
+    },
+    {
+      "path": "Release/_validation/O06-Algorithm-20261026/frozen-resource-diagnostics-candidate.json",
+      "sha256": "f28e361c85eb7bf15130e3ce1acf995a832ae066f315757e541786b1a9f4e0a2"
+    },
+    {
+      "path": "docs/collaboration/evidence/O06_ALGORITHM_RESOURCE_CHECKPOINT_20261026.zip",
+      "sha256": "e87df6c54753fbb7b2f9e07e444ca5abada14b4a8d00eb5b0ad526bcf256b3c2"
+    }
+  ],
+  "visualAcceptance": "原方案用户VM实际截图同页同态核布局/样式，源码/模板/消费链支撑职责与交互，功能独测单列；不因缺原机通道忽略实图、不以PASS代整体UI。ROI层级/四继承、滑条/订阅动作、长精度/来源/文本和标题差距保留。"
 }

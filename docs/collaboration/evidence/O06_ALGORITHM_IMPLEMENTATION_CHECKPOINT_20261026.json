@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-26",
+  "status": "算法迁移与本轮资源缺口已核收，完整O06目标继续",
+  "productCommit": "c2a3d6c8200e06070aa9c424481c90871e8b3aa4",
+  "candidateManifest": "Release/_validation/O06-Algorithm-20261026/frozen-resource-diagnostics-candidate.json",
+  "candidateManifestSha256": "F28E361C85EB7BF15130E3CE1ACF995A832AE066F315757E541786B1A9F4E0A2",
+  "implemented": [
+    "Blob单阈值/双阈值/不二值化，nullable实际阈值及模式输出",
+    "移出内置预处理与形态学；上游均衡化、严格二值形态学及Circle承接",
+    "条件隐藏字段按逻辑活动性验证，保留休眠草稿",
+    "三上游native结果所有权、迟到结果双合同清理及完整异常诊断"
+  ],
+  "build": {
+    "errors": 0,
+    "log": "Release/_validation/O06-Algorithm-20261026/build-resource-diagnostics.log",
+    "warnings": 1087,
+    "seconds": 47.52
+  },
+  "independent": {
+    "sourceFiles": 41,
+    "preservedFailure": "receipt-resource-independent.json：18通过/4异常诊断失败，修复后同fixture复验；另保原native12组全失败基线",
+    "receipt": "Release/_validation/O06-Window-20261026/receipt-resource-diagnostics-independent.json",
+    "sha256": "2980A7D220F8330D103197F041680017DE1ECA479524670D989EABDCE4451787",
+    "failed": 0,
+    "passed": 22,
+    "payloadFiles": 666,
+    "loadedFormalRecords": 33
+  },
+  "persistentRegression": {
+    "sourceSha256": "EA778BAE1BC7B2DF0D9CCF9BA7C067EFF5C92C2644F88659329C1DD41B631A95",
+    "exit": 0,
+    "receipt": "Release/_validation/S3-20261025/Resources/attempt-004/receipt.json",
+    "source": "scripts/verification/O06ResourceCases.cs",
+    "passed": 22,
+    "command": "pwsh -NoProfile -File scripts/verification/Run-S2ReleaseValidation.ps1 -Stage S3 -Track Resources",
+    "adaptation": "同独立22组仅改入口类名/结果文件名；原12组已保在产品检查点，所有原断言保留并扩到Blob第4节点",
+    "scope": "此为主对话回归，不冒充第二份独立验收；未改产品程序集，无需因此重建产品",
+    "finalSourceCheck": {
+      "receipt": "Release/_validation/S3-20261025/Resources/attempt-005/receipt.json",
+      "change": "仅清除末尾空白行，22断言不变；该最终源码重新实跑通过",
+      "exit": 0,
+      "sourceSha256": "EC510267640EAEB51C53FB049EDF4E80A16B0ECE99ACDF8602B33912C68828CA",
+      "passed": 22
+    }
+  },
+  "fullChain": {
+    "passedGroups": 8,
+    "kind": "真实宿主事件/命令与HALCON、保存重开、下游消费，非物理鼠标/用户验收",
+    "attempt": "Release/_validation/S4-20261025/FullChain/attempt-024/receipt.json"
+  },
+  "evidenceArchive": {
+    "contains": "候选清单/独评通过及失败回执/必要日志与fixture/原外部diff；不含程序集或仓库副本",
+    "sha256": "E87DF6C54753FBB7B2F9E07E444CA5ABADA14B4A8D00EB5B0AD526BCF256B3C2",
+    "bytes": 179518,
+    "path": "docs/collaboration/evidence/O06_ALGORITHM_RESOURCE_CHECKPOINT_20261026.zip"
+  },
+  "remaining": [
+    "ROI矩形区域/矩形参数/圆区域/圆参数的完整typed执行及保存链",
+    "VM同页同态布局、图标、滑条和长文本差异",
+    "31类实际旧消费者/资源承接后退出",
+    "最终同源Release关联回归、VS设计器、用户集中试用反馈"
+  ],
+  "writer": "根已接回唯一产品/测试/构建写权；其他路只读审查或文档，不恢复旧管理角色"
+}

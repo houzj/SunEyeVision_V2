@@ -27,7 +27,7 @@ public sealed class DeclaredFieldEditor : UserControl
     private readonly Grid _row = new();
     private readonly StackPanel _actions = new() { Orientation=Orientation.Horizontal };
     private readonly TextBlock _label = new();
-    private NumericUpDown? _numeric;
+    private NativeNumberField? _numeric;
     private bool _updatingInput;
     private bool _pairedSlider;
     private bool _regionSourceSelector;
@@ -41,14 +41,14 @@ public sealed class DeclaredFieldEditor : UserControl
     }
     internal DeclaredFieldEditor CreateStagedCopy(string label)=>new(_port,label,_setting,_=>{},_selectReference,_constant,_formatReference,_choiceLabels,_presentation);
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;_referenceMode=setting is ReferenceSetting;Render();return true;}
-    public void UsePairedSlider(){_pairedSlider=true;if(_numeric is not null){_numeric.ShowSlider=false;_numeric.Padding=new Thickness(2,0,2,0);}}
+    public void UsePairedSlider(){_pairedSlider=true;_numeric?.UsePairedRange();}
     public bool TrySetConstant(object value)
     {
         if(HasInvalidText||!Set(new ConstantSetting(value)))return false;
         _updatingInput=true;
         try
         {
-            if(_numeric is not null)_numeric.Value=Convert.ToDouble(value,CultureInfo.InvariantCulture);
+            if(_numeric is not null)_numeric.SetLiteral(value);
             else if(InputElement is TextBox text)text.Text=Convert.ToString(value,CultureInfo.InvariantCulture)??"";
             else Render();
         }
@@ -145,7 +145,8 @@ public sealed class DeclaredFieldEditor : UserControl
                     eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
-                var input = new SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle { IsChecked = value as bool? == true };
+                var input = new SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle
+                    { IsChecked = value as bool? == true,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Center };
                 input.OnCheckedChange += (_, _) =>
                 {
                     if(_updatingInput||Set(new ConstantSetting(input.IsChecked==true)))return;
@@ -209,16 +210,10 @@ public sealed class DeclaredFieldEditor : UserControl
                 if(numeric&&_port.Storage!=NumericStorage.Int64&&(_port.Type.Scalar!=ScalarKind.Int64||_port.Storage is not null))
                 {
                     var layout=_presentation?.Layout;
-                    var input=new NumericUpDown{Height=32,FontSize=14,
-                        Minimum=layout?.Minimum??-double.MaxValue,Maximum=layout?.Maximum??double.MaxValue,
-                        Value=Convert.ToDouble(value,CultureInfo.InvariantCulture),
-                        DecimalPlaces=_port.Type.Scalar==ScalarKind.Int64?0:layout?.DecimalPlaces??2,
-                        SmallChange=layout?.Increment??1,LargeChange=layout?.Increment??1,
-                        ShowSlider=layout?.Minimum is not null&&layout.Maximum is not null,
-                        IntegerType=_port.Type.Scalar==ScalarKind.Int64?TypeCode.Int32:TypeCode.Empty};
-                    if(_pairedSlider){input.ShowSlider=false;input.Padding=new Thickness(2,0,2,0);}
-                    TextBox? attached=null;
-                    input.Loaded+=(_,_)=>{input.ApplyTemplate();if(input.TextEditor is {} box&&!ReferenceEquals(box,attached)){attached=box;Attach(box);input.AcceptInitialDisplayText();}};
+                    var input=new NativeNumberField(_port,layout,value!,literal=>Set(new ConstantSetting(literal)));
+                    if(_pairedSlider)input.UsePairedRange();
+                    input.InputReady+=()=>InputElement=input.TextEditor;
+                    input.ValidationChanged+=()=>Changed?.Invoke();
                     _numeric=input;InputElement=input;_body.Children.Add(input);
                 }
                 else {var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center};Attach(input);_body.Children.Add(input);}

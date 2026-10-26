@@ -1,0 +1,2926 @@
+{
+  "schema": "vm-blob-control-appearance-evidence/v1",
+  "generatedUtc": "2026-10-26T09:12:46.9732783Z",
+  "product": "VisionMaster",
+  "tool": "IMVSBlobFindModu",
+  "sourceArtifacts": [
+    {
+      "role": "Blob参数/页面定义",
+      "path": "Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec"
+    },
+    {
+      "role": "Blob算法主体",
+      "path": "Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModu.dll",
+      "sha256": "4de695d8c3051045c9010739686f94c32d66a36ee486207fe749fb183fff4c9a",
+      "reaEvidence": "ev_2438c3859462a4920d4ae64ed8c5b86a78fe880056c0bc4c97f78602fab15705",
+      "classification": "原生 PE；REA 未发现 CLI 数据目录"
+    },
+    {
+      "role": "Blob托管适配程序集",
+      "path": "Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuCs.dll",
+      "sha256": "3106af2e9344a97288553bfbbfa86afd81e2384188b452734f56825f63e0a78d",
+      "reaEvidence": "ev_9af527f6d0dd76bf57a954dece44ff7240f59d6569eb6bcc1f7bacd79053587b",
+      "classification": "托管 CIL；不是独立的 Blob WPF 控件程序集"
+    },
+    {
+      "role": "共享参数编辑器",
+      "path": "Applications/myLibs/Apps.XmlUI.dll",
+      "sha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "reaEvidence": "ev_651d839ccc62083571d850045c7b89f6d524b8f7259d2ec009b59d56fac8986",
+      "embeddedResource": "Apps.XmlUI.g.resources"
+    }
+  ],
+  "controlResources": [
+    {
+      "role": "BooleanControl off 图片资源",
+      "sourcePath": "analysis/decompiled/Apps.XmlUI/resources/swith_off.png",
+      "path": "assets/blob/swith_off.png",
+      "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+    },
+    {
+      "role": "BooleanControl on 图片资源",
+      "sourcePath": "analysis/decompiled/Apps.XmlUI/resources/swith_on.png",
+      "path": "assets/blob/swith_on.png",
+      "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
+    }
+  ],
+  "existingPreview": {
+    "title": "O06 UI 交互预览",
+    "path": "D:\\MyWork\\SunEyeVision_V2\\docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\optimization-o06-ui-preview.html",
+    "sha256": "45d00774b5bee37d04a683538ace6973cb3a6e49d616aa2436d95119a830da56",
+    "role": "O06仅作版式参考；控件预览内置于本清单，不跳转到外部页面"
+  },
+  "popupAudit": [
+    {
+      "id": "image-source",
+      "label": "图像输入源下拉/候选弹层",
+      "blobEvidence": "Blob XML: GroupLinkItem Name=ImageSourceGroup → LinkName=ImageSourceGroup",
+      "o06Coverage": "有组合框和候选列表，但当前候选是 O06 示例数据，文档也标明尚未接入生产工作流",
+      "verdict": "外观骨架可参考；Blob 到宿主候选枚举、连接状态与选择写回链未由该预览证明"
+    },
+    {
+      "id": "enum",
+      "label": "枚举下拉",
+      "blobEvidence": "Blob XML 声明 6 个 Enumeration 实例；ThresholdType 的原始选择值为 0x1–0x6",
+      "o06Coverage": "有下拉控件，但预览的阈值选项为三项示例，和 Blob 六项不相同",
+      "verdict": "控件形态可参考；必须用 Blob XML 的具体选项和触发条件替换示例"
+    },
+    {
+      "id": "numeric",
+      "label": "整数/浮点数值输入与滑杆弹层",
+      "blobEvidence": "共享模板将 Integer 映射到 SliderArrange；其 XAML 默认 NumericControl，打开 ComboBox Popup 后显示 Slider；范围类型绑定两个 NumericControl 和双端 Slider",
+      "o06Coverage": "已有单值/双端滑杆草案",
+      "verdict": "覆盖该控件家族；实际尺寸、资源色与 Blob 参数实例需核对"
+    },
+    {
+      "id": "roi",
+      "label": "ROI 工具与 ROI 编辑区",
+      "blobEvidence": "Blob XML ROISelecter: FullScreenEnable=True, SelectType=Mul, ROISelection=Box SectorRing Polygon Sector, RoiMaxNum=16",
+      "o06Coverage": "有 ROI 交互示意，但包含通用/其他能力，未严格限定 Blob 的四种 ROI 和完整运行时列表/编辑状态",
+      "verdict": "有基础预览；Blob 专属可选图标、选中态、列表/编辑弹层不完整"
+    },
+    {
+      "id": "advanced",
+      "label": "Expert 展开区",
+      "blobEvidence": "Blob XML 存在 Expand Name=Expert；共享 DataTemplate 键 Expand 渲染 ToggleButton",
+      "o06Coverage": "有通用折叠区，但不是 Blob Expert 的原始参数集合",
+      "verdict": "外观结构可参考；Blob 实际展开内容和触发显隐未呈现"
+    },
+    {
+      "id": "image-display",
+      "label": "图像显示对象眼睛开关与配置弹层",
+      "blobEvidence": "Blob XML 声明 9 个 ImageViewConfig；VM 模板的 ImageViewConfig_subContent 是 260px PopupButton 配置层：OK颜色、NG颜色、透明度、按 StrokeThicknessConfigEnable 条件显示的粗细；高度 120/150px",
+      "o06Coverage": "预览列 6 种图层并提供颜色/RGB/线宽模态框；透明度字段在文本显示页，不在图层样式弹窗。弹出方式和字段组合不同",
+      "verdict": "确认存在缺口：9项映射需补齐；原生 260px PopupButton 弹层应有 OK/NG/透明度/条件线宽，不能拿当前模态框当作同一控件"
+    },
+    {
+      "id": "mask",
+      "label": "输入/输出掩膜关联组",
+      "blobEvidence": "Blob ROI 区有 InputMaskImageGroup 与 OutputMaskImageGroup 两个 GroupLinkItem",
+      "o06Coverage": "有一个屏蔽多边形编辑对话框，但使用演示顶点，不由 Blob 的 GroupLinkItem 链路导出",
+      "verdict": "不能视作 Blob 原生掩膜弹窗；还需追 GroupLinkItem 的宿主消费、输入/输出对象绑定和实际弹层"
+    }
+  ],
+  "templateEvidence": [
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SliderArrange.xaml",
+      "sha256": "be1a19c9b34259c22f9ce00fb69bed8caef3d9245e247cee9e9bcb9fd6d7e4ae"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/SliderArrangeFloat.xaml",
+      "sha256": "dba2157afa376e92142f7fa862fe5f82d182aad60d93e926fc6a6d6ed8713251"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml",
+      "sha256": "dc32518f4f08c24619ea8da7e7c6657b75b61d3c074e233e7f19c6fa92bc3c7a"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml",
+      "sha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTabControl/NumericControl.xaml",
+      "sha256": "71c9174ded1f0cb77749f554aa1c5909d759ccb4826748511aef4780c25981f5"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml",
+      "sha256": "e8c7c8ccb10faf3691e7ef786920c3a2cee49522aafe2053e1b6bce11c4190b3"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/NameValueItem.cs",
+      "sha256": "90b4742e79243f46c46fd6b38187ee7f5be49d4c6677f994133215a3796fed46"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ValueBettween.cs",
+      "sha256": "e3148003d0f9c687d161a4c50b467cb89cf8d1e6ba4dbf194016f879701db835"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/IntegerBettween.cs",
+      "sha256": "1f49d565e7792332b3b6f8bd7815546b179b6fa56fc6432a7e82150b583ad0f9"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/FloatBettween.cs",
+      "sha256": "0ac785326a7b856438bfb2fac1515df3e61b5402f0bc1b660f192d393ebd2302"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ROISelecter.cs",
+      "sha256": "b96735a3a474f02b9f6d3767e340bed4dc6e0ffd4c8c123547540b08665bc3c8"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ImageViewConfig.cs",
+      "sha256": "70f2686a29f3eaad06b18314f3e25d2a29b4ba2633ff79c41001696f27dec2a3"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI/UserTempConverter.cs",
+      "sha256": "4187efb8b1163ccc62fbf061b01b6b260b2bb2e6e9e3a9599595d5488e160e21"
+    },
+    {
+      "path": "analysis/decompiled/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+      "sha256": "bc8443f696d7c0fd41e38ddcd5df950c78d8f87485b348cd507b99b8565bfc0a"
+    }
+  ],
+  "uiMechanism": {
+    "summary": "Blob XML 声明每个参数的 XML 节点类型；Apps.XmlParser.ParamTab.NameValueItem 默认以运行时类型名作为 DisplayType；Apps.XmlUI.UserTempConverter 按 DisplayType 从 ParamUserControlDataTemplate.xaml 取 DataTemplate，缺键时回退 Default。",
+    "evidence": [
+      "NameValueItem.DisplayType",
+      "UserTempConverter.Convert",
+      "ParamUserControl.OnPropertyChanged(Content)",
+      "ParamUserControlDataTemplate.xaml"
+    ],
+    "limits": "当前是由原始 Blob XML 与框架反编译模板组成的结构预览；Apps.XmlUI 页面资源在原 DLL 的 .g.resources 中编译为 BAML。未从安装包提取并像素渲染 BAML，也未在真实 VM 窗口逐项截图，因此不能称原厂像素级截图。"
+  },
+  "nodeTypeCounts": {
+    "Expand": 2,
+    "Enumeration": 6,
+    "Integer": 12,
+    "FloatBettween": 18,
+    "IntegerBettween": 9,
+    "Boolean": 31,
+    "ROISelecter": 1,
+    "ImageViewConfig": 9
+  },
+  "items": [
+    {
+      "tab": "Tab_Basic Params",
+      "tabLabel": "基本参数",
+      "category": "Tab_ROI Area",
+      "type": "ROISelecter",
+      "name": "RoiType",
+      "label": "Shape",
+      "values": {
+        "DisplayName": "Shape",
+        "Description": "Shape",
+        "AccessMode": "RW",
+        "ROISelection": "Box SectorRing Polygon Sector",
+        "SelectType": "Mul",
+        "RoiMaxNum": "16"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Enumeration",
+      "name": "ThresholdType",
+      "label": "RunParam_Threshold Mode",
+      "values": {
+        "DisplayName": "RunParam_Threshold Mode",
+        "Description": "Threshold Type",
+        "CurValue": "0x2",
+        "DefaultValue": "0x2",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0601"
+      },
+      "enumEntries": [
+        {
+          "type": "BinaryImage",
+          "name": "BinaryImage",
+          "value": "0x1",
+          "displayName": "RunParam_No Binarization"
+        },
+        {
+          "type": "SingleThreshold",
+          "name": "SingleThreshold",
+          "value": "2",
+          "displayName": "Single Threshold"
+        },
+        {
+          "type": "DoubleThreshold",
+          "name": "DoubleThreshold",
+          "value": "3",
+          "displayName": "Double Threshold"
+        },
+        {
+          "type": "AutoThreshold",
+          "name": "AutoThreshold",
+          "value": "4",
+          "displayName": "Auto Threshold"
+        },
+        {
+          "type": "FixedSoftThreshold",
+          "name": "FixedSoftThreshold",
+          "value": "5",
+          "displayName": "Soft Threshld(Fixed)"
+        },
+        {
+          "type": "RelativeSoftThreshold",
+          "name": "RelativeSoftThreshold",
+          "value": "6",
+          "displayName": "Soft Threshold(Relative)"
+        }
+      ],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "0x1",
+          "setters": [
+            {
+              "target": "Polarity",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        },
+        {
+          "property": "CurValue",
+          "value": "0x2",
+          "setters": [
+            {
+              "target": "Polarity",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "LowThreshold",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        },
+        {
+          "property": "CurValue",
+          "value": "0x3",
+          "setters": [
+            {
+              "target": "LowThreshold",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "HightThreshold",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        },
+        {
+          "property": "CurValue",
+          "value": "0x4",
+          "setters": [
+            {
+              "target": "Polarity",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        },
+        {
+          "property": "CurValue",
+          "value": "0x5",
+          "setters": [
+            {
+              "target": "Polarity",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "ThresholdRangArea",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "Softness",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        },
+        {
+          "property": "CurValue",
+          "value": "0x6",
+          "setters": [
+            {
+              "target": "Polarity",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "Softness",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SoftLeftRatio",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SoftRightRatio",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SoftLowRatio",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SoftHighRatio",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Enumeration",
+      "name": "Polarity",
+      "label": "Polarity",
+      "values": {
+        "DisplayName": "Polarity",
+        "Description": "Dark Blobs Light Background, or Light Blobs Dark Background",
+        "CurValue": "0",
+        "DefaultValue": "0",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0602"
+      },
+      "enumEntries": [
+        {
+          "type": "DarkOnBright",
+          "name": "DarkOnBright",
+          "value": "0",
+          "displayName": "Brighter Than Background"
+        },
+        {
+          "type": "BrightOnDark",
+          "name": "BrightOnDark",
+          "value": "1",
+          "displayName": "Darker Than Background"
+        }
+      ],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "LowThreshold",
+      "label": "Low Threshold",
+      "values": {
+        "DisplayName": "Low Threshold",
+        "Description": "Low Threshold",
+        "CurValue": "0x64",
+        "DefaultValue": "0x64",
+        "MinValue": "0x0",
+        "MaxValue": "0xff",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0603"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "HightThreshold",
+      "label": "High Threshold",
+      "values": {
+        "DisplayName": "High Threshold",
+        "Description": "High Threshold",
+        "CurValue": "0x96",
+        "DefaultValue": "0x96",
+        "MinValue": "0x0",
+        "MaxValue": "0xff",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0604"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "ThresholdRangArea",
+      "label": "Threshold Range",
+      "values": {
+        "DisplayName": "Threshold Range",
+        "Description": "Threshold Range",
+        "DefaultValue": "10000",
+        "MinValue": "0",
+        "MaxValue": "255",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "LowSoftThreshold",
+          "name": "LowSoftThreshold",
+          "value": "0x64",
+          "min": "0x1",
+          "max": "255"
+        },
+        {
+          "type": "HightSoftThreshold",
+          "name": "HightSoftThreshold",
+          "value": "0x96",
+          "min": "0",
+          "max": "255"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "Softness",
+      "label": "Soft Threshold Softness",
+      "values": {
+        "DisplayName": "Soft Threshold Softness",
+        "Description": "Soft Threshold Softness",
+        "CurValue": "254",
+        "DefaultValue": "254",
+        "MinValue": "0x0",
+        "MaxValue": "254",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0605"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "SoftLeftRatio",
+      "label": "RunParam_Low Tail Ratio",
+      "values": {
+        "DisplayName": "RunParam_Low Tail Ratio",
+        "Description": "Low Tail of Soft Threshold(Relative)",
+        "CurValue": "5",
+        "DefaultValue": "5",
+        "MinValue": "0x0",
+        "MaxValue": "100",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0606"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "SoftRightRatio",
+      "label": "RunParam_High Tail Ratio",
+      "values": {
+        "DisplayName": "RunParam_High Tail Ratio",
+        "Description": "High Tail of Soft Threshold(Relative)",
+        "CurValue": "5",
+        "DefaultValue": "5",
+        "MinValue": "0x0",
+        "MaxValue": "100",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0607"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "SoftLowRatio",
+      "label": "Low Threshold Ratio",
+      "values": {
+        "DisplayName": "Low Threshold Ratio",
+        "Description": "Low Threshold of Soft Threshold(Relative)",
+        "CurValue": "40",
+        "DefaultValue": "40",
+        "MinValue": "0x0",
+        "MaxValue": "100",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0608"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "SoftHighRatio",
+      "label": "High Threshold Ratio",
+      "values": {
+        "DisplayName": "High Threshold Ratio",
+        "Description": "Hight Threshold of Soft Threshold(Relative)",
+        "CurValue": "60",
+        "DefaultValue": "60",
+        "MinValue": "0x0",
+        "MaxValue": "100",
+        "IncValue": "0x1",
+        "AccessMode": "Rw",
+        "AlgorithmIndex": "0x0609"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "FindNum",
+      "label": "RunParam_Number to Find",
+      "values": {
+        "DisplayName": "RunParam_Number to Find",
+        "Description": "Num of Found Blobs",
+        "CurValue": "100",
+        "DefaultValue": "100",
+        "MinValue": "1",
+        "MaxValue": "20000",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0622"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "HoleMinArea",
+      "label": "Fill Area Threshold",
+      "values": {
+        "DisplayName": "Fill Area Threshold",
+        "Description": "Fill Area Threshold",
+        "CurValue": "0",
+        "DefaultValue": "0",
+        "MinValue": "0",
+        "MaxValue": "999999999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0622"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByArea",
+      "label": "Area Enable",
+      "values": {
+        "DisplayName": "Area Enable",
+        "Description": "Area Enable",
+        "CurValue": "True",
+        "DefaultValue": "True",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "False",
+          "setters": [
+            {
+              "target": "RangArea",
+              "operation": "HiddenOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangArea",
+      "label": "RunParam_Area Range",
+      "values": {
+        "DisplayName": "RunParam_Area Range",
+        "Description": "This Value is the range of Blob Area",
+        "DefaultValue": "10000",
+        "MinValue": "0x1",
+        "MaxValue": "999999999",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinArea",
+          "name": "MinArea",
+          "value": "10",
+          "min": "0x1",
+          "max": "999999999"
+        },
+        {
+          "type": "MaxArea",
+          "name": "MaxArea",
+          "value": "999999999",
+          "min": "0x1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Enumeration",
+      "name": "BlobContourType",
+      "label": "RunParam_BlobContourType",
+      "values": {
+        "DisplayName": "RunParam_BlobContourType",
+        "Description": "RunParam_BlobContourType",
+        "CurValue": "0",
+        "DefaultValue": "0",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x20630"
+      },
+      "enumEntries": [
+        {
+          "type": "NoneContour",
+          "name": "NoneContour",
+          "value": "0",
+          "displayName": "RunParam_NoneContour"
+        },
+        {
+          "type": "NoneSequentialContour",
+          "name": "NoneSequentialContour",
+          "value": "1",
+          "displayName": "RunParam_NoneSequentialContour"
+        },
+        {
+          "type": "SequentialContour",
+          "name": "SequentialContour",
+          "value": "2",
+          "displayName": "RunParam_SequentialContour"
+        }
+      ],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "BolbImageEnable",
+      "label": "RunParam_BolbImageEnable",
+      "values": {
+        "DisplayName": "RunParam_BolbImageEnable",
+        "Description": "RunParam_BolbImageEnable",
+        "CurValue": "True",
+        "DefaultValue": "True",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "BinaryImageEnable",
+      "label": "RunParam_BinaryImageEnable",
+      "values": {
+        "DisplayName": "RunParam_BinaryImageEnable",
+        "Description": "RunParam_BinaryImageEnable",
+        "CurValue": "True",
+        "DefaultValue": "True",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Expand",
+      "name": "Expert",
+      "label": null,
+      "values": {
+        "CurValue": "False"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "True",
+          "setters": [
+            {
+              "target": "SelectByHistInfo",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "MaxAreaInnerRectNum",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByBoxAngle",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByRectWidth",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByRectHeight",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByPerimeter",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByShortAxis",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByLongAxis",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByCircularuty",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByRectangularity",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SelectByCentraBias",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "AxisRatioEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SortFeature",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "SortMode",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "connectivity",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "MaxOutPixelNumEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByHistInfo",
+      "label": "RunParam_SelectByHistInfoEnable",
+      "values": {
+        "DisplayName": "RunParam_SelectByHistInfoEnable",
+        "Description": "RunParam_SelectByHistInfoEnable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByBoxAngle",
+      "label": "Angle Enable",
+      "values": {
+        "DisplayName": "Angle Enable",
+        "Description": "Angle Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangBoxAngle",
+      "label": "RunParam_Angle Range",
+      "values": {
+        "DisplayName": "RunParam_Angle Range",
+        "Description": "This Value is the range of Blob BoxAngle",
+        "DefaultValue": "0x0",
+        "MinValue": "-9000",
+        "MaxValue": "9000",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "1528"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinBoxAngle",
+          "name": "MinBoxAngle",
+          "value": "-9000",
+          "min": "-9000",
+          "max": "9000"
+        },
+        {
+          "type": "MaxBoxAngle",
+          "name": "MaxBoxAngle",
+          "value": "9000",
+          "min": "-9000",
+          "max": "9000"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByRectWidth",
+      "label": "RectWidth Enable",
+      "values": {
+        "DisplayName": "RectWidth Enable",
+        "Description": "RectWidth Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangRectWidth",
+      "label": "RunParam_RectWidth Range",
+      "values": {
+        "DisplayName": "RunParam_RectWidth Range",
+        "Description": "This Value is the range of Blob RectWidth",
+        "DefaultValue": "0x0",
+        "MinValue": "1",
+        "MaxValue": "1000000",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "1529"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinRectWidth",
+          "name": "MinRectWidth",
+          "value": "100",
+          "min": "1",
+          "max": "1000000"
+        },
+        {
+          "type": "MaxRectWidth",
+          "name": "MaxRectWidth",
+          "value": "200",
+          "min": "1",
+          "max": "1000000"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByRectHeight",
+      "label": "RectHeight Enable",
+      "values": {
+        "DisplayName": "RectHeight Enable",
+        "Description": "RectHeight Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangRectHeight",
+      "label": "RunParam_RectHeight Range",
+      "values": {
+        "DisplayName": "RunParam_RectHeight Range",
+        "Description": "This Value is the range of Blob RectHeight",
+        "DefaultValue": "0x0",
+        "MinValue": "1",
+        "MaxValue": "1000000",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "1530"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinRectHeight",
+          "name": "MinRectHeight",
+          "value": "100",
+          "min": "1",
+          "max": "1000000"
+        },
+        {
+          "type": "MaxRectHeight",
+          "name": "MaxRectHeight",
+          "value": "200",
+          "min": "1",
+          "max": "1000000"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByPerimeter",
+      "label": "RunParam_Perimeter Enable",
+      "values": {
+        "DisplayName": "RunParam_Perimeter Enable",
+        "Description": "RunParam_Perimeter Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangPerimeter",
+      "label": "Perimeter Range",
+      "values": {
+        "DisplayName": "Perimeter Range",
+        "Description": "This Value is the range of Blob Perimeter",
+        "DefaultValue": "1000",
+        "MinValue": "0x1",
+        "MaxValue": "999999999",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinPerimeter",
+          "name": "MinPerimeter",
+          "value": "10",
+          "min": "0x1",
+          "max": "999999999"
+        },
+        {
+          "type": "MaxPerimeter",
+          "name": "MaxPerimeter",
+          "value": "999999999",
+          "min": "0x1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByShortAxis",
+      "label": "Minor Axis Enable",
+      "values": {
+        "DisplayName": "Minor Axis Enable",
+        "Description": "Minor Axis Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangShortAxis",
+      "label": "Minor Axis Range",
+      "values": {
+        "DisplayName": "Minor Axis Range",
+        "Description": "This Value is the range of Blob Short Axis",
+        "DefaultValue": "1000",
+        "MinValue": "0x1",
+        "MaxValue": "999999999",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinShortAxis",
+          "name": "MinShortAxis",
+          "value": "1",
+          "min": "0x1",
+          "max": "999999999"
+        },
+        {
+          "type": "MaxShortAxis",
+          "name": "MaxShortAxis",
+          "value": "999999999",
+          "min": "0x1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByLongAxis",
+      "label": "Major Axis Enable",
+      "values": {
+        "DisplayName": "Major Axis Enable",
+        "Description": "Major Axis Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "IntegerBettween",
+      "name": "RangLongAxis",
+      "label": "Major Axis Range",
+      "values": {
+        "DisplayName": "Major Axis Range",
+        "Description": "This Value is the range of Blob Long Axis",
+        "MinValue": "0x1",
+        "MaxValue": "999999999",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinLongAxis",
+          "name": "MinLongAxis",
+          "value": "10",
+          "min": "0x1",
+          "max": "999999999"
+        },
+        {
+          "type": "MaxLongAxis",
+          "name": "MaxLongAxis",
+          "value": "999999999",
+          "min": "0x1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByCircularuty",
+      "label": "Circularity Enable",
+      "values": {
+        "DisplayName": "Circularity Enable",
+        "Description": "Circularity Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "FloatBettween",
+      "name": "RangCircularity",
+      "label": "Circularity Range",
+      "values": {
+        "DisplayName": "Circularity Range",
+        "Description": "This Value is the range of Blob Roundness",
+        "DefaultValue": "1",
+        "MinValue": "0",
+        "MaxValue": "1",
+        "IncValue": "0.01",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinCircularity",
+          "name": "MinCircularity",
+          "value": "0.1",
+          "min": "0",
+          "max": "1"
+        },
+        {
+          "type": "MaxCircularity",
+          "name": "MaxCircularity",
+          "value": "1",
+          "min": "0",
+          "max": "1"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByRectangularity",
+      "label": "Rectangularity Enable",
+      "values": {
+        "DisplayName": "Rectangularity Enable",
+        "Description": "Rectangularity Enable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "FloatBettween",
+      "name": "RangRectangularity",
+      "label": "Rectangularity Range",
+      "values": {
+        "DisplayName": "Rectangularity Range",
+        "Description": "This Value is the range of Blob Rectangularity",
+        "DefaultValue": "1",
+        "MinValue": "0",
+        "MaxValue": "1",
+        "IncValue": "0.01",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinRectangularity",
+          "name": "MinRectangularity",
+          "value": "0.1",
+          "min": "0",
+          "max": "1"
+        },
+        {
+          "type": "MaxRectangularity",
+          "name": "MaxRectangularity",
+          "value": "1.0",
+          "min": "0",
+          "max": "1"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "SelectByCentraBias",
+      "label": "RunParam_Barycenter Offset Enable",
+      "values": {
+        "DisplayName": "RunParam_Barycenter Offset Enable",
+        "Description": "Enable Checking shift between center and mass center",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "FloatBettween",
+      "name": "RangCenterBias",
+      "label": "RunParam_Barycenter Offset Range",
+      "values": {
+        "DisplayName": "RunParam_Barycenter Offset Range",
+        "Description": "This value is the range of Blob mass center shift",
+        "DefaultValue": "10",
+        "MinValue": "0",
+        "MaxValue": "9999999.99",
+        "IncValue": "0.01",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinCenterBias",
+          "name": "MinCenterBias",
+          "value": "0",
+          "min": "0",
+          "max": "9999999.99"
+        },
+        {
+          "type": "MaxCenterBias",
+          "name": "MaxCenterBias",
+          "value": "9999999.99",
+          "min": "0",
+          "max": "9999999.99"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "AxisRatioEnable",
+      "label": "RunParam_Axial Ratio",
+      "values": {
+        "DisplayName": "RunParam_Axial Ratio",
+        "Description": "Minor Axis/Long Axis",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "FloatBettween",
+      "name": "AxisRatioRange",
+      "label": "RunParam_Axial Ratio",
+      "values": {
+        "DisplayName": "RunParam_Axial Ratio",
+        "Description": "该值是轴比范围",
+        "DefaultValue": "1",
+        "MinValue": "0.01",
+        "MaxValue": "1",
+        "IncValue": "0.01",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0001"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "MinAxisRatio",
+          "name": "MinAxisRatio",
+          "value": "0.01",
+          "min": "0.01",
+          "max": "1"
+        },
+        {
+          "type": "MaxAxisRatio",
+          "name": "MaxAxisRatio",
+          "value": "1.0",
+          "min": "0",
+          "max": "1"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Enumeration",
+      "name": "SortFeature",
+      "label": "Ranking",
+      "values": {
+        "DisplayName": "Ranking",
+        "Description": "Ranking",
+        "CurValue": "1",
+        "DefaultValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0621"
+      },
+      "enumEntries": [
+        {
+          "type": "SortFeatureArea",
+          "name": "SortFeatureArea",
+          "value": "0x1",
+          "displayName": "Area"
+        },
+        {
+          "type": "SortFeaturePerimeter",
+          "name": "SortFeaturePerimeter",
+          "value": "0x2",
+          "displayName": "Perimeter"
+        },
+        {
+          "type": "SortFeatureCircularity",
+          "name": "SortFeatureCircularity",
+          "value": "0x3",
+          "displayName": "CircleScore"
+        },
+        {
+          "type": "SortFeatureRect",
+          "name": "SortFeatureRect",
+          "value": "0x4",
+          "displayName": "RectScore"
+        },
+        {
+          "type": "SortFeatureCentroidX",
+          "name": "SortFeatureCentroidX",
+          "value": "0x5",
+          "displayName": "Connectivity center X"
+        },
+        {
+          "type": "SortFeatureCentroidY",
+          "name": "SortFeatureCentroidY",
+          "value": "0x6",
+          "displayName": "Connectivity center Y"
+        },
+        {
+          "type": "SortFeatureBoxAngle",
+          "name": "SortFeatureBoxAngle",
+          "value": "0x7",
+          "displayName": "box angle"
+        },
+        {
+          "type": "SortFeatureBoxWidth",
+          "name": "SortFeatureBoxWidth",
+          "value": "0x8",
+          "displayName": "box width"
+        },
+        {
+          "type": "SortFeatureBoxHeight",
+          "name": "SortFeatureBoxHeight",
+          "value": "0x9",
+          "displayName": "box height"
+        },
+        {
+          "type": "SortFeatureRectX",
+          "name": "SortFeatureRectX",
+          "value": "0xA",
+          "displayName": "Rectangle left upper x"
+        },
+        {
+          "type": "SortFeatureRectY",
+          "name": "SortFeatureRectY",
+          "value": "0xB",
+          "displayName": "Rectangle left upper y"
+        },
+        {
+          "type": "SortFeatureAxisAngle",
+          "name": "SortFeatureAxisAngle",
+          "value": "0xC",
+          "displayName": "Two step spindle angle"
+        },
+        {
+          "type": "SortFeatureAxisRatio",
+          "name": "SortFeatureAxisRatio",
+          "value": "0xD",
+          "displayName": "MinAxis / LongAxis"
+        }
+      ],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Enumeration",
+      "name": "SortMode",
+      "label": "Sort Type",
+      "values": {
+        "DisplayName": "Sort Type",
+        "Description": "Sort Type",
+        "CurValue": "2",
+        "DefaultValue": "2",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0621"
+      },
+      "enumEntries": [
+        {
+          "type": "SortModeAscend",
+          "name": "SortModeAscend",
+          "value": "0x1",
+          "displayName": "Grade Up"
+        },
+        {
+          "type": "SortModeDecend",
+          "name": "SortModeDecend",
+          "value": "0x2",
+          "displayName": "Grade Down"
+        },
+        {
+          "type": "SortModeNotSort",
+          "name": "SortModeNotSort",
+          "value": "0x3",
+          "displayName": "Donot Grade"
+        }
+      ],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Enumeration",
+      "name": "connectivity",
+      "label": "Connectivity",
+      "values": {
+        "DisplayName": "Connectivity",
+        "Description": "Connectivity",
+        "CurValue": "0x8",
+        "DefaultValue": "0x8",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x060B"
+      },
+      "enumEntries": [
+        {
+          "type": "Connected_8",
+          "name": "Connected_8",
+          "value": "0x8",
+          "displayName": "8-connected"
+        },
+        {
+          "type": "Connected_4",
+          "name": "Connected_4",
+          "value": "0x4",
+          "displayName": "4-connected"
+        }
+      ],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "MaxAreaInnerRectNum",
+      "label": "RunParam_MaxAreaInnerRectNum",
+      "values": {
+        "DisplayName": "RunParam_MaxAreaInnerRectNum",
+        "Description": "RunParam_MaxAreaInnerRectNum",
+        "CurValue": "0x0",
+        "DefaultValue": "0x0",
+        "MinValue": "0x0",
+        "MaxValue": "10",
+        "IncValue": "0x1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x2064A"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "OverlapRatio",
+      "label": "MinOverlap",
+      "values": {
+        "DisplayName": "MinOverlap",
+        "Description": "MinOverlap",
+        "CurValue": "0",
+        "DefaultValue": "0",
+        "MinValue": "0",
+        "MaxValue": "100",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0622"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Boolean",
+      "name": "MaxOutPixelNumEnable",
+      "label": "RunParam_MaxOutPixelNumEnable",
+      "values": {
+        "DisplayName": "RunParam_MaxOutPixelNumEnable",
+        "Description": "RunParam_MaxOutPixelNumEnable",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "Tab_Run Params",
+      "tabLabel": "运行参数",
+      "category": "Tab_Run Params",
+      "type": "Integer",
+      "name": "MaxOutPixelNum",
+      "label": "MaxOutPixelNum",
+      "values": {
+        "DisplayName": "MaxOutPixelNum",
+        "Description": "MaxOutPixelNum",
+        "CurValue": "0",
+        "DefaultValue": "0",
+        "MinValue": "0",
+        "MaxValue": "9000000",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x0622"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "OKWhenNumIsZero",
+      "label": "OKWhenNumIsZero",
+      "values": {
+        "DisplayName": "OKWhenNumIsZero",
+        "Description": "OKWhenNumIsZero",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "BlobNumLimitEnable",
+      "label": "Blob Number Check",
+      "values": {
+        "DisplayName": "Blob Number Check",
+        "Description": "Blob Number Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "False",
+          "setters": [
+            {
+              "target": "RangBlobNumLimit",
+              "operation": "HiddenOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "IntegerBettween",
+      "name": "RangBlobNumLimit",
+      "label": "Blob Number Range",
+      "values": {
+        "DisplayName": "Blob Number Range",
+        "Description": "Blob Number Range",
+        "DefaultValue": "1",
+        "MinValue": "1",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "BlobNumLimitLow",
+          "name": "BlobNumLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "99999"
+        },
+        {
+          "type": "BlobNumLimitHigh",
+          "name": "BlobNumLimitHigh",
+          "value": "99999",
+          "min": "0",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "BlobAreaLimitEnable",
+      "label": "Blob Area Check",
+      "values": {
+        "DisplayName": "Blob Area Check",
+        "Description": "Blob Area Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "False",
+          "setters": [
+            {
+              "target": "RangBlobAreaLimit",
+              "operation": "HiddenOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangBlobAreaLimit",
+      "label": "Blob Area Range",
+      "values": {
+        "DisplayName": "Blob Area Range",
+        "Description": "Blob Area Range",
+        "DefaultValue": "99999",
+        "MinValue": "1",
+        "MaxValue": "999999999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "BlobAreaLimitLow",
+          "name": "BlobAreaLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "999999999"
+        },
+        {
+          "type": "BlobAreaLimitHigh",
+          "name": "BlobAreaLimitHigh",
+          "value": "999999999",
+          "min": "1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "BlobTotalAreaLimitEnable",
+      "label": "RunParam_Blob Total Area Check",
+      "values": {
+        "DisplayName": "RunParam_Blob Total Area Check",
+        "Description": "Blob Total Area Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "False",
+          "setters": [
+            {
+              "target": "RangBlobTotalAreaLimit",
+              "operation": "HiddenOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangBlobTotalAreaLimit",
+      "label": "RunParam_Blob Total Area Range",
+      "values": {
+        "DisplayName": "RunParam_Blob Total Area Range",
+        "Description": "Blob Total Area Range",
+        "DefaultValue": "99999",
+        "MinValue": "1",
+        "MaxValue": "999999999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "BlobTotalAreaLimitLow",
+          "name": "BlobTotalAreaLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "999999999"
+        },
+        {
+          "type": "BlobTotalAreaLimitHigh",
+          "name": "BlobTotalAreaLimitHigh",
+          "value": "999999999",
+          "min": "1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Expand",
+      "name": "",
+      "label": null,
+      "values": {
+        "CurValue": "False"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CurValue",
+          "value": "True",
+          "setters": [
+            {
+              "target": "CentroidXLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "CentroidYLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "AngleLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "CenterXLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "CenterYLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "BoxHeightLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "BoxWidthLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "PerimeterLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "LongAxisLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "ShortAxisLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "CircularityLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "RectangularityLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            },
+            {
+              "target": "ScoreLimitEnable",
+              "operation": "VisibleOperation",
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "CentroidXLimitEnable",
+      "label": "Barycenter X Check",
+      "values": {
+        "DisplayName": "Barycenter X Check",
+        "Description": "Barycenter X Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangCentroidXLimit",
+      "label": "Barycenter X Range",
+      "values": {
+        "DisplayName": "Barycenter X Range",
+        "Description": "Barycenter X Range",
+        "DefaultValue": "99999",
+        "MinValue": "-99999",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "CentroidXLimitLow",
+          "name": "CentroidXLimitLow",
+          "value": "-99999",
+          "min": "-99999",
+          "max": "99999"
+        },
+        {
+          "type": "CentroidXLimitHigh",
+          "name": "CentroidXLimitHigh",
+          "value": "99999",
+          "min": "-99999",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "CentroidYLimitEnable",
+      "label": "Barycenter Y Check",
+      "values": {
+        "DisplayName": "Barycenter Y Check",
+        "Description": "Barycenter Y Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangCentroidYLimit",
+      "label": "Barycenter Y Range",
+      "values": {
+        "DisplayName": "Barycenter Y Range",
+        "Description": "Barycenter Y Range",
+        "DefaultValue": "99999",
+        "MinValue": "-99999",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "CentroidYLimitLow",
+          "name": "CentroidYLimitLow",
+          "value": "-99999",
+          "min": "-99999",
+          "max": "99999"
+        },
+        {
+          "type": "CentroidYLimitHigh",
+          "name": "CentroidYLimitHigh",
+          "value": "99999",
+          "min": "-99999",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "AngleLimitEnable",
+      "label": "RunParam_BoxAngle Check",
+      "values": {
+        "DisplayName": "RunParam_BoxAngle Check",
+        "Description": "RunParam_BoxAngle Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangAngleLimit",
+      "label": "RunParam_BoxAngle Range",
+      "values": {
+        "DisplayName": "RunParam_BoxAngle Range",
+        "Description": "RunParam_BoxAngle Range",
+        "DefaultValue": "100",
+        "MinValue": "-180",
+        "MaxValue": "180",
+        "IncValue": "0.1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "AngleLimitLow",
+          "name": "AngleLimitLow",
+          "value": "-180",
+          "min": "-180",
+          "max": "180"
+        },
+        {
+          "type": "AngleLimitHigh",
+          "name": "AngleLimitHigh",
+          "value": "180",
+          "min": "-180",
+          "max": "180"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "CenterXLimitEnable",
+      "label": "Center X Check",
+      "values": {
+        "DisplayName": "Center X Check",
+        "Description": "Center X Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit",
+      "label": "Center X Range",
+      "values": {
+        "DisplayName": "Center X Range",
+        "Description": "Center X Range",
+        "DefaultValue": "99999",
+        "MinValue": "-99999",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "CenterXLimitLow",
+          "name": "CenterXLimitLow",
+          "value": "-99999",
+          "min": "-99999",
+          "max": "99999"
+        },
+        {
+          "type": "CenterXLimitHigh",
+          "name": "CenterXLimitHigh",
+          "value": "99999",
+          "min": "-99999",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "CenterYLimitEnable",
+      "label": "Center Y Check",
+      "values": {
+        "DisplayName": "Center Y Check",
+        "Description": "Center Y Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit",
+      "label": "Center Y Range",
+      "values": {
+        "DisplayName": "Center Y Range",
+        "Description": "Center Y Range",
+        "DefaultValue": "99999",
+        "MinValue": "-99999",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "CenterYLimitLow",
+          "name": "CenterYLimitLow",
+          "value": "-99999",
+          "min": "-99999",
+          "max": "99999"
+        },
+        {
+          "type": "CenterYLimitHigh",
+          "name": "CenterYLimitHigh",
+          "value": "99999",
+          "min": "-99999",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "BoxHeightLimitEnable",
+      "label": "Box Height Check",
+      "values": {
+        "DisplayName": "Box Height Check",
+        "Description": "Box Height Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "BoxHeightLimit",
+      "label": "RunParam_Box Height Range",
+      "values": {
+        "DisplayName": "RunParam_Box Height Range",
+        "Description": "Surrending Box Height Range",
+        "DefaultValue": "99999",
+        "MinValue": "1",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "BoxHeightLimitLow",
+          "name": "BoxHeightLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "99999"
+        },
+        {
+          "type": "BoxHeightLimitHigh",
+          "name": "BoxHeightLimitHigh",
+          "value": "99999",
+          "min": "1",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "BoxWidthLimitEnable",
+      "label": "RunParam_Box Width Check",
+      "values": {
+        "DisplayName": "RunParam_Box Width Check",
+        "Description": "Surrending Box Width Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "BoxWidthLimit",
+      "label": "RunParam_Box Width Range",
+      "values": {
+        "DisplayName": "RunParam_Box Width Range",
+        "Description": "Surrending Box Width Range",
+        "DefaultValue": "99999",
+        "MinValue": "1",
+        "MaxValue": "99999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "BoxWidthLimitLow",
+          "name": "BoxWidthLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "99999"
+        },
+        {
+          "type": "BoxWidthLimitHigh",
+          "name": "BoxWidthLimitHigh",
+          "value": "99999",
+          "min": "1",
+          "max": "99999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "PerimeterLimitEnable",
+      "label": "Perimeter Check",
+      "values": {
+        "DisplayName": "Perimeter Check",
+        "Description": "Perimeter Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangPerimeterLimit",
+      "label": "Perimeter Range",
+      "values": {
+        "DisplayName": "Perimeter Range",
+        "Description": "Perimeter Range",
+        "DefaultValue": "1000000",
+        "MinValue": "1",
+        "MaxValue": "999999999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "PerimeterLimitLow",
+          "name": "PerimeterLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "999999999"
+        },
+        {
+          "type": "PerimeterLimitHigh",
+          "name": "PerimeterLimitHigh",
+          "value": "999999999",
+          "min": "1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "LongAxisLimitEnable",
+      "label": "Major Axis Check",
+      "values": {
+        "DisplayName": "Major Axis Check",
+        "Description": "Major Axis Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangLongAxisLimit",
+      "label": "Major Axis Range",
+      "values": {
+        "DisplayName": "Major Axis Range",
+        "Description": "Major Axis Range",
+        "DefaultValue": "1000000",
+        "MinValue": "1",
+        "MaxValue": "999999999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "LongAxisLimitLow",
+          "name": "LongAxisLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "999999999"
+        },
+        {
+          "type": "LongAxisLimitHigh",
+          "name": "LongAxisLimitHigh",
+          "value": "999999999",
+          "min": "1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "ShortAxisLimitEnable",
+      "label": "Minor Axis Check",
+      "values": {
+        "DisplayName": "Minor Axis Check",
+        "Description": "Minor Axis Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangShortAxisLimit",
+      "label": "Minor Axis Range",
+      "values": {
+        "DisplayName": "Minor Axis Range",
+        "Description": "Minor Axis Range",
+        "DefaultValue": "1000000",
+        "MinValue": "1",
+        "MaxValue": "999999999",
+        "IncValue": "1",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "ShortAxisLimitLow",
+          "name": "ShortAxisLimitLow",
+          "value": "1",
+          "min": "1",
+          "max": "999999999"
+        },
+        {
+          "type": "ShortAxisLimitHigh",
+          "name": "ShortAxisLimitHigh",
+          "value": "999999999",
+          "min": "1",
+          "max": "999999999"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "CircularityLimitEnable",
+      "label": "Circularity Check",
+      "values": {
+        "DisplayName": "Circularity Check",
+        "Description": "Circularity Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangCircularityLimit",
+      "label": "Circularity Range",
+      "values": {
+        "DisplayName": "Circularity Range",
+        "Description": "Circularity Range",
+        "DefaultValue": "100",
+        "MinValue": "0",
+        "MaxValue": "1",
+        "IncValue": "0.01",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "CircularityLimitLow",
+          "name": "CircularityLimitLow",
+          "value": "0",
+          "min": "0",
+          "max": "1"
+        },
+        {
+          "type": "CircularityLimitHigh",
+          "name": "CircularityLimitHigh",
+          "value": "1",
+          "min": "0",
+          "max": "1"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "Boolean",
+      "name": "RectangularityLimitEnable",
+      "label": "Rectangularity Check",
+      "values": {
+        "DisplayName": "Rectangularity Check",
+        "Description": "Rectangularity Check",
+        "CurValue": "False",
+        "DefaultValue": "False",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Check Result",
+      "type": "FloatBettween",
+      "name": "RangRectangularityLimit",
+      "label": "Rectangularity Range",
+      "values": {
+        "DisplayName": "Rectangularity Range",
+        "Description": "Rectangularity Range",
+        "DefaultValue": "100",
+        "MinValue": "0",
+        "MaxValue": "1",
+        "IncValue": "0.01",
+        "AccessMode": "RW",
+        "AlgorithmIndex": "0x000"
+      },
+      "enumEntries": [],
+      "pairValues": [
+        {
+          "type": "RectangularityLimitLow",
+          "name": "RectangularityLimitLow",
+          "value": "0",
+          "min": "0",
+          "max": "1"
+        },
+        {
+          "type": "RectangularityLimitHigh",
+          "name": "RectangularityLimitHigh",
+          "value": "1",
+          "min": "0",
+          "max": "1"
+        }
+      ],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "BlobFiled",
+      "label": "Blob",
+      "values": {
+        "DisplayName": "Blob",
+        "Description": "Blob",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "BlobMaxAreaInnerRect",
+      "label": "Blob Max Area Inner Rect",
+      "values": {
+        "DisplayName": "Blob Max Area Inner Rect",
+        "Description": "Blob Max Area Inner Rect",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "CheckZone",
+      "label": "ROI",
+      "values": {
+        "DisplayName": "ROI",
+        "Description": "ROI",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "MatchLocation",
+      "label": "Contour Point",
+      "values": {
+        "DisplayName": "Contour Point",
+        "Description": "Contour Point",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint",
+      "label": "Fixtured Point",
+      "values": {
+        "DisplayName": "Fixtured Point",
+        "Description": "Fixtured Point",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CustomVisible",
+          "value": null,
+          "setters": [
+            {
+              "target": null,
+              "operation": "SetDisplayObjectPropertyOperation",
+              "value": "Fixtured Point;IsDisplay"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint",
+      "label": "Unfixtured Point",
+      "values": {
+        "DisplayName": "Unfixtured Point",
+        "Description": "Unfixtured Point",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": [
+        {
+          "property": "CustomVisible",
+          "value": null,
+          "setters": [
+            {
+              "target": null,
+              "operation": "SetDisplayObjectPropertyOperation",
+              "value": "Unfixtured Point;IsDisplay"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "ResutlText",
+      "label": "RunParam_Text",
+      "values": {
+        "DisplayName": "RunParam_Text",
+        "Description": "Text",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "BlindZone",
+      "label": "ExternROI",
+      "values": {
+        "DisplayName": "ExternROI",
+        "Description": "ExternROI",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    },
+    {
+      "tab": "ResultShow",
+      "tabLabel": "结果显示",
+      "category": "Tab_Image Display",
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular",
+      "label": "Annular",
+      "values": {
+        "DisplayName": "Annular",
+        "Description": "Annular",
+        "AccessMode": "O"
+      },
+      "enumEntries": [],
+      "pairValues": [],
+      "triggers": []
+    }
+  ],
+  "coverage": {
+    "tabs": [
+      {
+        "name": "Tab_Basic Params",
+        "label": "基本参数",
+        "categories": [
+          {
+            "name": "ImageSourceGroup",
+            "groupLinks": {
+              "name": "ImageSourceGroup",
+              "target": "ImageSourceGroup"
+            },
+            "itemCount": 0
+          },
+          {
+            "name": "Tab_ROI Area",
+            "groupLinks": [
+              {
+                "name": "OutputMaskImageGroup",
+                "target": "OutputMaskImageGroup"
+              },
+              {
+                "name": "InputMaskImageGroup",
+                "target": "InputMaskImageGroup"
+              },
+              {
+                "name": "RoiSelectGroup",
+                "target": "RoiSelectGroup"
+              },
+              {
+                "name": "InheritWayGroup",
+                "target": "InheritWayGroup2"
+              },
+              {
+                "name": "ExternROITypeGroup",
+                "target": "ExternROITypeGroup"
+              },
+              {
+                "name": "AssistGroup",
+                "target": "AssistGroup"
+              }
+            ],
+            "itemCount": 1
+          }
+        ]
+      },
+      {
+        "name": "Tab_Run Params",
+        "label": "运行参数",
+        "categories": [
+          {
+            "name": "Tab_Run Params",
+            "groupLinks": null,
+            "itemCount": 46
+          }
+        ]
+      },
+      {
+        "name": "ResultShow",
+        "label": "结果显示",
+        "categories": [
+          {
+            "name": "Tab_Check Result",
+            "groupLinks": null,
+            "itemCount": 32
+          },
+          {
+            "name": "Tab_Image Display",
+            "groupLinks": null,
+            "itemCount": 9
+          },
+          {
+            "name": "TextDisplayGroup",
+            "groupLinks": {
+              "name": "TextDisplayGroup",
+              "target": "TextDisplayGroup"
+            },
+            "itemCount": 0
+          }
+        ]
+      }
+    ],
+    "itemCount": 88,
+    "staticOnly": true
+  }
+}

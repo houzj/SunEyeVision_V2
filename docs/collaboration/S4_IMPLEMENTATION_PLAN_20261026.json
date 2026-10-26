@@ -2,13 +2,13 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "已按用户要求直接逆向VM Blob原件，保留程序集/资源及反编译来源哈希，提取三页/18模板/16显示对象。落实中立数值Increment，透明度/圆度/矩形度.01、数量1..20000；UI036和全量036均0错误，正式窗口013九组/整链034八组通过。原PCUI浮点实例已加载并验证步进、数值联动和订阅显隐；主数值消费替换、全部显示对象、原31退出、样式范围存量兼容、typed调试新run、VM视觉/VS/人工继续推进。",
+  "current": "原VM数值消费者、Enter/校验/范围显示和开关布局已通过正式Release定向回归；按用户要求先提交并推送该基线，再实施Blob两工程、XML唯一默认值和无旧兼容结构。新架构尚未完成，不套用现行SDK链PASS。",
   "summaryStatus": "036构建0错误；直接VM原件基线已记录，原浮点实际加载和Blob步进/私有草稿检查通过；整库与视觉未完成",
   "rows": [
     [
       "整套库范围",
       "已定位VM.Controls、VMBaseControls、VMControls.WPF及Release双版、VM.PcUI、Apps.Style、Apps.XmlUI共7目录；不限Blob可见控件或原31行。",
-      "去重控件数量待inventory JSON，不以cs文件数或5style/17PNG冒充整库控件数；全库移植尚未完成。"
+      "已归档逆向项目194个工具层静态目标及原始证据，不作为整库完成数；主窗口/动态加载等范围缺口保留，完整迁移尚未完成。"
     ],
     [
       "VM Blob原件直接提取",
@@ -55,7 +55,7 @@
     {
       "item": "最终版本与人工",
       "scope": "固定同源Release与关联回归、实际VS设计器、集中用户试用反馈",
-      "state": "当前c8de30c4+已构建验证的未提交增量；发布与ROI定向回归通过，固定源码和发布身份、实际VS及人工仍未完成。"
+      "state": "结构改造前源码正按用户要求提交推送；现有正式Release成绩按原编译身份保留，新结构需重新构建回归。VS与人工未完成。"
     }
   ],
   "projectOrganization": [
@@ -229,8 +229,8 @@
     }
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
-  "productIdentity": "本地基线c8de30c4加当前未提交图像/框架适配与颜色事件增量；正式目录为034源码候选。发布清单按最终现有字节重新封存，发布扰动检查结束前由测试独占；不是历史b87二进制快照，也不是最终提交后同源试用身份。",
-  "next": "闭合剩余厂商视觉/参数依赖及源码-XAML配对，补齐样式范围/步长与存量值兼容；构建通过后运行新弹层/数值回归和Blob完整链，继续typed调试同run及原31项消费者退出，不以HTML或旧PASS替代本候选验收。",
+  "productIdentity": "当前正式Release为cd8c6402编译身份加已核源码增量，证据O06_NATIVE_NUMERIC_RELEASE_20261026.json逐文件SHA明确；提交检查点不冒充重编译发布身份。Blob XML/目录变更已单独保存并移出本次提交。",
+  "next": "先核远端提交状态并推送已验证源码检查点，再继续已保存的Blob XML/目录调整和公共新合同消费链。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -310,7 +310,7 @@
     },
     {
       "path": "tools/SunEyeVision.BlobAnalysis/BlobAnalysisParameters.cs",
-      "sha256": "3e85c466f458ee0f38c5e4c1b5b6f82942c12238b302223fb660cdfe12bc8181"
+      "sha256": "ba4f085963e3ed7b108fec439432ff1fbc312ecfbd9b34b0790fbef0a4c24cfe"
     },
     {
       "path": "tools/SunEyeVision.BlobAnalysis/BlobInputContract.cs",
@@ -318,7 +318,7 @@
     },
     {
       "path": "src/Plugin.Contracts/FieldPresentation.cs",
-      "sha256": "1e6ad6f721841ae63d8281b301dd1250f5dceba8bd72ad4d13e05f51f956da3e"
+      "sha256": "f6bf9943624cb7f6bdc8342234542609ea387ac720229059e69a011e13d900d7"
     },
     {
       "path": "src/Plugin.Wpf/Fields/RegionSourceModeSelector.cs",
@@ -326,15 +326,15 @@
     },
     {
       "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-      "sha256": "9f99ad9c6f661e094559ecebd75fb52074c07321adf1deb5c2eed348efbcbace"
+      "sha256": "8d47a9c9c19ec81d64ac67654b7f29e81fb1575f6d842a9317c9758252d11710"
     },
     {
       "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-      "sha256": "a8458609804e5b9c9bbcc2ba9ea8f0cefa81e1304268a1d56cc657db46da9fdc"
+      "sha256": "1aab64feae1f752d346c9e0b9d61d5b7d3712aa40fdc3e53f4dc77f3e2584475"
     },
     {
       "path": "src/Plugin.Wpf/Themes/Generic.xaml",
-      "sha256": "bb3f759a28dc1eb3e9bc84e57eaf697479541efc2e37074af06bd14c9bf52fc9"
+      "sha256": "f4bf41d924f5eaa18330b56588dcf00f4897e069e69db58fd6d8f401c995ce8f"
     },
     {
       "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.RoiInheritance.cs",
@@ -362,19 +362,19 @@
     },
     {
       "path": "scripts/verification/O06WindowPresentationCases.cs",
-      "sha256": "0552341f3f891c93833818cba743c2e6c12f3c0512633fa8b779d8bba48e7f60"
+      "sha256": "98abbbeffb017be2d54ce626133ae3c55894ac4e4e5b237cd63d6c0d8072ee2c"
     },
     {
       "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
-      "sha256": "36a8395e379d003f935fb919f742a4c3985f98ab6b9d44fa5f9ef5052b2c6a62"
+      "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
     },
     {
       "path": "src/Plugin.Wpf/Themes/VmFieldStyles.provenance.json",
-      "sha256": "e801dc2803f36f188e7f129db932b4f54c4de21735550f65a2f174e929c2c124"
+      "sha256": "da1e4fc25c10e8f94b8457839b6d9c1604bced0e37fefc506299019e969e6298"
     },
     {
       "path": "scripts/documentation/import_vm_field_resources.py",
-      "sha256": "bdaaa4426ee877dd52fbe84891bec6df75fe8e4084783041ff93c0838da5a1ba"
+      "sha256": "5954431bc179aabcde0032f1c567941775ec617e3e6f25b8c141afa7009b86e5"
     },
     {
       "path": "src/Plugin.Wpf/EditorIcons.cs",
@@ -4564,7 +4564,131 @@
     "counts": "三页、18相关模板、16显示对象（不是整库控件数）",
     "verified": "ImageViewConfig四行/宽260/标签列102/高32/偏移-90；透明度0..1步长.01，粗细1..10步长1；Integer/Float/双端值/订阅/命令完整组合",
     "applied": "FieldLayout追加有限正Increment；DeclaredFieldEditor与RangeField消费；透明度、圆度和矩形度.01，FindNum/现行SDK校验一致1..20000",
-    "remaining": "当前主数值字段仍是提取SDK NumericUpDown；原SliderArrange/Float已实际加载通过，但完整消费替换、样式范围/存量值兼容、显示对象补齐和VM实际主题命中仍未闭合",
+    "remaining": "声明字段已改原PCUI数值消费者，正式Release统一回归中；双端完整原组合、全部显示对象和VM实际主题命中仍未闭合。",
     "memberCoverage": "REA成员全量表示超过64MiB预算，保留unavailable证据，不计成员体成功。原机分支/主题未观测，用户VM截图继续验收。"
+  },
+  "vmControlLibraryReference": {
+    "entry": "references/index.html",
+    "snapshot": "references/vm-control-library-20261026/VM控件库逆向目标.html",
+    "manifest": "references/vm-control-library-20261026/reference-manifest.json",
+    "summary": "归档194个工具层静态控件目标（152个模块自有＋42个共享直接引用）、Blob外观证据及静态扫描器，保留原始文件与SHA-256。",
+    "boundary": "该清单作为VM来源与组合链参考；原31类职责/退出门、本方运行验证和VM实机截图验收继续独立。源预览差异记录有版本时点，不能套作当前产品结论；9个ImageViewConfig与16个展开显示对象需逐节点对齐。"
+  },
+  "nativeNumericConsumer": {
+    "status": "正式Release UI045/全量038均0错误；窗口017十一组、字段012八组、整链035八组、组件078五组、发布扰动027十一项通过；结构改造前基线正在提交推送。",
+    "chain": "Blob FieldLayout/Port → DeclaredFieldEditor → NativeNumberField → 原PCUI SliderArrange/SliderArrangeFloat → 原NumericControl/Slider模板及资源；无范围声明使用原NumericControl叶子，精确Int64保留文本路径。",
+    "draft": "合法原文先校验中立Port/存储范围再写宿主私有草稿；非法原文、焦点和旧值保留，不由原LostFocus绕过校验；确认/取消仍由外层负责。",
+    "adaptations": [
+      "原叶子解析/格式化按本方InvariantCulture合同适配；de-DE不误读点号，不宣称VM区域设置相同。",
+      "仅配对范围宿主将原叶子左内边距7改2，原边框、箭头和14号字体保留；原XAML未改。",
+      "原开关在声明字段宿主左对齐输入列，修复默认拉伸后图像居中的偏移。",
+      "捕获存储溢出为字段错误；防止文本变化与原箭头回调重复写入。"
+    ],
+    "remaining": "双端范围仍由RangeField/SDK提取RangeSlider组合，原PCUI between组合尚未整体替换；其他旧SDK消费者退出、全VM显示对象、typed新run、VS和用户人工仍未完成。"
+  },
+  "blobFileStructure": {
+    "status": "用户已批准按Runtime/Wpf、Parameters/Results/Algorithms及两份XML方案实施；当前先提交并推送结构改造前已验证基线",
+    "decision": "Runtime必需、Wpf可选；XML为新工具默认值及编辑/显示元数据唯一来源，C#属性保存当前值，用户值随方案保存。新建读取XML，恢复方案不覆盖用户值；不保留旧项目兼容链。",
+    "currentFacts": "当前3个工程、25份源码/XAML/工程文件（不计obj/bin）。参数/结果双套模型、SDK入口和逐字段转换叠加；不是算法本身需要这些层次。",
+    "tree": "tools/SunEyeVision.BlobAnalysis/\n├─ Runtime/\n│  ├─ SunEyeVision.BlobAnalysis.Runtime.csproj\n│  ├─ BlobTool.cs                 # 本工具单次执行入口，不调度工作流\n│  ├─ Parameters/\n│  │  ├─ BlobSettings.cs          # 当前运行参数及判定配置\n│  │  └─ BlobInput.cs             # 冻结的图像/ROI/位置输入\n│  ├─ Results/\n│  │  └─ BlobOutput.cs            # 唯一结果及资源所有权\n│  ├─ Algorithms/                 # 分割/连通域/特征/筛选/判定\n│  └─ Resources/\n│     ├─ BlobParameters.xml       # 默认值、参数分组、编辑元数据\n│     └─ BlobDisplay.xml          # 图形/文本/表格定义与结果字段映射\n└─ Wpf/\n   ├─ SunEyeVision.BlobAnalysis.Wpf.csproj\n   ├─ BlobEditorFactory.cs\n   ├─ BlobResultViewFactory.cs\n   └─ Views/\n      ├─ BlobParameterEditor.xaml\n      └─ BlobResultView.xaml",
+    "fileRows": [
+      [
+        "执行入口",
+        "Runtime/BlobTool.cs",
+        "只处理本工具单次执行和会话；工作流调度、快照组装由宿主负责。"
+      ],
+      [
+        "参数及输入",
+        "Parameters/BlobSettings.cs / BlobInput.cs",
+        "当前强类型值和冻结输入；默认值不再写第二份C#初始化器。"
+      ],
+      [
+        "唯一结果",
+        "Results/BlobOutput.cs",
+        "保留指标、判定、几何、可选图像与资源生命周期，UI不复制旧结果模型。"
+      ],
+      [
+        "参数定义",
+        "Resources/BlobParameters.xml",
+        "默认值、分组、编辑元数据；新建初始化一次，方案保存/重开恢复用户值。"
+      ],
+      [
+        "显示定义",
+        "Resources/BlobDisplay.xml",
+        "稳定输出字段ID到图形/文本/表格的映射；不执行算法或重新计算判定。"
+      ],
+      [
+        "WPF视图",
+        "两个Factory与Views",
+        "复用公共VM控件及宿主草稿/确认取消，XAML仅组合视图。"
+      ]
+    ],
+    "removeRows": [
+      [
+        "根SunEyeVision.Tool.BlobAnalysis.csproj / BlobAnalysisTool.cs",
+        "删除SDK兼容入口工程，插件发现/注册和工作流直接使用Runtime定义。"
+      ],
+      [
+        "BlobAnalysisParameters.cs / BlobAnalysisResults.cs / BlobResult.cs",
+        "删除旧参数/结果类型及序列化注册，唯一数据源改为BlobSettings/BlobOutput。"
+      ],
+      [
+        "BlobInputAdapter.cs / BlobSdkAdapter.cs",
+        "删除新旧模型转换；图像/ROI/位置和引用编译由公共输入快照边界承接。"
+      ],
+      [
+        "BlobInputContract.cs / BlobOutputContract.cs / BlobConfigurationFields.cs",
+        "真实参数和显示元数据转入两份XML及公共强类型合同；删除旧属性名/路径映射，不维护双份字段表。"
+      ],
+      [
+        "Runtime/BlobPresentation.cs",
+        "参数/页签/显示定义转入两份XML，WPF只解释组装；业务运算和交叉字段校验仍在Runtime。"
+      ],
+      [
+        "Wpf/Presentation/BlobAnalysisRow.cs / Wpf/Views/BlobDataAnalysisControl.xaml及.cs",
+        "表格直接读取声明记录与投影；不复制行模型，不使用现有UI统计getter重算业务结果。"
+      ],
+      [
+        "BlobSession.Boundary.cs / BlobSession.Operations.cs / HalconBlobExecutionScope.cs",
+        "归入Algorithms与单次执行作用域；保留拓扑、取消及HALCON线程设置恢复，不为减文件删能力。"
+      ]
+    ],
+    "stateOwnership": [
+      [
+        "执行数据",
+        "BlobSettings / ToolInvocation / BlobOutput",
+        "图像、ROI、位置、运行参数、判定参数及算法输出开关属于执行快照；输出开关不能被眼睛可见性替代。"
+      ],
+      [
+        "显示配置",
+        "公共宿主的工具显示配置＋BlobViewLayout声明",
+        "颜色、粗细、透明度、可见性、文本位置独立持久化；只改显示不重跑算法，不建Blob专属设置工程。"
+      ],
+      [
+        "编辑过程",
+        "公共WPF宿主私有草稿",
+        "输入原文、非法值、订阅候选、临时ROI、焦点和弹层是编辑状态，不回流Runtime。"
+      ]
+    ],
+    "commonContractGaps": [
+      [
+        "直接Runtime发现/调用",
+        "现行ToolRegistry仍先发现IToolPlugin SDK入口，再核RuntimeComponentId；需调整Plugin.Infrastructure/Workflow的准入、工具箱和执行消费者，删除旧入口路径。"
+      ],
+      [
+        "配置编辑与文档持久化",
+        "现行IConfigurationFieldProvider在SDK内且依赖BlobAnalysisParameters；新宿主需从Runtime schema和唯一设置快照生成/提交字段草稿，统一新文档格式，不读旧类型判别器。"
+      ],
+      [
+        "声明结果视图入口",
+        "ResultProjectionDescriptor已存在，但IToolDefinition/ToolSchema/ToolPresentation尚无实际结果投影发现入口，主窗口仍走SDK IToolEditorFactory。应在现有公共合同补最小查询入口和公共WPF消费者，不再拆Blob项目。"
+      ],
+      [
+        "资源与视图生命周期",
+        "公共结果视图接已发布快照/lease，结果替换、节点切换、关闭和卸载及时释放；复用当前资源所有权与RunIdentity，不另起一套生命周期协议。"
+      ]
+    ],
+    "implementation": "先完成结构改造前源码中文提交和origin/main推送，再继续已保存的XML/目录增量；同步改造公共宿主和消费者，删除旧桥接，执行正式UI/全量Release及同源运行回归。",
+    "boundaries": "此为自研目标结构，不冒充VM原始工程布局。需同步替换宿主的SDK发现/参数持久化/执行/结果消费，并核XML类型/字段/资源部署；不能只改目录就称完成。"
   }
 }

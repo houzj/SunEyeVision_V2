@@ -1,0 +1,63 @@
+{
+  "schema": "suneye-o06-native-numeric-consumption/v1",
+  "reference": "docs\\04-工具设计\\架构对照\\2026\\10\\21\\自研架构文档维护\\优化方案\\references\\vm-control-library-20261026\\VM控件库目标清单.json",
+  "referenceSha256": "650ff6d334c242301840d1377e8c5499cf736988b61a9211b8f6a546035a88ba",
+  "targets": [
+    {
+      "id": "control:774a6193e83eeaebf7158a2b873f6632d0fbe14460c578d70972a1fc42f0fe03",
+      "name": "HikPcUI.ListView.SliderArrange",
+      "assembly": "VM.PcUI",
+      "mvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "appearanceStatus": "xaml-source-found",
+      "verifiedSourceFiles": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+          "sha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb"
+        }
+      ]
+    },
+    {
+      "id": "control:97197ea4830513a9d9da9dc978e21fed5ea8934687138f0e96c2ab3abe46b17e",
+      "name": "HikPcUI.ListView.SliderArrangeBase",
+      "assembly": "VM.PcUI",
+      "mvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "appearanceStatus": "xaml-usage-found",
+      "verifiedSourceFiles": []
+    },
+    {
+      "id": "control:a2fe9153e11ffb5fbf7287eca2b6033194bd3b0afe703ad096152812bd4f5b36",
+      "name": "HikPcUI.ListView.SliderArrangeFloat",
+      "assembly": "VM.PcUI",
+      "mvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "appearanceStatus": "xaml-source-found",
+      "verifiedSourceFiles": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml",
+          "sha256": "07784584f38d02cd288e65b4ce2ae66c3ddf170c795404feac042e7e83d94a00"
+        }
+      ]
+    }
+  ],
+  "chain": "Integer_Sub/Float_sub/IntegerBettween_Sub/FloatBettween_sub → 原PCUI SliderArrange/SliderArrangeFloat；双端为SliderType.between，T1/T2分别承接StartValue/EndValue及各端订阅。",
+  "implemented": "DeclaredFieldEditor → NativeNumberField → 原PCUI单值或原NumericControl叶子；原Port和草稿校验优先，精确Int64保持文本路径。",
+  "pending": "RangeField双端仍使用提取SDK RangeSlider；需将两个字段、订阅/常量和校验草稿整体接入原between模板；不另造同名控件。",
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.Wpf/Fields/NativeNumberField.cs",
+      "sha256": "c1cc33daebbec3791656d9eaa584f908a39d2878314e9de7aa365be0c7ee7efa"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "8d47a9c9c19ec81d64ac67654b7f29e81fb1575f6d842a9317c9758252d11710"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/RangeField.cs",
+      "sha256": "363822db7f841b2cf2fd841471b1b8964c40a3f43dd6a11154d14b61e0245a75"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
+      "sha256": "cc30bed43a7f1bc99650578d81004b7488328cfeafb1e74b159459809da781cc"
+    }
+  ],
+  "evidenceBoundary": "源XAML按参考清单SHA核验；不计VM实机模板命中或完整控件库迁移。当前发布降级回归仍在定位，未因此标整个增量通过。"
+}

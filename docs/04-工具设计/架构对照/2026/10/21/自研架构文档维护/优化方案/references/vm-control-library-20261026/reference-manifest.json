@@ -1,0 +1,105 @@
+{
+  "schema": "suneye-vm-control-reference/v1",
+  "archivedAtUtc": "2026-10-26T14:41:02.666219+00:00",
+  "sourceUri": "file:///D:/MyWork/REA%E9%80%86%E5%90%91%E6%B5%8B%E8%AF%95/docs/%E6%9E%B6%E6%9E%84%E9%80%86%E5%90%91%E4%B8%8E%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%E6%96%87%E6%A1%A3/%E6%B8%85%E5%8D%95/VM%E6%8E%A7%E4%BB%B6%E5%BA%93%E9%80%86%E5%90%91%E7%9B%AE%E6%A0%87.html",
+  "sourceGeneratedUtc": "2026-10-26T14:24:44.053Z",
+  "blobEvidenceGeneratedUtc": "2026-10-26T09:12:46.9732783Z",
+  "baseline": {
+    "product": "VisionMaster",
+    "version": "V4.4.0 Build20250516@1555331",
+    "installRoot": "D:\\Program Files\\VisionMaster4.4.0",
+    "versionFile": "Applications/VersionInfo.config",
+    "versionFileBytes": 466,
+    "versionFileSha256": "d82cd1e749ccd32746c846ed379539f9f9dfdd6203196667f95d6fc1bc13249a"
+  },
+  "scope": "仅工具层界面控件：运行工具模块自己定义的 WPF 可视类型，以及由工具模块 CLI TypeRef 精确引用的共享运行库 WPF 可视类型。SDK 镜像不作为活动目标。",
+  "coverage": {
+    "toolModuleAssemblyOccurrences": 424,
+    "modulesWithScopedControlEvidence": 69,
+    "uniqueToolModuleControls": 152,
+    "uniqueSharedControlsDirectlyReferenced": 42,
+    "uniqueControlTargets": 194,
+    "appearanceEvidence": {
+      "targetsWithExactXamlClass": 152,
+      "targetsWithExactXamlUsage": 11,
+      "targetsWithXamlNameCandidateOnly": 2,
+      "targetsWithTypeMetadataOnly": 29,
+      "targetsWithInheritedBaseWindowStyleEvidence": 13,
+      "targetsWithOriginalImageResources": 86,
+      "originalImageResourceReferences": 583,
+      "groups": {
+        "windows": 35,
+        "composite": 113,
+        "basic": 4,
+        "usage": 11,
+        "unresolved": 31
+      },
+      "note": "精确 x:Class 是控件定义 XAML；精确 CLR 命名空间/程序集匹配是宿主使用例；同名文件只是候选。图片 URI 解析至本机反编译资源并记录 SHA-256。以上均不等于原程序运行时像素截图。"
+    },
+    "moduleExternalXamlTemplateDefinitions": 0,
+    "moduleTypeReferenceOccurrences": 19201,
+    "unresolvedItems": 2,
+    "notes": [
+      "目标身份按程序集名 + MVID + 完整类型名去重，安装路径和触发该共享控件的工具模块引用均保留。",
+      "模块自有目标依据 Applications/Module(sp) 下托管程序集的 WPF BaseType 继承链；共享目标依据工具模块 PE 元数据中的 CLI TypeRef 精确匹配共享程序集类型。",
+      "TypeRef 表明程序集元数据存在类型引用，不单独证明该控件在每个工具操作中实例化；源码调用链、XAML/BAML 消费与运行时仍需逐目标核验。",
+      "未把主窗口、流程画布、通用框架页面、SDK 镜像副本、非可视模型和仅按名称猜测的控件列为本范围目标。",
+      "本次仅静态读取 PE/CLI 元数据和 XML XAML，不加载或执行 VisionMaster 程序集。"
+    ]
+  },
+  "files": [
+    {
+      "path": "VM控件库逆向目标.html",
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\VM控件库逆向目标.html",
+      "bytes": 848208,
+      "sha256": "5e4dfae00d06da8a2cec28ad92c086705f572cc4868e8b650a9ec1dff7e8c254"
+    },
+    {
+      "path": "VM控件库目标清单.json",
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\VM控件库目标清单.json",
+      "bytes": 1000527,
+      "sha256": "650ff6d334c242301840d1377e8c5499cf736988b61a9211b8f6a546035a88ba"
+    },
+    {
+      "path": "VM控件库Blob外观证据.json",
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\VM控件库Blob外观证据.json",
+      "bytes": 85435,
+      "sha256": "13419eaabf69d73744a22968c1988bbe89184ad29ffa8f73c6e668bb63c933b1"
+    },
+    {
+      "path": "MetadataScanner/Program.cs",
+      "source": "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\MetadataScanner\\Program.cs",
+      "bytes": 9261,
+      "sha256": "6c89a5779ca7039523c945181cd3c2e407667b7cc1863e16e27a942550f9cd24"
+    }
+  ],
+  "boundary": [
+    "原始四份文件逐字节归档；没有执行扫描器或加载厂商程序集。",
+    "194是工具层静态控件目标数，不是整套VM所有控件数，也不是本方迁移完成数。",
+    "TypeRef、XAML定义、使用例、同名候选、原图资源分别保留证据等级；静态预览不等于VM实机像素截图。",
+    "源Blob弹层审计描述其生成时的旧预览；不覆盖本方后续修复与当前正式Release验收。",
+    "源扫描器仅作为代码证据附录，不代表可独立运行的完整工程。"
+  ],
+  "reconciliation": [
+    {
+      "topic": "原31类职责清单",
+      "handling": "31类是本方职责重组与退出门；194项是VM工具层目标发现集合，不能合并为迁移完成率。"
+    },
+    {
+      "topic": "Blob三页与组合链",
+      "handling": "使用Blob XML→共享DataTemplate→原控件/资源→本方消费者追踪；原三页/18相关模板/16显示对象基线继续独立保留。"
+    },
+    {
+      "topic": "显示对象统计",
+      "handling": "来源审计的9个ImageViewConfig、来源88个item与本方基线16个显示对象统计口径不同，按XML节点和GroupLink展开逐项对应，不直接相互替换。"
+    },
+    {
+      "topic": "样式与弹层",
+      "handling": "输入源、枚举、数值/双端范围、ROI、Expert、图像样式、掩膜七组弹层差异作为复核入口；已有修复以正式Release新证据为准。"
+    },
+    {
+      "topic": "工程组织",
+      "handling": "程序集/MVID/类型和资源证据用于定位来源；不按安装目录直接推断原工程或新增本方工程。"
+    }
+  ]
+}

@@ -97,13 +97,23 @@ internal static class S2DocumentEditingCases
                 System.Windows.Threading.Dispatcher.PushFrame(frame);
                 Progress("真实模板已完成布局");
                 var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(fallback).Single();
+                var pages=Find<System.Windows.Controls.TabControl>(fields).Single();
+                pages.SelectedItem=pages.Items.Cast<System.Windows.Controls.TabItem>().Single(tab=>Equals(tab.Header,"运行参数"));
+                context.CreatedWindow.UpdateLayout();
+                dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 var threshold=fields.Fields.Single(field=>field.FieldId==thresholdId).InputElement as System.Windows.Controls.TextBox
                     ??throw new Exception("真实数值模板没有输入框");
+                Require(threshold.IsVisible&&threshold.ActualWidth>0,"降级窗口没有显示实际待检数值字段");
                 DependencyObject? ancestor=threshold;
-                while(ancestor is not null&&ancestor is not SunEyeVision.Plugin.Wpf.Controls.NumericUpDown)
+                var ancestry=new List<string>();
+                while(ancestor is not null&&ancestor is not SunEyeVision.Plugin.Wpf.Fields.NativeNumberField)
+                {
+                    ancestry.Add(ancestor.GetType().AssemblyQualifiedName!);
                     ancestor=System.Windows.Media.VisualTreeHelper.GetParent(ancestor);
-                Require(ancestor is SunEyeVision.Plugin.Wpf.Controls.NumericUpDown numeric&&ReferenceEquals(numeric.TextEditor,threshold),
-                    "降级窗口未使用已迁入的数值控件模板");
+                }
+                Require(ancestor is SunEyeVision.Plugin.Wpf.Fields.NativeNumberField numeric&&ReferenceEquals(numeric.TextEditor,threshold)
+                    &&numeric.NativeControl is SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange,
+                    "降级窗口未使用已迁入的数值控件模板；实际="+(ancestor is SunEyeVision.Plugin.Wpf.Fields.NativeNumberField actual?actual.NativeControl.GetType().AssemblyQualifiedName:"无适配祖先："+string.Join(" → ",ancestry)));
                 threshold.Text="210";
                 Progress("有效数字已键入");
                 Require(Convert.ToInt32(draftContext.DraftNode.Parameters.GetType().GetProperty("Threshold")!.GetValue(draftContext.DraftNode.Parameters))==210

@@ -21,7 +21,8 @@
     "HikMessageBox只解绑自己注册的四个具名按钮事件；保留BaseWindow原关闭清理，不再反射清空所有事件。",
     "ShapeAndRoiMarginCvt半像素公式保留，开关改为实例选项，默认false；不读取厂商全局App.config，也不宣称当前默认已与VM安装配置一致。",
     "MultiLineROI使用原IMultiLineROI绘制角色及自身PolygonPoints依赖属性，距离计算保留double坐标；不绑定Hik XML参数模型。",
-    "帮助读取原helpUrl/GuidTemp布局并定位本方Release的Help目录，显式点击时调用系统浏览器；未读取厂商安装路径、注册表或单实例服务，未补造VM帮助内容，尚未执行浏览器打开验收。"
+    "帮助读取原helpUrl/GuidTemp布局并定位本方Release的Help目录，显式点击时调用系统浏览器；未读取厂商安装路径、注册表或单实例服务，未补造VM帮助内容，尚未执行浏览器打开验收。",
+    "原PCUI NumericControl/RangeRule按本方中立数值合同使用InvariantCulture，避免de-DE将点号按千位分隔误读；原模板、箭头和事件保留，不宣称VM区域设置行为相同。"
   ],
   "files": [
     {
@@ -130,6 +131,20 @@
       "original_source_sha256": "6de0d4143a2121073bb25b70afb286e786b98d126e64f1491627f3720efde2ce",
       "adapted_sha256": "ed6bd8bfadffac47ac2c652632b02dbd8347be0bd7fdcc3dc517a624befc9e13",
       "visual_member_adapter": true
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
+      "original_source_sha256": "7fa31754df042fad31ae5e16a9149484c4956c1164ff7fed9f688fbe9fb4b7ef",
+      "adapted_sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8",
+      "numeric_member_adapter": "invariant-literal-v1"
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
+      "original_source_sha256": "b5cac6bc7a5db08954c29ac8c342bba39cb4dc1a999a737845591017b51eeaed",
+      "adapted_sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf",
+      "numeric_member_adapter": "invariant-literal-v1"
     }
   ],
   "cross_module_impact": "限制在Native颜色与调用GetInstance的窗口；不修改宿主全局主题、工作流、算法或SDK契约。运行、设计时和三主题资源加载待构建通过后验证。"

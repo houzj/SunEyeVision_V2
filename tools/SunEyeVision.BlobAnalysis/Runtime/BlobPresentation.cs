@@ -43,9 +43,10 @@ public static class BlobPresentation
    dialog=key[..key.IndexOf('.',"presentation.graphics.".Length)];primary=key.EndsWith(".IsVisible");
    title=dialog["presentation.graphics.".Length..] switch {"blobs"=>"Blob","centroids"=>"质心","contours"=>"轮廓","inspection-roi"=>"检测区域","mask-roi"=>"屏蔽区域",_=>throw new ArgumentException("Unknown declared Blob display group.")};
   }
-  // Original ImageViewConfig_subContent uses .01 opacity ticks and unit stroke
-  // ticks. Keep stored literals intact; numeric bounds compatibility is separate.
-  if(key.StartsWith("presentation.")&&key.EndsWith(".Style.Opacity"))increment=.01;
+  // Original ImageViewConfig_subContent bounds; the field adapter keeps an
+  // existing out-of-range literal unchanged until the user actually edits it.
+  if(key.StartsWith("presentation.")&&key.EndsWith(".Style.Opacity")){minimum=0;maximum=1;increment=.01;}
+  if(key.StartsWith("presentation.graphics.")&&key.EndsWith(".Style.LineWidth")){minimum=1;maximum=10;}
   return new(page,section,condition,paired,advanced,minimum,maximum,decimals,allowReference,dialog,title,primary,increment);
  }
 }

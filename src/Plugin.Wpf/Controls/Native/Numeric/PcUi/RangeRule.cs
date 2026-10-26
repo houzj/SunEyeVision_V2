@@ -19,7 +19,7 @@ public class RangeRule : ValidationRule
 			{
 				if (((string)value).Length > 0)
 				{
-					num = double.Parse((string)value);
+					num = double.Parse((string)value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
 				}
 				if (double.IsNaN(num) || double.IsInfinity(num))
 				{

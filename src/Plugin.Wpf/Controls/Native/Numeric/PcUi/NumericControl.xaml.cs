@@ -181,7 +181,7 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 	{
 		get
 		{
-			if (double.TryParse(Text, out var result))
+			if (double.TryParse(Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var result))
 			{
 				_Value = result;
 			}
@@ -190,7 +190,7 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 		set
 		{
 			_Value = value;
-			Text = _Value.ToString();
+			Text = _Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 	}
 

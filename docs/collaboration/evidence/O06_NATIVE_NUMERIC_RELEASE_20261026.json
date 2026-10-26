@@ -1,0 +1,803 @@
+{
+  "schema": "suneye-o06-native-numeric-release/v1",
+  "status": "定向自动回归通过，整体迁移/视觉/人工未完成",
+  "sourceBaseCommit": "cd8c64024fd173af9422f6dcf0f28d081696f7e1",
+  "sourceIdentity": "测试时为cd8c6402基线加本文件所列未提交源码增量；Core编译身份与发布清单sourceCommit仍为基线。未来检查点正式同源交付应重新构建，不可仅改sourceCommit冒充新身份。",
+  "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+  "builds": [
+    {
+      "path": "Release/_validation/O06-RoiCore-20261026/build-ui-045.log",
+      "errors": 0,
+      "warnings": 6118,
+      "elapsed": "00:00:58.37",
+      "sha256": "e054df4a113ec9f82ff24dc13e3330deaee0a7657ec1dee39c35ce2de2f71601"
+    },
+    {
+      "path": "Release/_validation/O06-RoiCore-20261026/build-release-038.log",
+      "errors": 0,
+      "warnings": 6518,
+      "elapsed": "00:01:06.16",
+      "sha256": "f0da149e4c6603a299d71811b45c9e765ce9790d11b38e3d2f99711dac6c26a2"
+    }
+  ],
+  "checks": [
+    {
+      "track": "WindowPresentation",
+      "groups": 11,
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-017/receipt.json",
+      "sha256": "184e85fd61567f6af40e01ce701310635c0d48cada43de2bb796578ce65a74d2",
+      "exit": 0,
+      "loadedProductFiles": [
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "644a710c0f6b47520530bb0f4baf959e233b98a1d3bd504d834cda967ee870ee"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "c7856f43c2f56124544d7ed2ee87de4602868e41269d378cd80ca726141a74fe"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "6e779c3f0f54bc218e2f234c2cf8f79797d06eabc962a105cf508e941d5e2510"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "f2d5a7db1035e60550a441f2eea94161718dfc675fb9fb77601e9feb500f38c9"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "473c949d5b3c91ba1efbd61b7fa8fedac505e301b574d7cdc6e0ffa92a928330"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "e8e0f4a00a4379e2b1f0eb91751217629a80c6af0005765c8b30787c0848ae9e"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "ba877d19a0e8655bc6426a46278ffc47817fd9f32e720e91a842119e4b898fab"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "79d56628671ed0248187394cd6499d30be6a3ac5d5900f8697388f7e83ca1f88"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "5920bd9cc6e4f83c21f92d2164f2ac794b5cb6d3e0a5132d4677a7c1a3c183e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "4002d926b8635c3141b5094a8d768972b1f770c9890abd5dae84b6e6c6437fcc"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.BlobAnalysis\\SunEyeVision.Tool.BlobAnalysis.dll",
+          "sha256": "aa111a6f159f5c6c1d45550eee6e652c9f1c7e3aa02169894daeab2168658841"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleCircleMeasure\\SunEyeVision.Tool.CircleCircleMeasure.dll",
+          "sha256": "7f0a26a74c558651cf1ec55a913c207a90c1b6b51e26ed8b97137f0fd9b79016"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleDetect\\SunEyeVision.Tool.CircleDetect.dll",
+          "sha256": "c47c743588e916d2eb22a41bad0097cec16aa5a6fd3a0ef92362fe963faa5cd8"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Condition",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Condition\\SunEyeVision.Tool.Condition.dll",
+          "sha256": "412687a3f69858b7d045dd69fd644181239568489e3df0bd4494bd4b196342d1"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageFilter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageFilter\\SunEyeVision.Tool.ImageFilter.dll",
+          "sha256": "b9a5e753fee027fc33fce808b83da506f9caee9c5cf8d25568a2d884cebe1860"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageLoad",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageLoad\\SunEyeVision.Tool.ImageLoad.dll",
+          "sha256": "8acab5673d4bfbc7c086d3b620b924b44349fa148d02a56db85b4ec6f4b5d7a0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageThreshold",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageThreshold\\SunEyeVision.Tool.ImageThreshold.dll",
+          "sha256": "76476493740d072397c86a525332603cc57b4b88395b129023c5884e931ade7f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineCircleMeasure\\SunEyeVision.Tool.LineCircleMeasure.dll",
+          "sha256": "4e5db54efb3fbc66b526257ec381577774f2000466e6bc04723b3030fba13fef"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineDetect\\SunEyeVision.Tool.LineDetect.dll",
+          "sha256": "1ec1909a7944e918592774de4c973e07ab38d81f003263db33cf9b0488b8038a"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineLineMeasure\\SunEyeVision.Tool.LineLineMeasure.dll",
+          "sha256": "837deee06bdeca79d8d16c3f0236469e7d1f807a9e2238a03d6f51056c11bfe2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Morphology",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Morphology\\SunEyeVision.Tool.Morphology.dll",
+          "sha256": "bd5b30243818d518c203ec366db38b5aa67300e66e4c4b3a0a194563a285575f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.NPointCalibration",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.NPointCalibration\\SunEyeVision.Tool.NPointCalibration.dll",
+          "sha256": "e8bfca3ede94fe075d73d9a9976cf01bddabc67368559f397262d9f85efaefbe"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointCircleMeasure\\SunEyeVision.Tool.PointCircleMeasure.dll",
+          "sha256": "95a69c30673784f77afe4439e15c6dff604c9a05f8ffd28bd401f2e4499e285e"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointLineMeasure\\SunEyeVision.Tool.PointLineMeasure.dll",
+          "sha256": "860ccdcccfaf17b166d876e7bbb738ff4cad11b7f182626083d3b3913e54c4e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointPointMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointPointMeasure\\SunEyeVision.Tool.PointPointMeasure.dll",
+          "sha256": "fc1691aec3459cfffc80fb4e5582788090b7aebf0781c88480b78751d515f212"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolAssemble",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolAssemble\\SunEyeVision.Tool.ProtocolAssemble.dll",
+          "sha256": "6272a2897b6b63995031b9e78b9020ff18b9a99a42ab48a5ee2393902711ae36"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolParse",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolParse\\SunEyeVision.Tool.ProtocolParse.dll",
+          "sha256": "c8c15e4e09151371192b7041a250ae0d8eddd9341863211fb879371d5b2cfa00"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ReceiveData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ReceiveData\\SunEyeVision.Tool.ReceiveData.dll",
+          "sha256": "f4b4e07f87beaa452a82602a277b50eee6da4983a7b48623f0a4eeeb1d2c1389"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Script",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Script\\SunEyeVision.Tool.Script.dll",
+          "sha256": "7aeab27108c9d75f7c22e3bef41db6b1c2ea5d804228fa609b59d88dd328e223"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.SendData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.SendData\\SunEyeVision.Tool.SendData.dll",
+          "sha256": "9ed5449ada182230d0ac56870a59763fc8aa0676134cf36ef5ff6262e98d6ada"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ShapeMatch",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ShapeMatch\\SunEyeVision.Tool.ShapeMatch.dll",
+          "sha256": "c402322f060de747f6beb6f084849e781d5ef8f96f0f64f2b3b3c110510420c3"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "6e3d8fa5840e8ae8485adec4d9c79e6f0743bd087ec01639639f0d0706c8167d"
+        },
+        {
+          "assembly": "SunEyeVision.CvAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.CvAdapter.dll",
+          "sha256": "3765d8cc8d94673ce5da6992504555fa514a530c48d0a8ce78cd225867097737"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Subroutine",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Subroutine\\SunEyeVision.Tool.Subroutine.dll",
+          "sha256": "436c9c5c3ef23f34217a36fe8b040f19c71018d80857d34e881abc0b7e36ace8"
+        }
+      ]
+    },
+    {
+      "track": "FieldEditing",
+      "groups": 8,
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-012/receipt.json",
+      "sha256": "1f37628658b6709850e829c0dd13b225e13cf5f92a6b0f3b1eb3f2361c2b897e",
+      "exit": 0,
+      "loadedProductFiles": [
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "f2d5a7db1035e60550a441f2eea94161718dfc675fb9fb77601e9feb500f38c9"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "644a710c0f6b47520530bb0f4baf959e233b98a1d3bd504d834cda967ee870ee"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "6e779c3f0f54bc218e2f234c2cf8f79797d06eabc962a105cf508e941d5e2510"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "473c949d5b3c91ba1efbd61b7fa8fedac505e301b574d7cdc6e0ffa92a928330"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "c7856f43c2f56124544d7ed2ee87de4602868e41269d378cd80ca726141a74fe"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "e8e0f4a00a4379e2b1f0eb91751217629a80c6af0005765c8b30787c0848ae9e"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "ba877d19a0e8655bc6426a46278ffc47817fd9f32e720e91a842119e4b898fab"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "79d56628671ed0248187394cd6499d30be6a3ac5d5900f8697388f7e83ca1f88"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "5920bd9cc6e4f83c21f92d2164f2ac794b5cb6d3e0a5132d4677a7c1a3c183e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "4002d926b8635c3141b5094a8d768972b1f770c9890abd5dae84b6e6c6437fcc"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.BlobAnalysis\\SunEyeVision.Tool.BlobAnalysis.dll",
+          "sha256": "aa111a6f159f5c6c1d45550eee6e652c9f1c7e3aa02169894daeab2168658841"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleCircleMeasure\\SunEyeVision.Tool.CircleCircleMeasure.dll",
+          "sha256": "7f0a26a74c558651cf1ec55a913c207a90c1b6b51e26ed8b97137f0fd9b79016"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleDetect\\SunEyeVision.Tool.CircleDetect.dll",
+          "sha256": "c47c743588e916d2eb22a41bad0097cec16aa5a6fd3a0ef92362fe963faa5cd8"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Condition",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Condition\\SunEyeVision.Tool.Condition.dll",
+          "sha256": "412687a3f69858b7d045dd69fd644181239568489e3df0bd4494bd4b196342d1"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageFilter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageFilter\\SunEyeVision.Tool.ImageFilter.dll",
+          "sha256": "b9a5e753fee027fc33fce808b83da506f9caee9c5cf8d25568a2d884cebe1860"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageLoad",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageLoad\\SunEyeVision.Tool.ImageLoad.dll",
+          "sha256": "8acab5673d4bfbc7c086d3b620b924b44349fa148d02a56db85b4ec6f4b5d7a0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageThreshold",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageThreshold\\SunEyeVision.Tool.ImageThreshold.dll",
+          "sha256": "76476493740d072397c86a525332603cc57b4b88395b129023c5884e931ade7f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineCircleMeasure\\SunEyeVision.Tool.LineCircleMeasure.dll",
+          "sha256": "4e5db54efb3fbc66b526257ec381577774f2000466e6bc04723b3030fba13fef"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineDetect\\SunEyeVision.Tool.LineDetect.dll",
+          "sha256": "1ec1909a7944e918592774de4c973e07ab38d81f003263db33cf9b0488b8038a"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineLineMeasure\\SunEyeVision.Tool.LineLineMeasure.dll",
+          "sha256": "837deee06bdeca79d8d16c3f0236469e7d1f807a9e2238a03d6f51056c11bfe2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Morphology",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Morphology\\SunEyeVision.Tool.Morphology.dll",
+          "sha256": "bd5b30243818d518c203ec366db38b5aa67300e66e4c4b3a0a194563a285575f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.NPointCalibration",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.NPointCalibration\\SunEyeVision.Tool.NPointCalibration.dll",
+          "sha256": "e8bfca3ede94fe075d73d9a9976cf01bddabc67368559f397262d9f85efaefbe"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointCircleMeasure\\SunEyeVision.Tool.PointCircleMeasure.dll",
+          "sha256": "95a69c30673784f77afe4439e15c6dff604c9a05f8ffd28bd401f2e4499e285e"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointLineMeasure\\SunEyeVision.Tool.PointLineMeasure.dll",
+          "sha256": "860ccdcccfaf17b166d876e7bbb738ff4cad11b7f182626083d3b3913e54c4e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointPointMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointPointMeasure\\SunEyeVision.Tool.PointPointMeasure.dll",
+          "sha256": "fc1691aec3459cfffc80fb4e5582788090b7aebf0781c88480b78751d515f212"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolAssemble",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolAssemble\\SunEyeVision.Tool.ProtocolAssemble.dll",
+          "sha256": "6272a2897b6b63995031b9e78b9020ff18b9a99a42ab48a5ee2393902711ae36"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolParse",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolParse\\SunEyeVision.Tool.ProtocolParse.dll",
+          "sha256": "c8c15e4e09151371192b7041a250ae0d8eddd9341863211fb879371d5b2cfa00"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ReceiveData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ReceiveData\\SunEyeVision.Tool.ReceiveData.dll",
+          "sha256": "f4b4e07f87beaa452a82602a277b50eee6da4983a7b48623f0a4eeeb1d2c1389"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Script",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Script\\SunEyeVision.Tool.Script.dll",
+          "sha256": "7aeab27108c9d75f7c22e3bef41db6b1c2ea5d804228fa609b59d88dd328e223"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.SendData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.SendData\\SunEyeVision.Tool.SendData.dll",
+          "sha256": "9ed5449ada182230d0ac56870a59763fc8aa0676134cf36ef5ff6262e98d6ada"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ShapeMatch",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ShapeMatch\\SunEyeVision.Tool.ShapeMatch.dll",
+          "sha256": "c402322f060de747f6beb6f084849e781d5ef8f96f0f64f2b3b3c110510420c3"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "6e3d8fa5840e8ae8485adec4d9c79e6f0743bd087ec01639639f0d0706c8167d"
+        },
+        {
+          "assembly": "SunEyeVision.CvAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.CvAdapter.dll",
+          "sha256": "3765d8cc8d94673ce5da6992504555fa514a530c48d0a8ce78cd225867097737"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Subroutine",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Subroutine\\SunEyeVision.Tool.Subroutine.dll",
+          "sha256": "436c9c5c3ef23f34217a36fe8b040f19c71018d80857d34e881abc0b7e36ace8"
+        }
+      ]
+    },
+    {
+      "track": "FullChain",
+      "groups": 8,
+      "path": "Release/_validation/S4-20261025/FullChain/attempt-035/receipt.json",
+      "sha256": "d8048a6a982f121db9f99c07d31ee90d85ec02fe1261cee7f3be71c90bb77f2c",
+      "exit": 0,
+      "loadedProductFiles": [
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "c7856f43c2f56124544d7ed2ee87de4602868e41269d378cd80ca726141a74fe"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "473c949d5b3c91ba1efbd61b7fa8fedac505e301b574d7cdc6e0ffa92a928330"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "6e779c3f0f54bc218e2f234c2cf8f79797d06eabc962a105cf508e941d5e2510"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "644a710c0f6b47520530bb0f4baf959e233b98a1d3bd504d834cda967ee870ee"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "e8e0f4a00a4379e2b1f0eb91751217629a80c6af0005765c8b30787c0848ae9e"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "f2d5a7db1035e60550a441f2eea94161718dfc675fb9fb77601e9feb500f38c9"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "ba877d19a0e8655bc6426a46278ffc47817fd9f32e720e91a842119e4b898fab"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "79d56628671ed0248187394cd6499d30be6a3ac5d5900f8697388f7e83ca1f88"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "5920bd9cc6e4f83c21f92d2164f2ac794b5cb6d3e0a5132d4677a7c1a3c183e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "4002d926b8635c3141b5094a8d768972b1f770c9890abd5dae84b6e6c6437fcc"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.BlobAnalysis\\SunEyeVision.Tool.BlobAnalysis.dll",
+          "sha256": "aa111a6f159f5c6c1d45550eee6e652c9f1c7e3aa02169894daeab2168658841"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleCircleMeasure\\SunEyeVision.Tool.CircleCircleMeasure.dll",
+          "sha256": "7f0a26a74c558651cf1ec55a913c207a90c1b6b51e26ed8b97137f0fd9b79016"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleDetect\\SunEyeVision.Tool.CircleDetect.dll",
+          "sha256": "c47c743588e916d2eb22a41bad0097cec16aa5a6fd3a0ef92362fe963faa5cd8"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Condition",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Condition\\SunEyeVision.Tool.Condition.dll",
+          "sha256": "412687a3f69858b7d045dd69fd644181239568489e3df0bd4494bd4b196342d1"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageFilter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageFilter\\SunEyeVision.Tool.ImageFilter.dll",
+          "sha256": "b9a5e753fee027fc33fce808b83da506f9caee9c5cf8d25568a2d884cebe1860"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageLoad",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageLoad\\SunEyeVision.Tool.ImageLoad.dll",
+          "sha256": "8acab5673d4bfbc7c086d3b620b924b44349fa148d02a56db85b4ec6f4b5d7a0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageThreshold",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageThreshold\\SunEyeVision.Tool.ImageThreshold.dll",
+          "sha256": "76476493740d072397c86a525332603cc57b4b88395b129023c5884e931ade7f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineCircleMeasure\\SunEyeVision.Tool.LineCircleMeasure.dll",
+          "sha256": "4e5db54efb3fbc66b526257ec381577774f2000466e6bc04723b3030fba13fef"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineDetect\\SunEyeVision.Tool.LineDetect.dll",
+          "sha256": "1ec1909a7944e918592774de4c973e07ab38d81f003263db33cf9b0488b8038a"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineLineMeasure\\SunEyeVision.Tool.LineLineMeasure.dll",
+          "sha256": "837deee06bdeca79d8d16c3f0236469e7d1f807a9e2238a03d6f51056c11bfe2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Morphology",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Morphology\\SunEyeVision.Tool.Morphology.dll",
+          "sha256": "bd5b30243818d518c203ec366db38b5aa67300e66e4c4b3a0a194563a285575f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.NPointCalibration",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.NPointCalibration\\SunEyeVision.Tool.NPointCalibration.dll",
+          "sha256": "e8bfca3ede94fe075d73d9a9976cf01bddabc67368559f397262d9f85efaefbe"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointCircleMeasure\\SunEyeVision.Tool.PointCircleMeasure.dll",
+          "sha256": "95a69c30673784f77afe4439e15c6dff604c9a05f8ffd28bd401f2e4499e285e"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointLineMeasure\\SunEyeVision.Tool.PointLineMeasure.dll",
+          "sha256": "860ccdcccfaf17b166d876e7bbb738ff4cad11b7f182626083d3b3913e54c4e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointPointMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointPointMeasure\\SunEyeVision.Tool.PointPointMeasure.dll",
+          "sha256": "fc1691aec3459cfffc80fb4e5582788090b7aebf0781c88480b78751d515f212"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolAssemble",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolAssemble\\SunEyeVision.Tool.ProtocolAssemble.dll",
+          "sha256": "6272a2897b6b63995031b9e78b9020ff18b9a99a42ab48a5ee2393902711ae36"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolParse",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolParse\\SunEyeVision.Tool.ProtocolParse.dll",
+          "sha256": "c8c15e4e09151371192b7041a250ae0d8eddd9341863211fb879371d5b2cfa00"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ReceiveData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ReceiveData\\SunEyeVision.Tool.ReceiveData.dll",
+          "sha256": "f4b4e07f87beaa452a82602a277b50eee6da4983a7b48623f0a4eeeb1d2c1389"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Script",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Script\\SunEyeVision.Tool.Script.dll",
+          "sha256": "7aeab27108c9d75f7c22e3bef41db6b1c2ea5d804228fa609b59d88dd328e223"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.SendData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.SendData\\SunEyeVision.Tool.SendData.dll",
+          "sha256": "9ed5449ada182230d0ac56870a59763fc8aa0676134cf36ef5ff6262e98d6ada"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ShapeMatch",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ShapeMatch\\SunEyeVision.Tool.ShapeMatch.dll",
+          "sha256": "c402322f060de747f6beb6f084849e781d5ef8f96f0f64f2b3b3c110510420c3"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "6e3d8fa5840e8ae8485adec4d9c79e6f0743bd087ec01639639f0d0706c8167d"
+        },
+        {
+          "assembly": "SunEyeVision.CvAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.CvAdapter.dll",
+          "sha256": "3765d8cc8d94673ce5da6992504555fa514a530c48d0a8ce78cd225867097737"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Subroutine",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Subroutine\\SunEyeVision.Tool.Subroutine.dll",
+          "sha256": "436c9c5c3ef23f34217a36fe8b040f19c71018d80857d34e881abc0b7e36ace8"
+        },
+        {
+          "assembly": "SunEyeVision.DeviceDriver",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.DeviceDriver.dll",
+          "sha256": "f646b24d81bf41587aa463c00bde9c41b59b3aae2b90dd2b1227ec2ab46f9f0f"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "3cf8be44d94ca3688c292e13c5dc140b767d53cd5097b7104f9e1505bdbd93a6"
+        }
+      ]
+    },
+    {
+      "track": "Components",
+      "groups": 5,
+      "path": "Release/_validation/S3-20261025/Components/attempt-078/receipt.json",
+      "sha256": "f7d9a4d2349561588b7f4f05ab55ea16ec25dfbc356bc1d74b8394d0cbd27656",
+      "exit": 0,
+      "loadedProductFiles": [
+        {
+          "assembly": "SunEyeVision.Plugin.Infrastructure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Infrastructure.dll",
+          "sha256": "e8e0f4a00a4379e2b1f0eb91751217629a80c6af0005765c8b30787c0848ae9e"
+        },
+        {
+          "assembly": "SunEyeVision.Workflow",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Workflow.dll",
+          "sha256": "473c949d5b3c91ba1efbd61b7fa8fedac505e301b574d7cdc6e0ffa92a928330"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.SDK",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+          "sha256": "6e779c3f0f54bc218e2f234c2cf8f79797d06eabc962a105cf508e941d5e2510"
+        },
+        {
+          "assembly": "SunEyeVision.UI",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+          "sha256": "c7856f43c2f56124544d7ed2ee87de4602868e41269d378cd80ca726141a74fe"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+          "sha256": "644a710c0f6b47520530bb0f4baf959e233b98a1d3bd504d834cda967ee870ee"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Contracts",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+          "sha256": "f2d5a7db1035e60550a441f2eea94161718dfc675fb9fb77601e9feb500f38c9"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.dll",
+          "sha256": "6e3d8fa5840e8ae8485adec4d9c79e6f0743bd087ec01639639f0d0706c8167d"
+        },
+        {
+          "assembly": "SunEyeVision.Plugin.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Runtime.dll",
+          "sha256": "ba877d19a0e8655bc6426a46278ffc47817fd9f32e720e91a842119e4b898fab"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.BlobAnalysis\\SunEyeVision.Tool.BlobAnalysis.dll",
+          "sha256": "aa111a6f159f5c6c1d45550eee6e652c9f1c7e3aa02169894daeab2168658841"
+        },
+        {
+          "assembly": "SunEyeVision.Core",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Core.dll",
+          "sha256": "79d56628671ed0248187394cd6499d30be6a3ac5d5900f8697388f7e83ca1f88"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+          "sha256": "5920bd9cc6e4f83c21f92d2164f2ac794b5cb6d3e0a5132d4677a7c1a3c183e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis.Wpf",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+          "sha256": "4002d926b8635c3141b5094a8d768972b1f770c9890abd5dae84b6e6c6437fcc"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.BlobAnalysis",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.BlobAnalysis\\SunEyeVision.Tool.BlobAnalysis.dll",
+          "sha256": "aa111a6f159f5c6c1d45550eee6e652c9f1c7e3aa02169894daeab2168658841"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleCircleMeasure\\SunEyeVision.Tool.CircleCircleMeasure.dll",
+          "sha256": "7f0a26a74c558651cf1ec55a913c207a90c1b6b51e26ed8b97137f0fd9b79016"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.CircleDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.CircleDetect\\SunEyeVision.Tool.CircleDetect.dll",
+          "sha256": "c47c743588e916d2eb22a41bad0097cec16aa5a6fd3a0ef92362fe963faa5cd8"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Condition",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Condition\\SunEyeVision.Tool.Condition.dll",
+          "sha256": "412687a3f69858b7d045dd69fd644181239568489e3df0bd4494bd4b196342d1"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageFilter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageFilter\\SunEyeVision.Tool.ImageFilter.dll",
+          "sha256": "b9a5e753fee027fc33fce808b83da506f9caee9c5cf8d25568a2d884cebe1860"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageLoad",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageLoad\\SunEyeVision.Tool.ImageLoad.dll",
+          "sha256": "8acab5673d4bfbc7c086d3b620b924b44349fa148d02a56db85b4ec6f4b5d7a0"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ImageThreshold",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ImageThreshold\\SunEyeVision.Tool.ImageThreshold.dll",
+          "sha256": "76476493740d072397c86a525332603cc57b4b88395b129023c5884e931ade7f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineCircleMeasure\\SunEyeVision.Tool.LineCircleMeasure.dll",
+          "sha256": "4e5db54efb3fbc66b526257ec381577774f2000466e6bc04723b3030fba13fef"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineDetect",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineDetect\\SunEyeVision.Tool.LineDetect.dll",
+          "sha256": "1ec1909a7944e918592774de4c973e07ab38d81f003263db33cf9b0488b8038a"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.LineLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.LineLineMeasure\\SunEyeVision.Tool.LineLineMeasure.dll",
+          "sha256": "837deee06bdeca79d8d16c3f0236469e7d1f807a9e2238a03d6f51056c11bfe2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Morphology",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Morphology\\SunEyeVision.Tool.Morphology.dll",
+          "sha256": "bd5b30243818d518c203ec366db38b5aa67300e66e4c4b3a0a194563a285575f"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.NPointCalibration",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.NPointCalibration\\SunEyeVision.Tool.NPointCalibration.dll",
+          "sha256": "e8bfca3ede94fe075d73d9a9976cf01bddabc67368559f397262d9f85efaefbe"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointCircleMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointCircleMeasure\\SunEyeVision.Tool.PointCircleMeasure.dll",
+          "sha256": "95a69c30673784f77afe4439e15c6dff604c9a05f8ffd28bd401f2e4499e285e"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointLineMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointLineMeasure\\SunEyeVision.Tool.PointLineMeasure.dll",
+          "sha256": "860ccdcccfaf17b166d876e7bbb738ff4cad11b7f182626083d3b3913e54c4e2"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.PointPointMeasure",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.PointPointMeasure\\SunEyeVision.Tool.PointPointMeasure.dll",
+          "sha256": "fc1691aec3459cfffc80fb4e5582788090b7aebf0781c88480b78751d515f212"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolAssemble",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolAssemble\\SunEyeVision.Tool.ProtocolAssemble.dll",
+          "sha256": "6272a2897b6b63995031b9e78b9020ff18b9a99a42ab48a5ee2393902711ae36"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ProtocolParse",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ProtocolParse\\SunEyeVision.Tool.ProtocolParse.dll",
+          "sha256": "c8c15e4e09151371192b7041a250ae0d8eddd9341863211fb879371d5b2cfa00"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ReceiveData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ReceiveData\\SunEyeVision.Tool.ReceiveData.dll",
+          "sha256": "f4b4e07f87beaa452a82602a277b50eee6da4983a7b48623f0a4eeeb1d2c1389"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Script",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Script\\SunEyeVision.Tool.Script.dll",
+          "sha256": "7aeab27108c9d75f7c22e3bef41db6b1c2ea5d804228fa609b59d88dd328e223"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.SendData",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.SendData\\SunEyeVision.Tool.SendData.dll",
+          "sha256": "9ed5449ada182230d0ac56870a59763fc8aa0676134cf36ef5ff6262e98d6ada"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.ShapeMatch",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.ShapeMatch\\SunEyeVision.Tool.ShapeMatch.dll",
+          "sha256": "c402322f060de747f6beb6f084849e781d5ef8f96f0f64f2b3b3c110510420c3"
+        },
+        {
+          "assembly": "SunEyeVision.CvAdapter",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.CvAdapter.dll",
+          "sha256": "3765d8cc8d94673ce5da6992504555fa514a530c48d0a8ce78cd225867097737"
+        },
+        {
+          "assembly": "SunEyeVision.Tool.Subroutine",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\plugins\\SunEyeVision.Tool.Subroutine\\SunEyeVision.Tool.Subroutine.dll",
+          "sha256": "436c9c5c3ef23f34217a36fe8b040f19c71018d80857d34e881abc0b7e36ace8"
+        },
+        {
+          "assembly": "SunEyeVision.HalAdapter.Runtime",
+          "path": "Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.HalAdapter.Runtime.dll",
+          "sha256": "3cf8be44d94ca3688c292e13c5dc140b767d53cd5097b7104f9e1505bdbd93a6"
+        }
+      ]
+    }
+  ],
+  "componentDeployment": {
+    "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-027/results.json",
+    "groups": 11,
+    "sha256": "8178247a53a1a489e52242c52a4145d836d289bc892b7b62092a5a5da024e0d2",
+    "filesRestored": 3,
+    "manifestBytesRestored": true
+  },
+  "failuresPreserved": [
+    "UI041：中间输出写权限拒绝，UI042：正式程序占用输出；用户授权正常关闭前程序自行退出；后续串行UI/全量构建通过。",
+    "FieldEditing010：Int32溢出逃逸；已修适配层捕获为字段错误。FieldEditing011及最终复测通过。",
+    "ComponentDeployment024/025/026：用例在基本参数页查隐藏运行参数输入的视觉祖先，未验证实际可见原控件；已切到对应页并保留可见/类型/草稿断言，027全11项通过。",
+    "S3 Components070诊断时错误地只设置缺Wpf预期但未移出Wpf，被登记一致性门拒绝；不计产品失败或成功。",
+    "WindowPresentation015：七位数字可视宽度失败；配对宿主内边距修复后016/最终017通过。"
+  ],
+  "remaining": [
+    "RangeField仍使用提取SDK RangeSlider，继续接原PCUI between完整组合。",
+    "Blob当前五显示对象，VM XML展开16显示对象尚未全部映射；按口径逐项核对。",
+    "旧SDK其余消费者/原31项退出、50份pending组合闭包、typed调试新run、VS设计时和用户人工仍未闭合。",
+    "真实截图仍有部分长标签省略，不称整体VM视觉达标。"
+  ],
+  "sourceFiles": [
+    {
+      "path": "src/Plugin.Wpf/Fields/NativeNumberField.cs",
+      "sha256": "c1cc33daebbec3791656d9eaa584f908a39d2878314e9de7aa365be0c7ee7efa"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "8d47a9c9c19ec81d64ac67654b7f29e81fb1575f6d842a9317c9758252d11710"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+      "sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+      "sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobPresentation.cs",
+      "sha256": "8472ed1fa2d9978ba9ce81ad5a61aac1422e952cd67c018103e050bbbe0cce3f"
+    }
+  ]
+}

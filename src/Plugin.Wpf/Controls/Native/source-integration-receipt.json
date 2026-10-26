@@ -3,7 +3,7 @@
   "lane_manifests": [
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/numeric-migration-manifest.json",
-      "sha256": "94f080b4e97929948d7f2bd21713a0d9ab601718bdb51ef5d37e4547a82dd079"
+      "sha256": "efe7c27fae3febd273026442f121bfef44d748c914c33acde3ccb2d37961da8e"
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Input/migration-manifest.json",
@@ -6322,12 +6322,12 @@
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
-      "sha256": "9801a2f820c4bc6344a5dc09dd0a5bc4c159d280f830517f125e7909b2d34962",
+      "sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8",
       "pending": false
     },
     {
       "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
-      "sha256": "9710f95cc001102c3992eebd9f13a9632f17d24cb69a6de3aadb473291a46b3f",
+      "sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf",
       "pending": false
     },
     {

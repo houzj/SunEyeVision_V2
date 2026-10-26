@@ -285,11 +285,12 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
       "source_sha256": "7FA31754DF042FAD31AE5E16A9149484C4956C1164FF7FED9F688FBE9FB4B7EF",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\NumericControl.xaml.cs",
-      "target_sha256": "A6CA7336155BBBADF851BF614547FDDE9159F6E541B19F78CFFCB4B92BC77E63",
+      "target_sha256": "F5ED18766D6A21D0B99D5AE64E41B0817D6373D8E8EAE43EDF10AAA8027689E8",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
-        "restore attached property qualification where exported shorthand"
+        "restore attached property qualification where exported shorthand",
+        "Invariant literal parsing/formatting for the neutral host; original native numeric UI/templates retained."
       ]
     },
     {
@@ -400,11 +401,12 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
       "source_sha256": "B5CAC6BC7A5DB08954C29AC8C342BBA39CB4DC1A999A737845591017B51EEAED",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\RangeRule.cs",
-      "target_sha256": "364F7F645FAEF3FE2D9529DD815DA9F8BDE91787569C523E36E78ECB3AA5DFDC",
+      "target_sha256": "8B0296AEA4D0110B72A8F62D2923BBBD9EFB0E734FC9D10612CDC4434EAC90CF",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
-        "restore attached property qualification where exported shorthand"
+        "restore attached property qualification where exported shorthand",
+        "Invariant literal parsing/formatting for the neutral host; original native numeric UI/templates retained."
       ]
     },
     {

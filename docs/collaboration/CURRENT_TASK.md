@@ -128,3 +128,14 @@
 - Core/清单编译身份df06496c加证据记录的源码增量，不可把后续提交号只改进清单；旧成绩按旧身份保留。测试已直接改用Runtime测量，不为旧BlobResult保留兼容类型或旧接口。
 - 下一步优先替换WorkflowNodeBase.Parameters/AlgorithmNode.Tool和执行参数来源、SolutionSession/NodeConfigurationEditHost的SDK多态持久化、DeclaredToolConfigurationControl的SDK ToolDebugControlBase边界。直接使用Runtime设置与现有中立绑定/编辑合同，不再新增Blob旧/新转换桥；随后删根SDK工程/参数及资源边界，并完成参数Views/工厂、全部所需VM原控件/模板/交互。
 - 仍未验证VS设计时，新候选无真实用户验收；原视觉未通过反馈保留。M1/M2/M3、G1/G2及整体目标均未完成，继续active。
+
+## 2026-10-27 Runtime枚举单一来源与XML运行准入（最新）
+
+- Codex/main，基线14eb5f5e819f94a1bb3e12427629ee0fdd10e83f，单工作树单写者。本轮实际删除重复模型类型并补齐Runtime准入，不增加SDK参数包装层或新转换桥。
+- 删除根工具的ThresholdType、BlobSortMode、BlobSegmentationMode。现行参数属性、运行元数据、适配调用和相关消费者/测试直接使用Runtime枚举，删除枚举数值转换；不为旧类型保留别名或兼容模型。
+- 发现原Runtime数量仅校验正数、面积仅校验有限/有序、判定未核对XML允许范围及既定类型。现在启用数值字段按BlobParameters.xml边界校验，判定按XML核对键/类型/作用域和启用范围；空集合/空条目冻结明确拒绝，Validate给出字段诊断。XML原值未改，不能据此宣称VM默认或外观一致。
+- 串行正式UI构建0错误/6612警告238.28秒，全量0错误/6633警告81.95秒；日志blob-settings-authority-ui/release-001。正式目录RuntimeKernel021十四组、Components103七组/无Wpf101八组、Algorithm011九组、FullChain047/048各九组通过；ComponentDeployment032十二项通过，3文件及清单原SHA恢复，实际EXE准入正常。
+- 新增直接中立调用的越界/伪造判定负向检查；组件实际比较参数与Runtime属性的枚举类型身份且核对旧类型已不存在。真实HALCON、确认取消、下游、保存重开、资源释放、缺Wpf整链仍通过。
+- 证据docs/collaboration/evidence/O06_SETTINGS_AUTHORITY_CHECKPOINT_20261027.json：10份源码增量、768发布项和182加载记录SHA核对一致。Core/清单仍14eb5f5e加记录增量，不可用随后的提交号改写编译身份。原O06同步保留全部未完成条件。
+- 尚未删除重复参数存储/根SDK工程/设置及输入转换；节点配置、编辑事务、快照与方案持久化仍SDK绑定。下一步应直接改公共宿主的中立配置入口及这些消费者，不再给旧Blob参数加一层Runtime包装；最终删除旧入口/模型。参数Wpf视图、VM原件替换/交互和图形文本XML完整消费仍待实施。
+- M1/M2/M3均未完成，目标保持active。无新用户人工验收，VS设计时未验证，原视觉未通过反馈保留。本批功能PASS不等于VM视觉或整体交付完成。

@@ -1,3 +1,4 @@
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using NSubstitute;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
@@ -24,7 +25,7 @@ public sealed class DeclaredBlobResultTests
         var flow=workflows.CreateWorkflow("blob-address-"+Guid.NewGuid().ToString("N"),"blob");
         var parameters=new BlobAnalysisParameters{
             IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,IsCircularityFilterEnabled=false,
-            IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,SortMode=BlobSortMode.AreaDesc,
+            IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,SortMode=BlobSort.AreaDesc,
             Threshold=128,UpperThreshold=255,OutputContours=true};
         flow.AddNode(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});
         var runner=new WorkflowExecutionEngine(workflows,Substitute.For<IPluginManager>(),logger);

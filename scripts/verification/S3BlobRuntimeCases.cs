@@ -51,7 +51,7 @@ internal static class S2DocumentEditingCases
             for(int y = 8; y < 10; y++) for(int x = 8; x < 10; x++) separate[y * 16 + x] = 200;
             using var secondImage = HalImage.CreateFromBytes(separate, 16, 16, 1);
             var sorted = Settings(); sorted.ResolvedInputImage = secondImage;
-            sorted.SortMode = BlobSortMode.AreaDesc; sorted.IsBlobCountFilterEnabled = true; sorted.BlobCountLimit = 1;
+            sorted.SortMode = BlobSort.AreaDesc; sorted.IsBlobCountFilterEnabled = true; sorted.BlobCountLimit = 1;
             var final = new BlobAnalysisTool().Run(sorted);
             try { Require(final.IsSuccess && final.FilteredBlobCount == 1 && final.FilteredBlobs[0].Area == 4,
                 "应先生成全部候选、按面积降序，再取数量上限，而非提前取到小区域：" + final.ErrorMessage); }

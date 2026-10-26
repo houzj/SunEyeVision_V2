@@ -58,27 +58,64 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public bool OutputBoundary { get; init; }
     public BlobSort SortMode { get; init; }
     public IReadOnlyList<BlobJudgment> Judgments { get; init; }
-    public BlobSettings Freeze() => this with { Judgments = Array.AsReadOnly(Judgments.Select(x => x with { }).ToArray()) };
+    public BlobSettings Freeze()
+    {
+        if (Judgments is null || Judgments.Any(x => x is null))
+            throw new ArgumentException("Blob结果判定集合及条目不能为空。", nameof(Judgments));
+        return this with { Judgments = Array.AsReadOnly(Judgments.Select(x => x with { }).ToArray()) };
+    }
 
     public IReadOnlyList<Diagnostic> Validate()
     {
         var errors = new List<Diagnostic>();
         void Check(bool condition, string message) { if (!condition) errors.Add(new("BLOB_SETTINGS_INVALID", message)); }
+        var definition = BlobParameterDefinition.Instance;
+        bool Number(string field, double value)
+        {
+            var valid = double.IsFinite(value) && value >= definition.Minimum(field) && value <= definition.Maximum(field);
+            if (!valid) errors.Add(new("BLOB_SETTINGS_INVALID", $"{definition.Label(field)}必须在{definition.Minimum(field)}至{definition.Maximum(field)}之间。", field));
+            return valid;
+        }
         Check(Enum.IsDefined(SegmentationMode) && Enum.IsDefined(Type) && Enum.IsDefined(SortMode), "不支持的Blob分割、极性或排序模式。");
-        Check(SegmentationMode == BlobSegmentationMode.None || Threshold is >= 0 and <= 255, "阈值必须在0至255之间。");
-        Check(SegmentationMode != BlobSegmentationMode.DoubleThreshold || UpperThreshold <= 255 && UpperThreshold >= Threshold, "双阈值必须满足0≤下限≤上限≤255。");
-        Check(!IsBlobCountFilterEnabled || BlobCountLimit > 0, "数量限制必须为正数。");
-        void Range(bool enabled, double min, double max, double? limit = null) => Check(!enabled || double.IsFinite(min) && double.IsFinite(max) && min >= 0 && min <= max && (limit is null || max <= limit), "筛选范围必须有限、有序且处于有效范围。");
-        Range(IsAreaFilterEnabled, FilterAreaMin, FilterAreaMax);
-        Range(IsCircularityFilterEnabled, FilterCircularityMin, FilterCircularityMax, 1);
-        Range(IsRectangularityFilterEnabled, FilterRectangularityMin, FilterRectangularityMax, 1);
+        if (SegmentationMode != BlobSegmentationMode.None) Number(nameof(Threshold), Threshold);
+        if (SegmentationMode == BlobSegmentationMode.DoubleThreshold)
+        {
+            Number(nameof(UpperThreshold), UpperThreshold);
+            Check(UpperThreshold >= Threshold, "双阈值下限不能超过上限。");
+        }
+        if (IsBlobCountFilterEnabled) Number(nameof(BlobCountLimit), BlobCountLimit);
+        void Range(bool enabled, string minField, double min, string maxField, double max)
+        {
+            if (!enabled) return;
+            Number(minField, min); Number(maxField, max);
+            Check(min <= max, "筛选下限不能超过上限。");
+        }
+        Range(IsAreaFilterEnabled, nameof(FilterAreaMin), FilterAreaMin, nameof(FilterAreaMax), FilterAreaMax);
+        Range(IsCircularityFilterEnabled, nameof(FilterCircularityMin), FilterCircularityMin, nameof(FilterCircularityMax), FilterCircularityMax);
+        Range(IsRectangularityFilterEnabled, nameof(FilterRectangularityMin), FilterRectangularityMin, nameof(FilterRectangularityMax), FilterRectangularityMax);
+        if (Judgments is null || Judgments.Any(x => x is null))
+        {
+            errors.Add(new("BLOB_SETTINGS_INVALID", "Blob结果判定集合及条目不能为空。", nameof(Judgments)));
+            return errors;
+        }
         Check(Judgments.Select(x => x.Key).Distinct(StringComparer.Ordinal).Count() == Judgments.Count, "结果判定键不得重复。");
+        var declared = definition.CreateJudgments().ToDictionary(x => x.Key, StringComparer.Ordinal);
+        var metadata = definition.JudgmentMetadata.ToDictionary(x => (string)x.Attribute("key")!, StringComparer.Ordinal);
         foreach (var rule in Judgments)
         {
-            Check(Enum.IsDefined(rule.Kind), "结果判定类型无效。");
-            Check(!rule.Enabled || rule.Kind != BlobJudgmentKind.Range || double.IsFinite(rule.Minimum) && double.IsFinite(rule.Maximum) && rule.Minimum <= rule.Maximum, "结果判定范围无效。");
-            Check(rule.PerItem ? rule.Key is "per-blob-area" or "per-blob-circularity" or "per-blob-rectangularity"
-                : rule.Key is "output-not-empty" or "white-ratio" or "blob-count" or "total-area" or "average-area" or "max-area" or "min-area" or "average-circularity" or "average-rectangularity", "结果判定键与作用范围不匹配。");
+            if (rule.Key is null || !declared.TryGetValue(rule.Key, out var expected))
+            {
+                Check(false, "未知结果判定键。");
+                continue;
+            }
+            Check(rule.Kind == expected.Kind && rule.PerItem == expected.PerItem, "结果判定类型或作用范围与XML声明不符。");
+            if (rule.Enabled && rule.Kind == BlobJudgmentKind.Range)
+            {
+                var item = metadata[rule.Key];
+                Check(double.IsFinite(rule.Minimum) && double.IsFinite(rule.Maximum) && rule.Minimum <= rule.Maximum
+                    && rule.Minimum >= BlobParameterDefinition.Finite(item, "allowedMinimum")
+                    && rule.Maximum <= BlobParameterDefinition.Finite(item, "allowedMaximum"), "结果判定范围与XML声明不符。");
+            }
         }
         return errors;
     }

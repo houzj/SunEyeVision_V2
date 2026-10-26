@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
+using System;
 using System.Linq;
 using System.Windows.Media;
 using System.Collections.Generic;
@@ -10,46 +11,6 @@ using SunEyeVision.Plugin.SDK.Validation;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
-    /// <summary>
-    /// 阈值极性枚举（与分割方式独立）
-    /// </summary>
-    public enum ThresholdType
-    {
-        Binary = 0,
-        BinaryInv = 1
-    }
-
-    /// <summary>
-    /// Blob排序方式枚举
-    /// </summary>
-    public enum BlobSortMode
-    {
-        /// <summary>不排序（保持原始连通域顺序）</summary>
-        None = 0,
-        /// <summary>面积从小到大</summary>
-        AreaAsc = 1,
-        /// <summary>面积从大到小</summary>
-        AreaDesc = 2,
-        /// <summary>圆度从小到大</summary>
-        CircularityAsc = 3,
-        /// <summary>圆度从大到小</summary>
-        CircularityDesc = 4,
-        /// <summary>矩形度从小到大</summary>
-        RectangularityAsc = 5,
-        /// <summary>矩形度从大到小</summary>
-        RectangularityDesc = 6,
-        /// <summary>质心X坐标从小到大</summary>
-        XAsc = 7,
-        /// <summary>质心X坐标从大到小</summary>
-        XDesc = 8,
-        /// <summary>质心Y坐标从小到大</summary>
-        YAsc = 9,
-        /// <summary>质心Y坐标从大到小</summary>
-        YDesc = 10
-    }
-
-    public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None }
-
     /// <summary>
     /// Blob分析工具参数
     /// </summary>
@@ -68,8 +29,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
             var defaults=new Runtime.BlobSettings();
             Threshold=defaults.Threshold;
             UpperThreshold=defaults.UpperThreshold;
-            SegmentationMode=(BlobSegmentationMode)defaults.SegmentationMode;
-            Type=(ThresholdType)defaults.Type;
+            SegmentationMode=defaults.SegmentationMode;
+            Type=defaults.Type;
             IsPositionCorrectionEnabled=defaults.IsPositionCorrectionEnabled;
             IsAreaFilterEnabled=defaults.IsAreaFilterEnabled;
             FilterAreaMin=defaults.FilterAreaMin;
@@ -85,7 +46,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             OutputBlobImage=defaults.OutputGrayImage;
             OutputBinaryImage=defaults.OutputBinaryImage;
             OutputContours=defaults.OutputBoundary;
-            SortMode=(BlobSortMode)defaults.SortMode;
+            SortMode=defaults.SortMode;
         }
 
         public SunEyeVision.Plugin.Contracts.RegionFieldMode InspectionMode { get; set; }
@@ -151,7 +112,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         {
             new RuntimeParameterDescriptor(nameof(Threshold), "阈值", "Integer", typeof(int)),
             new RuntimeParameterDescriptor(nameof(UpperThreshold), "阈值上限", "Integer", typeof(int)),
-            new RuntimeParameterDescriptor(nameof(Type), "极性", ValueType: typeof(ThresholdType)),
+            new RuntimeParameterDescriptor(nameof(Type), "极性", ValueType: typeof(BlobThresholdMode)),
             new RuntimeParameterDescriptor(nameof(IsAreaFilterEnabled), "启用面积筛选", "Boolean", typeof(bool)),
             new RuntimeParameterDescriptor(nameof(FilterAreaMin), "面积最小值", "Double", typeof(double)),
             new RuntimeParameterDescriptor(nameof(FilterAreaMax), "面积最大值", "Double", typeof(double)),
@@ -161,7 +122,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             new RuntimeParameterDescriptor(nameof(IsRectangularityFilterEnabled), "启用矩形度筛选", "Boolean", typeof(bool)),
             new RuntimeParameterDescriptor(nameof(FilterRectangularityMin), "矩形度最小值", "Double", typeof(double)),
             new RuntimeParameterDescriptor(nameof(FilterRectangularityMax), "矩形度最大值", "Double", typeof(double)),
-            new RuntimeParameterDescriptor(nameof(SortMode), "排序方式", ValueType: typeof(BlobSortMode)),
+            new RuntimeParameterDescriptor(nameof(SortMode), "排序方式", ValueType: typeof(BlobSort)),
             new RuntimeParameterDescriptor(nameof(IsBlobCountFilterEnabled), "启用查找数量筛选", "Boolean", typeof(bool)),
             new RuntimeParameterDescriptor(nameof(BlobCountLimit), "查找数量", "Integer", typeof(int)),
             new RuntimeParameterDescriptor(nameof(OutputBlobImage), "Blob图像输出", "Boolean", typeof(bool)),
@@ -204,7 +165,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 阈值极性（Binary为区间内，BinaryInv为有效域内补集）
         /// </summary>
         [DisplayName("极性")]
-        public ThresholdType Type { get; set; }
+        public BlobThresholdMode Type { get; set; }
 
         #endregion
 
@@ -344,7 +305,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// Blob排序方式
         /// </summary>
         [DisplayName("排序方式")]
-        public BlobSortMode SortMode { get; set; }
+        public BlobSort SortMode { get; set; }
 
         #endregion
 

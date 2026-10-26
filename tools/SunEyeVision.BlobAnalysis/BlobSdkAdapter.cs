@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -49,12 +49,12 @@ internal static class BlobSdkAdapter
     }
 
     internal static BlobRuntime.BlobSettings Settings(BlobAnalysisParameters p) => new() {
-        Threshold=p.Threshold, UpperThreshold=p.UpperThreshold, Type=(BlobRuntime.BlobThresholdMode)p.Type,
-        SegmentationMode=(BlobRuntime.BlobSegmentationMode)p.SegmentationMode,
+        Threshold=p.Threshold, UpperThreshold=p.UpperThreshold, Type=p.Type,
+        SegmentationMode=p.SegmentationMode,
         IsAreaFilterEnabled=p.IsAreaFilterEnabled, FilterAreaMin=p.FilterAreaMin, FilterAreaMax=p.FilterAreaMax,
         IsCircularityFilterEnabled=p.IsCircularityFilterEnabled, FilterCircularityMin=p.FilterCircularityMin, FilterCircularityMax=p.FilterCircularityMax,
         IsRectangularityFilterEnabled=p.IsRectangularityFilterEnabled, FilterRectangularityMin=p.FilterRectangularityMin, FilterRectangularityMax=p.FilterRectangularityMax,
-        IsBlobCountFilterEnabled=p.IsBlobCountFilterEnabled, BlobCountLimit=p.BlobCountLimit, SortMode=(BlobRuntime.BlobSort)p.SortMode,
+        IsBlobCountFilterEnabled=p.IsBlobCountFilterEnabled, BlobCountLimit=p.BlobCountLimit, SortMode=p.SortMode,
         OutputGrayImage=p.OutputBlobImage, OutputBinaryImage=p.OutputBinaryImage, OutputBoundary=p.OutputContours,
         Judgments=Array.AsReadOnly(p.ResultPresentation.Judgments.Select(j=>new BlobRuntime.BlobJudgment(j.Key,j.Scope==JudgmentScope.PerItem,j.Enabled,j.Min,j.Max,(BlobRuntime.BlobJudgmentKind)j.RuleKind)).ToArray())
     };

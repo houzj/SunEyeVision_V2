@@ -65,6 +65,34 @@ internal static class S2DocumentEditingCases
                     &&restored.Judgments.SequenceEqual(changed.Judgments),"XML默认覆盖已保存的用户值");
                 Throws<InvalidDataException>(()=>BlobParameterDefinition.Instance.Default<double>(nameof(BlobSettings.Threshold)));
             });
+            Case("Runtime直接调用按XML拒绝越界与伪造判定，不依赖SDK界面校验",()=>{
+                IToolDefinition definition=new BlobTool();
+                var invalid=new[] {
+                    new BlobSettings { BlobCountLimit=20001 },
+                    new BlobSettings { FilterAreaMax=10000000 },
+                    new BlobSettings { SegmentationMode=BlobSegmentationMode.DoubleThreshold,Threshold=200,UpperThreshold=199 },
+                    new BlobSettings { Judgments=new[]{new BlobJudgment("white-ratio",false,true,0,101)} },
+                    new BlobSettings { Judgments=new[]{new BlobJudgment("average-circularity",false,true,-0.01,1)} },
+                    new BlobSettings { Judgments=new[]{new BlobJudgment("per-blob-area",true,false,0,1,BlobJudgmentKind.Boolean)} },
+                    new BlobSettings { Judgments=new[]{new BlobJudgment("output-not-empty",true,false,0,0,BlobJudgmentKind.Boolean)} },
+                    new BlobSettings { Judgments=new[]{new BlobJudgment("unknown",false,false,0,1)} }
+                };
+                using var resources=new FrozenOutputResources();
+                var inputs=new InputValues(Array.Empty<Port>(),new Dictionary<string,object?>());
+                foreach(var settings in invalid)
+                {
+                    Require(settings.Validate().Count>0,"Runtime接受了XML边界外的参数");
+                    var result=ToolRuntimeExecutor.ExecuteAsync(definition,settings,inputs,new RunnerContext(resources)).GetAwaiter().GetResult();
+                    Require(!result.Success&&result.Output is null&&result.Diagnostics.All(d=>d.Code=="BLOB_SETTINGS_INVALID"),
+                        "非法设置未在输入准入及算法执行前拒绝");
+                }
+                Require((new BlobSettings{BlobCountLimit=20000,FilterAreaMax=9999999}).Validate().Count==0,"XML合法边界被拒绝");
+                Require((new BlobSettings{IsBlobCountFilterEnabled=false,BlobCountLimit=0}).Validate().Count==0,"关闭的筛选仍参与执行校验");
+                var absent=new BlobSettings{Judgments=null!};
+                Require(absent.Validate().Count>0,"空判定集合未报告字段错误");
+                Throws<ArgumentException>(()=>absent.Freeze());
+                Throws<ArgumentException>(()=>(new BlobSettings{Judgments=new BlobJudgment[]{null!}}).Freeze());
+            });
             Case("参数XML完整性与非法元数据在加载阶段拒绝",()=>{
                 string Xml(){using var s=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;return new StreamReader(s).ReadToEnd();}
                 void Reject(Action<XElement> mutate)

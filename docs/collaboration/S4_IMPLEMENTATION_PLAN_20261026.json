@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27宿主中立Runtime入口与单次执行器已接正式注册/生产调用，冻结参数与异步清理边界已验；BlobResult和逐项结果复制已删，现行外壳直接转发Runtime数据。Runtime/Wpf工程文件名及引用已按目标修改。仍3工程，节点参数/持久化/SDK工具发现入口未替换，M1未完成。",
-  "summaryStatus": "中立运行入口增量：UI/全量0错误；Runtime13、组件7/8、有无Wpf整链各9、关联算法9、发布12通过。",
+  "current": "2026-10-27继续向Runtime单一模型收敛：Blob外层重复分割/极性/排序枚举已删除，参数及消费者使用Runtime真实类型；Runtime数值与判定准入读取参数XML边界。UI/全量构建0错误，本批正式产物定向回归通过；SDK参数存储/发现/持久化仍未退出，M1未完成。",
+  "summaryStatus": "模型和XML准入增量：UI/全量0错误；Runtime14、组件7/8、有无Wpf整链各9、关联算法9、发布12通过。",
   "rows": [
+    [
+      "Runtime枚举单一来源与XML准入",
+      "已删除外层ThresholdType/BlobSortMode/BlobSegmentationMode；实际参数、描述与消费者直接使用Runtime类型，不留兼容类型或枚举数值转换。Runtime按参数XML拒绝启用字段越界、未知判定键及类型/作用范围伪造；空判定集合明确拒绝。",
+      "本批正式产物Runtime14、组件7/8、有无Wpf整链各9、关联算法9和发布12通过，768发布项/182加载记录身份一致。SDK节点/参数存储/发现/持久化未退出；不是M1完成，也不冒充VM外观或人工验收。"
+    ],
     [
       "中立运行入口与重复结果退出",
       "现有Contracts公开宿主IToolDefinition/Session调用，泛型实现保留真实参数/结果实例；Plugin.Runtime单次执行器负责冻结、准入、会话清理，不调度工作流或拥有输入资源。注册表直接创建Runtime并校验XML默认；旧逐Blob DTO及复制已删除。",
@@ -5054,5 +5059,13 @@
     "removed": "BlobResult.cs与逐Blob复制、SDK统计/阈值/直方图/判定数据副本已删，输出以Runtime为权威。",
     "verified": "UI002为0错误/6612警告107.86秒，全量001为0错误/6589警告99.08秒；RuntimeKernel020十三、Components098/096七/八、FullChain045/046各九、Algorithm010九、ComponentDeployment031十二均通过。",
     "remaining": "不能据此称工具箱/节点配置/持久化已直接使用Runtime；旧根SDK工程、参数模型、输入/资源边界、参数Views、VM原件/完整交互和真实验收仍未完成。"
+  },
+  "settingsAuthorityCheckpoint": {
+    "status": "SCOPED_INCREMENT_VERIFIED_NOT_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_SETTINGS_AUTHORITY_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "14eb5f5e819f94a1bb3e12427629ee0fdd10e83f",
+    "implementation": "已删除外层ThresholdType/BlobSortMode/BlobSegmentationMode；实际参数、描述与消费者直接使用Runtime类型，不留兼容类型或枚举数值转换。Runtime按参数XML拒绝启用字段越界、未知判定键及类型/作用范围伪造；空判定集合明确拒绝。",
+    "verification": "本批正式产物Runtime14、组件7/8、有无Wpf整链各9、关联算法9和发布12通过，768发布项/182加载记录身份一致。SDK节点/参数存储/发现/持久化未退出；不是M1完成，也不冒充VM外观或人工验收。",
+    "remaining": "直接替换SDK工作流配置/快照/编辑/方案持久化与发现，移除根工具工程及剩余转换；完成参数编辑器和全部Blob所需VM原件。"
   }
 }

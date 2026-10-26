@@ -140,6 +140,12 @@ internal static class S2DocumentEditingCases
             {
                 var runtime=ToolRegistry.CreateRuntime("BlobAnalysis");var state=runtime.CreateSettings();var schema=runtime.Describe(state);
                 Require(state.GetType()==runtime.SettingsType,"注册入口未创建真实运行参数类型");
+                foreach(var name in new[]{"Type","SortMode","SegmentationMode"})
+                    Require(parameters.GetType().GetProperty(name)!.PropertyType==runtime.SettingsType.GetProperty(name)!.PropertyType,
+                        "配置消费仍使用重复枚举类型："+name);
+                foreach(var name in new[]{"ThresholdType","BlobSortMode","BlobSegmentationMode"})
+                    Require(parameters.GetType().Assembly.GetType("SunEyeVision.Tool.BlobAnalysis."+name) is null,
+                        "旧Blob枚举仍在外层程序集："+name);
                 var imagePort=schema.Inputs.Single(port=>port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image);
                 using var frozen=image.CaptureSnapshot(new(Guid.NewGuid(),"registered-runtime-input"));
                 using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();

@@ -66,7 +66,7 @@ internal static class S2DocumentEditingCases
             });
             Case("Facade nullable实际阈值与正式声明、canonical图像来源保留",()=>{
                 using var image=HalImage.CreateFromBytes(new byte[]{0,255,255,0},4,1,1);
-                var p=new BlobAnalysisParameters{ResolvedInputImage=image,SegmentationMode=SunEyeVision.Tool.BlobAnalysis.BlobSegmentationMode.None,IsAreaFilterEnabled=false,OutputBinaryImage=true};
+                var p=new BlobAnalysisParameters{ResolvedInputImage=image,SegmentationMode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode.None,IsAreaFilterEnabled=false,OutputBinaryImage=true};
                 var result=new BlobAnalysisTool().Run(p);try{
                     Require(result.IsSuccess&&result.ThresholdMinUsed is null&&result.ThresholdMaxUsed is null,result.ErrorMessage??"None门面失败");
                     foreach(var name in new[]{"ThresholdMinUsed","ThresholdMaxUsed"}){var field=result.GetOutputVariables().Single(f=>f.Name==name);Require(field.AllowsNull&&BindingClrAdapter.DescribeOutput(field).Nullable&&field.RuntimeValue is null,"Nullable正式声明丢失");}
@@ -75,7 +75,7 @@ internal static class S2DocumentEditingCases
                 }finally{result.Resources.Dispose();}
                 var many=new byte[16*16];many[2*16+2]=255;for(int y=8;y<10;y++)for(int x=8;x<10;x++)many[y*16+x]=255;
                 using var multiple=HalImage.CreateFromBytes(many,16,16,1);
-                var limited=new BlobAnalysisParameters{ResolvedInputImage=multiple,SegmentationMode=SunEyeVision.Tool.BlobAnalysis.BlobSegmentationMode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSortMode.AreaDesc};
+                var limited=new BlobAnalysisParameters{ResolvedInputImage=multiple,SegmentationMode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSort.AreaDesc};
                 var final=new BlobAnalysisTool().Run(limited);try{
                     Require(final.IsSuccess&&final.FilteredBlobCount==1&&final.MinimumArea==4&&final.MaximumArea==4,"Facade min/max没有来自限数后的最终集合");
                     var runtime=typeof(BlobAnalysisResults).GetProperty("RuntimeOutput",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(final)!;
@@ -94,7 +94,7 @@ internal static class S2DocumentEditingCases
                 var valid=Document();valid["Workflows"]![0]!["Nodes"]![0]!["ParamSettings"]!["Settings"]!.AsArray().Add(new JsonObject{["ParameterName"]="Threshold",["BindingType"]=0,["SourceProperty"]="MaxValue"});Check(valid);
             });
             Case("单/双/None保存重开且旧参数不再写出",()=>{
-                foreach(var mode in Enum.GetValues<SunEyeVision.Tool.BlobAnalysis.BlobSegmentationMode>()){
+                foreach(var mode in Enum.GetValues<SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode>()){
                     var p=ToolRegistry.CreateParameters("BlobAnalysis");Set(p,"SegmentationMode",mode.ToString());Set(p,"Threshold",100);Set(p,"UpperThreshold",200);
                     var json=JsonSerializer.Serialize<ToolParameters>(p,ParameterTypeRegistry.SerializationOptions);
                     Require(!json.Contains("IsMorphologyEnabled")&&!json.Contains("Preprocess")&&!json.Contains("\"MaxValue\""),"旧参数仍保存");

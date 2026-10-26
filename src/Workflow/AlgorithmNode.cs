@@ -15,7 +15,7 @@ namespace SunEyeVision.Workflow
     /// <summary>
     /// 算法节点
     /// </summary>
-    public class AlgorithmNode : WorkflowNodeBase
+    public partial class AlgorithmNode : WorkflowNodeBase
     {
         /// <summary>
         /// 工具实例
@@ -63,6 +63,9 @@ namespace SunEyeVision.Workflow
         {
             Tool = tool;
         }
+        public AlgorithmNode(string id,string name,string dispName,RuntimeToolConfiguration configuration)
+            :base(id,name,dispName,configuration.ToolId)
+        {RuntimeConfiguration=configuration.Copy();}
 
         /// <summary>
         /// 执行节点算法（带绑定解析）
@@ -95,7 +98,17 @@ namespace SunEyeVision.Workflow
 
             try
             {
-                if (Tool != null)
+                if (RuntimeConfiguration is not null)
+                {
+                    var result=await ExecuteRuntimeNodeAsync(nodeResults,cancellationToken).ConfigureAwait(false);
+                    if(cancellationToken.IsCancellationRequested||AdmittedIdentity?.IsCurrent==false)
+                    {result.Resources?.Dispose();cancellationToken.ThrowIfCancellationRequested();throw new InvalidOperationException("Runtime节点身份已失效，拒绝发布结果。");}
+                    try{BindingContext!.FreezeResult(this,result);}
+                    catch{result.Resources?.Dispose();throw;}
+                    StoreLastToolResult(result);
+                    LastResult=ConvertToAlgorithmResult(result);
+                }
+                else if (Tool != null)
                 {
                     var typedParams = GetTypedParameters();
 

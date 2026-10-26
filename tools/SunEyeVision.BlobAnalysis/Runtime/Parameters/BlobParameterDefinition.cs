@@ -16,7 +16,9 @@ public sealed class BlobParameterDefinition
     {
         if(root.Name!="BlobParameters"||(string?)root.Attribute("schemaVersion")!="1")
             throw new InvalidDataException("Unsupported Blob parameter metadata.");
-        Shape(root,["schemaVersion"],["Group","Judgments"]);
+        Shape(root,["schemaVersion","workflowImageInputId"],["Group","Judgments"]);
+        WorkflowImageInputId=Required(root,"workflowImageInputId");
+        if(WorkflowImageInputId!=BlobTool.ImageInput)throw new InvalidDataException("Blob workflow image default must name its declared image input.");
         foreach(var group in root.Elements("Group"))
         {
             Shape(group,["page","section"],["Parameter"]);
@@ -124,6 +126,7 @@ public sealed class BlobParameterDefinition
     internal static bool Boolean(XElement element,string name)=>bool.TryParse(Required(element,name),out var value)
         ?value:throw new InvalidDataException("Invalid Blob Boolean: "+name);
     public bool Contains(string id)=>_fields.ContainsKey(id);
+    public string WorkflowImageInputId { get; }
     public string Label(string id)=>Required(_fields[id],"label");
     public string Page(string id)=>Required(_fields[id].Parent!,"page");
     public string Section(string id)=>Required(_fields[id].Parent!,"section");

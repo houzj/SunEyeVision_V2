@@ -9,7 +9,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 /// <summary>CLR declarations and values adapt to the single semantic contract; checked rules live in Contracts.</summary>
 public static class BindingClrAdapter
 {
-    public static string OutputPortId(OutputVariable output)=>output.FieldId is Guid id?"field:"+id.ToString("N"):"name:"+output.Name;
+    public static string OutputPortId(OutputVariable output)=>output.PortId??(output.FieldId is Guid id?"field:"+id.ToString("N"):"name:"+output.Name);
     public static Port DescribeOutput(OutputVariable output)
     {
         if(output.Kind!=OutputVariableKind.Data)throw new ArgumentException("Only formal data outputs can be bound.");

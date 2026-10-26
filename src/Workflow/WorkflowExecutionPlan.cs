@@ -14,13 +14,14 @@ public sealed class WorkflowExecutionPlan : IDisposable
         Workflow executableWorkflow,
         WorkflowExecutionDependencyGraph dependencyGraph,
         IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles,
-        WorkflowBindingContext bindingContext)
+        WorkflowBindingContext bindingContext,IDisposable? frozenInput=null)
     {
         Scope = scope ?? throw new ArgumentNullException(nameof(scope));
         ExecutableWorkflow = executableWorkflow ?? throw new ArgumentNullException(nameof(executableWorkflow));
         DependencyGraph = dependencyGraph ?? throw new ArgumentNullException(nameof(dependencyGraph));
         NodeExecutionProfiles = nodeExecutionProfiles ?? throw new ArgumentNullException(nameof(nodeExecutionProfiles));
         _bindingContext=bindingContext;
+        _frozenInput=frozenInput;
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -45,5 +46,6 @@ public sealed class WorkflowExecutionPlan : IDisposable
 
     internal Workflow ExecutableWorkflow { get; }
     private readonly WorkflowBindingContext _bindingContext;
-    public void Dispose()=>_bindingContext.Dispose();
+    private readonly IDisposable? _frozenInput;
+    public void Dispose(){try{_bindingContext.Dispose();}finally{_frozenInput?.Dispose();}}
 }

@@ -54,6 +54,15 @@ internal sealed class WorkflowBindingContext : IDisposable
         IReadOnlyDictionary<string,Declaration> declarations,BindingScopeSnapshot scope)
     {
         if(setting.BindingType!=BindingType.Binding)return null;
+        if(node.RuntimeConfiguration is { } runtime)
+        {
+            var target=runtime.Schema.Inputs.SingleOrDefault(port=>port.Id==setting.ParameterName);
+            if(target is null)return Unavailable("target-declaration","Unknown Runtime input port.");
+            if((target.EditModes&FieldEditModes.Reference)==0)return Unavailable("target-mode","Runtime input does not allow a reference.");
+            if(setting.ReferenceExpression is null)return Unavailable("target-reference","Runtime input requires an explicit semantic reference.");
+            try{return new ParameterBindingService().CompileBinding(BindingReferenceSerializer.Deserialize(setting.ReferenceExpression),target,scope,setting.Conversion);}
+            catch(System.Text.Json.JsonException error){return Unavailable("reference",error.Message);}
+        }
         var explicitReference=setting.ReferenceExpression is not null;
         var property=node.Parameters.GetType().GetProperty(setting.ParameterName);
         var declared=(node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields().SingleOrDefault(field=>field.StoragePath==setting.ParameterName);
@@ -224,7 +233,12 @@ internal sealed class WorkflowBindingContext : IDisposable
     {
         var declaration=_declarations[node.Id];
         var values=new Dictionary<string,object?>(StringComparer.Ordinal);
-        if(result.IsSuccess&&declaration.Source.Schema.Outputs.Count>0)
+        if(result is RuntimeToolResults runtime)
+        {
+            if(result.IsSuccess)
+                foreach(var item in new InputValues(declaration.Source.Schema.Outputs,runtime.Values).CopyValues())values.Add(item.Key,item.Value);
+        }
+        else if(result.IsSuccess&&declaration.Source.Schema.Outputs.Count>0)
         {
             try
             {

@@ -2,9 +2,14 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27中立Runtime配置已进入真实节点存储、编辑事务、快照和方案保存；新节点直接入口用重开后的真实设置执行HALCON。工具箱默认创建、完整工作流调度器、绑定/ROI输入与参数页尚未切换；根SDK工程仍在，M1未完成。",
-  "summaryStatus": "配置链增量：最终UI/全量0错误；Runtime14、组件8/9（含新配置及节点直接HALCON）、原文档事务28、原工作流有无Wpf整链各9、部署12通过。",
+  "current": "2026-10-27中立Runtime配置已进入实际WorkflowExecutionEngine：冻结设置/图像Domain、编译稳定输入引用和依赖/输出需求、HALCON执行及原输出发布、保存重开、取消与租约均有正式证据。工具箱/参数Wpf默认入口、设置订阅/全局变量和本地ROI编辑仍待接入，根SDK Blob工程未删，M1未完成。",
+  "summaryStatus": "新Runtime调度8/8、有无Wpf组件8/9、纯Runtime15、原文档事务28、关联算法9、原UI整链9/9和部署13通过；最终UI/全量0错误。",
   "rows": [
+    [
+      "中立Runtime实际工作流调度与发布",
+      "实际调度器直接创建中立AlgorithmNode，使用保存设置/本次覆盖、冻结工作流图像与实际Domain，按稳定端口编译输入引用并收集下游输出需求。宿主通用结果信封持有同一Runtime输出，发布不再重捕获图像；保存门按Runtime声明端口校验。",
+      "新RuntimeWorkflow有/无Wpf各8组：真实双Blob、SDK图像来源、跨帧ROI拒绝、设置隔离/覆盖、保存重开、取消重跑、租约/清理异常通过。最终UI/全量0错误，768发布项/262加载记录一致。工具箱和参数页默认入口、设置/全局订阅与本地ROI编辑仍待切换；不计M1或整体完成。"
+    ],
     [
       "中立Runtime配置与节点直接执行",
       "现有Workflow内增加RuntimeToolConfiguration，持有真实强类型设置；节点序列化不同时写出SDK Parameters，读取严格拒绝双模型和错/缺字段。配置复制、签名、冻结、提交、撤销重做、结构历史与接受回滚均携带中立状态；节点直接调用公共Runtime执行器。",
@@ -5080,6 +5085,15 @@
     "implementation": "现有Workflow内增加RuntimeToolConfiguration，持有真实强类型设置；节点序列化不同时写出SDK Parameters，读取严格拒绝双模型和错/缺字段。配置复制、签名、冻结、提交、撤销重做、结构历史与接受回滚均携带中立状态；节点直接调用公共Runtime执行器。",
     "verification": "正式保存阈值73→重开→灰度100真实HALCON面积64通过；有/无Wpf组件8/9、原文档事务28及原SDK工作流整链9/9通过。工具箱/调度器/绑定与ROI准入尚未切换，不能把旧工作流回归算新调度消费完成。",
     "remaining": "接通工具箱默认创建、参数Wpf编辑及完整调度器/输入快照/绑定/ROI/输出发布；去掉临时拒绝检查，再删除旧Blob SDK工程和模型。",
-    "visualCorrection": "现有Combo.xaml与迁入SourceComboBoxes仅资源URI不同，不能称为自绘；本轮无模板改动。"
+    "visualCorrection": "现有Combo.xaml与迁入SourceComboBoxes仅资源URI不同，不能称为自绘；本轮无模板改动。",
+    "subsequentProgress": "后续已接通实际调度器，见runtimeWorkflowCheckpoint；原检查点只证明当时的配置及节点直接API，原证据不改写。"
+  },
+  "runtimeWorkflowCheckpoint": {
+    "status": "SCOPED_RUNTIME_SCHEDULER_VERIFIED_NOT_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_RUNTIME_WORKFLOW_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "3ef07588ad4f9a9c902965a180ceee0bfc2c5348",
+    "implementation": "实际调度器直接创建中立AlgorithmNode，使用保存设置/本次覆盖、冻结工作流图像与实际Domain，按稳定端口编译输入引用并收集下游输出需求。宿主通用结果信封持有同一Runtime输出，发布不再重捕获图像；保存门按Runtime声明端口校验。",
+    "verification": "新RuntimeWorkflow有/无Wpf各8组：真实双Blob、SDK图像来源、跨帧ROI拒绝、设置隔离/覆盖、保存重开、取消重跑、租约/清理异常通过。最终UI/全量0错误，768发布项/262加载记录一致。工具箱和参数页默认入口、设置/全局订阅与本地ROI编辑仍待切换；不计M1或整体完成。",
+    "remaining": "接中立参数编辑及工具箱默认创建、设置字段/全局变量和本地ROI编辑，再删除SDK Blob工程/模型/适配；继续全部所需VM原件、显示XML完整消费和真实验收。"
   }
 }

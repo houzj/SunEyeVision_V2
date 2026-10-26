@@ -153,3 +153,18 @@
 - 样式核对纠正：现有Themes/Combo.xaml与Native/Input/VisionUi/SourceComboBoxes.xaml仅资源URI重定位不同（逐字比较为true），不能把前者称自绘模板。本轮未改视觉控件，也不据此声称VM交互或视觉通过。
 - 下一步从WorkflowExecutionEngine的RuntimeConfiguration拒绝位置接通实际节点执行与结果发布，并同步绑定/输入/帧与资源准入、工具箱默认创建及中立参数编辑；不要再把旧Blob参数包进新设置或新增Blob兼容转换。最终删除根SDK工程/旧参数和结果后才能满足两工程目标。
 - Core/清单编译身份d749dc81加证据所列9份源码增量，不可用随后提交号改写该产物。目标树未改，M1/M2/M3均未完成/目标active。VS设计时未验证，新候选无人工验收，原视觉未通过反馈保留。
+
+## 2026-10-27 中立Runtime实际工作流调度与结果发布（最新）
+
+- Codex/main，基线3ef07588ad4f9a9c902965a180ceee0bfc2c5348，单工作树单写者。本轮已移除完整调度器对RuntimeConfiguration的临时拒绝，以下状态取代上一条“调度器尚未接通”；不改写旧证据。
+- WorkflowExecutionEngine从RuntimeConfiguration直接创建AlgorithmNode，不实例化SDK Blob工具/参数。冻结设置与本次覆盖、复制输入设置，再用既有Owner分配原执行身份、编译依赖/资源需求。Runtime能力声明提供HALCON资源键。
+- BlobParameters.xml新增必需workflowImageInputId，声明工作流默认图像输入；ToolSchema校验必须为图像输入并纳入指纹。计划开始捕获像素/实际Domain并拥有默认图像，Runtime节点只借用。显式输入按稳定端口/语义引用编译和解析，输入读者租约贯穿调用，跨物理帧ROI不重标记、不降级。
+- 宿主SDK现有结果管线增加通用RuntimeToolResults，保留实际IToolOutput实例及正式值，统一资源租约；不是Blob DTO或业务结果复制。WorkflowBindingContext直接发布已中立值，不重新捕获图像。Runtime插件本身仍无SDK/WPF依赖。执行、结果捕获与多处清理失败均保留原始/清理异常并执行全部清理。
+- 保存门修复Runtime输入仍要求SDK可写属性的缺口，直接按Runtime声明端口校验；Runtime消费者拒绝旧绑定信封，Runtime来源拒绝旧别名。不新增Blob新旧转换桥。
+- 新S3 RuntimeWorkflow轨道经真实WorkflowExecutionEngine运行：双Runtime Blob引用生成依赖/隐藏灰图需求、同帧ROI；设计修改只影响下次及本次覆盖不回写；未知源只阻断消费节点/修正恢复；真实SDK ImageLoad→Runtime并拒绝另一物理帧ROI；保存重开再执行；运行所有者关闭后读者租约保留输出/最后释放关闭；节点开始后取消排空/重跑；捕获与输出/工厂清理同时失败保留三个错误。全程禁止UI SynchronizationContext.Post。
+- 正式RuntimeWorkflow002/003有无Wpf各八组；RuntimeKernel023十五组；Components115八组/无Wpf113九组；DocumentEditing031二十八项；Algorithm012九组；原UI FullChain051/052各九组；ComponentDeployment034十三项通过，新增无Wpf时新Runtime调度8组。实际EXE准入正常，临时3文件及清单均原SHA恢复。
+- 最终构建UI004为0错误/6426警告75.52秒，全量002为0错误/6628警告71.60秒，blob-runtime-workflow前缀。早期UI001—003及全量001仅属前序源码，不冒充最终产物。本批768发布项、262加载记录及22项源码增量已核对；证据docs/collaboration/evidence/O06_RUNTIME_WORKFLOW_CHECKPOINT_20261027.json，Core/清单仍3ef07588加列出的源码增量，不能用随后提交号只改清单。
+- 失败保留：RuntimeWorkflow001先通过新执行/快照/引用恢复，在保存时因框架仍只查SDK可写属性失败；修复实际保存校验后002/003通过。跨帧和未知端口用例日志中的节点错误属于明确预期负向检查，收据exit=0才计PASS。
+- 工具箱/参数页默认入口仍为旧SDK Blob，RuntimeConfiguration节点当前须由公共模型/API创建。WorkflowNodeBase.CreateInstance的SDK接口拒绝Runtime配置是防止走错接口，不能让UI用此接口忽略新设置。设置字段订阅/全局变量、本地ROI编辑及参数Wpf视图仍待接入；根SDK工程/BlobAnalysisParameters/Results/适配尚未删除，最终两工程未完成。
+- 下一步优先中立设置编辑元数据和实际Wpf参数编辑/工具箱默认创建；同步输入订阅/本地ROI与调试生命周期，再删除根SDK Blob入口与旧模型。不要为继续保留旧Blob参数新增包装/兼容转换；宿主通用输出信封不是另一套Blob结果。之后继续全部Blob所需VM原件及完整交互与显示XML图形文本消费。
+- 新Runtime调度证据与旧UI FullChain回归分开记录；本轮未改控件视觉，不计VM视觉、物理鼠标操作或人工验收。原视觉未通过反馈保留，VS设计时未验证，目标/M1/M2/M3继续未完成/active。

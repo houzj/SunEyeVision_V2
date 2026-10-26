@@ -65,6 +65,12 @@ public sealed class OutputBindingChangeService
         var issues = new Dictionary<string, IReadOnlyList<ExecutionInputIssue>>(StringComparer.Ordinal);
         foreach (var node in workflow.Nodes)
         {
+            if(node.RuntimeConfiguration is not null)
+            {
+                var runtimeIssues=RuntimeInputBindings.Validate(workflow,node,sourceWorkflowId??workflow.Id);
+                if(runtimeIssues.Count>0)issues.Add(node.Id,runtimeIssues);
+                continue;
+            }
             var nodeIssues = new List<ExecutionInputIssue>();
             var declaredInputs = BindingRelationCatalog.Describe(node);
             foreach (var input in declaredInputs.Where(i => i.Active && !i.InternalProjection))
@@ -153,6 +159,7 @@ public sealed class OutputBindingChangeService
 
     public IReadOnlyList<OutputVariable>? ReadContract(WorkflowNodeBase node)
     {
+        if(node.RuntimeConfiguration is { } runtime)return RuntimeToolResults.Describe(runtime.Schema);
         var contract = node.Parameters is IOutputContractProvider provider ? provider.GetOutputContract() : StaticContractReader?.Invoke(node);
         if (contract == null && ToolRegistry.ToolExists(node.ToolType))
             contract = ToolRegistry.GetAllPropertyMetadata(node.ToolType).Select(m => new OutputVariable

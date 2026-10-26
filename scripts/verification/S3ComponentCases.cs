@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -330,7 +330,7 @@ internal static class S2DocumentEditingCases
         Reject(()=>mismatch.Deserialize<Solution>(WorkflowSerializationOptions.Default));
         var absent=JsonNode.Parse(json)!;absent["Workflows"]![0]!["Nodes"]![0]!["RuntimeConfiguration"]=null;
         Reject(()=>absent.Deserialize<Solution>(WorkflowSerializationOptions.Default));
-        Console.WriteLine("通过：中立Runtime设置进入实际节点编辑/冻结/冲突/撤销重做/接受回滚、正式保存重开及节点直接HALCON执行，拒绝缺失/重复/错型和双模型；工具箱默认创建及调度器入口尚未切换");
+        Console.WriteLine("通过：中立Runtime设置进入实际节点编辑/冻结/冲突/撤销重做/接受回滚、正式保存重开及节点直接HALCON执行，拒绝缺失/重复/错型和双模型；工具箱/参数页默认入口尚未切换；新调度链另见RuntimeWorkflow用例");
     }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
     private sealed class DirectRuntimeContext(IOutputResources resources,string nodeId="direct-runtime"):IToolExecutionContext

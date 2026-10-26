@@ -7,6 +7,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// </summary>
     public sealed class OutputVariable
     {
+        /// <summary>Exact neutral Runtime port identity, when the producer uses that contract.</summary>
+        public string? PortId { get; set; }
         public System.Guid? FieldId { get; set; }
         /// <summary>Declared, never inferred from a previous result's value or length.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
@@ -45,6 +47,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public object? RuntimeValue { get; set; }
         public OutputVariable CopyDeclaration()=>new()
         {
+            PortId=PortId,
             FieldId=FieldId,DeclaredType=DeclaredType,ValueDeclaration=ValueDeclaration,AllowsNull=AllowsNull,
             IsCollection=IsCollection,FixedCount=FixedCount,Name=Name,VariableType=VariableType,DisplayName=DisplayName,
             Group=Group,IsGroupPlaceholder=IsGroupPlaceholder,DisplayInResultPanel=DisplayInResultPanel,Kind=Kind

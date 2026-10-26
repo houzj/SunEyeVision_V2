@@ -15,11 +15,11 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs);
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema Describe(BlobSettings committedSettings) => new(new[] {
-        new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image)),
-        new Port(InspectionInput, TypeRef.ResourceOf(ResourceKind.Region), false),
-        new Port(MaskInput, TypeRef.ResourceOf(ResourceKind.Region), false),
-        new Port(PoseInput, SpatialDeclarations.Affine2D, false)
-    }, BlobSchema.Outputs);
+        new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes:FieldEditModes.Reference),
+        new Port(InspectionInput, TypeRef.ResourceOf(ResourceKind.Region), false, EditModes:FieldEditModes.Reference),
+        new Port(MaskInput, TypeRef.ResourceOf(ResourceKind.Region), false, EditModes:FieldEditModes.Reference),
+        new Port(PoseInput, SpatialDeclarations.Affine2D, false, EditModes:FieldEditModes.Constant|FieldEditModes.Reference)
+    }, BlobSchema.Outputs, workflowImageInputId: BlobParameterDefinition.Instance.WorkflowImageInputId);
     public IReadOnlyList<Diagnostic> Validate(BlobSettings settings) => settings.Validate();
     public ToolCapabilities Capabilities(BlobSettings settings) => new(new[] { "halcon" });
     public IToolSession<BlobSettings, BlobOutput> CreateSession() => new BlobSession();

@@ -876,13 +876,33 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo(
                 $"执行计划已编译: 节点={executableWorkflow.Nodes.Count}, 依赖={dependencyGraph.Dependencies.Count}, " +
                 $"可并行声明={nodeExecutionProfiles.Values.Count(profile => profile.ConcurrencyKind == ToolConcurrencyKind.ParallelSafe)}");
-            var bindings=new WorkflowBindingContext(session,scope,executableWorkflow,dependencyGraph,variableDefinitions);
-            return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles,bindings);
+            SunEyeVision.Plugin.Runtime.FrozenImageResource? frozenImage=null;
+            var runtimeDefaults=executableWorkflow.Nodes.OfType<AlgorithmNode>().Where(node=>node.RuntimeConfiguration?.Schema.WorkflowImageInputId is { } port
+                && node.ParamSettings.GetSetting(port) is null).ToArray();
+            if(inputImage is not null&&runtimeDefaults.Length>0)
+            {
+                try
+                {
+                    if(inputImage is not SunEyeVision.Plugin.SDK.Vision.Contracts.ITypedImageSnapshotSource pixels)
+                        throw new InvalidOperationException("工作流图像源不支持像素和实际Domain快照。");
+                    frozenImage=pixels.CaptureSnapshot(new SunEyeVision.Plugin.Contracts.ImageFrameAddress(Guid.NewGuid(),"workflow-input:"+scope.RunId.ToString("N")));
+                    foreach(var node in runtimeDefaults)node.FrozenWorkflowImage=frozenImage;
+                }
+                catch(Exception error){foreach(var node in runtimeDefaults)node.RuntimeInputError=error.Message;}
+            }
+            try
+            {
+                var bindings=new WorkflowBindingContext(session,scope,executableWorkflow,dependencyGraph,variableDefinitions);
+                return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles,bindings,frozenImage);
+            }
+            catch{frozenImage?.Dispose();throw;}
         }
 
         private static ToolExecutionProfile ResolveExecutionProfile(WorkflowNodeBase node,
             SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs)
         {
+            if(node.RuntimeConfiguration is { } runtime)
+                return new ToolExecutionProfile(ToolConcurrencyKind.ResourceExclusive,runtime.Capabilities.ResourceKeys,1);
             if (node is AlgorithmNode { Tool: IToolExecutionProfileProvider provider })
                 return provider.DescribeExecution(node.Parameters, communicationInputs) ?? ToolExecutionProfile.LegacyExclusive;
 
@@ -932,14 +952,20 @@ namespace SunEyeVision.Workflow
 
             foreach (var node in source.Nodes)
             {
-                if (node.RuntimeConfiguration is not null)
-                    throw new InvalidOperationException("Runtime节点尚未接通工作流执行适配，拒绝忽略Runtime设置后执行SDK工具。");
-                // 运行开始时冻结参数。UI 后续编辑原对象只影响下一次运行。
-                var executionParameters = ToolParameterSnapshot.Create(node.Parameters);
-                ApplyNodeParameterOverrides(executionParameters, node.Id, request);
-
-                // 所有节点（含 Condition、Subroutine）统一作为 AlgorithmNode + IToolPlugin 执行
-                var executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
+                ToolParameters? executionParameters=null;
+                AlgorithmNode executionNode;
+                if(node.RuntimeConfiguration is { } runtime)
+                {
+                    var configuration=runtime.Copy();
+                    if(request?.NodeParameterOverrides.TryGetValue(node.Id,out var runtimeOverrides)==true)
+                        configuration=configuration.WithOverrides(runtimeOverrides);
+                    executionNode=new AlgorithmNode(node.Id,node.Name,node.DispName??node.Name,configuration){IsEnabled=node.IsEnabled};
+                }
+                else
+                {
+                    executionParameters = ToolParameterSnapshot.Create(node.Parameters);
+                    ApplyNodeParameterOverrides(executionParameters, node.Id, request);
+                    executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
                     node.ToolType,
                     node.Id,
                     node.Name,
@@ -949,6 +975,7 @@ namespace SunEyeVision.Workflow
                     enableRetry: false)
                     ?? throw new InvalidOperationException(
                         $"无法创建算法节点: ToolType={node.ToolType}, Name={node.Name}");
+                }
 
                 // 复制参数绑定配置
                 executionNode.ParamSettings = node.ParamSettings?.Clone() ?? new ParamSettingContainer();

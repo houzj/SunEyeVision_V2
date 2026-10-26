@@ -77,6 +77,9 @@ try {
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track FullChain
     if($LASTEXITCODE -ne 0){throw '缺少Wpf时生产结果表/高亮/保存重开整链失败'}
     $results.Add([ordered]@{name='without-editor-result-host-chain';passed=$true;scope='真实MainWindow选择通用结果表、HALCON事件刷新/高亮、失败清空、确认取消、保存重开'})
+    & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeWorkflow
+    if($LASTEXITCODE -ne 0){throw '缺少Wpf时中立Runtime调度/引用/保存重开失败'}
+    $results.Add([ordered]@{name='without-editor-runtime-workflow';passed=$true;scope='中立配置→实际调度器→HALCON→输入引用与同帧ROI→保存重开→取消与资源租约'})
     Restore-Held
 
     $runtime=@($baseline.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0})

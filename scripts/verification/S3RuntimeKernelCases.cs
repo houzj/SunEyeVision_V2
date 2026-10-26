@@ -54,6 +54,15 @@ internal static class S2DocumentEditingCases
                 try{ToolRuntimeExecutor.ExecuteAsync(broken,new RunnerSettings(),inputs,context).GetAwaiter().GetResult();throw new Exception("异常未传播");}
                 catch(AggregateException errors){Require(errors.InnerExceptions.Count==2&&broken.Session!.Disposed,"执行/清理异常丢失或会话未释放");}
             });
+            Case("工作流图像默认源必须显式指向图像输入，并参与冻结声明身份",()=>{
+                var ports=new[]{new Port("image",DataType.Image),new Port("number",DataType.Integer)};
+                var direct=new ToolSchema(ports,Array.Empty<Port>());
+                var fallback=new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"image");
+                Require(direct.Fingerprint!=fallback.Fingerprint&&new BlobTool().Describe(Basic).WorkflowImageInputId==BlobTool.ImageInput,
+                    "默认图像源未由Runtime声明或未参与身份冻结");
+                Throws<ArgumentException>(()=>new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"number"));
+                Throws<ArgumentException>(()=>new ToolSchema(ports,Array.Empty<Port>(),workflowImageInputId:"unknown"));
+            });
             Case("XML唯一默认、用户设置重开及强类型读取",()=>{
                 var settings=new BlobSettings();
                 Require(settings.Threshold==128&&settings.UpperThreshold==255&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999
@@ -114,6 +123,8 @@ internal static class S2DocumentEditingCases
                 Reject(r=>Field(r,"Threshold").SetAttributeValue("increment","0"));
                 Reject(r=>Field(r,"SortMode").SetAttributeValue("default","Missing"));
                 Reject(r=>r.Add(new XElement("Unknown")));
+                Reject(r=>r.Attribute("workflowImageInputId")!.Remove());
+                Reject(r=>r.SetAttributeValue("workflowImageInputId","input.unknown"));
                 Reject(r=>r.Element("Judgments")!.Elements().First().Remove());
                 Reject(r=>r.Element("Judgments")!.Elements().First().SetAttributeValue("perItem","true"));
                 Reject(r=>r.Element("Judgments")!.Elements().First().SetAttributeValue("minimum","Infinity"));

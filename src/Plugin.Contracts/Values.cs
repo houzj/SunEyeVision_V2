@@ -7,9 +7,12 @@ public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Null
     FieldEditModes EditModes=FieldEditModes.None,FieldDefaultPresence DefaultPresence=FieldDefaultPresence.Unset,TextChoiceConstraint? Choices=null);
 public sealed class ToolSchema
 {
-    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null)
+    public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null)
     {
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
+        if (workflowImageInputId is not null && !Inputs.Any(port => port is not null && port.Id == workflowImageInputId && port.Type == TypeRef.ResourceOf(ResourceKind.Image)))
+            throw new ArgumentException("Workflow image fallback must name a declared image input.", nameof(workflowImageInputId));
+        WorkflowImageInputId=workflowImageInputId;
         foreach(var group in new[]{Inputs,Outputs})
             if(group.Any(p=>p is null || string.IsNullOrWhiteSpace(p.Id)) || group.Select(p=>p.Id).Distinct(StringComparer.Ordinal).Count()!=group.Count)
                 throw new ArgumentException("Port identities must be nonempty and unique.");
@@ -26,6 +29,7 @@ public sealed class ToolSchema
         using var buffer=new MemoryStream();
         using(var writer=new BinaryWriter(buffer,Encoding.UTF8,true))
         {
+            writer.Write(workflowImageInputId??"");
             foreach(var group in new[]{Inputs,Outputs})
             {
                 writer.Write(group.Count);
@@ -47,6 +51,7 @@ public sealed class ToolSchema
     public IReadOnlyList<Port> Inputs { get; }
     public IReadOnlyList<Port> Outputs { get; }
     public ToolPresentation? Presentation { get; }
+    public string? WorkflowImageInputId { get; }
     public string Fingerprint { get; }
 }
 public sealed class InputValues

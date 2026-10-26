@@ -45,6 +45,8 @@ internal static class SolutionLegacyBindingMigration
                 if (legacy.ScopeId is not null && legacy.ScopeId != workflow.Id)
                     throw new JsonException("Legacy source is outside the owning workflow.");
                 if (!nodes.TryGetValue(legacy.NodeId, out var source)) throw new JsonException("Legacy source node is missing.");
+                if(source.RuntimeConfiguration is not null&&approvedLegacyAliases)
+                    throw new JsonException("Runtime sources do not accept legacy binding aliases.");
                 var portId = legacy.PortId;
                 if (approvedLegacyAliases && portId.StartsWith("name:", StringComparison.Ordinal))
                     portId = LegacyBlobFieldAliases.Resolve(source.ToolType, portId);
@@ -68,6 +70,8 @@ internal static class SolutionLegacyBindingMigration
                 {
                     var major = envelope.RootElement.GetProperty("ContractMajor").GetInt32();
                     legacyEnvelope = major == 4;
+                    if(legacyEnvelope&&node.RuntimeConfiguration is not null)
+                        throw new JsonException("Runtime inputs do not accept legacy binding envelopes.");
                     if (legacyEnvelope && !legacyDocument) throw new JsonException("Format 2 cannot contain legacy binding envelopes.");
                     expression = legacyEnvelope
                         ? BindingReferenceSerializer.MigrateVersion4(setting.ReferenceExpression, old => Resolve(old, true))
@@ -88,15 +92,24 @@ internal static class SolutionLegacyBindingMigration
                     predecessors[item.Node.Id].Add(dependency.NodeId);
             foreach (var item in pending)
             {
-                var property = item.Node.Parameters.GetType().GetProperty(item.Setting.ParameterName);
-                var declared=(item.Node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields()
-                    .SingleOrDefault(field=>field.StoragePath==item.Setting.ParameterName);
-                if (declared is null&&property is not { CanWrite: true }) throw new JsonException("Consumer input is not declared writable.");
-                if(declared is not null&&(declared.Port.EditModes&FieldEditModes.Reference)==0)
-                    throw new JsonException("This declared consumer field does not allow a reference.");
                 Port target;
-                try { target = declared?.Port??BindingClrAdapter.DescribePort(item.Setting.ParameterName, property!.PropertyType); }
-                catch (ArgumentException exception) { throw new JsonException("Legacy consumer requires an explicit typed adapter.", exception); }
+                if(item.Node.RuntimeConfiguration is { } runtime)
+                {
+                    target=runtime.Schema.Inputs.SingleOrDefault(port=>port.Id==item.Setting.ParameterName)
+                        ??throw new JsonException("Runtime consumer input is not declared.");
+                    if((target.EditModes&FieldEditModes.Reference)==0)throw new JsonException("Runtime input does not allow a reference.");
+                }
+                else
+                {
+                    var property = item.Node.Parameters.GetType().GetProperty(item.Setting.ParameterName);
+                    var declared=(item.Node.Parameters as IConfigurationFieldProvider)?.GetConfigurationFields()
+                        .SingleOrDefault(field=>field.StoragePath==item.Setting.ParameterName);
+                    if (declared is null&&property is not { CanWrite: true }) throw new JsonException("Consumer input is not declared writable.");
+                    if(declared is not null&&(declared.Port.EditModes&FieldEditModes.Reference)==0)
+                        throw new JsonException("This declared consumer field does not allow a reference.");
+                    try { target = declared?.Port??BindingClrAdapter.DescribePort(item.Setting.ParameterName, property!.PropertyType); }
+                    catch (ArgumentException exception) { throw new JsonException("Legacy consumer requires an explicit typed adapter.", exception); }
+                }
                 var scope = new BindingScopeSnapshot(new(workflow.Id, item.Node.Id), candidate.ExecutionOwner.Id, 0,
                     declarations.Values, declarations.Values.Select(source => source.Node),
                     predecessors.Select(pair => new KeyValuePair<BindingNodeId, IReadOnlyList<BindingNodeId>>(

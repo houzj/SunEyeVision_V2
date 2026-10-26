@@ -17,6 +17,7 @@ public static class BindingRelationCatalog
         =>node.ParamSettings.Settings.Concat(RoiBindingInputs.Settings(node.Parameters)).ToArray();
     public static IReadOnlyList<BindingInputReference> Describe(WorkflowNodeBase node)
     {
+        if(node.RuntimeConfiguration is not null)return RuntimeInputBindings.Describe(node);
         var inputs = BindingInputCatalog.Describe(node.Parameters).ToList();
         foreach (var setting in node.ParamSettings.Settings.ToArray())
         {

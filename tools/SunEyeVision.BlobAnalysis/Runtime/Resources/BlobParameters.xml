@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<BlobParameters schemaVersion="1">
+<BlobParameters schemaVersion="1" workflowImageInputId="input.image">
   <Group page="运行参数" section="运行参数">
     <Parameter id="Threshold" type="Integer" default="128" label="阈值" minimum="0" maximum="255" decimals="0" increment="1" />
     <Parameter id="UpperThreshold" type="Integer" default="255" label="阈值上限" minimum="0" maximum="255" decimals="0" increment="1" />

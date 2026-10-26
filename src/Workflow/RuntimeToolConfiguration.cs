@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
@@ -32,6 +33,18 @@ public sealed class RuntimeToolConfiguration
     public RuntimeToolConfiguration WithSettings(object settings) => new(_definition, settings);
     public RuntimeToolConfiguration Copy() => new(_definition, _settings);
     public IReadOnlyList<Diagnostic> Validate() => _definition.Validate(CaptureSettings());
+    public ToolSchema Schema => _definition.Describe(CaptureSettings());
+    public ToolCapabilities Capabilities => _definition.Capabilities(CaptureSettings());
+    public RuntimeToolConfiguration WithOverrides(IReadOnlyDictionary<string,object?> overrides)
+    {
+        var value=JsonSerializer.SerializeToNode(CaptureSettings(),SettingsType,RuntimeToolConfigurationJsonConverter.SettingsOptions)!.AsObject();
+        foreach(var item in overrides)
+        {
+            if(!value.ContainsKey(item.Key))throw new ArgumentException("Unknown Runtime setting override: "+item.Key);
+            value[item.Key]=JsonSerializer.SerializeToNode(item.Value,RuntimeToolConfigurationJsonConverter.SettingsOptions);
+        }
+        return Restore(ToolId,JsonSerializer.SerializeToElement(value));
+    }
 
     public static RuntimeToolConfiguration Create(string toolId)
     {

@@ -898,12 +898,12 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 		DoEndValueChange();
 	}
 
-	private void T1_OnNumericClick(object sender, EventArgs e)
+	protected void T1_OnNumericClick(object sender, EventArgs e)
 	{
 		DoStartValueChange();
 	}
 
-	private void T2_OnNumericClick(object sender, EventArgs e)
+	protected void T2_OnNumericClick(object sender, EventArgs e)
 	{
 		DoEndValueChange();
 	}

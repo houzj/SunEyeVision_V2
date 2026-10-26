@@ -10,12 +10,12 @@
     {
       "group": "Display",
       "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\display\\src\\Plugin.Wpf\\Controls\\Native\\Display\\display-migration-manifest.json",
-      "sha256": "71E5132029A5B145D065C2521E3FA2804CE82674B25F3773C50B5A8FE2CF698B"
+      "sha256": "36E9BF8846884E59221EB1DE33CD7A038D0CC39F604BB5EA056430D6A971899F"
     },
     {
       "group": "Input",
       "path": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\input\\src\\Plugin.Wpf\\Controls\\Native\\Input\\migration-manifest.json",
-      "sha256": "F50632E5F51667990F0CCB7A4547FF5F2B3A491E64C9D6F49FDA36085BB76178"
+      "sha256": "6E954DD5A2FE74986D900C068BA678B354308488C4B87E763BB43B46E5AC132B"
     }
   ],
   "resolved_cross_group_types": {
@@ -27,6 +27,16 @@
     "VM.Controls.ButtonSpinner": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.ButtonSpinner",
     "VM.Controls.WatermarkTextBox": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.WatermarkTextBox",
     "VMControls.WPF.Release.Convert.BindingPropertyConvert": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Convert.BindingPropertyConvert"
+  },
+  "interaction_chain": {
+    "focus_popup": "NumericControl.ValueText.GotFocus -> IsFocusedP -> templated ComboBox.IsDropDownOpen; CBox_PreviewMouseDown opens original TextBoxView path",
+    "text_commit": "ValueText.Text LostFocus binding; PART_Popup_Closed ForceUpdateSource -> DoStartValueChange/DoEndValueChange",
+    "step": "UpButton/DownButton -> DoUp/DoDown -> OnNumericClick -> inherited T1/T2 handlers -> original value notifications",
+    "wheel": "ValueText_MouseWheel changes only while ValueText.IsFocused and writable; original clamp/extremum behavior unchanged",
+    "drag": "Thumb preview down/up -> DragingChangedCommand(true/false); original slider clipping and endpoint notifications retained",
+    "source_port_adaptation": "T1_OnNumericClick/T2_OnNumericClick made protected for inherited generated-XAML delegate access, with original bodies unchanged",
+    "local_reconstruction_reference": "RoiNumericField was read as an existing behavior reference, not used to replace the original single/double slider implementation",
+    "verification": "source chain only; no build or execution in this migration phase"
   },
   "ownership": {
     "worktree": "D:\\MyWork\\SunEyeVision_V2\\Release\\_migration-worktrees\\numeric",
@@ -133,7 +143,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\Apps.XmlUI.ParamTabControl\\SliderArrangeBase.cs",
       "source_sha256": "C0CE5F2E2D27151DB5D68E1884A69C80156F10168DA2B4D628CFD55D834B2662",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\AppsXmlUi\\SliderArrangeBase.cs",
-      "target_sha256": "BBA2C7A80C5D3B9E7F759F192C00634646BBA400DF1F964C543B701F1D18AAC1",
+      "target_sha256": "D0F97B54B95A3B3E7249E4D038489B35FC8D258193807B4CBE8485A6AA17CDAB",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -341,7 +351,7 @@
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
       "source_sha256": "CDCE54E608EEE5421A2863C700B28DDBE89242514EF44690B7B1EC83544C8FF2",
       "target": "src\\Plugin.Wpf\\Controls\\Native\\Numeric\\PcUi\\SliderArrangeBase.cs",
-      "target_sha256": "39D610A11D5043528182825C3E7CB7F78859871508329893D422E9F6E8AE6280",
+      "target_sha256": "8A8C21AA397690B1E9E84BFC2D24BB114899E012948A2753BB74B5CFFBC70FB6",
       "kind": "csharp",
       "adaptations": [
         "namespace/pack URI only",
@@ -508,6 +518,16 @@
       "target_sha256": "60454E2F6B841E667C15EBFC4DF5902959C9A60141E6F77CAB77F5F75B4DAD61",
       "kind": "original_resource_dictionary",
       "adaptations": []
+    },
+    {
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceSliderDictionary.xaml",
+      "source_sha256": "C119DFBD74285C6D350BA8A9F56E5B6983F8F651E6C5FEFB94E8DF016332B5D0",
+      "target": "src\\Plugin.Wpf\\Themes\\Native\\Numeric\\VisionUi\\SourceSliderDictionary.xaml",
+      "target_sha256": "DF0EFFE4CE60BBB42303E58DFD6C89EDC3C9BF03AD291177E19C94279EB61649",
+      "kind": "original_resource_dictionary",
+      "adaptations": [
+        "complete existing local reconstruction dictionary; separate identity; original slider image pack URI resolved to migrated original assets"
+      ]
     },
     {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\ByteUpDown.cs",
@@ -1336,6 +1356,10 @@
       "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/Shared/CommomDictionary.xaml"
     },
     {
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceSliderDictionary.xaml",
+      "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VisionUi/SourceSliderDictionary.xaml"
+    },
+    {
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\controls\\numericupdown\\themes\\generic.xaml",
       "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/generic.xaml"
     },
@@ -1355,6 +1379,7 @@
   },
   "generation_notes": [
     "XAML Page generation must supply InitializeComponent/named fields/IComponentConnector/IStyleConnector; exported code does not duplicate generated methods.",
+    "Inherited numeric click handlers are protected so regenerated derived XAML can wire the original delegates.",
     "Do not merge the two libraries solely by short class names: AppsXmlUi and PcUi variants retain separate target namespaces.",
     "Shared csproj, Generic.xaml and Contracts intentionally untouched; root integrates resource build items and dictionaries."
   ]

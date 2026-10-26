@@ -1199,7 +1199,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 		DoEndValueChange();
 	}
 
-	private void T1_OnNumericClick(object sender, EventArgs e)
+	protected void T1_OnNumericClick(object sender, EventArgs e)
 	{
 		if (isBetween && StartValue > EndValue)
 		{
@@ -1208,7 +1208,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 		DoStartValueChange();
 	}
 
-	private void T2_OnNumericClick(object sender, EventArgs e)
+	protected void T2_OnNumericClick(object sender, EventArgs e)
 	{
 		if (isBetween && StartValue > EndValue)
 		{

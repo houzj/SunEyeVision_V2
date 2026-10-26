@@ -112,6 +112,12 @@ def import_source(source, family, original_namespace, target_namespace=None):
     destination.parent.mkdir(parents=True,exist_ok=True)
     value=transform(text(source),source,original_namespace,target_namespace)
     if source.suffix=='.cs':
+        if source.name=='SliderArrangeBase.cs':
+            # Both original exported bases contain private handlers referenced by derived XAML.
+            # BAML had already captured those delegates; rebuilding XAML needs inherited access.
+            # Keep the exact handler bodies and the original commit/drag notification semantics.
+            for handler in ['T1_OnNumericClick','T2_OnNumericClick']:
+                value=value.replace('private void '+handler+'(', 'protected void '+handler+'(')
         # Numeric declarations move out of the display group's support namespace.
         if original_namespace.startswith('VM.Controls'):
             value = re.sub(r'^namespace [\w.]+;', 'namespace '+target_namespace+';',value,flags=re.M)
@@ -152,6 +158,14 @@ for filename in ['NumericUpDown.xaml','NumericUpDown.xaml.cs','SliderArrangeType
 original=EXPORT/'VM.PcUI/controls/commomdictionary.xaml';target=THEME/'Shared/CommomDictionary.xaml'
 target.parent.mkdir(parents=True,exist_ok=True)
 value=transform(text(original),original,'HikPcUI.Controls',NS+'HikPcUI.Controls');target.write_text(value,encoding='utf-8');record(original,target,'original_resource_dictionary')
+
+# The existing runnable reconstruction has its own dictionary identity. It is not
+# silently deduplicated with either of the two original assembly dictionaries.
+local_slider=Path('D:/MyWork/REA逆向测试/src/VisionUi/SourceSliderDictionary.xaml')
+local_slider_target=THEME/'VisionUi/SourceSliderDictionary.xaml'
+local_slider_target.parent.mkdir(parents=True,exist_ok=True)
+local_slider_target.write_text(transform(text(local_slider),local_slider,'VisionUi',NS+'VisionUi'),encoding='utf-8')
+record(local_slider,local_slider_target,'original_resource_dictionary',['complete existing local reconstruction dictionary; separate identity; original slider image pack URI resolved to migrated original assets'])
 
 for source in sorted((EXPORT/'VM.Controls').rglob('*.cs')):
     if source.stem in numeric_names or source.stem in numeric_editors:
@@ -197,6 +211,15 @@ for filename in ['NumbericParamControl.xaml','NumbericParamControl.xaml.cs']:
 manifest={'group':'numeric','base_commit':'b87fb685','phase':'source_migration_no_build_or_tests','source_roots':[str(EXPORT),str(CURRENT)],
  'dependency_manifests':dependency_manifests,
  'resolved_cross_group_types':{name:dependency_types[name] for name in ['VM.Controls.PropertyGrid.PropertyItem','VM.Controls.PropertyGrid.PropertyGridUtilities','VM.Controls.PropertyGrid.Editors.TypeEditor','VM.Controls.Primitives.InputBase','VM.Controls.Primitives.UpDownBase','VM.Controls.ButtonSpinner','VM.Controls.WatermarkTextBox','VMControls.WPF.Release.Convert.BindingPropertyConvert']},
+ 'interaction_chain':{
+    'focus_popup':'NumericControl.ValueText.GotFocus -> IsFocusedP -> templated ComboBox.IsDropDownOpen; CBox_PreviewMouseDown opens original TextBoxView path',
+    'text_commit':'ValueText.Text LostFocus binding; PART_Popup_Closed ForceUpdateSource -> DoStartValueChange/DoEndValueChange',
+    'step':'UpButton/DownButton -> DoUp/DoDown -> OnNumericClick -> inherited T1/T2 handlers -> original value notifications',
+    'wheel':'ValueText_MouseWheel changes only while ValueText.IsFocused and writable; original clamp/extremum behavior unchanged',
+    'drag':'Thumb preview down/up -> DragingChangedCommand(true/false); original slider clipping and endpoint notifications retained',
+    'source_port_adaptation':'T1_OnNumericClick/T2_OnNumericClick made protected for inherited generated-XAML delegate access, with original bodies unchanged',
+    'local_reconstruction_reference':'RoiNumericField was read as an existing behavior reference, not used to replace the original single/double slider implementation',
+    'verification':'source chain only; no build or execution in this migration phase'},
  'ownership':{'worktree':str(ROOT),'branch':'codex/vm-controls-numeric','shared_project_files_modified':False,'formal_release_modified':False,'handoff':'root integrates these exact types/resources before unified build; central CURRENT_TASK remains owned by root'},
  'entries':entries,'type_map':types,'cross_group_dependencies':sorted(dependencies),'blocked':blocked,
  'not_claimed':['compilation','runtime usability','visual acceptance','full-library completion'],
@@ -209,6 +232,7 @@ manifest={'group':'numeric','base_commit':'b87fb685','phase':'source_migration_n
                      'VMControls.WPF.Release':'complete NumbericParamControl wrapper retained .pending, blocked on genuine missing FrontendUI.Design implementation',
                      'Apps.Style':'root owns all original style dictionaries; numeric references original EditLinkButton via VmFieldStyles'},
  'generation_notes':['XAML Page generation must supply InitializeComponent/named fields/IComponentConnector/IStyleConnector; exported code does not duplicate generated methods.',
+                     'Inherited numeric click handlers are protected so regenerated derived XAML can wire the original delegates.',
                      'Do not merge the two libraries solely by short class names: AppsXmlUi and PcUi variants retain separate target namespaces.',
                      'Shared csproj, Generic.xaml and Contracts intentionally untouched; root integrates resource build items and dictionaries.']}
 out=CODE/'numeric-migration-manifest.json';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

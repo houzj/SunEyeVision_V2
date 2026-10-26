@@ -1,4 +1,4 @@
-using SunEyeVision.Tool.ProtocolParse;
+﻿using SunEyeVision.Tool.ProtocolParse;
 using SunEyeVision.Workflow;
 using Xunit;
 
@@ -63,9 +63,6 @@ public sealed class NodeConfigurationEditHostTests
 
     [Theory]
     [InlineData("binding")]
-    [InlineData("topology")]
-    [InlineData("image-input")]
-    [InlineData("enabled")]
     [InlineData("global-binding")]
     public void Independent_preview_does_not_adopt_real_external_configuration_changes(string change)
     {
@@ -75,14 +72,45 @@ public sealed class NodeConfigurationEditHostTests
         switch (change)
         {
             case "binding": model.Workflows[0].Nodes[1].ParamSettings.SetSetting(SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSetting.CreateBinding("InputText", "source", "value")); break;
-            case "topology": model.Workflows[0].Connections.Add(new("edge", "source", "parse")); break;
-            case "image-input": model.Workflows[0].Nodes[0].ImageSourceConfig = new() { NodeId = "source" }; break;
-            case "enabled": model.Workflows[0].Nodes[0].IsEnabled = false; break;
             default: model.GlobalVariables[0].ConsumerBindings.Add(new() { WorkflowId = "f", NodeId = "parse", ParameterName = "InputText" }); break;
         }
         Assert.Throws<InvalidOperationException>(() => host.Validate(edit));
         Assert.Throws<InvalidOperationException>(() => host.Commit(edit));
         Assert.Same(before, host.Capture()); Assert.False(host.CanUndo);
+    }
+
+    [Theory]
+    [InlineData("topology")]
+    [InlineData("image-input")]
+    [InlineData("enabled")]
+    public void Explicit_canvas_structure_is_synchronized_but_changed_node_rejects_its_old_parameter_draft(string change)
+    {
+        var model = Model(); var host = new NodeConfigurationEditHost(model);
+        var before = host.Capture(); var draft = host.BeginEdit("f", "source");
+        ((BindingAdaptationB2Tests.SourceParameters)draft.Node.Parameters).Name = "candidate";
+        var preview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
+        model.Workflows[0].Nodes[0].SelectedDisplaySource = preview;
+        if (change == "topology") model.Workflows[0].Connections.Add(new("edge", "source", "parse"));
+        if (change == "image-input") model.Workflows[0].Nodes[0].ImageSourceConfig = new() { NodeId = "source" };
+        if (change == "enabled") model.Workflows[0].Nodes[0].IsEnabled = false;
+        host.SynchronizeStructure();
+        Assert.True(host.Capture().Version > before.Version);
+        if (change == "topology")
+        {
+            host.Validate(draft); host.Commit(draft);
+            Assert.Single(model.Workflows[0].Connections);
+            Assert.Equal("candidate", ((BindingAdaptationB2Tests.SourceParameters)model.Workflows[0].Nodes[0].Parameters).Name);
+        }
+        else
+        {
+            Assert.Throws<InvalidOperationException>(() => host.Validate(draft));
+            Assert.Throws<InvalidOperationException>(() => host.Commit(draft));
+            Assert.Equal("value", ((BindingAdaptationB2Tests.SourceParameters)model.Workflows[0].Nodes[0].Parameters).Name);
+            Assert.Equal("candidate", ((BindingAdaptationB2Tests.SourceParameters)draft.Node.Parameters).Name);
+            if (change == "enabled") Assert.False(model.Workflows[0].Nodes[0].IsEnabled);
+            else Assert.Equal("source", model.Workflows[0].Nodes[0].ImageSourceConfig!.NodeId);
+        }
+        Assert.Same(preview, model.Workflows[0].Nodes[0].SelectedDisplaySource);
     }
 
     [Fact]

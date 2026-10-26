@@ -56,12 +56,8 @@ public static class WorkflowFragmentCopy
                     clone.Position = original.Position; clone.Width = original.Width; clone.Height = original.Height;
                     clone.IsEnabled = original.IsEnabled;
                     clone.Parameters = ToolParameterSnapshot.Create(original.Parameters);
-                    clone.ParamSettings = new ParamSettingContainer { NodeId = clone.Id, ToolName = original.ParamSettings.ToolName };
-                    foreach (var setting in original.ParamSettings.Settings)
-                    {
-                        var copy = setting.Clone(); copy.ConstantValue = CopyValue(setting.ConstantValue);
-                        clone.ParamSettings.SetSetting(copy);
-                    }
+                    clone.ParamSettings = ToolParameterSnapshot.CopySettings(original.ParamSettings)!;
+                    clone.ParamSettings.NodeId = clone.Id;
                     clone.AdditionalData = original.AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone());
                     clone.SelectedDisplaySource = Copy(original.SelectedDisplaySource);
                     clone.ImageSourceConfig = Copy(original.ImageSourceConfig);
@@ -209,6 +205,5 @@ public static class WorkflowFragmentCopy
     }
     private static T? Copy<T>(T? value) where T : class => value == null ? null
         : JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value, WorkflowSerializationOptions.Compact), WorkflowSerializationOptions.Compact);
-    private static object? CopyValue(object? value) => value is null ? null : value is JsonElement element ? element.Clone()
-        : JsonSerializer.Deserialize(JsonSerializer.Serialize(value, value.GetType(), WorkflowSerializationOptions.Compact), value.GetType(), WorkflowSerializationOptions.Compact);
+
 }

@@ -52,13 +52,13 @@ public sealed class InsertNodeIntoConnectionCommand : IUndoableCommand
         return outgoing.Keys.Any(Visit);
     }
     private Dictionary<WorkflowNode, (ToolParameters? Parameters, ParamSettingContainer? Settings)> Capture() => _affected.ToDictionary(n => n,
-        n => (n.Parameters == null ? null : ToolParameterSnapshot.Create(n.Parameters), n.ParamSettings?.Clone()));
+        n => (n.Parameters == null ? null : ToolParameterSnapshot.Create(n.Parameters), ToolParameterSnapshot.CopySettings(n.ParamSettings)));
     private static void Restore(Dictionary<WorkflowNode, (ToolParameters? Parameters, ParamSettingContainer? Settings)> snapshot)
     {
         foreach (var pair in snapshot)
         {
             pair.Key.Parameters = pair.Value.Parameters == null ? null! : ToolParameterSnapshot.Create(pair.Value.Parameters);
-            pair.Key.ParamSettings = pair.Value.Settings?.Clone()!;
+            pair.Key.ParamSettings = ToolParameterSnapshot.CopySettings(pair.Value.Settings)!;
         }
     }
     private void ApplyEdges(IEnumerable<WorkflowConnection> edges)

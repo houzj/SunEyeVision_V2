@@ -31,7 +31,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private MainWindowViewModel _viewModel = null!;
         private bool _isTabItemClick;  // 标记是否是通过点击TabItem触发的切换
         private WorkflowCanvasControl? _currentWorkflowCanvas;  // 当前显示的WorkflowCanvasControl
-        private (string Workflow,string Node)? _openSubroutineDebugIdentity;
+        private (string Parent,string Workflow,string Node)? _openSubroutineDebugIdentity;
         private Window? _openSubroutineDebugWindow;  // 子程序调试窗口单例跟踪
         private ScrollViewer? _canvasScrollViewer;  // 当前工作流的画布 ScrollViewer（用于视口框 1:1 同步与跳转）
 
@@ -656,12 +656,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 统一的子程序调试窗口打开逻辑（消除两个入口点的重复代码）
         /// </summary>
         private void OpenSubroutineDebugWindowCore(
+            string parentWorkflowId,
             string subroutineId,
             string nodeId,
             string nodeDispName,
             SubroutineParameters parameters)
         {
-            var identity=(subroutineId,nodeId);
+            var identity=(parentWorkflowId,subroutineId,nodeId);
             if (_openSubroutineDebugWindow?.IsLoaded == true)
             {
                 if (_openSubroutineDebugIdentity == identity)
@@ -671,8 +672,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 if (previous.IsLoaded) { previous.Activate();return; }
             }
             if (_viewModel?.CanEditWorkflowCanvas != true) return;
-            // 1. 找到父工作流 ID
-            var parentWorkflowId = FindParentWorkflowId(subroutineId);
+            // 1. 父作用域由实际节点/导航帧传入，不在全仓选择第一个拥有者。
             // 2. 父工作流作用域查询服务 → 输入绑定
             var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
             // 3. 子工作流内部数据源 → 输出/显示绑定
@@ -730,17 +730,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             try
             {
-                var parentNodeId = _viewModel?.FindParentSubroutineNodeId(tab.CurrentWorkflowId)
-                    ?? tab.CurrentWorkflowId;
-                var parameters = FindParentSubroutineParameters(tab.CurrentWorkflowId);
-                if (parameters == null)
-                {
-                    _viewModel?.LogWarning("未找到子程序参数", "Subroutine");
-                    return;
-                }
-                OpenSubroutineDebugWindowCore(
-                    tab.CurrentWorkflowId, parentNodeId,
-                    tab.EffectiveDisplayName, parameters);
+                var parentId=tab.NavigationAncestorIds.FirstOrDefault();
+                var ownerId=tab.CurrentOwnerNodeId;
+                var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
+                var node=parent?.Nodes.SingleOrDefault(n=>n.Id==ownerId&&n.SubroutineId==tab.CurrentWorkflowId);
+                if(node?.Parameters is not SubroutineParameters parameters)
+                    throw new InvalidOperationException("当前Group导航拥有者已经失效。");
+                OpenSubroutineDebugWindowCore(parentId!,tab.CurrentWorkflowId,node.Id,node.DispName,parameters);
             }
             catch (Exception ex)
             {
@@ -760,15 +756,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             try
             {
-                var subroutineId = node.SubroutineId ?? node.Id;
-                if (node.Parameters is not SubroutineParameters parameters)
-                {
-                    _viewModel?.LogWarning($"节点 '{node.Name}' 不是子程序或参数为空", "Subroutine");
-                    return;
-                }
-                OpenSubroutineDebugWindowCore(
-                    subroutineId, node.Id,
-                    node.DispName, parameters);
+                var parentId=_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
+                var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
+                if(parent==null||!parent.Nodes.Contains(node))throw new InvalidOperationException("Group节点不属于当前父流程。");
+                if(string.IsNullOrEmpty(node.SubroutineId)||_viewModel?.WorkflowEngine.GetWorkflowById(node.SubroutineId)==null)
+                    throw new InvalidOperationException("Group独占定义缺失。");
+                if(node.Parameters is not SubroutineParameters parameters)throw new InvalidOperationException("Group参数未加载。");
+                OpenSubroutineDebugWindowCore(parentId!,node.SubroutineId,node.Id,node.DispName,parameters);
             }
             catch (Exception ex)
             {
@@ -779,40 +773,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                     ThemeMessageDialog.MessageIcon.Error);
                 _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
             }
-        }
-
-        /// <summary>
-        /// 在工作流引擎中查找父节点对应的 SubroutineParameters
-        /// </summary>
-        private SubroutineParameters? FindParentSubroutineParameters(string subroutineWorkflowId)
-        {
-            if (_viewModel?.WorkflowEngine == null) return null;
-            foreach (var workflow in _viewModel.WorkflowEngine.GetAllWorkflows())
-            {
-                foreach (var node in workflow.Nodes)
-                {
-                    if (node.SubroutineId == subroutineWorkflowId)
-                        return node.Parameters as SubroutineParameters;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 在所有工作流中查找引用指定子程序工作流的父工作流 ID
-        /// </summary>
-        private string? FindParentWorkflowId(string subroutineWorkflowId)
-        {
-            if (_viewModel?.WorkflowEngine == null) return null;
-            foreach (var workflow in _viewModel.WorkflowEngine.GetAllWorkflows())
-            {
-                foreach (var node in workflow.Nodes)
-                {
-                    if (node.SubroutineId == subroutineWorkflowId)
-                        return workflow.Id;
-                }
-            }
-            return null;
         }
 
         #endregion

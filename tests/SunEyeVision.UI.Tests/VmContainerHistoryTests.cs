@@ -58,16 +58,16 @@ public sealed class VmContainerHistoryTests
             var rootNodes=new ObservableCollection<WorkflowNodeBase>();var rootEdges=new ObservableCollection<WorkflowConnection>();
             var childNodes=new ObservableCollection<WorkflowNodeBase>();var childEdges=new ObservableCollection<WorkflowConnection>();
             tab.SetContent(rootNodes,rootEdges);tab.CurrentScale=.5;tab.CaptureViewport(125,75);
-            tab.NavigateToSubroutine("child","外层Group","outer-icon");tab.SetContent(childNodes,childEdges);
+            tab.NavigateToSubroutine("child","外层Group","outer-icon","owner-a");tab.SetContent(childNodes,childEdges);
             Assert.Equal(1,tab.CurrentScale);Assert.False(tab.HasSavedViewport);
             tab.CurrentScale=1.5;tab.CaptureViewport(300,150);
-            tab.NavigateToSubroutine("grand","内层Group","inner-icon");
+            tab.NavigateToSubroutine("grand","内层Group","inner-icon","owner-b");
             Assert.Equal(new[]{"根流程","外层Group","内层Group"},tab.GetNavigationPath());Assert.Equal(new[]{"child","root"},tab.NavigationAncestorIds);
-            Assert.Throws<InvalidOperationException>(()=>tab.NavigateToSubroutine("root","错误"));
-            Assert.True(tab.NavigateBack());Assert.Equal("外层Group",tab.EffectiveDisplayName);Assert.Equal("outer-icon",tab.SubroutineIcon);
+            Assert.Throws<InvalidOperationException>(()=>tab.NavigateToSubroutine("root","错误",null,"owner-wrong"));
+            Assert.True(tab.NavigateBack());Assert.Equal("外层Group",tab.EffectiveDisplayName);Assert.Equal("outer-icon",tab.SubroutineIcon);Assert.Equal("owner-a",tab.CurrentOwnerNodeId);
             Assert.True(tab.NavigateBack());tab.SetContent(rootNodes,rootEdges);
-            Assert.Equal(.5,tab.CurrentScale);Assert.Equal(new System.Windows.Point(250,150),tab.ViewportCanvasOrigin);Assert.True(tab.HasSavedViewport);Assert.Null(tab.SubroutineIcon);
-            tab.NavigateToSubroutine("child","外层Group","outer-icon");tab.SetContent(childNodes,childEdges);
+            Assert.Equal(.5,tab.CurrentScale);Assert.Equal(new System.Windows.Point(250,150),tab.ViewportCanvasOrigin);Assert.True(tab.HasSavedViewport);Assert.Null(tab.SubroutineIcon);Assert.Null(tab.CurrentOwnerNodeId);
+            tab.NavigateToSubroutine("child","外层Group","outer-icon","owner-a");tab.SetContent(childNodes,childEdges);
             Assert.Equal(1.5,tab.CurrentScale);Assert.Equal(new System.Windows.Point(200,100),tab.ViewportCanvasOrigin);
         }catch(Exception ex){failure=ex;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure!=null)throw failure;
     }
@@ -82,6 +82,24 @@ public sealed class VmContainerHistoryTests
             var restore=typeof(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl).GetMethod("RestoreSavedViewport",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!;
             restore.Invoke(null,new object[]{tab,viewer});viewer.UpdateLayout();
             Assert.Equal(125,viewer.HorizontalOffset);Assert.Equal(75,viewer.VerticalOffset);
+        }catch(Exception ex){failure=ex;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure!=null)throw failure;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static (WeakReference Nodes,WeakReference Edges) BindAbandonedContainer(WorkflowTabViewModel tab)
+    {
+        var nodes=new ObservableCollection<WorkflowNodeBase>();var edges=new ObservableCollection<WorkflowConnection>();
+        tab.SetContent(nodes,edges);tab.CaptureViewport(20,30);tab.CommandManager.Execute(new AddConnectionCommand(edges,Edge("a","b")));
+        var references=(new WeakReference(nodes),new WeakReference(edges));
+        tab.SetContent(new(),new());return references;
+    }
+    [Fact]
+    public void Abandoned_container_collections_are_not_pinned_by_live_tab_history_or_view_cache()
+    {
+        Exception? failure=null;var thread=new Thread(()=>{try{
+            var tab=new WorkflowTabViewModel();var abandoned=BindAbandonedContainer(tab);
+            GC.Collect();GC.WaitForPendingFinalizers();GC.Collect();
+            Assert.False(abandoned.Nodes.IsAlive);Assert.False(abandoned.Edges.IsAlive);GC.KeepAlive(tab);
         }catch(Exception ex){failure=ex;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure!=null)throw failure;
     }
 

@@ -1166,7 +1166,7 @@ SplitterPosition = position;
 
         /// <summary>
         /// 将工作流实例同步到 Solution（确保运行时目标参数选择树可以看到工作流中的工具参数）。
-        /// 统一入口 — OnWorkflowAdded 和 CreateNewSubroutineWorkflow 都调用此方法，
+        /// 根流程同步入口 — 独占Group定义由图编辑事务注册，
         /// 避免重复代码，且确保所有创建路径都经过同一同步点。
         /// </summary>
         private void SyncWorkflowToSolution(SunEyeVision.Workflow.Workflow workflow, string? displayName = null)
@@ -2311,16 +2311,11 @@ SplitterPosition = position;
             if (definition.Nodes.Any(existing => existing.Id == node.Id))
                 throw new InvalidOperationException($"工作流中已存在节点: {node.Id}");
 
-            // ★ 子程序节点：自动创建子工作流并关联（用户无需手动配置）
-            if (string.Equals(node.ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase) &&
-                string.IsNullOrEmpty(uiNode.SubroutineId))
-            {
-                CreateNewSubroutineWorkflow(uiNode);
-                AddLog($"🆕 自动创建子程序工作流: {uiNode.DispName} (ID: {uiNode.SubroutineId})");
-            }
-
-            // 节点集合就是工作流定义集合；命令负责集合修改和撤销记录。
-            var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
+            AppCommands.IUndoableCommand command;
+            if(string.Equals(node.ToolType,"Subroutine",StringComparison.OrdinalIgnoreCase))
+                command=new AppCommands.AddGroupNodeCommand(definition,uiNode,_workflowEngine,
+                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
+            else command=new AppCommands.AddNodeCommand(definition.Nodes,uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
             // ★ 添加节点后自动绑定输入图像源（子程序内部节点默认绑子程序输入图像；主流程无源则跳过）
@@ -2831,35 +2826,12 @@ SplitterPosition = position;
 
                 var selectedTab = WorkflowTabViewModel.SelectedTab;
 
-                string subroutineId;
-
-                // ★ 使用节点上的 SubroutineId 属性（SSOT，取代 ExtraData）
-                subroutineId = node.SubroutineId ?? string.Empty;
-
-                if (!string.IsNullOrEmpty(subroutineId))
-                {
-                    // 已有关联：同步节点 DispName 到引擎工作流名称（支持重命名）
-                    var existingWorkflow = _workflowEngine.GetWorkflow(subroutineId);
-                    if (existingWorkflow != null && existingWorkflow.Name != node.Name)
-                    {
-                        existingWorkflow.Name = node.Name;
-                        AddLog($"🔄 同步子程序工作流名称: {existingWorkflow.Name}");
-                    }
-                    AddLog($"↪️ 导航到已有子程序: {node.Name} (ID: {subroutineId})");
-                }
-                else
-                {
-                    // 首次打开：创建子程序工作流并关联到节点
-                    subroutineId = CreateNewSubroutineWorkflow(node);
-                    AddLog($"🆕 创建并导航到子程序: {node.Name} (ID: {subroutineId})");
-                }
-
-                // 从引擎读取子程序工作流的实际名称
-                var subWorkflow = _workflowEngine.GetWorkflow(subroutineId);
-                var workflowDisplayName = node.Name;
-
-                // 下钻导航
-                selectedTab.NavigateToSubroutine(subroutineId, workflowDisplayName, node.Icon);
+                if(!selectedTab.WorkflowNodes.Contains(node))return;
+                var subroutineId=node.SubroutineId;
+                if(string.IsNullOrEmpty(subroutineId)||_workflowEngine.GetWorkflowById(subroutineId)==null)
+                    throw new InvalidOperationException("Group独占定义缺失，不能在导航时创建空流程覆盖此错误。");
+                var workflowDisplayName=node.DispName;
+                selectedTab.NavigateToSubroutine(subroutineId,workflowDisplayName,node.Icon,node.Id);
 
                 // 加载子程序画布内容（从引擎获取子程序工作流的节点/连接）
                 NavigateToWorkflowCanvas(subroutineId);
@@ -2875,36 +2847,6 @@ SplitterPosition = position;
                     ThemeMessageDialog.MessageIcon.Error);
                 AddLog($"❌ 子程序导航失败: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// 为子程序节点创建新的子程序工作流并关联（使用 SubroutineId 属性）
-        /// </summary>
-        private string CreateNewSubroutineWorkflow(SunEyeVision.UI.Shared.WorkflowNode node)
-        {
-            var subroutineId = Guid.NewGuid().ToString();
-
-            // 注册到工作流引擎
-            var workflow = _workflowDefinitions.GetOrCreate(subroutineId, node.Name);
-            workflow.IsSubroutine = true;
-
-            // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）
-            node.SubroutineId = subroutineId;
-
-            // ★ 同步到 Solution（通过统一入口，和 OnWorkflowAdded 共用同一方法）
-            SyncWorkflowToSolution(workflow, node.Name);
-
-            // ★ 默认输入端口：新建子程序自动带 in_1（Image），供内部节点默认绑定（幂等，已有则不重复加）
-            if (node.Parameters is SubroutineParameters subParams
-                && !subParams.Inputs.Any(i => string.Equals(i.Name, "in_1", StringComparison.OrdinalIgnoreCase)))
-            {
-                subParams.Inputs.Add(new SubroutineInputConfig { Name = "in_1", BindingKey = "in_1", TypeName = "Image" });
-                AddLog($"🆕 子程序默认输入端口: in_1 (Image)");
-            }
-
-            AddLog($"📝 新建子程序工作流: {node.Name} (ID: {subroutineId})");
-
-            return subroutineId;
         }
 
         /// <summary>

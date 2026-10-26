@@ -123,6 +123,7 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 状态栏子 VM（就近绑定底部状态栏）
         private readonly SunEyeVision.UI.Shell.Controls.StatusBarViewModel _statusBar;
+        private readonly Services.Workflow.WorkflowExecutionSnapshotPresenter _executionSnapshotPresenter = new();
 
         // 顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
         private readonly SunEyeVision.UI.Shell.Controls.ShellTopBarViewModel _topBar;
@@ -1012,6 +1013,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnSelectedTabChanged(object? sender, EventArgs e)
         {
+            CloseExecutionSnapshotDetails();
             RefreshStatusBarExecutionSnapshot();
             // 更新命令管理器
             SubscribeToCurrentCommandManager();
@@ -1623,6 +1625,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
+            CloseExecutionSnapshotDetails();
             ReleaseProductionEditors();
             _logger?.LogInfo($"[StartupTrace] MainWindowViewModel.OnCurrentSolutionChanged begin | solutionId={e.SolutionId}", "MainWindowViewModel");
             foreach (var window in _nodeDebugWindows.Values.Concat(_openDebugWindow == null ? Array.Empty<Window>() : new[] { _openDebugWindow }).Distinct().ToArray())
@@ -4364,25 +4367,13 @@ SplitterPosition = position;
             _statusBar.SetExecutionSnapshot(_executionManager.EnsureRootExecutionSnapshot(WorkflowTabViewModel.SelectedTab));
         }
 
+        internal void CloseExecutionSnapshotDetails() => _executionSnapshotPresenter.Close();
+
         private void ShowExecutionSnapshot(Services.Workflow.WorkflowExecutionSnapshot? snapshot)
         {
-            // 状态栏可能在标签加载的同一轮尚未完成绑定；打开入口始终以当前标签为准，
-            // 从而保证首次运行前也能看到“尚未运行”的快照窗口。
-            var currentTab = WorkflowTabViewModel.SelectedTab;
-            if (currentTab != null && !string.IsNullOrWhiteSpace(currentTab.RootWorkflowId))
-            {
-                snapshot = _executionManager.EnsureRootExecutionSnapshot(currentTab);
-                _statusBar.SetExecutionSnapshot(snapshot);
-            }
-
-            if (snapshot == null)
-                return;
-
-            var window = new WorkflowExecutionSnapshotWindow(snapshot)
-            {
-                Owner = System.Windows.Application.Current?.MainWindow
-            };
-            window.Show();
+            snapshot = _executionManager.EnsureRootExecutionSnapshot(WorkflowTabViewModel.SelectedTab);
+            _statusBar.SetExecutionSnapshot(snapshot);
+            _executionSnapshotPresenter.Show(snapshot, System.Windows.Application.Current?.MainWindow);
         }
 
         /// <summary>

@@ -61,7 +61,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             InitializeComponent();
             WorkspaceStatusBar.ScaleRequested += WorkspaceScaleRequested;
             Loaded += (_, _) => { if (_viewModel != null) { RefreshMiniMap(); QueueRestoreWorkspaceView(); } };
-            Unloaded += (_, _) => { CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
+            Unloaded += (_, _) => { _viewModel?.CloseExecutionSnapshotDetails(); CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
             // 小地图重绘节流定时器：单次触发，Tick 时重绘一次后停止
             _miniMapThrottleTimer = new System.Windows.Threading.DispatcherTimer

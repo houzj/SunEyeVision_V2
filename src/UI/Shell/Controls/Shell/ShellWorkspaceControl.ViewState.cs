@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Threading;
 using SunEyeVision.UI.Features.WorkflowUI;
 namespace SunEyeVision.UI.Shell.Controls.Shell;
@@ -14,6 +14,7 @@ public partial class ShellWorkspaceControl
     }
     private void WorkspaceContentChanging(object? sender,EventArgs e)
     {
+        _viewModel?.CloseExecutionSnapshotDetails();
         CaptureWorkspaceView(sender as WorkflowTabViewModel);
         ++_viewRestoreGeneration;_restoringContainerView=true;
     }

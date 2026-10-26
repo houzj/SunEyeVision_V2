@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -280,6 +280,7 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         protected override void OnClosed(EventArgs e)
         {
+            _viewModel.CloseExecutionSnapshotDetails();
             _viewModel.SolutionDialogOwner = null;
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
             // Dispatcher、相机采集会话和 Debug 输出程序集，导致进程残留并锁定 DLL。

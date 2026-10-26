@@ -1,5 +1,7 @@
 ﻿# 独立工作区当前任务：节点样式、交互与连线移植
 
+2026-10-27 耗时单窗生命周期批：基线ffffb369。按原件ShowTimeClick先关旧窗/CurDiagramArea变化关闭，新增Presenter管理实际owned只读Window；Closed退订清DataContext/引用，不释放共享快照；取消关闭拒开第二窗。MainVM切Tab/方案、Shell内容切换/卸载、主窗最终关闭已接清理。273全量0错误/1350警告/90.48秒，274/275专项3通过，首图漏Window背景未认可，275 Window层暗亮重新渲染已看；276扩大UI323通过/0失败/29秒；277实际probe exit0/22程序集，三DLL同版receipt-snapshot-lifetime-277.json。主方案/W04已归并；整窗物理退出链/原厂详情布局/当前Group模块算法选择、W01-W05剩余及Group/76项仍待，092两失败与原厂设计器人工未验不变，active，不同步主仓。
+
 2026-10-27 底栏根流程耗时批：基线0400cc20。实际底栏复用StatusBar正式快照文字/详情命令，明确根流程；修复MainVM用RootId却传Group可见节点的错误，Manager.EnsureRootExecutionSnapshot统一读引擎根定义。269最终全量0错误/755警告/49.85秒（268新测试命名空间编译失败保留）；270专项5及暗亮实际渲染已看，271扩大320通过/0失败/39秒；272实际probe exit0/22程序集，同版SHA receipt-workspace-timing-272.json。原主方案和W04同步；当前Group/模块/算法耗时、原厂图标/详情布局及单窗策略仍待，W01-W05及Group/76项完整范围不缩；092两失败、原厂设计器人工未验不变，active，不同步主仓。
 
 2026-10-27 工作区底栏批：基线8a26857e。原件DiagramArea→StatusBar已对照，实际Shell画布行+底栏行，新WorkspaceStatusBarControl绑定MainVM提示/选中Tab比例，请求复用ApplyZoom视口中心，10%-200%每档10%及点百分比回100%，80滑轨/6×12滑块，小地图留画布行。263最终全量0错误/755警告/71.06秒；264专项3及暗亮实际图已看，265扩大UI317通过/0失败/33秒；266实际probe exit0/22程序集，三DLL同版/原件SHA receipt-workspace-status-266.json。主方案与W04表同步；状态暂宿主全局提示、高度主题适配，原厂状态符号/真实耗时及详情/搜索管理/整窗物理中心与切换、W01-W05剩余和Group/76项继续，092两失败及原厂设计器人工未验不变；active，不同步主仓。

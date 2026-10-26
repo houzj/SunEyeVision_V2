@@ -15,7 +15,9 @@ public partial class WorkflowCanvasControl
     private Point[]? _vmBeforePath,_vmOriginalRendered;
     private Window? _vmWireWindow;
     private object? _vmWireOwner;
-    private bool CanEditVmCanvas => IsEnabled && _viewModel?.IsRunning != true && _viewModel?.IsDebugWindowOpen != true;
+    private WorkflowTabViewModel? _vmWireTab;
+    private string? _vmWireStamp, _vmWireConfigurationStamp;
+    private bool CanEditVmCanvas => IsEnabled && CurrentWorkflowTab?.IsRunning != true && _viewModel?.CanEditWorkflowCanvas != false;
     private bool CanEditVmWire => CanEditVmCanvas;
     private void InitializeVmWireEditing()
     {
@@ -79,6 +81,7 @@ public partial class WorkflowCanvasControl
         var source=tab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n=>n.Id==connection.SourceNodeId);
         var target=tab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n=>n.Id==connection.TargetNodeId);
         if(source==null||target==null||segment<0||segment+1>=connection.PathPoints.Count)return;
+        _vmWireTab=tab;_vmWireStamp=VmGraphStamp(tab);_vmWireConfigurationStamp=VmConfigurationStamp(tab);
         _vmWireOwner=DataContext;_vmEditingWire=connection;_vmBeforePath=connection.ManualPathPoints?.ToArray();_vmOriginalRendered=connection.PathPoints.ToArray();
         _vmWireDrag=new RecoveredConnectionDrag(connection.PathPoints.ToArray(),segment,source.NodeRect,target.NodeRect);
         WorkflowCanvas.CaptureMouse();
@@ -90,7 +93,7 @@ public partial class WorkflowCanvasControl
     private void VmWireMove(object sender,MouseEventArgs e)
     {
         if(_vmWireDrag==null||_vmEditingWire==null)return;
-        if(!CanEditVmWire||!ReferenceEquals(_vmWireOwner,DataContext)||_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(_vmEditingWire)!=true||e.LeftButton!=MouseButtonState.Pressed)
+        if(!CanEditVmWire||_vmWireTab==null||!ReferenceEquals(CurrentWorkflowTab,_vmWireTab)||VmGraphStamp(_vmWireTab)!=_vmWireStamp||!ReferenceEquals(_vmWireOwner,DataContext)||_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(_vmEditingWire)!=true||e.LeftButton!=MouseButtonState.Pressed)
         {FinishVmWireDrag(false);return;}
         _vmWireDrag.Move(e.GetPosition(WorkflowCanvas));
         _vmEditingWire.PreviewPathPoints=_vmWireDrag.PathPoints.ToArray();
@@ -101,9 +104,13 @@ public partial class WorkflowCanvasControl
         var connection=_vmEditingWire;var drag=_vmWireDrag;var owner=_vmWireOwner;var before=_vmBeforePath;var original=_vmOriginalRendered;
         _vmWireDrag=null;_vmEditingWire=null;_vmWireOwner=null;_vmBeforePath=null;_vmOriginalRendered=null;
         if(connection==null)return;
+        var valid=_vmWireTab!=null&&ReferenceEquals(CurrentWorkflowTab,_vmWireTab)&&VmGraphStamp(_vmWireTab)==_vmWireStamp
+            &&_vmWireConfigurationStamp!=null&&_vmWireConfigurationStamp==VmConfigurationStamp(_vmWireTab)
+            &&(connection.ManualPathPoints??Array.Empty<Point>()).SequenceEqual(before??Array.Empty<Point>());
+        _vmWireTab=null;_vmWireStamp=null;_vmWireConfigurationStamp=null;
         var after=drag?.PathPoints.ToArray();connection.PreviewPathPoints=null;
         if(WorkflowCanvas.IsMouseCaptured)WorkflowCanvas.ReleaseMouseCapture();
-        if(commit&&CanEditVmWire&&ReferenceEquals(owner,DataContext)&&after!=null&&original!=null&&!after.SequenceEqual(original)&&_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(connection)==true)
+        if(commit&&valid&&CanEditVmWire&&ReferenceEquals(owner,DataContext)&&after!=null&&original!=null&&!after.SequenceEqual(original)&&_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowConnections.Contains(connection)==true)
         {
             var history=_viewModel?.CurrentCommandManager;
             if(history!=null)history.Execute(new EditConnectionPathCommand(connection,before,after,()=>{RefreshVmWire(connection);DrawVmWireHandles();}));

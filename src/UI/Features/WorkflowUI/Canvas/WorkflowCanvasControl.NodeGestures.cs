@@ -18,6 +18,7 @@ public partial class WorkflowCanvasControl
         public required Dictionary<WorkflowNode, Point> Before { get; init; }
         public required string Token { get; init; }
         public required string Stamp { get; init; }
+        public string? ConfigurationStamp { get; init; }
         public Dictionary<WorkflowNode, Point> After { get; } = new();
         public List<FrameworkElement> Ghosts { get; } = new();
         public bool Copy { get; set; }
@@ -26,8 +27,9 @@ public partial class WorkflowCanvasControl
     private bool _vmNodeOleActive;
     private Window? _vmGestureWindow;
 
-    private string VmGraphStamp(WorkflowTabViewModel tab) => string.Join(";",
-        tab.WorkflowNodes.Select(n => $"{n.Id}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}")) + "|" +
+    private static int VmIdentity(object? value) => value == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value);
+    private string VmGraphStamp(WorkflowTabViewModel tab) => $"{tab.CurrentWorkflowId}:{VmIdentity(tab.WorkflowNodes)}:{VmIdentity(tab.WorkflowConnections)}|"+string.Join(";",
+        tab.WorkflowNodes.Select(n => $"{n.Id}:{VmIdentity(n)}:{n.PositionX:R},{n.PositionY:R}:{n.IsEnabled}:{n.Name}:{n.ToolType}:{n.SubroutineId}:{VmIdentity(n.Parameters)}:{VmIdentity(n.ParamSettings)}")) + "|" +
         string.Join(";", tab.WorkflowConnections.Select(c => $"{c.Id}:{c.SourceNodeId}:{c.SourcePort}:{c.TargetNodeId}:{c.TargetPort}"));
     private bool ValidVmNodeMove(VmNodeMoveSession session) => CanEditVmCanvas &&
         ReferenceEquals(DataContext, session.Owner) && ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, session.Tab) &&
@@ -80,7 +82,7 @@ public partial class WorkflowCanvasControl
         if (_dragConnectionSourceBorder != null) SetPortsVisibility(_dragConnectionSourceBorder, false);
         if (_highlightedTargetNodeBorder != null) SetPortsVisibility(_highlightedTargetNodeBorder, false);
         _dragConnectionSourceBorder = null; _highlightedTargetNodeBorder = null;
-        _vmConnectionTarget = null; _vmConnectionTab = null; _vmConnectionStamp = null; _vmConnectionStarted = false;
+        _vmConnectionTarget = null; _vmConnectionTab = null; _vmConnectionStamp = null; _vmConnectionConfigurationStamp = null; _vmConnectionStarted = false;
         foreach (var port in VmPorts(WorkflowCanvas)) { port.Visibility = Visibility.Collapsed; port.IsHighlighted = false; }
         if (_tempConnectionLine != null) _tempConnectionLine.Visibility = Visibility.Collapsed;
         _tempConnectionGeometry?.Figures.Clear();
@@ -99,7 +101,7 @@ public partial class WorkflowCanvasControl
         {
             Owner = DataContext, Tab = tab, Pointer = pointer, Token = Guid.NewGuid().ToString("N"),
             Before = tab.WorkflowNodes.OfType<WorkflowNode>().Where(n => n.IsSelected).ToDictionary(n => n, n => n.Position),
-            Stamp = VmGraphStamp(tab)
+            Stamp = VmGraphStamp(tab), ConfigurationStamp = VmConfigurationStamp(tab)
         };
     }
     private void StartVmNodeMove(MouseEventArgs e)
@@ -150,6 +152,7 @@ public partial class WorkflowCanvasControl
         if (!e.Data.GetDataPresent(VmNodeDragFormat, false)) return;
         e.Handled = true; e.Effects = DragDropEffects.None;
         if (!ReadVmNodeMove(e, out var session) || !ValidVmNodeMove(session) ||
+            session.ConfigurationStamp == null || session.ConfigurationStamp != VmConfigurationStamp(session.Tab) ||
             !VmNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, true) || !VmDropInside(e.GetPosition(WorkflowCanvas))) return;
         PreviewVmNodeMove(session, e.GetPosition(WorkflowCanvas));
         if (session.After.Count == 1)

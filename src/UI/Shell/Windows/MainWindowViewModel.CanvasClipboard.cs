@@ -10,13 +10,13 @@ public partial class MainWindowViewModel
 {
     private sealed record CanvasCopySource(WorkflowModel Definition, string[] Ids, Point Origin);
     private CanvasCopySource? _canvasCopySource;
-    public bool CanPasteCanvasSelection => _canvasCopySource is { } source && !IsRunning && !IsDebugWindowOpen &&
+    public bool CanPasteCanvasSelection => _canvasCopySource is { } source && CanEditWorkflowCanvas &&
         ReferenceEquals(_workflowEngine.GetWorkflowById(source.Definition.Id), source.Definition) &&
         source.Ids.All(id => source.Definition.Nodes.Any(n => n.Id == id));
     public bool CopyCanvasSelection()
     {
         var tab = WorkflowTabViewModel.SelectedTab;
-        if (tab == null || IsRunning || IsDebugWindowOpen) return false;
+        if (tab == null || !CanEditWorkflowCanvas) return false;
         var nodes = tab.WorkflowNodes.Where(n => n.IsSelected).ToArray();
         if (nodes.Length == 0) return false;
         if (nodes.Any(n => !ToolRegistry.ToolExists(n.ToolType))) { Status = "所选工具未加载，不能复制。"; return false; }
@@ -45,7 +45,7 @@ public partial class MainWindowViewModel
     private bool PasteCanvasFragment(WorkflowModel source, string[] ids, Point? topLeft, IReadOnlyDictionary<string, Point>? positions)
     {
         var tab = WorkflowTabViewModel.SelectedTab;
-        if (tab == null || IsRunning || IsDebugWindowOpen || tab.SequenceManager == null) return false;
+        if (tab == null || !CanEditWorkflowCanvas || tab.SequenceManager == null) return false;
         var target = _workflowDefinitions.GetRequired(tab.CurrentWorkflowId);
         if (!ReferenceEquals(target.Nodes, tab.WorkflowNodes) || !ReferenceEquals(target.Connections, tab.WorkflowConnections)) return false;
         var allocated = new List<(Node Node, string Scope)>(); bool committed = false;

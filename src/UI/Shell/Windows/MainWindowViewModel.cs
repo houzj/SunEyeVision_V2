@@ -1313,7 +1313,7 @@ SplitterPosition = position;
         /// </summary>
         private bool CanExecuteUndo()
         {
-            return CurrentCommandManager?.CanUndo ?? false;
+            return CanEditWorkflowCanvas && (CurrentCommandManager?.CanUndo ?? false);
         }
 
         /// <summary>
@@ -1321,7 +1321,7 @@ SplitterPosition = position;
         /// </summary>
         private bool CanExecuteRedo()
         {
-            return CurrentCommandManager?.CanRedo ?? false;
+            return CanEditWorkflowCanvas && (CurrentCommandManager?.CanRedo ?? false);
         }
 
         private void ExecutePause()
@@ -1331,6 +1331,7 @@ SplitterPosition = position;
 
         private void ExecuteUndo()
         {
+            if (!CanEditWorkflowCanvas) return;
             if (CurrentCommandManager == null)
             {
                 AddLog("❌ 没有选中的工作流，无法撤销");
@@ -1353,6 +1354,7 @@ SplitterPosition = position;
 
         private void ExecuteRedo()
         {
+            if (!CanEditWorkflowCanvas) return;
             if (CurrentCommandManager == null)
             {
                 AddLog("❌ 没有选中的工作流，无法重做");
@@ -2377,7 +2379,7 @@ SplitterPosition = position;
         public bool InsertNodeIntoConnection(WorkflowNode inserted, WorkflowConnection original, Point position)
         {
             var tab = WorkflowTabViewModel.SelectedTab;
-            if (tab == null || IsRunning || IsDebugWindowOpen || !tab.WorkflowNodes.Contains(inserted)) return false;
+            if (tab == null || !CanEditWorkflowCanvas || !tab.WorkflowNodes.Contains(inserted)) return false;
             var definition = _workflowDefinitions.GetRequired(tab.CurrentWorkflowId);
             if (!ReferenceEquals(tab.WorkflowConnections, definition.Connections) || !ReferenceEquals(tab.WorkflowNodes, definition.Nodes))
                 throw new InvalidOperationException("当前画布未绑定工作流定义。");
@@ -2399,7 +2401,7 @@ SplitterPosition = position;
         public bool AddConnectionToWorkflow(WorkflowConnection connection)
         {
             var tab = WorkflowTabViewModel.SelectedTab;
-            if (tab == null || IsRunning || IsDebugWindowOpen) return false;
+            if (tab == null || !CanEditWorkflowCanvas) return false;
             var definition = _workflowDefinitions.GetRequired(tab.CurrentWorkflowId);
             if (!ReferenceEquals(tab.WorkflowConnections, definition.Connections) || !ReferenceEquals(tab.WorkflowNodes, definition.Nodes))
                 throw new InvalidOperationException("工作流定义集合未绑定，不能添加连接。");
@@ -2552,7 +2554,7 @@ SplitterPosition = position;
                 return false;
 
             // 调试窗口打开时禁止删除节点（避免Delete键与区域编辑器冲突）
-            if (IsDebugWindowOpen)
+            if (!CanEditWorkflowCanvas)
                 return false;
 
             return WorkflowTabViewModel.SelectedTab.WorkflowNodes.Any(n => n.IsSelected)
@@ -2564,6 +2566,7 @@ SplitterPosition = position;
         /// </summary>
         private void ExecuteDeleteSelectedNodes()
         {
+            if (!CanEditWorkflowCanvas) return;
             if (WorkflowTabViewModel.SelectedTab == null)
                 return;
 

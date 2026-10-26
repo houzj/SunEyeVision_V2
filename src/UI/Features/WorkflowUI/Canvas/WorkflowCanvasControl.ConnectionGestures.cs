@@ -8,7 +8,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
     private WorkflowTabViewModel? _vmConnectionTab;
-    private string? _vmConnectionStamp;
+    private string? _vmConnectionStamp, _vmConnectionConfigurationStamp;
     private WorkflowNode? _vmConnectionTarget;
     private bool _vmConnectionStarted;
     private static readonly string[] VmSides = { "LeftPort", "TopPort", "RightPort", "BottomPort" };
@@ -18,7 +18,7 @@ public partial class WorkflowCanvasControl
         var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
         if (!CanEditVmCanvas || tab == null || !tab.WorkflowNodes.Contains(node) || !VmSides.Contains(side)) return;
         ClearVmWireSelection(); WorkflowCanvas.Focus();
-        _vmConnectionTab = tab; _vmConnectionStamp = VmGraphStamp(tab); _vmConnectionTarget = null; _vmConnectionStarted = false;
+        _vmConnectionTab = tab; _vmConnectionStamp = VmGraphStamp(tab); _vmConnectionConfigurationStamp = VmConfigurationStamp(tab); _vmConnectionTarget = null; _vmConnectionStarted = false;
         _dragConnectionSourceNode = node; _dragConnectionSourcePort = side; _isDraggingConnection = true;
         _dragConnectionStartPoint = GetPortPositionByName(node, side);
     }
@@ -83,7 +83,8 @@ public partial class WorkflowCanvasControl
     {
         var source = _dragConnectionSourceNode; var side = _dragConnectionSourcePort;
         var target = _vmConnectionTarget;
-        var commit = _vmConnectionStarted && ValidVmConnection() && VmDropInside(pointer) && source != null && target != null;
+        var commit = _vmConnectionStarted && ValidVmConnection() && _vmConnectionConfigurationStamp != null &&
+            _vmConnectionConfigurationStamp == VmConfigurationStamp(_vmConnectionTab!) && VmDropInside(pointer) && source != null && target != null;
         var targetSide = target == null ? null : VmNearestSide(target, pointer);
         // 清状态及释放捕获必须在提交之前，PortUp 不再有第二个创建机会。
         CancelVmCanvasGesture();

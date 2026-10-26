@@ -285,6 +285,24 @@ public sealed class VmGestureTests
         Assert.EndsWith(file,Assert.IsType<System.Windows.Media.Imaging.BitmapImage>(brush.ImageSource).UriSource.OriginalString);
     });
 
+    [Fact] public void Running_tab_blocks_canvas_editing_even_without_a_main_window_host() => Sta(() =>
+    {
+        var control=Create(out _);var tab=(WorkflowTabViewModel)control.DataContext;
+        var permission=typeof(WorkflowCanvasControl).GetProperty("CanEditVmCanvas",Private)!;
+        Assert.True((bool)permission.GetValue(control)!);tab.IsRunning=true;Assert.False((bool)permission.GetValue(control)!);
+        tab.IsRunning=false;Assert.True((bool)permission.GetValue(control)!);control.DataContext=null;
+    });
+    [Fact] public void Gesture_stamps_detect_replaced_node_identity_and_nested_unnotified_parameter_changes() => Sta(() =>
+    {
+        var control=Create(out var node);var tab=(WorkflowTabViewModel)control.DataContext;
+        node.Parameters=new VmFragmentCopyTests.Parameters{Values=new(){1,2}};
+        var before=Call(control,"VmGraphStamp",tab);var configuration=Call(control,"VmConfigurationStamp",tab);Assert.NotNull(configuration);
+        ((VmFragmentCopyTests.Parameters)node.Parameters).Values.Add(3);
+        Assert.Equal(before,Call(control,"VmGraphStamp",tab));Assert.NotEqual(configuration,Call(control,"VmConfigurationStamp",tab));
+        var replacement=new WorkflowNode{Id=node.Id,Name=node.Name,ToolType=node.ToolType,Position=node.Position,Parameters=node.Parameters,ParamSettings=node.ParamSettings};
+        tab.WorkflowNodes[0]=replacement;Assert.NotEqual(before,Call(control,"VmGraphStamp",tab));control.DataContext=null;
+    });
+
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
 public sealed class VmCanvasUiCollection { }

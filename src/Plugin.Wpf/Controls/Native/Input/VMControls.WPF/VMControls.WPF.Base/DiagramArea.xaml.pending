@@ -20,17 +20,17 @@
               </Border>
               <ControlTemplate.Triggers>
                 <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="image" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_btn_切换_click.png" />
+                  <Setter TargetName="image" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_btn_切换_click.png" />
                   <Setter TargetName="border" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
                   <Setter TargetName="text" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                  <Setter TargetName="image" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_btn_切换_click.png" />
+                  <Setter TargetName="image" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_btn_切换_click.png" />
                   <Setter TargetName="border" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
                   <Setter TargetName="text" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
-                  <Setter TargetName="image" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_btn_切换_disable.png" />
+                  <Setter TargetName="image" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_btn_切换_disable.png" />
                   <Setter TargetName="border" Property="UIElement.Opacity" Value="0.5" />
                 </Trigger>
               </ControlTemplate.Triggers>

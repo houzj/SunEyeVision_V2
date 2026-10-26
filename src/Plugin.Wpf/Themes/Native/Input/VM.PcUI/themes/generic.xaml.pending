@@ -7,13 +7,13 @@
           <Image Name="ImageBackground" Width="34" Height="34" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomin.png" />
           <ControlTemplate.Triggers>
             <Trigger Property="UIElement.IsMouseOver" Value="True">
-              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn_1.png" />
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomin_1.png" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn_1.png" />
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomin_1.png" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn.png" />
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomin.png" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -28,13 +28,13 @@
           <Image Name="ImageBackground" Width="34" Height="34" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomout.png" />
           <ControlTemplate.Triggers>
             <Trigger Property="UIElement.IsMouseOver" Value="True">
-              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut_1.png" />
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomout_1.png" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut_1.png" />
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomout_1.png" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut.png" />
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VM.PcUI/resources/zoomout.png" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

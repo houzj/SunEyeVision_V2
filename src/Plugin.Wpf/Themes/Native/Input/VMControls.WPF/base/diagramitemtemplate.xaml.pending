@@ -1257,7 +1257,7 @@
                             <Image Name="icon" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_off.png" Stretch="Fill" />
                             <ControlTemplate.Triggers>
                               <Trigger Property="ToggleButton.IsChecked" Value="True">
-                                <Setter TargetName="icon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/swith_on.png" />
+                                <Setter TargetName="icon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_on.png" />
                               </Trigger>
                             </ControlTemplate.Triggers>
                           </ControlTemplate>

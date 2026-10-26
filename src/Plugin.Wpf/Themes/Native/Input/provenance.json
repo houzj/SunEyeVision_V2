@@ -24,9 +24,9 @@
       "source_sha256": "BE86135158197CB72DDD9EE5049388E762D961F2967AED5AB6237DDF99DE089A",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, VM.Controls;assembly=VM.Controls, VM.Controls.Core.Converters, VM.Controls.Core.Converters;assembly=VM.Controls",
+        "Internal XAML type pending: VMControls.WPF.Base/CommentBox.cs",
         "Internal XAML type pending: VMControls.WPF.Base/ResizeThumb.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/CommentBox.cs"
+        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/commentboxstyle.xaml.pending",
@@ -40,8 +40,8 @@
       "source_sha256": "55375647FA2F2231FC93AA9C4DCF9CEB70F220EDEEE38F2ACEFC7A09B59806BB",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, VM.Controls;assembly=VM.Controls, VM.User;assembly=VM.User",
-        "Internal XAML type pending: VMControls.WPF.Base/Connection.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs"
+        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/Connection.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/connection/connectionstyle.xaml.pending",
@@ -55,16 +55,16 @@
       "source_sha256": "95DC48AF35A601585C893A2377665781BC4A72A2D5B2AB562D82B4BA0DC5F4F9",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, Apps.PcUI;assembly=Apps.PcUI, Apps.UIHelper.Attach;assembly=Apps.UIHelper, Apps.UIHelper.Converter;assembly=Apps.UIHelper, Apps.UIHelper.Extern;assembly=Apps.UIHelper, Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions, VM.Controls;assembly=VM.Controls, VM.User;assembly=VM.User, VMControls.Interface;assembly=VMControls.Interface",
+        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
         "Internal XAML type pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/DiagramArea.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
         "Internal XAML type pending: VMControls.WPF.Base/Connector.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
         "Referenced original resource pending: styles/commonstyle.xaml"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/diagramitemtemplate.xaml.pending",
-      "output_sha256": "D361C59EA509AA0355FF736CE2D7D13D80C0C0364CCC138D98434F5D18C432C2"
+      "output_sha256": "BD79269306F16A2B63D7B29E5177DD3C45E9BDED0DC0EE302CB6569C7E6811BB"
     },
     {
       "library": "VMControls.WPF",
@@ -6209,13 +6209,13 @@
       "source_sha256": "2E195D69C45DE43C2DCA7528705959F4127207722ABDE533B49F7D3E70305D9B",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, Apps.XmlUI.ParamTab;assembly=Apps.XmlUI, VMControls.Interface;assembly=VMControls.Interface",
-        "Internal XAML type pending: VMControls.WPF/TreeItemVisibilityConverter.cs",
+        "Internal XAML type pending: VMControls.WPF/LanguageConverter.cs",
         "Internal XAML type pending: VMControls.WPF/TreeDeepthConverter.cs",
-        "Internal XAML type pending: VMControls.WPF/LanguageConverter.cs"
+        "Internal XAML type pending: VMControls.WPF/TreeItemVisibilityConverter.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml.pending",
-      "output_sha256": "0D740C6BCCDB7C6C1AA4EC5FCFCAA3A896880E6BC916A69F626917F131E041C0"
+      "output_sha256": "3F5ADC1FDF3CF4D50BDFD8C78BF0395D797703C0B7601BBC69EAC02FA99F0E75"
     },
     {
       "library": "VMControls.WPF",
@@ -6286,8 +6286,8 @@
       "source_sha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, VM.Controls;assembly=VM.Controls, VM.Utility;assembly=VM.Utility, VMControls.Interface;assembly=VMControls.Interface",
-        "Internal XAML type pending: VMControls.WPF/ImageListPanelBase.cs",
         "Internal XAML type pending: VMControls.WPF/ImageView.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF/ImageListPanelBase.cs",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ImageListPanel.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
@@ -6345,8 +6345,8 @@
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.XmlUI;assembly=Apps.XmlUI, VMControls.Interface;assembly=VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/MainViewControl.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/LogView.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
@@ -6362,9 +6362,9 @@
       "reasons": [
         "External XAML namespace closure: Apps.BaseData;assembly=Apps.BaseData, Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, Apps.XmlUI;assembly=Apps.XmlUI, VM.Controls;assembly=VM.Controls, VM.Core;assembly=VM.Core, VMBaseControls;assembly=VMBaseControls, VMControls.Interface;assembly=VMControls.Interface, VMControls.RenderInterface;assembly=VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/LocalImageListView.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/AdditionCloudResultSelector.cs",
         "Internal XAML type pending: VMControls.WPF/AdditionRangeResultSelector.cs",
+        "Internal XAML type pending: VMControls.WPF/AdditionCloudResultSelector.cs",
+        "Internal XAML type pending: VMControls.WPF/LocalImageListView.xaml.cs",
         "Internal XAML type pending: HikPcUI.Controls/HikHistogram.xaml.cs",
         "Referenced original resource pending: styles/moduleviewstyle.xaml",
         "Internal XAML type pending: HikPcUI.Controls/ZoomOutButton.cs",
@@ -6442,8 +6442,8 @@
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, VM.Controls;assembly=VM.Controls",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/ParamsConfigControlBase.xaml.cs"
+        "Internal XAML type pending: VMControls.WPF/ParamsConfigControlBase.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.pending",
@@ -6483,7 +6483,7 @@
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.pending",
-      "output_sha256": "B186ADEDFD0D2C46BE28E44ECCA3661380697A5BB4C91642126EBC83CB79EA9F"
+      "output_sha256": "D9C059898DD04C30683334BB923F750D239D40DC15A60AE0AA453F0F3A92E6E3"
     },
     {
       "library": "VMControls.WPF",
@@ -6614,15 +6614,15 @@
       "reasons": [
         "External XAML namespace closure: Apps.Localization;assembly=Apps.Localization, Apps.UIHelper.Extern;assembly=Apps.UIHelper, Apps.XmlUI;assembly=Apps.XmlUI, VMControls.Interface;assembly=VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramArea.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/DiagramArea.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/StatusBar.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/ZoomArea.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.pending",
-      "output_sha256": "2EF7246F11EA44496A95E85073C6161056FD01411C2A8CD49F15DF91859BB3AB"
+      "output_sha256": "E0FEA48813DBC7A8FD7A3087A4B83922CE40D48A467D42881F993F7CEE18650B"
     },
     {
       "library": "VMControls.WPF",
@@ -6632,14 +6632,14 @@
       "source_sha256": "0CE58D2A404479F39D67CD6AF8AEDAAD253920778EFAFAD8737207505D0216D8",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.UIHelper.Extern;assembly=Apps.UIHelper, VM.Utility.Convert;assembly=VM.Controls, VMControls.Interface;assembly=VMControls.Interface",
-        "Internal XAML type pending: VMControls.WPF.Base/VMDataVisibleConverter.cs",
         "Internal XAML type pending: VMControls.WPF.Base/IndentConverter.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/VMDataVisibleConverter.cs",
         "Internal XAML type pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramGroupListUI.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramGroupListUI.xaml.pending",
-      "output_sha256": "9809E88BE3E6B6F4174B80A1FDBEEEEC5225E5A43C62087C820E60AEA0EFF38B"
+      "output_sha256": "542C7187227423C648574B0F2ABC4996B08010BED1461416F240FCF7D79AB81F"
     },
     {
       "library": "VMControls.WPF",
@@ -6665,8 +6665,8 @@
         "External XAML namespace closure: Apps.Localization;assembly=Apps.Localization, Apps.UIHelper.Extern;assembly=Apps.UIHelper, VM.Controls;assembly=VM.Controls, VM.Controls.AttachedProperties;assembly=VM.Controls, VM.User;assembly=VM.User, VMControls.Interface;assembly=VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/RectDragPanal.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.DataForUI/Clipboard.cs"
       ],
@@ -6865,7 +6865,7 @@
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.pending",
-      "output_sha256": "0BBE6B0AAEAAEB19CC65E07A1C5436BA4BC6ACF46B7CF8C1EEC7F5C4476AC6FC"
+      "output_sha256": "1CFC2F991C0AC43CA4512C01BCCDB1DB901092D2F03F523550830D76C24D1F43"
     },
     {
       "library": "VMControls.WPF",
@@ -6880,7 +6880,7 @@
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.pending",
-      "output_sha256": "34499C83426B3539ABFFC29ACA5FA90680FC067AD097865848EB74800BA84697"
+      "output_sha256": "24D807FA5600845518C853715B6CD2D0BF44497553BCD0260CE8F63AAE53DC30"
     },
     {
       "library": "VMControls.WPF",
@@ -7898,8 +7898,8 @@
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCircleCaliper.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikCircleCaliper.xaml.pending",
@@ -7932,11 +7932,11 @@
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCover.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/SpinArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/HikCover.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/HikCover.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikCover.xaml.pending",
@@ -7949,8 +7949,8 @@
       "kind": "xaml",
       "source_sha256": "A53FD46437553784A048A181A7A6A04AB27A0A0411E0265791DBC2843C4E993F",
       "reasons": [
-        "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal XAML type pending: HikPcUI.ImageView/CircleArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCoverCircle.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
@@ -8126,9 +8126,9 @@
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPath.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikPath.xaml.pending",
@@ -8160,8 +8160,8 @@
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPolygon.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikPolygon.xaml.pending",
@@ -8667,7 +8667,7 @@
       ],
       "status": "transplanted_pending_real_dependency",
       "output": "src/Plugin.Wpf/Themes/Native/Input/VM.PcUI/themes/generic.xaml.pending",
-      "output_sha256": "3B34F7D322D12A62F63B42E50B97DE83342606C42C6D765630295F9F9A125942"
+      "output_sha256": "B721E440426E53EFBF31F4639D042E13BC07E431D33659DAE9E8629246C2708D"
     },
     {
       "library": "VM.PcUI",
@@ -8690,6 +8690,270 @@
       "status": "transplanted_unbuilt",
       "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VM.PcUI/VM.PcUI.Resources.鼠标旋转箭头.png",
       "output_sha256": "1662C0A1871F70D5563813864E7D263FC01E4EFB7098BFEAEC036EA0E0B60488"
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
+      "original_relative": "SourceControlStyles.xaml",
+      "kind": "xaml",
+      "source_sha256": "05A35C93F09F66D11584261B5558D8AD47FC0467B0FA4FB040F42510F883F16F",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceControlStyles.xaml",
+      "output_sha256": "D4E888D8DCE61F0CEFA75B9C7A010C732AD5BC8FEB6D1BC8A320ED335F9E2BBC",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceComboBoxes.xaml",
+      "original_relative": "SourceComboBoxes.xaml",
+      "kind": "xaml",
+      "source_sha256": "F1B3D8CA08B433D1C41BA715E04D53021E97198E221D61E456958B8186249984",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "output_sha256": "193A0A4594F4894ADFAA0313EDF5CC9A7C05A5D4151936293A042BB4AE25392A",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceScrollBars.xaml",
+      "original_relative": "SourceScrollBars.xaml",
+      "kind": "xaml",
+      "source_sha256": "B262ACAC5D898B26EE0D84441CBCA986D2C6996E8C9BE17D26B4CE515D7FD509",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "output_sha256": "AE24EA3DC715E6B5C5CAE70B9167644F28E277AC96E0F3EFFD3E2641E96C2812",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceBottomButtons.xaml",
+      "original_relative": "SourceBottomButtons.xaml",
+      "kind": "xaml",
+      "source_sha256": "2D617C585407E400F260AA4FA9AD9B8F5A405DB54B1B447FBA39C391F026C196",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceBottomButtons.xaml",
+      "output_sha256": "34ADE27DFBAE97E9A67ABCF77E8AA369CF92E64D32309D6E17F4AAF48345ABD7",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\check-box_off.png",
+      "original_relative": "SourceAssets/check-box_off.png",
+      "kind": "asset",
+      "source_sha256": "CB3EE5D0093A0EF7A38ECABE6E71BE305319B4B32D4D6C3C9E6B8324A6EC55DE",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/check-box_off.png",
+      "output_sha256": "CB3EE5D0093A0EF7A38ECABE6E71BE305319B4B32D4D6C3C9E6B8324A6EC55DE",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\check-box_on.png",
+      "original_relative": "SourceAssets/check-box_on.png",
+      "kind": "asset",
+      "source_sha256": "E9693E37C209B37FF9473AE816AD31BC1331DD831F3616519E30D883AE812655",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/check-box_on.png",
+      "output_sha256": "E9693E37C209B37FF9473AE816AD31BC1331DD831F3616519E30D883AE812655",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_triangle_click.png",
+      "original_relative": "SourceAssets/combo_ic_triangle_click.png",
+      "kind": "asset",
+      "source_sha256": "BE2C6C437DF328FB1AA8EFAF6361B9F851F218045C277D57C165AAE019566FA0",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
+      "output_sha256": "BE2C6C437DF328FB1AA8EFAF6361B9F851F218045C277D57C165AAE019566FA0",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_triangle_normal.png",
+      "original_relative": "SourceAssets/combo_ic_triangle_normal.png",
+      "kind": "asset",
+      "source_sha256": "397439A8E64D1F24566E479439B31447F508B567E7AFE5E7A0D759D0D46B1209",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_normal.png",
+      "output_sha256": "397439A8E64D1F24566E479439B31447F508B567E7AFE5E7A0D759D0D46B1209",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_click.png",
+      "original_relative": "SourceAssets/combo_ic_关联_click.png",
+      "kind": "asset",
+      "source_sha256": "C1C062A0866B15A7B741519E4A863A96082C788F31F4CA94E71FA11E5068C8BD",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_click.png",
+      "output_sha256": "C1C062A0866B15A7B741519E4A863A96082C788F31F4CA94E71FA11E5068C8BD",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_hover.png",
+      "original_relative": "SourceAssets/combo_ic_关联_hover.png",
+      "kind": "asset",
+      "source_sha256": "071249F8F391FB02DEB36C49CDBCFD9E4ACF595365BC00314EDA95595DAFC3E2",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_hover.png",
+      "output_sha256": "071249F8F391FB02DEB36C49CDBCFD9E4ACF595365BC00314EDA95595DAFC3E2",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_normal.png",
+      "original_relative": "SourceAssets/combo_ic_关联_normal.png",
+      "kind": "asset",
+      "source_sha256": "CC7B05A48DBA2B4E08ABDA4B8D3C30AFD0B27DDC25B5993082F8CB24220DE953",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_normal.png",
+      "output_sha256": "CC7B05A48DBA2B4E08ABDA4B8D3C30AFD0B27DDC25B5993082F8CB24220DE953",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_click.png",
+      "original_relative": "SourceAssets/edit_click.png",
+      "kind": "asset",
+      "source_sha256": "A7B3FE62930D3A17FBD5029C5950B324A089B07212C0B00954CA226ED1EF7315",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_click.png",
+      "output_sha256": "A7B3FE62930D3A17FBD5029C5950B324A089B07212C0B00954CA226ED1EF7315",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_normal.png",
+      "original_relative": "SourceAssets/edit_normal.png",
+      "kind": "asset",
+      "source_sha256": "1DBF4F14ABF519F7C04332802BFAEA70FA1B063D7C433A628E420E7CE38334C2",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_normal.png",
+      "output_sha256": "1DBF4F14ABF519F7C04332802BFAEA70FA1B063D7C433A628E420E7CE38334C2",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_click.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_click.png",
+      "kind": "asset",
+      "source_sha256": "349D0D34E2E9BB85B13D6E15F3F1F18A47347769281C8C6174461D5D9F749A3B",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_click.png",
+      "output_sha256": "349D0D34E2E9BB85B13D6E15F3F1F18A47347769281C8C6174461D5D9F749A3B",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_disable.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_disable.png",
+      "kind": "asset",
+      "source_sha256": "7DD16D3C9961BF3FDB88162369B7C02333C81D19A5676FEC9240915D982CD7D1",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_disable.png",
+      "output_sha256": "7DD16D3C9961BF3FDB88162369B7C02333C81D19A5676FEC9240915D982CD7D1",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_hover.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_hover.png",
+      "kind": "asset",
+      "source_sha256": "8437A6551A359BAC673D90C2CCD2A1840D69215522F8CAB6136032976519525B",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_hover.png",
+      "output_sha256": "8437A6551A359BAC673D90C2CCD2A1840D69215522F8CAB6136032976519525B",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_normal.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_normal.png",
+      "kind": "asset",
+      "source_sha256": "767E0FF5B870108C17BA5F09C104435935653273EE4CE33F20EC682232597F48",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_normal.png",
+      "output_sha256": "767E0FF5B870108C17BA5F09C104435935653273EE4CE33F20EC682232597F48",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_清空图片_click.png",
+      "original_relative": "SourceAssets/ic_清空图片_click.png",
+      "kind": "asset",
+      "source_sha256": "800E1BA59374C7679B8949E4466CD2CED1007563DE6127C26FADB266A07733DD",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_click.png",
+      "output_sha256": "800E1BA59374C7679B8949E4466CD2CED1007563DE6127C26FADB266A07733DD",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_清空图片_disable.png",
+      "original_relative": "SourceAssets/ic_清空图片_disable.png",
+      "kind": "asset",
+      "source_sha256": "E9A7A690F292ED8A142BC4D99031E664F99278BB39667D7BBB86AF8365CAF27F",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_disable.png",
+      "output_sha256": "E9A7A690F292ED8A142BC4D99031E664F99278BB39667D7BBB86AF8365CAF27F",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_清空图片_normal.png",
+      "original_relative": "SourceAssets/ic_清空图片_normal.png",
+      "kind": "asset",
+      "source_sha256": "1FE8DEE1866625893E33C52E8FB758C5338F6221B6CB2765E8E6FC9E1672E760",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_normal.png",
+      "output_sha256": "1FE8DEE1866625893E33C52E8FB758C5338F6221B6CB2765E8E6FC9E1672E760",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\not-_see_click.png",
+      "original_relative": "SourceAssets/not-_see_click.png",
+      "kind": "asset",
+      "source_sha256": "0F3C941DFD11A5F8F66A5079EE6B5FC20E62994ECCEEE89E3784112426E3000A",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/not-_see_click.png",
+      "output_sha256": "0F3C941DFD11A5F8F66A5079EE6B5FC20E62994ECCEEE89E3784112426E3000A",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\not-see_normal.png",
+      "original_relative": "SourceAssets/not-see_normal.png",
+      "kind": "asset",
+      "source_sha256": "35F372F7D09C0F46F69B1F9ECAE0A9DF953E5B5960C9ED1C68BB6661BC746AA5",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/not-see_normal.png",
+      "output_sha256": "35F372F7D09C0F46F69B1F9ECAE0A9DF953E5B5960C9ED1C68BB6661BC746AA5",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\see_click.png",
+      "original_relative": "SourceAssets/see_click.png",
+      "kind": "asset",
+      "source_sha256": "904629A4350DC526E576E4DE88768FCDD8DFF722FB1AD4950C950A234D4F46E3",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/see_click.png",
+      "output_sha256": "904629A4350DC526E576E4DE88768FCDD8DFF722FB1AD4950C950A234D4F46E3",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\see_normal.png",
+      "original_relative": "SourceAssets/see_normal.png",
+      "kind": "asset",
+      "source_sha256": "C27B13B2CF090268B01A1E48F2C7748253FEA5F6F8DEB56BF37396422D9078C7",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/see_normal.png",
+      "output_sha256": "C27B13B2CF090268B01A1E48F2C7748253FEA5F6F8DEB56BF37396422D9078C7",
+      "status": "transplanted_unbuilt",
+      "reasons": []
     }
   ]
 }

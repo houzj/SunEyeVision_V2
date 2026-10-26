@@ -1,0 +1,44 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<!-- Source: Apps.Style/buttonstyle/bottombuttonstyle.xaml Orange_ButtonStyle; Apps.ColorFun colorstyle and colorstyle1. -->
+<SolidColorBrush x:Key="btnEditTemplateBorderBG" Color="#E1DEDE" />
+<SolidColorBrush x:Key="BottomLineBtnEnableBB" Color="#B8B6B6" />
+<SolidColorBrush x:Key="ParamsTabForeground" Color="#FF666666" />
+<SolidColorBrush x:Key="BottomLineBtnEnableBG" Color="#80D6D5D4" />
+<SolidColorBrush x:Key="btnEditTemplateEnableFG" Color="#80666666" /><SolidColorBrush x:Key="Col_Theme" Color="#E76900"/>
+  <Style x:Key="Orange_ButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="Background" Value="{DynamicResource btnEditTemplateBorderBG}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BottomLineBtnEnableBB}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+    <Setter Property="FontFamily" Value="Microsoft YaHei" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+              <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+              <Setter Property="Foreground" Value="#FFFFFFFF" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+              <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+              <Setter Property="Foreground" Value="#FFFFFFFF" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Value="{DynamicResource BottomLineBtnEnableBG}" Property="Background" />
+              <Setter Value="{DynamicResource BottomLineBtnEnableBB}" Property="BorderBrush" />
+              <Setter Value="{DynamicResource btnEditTemplateEnableFG}" Property="Foreground" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

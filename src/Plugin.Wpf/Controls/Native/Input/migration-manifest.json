@@ -102,10 +102,10 @@
     "Actual unavailable source/templates preserved with .pending suffix; no invented stubs"
   ],
   "summary": {
-    "files": 1169,
-    "active_source_or_xaml": 167,
+    "files": 1194,
+    "active_source_or_xaml": 172,
     "pending_source_or_xaml": 403,
-    "assets": 578,
+    "assets": 598,
     "numeric_other_group": 21
   },
   "files": [
@@ -151,9 +151,9 @@
       "source_sha256": "BE86135158197CB72DDD9EE5049388E762D961F2967AED5AB6237DDF99DE089A",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, VM.Controls;assembly=VM.Controls, VM.Controls.Core.Converters, VM.Controls.Core.Converters;assembly=VM.Controls",
+        "Internal XAML type pending: VMControls.WPF.Base/CommentBox.cs",
         "Internal XAML type pending: VMControls.WPF.Base/ResizeThumb.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/CommentBox.cs"
+        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": null,
@@ -201,8 +201,8 @@
       "source_sha256": "55375647FA2F2231FC93AA9C4DCF9CEB70F220EDEEE38F2ACEFC7A09B59806BB",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, VM.Controls;assembly=VM.Controls, VM.User;assembly=VM.User",
-        "Internal XAML type pending: VMControls.WPF.Base/Connection.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs"
+        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/Connection.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": null,
@@ -245,9 +245,9 @@
       "source_sha256": "95DC48AF35A601585C893A2377665781BC4A72A2D5B2AB562D82B4BA0DC5F4F9",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, Apps.PcUI;assembly=Apps.PcUI, Apps.UIHelper.Attach;assembly=Apps.UIHelper, Apps.UIHelper.Converter;assembly=Apps.UIHelper, Apps.UIHelper.Extern;assembly=Apps.UIHelper, Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions, VM.Controls;assembly=VM.Controls, VM.User;assembly=VM.User, VMControls.Interface;assembly=VMControls.Interface",
+        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
         "Internal XAML type pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/DiagramArea.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
         "Internal XAML type pending: VMControls.WPF.Base/Connector.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
         "Referenced original resource pending: styles/commonstyle.xaml"
@@ -318,7 +318,7 @@
         "http://schemas.microsoft.com/winfx/2006/xaml"
       ],
       "output": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/base/diagramitemtemplate.xaml.pending",
-      "output_sha256": "D361C59EA509AA0355FF736CE2D7D13D80C0C0364CCC138D98434F5D18C432C2"
+      "output_sha256": "BD79269306F16A2B63D7B29E5177DD3C45E9BDED0DC0EE302CB6569C7E6811BB"
     },
     {
       "library": "VMControls.WPF",
@@ -7067,9 +7067,9 @@
       "source_sha256": "2E195D69C45DE43C2DCA7528705959F4127207722ABDE533B49F7D3E70305D9B",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, Apps.XmlUI.ParamTab;assembly=Apps.XmlUI, VMControls.Interface;assembly=VMControls.Interface",
-        "Internal XAML type pending: VMControls.WPF/TreeItemVisibilityConverter.cs",
+        "Internal XAML type pending: VMControls.WPF/LanguageConverter.cs",
         "Internal XAML type pending: VMControls.WPF/TreeDeepthConverter.cs",
-        "Internal XAML type pending: VMControls.WPF/LanguageConverter.cs"
+        "Internal XAML type pending: VMControls.WPF/TreeItemVisibilityConverter.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": null,
@@ -7105,7 +7105,7 @@
         "http://schemas.microsoft.com/winfx/2006/xaml"
       ],
       "output": "src/Plugin.Wpf/Themes/Native/Input/VMControls.WPF/styles/moduleviewstyle.xaml.pending",
-      "output_sha256": "0D740C6BCCDB7C6C1AA4EC5FCFCAA3A896880E6BC916A69F626917F131E041C0"
+      "output_sha256": "3F5ADC1FDF3CF4D50BDFD8C78BF0395D797703C0B7601BBC69EAC02FA99F0E75"
     },
     {
       "library": "VMControls.WPF",
@@ -7604,8 +7604,8 @@
       "source_sha256": "A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, VM.Controls;assembly=VM.Controls, VM.Utility;assembly=VM.Utility, VMControls.Interface;assembly=VMControls.Interface",
-        "Internal XAML type pending: VMControls.WPF/ImageListPanelBase.cs",
         "Internal XAML type pending: VMControls.WPF/ImageView.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF/ImageListPanelBase.cs",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ImageListPanel.xaml.cs"
       ],
       "cross_group_dependencies": [],
@@ -8034,8 +8034,8 @@
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.XmlUI;assembly=Apps.XmlUI, VMControls.Interface;assembly=VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/MainViewControl.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/LogView.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs"
       ],
       "cross_group_dependencies": [],
@@ -8079,9 +8079,9 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.PcUI.Controls, Apps.UIHelper.Extern, Apps.XmlUI, Mvvm.Commands, VM.AppData, VM.PlatformSDK, VM.PlatformSDKCS, VMControls.Data, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/MainViewControl.xaml",
-        "Internal dependency pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
         "Internal dependency pending: VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs"
+        "Internal dependency pending: VMControls.WPF/ProcedureConfigControl.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF",
@@ -8115,9 +8115,9 @@
       "reasons": [
         "External XAML namespace closure: Apps.BaseData;assembly=Apps.BaseData, Apps.ColorFun;assembly=Apps.ColorFun, Apps.Localization;assembly=Apps.Localization, Apps.XmlUI;assembly=Apps.XmlUI, VM.Controls;assembly=VM.Controls, VM.Core;assembly=VM.Core, VMBaseControls;assembly=VMBaseControls, VMControls.Interface;assembly=VMControls.Interface, VMControls.RenderInterface;assembly=VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/LocalImageListView.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/AdditionCloudResultSelector.cs",
         "Internal XAML type pending: VMControls.WPF/AdditionRangeResultSelector.cs",
+        "Internal XAML type pending: VMControls.WPF/AdditionCloudResultSelector.cs",
+        "Internal XAML type pending: VMControls.WPF/LocalImageListView.xaml.cs",
         "Internal XAML type pending: HikPcUI.Controls/HikHistogram.xaml.cs",
         "Referenced original resource pending: styles/moduleviewstyle.xaml",
         "Internal XAML type pending: HikPcUI.Controls/ZoomOutButton.cs",
@@ -8196,17 +8196,17 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.BaseData, Apps.Data, Apps.Data.ShapeDefine, Apps.ErrorCode, Apps.Interface, Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlParser, Apps.XmlParser.ParamTab, Hik.Util, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VMBaseControls, VMBaseControls.Base.ImageView.Shape, VMControls.BaseInterface, VMControls.Interface, VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ModuleResultView.xaml",
-        "Internal dependency pending: VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs",
-        "Internal dependency pending: VMControls.WPF/RenderThreadPool.cs",
         "Internal dependency pending: VMControls.WPF/ImageView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF/LocalImageListView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/RenderDataCenter.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ROISelecterHolder.cs",
         "Internal dependency pending: VMControls.WPF/CrossConfig.xaml.cs",
-        "Internal dependency pending: HikPcUI.Commom/DrawShapeHelper.cs",
-        "Internal dependency pending: VMControls.WPF/ModuleSetShapesConfig.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/RenderDataCenter.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs",
         "Internal dependency pending: VMControls.WPF/CrossData.cs",
-        "Internal dependency pending: HikPcUI.Controls/MultiLangItem.cs"
+        "Internal dependency pending: VMControls.WPF/RenderThreadPool.cs",
+        "Internal dependency pending: HikPcUI.Controls/MultiLangItem.cs",
+        "Internal dependency pending: HikPcUI.Commom/DrawShapeHelper.cs",
+        "Internal dependency pending: VMControls.WPF/LocalImageListView.xaml.cs",
+        "Internal dependency pending: VMControls.WPF/ModuleSetShapesConfig.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ROISelecterHolder.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF",
@@ -8566,8 +8566,8 @@
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, VM.Controls;assembly=VM.Controls",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF/ParamsConfigControlBase.xaml.cs"
+        "Internal XAML type pending: VMControls.WPF/ParamsConfigControlBase.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF/ModuleResultView.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": "VMControls.WPF.ParamsConfigWithResultViewControl",
@@ -8604,8 +8604,8 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.XmlParser.ParamTab, VM.Controls, VM.Core, VMControls.BaseInterface, VMControls.Interface, VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ParamsConfigWithResultViewControl.xaml",
-        "Internal dependency pending: VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF/ParamsConfigWithRenderControlBase.xaml.cs"
+        "Internal dependency pending: VMControls.WPF/ParamsConfigWithRenderControlBase.xaml.cs",
+        "Internal dependency pending: VMControls.WPF/ModuleResultView.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF",
@@ -9022,7 +9022,7 @@
       ],
       "paired_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ProcedureConfigControl.xaml.cs",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml.pending",
-      "output_sha256": "B186ADEDFD0D2C46BE28E44ECCA3661380697A5BB4C91642126EBC83CB79EA9F"
+      "output_sha256": "D9C059898DD04C30683334BB923F750D239D40DC15A60AE0AA453F0F3A92E6E3"
     },
     {
       "library": "VMControls.WPF",
@@ -9033,22 +9033,22 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data, Apps.ErrorCode, Apps.Localization, Apps.Log, Apps.PcUI.Controls, Apps.UIHelper.Extern, Hik.Util, Mvvm.Commands, VM.AppData, VM.Controls, VM.Controls.Core.Utilities, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.User, VMBaseControls, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ProcedureConfigControl.xaml",
-        "Internal dependency pending: VMControls.WPF/ModuleResultView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs",
-        "Internal dependency pending: VMControls.WPF/TabWinBase.cs",
         "Internal dependency pending: VMControls.WPF/MainViewControl.xaml.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
-        "Internal dependency pending: VMControls.WPF/ToolBox.xaml.cs",
-        "Internal dependency pending: VMControls.WPF/ToolControl.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
+        "Internal dependency pending: VMControls.WPF/ToolControl.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
+        "Internal dependency pending: VMControls.WPF/ParamsTabControlBase.xaml.cs",
+        "Internal dependency pending: VMControls.WPF/ModuleResultView.xaml.cs",
+        "Internal dependency pending: VMControls.WPF/TabWinBase.cs",
+        "Internal dependency pending: VMControls.WPF/ToolBox.xaml.cs",
         "Internal dependency pending: VMControls.WPF.Base/ServiceProvideControl.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramArea.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmSolutionDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmSolutionDecorator.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
-        "Internal dependency pending: VMControls.WPF/ParamsTabControlBase.xaml.cs"
+        "Internal dependency pending: VMControls.WPF.Base/DiagramArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF",
@@ -9234,17 +9234,17 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.BaseData, Apps.Data, Apps.Data.Common, Apps.Data.ShapeDefine, Apps.Localization, Apps.Log, Apps.XmlParser, Apps.XmlParser.ItemInterface, Apps.XmlParser.ParamTab, HikExternalCall.Common, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VMBaseControls, VMBaseControls.Base.ImageView.Shape, VMControls.BaseInterface, VMControls.Interface, VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/RenderControlBase.xaml",
-        "Internal dependency pending: VMControls.WPF/PolygonEx.cs",
         "Internal dependency pending: VMControls.WPF/TextEx.cs",
-        "Internal dependency pending: VMControls.WPF/PointEx.cs",
-        "Internal dependency pending: VMControls.WPF/LineEx.cs",
         "Internal dependency pending: VMControls.WPF/ImageView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF/AnnularSectorEx.cs",
         "Internal dependency pending: VMControls.WPF/PointSetEx.cs",
-        "Internal dependency pending: VMControls.WPF/PolylineEx.cs",
-        "Internal dependency pending: HikPcUI.Commom/DrawShapeHelper.cs",
-        "Internal dependency pending: VMControls.WPF/RectangleEx.cs",
+        "Internal dependency pending: VMControls.WPF/LineEx.cs",
+        "Internal dependency pending: VMControls.WPF/PointEx.cs",
         "Internal dependency pending: VMControls.WPF/EllipseEx.cs",
+        "Internal dependency pending: VMControls.WPF/PolylineEx.cs",
+        "Internal dependency pending: VMControls.WPF/RectangleEx.cs",
+        "Internal dependency pending: HikPcUI.Commom/DrawShapeHelper.cs",
+        "Internal dependency pending: VMControls.WPF/AnnularSectorEx.cs",
+        "Internal dependency pending: VMControls.WPF/PolygonEx.cs",
         "Internal dependency pending: VMControls.WPF/CircleEx.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/DisplayImageListDecorator.cs"
       ],
@@ -9793,17 +9793,17 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data, Apps.ErrorCode, Apps.Json, Apps.Localization, Apps.Log, Apps.PcUI, Apps.UIHelper.Extern, DirectoryBrowser, FrontendUI.Design, GlobalScriptUI, Hik.Util, Microsoft.Win32, PasswordWindowUI, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.User, VM.Utility.SingleInstance, VMControls.Data, VMControls.Interface, starshipxac.Windows.Shell.Dialogs, starshipxac.Windows.Shell.Dialogs.Controls",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF/ToolControl.xaml",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCommunication.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCameraManager.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceDlg.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GloablTriggleConfigUI.xaml.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/ComprehensiveConfigManager.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCameraDlg.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceDlg.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF",
@@ -9921,10 +9921,10 @@
       "source_sha256": "924E1E105967A2D90519F6717DE9DE4F5ADE7F5EB9F047290D1E19765F04FB03",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.UIHelper.Extern, VM.Core, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmCommentDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ItemsPage.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmCommentDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ItemsPage.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.Base",
@@ -10003,12 +10003,12 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.UIHelper.Extern, Mvvm.Commands",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/Connection.xaml",
-        "Internal dependency pending: VMControls.WPF.Base/HoverPotData.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/HoverPotDelegate.cs",
-        "Internal dependency pending: VMControls.WPF.Base/PathFinder.cs"
+        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
+        "Internal dependency pending: VMControls.WPF.Base/HoverPotData.cs",
+        "Internal dependency pending: VMControls.WPF.Base/PathFinder.cs",
+        "Internal dependency pending: VMControls.WPF.Base/HoverPotDelegate.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.Base",
@@ -10148,9 +10148,9 @@
       "reasons": [
         "External XAML namespace closure: Apps.Localization;assembly=Apps.Localization, Apps.UIHelper.Extern;assembly=Apps.UIHelper, Apps.XmlUI;assembly=Apps.XmlUI, VMControls.Interface;assembly=VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramArea.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/DiagramArea.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/StatusBar.xaml.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/ZoomArea.xaml.cs"
       ],
@@ -10191,7 +10191,7 @@
       ],
       "paired_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.Base\\DiagramArea.xaml.cs",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramArea.xaml.pending",
-      "output_sha256": "2EF7246F11EA44496A95E85073C6161056FD01411C2A8CD49F15DF91859BB3AB"
+      "output_sha256": "E0FEA48813DBC7A8FD7A3087A4B83922CE40D48A467D42881F993F7CEE18650B"
     },
     {
       "library": "VMControls.WPF",
@@ -10203,11 +10203,11 @@
         "External namespace/interface closure not in this group: Apps.Localization, Apps.UIHelper.Extern, Mvvm.Commands, VM.Controls, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramArea.xaml",
         "Internal dependency pending: VMControls.WPF.CalibGuide/CalibrationGuideData.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.CalibGuide/CalibHelper.cs",
+        "Internal dependency pending: VMControls.WPF.Base/StatusBar.xaml.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.Base/StatusBar.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.CalibGuide/CalibHelper.cs",
         "Internal dependency pending: VMControls.WPF.Base/WindowLockModeTipsView.xaml.cs"
       ],
       "cross_group_dependencies": [],
@@ -10256,8 +10256,8 @@
       "source_sha256": "0CE58D2A404479F39D67CD6AF8AEDAAD253920778EFAFAD8737207505D0216D8",
       "reasons": [
         "External XAML namespace closure: Apps.ColorFun;assembly=Apps.ColorFun, Apps.UIHelper.Extern;assembly=Apps.UIHelper, VM.Utility.Convert;assembly=VM.Controls, VMControls.Interface;assembly=VMControls.Interface",
-        "Internal XAML type pending: VMControls.WPF.Base/VMDataVisibleConverter.cs",
         "Internal XAML type pending: VMControls.WPF.Base/IndentConverter.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/VMDataVisibleConverter.cs",
         "Internal XAML type pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramGroupListUI.xaml.cs"
       ],
@@ -10298,7 +10298,7 @@
       ],
       "paired_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.Base\\DiagramGroupListUI.xaml.cs",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.Base/DiagramGroupListUI.xaml.pending",
-      "output_sha256": "9809E88BE3E6B6F4174B80A1FDBEEEEC5225E5A43C62087C820E60AEA0EFF38B"
+      "output_sha256": "542C7187227423C648574B0F2ABC4996B08010BED1461416F240FCF7D79AB81F"
     },
     {
       "library": "VMControls.WPF",
@@ -10369,15 +10369,15 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.UIHelper.Extern, Apps.UIHelper.Service, VM.AppData, VM.User, VM.Utility, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramItem.xaml",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.Base/Connector.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
-        "Internal dependency pending: VMControls.WPF.Base/Connection.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmConnectionDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/Connection.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/Connector.xaml.cs",
         "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
         "Internal dependency pending: VMControls.WPF.Base/ItemsPage.cs"
       ],
       "cross_group_dependencies": [],
@@ -10467,8 +10467,8 @@
         "External XAML namespace closure: Apps.Localization;assembly=Apps.Localization, Apps.UIHelper.Extern;assembly=Apps.UIHelper, VM.Controls;assembly=VM.Controls, VM.Controls.AttachedProperties;assembly=VM.Controls, VM.User;assembly=VM.User, VMControls.Interface;assembly=VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/RectDragPanal.xaml.cs",
-        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.Base/ItemsPage.cs",
+        "Internal XAML type pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal XAML type pending: VMControls.WPF/ProcedureConfigControl.xaml.cs",
         "Internal XAML type pending: VMControls.WPF.DataForUI/Clipboard.cs"
       ],
@@ -10530,14 +10530,14 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.UIHelper.Extern, Apps.UIHelper.Service, Mvvm.Commands, VM.AppData, VM.Controls, VM.Core, VMControls.Data, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/DiagramPage.xaml",
-        "Internal dependency pending: VMControls.WPF.Base/CommentBox.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
+        "Internal dependency pending: VMControls.WPF.Base/CommentBox.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmSolutionDecorator.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal dependency pending: VMControls.WPF.Base/ItemsPage.cs",
         "Internal dependency pending: VMControls.WPF.Base/PathFinder.cs"
       ],
@@ -10751,13 +10751,13 @@
       "source_sha256": "BC3A7A487A75BE202162BBE4BA6D6202B9B0E6EE9B618A9DB9373A299091491B",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.UIHelper.Service, VM.Core, VM.User, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.Base/CommentBox.cs",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
         "Internal dependency pending: VMControls.WPF.Base/AutoConnect.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/CommentBox.cs",
         "Internal dependency pending: VMControls.WPF.Base/ZoomArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
@@ -10944,9 +10944,9 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.UIHelper.Extern",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Base/RectDragPanal.xaml",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.Base",
@@ -10990,10 +10990,10 @@
       "source_sha256": "45D026A2875672B4EEB40E61FFB8E378093A6ED18A91BDD61CE2AD239D5575B4",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.UIHelper.Extern, VM.Core, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/CommentBox.cs",
         "Internal dependency pending: VMControls.WPF.Base/ItemsPage.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
+        "Internal dependency pending: VMControls.WPF.Base/CommentBox.cs",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.Base",
@@ -11240,11 +11240,11 @@
       "source_sha256": "304BE361EFFDD7C42D3FB34BF4EFE65967D042F73DC44924054ECE8712D940D7",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.UIHelper.Extern, Apps.UIHelper.Service, Apps.UIHelper.Service.ExtensionControl, VM.AppData, VMControls.Interface",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
         "Internal dependency pending: VMControls.WPF.Base/AutoConnect.cs",
         "Internal dependency pending: VMControls.WPF.Base/Connection.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.Base/DiagramItem.xaml.cs",
         "Internal dependency pending: VMControls.WPF.Base/ItemsPage.cs"
       ],
       "cross_group_dependencies": [],
@@ -11845,11 +11845,11 @@
         "External namespace/interface closure not in this group: Apps.Data, Apps.ErrorCode, Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlUI, DirectoryBrowser, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility, VM.Utility.SingleInstance, VMControls.Interface",
         "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmSolutionDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmConnectionDecorator.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmConnectionDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -11956,9 +11956,9 @@
       "source_sha256": "CEDA24B7FB93BCD9F02B77B23D42A839B1F737BF70CF3ABC6B7786D11765740E",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.BaseData, Apps.Data, Apps.Data.ShapeDefine, Apps.Localization, Apps.Log, Apps.XmlParser, Apps.XmlParser.ItemInterface, Apps.XmlParser.ParamTab, Apps.XmlParser.Variable, Apps.XmlUI.ParamTab, Hik.Util, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VMControls.BaseInterface, VMControls.Interface, VMControls.RenderInterface",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/RenderDataCenter.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12183,8 +12183,8 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlUI, HikExternalCall.Common, Mvvm.Commands, VMControls.Interface",
         "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12214,9 +12214,9 @@
       "source_sha256": "D49800668E49C44A8D19D9388D9FB9E3DB98852B7E04CBEA63F296854EE4C933",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data, Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlUI, DirectoryBrowser, HikExternalCall.Common, Mvvm.Commands, PasswordWindowUI, VM.Controls, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility, VM.Utility.SingleInstance, VMControls.Data, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12255,17 +12255,17 @@
       "source_sha256": "F124B9A5E3CE5B8E2E856D3E325B00A4B143F7074513CCC74D542EC35C2695DD",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.ErrorCode, Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlParser, Apps.XmlParser.ParamTab, Apps.XmlUI, HikExternalCall.Common, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility.SingleInstance, VMControls.Data, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.Base/ModifyName.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.Base/Connection.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmConnectionDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/ModifyName.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmProcedureDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/ReNameUnRedoOperation.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.Base/Connection.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Internal dependency pending: VMControls.WPF.Base/DiagramPage.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/ReNameUnRedoOperation.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12304,11 +12304,11 @@
       "source_sha256": "FCF5ADFAF9CC6422E9F12B3FF19A3D880A5EF6EF4174FE8DFA5355FC31C7C9E4",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, Apps.XmlParser.ParamTab, Apps.XmlUI, Mvvm.Commands, VM.Controls, VM.User, VMControls.Interface",
+        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/Clipboard.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12372,10 +12372,10 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.ErrorCode, Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlUI, Apps.XmlUI.ParamTab, DirectoryBrowser, HikExternalCall.Common, Mvvm.Commands, PasswordWindowUI, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility, VMControls.Interface",
         "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleSetDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmGroupDecorator.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12417,8 +12417,8 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.ErrorCode, Apps.Localization, Apps.UIHelper.Extern, Apps.XmlUI, Mvvm.Commands, VM.Controls, VM.PlatformSDK, VM.PlatformSDKCS, VMControls.Interface",
         "Internal dependency pending: VMControls.WPF.DataForUI/RootOperation.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs",
-        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs"
+        "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "Internal dependency pending: VMControls.WPF.DataForUI/DecoratorBase.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.DataForUI",
@@ -12784,9 +12784,9 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data, Apps.Localization, Apps.UIHelper.Extern, Apps.XmlParser.ParamTab, DirectoryBrowser, Microsoft.Win32, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility.SingleInstance, VMControls.Interface",
         "Internal dependency pending: VMControls.WPF.GlobalUI/RelationSelector.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/TrigerOutPutItem.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerEventItem.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/TrigerOutPutItem.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -12841,8 +12841,8 @@
       "source_sha256": "5A4481200CC0D4A5E58E9081F99CD0329067023B2900E9F9F0589D1FC57AE74B",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.XmlParser.ParamTab, VM.Controls",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceDevice.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceDevice.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13138,9 +13138,9 @@
       "source_sha256": "4D0DB8FB2B9879AB545176A7A3037457C04D1D6AFE8F7E314631840C9EA70338",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, Apps.UIHelper.Extern, Apps.XmlParser.ParamTab, Hik.Util, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.User, VM.Utility.SingleInstance, VMControls.BaseInterface, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/CameraDeviceTypeHelper.cs",
         "Internal dependency pending: VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/CameraDeviceTypeHelper.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13254,9 +13254,9 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data, Apps.ErrorCode, Apps.Localization, Apps.Log, Apps.XmlParser.ParamTab, GateWayFramework, GateWayServer, Hik.Xml, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility, VM.Utility.SingleInstance, VMControls.BaseInterface, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.GlobalUI/GlobalCommunication.xaml",
-        "Internal dependency pending: VMControls.WPF.GlobalUI.GlobalTrigger/GlobalTriggerConfigContent.xaml.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/CommunicationEncryService.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/CommunicationEncryService.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI.GlobalTrigger/GlobalTriggerConfigContent.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13348,8 +13348,8 @@
       "kind": "source",
       "source_sha256": "4AD8868790851F6B67F6DFC106B5EA0F0AEB3B1951743A80F4876DB1B6FFA31D",
       "reasons": [
-        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Param.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Input.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Input.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Param.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13390,12 +13390,12 @@
       "source_sha256": "8DF3C3BB4B0B7E8F120CCC955133CBA54C2FDBEB769C2BE91644F454D9F5616D",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, Apps.XmlParser.ParamTab, Hik.Util, HikExternalCall.Common, Mvvm.Commands, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VMControls.BaseInterface, VMControls.Interface",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Param.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/ComTriggerItem.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerStrItem.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalEventTriggerData.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Param.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Input.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/ComTriggerItem.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerEventItem.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/Set_Module_Input.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalEventTriggerData.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13449,10 +13449,10 @@
       "source_sha256": "621D9C0AFC95F3C844EEAAB056A1CC3E272BBA56E09A42FC52640F54D5CD737B",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.XmlParser.ParamTab, Mvvm.Commands",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/ComTriggerItem.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/TrigerOutPutItem.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerConfig.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/TrigerOutPutItem.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13503,7 +13503,7 @@
       ],
       "paired_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.GlobalUI\\GlobalTriggerParamSet.xaml.cs",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalTriggerParamSet.xaml.pending",
-      "output_sha256": "0BBE6B0AAEAAEB19CC65E07A1C5436BA4BC6ACF46B7CF8C1EEC7F5C4476AC6FC"
+      "output_sha256": "1CFC2F991C0AC43CA4512C01BCCDB1DB901092D2F03F523550830D76C24D1F43"
     },
     {
       "library": "VMControls.WPF",
@@ -13661,7 +13661,7 @@
       ],
       "paired_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.GlobalUI\\GlobalVariableDialog.xaml.cs",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.pending",
-      "output_sha256": "34499C83426B3539ABFFC29ACA5FA90680FC067AD097865848EB74800BA84697"
+      "output_sha256": "24D807FA5600845518C853715B6CD2D0BF44497553BCD0260CE8F63AAE53DC30"
     },
     {
       "library": "VMControls.WPF",
@@ -13672,9 +13672,9 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, Apps.XmlParser.ParamTab, Apps.XmlParser.Variable, DirectoryBrowser, Microsoft.Win32, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VM.User, VM.Utility.SingleInstance, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/VarGroupItem.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalVarExtern.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalVariableItem.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/GlobalVariableItem.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/VarGroupItem.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -13828,11 +13828,11 @@
       "source_sha256": "FB7072CA4AA3ECB88D17473081FE2831717C81DA2048F7431BBF16E71F585AE9",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.UIHelper.Extern, Apps.XmlParser.ParamTab, Mvvm.Commands, VM.Controls, VM.PlatformSDK, VM.PlatformSDKCS, VM.Utility.SingleInstance",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/Device_IO.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightChannel.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/AddLightSourceDeviceDlg.xaml.cs",
         "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/TriggerProcedurePanel.xaml.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightChannel.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/TriggerProcedurePanel.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -14355,8 +14355,8 @@
         "External namespace/interface closure not in this group: Apps.ErrorCode, Apps.Localization, Apps.Log, VM.Controls, VM.PlatformSDK, VM.PlatformSDKCS",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.GlobalUI/TriggerProcedurePanel.xaml",
         "Internal dependency pending: VMControls.WPF.GlobalUI/TriggerProcessItem.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs",
-        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceDevice.cs"
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceDevice.cs",
+        "Internal dependency pending: VMControls.WPF.GlobalUI/LightSourceManager.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.GlobalUI",
@@ -15146,8 +15146,8 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.ColorFun, Apps.ErrorCode, Apps.Localization, Apps.Log, Apps.UIHelper.Extern, VM.Controls, VM.Core, VM.PlatformSDK, VM.PlatformSDKCS, VMControls.Interface",
         "Paired original XAML/code has unavailable dependencies; see VMControls.WPF.Release/VmMainViewConfigControl.xaml",
-        "Internal dependency pending: VMControls.WPF.Release/VmExceptionUtil.cs",
-        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs"
+        "Internal dependency pending: VMControls.WPF.Base/ToolItemGrid.cs",
+        "Internal dependency pending: VMControls.WPF.Release/VmExceptionUtil.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "VMControls.WPF.Release",
@@ -17834,8 +17834,8 @@
       "source_sha256": "EA5605062A5A2D2D094418C0F19C625659DADC3B6A8C78FAB97B8ACD7C2B6571",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.Common/ClearImageButton.xaml",
-        "Internal dependency pending: HikPcUI.Common/ImageViewControlButton.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.Common/ImageViewControlButton.cs",
         "Internal dependency pending: HikPcUI.Common/ImageViewController.xaml.cs"
       ],
       "cross_group_dependencies": [],
@@ -17894,9 +17894,9 @@
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.Common/CrossRadioButton.xaml",
         "Internal dependency pending: HikPcUI.Common/ImageViewControlButton.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.Common/ImageViewController.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCross.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikCross.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.Common",
@@ -17989,9 +17989,9 @@
       "source_sha256": "734DD6B8931BCCC9A14F6CF85E96A0BEDD870E2B5F4DB4F8E1CC8F7071CF4D73",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.Common/ImageViewController.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
         "Internal dependency pending: HikPcUI.Common/ArrowRadioButton.xaml.cs",
-        "Internal dependency pending: HikPcUI.Common/ImageViewControlButton.cs"
+        "Internal dependency pending: HikPcUI.Common/ImageViewControlButton.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.Common",
@@ -18107,8 +18107,8 @@
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.Common/XYRadioButton.xaml",
         "Internal dependency pending: HikPcUI.Common/ImageViewController.xaml.cs",
         "Internal dependency pending: HikPcUI.Common/ImageViewControlButton.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikXY.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikXY.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.Common",
@@ -19273,9 +19273,9 @@
       "source_sha256": "B6CA24C5EC6FD59D244751B5994B459104928DD287D7370710338E9D0BA7F6B4",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCircleArc.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCircleArcRoiParameter.cs"
@@ -19327,8 +19327,8 @@
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCircleCaliper.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": "HikPcUI.ImageView.HikCircleCaliper",
@@ -19355,8 +19355,8 @@
       "source_sha256": "ED1B15004324A2C5376BC002A4C172F2C6846DC8D20A6A0D30DF332D412AF4F5",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCircleCaliper.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCircleCaliperRoiParameter.cs"
       ],
@@ -19433,11 +19433,11 @@
       "source_sha256": "2D9B4546741C4E9B90CF4BDD2A83DD9F20D9191C94981A0B2E7C5FED2461F621",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCircleMeasure.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCircleMesRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCircleMesRoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -19483,11 +19483,11 @@
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCover.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/SpinArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/HikCover.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/HikCover.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": "HikPcUI.ImageView.HikCover",
@@ -19516,13 +19516,13 @@
       "source_sha256": "8B77BB3D3A67493A842071FB6CA5ACFA438357EDFDB9A94AE90EBDC09865CA79",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCover.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCoverRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCover.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -19546,8 +19546,8 @@
       "kind": "xaml",
       "source_sha256": "A53FD46437553784A048A181A7A6A04AB27A0A0411E0265791DBC2843C4E993F",
       "reasons": [
-        "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal XAML type pending: HikPcUI.ImageView/CircleArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCoverCircle.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
@@ -19577,10 +19577,10 @@
       "source_sha256": "386E8A773E6344A6F76C5BBEEC95761F29F216F198C2D6D9582FDA764D91D9B7",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCoverCircle.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
@@ -19638,9 +19638,9 @@
       "source_sha256": "F4D4FBA3BA9F2EE7C96CA611160D101F4B8842587CE02792FF5481AB25CB2174",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCoverCircle2.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter2.cs"
@@ -19771,13 +19771,13 @@
       "source_sha256": "F52610DA5FC78FC46CA180A5514525389C3DA52D2521E0F1D49C702733A4819E",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCoverHollow.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCoverHollowRoiParameter.cs"
       ],
       "cross_group_dependencies": [],
@@ -19800,8 +19800,8 @@
       "kind": "source",
       "source_sha256": "5FA0DD1CF46B7EC1C597D9A8D6C933235AAD3C7C442FF46EA6D434CFE3B82AA0",
       "reasons": [
-        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs"
+        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -19999,14 +19999,14 @@
       "source_sha256": "EABD6DF45FB257EF13BE08541A8A246F2E5D5145E6EC103AD4A65C7C70B02688",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikCruciform.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCruciformRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20028,8 +20028,8 @@
       "kind": "source",
       "source_sha256": "F84DF70B5876D15AE0A387A1702D9142832699DECB0201BD38109ADE4C1EED5F",
       "reasons": [
-        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs"
+        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20076,8 +20076,8 @@
       "source_sha256": "BFFECB3E6DAD1930E4106AC39FD13B1C65FF728213657D9356E250C524CAEB35",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikDoubleCover.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20195,53 +20195,53 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data, Apps.Data.Common, Apps.Data.ShapeDefine, Apps.Interface, Apps.Localization, Microsoft.Win32, Mvvm.Commands, VM.Controls, VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikImageView.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikCircleMesRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCover.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPath.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCircleCaliper.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPolygonRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter2.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikRectangleShapeParameter.cs",
-        "Internal dependency pending: HikPcUI.Controls/LineAndAngle.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCircleArc.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverHollow.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCircleMeasure.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCruciform.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/ShapeParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle2.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPolygon.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCircleCaliperRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCruciformRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCircleArcRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverHollowRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/Byte2ImageSource.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPoint.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCover.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikLineCaliper.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPasterParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikLineCaliperRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPolylineRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikXYParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikIndexPoint.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikIndexPointRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPath.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikRectangleShapeParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
+        "Internal dependency pending: HikPcUI.Controls/LineAndAngle.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ShapeParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCoverRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCircleMesRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverHollowRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter2.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverHollow.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCruciformRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCruciform.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPolygon.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCircleArcRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPolygonRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCircleCaliperRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCircleArc.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle2.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikIndexPointRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikXY.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPointRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikIndexPoint.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPolylineRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPaster.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiEventArgs.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikLineRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPointRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikLineCaliper.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikLine.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPaster.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCoverRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikXYParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikLineRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPasterParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPoint.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikLineCaliperRoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20304,9 +20304,9 @@
       "source_sha256": "75281A79DD4FB701A7FBD5073351051456FB72ED394E488DEA3BED6561AD0084",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikIndexPoint.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikPointRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
@@ -20380,11 +20380,11 @@
       "source_sha256": "ED5717C7ADE449DDF7B70DF89BD811B16801523E0B72957638C4A7F74577428F",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikLine.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikLineRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikLineRoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20437,8 +20437,8 @@
       "source_sha256": "8C1A86B470EC8F287795F5BE10D88D8232C03E784CFD5365CDEC1C66FC18D788",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikLineCaliper.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikLineCaliperRoiParameter.cs"
       ],
       "cross_group_dependencies": [],
@@ -20607,9 +20607,9 @@
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPath.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": "HikPcUI.ImageView.HikPath",
@@ -20645,14 +20645,14 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, VM.Controls",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPath.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikPolylineRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20704,9 +20704,9 @@
       "source_sha256": "C8CD72E0730A9629C91A0FF989C47FFB4A0F7D95B2AF8C6F9EC0EB856906B82D",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPoint.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikPointRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
@@ -20755,8 +20755,8 @@
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPolygon.xaml.cs",
         "Internal XAML type pending: HikPcUI.ImageView/HikROIBase.cs",
         "Referenced original resource pending: imageview/roidictionary.xaml",
-        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs",
-        "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs"
+        "Internal XAML type pending: HikPcUI.ImageView/MoveArea.xaml.cs",
+        "Internal XAML type pending: HikPcUI.ImageView/RectangleArea.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "xclass": "HikPcUI.ImageView.HikPolygon",
@@ -20792,14 +20792,14 @@
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Localization, Apps.Log, VMControls.RenderInterface",
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikPolygon.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
-        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikPolygonRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs",
-        "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/SquareArea.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20851,8 +20851,8 @@
       "kind": "source",
       "source_sha256": "056B4B19F00456F5C97F57C5CC27A70EAD5ACB38E67912853D01C894D656B160",
       "reasons": [
-        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs"
+        "Internal dependency pending: HikPcUI.ImageView/PolygonPoint.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20899,8 +20899,8 @@
       "source_sha256": "8981EF37763593EFF6BCDEFEE7B8E79C92F6B11666E5E7F300D939F496A2BBBA",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikQuadraCover.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -20970,9 +20970,9 @@
       "source_sha256": "088F0958AF4A11A837A735104CFCB034BDA6EC84D81BFC4629E75404EE721629",
       "reasons": [
         "External namespace/interface closure not in this group: Mvvm.Commands",
-        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/ROIContainer.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
       "cross_group_dependencies": [],
@@ -21074,9 +21074,9 @@
       "source_sha256": "A7BAEEE4DDAD921BDFE4DC0CB21D28D70C7B43D21E7B1F0262E6BEDFD82700D7",
       "reasons": [
         "Paired original XAML/code has unavailable dependencies; see HikPcUI.ImageView/HikXY.xaml",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikXYParameter.cs"
       ],
@@ -21375,28 +21375,28 @@
       "source_sha256": "965D34FAA9D59966E29338FCD78BA9D857F767F58236E209DCD2EE64341B1695",
       "reasons": [
         "External namespace/interface closure not in this group: Apps.Data",
-        "Internal dependency pending: HikPcUI.ImageView/HikPasterParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCover.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPath.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle2.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPolygon.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPolygonRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPoint.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCover.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCircleMeasure.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikLine.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPaster.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikPolylineRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCircleMeasure.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPolygonRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPath.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPaster.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCoverRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPolygon.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircle2.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikDoubleCover.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPasterParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPoint.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikROIBase.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikLine.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikCoverCircleRoiParameter2.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikQuadraCoverRoiParameter.cs",
         "Internal dependency pending: HikPcUI.ImageView/RoiUIType.cs",
         "Internal dependency pending: HikPcUI.ImageView/SelectionService.cs"
       ],
@@ -21526,9 +21526,9 @@
       "kind": "source",
       "source_sha256": "8EBBD9511C15619C953DBDC7EB63679C8759B13514E48C9F67AE056D73526CAA",
       "reasons": [
-        "Internal dependency pending: HikPcUI.ImageView/HikPaster.xaml.cs",
         "Internal dependency pending: HikPcUI.ImageView/HikXY.xaml.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikPath.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikPath.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/HikPaster.xaml.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -21598,8 +21598,8 @@
       "source_sha256": "20199EA812D101504D85CE01D8BDB8120DA4978A3C5C612E3DDE586E15EEB367",
       "reasons": [
         "Internal dependency pending: HikPcUI.ImageView/HikCoverRoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs",
-        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs"
+        "Internal dependency pending: HikPcUI.ImageView/HikImageView.xaml.cs",
+        "Internal dependency pending: HikPcUI.ImageView/RoiParameter.cs"
       ],
       "cross_group_dependencies": [],
       "original_namespace": "HikPcUI.ImageView",
@@ -22691,7 +22691,7 @@
         "http://schemas.microsoft.com/winfx/2006/xaml"
       ],
       "output": "src/Plugin.Wpf/Themes/Native/Input/VM.PcUI/themes/generic.xaml.pending",
-      "output_sha256": "3B34F7D322D12A62F63B42E50B97DE83342606C42C6D765630295F9F9A125942"
+      "output_sha256": "B721E440426E53EFBF31F4639D042E13BC07E431D33659DAE9E8629246C2708D"
     },
     {
       "library": "VM.PcUI",
@@ -22758,6 +22758,298 @@
       "status": "transplanted_unbuilt",
       "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VM.PcUI/VM.PcUI.Resources.鼠标旋转箭头.png",
       "output_sha256": "1662C0A1871F70D5563813864E7D263FC01E4EFB7098BFEAEC036EA0E0B60488"
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlResources.cs",
+      "original_relative": "SourceControlResources.cs",
+      "kind": "source",
+      "source_sha256": "3AE9E64355C345ED685C60C0D8546F9607FA68E1331393457AB4E53405610E8E",
+      "output": "src/Plugin.Wpf/Controls/Native/Input/VisionUi/SourceControlResources.cs",
+      "output_sha256": "5E8024E7DAD38233DD840C22542B6BE437253D01B47A9658A74B9CC397D0161B",
+      "status": "transplanted_unbuilt",
+      "reasons": [],
+      "cross_group_dependencies": [],
+      "original_namespace": "VisionUi",
+      "namespace": "SunEyeVision.Plugin.Wpf.Native.Input.VisionUi",
+      "types": [
+        "VisionUi.SourceControlResources"
+      ]
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlStyles.xaml",
+      "original_relative": "SourceControlStyles.xaml",
+      "kind": "xaml",
+      "source_sha256": "05A35C93F09F66D11584261B5558D8AD47FC0467B0FA4FB040F42510F883F16F",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceControlStyles.xaml",
+      "output_sha256": "D4E888D8DCE61F0CEFA75B9C7A010C732AD5BC8FEB6D1BC8A320ED335F9E2BBC",
+      "status": "transplanted_unbuilt",
+      "reasons": [],
+      "cross_group_dependencies": [
+        {
+          "owner": "numeric",
+          "original": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceSliderDictionary.xaml",
+          "source_sha256": "C119DFBD74285C6D350BA8A9F56E5B6983F8F651E6C5FEFB94E8DF016332B5D0",
+          "target_uri": "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VisionUi/SourceSliderDictionary.xaml"
+        }
+      ]
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceComboBoxes.xaml",
+      "original_relative": "SourceComboBoxes.xaml",
+      "kind": "xaml",
+      "source_sha256": "F1B3D8CA08B433D1C41BA715E04D53021E97198E221D61E456958B8186249984",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "output_sha256": "193A0A4594F4894ADFAA0313EDF5CC9A7C05A5D4151936293A042BB4AE25392A",
+      "status": "transplanted_unbuilt",
+      "reasons": [],
+      "cross_group_dependencies": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceScrollBars.xaml",
+      "original_relative": "SourceScrollBars.xaml",
+      "kind": "xaml",
+      "source_sha256": "B262ACAC5D898B26EE0D84441CBCA986D2C6996E8C9BE17D26B4CE515D7FD509",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+      "output_sha256": "AE24EA3DC715E6B5C5CAE70B9167644F28E277AC96E0F3EFFD3E2641E96C2812",
+      "status": "transplanted_unbuilt",
+      "reasons": [],
+      "cross_group_dependencies": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceBottomButtons.xaml",
+      "original_relative": "SourceBottomButtons.xaml",
+      "kind": "xaml",
+      "source_sha256": "2D617C585407E400F260AA4FA9AD9B8F5A405DB54B1B447FBA39C391F026C196",
+      "output": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceBottomButtons.xaml",
+      "output_sha256": "34ADE27DFBAE97E9A67ABCF77E8AA369CF92E64D32309D6E17F4AAF48345ABD7",
+      "status": "transplanted_unbuilt",
+      "reasons": [],
+      "cross_group_dependencies": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\check-box_off.png",
+      "original_relative": "SourceAssets/check-box_off.png",
+      "kind": "asset",
+      "source_sha256": "CB3EE5D0093A0EF7A38ECABE6E71BE305319B4B32D4D6C3C9E6B8324A6EC55DE",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/check-box_off.png",
+      "output_sha256": "CB3EE5D0093A0EF7A38ECABE6E71BE305319B4B32D4D6C3C9E6B8324A6EC55DE",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\check-box_on.png",
+      "original_relative": "SourceAssets/check-box_on.png",
+      "kind": "asset",
+      "source_sha256": "E9693E37C209B37FF9473AE816AD31BC1331DD831F3616519E30D883AE812655",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/check-box_on.png",
+      "output_sha256": "E9693E37C209B37FF9473AE816AD31BC1331DD831F3616519E30D883AE812655",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_triangle_click.png",
+      "original_relative": "SourceAssets/combo_ic_triangle_click.png",
+      "kind": "asset",
+      "source_sha256": "BE2C6C437DF328FB1AA8EFAF6361B9F851F218045C277D57C165AAE019566FA0",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
+      "output_sha256": "BE2C6C437DF328FB1AA8EFAF6361B9F851F218045C277D57C165AAE019566FA0",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_triangle_normal.png",
+      "original_relative": "SourceAssets/combo_ic_triangle_normal.png",
+      "kind": "asset",
+      "source_sha256": "397439A8E64D1F24566E479439B31447F508B567E7AFE5E7A0D759D0D46B1209",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_normal.png",
+      "output_sha256": "397439A8E64D1F24566E479439B31447F508B567E7AFE5E7A0D759D0D46B1209",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_click.png",
+      "original_relative": "SourceAssets/combo_ic_关联_click.png",
+      "kind": "asset",
+      "source_sha256": "C1C062A0866B15A7B741519E4A863A96082C788F31F4CA94E71FA11E5068C8BD",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_click.png",
+      "output_sha256": "C1C062A0866B15A7B741519E4A863A96082C788F31F4CA94E71FA11E5068C8BD",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_hover.png",
+      "original_relative": "SourceAssets/combo_ic_关联_hover.png",
+      "kind": "asset",
+      "source_sha256": "071249F8F391FB02DEB36C49CDBCFD9E4ACF595365BC00314EDA95595DAFC3E2",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_hover.png",
+      "output_sha256": "071249F8F391FB02DEB36C49CDBCFD9E4ACF595365BC00314EDA95595DAFC3E2",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\combo_ic_关联_normal.png",
+      "original_relative": "SourceAssets/combo_ic_关联_normal.png",
+      "kind": "asset",
+      "source_sha256": "CC7B05A48DBA2B4E08ABDA4B8D3C30AFD0B27DDC25B5993082F8CB24220DE953",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_normal.png",
+      "output_sha256": "CC7B05A48DBA2B4E08ABDA4B8D3C30AFD0B27DDC25B5993082F8CB24220DE953",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_click.png",
+      "original_relative": "SourceAssets/edit_click.png",
+      "kind": "asset",
+      "source_sha256": "A7B3FE62930D3A17FBD5029C5950B324A089B07212C0B00954CA226ED1EF7315",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_click.png",
+      "output_sha256": "A7B3FE62930D3A17FBD5029C5950B324A089B07212C0B00954CA226ED1EF7315",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\edit_normal.png",
+      "original_relative": "SourceAssets/edit_normal.png",
+      "kind": "asset",
+      "source_sha256": "1DBF4F14ABF519F7C04332802BFAEA70FA1B063D7C433A628E420E7CE38334C2",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_normal.png",
+      "output_sha256": "1DBF4F14ABF519F7C04332802BFAEA70FA1B063D7C433A628E420E7CE38334C2",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_click.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_click.png",
+      "kind": "asset",
+      "source_sha256": "349D0D34E2E9BB85B13D6E15F3F1F18A47347769281C8C6174461D5D9F749A3B",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_click.png",
+      "output_sha256": "349D0D34E2E9BB85B13D6E15F3F1F18A47347769281C8C6174461D5D9F749A3B",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_disable.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_disable.png",
+      "kind": "asset",
+      "source_sha256": "7DD16D3C9961BF3FDB88162369B7C02333C81D19A5676FEC9240915D982CD7D1",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_disable.png",
+      "output_sha256": "7DD16D3C9961BF3FDB88162369B7C02333C81D19A5676FEC9240915D982CD7D1",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_hover.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_hover.png",
+      "kind": "asset",
+      "source_sha256": "8437A6551A359BAC673D90C2CCD2A1840D69215522F8CAB6136032976519525B",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_hover.png",
+      "output_sha256": "8437A6551A359BAC673D90C2CCD2A1840D69215522F8CAB6136032976519525B",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_tab_downarrow_normal.png",
+      "original_relative": "SourceAssets/ic_tab_downarrow_normal.png",
+      "kind": "asset",
+      "source_sha256": "767E0FF5B870108C17BA5F09C104435935653273EE4CE33F20EC682232597F48",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_normal.png",
+      "output_sha256": "767E0FF5B870108C17BA5F09C104435935653273EE4CE33F20EC682232597F48",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_清空图片_click.png",
+      "original_relative": "SourceAssets/ic_清空图片_click.png",
+      "kind": "asset",
+      "source_sha256": "800E1BA59374C7679B8949E4466CD2CED1007563DE6127C26FADB266A07733DD",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_click.png",
+      "output_sha256": "800E1BA59374C7679B8949E4466CD2CED1007563DE6127C26FADB266A07733DD",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_清空图片_disable.png",
+      "original_relative": "SourceAssets/ic_清空图片_disable.png",
+      "kind": "asset",
+      "source_sha256": "E9A7A690F292ED8A142BC4D99031E664F99278BB39667D7BBB86AF8365CAF27F",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_disable.png",
+      "output_sha256": "E9A7A690F292ED8A142BC4D99031E664F99278BB39667D7BBB86AF8365CAF27F",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\ic_清空图片_normal.png",
+      "original_relative": "SourceAssets/ic_清空图片_normal.png",
+      "kind": "asset",
+      "source_sha256": "1FE8DEE1866625893E33C52E8FB758C5338F6221B6CB2765E8E6FC9E1672E760",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_normal.png",
+      "output_sha256": "1FE8DEE1866625893E33C52E8FB758C5338F6221B6CB2765E8E6FC9E1672E760",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\not-_see_click.png",
+      "original_relative": "SourceAssets/not-_see_click.png",
+      "kind": "asset",
+      "source_sha256": "0F3C941DFD11A5F8F66A5079EE6B5FC20E62994ECCEEE89E3784112426E3000A",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/not-_see_click.png",
+      "output_sha256": "0F3C941DFD11A5F8F66A5079EE6B5FC20E62994ECCEEE89E3784112426E3000A",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\not-see_normal.png",
+      "original_relative": "SourceAssets/not-see_normal.png",
+      "kind": "asset",
+      "source_sha256": "35F372F7D09C0F46F69B1F9ECAE0A9DF953E5B5960C9ED1C68BB6661BC746AA5",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/not-see_normal.png",
+      "output_sha256": "35F372F7D09C0F46F69B1F9ECAE0A9DF953E5B5960C9ED1C68BB6661BC746AA5",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\see_click.png",
+      "original_relative": "SourceAssets/see_click.png",
+      "kind": "asset",
+      "source_sha256": "904629A4350DC526E576E4DE88768FCDD8DFF722FB1AD4950C950A234D4F46E3",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/see_click.png",
+      "output_sha256": "904629A4350DC526E576E4DE88768FCDD8DFF722FB1AD4950C950A234D4F46E3",
+      "status": "transplanted_unbuilt",
+      "reasons": []
+    },
+    {
+      "library": "VisionUi.local-input",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAssets\\see_normal.png",
+      "original_relative": "SourceAssets/see_normal.png",
+      "kind": "asset",
+      "source_sha256": "C27B13B2CF090268B01A1E48F2C7748253FEA5F6F8DEB56BF37396422D9078C7",
+      "output": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/see_normal.png",
+      "output_sha256": "C27B13B2CF090268B01A1E48F2C7748253FEA5F6F8DEB56BF37396422D9078C7",
+      "status": "transplanted_unbuilt",
+      "reasons": []
     }
   ],
   "resource_gaps": [],
@@ -22788,7 +23080,8 @@
     "VMControls.WPF.Release.Convert": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Convert",
     "VMControls.WPF.Release.Front": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front",
     "VMControls.WPF.Release.Properties": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Properties",
-    "VMControls.WPF.TimeDialog": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.TimeDialog"
+    "VMControls.WPF.TimeDialog": "SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.TimeDialog",
+    "VisionUi": "SunEyeVision.Plugin.Wpf.Native.Input.VisionUi"
   },
   "original_build_items": {
     "VMControls.WPF": {
@@ -34254,6 +34547,25 @@
       ]
     }
   },
+  "local_input_supplement": {
+    "identity": "Existing local VisionUi reconstruction retained separately from original decompiled library identities; no original-binary equivalence claim",
+    "source_root": "D:\\MyWork\\REA逆向测试\\src\\VisionUi",
+    "project_sha256": "FBE323862E2F2183114815F6A17CFB7E157FFBC76257C56AC55AA71632F4C702",
+    "popup_review": {
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.Base\\PopupEx.cs",
+      "original_sha256": "EA2BDE64C802B85FFE73AF0E5273B633D6A45A500C27E14DA7AACD0900B83A46",
+      "same_type_restored": false,
+      "finding": "PopupEx.UpdateWindow is empty in the available export. No same-type implementation found in local VisionUi. A different original PopupWithTopmost class has a real HwndSource/GetWindowRect/SetWindowPos implementation, retained under its own identity; it is not evidence of PopupEx's omitted method body.",
+      "different_type_reference": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\PopupWithTopmost.cs",
+      "different_type_sha256": "B2CF58B95B15B5D7619136D2B4C9ADE825F706FFA7224786DD230866E2F4A4F7"
+    },
+    "limits": [
+      "Only namespace/pack URI and explicit System import adapted",
+      "No host source-catalog/workflow adapter added",
+      "Root owns resource build items and dictionary merge",
+      "No build, runtime, designer or visual tests"
+    ]
+  },
   "type_map": [
     {
       "assembly": "VMControls.WPF",
@@ -36900,6 +37212,12 @@
       "original_full_type": "VM.PcUI.Properties.Settings",
       "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Input.VM.PcUI.Properties.Settings",
       "status": "transplanted_pending_real_dependency"
+    },
+    {
+      "assembly": "VisionUi.local-input",
+      "original_full_type": "VisionUi.SourceControlResources",
+      "target_full_type": "SunEyeVision.Plugin.Wpf.Native.Input.VisionUi.SourceControlResources",
+      "status": "transplanted_unbuilt"
     }
   ],
   "type_mappings": [
@@ -40430,6 +40748,14 @@
       "status": "transplanted_pending_real_dependency",
       "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\VM.PcUI.Properties\\Settings.cs",
       "output": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/VM.PcUI.Properties/Settings.cs.pending"
+    },
+    {
+      "assembly": "VisionUi.local-input",
+      "original": "VisionUi.SourceControlResources",
+      "migrated": "SunEyeVision.Plugin.Wpf.Native.Input.VisionUi.SourceControlResources",
+      "status": "transplanted_unbuilt",
+      "source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceControlResources.cs",
+      "output": "src/Plugin.Wpf/Controls/Native/Input/VisionUi/SourceControlResources.cs"
     }
   ],
   "integration_required": [

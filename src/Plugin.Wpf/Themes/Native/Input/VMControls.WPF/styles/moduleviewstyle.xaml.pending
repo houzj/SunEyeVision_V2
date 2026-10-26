@@ -51,13 +51,13 @@
                       <Image Stretch="None">
                         <FrameworkElement.Style>
                           <Style TargetType="{x:Type Image}">
-                            <Setter Property="Source" Value="/VMControls.WPF;component/Resources/ic_叠加图像_未选择.png" />
+                            <Setter Property="Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_叠加图像_未选择.png" />
                             <Style.Triggers>
                               <DataTrigger Value="True" Binding="{Binding IsCheck}">
-                                <Setter Property="Source" Value="/VMControls.WPF;component/Resources/ic_叠加图像_已选择.png" />
+                                <Setter Property="Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_叠加图像_已选择.png" />
                               </DataTrigger>
                               <DataTrigger Value="True" Binding="{Binding IsBackgroundImage}">
-                                <Setter Property="Source" Value="/VMControls.WPF;component/Resources/ic_叠加图像_背景图.png" />
+                                <Setter Property="Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_叠加图像_背景图.png" />
                               </DataTrigger>
                             </Style.Triggers>
                           </Style>
@@ -67,13 +67,13 @@
                         <Image Stretch="None">
                           <FrameworkElement.Style>
                             <Style TargetType="{x:Type Image}">
-                              <Setter Property="Source" Value="/VMControls.WPF;component/Resources/ic_叠加图像_未选择.png" />
+                              <Setter Property="Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_叠加图像_未选择.png" />
                               <Style.Triggers>
                                 <DataTrigger Value="True" Binding="{Binding IsCheck}">
-                                  <Setter Property="Source" Value="/VMControls.WPF;component/Resources/ic_叠加图像_已选择.png" />
+                                  <Setter Property="Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_叠加图像_已选择.png" />
                                 </DataTrigger>
                                 <DataTrigger Value="True" Binding="{Binding IsBackgroundImage}">
-                                  <Setter Property="Source" Value="/VMControls.WPF;component/Resources/ic_叠加图像_背景图.png" />
+                                  <Setter Property="Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_叠加图像_背景图.png" />
                                 </DataTrigger>
                               </Style.Triggers>
                             </Style>
@@ -413,7 +413,7 @@
                                 <Image Name="icon" Height="32" Width="32" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_link_dark_normal.png" />
                                 <ControlTemplate.Triggers>
                                   <Trigger Property="UIElement.IsMouseOver" Value="True">
-                                    <Setter TargetName="icon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_link_dark_click.png" />
+                                    <Setter TargetName="icon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_link_dark_click.png" />
                                   </Trigger>
                                 </ControlTemplate.Triggers>
                               </ControlTemplate>

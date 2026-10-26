@@ -53,9 +53,72 @@ def declared_types(content: str, namespace: str) -> list[str]:
             depth -= 1
     return result
 
+def import_local_input(vision_ui: Path) -> tuple[list[dict], dict]:
+    """Preserve the existing local reconstruction as its own source identity.
+
+    Numeric owns SourceSliderDictionary independently; it is not interchangeable
+    with the similarly named PcUI or Apps.XmlUI dictionaries.
+    """
+    names = ("SourceControlResources.cs", "SourceControlStyles.xaml", "SourceComboBoxes.xaml", "SourceScrollBars.xaml", "SourceBottomButtons.xaml")
+    resource_root = "Themes/Native/Input/VisionUi/"
+    asset_root = "Themes/Assets/Native/Input/VisionUi/SourceAssets/"
+    numeric_uri = "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VisionUi/SourceSliderDictionary.xaml"
+    images = set()
+    records = []
+    for name in names:
+        source = vision_ui / name
+        content = text(source)
+        for path in re.findall(r"/VisionUi;component/SourceAssets/([^\"'<>]+)", content):
+            images.add(path)
+        if source.suffix == ".cs":
+            content = "using System;\n" + content.replace("namespace VisionUi;", "namespace " + PREFIX + "VisionUi;")
+            content = content.replace("/VisionUi;component/SourceControlStyles.xaml", "/SunEyeVision.Plugin.Wpf;component/" + resource_root + "SourceControlStyles.xaml")
+            output = "src/Plugin.Wpf/Controls/Native/Input/VisionUi/" + name
+            kind = "source"
+        else:
+            def uri(match):
+                value = match.group(2)
+                if value == "SourceSliderDictionary.xaml":
+                    value = "pack://application:,,," + numeric_uri
+                elif value in names and value.endswith(".xaml"):
+                    value = "pack://application:,,,/SunEyeVision.Plugin.Wpf;component/" + resource_root + value
+                elif value.startswith("/VisionUi;component/SourceAssets/"):
+                    value = "pack://application:,,,/SunEyeVision.Plugin.Wpf;component/" + asset_root + value.split("/SourceAssets/", 1)[1]
+                return match.group(1) + value + match.group(3)
+            content = re.sub(r'(\b(?:Source|UriSource|Icon|Value)\s*=\s*["\'])([^"\']+)(["\'])', uri, content)
+            output = "src/Plugin.Wpf/" + resource_root + name
+            kind = "xaml"
+        target = ROOT / output
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8", newline="\n")
+        entry = dict(library="VisionUi.local-input", source=str(source), original_relative=name, kind=kind, source_sha256=sha(source.read_bytes()), output=output, output_sha256=sha(target.read_bytes()), status="transplanted_unbuilt", reasons=[], cross_group_dependencies=[])
+        if name == "SourceControlResources.cs":
+            entry.update(original_namespace="VisionUi", namespace=PREFIX + "VisionUi", types=["VisionUi.SourceControlResources"])
+        if name == "SourceControlStyles.xaml":
+            dependency = vision_ui / "SourceSliderDictionary.xaml"
+            entry["cross_group_dependencies"].append(dict(owner="numeric", original=str(dependency), source_sha256=sha(dependency.read_bytes()), target_uri=numeric_uri))
+        records.append(entry)
+    for relative in sorted(images):
+        source = vision_ui / "SourceAssets" / relative
+        if not source.is_file(): raise FileNotFoundError("Local input template asset missing: " + str(source))
+        output = "src/Plugin.Wpf/" + asset_root + relative
+        target = ROOT / output
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+        records.append(dict(library="VisionUi.local-input", source=str(source), original_relative="SourceAssets/" + relative, kind="asset", source_sha256=sha(source.read_bytes()), output=output, output_sha256=sha(target.read_bytes()), status="transplanted_unbuilt", reasons=[]))
+    popup = Path(r"D:\MyWork\REA逆向测试\analysis\decompiled\VMControls.WPF\VMControls.WPF.Base\PopupEx.cs")
+    sibling = Path(r"D:\MyWork\REA逆向测试\analysis\decompiled\VM.PcUI\HikPcUI.ListView\PopupWithTopmost.cs")
+    return records, {
+        "identity": "Existing local VisionUi reconstruction retained separately from original decompiled library identities; no original-binary equivalence claim",
+        "source_root": str(vision_ui), "project_sha256": sha((vision_ui / "VisionUi.csproj").read_bytes()),
+        "popup_review": {"original": str(popup), "original_sha256": sha(popup.read_bytes()), "same_type_restored": False, "finding": "PopupEx.UpdateWindow is empty in the available export. No same-type implementation found in local VisionUi. A different original PopupWithTopmost class has a real HwndSource/GetWindowRect/SetWindowPos implementation, retained under its own identity; it is not evidence of PopupEx's omitted method body.", "different_type_reference": str(sibling), "different_type_sha256": sha(sibling.read_bytes())},
+        "limits": ["Only namespace/pack URI and explicit System import adapted", "No host source-catalog/workflow adapter added", "Root owns resource build items and dictionary merge", "No build, runtime, designer or visual tests"]
+    }
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--exports", type=Path, default=Path(r"D:\MyWork\REA逆向测试\analysis\decompiled"))
+    parser.add_argument("--vision-ui", type=Path, default=Path(r"D:\MyWork\REA逆向测试\src\VisionUi"))
     args = parser.parse_args()
     inventory_path = ROOT / "docs/collaboration/evidence/VM_CONTROL_LIBRARY_INVENTORY_20261026.json"
     inventory = json.loads(inventory_path.read_text(encoding="utf-8-sig"))
@@ -294,7 +357,7 @@ def main() -> None:
                 if new_namespaces:
                     position = re.search(r"<(?!\?)[\w.:]+", content).end()
                     content = content[:position] + "".join(f' xmlns:{key}="clr-namespace:{value};assembly=SunEyeVision.Plugin.Wpf"' for key, value in new_namespaces.items()) + content[position:]
-                content = re.sub(r'(\b(?:Source|UriSource|Icon)\s*=\s*["\'])([^"\']+)(["\'])', lambda match: match.group(1) + adapt_resource(match.group(2), record["library"], record["original_relative"]) + match.group(3), content)
+                content = re.sub(r'(\b(?:Source|UriSource|Icon|Value)\s*=\s*["\'])([^"\']+)(["\'])', lambda match: match.group(1) + adapt_resource(match.group(2), record["library"], record["original_relative"]) + match.group(3), content)
             else:
                 content = namespace_map(content)
                 aliases = []
@@ -334,6 +397,9 @@ def main() -> None:
         destination.write_bytes(data)
         record["output_sha256"] = sha(data)
 
+    local_records, local_evidence = import_local_input(args.vision_ui)
+    records.extend(local_records)
+    namespaces.add("VisionUi")
     manifest = {
         "baseline": "b87fb6857212ce8e1a7d0d0cb47c6c9a00c8e86b",
         "group": "native-input", "status": "source_transplant_only_no_build_no_test_no_availability_claim",
@@ -345,6 +411,7 @@ def main() -> None:
         "files": records, "resource_gaps": missing_resources,
         "namespace_map": {namespace: PREFIX + namespace for namespace in sorted(namespaces)},
         "original_build_items": original_build_items,
+        "local_input_supplement": local_evidence,
         "type_map": [{"assembly": record["library"], "original_full_type": original, "target_full_type": NUMERIC_TYPES.get(original, PREFIX + original), "status": record["status"]} for record in records for original in record.get("types", [])],
         "type_mappings": [{"assembly": record["library"], "original": original, "migrated": NUMERIC_TYPES.get(original, PREFIX + original), "status": record["status"], "source": record["source"], "output": record.get("output")} for record in records for original in record.get("types", [])],
         "integration_required": ["Root owns project Resource/Page/Compile items, embedded resources and Generic merge order", "Resolve external library ownership/namespace maps from other migration groups before enabling pending files", "WindowsForms wrappers require the original unavailable FrontendUI/VMControls.Winform behavior and host interface adaptation", "PopupEx.UpdateWindow original export is empty; do not claim topmost behavior", "Runtime/designer/native/visual verification deliberately deferred to root integration"]

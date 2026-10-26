@@ -21,21 +21,21 @@
               </Border>
               <ControlTemplate.Triggers>
                 <Trigger Property="ToggleButton.IsChecked" Value="True">
-                  <Setter TargetName="fore" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_全局_normal.png" />
+                  <Setter TargetName="fore" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_全局_normal.png" />
                 </Trigger>
                 <MultiTrigger>
                   <MultiTrigger.Conditions>
                     <Condition Property="IsEnabled" Value="False" />
                     <Condition Property="ToggleButton.IsChecked" Value="True" />
                   </MultiTrigger.Conditions>
-                  <Setter TargetName="fore" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_全局_disable.png" />
+                  <Setter TargetName="fore" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_全局_disable.png" />
                 </MultiTrigger>
                 <MultiTrigger>
                   <MultiTrigger.Conditions>
                     <Condition Property="IsEnabled" Value="False" />
                     <Condition Property="ToggleButton.IsChecked" Value="False" />
                   </MultiTrigger.Conditions>
-                  <Setter TargetName="fore" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_单个_disable.png" />
+                  <Setter TargetName="fore" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_单个_disable.png" />
                 </MultiTrigger>
                 <Trigger Property="UIElement.IsMouseOver" Value="True">
                   <Setter TargetName="border" Value="{DynamicResource Col_EditProcess_AllProcess_MouseOver_Background}" Property="Border.Background" />
@@ -189,7 +189,7 @@
                                 <Image Name="icon" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_off.png" Stretch="Fill" />
                                 <ControlTemplate.Triggers>
                                   <Trigger Property="ToggleButton.IsChecked" Value="True">
-                                    <Setter TargetName="icon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/swith_on.png" />
+                                    <Setter TargetName="icon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_on.png" />
                                   </Trigger>
                                 </ControlTemplate.Triggers>
                               </ControlTemplate>
@@ -296,17 +296,17 @@
           <FrameworkElement.Style>
             <Style TargetType="{x:Type appUiCommon:PerSuperImageButton}">
               <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_MutiRun}" />
-              <Setter Property="appUiCommon:PerSuperImageButton.NormalSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_normal.png" />
-              <Setter Property="appUiCommon:PerSuperImageButton.DisableSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_disable.png" />
-              <Setter Property="appUiCommon:PerSuperImageButton.PressedSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_click.png" />
-              <Setter Property="appUiCommon:PerSuperImageButton.MoveOverSource" Value="/VMControls.WPF;component/Resources/ic_多次运行_hover.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.NormalSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_多次运行_normal.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.DisableSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_多次运行_disable.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.PressedSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_多次运行_click.png" />
+              <Setter Property="appUiCommon:PerSuperImageButton.MoveOverSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_多次运行_hover.png" />
               <Style.Triggers>
                 <DataTrigger Value="True" Binding="{Binding DecorateSource.ContinuousRunEnable}">
                   <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_StopRun}" />
-                  <Setter Property="appUiCommon:PerSuperImageButton.NormalSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_normal.png" />
-                  <Setter Property="appUiCommon:PerSuperImageButton.DisableSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_disable.png" />
-                  <Setter Property="appUiCommon:PerSuperImageButton.PressedSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_click.png" />
-                  <Setter Property="appUiCommon:PerSuperImageButton.MoveOverSource" Value="/VMControls.WPF;component/Resources/ic_停止运行_hover.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.NormalSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_停止运行_normal.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.DisableSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_停止运行_disable.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.PressedSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_停止运行_click.png" />
+                  <Setter Property="appUiCommon:PerSuperImageButton.MoveOverSource" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_停止运行_hover.png" />
                 </DataTrigger>
               </Style.Triggers>
             </Style>
@@ -503,7 +503,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                           <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="im" Property="Image.Source" Value="/VMControls.WPF;component/Resources/btn_add_click.png" />
+                            <Setter TargetName="im" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/btn_add_click.png" />
                             <Setter TargetName="tb" Property="TextBlock.Foreground" Value="#FFFFFFFF" />
                             <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
                             <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />

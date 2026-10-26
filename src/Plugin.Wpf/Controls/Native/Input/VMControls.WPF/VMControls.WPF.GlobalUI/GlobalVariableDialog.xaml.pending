@@ -91,11 +91,11 @@
                     <ControlTemplate.Triggers>
                       <Trigger Property="UIElement.IsMouseOver" Value="True">
                         <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
-                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_deduct_hover.png" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_deduct_hover.png" />
                       </Trigger>
                       <Trigger Property="IsPressed" Value="True">
                         <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
-                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_deduct_click.png" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_deduct_click.png" />
                       </Trigger>
                     </ControlTemplate.Triggers>
                   </ControlTemplate>
@@ -109,10 +109,10 @@
                     <Image Name="addIcon" Margin="2,0,0,0" Width="32" Height="32" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_link_gray_normal.png" />
                     <ControlTemplate.Triggers>
                       <Trigger Property="UIElement.IsMouseOver" Value="True">
-                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_link_gray_click.png" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_link_gray_click.png" />
                       </Trigger>
                       <Trigger Property="IsPressed" Value="True">
-                        <Setter TargetName="addIcon" Property="Image.Source" Value="/VMControls.WPF;component/Resources/ic_link_gray_click.png" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_link_gray_click.png" />
                       </Trigger>
                       <DataTrigger Value="Collapsed" Binding="{Binding ElementName=ulinkButton, Path=Visibility}">
                         <Setter Property="Visibility" Value="Visible" />
@@ -249,7 +249,7 @@
                 <Image Name="Image" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_off.png" />
                 <ControlTemplate.Triggers>
                   <Trigger Property="ToggleButton.IsChecked" Value="True">
-                    <Setter TargetName="Image" Property="Image.Source" Value="../../Resources/swith_on.png" />
+                    <Setter TargetName="Image" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/swith_on.png" />
                   </Trigger>
                   <Trigger Property="IsEnabled" Value="False">
                     <Setter Value="{DynamicResource Lang_COMMSTREMPTY}" Property="FrameworkElement.ToolTip" />

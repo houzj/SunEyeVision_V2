@@ -2,8 +2,8 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "真实DisplayObjectField已从子modal重组为就地弹层：VM四行主区与-90横偏移、102列起点和原渐变承接，现有十字/线型放在更多；字段直接写外层窗口草稿，保留外层确定/取消职责。嵌套Popup归属和逐层Escape、卸载/失活关闭及输入监听解除已有代码。数值有效键入即时同步滑条，Enter校验后失焦；非法输入/Enter保留待校验文本，初始显示不作用户改值，非聚焦滚轮不改值。027全量Release仍9错误/132警告27.96秒，未运行或人工验收。图形数值范围/步长和存量值兼容仍待对齐，不能称VM完整等价。按用户要求构建通过前不推送。",
-  "summaryStatus": "ROI诊断依赖和未使用的旧XAML命名空间已修；全量当前9个错误，未进入运行或人工验收",
+  "current": "全量Release035已通过。用户指出算法不应等待UI后，修正工作流公共入口上下文捕获；三个正式入口在WPF上下文且不泵消息仍完成HALCON及会话清理，预取消和下一次运行通过。新产物整链8组/资源22组/消费7组/发布11项通过；历史034窗口8组与ROI编辑9组/组合6组/绑定12组保留身份，不套作035重验。整库消费、原31项退出、VM同状态外观、样式范围/存量兼容、typed调试新run、VS及人工继续推进。",
+  "summaryStatus": "全量035构建0错误；执行完成不依赖UI消息处理，整链/资源/消费/发布定向回归通过；整库及视觉人工未闭合",
   "rows": [
     [
       "整套库范围",
@@ -13,7 +13,7 @@
     [
       "本轮真实颜色组合",
       "ColorField → VmColorPicker → 原色板/高级色谱；父层DisplayObjectField为就地四行主区，原有扩展收在更多。选色和样式直接写外层草稿，外层确认/取消负责保存；旧类尚未删除。",
-      "本候选未运行/视觉验收；样式数值范围、步长及存量值兼容仍待对齐；仅当前源码语法解析通过。"
+      "本候选WindowPresentation011已验证真实四行样式草稿、颜色路由事件、嵌套Escape与关闭释放；透明度/粗细范围、步长及存量值兼容仍待对齐，VM整体视觉与用户人工未验收。"
     ],
     [
       "原资源实际导入",
@@ -21,7 +21,7 @@
       "手画EditorIcons实现和近似Radio模板已替换；EditorIcons.cs现为原PNG状态映射助手，文件未删除。仅pack URI/两态bool绑定适配，不引用逆向工程DLL。"
     ],
     [
-      "当前候选回归",
+      "历史候选回归（保留原身份）",
       "build-vm-native-resources-002：0错误/881警告30.25秒；RoiEditing018九组、WindowPresentation007四组、原资源后FullChain030八组均exit0。",
       "首轮ResourceDictionary相对URI运行失败保留，绝对组件pack URI修复；006独评7PASS是前候选，不套作本轮native独评。"
     ],
@@ -35,7 +35,7 @@
     {
       "item": "整套VM控件库移植",
       "scope": "按7目录与双版本inventory去重逐项移植全部控件/模板/样式/图标及资源依赖，原31类不再作为总范围上限",
-      "state": "三路源码和公共组合已导入并统一依赖；源码、模板和图标有来源记录，真实消费链及完整构建未闭合，不以源码数代替控件数或验收。"
+      "state": "三路源码和公共组合已导入并统一依赖，全量Release034已通过；尚有50份组合源码pending及未完成消费者，不以源码数代替控件数或验收。"
     },
     {
       "item": "Blob原样组装与typed调试",
@@ -50,7 +50,7 @@
     {
       "item": "最终版本与人工",
       "scope": "固定同源Release与关联回归、实际VS设计器、集中用户试用反馈",
-      "state": "当前a6f58334+未提交增量，本轮native独评/整体UI/VS及人工尚未通过"
+      "state": "当前c8de30c4+已构建验证的未提交增量；发布与ROI定向回归通过，固定源码和发布身份、实际VS及人工仍未完成。"
     }
   ],
   "projectOrganization": [
@@ -141,10 +141,16 @@
   ],
   "checks": [
     {
-      "name": "当前源码候选全量Release（未通过）",
-      "result": "027：9错误/132警告27.96秒；修复3处ROI日志依赖，并移除重映射后已无引用的旧XAML CLR命名空间；未改变控件正文或模板行为。9个诊断不是后续所有语义问题的上限。当前候选未运行或人工验收。",
-      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-027.log",
-      "sha256": "c0d8bd27ab81ab7a7866e4117ba76ee9908f4ba7fb83cbfea03947aa02dcca22"
+      "name": "当前源码全量Release（通过，非最终验收）",
+      "result": "035：0错误/3560警告81.30秒；修复工作流公共入口捕获调用方上下文，HALCON及会话收尾不等待UI。此前034及033迁移构建通过成绩保留历史；不等于整库/视觉/人工通过。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-roi-core-035.log",
+      "sha256": "03cae04582786d4e0de855f5802127bfbbd58e5dd2de008f1982e0d693c19235"
+    },
+    {
+      "name": "当前UI Release构建",
+      "result": "UI035：0错误/6610警告140.91秒；重建后正式程序集SHA变化，Components066五组与FullChain033八组已按当前实际产物重新装载核验通过。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-ui-035.log",
+      "sha256": "d8c7622e790fc15fb728486c78c6c516063754926ba420ee85a86a60cf5bf140"
     },
     {
       "name": "本轮C#语法解析（有限范围）",
@@ -206,7 +212,7 @@
     }
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
-  "productIdentity": "当前候选027全量构建失败（9错误/132警告27.96秒）。正式Release目录混有部分新输出与历史文件，不能作为可试用版本，也不能视作b87的完整二进制快照。所有改动留本地，构建通过前不推送。",
+  "productIdentity": "本地基线c8de30c4加当前未提交图像/框架适配与颜色事件增量；正式目录为034源码候选。发布清单按最终现有字节重新封存，发布扰动检查结束前由测试独占；不是历史b87二进制快照，也不是最终提交后同源试用身份。",
   "next": "闭合剩余厂商视觉/参数依赖及源码-XAML配对，补齐样式范围/步长与存量值兼容；构建通过后运行新弹层/数值回归和Blob完整链，继续typed调试同run及原31项消费者退出，不以HTML或旧PASS替代本候选验收。",
   "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
   "evidence": {
@@ -387,7 +393,7 @@
     "program": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe",
     "sample": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\BlobTrial\\Blob试用.solution",
     "version": "2.0.0.8_alpha",
-    "productCommit": "69d844e29e5ec198dadff5e62615d02dfe3afb88",
+    "productCommit": "c8de30c4 + 当前034源码增量（尚未固定最终试用提交）",
     "example": "示例有两块白色区域。检测框先圈住左上块，运行后父Blob和下游都应是1颗、面积16；将检测框中心移到另一块（X=32、Y=32），重新执行后应为1颗、面积25。灰度图仍保留原始两块图像，检测结果只取有效区域。",
     "checklist": [
       [
@@ -422,7 +428,7 @@
       ]
     ],
     "limitations": "自动检查不替代物理鼠标手感和你自己的图像/流程。实际VS设计器尚未打开；S5通用结果平台及正式性能基准不在本轮交付中。",
-    "status": "整套VM库/Blob原样组装及typed调试新run未闭合，本轮原资源定向回归不构成整体UI试用交付"
+    "status": "构建与三条定向轨道通过；发布降级布局场景仍待修复并完成正式目录还原，暂未作整体试用交付"
   },
   "manualAcceptance": {
     "status": "UI_REJECTED_FUNCTIONAL_TRIAL_NOT_STARTED",
@@ -434,7 +440,8 @@
         "source": "用户本对话反馈；不是自动观察或代签。",
         "functionalTrial": "尚未进行"
       }
-    ]
+    ],
+    "currentCandidateStatus": "AWAITING_REAL_USER_REVIEW；保留此前用户明确拒绝外观的真实记录，不代签新候选通过"
   },
   "uiReview": {
     "comparison": [
@@ -4399,6 +4406,12 @@
       "result": "026：17错误/132警告37.04秒；PolygonPoint纯坐标模型已脱离厂商XML基类。50份配对或依赖未闭合源码保留为.pending，正文逐份与HEAD核对一致；属于编译准入纠正，不计作功能迁移完成。未作当前候选运行或人工验收。",
       "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-026.log",
       "sha256": "d6e43c1be63e52b728e4621bfc1d5822a1557d4d408f089aa3bde37e55c51c79"
+    },
+    {
+      "name": "当前源码候选全量Release（未通过）",
+      "result": "027：9错误/132警告27.96秒；修复3处ROI日志依赖，并移除重映射后已无引用的旧XAML CLR命名空间；未改变控件正文或模板行为。9个诊断不是后续所有语义问题的上限。当前候选未运行或人工验收。",
+      "path": "Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-027.log",
+      "sha256": "c0d8bd27ab81ab7a7866e4117ba76ee9908f4ba7fb83cbfea03947aa02dcca22"
     }
   ],
   "admissionCorrection": {
@@ -4423,5 +4436,105 @@
     "next": "根单写者继续拆分视觉、图像缓冲与外部扩展适配；完整候选构建通过后运行正式目录组件与Blob整链。",
     "verification": "Release/_validation/O06-RoiCore-20261026/source-integration-check-027.json",
     "integratorIdempotency": "再次执行changed_files=0；仅源码整合稳定性，非功能通过"
+  },
+  "currentRuntimeCheckpoint": {
+    "scope": "实施者对正式Release的定向自动检查，不代VS、物理交互和用户人工验收",
+    "checks": [
+      {
+        "track": "WindowPresentation",
+        "groups": 8,
+        "result": "PASS",
+        "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-011/receipt.json"
+      },
+      {
+        "track": "RoiEditing",
+        "groups": 9,
+        "path": "Release/_validation/S4-20261025/RoiEditing/attempt-019/receipt.json",
+        "sha256": "17c39722ec90e097c8ce59fcee0128d2266805106fb3d111bf76591f6f247002",
+        "exit": 0
+      },
+      {
+        "track": "RoiComposition",
+        "groups": 6,
+        "path": "Release/_validation/S3-20261025/RoiComposition/attempt-002/receipt.json",
+        "sha256": "eb68ea99218258f349223085fdeb72bb8a0fac681f2b39e534eb6ba2873a1b42",
+        "exit": 0
+      },
+      {
+        "track": "RoiBindings",
+        "groups": 12,
+        "path": "Release/_validation/S3-20261025/RoiBindings/attempt-006/receipt.json",
+        "sha256": "1f177d10a130bfe29240e1b64ffe5f8384ce434fd803b520c7b9d5dab84bf21a",
+        "exit": 0
+      },
+      {
+        "track": "Resources",
+        "groups": 22,
+        "path": "Release/_validation/S3-20261025/Resources/attempt-008/receipt.json",
+        "sha256": "44ba1a373c0a7d80cefbf67bea586a7fe5f1a2e5943495f604f31c9f2ff07502",
+        "exit": 0
+      },
+      {
+        "track": "ComponentDeployment",
+        "groups": 11,
+        "path": "Release/_validation/S3-20261025/ComponentDeployment/attempt-023/results.json",
+        "sha256": "510aaabefbc9052197cc281e3702d73a0e8566de1fcc3fb53b5babf292f2e1c6",
+        "exit": 0,
+        "note": "三个正式入口在DispatcherSynchronizationContext下同步等待而不泵消息，均完成真实HALCON和会话清理；有/无Wpf分别4/5组。补充取消和重运行在Components065另列。"
+      },
+      {
+        "track": "Consumption",
+        "groups": 7,
+        "path": "Release/_validation/S3-20261025/Consumption/attempt-023/receipt.json",
+        "sha256": "98b7608e93cf05fceb4641b7eef6fc54fbc58287ba18c3a6f24030bbaf23ede3",
+        "exit": 0
+      },
+      {
+        "track": "FullChain",
+        "groups": 8,
+        "path": "Release/_validation/S4-20261025/FullChain/attempt-033/receipt.json",
+        "sha256": "dd168c2c144e8b5ab2121697b2108ea346e354b1fc59171bcccb778e9a6cf44d",
+        "exit": 0,
+        "note": "最终UI035构建后正式程序集重验"
+      },
+      {
+        "track": "Components",
+        "groups": 5,
+        "path": "Release/_validation/S3-20261025/Components/attempt-066/receipt.json",
+        "sha256": "83d860d9068b8636bee15c0fab99ea9731064962c8b2244a84a48450703c858e",
+        "exit": 0,
+        "note": "最终UI035构建后正式程序集重验"
+      }
+    ],
+    "preservedFailures": [
+      "WindowPresentation008：颜色变更事件没有RoutedEvent；已修真实产品事件。数值检查发送错误事件阶段，改为控件实际Preview阶段。首轮与补充构建重叠且清单SHA不符，不计最终发布验证。",
+      "WindowPresentation010：Gray16解码未请求PreservePixelFormat；检查PNG IHDR确为16位灰度后修正解码。生命周期夹具未提供接口要求的模板，补齐最小夹具；未声称3D/profile绘制通过。",
+      "ComponentDeployment009：旧用例把NumericUpDown强转TextBox；后续实际显示窗口的布局阶段超时，继续定位，未计通过。",
+      "ComponentDeployment009后的Loaded模板/组合Grid查找、测试Application启动及Dispatcher同步等待失败均保留。用户指出算法不应等UI后，进一步发现产品根入口await捕获上下文；已ConfigureAwait(false)，兼容入口直接转发Task。035的正式组件检查移除算法阶段Dispatcher泵，三个入口、已取消请求及取消后重运行均通过。",
+      "Consumption021：旧用例以没有物理帧证明的裸缓冲测试几何继承，被BLOB_ROI_FRAME_UNVERIFIED拒绝；改用两个真实ImageLoad建立可区分来源，继续验证，不放宽产品同帧校验。初次补充用例SourceKind传string而非实际enum，失败日志保留。"
+    ],
+    "next": "继续VM同态布局与原31项/整库真实消费迁移，固定中文源码检查点和同源发布身份；解决方案入口清理建议已由旁聊转达，当前验证完成后按实际脚本覆盖范围处理。"
+  },
+  "nativeHostAdaptation": {
+    "scope": "源码提取/框架适配及已列局部消费验证，不计作整套控件库迁移完成",
+    "dependenciesManifest": "src/Plugin.Wpf/Controls/Native/Dependencies/dependencies-migration-manifest.json",
+    "sourceFiles": 139,
+    "artifactIdentities": 9,
+    "notControlCount": true,
+    "hostReceipt": "src/Plugin.Wpf/Controls/Native/Display/visual-host-adaptations.json",
+    "details": [
+      "原Byte2ImageSource/MemoryHelper/MemoryNativeMethods及精确IntPtr2Bytes方法迁入；未引入厂商二进制、Ioc或模块/IO/变量模型。",
+      "完整纯WPF的IImageViewBoxWAddition迁入；图像视图用显式可选provider/有限视觉会话，卸载和更换时释放。原3D模块/IO服务消费者仍未迁入，不以生命周期夹具当作3D能力验收。",
+      "同步WPF图像导出复制借入缓冲，RGB/Gray16与原ShapeItemsPage渲染有实际PNG检查；栅格/JPEG编码为本方适配，不宣称VM/OpenCV逐像素等价。",
+      "WriteableBitmapEx六份源码按原件迁入；原AA绘线实测，未计作六个控件。",
+      "Behavior基类调用、圆角x:Name、Text直接TwoWay绑定/模板解绑、消息框自有按钮解绑及泛型XAML属性所有者已修。半像素偏移改实例选项，不推断VM安装配置默认。"
+    ]
+  },
+  "executionUiBoundary": {
+    "issue": "根执行任务默认await捕获UI调用方上下文，HALCON已在线程池但返回与finally清理仍可能等待UI",
+    "fix": "WorkflowExecutionEngine根入口ConfigureAwait(false)，两个兼容入口直接返回任务；UI状态更新仍由宿主Post负责",
+    "impact": "不改输入快照、HALCON算法、调度、取消、结果所有权；只解除调用方上下文对完成及会话清理的约束",
+    "proof": "最终UI035构建后Components066五组：无Dispatcher消息泵的三入口HALCON、预取消清理及再运行通过；FullChain033真实主窗口整链八组通过。Resources008二十二组、Consumption023七组及发布扰动023十一项为同源码全量035/UI重建前产物，身份分列。",
+    "notClaimed": "Workflow项目仍有历史WPF数据类型依赖；本次不称整个Workflow程序集已纯净解耦。"
   }
 }

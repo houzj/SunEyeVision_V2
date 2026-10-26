@@ -6,7 +6,7 @@ using Apps.Log;
 using Apps.XmlParser.ParamTab;
 using Apps.XmlParser.Variable;
 using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
-using HikExternalCall.Common;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.HikExternalCall.Common;
 using VM.Core;
 using VM.PlatformSDKCS;
 

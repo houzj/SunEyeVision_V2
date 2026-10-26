@@ -606,10 +606,10 @@ namespace SunEyeVision.Workflow
         /// 公开入口：管理执行状态和生命周期；支持递归调用（子程序场景）
         /// 主工作流和子程序递归共享同一节点类型转换逻辑
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage,
+        public Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage,
             IDictionary<string, object?>? globalVariables = null,
             Dictionary<string, object>? contextVariables = null)
-            => await ExecuteWorkflowAsync(workflowId, inputImage, globalVariables, contextVariables);
+            => ExecuteWorkflowAsync(workflowId, inputImage, globalVariables, contextVariables);
 
         private async Task<ExecutionResult> ExecuteWorkflowCore(
             WorkflowRunSession session,
@@ -1242,10 +1242,10 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 异步执行工作流
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage,
+        public Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage,
             IDictionary<string, object?>? globalVariables = null,
             Dictionary<string, object>? contextVariables = null)
-            => await ExecuteWorkflowAsync(
+            => ExecuteWorkflowAsync(
                 new WorkflowRunRequest(workflowId, inputImage, globalVariables, contextVariables: contextVariables));
 
         /// <summary>
@@ -1287,7 +1287,7 @@ namespace SunEyeVision.Workflow
                         new Dictionary<string, object?>(request.GlobalVariables),
                         new Dictionary<string, object>(request.ContextVariables),
                         request,
-                        isSubworkflow: false));
+                        isSubworkflow: false)).ConfigureAwait(false);
             }
             finally
             {

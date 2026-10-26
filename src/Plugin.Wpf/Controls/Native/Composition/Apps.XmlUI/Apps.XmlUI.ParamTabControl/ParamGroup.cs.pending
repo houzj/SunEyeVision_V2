@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using Apps.PcUI.Controls;

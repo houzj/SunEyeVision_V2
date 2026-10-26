@@ -1375,11 +1375,12 @@
       "sourceRelative": "VM.Controls/EditableTextBlock.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/EditableTextBlock.cs",
       "sourceSha256": "C7D41D0700C39D23B770D44B817AEA5E1FEF40D55301B22590C17D593B3574D3",
-      "targetSha256": "58476B02554EBBF04EB6BC33BB33A07A7515F3421D274003B13EEA5CB1ECC7DE",
+      "targetSha256": "ac2a75be2edce6d4b11d5ef7fd84e2f5bf2d68f431496c7d03e47e58d3e5623b",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "935D16B22B771887D308B55E972D021032BBA59DF09A6B8CCBCBAA60992D770C"
+      "gitNormalizedTargetSha256": "0a70e74e7600fc2fc9cafddc6bfa7b6bdb3d130239df6b1b7ed9a4cfd1eb5d85"
     },
     {
       "library": "VM.Controls",
@@ -1461,12 +1462,13 @@
       "sourceRelative": "VM.Controls/HikMessageBox.xaml.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
       "sourceSha256": "D9551BDEF67BF1324EF7D2A726F2AFC191DDC2BEBFDFB86F8021C42E594319F1",
-      "targetSha256": "F46C776C81A9F17611971737FA8816FE6B8A75EA0AC597DA8B1CEE7B82D7E698",
+      "targetSha256": "4061c3261460ed38321764af96400572f6ed2aeb7b6b0618d1f3809d8bf16f62",
       "adaptations": [
         "assembly component URI",
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "2FFDBC8AB539E2FBF19A1177549EFBC1EB1D7B96CB8B80B8091CF9EC70407B0D"
+      "gitNormalizedTargetSha256": "46894a3cfe79f88be11c509920f9e732884a4d44e68d5bacee2a62a0879db91d"
     },
     {
       "library": "VM.Controls",
@@ -3942,11 +3944,12 @@
       "sourceRelative": "VM.Controls.Utility/HelpDocumentUtil.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Utility/HelpDocumentUtil.cs",
       "sourceSha256": "6DE0D4143A2121073BB25B70AFB286E786B98D126E64F1491627F3720EFDE2CE",
-      "targetSha256": "B33FB37B6983DADC89C0489B15E913F45A98CF521799185323A7C4452362D0D2",
+      "targetSha256": "ed6bd8bfadffac47ac2c652632b02dbd8347be0bd7fdcc3dc517a624befc9e13",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "C32F7AFB2358E45B576CC41B1889C74A455545BAA2B197A6C3791FF08D5B01A2"
+      "gitNormalizedTargetSha256": "878ad6a42027a8619f1d264a87915303d0273c54551818cd84d1eb88dd6be0be"
     },
     {
       "library": "VM.Controls",
@@ -3954,11 +3957,12 @@
       "sourceRelative": "VM.Utility/ListBoxBehavior.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/ListBoxBehavior.cs",
       "sourceSha256": "A648F4F5C0C5EA6F4308097FA5BB19E63D7F84EB6307E83B832C42D8FF065034",
-      "targetSha256": "4F26DD6C59771031B013CAFF850D2C6C4468D1FA2E939FB257C382AE46186241",
+      "targetSha256": "d745d98b73d9974ff13970ec7fdb4d48c7c69f89a0602165bd8d16ee6e58f262",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "0F32CB993120ACBCAA1A9C397275321D0DA0D80A310E75CA3A5182F15A9C91A6"
+      "gitNormalizedTargetSha256": "ea1f3e9312479e2ea58d377e2533a9b663fb16061f1f23b41065606293955629"
     },
     {
       "library": "VM.Controls",
@@ -3990,11 +3994,12 @@
       "sourceRelative": "VM.Utility/TreeViewScrollToBottomBehavior.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/TreeViewScrollToBottomBehavior.cs",
       "sourceSha256": "00223A1E04A4593528F4C090846E46F10AF0D48C9A0CFA94411C626CFDF1D1AB",
-      "targetSha256": "765BC4B0E42921C2069CC08360725C57356A60B7477CB6AF691C1F08F72A61E2",
+      "targetSha256": "a7e51ec8ed05a9e6830740caf9c7683f0615fe150902da70176047eada469498",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "303E2E6A36F0C2161E10586EE439C61AC9869011C15E109E2552C1E503945471"
+      "gitNormalizedTargetSha256": "1070ad7cda94dd9fa66340f182053d0dafa1e33bdb0354cc26527888a15285c1"
     },
     {
       "library": "VM.Controls",
@@ -4719,11 +4724,12 @@
       "sourceRelative": "VMBaseControls/AdditionTemplateSelector.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AdditionTemplateSelector.cs",
       "sourceSha256": "DE6DCA526FE5E4CA5988FDBB416ECDF760CF548FE771ED25D3CED888ACE30237",
-      "targetSha256": "4295B27F90A2D7F0031907DA28ECB322A6A472190A7F5BEE23927EAAC36FB730",
+      "targetSha256": "47e2810e15ca569140cd12782563b7898f352db3d8de1ce348285a5e210b3c44",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Explicit optional visual provider replaces vendor Ioc/module/IO; synchronous local WPF export; see visual-host-adaptations.json."
       ],
-      "gitNormalizedTargetSha256": "00B140E651DFD63164F148CFECC7E35CBAA105094E6AEE67B7355A465C61F4BF"
+      "gitNormalizedTargetSha256": "4e5b13defab1e3982261b99155bd1f1675714356911009ca45db78f83f8e5636"
     },
     {
       "library": "VMBaseControls",
@@ -4731,11 +4737,12 @@
       "sourceRelative": "VMBaseControls/AdditionWTemplateSelector.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AdditionWTemplateSelector.cs",
       "sourceSha256": "376FE2D9FB323E9A1FFDE0A47B423C94BAAF7177751223DFC62480343D57C558",
-      "targetSha256": "0BC3C66B3244D2E0EA144AEF5D1CBAB7A42C01EE82696C1312A33C5B312DD3E5",
+      "targetSha256": "c6c8424a3d108455b2bda96c431a3dd2970a40f5add464810accac5ace280f8e",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Explicit optional visual provider replaces vendor Ioc/module/IO; synchronous local WPF export; see visual-host-adaptations.json."
       ],
-      "gitNormalizedTargetSha256": "93F9678AA51DC19296860FC425C56220D64D4041A83BB476F9A1B3E4ACAAF4E6"
+      "gitNormalizedTargetSha256": "5c1be10780c2b3e666531c672510ea9184b4f51cb310d79410059c7d2260753e"
     },
     {
       "library": "VMBaseControls",
@@ -4839,11 +4846,12 @@
       "sourceRelative": "VMBaseControls/ImageViewBox.xaml.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
       "sourceSha256": "2092BAB5093C476C124D317F425C5EA5A2105FB55B5E6E64EB31D68621C43B4E",
-      "targetSha256": "D2B8C98EDE8F45FBFAAB9FFF9CFBA9A5A9D9A5D8DF2B54616DBC6187D19402FF",
+      "targetSha256": "aec389ca55e89fccffb395e80fdb220c5564add7837f9d02995749ad041a135b",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Explicit optional visual provider replaces vendor Ioc/module/IO; synchronous local WPF export; see visual-host-adaptations.json."
       ],
-      "gitNormalizedTargetSha256": "A3C73517CD8C5F783E7849993A7E611443434B6ABF7838ADF316EF9361076D5B"
+      "gitNormalizedTargetSha256": "919298a1e6bbc0bb90843413f9cc514d71966a193282bdb863052318c0a4da5f"
     },
     {
       "library": "VMBaseControls",
@@ -4911,11 +4919,12 @@
       "sourceRelative": "VMBaseControls/ShapeAndRoiMarginCvt.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ShapeAndRoiMarginCvt.cs",
       "sourceSha256": "3F0CDDA49B710FE0ADAA6D41AAE603E461B6A5FD12BD2411B4DA6617882A4018",
-      "targetSha256": "2CF9600B0418211B2B168FEB16404B9D1BE54AAFB0ECF199A348DBBFFDB5058F",
+      "targetSha256": "6abb2f46b91c7f38af01b562e53c907c0a2410149a366b170e2d7b33b89fffdc",
       "adaptations": [
-        "namespace/assembly and cross-group numeric import"
+        "namespace/assembly and cross-group numeric import",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "81B5D1D871B51A945E4A439C18DA8398BA42E1C9BE00A5DBA6CCA9860A64AA40"
+      "gitNormalizedTargetSha256": "d91a92f4fd9a37d17c1bdf754ad2405b412f0490b1d1226238bfed5b46ac1a92"
     },
     {
       "library": "VMBaseControls",
@@ -5589,13 +5598,14 @@
       "sourceRelative": "VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml",
       "sourceSha256": "E6BA881C6230E601D2042C3947A58B54263042AA7758BAFCABA126B20E61F97A",
-      "targetSha256": "3317630267F2CB5E63B312EFCEA39AA843A1ED805A0514240ECEBE5E1729DE35",
+      "targetSha256": "568943c8b89d816b536cacee4975e581799bfd0b0b472974d1753f7f7bc6f00e",
       "adaptations": [
         "assembly component URI",
         "namespace/assembly and cross-group numeric import",
-        "relative resource URI relocated to exact component path"
+        "relative resource URI relocated to exact component path",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "75A76104A60E924AE4653ECB66D76BF6041A5F1B17DE791D602F7FB3487BAE4A"
+      "gitNormalizedTargetSha256": "dcf96ba3a84e632aa1bb789088f17a56f90ccdd16163ec46297a0bdbf4541971"
     },
     {
       "library": "VMBaseControls",
@@ -5836,12 +5846,13 @@
       "sourceRelative": "VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
       "sourceSha256": "EC39211D4CF5D18BA1AB11750FE69597AC7ABB6E29E65E8839C3EDFB8EA16F2E",
-      "targetSha256": "5d6c65194a79b37ccde75ca3e3c8c4d14728269185fa798b2920fe994802cc9f",
+      "targetSha256": "0a83614af4b037812f9caceb1bf1f79cbb5012c69f1376d8efd8044b0a321816",
       "adaptations": [
         "namespace/assembly and cross-group numeric import",
-        "Host diagnostics only: original catch paths/messages retained; Apps.Log calls mapped to System.Diagnostics.Trace, no vendor logger or model restored."
+        "Host diagnostics only: original catch paths/messages retained; Apps.Log calls mapped to System.Diagnostics.Trace, no vendor logger or model restored.",
+        "Reviewed framework/member adapter; see adapt_vm_visual_members.py and visual-host-adaptations.json; not runtime acceptance."
       ],
-      "gitNormalizedTargetSha256": "e7645ea23a9ee5cb113fb1091892581649ab24679f3347e92b1f52cd21abe545"
+      "gitNormalizedTargetSha256": "34fd3b1026a770390c5cd1107d41cac481e829dd23816987e0418705df86e724"
     },
     {
       "library": "VMBaseControls",

@@ -16,21 +16,20 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
-using Apps.Data;
-using Apps.Data.Common;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
-using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Common;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 
-public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewBox, IComponentConnector, IStyleConnector
+public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentConnector, IStyleConnector
 {
 	public delegate void ControlAlert(object sender, string msg);
 
@@ -268,7 +267,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 
 	public static readonly DependencyProperty IsShowPointCloudProperty = DependencyProperty.Register("IsShowPointCloud", typeof(bool), typeof(ImageViewBox), new PropertyMetadata(false, null));
 
-	public IImageViewAddition ImageBoxAddition { get; set; }
+	public IImageViewPresentation? ImageBoxAddition { get; private set; }
 
 	public ICommand RoiAddCommand
 	{
@@ -1221,7 +1220,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 			{
 				return true;
 			}
-			if (ImageDataSource is ImageData imageData)
+			if (ImageDataSource is IRangeImageData imageData)
 			{
 				return imageData.DetailedPixelFormat == 17825976;
 			}
@@ -1490,7 +1489,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 	public ImageViewBox()
 	{
 		InitializeComponent();
-		ImageBoxAddition = Ioc.HotGet<IAdditionService>()?.GetImageViewAdditionInstance(this);
+		AttachPresentationHost();
 	}
 
 	private void SetAboveCanvas()
@@ -1555,7 +1554,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 	private bool DoImageSourceChanged()
 	{
 		bool returnValue = false;
-		IImageViewAddition imageBoxAddition = ImageBoxAddition;
+		IImageViewPresentation imageBoxAddition = ImageBoxAddition;
 		if (imageBoxAddition != null && imageBoxAddition.DoImageSourceChangedOut(out returnValue))
 		{
 			return returnValue;
@@ -1722,7 +1721,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 
 	public void Init()
 	{
-		IImageViewAddition imageBoxAddition = ImageBoxAddition;
+		IImageViewPresentation imageBoxAddition = ImageBoxAddition;
 		if (imageBoxAddition == null || !imageBoxAddition.InitOut())
 		{
 			ImageScale = 1.0;
@@ -1931,7 +1930,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 
 	public void Enlarge()
 	{
-		IImageViewAddition imageBoxAddition = ImageBoxAddition;
+		IImageViewPresentation imageBoxAddition = ImageBoxAddition;
 		if ((imageBoxAddition == null || !imageBoxAddition.EnlargeOut()) && sImage.Source != null)
 		{
 			System.Windows.Point point = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), mapcanvas);
@@ -1949,7 +1948,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 
 	public void Shrink()
 	{
-		IImageViewAddition imageBoxAddition = ImageBoxAddition;
+		IImageViewPresentation imageBoxAddition = ImageBoxAddition;
 		if ((imageBoxAddition == null || !imageBoxAddition.ShrinkOut()) && sImage.Source != null)
 		{
 			System.Windows.Point point = sImage.TranslatePoint(new System.Windows.Point(0.0, 0.0), mapcanvas);
@@ -2169,7 +2168,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
 				if (saveFileDialog.ShowDialog() == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
 				{
-					ImageSaveOpenCvHelper.SaveRawImageSyn(saveFileDialog.FileName, imageDataSource);
+					NativeImageExport.SaveRaw(saveFileDialog.FileName, imageDataSource);
 				}
 			}
 		}
@@ -2195,7 +2194,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IImageViewB
 				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
 				if (saveFileDialog.ShowDialog() == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
 				{
-					ImageSaveOpenCvHelper.SaveRoiImageSyn(saveFileDialog.FileName, (ImageData)imageDataSource, shapesSource, null);
+					NativeImageExport.SaveRendered(saveFileDialog.FileName, imageDataSource, shapesSource, this);
 				}
 			}
 		}

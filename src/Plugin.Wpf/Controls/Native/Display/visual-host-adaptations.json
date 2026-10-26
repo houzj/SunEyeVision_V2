@@ -1,5 +1,5 @@
 {
-  "scope": "原颜色与ROI诊断宿主适配；不代表运行或视觉验收",
+  "scope": "原颜色、ROI诊断与图像视图宿主适配；不是运行或视觉验收",
   "changes": [
     "资源固定使用项目内原colorstyle1/2/3及colorstyle.xaml，默认light colorstyle1是本方选择，不推断VM运行主题",
     "不再读取厂商CurrentPathHelper、外置ColorCFG；不将插件字典注入Application.Current",
@@ -7,7 +7,21 @@
     "先加载新主题完整字典后再切换，失败保留当前主题并输出真实错误；不部署VM DLL",
     "SourceAdvancedColorPicker新增宿主基色同步入口，重开/选预设色时重置亮度基色；原scRGB亮度公式保留。原模板渐变冻结时先Clone，避免修改共享冻结画刷。VmColorPicker组合原70色色板、原默认/更多页签及原高级色图，ColorField直接更新外层窗口草稿，移除独立确定/取消按钮；未作本候选运行验收。",
     "ColorResourceBinding正文复核后更新整合输出哈希；查询和ColorViewModel绑定保持原逻辑，日志使用Trace。先前静态哈希检查发现记录过期，未计通过。",
-    "MultiLineROI/PolygonROI原Debug诊断转Trace.WriteLine，PolylineROI原Error诊断转Trace.TraceError；保留异常处理路径和全部消息，不引入厂商日志/全局服务。"
+    "MultiLineROI/PolygonROI原Debug诊断转Trace.WriteLine，PolylineROI原Error诊断转Trace.TraceError；保留异常处理路径和全部消息，不引入厂商日志/全局服务。",
+    "ImageViewBox移除空标记接口及厂商Ioc；可选ExtensionProvider创建有限视觉会话，卸载/更换provider先清引用再Dispose，原缩放/绘图回调保留。未导入模块、IO或旧变量模型。",
+    "完整原IImageViewBoxWAddition纯绘图接口按原件迁入；IImageViewPresentation承接视图消费成员，不宣称原3D模块/IO服务整体迁移完成。",
+    "IRangeImageData承接位深读取；原图/带图形保存用本地WPF编码和原ShapeItemsPage。先复制借入缓冲，16位范围原图保留Gray16；WPF栅格与JPEG质量95为本方适配，不宣称等同VM/OpenCV像素结果。",
+    "Behavior的反编译显式基类cast改为真正base调用；圆角窗口使用x:Name生成原滑条字段。",
+    "EditableTextBlock按已知Text依赖属性直接TwoWay绑定，换模板先解绑旧模板事件；不迁入反射BindingHelper。",
+    "HikMessageBox只解绑自己注册的四个具名按钮事件；保留BaseWindow原关闭清理，不再反射清空所有事件。",
+    "ShapeAndRoiMarginCvt半像素公式保留，开关改为实例选项，默认false；不读取厂商全局App.config，也不宣称当前默认已与VM安装配置一致。",
+    "MultiLineROI使用原IMultiLineROI绘制角色及自身PolygonPoints依赖属性，距离计算保留double坐标；不绑定Hik XML参数模型。",
+    "Behavior的反编译显式基类cast改为真正base调用；圆角窗口使用x:Name生成原滑条字段。",
+    "EditableTextBlock按已知Text依赖属性直接TwoWay绑定，换模板先解绑旧模板事件；不迁入反射BindingHelper。",
+    "HikMessageBox只解绑自己注册的四个具名按钮事件；保留BaseWindow原关闭清理，不再反射清空所有事件。",
+    "ShapeAndRoiMarginCvt半像素公式保留，开关改为实例选项，默认false；不读取厂商全局App.config，也不宣称当前默认已与VM安装配置一致。",
+    "MultiLineROI使用原IMultiLineROI绘制角色及自身PolygonPoints依赖属性，距离计算保留double坐标；不绑定Hik XML参数模型。",
+    "帮助读取原helpUrl/GuidTemp布局并定位本方Release的Help目录，显式点击时调用系统浏览器；未读取厂商安装路径、注册表或单实例服务，未补造VM帮助内容，尚未执行浏览器打开验收。"
   ],
   "files": [
     {
@@ -26,13 +40,15 @@
       "target": "src/Plugin.Wpf/Controls/Native/Display/VisionUi/SourceAdvancedColorPicker.xaml.cs",
       "original_source": "D:\\MyWork\\REA逆向测试\\src\\VisionUi\\SourceAdvancedColorPicker.xaml.cs",
       "original_source_sha256": "cd54932cc65c00c8f6401083ff43b895554c52c2e06b996e588fa020bc95a3e4",
-      "adapted_sha256": "9f0eac1c8c5214a3e1d47dd3be94ecc8df816425d10c95160992bf470ed26b55"
+      "adapted_sha256": "4eb32939ed2b2fbcf15cb1bf90d417fe75f10b26a70cce26d0eed54337a13e66",
+      "integration_change": "Verified source hash before normalization; only C# header using directives changed, namespace/body unchanged."
     },
     {
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MultiLineROI.cs",
       "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MultiLineROI.cs",
       "original_source_sha256": "ec39211d4cf5d18ba1ab11750fe69597ac7abb6e29e65e8839c3edfb8ea16f2e",
-      "adapted_sha256": "5d6c65194a79b37ccde75ca3e3c8c4d14728269185fa798b2920fe994802cc9f"
+      "adapted_sha256": "1a3ed76c1b275b300ffd4fed36ef29aa6667306b4877e1c38a9e3bf33431c39a",
+      "visual_member_adapter": true
     },
     {
       "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
@@ -45,6 +61,75 @@
       "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolylineROI.cs",
       "original_source_sha256": "cfdcc897a1af7e762deddccf6923f1d27b9850034aa53e88000df73ac0415ecb",
       "adapted_sha256": "9e9007148aa3752e2022a9178f0ce6cfc25c6a215953b836b78126cb6a8cd23b"
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
+      "original_source_sha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
+      "adapted_sha256": "12603212445fe30b90ec9efcfd3be463c542942ac03cdf15946c3a5f85aa5efa",
+      "integration_change": "Verified source hash before normalization; only C# header using directives changed, namespace/body unchanged."
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AdditionTemplateSelector.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\AdditionTemplateSelector.cs",
+      "original_source_sha256": "de6dca526fe5e4ca5988fdbb416ecdf760cf548fe771ed25d3ced888ace30237",
+      "adapted_sha256": "47e2810e15ca569140cd12782563b7898f352db3d8de1ce348285a5e210b3c44"
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/AdditionWTemplateSelector.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\AdditionWTemplateSelector.cs",
+      "original_source_sha256": "376fe2d9fb323e9a1ffde0a47b423c94baaf7177751223dfc62480343d57c558",
+      "adapted_sha256": "c6c8424a3d108455b2bda96c431a3dd2970a40f5add464810accac5ace280f8e"
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/ListBoxBehavior.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Utility\\ListBoxBehavior.cs",
+      "original_source_sha256": "a648f4f5c0c5ea6f4308097fa5bb19e63d7f84eb6307e83b832c42d8ff065034",
+      "adapted_sha256": "d745d98b73d9974ff13970ec7fdb4d48c7c69f89a0602165bd8d16ee6e58f262",
+      "visual_member_adapter": true
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility/TreeViewScrollToBottomBehavior.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Utility\\TreeViewScrollToBottomBehavior.cs",
+      "original_source_sha256": "00223a1e04a4593528f4c090846e46f10af0d48c9a0cfa94411c626cfdf1d1ab",
+      "adapted_sha256": "a7e51ec8ed05a9e6830740caf9c7683f0615fe150902da70176047eada469498",
+      "visual_member_adapter": true
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/EditRoundedWindow.xaml",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\EditRoundedWindow.xaml",
+      "original_source_sha256": "e6ba881c6230e601d2042c3947a58b54263042aa7758bafcaba126b20e61f97a",
+      "adapted_sha256": "568943c8b89d816b536cacee4975e581799bfd0b0b472974d1753f7f7bc6f00e",
+      "visual_member_adapter": true
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/EditableTextBlock.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\EditableTextBlock.cs",
+      "original_source_sha256": "c7d41d0700c39d23b770d44b817aea5e1fef40d55301b22590c17d593b3574d3",
+      "adapted_sha256": "ac2a75be2edce6d4b11d5ef7fd84e2f5bf2d68f431496c7d03e47e58d3e5623b",
+      "visual_member_adapter": true
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\HikMessageBox.xaml.cs",
+      "original_source_sha256": "d9551bdef67bf1324ef7d2a726f2afc191ddc2bebfdfb86f8021c42e594319f1",
+      "adapted_sha256": "05d7c1bb82623b390db27fee4a54f66d275d148b9f3d219ef307e92182ba5997",
+      "visual_member_adapter": true,
+      "integration_change": "Verified source hash before normalization; only C# header using directives changed, namespace/body unchanged."
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ShapeAndRoiMarginCvt.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ShapeAndRoiMarginCvt.cs",
+      "original_source_sha256": "3f0cdda49b710fe0adaa6d41aae603e461b6a5fd12bd2411b4da6617882a4018",
+      "adapted_sha256": "6abb2f46b91c7f38af01b562e53c907c0a2410149a366b170e2d7b33b89fffdc",
+      "visual_member_adapter": true
+    },
+    {
+      "target": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls.Utility/HelpDocumentUtil.cs",
+      "original_source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls.Utility\\HelpDocumentUtil.cs",
+      "original_source_sha256": "6de0d4143a2121073bb25b70afb286e786b98d126e64f1491627f3720efde2ce",
+      "adapted_sha256": "ed6bd8bfadffac47ac2c652632b02dbd8347be0bd7fdcc3dc517a624befc9e13",
+      "visual_member_adapter": true
     }
   ],
   "cross_module_impact": "限制在Native颜色与调用GetInstance的窗口；不修改宿主全局主题、工作流、算法或SDK契约。运行、设计时和三主题资源加载待构建通过后验证。"

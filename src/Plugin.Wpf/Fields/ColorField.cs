@@ -21,7 +21,10 @@ public sealed class ColorField : Control
         nameof(SelectedColor),typeof(Color),typeof(ColorField),new FrameworkPropertyMetadata(Colors.Red,
             FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,OnColorChanged));
     public Color SelectedColor { get=>(Color)GetValue(SelectedColorProperty); set=>SetValue(SelectedColorProperty,value); }
-    public event RoutedPropertyChangedEventHandler<Color>? SelectedColorChanged;
+    public static readonly RoutedEvent SelectedColorChangedEvent=EventManager.RegisterRoutedEvent(
+        nameof(SelectedColorChanged),RoutingStrategy.Bubble,typeof(RoutedPropertyChangedEventHandler<Color>),typeof(ColorField));
+    public event RoutedPropertyChangedEventHandler<Color> SelectedColorChanged
+    {add=>AddHandler(SelectedColorChangedEvent,value);remove=>RemoveHandler(SelectedColorChangedEvent,value);}
     static ColorField()=>DefaultStyleKeyProperty.OverrideMetadata(typeof(ColorField),new FrameworkPropertyMetadata(typeof(ColorField)));
     public ColorField()=>Unloaded+=(_,_)=>CancelEdit();
 
@@ -70,7 +73,7 @@ public sealed class ColorField : Control
         e.Handled=true;
     }
     private static void OnColorChanged(DependencyObject sender,DependencyPropertyChangedEventArgs e)
-    {var field=(ColorField)sender;field.UpdateDisplay();field.SelectedColorChanged?.Invoke(field,new((Color)e.OldValue,(Color)e.NewValue));}
+    {var field=(ColorField)sender;field.UpdateDisplay();field.RaiseEvent(new RoutedPropertyChangedEventArgs<Color>((Color)e.OldValue,(Color)e.NewValue,SelectedColorChangedEvent));}
     private void UpdateDisplay()
     {if(_preview is not null)_preview.Background=new SolidColorBrush(SelectedColor);if(_rgb is not null)_rgb.Text=$"{SelectedColor.R}, {SelectedColor.G}, {SelectedColor.B}";}
 }

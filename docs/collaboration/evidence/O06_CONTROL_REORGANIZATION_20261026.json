@@ -1777,7 +1777,7 @@
     "inventoryStatus": "去重控件数待inventory JSON，不以cs数计数；本31类仅既有责任映射，不是整套控件库总数"
   },
   "currentCompositionEvidence": {
-    "baseline": "c1b05c91 + 当前配对准入/图像坐标与诊断依赖增量",
+    "baseline": "c8de30c4 + 当前034源码增量",
     "reference": {
       "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
       "sha256": "8499c1903f08edb1f91ef4609970d8fbcd0cf64a27c3f6f54db653efb3e59639",
@@ -1793,11 +1793,12 @@
       "ColorField → VmColorPicker → 原色板/高级算法；NumericUpDown → Value/Slider",
       "writeDraft；外层TryCommitEditor或Discard承担持久化/撤销"
     ],
-    "verification": "027全量当前9错误/132警告27.96秒；6份宿主适配原件/输出哈希核对通过，169份已跟踪变更XAML可解析，导入整合重跑0变更；不等于编译、运行或视觉验收。50份原源码保留为待适配义务，未计迁移完成。",
+    "verification": "034全量0错误；正式Release窗口011八组（含原图/原图形页导出和视觉会话释放）、FullChain031八组、Resources007二十二组通过。发布降级场景布局仍定位中；不代表原31项消费者退出、整库功能或VM整体外观通过。",
     "remaining": [
       "图形透明度/粗细的声明范围和步长尚未完整按VM源配置接入，须核存量值兼容，不悄悄截断保存值。",
       "VM截图同状态对照、嵌套弹层实际鼠标/焦点、释放与外层真实提交撤销待完整候选运行。",
-      "原31项消费者退出门仍适用，当前不宣布整套迁移或旧类退出完成。"
+      "原31项消费者退出门仍适用，当前不宣布整套迁移或旧类退出完成。",
+      "实际运行页截图仍有标签截断；范围/步长和VM同状态外观继续逐项核对，未计视觉验收。"
     ]
   },
   "admissionCorrection": {

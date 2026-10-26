@@ -11,6 +11,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.VisionUi;

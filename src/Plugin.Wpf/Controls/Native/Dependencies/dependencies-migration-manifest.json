@@ -36,6 +36,24 @@
       "sha256": "5685c13c79321e7d7ec4ed85e764d00c915ca54401d5ccb6314414d54f76e120",
       "rea_evidence": "ev_6f9b6761f00a733d4aa20ae8f02e4174b6a42920de912495fe814194616485be",
       "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.ExternalCall.dll",
+      "sha256": "873b1ca3c7c2f9052e361a5c78d5f68e9cc297ed85faf27a8f71b61b61bd6a4c",
+      "rea_evidence": "ev_030ee78712fc7e2fb87cc119c334d36bc4f411c1286b32d07a1a939574742182",
+      "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.Interface.dll",
+      "sha256": "47c11ff2239bd2577378c4eb202ef6b2aee8fc0e99c3b7f0692c2209eb69c304",
+      "rea_evidence": "ev_6dbcdadb17ae62ecd06f735225c248ba7dedcb6abc6292f1e6a8de93717dc042",
+      "executed": false
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "sha256": "2cb24cad7d3eb0bffaa9a25b9e1db873a846fe2e9678cfe5061fc2555a156c03",
+      "rea_evidence": "ev_2d08f54d7a3317f235ca244dcf4bc9a124800160ed387b8bbfe755343efe869a",
+      "executed": false
     }
   ],
   "entries": [
@@ -1239,6 +1257,17 @@
       ]
     },
     {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\Byte2ImageSource.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+      "source_sha256": "e72272ad1f0b39d25beee53e43f83fa173de564ea417a8608f03483b099e8a68",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/Byte2ImageSource.cs",
+      "target_sha256": "3f36cd88ec1932f5d6db181bdc364e1ba34859aa78f86ecfd09b0fade6953739",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
       "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.UIData\\DynamicResourceDictionary.cs",
       "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.UIData.dll",
       "source_sha256": "fd19fd31377d338e431770add9822d5e7ee06f3c6d867a0023a9d2969c1a4955",
@@ -1299,6 +1328,28 @@
       "source_sha256": "2d7ab1ee08ba56dda0806225eac0f4cdcd9e0951b0aed2e7b631e373a88d0074",
       "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/DelegateCommand.cs",
       "target_sha256": "2da3fc649319a2253301c3428c754dc5256168a4941236e63640c71d3793315d",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VM.Utility\\MemoryHelper.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Utility.dll",
+      "source_sha256": "b39bf2b07c4a9b31a15c8603a41e229f6d67ad0ff9ba8cd0b7d9eee1b42bc7b9",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/MemoryHelper.cs",
+      "target_sha256": "da94e162268d284a3081a4f2b14e260386e6039323838fabaad1a6500f916f02",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VM.Utility\\MemoryNativeMethods.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Utility.dll",
+      "source_sha256": "247e62af8ac4b242435ab0bfffa40b0fa2dcd93ed09cbf2662b2abe95f702951",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.Utility/MemoryNativeMethods.cs",
+      "target_sha256": "283ede61a0922c872c07a3f3e13b89cfc43dfc87e8f2846c09f5ff878f574b9b",
       "kind": "source_port",
       "adaptations": [
         "namespace only; original converter/interface bodies retained"
@@ -1443,6 +1494,96 @@
       "target": "src/Plugin.Wpf/Controls/Native/Dependencies/Mvvm/Mvvm.Properties.Resources.resx",
       "target_sha256": "13228ac7767eb83f06abae1880bd486e9ad9c6689013e03d07d59a8e26bcc8c2",
       "kind": "original_embedded_resource"
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VM.ExternalCall\\ExternalCallHelper.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.ExternalCall.dll",
+      "source_sha256": "55e290ad7912df2cf18ad35c41ed14fb9a37d845a6613316d5950796b411c1fa",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VM.ExternalCall/ExternalCallHelper.cs",
+      "target_sha256": "d0301b7436ca45b8db0e3d6193efe71a7fc410e16ec89e2175419375b0bf39d0",
+      "kind": "source_member_port",
+      "adaptations": [
+        "namespace only for selected original method; wrapper imports reduced; unrelated original members remain unported"
+      ],
+      "selected_member": "HikExternalCall.Common.ExternalCallHelper.IntPtr2Bytes(IntPtr,int)",
+      "selected_member_sha256": "76de309e4fd0ff52d802cd240cee8337c03bee5e4cc5785a46c3eb6a1ad21ad5"
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\VMControls.Interface\\IImageViewBoxWAddition.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.Interface.dll",
+      "source_sha256": "9e137cd303734a491e25552a82a6600c2f6fa39fb1e2042bfe279917a3b09237",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/VMControls.Interface/IImageViewBoxWAddition.cs",
+      "target_sha256": "62277cabf2f45983d24a2412eb17b3b68ea9264b26ea4123ed72ca44dc2d76ce",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\WriteableBitmapEx.Wpf\\System.Windows.Media.Imaging\\BitmapContext.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "source_sha256": "d134e0b0f32eae5c5c84103b83692458b0474c964e2eeed4ea57d7ae63f33063",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/BitmapContext.cs",
+      "target_sha256": "981e832c8a695354864c2bb9cd70998741c0a5616f14769af15710a7eb76bf74",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\WriteableBitmapEx.Wpf\\System.Windows.Media.Imaging\\BitmapFactory.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "source_sha256": "4230e5dc5c1ed03b059fcdf46302df34caa92143ad1a2f38e56f57434167b974",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/BitmapFactory.cs",
+      "target_sha256": "76324e978ff7981d8e7f715d0648f2c2d2c45b5cd41b675dfee6eab91a310be4",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\WriteableBitmapEx.Wpf\\System.Windows.Media.Imaging\\NativeMethods.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "source_sha256": "235eda847a277725771c7c681e6eaf0828da5dd31421e3d5f95c849313df6d3a",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/NativeMethods.cs",
+      "target_sha256": "70d945cff3260fcef7488c7bc62586165132c50d6cffd511bbb53cf3cae46caa",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\WriteableBitmapEx.Wpf\\System.Windows.Media.Imaging\\ReadWriteMode.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "source_sha256": "dc440dd0167e98a116494aad4b246adde92f90d8905dc0ab891d228206d27921",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/ReadWriteMode.cs",
+      "target_sha256": "7bcdc673c97e2175fd986d901044b6e7533b22648440f9e88fca86e81cb7daf3",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\WriteableBitmapEx.Wpf\\System.Windows.Media.Imaging\\WriteableBitmapContextExtensions.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "source_sha256": "c04c6d4b409c98f0f670d12b140ac0c1622f6168a03c13519cadc6fea39665a8",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/WriteableBitmapContextExtensions.cs",
+      "target_sha256": "78224c771741eb6d92a54b8f58258fdb1664575c38ee480aecac38114046078a",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
+    },
+    {
+      "source": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\WriteableBitmapEx.Wpf\\System.Windows.Media.Imaging\\WriteableBitmapExtensions.cs",
+      "artifact": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\WriteableBitmapEx.Wpf.dll",
+      "source_sha256": "e8c5f99ab3802f7289585829af1a9a79f591f6c48c7653e064318858f952191a",
+      "target": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/WriteableBitmapExtensions.cs",
+      "target_sha256": "dbb1033456e5ebcef109069481a39a9a5c5f4159d99315f536444dc5961f1de7",
+      "kind": "source_port",
+      "adaptations": [
+        "namespace only; original converter/interface bodies retained"
+      ]
     }
   ],
   "type_map": {
@@ -1555,12 +1696,15 @@
     "Apps.BaseData.TypeFilterConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.TypeFilterConverter",
     "Apps.BaseData.MulParamsMultiplicationConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.MulParamsMultiplicationConverter",
     "Apps.BaseData.NULLJudgeConverter": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.NULLJudgeConverter",
+    "Apps.BaseData.Byte2ImageSource": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.Byte2ImageSource",
     "Apps.BaseData.DynamicResourceDictionary": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.DynamicResourceDictionary",
     "Apps.UIHelper.Extern.UIExtern": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIExtern",
     "Apps.UIHelper.Extern.UIHelper": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.UIHelper",
     "Apps.UIHelper.Extern.ObjectEventArgs": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventArgs",
     "Apps.UIHelper.Extern.ObjectEventHandler": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern.ObjectEventHandler",
     "VM.Utility.DelegateCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility.DelegateCommand",
+    "VM.Utility.MemoryHelper": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility.MemoryHelper",
+    "VM.Utility.MemoryNativeMethods": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility.MemoryNativeMethods",
     "Mvvm.BindableBase": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.BindableBase",
     "Mvvm.ErrorsContainer": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.ErrorsContainer",
     "Mvvm.IActiveAware": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.IActiveAware",
@@ -1572,7 +1716,15 @@
     "Mvvm.Commands.DelegateCommand": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.DelegateCommand",
     "Mvvm.Commands.DelegateCommandBase": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.DelegateCommandBase",
     "Mvvm.Commands.WeakEventHandlerManager": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands.WeakEventHandlerManager",
-    "Mvvm.Properties.Resources": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Properties.Resources"
+    "Mvvm.Properties.Resources": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Properties.Resources",
+    "HikExternalCall.Common.ExternalCallHelper": "SunEyeVision.Plugin.Wpf.Native.Dependencies.HikExternalCall.Common.ExternalCallHelper",
+    "VMControls.Interface.IImageViewBoxWAddition": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.Interface.IImageViewBoxWAddition",
+    "System.Windows.Media.Imaging.BitmapContext": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.BitmapContext",
+    "System.Windows.Media.Imaging.BitmapFactory": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.BitmapFactory",
+    "System.Windows.Media.Imaging.NativeMethods": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.NativeMethods",
+    "System.Windows.Media.Imaging.ReadWriteMode": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.ReadWriteMode",
+    "System.Windows.Media.Imaging.WriteableBitmapContextExtensions": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.WriteableBitmapContextExtensions",
+    "System.Windows.Media.Imaging.WriteableBitmapExtensions": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.WriteableBitmapExtensions"
   },
   "embeddedResourcesForRootBuildIntegration": [
     {

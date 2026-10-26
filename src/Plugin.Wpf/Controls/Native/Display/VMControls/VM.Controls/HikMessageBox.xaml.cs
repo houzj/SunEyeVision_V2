@@ -13,6 +13,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
@@ -649,26 +650,19 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 		Initialize();
 	}
 
+	private void OnOkClick(object sender, RoutedEventArgs args) => DialogResult = DialogResult.Ok;
+	private void OnYesClick(object sender, RoutedEventArgs args) => DialogResult = DialogResult.Yes;
+	private void OnNoClick(object sender, RoutedEventArgs args) => DialogResult = DialogResult.No;
+	private void OnCancelClick(object sender, RoutedEventArgs args) => DialogResult = DialogResult.Cancel;
+
 	private void Initialize()
 	{
 		InitializeComponent();
 		MinButtonVisibility = Visibility.Collapsed;
-		OkBtn.Click += (object s, RoutedEventArgs e) =>
-		{
-			DialogResult = DialogResult.Ok;
-		};
-		YesBtn.Click += (object s, RoutedEventArgs e) =>
-		{
-			DialogResult = DialogResult.Yes;
-		};
-		NoBtn.Click += (object s, RoutedEventArgs e) =>
-		{
-			DialogResult = DialogResult.No;
-		};
-		CancelBtn.Click += (object s, RoutedEventArgs e) =>
-		{
-			DialogResult = DialogResult.Cancel;
-		};
+		OkBtn.Click += OnOkClick;
+		YesBtn.Click += OnYesClick;
+		NoBtn.Click += OnNoClick;
+		CancelBtn.Click += OnCancelClick;
 		switch (_buttons)
 		{
 		case MessageButtons.Normal:
@@ -807,13 +801,12 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 
 	protected override void OnClosed(EventArgs e)
 	{
-		OkBtn.RemoveEvents();
-		YesBtn.RemoveEvents();
-		NoBtn.RemoveEvents();
-		CancelBtn.RemoveEvents();
+		OkBtn.Click -= OnOkClick;
+		YesBtn.Click -= OnYesClick;
+		NoBtn.Click -= OnNoClick;
+		CancelBtn.Click -= OnCancelClick;
 		base.OnClosed(e);
 		_alivecount--;
-		this.RemoveEvents();
 	}
 
 	private new DialogResult ShowDialog()

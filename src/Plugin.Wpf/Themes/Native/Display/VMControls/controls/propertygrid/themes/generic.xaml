@@ -189,7 +189,7 @@
           <Condition Property="UIElement.IsMouseOver" Value="False" />
         </MultiTrigger.Conditions>
         <Setter Property="BorderBrush" Value="#00FFFFFF" />
-        <Setter Property="{x:Static editor:PropertyGridEditorCollectionControl.ShowButtonSpinnerProperty}" Value="False" />
+        <Setter Property="{x:Static displayNumericEditors:PropertyGridEditorSByteUpDown.ShowButtonSpinnerProperty}" Value="False" />
       </MultiTrigger>
     </Style.Triggers>
   </Style>

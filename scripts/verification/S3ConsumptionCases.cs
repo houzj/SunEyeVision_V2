@@ -66,6 +66,19 @@ internal static class S2DocumentEditingCases
                 Require(forwarded is not null&&!forwarded.IsEmpty,"子流程返回没有保留所需图像资源");
             }
             Console.WriteLine("通过：真实父/子流程返回链在无本地消费者时也生成并返回所需图像");
+            // Geometry inheritance requires a proven physical frame. A raw caller
+            // buffer intentionally has no provenance; use two actual ImageLoad
+            // invocations so same-source success and cross-source rejection are real.
+            var imagePath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"consumption-source.png");
+            HalconDotNet.HOperatorSet.WriteImage(image.Unwrap(),"png",0,imagePath);
+            foreach(var loadId in new[]{"load","emptyLoad"})
+            {
+                var loadParameters=ToolRegistry.CreateParameters("ImageLoad");
+                loadParameters.GetType().GetProperty("FilePath")!.SetValue(loadParameters,imagePath);
+                loadParameters.GetType().GetProperty("SourceKind")!.SetValue(loadParameters,ImageSourceKind.Local);
+                workflow.Nodes.Add(new WorkflowNodeBase(loadId,loadId,loadId,"ImageLoad"){Parameters=loadParameters});
+            }
+            source.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(source.Parameters,new ImageSourceReference("load","OutputImage","load","原图"));
             var binary=Node("binary");binary.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(binary.Parameters,new ImageSourceReference("source","BinaryMask","source","二值图"));workflow.Nodes.Add(binary);
             var gray=Node("gray");gray.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(gray.Parameters,new ImageSourceReference("source","GrayImage","source","灰度图"));
             gray.Parameters.GetType().GetProperty("Threshold")!.SetValue(gray.Parameters,210);workflow.Nodes.Add(gray);
@@ -91,6 +104,7 @@ internal static class S2DocumentEditingCases
             var mask=Node("mask");RegionBinding(mask,"source",true);
             mask.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(mask.Parameters,new ImageSourceReference("source","GrayImage","source","灰度图"));workflow.Nodes.Add(mask);
             var emptySource=Node("emptySource");emptySource.Parameters.GetType().GetProperty("Threshold")!.SetValue(emptySource.Parameters,210);workflow.Nodes.Add(emptySource);
+            emptySource.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(emptySource.Parameters,new ImageSourceReference("emptyLoad","OutputImage","emptyLoad","另一物理来源"));
             var emptyRegion=Node("emptyRegion");RegionBinding(emptyRegion,"emptySource",false);
             emptyRegion.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(emptyRegion.Parameters,new ImageSourceReference("emptySource","GrayImage","emptySource","灰度图"));workflow.Nodes.Add(emptyRegion);
             var emptyGeometry=Node("emptyGeometry");

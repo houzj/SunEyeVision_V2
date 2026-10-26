@@ -15,13 +15,13 @@ public class TreeViewScrollToBottomBehavior : Behavior<TreeView>
 {
 	protected override void OnAttached()
 	{
-		((Behavior)this).OnAttached();
+		base.OnAttached();
 		((INotifyCollectionChanged)base.AssociatedObject.Items).CollectionChanged += TreeViewScrollToBottomBehavior_CollectionChanged;
 	}
 
 	protected override void OnDetaching()
 	{
-		((Behavior)this).OnDetaching();
+		base.OnDetaching();
 		((INotifyCollectionChanged)base.AssociatedObject.Items).CollectionChanged -= TreeViewScrollToBottomBehavior_CollectionChanged;
 	}
 

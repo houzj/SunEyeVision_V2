@@ -15,7 +15,7 @@ public static class HelpDocumentUtil
 		if (!string.IsNullOrEmpty(toolItemInfoPath))
 		{
 			string language = ((AppLocalizationService.GetLangType() == "zh-cn") ? "CH" : "EN");
-			switch (BrowserUtil.OpenModuleHelpUrl(toolItemInfoPath, language))
+			switch (SunEyeVision.Plugin.Wpf.Native.Common.NativeHelpDocument.OpenModuleHelpUrl(toolItemInfoPath, language))
 			{
 			case 0:
 				return;

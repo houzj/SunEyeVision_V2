@@ -23,7 +23,14 @@ public sealed class VmColorPicker : UserControl
         set => SetValue(SelectedColorProperty, value);
     }
 
-    public event RoutedPropertyChangedEventHandler<Color>? SelectedColorChanged;
+    public static readonly RoutedEvent SelectedColorChangedEvent = EventManager.RegisterRoutedEvent(
+        nameof(SelectedColorChanged), RoutingStrategy.Bubble,
+        typeof(RoutedPropertyChangedEventHandler<Color>), typeof(VmColorPicker));
+    public event RoutedPropertyChangedEventHandler<Color> SelectedColorChanged
+    {
+        add => AddHandler(SelectedColorChangedEvent, value);
+        remove => RemoveHandler(SelectedColorChangedEvent, value);
+    }
     public event EventHandler? PaletteColorChosen;
 
     public VmColorPicker()
@@ -67,6 +74,6 @@ public sealed class VmColorPicker : UserControl
             try { picker._advanced.SynchronizeSelection((Color)args.NewValue); }
             finally { picker._syncing = false; }
         }
-        picker.SelectedColorChanged?.Invoke(picker, new RoutedPropertyChangedEventArgs<Color>((Color)args.OldValue, (Color)args.NewValue));
+        picker.RaiseEvent(new RoutedPropertyChangedEventArgs<Color>((Color)args.OldValue, (Color)args.NewValue, SelectedColorChangedEvent));
     }
 }

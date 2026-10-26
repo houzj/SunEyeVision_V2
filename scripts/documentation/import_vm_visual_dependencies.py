@@ -26,16 +26,21 @@ def cache_matches(source):
     if sha(source)==expected:return True
     return source.suffix=='.cs' and hashlib.sha256(source.read_text(encoding='utf-8-sig').encode()).hexdigest()==expected
 def port(text):
-    for old in ('VMControls.RenderInterface','Apps.BaseData','Apps.UIHelper.Extern','VM.Utility','Mvvm'):
+    for old in ('VMControls.RenderInterface','VMControls.Interface','Apps.BaseData','Apps.UIHelper.Extern','VM.Utility','Mvvm','HikExternalCall.Common'):
         text=re.sub(r'(?<![\w.])'+re.escape(old)+r'(?!\w)','SunEyeVision.Plugin.Wpf.Native.Dependencies.'+old,text)
     return text
 def save(source,target,original,artifact):
+    bitmap_library=artifact.stem=='WriteableBitmapEx.Wpf'
     namespace=re.search(r'namespace\s+([\w.]+)',original)
     if namespace:
         # These exports use file-scoped namespaces; retain the real type names.
         for name in re.findall(r'^(?:public|internal)\s+(?:(?:abstract|sealed|static|readonly)\s+)*(?:class|interface|enum|struct|delegate\s+\w+)\s+(\w+)',original,re.M):
-            old=namespace[1]+'.'+name;types[old]='SunEyeVision.Plugin.Wpf.Native.Dependencies.'+old
-    target.parent.mkdir(parents=True,exist_ok=True);target.write_text(port(original),encoding='utf-8')
+            old=namespace[1]+'.'+name
+            types[old]=('SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx.'+name) if bitmap_library else 'SunEyeVision.Plugin.Wpf.Native.Dependencies.'+old
+    output=port(original)
+    if bitmap_library:
+        output='using System;\nusing System.Windows;\nusing System.Windows.Media;\nusing System.Windows.Media.Imaging;\n'+re.sub(r'\bnamespace\s+System\.Windows\.Media\.Imaging\s*;', 'namespace SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;',output)
+    target.parent.mkdir(parents=True,exist_ok=True);target.write_text(output,encoding='utf-8')
     entries.append({'source':str(source),'artifact':str(artifact),'source_sha256':hashlib.sha256(original.encode()).hexdigest(),'target':target.relative_to(ROOT).as_posix(),'target_sha256':sha(target),'kind':'source_port','adaptations':['namespace only; original converter/interface bodies retained']})
 for name,expected,evidence in [
  ('VMControls.RenderInterface','67d5988152401745e160f0e6a0dd257a3451c519f7740334887bacd202622ac2','ev_18c3872c6efc942f0bf47b30062a476770eabaf60d2bd4ff0af675265516a8df'),
@@ -43,12 +48,15 @@ for name,expected,evidence in [
  ('Apps.UIData','d063decd9f6a5bf6992b37b26416b46e0a76e715973b077f0cc281eaf36f2b24','ev_0ca6f0a7a59062067334e0c7e4346690cbe017465b65fb95a5c76ade33f34d42'),
  ('Apps.UIHelper','be53f11087a4bcd338530edc283ca49a37d595bfd1a64c6f67232c007cfa189c','ev_9b0a9ef9796730075b30bb07123f5ad5f184a3f55490968bf266c5602d2d321b'),
  ('VM.Utility','65ebb5edabf77465fa01f8c6d70efdcbd4b6a87f510911249cd93d73649d1cdf','ev_ff90a25ff7174a267deac758048e4cc18f99ed9a1b9aa7d73434aad58f4ed551'),
- ('Mvvm','5685c13c79321e7d7ec4ed85e764d00c915ca54401d5ccb6314414d54f76e120','ev_6f9b6761f00a733d4aa20ae8f02e4174b6a42920de912495fe814194616485be')]:
+ ('Mvvm','5685c13c79321e7d7ec4ed85e764d00c915ca54401d5ccb6314414d54f76e120','ev_6f9b6761f00a733d4aa20ae8f02e4174b6a42920de912495fe814194616485be'),
+ ('VM.ExternalCall','873b1ca3c7c2f9052e361a5c78d5f68e9cc297ed85faf27a8f71b61b61bd6a4c','ev_030ee78712fc7e2fb87cc119c334d36bc4f411c1286b32d07a1a939574742182'),
+ ('VMControls.Interface','47c11ff2239bd2577378c4eb202ef6b2aee8fc0e99c3b7f0692c2209eb69c304','ev_6dbcdadb17ae62ecd06f735225c248ba7dedcb6abc6292f1e6a8de93717dc042'),
+ ('WriteableBitmapEx.Wpf','2cb24cad7d3eb0bffaa9a25b9e1db873a846fe2e9678cfe5061fc2555a156c03','ev_2d08f54d7a3317f235ca244dcf4bc9a124800160ed387b8bbfe755343efe869a')]:
     artifact=(INSTALL.parent/'3rdLib/MVVM/Mvvm.dll') if name=='Mvvm' else INSTALL/(name+'.dll')
     assert sha(artifact)==expected,artifact
     artifacts.append({'path':str(artifact),'sha256':expected,'rea_evidence':evidence,'executed':False})
     out=EXPORT/name
-    if name in ('VMControls.RenderInterface','Mvvm'):
+    if name in ('VMControls.RenderInterface','Mvvm','WriteableBitmapEx.Wpf'):
         out.mkdir(parents=True,exist_ok=True)
         cached=[Path(entry['source']) for entry in previous.get('entries',[]) if entry.get('artifact')==str(artifact)]
         if not cached or not all(cache_matches(source) for source in cached):
@@ -62,11 +70,19 @@ for name,expected,evidence in [
             entries.append({'source':str(source),'artifact':str(artifact),'source_sha256':sha(source),'target':target.relative_to(ROOT).as_posix(),'target_sha256':sha(target),'kind':'original_embedded_resource'})
             embedded_resources.append({'target':target.relative_to(ROOT).as_posix(),'logicalName':'SunEyeVision.Plugin.Wpf.Native.Dependencies.'+source.stem+'.resources'})
     else:
-        selected=('UIExtern','UIHelper','ObjectEventArgs','ObjectEventHandler') if name=='Apps.UIHelper' else (('DynamicResourceDictionary',) if name=='Apps.UIData' else ('NormalMultiplicationConverter','RightFixdMultiplicationConverter','RightFixdMultiplicationForCaliperConverter','PointRightFixdMultiplicationConverter','PointListRightFixdMultiplicationConverter','TypeFilterConverter','MulParamsMultiplicationConverter','NULLJudgeConverter'))
+        selected=('UIExtern','UIHelper','ObjectEventArgs','ObjectEventHandler') if name=='Apps.UIHelper' else (('DynamicResourceDictionary',) if name=='Apps.UIData' else ('NormalMultiplicationConverter','RightFixdMultiplicationConverter','RightFixdMultiplicationForCaliperConverter','PointRightFixdMultiplicationConverter','PointListRightFixdMultiplicationConverter','TypeFilterConverter','MulParamsMultiplicationConverter','NULLJudgeConverter','Byte2ImageSource'))
         source_namespace='Apps.UIHelper.Extern.' if name=='Apps.UIHelper' else 'Apps.BaseData.'
         if name=='VM.Utility':
-            selected=('DelegateCommand',)
+            selected=('DelegateCommand','MemoryHelper','MemoryNativeMethods')
             source_namespace='VM.Utility.'
+        if name=='VM.ExternalCall':
+            selected=('ExternalCallHelper',)
+            source_namespace='HikExternalCall.Common.'
+        if name=='VMControls.Interface':
+            # This complete profile drawing contract is pure WPF. Do not import
+            # the adjacent module/IO/container contracts through the 3D family.
+            selected=('IImageViewBoxWAddition',)
+            source_namespace='VMControls.Interface.'
         for short in selected:
             source=out/(short+'.cs')
             if cache_matches(source):
@@ -74,7 +90,26 @@ for name,expected,evidence in [
             else:
                 result=subprocess.run([str(ILSPY),'-t',source_namespace+short,str(artifact)],check=True,capture_output=True,encoding='utf-8-sig')
                 original=result.stdout;source.parent.mkdir(parents=True,exist_ok=True);source.write_text(original,encoding='utf-8')
-            save(source,TARGET/name/source.name,original,artifact)
+            if name=='VM.ExternalCall':
+                # Extract only the actual pointer-copy dependency, retaining its
+                # exact body. The unrelated binary serialization/reflection API
+                # is not imported or counted as a migrated helper class.
+                method=re.search(r'\tpublic static byte\[\] IntPtr2Bytes\(IntPtr ptr, int size\)\s*\{',original)
+                assert method, 'ExternalCallHelper member identity changed'
+                start=method.start();end=method.end();depth=1
+                while depth:
+                    if original[end]=='{':depth+=1
+                    elif original[end]=='}':depth-=1
+                    end+=1
+                member=original[start:end]
+                excerpt='using System;\nusing System.Runtime.InteropServices;\n\nnamespace HikExternalCall.Common;\n\npublic static class ExternalCallHelper\n{\n'+member+'\n}\n'
+                save(source,TARGET/name/source.name,excerpt,artifact)
+                entries[-1].update({'source_sha256':hashlib.sha256(original.encode()).hexdigest(),
+                    'kind':'source_member_port','selected_member':'HikExternalCall.Common.ExternalCallHelper.IntPtr2Bytes(IntPtr,int)',
+                    'selected_member_sha256':hashlib.sha256(member.encode()).hexdigest(),
+                    'adaptations':['namespace only for selected original method; wrapper imports reduced; unrelated original members remain unported']})
+            else:
+                save(source,TARGET/name/source.name,original,artifact)
 TARGET.mkdir(parents=True,exist_ok=True)
 (TARGET/'dependencies-migration-manifest.json').write_text(json.dumps({'phase':'static_reconstruction_not_runtime_acceptance','artifacts':artifacts,'entries':entries,'type_map':types,'embeddedResourcesForRootBuildIntegration':embedded_resources,'not_claimed':['Not a second workflow or algorithm model','No vendor DLL deployed','Compilation and host consumption still require verification']},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(json.dumps({'files':len(entries),'types':len(types),'artifacts':len(artifacts)}))

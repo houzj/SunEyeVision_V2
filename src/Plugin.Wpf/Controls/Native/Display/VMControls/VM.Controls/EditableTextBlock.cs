@@ -92,11 +92,18 @@ public class EditableTextBlock : Control, INotifyPropertyChanged
 
 	public override void OnApplyTemplate()
 	{
+		if (_editableTextBoxHeader != null)
+		{
+			_editableTextBoxHeader.IsVisibleChanged -= editableTextBoxHeader_IsVisibleChanged;
+			_editableTextBoxHeader.KeyDown -= editableTextBoxHeader_KeyDown;
+			_editableTextBoxHeader.LostFocus -= editableTextBoxHeader_LostFocus;
+		}
+		if (_textBlockHeader != null) _textBlockHeader.MouseLeftButtonDown -= textBlockHeader_MouseLeftButtonDown;
 		base.OnApplyTemplate();
 		_editableTextBoxHeader = Template.FindName("editableTextBoxHeader", this) as TextBox;
 		if (_editableTextBoxHeader != null)
 		{
-			_editableTextBoxHeader.Binding(this, "Text", "Text");
+			_editableTextBoxHeader.SetBinding(TextBox.TextProperty, new System.Windows.Data.Binding("Text") { Source = this, Mode = System.Windows.Data.BindingMode.TwoWay });
 			_editableTextBoxHeader.IsVisibleChanged += editableTextBoxHeader_IsVisibleChanged;
 			_editableTextBoxHeader.KeyDown += editableTextBoxHeader_KeyDown;
 			_editableTextBoxHeader.LostFocus += editableTextBoxHeader_LostFocus;
@@ -104,7 +111,7 @@ public class EditableTextBlock : Control, INotifyPropertyChanged
 		_textBlockHeader = Template.FindName("textBlockHeader", this) as TextBlock;
 		if (_textBlockHeader != null)
 		{
-			_textBlockHeader.Binding(this, "Text", "Text");
+			_textBlockHeader.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("Text") { Source = this, Mode = System.Windows.Data.BindingMode.TwoWay });
 			_textBlockHeader.MouseLeftButtonDown += textBlockHeader_MouseLeftButtonDown;
 		}
 	}

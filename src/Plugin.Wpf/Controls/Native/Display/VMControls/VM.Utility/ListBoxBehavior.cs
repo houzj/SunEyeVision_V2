@@ -14,13 +14,13 @@ public class ListBoxBehavior : Behavior<ListBox>
 {
 	protected override void OnAttached()
 	{
-		((Behavior)this).OnAttached();
+		base.OnAttached();
 		((INotifyCollectionChanged)base.AssociatedObject.Items).CollectionChanged += ListBoxScrollToBottomBehavior_CollectionChanged;
 	}
 
 	protected override void OnDetaching()
 	{
-		((Behavior)this).OnDetaching();
+		base.OnDetaching();
 		((INotifyCollectionChanged)base.AssociatedObject.Items).CollectionChanged -= ListBoxScrollToBottomBehavior_CollectionChanged;
 	}
 

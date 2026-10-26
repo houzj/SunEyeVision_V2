@@ -101,7 +101,7 @@
                         </ControlTemplate>
                       </Control.Template>
                     </Calendar>
-                    <local:TimePicker x:Name="PART_TimeUpDown" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" Format="{TemplateBinding local:DateTimePicker.TimeFormat}" FormatString="{TemplateBinding local:DateTimePicker.TimeFormatString}" AllowSpin="{TemplateBinding local:DateTimePicker.TimePickerAllowSpin}" Step="{TemplateBinding primitives:DateTimeUpDownBase.Step}" ShowButtonSpinner="{TemplateBinding local:DateTimePicker.TimePickerShowButtonSpinner}" Watermark="{TemplateBinding local:DateTimePicker.TimeWatermark}" WatermarkTemplate="{TemplateBinding local:DateTimePicker.TimeWatermarkTemplate}" Visibility="{TemplateBinding local:DateTimePicker.TimePickerVisibility}" Kind="{Binding Kind, RelativeSource={RelativeSource TemplatedParent}}" Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}}" Minimum="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}}" Maximum="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}}" ClipValueToMinMax="{Binding ClipValueToMinMax, RelativeSource={RelativeSource TemplatedParent}}" IsUndoEnabled="{Binding IsUndoEnabled, RelativeSource={RelativeSource TemplatedParent}}" />
+                    <local:TimePicker x:Name="PART_TimeUpDown" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" Format="{TemplateBinding local:DateTimePicker.TimeFormat}" FormatString="{TemplateBinding local:DateTimePicker.TimeFormatString}" AllowSpin="{TemplateBinding local:DateTimePicker.TimePickerAllowSpin}" Step="{TemplateBinding Step}" ShowButtonSpinner="{TemplateBinding local:DateTimePicker.TimePickerShowButtonSpinner}" Watermark="{TemplateBinding local:DateTimePicker.TimeWatermark}" WatermarkTemplate="{TemplateBinding local:DateTimePicker.TimeWatermarkTemplate}" Visibility="{TemplateBinding local:DateTimePicker.TimePickerVisibility}" Kind="{Binding Kind, RelativeSource={RelativeSource TemplatedParent}}" Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}}" Minimum="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}}" Maximum="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}}" ClipValueToMinMax="{Binding ClipValueToMinMax, RelativeSource={RelativeSource TemplatedParent}}" IsUndoEnabled="{Binding IsUndoEnabled, RelativeSource={RelativeSource TemplatedParent}}" />
                   </StackPanel>
                 </Border>
               </Popup>
@@ -121,8 +121,8 @@
             <Trigger Property="IsEnabled" Value="False">
               <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
             </Trigger>
-            <Trigger Property="UpDownBase.UpdateValueOnEnterKey" Value="True">
-              <Setter TargetName="PART_TimeUpDown" Property="UpDownBase.Value" Value="{Binding Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Trigger Property="UpdateValueOnEnterKey" Value="True">
+              <Setter TargetName="PART_TimeUpDown" Property="Value" Value="{Binding Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

@@ -23,7 +23,7 @@ using VM.Core;
 using VM.PlatformSDKCS;
 using VM.Utility.SingleInstance;
 using VMControls.BaseInterface;
-using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.Interface;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF;

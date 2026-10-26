@@ -288,7 +288,7 @@ public class MultiLineROI : ROIControlBase
 		}
 		List<Point> list = ((Rects.SelectedIndex == 0) ? Rects.ItemsSource.OfType<Point>().Reverse().ToList() : Rects.ItemsSource.OfType<Point>().ToList());
 		ROIItemsPage rOIItemsPage = this.GetParent<ROIItemsPage>();
-		Type typeFromHandle = typeof(HikMultiLineRoiParameter);
+		Type typeFromHandle = typeof(IMultiLineROI);
 		isDrawFinished = false;
 		isDrawOnePoint = false;
 		ROIControlBase.BaseBeforeDraw(rOIItemsPage, typeFromHandle);
@@ -492,16 +492,17 @@ public class MultiLineROI : ROIControlBase
 
 	private int GetIndex(PolygonPoint curPoint)
 	{
-		HikMultiLineRoiParameter hikMultiLineRoiParameter = DataContext as HikMultiLineRoiParameter;
-		Dictionary<int, Tuple<PolygonPoint, PolygonPoint>> dictionary = new Dictionary<int, Tuple<PolygonPoint, PolygonPoint>>();
+		var polygonPoints = PolygonPoints;
+		if (polygonPoints == null || polygonPoints.Count < 2) return -1;
+		Dictionary<int, Tuple<Point, Point>> dictionary = new Dictionary<int, Tuple<Point, Point>>();
 		Dictionary<int, double> dictionary2 = new Dictionary<int, double>();
-		for (int i = 0; i < hikMultiLineRoiParameter.PolygonPoints.Count - 1; i++)
+		for (int i = 0; i < polygonPoints.Count - 1; i++)
 		{
-			dictionary.Add(i + 1, new Tuple<PolygonPoint, PolygonPoint>(hikMultiLineRoiParameter.PolygonPoints[i], hikMultiLineRoiParameter.PolygonPoints[i + 1]));
+			dictionary.Add(i + 1, new Tuple<Point, Point>(polygonPoints[i], polygonPoints[i + 1]));
 		}
-		foreach (KeyValuePair<int, Tuple<PolygonPoint, PolygonPoint>> item in dictionary)
+		foreach (KeyValuePair<int, Tuple<Point, Point>> item in dictionary)
 		{
-			double value = PointToSegDist(item.Value.Item1, item.Value.Item2, curPoint);
+			double value = PointToSegDist(item.Value.Item1, item.Value.Item2, new Point(curPoint.X, curPoint.Y));
 			dictionary2.Add(item.Key, value);
 		}
 		double num = dictionary2.Values.Min();
@@ -515,7 +516,7 @@ public class MultiLineROI : ROIControlBase
 		return -1;
 	}
 
-	private double PointToSegDist(PolygonPoint Point1, PolygonPoint Point2, PolygonPoint curPoint)
+	private double PointToSegDist(Point Point1, Point Point2, Point curPoint)
 	{
 		double x = curPoint.X;
 		double y = curPoint.Y;
@@ -542,7 +543,7 @@ public class MultiLineROI : ROIControlBase
 		return GetMinDistance(Point1, Point2, curPoint);
 	}
 
-	private double GetMinDistance(PolygonPoint pt1, PolygonPoint pt2, PolygonPoint pt3)
+	private double GetMinDistance(Point pt1, Point pt2, Point pt3)
 	{
 		double num = 0.0;
 		if (pt1.X == pt2.X)

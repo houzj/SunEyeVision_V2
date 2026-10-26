@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using Apps.XmlParser.ParamTab;
 using Hik.Util;
 using VM.Core;
-using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.Interface;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.CalibGuide;
 

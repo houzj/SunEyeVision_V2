@@ -15,15 +15,11 @@ public class ShapeAndRoiMarginCvt : IValueConverter
 {
 	public static ShapeAndRoiMarginCvt Cvt;
 
-	private static bool ImageROIOffsetEnable { get; set; }
+	public bool ImageROIOffsetEnable { get; set; }
 
 	static ShapeAndRoiMarginCvt()
 	{
 		Cvt = new ShapeAndRoiMarginCvt();
-		if (bool.TryParse(ConfigurationHelper.GetConfig("ImageROIOffsetEnable"), out var result))
-		{
-			ImageROIOffsetEnable = result;
-		}
 	}
 
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

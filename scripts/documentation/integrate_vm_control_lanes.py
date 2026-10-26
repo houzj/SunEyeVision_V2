@@ -21,6 +21,15 @@ compiled_namespaces=set()
 manifest_ids = []
 embedded_resources = []
 raw_xaml_resources = []
+host_receipt_path = NATIVE / 'Display/visual-host-adaptations.json'
+host_receipt = json.loads(host_receipt_path.read_text(encoding='utf-8')) if host_receipt_path.exists() else None
+protected_host = {row['target']:row for row in host_receipt['files']} if host_receipt else {}
+host_headers_updated = False
+
+def without_header_imports(text):
+    namespace = re.search(r'\bnamespace\s+[\w.]+', text)
+    end = namespace.start() if namespace else 0
+    return re.sub(r'^using\s+[\w.]+;[^\S\n]*\n', '', text[:end], flags=re.M) + text[end:]
 
 def path(value):
     return Path(str(value).replace('\\', '/'))
@@ -77,6 +86,11 @@ for folder in roots:
                 originals = reverse.get(match[1], {match[1]})
                 destinations = {target for original in originals for target in namespaces.get(original, ())}
                 destinations = (destinations & compiled_namespaces) or destinations
+                # Third-party WPF extensions share framework namespaces in the
+                # original DLL. Their relocated classes supplement the actual
+                # framework; they must not replace the framework using.
+                if match[1].startswith('System.') and destinations:
+                    destinations.add(match[1])
                 return '\n'.join('using ' + name + ';' for name in sorted(destinations)) if destinations else match[0]
             text = re.sub(r'^using\s+([\w.]+)\s*;', imports, text, flags=re.M)
             own = re.search(r'\bnamespace\s+([\w.]+)', text)
@@ -109,7 +123,7 @@ for folder in roots:
             text = re.sub(r'(clr-namespace:SunEyeVision\.Plugin\.Wpf\.Native[^";]*);assembly=SunEyeVision\.Plugin\.Wpf', r'\1', text)
             # Decompiler emits generic base owners as bare XAML types. Resolve
             # inherited DPs against the concrete template/style target instead.
-            text = re.sub(r'\b\w+:(?:UpDownBase|InputBase)\.(\w+)', r'\1', text)
+            text = re.sub(r'(?<![\w.])(?:\w+:)?(?:UpDownBase|InputBase|DateTimeUpDownBase)\.(\w+)', r'\1', text)
             declarations = dict(re.findall(r'xmlns:(\w+)="clr-namespace:([^";]+)(?:;assembly=[^"]+)?"', text))
             additions = {}
             for alias, declared in declarations.items():
@@ -162,12 +176,16 @@ for folder in roots:
                         text = text[:trigger] + event + '\n        ' + text[trigger:]
             def concrete_setters(match):
                 owner=match[2]
-                if not (owner.endswith(('UpDown','Picker')) or 'PropertyGridEditor' in owner):
+                if not owner.endswith(('UpDown','Picker')):
                     return match[0]
+                # Repair an earlier owner substitution as well as bare DPs.
+                # Self-closing styles cannot own the following style's body.
+                body=re.sub(r'(<Setter\b[^>]*\bProperty=")\{x:Static [\w]+:[\w]+\.(TextAlignment|WatermarkTemplate|ShowButtonSpinner|AllowSpin|ButtonSpinnerLocation)Property\}("|\s)',
+                            lambda setter:setter[1]+'{x:Static '+owner+'.'+setter[2]+'Property}'+setter[3],match[3])
                 body=re.sub(r'(<Setter\b[^>]*\bProperty=")(TextAlignment|WatermarkTemplate|ShowButtonSpinner|AllowSpin|ButtonSpinnerLocation)(")',
-                            lambda setter:setter[1]+owner+'.'+setter[2]+setter[3],match[3])
+                            lambda setter:setter[1]+owner+'.'+setter[2]+setter[3],body)
                 return match[1]+body+match[4]
-            text=re.sub(r'(<Style\b[^>]*TargetType="\{x:Type ([^}]+)\}"[^>]*>)([\s\S]*?)(</Style>)',concrete_setters,text)
+            text=re.sub(r'(<Style\b[^>]*TargetType="\{x:Type ([^}]+)\}"[^>]*(?<!/)>)([\s\S]*?)(</Style>)',concrete_setters,text)
             text=re.sub(r'(<Setter\b[^>]*\bProperty=")([\w]+:[\w]+)\.(TextAlignment|WatermarkTemplate|ShowButtonSpinner|AllowSpin|ButtonSpinnerLocation)(")',
                         lambda setter:setter[1]+'{x:Static '+setter[2]+'.'+setter[3]+'Property}'+setter[4],text)
             # Recovered BAML declares CLR aliases on Setter/property elements.
@@ -200,8 +218,19 @@ for folder in roots:
                 if not qualified_reference and not compatibility_reference:
                     text = without_declaration
         if text != old_text:
+            protected = protected_host.get(file.relative_to(ROOT).as_posix())
+            if protected:
+                assert hashlib.sha256(file.read_bytes()).hexdigest() == protected['adapted_sha256'], 'Review edited host adapter before normalization: '+str(file)
+                assert '.cs' in file.suffixes and without_header_imports(text) == without_header_imports(old_text), 'Host adapter body normalization requires explicit review: '+str(file)
             file.write_text(text, encoding='utf-8')
+            if protected:
+                protected['adapted_sha256'] = hashlib.sha256(file.read_bytes()).hexdigest()
+                protected['integration_change'] = 'Verified source hash before normalization; only C# header using directives changed, namespace/body unchanged.'
+                host_headers_updated = True
             changed.append(file.relative_to(ROOT).as_posix())
+
+if host_headers_updated:
+    host_receipt_path.write_text(json.dumps(host_receipt, ensure_ascii=False, indent=2)+'\n', encoding='utf-8', newline='\n')
 
 integrated_files = []
 for folder in roots:

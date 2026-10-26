@@ -24,7 +24,7 @@ using Apps.Log;
 using Apps.XmlParser;
 using Apps.XmlParser.ItemInterface;
 using Apps.XmlParser.ParamTab;
-using HikExternalCall.Common;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.HikExternalCall.Common;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
 using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.Controls;
@@ -35,7 +35,7 @@ using VM.PlatformSDKCS;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
 using VMControls.BaseInterface;
-using VMControls.Interface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.Interface;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 using SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.DataForUI;
 

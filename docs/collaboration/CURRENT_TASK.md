@@ -2,39 +2,38 @@
 
 ## 写入与版本
 
-- 当前主对话是主工作树唯一产品写者；不恢复旧角色、批次或副本。
-- 远端历史可运行检查点为 `b87fb685`；其通过成绩不适用于当前迁移候选。
-- 本地已保存 `602cf8a1`（源码整合/发布路径）及 `8a82648b`（命令/语言/ROI基类/原色板消费）。本轮增量为就地样式弹层和数值交互；最后保存点以当前Git HEAD为准，构建日志按基线加增量记录。
-- 用户明确要求：构建通过前只保留本地，不推送主仓。不重问或重试此前被拒绝的推送。
+- 当前主对话是主工作树唯一产品写者；不恢复旧管理角色、批次或副本，不原样恢复旧变量收口。
+- 本轮本地检查点以HEAD为准，父基线c8de30c4；包含图像、框架、颜色事件及执行入口上下文修复。远端历史检查点b87fb685的成绩不套作新候选；当前未推送。
+- 用户要求构建通过前不推送；现已全量通过。用户质疑算法等待UI后，已修工作流入口上下文捕获，正在补强无UI消息泵的执行验证；固定源码与发布身份后按原授权中文提交/推送，不重复询问。
 
-## 本轮实际代码
+## 已落地的当前代码
 
-- `DisplayObjectField`由独立子modal改为就地弹层，同一DeclaredFieldEditor实例直接写调用方窗口草稿；外层ProductionEditorContext/窗口确认或Discard承担保存撤销。
-- 主区按原ImageViewConfig_subContent承接260宽、102列起点、四行、原渐变及-90横偏移。已有十字大小/线型收在更多，不宣称VM原面板有这两个扩展。
-- 父层不依赖单一鼠标捕获；按Popup.PlacementTarget/TemplatedParent归属处理外部点击。逐层Escape、卸载/窗口失活关闭、输入监听和窗口事件解除已有代码，尚未真实运行验证。
-- `ColorField`消费VmColorPicker组合原70色色板、原默认/更多模板与高级色谱。选色写外层草稿，无独立确定/取消；Escape先收子色板并回焦，下一次交给父层。源scRGB公式保留，重开基色同步/冻结渐变Clone为明确适配。
-- `NumericUpDown`有效键入即时同步Value/滑条且保留编辑文本；有效Enter确认后失焦收起，非法Enter保留。仅控件内聚焦允许滚轮改值；初始显示与用户改值分开，DeclaredFieldEditor拦截数值校验失败并让外层验证看到待校验错误。
-- 原31行来源/职责/去留和本轮4项实际文件集中更新在 `evidence/O06_CONTROL_REORGANIZATION_20261026.json`，原方案/预览共用；原目标文件和退出门保留，不把已有实现改名当作架构完成。
+- DisplayObjectField使用就地四行主区与更多项，同一DeclaredFieldEditor写外层私有草稿；外层ProductionEditorContext/窗口确认或Discard负责持久化。嵌套弹层归属、逐层Escape、卸载/失活关闭及监听解除已有真实验证。
+- ColorField→VmColorPicker组合原70色色板、默认/更多模板及高级色谱。修复实际运行发现的颜色事件异常：两个颜色控件均注册合法RoutedEvent；选色写外层草稿，未增加子层保存按钮。
+- NumericUpDown有效键入同步滑条；有效Enter失焦收起，非法Enter留焦。初始显示与用户改值分开，仅聚焦滚轮改值。数值检查改发实际Preview阶段事件，保留首轮失败。
+- 原Byte2ImageSource、Windows内存辅助、精确指针复制方法和WriteableBitmapEx六份源码迁入；来源SHA/静态REA依据保留，无厂商DLL部署。139份依赖源码、9个原件不是控件数量或整库完成数。
+- ImageViewBox用显式可选ExtensionProvider/有限视觉会话，卸载和更换释放；不恢复厂商Ioc/模块/IO模型。完整纯WPF的IImageViewBoxWAddition按原件迁入；3D模块/IO实际消费者仍未适配，不以生命周期夹具冒充3D绘制通过。
+- 同步WPF导出复制借入缓冲；RGB/Gray16原图及原ShapeItemsPage图形渲染已实测。栅格/JPEG为本方适配，不宣称VM/OpenCV逐像素等价。
+- Behavior基类调用、圆角x:Name、已知Text依赖属性TwoWay绑定/旧模板解绑、消息框自有按钮解绑、泛型XAML属性所有者已修。半像素偏移改实例选项，不读取或猜测厂商全局配置。
+- 50份组合源码按C#/XAML/依赖闭包保留为.pending，仍是迁移义务，不计功能完成。16份宿主适配有原件及输出保护；整合器只允许校验后更新C#头部using哈希，正文变化需显式复核。
 
-## 验证事实
+## 实际验证
 
-- 最新全量：`dotnet build SunEyeVision.slnx -c Release --no-restore`，日志 `Release/_validation/O06-RoiCore-20261026/build-vm-library-integration-027.log`：9错误、132警告、27.96秒。当前候选未编译通过，未可试用；正式目录已有部分基础工程新输出，不当作历史b87的完整二进制快照。
-- 6个当前C#文件使用可用Roslyn 5.0解析无语法错误，记录 `popup-numeric-syntax-check-003.json`；不是完整语义编译或运行验收。额外加载SDK解析器曾绑定冲突，未计通过。
-- 现有O06WindowPresentationCases已补同实例草稿、嵌套逐层Escape、数值同步/Enter、卸载关闭及真实ProductionEditorContext颜色不污染正式节点/Discard检查；本候选尚未执行这些用例。
-- 预览资源按.gitattributes统一LF，SHA版本链接和连续再生稳定性检查通过；不是渲染/视觉验证。
-- 原HTML已含数值双向同步、数量滑条、Enter失焦、就地样式/二层色板及内侧焦点提示；浏览器file协议被策略拒绝，未绕过，不称浏览器视觉通过。
-- 基础三工程Release路径及Tool.Kernels解决方案归属已修；实际日志确认正式Release路径。新候选不复用旧构建/回归PASS。所有后续运行/验收基于D盘Release。
-
-- 本轮导入器纠正C#/XAML及依赖准入闭包；50份源码保留为.pending，正文与HEAD逐份核对一致，证据composition-source-preservation-001.json。这些仍是迁移待办，不计作已完成功能。PolygonPoint保留原坐标/通知正文，脱离未使用的厂商XML基类；运行未验。
-- 027剩余诊断集中图像视图接口与转换。三处ROI日志已接Trace；无引用的旧XAML CLR命名空间已清理，整合器重跑0变更。不得用空接口或旧全局模型凑编译。
-
-- 静态核对：实际Byte2ImageSource在Apps.BaseData，不是旧VM.PcUI版本；IImageViewAddition经3D扩展涉及IVmModule/IVmIO，Apps.Data.ImageData涉及厂商XML/VisionDesigner。继续做有限视觉/图像缓冲适配，未复制厂商DLL、Ioc或工作流模型。6份适配哈希/169份已跟踪变更XAML解析通过，source-integration-check-027.json；不是运行验收。
+- 全量033：0错误/6125警告77.35秒；颜色事件修复后的全量034：0错误/6619警告52.47秒。正式目录D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision。
+- 单UI命令033：0错误/6621警告87.63秒（颜色路由修复前）；最终固定源码后补最终UI/全量身份核对。
+- WindowPresentation011：8组通过，含样式草稿/逐层Escape/数值同步与Enter/真实Blob三页、原图与原图形页导出、扩展会话释放。FullChain031：8组真实MainWindow工具箱→HALCON→下游→私有调试→保存重开通过。Resources007：22组输入/输出所有权、取消、异常清理通过。均从正式Release装载，不代物理操作、VS或用户人工。
+- 首轮Window008发现颜色RoutedEvent异常；已修产品。数值检查事件阶段、Gray16解码PreservePixelFormat和provider夹具模板已修；失败日志均保留。
+- 首轮与补充UI构建曾重叠且清单SHA不符，不计最终发布验证。随后串行封存现有产物，窗口/整链/资源准入已通过。
+- ComponentDeployment021的11项全部通过：缺少可选Wpf仍可配置并执行，非法值拦截和草稿隔离成立；缺Runtime及错误组件明确拒绝，3文件和清单均按原SHA还原。实际Loaded后InputElement为NumericUpDown模板TextBox，宿主Content为组合Grid，用例已按真实树查找；普通Application加载真实主题避免触发产品App交互启动。保留此前失败日志。
+- ROI编辑019九组、ROI组合002六组、ROI绑定006十二组通过（035执行入口修复前的034产物成绩，不能套用于新产物）。
+- 用户指出算法不应等待UI，核查发现Task.Run内HALCON不依赖Dispatcher，但公共异步入口默认await捕获调用方上下文，返回及finally清理可能等UI。产品根入口已ConfigureAwait(false)，两个兼容入口直接返回Task。影响仅执行任务收尾，不改变快照、调度、取消、结果所有权；UI已有Post更新边界。全量035：0错误/3560警告81.30秒。ComponentDeployment023十一项通过，有/无Wpf均在WPF上下文且不泵消息完成三个正式入口HALCON和会话清理；Components065五组另验已取消请求返回Cancelled、清理及下一次真实运行成功，不用泵消息掩盖执行层捕获。
+- 035产物FullChain032八组、Resources008二十二组、Consumption023七组通过。Consumption021旧用例裸输入没有物理帧来源，实际被同帧门拒绝；用两个真实ImageLoad建立可区分来源后，同源成功、异源拒绝，未放宽产品校验。原失败及首次用例SourceKind枚举赋值错误日志保留。最后补UI035构建并核对程序集身份。
+- UI035最终构建0错误/6610警告140.91秒；同源码重建使UI/Workflow/Plugin.Wpf程序集SHA变化，已按新产物补跑Components066五组与FullChain033八组，均通过。Resources008/Consumption023/ComponentDeployment023仍明确归属UI重建前产物；不伪称旧哈希覆盖新产物。原方案已同步。
+- 原方案optimization-o06.html与S4_IMPLEMENTATION_PLAN_20261026.json、原31行证据已同步当前通过项、失败和未完范围。实际运行页截图仍有标签截断；不称整体VM外观达标。
 
 ## 下一步与未完成
 
-- 根继续处理厂商视觉/参数依赖与源码-XAML配对，不能制造旧工作流/变量模型或空接口来凑编译。
-- 图形透明度/粗细的声明范围、步长和存量值兼容仍未完整按VM源对齐；须保真承接，不悄悄截断保存值。
-- 完整typed调试同run、原31项提取/重组及旧SDK消费者退出、VM同状态截图、VS设计时、真实运行/关闭释放与用户人工验收均未完成。旧类需消费者/资源/新合同承接及回归通过后再删。
-- HALCON沿用加密狗，不单独检查许可；不恢复旧变量收口。构建通过后先核发布依赖，再运行组件/Blob完整链及关联回归，集中交付正式Release供用户试用，不代用户通过。
-
-此前详细记录保留于Git检查点及 `history/CURRENT_TASK_before_four_lane_import_20261026.md`；原方案是统一实施/验证入口。
+- 根完成035产物的无UI消息泵执行门、发布扰动及相关回归，固定中文源码检查点及同源Release；继续VM控件真实消费和同态布局迁移。旁聊只读沟通已同步；SunEyeVision.App.slnx入口清理建议排在当前验证后，不打断主线。
+- 图形透明度/粗细的范围、步长与存量值兼容、VM同状态外观、typed调试新run、原31项重组及旧SDK消费者退出、VS设计时、用户真实人工反馈均未闭合。原目标与退出门不缩减，不据局部PASS删除旧类。
+- 人工记录保留用户此前“不符合要求”的真实反馈；新候选未由用户验收，不代签或标整体目标完成。
+- HALCON沿用加密狗，不单独检查许可。浏览器file预览此前被策略拒绝，不绕过；本轮图像为正式WPF程序实际输出，未称HTML渲染通过。

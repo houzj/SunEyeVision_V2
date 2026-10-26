@@ -2396,62 +2396,28 @@ SplitterPosition = position;
             catch (InvalidOperationException error) { StatusText = error.Message; AddLog("插线已取消: " + error.Message); return false; }
         }
 
-        public void AddConnectionToWorkflow(WorkflowConnection connection)
+        public bool AddConnectionToWorkflow(WorkflowConnection connection)
         {
-            if (WorkflowTabViewModel.SelectedTab == null)
-                return;
-
-            var connections = WorkflowTabViewModel.SelectedTab.WorkflowConnections;
-
-            // 检查是否已存在相同端口对连接（两节点间有且仅有一条连线）
-            var existingConnection = connections.FirstOrDefault(c =>
-                c.SourceNodeId == connection.SourceNodeId &&
-                c.TargetNodeId == connection.TargetNodeId &&
-                c.SourcePort == connection.SourcePort &&
-                c.TargetPort == connection.TargetPort);
-
-            // 通过定义服务取得唯一工作流定义，并确认 Tab 没有脱离定义集合。
-            var engineWf = _workflowDefinitions.GetRequired(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
-            if (!ReferenceEquals(connections, engineWf.Connections) ||
-                !ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowNodes, engineWf.Nodes))
+            var tab = WorkflowTabViewModel.SelectedTab;
+            if (tab == null || IsRunning || IsDebugWindowOpen) return false;
+            var definition = _workflowDefinitions.GetRequired(tab.CurrentWorkflowId);
+            if (!ReferenceEquals(tab.WorkflowConnections, definition.Connections) || !ReferenceEquals(tab.WorkflowNodes, definition.Nodes))
+                throw new InvalidOperationException("工作流定义集合未绑定，不能添加连接。");
+            if (!tab.WorkflowNodes.Any(n => n.Id == connection.SourceNodeId) || !tab.WorkflowNodes.Any(n => n.Id == connection.TargetNodeId))
+                throw new InvalidOperationException("连线端点不属于当前流程。");
+            var existing = tab.WorkflowConnections.FirstOrDefault(c => c.SourceNodeId == connection.SourceNodeId && c.TargetNodeId == connection.TargetNodeId);
+            if (existing != null)
             {
-                throw new InvalidOperationException(
-                    $"工作流定义集合未绑定: {engineWf.Name} ({engineWf.Id})。请先完成 Tab 绑定。");
+                if (existing.SourcePort != connection.SourcePort || existing.TargetPort != connection.TargetPort)
+                    tab.CommandManager.Execute(new AppCommands.EditConnectionPortsCommand(existing, connection.SourcePort, connection.TargetPort));
+                return true;
             }
-
-            if (existingConnection != null)
-            {
-                // 覆盖：用新连接替换旧连接
-                var sourceNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
-                var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
-                AddLog($"🔗 覆盖连接: {sourceNode?.Name ?? connection.SourceNodeId} → {targetNode?.Name ?? connection.TargetNodeId}");
-
-                var command = new AppCommands.ReplaceConnectionCommand(connections, existingConnection, connection);
-                WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-                var previousTarget = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == existingConnection.TargetNodeId) as WorkflowNodeBase;
-                AutoBindImageSourceOnConnectionRemoved(existingConnection.SourceNodeId, previousTarget, existingConnection.Id);
-
-                // Tab 与引擎共享同一连接集合，命令已同时更新定义。
-            }
-            else
-            {
-                // 新建连接
-                var sourceNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
-                var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
-                AddLog($"🔗 创建连接: {sourceNode?.Name ?? connection.SourceNodeId} → {targetNode?.Name ?? connection.TargetNodeId}");
-
-                var command = new AppCommands.AddConnectionCommand(connections, connection);
-                WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-                // Tab 与引擎共享同一连接集合，命令已同时更新定义。
-            }
-
-            // 连线建立后自动绑定 ImageSource（所见即所得）
+            var reason = ExecutionConnectionPolicy.Rejection(tab.WorkflowConnections, connection);
+            if (reason != null) { StatusText = reason; AddLog(reason); return false; }
+            tab.CommandManager.Execute(new AppCommands.AddConnectionCommand(tab.WorkflowConnections, connection));
             AutoBindImageSourceOnConnectionAdded(connection);
-
-            // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
             RefreshImageDisplayIfAffected(connection);
+            return true;
         }
 
         /// <summary>

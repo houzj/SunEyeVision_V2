@@ -294,7 +294,7 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                     {
                         var link = new SunEyeVision.Workflow.WorkflowConnection(Guid.NewGuid().ToString("N"), predecessor, newNode.Id)
                         { SourcePort = "BottomPort", TargetPort = "TopPort" };
-                        viewModel.AddConnectionToWorkflow(link);
+                        if (!viewModel.AddConnectionToWorkflow(link)) throw new InvalidOperationException(viewModel.StatusText);
                     }
                     transaction.Complete();
                 }

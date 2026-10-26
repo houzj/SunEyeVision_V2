@@ -1955,27 +1955,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-            // 检查是否已存在相同连接（同时检查节点和端口）
-
-            var existingConnection = selectedTab.WorkflowConnections?.FirstOrDefault(
-
-                c => c.SourceNodeId == sourceNode.Id && 
-
-                     c.TargetNodeId == targetNode.Id &&
-
-                     c.SourcePort == sourcePort && 
-
-                     c.TargetPort == targetPort);
-
-            
-
-            if (existingConnection != null)
-            {
-                return false;
-            }
-
-
-
             // 创建新连接
 
             var connectionId = $"conn_{Guid.NewGuid().ToString("N")[..8]}";
@@ -1989,7 +1968,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
             // 添加连接到集合（通过 ViewModel 统一入口：日志 + 命令 + ImageSource绑定）
-            _viewModel?.AddConnectionToWorkflow(newConnection);
+            if (_viewModel?.AddConnectionToWorkflow(newConnection) != true) return false;
 
 
 

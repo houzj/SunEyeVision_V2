@@ -7,7 +7,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
     private WorkflowTabViewModel? _vmGeometryTab;
-    private INotifyCollectionChanged? _vmGeometryNodes;
+    private INotifyCollectionChanged? _vmGeometryNodes, _vmGeometryConnections;
+    private readonly HashSet<WorkflowConnection> _vmGeometryConnectionSubscriptions = new();
     private readonly HashSet<WorkflowNode> _vmGeometrySubscriptions = new();
     private int _vmGeometryGeneration;
     private bool _vmGeometryQueued;
@@ -24,7 +25,10 @@ public partial class WorkflowCanvasControl
         if (_vmGeometryTab != null) _vmGeometryTab.WorkflowContentChanged -= VmGeometryContentChanged;
         if (_vmGeometryNodes != null) _vmGeometryNodes.CollectionChanged -= VmGeometryCollectionChanged;
         foreach (var node in _vmGeometrySubscriptions) node.PropertyChanged -= VmNodeGeometryChanged;
-        _vmGeometrySubscriptions.Clear(); _vmGeometryTab = null; _vmGeometryNodes = null;
+        if (_vmGeometryConnections != null) _vmGeometryConnections.CollectionChanged -= VmGeometryCollectionChanged;
+        foreach (var edge in _vmGeometryConnectionSubscriptions) edge.PropertyChanged -= VmConnectionGeometryChanged;
+        _vmGeometryConnectionSubscriptions.Clear();
+        _vmGeometrySubscriptions.Clear(); _vmGeometryTab = null; _vmGeometryNodes = null; _vmGeometryConnections = null;
     }
     private void BindVmGeometry()
     {
@@ -34,6 +38,8 @@ public partial class WorkflowCanvasControl
         _vmGeometryTab.WorkflowContentChanged += VmGeometryContentChanged;
         _vmGeometryNodes = _vmGeometryTab.WorkflowNodes;
         _vmGeometryNodes.CollectionChanged += VmGeometryCollectionChanged;
+        _vmGeometryConnections = _vmGeometryTab.WorkflowConnections;
+        _vmGeometryConnections.CollectionChanged += VmGeometryCollectionChanged;
         SubscribeVmGeometryNodes();
     }
     private void VmGeometryContentChanged(object? sender, EventArgs e) { BindVmGeometry(); QueueVmGeometryRefresh(); }
@@ -46,6 +52,16 @@ public partial class WorkflowCanvasControl
         { node.PropertyChanged -= VmNodeGeometryChanged; _vmGeometrySubscriptions.Remove(node); }
         foreach (var node in current.Except(_vmGeometrySubscriptions))
         { node.PropertyChanged += VmNodeGeometryChanged; _vmGeometrySubscriptions.Add(node); }
+        var edges = _vmGeometryTab?.WorkflowConnections.ToHashSet() ?? new();
+        foreach (var edge in _vmGeometryConnectionSubscriptions.Except(edges).ToArray())
+        { edge.PropertyChanged -= VmConnectionGeometryChanged; _vmGeometryConnectionSubscriptions.Remove(edge); }
+        foreach (var edge in edges.Except(_vmGeometryConnectionSubscriptions))
+        { edge.PropertyChanged += VmConnectionGeometryChanged; _vmGeometryConnectionSubscriptions.Add(edge); }
+    }
+    private void VmConnectionGeometryChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(WorkflowConnection.SourcePort) or nameof(WorkflowConnection.TargetPort) or
+            nameof(WorkflowConnection.SourceNodeId) or nameof(WorkflowConnection.TargetNodeId)) QueueVmGeometryRefresh();
     }
     private void VmNodeGeometryChanged(object? sender, PropertyChangedEventArgs e)
     {

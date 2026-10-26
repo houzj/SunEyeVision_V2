@@ -94,7 +94,16 @@ public sealed class VmGestureTests
         Assert.Equal(original, node.Position);
         var after = (Dictionary<WorkflowNode, Point>)type.GetProperty("After")!.GetValue(session)!;
         Assert.NotEqual(original, after[node]);
-        Assert.NotEmpty((List<FrameworkElement>)type.GetProperty("Ghosts")!.GetValue(session)!);
+        var ghosts = (List<FrameworkElement>)type.GetProperty("Ghosts")!.GetValue(session)!;
+        var ghost = Assert.IsType<Rectangle>(Assert.Single(ghosts));
+        var brush = Assert.IsType<VisualBrush>(ghost.Fill);
+        Assert.Equal(Stretch.None, brush.Stretch); Assert.Equal(.7, brush.Opacity);
+        var originalVisual = Assert.IsType<Border>(brush.Visual);
+        Assert.Equal("HitAreaBorder", originalVisual.Name); Assert.Same(node, originalVisual.Tag);
+        var bounds = VisualTreeHelper.GetDescendantBounds(originalVisual);
+        Assert.Equal(bounds.Width, ghost.Width); Assert.Equal(bounds.Height, ghost.Height);
+        Assert.Equal(after[node].X - 65 + bounds.X, System.Windows.Controls.Canvas.GetLeft(ghost));
+        Assert.Equal(after[node].Y - 25 + bounds.Y, System.Windows.Controls.Canvas.GetTop(ghost));
         // 拖出后回到起点，不能沿用上次预览的旧落点。
         Call(control, "HideVmNodeGhosts");
         Call(control, "PreviewVmNodeMove", session, new Point(150, 90));
@@ -121,6 +130,19 @@ public sealed class VmGestureTests
         Assert.Equal(new Point(210, 155), connection.PathPoints[0]);
         control.DataContext = null;
         Assert.Empty((HashSet<WorkflowNode>)Field(control, "_vmGeometrySubscriptions")!);
+    });
+    [Fact] public void Actual_canvas_retarget_uses_same_edge_and_refreshes_path_and_undo() => Sta(() =>
+    {
+        var control = Create(out var source); var tab = (WorkflowTabViewModel)control.DataContext;
+        var edge = Assert.Single(tab.WorkflowConnections); var id = edge.Id;
+        tab.CommandManager.Execute(new EditConnectionPortsCommand(edge, "RightPort", "LeftPort"));
+        control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Same(edge, Assert.Single(tab.WorkflowConnections)); Assert.Equal(id, edge.Id);
+        Assert.Equal(source.RightPortPosition, edge.PathPoints[0]);
+        tab.CommandManager.Undo(); control.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Equal(source.BottomPortPosition, edge.PathPoints[0]);
+        control.DataContext = null;
+        Assert.Empty((HashSet<Connection>)Field(control, "_vmGeometryConnectionSubscriptions")!);
     });
     [Fact] public void Actual_hot_region_has_guides_and_respects_both_directions_of_bottom_port_occupancy() => Sta(() =>
     {

@@ -500,6 +500,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
         if (!Nodes.Any(n => n.Id == connection.TargetNodeId))
             throw new ArgumentException($"目标节点不存在: {connection.TargetNodeId}", nameof(connection));
 
+        ExecutionConnectionPolicy.EnsureCanAdd(Connections, connection);
         Connections.Add(connection);
 
         // 增量更新：连接建立时，更新目标节点的上游节点池
@@ -527,6 +528,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
             SourcePort = "output",
             TargetPort = "input"
         };
+        ExecutionConnectionPolicy.EnsureCanAdd(Connections, connection);
         Connections.Add(connection);
         return connection;
     }

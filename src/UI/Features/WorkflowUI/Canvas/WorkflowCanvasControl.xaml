@@ -193,7 +193,7 @@
         </ItemsControl>
 
         <!-- 节点 -->
-        <ItemsControl ItemsSource="{Binding WorkflowNodes}">
+        <ItemsControl x:Name="VmNodeItems" ItemsSource="{Binding WorkflowNodes}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>

@@ -184,9 +184,13 @@ public partial class WorkflowCanvasControl
             session.After[node] = position;
             var visual = FindVmNodeVisual(WorkflowCanvas, node);
             if (visual == null) continue;
-            var ghost = new Rectangle { Width = width, Height = height, Fill = new VisualBrush(visual), Opacity = .7, IsHitTestVisible = false };
-            System.Windows.Controls.Canvas.SetLeft(ghost, position.X - width / 2);
-            System.Windows.Controls.Canvas.SetTop(ghost, position.Y - height / 2);
+            // 原件DiagramItem_PreviewMouseMove：后代边界+不拉伸的0.7镜像。
+            var bounds = VisualTreeHelper.GetDescendantBounds(visual);
+            if (bounds.IsEmpty) continue;
+            var brush = new VisualBrush(visual) { Stretch = Stretch.None, Opacity = .7 };
+            var ghost = new Rectangle { Width = bounds.Width, Height = bounds.Height, Fill = brush, IsHitTestVisible = false };
+            System.Windows.Controls.Canvas.SetLeft(ghost, position.X - width / 2 - 10 + bounds.X);
+            System.Windows.Controls.Canvas.SetTop(ghost, position.Y - height / 2 - 10 + bounds.Y);
             Panel.SetZIndex(ghost, 9000); WorkflowCanvas.Children.Add(ghost); session.Ghosts.Add(ghost);
         }
         if (session.After.Count == 1)
@@ -199,7 +203,7 @@ public partial class WorkflowCanvasControl
     }
     private static Border? FindVmNodeVisual(DependencyObject parent, WorkflowNode node)
     {
-        if (parent is Border border && border.Name == "NodeBorder" && ReferenceEquals(border.Tag, node)) return border;
+        if (parent is Border border && border.Name == "HitAreaBorder" && ReferenceEquals(border.Tag, node)) return border;
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var result = FindVmNodeVisual(VisualTreeHelper.GetChild(parent, i), node);

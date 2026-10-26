@@ -28,6 +28,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 
         public void Execute(object? parameter)
         {
+            ExecutionConnectionPolicy.EnsureCanAdd(_connections, _connection);
             _connections.Add(_connection);
         }
 

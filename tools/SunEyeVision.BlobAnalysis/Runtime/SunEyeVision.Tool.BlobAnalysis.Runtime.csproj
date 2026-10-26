@@ -9,9 +9,11 @@
     <ToolComponentId>SunEyeVision.Tool.BlobAnalysis.Runtime</ToolComponentId>
     <ToolComponentToolId>BlobAnalysis</ToolComponentToolId>
     <ToolComponentRole>Runtime</ToolComponentRole>
-    <ToolComponentEntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobDefinition</ToolComponentEntryType>
+    <ToolComponentEntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool</ToolComponentEntryType>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources/BlobParameters.xml" LogicalName="BlobAnalysis.BlobParameters.xml" />
+    <EmbeddedResource Include="Resources/BlobDisplay.xml" LogicalName="BlobAnalysis.BlobDisplay.xml" />
     <ProjectReference Include="../../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
     <Reference Include="halcondotnetxl"><HintPath>../../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>

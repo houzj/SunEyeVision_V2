@@ -32,7 +32,7 @@ internal static class WorkflowCases
    // S3 captures the actual input snapshot before the kernel runs. Gray/Binary/Region retain that
    // physical source; publication has its separate output.Identity and must not relabel the frame.
    var blobRegion=second.Values.Get<IReadOnlyRegion>(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSchema.RegionPort);
-   if(image.Frame.ProducerRun!=output.Identity||image.Frame.SourcePortId!=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobDefinition.ImageInput
+   if(image.Frame.ProducerRun!=output.Identity||image.Frame.SourcePortId!=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool.ImageInput
       ||image.EffectiveDomain.SourceFrame!=image.Frame||blobRegion.SourceFrame!=image.Frame)
        throw new Exception("Actual input capture / output publication / Region provenance is inconsistent");
    var frame=image.Frame;var pixelLease=image.AcquirePixels();var region=pixelLease.AcquireDomainReader();

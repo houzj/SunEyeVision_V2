@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BlobParameters schemaVersion="1">
+  <Group page="运行参数" section="运行参数">
+    <Parameter id="Threshold" type="Integer" default="128" label="阈值" minimum="0" maximum="255" decimals="0" increment="1" />
+    <Parameter id="UpperThreshold" type="Integer" default="255" label="阈值上限" minimum="0" maximum="255" decimals="0" increment="1" />
+    <Parameter id="SegmentationMode" type="Enum" default="SingleThreshold" label="分割方式" />
+    <Parameter id="Type" type="Enum" default="Binary" label="极性" />
+  </Group>
+  <Group page="基本参数" section="ROI区域">
+    <Parameter id="IsPositionCorrectionEnabled" type="Boolean" default="false" label="位置修正" />
+  </Group>
+  <Group page="运行参数" section="Blob筛选">
+    <Parameter id="IsAreaFilterEnabled" type="Boolean" default="true" label="面积使能" />
+    <Parameter id="FilterAreaMin" type="Number" default="10" label="面积下限" minimum="0" maximum="9999999" decimals="0" increment="1" />
+    <Parameter id="FilterAreaMax" type="Number" default="999999" label="面积上限" minimum="0" maximum="9999999" decimals="0" increment="1" />
+    <Parameter id="IsCircularityFilterEnabled" type="Boolean" default="false" label="圆度使能" />
+    <Parameter id="FilterCircularityMin" type="Number" default="0" label="圆度下限" minimum="0" maximum="1" decimals="2" increment="0.01" />
+    <Parameter id="FilterCircularityMax" type="Number" default="1" label="圆度上限" minimum="0" maximum="1" decimals="2" increment="0.01" />
+    <Parameter id="IsRectangularityFilterEnabled" type="Boolean" default="false" label="矩形度使能" />
+    <Parameter id="FilterRectangularityMin" type="Number" default="0" label="矩形度下限" minimum="0" maximum="1" decimals="2" increment="0.01" />
+    <Parameter id="FilterRectangularityMax" type="Number" default="1" label="矩形度上限" minimum="0" maximum="1" decimals="2" increment="0.01" />
+    <Parameter id="IsBlobCountFilterEnabled" type="Boolean" default="true" label="数量使能" />
+    <Parameter id="BlobCountLimit" type="Integer" default="1000" label="查找数量" minimum="1" maximum="20000" decimals="0" increment="1" />
+    <Parameter id="SortMode" type="Enum" default="AreaDesc" label="排序方式" />
+  </Group>
+  <Group page="运行参数" section="输出">
+    <Parameter id="OutputGrayImage" type="Boolean" default="true" label="Blob图像输出" />
+    <Parameter id="OutputBinaryImage" type="Boolean" default="false" label="二值化图像输出" />
+    <Parameter id="OutputBoundary" type="Boolean" default="false" label="轮廓输出" />
+  </Group>
+  <Judgments>
+    <Judgment key="output-not-empty" name="输出不为空" kind="Boolean" perItem="false" enabled="false" minimum="0" maximum="0" order="10" allowedMinimum="0" allowedMaximum="1.7976931348623157E+308" unit="" decimals="2" />
+    <Judgment key="white-ratio" name="白色像素比例" kind="Range" perItem="false" enabled="false" minimum="0" maximum="100" allowedMinimum="0" allowedMaximum="100" unit="%" order="20" decimals="2" />
+    <Judgment key="blob-count" name="Blob数量" kind="Range" perItem="false" enabled="false" minimum="0" maximum="9999" allowedMinimum="0" allowedMaximum="999999" decimals="0" order="30" unit="" />
+    <Judgment key="total-area" name="总面积" kind="Range" perItem="false" enabled="false" minimum="0" maximum="10000000" allowedMinimum="0" unit="px²" order="40" allowedMaximum="1.7976931348623157E+308" decimals="2" />
+    <Judgment key="average-area" name="平均面积" kind="Range" perItem="false" enabled="false" minimum="0" maximum="10000000" allowedMinimum="0" unit="px²" order="50" allowedMaximum="1.7976931348623157E+308" decimals="2" />
+    <Judgment key="max-area" name="最大面积" kind="Range" perItem="false" enabled="false" minimum="0" maximum="10000000" allowedMinimum="0" unit="px²" order="60" allowedMaximum="1.7976931348623157E+308" decimals="2" />
+    <Judgment key="min-area" name="最小面积" kind="Range" perItem="false" enabled="false" minimum="0" maximum="10000000" allowedMinimum="0" unit="px²" order="70" allowedMaximum="1.7976931348623157E+308" decimals="2" />
+    <Judgment key="average-circularity" name="平均圆度" kind="Range" perItem="false" enabled="false" minimum="0" maximum="1" allowedMinimum="0" allowedMaximum="1" decimals="3" order="80" unit="" />
+    <Judgment key="average-rectangularity" name="平均矩形度" kind="Range" perItem="false" enabled="false" minimum="0" maximum="1" allowedMinimum="0" allowedMaximum="1" decimals="3" order="90" unit="" />
+    <Judgment key="per-blob-area" name="每个Blob面积" kind="Range" perItem="true" enabled="false" minimum="0" maximum="10000000" allowedMinimum="0" unit="px²" order="100" allowedMaximum="1.7976931348623157E+308" decimals="2" />
+    <Judgment key="per-blob-circularity" name="每个Blob圆度" kind="Range" perItem="true" enabled="false" minimum="0" maximum="1" allowedMinimum="0" allowedMaximum="1" decimals="3" order="110" unit="" />
+    <Judgment key="per-blob-rectangularity" name="每个Blob矩形度" kind="Range" perItem="true" enabled="false" minimum="0" maximum="1" allowedMinimum="0" allowedMaximum="1" decimals="3" order="120" unit="" />
+  </Judgments>
+</BlobParameters>

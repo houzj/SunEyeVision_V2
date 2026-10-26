@@ -47,6 +47,12 @@ public static class BlobPresentation
   // existing out-of-range literal unchanged until the user actually edits it.
   if(key.StartsWith("presentation.")&&key.EndsWith(".Style.Opacity")){minimum=0;maximum=1;increment=.01;}
   if(key.StartsWith("presentation.graphics.")&&key.EndsWith(".Style.LineWidth")){minimum=1;maximum=10;}
+  if(key.StartsWith("setting.")&&BlobParameterDefinition.Instance.Contains(key[8..]))
+  {
+   var id=key[8..];var definition=BlobParameterDefinition.Instance;
+   page=definition.Page(id);section=definition.Section(id);minimum=definition.Minimum(id);maximum=definition.Maximum(id);
+   decimals=definition.DecimalPlaces(id);increment=definition.Increment(id);
+  }
   return new(page,section,condition,paired,advanced,minimum,maximum,decimals,allowReference,dialog,title,primary,increment);
  }
 }

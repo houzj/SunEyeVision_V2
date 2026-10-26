@@ -61,3 +61,41 @@
 - 恢复后5个产品关键源码SHA与正式Release验证证据一致，4轨最终测试源码SHA也一致；本次检查点只收已验证控件消费者及文档。新结构尚未编译、未实施完整宿主替换，不计完成。
 - 用户批准的最新目标为Runtime/Parameters、Results、Algorithms、Resources和Wpf/Factories/Views；BlobParameters.xml是默认值/编辑元数据唯一来源，BlobDisplay.xml声明结果显示，属性存当前值、方案存用户值。两份XML不是用户参数保存文件。
 - 核src工程实际职责：Contracts/Runtime/Wpf具真实公共职责；SDK仍混合旧参数/结果/控件与辅助，须随新消费链退出；Cv/Hal Adapter按引擎边界评估重写，不为旧SDK兼容保留；Tool.Kernels当前仅PointPairMath一个类，仅SDK生产调用，独立工程收益不足。CommonControl主要脚本编辑，命名需澄清。
+
+## 2026-10-26 更新S4目标清单方案
+
+- 已核结构改造前基线f1d42c80提交并推送origin/main完成；原先“正在提交/未推送”段落为历史。新结构改动仍仅保存在既有ZIP，尚未恢复或验证。
+- 用户要求重新整理目标清单；原O06生成源新增s4GoalPlan，G0—G8覆盖基线、公共工程/新合同、两工程唯一模型、XML唯一默认值/显示定义、Runtime完整链、Blob三页交互、原31与整套VM库、正式Release、真实人工验收。保留完整总目标及既有成果，不把范围缩到目录调整。
+- 三个交付检查点：M1新Blob完整运行链；M2原VM控件/交互与整库/旧类退出；M3正式版本及真实验收收口。当前为清单方案更新，不将原人工未通过或未知项改为完成。
+
+## 2026-10-27 正式制定并启动S4完整交付目标
+
+- 用户明确“好的制定目标”，G0—G8由方案转正式执行目标；基线f1d42c80不重置，原完整S4/原31及整套VM库范围保留。
+- G2目标结构是硬性交付标准，唯一文件树在S4_IMPLEMENTATION_PLAN_20261026.json的blobFileStructure.tree；s4GoalPlan.G2Acceptance引用其SHA，并列出必需路径、两工程依赖、唯一模型、XML默认定义/用户值持久化、旧入口桥接删除、宿主接入及正式Release整链验收。
+- M1新Blob完整运行链，M2控件/交互与整库/旧类退出，M3正式版本及真实验收收口；单工作树单产品写者，不恢复旧角色/副本，不为旧项目兼容保留双轨。
+- 新目标已正式启动不代表G1—G8已完成；本轮只更新目标文件和原O06展示，未恢复或宣称通过已保存的结构重构增量。
+
+## 2026-10-27 Blob全VM控件与公共层管理约束
+
+- 用户明确Blob全部控件都用VM迁移原件，当前先迁移Blob所需的控件及依赖，缺资料继续VM逆向；194项参考资料供查源，不按原31类设计/保留本方控件。已写入AGENTS和原方案vmCommonControls。
+- 公共可视控件统一Plugin.Wpf/Controls/Native，原模板/资源留Themes/Native与Assets；目标Adapters只做非视觉数据绑定/生命周期，Presenters选原模板组装。Blob.Wpf不复制公共控件，Runtime不依赖WPF。
+- 现有Fields/Regions组合及SDK壳/RangeSlider/输入源等并未全部替换；不得改目录/改名就称原VM消费完成。原31清单保历史功能追踪，整库既有目标仍记录。
+- 实施状态纠正：上一继续执行轮已按before/after SHA恢复26项结构/XML增量，目前为未编译增量；Runtime有BlobTool和Parameters/Results/Algorithms，参数XML及读取已初步接入，尚缺BlobInput/显示XML、完整公共合同消费和新构建验证。
+
+## 2026-10-27 用户删除旧目标后重新创建
+
+- 用户明确旧目标已删除并要求重新创建；已核工具返回goal=null。新目标以最后确认的Blob完整方案为准，范围为Blob及受影响公共链，原31只作历史追踪，整套VM库全量移植不再作为本轮完成条件。此段取代此前“整库既有范围仍属当前目标”的说法；旧目标清单已保存在supersededGoalPlans。
+- 保留已推送基线f1d42c80和实际成果；新目标仍要求两工程硬性结构、两份XML、无旧兼容/双模型/桥接、Blob全部VM原控件及完整交互、正式Release同源回归和真实人工验收。M1完整运行链→M2所需VM控件/交互→M3正式验收。
+- 当前产品源码是已恢复26项未验证结构/XML增量，并未宣称G2/G3完成；后续直接继续实施，不重新申请阶段授权。
+
+## 2026-10-27 Blob输入与XML基础检查点（当前状态）
+
+- 执行者Codex，单产品写者，main基线f1d42c807fa6e5848b3640cd797d172fc50534d6。上一轮只确认目标；本轮已实际修改源码并完成本增量的正式Release定向验证。
+- 已接BlobInput借用宿主冻结输入，不新增资源所有者；BlobTool/Settings/Output/算法位于目标职责目录。参数XML是20运行字段和12判定的新建默认来源，严格拒绝未知/重复/缺失/类型/非法默认值/范围/步进/判定及DTD。属性保持强类型当前值。
+- BlobDisplay.xml与严格解析器已嵌入Runtime：区分输入ROI与输出，校验稳定字段路径、颜色/样式、表格身份。当前生产参数初始化读取5图形/1文本样式，结果页按XML生成8列并直接读算法发布摘要，不自行Sum/Average/Min/Max。
+- UI构建blob-xml-ui-build-001：0错误/6610警告，175.34秒；全量blob-xml-release-build-001：0错误/6626警告，109.73秒。正式目录RuntimeKernel018十一组、FullChain037八组、WindowPresentation018十一组、FieldEditing013八组、Components079五组、ComponentDeployment028十一项通过。部署检查实际启动正式EXE，22工具准入；临时移动3文件及清单均原SHA还原。全768项发布文件及144条加载记录核对一致。
+- FullChain036失败是新增测试误把旧SDK单元素数组作标量；修为正式声明NormalizeValue后037通过。失败日志保留，不放宽产品门。
+- 证据docs/collaboration/evidence/O06_BLOB_XML_CHECKPOINT_20261027.json，记录30份Blob源码SHA、构建、测试源码、加载文件与发布SHA。Core/清单编译身份为f1d42c80，加明确记录的未提交增量；不得把后续提交号直接改入清单冒充本次构建。
+- 未完成：旧SDK根入口、双套模型和转换桥接仍存在；工程最终命名、Wpf参数/结果Views与工厂、宿主直接Runtime发现/编辑/持久化/结果链均需改造。显示XML已供默认样式与表格列，几何/文本生成尚有旧入口硬编码，不能称完整映射消费。当前样式XML沿用产品值，不冒充全部VM默认或VM外观达标。
+- 下一步优先G1公共新合同与生产消费链，连同受影响宿主与测试直接替换，删除旧入口/双模型/桥接；然后完成两工程与全部所需VM原件。原31只历史核对，本轮不要求全194清单迁完。
+- VS设计时未验证；保留用户此前视觉未通过，新候选未人工验收。目标继续active，不把本检查点计M1或整体完成。

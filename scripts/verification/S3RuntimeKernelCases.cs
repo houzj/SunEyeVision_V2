@@ -1,4 +1,7 @@
 using System.IO;
+using System.Text;
+using System.Text.Json;
+using System.Xml.Linq;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
@@ -12,6 +15,68 @@ internal static class S2DocumentEditingCases
     {
         try
         {
+            Case("XML唯一默认、用户设置重开及强类型读取",()=>{
+                var settings=new BlobSettings();
+                Require(settings.Threshold==128&&settings.UpperThreshold==255&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999
+                    &&settings.BlobCountLimit==1000&&settings.OutputGrayImage&&!settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
+                var changed=settings with{Threshold=73,UpperThreshold=211,FilterAreaMax=9999999,BlobCountLimit=993,
+                    Judgments=new[]{new BlobJudgment("per-blob-area",true,true,19,750)}};
+                var restored=JsonSerializer.Deserialize<BlobSettings>(JsonSerializer.Serialize(changed))!;
+                Require(restored.Threshold==73&&restored.UpperThreshold==211&&restored.FilterAreaMax==9999999&&restored.BlobCountLimit==993
+                    &&restored.Judgments.SequenceEqual(changed.Judgments),"XML默认覆盖已保存的用户值");
+                Throws<InvalidDataException>(()=>BlobParameterDefinition.Instance.Default<double>(nameof(BlobSettings.Threshold)));
+            });
+            Case("参数XML完整性与非法元数据在加载阶段拒绝",()=>{
+                string Xml(){using var s=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;return new StreamReader(s).ReadToEnd();}
+                void Reject(Action<XElement> mutate)
+                {
+                    var root=XElement.Parse(Xml());mutate(root);
+                    using var stream=new MemoryStream(Encoding.UTF8.GetBytes(root.ToString()));
+                    Throws<InvalidDataException>(()=>BlobParameterDefinition.Read(stream));
+                }
+                XElement Field(XElement root,string id)=>root.Elements("Group").Elements("Parameter").Single(x=>(string?)x.Attribute("id")==id);
+                Reject(r=>Field(r,"Threshold").Remove());
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("id","Unknown"));
+                Reject(r=>Field(r,"Threshold").Parent!.Add(new XElement(Field(r,"Threshold"))));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("type","Number"));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("default","256"));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("default","oops"));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("minimum","NaN"));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("minimum","oops"));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("decimals","0.5"));
+                Reject(r=>Field(r,"Threshold").SetAttributeValue("increment","0"));
+                Reject(r=>Field(r,"SortMode").SetAttributeValue("default","Missing"));
+                Reject(r=>r.Add(new XElement("Unknown")));
+                Reject(r=>r.Element("Judgments")!.Elements().First().Remove());
+                Reject(r=>r.Element("Judgments")!.Elements().First().SetAttributeValue("perItem","true"));
+                Reject(r=>r.Element("Judgments")!.Elements().First().SetAttributeValue("minimum","Infinity"));
+                Reject(r=>r.Element("Judgments")!.Elements().First().SetAttributeValue("unknown","1"));
+                using var dtd=new MemoryStream(Encoding.UTF8.GetBytes("<!DOCTYPE x [<!ENTITY y 'x'>]><BlobParameters schemaVersion='1'/>"));
+                Throws<InvalidDataException>(()=>BlobParameterDefinition.Read(dtd));
+            });
+            Case("显示XML声明源校验、样式与表格投影",()=>{
+                var definition=BlobDisplayDefinition.Instance;var schema=new BlobTool().Describe(Basic);
+                Require(definition.Graphics.Count==5&&definition.Texts.Count==1&&definition.Table.Columns.Count==8
+                    &&definition.Table.Validate(schema).Count==0,"显示定义未加载或字段映射无效");
+                Require(definition.Graphics.Single(x=>x.Key=="inspection-roi").InputSource
+                    &&definition.Graphics.Single(x=>x.Key=="blobs").Source.PortId==BlobSchema.BlobsPort
+                    &&definition.Texts.Single().Source.MemberFieldPath.SequenceEqual(new[]{"area"}),"输入/输出显示来源混淆");
+                string Xml(){using var s=typeof(BlobTool).Assembly.GetManifestResourceStream("BlobAnalysis.BlobDisplay.xml")!;return new StreamReader(s).ReadToEnd();}
+                void Reject(Action<XElement> mutate)
+                {
+                    var root=XElement.Parse(Xml());mutate(root);
+                    using var stream=new MemoryStream(Encoding.UTF8.GetBytes(root.ToString()));
+                    Throws<InvalidDataException>(()=>BlobDisplayDefinition.Read(stream,schema));
+                }
+                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("member","unknown"));
+                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("okColor","#GG0000"));
+                Reject(r=>r.Element("Graphics")!.Elements().First().SetAttributeValue("opacity","1.1"));
+                Reject(r=>r.Element("Graphics")!.Add(new XElement(r.Element("Graphics")!.Elements().First())));
+                Reject(r=>r.Element("Texts")!.Elements().First().SetAttributeValue("port","unknown"));
+                Reject(r=>r.Element("Table")!.SetAttributeValue("identity","missing"));
+                Reject(r=>r.Element("Table")!.Elements().First().SetAttributeValue("member","unknown"));
+                Reject(r=>r.Element("Table")!.Elements().First().SetAttributeValue("decimals","16"));
+            });
             Case("最终集合、双孔边界、NG保留和请求输出", () => {
                 using var factory = new FrozenOutputResources();
                 using var input = Image(32,24,(r,c) => r>=2&&r<=16&&c>=2&&c<=16 && !(r>=5&&r<=7&&c>=5&&c<=7) && !(r>=10&&r<=12&&c>=10&&c<=12) || r>=20&&r<=21&&c>=25&&c<=26);
@@ -22,10 +87,10 @@ internal static class S2DocumentEditingCases
                 var values=result.ToValues();
                 Require(values.ContainsKey(BlobSchema.BlobsPort)&&result.GrayImage is not null&&result.BinaryImage is not null, "请求资源被开关抑制");
                 Require((double)values[BlobSchema.Field(30)]! ==4&&(double)values[BlobSchema.Field(31)]! ==207,"公开最小/最大面积没有来自同一最终集合");
-                var definition=new BlobDefinition();var declaration=definition.Describe(Basic);
+                var definition=new BlobTool();var declaration=definition.Describe(Basic);
                 var session=definition.CreateSession();
                 var outcome=session.ExecuteAsync(new(Basic,
-                    new InputValues(declaration.Inputs,new Dictionary<string,object?>{{BlobDefinition.ImageInput,input}}),
+                    new InputValues(declaration.Inputs,new Dictionary<string,object?>{{BlobTool.ImageInput,input}}),
                     new Context(factory),new[]{new OutputValueRequest(BlobSchema.BlobsPort,new[]{"contour-lossy"})})).GetAwaiter().GetResult();
                 session.DisposeAsync().GetAwaiter().GetResult();
                 using(var projected=outcome.Output)
@@ -97,8 +162,8 @@ internal static class S2DocumentEditingCases
             });
             Case("声明执行与下游资源请求覆盖隐藏输出、无效路径明确拒绝",()=> {
                 using var factory=new FrozenOutputResources(); using var image=Image(8,8,(_,_)=>true);
-                var definition=new BlobDefinition();var schema=definition.Describe(Basic);
-                var inputs=new InputValues(schema.Inputs,new Dictionary<string,object?>{[BlobDefinition.ImageInput]=image});
+                var definition=new BlobTool();var schema=definition.Describe(Basic);
+                var inputs=new InputValues(schema.Inputs,new Dictionary<string,object?>{[BlobTool.ImageInput]=image});
                 var context=new Context(factory);
                 var requests=new[]{new OutputValueRequest(BlobSchema.Field(5)),new OutputValueRequest(BlobSchema.Field(6)),new OutputValueRequest(BlobSchema.BlobsPort,new[]{"boundary"})};
                 var session=definition.CreateSession();

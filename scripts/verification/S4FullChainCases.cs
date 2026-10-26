@@ -145,6 +145,23 @@ internal static class S2DocumentEditingCases
         Require(context.DebugResults.GetNodeResult(blob.Id)?.Result is { } draftResult&&Count(draftResult)==1&&Count(Result(blob))==2,"调试结果没有正确隔离于生产结果");
         var analysis=vm.SelectedNodeDataAnalysisControl??throw new Exception("没有数据分析视图");
         var table=Logicals(analysis).OfType<DataGrid>().Single();Require(table.Items.Count==1,"真实事件链没有刷新Blob结果表");
+        var displayDefinition=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobDisplayDefinition.Instance;
+        Require(table.Columns.Select(column=>column.Header?.ToString()).SequenceEqual(displayDefinition.Table.Columns.Select(column=>column.DisplayName)),
+            "生产结果表未使用BlobDisplay.xml的列声明");
+        foreach(var (actual,expected) in table.Columns.Zip(displayDefinition.Table.Columns))
+            Require(actual is DataGridTextColumn textColumn&&textColumn.Binding is System.Windows.Data.Binding binding
+                &&binding.Path.Path=="["+expected.Value.MemberFieldPath.Single()+"]","生产结果表仍依赖旧CLR字段列绑定");
+        var published=(ToolResults)execution.Results!;
+        double Published(int id)
+        {
+            var variable=published.GetOutputVariables().Single(variable=>BindingClrAdapter.OutputPortId(variable)
+                ==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSchema.Field(id));
+            return Convert.ToDouble(BindingClrAdapter.NormalizeValue(BindingClrAdapter.DescribeOutput(variable),variable.RuntimeValue),
+                System.Globalization.CultureInfo.InvariantCulture);
+        }
+        foreach(var (property,id) in new[]{("FilteredBlobCount",11),("FilteredTotalArea",12),("AverageArea",13),("MinArea",30),("MaxArea",31)})
+            Require(Convert.ToDouble(analysis.GetType().GetProperty(property)!.GetValue(analysis),System.Globalization.CultureInfo.InvariantCulture)==Published(id),
+                "结果摘要未显示算法发布值："+property);
         table.SelectedItem=table.Items[0];Pump();
         var highlight=typeof(ResultRenderLayer).GetField("_highlightItems",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(image.ResultRenderLayerControl) as System.Collections.IEnumerable;
         Require(highlight?.Cast<object>().Count()==1,"结果行选择未通过真实主窗口订阅形成图像高亮");

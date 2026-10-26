@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows.Media;
 using System.Collections.Generic;
@@ -63,6 +63,31 @@ namespace SunEyeVision.Tool.BlobAnalysis
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
     public class BlobAnalysisParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract, IOutputContractProvider, IStoredConfigurationValidator, IBindingInputActivityProvider, IConfigurationFieldProvider
     {
+        public BlobAnalysisParameters()
+        {
+            var defaults=new Runtime.BlobSettings();
+            Threshold=defaults.Threshold;
+            UpperThreshold=defaults.UpperThreshold;
+            SegmentationMode=(BlobSegmentationMode)defaults.SegmentationMode;
+            Type=(ThresholdType)defaults.Type;
+            IsPositionCorrectionEnabled=defaults.IsPositionCorrectionEnabled;
+            IsAreaFilterEnabled=defaults.IsAreaFilterEnabled;
+            FilterAreaMin=defaults.FilterAreaMin;
+            FilterAreaMax=defaults.FilterAreaMax;
+            IsCircularityFilterEnabled=defaults.IsCircularityFilterEnabled;
+            FilterCircularityMin=defaults.FilterCircularityMin;
+            FilterCircularityMax=defaults.FilterCircularityMax;
+            IsRectangularityFilterEnabled=defaults.IsRectangularityFilterEnabled;
+            FilterRectangularityMin=defaults.FilterRectangularityMin;
+            FilterRectangularityMax=defaults.FilterRectangularityMax;
+            IsBlobCountFilterEnabled=defaults.IsBlobCountFilterEnabled;
+            BlobCountLimit=defaults.BlobCountLimit;
+            OutputBlobImage=defaults.OutputGrayImage;
+            OutputBinaryImage=defaults.OutputBinaryImage;
+            OutputContours=defaults.OutputBoundary;
+            SortMode=(BlobSortMode)defaults.SortMode;
+        }
+
         public SunEyeVision.Plugin.Contracts.RegionFieldMode InspectionMode { get; set; }
         public SunEyeVision.Plugin.Contracts.RegionFieldMode MaskMode { get; set; }
         [JsonIgnore] public SunEyeVision.Plugin.Contracts.IReadOnlyRegion? InspectionRegionInput { get; set; }
@@ -164,13 +189,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 二值化阈值(0-255)
         /// </summary>
         [DisplayName("阈值")]
-        public int Threshold { get; set; } = 128;
+        public int Threshold { get; set; }
 
         /// <summary>
         /// 双阈值选取区间上限(0-255)
         /// </summary>
         [DisplayName("阈值上限")]
-        public int UpperThreshold { get; set; } = 255;
+        public int UpperThreshold { get; set; }
 
         [DisplayName("分割方式")]
         public BlobSegmentationMode SegmentationMode { get; set; }
@@ -179,7 +204,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 阈值极性（Binary为区间内，BinaryInv为有效域内补集）
         /// </summary>
         [DisplayName("极性")]
-        public ThresholdType Type { get; set; } = ThresholdType.Binary;
+        public ThresholdType Type { get; set; }
 
         #endregion
 
@@ -270,13 +295,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 是否限制后续结果、区域和显示统一使用的 Blob 数量。
         /// </summary>
         [DisplayName("启用查找数量筛选")]
-        public bool IsBlobCountFilterEnabled { get; set; } = true;
+        public bool IsBlobCountFilterEnabled { get; set; }
 
         [DisplayName("查找数量")]
-        public int BlobCountLimit { get; set; } = 1000;
+        public int BlobCountLimit { get; set; }
 
         [DisplayName("Blob图像输出")]
-        public bool OutputBlobImage { get; set; } = true;
+        public bool OutputBlobImage { get; set; }
 
         [DisplayName("二值化图像输出")]
         public bool OutputBinaryImage { get; set; }
@@ -290,24 +315,26 @@ namespace SunEyeVision.Tool.BlobAnalysis
         private static ResultPresentationConfig CreateResultPresentation()
         {
             var config = new ResultPresentationConfig();
-            config.Judgments.Add(new() { Key = "output-not-empty", Name = "输出不为空", RuleKind = JudgmentRuleKind.Boolean, Enabled = false, Order = 10 });
-            config.Judgments.Add(new() { Key = "white-ratio", Name = "白色像素比例", Enabled = false, Min = 0, Max = 100, Unit = "%", AllowedMinimum = 0, AllowedMaximum = 100, Order = 20 });
-            config.Judgments.Add(new() { Key = "blob-count", Name = "Blob数量", Enabled = false, Min = 0, Max = 9999, AllowedMinimum = 0, AllowedMaximum = 999999, DecimalPlaces = 0, Order = 30 });
-            config.Judgments.Add(new() { Key = "total-area", Name = "总面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 40 });
-            config.Judgments.Add(new() { Key = "average-area", Name = "平均面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 50 });
-            config.Judgments.Add(new() { Key = "max-area", Name = "最大面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 60 });
-            config.Judgments.Add(new() { Key = "min-area", Name = "最小面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 70 });
-            config.Judgments.Add(new() { Key = "average-circularity", Name = "平均圆度", Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 80 });
-            config.Judgments.Add(new() { Key = "average-rectangularity", Name = "平均矩形度", Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 90 });
-            config.Judgments.Add(new() { Key = "per-blob-area", Name = "每个Blob面积", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 100 });
-            config.Judgments.Add(new() { Key = "per-blob-circularity", Name = "每个Blob圆度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 110 });
-            config.Judgments.Add(new() { Key = "per-blob-rectangularity", Name = "每个Blob矩形度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 120 });
-            config.Graphics.Add(new() { Key = "blobs", Name = "外接矩形", Order = 10, Style = new() { Name = "Blobs", LineWidth = 2 } });
-            config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8, IsVisible = false } });
-            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1, IsVisible = false } });
-            config.Graphics.Add(new() { Key = "inspection-roi", Name = "检测区", Order = 40, Style = new() { Name = "InspectionRoi", LineWidth = 1, OkColor = Color.FromRgb(0, 0, 255) } });
-            config.Graphics.Add(new() { Key = "mask-roi", Name = "屏蔽区", Order = 50, Style = new() { Name = "MaskRoi", LineWidth = 1, OkColor = Color.FromRgb(0xFF, 0xA5, 0x00) } });
-            config.Texts.Add(new() { Key = "area", Name = "面积列表", Order = 10, Style = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 } });
+            foreach(var item in Runtime.BlobParameterDefinition.Instance.JudgmentMetadata)
+            {
+                string Get(string key)=>(string?)item.Attribute(key)??throw new InvalidOperationException("判定元数据缺失："+key);
+                double? Number(string key)=>item.Attribute(key) is {} value?double.Parse(value.Value,System.Globalization.CultureInfo.InvariantCulture):null;
+                config.Judgments.Add(new(){Key=Get("key"),Name=Get("name"),RuleKind=Enum.Parse<JudgmentRuleKind>(Get("kind")),
+                    Scope=bool.Parse(Get("perItem"))?JudgmentScope.PerItem:JudgmentScope.Overall,
+                    AffectsItemDisplayState=bool.Parse(Get("perItem")),Enabled=bool.Parse(Get("enabled")),
+                    Min=Number("minimum")!.Value,Max=Number("maximum")!.Value,AllowedMinimum=Number("allowedMinimum")!.Value,AllowedMaximum=Number("allowedMaximum")!.Value,
+                    Unit=Get("unit"),DecimalPlaces=int.Parse(Get("decimals"),System.Globalization.CultureInfo.InvariantCulture),Order=int.Parse(Get("order"),System.Globalization.CultureInfo.InvariantCulture)});
+            }
+            static Color ColorValue(uint argb)=>Color.FromArgb((byte)(argb>>24),(byte)(argb>>16),(byte)(argb>>8),(byte)argb);
+            var display=Runtime.BlobDisplayDefinition.Instance;
+            foreach(var item in display.Graphics)
+                config.Graphics.Add(new(){Key=item.Key,Name=item.Label,Order=item.Order,Style=new(){Name=item.StyleName,
+                    IsVisible=item.Visible,OkColor=ColorValue(item.OkColor),NgColor=ColorValue(item.NgColor),
+                    Opacity=item.Opacity,LineWidth=item.LineWidth,CrossSize=item.CrossSize}});
+            foreach(var item in display.Texts)
+                config.Texts.Add(new(){Key=item.Key,Name=item.Label,Order=item.Order,Style=new(){Name=item.StyleName,
+                    IsVisible=item.Visible,OkColor=ColorValue(item.OkColor),NgColor=ColorValue(item.NgColor),Opacity=item.Opacity,
+                    FontSize=item.FontSize,IsBold=item.Bold,PositionX=item.X,PositionY=item.Y}});
             return config;
         }
 
@@ -317,7 +344,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// Blob排序方式
         /// </summary>
         [DisplayName("排序方式")]
-        public BlobSortMode SortMode { get; set; } = BlobSortMode.AreaDesc;
+        public BlobSortMode SortMode { get; set; }
 
         #endregion
 
@@ -342,13 +369,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #region 字段（预处理/形态学/滤波，位置修正字段已上提基类 RoiParameters）
 
-        private double _filterAreaMin = 10;
-        private double _filterAreaMax = 999999;
+        private double _filterAreaMin;
+        private double _filterAreaMax;
         private double _filterCircularityMin;
-        private double _filterCircularityMax = 1.0;
+        private double _filterCircularityMax;
         private double _filterRectangularityMin;
-        private double _filterRectangularityMax = 1.0;
-        private bool _isAreaFilterEnabled = true;
+        private double _filterRectangularityMax;
+        private bool _isAreaFilterEnabled;
         private bool _isCircularityFilterEnabled;
         private bool _isRectangularityFilterEnabled;
 

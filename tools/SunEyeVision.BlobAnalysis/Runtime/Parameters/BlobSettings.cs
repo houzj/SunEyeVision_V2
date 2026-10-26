@@ -11,27 +11,53 @@ public sealed record BlobJudgment(string Key, bool PerItem, bool Enabled, double
 /// <summary>Business settings only: no bindings, brushes, view state, backend handles or writable globals.</summary>
 public sealed record BlobSettings : IToolSettings<BlobSettings>
 {
-    public int Threshold { get; init; } = 128;
-    public int UpperThreshold { get; init; } = 255;
+    public BlobSettings()
+    {
+        var definition=BlobParameterDefinition.Instance;
+        Threshold=definition.Default<int>(nameof(Threshold));
+        UpperThreshold=definition.Default<int>(nameof(UpperThreshold));
+        SegmentationMode=definition.Default<BlobSegmentationMode>(nameof(SegmentationMode));
+        Type=definition.Default<BlobThresholdMode>(nameof(Type));
+        IsPositionCorrectionEnabled=definition.Default<bool>(nameof(IsPositionCorrectionEnabled));
+        IsAreaFilterEnabled=definition.Default<bool>(nameof(IsAreaFilterEnabled));
+        FilterAreaMin=definition.Default<double>(nameof(FilterAreaMin));
+        FilterAreaMax=definition.Default<double>(nameof(FilterAreaMax));
+        IsCircularityFilterEnabled=definition.Default<bool>(nameof(IsCircularityFilterEnabled));
+        FilterCircularityMin=definition.Default<double>(nameof(FilterCircularityMin));
+        FilterCircularityMax=definition.Default<double>(nameof(FilterCircularityMax));
+        IsRectangularityFilterEnabled=definition.Default<bool>(nameof(IsRectangularityFilterEnabled));
+        FilterRectangularityMin=definition.Default<double>(nameof(FilterRectangularityMin));
+        FilterRectangularityMax=definition.Default<double>(nameof(FilterRectangularityMax));
+        IsBlobCountFilterEnabled=definition.Default<bool>(nameof(IsBlobCountFilterEnabled));
+        BlobCountLimit=definition.Default<int>(nameof(BlobCountLimit));
+        OutputGrayImage=definition.Default<bool>(nameof(OutputGrayImage));
+        OutputBinaryImage=definition.Default<bool>(nameof(OutputBinaryImage));
+        OutputBoundary=definition.Default<bool>(nameof(OutputBoundary));
+        SortMode=definition.Default<BlobSort>(nameof(SortMode));
+        Judgments=definition.CreateJudgments();
+    }
+
+    public int Threshold { get; init; }
+    public int UpperThreshold { get; init; }
     public BlobSegmentationMode SegmentationMode { get; init; }
     public BlobThresholdMode Type { get; init; }
     public bool IsPositionCorrectionEnabled { get; init; }
-    public bool IsAreaFilterEnabled { get; init; } = true;
-    public double FilterAreaMin { get; init; } = 10;
-    public double FilterAreaMax { get; init; } = 9999999;
+    public bool IsAreaFilterEnabled { get; init; }
+    public double FilterAreaMin { get; init; }
+    public double FilterAreaMax { get; init; }
     public bool IsCircularityFilterEnabled { get; init; }
     public double FilterCircularityMin { get; init; }
-    public double FilterCircularityMax { get; init; } = 1;
+    public double FilterCircularityMax { get; init; }
     public bool IsRectangularityFilterEnabled { get; init; }
     public double FilterRectangularityMin { get; init; }
-    public double FilterRectangularityMax { get; init; } = 1;
-    public bool IsBlobCountFilterEnabled { get; init; } = true;
-    public int BlobCountLimit { get; init; } = 1000;
-    public bool OutputGrayImage { get; init; } = true;
+    public double FilterRectangularityMax { get; init; }
+    public bool IsBlobCountFilterEnabled { get; init; }
+    public int BlobCountLimit { get; init; }
+    public bool OutputGrayImage { get; init; }
     public bool OutputBinaryImage { get; init; }
     public bool OutputBoundary { get; init; }
-    public BlobSort SortMode { get; init; } = BlobSort.AreaDesc;
-    public IReadOnlyList<BlobJudgment> Judgments { get; init; } = Array.Empty<BlobJudgment>();
+    public BlobSort SortMode { get; init; }
+    public IReadOnlyList<BlobJudgment> Judgments { get; init; }
     public BlobSettings Freeze() => this with { Judgments = Array.AsReadOnly(Judgments.Select(x => x with { }).ToArray()) };
 
     public IReadOnlyList<Diagnostic> Validate()

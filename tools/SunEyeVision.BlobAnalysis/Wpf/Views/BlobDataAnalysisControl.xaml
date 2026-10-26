@@ -86,16 +86,6 @@
                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 </Style>
             </DataGrid.ColumnHeaderStyle>
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="序号" Binding="{Binding Label}" Width="36"/>
-                <DataGridTextColumn Header="面积" Binding="{Binding Area, StringFormat='{}{0:F0}'}" Width="58"/>
-                <DataGridTextColumn Header="周长" Binding="{Binding Perimeter, StringFormat='{}{0:F1}'}" Width="52"/>
-                <DataGridTextColumn Header="中心X" Binding="{Binding CentroidX, StringFormat='{}{0:F1}'}" Width="52"/>
-                <DataGridTextColumn Header="中心Y" Binding="{Binding CentroidY, StringFormat='{}{0:F1}'}" Width="52"/>
-                <DataGridTextColumn Header="圆度" Binding="{Binding Circularity, StringFormat='{}{0:F3}'}" Width="50"/>
-                <DataGridTextColumn Header="矩形度" Binding="{Binding Rectangularity, StringFormat='{}{0:F3}'}" Width="52"/>
-                <DataGridTextColumn Header="边框" Binding="{Binding BoundingRectText}" Width="80"/>
-            </DataGrid.Columns>
         </DataGrid>
 
     </DockPanel>

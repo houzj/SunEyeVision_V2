@@ -18,7 +18,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         try
         {
             ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
-            var schema=new BlobDefinition().Describe(invocation.Settings);
+            var schema=new BlobTool().Describe(invocation.Settings);
             var requested=BlobOutputRequest.None;
             foreach(var demand in invocation.OutputRequests)
             {
@@ -27,11 +27,9 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 if(demand.PortId==BlobSchema.Field(6))requested|=BlobOutputRequest.BinaryImage;
                 if(demand.PortId==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour" or "contour-lossy"))requested|=BlobOutputRequest.Boundary;
             }
-            var input=invocation.Inputs;
-            var output=Execute(invocation.Settings,input.Get<IReadOnlyImage>(BlobDefinition.ImageInput),invocation.Context.Resources,
-                input.Contains(BlobDefinition.InspectionInput)?input.Get<IReadOnlyRegion>(BlobDefinition.InspectionInput):null,
-                input.Contains(BlobDefinition.MaskInput)?input.Get<IReadOnlyRegion>(BlobDefinition.MaskInput):null,
-                input.Contains(BlobDefinition.PoseInput)?input.Get<RecordValue>(BlobDefinition.PoseInput):null,
+            var input=BlobInput.Read(invocation.Inputs);
+            var output=Execute(invocation.Settings,input.Image,invocation.Context.Resources,
+                input.Inspection,input.Mask,input.Pose,
                 invocation.Context.Cancellation,requested);
             IReadOnlyList<Diagnostic> diagnostics=output.Measurements.Any(blob=>blob.Boundary.Count>1)
                 ?new[]{new Diagnostic("BLOB_CONTOUR_LOSSY","单轮廓仅投影一个外环；多环和孔洞应读取boundary/Region。",BlobSchema.BlobsPort)}

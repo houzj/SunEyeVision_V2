@@ -59,6 +59,7 @@ internal static class BlobConfigurationFields
         field.LogicalKey.StartsWith("input.")||field.LogicalKey=="setting.pose-enabled"?"基本参数":"运行参数";
     private static string Label(BlobInputField field,BlobAnalysisParameters parameters)
     {
+        if(field.LogicalKey.StartsWith("setting.")&&Runtime.BlobParameterDefinition.Instance.Contains(field.LogicalKey[8..]))return Runtime.BlobParameterDefinition.Instance.Label(field.LogicalKey[8..]);
         if(field.LogicalKey=="setting.FilterAreaMin")return "面积下限";
         if(field.LogicalKey=="setting.FilterCircularityMin")return "圆度下限";
         if(field.LogicalKey=="setting.FilterRectangularityMin")return "矩形度下限";

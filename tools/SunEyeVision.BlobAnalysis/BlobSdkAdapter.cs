@@ -16,10 +16,10 @@ internal static class BlobSdkAdapter
     internal static BlobRuntime.BlobOutput Execute(BlobAnalysisParameters parameters, BlobRuntime.BlobSettings settings,
         IReadOnlyImage image, IOutputResources resources, IReadOnlyRegion? inspection, IReadOnlyRegion? mask)
     {
-        var definition=new BlobRuntime.BlobDefinition();
-        var values=new Dictionary<string,object?> { [BlobRuntime.BlobDefinition.ImageInput]=image };
-        if(inspection is not null)values[BlobRuntime.BlobDefinition.InspectionInput]=inspection;
-        if(mask is not null)values[BlobRuntime.BlobDefinition.MaskInput]=mask;
+        var definition=new BlobRuntime.BlobTool();
+        var values=new Dictionary<string,object?> { [BlobRuntime.BlobTool.ImageInput]=image };
+        if(inspection is not null)values[BlobRuntime.BlobTool.InspectionInput]=inspection;
+        if(mask is not null)values[BlobRuntime.BlobTool.MaskInput]=mask;
         var context=new SdkContext(parameters,resources);
         var invocation=new ToolInvocation<BlobRuntime.BlobSettings>(settings,new InputValues(definition.Describe(settings).Inputs,values),context,
             BlobOutputContract.ToRuntimeRequests(parameters.Context?.OutputRequests??Array.Empty<OutputValueRequest>()));
@@ -42,8 +42,8 @@ internal static class BlobSdkAdapter
         {
             _parameters=parameters;Resources=resources;
             var context=parameters.Context;
-            Identity=context?.ExecutionIdentity?.ToInvocationIdentity(context.NodeId??BlobRuntime.BlobDefinition.Id)
-                ?? new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),BlobRuntime.BlobDefinition.Id,Guid.NewGuid());
+            Identity=context?.ExecutionIdentity?.ToInvocationIdentity(context.NodeId??BlobRuntime.BlobTool.Id)
+                ?? new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),BlobRuntime.BlobTool.Id,Guid.NewGuid());
             Cancellation=context?.CancellationToken??default;
         }
         public RunIdentity Identity { get; }

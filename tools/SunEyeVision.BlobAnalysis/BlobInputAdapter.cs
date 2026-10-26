@@ -50,9 +50,9 @@ internal static class BlobInputAdapter
         }
         var physicalFrame=ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
         var invocation=parameters.Context?.ExecutionIdentity;
-        RunIdentity? captureIdentity=invocation is null?null:invocation.ToInvocationIdentity(parameters.Context!.NodeId??Runtime.BlobDefinition.Id);
+        RunIdentity? captureIdentity=invocation is null?null:invocation.ToInvocationIdentity(parameters.Context!.NodeId??Runtime.BlobTool.Id);
         var frame=new ImageFrameAddress(physicalFrame??Guid.NewGuid(),physicalFrame.HasValue?"sdk-image":parameters.Context?.NodeId??"input",
-            captureIdentity,Runtime.BlobDefinition.ImageInput);
+            captureIdentity,Runtime.BlobTool.ImageInput);
         using var captured=parameters.ResolvedInputImage is ITypedImageSnapshotSource source
             ?source.CaptureSnapshot(frame):HalImageSnapshotSource.Capture(parameters.GetHalconImage(),frame);
         return resources.RetainInput(captured);

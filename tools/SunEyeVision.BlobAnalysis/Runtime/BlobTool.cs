@@ -2,8 +2,8 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
-/// <summary>One neutral producer definition; editor and legacy entry points consume this same definition.</summary>
-public sealed class BlobDefinition : IToolDefinition<BlobSettings, BlobOutput>
+/// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";

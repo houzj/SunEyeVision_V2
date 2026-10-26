@@ -261,7 +261,22 @@ internal static class S2DocumentEditingCases
    Test("正式Blob五显示对象与ROI真实Combo条件",()=>
    {
     var manager=new PluginManager();var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;manager.LoadPlugins(Path.Combine(product,"plugins"));manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));
-    var parameters=ToolRegistry.CreateParameters("BlobAnalysis");parameters.GetType().GetProperty("FilterAreaMax")!.SetValue(parameters,9999999d);var node=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){Parameters=parameters};
+    var parameters=ToolRegistry.CreateParameters("BlobAnalysis");
+    var presentation=(ResultPresentationConfig)parameters.GetType().GetProperty("ResultPresentation")!.GetValue(parameters)!;
+    var displayDefinition=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobDisplayDefinition.Instance;
+    foreach(var item in displayDefinition.Graphics)
+    {
+        var style=presentation.GetGraphicsStyle(item.Key);
+        Require(style.IsVisible==item.Visible&&style.LineWidth==item.LineWidth&&style.Opacity==item.Opacity
+            &&style.GetEffectiveColorArgb(true)==item.OkColor&&style.GetEffectiveColorArgb(false)==item.NgColor,"生产图形样式未消费XML："+item.Key);
+    }
+    foreach(var item in displayDefinition.Texts)
+    {
+        var style=presentation.GetTextStyle(item.Key);
+        Require(style.IsVisible==item.Visible&&style.FontSize==item.FontSize&&style.PositionX==item.X&&style.PositionY==item.Y
+            &&style.OkColor.R==(byte)(item.OkColor>>16)&&style.OkColor.G==(byte)(item.OkColor>>8)&&style.OkColor.B==(byte)item.OkColor,"生产文本样式未消费XML："+item.Key);
+    }
+    parameters.GetType().GetProperty("FilterAreaMax")!.SetValue(parameters,9999999d);var node=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){Parameters=parameters};
     var flow=new SunEyeVision.Workflow.Workflow("flow","O06窗口草稿");flow.Nodes.Add(node);var solution=new Solution();solution.Workflows.Add(flow);
     var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
     var root=new DeclaredToolConfigurationControl(ToolRegistry.CreateToolInstance("BlobAnalysis")!);var query=new DataSourceQueryService();

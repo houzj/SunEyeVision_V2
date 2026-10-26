@@ -24,22 +24,22 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         public ObservableCollection<BlobAnalysisRow> FilteredBlobs { get; } = new();
 
         /// <summary>筛选后数量</summary>
-        public int FilteredBlobCount => FilteredBlobs.Count;
+        public int FilteredBlobCount { get; private set; }
 
         /// <summary>总面积（px²）</summary>
         public double TotalArea { get; private set; }
 
         /// <summary>筛选后总面积（px²）</summary>
-        public double FilteredTotalArea => FilteredBlobs.Sum(b => b.Area);
+        public double FilteredTotalArea => TotalArea;
 
         /// <summary>平均面积（px²）</summary>
-        public double AverageArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Sum(b => b.Area) / FilteredBlobs.Count : 0;
+        public double AverageArea { get; private set; }
 
         /// <summary>最大面积（px²）</summary>
-        public double MaxArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Max(b => b.Area) : 0;
+        public double MaxArea { get; private set; }
 
         /// <summary>最小面积（px²）</summary>
-        public double MinArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Min(b => b.Area) : 0;
+        public double MinArea { get; private set; }
 
         /// <summary>阈值分割实际使用的范围</summary>
         public string ThresholdRangeText { get; private set; } = "-";
@@ -74,6 +74,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         public BlobDataAnalysisControl()
         {
             InitializeComponent();
+            foreach(var column in BlobDisplayDefinition.Instance.Table.Columns)
+                BlobDataGrid.Columns.Add(new DataGridTextColumn{
+                    Header=column.DisplayName,Binding=new System.Windows.Data.Binding("["+column.Value.MemberFieldPath.Single()+"]"){
+                        Mode=System.Windows.Data.BindingMode.OneWay,
+                        StringFormat=column.Value.MemberFieldPath.Single()=="bounds"?null:"{0:F"+column.DecimalPlaces+"}"},
+                    Width=DataGridLength.SizeToHeader});
             DataContext = this;
         }
 
@@ -117,7 +123,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             PluginLogger.Info($"[OnResultUpdated] 收到结果 | Type={result?.GetType().Name ?? "null"}", "BlobDataAnalysis");
 
             SelectedBlob=null;
-            FilteredBlobs.Clear();TotalArea=0;ThresholdRangeText="-";ThresholdTypeText="-";
+            FilteredBlobs.Clear();FilteredBlobCount=0;TotalArea=AverageArea=MaxArea=MinArea=0;ThresholdRangeText="-";ThresholdTypeText="-";
             NotifySummary(); // A rejected or failed update cannot leave old summary values beside an empty table.
             if (result is {IsSuccess:true})
             {
@@ -136,9 +142,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 if(records.Declaration!=BlobSchema.BlobsType)throw new InvalidOperationException("Blob记录类型不符合声明。");
                 var rows=records.Cast<RecordValue>().Select(BlobAnalysisRow.From).ToArray();
                 var total=Convert.ToDouble(Read(BlobSchema.Field(12)),System.Globalization.CultureInfo.InvariantCulture);
+                var count=checked((int)Convert.ToInt64(Read(BlobSchema.Field(11)),System.Globalization.CultureInfo.InvariantCulture));
+                var average=Convert.ToDouble(Read(BlobSchema.Field(13)),System.Globalization.CultureInfo.InvariantCulture);
+                var minArea=Convert.ToDouble(Read(BlobSchema.Field(30)),System.Globalization.CultureInfo.InvariantCulture);
+                var maxArea=Convert.ToDouble(Read(BlobSchema.Field(31)),System.Globalization.CultureInfo.InvariantCulture);
                 var minimum=Read(BlobSchema.Field(8));var maximum=Read(BlobSchema.Field(9));var thresholdType=(string)Read(BlobSchema.Field(10))!;
                 foreach(var row in rows)FilteredBlobs.Add(row);
-                TotalArea=total;ThresholdRangeText=$"{minimum}–{maximum}";
+                FilteredBlobCount=count;TotalArea=total;AverageArea=average;MinArea=minArea;MaxArea=maxArea;ThresholdRangeText=$"{minimum}–{maximum}";
                 ThresholdTypeText=thresholdType=="Binary"?"正向阈值":thresholdType=="BinaryInv"?"反向阈值":thresholdType;
 
                 NotifySummary();

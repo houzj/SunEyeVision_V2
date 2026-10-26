@@ -150,7 +150,7 @@
                                 <DataGridTemplateColumn Header="订阅关系" Width="*" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <controls:ParamBinding
+                                            <controls:ParamBinding BindingSourceSelected="OnIoBindingChanged"
                                                 AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -239,7 +239,7 @@
                                 <DataGridTemplateColumn Header="订阅关系" Width="*" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <controls:ParamBinding
+                                            <controls:ParamBinding BindingSourceSelected="OnIoBindingChanged"
                                                 AvailableDataSources="{Binding DataContext.SubroutineInternalSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

@@ -125,6 +125,75 @@ public sealed class GroupRunParameterConfigTests
         finally{window.Close();((ISubroutineParameterEditor)control).Dispose();}
     });
     [Fact]
+    public void Actual_batch_entry_imports_selected_sources_and_manual_rebinding_replaces_imported_metadata()=>Sta(()=>
+    {
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
+        AvailableDataSource Source(string node)=>new(){SourceWorkflowId="parent",SourceNodeId=node,SourceNodeName="模块",PropertyName="Values",DisplayName="数值",PropertyType=typeof(long[]),VariableType="Integer"};
+        var source=Source("first");var replacement=Source("second");var query=new RegionQuery{Sources=new(){source,replacement}};
+        var p=new SubroutineParameters{SubroutineId="child"};var control=(UserControl)Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl",true)!,new object?[]{"child","Group","owner",query,null,p,null})!;
+        var window=new Window{Content=control,Width=1100,Height=680,Left=-10000,ShowActivated=false};
+        try
+        {
+            foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})window.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+            window.Show();control.DataContext.GetType().GetProperty("SelectedInputTypeName")!.SetValue(control.DataContext,"SourceImport");
+            window.Dispatcher.BeginInvoke(new Action(()=>
+            {
+                var picker=window.OwnedWindows.Cast<Window>().Single(w=>w.IsVisible);Assert.Equal(370,picker.Width);Assert.Equal(420,picker.Height);
+                foreach(var item in Visual<TreeView>(picker).Single().Items.OfType<TreeViewItem>()){Assert.False(item.IsExpanded);item.IsExpanded=true;}picker.UpdateLayout();
+                var leaf=Visual<CheckBox>(picker).Single(c=>ReferenceEquals(c.Tag,source));
+                foreach(var item in Visual<TreeViewItem>(picker).Where(t=>!t.HasItems))Assert.Equal(Visibility.Hidden,((FrameworkElement)item.Template.FindName("Expander",item)!).Visibility);
+                leaf.IsChecked=true;leaf.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                Assert.True(((ISubroutineParameterEditor)control).HasPendingEdits);
+                Assert.False(((ISubroutineParameterEditor)control).TryPrepare(out var pendingError));
+                Assert.Contains("批量选择",pendingError);Assert.Empty(p.Inputs);
+                Assert.Throws<InvalidOperationException>(()=>((ISubroutineParameterEditor)control).BindParameters(p,query));
+                Assert.True(Visual<CheckBox>(picker).Single(c=>Equals(c.Content,"包含模块名称")).IsChecked);
+                var bitmap=new RenderTargetBitmap(370,420,96,96,PixelFormats.Pbgra32);bitmap.Render((FrameworkElement)picker.Content);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"group-io-picker-Dark.png")))encoder.Save(file);
+                Visual<Button>(picker).Single(b=>Equals(b.Content,"确定")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }),System.Windows.Threading.DispatcherPriority.ContextIdle);
+            var add=(System.Windows.Input.ICommand)control.DataContext.GetType().GetProperty("AddInputCommand")!.GetValue(control.DataContext)!;add.Execute(null);
+            Assert.True(((ISubroutineParameterEditor)control).TryPrepare(out _));
+            Assert.False(((ISubroutineParameterEditor)control).HasPendingEdits);
+            var input=Assert.Single(p.Inputs);Assert.Equal("模块_数值",input.Name);Assert.Equal(typeof(long[]),input.ParamType);Assert.Equal("first",input.Source!.SourceNodeId);
+            window.UpdateLayout();var binding=Assert.Single(Visual<SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding>(control));binding.BindingSource=replacement.GetBindingPath();binding.RaiseEvent(new SunEyeVision.Plugin.SDK.UI.Controls.ParamBindingSourceEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent,replacement));
+            Assert.Equal("second",input.Source!.SourceNodeId);Assert.Equal(replacement.GetBindingPath(),input.BindingSource);
+            binding.BindingSource="";binding.RaiseEvent(new RoutedEventArgs(SunEyeVision.Plugin.SDK.UI.Controls.ParamBinding.BindingSourceSelectedEvent));Assert.Null(input.Source);Assert.Empty(input.BindingSource);
+        }
+        finally{window.Close();((ISubroutineParameterEditor)control).Dispose();}
+    });
+    [Fact]
+    public void Actual_picker_cancel_can_be_refused_and_owner_close_releases_the_modal_without_another_prompt()=>Sta(()=>
+    {
+        var root=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+        var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
+        var type=plugin.GetType("SunEyeVision.Tool.Subroutine.Views.SubroutineIoPicker",true)!;
+        var sources=new[]{new AvailableDataSource{SourceNodeId="a",SourceWorkflowId="parent",SourceNodeName="模块",PropertyName="Value",PropertyType=typeof(long)}};
+        var owner=new Window{Width=500,Height=400,Left=-10000,ShowActivated=false};owner.Show();var decisions=0;
+        var trace=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"io-picker-close-trace.txt");
+        void Trace(string text)=>File.AppendAllText(trace,text+Environment.NewLine);Trace("owner opened");
+        try
+        {
+            var picker=(Window)Activator.CreateInstance(type,new object?[]{owner,sources,(Func<bool>)(()=>++decisions>1)})!;
+            picker.Dispatcher.BeginInvoke(new Action(()=>
+            {
+                foreach(var item in Visual<TreeView>(picker).Single().Items.OfType<TreeViewItem>())item.IsExpanded=true;picker.UpdateLayout();
+                var leaf=Visual<CheckBox>(picker).Single(c=>c.Tag is AvailableDataSource);leaf.IsChecked=true;leaf.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                var cancel=Visual<Button>(picker).Single(b=>Equals(b.Content,"取消"));cancel.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Assert.True(picker.IsVisible);Assert.Equal(1,decisions);Trace("discard refused");
+                cancel.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }),System.Windows.Threading.DispatcherPriority.ContextIdle);
+            Assert.False(picker.ShowDialog());Assert.Equal(2,decisions);Trace("cancel returned");
+            var closing=(Window)Activator.CreateInstance(type,new object?[]{owner,sources,(Func<bool>)(()=>throw new InvalidOperationException("已关闭拥有者不应再次询问"))})!;
+            closing.Dispatcher.BeginInvoke(new Action(()=>
+            {
+                foreach(var item in Visual<TreeView>(closing).Single().Items.OfType<TreeViewItem>())item.IsExpanded=true;closing.UpdateLayout();
+                var leaf=Visual<CheckBox>(closing).Single(c=>c.Tag is AvailableDataSource);leaf.IsChecked=true;Trace("closing owner");owner.Close();Trace("owner close returned");
+            }),System.Windows.Threading.DispatcherPriority.ContextIdle);
+            Assert.False(closing.ShowDialog());Assert.False(closing.IsVisible);Trace("owned modal returned");
+        }
+        finally{owner.Close();}
+    });
+    [Fact]
     public void Native_relation_policy_matches_module_kind_and_parameter_key_instead_of_only_CLR_type()
     {
         using var f=new Fixture();var group=f.Editor.AddGroup();var item=f.Editor.Add(group,f.Source("a",nameof(ProtocolParseParameters.Mode)));

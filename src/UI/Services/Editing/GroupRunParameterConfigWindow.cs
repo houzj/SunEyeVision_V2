@@ -123,7 +123,7 @@ internal sealed class GroupRunParameterConfigWindow : Window
             foreach(var module in available.GroupBy(a=>(a.Target.WorkflowId,a.Target.NodeId)))
             {
                 var entries=module.ToArray();var all=entries.Count(a=>_session.FindExposure(a)!=null);
-                var moduleCheck=new CheckBox{Content=_session.ModuleLabel(entries[0]),IsThreeState=true,IsChecked=all==0?false:all==entries.Length?true:null};var parent=new TreeViewItem{Header=moduleCheck,IsExpanded=true};moduleCheck.SetResourceReference(Control.ForegroundProperty,"ThemeTextPrimaryBrush");
+                var moduleCheck=new CheckBox{Content=_session.ModuleLabel(entries[0]),IsThreeState=false,IsChecked=all==0?false:all==entries.Length?true:null};var parent=new TreeViewItem{Header=moduleCheck,IsExpanded=true};moduleCheck.SetResourceReference(Control.ForegroundProperty,"ThemeTextPrimaryBrush");
                 moduleCheck.Click+=(_,_)=>Run(()=>{Toggle(entries,moduleCheck.IsChecked==true);RefreshFromSession(ActiveGroup?.Id);});
                 foreach(var entry in entries)
                 {var source=entry;var check=new CheckBox{Content=source.Label.Split(" / ").Last(),IsChecked=_session.FindExposure(source)!=null};check.Click+=(_,_)=>Run(()=>{Toggle(new[]{source},check.IsChecked==true);RefreshFromSession(ActiveGroup?.Id);});check.SetResourceReference(Control.ForegroundProperty,"ThemeTextPrimaryBrush");parent.Items.Add(new TreeViewItem{Header=check,Tag=source});}

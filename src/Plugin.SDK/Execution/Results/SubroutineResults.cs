@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -79,7 +79,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             // 用户声明输出变量（含 DisplayName/Group）
             foreach (var cfg in OutputConfigs)
             {
-                var sysType = SdkTypeVocabulary.ToSystemType(cfg.TypeName);
+                var sysType = cfg.ParamType;
                 if (sysType is null)
                 {
                     throw new InvalidOperationException(
@@ -91,8 +91,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     Name = cfg.Name,
                     FieldId = cfg.FieldId, DeclaredType = sysType,
                     IsCollection = cfg.IsAccumulated || sysType.IsArray,
-                    ValueDeclaration = typeof(IVisionImage).IsAssignableFrom(sysType)
-                        ? cfg.IsAccumulated ? SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf(SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image))
+                    ValueDeclaration = typeof(IVisionImage).IsAssignableFrom(sysType.IsArray?sysType.GetElementType()!:sysType)
+                        ? cfg.IsAccumulated||sysType.IsArray ? SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf(SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image))
                             : SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Image) : null,
                     VariableType = cfg.TypeName,
                     DisplayName = cfg.Name,

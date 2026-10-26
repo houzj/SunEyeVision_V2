@@ -55,9 +55,9 @@ public partial class MainWindowViewModel
             }),()=>GetMainImageControl?.Invoke());
         groupEditor.SetRunParameterEditor(page);
         ToolEditorCommit.AttachDraftContext(control,context);
-        context.PrepareView=()=>!ToolEditorCommit.TryPrepare(control,out var error)?error:page.TryPrepare(out error)?null:error;
-        context.HasPendingViewEdits=()=>ToolEditorCommit.HasPendingEdits(control)||page.HasPendingConfigurationEdits;
-        context.Deactivated+=()=>{control.IsEnabled=false;page.Deactivate();};
+        context.PrepareView=()=>!groupEditor.TryPrepare(out var error)?error:!ToolEditorCommit.TryPrepare(control,out error)?error:page.TryPrepare(out error)?null:error;
+        context.HasPendingViewEdits=()=>groupEditor.HasPendingEdits||ToolEditorCommit.HasPendingEdits(control)||page.HasPendingConfigurationEdits;
+        context.Deactivated+=()=>{control.IsEnabled=false;groupEditor.Deactivate();page.Deactivate();};
         TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);
     }
 }

@@ -24,7 +24,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if(ioNames.Distinct(StringComparer.Ordinal).Count()!=ioNames.Length)result.AddError("Group输入和输出名称不能重复。");
             var fieldIds=Inputs.Select(i=>i.FieldId).Concat(Outputs.Select(o=>o.FieldId)).ToArray();
             if(fieldIds.Any(id=>id==Guid.Empty)||fieldIds.Distinct().Count()!=fieldIds.Length)result.AddError("Group输入输出字段身份无效或重复。");
-            if(Inputs.Any(i=>i.ParamType is null)||Outputs.Any(o=>o.ParamType is null))result.AddError("Group输入输出类型无效。");
+            if(Inputs.Any(i=>!SubroutineIoRules.HasConsistentType(i.TypeName,i.ParamType))||Outputs.Any(o=>!SubroutineIoRules.HasConsistentType(o.TypeName,o.ParamType)))result.AddError("Group输入输出类型无效。");
 
             if(LoopConfig is null)result.AddError("循环配置缺失。");
             else

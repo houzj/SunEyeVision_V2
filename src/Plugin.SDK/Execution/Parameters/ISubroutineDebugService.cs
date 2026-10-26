@@ -9,6 +9,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     public interface ISubroutineParameterEditor : IDisposable
     {
         void BindParameters(SubroutineParameters parameters,IDataSourceQueryService? queryService);
+        bool TryPrepare(out string error);
+        bool HasPendingEdits { get; }
+        void Deactivate();
         void SetRunParameterEditor(System.Windows.Controls.UserControl editor);
     }
 

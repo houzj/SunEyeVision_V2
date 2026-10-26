@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.Subroutine.ViewModels
 {
+    public sealed record SubroutineIoSelection(IReadOnlyList<AvailableDataSource> Sources,bool IncludeModuleName);
     public class SubroutineParameterDialogViewModel : ObservableObject
     {
         private readonly string _subroutineId;
@@ -60,7 +61,9 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             set => SetProperty(ref _selectedDisplayType, value);
         }
 
-        public List<TypeOption> AvailableTypes { get; } = SdkTypeVocabulary.GetAllTypeOptions();
+        public const string SourceImportType="SourceImport";
+        public Func<bool,SubroutineIoSelection?>? PickSources{get;set;}
+        public List<TypeOption> AvailableTypes { get; } = SdkTypeVocabulary.GetAllTypeOptions().Concat(new[]{new TypeOption("批量选择",SourceImportType)}).ToList();
 
         public List<DisplayTypeOption> AvailableDisplayTypes { get; } = SubroutineDisplayTypeExtensions.GetAllOptions();
 
@@ -117,7 +120,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         public void Dispose()
         {
             if (_isDisposed) return;
-            _isDisposed = true;
+            _isDisposed = true;PickSources=null;
             _parameters.Outputs.CollectionChanged -= OnOutputsCollectionChanged;
             LoopConfig.PropertyChanged-=LoopChanged;
             foreach (var output in _parameters.Outputs)
@@ -151,6 +154,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private void AddInput()
         {
             if(!AddInputCommand.CanExecute(null))return;
+            if(SelectedInputTypeName==SourceImportType){PickAndImport(true);return;}
             var initialName = SubroutineIoRules.UniqueName("in",Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name)));
             Inputs.Add(new SubroutineInputConfig
             {
@@ -163,11 +167,51 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private void AddOutput()
         {
             if(!AddOutputCommand.CanExecute(null))return;
+            if(SelectedOutputTypeName==SourceImportType){PickAndImport(false);return;}
             Outputs.Add(new SubroutineOutputConfig
             {
                 Name = SubroutineIoRules.UniqueName("out",Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name))),
                 TypeName = SelectedOutputTypeName
             });
+        }
+
+        private void PickAndImport(bool inputs)
+        {
+            var picked=PickSources?.Invoke(inputs);if(picked is null||_isDisposed)return;
+            try{ImportSources(inputs,picked.Sources,picked.IncludeModuleName);}
+            catch(InvalidOperationException ex){MessageBox.Show(ex.Message,"批量选择",MessageBoxButton.OK,MessageBoxImage.Warning);}
+        }
+        internal static AvailableDataSource CopySource(AvailableDataSource source)=>new()
+        {
+            SourceWorkflowId=source.SourceWorkflowId,SourceNodeId=source.SourceNodeId,SourceFieldId=source.SourceFieldId,
+            SourceNodeName=source.SourceNodeName,SourceNodeType=source.SourceNodeType,PropertyName=source.PropertyName,
+            BindingSuffix=source.BindingSuffix,DisplayName=source.DisplayName,PropertyType=source.PropertyType,
+            VariableType=source.VariableType,Description=source.Description,Unit=source.Unit,GroupName=source.GroupName
+        };
+        public void ImportSources(bool inputs,IEnumerable<AvailableDataSource> selection,bool includeModuleName)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed,this);
+            static (string?,string,Guid?,string) Key(AvailableDataSource s)=>(s.SourceWorkflowId,s.SourceNodeId,s.SourceFieldId,s.GetBindingPath());
+            var available=inputs?AvailableSources:SubroutineInternalSources;var selected=selection.DistinctBy(Key).ToArray();
+            if((inputs?Inputs.Count:Outputs.Count)+selected.Length>SubroutineIoRules.MaximumItems)throw new InvalidOperationException("批选超过IO数量上限，未添加任何项。");
+            var names=Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name)).ToHashSet(StringComparer.Ordinal);
+            var rows=new List<(string Name,string Type,AvailableDataSource Source)>();
+            foreach(var source in selected)
+            {
+                if(!source.IsValid||!available.Any(a=>Key(a)==Key(source)))throw new InvalidOperationException("批选来源不属于当前输入或输出作用域。");
+                var type=SdkTypeVocabulary.ToTypeVocabulary(source.PropertyType)??throw new InvalidOperationException("批选来源类型不受支持："+source.DisplayName);
+                var label=string.IsNullOrWhiteSpace(source.DisplayName)?source.PropertyName:source.DisplayName;
+                var suggestion=SubroutineIoRules.SuggestName((includeModuleName?source.SourceNodeName+"_":"")+label,inputs?"in":"out");
+                var name=SubroutineIoRules.UniqueName(suggestion,names);names.Add(name);rows.Add((name,type,CopySource(source)));
+            }
+            var added=new List<object>();
+            try
+            {
+                foreach(var row in rows)
+                    if(inputs){var item=new SubroutineInputConfig{Name=row.Name,BindingKey=row.Name,TypeName=row.Type,Source=row.Source,BindingSource=row.Source.GetBindingPath(),BindingDisplayText=row.Source.DropdownDisplayText};added.Add(item);Inputs.Add(item);}
+                    else{var item=new SubroutineOutputConfig{Name=row.Name,TypeName=row.Type,Source=row.Source,BindingSource=row.Source.GetBindingPath(),BindingDisplayText=row.Source.DropdownDisplayText};added.Add(item);Outputs.Add(item);}
+            }
+            catch{foreach(var item in added)if(item is SubroutineInputConfig input)Inputs.Remove(input);else Outputs.Remove((SubroutineOutputConfig)item);throw;}
         }
 
         private void AddDisplayItem()

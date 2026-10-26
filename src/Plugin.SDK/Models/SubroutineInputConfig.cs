@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
@@ -38,7 +38,7 @@ namespace SunEyeVision.Plugin.SDK.Models
         }
 
         [JsonIgnore]
-        public Type? ParamType => SdkTypeVocabulary.ToSystemType(TypeName);
+        public Type? ParamType => Source?.PropertyType??SdkTypeVocabulary.ToSystemType(TypeName);
 
         public AvailableDataSource? Source
         {
@@ -49,6 +49,7 @@ namespace SunEyeVision.Plugin.SDK.Models
                 {
                     if (value != null && SdkTypeVocabulary.ToTypeVocabulary(value.PropertyType) is { } vocabulary)
                         TypeName = vocabulary;
+                    OnPropertyChanged(nameof(ParamType));OnPropertyChanged(nameof(SourceDisplayText));
                 }
             }
         }

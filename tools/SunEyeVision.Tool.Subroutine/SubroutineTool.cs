@@ -221,6 +221,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = output.Name,
+                    SourceWorkflowId=output.Source?.SourceWorkflowId,SourceFieldId=output.Source?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -302,6 +303,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = bindingKey,
+                    SourceWorkflowId=input.Source?.SourceWorkflowId,SourceFieldId=input.Source?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -386,7 +388,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var iterToolResults = ExtractToolResults(iterResult);
                 // Earlier iteration images remain borrowed in the accumulated output. Keep only
                 // their declared source owners; ordinary numeric accumulation needs no native retain.
-                var accumulatedImageSources=parameters.Outputs.Where(output=>output.IsAccumulated&&output.ParamType is { } type&&typeof(IVisionImage).IsAssignableFrom(type))
+                var accumulatedImageSources=parameters.Outputs.Where(output=>output.IsAccumulated&&output.ParamType is { } type&&typeof(IVisionImage).IsAssignableFrom(type.IsArray?type.GetElementType()!:type))
                     .Select(output=>output.Source?.GetBindingPath()??output.BindingSource)
                     .Where(path=>path.Contains('.')).Select(path=>path[..path.IndexOf('.')]).ToHashSet(StringComparer.Ordinal);
                 retainChildren(iterToolResults.Where(pair=>accumulatedImageSources.Contains(pair.Key)).Select(pair=>pair.Value));

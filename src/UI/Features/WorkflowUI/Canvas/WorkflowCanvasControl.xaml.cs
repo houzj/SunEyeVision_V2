@@ -983,6 +983,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             InitializeVmNodeGestures();
             InitializeVmGeometryTracking();
             InitializeVmGroupSelection();
+            InitializeVmCanvasClipboard();
 
 
 

@@ -222,6 +222,20 @@ public sealed class VmGestureTests
         control.DataContext = null;
     });
 
+    [Theory]
+    [InlineData(false, DragDropKeyStates.LeftMouseButton, DragDropEffects.Move, false, true)]
+    [InlineData(false, DragDropKeyStates.ControlKey, DragDropEffects.Move, false, false)]
+    [InlineData(true, DragDropKeyStates.ControlKey | DragDropKeyStates.LeftMouseButton, DragDropEffects.Copy, false, true)]
+    [InlineData(true, DragDropKeyStates.None, DragDropEffects.Copy, true, false)]
+    [InlineData(true, DragDropKeyStates.ControlKey, DragDropEffects.Move, true, false)]
+    [InlineData(true, DragDropKeyStates.ControlKey, DragDropEffects.Copy, true, true)]
+    [InlineData(true, DragDropKeyStates.ControlKey | DragDropKeyStates.ShiftKey, DragDropEffects.Copy, true, false)]
+    public void Node_copy_drag_keeps_original_allowed_effect_and_control_contract(bool copy, DragDropKeyStates keys, DragDropEffects allowed, bool dropping, bool expected)
+    {
+        var method=typeof(WorkflowCanvasControl).GetMethod("VmNodeDropEffectAllowed", BindingFlags.NonPublic | BindingFlags.Static)!;
+        Assert.Equal(expected, method.Invoke(null,new object[]{copy,keys,allowed,dropping}));
+    }
+
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
 public sealed class VmCanvasUiCollection { }

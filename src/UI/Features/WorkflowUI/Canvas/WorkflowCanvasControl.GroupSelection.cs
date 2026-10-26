@@ -48,6 +48,7 @@ public partial class WorkflowCanvasControl
             item.Click += (_, _) => { if (CanEditVmCanvas) action(); }; owner.Items.Add(item);
         }
         Add(menu, "删除", () => { var command = _viewModel?.DeleteSelectedNodesCommand; if (command?.CanExecute(null) == true) command.Execute(null); });
+        Add(menu, "复制", () => _viewModel?.CopyCanvasSelection());
         Add(menu, "禁用", () => SetVmSelectionEnabled(false)); Add(menu, "启用", () => SetVmSelectionEnabled(true));
         menu.Items.Add(new Separator());
         var align = new MenuItem { Header = "对齐" }; menu.Items.Add(align);
@@ -82,7 +83,12 @@ public partial class WorkflowCanvasControl
         Unloaded += (_, _) => ClearVmSelectionFrame();
         PreviewKeyDown += (_, e) =>
         {
-            if (VmTextInputOwnsKeyboard() || !WorkflowCanvas.IsKeyboardFocusWithin || !CanEditVmCanvas || !_vmBoxSelectionActive) return;
+            if (VmTextInputOwnsKeyboard() || !WorkflowCanvas.IsKeyboardFocusWithin || !CanEditVmCanvas) return;
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key == Key.C)
+            { _viewModel?.CopyCanvasSelection(); e.Handled = true; return; }
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key == Key.V)
+            { if (_viewModel?.PasteCanvasSelection() == true) { _vmBoxSelectionActive = VmSelectedNodes().Length > 1; DrawVmSelectionFrame(); } e.Handled = true; return; }
+            if (!_vmBoxSelectionActive) return;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.A or Key.F)
             { SetVmSelectionEnabled(e.Key == Key.A); e.Handled = true; }
         };

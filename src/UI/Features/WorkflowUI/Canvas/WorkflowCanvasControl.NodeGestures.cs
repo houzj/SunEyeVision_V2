@@ -20,6 +20,7 @@ public partial class WorkflowCanvasControl
         public required string Stamp { get; init; }
         public Dictionary<WorkflowNode, Point> After { get; } = new();
         public List<FrameworkElement> Ghosts { get; } = new();
+        public bool Copy { get; set; }
     }
     private VmNodeMoveSession? _vmNodeMove;
     private bool _vmNodeOleActive;
@@ -105,12 +106,13 @@ public partial class WorkflowCanvasControl
     {
         var session = _vmNodeMove;
         if (session == null || !ValidVmNodeMove(session)) { CancelVmNodeMove(); return; }
+        session.Copy = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
         _vmNodeOleActive = true;
         QueryContinueDragEventHandler query = (_, args) => { if (!ValidVmNodeMove(session)) args.Action = DragAction.Cancel; };
         WorkflowCanvas.QueryContinueDrag += query;
         try
         {
-            DragDrop.DoDragDrop(WorkflowCanvas, new DataObject(VmNodeDragFormat, session.Token, false), DragDropEffects.Move);
+            DragDrop.DoDragDrop(WorkflowCanvas, new DataObject(VmNodeDragFormat, session.Token, false), session.Copy ? DragDropEffects.Copy : DragDropEffects.Move);
         }
         finally
         {
@@ -138,9 +140,9 @@ public partial class WorkflowCanvasControl
         if (!e.Data.GetDataPresent(VmNodeDragFormat, false)) return;
         e.Handled = true; e.Effects = DragDropEffects.None;
         if (!ReadVmNodeMove(e, out var session) || !ValidVmNodeMove(session) ||
-            (e.KeyStates & DragDropKeyStates.ControlKey) != 0 || !VmDropInside(e.GetPosition(WorkflowCanvas)))
+            !VmNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, false) || !VmDropInside(e.GetPosition(WorkflowCanvas)))
         { HideVmNodeGhosts(); return; }
-        e.Effects = DragDropEffects.Move;
+        e.Effects = session.Copy ? DragDropEffects.Copy : DragDropEffects.Move;
         PreviewVmNodeMove(session, e.GetPosition(WorkflowCanvas));
     }
     private void VmNodeDrop(object sender, DragEventArgs e)
@@ -148,7 +150,7 @@ public partial class WorkflowCanvasControl
         if (!e.Data.GetDataPresent(VmNodeDragFormat, false)) return;
         e.Handled = true; e.Effects = DragDropEffects.None;
         if (!ReadVmNodeMove(e, out var session) || !ValidVmNodeMove(session) ||
-            (e.KeyStates & DragDropKeyStates.ControlKey) != 0 || !VmDropInside(e.GetPosition(WorkflowCanvas))) return;
+            !VmNodeDropEffectAllowed(session.Copy, e.KeyStates, e.AllowedEffects, true) || !VmDropInside(e.GetPosition(WorkflowCanvas))) return;
         PreviewVmNodeMove(session, e.GetPosition(WorkflowCanvas));
         if (session.After.Count == 1)
         {
@@ -161,9 +163,19 @@ public partial class WorkflowCanvasControl
         {
             if (_viewModel?.InsertNodeIntoConnection(positions[0].Node, insertion, positions[0].After) != true) return;
         }
+        else if (session.Copy)
+        {
+            if (_viewModel?.DuplicateCanvasNodes(session.After) != true) return;
+        }
         else if (positions.Any(p => p.Before != p.After))
             _viewModel?.CurrentCommandManager?.Execute(new MoveNodesSnapshotCommand(positions, session.Tab.WorkflowConnections));
-        e.Effects = DragDropEffects.Move;
+        e.Effects = session.Copy && insertion == null ? DragDropEffects.Copy : DragDropEffects.Move;
+    }
+    private static bool VmNodeDropEffectAllowed(bool copy, DragDropKeyStates keys, DragDropEffects allowed, bool dropping)
+    {
+        var control = (keys & DragDropKeyStates.ControlKey) != 0;
+        return copy == control && (!copy || !dropping || keys == DragDropKeyStates.ControlKey) &&
+            (allowed & (copy ? DragDropEffects.Copy : DragDropEffects.Move)) != 0;
     }
     private void PreviewVmNodeMove(VmNodeMoveSession session, Point pointer)
     {

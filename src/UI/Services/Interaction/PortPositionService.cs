@@ -16,12 +16,10 @@ namespace SunEyeVision.UI.Services.Interaction
     public class PortPositionService
     {
         private readonly System.Windows.Controls.Canvas _canvas;
-        private readonly NodeStyleConfig _styleConfig;
 
-        public PortPositionService(System.Windows.Controls.Canvas canvas, NodeStyleConfig styleConfig)
+        public PortPositionService(System.Windows.Controls.Canvas canvas)
         {
             _canvas = canvas;
-            _styleConfig = styleConfig;
         }
 
         /// <summary>
@@ -103,11 +101,11 @@ namespace SunEyeVision.UI.Services.Interaction
         {
             return portName switch
             {
-                "TopPort" => _styleConfig.GetTopPortPosition(node.Position),
-                "BottomPort" => _styleConfig.GetBottomPortPosition(node.Position),
-                "LeftPort" => _styleConfig.GetLeftPortPosition(node.Position),
-                "RightPort" => _styleConfig.GetRightPortPosition(node.Position),
-                _ => _styleConfig.GetRightPortPosition(node.Position)
+                "TopPort" => node.TopPortPosition,
+                "BottomPort" => node.BottomPortPosition,
+                "LeftPort" => node.LeftPortPosition,
+                "RightPort" => node.RightPortPosition,
+                _ => node.RightPortPosition
             };
         }
 

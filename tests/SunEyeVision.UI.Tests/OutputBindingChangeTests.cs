@@ -91,7 +91,10 @@ public sealed class OutputBindingChangeTests
         solution.GlobalVariables.Add(variable); service.Reset(solution); solution.Workflows[0].Nodes.RemoveAt(0);
         service.Commit("source"); Assert.Null(variable.ProducerBinding); Assert.NotEmpty(variable.RebindingReason);
         Assert.Empty(variable.ConsumerBindings); Assert.Empty(receive.Variables[0].VariableId); Assert.Equal("请选择", receive.Variables[0].VariablePath); Assert.Empty(p.InputText);
-        Assert.Throws<InvalidOperationException>(() => SolutionExecutionDependencyGraph.Compile(solution));
+        // 当前合同允许无关节点继续编译；失效输入由消费者执行准入拒绝，不允许回退初值。
+        var graph = SolutionExecutionDependencyGraph.Compile(solution);
+        Assert.DoesNotContain(graph.Dependencies, d => d.Kind == SolutionDependencyKind.GlobalVariable);
+        Assert.Throws<InvalidOperationException>(() => OutputBindingChangeService.EnsureExecutable(solution.Workflows[0]));
         var copy = JsonSerializer.Deserialize<GlobalVariable>(JsonSerializer.Serialize(variable))!; Assert.Equal(variable.RebindingReason, copy.RebindingReason);
         variable.ProducerBinding = new() { NodeId = "new" }; Assert.Empty(variable.RebindingReason);
     }

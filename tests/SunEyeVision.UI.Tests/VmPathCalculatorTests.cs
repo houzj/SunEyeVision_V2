@@ -42,7 +42,7 @@ public sealed class VmPathCalculatorTests
     public void Pointer_preview_preserves_mouse_endpoint()
     {
         var calculator=new VmPathCalculator();var pointer=new Point(363,287);
-        var points=calculator.CalculateOrthogonalPath(new Point(210,115),pointer,PortDirection.Right,PortDirection.Left);
+        var points=calculator.CalculatePreviewPath(new Point(210,115),pointer,PortDirection.Right,new Rect(100,100,110,30));
         Assert.Equal(new Point(210,115),points[0]);Assert.Equal(pointer,points[^1]);
     }
 }

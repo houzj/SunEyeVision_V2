@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -23,7 +23,7 @@ namespace SunEyeVision.UI.Shared
     /// - UI 直接绑定 Solution.Workflow.Nodes（ObservableCollection）
     /// - 不再需要同步代码
     /// </remarks>
-    public class WorkflowNode : WorkflowNodeBase
+    public partial class WorkflowNode : WorkflowNodeBase
     {
         /// <summary>
         /// 节点输出缓存（UI 层专用，强类型）
@@ -85,7 +85,7 @@ namespace SunEyeVision.UI.Shared
         /// </summary>
         public NodeStyleConfig StyleConfigTyped
         {
-            get => base.StyleConfig as NodeStyleConfig ?? NodeStyles.Standard;
+            get => IsSubroutineNode ? NodeStyles.Group : base.StyleConfig as NodeStyleConfig ?? NodeStyles.Standard;
             set => base.StyleConfig = value;
         }
 
@@ -121,6 +121,13 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 获取节点边界矩形（用于框选等操作）
         /// </summary>
+        [JsonIgnore] public bool IsSubroutineNode => string.Equals(ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase);
+        [JsonIgnore] public double VisualWidth => StyleConfigTyped.NodeWidth;
+        [JsonIgnore] public double VisualHeight => StyleConfigTyped.NodeHeight;
+        [JsonIgnore] public double HitAreaWidth => VisualWidth + 20;
+        [JsonIgnore] public double HitAreaHeight => VisualHeight + 20;
+        [JsonIgnore] public double HitAreaLeft => Position.X - HitAreaWidth / 2;
+        [JsonIgnore] public double HitAreaTop => Position.Y - HitAreaHeight / 2;
         public Rect NodeRect => StyleConfigTyped.GetNodeRect(Position);
 
         /// <summary>
@@ -171,6 +178,7 @@ namespace SunEyeVision.UI.Shared
         {
             // 初始化样式配置
             StyleConfigTyped = NodeStyles.Standard;
+            InitializeVmPresentation();
         }
 
         /// <summary>
@@ -180,6 +188,7 @@ namespace SunEyeVision.UI.Shared
         public WorkflowNode() : base()
         {
             StyleConfigTyped = NodeStyles.Standard;
+            InitializeVmPresentation();
         }
 
         #endregion

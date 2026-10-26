@@ -29,6 +29,14 @@ public sealed class OutputBindingChangeService
         Capture();
     }
 
+    /// <summary>历史已恢复图与配置后接纳其合同基线；保留宿主读取器，不再次裁剪恢复的绑定。</summary>
+    public void AcceptHistoryConfiguration(Solution? solution)
+    {
+        _solution = solution;
+        InvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
+        Capture();
+    }
+
     public IReadOnlyList<OutputBindingChange> Commit(string sourceId)
     {
         var owners = (_solution?.Workflows.Where(w => w.Nodes.Any(n => n.Id == sourceId)).Select(w => w.Id)

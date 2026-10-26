@@ -1132,7 +1132,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                     {
 
-                        _portPositionService = new PortPositionService(WorkflowCanvas, NodeStyles.Standard);
+                        _portPositionService = new PortPositionService(WorkflowCanvas);
                     }
 
                 }
@@ -1753,80 +1753,18 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// <param name="targetPortName">目标端口名称（可选）</param>
 
-        private void UpdateTempConnectionPath(
-            Point startPoint,
-            Point endPoint,
-            WorkflowNode? targetNode = null,
-            string? targetPortName = null)
+        private void UpdateTempConnectionPath(Point startPoint, Point endPoint)
         {
-            if (_tempConnectionGeometry == null)
-                return;
-
+            if (_tempConnectionGeometry == null || _dragConnectionSourceNode == null) return;
             var calculator = PathCalculatorFactory.CreateCalculator();
             var sourceDirection = PortDirectionExtensions.FromPortName(_dragConnectionSourcePort ?? "RightPort");
-
-            // 根据是否有目标节点，计算目标位置和方向
-            Point targetPosition;
-            PortDirection targetDirection;
-
-            if (targetNode != null && !string.IsNullOrEmpty(targetPortName))
-            {
-                // 情况1：有目标节点 - 使用实际端口位置和方向
-                targetPosition = GetPortPositionByName(targetNode, targetPortName);
-                targetDirection = PortDirectionExtensions.FromPortName(targetPortName);
-            }
-            else
-            {
-                // 情况2：无目标节点 - 使用鼠标位置和推断方向
-                targetPosition = endPoint;
-                targetDirection = InferTargetDirection(startPoint, endPoint);
-            }
-
-            // 统一使用贝塞尔曲线计算器
-            var pathPoints = calculator.CalculateOrthogonalPath(
-                startPoint,
-                targetPosition,
-                sourceDirection,
-                targetDirection);
-
-            var geometry = calculator.CreatePathGeometry(pathPoints);
-
+            var points = calculator.CalculatePreviewPath(startPoint, endPoint, sourceDirection, _dragConnectionSourceNode.NodeRect);
+            var geometry = calculator.CreatePathGeometry(points);
             _tempConnectionGeometry.Figures.Clear();
-            foreach (var figure in geometry.Figures)
-            {
-                _tempConnectionGeometry.Figures.Add(figure);
-            }
+            foreach (var figure in geometry.Figures) _tempConnectionGeometry.Figures.Add(figure);
         }
 
-        
-
-
-
-        /// <summary>
-        /// 根据起点和鼠标位置推算目标端口方向
-        /// </summary>
-        private PortDirection InferTargetDirection(Point source, Point mouse)
-        {
-            double dx = mouse.X - source.X;
-            double dy = mouse.Y - source.Y;
-
-            if (Math.Abs(dx) > Math.Abs(dy))
-            {
-                return dx > 0 ? PortDirection.Left : PortDirection.Right;
-            }
-            else
-            {
-                return dy > 0 ? PortDirection.Top : PortDirection.Bottom;
-            }
-        }
-
-
-
-        /// <summary>
-        /// 端口鼠标左键释放 - 结束拖拽连接线
-
-        /// </summary>
-
+        /// <summary>端口鼠标释放：只消费移动阶段记录的目标。</summary>
         private void Port_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (_isDraggingConnection) { FinishVmConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; }
@@ -3255,9 +3193,12 @@ _viewModel.SelectedNode = targetNode;
         private void SubroutineNodeSettings_Click(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
+            if (!CanEditVmCanvas) return;
 
             if (sender is FrameworkElement element && element.DataContext is WorkflowNode node)
             {
+                node.IsSelected = true;
+                if (_viewModel != null) _viewModel.SelectedNode = node;
                 var mainWindow = Window.GetWindow(this) as MainWindow;
                 if (mainWindow != null)
                 {

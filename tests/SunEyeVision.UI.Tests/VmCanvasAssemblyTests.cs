@@ -38,7 +38,7 @@ public sealed class VmCanvasAssemblyTests
                 var canvas=(System.Windows.Controls.Canvas)control.FindName("WorkflowCanvas");
                 foreach(var port in VisualPorts(control))port.Visibility=Visibility.Visible;
                 control.UpdateLayout();
-                var ports=new PortPositionService(canvas,NodeStyles.Standard);
+                var ports=new PortPositionService(canvas);
                 foreach(var node in new[]{source,target})
                 foreach(var side in new[]{"TopPort","BottomPort","LeftPort","RightPort"})
                 {

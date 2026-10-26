@@ -25,6 +25,7 @@
         <convertersPath:PointOffsetConverter x:Key="PointOffsetConverter"/>
         <converters:PointCenterToOffsetConverter x:Key="PointCenterToOffsetConverter"/>
         <convertersNode:VmNodeIconConverter x:Key="VmNodeIcon"/>
+        <convertersNode:VmGroupBackgroundConverter x:Key="VmGroupBackground"/>
 
         <!-- 使用缓存的节点转换器（性能优化） -->
         <rendering:CachedNodeBackgroundConverter x:Key="NodeBackgroundColorConverter"/>
@@ -203,14 +204,14 @@
                 <Style>
         <!-- Position表示HitArea中心点，Canvas.Left/Top需要左上角坐标 -->
         <!-- 左上角 = 中心点 - (HitAreaWidth/2, HitAreaHeight/2) -->
-        <Setter Property="Canvas.Left" Value="{Binding Position.X, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-65, Mode=OneWay}"/>
-        <Setter Property="Canvas.Top" Value="{Binding Position.Y, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-25, Mode=OneWay}"/>
+        <Setter Property="Canvas.Left" Value="{Binding HitAreaLeft, Mode=OneWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding HitAreaTop, Mode=OneWay}"/>
                 </Style>
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <!-- HitArea Border: 用于命中测试，Position表示其中心点 -->
-                    <Border Width="{DynamicResource HitAreaWidth}" Height="{DynamicResource HitAreaHeight}"
+                    <Border Width="{Binding HitAreaWidth}" Height="{Binding HitAreaHeight}"
                             Background="Transparent"
                             Tag="{Binding}"
                             x:Name="HitAreaBorder"
@@ -226,8 +227,18 @@
                             </ContextMenu>
                         </Border.ContextMenu>
                         <Grid>
+                            <!-- GROUP循环装饰：原件GroupCirculationBackground，围绕110×40卡片外扩5。 -->
+                            <Grid x:Name="GroupLoopOverlay" Width="120" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsGroupLoopEnabled}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Grid.Style>
+                                <Grid.Resources><Style x:Key="GroupLoopArrow" TargetType="Image"><Setter Property="Stretch" Value="None"/><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_cycle_right.png"/><Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_cycle_right_disable.png"/></DataTrigger></Style.Triggers></Style></Grid.Resources>
+                                <Border BorderBrush="#66F9F5F2" BorderThickness="2" CornerRadius="3"><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.08"><GradientStop Color="#19F6F6F6" Offset="0"/><GradientStop Color="#33F3F3F3" Offset="1"/></LinearGradientBrush></Border.Background><Border.Effect><DropShadowEffect Color="Black" ShadowDepth="3" Opacity="0.5"/></Border.Effect></Border>
+                                <Image Margin="0,-4,0,0" VerticalAlignment="Top" Style="{StaticResource GroupLoopArrow}"/>
+                                <Image Margin="0,0,0,-4" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5" Style="{StaticResource GroupLoopArrow}"><Image.RenderTransform><RotateTransform Angle="180"/></Image.RenderTransform></Image>
+                                <Image Margin="-3,0,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.5,0.5" Style="{StaticResource GroupLoopArrow}"><Image.RenderTransform><RotateTransform Angle="-90"/></Image.RenderTransform></Image>
+                                <Image Margin="0,0,-3,0" HorizontalAlignment="Right" RenderTransformOrigin="0.5,0.5" Style="{StaticResource GroupLoopArrow}"><Image.RenderTransform><RotateTransform Angle="90"/></Image.RenderTransform></Image>
+                            </Grid>
                             <!-- NodeBorder: 视觉显示元素，居中于HitArea -->
-                            <Border Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
+                            <Border Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
 
                                     BorderBrush="{Binding IsSelected, Converter={StaticResource NodeBorderColorConverter}}"
                                     HorizontalAlignment="Center"
@@ -248,84 +259,29 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- 节点类型图标（非子程序）/ 子程序设置按钮；方案 §6 五态：状态色块 + 图标重叠 -->
-                                <Grid Grid.Column="0" Width="24">
+                                <Grid Grid.Column="0">
+                                    <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="24"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
-                                    <Image Source="{Binding ToolType, Converter={StaticResource VmNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                    <Image Source="{Binding ToolType, Converter={StaticResource VmNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center"><Image.Style><Style TargetType="Image"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
 
-                                    <!-- 子程序沿用同一语义矢量图标，保留参数设置点击入口。 -->
-                                    <Button Background="Transparent"
-                                            BorderThickness="0"
-                                            Padding="0"
-                                            Width="24" Height="24"
-                                            Cursor="Hand"
-                                            ToolTip="子程序参数设置"
-                                            Click="SubroutineNodeSettings_Click"
-                                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            Panel.ZIndex="10">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <!-- 背景恒透明：悬停/按下不出现背景色块（避免与状态色块混色出杂色）。
-                                                     点击热区=按钮自身 24x24。 -->
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                        <!-- 矢量图标前景在 Style 中控制，状态与点击悬停语义保持不变：
-                                             ★ 基础色跟随节点运行状态(与普通类型图标同一转换器的色值)：
-                                               待运行→#333333(浅卡片可见)；运行中/成功/失败/跳过→白色(on实色状态色块)。
-                                             ★ 悬停变主题蓝提示可点(按钮语义)。Style Trigger 优先级>Style Setter，
-                                               且悬停 Trigger 放最后 → 悬停时覆盖状态色。 -->
-                                        <icons:ToolIcon Key="{Binding Icon}" Width="16" Height="16"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <icons:ToolIcon.Style>
-                                                <Style TargetType="icons:ToolIcon">
-                                                    <Setter Property="Foreground" Value="#FF333333"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Status}" Value="运行中">
-                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="成功">
-                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="OK">
-                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="失败">
-                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="NG">
-                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="跳过">
-                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                                        </DataTrigger>
-                                                        <!-- 悬停变节点端口同款悬停色(橙 #FF6600)：与端口交互反馈一致，
-                                                             且橙在绿/蓝/红/灰/浅底上都足够明显。放最后，覆盖状态色 -->
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Foreground" Value="{DynamicResource PortHoverBrush}"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </icons:ToolIcon.Style>
-                                        </icons:ToolIcon>
-                                        <Button.Style>
-                                            <Style TargetType="Button">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
+                                    <!-- 原GROUP参数按钮：24px原图、左边距7，标题不显示全局ID。 -->
+                                    <Button x:Name="GroupSettingsButton" Width="24" Height="24" Margin="7,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Cursor="Hand" ToolTip="子程序参数设置" Click="SubroutineNodeSettings_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button">
+                                            <Image x:Name="GroupSettingsImage" Stretch="None" Source="/SunEyeVision.UI;component/Resources/Workflow/ic_group_configuration_normal.png"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="GroupSettingsImage" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_group_configuration_click.png"/></Trigger>
+                                                <Trigger Property="IsEnabled" Value="False"><Setter TargetName="GroupSettingsImage" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_group_configuration_disable.png"/></Trigger>
+                                                <DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter TargetName="GroupSettingsImage" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_group_configuration_disable.png"/></DataTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate></Button.Template>
+                                        <Button.Style><Style TargetType="Button"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Button.Style>
                                     </Button>
                                 </Grid>
 
                                 <!-- 全局序号 -->
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding GlobalIndex, StringFormat='{}{0}'}"
-                                           Style="{DynamicResource NodeGlobalIndexStyle}"
-                                           Margin="0"
-                                           Visibility="Visible"/>
+                                           Margin="0"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
 
                                 <!-- 节点显示名称（重命名时切换到编辑框） -->
                                 <Grid Grid.Column="2">
@@ -379,7 +335,11 @@
                                 <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
                                 <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45"/></Setter.Value></Setter>
 
-                            <Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding ToolType}" Value="ImageLoad"><Setter Property="CornerRadius" Value="15"/></DataTrigger></Style.Triggers></Style>
+                            <Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding ToolType}" Value="ImageLoad"><Setter Property="CornerRadius" Value="15"/></DataTrigger><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
+                                    <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="Effect" Value="{x:Null}"/>
+                                    <Setter Property="Background"><Setter.Value><MultiBinding Converter="{StaticResource VmGroupBackground}"><Binding Path="IsEnabled"/><Binding Path="IsSelected"/><Binding Path="Status"/></MultiBinding></Setter.Value></Setter>
+                                </DataTrigger>
+                            </Style.Triggers></Style>
                         </Border.Style>
                     </Border>
                             <!-- 连接点 - 上 -->

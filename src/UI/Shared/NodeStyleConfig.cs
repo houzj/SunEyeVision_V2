@@ -11,6 +11,9 @@ namespace SunEyeVision.UI.Shared
     public class NodeStyleConfig
     {
         private static readonly ResourceDictionary _resources;
+        private readonly double? _height;
+        public NodeStyleConfig() : this(null) { }
+        public NodeStyleConfig(double? height) { _height = height; }
 
         static NodeStyleConfig()
         {
@@ -58,7 +61,7 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 节点高度（从资源读取）
         /// </summary>
-        public double NodeHeight => GetDouble("NodeHeight");
+        public double NodeHeight => _height ?? GetDouble("NodeHeight");
 
         /// <summary>
         /// 端口大小（直径）（从资源读取）
@@ -164,6 +167,7 @@ namespace SunEyeVision.UI.Shared
         /// 标准节点样式（当前默认，从资源读取）
         /// </summary>
         public static readonly NodeStyleConfig Standard = new NodeStyleConfig();
+        public static readonly NodeStyleConfig Group = new NodeStyleConfig(40);
 
         /// <summary>
         /// 紧凑节点样式（小尺寸）

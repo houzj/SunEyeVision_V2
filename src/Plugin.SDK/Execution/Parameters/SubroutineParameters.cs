@@ -30,7 +30,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public ObservableCollection<SubroutineInputConfig> Inputs { get; set; } = new();
         public ObservableCollection<SubroutineOutputConfig> Outputs { get; set; } = new();
         public ObservableCollection<SubroutineDisplayItem> DisplayConfigs { get; set; } = new();
-        public SubroutineLoopConfig LoopConfig { get; set; } = new();
+        private SubroutineLoopConfig _loopConfig = new();
+        public SubroutineLoopConfig LoopConfig { get => _loopConfig; set => SetProperty(ref _loopConfig, value); }
 
         [JsonIgnore]
         public int CurrentIteration { get; set; }

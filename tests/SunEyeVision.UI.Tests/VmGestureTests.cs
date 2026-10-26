@@ -37,8 +37,8 @@ public sealed class VmGestureTests
     {
         var control = new WorkflowCanvasControl { Width = 700, Height = 450 };
         control.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/SunEyeVision.UI;component/Themes/Dark/DarkTheme.xaml", UriKind.Relative) });
-        node = new WorkflowNode { Id = "a", ToolType = "ImageLoad", DispName = "图像源", Position = new Point(150, 90) };
-        var target = new WorkflowNode { Id = "b", ToolType = "BlobAnalysis", Position = new Point(350, 290) };
+        node = new WorkflowNode { Id = "a", ToolType = "ImageLoad", DispName = "图像源1", GlobalIndex = 2, Position = new Point(150, 90) };
+        var target = new WorkflowNode { Id = "b", ToolType = "BlobAnalysis", DispName = "Blob分析1", GlobalIndex = 1, Position = new Point(350, 290) };
         var model = new WorkflowTabViewModel(); model.SetNodes(new ObservableCollection<NodeBase> { node, target });
         model.SetConnections(new ObservableCollection<Connection> { new() { Id = "wire", SourceNodeId = "a", TargetNodeId = "b", SourcePort = "BottomPort", TargetPort = "TopPort" } });
         control.DataContext = model; control.Measure(new Size(700, 450)); control.Arrange(new Rect(0, 0, 700, 450)); control.UpdateLayout();
@@ -235,6 +235,55 @@ public sealed class VmGestureTests
         var method=typeof(WorkflowCanvasControl).GetMethod("VmNodeDropEffectAllowed", BindingFlags.NonPublic | BindingFlags.Static)!;
         Assert.Equal(expected, method.Invoke(null,new object[]{copy,keys,allowed,dropping}));
     }
+
+    [Fact] public void Group_original_dimensions_match_visual_ports_router_and_live_loop_parameters() => Sta(() =>
+    {
+        var control = Create(out var node); var tab=(WorkflowTabViewModel)control.DataContext;
+        node.ToolType="Subroutine";node.DispName="子程序1";
+        var parameters=new SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters();node.Parameters=parameters;
+        control.Dispatcher.Invoke(() => { },System.Windows.Threading.DispatcherPriority.ContextIdle);control.UpdateLayout();
+        Assert.Equal(40,node.NodeRect.Height);Assert.Equal(60,node.HitAreaHeight);
+        var hit=Children<Border>(control).Single(b=>b.Name=="HitAreaBorder"&&ReferenceEquals(b.Tag,node));
+        var card=Children<Border>(control).Single(b=>b.Name=="NodeBorder"&&ReferenceEquals(b.Tag,node));
+        Assert.Equal(60,hit.ActualHeight);Assert.Equal(40,card.ActualHeight);Assert.Equal(110,card.ActualWidth);
+        Assert.IsType<ImageBrush>(card.Background);Assert.Equal(new Thickness(0),card.BorderThickness);
+        Call(control,"SetPortsVisibility",card,true);control.UpdateLayout();
+        var ports=Children<VmExecutionPort>(control).Where(p=>ReferenceEquals(p.DataContext,node)).ToArray();
+        var expected=new Dictionary<string,Point>{{"TopPort",node.TopPortPosition},{"BottomPort",node.BottomPortPosition},{"LeftPort",node.LeftPortPosition},{"RightPort",node.RightPortPosition}};
+        var canvas=(System.Windows.Controls.Canvas)control.FindName("WorkflowCanvas");
+        foreach(var port in ports)Assert.Equal(expected[(string)port.Tag],port.TranslatePoint(port.Anchor,canvas));
+        var portService = new SunEyeVision.UI.Services.Interaction.PortPositionService(canvas);
+        foreach(var port in ports) { port.Visibility=Visibility.Collapsed;Assert.Equal(expected[(string)port.Tag],portService.QueryPortPosition(node.Id,(string)port.Tag)); }
+        Assert.Equal(node.BottomPortPosition,tab.WorkflowConnections.Single().PathPoints.First());
+        var overlay=Children<Grid>(control).Single(g=>g.Name=="GroupLoopOverlay"&&ReferenceEquals(g.DataContext,node));
+        Assert.Equal(Visibility.Collapsed,overlay.Visibility);
+        parameters.LoopConfig.EnableLoop=true;control.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Equal(Visibility.Visible,overlay.Visibility);
+        var bitmap=new System.Windows.Media.Imaging.RenderTargetBitmap(1400,900,192,192,PixelFormats.Pbgra32);bitmap.Render(control);
+        var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+        var directory=Environment.GetEnvironmentVariable("S2_CASE_ROOT")!;System.IO.Directory.CreateDirectory(directory);
+        using(var output=System.IO.File.Create(System.IO.Path.Combine(directory,"vm-group-template.png")))encoder.Save(output);
+        var oldLoop=parameters.LoopConfig;parameters.LoopConfig=new();control.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
+        Assert.Equal(Visibility.Collapsed,overlay.Visibility);oldLoop.EnableLoop=false;oldLoop.EnableLoop=true;Assert.False(node.IsGroupLoopEnabled);
+        node.Parameters=new SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters();parameters.LoopConfig.EnableLoop=true;Assert.False(node.IsGroupLoopEnabled);
+        node.ToolType="ImageLoad";control.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);control.UpdateLayout();Assert.Equal(30,node.NodeRect.Height);Assert.Equal(30,card.ActualHeight);
+        control.DataContext=null;
+    });
+    [Theory]
+    [InlineData(true,false,"待运行","group_bg.png")]
+    [InlineData(true,true,"待运行","group_bg_focus.png")]
+    [InlineData(true,false,"OK","group_ok.png")]
+    [InlineData(true,true,"成功","group_ok_selected.png")]
+    [InlineData(true,false,"NG","group_ng.png")]
+    [InlineData(true,true,"失败","group_ng_selected.png")]
+    [InlineData(false,true,"成功","group_bg_forbidden.png")]
+    public void Group_background_uses_original_image_and_state_precedence(bool enabled,bool selected,string status,string file) => Sta(() =>
+    {
+        var converter=new SunEyeVision.UI.Converters.Node.VmGroupBackgroundConverter();
+        var brush=Assert.IsType<ImageBrush>(converter.Convert(new object[]{enabled,selected,status},typeof(Brush),null!,System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(Stretch.None,brush.Stretch);Assert.True(brush.IsFrozen);
+        Assert.EndsWith(file,Assert.IsType<System.Windows.Media.Imaging.BitmapImage>(brush.ImageSource).UriSource.OriginalString);
+    });
 
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]

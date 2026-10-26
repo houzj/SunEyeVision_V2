@@ -2605,55 +2605,28 @@ SplitterPosition = position;
                 }
             }
 
-            // 合并为一个原子命令，消除两步骤间的重叠删除问题
-            var command = new AppCommands.BatchDeleteNodesAndConnectionsCommand(
-                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                selectedNodes,
-                selectedConnections);
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // Tab 与引擎共享同一份定义集合，命令执行后引擎已同步，不再重复删除。
-
-            // 级联清理：清理被删节点关联的全局变量绑定
-            foreach (var node in selectedNodes)
-            {
-                CleanupBindingsForDeletedNode(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId, node.Id);
-            }
-
-            // ★ Phase 3：级联清理子程序工作流（删除 Subroutine 节点时同步清理对应后台工作流）
-            foreach (var node in selectedNodes)
-            {
-                if (string.Equals(node.ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase)
-                    && !string.IsNullOrEmpty(node.SubroutineId))
+            var tab = WorkflowTabViewModel.SelectedTab;
+            var definition = _workflowDefinitions.GetRequired(tab.CurrentWorkflowId);
+            var solution = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+            var bindingService = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings;
+            var command = new AppCommands.DeleteWorkflowItemsCommand(definition, selectedNodes, selectedConnections,
+                _workflowEngine, solution,
+                configure: () =>
                 {
-                    var subId = node.SubroutineId;
-                    _workflowEngine.DeleteWorkflow(subId);
-
-                    var solMgr = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-                    if (solMgr?.CurrentSolution != null)
-                    {
-                        solMgr.CurrentSolution.RemoveWorkflow(subId);
-                    }
-
-                    AddLog($"🗑️ 级联清理子程序工作流: {node.Name} (ID: {subId})");
-                }
-            }
-
-            // 处理被删连接的后置副作用（ImageSource 回退、日志）
-            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
-            foreach (var conn in allAffectedConnections)
-            {
-                var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
-                    .FirstOrDefault(n => n.Id == conn.TargetNodeId) as WorkflowNodeBase;
-                AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId, targetNode, conn.Id);
-
-                var sourceNodeName = WorkflowTabViewModel.SelectedTab.WorkflowNodes
-                    .FirstOrDefault(n => n.Id == conn.SourceNodeId)?.Name ?? conn.SourceNodeId;
-                var targetNodeName = targetNode?.Name ?? conn.TargetNodeId;
-                AddLog($"⛓️ 删除连接: {sourceNodeName} → {targetNodeName}");
-            }
+                    foreach (var node in selectedNodes) CleanupBindingsForDeletedNode(definition.Id, node.Id);
+                    foreach (var conn in allAffectedConnections)
+                        AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId,
+                            definition.Nodes.FirstOrDefault(n => n.Id == conn.TargetNodeId), conn.Id);
+                    bindingService.ReconcileAll();
+                },
+                refresh: () =>
+                {
+                    // 撤销恢复配置后重建基线，避免用“删除后”的合同再次裁掉已恢复引用。
+                    bindingService.AcceptHistoryConfiguration(solution);
+                    SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
+                    BuildFlatRows();
+                });
+            tab.CommandManager.Execute(command);
 
             // 刷新当前选中节点的图像（如果受影响）
             if (allAffectedConnections.Count > 0)

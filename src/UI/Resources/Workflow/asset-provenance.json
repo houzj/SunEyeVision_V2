@@ -18,5 +18,117 @@
     "file": "ic_retract_normal.png",
     "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_retract_normal.png",
     "sha256": "FC94A8DDBDD92A61FDB1B966945FED2463AB4E6060FB4AE1AEC792F891862EA7"
+  },
+  {
+    "file": "group_bg.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg.png",
+    "sha256": "4041D5515234D57253B80E1E5A5F0152B91F59A93F52563A72697399DCC91311",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_bg_focus.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg_focus.png",
+    "sha256": "E3D5490C0C2D50C93D545731CA28B27E772C4DB106B661D66A9FEDF9A5378887",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_bg_forbidden.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg_forbidden.png",
+    "sha256": "8FE9A7131CB35B53A9DFF251C965DE9B66C56E448BA94F1EBD8C7E8A1FA1307D",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_bg_load_fail.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg_load_fail.png",
+    "sha256": "541A0236AF726393AC49B728803D913FDDCB0C56400927C4C587112E991ACBC0",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ng.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e5%bc%82%e5%b8%b8.png",
+    "sha256": "04E7FC00FA1BA386BD2DCE7D6A63AF5D3B24169F48954EE098EBC9A35F9036A8",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ng_selected.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e5%bc%82%e5%b8%b8%e9%80%89%e4%b8%ad.png",
+    "sha256": "33B470378AFE3FD843CF5C18C91A2B4BA407356AF8B71D7A3400DE544487810E",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ok.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e6%ad%a3%e5%b8%b8.png",
+    "sha256": "A6B8F6DE1FBA02C2E072F86963F7FB32AC084B9F688106DE2F18E6F535B6E97E",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ok_selected.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e6%ad%a3%e5%b8%b8%e9%80%89%e4%b8%ad.png",
+    "sha256": "F25715F22A052745F8697ACD8BB62F74BE648939B5E38C620FF2B7F5652CB036",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_cycle_right.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_cycle_right.png",
+    "sha256": "18EFAE324C82042AECB0E2BDBEBB08658F6F8D2F9CF3DEE77E26BEB942BDA035",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_cycle_right_disable.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_cycle_right_disable.png",
+    "sha256": "067EA60ABF881FC946802C59DB687DC6D8AA1F877EA29FC67E387979119D4984",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_flow_group_notice.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_flow_group_notice.png",
+    "sha256": "6975CCFEAEAE483CE6556393BB21FA46BBAF740949CFED394CE0CD0A47B9DBC5",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_group_configuration_click.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_group_configuration_click.png",
+    "sha256": "086BBC11AA131B37C78BF6430BCC17E2E37BC71B83B8541F7F59BA51E5DD6327",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_group_configuration_disable.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_group_configuration_disable.png",
+    "sha256": "CF1BC64CE15BACED7C402F048033A2F1CF25C006A122966F9D246D54D50A8DE8",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_group_configuration_normal.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_group_configuration_normal.png",
+    "sha256": "1541529DBE85F4632F0772596D396A364210F83E0B9280C214818D8CC8D1D239",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
   }
 ]

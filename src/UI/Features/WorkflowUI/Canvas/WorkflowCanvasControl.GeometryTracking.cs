@@ -74,7 +74,7 @@ public partial class WorkflowCanvasControl
             }));
             return;
         }
-        if (e.PropertyName is nameof(WorkflowNode.Position) or nameof(WorkflowNode.Width) or nameof(WorkflowNode.Height))
+        if (e.PropertyName is nameof(WorkflowNode.Position) or nameof(WorkflowNode.Width) or nameof(WorkflowNode.Height) or nameof(WorkflowNode.VisualHeight) or nameof(WorkflowNode.VisualWidth))
             QueueVmGeometryRefresh();
     }
     private void QueueVmGeometryRefresh()

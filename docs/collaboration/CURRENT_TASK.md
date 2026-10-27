@@ -1,5 +1,7 @@
 ﻿# 独立工作区当前任务：节点样式、交互与连线移植
 
+2026-10-27 根范围纠正与下一并行收尾：固定ba889d4a经D增量43931fbc无新增明确阻断，已集成。B完整入口核证554c1399确认CategoryId/Relations仅属GroupRunConfigurationWindow，根BuildRunParameters平铺单目标，撤回误列根分类多关联任务，不为此扩Group。真正有基础剩余是MeasureGuide.ImageSource/ImageSourceRef、Blob像素区域Reference-only槽；B从ba889d4a独立codex/root-resource-proxies集中实现RootParameterCatalog/Context/Picker/配置窗codebehind及专项测试（A不写这些文件）。C模式批a157e5f0已集成，补齐四态/总览显隐/弹层和手势/独立视口；A补底栏MaximumScale=2/4合同，368 UI及真实模式测试进行中。当前目录A唯一写入，只做共享合同/集成/文档/最终同版验收，不与main同步。原主方案已纠正错误范围，下一步收资源槽生产链与模式专项，再固定最终人工验收版本。
+
 2026-10-27 三路并行已交付并集成：B总览9c55b76d/a147ab9d，C底栏b774f8bd，D核验6a043d33/01ff5695；当前主集成根配置/共享接线同版367验证98不同用例过，扩充真实按钮/结果/类型化订阅复制执行后host-reference-copy再次1过7秒，root-final5过。366全量0错1356警告122.79秒；367UI0错1332警告108.79秒，三DLL正式/测试SHA相同；配置/总览/耗时暗亮WPF客户区已逐图核。原主方案已集中记录实现/效果/失败与最终验证/剩余/人工安排。准备中文阶段提交；目标active，R12分类多关联、总览模式顶栏及弹层/视口完整收尾仍待，不将可做项误标缺基础。R11/R13/R14真合同缺口精确禁用，R08不冒称VM等待等价，Group/SDK公共扩展冻结，不同步main；未启动人工验收中间版。下一步固定提交后给D做对应修改增量审查，再集中完成剩余有基础链。
 
 2026-10-27 用户明确授权按策略启动三路并行。已从已验证 adc727ba 创建 workflow-overview、workflow-timing-footer、workflow-review 三个独立 worktree，分别由总览实施、耗时底栏实施、只读核验负责；当前 87f4 目录仍由主集成唯一写入，负责根配置、共享接口、最终同版 Release 构建与人工交付。子任务禁止部署独立程序，Group 与 SDK 公共合同扩展冻结，不同步 main。根配置 363 缺失 using 已修，尚待重新构建与专项验证。

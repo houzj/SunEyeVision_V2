@@ -7,6 +7,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell;
 public enum WorkspaceConfigurationState { Waiting, Ready, Incomplete }
 public partial class WorkspaceStatusBarControl : UserControl
 {
+ public static readonly DependencyProperty MaximumScaleProperty=DependencyProperty.Register(nameof(MaximumScale),typeof(double),typeof(WorkspaceStatusBarControl),new PropertyMetadata(2d),value=>value is double maximum&&double.IsFinite(maximum)&&maximum>=.1&&maximum<=4);
+ public double MaximumScale {get=>(double)GetValue(MaximumScaleProperty);set=>SetValue(MaximumScaleProperty,value);}
  public static readonly DependencyProperty ScaleProperty=DependencyProperty.Register(nameof(Scale),typeof(double),typeof(WorkspaceStatusBarControl),new PropertyMetadata(1d));
  public static readonly DependencyProperty StatusTextProperty=DependencyProperty.Register(nameof(StatusText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("等待添加模块"));
  public static readonly DependencyProperty ExecutionTextProperty=DependencyProperty.Register(nameof(ExecutionText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("尚未运行"));
@@ -25,7 +27,7 @@ public partial class WorkspaceStatusBarControl : UserControl
  public WorkspaceStatusBarControl()=>InitializeComponent();
  private void ZoomSlider_ValueChanged(object sender,RoutedPropertyChangedEventArgs<double> e)
  {
-  if(double.IsFinite(e.NewValue)&&Math.Abs(e.NewValue-Scale)>0.00001)ScaleRequested?.Invoke(Math.Clamp(Math.Round(e.NewValue,1),0.1,2));
+  if(double.IsFinite(e.NewValue)&&Math.Abs(e.NewValue-Scale)>0.00001)ScaleRequested?.Invoke(Math.Clamp(Math.Round(e.NewValue,1),0.1,MaximumScale));
  }
  private void ResetZoomButton_Click(object sender,RoutedEventArgs e)=>ScaleRequested?.Invoke(1);
 }

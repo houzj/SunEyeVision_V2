@@ -55,7 +55,7 @@ public static class NativeRoiDesignData
         private readonly NativeRoiScene _scene;
         private readonly SampleImage _image=new();
         private readonly Guid _scope=Guid.NewGuid();
-        private readonly RoiEditItem[] _rows;
+        private readonly List<RoiEditItem> _rows;
         private long _revision,_generation;
         private bool _disposed;
         private DispatcherOperation? _pending;
@@ -69,8 +69,8 @@ public static class NativeRoiDesignData
                 new RoiEditItem("detect",Guid.NewGuid(),"矩形",RoiGeometryEditing.Create("rectangle",new(100,70),new(380,240))),
                 new RoiEditItem("mask",Guid.NewGuid(),"圆环",RoiGeometryEditing.Create("annulus",new(300,150),new(400,150))),
                 new RoiEditItem("detect",Guid.NewGuid(),"多边形",RoiGeometryEditing.Create("polygon",new(0,0),new(0,0),new[]{new Point2(90,80),new Point2(360,60),new Point2(440,230),new Point2(150,270)})),
-                new RoiEditItem("mask",Guid.NewGuid(),"扇形",RoiGeometryEditing.Checked(sector))};
-            Session=new(_image,Read,Accept,()=>!_disposed);
+                new RoiEditItem("mask",Guid.NewGuid(),"扇形",RoiGeometryEditing.Checked(sector))}.ToList();
+            Session=new(_image,Read,Accept,()=>!_disposed,"detect");
         }
         internal void Attach()
         {
@@ -80,20 +80,29 @@ public static class NativeRoiDesignData
             _scene.Loaded+=Loaded;_scene.Unloaded+=Unloaded;_scene.Disposing+=Dispose;
         }
         private RoiEditSnapshot Read()=>new(new(_scope,_revision,_image.Frame),Array.AsReadOnly(_rows.ToArray()));
-        private RoiEditAcceptance Accept(RoiEditStamp expected,RoiGeometryChange change)
+        private RoiEditAcceptance Accept(RoiEditStamp expected,RoiEditProposal change)
         {
-            var snapshot=Read();if(_disposed||expected!=snapshot.Stamp)return new(false,snapshot,"旧预览范围");
-            var index=Array.FindIndex(_rows,row=>row.Group==change.Group&&row.Id==change.Id);
-            if(index<0)return new(false,snapshot,"预览对象不存在");
-            _rows[index]=_rows[index] with{Geometry=change.Geometry};_revision++;
-            return new(true,Read());
+            var snapshot=Read();if(_disposed||expected!=snapshot.Stamp)return new(false,snapshot,Error:"旧预览范围");
+            Guid id;
+            if(change.Operation==RoiEditOperation.Create)
+            {
+                if(change.TargetId is not null)return new(false,snapshot,Error:"创建不得指定旧身份");
+                id=Guid.NewGuid();_rows.Add(new(change.Group,id,"新区域",change.Geometry));
+            }
+            else
+            {
+                var index=_rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.TargetId);
+                if(index<0)return new(false,snapshot,Error:"预览对象不存在");
+                id=_rows[index].Id;_rows[index]=_rows[index] with{Geometry=change.Geometry};
+            }
+            _revision++;return new(true,Read(),new(change.Group,id));
         }
         internal void Select()
         {
             if(_disposed||!ReferenceEquals(_scene.Session,Session))throw new InvalidOperationException("Preview session is detached.");
             var row=_rows[GetSampleIndex(_scene)];
             if(!Session.Select(row.Group,row.Id))throw new InvalidOperationException("Sample selection was rejected: "+_scene.Editor.Error);
-            Queue();
+            Session.SetDrawingGroup(row.Group);Queue();
         }
         private void Loaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_scene))Queue();}
         private void Unloaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_scene))Cancel();}

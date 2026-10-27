@@ -37,7 +37,8 @@
       "退出绘制不仅隐藏还拒编辑；退出来源分支失效C07请求与Popup；模式/来源更改revision取消旧候选",
       "当前RegionSourceModeSelector手工Radio缓存不能当最终原件；本批不接Blob字段或SDK"
     ],
-    "concreteGap": "原按钮传RoiType但Session无参DrawRequested丢弃；Viewport未订阅。原PrepareRawRoi -> static Draw会Activator创建可写原数据并在AddROI后通知，不能对只读ProjectionRows直接挂接。须原AddROI前接中立完整候选出口、宿主分配新ID和一次snapshot接纳；不增VM业务模型或可写正式集合。"
+    "concreteGap": "原按钮保RoiType/组/版本并由唯一视口接收；四原替身→原完成入口→宿主Create分配ID已通过自动链。仍缺原多边形超限模态、继承/来源、位姿、多对象菜单/宿主历史、物理指针及VM/VS人工。不计完整C08或阶段一。",
+    "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json"
   },
   "c01Host": {
     "source": "原Apps.XmlUI ParamListView/ParamUserControl/globalresources/LeftRightControl；原SHA由只读核收给出，激活前再次独立复核",

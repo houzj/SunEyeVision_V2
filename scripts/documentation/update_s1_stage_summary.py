@@ -336,6 +336,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['nativeStandaloneRoiSceneCandidate'].items()])
                if plan.get('nativeStandaloneRoiSceneCandidate') else '')
+            + ('<h5 id="o06-native-roi-drawing">C08原四形状绘制与宿主显式接纳</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativeRoiDrawingCandidate'].items()])
+               if plan.get('nativeRoiDrawingCandidate') else '')
             + ('<h5 id="o06-baseline-sync-20261027">控件库与工作流统一开发基线</h5>'
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['baselineSynchronization'].items()])

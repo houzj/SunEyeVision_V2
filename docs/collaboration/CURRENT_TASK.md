@@ -1,3 +1,13 @@
+## 2026-10-28 C08原四形状绘制及宿主接纳集中批封存
+
+- 共同基线e8b27e54；主线唯一产品写者，三路只读核收并补位继承来源、对象菜单、位姿。原RoiSelect保类型/组/版本→唯一视口→原四替身→两原完成入口pre-Add→宿主Create分配ID，Replace保ID；完整快照/选中先装再通知。不是完整C08或阶段一。
+- 取消/过期/非法/重放拒绝，旧帧/模板/捕获清理有租约身份。修Bind/Unloaded外层与ReleaseFrame内部重入、同Session旧CancelPending、旧capture先释放再DP通知，以及读取后重核接收器。正式半径直接计算，保原圆环inner0/full2π及扇形0..π/2。
+- 原模板命中适配：独立RoiDrawingCaptureEnabled让page可捕获，原ROIHitTestVisible业务门禁不变；ItemsPresenter消费原host命中DP，禁已有ROI分支。只据本方恢复源码适配，不断言VM实机原有缺陷。
+- 最终UI004零错6204警告60.15秒、全Release001零错6585警告77秒。正常桌面Window125=81、Field074=31、Design037=69、RuntimeEditor055=10、FullChain115=8、Components197=9共208组；正式EXE009 exit0/22可用工具15分类。检查点核10源增量（含用户XAML）、782发布项、86加载记录；原来源123个唯一文件SHA复核，Catalog最后仅非编译元数据更新。原O06生成706唯一锚点且幂等。
+- 失败保留Window112—123：受限进程捕获、夹具误把ItemsPresenter计为替身、原事件消息诊断；正常桌面124定向17组过、125全81组过。同一产物不绕过捕获，也不移动系统cursor；SendMessage仅预热自有窗口，生产几何方法程序驱动不代物理鼠标。早期UI002/003不套最终成绩。
+- 未完：Polygon超限仍状态提示，缺原模态释放/重捕；继承/图形图像来源、位姿、菜单多对象/宿主历史及真实VS/VM同态/物理指针/用户本批验收。Blob业务冻结；阶段二未准入。用户页索引2及SHA不改不提交。不推送，目标active。
+- 交接HANDOFF_NATIVE_ROI_DRAWING_20261028.md；权威证据evidence/O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json。自有构建、检查、正式EXE均已退出。
+
 ## 2026-10-28 绘制候选开发期间再次统一工作流基线
 
 - 用户要求先同步再独立开发。主线已封存产品7b8bed86，工作流078b262d且干净、无独有提交，差异2/0，聊天idle；包含本记录的交接提交为共同基线，直接快进。
@@ -846,4 +856,3 @@
 2026-10-26 删除补证：原VmModuleBaseDecorator.DeleteItemCommandExecute在删除节点前连接全部前驱/后继，沿两侧端口且isAutoLink:false；当前批删命令缺该机制，下一步迁入并验证连续链/分支/已有边/撤销。单独删线另走NextModules.Remove→UnSubModule并清PathPoints，不能混同。Group057构建0错误/058共120通过及059主窗启动记录、未验范围已集中回原主方案；未与主仓同步。
 
 最终删除补线源码063全量Release为0错误/759警告/33.50秒，064为126通过/0失败/0跳过/2秒；UI Release与测试SHA同为BF9D9F003713E2C0554815EC64B12A21033BB3B95E98234AB90C78FB977FB793。063仅去除旧命令无用状态，所有最终验证对应当前未提交源码。
-

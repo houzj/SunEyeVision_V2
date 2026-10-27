@@ -2022,14 +2022,14 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "999eae0af42122ddbdcdac40b7f1885c256577a0d183f07a05c943d010645718"
+          "localSha256": "7e3bd0926d72314e092fd1bfc792d3707b2ec6a7a8562871cd557ef8e58be512"
         },
         {
           "originalType": "VMBaseControls original ROI style",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\roiitemspagestyle.xaml",
           "originalSha256": "ff0b678abf2fb7b1a3f526ebb978605b44beded1b3949fa83eb4901139e37e95",
           "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roiitemspagestyle.xaml",
-          "localSha256": "cea774b3f426941a610cd457c329a029f7e132a23c98831a78ae39e4099413d7"
+          "localSha256": "850e3dd765dd65b9cb4f3667d3f147fcd357f72e6e7d786d60ed6ca103e356f9"
         },
         {
           "originalType": "VMBaseControls original ROI style",
@@ -2272,12 +2272,100 @@
           "originalSha256": "88092cd14d3e63aeb18bf94a9a4e532e95fb73687a7450dba1bac2a9684b4ddf",
           "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/roi_屏蔽polygon_click.png",
           "localSha256": "88092cd14d3e63aeb18bf94a9a4e532e95fb73687a7450dba1bac2a9684b4ddf"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.RectROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RectROISubstitute.xaml",
+          "originalSha256": "1300e4345a8afad8f91316903b757bc61ed4ab9b46b74bd5fa6c25bbc42b00ec",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROISubstitute.xaml",
+          "localSha256": "0ee0c6a724869abef147844e77d885f2962f485461d1c3f991aa2832bbeeecfb",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.RectROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RectROISubstitute.xaml.cs",
+          "originalSha256": "207744e727c6cf152588ee3e20e1d0da1077708eb059b42758315d1eb1aab603",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROISubstitute.xaml.cs",
+          "localSha256": "250ad34d50286930343abf26c9c3a1603b683a2e669773f6aff0f3e4d7e5174c",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.CircleROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\CircleROISubstitute.xaml",
+          "originalSha256": "39b96bd478bc8ee9ab4ddd89a9621b2ab46b61f7dc85ac37c25093419906d427",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROISubstitute.xaml",
+          "localSha256": "26764f20a27a2128b9091e1c965cab43138e08cdfd82c5decbd172d8ba41ed39",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.CircleROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\CircleROISubstitute.xaml.cs",
+          "originalSha256": "56e31c222fb7a72b28e4e1433b12fc7f83707c35e1df7adc2d7affb7e22f80c0",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROISubstitute.xaml.cs",
+          "localSha256": "19b6798c39fc717b0ee6214035f4b5eedde2258966f3a56cded208823b1ba8ff",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.SectorROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\SectorROISubstitute.xaml",
+          "originalSha256": "7b261e1ab57e67736f99ef8f2b8dee944882254842684c7ecf5a327f742c8566",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROISubstitute.xaml",
+          "localSha256": "39a2dd4f5df9d98256aabfdd23e877168540c53904c210bb4b4990c2c0f0fdad",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.SectorROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\SectorROISubstitute.xaml.cs",
+          "originalSha256": "dc15f9091f8c83d5592abb31bacc5ecd6cb1fed1edaee080a319b0ec384ae0fc",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROISubstitute.xaml.cs",
+          "localSha256": "23d5c597a24ebe73556e423bba33d7adfa2c58b2229c2f4c88e45ed26f7cac01",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.PolygonROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolygonROISubstitute.xaml",
+          "originalSha256": "e6ff9deaa52b5bc72f2fa09706871326442dff055feb713573d461e672987d23",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROISubstitute.xaml",
+          "localSha256": "af1e032138900668e3cf909a952f49f5edbf8b3417bccd06533c470f99dc3bd5",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.PolygonROISubstitute",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolygonROISubstitute.xaml.cs",
+          "originalSha256": "e68ba00b580e64bf811cafd718dd2f0643360037c14c0159dd45709ed11ffea3",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROISubstitute.xaml.cs",
+          "localSha256": "b5a0254830fe41d1b3837ad5a2d1e23756264813c3edbd3dc2f56e7ee4844667",
+          "coverage": "whole original substitute XAML/template and code; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls.ImageViewBox",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml",
+          "originalSha256": "1a376cf7ed4516a4e3e15402fa2a99eac6820d9905081339ee763e0e5920e68c",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml",
+          "localSha256": "0b682b0acb0ead831f5d0fd53a09b088b25e9fea79aec9911a15944f0af5c857",
+          "coverage": "original template plus explicit drawing capture capability; existing ROI ItemsPresenter branch disabled separately"
+        },
+        {
+          "originalType": "VMBaseControls ROI substitute base/resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\ROISubstitute.cs",
+          "originalSha256": "e41c9c7f8fecfcab9b67109aa92daf7b6a4f8b19c17ebe10d76b9a0908b73a34",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROISubstitute.cs",
+          "localSha256": "f9c30110c18eb2ec004cfc06ffe6c1041766a6675af8ca6bc8669ec62a28857e",
+          "coverage": "shared original recursive substitute dependency; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "VMBaseControls ROI substitute base/resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\roicontrolbasestyle.xaml",
+          "originalSha256": "a321d94a3ffa56005153a4395e35d4ec5c9667e57587f9412859b14f529e6a1f",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml",
+          "localSha256": "50ea233cc238b9af5df1cecee857ca57b677a0fecd0ed048a36d0a69e9e02f88",
+          "coverage": "shared original recursive substitute dependency; local namespace/resource adaptation"
         }
       ],
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "5b84a2fce897eb89308bb4157b0193183b3cc6dd0c007e2b45d680a8d9517d26"
+          "sha256": "366389e27c908c24fbee7a9d2d73cfd6f3ae846913ded8a678ff98058a017a96"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
@@ -2285,11 +2373,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
-          "sha256": "c8b5184e503377755c84b6a0e55851736512f262b1805bccb1ea8aaaa16d76c8"
+          "sha256": "90bc80b852d15331dee6b1ee055483dd52d5394479f45a870805a812d30e7515"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "e2c5d9f4ccc4d9600c4e26e8624cbfbcd8ec4da34745270c96c5d4c380232f53"
+          "sha256": "eeb7cd1e5479d7065d64b570cfc2da9dcceef1d839e20f65eb7c569e20a2d95e"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
@@ -2309,7 +2397,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiDesignData.cs",
-          "sha256": "668546fb8229ca138b03b87cf1255c1629a2b023f221a896814f81f9f4347e49"
+          "sha256": "92a252873e9d86785152da7f15ee02fefdc929410be945b197d946b4c450f48c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs",
+          "sha256": "a313a19a8b4c3f3cb8b69576c07d36dc5aacff74e1edfb99e818f9fc282797f6"
+        },
+        {
+          "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs",
+          "sha256": "0640fe4b4a84a92544d548df4e0bc76bef5420955fd6e6447323352a3c6c4101"
         }
       ],
       "consumers": [
@@ -2318,7 +2414,7 @@
         "NativeRoiScene + Design/NativeRoiScene.xaml via same real Editor/Viewport/Session and original parameter host"
       ],
       "status": "BOX_RING_SECTOR_FOCUSED_AUTOMATION_PASSED_FULL_C08_INCOMPLETE",
-      "adaptation": "Common fixed-frame session and transient projections; atomic host-owned ScopeId/Revision/Frame acceptance contract; read-only row collection installed before observer notifications. Original bound geometry/layout properties use SetCurrentValue, exact capture-failure cleanup and template detachment. Original Sector full-circle migration render fix uses two EllipseGeometry EvenOdd, preserving six-field Sector identity; this local fix does not prove a vendor runtime bug. Internal numeric TextBox leaves isolate page implicit MinHeight; dirty baseline uses actual original binding StringFormat. InvariantCulture parsing. Local resource closure and URI/namespace adaptations. LeftRightControl ParamListView ancestor remains temporarily ItemsControl until full C01 host. Session/projections/presenters are local lifecycle adapters, not vendor source. Original Circle geometry/layout setters preserve bindings; exact capture/template lifecycle cleanup. Reentrant binding update and reject recovery freeze real inputs and verify current lease; same-root rejection defers notification projection, explicit success forces final projection. Full annulus only, original endpoints preserved; no CircleMes single-radius substitute.",
+      "adaptation": "Common fixed-frame session and transient projections; atomic host-owned ScopeId/Revision/Frame acceptance contract; read-only row collection installed before observer notifications. Original bound geometry/layout properties use SetCurrentValue, exact capture-failure cleanup and template detachment. Original Sector full-circle migration render fix uses two EllipseGeometry EvenOdd, preserving six-field Sector identity; this local fix does not prove a vendor runtime bug. Internal numeric TextBox leaves isolate page implicit MinHeight; dirty baseline uses actual original binding StringFormat. InvariantCulture parsing. Local resource closure and URI/namespace adaptations. LeftRightControl ParamListView ancestor remains temporarily ItemsControl until full C01 host. Session/projections/presenters are local lifecycle adapters, not vendor source. Original Circle geometry/layout setters preserve bindings; exact capture/template lifecycle cleanup. Reentrant binding update and reject recovery freeze real inputs and verify current lease; same-root rejection defers notification projection, explicit success forces final projection. Full annulus only, original endpoints preserved; no CircleMes single-radius substitute. Explicit Create/Replace and affected host identity; original four substitute visuals and selected mouse geometry with instance-owned capture/template/frame lease. Both original completion entrances intercept before IList mutation. Drawing capture capability is separate from original ROIHitTestVisible business gates; original ItemsPresenter branch consumes its own host-hit DP. Direct radius avoids center-add/subtract cancellation. Polygon limit warning remains status-only, not original modal behavior.",
       "remaining": [
         "Polygon original branch; complete drawing and creation host contract",
         "Drawing/inheritance/pose source compositions",
@@ -2332,7 +2428,9 @@
         "status": "Ring pre-sync checkpoint: current formal WindowPresentation075=42 and FieldEditing065=31 passed; UI004 and full Release001 zero errors; broader merged-baseline regression follows integration. Not full C08/manual acceptance.",
         "sourceEvidence": "O06_ROI_CLOSURE_QUEUE_20261027.json",
         "iconSource": "O06_RING_CIRCLE_ICON_SOURCE_20261027.json",
-        "checkpoint": "O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json"
+        "checkpoint": "O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json",
+        "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json",
+        "drawingStatus": "Current batch: UI004/full001 zero errors; Window final 81 including 17 drawing protocol/composition cases; six-track checkpoint authoritative. Native pointer/VS/VM/manual and full C08 incomplete."
       },
       "polygonPrerequisites": {
         "status": "FOCUSED_FORMAL_AUTOMATION_PASSED",

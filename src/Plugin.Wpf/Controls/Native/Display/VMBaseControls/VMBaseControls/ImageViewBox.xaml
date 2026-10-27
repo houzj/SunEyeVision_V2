@@ -139,6 +139,9 @@
         <ContentControl Name="ContentControl" ContentTemplateSelector="{StaticResource AdditionSelector}" />
       </Grid>
       <ControlTemplate.Triggers>
+        <DataTrigger Value="True" Binding="{Binding RoiDrawingCaptureEnabled, RelativeSource={RelativeSource Self}}">
+          <Setter TargetName="mROIView" Property="IsHitTestVisible" Value="True" />
+        </DataTrigger>
         <DataTrigger Value="True" Binding="{Binding IsStateForDrawROI, RelativeSource={RelativeSource Mode=Self}}">
           <Setter TargetName="mROIView" Property="imageview:ROIItemsPage.IsHitTestVisibleOfHost" Value="False" />
         </DataTrigger>

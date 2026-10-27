@@ -2031,8 +2031,30 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		return false;
 	}
 
+    // Explicit borrowed composition capabilities. A routed native consumer never falls through to IList mutation.
+    internal Func<ROIItemsPage,System.Windows.Point,bool>? NativeDrawStart {get;set;}
+    internal Func<object,bool>? NativeDrawComplete {get;set;}
+    internal Action? NativeDrawCancel {get;set;}
+    internal Action<object?>? NativeDrawCaptureLost {get;set;}
+    public static readonly DependencyProperty RoiDrawingCaptureEnabledProperty=DependencyProperty.Register(nameof(RoiDrawingCaptureEnabled),typeof(bool),typeof(ImageViewBox),new PropertyMetadata(false));
+    public bool RoiDrawingCaptureEnabled {get=>(bool)GetValue(RoiDrawingCaptureEnabledProperty);internal set=>SetValue(RoiDrawingCaptureEnabledProperty,value);}
+    internal void PrepareNativeRoi(Type type,Func<bool> current)
+    {
+        if(!current())return;DrawROIType=type;
+        if(current())IsStateForDrawROI=true;
+        if(current())RoiDrawingCaptureEnabled=true;
+    }
+    internal void UnprepareNativeRoi(Func<bool> current)
+    {
+        if(!current())return;IsDrawingOfROI=false;
+        if(!current())return;RoiDrawingCaptureEnabled=false;
+        if(!current())return;DrawROIType=null;
+        if(current())IsStateForDrawROI=false;
+    }
+
 	private void mROIView_LostMouseCapture(object sender, MouseEventArgs e)
 	{
+        if(NativeDrawCaptureLost is not null){NativeDrawCaptureLost(e.OriginalSource);return;}
 		if (IsDrawingOfROI)
 		{
 			mROIView.CaptureMouse();
@@ -2041,6 +2063,14 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void mouseLBDown(object sender, MouseButtonEventArgs e)
 	{
+        if(NativeDrawStart is not null&&IsStateForDrawROI)
+        {
+            if(ROIVisible&&!IsDrawingOfROI)
+            {
+                NativeDrawStart(mROIView,e.GetPosition(mROIView));
+            }
+            e.Handled=true;return;
+        }
 		IsDrawingOfROI = false;
 		if (!IsStateForDrawROI)
 		{
@@ -2071,6 +2101,11 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void MROIView_DrawSubstituteComplete(object sender, ObjectEventArgs e)
 	{
+        if(NativeDrawComplete is not null)
+        {
+            if(e.Param is not null&&NativeDrawComplete(e.Param))OnDrawROICompleted?.Invoke(this,e);
+            return;
+        }
 		IsDrawingOfROI = false;
 		if (e.Param != null)
 		{
@@ -2086,6 +2121,11 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void MROI_DrawCompleteComamndExecute(ObjectEventArgs e)
 	{
+        if(NativeDrawComplete is not null)
+        {
+            if(e.Param is not null&&NativeDrawComplete(e.Param))OnDrawROICompleted?.Invoke(this,e);
+            return;
+        }
 		IsDrawingOfROI = false;
 		if (e.Param != null)
 		{
@@ -2442,6 +2482,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	public void UnPrepareRawRoi()
 	{
+        if(NativeDrawCancel is not null){NativeDrawCancel();return;}
 		DrawROIType = null;
 		IsStateForDrawROI = false;
 	}

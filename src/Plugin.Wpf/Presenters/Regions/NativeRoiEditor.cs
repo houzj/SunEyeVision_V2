@@ -254,6 +254,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public Context(NativeRoiEditor owner,NativeRoiSession session,long generation,NativeRoiProjection? item)
         {
             _session=session;var uiGeneration=owner._uiGeneration;
+            ValueChangedCommand=new RequestCommand(()=>!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded
+                &&uiGeneration==owner._uiGeneration&&generation==owner._generation&&ReferenceEquals(owner._session,session)&&session.IsCurrent,
+                value=>session.ValueChangedCommand.Execute(value));
             ROIValueChangedCommand=new CommitCommand(()=>
             {if(!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded&&uiGeneration==owner._uiGeneration&&owner._generation==generation&&ReferenceEquals(owner._session,session)&&ReferenceEquals(session.CurROIData,item))owner.TryCommitPending();});
         }
@@ -272,8 +275,14 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public string ROISelectionA=>_session.ROISelectionA;
         public string DisplayNameA=>_session.DisplayNameA;
         public string DescriptionA=>_session.DescriptionA;
-        public ICommand ValueChangedCommand=>_session.ValueChangedCommand;
+        public ICommand ValueChangedCommand {get;}
         public ICommand ROIValueChangedCommand {get;}
+    }
+    private sealed class RequestCommand(Func<bool> current,Action<object?> execute):ICommand
+    {
+        public bool CanExecute(object? parameter)=>current();
+        public void Execute(object? parameter){if(current())execute(parameter);}
+        public event EventHandler? CanExecuteChanged{add{}remove{}}
     }
     private sealed class CommitCommand(Action execute):ICommand
     {

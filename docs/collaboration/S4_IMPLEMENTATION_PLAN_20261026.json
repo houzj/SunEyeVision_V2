@@ -7536,6 +7536,16 @@
         "identity": "8项产品源增量（含保留未提交用户页索引）、782发布项、86加载记录、141原来源SHA核对",
         "manual": "四形状最终PNG实际查看；VS/VM/物理指针/用户仍未验"
       }
+    },
+    "nativeRoiDrawingCandidate": {
+      "范围": "仅C08原四形状绘制及显式宿主接纳集中批，不计完整C08或阶段一；基线e8b27e54。",
+      "组装": "原RoiSelect按钮保留类型/组/版本→唯一视口请求→四原替身→原完成入口在AddROI之前拦截→宿主Create分配稳定ID；Replace保ID，完整快照安装与选中后通知。",
+      "生命周期": "取消/过期/非法/重复完成拒绝；换帧/模板/卸载及重绑按代次清理。外层与内部帧释放门禁；先释放旧capture再发原DP通知；读取后重新核唯一接收器。",
+      "原模板适配": "独立RoiDrawingCaptureEnabled只让page可捕获，不改变原ROIHitTestVisible粘贴门禁；ItemsPresenter消费原host命中DP禁既有ROI。不是新皮肤，也不据恢复源码断言VM实机有相同缺陷。",
+      "自动验证": "UI004零错6204警告60.15秒；全Release001零错6585警告77秒；Window125=81/Field074=31/Design037=69/RuntimeEditor055=10/FullChain115=8/Components197=9，共208组；正式EXE009 exit0、22可用工具15分类。",
+      "失败保留": "Window112—123包含捕获/夹具诊断失败；SubstituteHost还含ItemsPresenter，已纠正错误总数断言。受限进程捕获失败，正常桌面针对性124=17过，最终125=81过。不放宽capture门禁，不移动系统cursor；SendMessage仅预热自有窗口，几何由真实生产方法程序驱动，非物理指针验收。",
+      "证据": "evidence/O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json，原来源与递归依赖SHA逐字节复核。Catalog最终只更新非编译验收元数据，产品源码未变。",
+      "剩余": "Polygon超限原模态交互仍缺，当前仅状态提示；继承/来源/位姿/多对象菜单及宿主历史未完。真实VS/VM同态/物理指针与用户本批验收未签；Blob重组冻结。"
     }
   },
   "vmFrameworkArchitectureReference": {

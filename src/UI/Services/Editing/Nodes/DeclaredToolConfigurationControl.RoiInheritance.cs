@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,40 +19,62 @@ public sealed partial class DeclaredToolConfigurationControl
     private readonly List<Func<string?>> _inheritedRegionChecks=new();
 
     // Each presentation branch writes the existing persisted ROI model. No second coordinate store.
-    private void BuildInheritancePanels(RegionFieldGroup group,RoiCollection collection,string title)
+    private void BuildInheritancePanels(RegionFieldGroup group,string title)
     {
+        var generation=_configurationGeneration;
+        RoiCollection Collection()=>CurrentRegionCollection(group.Role);
+        bool Current()=>generation==_configurationGeneration&&RegionScopeCurrent();
         Add(RegionFieldMode.InheritedRectangle,ShapeType.RotatedRectangle,false);
         Add(RegionFieldMode.InheritedCircle,ShapeType.Circle,false);
         Add(RegionFieldMode.InheritedRectangleParameters,ShapeType.RotatedRectangle,true);
         Add(RegionFieldMode.InheritedCircleParameters,ShapeType.Circle,true);
-        bool Active(RegionFieldMode mode)=>_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString()==mode.ToString();
+        bool Active(RegionFieldMode mode)=>generation==_configurationGeneration&&_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString()==mode.ToString();
         void Add(RegionFieldMode mode,ShapeType shape,bool composed)
         {
             var panel=new StackPanel{Margin=new Thickness(0,4,0,8),Tag=group.Role+":"+mode};
             _fields!.AddAfterField(group.ModeFieldId,panel,new(group.ModeFieldId,mode.ToString()));
             bool Matches(Roi roi)=>composed?roi.IsComposed&&roi.DeclaredShapeType==shape:roi.IsSubscribed&&roi.InheritedShapeType==shape;
-            var existing=collection.Rois.Where(Matches).ToArray();
-            _inheritedRegionChecks.Add(()=>Active(mode)&&!collection.Rois.Any(roi=>roi.IsEnabled&&Matches(roi))?title+"：请设置当前继承方式的来源。":null);
+            var existing=Collection().Rois.Where(Matches).ToArray();
+            _inheritedRegionChecks.Add(()=>Active(mode)&&!Collection().Rois.Any(roi=>roi.IsEnabled&&Matches(roi))?title+"：请设置当前继承方式的来源。":null);
             if(existing.Length==0)AddSlot(null);else foreach(var roi in existing)AddSlot(roi);
-            void AddSlot(Roi? item)
+            void AddSlot(Roi? initialItem)
             {
+            Guid? itemId=initialItem?.Id;
+            Roi? Item()=>itemId is Guid id?Collection().Rois.SingleOrDefault(roi=>roi.Id==id&&Matches(roi))
+                ??throw new InvalidOperationException("继承区域已删除或来源已改变。"):null;
+            var item=Item();
             var content=new StackPanel();panel.Children.Add(content);
             if(item is not null)
             {
                 var enable=new CheckBox{Content=item.Name,IsChecked=item.IsEnabled,Margin=new Thickness(0,4,0,4)};
-                enable.Click+=(_,_)=>{if(RegionScopeCurrent()){item.IsEnabled=enable.IsChecked==true;RefreshRegionScene();}};content.Children.Add(enable);
+                enable.Click+=(_,_)=>
+                {
+                    if(!Current())return;
+                    var error=Change(generation,(candidate,_)=>Ensure(candidate).IsEnabled=enable.IsChecked==true);
+                    if(error is not null){enable.IsChecked=Item()?.IsEnabled;enable.ToolTip=error;}
+                    else OnAcceptedFieldNotification();
+                };content.Children.Add(enable);
             }
-            Roi Ensure()
+            Roi Ensure(ToolParameters candidate)
             {
-                if(!RegionScopeCurrent())throw new InvalidOperationException("当前编辑范围已失效。");
-                if(item is not null)return item;
-                item=composed?Roi.CreateComposed(title+"参数",shape):Roi.CreateSubscribed(title+"继承","","");
-                if(!composed)item.InheritedShapeType=shape;
-                collection.Rois.Add(item);return item;
+                var target=RegionCollection(candidate,group.Role);
+                if(itemId is Guid id)return target.Rois.SingleOrDefault(roi=>roi.Id==id&&Matches(roi))
+                    ??throw new InvalidOperationException("继承区域已删除或来源已改变。");
+                var created=composed?Roi.CreateComposed(title+"参数",shape):Roi.CreateSubscribed(title+"继承","","");
+                if(!composed)created.InheritedShapeType=shape;
+                target.Rois.Add(created);return created;
+            }
+            void Write(Action<Roi> prepare)
+            {
+                if(!Current())throw new InvalidOperationException("当前编辑范围已失效。");
+                Guid? acceptedId=itemId;
+                AcceptParameterCandidate(generation,(candidate,_)=>{var roi=Ensure(candidate);prepare(roi);acceptedId=roi.Id;});
+                itemId=acceptedId;OnAcceptedFieldNotification();
             }
             _inheritedRegionChecks.Add(()=>
             {
                 if(!Active(mode))return null;
+                var item=Item();
                 if(item is not {IsEnabled:true})return null;
                 if(!composed)return StorageError(item.Binding)??(item.Binding?.BindingType==BindingType.Binding?null:title+"：请选择区域来源。");
                 var missing=RoiComposeResolver.RequiredParameters(shape).Where(key=>item.ParameterBindings?.ContainsKey(key)!=true).ToArray();
@@ -65,16 +87,16 @@ public sealed partial class DeclaredToolConfigurationControl
                 var editor=new DeclaredFieldEditor(port,"区域",initial,setting=>
                 {
                     if(setting is not ReferenceSetting reference)throw new ArgumentException("整区域必须选择声明来源。");
-                    var roi=Ensure();roi.Binding=ToSetting(roi.Name,reference.Reference);RefreshRegionScene();
+                    Write(roi=>roi.Binding=ToSetting(roi.Name,reference.Reference));
                 },CreateReferenceOptions(reference=>
                 {
-                    var target=new RoiBindingInputs.Slot(port.Id,item??new Roi(),null,null).Target(reference);
+                    var target=new RoiBindingInputs.Slot(port.Id,Item()??new Roi(),null,null).Target(reference);
                     var element=target.Type.Element!;
                     var expected=shape==ShapeType.Circle?GeometryKind.Circle:GeometryKind.OrientedRectangle;
                     if(element.Shape==ValueShape.Geometry&&element.Geometry!=expected)throw new ArgumentException("来源几何与所选继承类型不一致。");
                     return target;
                 }),formatReference:FormatReference);
-                content.Children.Add(editor);_inheritedRegionEditors.Add((editor,()=>Active(mode)&&item?.IsEnabled!=false));return;
+                content.Children.Add(editor);_inheritedRegionEditors.Add((editor,()=>Active(mode)&&Item()?.IsEnabled!=false));return;
             }
             foreach(var key in RoiComposeResolver.RequiredParameters(shape))
             {
@@ -91,10 +113,10 @@ public sealed partial class DeclaredToolConfigurationControl
                     }
                     else if(setting is ReferenceSetting reference)value=ToSetting(key,reference.Reference);
                     else throw new ArgumentException("请设置必需的区域参数。");
-                    var roi=Ensure();roi.ParameterBindings??=new();roi.ParameterBindings[key]=value;RefreshRegionScene();
+                    Write(roi=>{roi.ParameterBindings??=new();roi.ParameterBindings[key]=value;});
                 },CreateReferenceOptions(_=>new Port(port.Id,TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64)))),
                 new ConstantSetting(key is "Width" or "Height" or "Radius"?1d:0d),FormatReference);
-                content.Children.Add(editor);_inheritedRegionEditors.Add((editor,()=>Active(mode)&&item?.IsEnabled!=false));
+                content.Children.Add(editor);_inheritedRegionEditors.Add((editor,()=>Active(mode)&&Item()?.IsEnabled!=false));
             }
             }
         }
@@ -126,9 +148,13 @@ public sealed partial class DeclaredToolConfigurationControl
     private bool HasPendingInheritedRegions=>_inheritedRegionEditors.Any(part=>part.Active()&&part.Editor.HasInvalidText);
     private bool ValidateInheritedRegionEditors(out string error)
     {
-        error=_inheritedRegionEditors.FirstOrDefault(part=>part.Active()&&part.Editor.HasInvalidText).Editor?.Error??"";
-        if(error.Length>0)return false;
-        error=_inheritedRegionChecks.Select(check=>check()).FirstOrDefault(message=>message is not null)??"";
-        return error.Length==0;
+        try
+        {
+            error=_inheritedRegionEditors.FirstOrDefault(part=>part.Active()&&part.Editor.HasInvalidText).Editor?.Error??"";
+            if(error.Length>0)return false;
+            error=_inheritedRegionChecks.Select(check=>check()).FirstOrDefault(message=>message is not null)??"";
+            return error.Length==0;
+        }
+        catch(InvalidOperationException exception){error=exception.Message;return false;}
     }
 }

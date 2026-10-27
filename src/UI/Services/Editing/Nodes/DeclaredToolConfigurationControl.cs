@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -22,6 +22,10 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
 {
     private readonly IToolPlugin _tool;
     private ToolParameters? _parameters;
+    private long _configurationGeneration;
+    private bool _acceptingFields;
+    private bool _refreshAcceptedFields;
+    public string? LastAcceptedRefreshError {get;private set;}
     private DeclaredFieldsView? _fields;
     private IReadOnlyList<ConfigurationFieldAccessor> _accessors=Array.Empty<ConfigurationFieldAccessor>();
     public bool HasPendingEdits=>_fields?.HasInvalidActiveFields==true||HasPendingRegions||HasPendingSources||HasPendingInheritedRegions;
@@ -46,12 +50,22 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
     }
     public override void SetParameters(ToolParameters parameters)
     {
+        _configurationGeneration++;_refreshAcceptedFields=false;
+        _fields?.Dispose();_fields=null;
+        _roiViewport?.CancelGesture();
+        foreach(var part in _regionParts)part.View.Dispose();
+        _regionParts.Clear();_sourceFields.Clear();_sourceActivity.Clear();
+        foreach(var part in _inheritedRegionEditors)part.Editor.Dispose();
+        _inheritedRegionEditors.Clear();_inheritedRegionChecks.Clear();
         base.SetParameters(parameters);_parameters=parameters;
+        var generation=_configurationGeneration;
         if(parameters is IConfigurationFieldProvider provider)
         {
             _accessors=provider.GetConfigurationFields();
-            _fields=new(_accessors.Select(field=>(field.Port,field.Presentation,ReadDraft(field))),WriteDraft,CreateReferenceOptions(),
+            _fields=new(_accessors.Select(field=>(field.Port,field.Presentation,ReadDraft(field))),
+                proposals=>WriteDraft(proposals,generation),CreateReferenceOptions() with {ValidateProposal=null},
                 id=>new ConstantSetting(_accessors.Single(field=>field.Port.Id==id).Read()),FormatReference);
+            foreach(var field in _fields.Fields)field.Changed+=OnAcceptedFieldNotification;
             SetEditorContent(_fields);BuildRegionEditors(provider);BuildSourceEditors(provider);return;
         }
         var slots=new Dictionary<string,PropertyInfo>(StringComparer.Ordinal);
@@ -77,13 +91,20 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
             fields.Add((port,new(port.Id,field.DisplayName,"运行参数",fields.Count,
                 type.IsEnum?FieldEditorKind.Choice:FieldEditorKind.Scalar,type.IsEnum?Enum.GetNames(type):null),new ConstantSetting(value)));
         }
-        _fields=new(fields,(id,setting)=>
+        _fields=new(fields,proposals=>AcceptParameterCandidate(generation,(candidate,bindings)=>
         {
-            var property=slots[id];var literal=((ConstantSetting)setting).Value;
-            var value=property.PropertyType.IsEnum?Enum.Parse(property.PropertyType,(string)literal!):
-                BindingClrAdapter.Materialize(fields.Single(field=>field.Port.Id==id).Port,property.PropertyType,literal);
-            property.SetValue(parameters,value);
-        });
+            foreach(var (id,setting) in proposals)
+            {
+                if(!slots.TryGetValue(id,out var property)||setting is not ConstantSetting constant)
+                    throw new ArgumentException("未声明字段或不支持的参数提案。");
+                var port=fields.Single(field=>field.Port.Id==id).Port;
+                var literal=ValueRules.Freeze(port,constant.Value);
+                var value=property.PropertyType.IsEnum?Enum.Parse(property.PropertyType,(string)literal!):
+                    BindingClrAdapter.Materialize(port,property.PropertyType,literal);
+                property.SetValue(candidate,value);bindings.RemoveSetting(id);
+            }
+        }));
+        foreach(var field in _fields.Fields)field.Changed+=OnAcceptedFieldNotification;
         SetEditorContent(_fields);
     }
     public bool TryValidateEditor(out string error)
@@ -119,19 +140,78 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
             return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression));
         return new ConstantSetting(field.Read());
     }
-    private void WriteDraft(string id,ConfigurationSetting value)
+    public override void SetCurrentNode(object node)
     {
-        if(ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext {IsValid:false})throw new InvalidOperationException("当前编辑范围已失效。");
-        var field=_accessors.Single(field=>field.Port.Id==id);
-        if(value is ConstantSetting constant)field.Write(constant.Value);
-        else if(value is not ReferenceSetting)throw new ArgumentException("此常量字段不支持清除。");
-        if(CurrentNode is WorkflowNodeBase node)
+        _configurationGeneration++;
+        base.SetCurrentNode(node);
+    }
+    private void OnAcceptedFieldNotification()
+    {
+        if(!_refreshAcceptedFields)return;
+        _refreshAcceptedFields=false;
+        try{RefreshRegionScene();LastAcceptedRefreshError=null;}
+        catch(Exception error){LastAcceptedRefreshError=error.Message;}
+    }
+    private void WriteDraft(IReadOnlyDictionary<string,ConfigurationSetting> proposals,long generation)
+        =>AcceptParameterCandidate(generation,(candidate,bindings)=>
         {
-            if(value is ReferenceSetting reference)node.ParamSettings.SetSetting(ToSetting(field,reference.Reference));
-            else node.ParamSettings.RemoveSetting(field.StoragePath);
-            node.Parameters.RebindingRequired.Remove(field.StoragePath);node.Parameters.BindingValidationPending.Remove(field.StoragePath);
+            if(candidate is not IConfigurationFieldProvider provider)throw new InvalidOperationException("参数声明已改变。");
+            var fields=provider.GetConfigurationFields();
+            foreach(var (id,value) in proposals)
+            {
+                var field=fields.SingleOrDefault(field=>field.Port.Id==id)??throw new ArgumentException("未声明参数字段："+id);
+                if(value is ConstantSetting constant){field.Write(ValueRules.Freeze(field.Port,constant.Value));bindings.RemoveSetting(field.StoragePath);}
+                else if(value is ReferenceSetting reference)bindings.SetSetting(ToSetting(field,reference.Reference));
+                else throw new ArgumentException("此字段不支持清除。");
+                candidate.RebindingRequired.Remove(field.StoragePath);candidate.BindingValidationPending.Remove(field.StoragePath);
+            }
+        });
+    private void AcceptParameterCandidate(long generation,
+        Action<ToolParameters,ParamSettingContainer> prepare)
+    {
+        if(_acceptingFields)throw new InvalidOperationException("参数整组接纳正在进行，不能重入。");
+        var original=_parameters??throw new InvalidOperationException("配置尚未初始化。");
+        var fields=_fields;
+        if(CurrentNode is not WorkflowNodeBase node||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext context)
+            throw new InvalidOperationException("当前私有参数编辑范围尚未就绪。");
+        bool SameBinding()=>generation==_configurationGeneration&&ReferenceEquals(_fields,fields)&&
+            ReferenceEquals(CurrentNode,node)&&ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context);
+        bool Current()=>SameBinding()&&ReferenceEquals(_parameters,original)&&context.IsValid&&ReferenceEquals(context.DraftNode,node);
+        if(!Current()||!ReferenceEquals(node.Parameters,original))throw new InvalidOperationException("当前参数编辑范围已失效。");
+        _acceptingFields=true;
+        try
+        {
+            var candidate=ToolExecutionPreparation.CopyParameters(original);
+            var priorBindings=node.ParamSettings;var nextBindings=priorBindings.Clone();
+            prepare(candidate,nextBindings);
+            var validation=candidate.Validate();
+            if(!validation.IsValid)throw new ArgumentException(string.Join("；",validation.Errors));
+            var nextAccessors=candidate is IConfigurationFieldProvider provider?provider.GetConfigurationFields():Array.Empty<ConfigurationFieldAccessor>();
+            if(!Current()||!ReferenceEquals(node.Parameters,original)||!ReferenceEquals(node.ParamSettings,priorBindings))
+                throw new InvalidOperationException("准备参数时编辑范围已改变。");
+            try
+            {
+                node.Parameters=candidate;node.ParamSettings=nextBindings;
+                context.Host.Validate(context.PreparedDraft);
+                if(!Current()||!ReferenceEquals(node.Parameters,candidate)||!ReferenceEquals(node.ParamSettings,nextBindings))
+                    throw new InvalidOperationException("校验参数时编辑范围已改变。");
+            }
+            finally
+            {
+                // Validation can synchronously rebind even the same node. Restore only our own temporary slots.
+                if(SameBinding()||!ReferenceEquals(CurrentNode,node))
+                {
+                    if(ReferenceEquals(node.Parameters,candidate))node.Parameters=original;
+                    if(ReferenceEquals(node.ParamSettings,nextBindings))node.ParamSettings=priorBindings;
+                }
+            }
+            if(!Current()||!ReferenceEquals(node.Parameters,original)||!ReferenceEquals(node.ParamSettings,priorBindings))
+                throw new InvalidOperationException("接纳参数时编辑范围已改变。");
+            node.Parameters=candidate;node.ParamSettings=nextBindings;
+            _parameters=candidate;_accessors=nextAccessors;ReplacePreviewParameterOwner(candidate);
+            _refreshAcceptedFields=true;
         }
-        RefreshRegionScene();
+        finally{_acceptingFields=false;}
     }
     private ParamSetting ToSetting(ConfigurationFieldAccessor field,OutputReference reference)
         =>ToSetting(field.StoragePath,reference);
@@ -144,7 +224,23 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
             SourceWorkflowId=reference.ScopeId,SourceFieldId=source?.FieldId,SourceProperty=source?.Name??reference.PortId};
     }
     private ReferenceFieldOptions CreateReferenceOptions(Func<OutputReference,Port>? roiTarget=null)
-        =>new(_=>ReadReferenceCandidates(),(target,proposal)=>ValidateReferenceProposal(target,proposal,roiTarget));
+    {
+        var generation=_configurationGeneration;var node=CurrentNode;var context=ToolEditorCommit.GetDraftContext(this);
+        bool Current()
+        {
+            // The host attaches its private context after constructing and binding the view.
+            // Adopt that first context, then keep its identity for this binding generation.
+            var actual=ToolEditorCommit.GetDraftContext(this);context??=actual;
+            return generation==_configurationGeneration&&ReferenceEquals(CurrentNode,node)&&
+                ReferenceEquals(actual,context)&&RegionScopeCurrent();
+        }
+        void EnsureCurrent(){if(!Current())throw new InvalidOperationException("当前来源编辑范围已失效。");}
+        return new(_=>{EnsureCurrent();var candidates=ReadReferenceCandidates();EnsureCurrent();return candidates;},
+            (target,proposal)=>
+            {
+                EnsureCurrent();var error=ValidateReferenceProposal(target,proposal,roiTarget);EnsureCurrent();return error;
+            });
+    }
     private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates()
     {
         var candidates=new List<DeclaredReferenceCandidate>();

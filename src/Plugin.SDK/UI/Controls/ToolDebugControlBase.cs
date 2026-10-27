@@ -484,10 +484,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         public virtual void SetParameters(ToolParameters parameters)
         {
-            if (_previewParameters != null)
-                PropertyChangedEventManager.RemoveHandler(_previewParameters, OnPreviewParameterChanged, "");
-            _previewParameters = parameters;
-            PropertyChangedEventManager.AddHandler(parameters, OnPreviewParameterChanged, "");
+            ReplacePreviewParameterOwner(parameters);
             PluginLogger.Info(
                 $"参数已设置: {parameters?.GetType().Name}",
                 GetType().Name);
@@ -498,6 +495,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             Dispatcher.BeginInvoke(
                 System.Windows.Threading.DispatcherPriority.ContextIdle,
                 new Action(RestoreExternalParameterBindings));
+        }
+
+        /// <summary>Adopt a validated private parameter owner without rebuilding the view or restoring sources.</summary>
+        protected void ReplacePreviewParameterOwner(ToolParameters parameters)
+        {
+            ArgumentNullException.ThrowIfNull(parameters);
+            if (ReferenceEquals(_previewParameters, parameters)) return;
+            if (_previewParameters != null)
+                PropertyChangedEventManager.RemoveHandler(_previewParameters, OnPreviewParameterChanged, "");
+            _previewParameters = parameters;
+            PropertyChangedEventManager.AddHandler(parameters, OnPreviewParameterChanged, "");
+            QueueBindingIssueRefresh();
         }
 
         private void OnToolDebugControlLoaded(object sender, RoutedEventArgs e)

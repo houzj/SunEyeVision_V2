@@ -539,7 +539,7 @@ internal static class S2DocumentEditingCases
             return (new Port(id,DataType.Boolean),
                 new FieldPresentation(id,"使能",page,index,FieldEditorKind.Scalar){Layout=new FieldLayout(page,"参数")},
                 (ParameterSetting)new ConstantSetting(false));
-        }),(_,_)=>{});
+        }),_=>{});
         var tabs=(TabControl)pages.Content;
         var hostileText=new Style(typeof(TextBlock));
         hostileText.Setters.Add(new Setter(TextBlock.ForegroundProperty,Brushes.White));

@@ -1,9 +1,10 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using SunEyeVision.Workflow;
 using SunEyeVision.Tool.ImageThreshold;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 internal static class S2DocumentEditingCases
 {
@@ -114,6 +115,13 @@ internal static class S2DocumentEditingCases
             yield return root;
             for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
                 foreach (var child in Visuals(System.Windows.Media.VisualTreeHelper.GetChild(root, i))) yield return child;
+        }
+        public SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView Fields=>Logicals(Control).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>().Single();
+        public long Generation=>(long)Control.GetType().GetField("_configurationGeneration",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(Control)!;
+        public void Accept(Action<ToolParameters,ParamSettingContainer> prepare)
+        {
+            try{Control.GetType().GetMethod("AcceptParameterCandidate",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Control,new object[]{Generation,prepare});}
+            catch(TargetInvocationException error) when(error.InnerException is not null){System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error.InnerException).Throw();}
         }
         public System.Windows.Controls.TextBox ThresholdText()
         {
@@ -317,6 +325,56 @@ internal static class S2DocumentEditingCases
             Require(!view.Control.IsLoaded && view.Model.Editing.RegisteredScopeCount == 1, "卸载错误取消了编辑范围");
             view.Model.Editing.AcceptAll();
             Require(((ImageThresholdParameters)view.Model.A.Parameters).Threshold == 191, "卸载后没有准备登记草稿");
+        });
+        Case("字段接纳替换完整私有参数根，第二项非法拒绝整组而不改原根", () => {
+            using var view=new ThresholdViewFixture();var original=(ImageThresholdParameters)view.Context.DraftNode.Parameters;
+            var fields=view.Fields;Require(fields.Fields.Single(field=>field.FieldId=="Threshold").TrySetConstant(180L),"真实字段接纳失败");
+            var accepted=(ImageThresholdParameters)view.Context.DraftNode.Parameters;
+            Require(!ReferenceEquals(original,accepted)&&accepted.Threshold==180&&original.Threshold==128&&ReferenceEquals(fields,view.Fields),"未替换完整根或重建了字段树");
+            var bindings=view.Context.DraftNode.ParamSettings;
+            var rejected=false;
+            try{view.Accept((candidate,_)=>{((ImageThresholdParameters)candidate).Threshold=190;((ImageThresholdParameters)candidate).MaxValue=999;});}
+            catch(ArgumentException){rejected=true;}
+            Require(rejected,"非法第二项没有拒绝候选");
+            Require(ReferenceEquals(view.Context.DraftNode.Parameters,accepted)&&ReferenceEquals(view.Context.DraftNode.ParamSettings,bindings)&&accepted.Threshold==180,"非法第二项造成部分接纳");
+            Require(((ImageThresholdParameters)view.Model.A.Parameters).Threshold==128,"私有候选污染正式节点");
+        });
+        Case("合法联合范围跨越原上限仍一次接纳，准备中同节点换根不得被覆盖", () => {
+            using var view=new ThresholdViewFixture();var original=(ImageThresholdParameters)view.Context.DraftNode.Parameters;
+            original.Method=ThresholdMethod.InRange;original.MinThreshold=1;original.MaxThreshold=100;
+            view.Accept((candidate,_)=>{var p=(ImageThresholdParameters)candidate;p.MinThreshold=200;p.MaxThreshold=220;});
+            var accepted=(ImageThresholdParameters)view.Context.DraftNode.Parameters;
+            Require(accepted.MinThreshold==200&&accepted.MaxThreshold==220&&original.MinThreshold==1&&original.MaxThreshold==100,"整组候选仍被旧端点限制或改原根");
+            var replacement=new ImageThresholdParameters{Threshold=77};var nextBindings=new ParamSettingContainer();
+            Reject(()=>view.Accept((_,_)=>{view.Context.DraftNode.Parameters=replacement;view.Context.DraftNode.ParamSettings=nextBindings;}));
+            Require(ReferenceEquals(view.Context.DraftNode.Parameters,replacement)&&ReferenceEquals(view.Context.DraftNode.ParamSettings,nextBindings),"准备回调换根被候选覆盖");
+        });
+        Case("候选换根后本地ROI按稳定ID继续编辑，删除ID及旧绑定代均拒绝", () => {
+            using var view=new ThresholdViewFixture();var original=(ImageThresholdParameters)view.Context.DraftNode.Parameters;
+            var roi=Roi.CreateLocal("同一检测区",new RotatedRect2d(10,20,30,40,0));original.InspectionRois.Rois.Add(roi);
+            var generation=view.Generation;
+            var type=typeof(SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl).Assembly.GetType("SunEyeVision.UI.Services.Editing.Regions.RoiParameterEditingAdapter",true)!;
+            var adapter=Activator.CreateInstance(type,BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic,null,new object[]{
+                (Func<RoiParameters>)(()=> (RoiParameters)view.Context.DraftNode.Parameters),"inspection",(Func<bool>)(()=>generation==view.Generation),
+                (Action<Action<RoiParameters>>)(prepare=>view.Accept((candidate,_)=>prepare((RoiParameters)candidate)))},null)!;
+            object? Call(string method,params object?[] args)
+            {
+                try{return type.GetMethod(method)!.Invoke(adapter,args);}
+                catch(TargetInvocationException error) when(error.InnerException is not null){System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error.InnerException).Throw();return null;}
+            }
+            Require(view.Fields.Fields.Single(field=>field.FieldId=="Threshold").TrySetConstant(180L),"前置字段换根失败");
+            var previous=(RoiParameters)view.Context.DraftNode.Parameters;
+            var shape=RoiShapeValueAdapter.Freeze(new RoiShape{Geometry=new RotatedRect2d(50,60,70,80,5)});
+            Call("Write",roi.Id,shape);
+            var current=(RoiParameters)view.Context.DraftNode.Parameters;
+            Require(!ReferenceEquals(current,previous)&&current.InspectionRois.Rois.Single().Id==roi.Id&&
+                RoiShapeValueAdapter.Freeze(current.InspectionRois.Rois.Single().LocalGeometry!).Get<SunEyeVision.Plugin.Contracts.PointGeometry>("center").Point.X==50&&
+                RoiShapeValueAdapter.Freeze(roi.LocalGeometry!).Get<SunEyeVision.Plugin.Contracts.PointGeometry>("center").Point.X==10,"ROI编辑写旧根或丢失ID");
+            Call("Enable",roi.Id,false);Require(!((RoiParameters)view.Context.DraftNode.Parameters).InspectionRois.Rois.Single().IsEnabled,"启禁未写当前根");
+            Call("Write",roi.Id,null);Reject(()=>Call("Write",roi.Id,shape));
+            Require(!((RoiParameters)view.Context.DraftNode.Parameters).InspectionRois.Rois.Any(),"删除ID被复活");
+            view.Control.SetParameters(view.Context.DraftNode.Parameters);Reject(()=>Call("Write",null,shape));
+            Require(!((RoiParameters)view.Context.DraftNode.Parameters).InspectionRois.Rois.Any(),"旧绑定代新增ROI");
         });
         Case("真实公共参数窗口无效输入拒绝保存，取消保持正式参数并退出范围", () => {
             using var view = new ThresholdViewFixture(); var text = view.ThresholdText();

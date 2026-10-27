@@ -1,5 +1,17 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 C06整组消费与参数根连接基础已验证（最新）
+
+- 编译基线a4526449/main；主线唯一产品写者，三路只读核C06、C07、C08必要依赖。之前SunEye本地框架分析与VM原厂逆向证据已分开归档，本轮没有实施框架重构。
+- FieldsView唯一整组writer、Runtime直接WriteGroup；SDK现CopyParameters完整候选统一业务/图预检后换参数与绑定根，不重建字段树。固定node/context/generation、视图及两实际槽；只恢复本次临时槽，不覆盖已重绑的新租约。
+- SDK本地ROI、继承参数、区域/图像/位姿来源按当前根和Group+Guid定位；候选成功后安装新ID，删除已知ID不复活。旧代回调拒绝；来源不再先改活动模型再回滚。SDK自身接纳preview owner和诊断刷新，接纳后的刷新错误单列记录，不伪装候选拒绝。
+- UI001因UI调用SDK internal诊断方法失败（CS0103），已修；最终UI002零错误1086警告96.08秒，全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；实际EXE exit0/22工具。
+- O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json核11源码增量、760发布项、191加载记录SHA和八轨源码；无活动构建/验证进程。失败日志保留，未套旧成绩。原方案701唯一锚点且生成幂等，Catalog本地依赖SHA同步。
+- 验收边界：新增SDK用例使用实际ImageThreshold公共窗及非视觉ROI adapter，不是Runtime Blob本地ROI或原几何栈。当前IConfigurationFieldProvider无生产工具实现，provider附加来源/继承组合仅源码复核，不能宣称完整原件消费通过。真实VS/VM同态和用户本批未验。
+- 下一批优先C06一份原between、逻辑字段访问、两端数字/引用联合准备与一次writer；原Clip及net9 Track大域稳定映射未实施。已查IL证实Slider忽略Infinity拖动，必须返回有限目标差并发真实Thumb DragDelta检验。
+- C07原扩展窗、C08原Box栈资源闭包/原图像事件尚未接入；Runtime面板目前只有输入/设置，检测/屏蔽仍Region资源，没有本地几何持久化字段。先完成库内独立同帧样例，再第二阶段接Blob，禁止借SDK ROI模型冒充已完成。
+- 本轮准备固定有意义中文本地检查点，不推送。用户手工BlobParameterEditor.xaml SelectedPageIndex=2原样保留未提交（已在编译增量如实登记）；第二阶段未准入，完整目标active。
+
 ## 2026-10-27 C05正式同源检查点已封存，继续C06（最新）
 
 - 编译基线7ccc8c5a/main，主线唯一产品写者，三路只读分别核C06字段/范围、C07扩展请求、C08选中ROI参数栈；Blob重组未准入，不扩大到全VM库。

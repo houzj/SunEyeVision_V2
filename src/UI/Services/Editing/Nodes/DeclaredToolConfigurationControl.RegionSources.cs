@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,56 +15,66 @@ public sealed partial class DeclaredToolConfigurationControl
 {
     private void BuildRegionSourceEditors(IConfigurationFieldProvider provider)
     {
-        if(_parameters is not RoiParameters parameters||_fields is null||CurrentNode is not WorkflowNodeBase node)return;
+        if(_parameters is not RoiParameters||_fields is null||CurrentNode is not WorkflowNodeBase node)return;
+        var generation=_configurationGeneration;
+        bool Current()=>generation==_configurationGeneration&&ReferenceEquals(CurrentNode,node)&&RegionScopeCurrent();
+        void EnsureCurrent(){if(!Current())throw new InvalidOperationException("当前区域来源编辑范围已失效。");}
         _inheritedRegionEditors.Clear();_inheritedRegionChecks.Clear();
         foreach(var group in provider.ConfigurationSchema?.Presentation?.Regions??Array.Empty<RegionFieldGroup>())
         {
-            var collection=group.Role switch {"inspection"=>parameters.InspectionRois,"mask"=>parameters.MaskRois,_=>throw new ArgumentException("未知区域角色。")};
+            var collection=CurrentRegionCollection(group.Role);
             var title=group.Role=="mask"?"屏蔽区域":"检测区域";
             _fields.Fields.Single(field=>field.FieldId==group.ModeFieldId).UseRegionSourceSelector();
-            BuildInheritancePanels(group,collection,title);
+            BuildInheritancePanels(group,title);
             var rows=new StackPanel{Margin=new Thickness(0,4,0,8)};
             _fields.AddAfterField(group.ModeFieldId,rows,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedGeometry)));
             foreach(var item in collection.Rois.Where(item=>item.IsSubscribed).ToArray())AddGeometry(item);
             if(!collection.Rois.Any(item=>item.IsSubscribed))AddGeometry(null);
             var add=new Button{Content="增加几何订阅",HorizontalAlignment=HorizontalAlignment.Left,Margin=new Thickness(0,4,0,8)};
-            add.Click+=(_,_)=>AddGeometry(null);rows.Children.Add(add);
+            add.Click+=(_,_)=>{if(Current())AddGeometry(null);};rows.Children.Add(add);
             if(provider.RegionInputStorage.TryGetValue(group.Role,out var slot))
             {
                 var declared=(_parameters as IInputSlotContract)?.GetInputSlots().SingleOrDefault(input=>input.PropertyName==slot);
                 if(declared?.ValueType!=typeof(IReadOnlyRegion))throw new InvalidOperationException("像素区域存储必须对应已声明的Region输入槽。");
-                var view=new SourceSelectionField(title+" · 像素区域",()=>Choices(SourceKind.Region),
-                    ()=>Describe(node.ParamSettings.GetSetting(slot)),choice=>
+                var view=new SourceSelectionField(title+" · 像素区域",()=>CurrentChoices(SourceKind.Region),
+                    ()=>{EnsureCurrent();return Describe(node.ParamSettings.GetSetting(slot));},choice=>
                     {
-                        var previous=node.ParamSettings.GetSetting(slot)?.Clone();
-                        var candidate=Resolve(choice,SourceKind.Region);
-                        return Change(()=>{if(candidate is null)node.ParamSettings.RemoveSetting(slot);else node.ParamSettings.SetSetting(Setting(slot,candidate));},
-                            ()=>{if(previous is null)node.ParamSettings.RemoveSetting(slot);else node.ParamSettings.SetSetting(previous);},choice is not null);
+                        if(!Current())return "当前区域来源编辑范围已失效。";
+                        var error=Change(generation,(candidate,bindings)=>
+                        {
+                            var source=Resolve(choice,SourceKind.Region);
+                            if(source is null)bindings.RemoveSetting(slot);else bindings.SetSetting(Setting(slot,source));
+                        });
+                        if(error is null)OnAcceptedFieldNotification();return error;
                     }){Tag=group.RegionSourceFieldId};
-                _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedRegion)));RegisterSource(view,()=>Mode()==nameof(RegionFieldMode.InheritedRegion));
+                _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedRegion)));RegisterSource(view,()=>Current()&&Mode()==nameof(RegionFieldMode.InheritedRegion));
             }
+            SourceChoice[] CurrentChoices(SourceKind kind){EnsureCurrent();var choices=Choices(kind);EnsureCurrent();return choices;}
             void AddGeometry(Roi? existing)
             {
-                Roi? item=existing;
-                var view=new SourceSelectionField(title+" · 几何订阅",()=>Choices(SourceKind.Geometry),()=>Describe(item?.Binding),choice=>
+                Guid? itemId=existing?.Id;
+                Roi? Item(ToolParameters? owner)=>itemId is Guid id?RegionCollection(owner,group.Role).Rois.SingleOrDefault(roi=>roi.Id==id&&roi.IsSubscribed)
+                    ??throw new InvalidOperationException("订阅区域已删除或来源已改变。"):null;
+                var view=new SourceSelectionField(title+" · 几何订阅",()=>CurrentChoices(SourceKind.Geometry),
+                    ()=>{EnsureCurrent();return Describe(Item(_parameters)?.Binding);},choice=>
                 {
-                    var previous=item;var binding=item?.Binding;var index=item is null?-1:collection.Rois.IndexOf(item);
-                    var candidate=Resolve(choice,SourceKind.Geometry);
-                    return Change(()=>
+                    if(!Current())return "当前区域来源编辑范围已失效。";
+                    var nextId=itemId;
+                    var error=Change(generation,(candidate,_)=>
                     {
-                        if(candidate is null){if(item is not null)collection.Rois.Remove(item);item=null;}
+                        var source=Resolve(choice,SourceKind.Geometry);
+                        var target=RegionCollection(candidate,group.Role);var item=Item(candidate);
+                        if(source is null){if(item is not null)target.Rois.Remove(item);nextId=null;}
                         else
                         {
-                            if(item is null){item=Roi.CreateSubscribed(title+"订阅",candidate.SourceNodeId,candidate.PropertyName);collection.Rois.Add(item);}
-                            item.Binding=Setting(item.Name,candidate);
+                            if(item is null){item=Roi.CreateSubscribed(title+"订阅",source.SourceNodeId,source.PropertyName);target.Rois.Add(item);}
+                            item.Binding=Setting(item.Name,source);nextId=item.Id;
                         }
-                    },()=>
-                    {
-                        if(item is not null&&!ReferenceEquals(item,previous))collection.Rois.Remove(item);
-                        item=previous;if(item is not null){item.Binding=binding;if(!collection.Rois.Contains(item))collection.Rois.Insert(Math.Min(index,collection.Rois.Count),item);}
-                    },choice is not null);
+                    });
+                    if(error is null){itemId=nextId;OnAcceptedFieldNotification();}
+                    return error;
                 }){Tag=group.GeometrySourceFieldId};
-                rows.Children.Add(view);RegisterSource(view,()=>Mode()==nameof(RegionFieldMode.InheritedGeometry));
+                rows.Children.Add(view);RegisterSource(view,()=>Current()&&Mode()==nameof(RegionFieldMode.InheritedGeometry));
             }
             string? Mode()=>_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString();
         }
@@ -88,16 +98,11 @@ public sealed partial class DeclaredToolConfigurationControl
         return new(){ParameterName=path,BindingType=BindingType.Binding,SourceNodeId=source.SourceNodeId,SourceWorkflowId=source.SourceWorkflowId,
             SourceFieldId=source.SourceFieldId,SourceProperty=source.PropertyName,ReferenceExpression=BindingReferenceSerializer.Serialize(reference)};
     }
-    private string? Change(Action apply,Action rollback,bool validate)
+    private string? Change(long generation,Action<ToolParameters,ParamSettingContainer> prepare)
     {
-        if(!RegionScopeCurrent())return "当前编辑范围已失效。";
-        var accepted=false;
-        try
-        {
-            apply();
-            if(validate&&ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context&&!context.TryValidateEditor(out var error))return error;
-            accepted=true;RefreshRegionScene();return null;
-        }
-        finally{if(!accepted)rollback();}
+        if(generation!=_configurationGeneration||!RegionScopeCurrent())return "当前编辑范围已失效。";
+        try{AcceptParameterCandidate(generation,prepare);}
+        catch(Exception error) when(error is ArgumentException or InvalidOperationException){return error.Message;}
+        return null;
     }
 }

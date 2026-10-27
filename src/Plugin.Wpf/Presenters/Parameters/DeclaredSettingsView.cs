@@ -64,10 +64,10 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             var port=schema.Inputs.Single(p=>p.Id==presentation.FieldId);
             ParameterSetting initial=_references.TryGetValue(port.Id,out var reference)?reference:new ConstantSetting(values.Get<object?>(port.Id));
             return(port,presentation,initial);
-        }),(id,value)=>
+        }),proposals=>
         {
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
-            WriteGroup(new Dictionary<string,ParameterSetting>{{id,value}});
+            WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
             id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference);
         foreach(var field in _fields.Fields)field.Changed+=OnChanged;

@@ -570,6 +570,13 @@
         "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
         "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
         "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      },
+      "sdkGroupConsumer": {
+        "status": "FOUNDATION_AUTOMATED_CHECKS_PASSED_NATIVE_BETWEEN_PENDING",
+        "note": "FieldsView统一整组writer；现SDK仅非视觉候选接纳和当前owner连接，完整原between尚未替换；ReferencePopupScope按当前sender与活动态筛选文字事件。",
+        "baseline": "a4526449",
+        "verification": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json"
       }
     },
     {
@@ -688,6 +695,13 @@
         "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
         "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
         "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      },
+      "sdkGroupConsumer": {
+        "status": "FOUNDATION_AUTOMATED_CHECKS_PASSED_NATIVE_BETWEEN_PENDING",
+        "note": "FieldsView统一整组writer；现SDK仅非视觉候选接纳和当前owner连接，完整原between尚未替换；ReferencePopupScope按当前sender与活动态筛选文字事件。",
+        "baseline": "a4526449",
+        "verification": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json"
       }
     },
     {
@@ -748,7 +762,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "b0a5c17f23273cf4b05be5a20008fb6a2c218d36370a9711c0793038f61bb475"
+          "sha256": "ab5d734225669bc5a4ceeccb13be2bc3e9c645f31aa1808dc20c53b337aff873"
         }
       ],
       "dependencyCatalogRefs": [
@@ -779,6 +793,13 @@
         "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_NUMBER_CHECKPOINT_20261027.json",
         "result": "UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；实际正式EXE exit0、22工具准入。",
         "boundary": "C07扩展专窗和C06共根左右端点实际消费仍待，不能以本批单值通过代签。"
+      },
+      "sdkGroupConsumer": {
+        "status": "FOUNDATION_AUTOMATED_CHECKS_PASSED_NATIVE_BETWEEN_PENDING",
+        "note": "FieldsView统一整组writer；现SDK仅非视觉候选接纳和当前owner连接，完整原between尚未替换；ReferencePopupScope按当前sender与活动态筛选文字事件。",
+        "baseline": "a4526449",
+        "verification": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json"
       }
     },
     {
@@ -973,7 +994,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "b0a5c17f23273cf4b05be5a20008fb6a2c218d36370a9711c0793038f61bb475"
+          "sha256": "ab5d734225669bc5a4ceeccb13be2bc3e9c645f31aa1808dc20c53b337aff873"
         },
         {
           "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
@@ -1032,6 +1053,13 @@
         "file": "src/Plugin.Wpf/Directory.Build.props",
         "scope": "仅本公共库命令行标记编译缓存分离CommandLine子目录，不改NuGet资产位置/正式OutDir/项目依赖。",
         "status": "隔离后规定UI005/全量001及源码修正后的UI006/全量002均0错误，原Generic/数值/订阅资源实际可加载；不据此声称首次干扰来源已证或VS人工已过。"
+      },
+      "sdkGroupConsumer": {
+        "status": "FOUNDATION_AUTOMATED_CHECKS_PASSED_NATIVE_BETWEEN_PENDING",
+        "note": "FieldsView统一整组writer；现SDK仅非视觉候选接纳和当前owner连接，完整原between尚未替换；ReferencePopupScope按当前sender与活动态筛选文字事件。",
+        "baseline": "a4526449",
+        "verification": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json"
       }
     }
   ]

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -22,16 +22,26 @@ public sealed partial class DeclaredToolConfigurationControl
     private bool IsLocalRegion(RegionPart part)=>_accessors.Single(field=>field.Port.Id==part.Definition.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry);
     private bool HasPendingRegions=>_roiViewport?.HasPendingGesture==true||_regionParts.Any(part=>IsLocalRegion(part)&&part.View.HasInvalidText);
     public IRoiEditViewport? RegionViewport=>_roiViewport;
-    private bool RegionScopeCurrent()=>ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context?context.IsValid:_parameters is not null;
+    private bool RegionScopeCurrent()=>!_acceptingFields&&_parameters is not null&&
+        CurrentNode is SunEyeVision.Workflow.WorkflowNodeBase node&&ReferenceEquals(node.Parameters,_parameters)&&
+        (ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext context||
+            context.IsValid&&ReferenceEquals(context.DraftNode,node));
+    private RoiCollection CurrentRegionCollection(string role)=>RegionCollection(_parameters,role);
+    private static RoiCollection RegionCollection(ToolParameters? owner,string role)=>owner is RoiParameters parameters
+        ?role switch {"inspection"=>parameters.InspectionRois,"mask"=>parameters.MaskRois,_=>throw new ArgumentException("未知区域角色。")}
+        :throw new InvalidOperationException("当前参数不包含区域。");
     private void BuildRegionEditors(IConfigurationFieldProvider provider)
     {
         foreach(var part in _regionParts)part.View.Dispose();_regionParts.Clear();
-        if(_parameters is not RoiParameters parameters||_fields is null)return;
+        if(_parameters is not RoiParameters||_fields is null)return;
+        var generation=_configurationGeneration;
         foreach(var group in provider.ConfigurationSchema?.Presentation?.Regions??Array.Empty<RegionFieldGroup>())
         {
-            var model=new RoiParameterEditingAdapter(parameters,group.Role,()=>RegionScopeCurrent()&&_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry));
+            var model=new RoiParameterEditingAdapter(()=>_parameters as RoiParameters??throw new InvalidOperationException("当前区域参数已失效。"),group.Role,
+                ()=>generation==_configurationGeneration&&RegionScopeCurrent()&&_accessors.Single(field=>field.Port.Id==group.ModeFieldId).Read()?.ToString()==nameof(RegionFieldMode.LocalGeometry),
+                prepare=>AcceptParameterCandidate(generation,(candidate,_)=>prepare((RoiParameters)candidate)));
             var view=new RegionGeometryEditor(group.Role,group.Role=="mask"?"屏蔽区域 · 本地几何":"检测区域 · 本地几何",model.Read,model.Write,model.Enable);
-            view.ModelChanged+=RefreshRegionScene;view.SetViewport(_roiViewport);
+            view.ModelChanged+=OnAcceptedFieldNotification;view.SetViewport(_roiViewport);
             _fields.AddAfterField(group.ModeFieldId,view,new(group.ModeFieldId,nameof(RegionFieldMode.LocalGeometry)));
             _regionParts.Add(new(group,model,view));
         }

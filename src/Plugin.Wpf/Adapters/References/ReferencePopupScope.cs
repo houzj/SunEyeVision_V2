@@ -47,7 +47,7 @@ internal sealed class ReferencePopupScope : IDisposable
     }
     private void DetachText(){if(_text is not null)_text.TextChanged-=OnTextChanged;_text=null;}
     private void OnTextChanged(object sender,TextChangedEventArgs args)
-    {if(!_disposed&&_text is not null)_session.ObserveText(_text.Text);}
+    {if(!_disposed&&_isActive()&&_text is not null&&ReferenceEquals(sender,_text))_session.ObserveText(_text.Text);}
     private void OnKey(object sender,KeyEventArgs args)
     {
         if(_disposed||!_isActive())return;

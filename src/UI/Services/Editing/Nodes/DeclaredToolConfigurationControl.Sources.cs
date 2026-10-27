@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.Contracts;
@@ -27,7 +27,9 @@ public sealed partial class DeclaredToolConfigurationControl
     private void BuildSourceEditors(IConfigurationFieldProvider provider)
     {
         _sourceFields.Clear();_sourceActivity.Clear();
-        if(_parameters is not MeasureGuideParameters guide||_fields is null||provider.ConfigurationSchema is not { } schema)return;
+        if(_parameters is not MeasureGuideParameters||_fields is null||provider.ConfigurationSchema is not { } schema)return;
+        var generation=_configurationGeneration;
+        MeasureGuideParameters Owner()=>_parameters as MeasureGuideParameters??throw new InvalidOperationException("当前图像参数已失效。");
         var image=schema.Inputs.SingleOrDefault(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image));
         var pose=schema.Inputs.SingleOrDefault(port=>port.Type==SpatialDeclarations.Affine2D);
         var leading=0;
@@ -36,16 +38,18 @@ public sealed partial class DeclaredToolConfigurationControl
         BuildRegionSourceEditors(provider);
         void Add(Port port,string title,bool correction)
         {
+            void EnsureCurrent(){if(generation!=_configurationGeneration||!RegionScopeCurrent())throw new InvalidOperationException("当前来源编辑范围已失效。");}
             string Read()
             {
+                EnsureCurrent();var guide=Owner();
                 var stored=correction?guide.PositionCorrectionSource:guide.ImageSourceRef;
                 return stored is null?"尚未选择来源":$"{stored.SourceNodeName} · {stored.DisplayName} ({stored.PropertyName})";
             }
-            var view=new SourceSelectionField(title,()=>SdkSources(correction).Select(source=>new SourceChoice(source.Identity,
-                source.Source.DropdownDisplayText,source.Many)).ToArray(),Read,choice=>ApplySdkSource(correction,choice)){Tag=port.Id};
+            var view=new SourceSelectionField(title,()=>{EnsureCurrent();var choices=SdkSources(correction).Select(source=>new SourceChoice(source.Identity,
+                source.Source.DropdownDisplayText,source.Many)).ToArray();EnsureCurrent();return choices;},Read,choice=>ApplySdkSource(correction,choice,generation)){Tag=port.Id};
             view.ToolTip=correction?"位置修正来源；集合必须明确选择序号。":"输入图像来源，仅列出当前作用域的声明输出。";
-            RegisterSource(view,()=>!correction||guide.IsPositionCorrectionEnabled);
-            if(correction&&_accessors.SingleOrDefault(field=>field.StoragePath==nameof(guide.IsPositionCorrectionEnabled)) is {} enabled)
+            RegisterSource(view,()=>generation==_configurationGeneration&&(!correction||Owner().IsPositionCorrectionEnabled));
+            if(correction&&_accessors.SingleOrDefault(field=>field.StoragePath==nameof(MeasureGuideParameters.IsPositionCorrectionEnabled)) is {} enabled)
                 _fields.AddAfterField(enabled.Port.Id,view,new(enabled.Port.Id,true));
             else _fields.AddToGroup("基本参数",view,leading++);
         }
@@ -81,41 +85,35 @@ public sealed partial class DeclaredToolConfigurationControl
         }
         return sources;
     }
-    private string? ApplySdkSource(bool correction,SourceChoiceSelection? choice)
+    private string? ApplySdkSource(bool correction,SourceChoiceSelection? choice,long generation)
     {
-        if(_parameters is not MeasureGuideParameters guide||!RegionScopeCurrent())return "当前编辑范围已失效。";
-        AvailableDataSource? proposed=null;
-        if(choice is not null)
-        {
-            var candidate=SdkSources(correction).SingleOrDefault(source=>source.Identity==choice.Identity);
-            if(candidate is null)return "来源已不在当前声明与作用域中，请重新选择。";
-            if(candidate.Many!=choice.Index.HasValue||choice.Index is <0)return "集合需明确序号，标量不能指定序号。";
-            proposed=candidate.Source;
-            if(choice.Index is int index)proposed.BindingSuffix="["+index.ToString(System.Globalization.CultureInfo.InvariantCulture)+"]";
-        }
-        var previous=correction?guide.PositionCorrectionBindingSource:guide.ImageSource;
-        var stored=correction?guide.PositionCorrectionSource:guide.ImageSourceRef;
-        void Assign(AvailableDataSource? source)
-        {
-            // AvailableDataSource equality addresses a root output, not its selected element.
-            // Clear this private model slot first so changing [0] to [1] cannot retain an old runtime source.
-            if(correction){guide.PositionCorrectionBindingSource=null;guide.PositionCorrectionBindingSource=source;}
-            else{guide.ImageSource=null;guide.ImageSource=source;}
-        }
-        Assign(proposed);
-        // Setter equality can ignore a changed array suffix. Always persist the exact chosen reference.
-        if(correction)guide.PositionCorrectionSource=ImageSourceReference.FromDataSource(proposed);else guide.ImageSourceRef=ImageSourceReference.FromDataSource(proposed);
-        var accepted=false;
+        if(generation!=_configurationGeneration||_parameters is not MeasureGuideParameters||!RegionScopeCurrent())return "当前编辑范围已失效。";
+        var original=_parameters;var node=CurrentNode;var context=ToolEditorCommit.GetDraftContext(this);
         try
         {
-            if(choice is not null&&ToolEditorCommit.GetDraftContext(this) is ProductionEditorContext context&&!context.TryValidateEditor(out var error))return error;
-            accepted=true;
-            var key=correction?nameof(MeasureGuideParameters.PositionCorrectionBindingSource):nameof(MeasureGuideParameters.ImageSource);
-            guide.RebindingRequired.Remove(key);guide.BindingValidationPending.Remove(key);RefreshRegionScene();return null;
+            AvailableDataSource? proposed=null;
+            if(choice is not null)
+            {
+                var source=SdkSources(correction).SingleOrDefault(source=>source.Identity==choice.Identity);
+                if(source is null)return "来源已不在当前声明与作用域中，请重新选择。";
+                if(source.Many!=choice.Index.HasValue||choice.Index is <0)return "集合需明确序号，标量不能指定序号。";
+                proposed=source.Source;
+                if(choice.Index is int index)proposed.BindingSuffix="["+index.ToString(System.Globalization.CultureInfo.InvariantCulture)+"]";
+            }
+            if(generation!=_configurationGeneration||!ReferenceEquals(_parameters,original)||!ReferenceEquals(CurrentNode,node)||
+                !ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context)||!RegionScopeCurrent())return "读取来源时编辑范围已改变。";
+            AcceptParameterCandidate(generation,(candidate,_)=>
+            {
+                var guide=(MeasureGuideParameters)candidate;
+                // Both slots belong to the candidate; changing an array index must persist the exact reference.
+                if(correction){guide.PositionCorrectionBindingSource=null;guide.PositionCorrectionBindingSource=proposed;
+                    guide.PositionCorrectionSource=ImageSourceReference.FromDataSource(proposed);}
+                else{guide.ImageSource=null;guide.ImageSource=proposed;guide.ImageSourceRef=ImageSourceReference.FromDataSource(proposed);}
+                var key=correction?nameof(MeasureGuideParameters.PositionCorrectionBindingSource):nameof(MeasureGuideParameters.ImageSource);
+                guide.RebindingRequired.Remove(key);guide.BindingValidationPending.Remove(key);
+            });
         }
-        finally
-        {
-            if(!accepted){Assign(previous);if(correction)guide.PositionCorrectionSource=stored;else guide.ImageSourceRef=stored;}
-        }
+        catch(Exception error) when(error is ArgumentException or InvalidOperationException){return error.Message;}
+        OnAcceptedFieldNotification();return null;
     }
 }

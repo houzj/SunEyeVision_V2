@@ -47,7 +47,7 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   error=_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error??"";return error.Length==0;
  }
  public DeclaredFieldsView(IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> fields,
-  Action<string,ParameterSetting> writeDraft,ReferenceFieldOptions? references=null,
+  Action<IReadOnlyDictionary<string,ParameterSetting>> writeDraft,ReferenceFieldOptions? references=null,
   Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null)
  {
   Resources.MergedDictionaries.Add(EditorResources.Create());Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
@@ -55,7 +55,7 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   foreach(var field in all)
   {
    if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
-   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(field.Port.Id,value),constantBackup?.Invoke(field.Port.Id),validate:proposal=>references?.ValidateProposal?.Invoke(field.Port,proposal));
+   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),validate:proposal=>references?.ValidateProposal?.Invoke(field.Port,proposal));
    _fieldStates.Add(state);
    var editor=new DeclaredFieldEditor(state,field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation);
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;

@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
+using System.Windows.Data;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using System.Globalization;
@@ -149,7 +151,7 @@ internal static class S2DocumentEditingCases
   var low=fields.Fields.Single(f=>f.FieldId==descriptors.Single(d=>d.StoragePath=="FilterAreaMin").Port.Id);var high=fields.Fields.Single(f=>f.FieldId==descriptors.Single(d=>d.StoragePath=="FilterAreaMax").Port.Id);
   var label=(TextBlock)typeof(DeclaredFieldEditor).GetField("_label",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(low)!;Require(label.Text=="面积范围","配对范围标签不是面积范围："+label.Text);
   var areaSwitch=fields.Fields.Single(f=>f.FieldId==descriptors.Single(d=>d.StoragePath=="IsAreaFilterEnabled").Port.Id).InputElement!;
-  var rangeInput=Visuals<NativeNumberField>(low).Single().NativeControl;
+  var rangeInput=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low).Single();
   var switchLeft=areaSwitch.TransformToAncestor(fields).Transform(new Point()).X;
   var inputLeft=rangeInput.TransformToAncestor(fields).Transform(new Point()).X;
   Require(Math.Abs(switchLeft-inputLeft)<=2,"原VM开关未与参数输入列左对齐：switch="+switchLeft+",input="+inputLeft);
@@ -162,8 +164,9 @@ internal static class S2DocumentEditingCases
    if(text.HorizontalOffset!=0||width>available+.1)widthFailures.Add(measurement);return text;
   }
   var initial=Verify("Loaded");initial.Focus();Pump();Keyboard.ClearFocus();Pump();Verify("聚焦失焦");
-  Click(Find<ToggleButton>(high).Single(b=>Equals(b.ToolTip,"切换为订阅")));Pump();Click(Find<ToggleButton>(high).Single(b=>Equals(b.ToolTip,"切换为数值编辑")));Pump();
-  var numeric=Visuals<NativeNumberField>(high).Single();Require(!numeric.ShowSlider&&numeric.NativeControl is Native.Numeric.HikPcUI.ListView.SliderArrangeBase,"配对切回常量未保留原数值控件或单滑条抑制");Verify("切订阅再切常量");Require(widthFailures.Count==0,"9999999可视宽度不足："+string.Join("；",widthFailures));
+  var mode=Visuals<ToggleButton>(high).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
+  mode.IsChecked=true;Click(mode);Pump();mode.IsChecked=false;Click(mode);Pump();
+  var numeric=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(high).Single();Require(numeric.SliderVisibility==Visibility.Collapsed,"配对切回常量未保留原数值控件或单滑条抑制");Verify("切订阅再切常量");Require(widthFailures.Count==0,"9999999可视宽度不足："+string.Join("；",widthFailures));
  }
  static void Show(UIElement view){host.Children.Clear();host.Children.Add(view);owner.UpdateLayout();Pump();}
  static void VerifyPageScroll(DeclaredFieldsView fields,TabControl tabs,IReadOnlyList<ConfigurationFieldAccessor> descriptors,Window shell)
@@ -176,6 +179,23 @@ internal static class S2DocumentEditingCases
  }
  static IEnumerable<T> Find<T>(DependencyObject root) where T:DependencyObject
  {if(root is T item)yield return item;foreach(var child in LogicalTreeHelper.GetChildren(root))if(child is DependencyObject d)foreach(var found in Find<T>(d))yield return found;}
+ static Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
+ {
+  var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();
+  var box=(ComboBox)original.FindName("CBox");box.ApplyTemplate();
+  return (Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+ }
+ static void CaptureInline(FrameworkElement view,string name)
+ {
+  owner.UpdateLayout();Pump();
+  var image=new RenderTargetBitmap((int)Math.Ceiling(owner.ActualWidth),(int)Math.Ceiling(owner.ActualHeight),96,96,PixelFormats.Pbgra32);image.Render(owner);
+  var area=view.TransformToAncestor(owner).TransformBounds(new Rect(view.RenderSize));
+  var left=Math.Max(0,(int)Math.Floor(area.Left));var top=Math.Max(0,(int)Math.Floor(area.Top));
+  var right=Math.Min(image.PixelWidth,(int)Math.Ceiling(area.Right));var bottom=Math.Min(image.PixelHeight,(int)Math.Ceiling(area.Bottom));
+  Require(right>left&&bottom>top,"数值控件实际取图为空");
+  var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(new CroppedBitmap(image,new Int32Rect(left,top,right-left,bottom-top))));
+  using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));encoder.Save(file);
+ }
  static void Click(ButtonBase button)=>button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
  static void StylePopup(DisplayObjectField display,Action<FrameworkElement> edit)
  {
@@ -213,36 +233,101 @@ internal static class S2DocumentEditingCases
         {Layout=new("运行参数","参数",Minimum:0,Maximum:1,Increment:.01)};
     var field=new DeclaredFieldEditor(new("native-ratio",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),
         setting=>{value=(double)((ConstantSetting)setting).Value!;writes++;},presentation:presentation);
-    Show(field);var adapter=Visuals<NativeNumberField>(field).Single();
-    Require(adapter.NativeControl is Native.Numeric.HikPcUI.ListView.SliderArrangeFloat,"声明字段没有消费原PCUI浮点控件");
-    var original=(Native.Numeric.HikPcUI.ListView.SliderArrangeFloat)adapter.NativeControl;
+    Show(field);var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
     var text=(TextBox)field.InputElement!;text.Focus();Pump();
     var combo=(ComboBox)original.FindName("CBox");var popup=(Popup)combo.Template.FindName("PART_Popup",combo);
     Require(popup.IsOpen,"原浮点控件获得焦点未展开滑条");
     text.Text="0.12345";text.CaretIndex=4;Pump();
     var slider=Visuals<Slider>(popup.Child).Single(item=>item.Name=="SL_Bat1");
-    Require(value==.12345&&text.Text=="0.12345"&&text.CaretIndex==4&&Math.Abs(slider.Value-value)<1e-12,
-        "原数值输入未保留精度/原文/光标或未同步滑条");
-    slider.Value=.67;Pump();Require(value==.67&&double.Parse(text.Text,CultureInfo.InvariantCulture)==.67,"原滑条没有回填同一字段草稿");
-    text.Text="bad";SendKey(text,Key.Enter,true);Require(text.IsKeyboardFocused&&field.HasInvalidText&&value==.67&&text.Text=="bad","非法Enter未留焦保留原文和值");
-    text.Text="0.75";SendKey(text,Key.Enter,true);Require(!text.IsKeyboardFocused&&!popup.IsOpen&&!field.HasInvalidText&&value==.75,"有效Enter未失焦/关闭原滑条");
-    var count=writes;text.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});Pump();
+    Require(value==.5&&text.Text=="0.12345"&&text.CaretIndex==4,"未提交输入提前写入或丢失原文/光标");
+    SendKey(text,Key.Enter,true);Require(value==.12&&Math.Abs(slider.Value-.12)<1e-12,"原浮点声明精度提交未同步滑条");
+    text.Focus();Pump();slider.Value=.67;Pump();
+    var thumb=(Thumb)slider.Template.FindName("Thumb",slider);thumb.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Mouse.PreviewMouseUpEvent});Pump();
+    Require(value==.67&&double.Parse(text.Text,CultureInfo.InvariantCulture)==.67,"原滑条释放没有回填同一字段草稿");
+    text.Text="bad";SendKey(text,Key.Enter,true);Require(text.IsKeyboardFocused&&field.HasInvalidText&&value==.67&&text.Text=="bad","非法Enter未留焦保留原文和值");CaptureInline(field,"native-number-invalid.png");
+    text.Text="0.75";SendKey(text,Key.Enter,true);Require(!text.IsKeyboardFocused&&!popup.IsOpen&&!field.HasInvalidText&&value==.75,"有效Enter未失焦/关闭原滑条");CaptureInline(field,"native-number-accepted.png");
+    var count=writes;text.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.PreviewMouseWheelEvent});text.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});Pump();
     Require(value==.75&&writes==count,"未聚焦滚轮修改了原控件字段");
-    text.Focus();Pump();text.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});Pump();
+    text.Focus();Pump();text.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.PreviewMouseWheelEvent});text.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});Pump();
     Require(Math.Abs(value-.76)<1e-12,"已聚焦原控件滚轮未按0.01写回");
    });
-   Test("原样式数值范围保留旧线宽且仅主动编辑写入",()=>
+   Test("程序数值提案与键入共用范围和精度且不接纳不可精确整数",()=>
    {
-    var value=.25;var writes=0;
-    var presentation=new FieldPresentation("legacy-stroke","粗细","样式",0,FieldEditorKind.Scalar)
-        {Layout=new("结果显示","样式",Minimum:1,Maximum:10,Increment:1)};
-    var field=new DeclaredFieldEditor(new("legacy-stroke",DataType.Number,Storage:NumericStorage.Float64),"粗细",new ConstantSetting(value),
+    var value=.5;var writes=0;
+    var presentation=new FieldPresentation("program-ratio","比例","参数",0,FieldEditorKind.Scalar)
+        {Layout=new("运行参数","参数",Minimum:0,Maximum:1,Increment:.01)};
+    using var field=new DeclaredFieldEditor(new("program-ratio",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),
         setting=>{value=(double)((ConstantSetting)setting).Value!;writes++;},presentation:presentation);
-    Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();SendKey(text,Key.Enter,true);
-    Require(value==.25&&writes==0&&!field.HasInvalidText,"打开/聚焦/Enter自动夹紧或写入旧线宽");
-    var number=Visuals<NativeNumberField>(field).Single().InputControl!;
+    Show(field);Require(!field.TrySetConstant(2d)&&value==.5&&writes==0,"程序提案绕过声明范围");
+    Require(!field.TryCommitPending()&&value==.5&&writes==0,"保存捕获自动清除了拒绝的程序提案");
+    Require(field.TrySetConstant(.12345)&&value==.12&&writes==1,"程序提案未走相同浮点精度");
+    using var initial=new DeclaredFieldEditor(new("initial-ratio",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(.12345),_=>writes++,presentation:presentation);
+    Show(initial);Require(initial.HasInvalidText&&writes==1,"初始超精度值被格式化掩盖");
+    var rejected=false;try{using var large=new DeclaredFieldEditor(new("large",DataType.Integer),"大整数",new ConstantSetting(9007199254740993L),_=>writes++);}catch(ArgumentException){rejected=true;}
+    Require(rejected&&writes==1,"不可精确初值被舍入显示或写入");
+   });
+   Test("已存在引用允许退出但禁止重新进入且越界备份不能恢复",()=>
+   {
+    var source=new DeclaredReferenceCandidate("来源","source",null,new Port("count",DataType.Integer),Array.Empty<string>());
+    var options=new ReferenceFieldOptions(_=>new[]{source});var writes=0;
+    FieldPresentation Layout(bool allow)=>new("mode-count","数量","参数",0,FieldEditorKind.Scalar){Layout=new("运行参数","参数",Minimum:0,Maximum:255,AllowReference:allow)};
+    using var field=new DeclaredFieldEditor(new("mode-count",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
+        "数量",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,options,new ConstantSetting(7L),presentation:Layout(false));
+    Show(field);var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();
+    var box=(ComboBox)original.FindName("CBox");
+    var mode=Visuals<ToggleButton>(field).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
+    mode.IsChecked=false;Click(mode);Pump();Require(!original.IsSubscribeLeft&&writes==1&&mode.Visibility==Visibility.Collapsed,"退出已有引用后仍允许新增订阅");
+    mode.IsChecked=true;Click(mode);Require(!original.IsSubscribeLeft&&writes==1,"强制旧切换事件绕过禁止订阅");
+    using var invalid=new DeclaredFieldEditor(new("mode-count",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
+        "数量",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,options,new ConstantSetting(1000L),presentation:Layout(true));
+    Show(invalid);original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(invalid).Single();
+    mode=Visuals<ToggleButton>(invalid).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
+    mode.IsChecked=false;Click(mode);Pump();Require(original.IsSubscribeLeft&&invalid.HasInvalidText&&writes==1,"越界backup先接纳后夹紧");
+   });
+   Test("原数值两级绑定保留且初始订阅不校验隐藏常量",()=>
+   {
+    var type=DataType.Number;var writes=0;
+    var source=new DeclaredReferenceCandidate("比例来源","source",null,new Port("ratio",type),Array.Empty<string>());
+    var presentation=new FieldPresentation("reference-ratio","比例","参数",0,FieldEditorKind.Scalar)
+        {Layout=new("运行参数","参数",Minimum:1,Maximum:10,Increment:1)};
+    using var field=new DeclaredFieldEditor(new("reference-ratio",type,Storage:NumericStorage.Float64,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
+        "比例",new ReferenceSetting(source.Reference(BindingSelection.All)),_=>writes++,new SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldOptions(_=>new[]{source}),presentation:presentation);
+    Show(field);Require(!field.HasInvalidText&&field.TryCommitPending()&&writes==0,"合法初始引用被隐藏数字越界污染");
+    var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
+    Require(original.IsSubscribeLeft,"初始引用没有显示原订阅槽");
+   });
+   Test("原浮点卸载重载保留待编辑原文且离线捕获不依赖延迟回调",()=>
+   {
+    var value=.5;var writes=0;
+    var presentation=new FieldPresentation("pending-ratio","比例","参数",0,FieldEditorKind.Scalar)
+        {Layout=new("运行参数","参数",Minimum:0,Maximum:1,Increment:.01)};
+    using var field=new DeclaredFieldEditor(new("pending-ratio",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),
+        setting=>{value=(double)((ConstantSetting)setting).Value!;writes++;},presentation:presentation);
+    Show(field);var text=(TextBox)field.InputElement!;
+    var leaf=OriginalNumberInput(field);
+    var inner=BindingOperations.GetBinding(text,TextBox.TextProperty);var outer=BindingOperations.GetBinding(leaf,Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty);
+    Require(inner?.Mode==BindingMode.Default&&((FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(text.GetType())).BindsTwoWayByDefault&&inner.UpdateSourceTrigger==UpdateSourceTrigger.LostFocus&&outer?.Mode==BindingMode.TwoWay&&outer.StringFormat=="0.00","没有保留两级原绑定/原浮点格式");
+    text.Text="bad";Show(new TextBlock());Require(!field.TryCommitPending()&&value==.5&&writes==0,"卸载捕获丢失非法原文");
+    Show(field);Require(((TextBox)field.InputElement!).Text=="bad"&&field.HasInvalidText,"重载未恢复非法原文");
+    text=(TextBox)field.InputElement!;text.Text="0.73";Show(new TextBlock());
+    Require(field.TryCommitPending()&&value==.73&&writes==1,"卸载后捕获没有提交真实pending原文");
+    Show(field);Require(double.Parse(((TextBox)field.InputElement!).Text,CultureInfo.InvariantCulture)==.73&&!field.HasInvalidText,"卸载接纳后重载没有投影新值");
+   });
+   Test("原样式粗细严格范围、非法Enter留焦与箭头单次提交",()=>
+   {
+    var value=2d;var writes=0;
+    var presentation=new FieldPresentation("stroke","粗细","样式",0,FieldEditorKind.Scalar)
+        {Layout=new("结果显示","样式",Minimum:1,Maximum:10,Increment:1)};
+    var field=new DeclaredFieldEditor(new("stroke",DataType.Number,Storage:NumericStorage.Float64),"粗细",new ConstantSetting(value),
+        setting=>{value=(double)((ConstantSetting)setting).Value!;writes++;},presentation:presentation);
+    Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();text.Text="0.25";SendKey(text,Key.Enter,true);
+    Require(value==2&&writes==0&&field.HasInvalidText&&text.IsKeyboardFocused&&text.Text=="0.25","越界Enter未拒绝并保留原文/焦点");
+    text.Text="2";SendKey(text,Key.Enter,true);Require(value==2&&!field.HasInvalidText&&!text.IsKeyboardFocused,"纠正Enter未恢复");
+    var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field).Single();
+    Require(original.Minimum==1&&original.Maximum==10,"编辑器擅自扩大声明范围");
+    var number=OriginalNumberInput(field);
     Click((ButtonBase)number.FindName("UpButton"));Pump();
-    Require(value==1.25&&writes==1,"原箭头未从旧值按单位步长编辑或重复写入");
+    Require(value==3&&writes==1,"原箭头未按单位步长单次提交");
    });
    Test("样式就地弹层草稿编辑、校验与卸载关闭",()=>
    {
@@ -254,7 +339,7 @@ internal static class S2DocumentEditingCases
     StylePopup(display,surface=>
     {
      Require(Find<DeclaredFieldEditor>(surface).Contains(line),"样式字段仍为第二套临时副本");
-     ((TextBox)line.InputElement!).Text="7";Require(width==7&&writes>0,"样式未更新调用方草稿");
+     ((TextBox)line.InputElement!).Text="7";line.TryCommitPending();Require(width==7&&writes>0,"样式未更新调用方草稿");
      var field=(NativeColorPresenter)rgba.InputElement!;field.Palette.IsDropDownOpen=true;Pump();Require(display.IsStyleEditorOpen,"嵌套色板打开关闭了样式父层");
      var picker=field.NativeView;
      SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute(new SolidColorBrush(Color.FromArgb(123,32,64,128)),picker);
@@ -266,7 +351,7 @@ internal static class S2DocumentEditingCases
      Require(!display.IsStyleEditorOpen,"第二次Escape没有关闭样式父层");
     });
     Require(width==7&&color.Get<long>("a")==123&&!display.IsStyleEditorOpen,"收起样式层丢失草稿或弹层残留");
-    StylePopup(display,_=>{reject=true;((TextBox)line.InputElement!).Text="9";Require(line.HasInvalidText&&width==7,"草稿写入拒绝未保留错误和值");reject=false;((TextBox)line.InputElement!).Text="7";Require(!line.HasInvalidText,"修正后错误未清除");((TextBox)line.InputElement!).Text="bad";Require(line.HasInvalidText&&width==7,"非法输入写入草稿");((TextBox)line.InputElement!).Text="7";});
+    StylePopup(display,_=>{reject=true;((TextBox)line.InputElement!).Text="9";line.TryCommitPending();Require(line.HasInvalidText&&width==7,"草稿写入拒绝未保留错误和值");reject=false;var corrected=(TextBox)line.InputElement!;corrected.Focus();corrected.Text="7";SendKey(corrected,Key.Enter,true);Require(!line.HasInvalidText,"修正后错误未清除");((TextBox)line.InputElement!).Text="bad";Require(line.HasInvalidText&&width==7,"非法输入写入草稿");((TextBox)line.InputElement!).Text="7";});
     display.OpenStyleEditor();Pump();Show(new TextBlock{Text="卸载弹层宿主"});Require(!display.IsStyleEditorOpen,"宿主卸载后样式弹层仍打开");
    });
    Test("公共设置视图重绑释放样式父层和原色板",()=>
@@ -324,6 +409,8 @@ internal static class S2DocumentEditingCases
     foreach(var name in new[]{"FilterCircularityMin","FilterCircularityMax","FilterRectangularityMin","FilterRectangularityMax"})Require(Metadata(name).Layout!.Increment==.01,"浮点步进丢失");
     tabs.SelectedIndex=1;Pump();var threshold=fields.Fields.Single(f=>f.FieldId==Metadata("Threshold").FieldId);
     var text=(TextBox)threshold.InputElement!;text.Text="201";
+    Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&text.Text=="201","尚未提交的原文提前写入草稿");
+    Require(threshold.TryCommitPending(),"真实原数值不能提交："+threshold.Error);
     Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold==128&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==201,"数值没有隔离草稿");
     context.Discard();edits.Close();
     // 旧SDK显示对象/ROI组合用例已退出；新Runtime对应完整显示及本地ROI仍未实现，不能按旧成绩算通过。

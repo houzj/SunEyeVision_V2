@@ -1,5 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
+using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,7 +35,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     private readonly Grid _row = new();
     private readonly StackPanel _actions = new() { Orientation=Orientation.Horizontal };
     private readonly TextBlock _label = new();
-    private NativeNumberField? _numeric;
+    private NativeNumberPresenter? _numeric;
     private bool _updatingInput;
     private bool _disposed;
     private long _renderGeneration;
@@ -51,15 +52,15 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         _error.Margin=new Thickness(width,2,0,0);
     }
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;Render();return true;}
-    public void UsePairedSlider(){_pairedSlider=true;_numeric?.UsePairedRange();}
+    public void UsePairedSlider(){_pairedSlider=true;_numeric?.SuppressStandaloneSlider();}
     public bool TrySetConstant(object value)
     {
+        if(_numeric is not null)return _numeric.TrySetConstant(value);
         if(!Set(new ConstantSetting(value)))return false;
         _updatingInput=true;
         try
         {
-            if(_numeric is not null)_numeric.SetLiteral(value);
-            else if(InputElement is TextBox text)text.Text=Convert.ToString(value,CultureInfo.InvariantCulture)??"";
+            if(InputElement is TextBox text)text.Text=Convert.ToString(value,CultureInfo.InvariantCulture)??"";
             else Render();
         }
         finally{_updatingInput=false;}
@@ -68,11 +69,11 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     public void HideLabel() { _label.Visibility=Visibility.Collapsed;_row.ColumnDefinitions[0].Width=new GridLength(0); }
     public string FieldId => _port.Id;
     public ParameterSetting Setting => _setting;
-    public FrameworkElement? InputElement { get; private set; }
-    private string NumericError => _numeric is not null&&!_numeric.TryValidatePendingEdit(out var error)?error:"";
+    private FrameworkElement? _inputElement;
+    public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_inputElement;private set=>_inputElement=value;}
     private bool MissingReference=>_state.MissingReference;
-    public bool HasInvalidText => _state.HasInvalidInput || NumericError.Length!=0 || _children.Any(child => child.HasInvalidText);
-    public string Error => _state.Error.Length!=0?_state.Error:NumericError is {Length:>0} numericError?numericError:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    public bool HasInvalidText => _state.HasInvalidInput || _children.Any(child => child.HasInvalidText);
+    public string Error => _state.Error.Length!=0?_state.Error:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     private void UpdateErrorDisplay()=>_error.Text=_state.Error;
     public event Action? Changed;
 
@@ -117,8 +118,10 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         DetachOwnedEditors();
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         if(_imageSources is not null){RenderImageSource();return;}
+        var numeric=_port.Type.Shape==ValueShape.Scalar&&_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
+        var composedNumeric=numeric&&NativeNumberPresenter.UsesOriginalModes(_port,_presentation);
         var canReference=_referenceOptions is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
-        if(canReference&&(_port.EditModes&FieldEditModes.Constant)!=0)
+        if(canReference&&!composedNumeric&&(_port.EditModes&FieldEditModes.Constant)!=0)
         {
             var mode=new ToggleButton {Content=_referenceMode?"✎":"⇄",IsChecked=_referenceMode,Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip=_referenceMode?"切换为数值编辑":"切换为订阅"};
             mode.SetResourceReference(StyleProperty,"EditLinkButton");
@@ -128,6 +131,12 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         {
             var clear=new Button {Content="×",Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip="清除可选项"};
             clear.Click+=(_,_)=>{if(Set(new UnsetSetting()))Render();};_actions.Children.Add(clear);
+        }
+        if(composedNumeric&&(_setting is not UnsetSetting||_referenceMode))
+        {
+            _numeric=new NativeNumberPresenter(_state,_presentation,_referenceOptions,_formatReference);
+            if(_pairedSlider)_numeric.SuppressStandaloneSlider();
+            InputElement=_numeric;_body.Children.Add(_numeric);return;
         }
         if(_referenceMode||_setting is ReferenceSetting||_allowUnboundReference&&_port.EditModes==FieldEditModes.Reference)
         {
@@ -201,51 +210,17 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
             }
             else
             {
-                void Attach(TextBox input)
+                if(numeric)
                 {
-                    input.Text=Convert.ToString(value,CultureInfo.InvariantCulture)??"";
-                    InputElement=input;
-                input.TextChanged += (_, _) =>
-                {
-                    if(_updatingInput)return;
-                    try
-                    {
-                        if(_numeric is not null&&!_numeric.TryValidatePendingEdit(out var numericError))
-                        { _state.SetEditError(numericError);return; }
-                        object parsed = _port.Type.Scalar switch
-                        {
-                            ScalarKind.Int64 => long.Parse(input.Text, CultureInfo.InvariantCulture),
-                            ScalarKind.Float64 => double.Parse(input.Text, CultureInfo.InvariantCulture),
-                            _ => input.Text
-                        };
-                        Set(new ConstantSetting(parsed));
-                    }
-                    catch (Exception exception) when (exception is FormatException or OverflowException)
-                    { _state.SetEditError("请输入有效的" + (_port.Type.Scalar == ScalarKind.Int64 ? "整数。" : "数字。")); }
-                };
-                input.KeyDown+=(_,args)=>
-                {
-                    if(args.Key!=System.Windows.Input.Key.Enter)return;
-                    args.Handled=true;
-                    if(HasInvalidText)return;
-                    System.Windows.Input.FocusManager.SetFocusedElement(System.Windows.Input.FocusManager.GetFocusScope(input),null);
-                    System.Windows.Input.Keyboard.ClearFocus();
-                };
-
+                    _numeric=new NativeNumberPresenter(_state,_presentation,_referenceOptions,_formatReference);
+                    InputElement=_numeric;_body.Children.Add(_numeric);
                 }
-                var numeric=_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
-                // Int64 must never travel through a double-valued visual; retain the exact text editor.
-                if(numeric&&_port.Storage!=NumericStorage.Int64&&(_port.Type.Scalar!=ScalarKind.Int64||_port.Storage is not null))
+                else
                 {
-                    var layout=_presentation?.Layout;
-                    var input=new NativeNumberField(_port,layout,value!,literal=>Set(new ConstantSetting(literal)));
-                    if(_pairedSlider)input.UsePairedRange();
-                    input.InputReady+=()=>InputElement=input.TextEditor;
-                    input.ValidationChanged+=()=>Changed?.Invoke();
-                    _numeric=input;InputElement=input;_body.Children.Add(input);
+                    var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center,Text=Convert.ToString(value,CultureInfo.InvariantCulture)??""};
+                    input.TextChanged+=(_,_)=>{if(!_updatingInput)Set(new ConstantSetting(input.Text));};
+                    InputElement=input;_body.Children.Add(input);
                 }
-                else {var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center};Attach(input);_body.Children.Add(input);}
-
             }
         }
         else if (_port.Type.Shape == ValueShape.Record && value is RecordValue record)
@@ -291,11 +266,17 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         finally{_updatingInput=false;}
     }
 
-    public bool TryCommitPending()=>_referencePresenter?.TryCommitPending()??true;
+    public bool TryCommitPending()
+    {
+        if(_numeric is not null&&!_numeric.TryCommitPending())return false;
+        if(_referencePresenter is not null&&!_referencePresenter.TryCommitPending())return false;
+        return _children.All(child=>child.TryCommitPending());
+    }
 
     private void DetachOwnedEditors()
     {
         _referencePresenter?.Dispose();_referencePresenter=null;
+        _numeric?.Dispose();_numeric=null;
         DetachImageSource();
         if(InputElement is ComboBox combo)combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
         if(InputElement is NativeColorPresenter color)

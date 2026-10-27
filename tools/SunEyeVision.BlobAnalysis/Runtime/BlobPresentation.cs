@@ -43,8 +43,7 @@ public static class BlobPresentation
    dialog=key[..key.IndexOf('.',"presentation.graphics.".Length)];primary=key.EndsWith(".IsVisible");
    title=dialog["presentation.graphics.".Length..] switch {"blobs"=>"Blob","centroids"=>"质心","contours"=>"轮廓","inspection-roi"=>"检测区域","mask-roi"=>"屏蔽区域",_=>throw new ArgumentException("Unknown declared Blob display group.")};
   }
-  // Original ImageViewConfig_subContent bounds; the field adapter keeps an
-  // existing out-of-range literal unchanged until the user actually edits it.
+  // Original ImageViewConfig_subContent bounds, enforced by the real numeric composition.
   if(key.StartsWith("presentation.")&&key.EndsWith(".Style.Opacity")){minimum=0;maximum=1;increment=.01;}
   if(key.StartsWith("presentation.graphics.")&&key.EndsWith(".Style.LineWidth")){minimum=1;maximum=10;}
   if(key.StartsWith("setting.")&&BlobParameterDefinition.Instance.Contains(key[8..]))

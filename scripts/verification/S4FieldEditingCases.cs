@@ -41,15 +41,15 @@ internal static class S2DocumentEditingCases
             Show(number);var input=(TextBox)number.InputElement!;
             input.Text="2147483648";Require(number.HasInvalidText&&Equals(((ConstantSetting)current).Value,100L)&&writes==0,"溢出数字污染草稿");
             input.Text="1.2";Require(number.HasInvalidText&&input.Text=="1.2"&&writes==0,"非法原文未保留");
-            input.Text="210";Require(!number.HasInvalidText&&Equals(((ConstantSetting)current).Value,210L)&&writes==1,"数字修正未恢复");
-            var nativeInput=Descendants(number).OfType<NativeNumberField>().Single().InputControl!;
+            input.Text="210";number.TryCommitPending();Require(!number.HasInvalidText&&Equals(((ConstantSetting)current).Value,210L)&&writes==1,"数字修正未恢复");
+            var nativeInput=OriginalNumberInput(number);
             ((RepeatButton)nativeInput.FindName("UpButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();
             Require(Equals(((ConstantSetting)current).Value,211L)&&writes==2,"无界原数值箭头未单次写入草稿；writes="+writes);
             Console.WriteLine("通过：声明Int32范围、整数格式、非法原文保留和修正恢复");
 
             var exact=1d;var floating=new DeclaredFieldEditor(new("ratio",DataType.Number),"比例",new ConstantSetting(exact),next=>exact=(double)((ConstantSetting)next).Value!);
             Show(floating);((TextBox)floating.InputElement!).Text="NaN";Require(floating.HasInvalidText&&exact==1d,"NaN通过声明校验");
-            ((TextBox)floating.InputElement!).Text="0.5";Require(!floating.HasInvalidText&&exact==.5d,"有限数值不能恢复");
+            ((TextBox)floating.InputElement!).Text="0.5";floating.TryCommitPending();Require(!floating.HasInvalidText&&exact==.5d,"有限数值不能恢复");
             Console.WriteLine("通过：非有限数值拒绝，独立字段错误状态互不污染");
 
             var choiceValue="Binary";var choice=new DeclaredFieldEditor(new("type",DataType.Text,Choices:new TextChoiceConstraint(new[]{"Binary","BinaryInv"})),"极性",
@@ -105,7 +105,7 @@ internal static class S2DocumentEditingCases
             var channel=new DeclaredFieldEditor(new("channel",channelType),"通道",new ConstantSetting(channelValue),next=>{channelValue=(RecordValue)((ConstantSetting)next).Value!;channelWrites++;});
             Show(channel);var red=Descendants(channel).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId=="r");
             ((TextBox)red.InputElement!).Text="256";Require(channel.HasInvalidText&&channelValue.Get<long>("r")==10&&channelWrites==0,"记录成员溢出仍更新了记录");
-            ((TextBox)red.InputElement!).Text="255";Require(!channel.HasInvalidText&&channelValue.Get<long>("r")==255&&channelWrites==1,"记录成员纠正未原子更新");
+            ((TextBox)red.InputElement!).Text="255";red.TryCommitPending();Require(!channel.HasInvalidText&&channelValue.Get<long>("r")==255&&channelWrites==1,"记录成员纠正未原子更新");
             Console.WriteLine("通过：真实颜色控件原子写RGBA；通用记录UInt8非法原文拦截及修正恢复");
 
             ParameterSetting bound=new ConstantSetting(7L);
@@ -118,7 +118,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：宿主选择绑定、恢复常量及明确Unset；控件不自行执行或发布");
 
             var rejected=3L;var reject=new DeclaredFieldEditor(new("host-reject",DataType.Integer),"宿主拒绝",new ConstantSetting(rejected),_=>throw new InvalidOperationException("编辑范围已失效"));
-            Show(reject);((TextBox)reject.InputElement!).Text="4";Require(reject.HasInvalidText&&reject.Error.Contains("编辑范围")&&Equals(((ConstantSetting)reject.Setting).Value,3L),"宿主拒绝后控件冒称写入成功");
+            Show(reject);((TextBox)reject.InputElement!).Text="4";reject.TryCommitPending();Require(reject.HasInvalidText&&reject.Error.Contains("编辑范围")&&Equals(((ConstantSetting)reject.Setting).Value,3L),"宿主拒绝后控件冒称写入成功");
             var names=typeof(DeclaredFieldEditor).Assembly.GetReferencedAssemblies().Select(assembly=>assembly.Name!).ToArray();
             Require(!names.Any(name=>name.Contains("Plugin.SDK")||name.Contains("Halcon",StringComparison.OrdinalIgnoreCase)||name=="SunEyeVision.UI"),"公共字段层倒置依赖");
             Console.WriteLine("通过：失效范围拒绝且保留原值；公共字段程序集不依赖SDK、HALCON或UI宿主");
@@ -612,8 +612,19 @@ internal static class S2DocumentEditingCases
         Require(NativeDescendants(field).OfType<AppsPopup>().All(button=>!button.IsDropDownOpen
             &&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),"来源接纳后原Popup实际未关闭");
     }
+    private static SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
+    {
+        var original=NativeDescendants(field).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase>().Single();
+        var box=(ComboBox)original.FindName("CBox");box.ApplyTemplate();
+        return (SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+    }
     private static void Click(DependencyObject control,string tooltip)
     {
+        if(tooltip is "切换为订阅" or "切换为数值编辑")
+        {
+            var original=NativeDescendants(control).OfType<ToggleButton>().SingleOrDefault(button=>BindingOperations.GetBinding(button,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
+            if(original is not null){original.IsChecked=tooltip=="切换为订阅";original.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();return;}
+        }
         Descendants(control).OfType<ButtonBase>().Single(button=>Equals(button.ToolTip,tooltip)).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();
     }
     private static IEnumerable<DependencyObject> Descendants(DependencyObject parent)

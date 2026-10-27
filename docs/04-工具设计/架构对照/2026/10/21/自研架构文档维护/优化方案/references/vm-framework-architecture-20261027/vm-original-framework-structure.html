@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VisionMaster 4.4.0 原厂框架层级与源码组织逆向</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2b;--panel2:#182338;--text:#e8eef8;--muted:#a8b5c9;--line:#293750;--cyan:#5eead4;--blue:#93c5fd;--amber:#fbbf24;--red:#fca5a5;--green:#86efac}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#0b1020,#111a2e 65%,#0a1222);color:var(--text);font:15px/1.65 "Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1180px;margin:auto;padding:32px 24px 72px}h1{font-size:32px;line-height:1.25;margin:0 0 12px}h2{font-size:22px;margin:34px 0 12px;color:#d8e9ff}h3{font-size:17px;margin:18px 0 8px}.lead{font-size:17px;color:#cfdbeb;max-width:900px}.muted{color:var(--muted)}.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;margin:3px 5px 3px 0;font-size:12px;color:var(--blue)}
+.card{background:linear-gradient(145deg,var(--panel),#101827);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:12px 0;box-shadow:0 8px 25px #0002}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.callout{border-left:3px solid var(--cyan);padding:10px 14px;background:#10232c;border-radius:0 8px 8px 0}
+.warn{border-left-color:var(--amber);background:#2b2413}.unknown{border-left-color:var(--red);background:#2a171b}
+code,pre{font-family:Consolas,"Cascadia Code",monospace}code{color:#a7f3d0}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#080d17;border:1px solid var(--line);padding:16px;border-radius:10px;color:#d7e2f2;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid var(--line)}th{color:#b8d6ff;background:#172239}td{overflow-wrap:anywhere} .path{color:#a7f3d0;font-family:Consolas,monospace;font-size:13px}
+.flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}.node{flex:1;min-width:150px;border:1px solid #34506f;background:var(--panel2);border-radius:10px;padding:12px}.arrow{align-self:center;color:var(--cyan);font-size:22px}
+.diagram{overflow-x:auto;padding:10px}.diagram svg{display:block;width:100%;min-width:860px;height:auto}.diagram .box{fill:#18253a;stroke:#54749a;stroke-width:2}.diagram .core{fill:#17333a;stroke:#5eead4}.diagram .ui{fill:#252745;stroke:#a5b4fc}.diagram .module{fill:#3a2a18;stroke:#fbbf24}.diagram .sdk{fill:#202e43;stroke:#93c5fd}.diagram text{font-family:"Segoe UI","Microsoft YaHei",sans-serif;fill:#e8eef8}.diagram .title{font-size:21px;font-weight:700}.diagram .sub{font-size:15px;fill:#bfccdc}.diagram .edge{stroke:#5eead4;stroke-width:3;fill:none;marker-end:url(#arrow)}.diagram .callback{stroke:#c4b5fd;stroke-width:3;fill:none;marker-end:url(#arrow2)}.diagram .native{stroke:#fbbf24;stroke-width:3;fill:none;marker-end:url(#arrow3)}.diagram .edge-label{font-size:13px;fill:#cbd5e1}.diagram h3{margin-top:0}
+footer{border-top:1px solid var(--line);padding-top:16px;margin-top:40px;color:var(--muted);font-size:13px}
+@media(max-width:700px){main{padding:22px 14px}h1{font-size:26px}table{font-size:12px}th,td{padding:7px}}
+</style></head><body><main>
+<header><span class="tag">只读逆向</span><span class="tag">VisionMaster 4.4.0</span><span class="tag">静态/反编译证据</span>
+<h1>VisionMaster 原厂框架：层级分布与源码组织逆向</h1>
+<p class="lead">本报告重建 VM 原厂框架本身：程序集层次、职责边界、类型关系、关键源码文件和调用路径。反编译导出目录不等于厂商原始源码树。</p>
+<div class="callout"><b>当前确认的主干：</b><code>VM.Core</code> 持有方案/流程/模块对象模型与参数门面；<code>VM.PlatformSDKCS</code> 封装 native Platform SDK 调用与回调；<code>VMControls.WPF</code> 提供流程配置、通用参数页和结果呈现；<code>Apps.XmlParser</code>/<code>Apps.XmlUI</code> 解释参数/显示资源并生成通用参数 UI；具体工具包提供模块包装器、资源和算法组件。启动和保存分别有独立调用路径。下文按证据展开，未知项明确标记。</div>
+</header>
+
+<h2>框架关系总图</h2>
+<div class="card diagram"><svg viewBox="0 0 1200 670" role="img" aria-label="VisionMaster 框架层级与组件关系图">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5eead4"/></marker><marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c4b5fd"/></marker><marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#fbbf24"/></marker></defs>
+<rect x="20" y="18" width="1160" height="620" rx="18" fill="#0b1220" stroke="#293750"/>
+<text x="48" y="55" class="sub">组件关系图 · 箭头标注调用/消费关系；紫色为结果回调，黄色为 native 边</text>
+<rect class="box" x="420" y="82" width="360" height="78" rx="12"/><text class="title" x="600" y="113" text-anchor="middle">VisionMaster.exe</text><text class="sub" x="600" y="140" text-anchor="middle">Program / App · 启动与应用协调</text>
+<rect class="ui" x="420" y="197" width="360" height="82" rx="12"/><text class="title" x="600" y="230" text-anchor="middle">VisionMasterMain.dll</text><text class="sub" x="600" y="257" text-anchor="middle">MainWindow · 主窗口视图</text>
+<path class="edge" d="M600 160V193"/><text class="edge-label" x="614" y="183">创建 / 绑定</text>
+<rect class="core" x="420" y="325" width="360" height="105" rx="12"/><text class="title" x="600" y="359" text-anchor="middle">VM.Core.dll</text><text class="sub" x="600" y="387" text-anchor="middle">VmSolution · VmProcedure · VmModule</text><text class="sub" x="600" y="411" text-anchor="middle">ModuleParam · 模型/参数/执行协调</text>
+<path class="edge" d="M600 279V321"/><text class="edge-label" x="614" y="307">绑定主数据 / 操作流程</text>
+<rect class="ui" x="45" y="325" width="310" height="105" rx="12"/><text class="title" x="200" y="360" text-anchor="middle">VMControls.WPF.dll</text><text class="sub" x="200" y="388" text-anchor="middle">配置页 · 结果视图 · RenderControl</text><text class="sub" x="200" y="412" text-anchor="middle">订阅模块结果事件</text>
+<path class="edge" d="M420 369H359"/><text class="edge-label" x="368" y="352">读写参数 / 订阅事件</text>
+<rect class="ui" x="845" y="325" width="310" height="105" rx="12"/><text class="title" x="1000" y="360" text-anchor="middle">Apps.XmlParser + Apps.XmlUI</text><text class="sub" x="1000" y="388" text-anchor="middle">AlgorithmTabRoot · 参数树</text><text class="sub" x="1000" y="412" text-anchor="middle">DisplayType · 通用控件模板</text>
+<path class="edge" d="M845 369H784"/><text class="edge-label" x="783" y="352" text-anchor="end">消费参数 / 显示声明</text>
+<path class="callback" d="M420 410C385 470 310 470 260 434"/><text class="edge-label" x="328" y="468">异步结果回调 → 刷新视图</text>
+<rect class="module" x="45" y="500" width="310" height="100" rx="12"/><text class="title" x="200" y="535" text-anchor="middle">具体工具模块包</text><text class="sub" x="200" y="563" text-anchor="middle">VmModule 派生包装器 + XML</text><text class="sub" x="200" y="586" text-anchor="middle">可选 Control 扩展 / native 算法</text>
+<path class="edge" d="M355 541C390 520 435 468 470 434"/><text class="edge-label" x="392" y="504">创建 / 注册模块</text>
+<rect class="sdk" x="445" y="500" width="310" height="100" rx="12"/><text class="title" x="600" y="535" text-anchor="middle">VM.PlatformSDKCS.dll</text><text class="sub" x="600" y="563" text-anchor="middle">ModuleManager · CollectionManager</text><text class="sub" x="600" y="586" text-anchor="middle">SDK 管理器 / PInvoke wrapper</text>
+<path class="native" d="M600 430V496"/><text class="edge-label" x="614" y="472">执行 / 保存调用</text>
+<rect class="sdk" x="845" y="500" width="310" height="100" rx="12"/><text class="title" x="1000" y="535" text-anchor="middle">iMVS-6000PlatformSDK.dll</text><text class="sub" x="1000" y="563" text-anchor="middle">托管 wrapper 的 native 目标</text><text class="sub" x="1000" y="586" text-anchor="middle">内部实现需 native 证据</text>
+<path class="native" d="M755 550H840"/><text class="edge-label" x="798" y="535" text-anchor="middle">P/Invoke</text>
+<path class="callback" d="M1000 500C1000 465 880 454 780 412"/><text class="edge-label" x="907" y="455">结果 callback</text>
+</svg><p class="muted">实线边来自反编译源码/程序集引用；组件物理部署位置不用于推断进程隔离。native SDK 之后的内部实现尚未从托管调用链还原。</p></div>
+
+<h2>关键调用流程图</h2>
+<div class="card diagram"><svg viewBox="0 0 1200 850" role="img" aria-label="参数配置、工具执行、结果回调、流程保存四个调用流程">
+<defs><marker id="fa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5eead4"/></marker></defs>
+<rect x="20" y="15" width="1160" height="820" rx="18" fill="#0b1220" stroke="#293750"/>
+<text x="50" y="54" class="title">配置 / 参数读写</text>
+<g class="sub"><rect class="box" x="50" y="75" width="230" height="78" rx="10"/><text x="165" y="107" text-anchor="middle">ProcedureConfigControl</text><text x="165" y="132" text-anchor="middle">校验 XML / 查可选 Control.dll</text>
+<rect class="box" x="355" y="75" width="210" height="78" rx="10"/><text x="460" y="107" text-anchor="middle">专属 TabWinBase</text><text x="460" y="132" text-anchor="middle">缺省 → 通用参数窗</text>
+<rect class="box" x="640" y="75" width="210" height="78" rx="10"/><text x="745" y="107" text-anchor="middle">AlgorithmTabRoot</text><text x="745" y="132" text-anchor="middle">解析参数树 / 动态属性</text>
+<rect class="box" x="925" y="75" width="220" height="78" rx="10"/><text x="1035" y="107" text-anchor="middle">ModuleParam</text><text x="1035" y="132" text-anchor="middle">Get / SetParamValue</text>
+<path d="M280 114H350M565 114H635M850 114H920" class="edge" marker-end="url(#fa)"/></g>
+<text x="50" y="217" class="title">工具运行</text>
+<g class="sub"><rect class="core" x="50" y="238" width="230" height="78" rx="10"/><text x="165" y="270" text-anchor="middle">VmModule.Run()</text><text x="165" y="295" text-anchor="middle">读取 module node ID</text>
+<rect class="sdk" x="355" y="238" width="240" height="78" rx="10"/><text x="475" y="270" text-anchor="middle">ModuleManager</text><text x="475" y="295" text-anchor="middle">SelfRun / SyncSelfRun</text>
+<rect class="sdk" x="670" y="238" width="220" height="78" rx="10"/><text x="780" y="270" text-anchor="middle">NativeMethods</text><text x="780" y="295" text-anchor="middle">P/Invoke</text>
+<rect class="module" x="965" y="238" width="180" height="78" rx="10"/><text x="1055" y="270" text-anchor="middle">Platform SDK</text><text x="1055" y="295" text-anchor="middle">SelfExecuteOneModule</text>
+<path d="M280 277H350M595 277H665M890 277H960" class="edge" marker-end="url(#fa)"/></g>
+<text x="50" y="380" class="title">结果返回与界面刷新</text>
+<g class="sub"><rect class="module" x="50" y="401" width="205" height="78" rx="10"/><text x="152" y="433" text-anchor="middle">Native result callback</text><text x="152" y="458" text-anchor="middle">结果到达</text>
+<rect class="sdk" x="315" y="401" width="210" height="78" rx="10"/><text x="420" y="433" text-anchor="middle">SDK ModuleManager</text><text x="420" y="458" text-anchor="middle">PreProData / 转发</text>
+<rect class="core" x="585" y="401" width="210" height="78" rx="10"/><text x="690" y="433" text-anchor="middle">VmSolution</text><text x="690" y="458" text-anchor="middle">module ID 路由 / 队列</text>
+<rect class="ui" x="855" y="401" width="290" height="78" rx="10"/><text x="1000" y="433" text-anchor="middle">RenderControlBase → ModuleResultView</text><text x="1000" y="458" text-anchor="middle">RenderDataCenter → 图像/形状/结果树</text>
+<path d="M255 440H310M525 440H580M795 440H850" class="edge" marker-end="url(#fa)"/></g>
+<text x="50" y="543" class="title">Process 保存 / 导出</text>
+<g class="sub"><rect class="core" x="50" y="564" width="230" height="78" rx="10"/><text x="165" y="596" text-anchor="middle">VmProcedure.SaveAs</text><text x="165" y="621" text-anchor="middle">ExportFile</text>
+<rect class="sdk" x="355" y="564" width="240" height="78" rx="10"/><text x="475" y="596" text-anchor="middle">CollectionManager</text><text x="475" y="621" text-anchor="middle">SyncExportProcess</text>
+<rect class="sdk" x="670" y="564" width="220" height="78" rx="10"/><text x="780" y="596" text-anchor="middle">P/Invoke</text><text x="780" y="621" text-anchor="middle">IMVS_ExportProcess</text>
+<rect class="module" x="965" y="564" width="180" height="78" rx="10"/><text x="1055" y="596" text-anchor="middle">Export callback</text><text x="1055" y="621" text-anchor="middle">等待 / 检查错误码</text>
+<path d="M280 603H350M595 603H665M890 603H960" class="edge" marker-end="url(#fa)"/></g>
+<rect x="50" y="700" width="1095" height="90" rx="12" fill="#172238" stroke="#425573"/><text x="75" y="735" class="sub">Solution 保存：走独立 SolutionManager 路径。 native 调度、序列化内部和工具字段映射属于未闭合证据，不在此图中补猜。</text><text x="75" y="765" class="sub">所有流程均为反编译源码静态调用链；本次没有运行 VM 做动态确认。</text>
+</svg></div>
+
+<h2>一、反编译源码可恢复出的框架层级</h2>
+<div class="card"><div class="flow">
+<div class="node"><b>应用入口</b><br><code>VisionMaster.exe</code><br><code>Program / App</code><br>启动、初始化、选择主窗</div><div class="arrow">→</div>
+<div class="node"><b>主窗口 UI</b><br><code>VisionMasterMain.dll</code><br><code>MainWindow</code><br>应用 shell 和主窗数据绑定</div><div class="arrow">→</div>
+<div class="node"><b>对象/流程模型</b><br><code>VM.Core.dll</code><br><code>VmSolution / VmProcedure / VmModule / ModuleParam</code><br>流程、模块、参数、执行/结果接入</div><div class="arrow">→</div>
+<div class="node"><b>托管 SDK Facade</b><br><code>VM.PlatformSDKCS.dll</code><br>管理器、回调适配、P/Invoke</div><div class="arrow">→</div>
+<div class="node"><b>Native Platform SDK</b><br><code>iMVS-6000PlatformSDK.dll</code><br>native 调用目标；内部逻辑未由托管 wrapper 证明</div></div>
+<div class="flow" style="margin-top:10px"><div class="node"><b>配置/结果呈现</b><br><code>VMControls.WPF.dll</code><br>ProcedureConfigControl、参数页、RenderControlBase、ModuleResultView</div><div class="arrow">↔</div><div class="node"><b>声明解析与通用 UI</b><br><code>Apps.XmlParser.dll</code> + <code>Apps.XmlUI.dll</code><br>AlgorithmTabRoot、参数树、DisplayType 模板</div><div class="arrow">←</div><div class="node"><b>工具模块包</b><br>模块包装器、XML 声明、算法组件；可选专属 Control 扩展</div></div>
+<p>此图表达源码中恢复的类型关系和调用边，不代表进程边界或动态加载时序。VM.Core AssemblyRef 直接包含 WindowsBase 和 PresentationCore，因此不能称其为完全脱离 WPF 的纯 Runtime 层。</p></div>
+<h3>恢复出的源码文件/类型地图</h3><div class="card"><pre>VisionMaster.exe
+├── VisionMaster/Program.cs                 # Main、应用启动入口
+├── VisionMaster/App.cs                     # OnStartup、窗体生命周期
+└── VisionMaster/MainWindowData.cs          # 主窗数据预载
+
+VisionMasterMain.dll
+└── VisionMasterMain/MainWindow.xaml(.cs)   # 主窗口视图
+
+VM.Core.dll
+├── VmSolution.cs                           # solution、结果回调路由
+├── VmProcedure.cs                          # 流程对象、导入/导出门面
+├── VmModule.cs                              # 模块对象、参数/执行/结果事件
+└── ModuleParam.cs                           # 参数访问门面
+
+VM.PlatformSDKCS.dll
+├── ModuleManager.cs                        # 模块增删/执行/结果查询和回调
+├── CollectionManager.cs                    # Process 导入/导出
+├── SolutionManager.cs                      # Solution SDK 保存路径
+├── ServerSDKAPI.cs                          # native wrapper API
+└── NativeMethods.cs                         # P/Invoke 与 native library 名
+
+VMControls.WPF.dll
+├── ProcedureConfigControl.xaml.cs           # 参数页分派
+├── ParamsTabControlBase.xaml(.cs)           # 通用参数窗
+├── ParamsConfigControlBase.xaml(.cs)        # 参数绑定/树接入
+├── RenderControlBase.xaml.cs                # 结果事件订阅
+└── ModuleResultView.xaml(.cs)               # 结果/图形刷新
+
+Apps.XmlParser.dll / Apps.XmlUI.dll
+├── ParamTab/AlgorithmTabRoot                # AlgorithmTab 参数树根
+├── ParamTab/VmModuleExtern                  # ModuleParam → 参数树
+└── ParamUserControl / DataTemplate          # DisplayType 控件模板
+
+具体工具包
+├── &lt;ModuleType&gt;Cs.dll                       # VmModule 派生包装层（Blob 已确认）
+├── &lt;ModuleType&gt;.dll                         # native 组件（Blob 目录中观察）
+├── &lt;ModuleType&gt;.xml / *AlgorithmTab.xml     # 模块和参数声明
+├── &lt;ModuleType&gt;Display.xml                 # 显示声明
+└── 可选 &lt;ModuleType&gt;Control.dll            # 专属参数窗扩展</pre>
+<p class="muted">该地图按照程序集和反编译类型组织，是恢复出的逻辑源码结构；不是厂商原始仓库的物理目录列表。具体模块后缀需逐包核实。</p></div>
+
+<h2>二、参数对象与通用配置页的数据流</h2>
+<div class="card"><p><code>VM.Core.ModuleParam</code> 实现 <code>IParamsConfig</code> 等接口，是模块参数访问门面；它把字符串键读写转发到 SDK 的 <code>GetParamValue/SetParamValue</code>，二进制键走 <code>GetBinaryData/SetBinaryData</code>。参数 setter 记录 Undo/Redo 并通知 <code>Parent.OnModuleParamChanged</code>。<code>XmlPath</code> 指向参数 UI schema；<code>Data</code> 缓存解析出来的参数树。运行参数值仍由该对象访问 SDK；参数树/XML 属于 UI 声明与编辑呈现模型，不应误作算法输出对象。</p>
+<div class="flow"><div class="node"><b>模块声明</b><br><code>&lt;type&gt;.xml</code><br><code>AlgorithmTab.xml</code><br><code>Display.xml</code></div><div class="arrow">→</div><div class="node"><b>窗体选择</b><br><code>ProcedureConfigControl.OpenParamsTabControl</code><br>优先尝试可选专属 <code>Control.dll</code>；否则 <code>ParamsTabControlBase</code></div><div class="arrow">→</div><div class="node"><b>参数树构建</b><br><code>ModuleParam.GetParamRoot()</code><br><code>VmModuleExtern → AlgorithmTabRoot</code><br>加载 XML 并建立动态属性</div><div class="arrow">→</div><div class="node"><b>通用控件</b><br><code>Apps.XmlUI.ParamUserControl</code><br>依 DisplayType 选择 DataTemplate</div></div>
+<p>编辑控件对 <code>ModuleParam</code> 的写入回到 SDK 参数 getter/setter，不是单独创建一套每工具运行参数类的证据。具体一个参数字段如何从 XML 名称映射为执行时 native 参数，需要继续按工具追踪其 wrapper/SDK 读写。</p></div><h2>二、模块包实例：Blob Find</h2>
+<div class="card"><p class="path">Applications/Module(sp)/x64/Location/IMVSBlobFindModu/</p>
+<table><thead><tr><th>观察到的文件</th><th>可确认的含义与边界</th></tr></thead><tbody>
+<tr><td><code>IMVSBlobFindModu.dll</code></td><td>本机 PE；REA 判定非托管。具体算法导出/ABI 仍需 native 证据，不能只凭文件名定行为。</td></tr>
+<tr><td><code>IMVSBlobFindModuCs.dll</code></td><td>托管 C# 包装程序集。恢复类型 <code>IMVSBlobFindModuTool : VM.Core.VmModule</code>；<code>Run()</code> 调用同步执行路径。</td></tr>
+<tr><td><code>IMVSBlobFindModu.xml</code>、<code>*Algorithm.xml</code>、<code>*AlgorithmTab.xml</code></td><td>模块声明/算法参数相关资源（文件名和包内位置确认；具体每个字段的绑定语义应逐项沿消费者追踪）。</td></tr>
+<tr><td><code>*Display.xml</code></td><td>结果显示声明资源；不能仅凭名称推导结果渲染的全部生命周期。</td></tr>
+<tr><td><code>IMVSBlobFindModuCs.xml</code>、<code>ToolItemInfo.xml</code>、logo</td><td>同包注册/工具项资源候选；实际加载优先级与失败分支需继续查加载器调用链。</td></tr>
+</tbody></table>
+<div class="callout">现有 Blob 证据指向：C# 包装层进入 <code>VmModule</code> 执行框架，经 <code>ModuleManager.SyncSelfRun(ID)</code> 到 <code>ServerSDKAPI.IMVS_SelfExecuteOneModule</code>。模块目录未发现 Blob 专属 <code>IMVSBlobFindModuControl.dll</code>；审计确认可走通用参数窗口回退路径。这只说明 Blob 专属 Control 扩展可缺省，不能推出整个 VM 可在没有 WPF/桌面依赖时运行。</div>
+</div>
+
+<h2>三、启动与主窗口：已恢复的调用链</h2>
+<div class="card"><div class="flow">
+<div class="node"><b>VisionMaster.exe</b><br><code>VisionMaster.Program.Main</code><br>单实例分支 → <code>StartApp</code></div><div class="arrow">→</div>
+<div class="node"><b>WPF 应用启动</b><br><code>new VisionMaster.App(args).Run()</code><br><code>App.OnStartup</code></div><div class="arrow">→</div>
+<div class="node"><b>并行初始化</b><br>STA 启动线程：许可/环境、<code>VmSolution.StartNewInstance</code><br>主初始化：<code>MainWindowData.PreLoad</code>、<code>ServerManager.InitServer</code></div><div class="arrow">→</div>
+<div class="node"><b>窗口/方案</b><br>选择 Frontend 或主窗口<br><code>VisionMasterMain.MainWindow</code><br>绑定 <code>Program.MainData</code></div>
+</div><p>可读恢复源码：<code>analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster/Program.cs</code>、<code>App.cs</code>、<code>analysis/decompiled/VisionMasterMain/VisionMasterMain/MainWindow.xaml.cs</code>。主窗口类为 <code>VisionMasterMain.MainWindow : VM.Controls.BaseWindow</code>。恢复出的 csproj 将若干 XAML 映射到 pack URI 逻辑资源名；这些导出路径不是厂商原始工程文件夹证据。</p>
+<p class="muted">该启动链由反编译源码和指定 CIL 方法体支持；审计只覆盖相关方法，不等于整个主程序反编译完整，也没有在本次报告中启动 VM 做运行验证。</p></div>
+
+<h2>四、框架内部边界：模块、参数配置与执行桥</h2>
+<div class="card"><p>反编译源码比单看目录名更具体地显示了框架分工。下面是目前已恢复的托管侧关系；SDK wrapper 下游的 native 调度和未追完的持久化细节仍需继续取证。</p>
+<div class="flow"><div class="node"><b>模块对象模型</b><br><code>VM.Core.VmModule</code><br><code>IVmModule / IParamsConfig / IParamsOperator / IVMRun</code></div><div class="arrow">→</div><div class="node"><b>SDK 适配器</b><br><code>VM.PlatformSDKCS.ModuleManager</code><br>SyncAddOneModule / SyncSelfRun / QueryModuleOneResult</div><div class="arrow">→</div><div class="node"><b>Server SDK API</b><br><code>IMVS_AddOneModule</code><br><code>IMVS_SelfExecuteOneModule</code><br>native 侧内部调度未从 wrapper 单独证实</div></div>
+<p><code>VmModule.CreateToModuleSet(...)</code> 组装 <code>IMVS_SYNC_ADD_ONE_MODULE_INFO</code> 并进入 <code>SyncAddOneModule</code>；<code>VmModule.Run()</code> 读取 <code>moduleInfo.nNodeID</code> 后进入 <code>ModuleManager.SelfRun</code>。Blob 包装器调用的 <code>SyncSelfRun(ID)</code> 与这条通用机制相吻合。VM.Core 的 <code>Save/SaveAs</code> 入口和结果回调类型已见，但序列化器到 native 持久化的完整链还未闭合。</p>
+<h3>通用参数页不是“每工具一个必需 WPF Control”</h3><p><code>ProcedureConfigControl.OpenParamsTabControl</code> 检查模块目录中的 <code>&lt;type&gt;.xml</code>、<code>&lt;type&gt;AlgorithmTab.xml</code>、<code>&lt;type&gt;Display.xml</code>；再尝试装载可选的 <code>&lt;type&gt;Control.dll</code> 扩展并查找 <code>TabWinBase</code> 派生窗体。没找到扩展时构造通用 <code>ParamsTabControlBase</code>，将 <code>vmModule.Params</code> 赋给 <code>ParamsConfig</code>。通用窗体的 XAML 中由 <code>paramstab</code> 把数据交给 <code>Apps.XmlUI</code> 的参数控件；<code>Apps.XmlParser.ParamTab.AlgorithmTabRoot</code> 承载 AlgorithmTab 参数树/绑定相关数据，<code>VmModuleExtern.GetParamRoot(ModuleParam)</code> 从 <code>param.Data</code> 惰性创建根对象。</p>
+<p class="muted">当前证据说明参数 UI 由 VMControls.WPF 的窗体调度、Apps.XmlParser 的参数树及 Apps.XmlUI 的控件协作。AlgorithmTab XML 的每类字段如何读写 VM.Core 参数、运行前怎样冻结/转换、显示 XML 与结果对象如何完整配对，仍应逐成员追踪，不能仅凭这些类名宣称全链已闭合。</p>
+<h3>执行、结果事件与保存调用</h3><p><code>VmModule.Run()</code> → <code>ModuleManager.SelfRun(nodeID)</code> → SDK native <code>IMVS_SelfExecuteOneModule</code>。同步 <code>SyncSelfRun</code> 按 node ID 重置等待状态、调用 native 执行接口并查询状态/等待完成标志。这支持“工具执行由 VM 执行框架调度”的结论；不证明 native 算法内部执行细节。</p>
+<p>结果事件链：SDK <code>ModuleManager</code> 订阅 native module-result callback 并做 <code>PreProData</code>；<code>VmSolution</code> 按 module ID 更新 IO 树并把模块结果事件送入回调队列；<code>RenderControlBase</code> 弱订阅 <code>IVmModule.AsyncModuleResultCallBackArrived</code>；<code>ModuleResultView</code> 收到事件后从 <code>RenderDataCenter</code> 交换对应执行轮次的数据，再刷新图像/形状/结果树。<code>QueryModuleOneResult</code> 是另一个主动查询方法，不能与异步 UI 回调机制混为一谈。图形/文本/接管判断字段各自的资源映射仍需进一步按工具追踪。</p>
+<p>保存调用：<code>VmProcedure.ExportFile/SaveAs</code> → <code>CollectionManager.SyncExportProcess</code> → native <code>IMVS_ExportProcess</code>；同步路径等待 export callback 并检查 error code。Solution 保存由独立 <code>SolutionManager</code> 路径处理。现有证据不支持“VM.Core 自己把整棵模块树序列化”，也不证明每次参数写入都同步落盘。</p>
+<p class="muted">关键源文件：<code>analysis/decompiled/VM.Core/VM.Core/VmModule.cs</code>；<code>analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleManager.cs</code>；<code>ProcedureConfigControl.xaml.cs</code>；<code>ParamsTabControlBase.xaml.cs</code>；<code>Apps.XmlParser.ParamTab.AlgorithmTabRoot.decompiled.cs</code>；<code>Apps.XmlParser.ParamTab.VmModuleExtern.decompiled.cs</code>。VM.Core 原件身份 EID <code>ev_758f593356d11c17370747b341d4b1992a0fe8ab3fd3176f70d4a6831c3d8517</code>；SDK adapter EID <code>ev_f7be1556d1c1f0da99dd1b08f8123e6bc1998e5194f19d85c28edfc0b6aca764</code>；Apps.XmlUI EID <code>ev_0b720b58c29ebc598cf14b4033d1cf52c913afcb9c9d066a53d694437e997b36</code>；Apps.XmlParser EID <code>ev_b3a71726ac88c3bfa26cb2a7f52cae18a1c0b089aa5306d29d074a63ad2ee5f7</code>。这些是静态恢复/元数据证据，未运行验证。</p></div>
+
+<h2>五、程序集依赖证据：WPF 是否只是可选 UI？</h2>
+<div class="card"><table><thead><tr><th>组件</th><th>本机路径 / 身份</th><th>REA 观察</th><th>可得结论</th></tr></thead><tbody>
+<tr><td><code>VisionMaster.exe</code></td><td>Applications/VisionMaster.exe<br>SHA256 <code>42e2437780ec21c9…e233e0c23</code></td><td>EID <code>ev_e8a42a7c97f33a1d76a2f6ca40362c4d476176fbb129d802e81430534146c984</code><br>v4.2.0.0 / .NET 4.6.1</td><td>直接引用 VisionMasterMain、VM.Core、VM.PlatformSDKCS、VMControls.WPF、Apps.XmlUI / XmlParser 及 WPF 框架。</td></tr>
+<tr><td><code>VisionMasterMain.dll</code></td><td>Applications/myLibs/VisionMasterMain.dll<br>SHA256 <code>319618b9f82dfc30…75180c1</code></td><td>EID <code>ev_794ec90dcf17db140a039eddc4be91ccc1e00fad1f6ff37c51d1d439c81631e5</code></td><td>主窗口/主 UI 程序集；直接依赖 VM.Core、SDK、WPF 与 UI 库。</td></tr>
+<tr><td><code>VM.Core.dll</code></td><td>Applications/myLibs/VM.Core.dll<br>SHA256 <code>936763f6c8a1bf9f…e626190d</code></td><td>EID <code>ev_fae324921821a748611e953d4e024be4bf5acf63106a591e4d1efd29333051c1</code></td><td><b>程序集直接引用 WindowsBase、PresentationCore</b>，并引用 VM.PlatformSDKCS、VMControls.Interface、VM.Controls、VM.Utility。故不能从“Blob 专属窗口可选”推断 Core 的传递依赖图无 WPF。</td></tr>
+<tr><td><code>VMControls.WPF.dll</code></td><td>Applications/myLibs/VMControls.WPF.dll</td><td>EID <code>ev_420e1059924366dcd4f8f7569fb648e0d4f0da3feb363dc4823cbff2253958d4</code></td><td>直接引用 PresentationFramework / WindowsBase / PresentationCore 及 VM.Core、XML UI。</td></tr>
+<tr><td><code>VM.PlatformSDKCS.dll</code></td><td>Applications/PublicFile/x64/VM.PlatformSDKCS.dll</td><td>EID <code>ev_7c1b9f62988757dfb2abfde797eb09b56f9c05bdca730e7512121a9d9e1f563e</code></td><td>独立 SDK 程序集直接引用 WinForms；其直接引用表无 Presentation*。这不能单独证明所有宿主无需 WPF。</td></tr>
+<tr><td><code>PlatformManager.dll</code></td><td>Applications/Server/PlatformManager.dll</td><td>EID <code>ev_ffc90167b82fc4fcceb295f5752d0577ce789040c1051bea039aae707825bb74</code><br>REA 判为 native</td><td>证明安装包另有 native Server 组件；内部职责不能仅凭名称确认。</td></tr>
+</tbody></table></div>
+
+<h2>六、厂商原始源码目录能确认的范围</h2>
+<div class="grid">
+<div class="card"><h3>源码逻辑组织已恢复</h3><p>可按程序集和类型还原应用入口、主窗口、Core 对象模型、SDK facade、配置/渲染 UI、XML 参数/显示组件及工具模块包装层。上方文件/类型地图是对此逻辑结构的表达。</p></div>
+<div class="card"><h3>厂商物理源码树未知</h3><p><code>analysis/decompiled</code> 的路径和导出 <code>.csproj</code> 是反编译/审计产物，不可直接视为厂商原工程目录。当前安装件扫描只找到少量示例/脚本工程，未观察到完整主程序/框架源码解决方案；因此不能声称恢复了原仓库的物理文件夹结构。</p></div>
+<div class="card"><h3>后续逆向缺口</h3><p>所有模块加载分支、参数 Schema 到 native 参数的逐项映射、图形/文本/接管判定结果到消费者的数据流、Solution 序列化内部、native Platform SDK 及会话释放/错误分支尚未完全闭合。它们是尚待继续取得源码/二进制证据的问题，不以猜测补全。</p></div>
+</div>
+
+<h2>证据清单与置信边界</h2>
+<div class="card"><table><thead><tr><th>证据</th><th>支撑点</th><th>证据类型 / 限制</th></tr></thead><tbody>
+<tr><td>REA EID <code>ev_e8a42a7c97f33a1d76a2f6ca40362c4d476176fbb129d802e81430534146c984</code></td><td>VisionMaster.exe 身份、版本、.NET target、直接程序集引用</td><td>托管程序集元数据；不执行程序</td></tr>
+<tr><td>REA EID <code>ev_fbe6e3bef56ab98d6f6a7756adbe474d2b6583f820583efa489711898053e0bb</code></td><td>Program.Main → StartApp → App.Run；App.OnStartup 初始化调用路径</td><td>指定恢复 CIL 方法；覆盖有限、未运行验证</td></tr>
+<tr><td>REA EID <code>ev_fae324921821a748611e953d4e024be4bf5acf63106a591e4d1efd29333051c1</code></td><td>VM.Core 引用 PresentationCore / WindowsBase</td><td>托管元数据；是直接引用关系，不自动说明每个 API 的实际执行必要性</td></tr>
+<tr><td>REA EID <code>ev_7c1b9f62988757dfb2abfde797eb09b56f9c05bdca730e7512121a9d9e1f563e</code></td><td>公开 SDK 程序集身份与直接引用</td><td>元数据；SDK 与完整 VM 宿主依赖图需分开</td></tr>
+<tr><td>REA EID <code>ev_ffc90167b82fc4fcceb295f5752d0577ce789040c1051bea039aae707825bb74</code></td><td>Server 下 PlatformManager.dll 是 native</td><td>PE/格式识别；职责未确认</td></tr>
+<tr><td>Blob 局部审计</td><td>包装层继承与 Run 执行桥、Blob Control 可选回退、VM.Core WPF 引用边界</td><td><code>analysis/selfdev-support/VM-CONTROL-BLOB-ASSEMBLY-20261024/root/blob-runtime-wpf-structure-recovery-20261026.md</code>；只闭合 Blob 专项问题，不代表全部模块机制</td></tr>
+<tr><td>文件系统清点</td><td>部署目录、模块包组成、SDK 示例位置</td><td>本机安装件直接观察；角色按上文置信等级分列</td></tr>
+</tbody></table></div>
+<div class="callout warn"><b>重要边界：</b>“部署文件结构”已有直接观察；“原厂源码项目结构”没有完整原工程证据。因此，本报告给出真实安装树和可追踪的逻辑组件边界，不虚构 VM 内部的源文件夹划分。</div>
+
+<h2>源码身份索引</h2>
+<div class="card"><table><thead><tr><th>恢复源码文件</th><th>用途</th><th>SHA-256（恢复文件）</th></tr></thead><tbody>
+<tr><td><code>analysis/decompiled/VM.Core/VM.Core/VmModule.cs</code></td><td>模块创建、执行与回调/参数接口</td><td><code>53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE</code></td></tr>
+<tr><td><code>analysis/decompiled/VM.Core/VM.Core/ModuleParam.cs</code></td><td>参数 getter/setter、Undo/Redo 通知</td><td><code>AF392BF2D3AF006C6A16021A271D67DD8EF2017B268580841874AB6FEDE1DA48</code></td></tr>
+<tr><td><code>analysis/decompiled/VM.Core/VM.Core/VmSolution.cs</code></td><td>模块结果回调分发</td><td><code>C141E2C53913B233B768782D6757FAE5997ECAF638B35DB2DDF98F5EF951A13E</code></td></tr>
+<tr><td><code>analysis/decompiled/VM.Core/VM.Core/VmProcedure.cs</code></td><td>Process 保存/导出入口</td><td><code>FDDE074D17C50C37F8D0BFE097CF20F904CDB4B59D4AC39612FC023C3F0B69DA</code></td></tr>
+<tr><td><code>analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/ModuleManager.cs</code></td><td>托管 SDK 模块增设/运行/结果回调适配</td><td><code>783A45B1518F713223ECA2B5E59291BE973552C3E08FEF0EA0D4BFCCC2FBD922</code></td></tr>
+<tr><td><code>analysis/decompiled/VM.PlatformSDKCS.Audit/VM.PlatformSDKCS/CollectionManager.cs</code></td><td>Process native 导出桥</td><td><code>CECBDBAD7FE06DD91F0D7D276DFB96B7BF436B53BC82BC858674354FB5D880CC</code></td></tr>
+<tr><td><code>analysis/decompiled/Apps.XmlParser/Apps.XmlParser.ParamTab.AlgorithmTabRoot.decompiled.cs</code></td><td>参数 XML 树与绑定根</td><td><code>31C8AAFDBCCD0E034316A54E2959F451E135298FAD9F618E8234BC6CBC1BC72E</code></td></tr>
+<tr><td><code>analysis/decompiled/VMControls.WPF/.../RenderControlBase.xaml.cs</code></td><td>结果事件订阅到 WPF renderer</td><td><code>E13F97E8E82616056BF1CA02EFB61F15527FA7CE8CA0724EF501C9A8F5EFAC67</code></td></tr>
+</tbody></table><p class="muted">SHA 针对本地恢复源码文件；二进制身份与 REA Evidence IDs 见前表。VMControls.WPF 和 SDK 部分 REA 成员重检因元数据预算不可用，相关行为仅标为反编译源码静态证据。</p></div>
+<footer>报告生成日期：2026-10-27。目标：VisionMaster 4.4.0 原厂框架及匹配的反编译/REA证据。结论分别来自托管元数据、反编译调用链或明确标注的未知项；本轮没有运行 VM。</footer>
+</main></body></html>
+

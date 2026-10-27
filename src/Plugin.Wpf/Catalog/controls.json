@@ -211,7 +211,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "4eb0ef2f38a892b9f14e47d4364a64465bc3692baf8eb5a1ccd1db1ba493b0f9"
+          "sha256": "bb39fcf5c09bae4896acd784b0374033c8f7ccbf61e4b9d7b595896ad830e810"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -369,7 +369,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "4eb0ef2f38a892b9f14e47d4364a64465bc3692baf8eb5a1ccd1db1ba493b0f9"
+          "sha256": "bb39fcf5c09bae4896acd784b0374033c8f7ccbf61e4b9d7b595896ad830e810"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -443,7 +443,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "4eb0ef2f38a892b9f14e47d4364a64465bc3692baf8eb5a1ccd1db1ba493b0f9"
+          "sha256": "bb39fcf5c09bae4896acd784b0374033c8f7ccbf61e4b9d7b595896ad830e810"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -720,7 +720,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
-          "sha256": "a84366e58ce3389347ec27c72f66e10e4edb460d98fbd4551c367e98410ac6cf"
+          "sha256": "76c1bf4d5093eb43fa2c130b3e2e8352f9ef59f48774545423067bf33e514702"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -745,6 +745,10 @@
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_click.png",
           "sha256": "457e4c6f957d60230d8062be36901168600f94ad47d335853e5c63360d58d04c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+          "sha256": "b0a5c17f23273cf4b05be5a20008fb6a2c218d36370a9711c0793038f61bb475"
         }
       ],
       "dependencyCatalogRefs": [
@@ -761,7 +765,7 @@
         "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs 模态选择路径"
       ],
       "adaptation": "原布局/双Popup/树/文本/模板；仅显式绑定正式候选树、身份/索引状态与生命周期。普通数值原版readonly，输入Combination可编辑括号。不存在真实Expand能力时隐藏扩展按钮，不声称扩展完成。",
-      "status": "PRODUCTION_COMPOSITION_AUTOMATED_CHECKS_PASSED_EXTENSION_AND_MANUAL_PENDING",
+      "status": "NUMERIC_INTEGRATION_AUTOMATED_CHECKS_PASSED_EXTENSION_AND_MANUAL_PENDING",
       "validation": {
         "build": "blob-reference-ui-005：0错误6619警告227.32秒；全量004：0错误6628警告113.97秒。",
         "runtime": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；实际Release EXE22工具准入。",
@@ -770,6 +774,264 @@
       "sharedStateValidation": {
         "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
         "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
+      },
+      "numericIntegrationValidation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_NUMBER_CHECKPOINT_20261027.json",
+        "result": "UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；实际正式EXE exit0、22工具准入。",
+        "boundary": "C07扩展专窗和C06共根左右端点实际消费仍待，不能以本批单值通过代签。"
+      }
+    },
+    {
+      "id": "C05.original-number-composition",
+      "assembly": "VM.PcUI",
+      "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
+      "selectionEvidence": "Apps.XmlUI/styles/paramusercontroldatatemplate.xaml的PCListView数值声明；同名Apps.XmlUI类型不混用。",
+      "sourceFiles": [
+        {
+          "originalType": "HikPcUI.ListView.NumericControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
+          "originalSha256": "6d0a82850fdd0e98f4182fda7c6aacd08f135bd20fc37068729bf3075af72f63",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml",
+          "localSha256": "d4f848d9a56ccb9dc769e689713a7094e0f0680b997df970df00cd610b9f7480"
+        },
+        {
+          "originalType": "HikPcUI.ListView.NumericControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml.cs",
+          "originalSha256": "7fa31754df042fad31ae5e16a9149484c4956c1164ff7fed9f688fbe9fb4b7ef",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+          "localSha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrange",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+          "originalSha256": "d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml",
+          "localSha256": "d3341b658b8531350522efca9c8a201c4b2dac4274a590e7d52f75923b9a1ecc"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrange",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml.cs",
+          "originalSha256": "40e9ddc63a2e3cfd5b9670dd59e1fbeea249590ad74c5b540418b8eab17c8be3",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml.cs",
+          "localSha256": "4526c6696c9d45c144bd5c04f623c5ac52fc29971201143e66afc05db1fe2e0f"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrangeFloat",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml",
+          "originalSha256": "07784584f38d02cd288e65b4ce2ae66c3ddf170c795404feac042e7e83d94a00",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml",
+          "localSha256": "9c7ff32a6f190c46e0ff5bad2f0b1bbb2482763b1d8a3af933a39275431b373e"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrangeFloat",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeFloat.xaml.cs",
+          "originalSha256": "88a03646b37396016244a42224773301b10f318620aad5d114905cbebda7ff80",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs",
+          "localSha256": "b63b9c4ac5ca0f8c6a0576c9f4978f399012a121aad36c4b727b45e8ce555313"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrangeBase",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
+          "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
+          "localSha256": "ee83c76d2dc897e3100f39722003cbde06c16464d66076de196e5fa888a95a0c"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml",
+          "originalSha256": "6c2787ade4865cabbfb28c8fc015c905a744c94ea6d21e782337d9e07f67e9b2",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml",
+          "localSha256": "3437bc43530c35dbe8c5ffcc8b5074362b067c8148083c7459beacbccb065ead"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeDictionary.xaml.cs",
+          "originalSha256": "a873816def89bb8a5059a67ff8492623c0a34dd560d144d9f9bc63f6130476a2",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
+          "localSha256": "9242aab5609ec29f7ad882746e7d84bb198ae27aa718f77baeecaf1ebb76612b"
+        },
+        {
+          "originalType": "HikPcUI.ListView.RangeRule",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\RangeRule.cs",
+          "originalSha256": "b5cac6bc7a5db08954c29ac8c342bba39cb4dc1a999a737845591017b51eeaed",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+          "localSha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SymbolType",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SymbolType.cs",
+          "originalSha256": "0e459ce0f463a3079213891692172780a31958d2a90fb36dec94c6646578bea4",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SymbolType.cs",
+          "localSha256": "2754ebfb250b0c5da6f4193aaf48a3799fcc43435478fa9075bcff3520acbbe3"
+        },
+        {
+          "originalType": "HikPcUI.ListView.SliderArrangeType",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeType.cs",
+          "originalSha256": "2109ff8dbdd75c4346b31550e56bea7399c3494fed7960f3e621d120b6295d26",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeType.cs",
+          "localSha256": "541f83f36fcf7e70b1c7d2dad3de0f92a8219644b9ccbca0a4161765b6cac3e3"
+        },
+        {
+          "originalType": "VM.PcUI numeric resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\combo_ic_top_normal.png",
+          "originalSha256": "c4c2008512fae8debcdfbc0c48b069e934b8ae699b63727712d023bf55a6a319",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_normal.png",
+          "localSha256": "c4c2008512fae8debcdfbc0c48b069e934b8ae699b63727712d023bf55a6a319"
+        },
+        {
+          "originalType": "VM.PcUI numeric resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\combo_ic_top_click.png",
+          "originalSha256": "86169298f16ca824208e030e67bacb24cedeb9c150f8f450aaf6cffaf7e6f993",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_click.png",
+          "localSha256": "86169298f16ca824208e030e67bacb24cedeb9c150f8f450aaf6cffaf7e6f993"
+        },
+        {
+          "originalType": "VM.PcUI numeric resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\滑块_normal.png",
+          "originalSha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/滑块_normal.png",
+          "localSha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2"
+        },
+        {
+          "originalType": "VM.PcUI numeric resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\controls\\commomdictionary.xaml",
+          "originalSha256": "0db0ae196d61b8dd3a717478ba571344958d9200abac364074ffbf42ff31da4f",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Numeric/Shared/CommomDictionary.xaml",
+          "localSha256": "60454e2f6b841e667c15ebfc4df5902959c9a60141e6f77cab77f5f75b4dad61"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_click.png",
+          "originalSha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",
+          "localSha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_disable.png",
+          "originalSha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_disable.png",
+          "localSha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_edit切换_normal.png",
+          "originalSha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_normal.png",
+          "localSha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_link切换_click.png",
+          "originalSha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_click.png",
+          "localSha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_link切换_disable.png",
+          "originalSha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_disable.png",
+          "localSha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton resource",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_btn_link切换_normal.png",
+          "originalSha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_normal.png",
+          "localSha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "EditLinkButton Style",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+          "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
+          "originalLines": "2106起",
+          "localPath": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+          "localSha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+          "sha256": "0f2a93241305f0b312b7074627c0de9217a43ddd878aa73c4b7f9f21847b7b08"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+          "sha256": "4027e034fd77eee18dcc9cd82583af535aab33d8a2579ef734d06c0d2d90edcb"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+          "sha256": "296f1f5638b91d851e22a15f8ff98a271eb95b29f8e5f9bfd480c543a84e9b8f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+          "sha256": "b0a5c17f23273cf4b05be5a20008fb6a2c218d36370a9711c0793038f61bb475"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+          "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+          "sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Directory.Build.props",
+          "sha256": "edf30fece9d584c59f9245626c23e52c139ae0e382e66bf22a0be20b858bafca"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C07.original-reference-composition"
+      ],
+      "consumers": [
+        "DeclaredFieldEditor ordinary numeric fields",
+        "DeclaredSettingsView Runtime settings",
+        "DeclaredToolConfigurationControl current fields"
+      ],
+      "retired": [
+        "src/Plugin.Wpf/Fields/NativeNumberField.cs"
+      ],
+      "adaptation": "原single数值与订阅槽、两级绑定、原格式/校验、滑块/箭头。NativeNumericCommit仅原文/提案准备，Presenter选择原视觉并借用唯一State；未强制IsDynamicValue，未扩声明范围。",
+      "nativeSourceAdaptation": {
+        "file": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
+        "change": "内部EnsureTemplateInputs只取得CBox原T1/T2并调用原虚Loaded初始化，使同一原模板可独立设计创建；无数值数学或模板改动。",
+        "baseline": "7ccc8c5a",
+        "sourceShaPreserved": true
+      },
+      "lifecycle": "原文在卸载期间保存并可同步捕获；不操作卸载叶绑定，重载恢复原文或已接纳值。释放取消Dispatcher与Owner/原件/State监听；Session分别单次释放。",
+      "status": "PRODUCTION_SINGLE_COMPOSITION_AUTOMATED_CHECKS_PASSED_MANUAL_PENDING",
+      "validation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_NUMBER_CHECKPOINT_20261027.json",
+        "result": "UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；实际正式EXE exit0、22工具准入。",
+        "originalSourceShaVerified": 23,
+        "scope": "C05单值/数值订阅组合；不含C06原between、完整扩展订阅或人工VM外观验收。",
+        "screenshots": [
+          {
+            "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-038/native-number-accepted.png",
+            "sha256": "084590e8253f537b4a79e34910ee9b56de4045b8f42c8c532148b430d2cc99d1"
+          },
+          {
+            "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-038/native-number-invalid.png",
+            "sha256": "d1cd70fbfd5fa1b974b355abba372ee0794ce111ec2f25e393d7c718f8239b00"
+          }
+        ]
+      },
+      "buildIsolation": {
+        "file": "src/Plugin.Wpf/Directory.Build.props",
+        "scope": "仅本公共库命令行标记编译缓存分离CommandLine子目录，不改NuGet资产位置/正式OutDir/项目依赖。",
+        "status": "隔离后规定UI005/全量001及源码修正后的UI006/全量002均0错误，原Generic/数值/订阅资源实际可加载；不据此声称首次干扰来源已证或VS人工已过。"
       }
     }
   ]

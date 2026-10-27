@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "title": "VM原厂框架层级与源码组织逆向参考",
+  "purpose": "仅整理归档，供后续框架对照及重构评估查阅；未据此批准或实施重构。",
+  "source": {
+    "path": "D:\\MyWork\\REA逆向测试\\analysis\\vm-framework-architecture-20261027\\vm-original-framework-structure.html",
+    "documentTitle": "VisionMaster 4.4.0 原厂框架层级与源码组织逆向",
+    "modifiedUtc": "2026-10-27T08:52:27.429298+00:00",
+    "bytes": 35948,
+    "sha256": "d84271444e83edab01cb6b38180dbe48bacde13b9c75a44e76ea413b10744770"
+  },
+  "archive": {
+    "path": "vm-original-framework-structure.html",
+    "archivedUtc": "2026-10-27T08:58:10.209679+00:00",
+    "bytes": 35948,
+    "sha256": "d84271444e83edab01cb6b38180dbe48bacde13b9c75a44e76ea413b10744770",
+    "mode": "byte-identical snapshot; inline CSS/SVG, no linked assets"
+  },
+  "provenance": {
+    "sunEyeAnalysis": "此前分析本地SunEye项目得到的是自研框架现状，不能标作VM原厂架构逆向证据。",
+    "vmReference": "本归档保留来源对VM安装程序集、托管元数据及反编译源码的分析；结论与未知项以原文证据等级为准。",
+    "limits": [
+      "反编译逻辑组织不等于厂商原始源码物理目录或原工程拆分。",
+      "原文明确没有运行VM作动态确认；本次归档未新增逆向或运行验证。",
+      "归档校验只证明原文快照一致，不表示本方逐项复核或批准全部架构结论。",
+      "本方重构设计建议与VM已证事实应分别记录。"
+    ]
+  }
+}

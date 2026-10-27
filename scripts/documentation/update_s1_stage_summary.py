@@ -288,6 +288,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['numericGroupCandidate'].items()])
                if plan.get('numericGroupCandidate') else '')
+            + ('<h5>原单值数值与订阅组合候选</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['numericSingleCandidate'].items()])
+               if plan.get('numericSingleCandidate') else '')
             + ('<p><b>失败记录保留：</b>' + escape('；'.join(plan['implementationFailures'])) + '</p>' if plan.get('implementationFailures') else '')
             + '<h5>完整控件与组合清单</h5><p>' + escape(plan['inventoryRule']) + '</p>'
             + table(['编号 / 组合','Blob消费位置','VM控件 / 模板 / 组合链','已有成果及处理','证据 / 缺口','验收标准'], plan['compositions'])
@@ -327,6 +331,7 @@ def render_s4_stage(page):
              + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if 'preview' in s4.get('uiReview', {}) else '')
              + ('<p><a href="#o06-blob-control-prototype-plan"><b>审核Blob所需控件、组合与接入条件</b></a> · 原31类仅作历史功能追踪；不要求先迁完整个VM控件库。</p>' if s4.get('blobControlPrototypePlan') else '')
              + render_blob_control_plan(s4.get('blobControlPrototypePlan'))
+             + ('<aside id="o06-vm-framework-architecture-reference"><h4>VM原厂框架逆向参考归档</h4><p><a href="' + escape(s4['vmFrameworkArchitectureReference']['entry'], quote=True) + '">打开原厂框架层级、源码组织与调用关系原文</a> · <a href="' + escape(s4['vmFrameworkArchitectureReference']['manifest'], quote=True) + '">来源与SHA-256</a></p><p>' + escape(s4['vmFrameworkArchitectureReference']['summary']) + '</p><p>' + escape(s4['vmFrameworkArchitectureReference']['boundary']) + '</p></aside>' if s4.get('vmFrameworkArchitectureReference') else '')
              + ('<aside id="o06-vm-control-library-reference"><h4>VM控件库逆向参考快照</h4><p><a href="' + escape(s4['vmControlLibraryReference']['entry'], quote=True) + '">打开归档说明、原始目标页及机器证据</a>。' + escape(s4['vmControlLibraryReference']['summary']) + '</p><p>' + escape(s4['vmControlLibraryReference']['boundary']) + '</p></aside>' if s4.get('vmControlLibraryReference') else '')
              + ('<details id="o06-native-numeric-consumer"><summary>原VM数值控件的真实消费与宿主适配</summary>' + table(['项目','当前事实'], [[label,s4['nativeNumericConsumer'][key]] for key,label in [('status','验证状态'),('chain','完整消费链'),('draft','草稿与校验'),('remaining','未完成')]]) + '<ul>' + ''.join('<li>'+escape(item)+'</li>' for item in s4['nativeNumericConsumer']['adaptations']) + '</ul></details>' if s4.get('nativeNumericConsumer') else '')
              + ('<section id="o06-blob-file-structure"><h4>Blob目标文件结构：不保留旧项目兼容</h4><p><b>' + escape(s4['blobFileStructure']['decision']) + '</b></p><p>' + escape(s4['blobFileStructure']['status']) + '。' + escape(s4['blobFileStructure']['currentFacts']) + '</p><pre>' + escape(s4['blobFileStructure']['tree']) + '</pre>' + table(['职责','目标文件','承接方式'],s4['blobFileStructure']['fileRows']) + '<details><summary>旧文件去留、状态归属与公共合同缺口</summary>' + table(['现有文件','目标处理'],s4['blobFileStructure']['removeRows']) + table(['数据类别','唯一所有者','边界'],s4['blobFileStructure']['stateOwnership']) + table(['共同改造点','当前实际缺口与处理'],s4['blobFileStructure']['commonContractGaps']) + '</details><p>' + escape(s4['blobFileStructure']['implementation']) + '</p><p>' + escape(s4['blobFileStructure']['boundaries']) + '</p></section>' if s4.get('blobFileStructure') else '')

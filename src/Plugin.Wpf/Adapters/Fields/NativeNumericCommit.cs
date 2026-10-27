@@ -1,0 +1,156 @@
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using SunEyeVision.Plugin.Contracts;
+using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+
+namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
+
+/// <summary>Raw-edit and binding commit over the original numeric leaf; accepted values belong only to the borrowed state.</summary>
+internal sealed class NativeNumericCommit : IDisposable
+{
+    private readonly DeclaredFieldState _state;
+    private readonly FieldLayout? _layout;
+    private readonly Numbers.NumericControl _leaf;
+    private readonly Numbers.SliderArrangeBase? _owner;
+    private readonly TextBox _text;
+    private bool _syncing,_disposed,_suspended;
+    private string? _pendingRaw;
+    private string _rawError="";
+    public bool IsDirty {get;private set;}
+    public TextBox Text=>_text;
+    public string? PendingRaw=>IsDirty?(_suspended?_pendingRaw:_text.Text):null;
+    internal static void EnsureRepresentable(ConstantSetting setting)
+    {
+        if(setting.Value is long value&&(value < -9007199254740992L||value > 9007199254740992L))
+            throw new ArgumentException("当前原数值控件不能保证此整数的精确步进。");
+    }
+
+    public NativeNumericCommit(DeclaredFieldState state,FieldLayout? layout,Numbers.NumericControl leaf,Numbers.SliderArrangeBase? owner)
+    {
+        _state=state;_layout=layout;_leaf=leaf;_owner=owner;
+        _text=(TextBox)leaf.FindName("ValueText");
+        _text.TextChanged+=OnTextChanged;
+        ProjectAccepted();
+    }
+    private void OnTextChanged(object sender,TextChangedEventArgs args)
+    {
+        if(_syncing||_suspended||_disposed||_state.IsDisposed||_state.IsReferenceMode)return;
+        IsDirty=true;
+        var previous=_rawError;
+        _rawError=ReadRaw(out _,out var error)?"":error;
+        if(_rawError.Length!=0)_state.SetEditError(_rawError);
+        else if(previous.Length!=0&&_state.EditError==previous)_state.SetEditError("");
+    }
+    private bool ReadRaw(out object value,out string error)
+    {
+        value=null!;error="";
+        try
+        {
+            var raw=_suspended?_pendingRaw??_text.Text:_text.Text;
+            if(string.IsNullOrWhiteSpace(raw))throw new ArgumentException("请输入数值。");
+            if(_state.Port.Type.Scalar==ScalarKind.Int64)
+            {
+                var integer=long.Parse(raw,NumberStyles.Integer,CultureInfo.InvariantCulture);
+                EnsureRepresentable(new ConstantSetting(integer));
+                value=integer;
+            }
+            else
+            {
+                var number=double.Parse(raw,NumberStyles.Float,CultureInfo.InvariantCulture);
+                if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
+                value=number;
+            }
+            value=PrepareValue(value).Value!;
+            return true;
+        }
+        catch(Exception failure)when(failure is ArgumentException or FormatException or OverflowException)
+        {error=failure.Message;return false;}
+    }
+    public ConstantSetting PrepareValue(object value)
+    {
+        EnsureRepresentable(new ConstantSetting(value));
+        if(value is double number)
+        {
+            if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
+            if(_layout is not null)value=Math.Round(number,_layout.DecimalPlaces,MidpointRounding.ToEven);
+        }
+        var frozen=ValueRules.Freeze(_state.Port,value)!;
+        var numeric=Convert.ToDouble(frozen,CultureInfo.InvariantCulture);
+        if((_layout?.Minimum is {} minimum&&numeric<minimum)||(_layout?.Maximum is {} maximum&&numeric>maximum)
+            ||numeric<_leaf.Minimum||numeric>_leaf.Maximum
+            ||_leaf.IsNeedCheckExtremumByXML&&(numeric<_leaf.MinValue||numeric>_leaf.MaxValue))
+            throw new ArgumentException("数值超出允许范围。");
+        return new(frozen);
+    }
+    public void ValidateStored(ConstantSetting setting)
+    {
+        var prepared=PrepareValue(setting.Value!);
+        if(!Equals(prepared.Value,setting.Value))throw new ArgumentException("当前数值超出声明的编辑精度，请明确修改后提交。");
+    }
+    public bool TryPrepare(out ConstantSetting proposal)
+    {
+        proposal=null!;
+        if(_disposed||_state.IsDisposed)return false;
+        if(!ReadRaw(out var value,out var error)){_state.SetEditError(error);return false;}
+        proposal=new(value);
+        // An unloaded capture consumes its saved edit, without touching the detached visual.
+        if(_suspended)return true;
+        // Preserve both original bindings, their validators, trigger and floating format.
+        var inner=_text.GetBindingExpression(TextBox.TextProperty);
+        inner?.UpdateSource();
+        if(_disposed||_state.IsDisposed)return false;
+        if(inner?.HasValidationError==true){_state.SetEditError("原数值输入校验未通过。");return false;}
+        var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
+        outer?.UpdateSource();
+        if(_disposed||_state.IsDisposed)return false;
+        if(outer?.HasValidationError==true){_state.SetEditError("无法提交原数值绑定。");return false;}
+        proposal=new(value);return true;
+    }
+    public void ProjectAccepted()
+    {
+        if(_disposed||_state.IsDisposed)return;
+        if(_state.IsReferenceMode){IsDirty=false;_rawError="";_pendingRaw=null;return;}
+        var constant=_state.Accepted as ConstantSetting??_state.ConstantBackup;
+        if(constant is null)return;
+        EnsureRepresentable(constant);
+        if(_suspended){IsDirty=false;_rawError="";_pendingRaw=null;return;}
+        _syncing=true;
+        try
+        {
+            if(_owner is not null)_owner.SetCurrentValue(Numbers.SliderArrangeBase.StartValueProperty,Convert.ToDouble(constant.Value,CultureInfo.InvariantCulture));
+            else _leaf.SetCurrentValue(Numbers.NumericControl.TextProperty,Format(constant.Value!));
+            var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
+            if(outer is not null){Validation.ClearInvalid(outer);outer.UpdateTarget();}
+            var inner=_text.GetBindingExpression(TextBox.TextProperty);
+            if(inner is not null){Validation.ClearInvalid(inner);inner.UpdateTarget();}
+            IsDirty=false;_rawError="";_pendingRaw=null;
+        }
+        finally{_syncing=false;}
+    }
+    private string Format(object value)=>value is long integer?integer.ToString(CultureInfo.InvariantCulture)
+        :Convert.ToDouble(value,CultureInfo.InvariantCulture).ToString(_layout is null?"G17":"F"+_layout.DecimalPlaces,CultureInfo.InvariantCulture);
+    public void ValidateInitial()
+    {
+        if(_state.IsReferenceMode||_state.Accepted is not ConstantSetting initial)return;
+        try{if(IsDirty){if(!ReadRaw(out _,out var error))_state.SetEditError(error);}else ValidateStored(initial);}
+        catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_state.SetEditError(error.Message);}
+    }
+    public void Suspend(){if(_suspended)return;_pendingRaw=PendingRaw;_suspended=true;}
+    public void RestorePending(string? raw)
+    {if(raw is null)return;_pendingRaw=raw;_suspended=true;IsDirty=true;}
+    public void Resume()
+    {
+        if(!_suspended||_disposed)return;
+        _suspended=false;
+        if(_pendingRaw is not {} raw){ProjectAccepted();return;}
+        _syncing=true;
+        try{_text.SetCurrentValue(TextBox.TextProperty,raw);IsDirty=true;_pendingRaw=null;}
+        finally{_syncing=false;}
+        _rawError=ReadRaw(out _,out var error)?"":error;
+        if(_rawError.Length!=0)_state.SetEditError(_rawError);
+    }
+    public void Dispose()
+    {if(_disposed)return;_disposed=true;_text.TextChanged-=OnTextChanged;}
+}

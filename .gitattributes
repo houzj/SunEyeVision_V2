@@ -160,3 +160,6 @@ docker-compose.yml text eol=lf encoding=utf-8
 *.xlsx binary
 *.ppt binary
 *.pptx binary
+
+# 逆向原文快照逐字节保留，防止HTML换行规范化破坏来源SHA。
+**/references/vm-framework-architecture-20261027/vm-original-framework-structure.html -text -eol

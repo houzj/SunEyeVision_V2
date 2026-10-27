@@ -766,6 +766,21 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 		Loaded += SliderArrangeBase_Loaded;
 	}
 
+	// Materialize the same original input initialization for an independent designer,
+	// which can measure the real view without attaching it to a Window first.
+	internal (NumericControl Left, NumericControl Right) EnsureTemplateInputs()
+	{
+		var box = (ComboBox)FindName("CBox");
+		box.ApplyTemplate();
+		var left = box.Template.FindName("T1", box) as NumericControl
+			?? throw new InvalidOperationException("Original numeric template has no T1.");
+		var right = box.Template.FindName("T2", box) as NumericControl
+			?? throw new InvalidOperationException("Original numeric template has no T2.");
+		T1_Loaded(left, new RoutedEventArgs());
+		T2_Loaded(right, new RoutedEventArgs());
+		return (left, right);
+	}
+
 	private void SliderArrangeBase_Loaded(object sender, RoutedEventArgs e)
 	{
 		LoadAlready = true;

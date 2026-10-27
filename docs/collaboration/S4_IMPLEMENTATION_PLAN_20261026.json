@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27 第一阶段执行中。原输入/色板及本批唯一字段状态、错误/引用隔离、捕获重入基础已落码；最终blob-field-state UI002与全量002均0错误，六轨正式同源回归和实际EXE22工具准入通过。7项源码增量、760发布项、174加载记录SHA核对。订阅树透明图已证为验证坐标错误，不改原件。原单值/范围/完整订阅/ROI/显示/窗口组合、产品职责命名迁移及真实VS/VM同态人工仍未完成，第二阶段未准入。",
+  "current": "2026-10-27 第一阶段继续。C05原single数值/订阅组合已替换NativeNumberField，保原两级绑定/精度/模板，Enter、步进、滑条释放、错误与卸载捕获贯通；最终规定构建及七轨正式回归、EXE22工具准入通过。UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；实际正式EXE exit0、22工具准入。C06原between、扩展订阅、选中ROI参数栈/图像、显示/完整窗口、产品职责命名及真实VS/VM同态人工仍待，第二阶段未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -4670,16 +4670,17 @@
     "boundary": "该清单作为VM来源与组合链参考；原31类职责/退出门、本方运行验证和VM实机截图验收继续独立。源预览差异记录有版本时点，不能套作当前产品结论；9个ImageViewConfig与16个展开显示对象需逐节点对齐。"
   },
   "nativeNumericConsumer": {
-    "status": "正式Release UI045/全量038均0错误；窗口017十一组、字段012八组、整链035八组、组件078五组、发布扰动027十一项通过；结构改造前基线正在提交推送。",
-    "chain": "Blob FieldLayout/Port → DeclaredFieldEditor → NativeNumberField → 原PCUI SliderArrange/SliderArrangeFloat → 原NumericControl/Slider模板及资源；无范围声明使用原NumericControl叶子，精确Int64保留文本路径。",
-    "draft": "合法原文先校验中立Port/存储范围再写宿主私有草稿；非法原文、焦点和旧值保留，不由原LostFocus绕过校验；确认/取消仍由外层负责。",
+    "status": "UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；实际正式EXE exit0、22工具准入。当前仅自动检查，不算第一阶段或人工通过。",
+    "chain": "Port/FieldLayout → DeclaredFieldState → DeclaredFieldEditor → NativeNumberPresenter → 原PCUI SliderArrange/SliderArrangeFloat single及原订阅槽 → 原NumericControl/Slider模板；NativeNumericCommit仅提案/原绑定/原文适配。NativeNumberField已删除，无精确Int64自制文本回落。",
+    "draft": "键入保留待提交原文，原步进/滑条释放/焦点提交及Enter消费同一原绑定链后一次接纳。非法保原文并阻断保存；程序提案拒绝后普通捕获不得吞错，用户明确Enter或有效提案才能修复。宿主拒绝/重绑/释放不污染已接受字段，确认取消属外层。",
     "adaptations": [
-      "原叶子解析/格式化按本方InvariantCulture合同适配；de-DE不误读点号，不宣称VM区域设置相同。",
-      "仅配对范围宿主将原叶子左内边距7改2，原边框、箭头和14号字体保留；原XAML未改。",
-      "原开关在声明字段宿主左对齐输入列，修复默认拉伸后图像居中的偏移。",
-      "捕获存储溢出为字段错误；防止文本变化与原箭头回调重复写入。"
+      "InvariantCulture原叶解析/格式适配，de-DE不误读点号；不宣称VM区域设置等价。",
+      "保持原XAML、箭头、滑块、两级Binding及原Float格式，不把IsDynamicValue强制打开，不为粗细0.25扩域兼容。",
+      "原Base仅增加内部EnsureTemplateInputs复用原Loaded输入初始化，供同一真实视图独立设计；CLI中间缓存独立，不改正式OutDir。",
+      "初始/程序/原文/备份复用数值范围/精度能力校验；原double步进无法精确表达的大Int64明确拒绝，不舍入冒充。",
+      "卸载保存原文，捕获不等待Dispatcher或写卸载叶；重载恢复原文/已接受值，Dispose取消回调与监听。"
     ],
-    "remaining": "双端范围仍由RangeField/SDK提取RangeSlider组合，原PCUI between组合尚未整体替换；其他旧SDK消费者退出、全VM显示对象、typed新run、VS和用户人工仍未完成。"
+    "remaining": "C06仍是RangeField双single/自制范围，需一份原between并整组接纳；完整扩展订阅、ROI/图像参数栈、显示组合、旧SDK可视消费退出及产品命名治理仍待。真实VS/VM同态及用户人工未验。"
   },
   "blobFileStructure": {
     "status": "目标树不变；两工程及旧SDK实现退出已落实，但G2全部生产输入/显示/交互与验收仍未完成。",
@@ -7213,6 +7214,44 @@
         "computeSliderLengthsIlSha256": "5f094d71f6c74a58fc9815ea82144d0c12d939bca89af9e53e8fca577388ce23",
         "boundary": "原件Clip与框架Track两处先乘中间溢出；派生Track须同时覆写排列/ValueFromDistance/ValueFromPoint，自有跨度/中心缓存，保原Thumb按钮样式及业务域；有限ViewportSize仍交基类。未做0..1绑定或修改系统DLL，尚无运行成绩。"
       }
+    },
+    "numericSingleCandidate": {
+      "status": "AUTOMATED_CHECKS_PASSED_MANUAL_PENDING",
+      "baseline": "7ccc8c5a",
+      "implementation": [
+        "删除NativeNumberField，由原SliderArrange/Float的single与订阅槽直接消费唯一字段状态；原两级绑定与精度、箭头/滑条释放/滚轮/Enter提交。",
+        "非视觉NativeNumericCommit统一原文与程序提案校验；非法留原文、合法失焦；宿主拒绝后可重新提交原值。",
+        "ReferencePopupScope按当前Session真实焦点过滤，不因另一弹层尚开而截获数字Enter；卸载捕获不等Dispatcher且不写卸载叶。",
+        "原Base仅增加内部原模板输入初始化以支持独立设计；原数学/样式未改，真实来源与当前SHA单独登记Catalog。"
+      ],
+      "remaining": [
+        "C06原between及SDK整组消费未落实；不以本批单值代范围。",
+        "扩展订阅、ROI参数栈/图像、完整显示/窗口及产品职责命名仍未完成，Blob重组未准入。",
+        "真实VS/VM同态和用户人工未验，不代签。"
+      ],
+      "failures": [
+        "UI001：ReferencePopupScope非视觉类误用Dispatcher实例；已改root.Dispatcher。",
+        "UI002编译零错误但FieldEditing054缺Generic资源。focused diag001证实22份二阶段g.cs缺失；Rebuild恢复BAML。首次缓存失配原因未证，不归因用户或设计器。",
+        "FieldEditing055测试按FrameworkElement.Name取原T1失败，改CBox原模板命名域查找；056已过28组至发布SHA不匹配，focused重建后须完整构建重封。",
+        "WindowPresentation034测试缺引用命名空间；035新原绑定断言错误（原Mode=Default随TextBox元数据双向）、宿主拒绝后原值重试缺口及发布SHA不匹配；分别修正，不计通过。",
+        "UI004及focused Rebuild002再次缺少两份/二十份g.cs；不将短暂Rebuild恢复当稳定通过。CLI与VS标记编译中间目录现分离，NuGet和正式部署位置不变，等待UI005及全量重新核证。",
+        "WindowPresentation036最后仍用键入即写的旧断言，改真实提交后037过17项。",
+        "Components182发现程序提案拒绝后普通捕获自动清错，产品改为仅明确Enter允许原值重试；全部重新规定构建与七轨回归，最终Components183等通过，旧成绩仅历史。"
+      ],
+      "nextControls": {
+        "C06": "先唯一状态/配对校验再创建一份原between；逻辑字段访问与实际视图分离，FieldsView统一整组writer。Runtime已有整组接纳；SDK候选参数/绑定整体预检和非视觉重接仍缺，不能循环单字段冒充原子。",
+        "C07": "ParamSubscribeWindow.pending有原双树/默认方式/Owner跟随证据。现请求缺当前选择/清除/索引上下文/失效通知；原窗口未启用，不能隐藏Expand就算完成。",
+        "C08": "原四形状ROI栈和RoiSelect模板已有pending原件，非缺逆向源码；现RegionGeometryEditor/SDK视口仍本方路径。公共IRoiEditViewport尚缺图像尺寸/帧/Pose输入链，须以同Guid和规范几何适配原图像/参数栈，不搬VM模型。"
+      },
+      "verification": "UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；实际正式EXE exit0、22工具准入。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_NUMBER_CHECKPOINT_20261027.json"
     }
+  },
+  "vmFrameworkArchitectureReference": {
+    "entry": "references/vm-framework-architecture-20261027/vm-original-framework-structure.html",
+    "manifest": "references/vm-framework-architecture-20261027/reference-manifest.json",
+    "sha256": "d84271444e83edab01cb6b38180dbe48bacde13b9c75a44e76ea413b10744770",
+    "summary": "2026-10-27按用户要求逐字节整理VM原厂框架层级、源码组织及调用关系逆向文档；仅归档，供后续框架评估查阅。",
+    "boundary": "此前本地SunEye项目分析是自研现状，不是VM原厂架构证据。当前材料来自VM程序集及反编译源码，仍不证明厂商原始物理工程树；原文静态/未知/未动态验证边界保留，尚未据此制定或实施重构。"
   }
 }

@@ -145,11 +145,11 @@ internal static class S2DocumentEditingCases
             Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==expression
                 &&node.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"刷新候选写入了草稿或正式节点");
         });
-        Case("真实未失焦数值进入私有Runtime草稿，隐藏窗口后文档保存接受它并可重开",()=>
+        Case("真实未失焦数值在捕获时进入私有Runtime草稿，隐藏窗口保存后可重开",()=>
         {
             var text=Threshold(first);text.Focus();text.Text="73";Pump();
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
-            Require(Formal()==128&&((BlobSettings)context.DraftNode.RuntimeConfiguration!.CaptureSettings()).Threshold==73,"未确认输入污染正式设置或未更新草稿");
+            Require(Formal()==128&&text.Text=="73","未提交输入污染正式设置或丢失原文");
             Capture(first,"runtime-editor-run.png");
             first.Hide();vm.SaveCurrentSolutionCommand.Execute(null);Pump();
             Require(Formal()==73,"文档保存没有接受Runtime草稿");

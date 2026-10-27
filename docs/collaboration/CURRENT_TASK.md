@@ -1,5 +1,35 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 C05正式同源检查点已封存，继续C06（最新）
+
+- 编译基线7ccc8c5a/main，主线唯一产品写者，三路只读分别核C06字段/范围、C07扩展请求、C08选中ROI参数栈；Blob重组未准入，不扩大到全VM库。
+- C05原single与订阅槽已替换NativeNumberField；原两级绑定/精度/箭头/滑条释放、合法Enter失焦、非法拒绝、程序拒绝后的保存门禁及卸载原文捕获已贯通。原Base仅增加原模板初始化，CLI缓存分离，未改原数学/样式。
+- 最终规定UI006零错误6621警告109.20秒；全量Release002零错误6634警告115.74秒。FieldEditing058=31、WindowPresentation038=17、RuntimeEditor039=10、DesignTime015=27、FullChain098=7、Components183=9、RuntimeKernel037=17；正式EXE探针exit0/22工具。
+- O06_BLOB_NATIVE_NUMBER_CHECKPOINT_20261027.json核10源码增量、760发布项、178加载记录SHA；Catalog当前23个原源/资源SHA复核，数字正常/非法PNG已实看；真实VS/VM同态/用户仍未验，不代签。
+- 失败全保留：缺Dispatcher实例、二阶段g.cs/BAML失配、测试命名域/绑定默认Mode/旧即时写断言，以及Components182保存吞程序拒绝错误。最终修正后重新规定构建和全部七轨通过，不套前候选成绩。首次缓存干扰来源未证。
+- C06仍RangeField双single/自制范围；下一集中批需唯一字段状态先建、配对拓扑校验、一份原between、逻辑字段访问与真实视图分开、FieldsView整组writer及SDK候选参数/绑定完整接纳。原double.Max域另需Track和Clip稳定归一化，禁止偷偷缩小。
+- C07已给带请求代次的同Session转发合同，C08已有原四形状参数栈和图像事件；未把它们算落地。产品职责命名治理也未实施。
+- 用户要求的VM原厂框架文档已逐字节归档原方案references，明确区别SunEye本地源码分析与VM逆向；只是参考，不据此开展框架重构。
+- 当前无活动构建/验证句柄；准备固定中文本地检查点，不推送。用户手工BlobParameterEditor.xaml页索引2保持未提交，早于本轮编译；正式来源增量如实记录该用户文件。
+
+## 2026-10-27 用户当前优先事项：只整理VM原厂框架参考（已归档）
+
+- 用户指定REA项目analysis/vm-framework-architecture-20261027/vm-original-framework-structure.html，目前只需整理留作后续参考，不制定或实施框架重构。
+- 原文35948字节逐字节归档至原O06方案references/vm-framework-architecture-20261027/，附reference-manifest.json；源/归档SHA均为d84271444e83edab01cb6b38180dbe48bacde13b9c75a44e76ea413b10744770。无外链资源依赖，原文未改。
+- 用户纠正来源：此前本地SunEye项目分析属于自研现状，不能作VM原厂架构证据。新归档针对VM程序集与反编译源码恢复；不证明厂商物理工程树，静态/未知/未动态验证边界保留，不算本方复核或重构批准。
+- 参考总索引、S4_IMPLEMENTATION_PLAN和原O06新增框架参考入口同步；生成幂等，701唯一锚点；本次追加整理没有改产品代码。
+- 归档前C05集中候选已落码：原single/订阅、Enter、原绑定、越界及精度、卸载原文与程序拒绝保存门禁；NativeNumberField删除，C06尚未替换。CLI与VS中间缓存分离后最终UI006零错误6621警告109.20秒、全量Release002零错误6634警告115.74秒。
+- 最终七轨均已结束且通过：FieldEditing058；WindowPresentation038；RuntimeEditor039；DesignTime015；FullChain098；Components183；RuntimeKernel037。当前无活动构建或验证句柄。Component182曾发现保存捕获误清程序拒绝错误，已修为只有明确Enter允许重试，最终重新全部跑过；不得套首候选成绩。
+- C05尚待实际EXE探针、当前SHA检查点封存、原方案当前总摘要/Catalog候选状态更新与有意义中文本地提交；真实VS/VM同态人工仍未验，第一阶段未完成，目标继续active。用户手工BlobParameterEditor.xaml页索引当前为2（15:53修改），原样保留，不纳入提交。
+
+## 2026-10-27 C05原数值组合替换候选（未验证）
+
+- 当前基线7ccc8c5a，主线唯一写者、三路只读复核；第一阶段继续，Blob业务重组冻结。用户SelectedPageIndex=1原样保留不提交。
+- 删除NativeNumberField，新增Presenters/Numeric/NativeNumberPresenter及非视觉NativeNumericCommit；消费原SliderArrange/Float及原订阅槽，保两级原绑定与校验，合法Enter提交失焦、非法保原文，步进/释放/聚焦滚轮统一接纳。
+- ReferencePopupScope抽取单Session弹层生命周期，按真实焦点而非弹层打开状态过滤Enter，防跨端点截获。初始引用不校验隐藏数字。
+- 原SliderArrangeBase增加内部EnsureTemplateInputs，仅复用原Loaded初始化供独立设计创建，不改数值公式/样式。C06仍旧范围组合，尚未替换，不声称范围完成。
+- 旧验证已改为真实提交边界，删除人工要求粗细0.25扩域兼容；本批尚未构建与回归，历史成绩不覆盖当前源码。下一步集中串行UI/全量及正式回归，记录所有失败。产品命名治理尚未实施。
+
 ## 2026-10-27 整组接纳基础已验证（最新）
 
 - 基线fdf4c672/main，Codex主线唯一写者；三路只读核C05、C06和必要SDK消费。第一阶段继续；尚未替换原单值/between生产视图，没有调整Blob业务XML或批量改名。

@@ -121,7 +121,7 @@ internal static class S2DocumentEditingCases
             var tabs=Logicals(Control).OfType<System.Windows.Controls.TabControl>().Single();tabs.SelectedIndex=0;Window.UpdateLayout();Pump();
             const string key="Threshold";
             var input=fields.Fields.Single(item=>item.FieldId==key).InputElement!;
-            return input is SunEyeVision.Plugin.Wpf.Fields.NativeNumberField number?number.TextEditor??throw new Exception("数值尚未加载："+number.IsLoaded+" visible="+number.IsVisible+" control="+Control.IsLoaded+" tab="+tabs.SelectedIndex):(System.Windows.Controls.TextBox)input;
+            return (System.Windows.Controls.TextBox)input;
         }
         static IEnumerable<System.Windows.DependencyObject> Logicals(System.Windows.DependencyObject root)
         {yield return root;foreach(var item in System.Windows.LogicalTreeHelper.GetChildren(root))if(item is System.Windows.DependencyObject child)foreach(var next in Logicals(child))yield return next;}

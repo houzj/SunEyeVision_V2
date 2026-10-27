@@ -4,6 +4,8 @@
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj/SunEyeVision.Plugin.Wpf/</BaseIntermediateOutputPath>
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/$(TargetFramework)/</IntermediateOutputPath>
+    <!-- 命令行编译与VS的后台/设计构建使用独立标记编译缓存，正式程序集仍由统一OutDir部署。 -->
+    <IntermediateOutputPath Condition="'$(BuildingInsideVisualStudio)'!='true'">$(BaseIntermediateOutputPath)CommandLine/$(Configuration)/$(TargetFramework)/</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

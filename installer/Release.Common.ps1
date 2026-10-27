@@ -259,6 +259,7 @@ function New-ReleasePayload {
     if($SourceCommit -cne $productIdentity['Commit']){throw 'Payload sourceCommit differs from the Core PE product identity.'}
     if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Core PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
+    if(Test-Path -LiteralPath (Join-Path $appRoot 'plugins/SunEyeVision.Tool.BlobAnalysis')){throw 'Retired Blob SDK deployment must not enter a release payload.'}
     $sdkIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll')).FullName
     $contractsIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.Contracts.dll')).FullName
     $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {

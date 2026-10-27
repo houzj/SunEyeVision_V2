@@ -1,57 +1,27 @@
-using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
-using SunEyeVision.Tool.BlobAnalysis;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Workflow;
 
-if(args.Contains("inspect-default")){var config=new BlobAnalysisParameters();Console.WriteLine(JsonSerializer.Serialize(new{judgments=config.ResultPresentation.Judgments.Select(item=>item.Key),graphics=config.ResultPresentation.Graphics.Select(item=>item.Key),texts=config.ResultPresentation.Texts.Select(item=>item.Key),issues=config.ValidateStoredConfiguration()}));return 0;}
-if(args.Contains("export-fields"))
-{
-    var defaults=BlobInputContract.CreateDefaults();
-    var fields=BlobInputContract.Fields.Select(field=>new{
-        field.LogicalKey,field.LegacyPath,field.Port,field.Presentation,
-        defaultKind=defaults[field.Port.Id] is UnsetSetting?"Unset":"Constant",
-        defaultValue=defaults[field.Port.Id] is ConstantSetting literal?literal.Value:null,
-        unsetMeaning="Absent optional setting; distinct from null, empty sequence and empty Region",
-        unitPolicy="Only coordinate frames declare units in TypeRef; scalar physical units are not encoded by this Contracts version"
-    });
-    Console.WriteLine(JsonSerializer.Serialize(new{specSha="94DA12876AB19360F681378B1FFAB2D2139330EDF1701121CCFBADC752A8ADD3",fields,groups=BlobInputContract.Groups,legacyStyleAliases=BlobInputContract.LegacyStyleAliases,outputs=BlobInputContract.Describe().Outputs},new JsonSerializerOptions{WriteIndented=true}));
-    return 0;
-}
-
-var rows=new List<object>();void Check(bool ok,string error){if(!ok)throw new Exception(error);}
-void Test(string name,Action run){try{run();rows.Add(new{name,passed=true});}catch(Exception error){rows.Add(new{name,passed=false,error=error.ToString()});}}
-ToolSchema? schema=null;
-Test("explicit-109-schema-25-groups-79-leaves-34-outputs",()=>{schema=BlobInputContract.Describe();Check(schema.Inputs.Count==109&&schema.Outputs.Count==34&&BlobInputContract.Groups.Count==25&&BlobInputContract.Fields.Count(f=>f.LogicalKey.StartsWith("presentation."))==79,"field coverage differs");var ids=BlobInputContract.Groups.SelectMany(group=>group.PortIds).ToArray();Check(ids.Length==109&&ids.Distinct().Count()==109&&ids.ToHashSet().SetEquals(schema.Inputs.Select(port=>port.Id)),"group-to-port map incomplete");});
-Test("defaults-are-valid-and-resources-unset",()=>{var contract=schema??BlobInputContract.Describe();var defaults=BlobInputContract.CreateDefaults();Check(defaults.Count==109,"defaults incomplete");var draft=new ParameterEditSession(contract.Inputs,defaults);Check(!draft.HasInvalidDraft,"default draft invalid");Check(defaults[BlobInputContract.Fields.Single(field=>field.LogicalKey=="input.image").Port.Id] is UnsetSetting,"image default is not Unset");Check(defaults[BlobInputContract.Fields.Single(field=>field.LogicalKey=="input.inspection.local").Port.Id] is UnsetSetting,"inspection default is not Unset");});
-Test("stored-pure-default-config-valid",()=>Check(BlobInputContract.ValidateStoredConfiguration(new()).Count==0,"default persisted config rejected"));
-Test("closed-enums-reject-direct-draft-and-runtime-config",()=>{var config=new BlobAnalysisParameters{Type=(BlobThresholdMode)999,SortMode=(BlobSort)999,InspectionMode=(RegionFieldMode)999};Check(config.ValidateStoredConfiguration().Count==3&&!config.Validate().IsValid,"invalid stored/runtime choices accepted");var draft=new ParameterEditSession((schema??BlobInputContract.Describe()).Inputs,BlobInputContract.CreateDefaults());var typePort=BlobInputContract.Fields.Single(f=>f.LogicalKey=="setting.Type").Port;Check(!draft.Set(typePort.Id,new ConstantSetting("future-mode")),"draft escaped choices");});
-Test("missing-presentation-entry-rejected",()=>{var config=new BlobAnalysisParameters();config.ResultPresentation.Graphics.RemoveAt(0);Check(config.ValidateStoredConfiguration().Count!=0,"missing entry silently ignored");});
-Test("rgba-neutral-record-uint8",()=>{var color=PresentationDeclarations.Color(10,20,30,40);Check(color.Get<long>("a")==40&&color.Get<long>("r")==10,"RGBA mapping differs");var failed=false;try{new RecordValue(PresentationDeclarations.Rgba,new Dictionary<string,object?>{{"r",256L},{"g",0L},{"b",0L},{"a",255L}});}catch(Exception error) when(error is ArgumentException or OverflowException){failed=true;}Check(failed,"RGBA exceeded UInt8 constraint");});
-Test("roi-original-declaration-fingerprint-and-roundtrip",()=>{var frame=new CoordinateFrame("image:input",CoordinateDomain.Image,CoordinateUnit.Pixel);var point=TypeRef.GeometryOf(GeometryKind.Point,frame);var original=TypeRef.RecordOf("sdk.roi-shape",new[]{new Port("kind",DataType.Text),new Port("center",point,false),new Port("direction-x",DataType.Number,false),new Port("direction-y",DataType.Number,false),new Port("radius",DataType.Number,false),new Port("inner-radius",DataType.Number,false),new Port("outer-radius",DataType.Number,false),new Port("width",DataType.Number,false),new Port("height",DataType.Number,false),new Port("angle-degrees",DataType.Number,false),new Port("start-radians",DataType.Number,false),new Port("end-radians",DataType.Number,false),new Port("major-arc",DataType.Boolean,false),new Port("vertices",TypeRef.SequenceOf(point),false),new Port("closed",DataType.Boolean,false)});Check(original.Fingerprint==RoiDeclarations.Shape.Fingerprint&&ReferenceEquals(RoiShapeValueAdapter.Declaration,RoiDeclarations.Shape),"ROI declaration changed");var reference=new OutputReference("roi","roi",RoiDeclarations.Sequence,scopeId:"flow");Check(BindingReferenceSerializer.Deserialize(BindingReferenceSerializer.Serialize(reference)).Type==TypeRef.SequenceOf(original),"ROI serializer roundtrip changed");});
-Test("real-repository-load-closed-choice-rejects-original-unchanged",()=>{ToolRegistry.RegisterTool(typeof(BlobAnalysisTool));PluginLoader.MarkAsLoaded();var folder=Path.Combine(AppContext.BaseDirectory,"fixtures");Directory.CreateDirectory(folder);var solution=new Solution{Id="field-map",SchemaVersion=2};var flow=new Workflow("flow","flow");flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=new BlobAnalysisParameters()});solution.Workflows.Add(flow);var document=JsonNode.Parse(JsonSerializer.Serialize(solution,WorkflowSerializationOptions.Default))!;document["Workflows"]![0]!["Nodes"]![0]!["Parameters"]!["Type"]=999;var path=Path.Combine(folder,"invalid-choice.solution");File.WriteAllText(path,document.ToJsonString());var bytes=File.ReadAllBytes(path);var time=File.GetLastWriteTimeUtc(path);var result=new SolutionRepository(Path.Combine(folder,"recovery")).LoadCandidate(path);Check(result.Candidate is null&&bytes.SequenceEqual(File.ReadAllBytes(path))&&time==File.GetLastWriteTimeUtc(path),"Load did not preserve/reject invalid choice");});
-Test("unknown-and-duplicate-presentation-keys-rejected",()=>{var unknown=new BlobAnalysisParameters();unknown.ResultPresentation.Judgments.Add(new(){Key="future-business-rule"});Check(unknown.ValidateStoredConfiguration().Count!=0,"unknown judgment accepted");var duplicate=new BlobAnalysisParameters();duplicate.ResultPresentation.Graphics.Add(duplicate.ResultPresentation.Graphics[0]);Check(duplicate.ValidateStoredConfiguration().Count!=0,"duplicate graphic key accepted");});
-Test("declarative-unset-defaults-prepare-publish-ack",()=>{var contract=schema??BlobInputContract.Describe();var document=Guid.NewGuid();var node=new BindingNodeId("flow","blob");var scope=new BindingScopeSnapshot(node,document,0,Array.Empty<BindingSource>(),Array.Empty<BindingNodeId>(),Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());var identity=new EditScopeIdentity(document,Guid.NewGuid(),node,0);var draft=new ParameterEditSession(contract.Inputs,BlobInputContract.CreateDefaults(),new ParameterBindingService(),scope,identity);Check(draft.Committed.Values.All(value=>value is not UnsetSetting),"declarative Unset leaked into committed settings");Check(draft.TryPrepare(identity,scope,out var proposal,out _),"default prepare rejected");draft.AcceptPublished(proposal!,draft.Committed,scope,false);Check(draft.Identity==identity&&!draft.HasInvalidDraft,"no-op default acknowledgement changed state");});
-Test("integer-physical-overflow-is-invalid-draft",()=>{var contract=schema??BlobInputContract.Describe();var threshold=BlobInputContract.Fields.Single(field=>field.LogicalKey=="setting.Threshold").Port;var draft=new ParameterEditSession(contract.Inputs,BlobInputContract.CreateDefaults());Check(!draft.Set(threshold.Id,new ConstantSetting(long.MaxValue))&&draft.HasInvalidDraft,"Int32 overflow escaped draft validation");});
-Test("style-aliases-cover-original-canonical-leaves",()=>{Check(BlobInputContract.LegacyStyleAliases.Count==2,"style aliases missing");foreach(var list in BlobInputContract.LegacyStyleAliases.Values)Check(list.Count==7&&list.All(id=>BlobInputContract.Fields.Any(field=>field.Port.Id==id&&field.LogicalKey.StartsWith("presentation.graphics."))),"style alias lost canonical leaves");});
-Test("integrated-save-rejects-closed-choice-before-target-or-backup-change",()=>{
-    var folder=Path.Combine(AppContext.BaseDirectory,"integrated-save");Directory.CreateDirectory(folder);
-    var repository=new SolutionRepository(Path.Combine(folder,"recovery"));
-    var solution=new Solution{Id="save-fields",SchemaVersion=2};var flow=new Workflow("flow","flow");
-    var parameters=new BlobAnalysisParameters();flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});solution.Workflows.Add(flow);
-    var path=Path.Combine(folder,"field.solution");Check(repository.Save(solution,path),"initial valid Save failed");
-    solution.Name="second-valid";Check(repository.Save(solution,path),"second valid Save failed");
-    var backup=repository.GetRecoveryPath(path);var bytes=File.ReadAllBytes(path);var oldBackup=File.ReadAllBytes(backup);var targetTime=File.GetLastWriteTimeUtc(path);var backupTime=File.GetLastWriteTimeUtc(backup);
-    parameters.Type=(BlobThresholdMode)999;
-    Check(!repository.Save(solution,path),"invalid choice Save succeeded");
-    Check(bytes.SequenceEqual(File.ReadAllBytes(path))&&oldBackup.SequenceEqual(File.ReadAllBytes(backup))&&targetTime==File.GetLastWriteTimeUtc(path)&&backupTime==File.GetLastWriteTimeUtc(backup),"rejected Save changed target or prior backup");
-    Check(repository.LoadCandidate(path).Candidate is not null,"last valid disk state cannot reopen");
+var tool=new BlobTool();var defaults=new BlobSettings();var schema=tool.SettingsSchema;
+if(args.Contains("inspect-default")){Console.WriteLine(JsonSerializer.Serialize(new{settings=defaults,issues=defaults.Validate()}));return 0;}
+if(args.Contains("export-fields")){Console.WriteLine(JsonSerializer.Serialize(new{schema,inputs=tool.Describe(defaults).Inputs,outputs=BlobSchema.Outputs},new JsonSerializerOptions{WriteIndented=true}));return 0;}
+var rows=new List<object>();
+void Test(string name,Action action){try{action();rows.Add(new{name,passed=true});}catch(Exception e){rows.Add(new{name,passed=false,error=e.ToString()});}}
+void Check(bool value,string error){if(!value)throw new Exception(error);}
+void Reject(Action action){try{action();}catch(Exception e)when(e is ArgumentException or InvalidOperationException or JsonException or InvalidDataException or OverflowException){return;}throw new Exception("应拒绝的配置被接受");}
+Test("runtime-4-inputs-54-settings-unique-declarations",()=>{Check(tool.Describe(defaults).Inputs.Count==4&&schema.Inputs.Count==54&&schema.Inputs.Select(p=>p.Id).Distinct().Count()==54,"字段数或身份重复");Check(schema.Presentation!.Fields.Select(f=>f.FieldId).ToHashSet().SetEquals(schema.Inputs.Select(p=>p.Id)),"元数据映射不完整");});
+Test("XML-defaults-and-private-settings-draft",()=>{var session=new ToolSettingsEditSession(tool,defaults);Check(defaults.Validate().Count==0,"默认值无效");var id=schema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId;session.ApplyFields(new Dictionary<string,object?>{{id,73L}});Check(((BlobSettings)session.CaptureSettings()).Threshold==73&&defaults.Threshold==128,"私有草稿污染原值");Reject(()=>session.ApplyFields(new Dictionary<string,object?>{{id,long.MaxValue}}));Check(((BlobSettings)session.CaptureSettings()).Threshold==73,"溢出污染有效草稿");});
+Test("closed-enums-and-judgment-definition-identity",()=>{Check((defaults with{Type=(BlobThresholdMode)999}).Validate().Count>0,"非法枚举被接受");Check((defaults with{Judgments=defaults.Judgments.Skip(1).ToArray()}).Validate().Count>0,"缺判定定义未拒绝");Check((defaults with{Judgments=defaults.Judgments.Append(defaults.Judgments[0]).ToArray()}).Validate().Count>0,"重判定未拒绝");});
+Test("strict-runtime-save-load-without-default-refill",()=>{
+    Check(PluginLoader.LoadPlugins(Path.Combine(Environment.GetEnvironmentVariable("S1_PRODUCT_ROOT")!,"plugins")),"插件装载失败");
+    var flow=new Workflow("flow","新配置");flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(defaults with{Threshold=73})});var solution=new Solution();solution.Workflows.Add(flow);
+    var folder=Path.Combine(Environment.GetEnvironmentVariable("S1_CASE_ROOT")!,"runtime-fields");Directory.CreateDirectory(folder);var path=Path.Combine(folder,"valid.solution");var repository=new SolutionRepository();Check(repository.Save(solution,path),repository.LastError??"保存失败");
+    Check(((BlobSettings)repository.LoadCandidate(path).Candidate!.Workflows[0].Nodes[0].RuntimeConfiguration!.CaptureSettings()).Threshold==73,"XML默认覆盖用户值");
+    foreach(var member in new[]{"Threshold","SegmentationMode"}){var bad=JsonNode.Parse(File.ReadAllText(path))!;bad["Workflows"]![0]!["Nodes"]![0]!["RuntimeConfiguration"]!["Settings"]!.AsObject().Remove(member);var file=Path.Combine(folder,member+".solution");File.WriteAllText(file,bad.ToJsonString());var bytes=File.ReadAllBytes(file);Check(repository.LoadCandidate(file).Candidate is null&&bytes.SequenceEqual(File.ReadAllBytes(file)),"缺字段被补默认或改写源文件");}
 });
-Console.WriteLine(JsonSerializer.Serialize(rows,new JsonSerializerOptions{WriteIndented=true}));
-return rows.All(row=>JsonSerializer.SerializeToElement(row).GetProperty("passed").GetBoolean())?0:1;
+Console.WriteLine(JsonSerializer.Serialize(rows,new JsonSerializerOptions{WriteIndented=true}));return rows.All(row=>JsonSerializer.SerializeToElement(row).GetProperty("passed").GetBoolean())?0:1;

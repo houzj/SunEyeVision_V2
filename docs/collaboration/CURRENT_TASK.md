@@ -274,3 +274,12 @@
 - 原O06/目标JSON已统一更新，硬性blobFileStructure和完整s4GoalPlan不变，生成器697锚点且幂等。VS设计时未验证，无新用户人工反馈，原视觉未通过反馈保留；M1/M2/M3及整体目标继续未完成/active。
 - 下一步删除根SDK Blob工程、旧参数/结果/转换并改写剩余消费者/测试/项目引用/加载器，清理发布残留；同步移除EditorDraftAdapter的ForBlob、SolutionCompatibilityAdapter旧Blob字段分支及SolutionLegacyBindingMigration内LegacyBlobFieldAliases，不保留旧项目兼容。现有后端仍需拒绝缺少RuntimeConfiguration的Blob旧配置，不能静默生成默认配置。
 - 本地ROI/位置常量、Runtime全局变量、缺省输入非推进快照、完整BlobDisplay图形文本消费、全部所需VM原件及完整交互仍待完成；不以本次主图像或混合链检查代替这些要求。
+
+## 2026-10-27 Blob两工程及设计时基础要求（最新）
+
+- Codex/main，基线246093e68145d5dab9a17f3fdc07f9ed38132089，单工作树单产品写者。Blob根目录现仅Runtime/Wpf；删除根SDK工程、八个旧入口/模型/转换源码及锁文件，调整真实消费者、解决方案及发布清理。Runtime缺配置明确拒绝，不自动补旧配置；XML判定字段缺失检查已实际修复。
+- 最终串行构建blob-two-project-ui-002：0错误/6613警告160.96秒；blob-two-project-release-003：0错误/6624警告110.05秒。正式清单development-6522eb8c267a4c02b90532351fe0b39a，760项，编译身份仍246093e6加列明增量，不冒用后续提交。
+- 当前正式Release：RuntimeUnits9、RuntimeAlgorithm5、RuntimeKernel16、RuntimeCatalog4、RuntimeWorkflow10、RuntimeDebug7、Components9、Algorithm9、DocumentEditing27、FieldEditing8、FullChain7、RuntimeImage7、WindowPresentation11；有无Wpf关联轨道及RuntimeEditor各8通过。ComponentDeployment047十八项通过，三文件及清单原SHA恢复。S1 Fields4/Workflow9通过。证据O06_BLOB_TWO_PROJECT_CHECKPOINT_20261027.json含源码、发布和619条加载身份；历史失败日志保留。
+- 四份旧SDK测试退出，不能称覆盖等价迁移：变量生产者/子程序需求、完整输入组合、动态成员选择、本地ROI/位置编辑仍有待补齐。DocumentEditing旧28项现在27项，WindowPresentation旧显示/ROI块未冒充完整显示验收。全部所需VM原件、完整显示XML、全局变量、VS设计器及真实人工验收尚未完成。
+- 用户确认设计时可用属于基础交付。继续同一真实视图、正式资源和同一动态组装链；允许C#动态字段，不要求全部手写XAML。补无参构造、设计时独立示例数据和正式资源，不能启动宿主/工作流/算法。设计器实际预览、运行时回归、人工视觉分开验收。目前只写入原O06方案，尚未实现，不称已支持。下一步修改Wpf真实视图及公共Presenter生命周期。
+- 原O06目标JSON和生成HTML已更新事实及设计时方案；完整s4GoalPlan和硬性目标树保持。M1/M2/M3均未完成，原视觉未通过反馈保留。本轮不创建新目标、不新增工程、不推送未验收改动。

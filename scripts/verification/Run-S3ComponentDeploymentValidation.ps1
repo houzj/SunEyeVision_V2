@@ -57,6 +57,9 @@ function Reject-Metadata([string]$name,[scriptblock]$change,[string]$reason) {
 }
 
 try {
+    if(Test-Path -LiteralPath (Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis')){throw '退出的SDK Blob目录仍在正式发布中'}
+    if($baseline.expectedPluginAssemblies -contains 'SunEyeVision.Tool.BlobAnalysis'){throw '清单仍要求退出的SDK Blob'}
+    $results.Add([ordered]@{name='retired-sdk-absent-in-clean-release';passed=$true})
     Invoke-Probe 'baseline-present' $false
     $env:S3_USE_GLOBAL_LOADER='1';$env:S3_EXPECT_REJECTION='0'
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track Components
@@ -83,27 +86,16 @@ try {
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeDebug
     if($LASTEXITCODE -ne 0){throw '缺少Wpf时Runtime已发布输入调试快照失败'}
     $results.Add([ordered]@{name='without-editor-runtime-debug';passed=$true;scope='已发布输入快照→真实HALCON，不重跑上游/不改来源身份；冻结设置、取消与资源排空'})
-    $sdkBlob='plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll'
-    Move-IntoHold $sdkBlob
-    $runtimeOnly=[Text.Encoding]::UTF8.GetString($original)|ConvertFrom-Json -AsHashtable -Depth 100
-    $runtimeOnly.entries=@($runtimeOnly.entries|Where-Object path -ne $sdkBlob)
-    $runtimeOnly.expectedPluginAssemblies=@($runtimeOnly.expectedPluginAssemblies|Where-Object {$_ -ne 'SunEyeVision.Tool.BlobAnalysis'})
-    $runtimeOnly|ConvertTo-Json -Depth 100|Set-Content -LiteralPath $manifest -Encoding utf8
-    try {
-        Invoke-Probe 'without-sdk-frontend-and-editor-toolbox' $false
-        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeCatalog
-        if($LASTEXITCODE -ne 0){throw '移除SDK入口及Wpf后中立目录/默认节点创建/运行/保存失败'}
-        $results.Add([ordered]@{name='runtime-without-sdk-frontend-and-editor';passed=$true;scope='正式EXE工具箱→Runtime目录→公共节点工厂→强类型设置→HALCON→保存重开；SDK入口/Wpf均缺席'})
-        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track RuntimeEditor
-        if($LASTEXITCODE -ne 0){throw 'SDK入口及Wpf缺席时真实Runtime参数窗口/文档保存/确认取消失败'}
-        $results.Add([ordered]@{name='runtime-window-without-sdk-frontend-and-editor';passed=$true;scope='实际MainWindow打开→通用Runtime设置视图→来源弹窗→私有输入/隐藏保存→非法阻断→确定取消/释放'})
-        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track FullChain
-        if($LASTEXITCODE -ne 0){throw 'SDK入口及Wpf缺席时默认工具箱拖放/连线/Runtime运行及保存重开失败'}
-        $results.Add([ordered]@{name='runtime-default-ui-without-sdk-frontend-and-editor';passed=$true;scope='实际工具箱Drop默认Runtime→语义图像自动绑定→HALCON及下游Region→私有调试→强类型保存重开'})
-        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeImage
-        if($LASTEXITCODE -ne 0){throw 'SDK Blob入口及Wpf缺席时Runtime与现行工具的图像消费失败'}
-        $results.Add([ordered]@{name='runtime-image-without-sdk-frontend-and-editor';passed=$true;scope='Runtime→现行SDK二值化→Runtime真实HALCON，像素/Domain/帧、精确端口准入及副本读者生命周期'})
-    } finally {[IO.File]::WriteAllBytes($manifest,$original)}
+    if(Test-Path -LiteralPath (Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis')){throw '退出的SDK Blob发布目录仍存在'}
+    & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeCatalog
+    if($LASTEXITCODE -ne 0){throw '无Wpf时Runtime目录/默认创建失败'}
+    $results.Add([ordered]@{name='runtime-catalog-without-editor';passed=$true})
+    & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track RuntimeEditor
+    if($LASTEXITCODE -ne 0){throw '无Wpf时真实Runtime参数窗口失败'}
+    $results.Add([ordered]@{name='runtime-window-without-editor';passed=$true})
+    & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeImage
+    if($LASTEXITCODE -ne 0){throw '无Wpf时Runtime与现行工具图像消费失败'}
+    $results.Add([ordered]@{name='runtime-image-without-editor';passed=$true})
     Restore-Held
 
     $runtime=@($baseline.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0})

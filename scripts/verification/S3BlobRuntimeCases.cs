@@ -1,99 +1,46 @@
-using System;
 using HalconDotNet;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Tool.BlobAnalysis;
-using System.Reflection;
-using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 
-// Reuse the guarded official-Release harness entry; this is S3, not an S2 pass claim.
 internal static class S2DocumentEditingCases
 {
-    [STAThread]
-    static int Main()
+    [STAThread] private static int Main()
     {
-        HOperatorSet.GetSystem("tsp_neighborhood", out var originalNeighborhood);
-        HOperatorSet.GetSystem("max_connection", out var originalLimit);
+        HOperatorSet.GetSystem("tsp_neighborhood",out var previous);HOperatorSet.GetSystem("max_connection",out var limit);
         try
         {
-            HOperatorSet.SetSystem("max_connection", 0);
-            var pixels = new byte[8 * 8]; pixels[2 * 8 + 2] = pixels[3 * 8 + 3] = 200;
-            using var image = HalImage.CreateFromBytes(pixels, 8, 8, 1);
-            BlobAnalysisParameters Settings() => new() {
-                ResolvedInputImage = image, Threshold = 100, UpperThreshold = 255,
-                IsAreaFilterEnabled = false, IsCircularityFilterEnabled = false,
-                IsRectangularityFilterEnabled = false, IsBlobCountFilterEnabled = false, OutputContours = false
-            };
-            HOperatorSet.SetSystem("tsp_neighborhood", 4);
-            var joined = new BlobAnalysisTool().Run(Settings());
-            try { Require(joined.IsSuccess && joined.FilteredBlobCount == 1 && joined.FilteredBlobs[0].Area == 2,
-                "Blob必须固定8邻域连接对角像素：" + joined.ErrorMessage); }
-            finally { joined.Resources.Dispose(); }
-            HOperatorSet.GetSystem("tsp_neighborhood", out var restored);
-            using (restored) Require(restored.I == 4, "成功后没有恢复调用线程原4邻域");
-            Console.WriteLine("通过：实际HALCON以8邻域连通，退出恢复调用线程4邻域");
-
-            HOperatorSet.SetSystem("max_connection", 1);
-            var rejected = new BlobAnalysisTool().Run(Settings());
-            try { Require(!rejected.IsSuccess && rejected.ErrorMessage?.Contains("BLOB_HALCON_MAX_CONNECTION") == true,
-                "全局连通上限不能截断候选后冒称成功"); }
-            finally { rejected.Resources.Dispose(); }
-            HOperatorSet.GetSystem("max_connection", out var unchangedLimit);
-            using (unchangedLimit) Require(unchangedLimit.I == 1, "算法擅自改了HALCON全局上限");
-            HOperatorSet.GetSystem("tsp_neighborhood", out var unchangedNeighborhood);
-            using (unchangedNeighborhood) Require(unchangedNeighborhood.I == 4, "拒绝执行污染线程设置");
-            Console.WriteLine("通过：连通全局上限异常明确拒绝，不擅改全局或线程设置");
-
-            HOperatorSet.SetSystem("max_connection", 0);
-            var separate = new byte[16 * 16];
-            separate[2 * 16 + 2] = 200;
-            for(int y = 8; y < 10; y++) for(int x = 8; x < 10; x++) separate[y * 16 + x] = 200;
-            using var secondImage = HalImage.CreateFromBytes(separate, 16, 16, 1);
-            var sorted = Settings(); sorted.ResolvedInputImage = secondImage;
-            sorted.SortMode = BlobSort.AreaDesc; sorted.IsBlobCountFilterEnabled = true; sorted.BlobCountLimit = 1;
-            var final = new BlobAnalysisTool().Run(sorted);
-            try { Require(final.IsSuccess && final.FilteredBlobCount == 1 && final.FilteredBlobs[0].Area == 4,
-                "应先生成全部候选、按面积降序，再取数量上限，而非提前取到小区域：" + final.ErrorMessage); }
-            finally { final.Resources.Dispose(); }
-            Console.WriteLine("通过：候选完整生成，筛选排序后才执行数量限制");
-            var ringPixels=new byte[32*24];
-            for(int r=2;r<=16;r++)for(int c=2;c<=16;c++)
-                if(!(r>=5&&r<=7&&c>=5&&c<=7)&&!(r>=10&&r<=12&&c>=10&&c<=12))ringPixels[r*32+c]=200;
-            for(int r=20;r<=21;r++)for(int c=25;c<=26;c++)ringPixels[r*32+c]=200;
-            using var rings=HalImage.CreateFromBytes(ringPixels,32,24,1);
-            var delegated=Settings();delegated.ResolvedInputImage=rings;delegated.OutputContours=true;delegated.OutputBinaryImage=true;
-            var areaRule=delegated.ResultPresentation.Judgments.Single(x=>x.Key=="per-blob-area");
-            areaRule.Enabled=true;areaRule.Min=10;areaRule.Max=9999;
-            var actual=new BlobAnalysisTool().Run(delegated);
-            try
+            using var resources=new FrozenOutputResources();
+            BlobOutput Run(HalImage image,BlobSettings settings){using var snapshot=image.CaptureSnapshot(new(Guid.NewGuid(),"native-input"));return new BlobSession().Execute(settings,snapshot,resources);}
+            var settings=new BlobSettings{Threshold=100,IsAreaFilterEnabled=false};
+            HOperatorSet.SetSystem("max_connection",0);HOperatorSet.SetSystem("tsp_neighborhood",4);
+            var bytes=new byte[64];bytes[18]=bytes[27]=200;using var input=HalImage.CreateFromBytes(bytes,8,8,1);
+            using(var output=Run(input,settings))Require(output.Count==1&&output.TotalArea==2,"不是8邻域连接");
+            HOperatorSet.GetSystem("tsp_neighborhood",out var restored);using(restored)Require(restored.I==4,"没有恢复调用线程设置");
+            Console.WriteLine("通过：Runtime真实HALCON固定8邻域并恢复原线程设置");
+            HOperatorSet.SetSystem("max_connection",1);var rejected=false;
+            try{using var output=Run(input,settings);}catch(InvalidOperationException e)when(e.Message.Contains("BLOB_HALCON_MAX_CONNECTION")){rejected=true;}
+            Require(rejected,"允许HALCON全局截断候选");HOperatorSet.GetSystem("max_connection",out var unchanged);using(unchanged)Require(unchanged.I==1,"擅自修改全局限制");
+            Console.WriteLine("通过：拒绝全局截断且不修改全局限制");HOperatorSet.SetSystem("max_connection",0);
+            var separate=new byte[256];separate[34]=200;for(var y=8;y<10;y++)for(var x=8;x<10;x++)separate[y*16+x]=200;
+            using var multiple=HalImage.CreateFromBytes(separate,16,16,1);
+            using(var output=Run(multiple,settings with{SortMode=BlobSort.AreaDesc,IsBlobCountFilterEnabled=true,BlobCountLimit=1}))Require(output.Count==1&&output.TotalArea==4,"没有先排序再限数");
+            Console.WriteLine("通过：完整候选筛选排序后才执行数量限制");
+            var ring=new byte[32*24];for(var y=2;y<=16;y++)for(var x=2;x<=16;x++)if(!(y>=5&&y<=7&&x>=5&&x<=7)&&!(y>=10&&y<=12&&x>=10&&x<=12))ring[y*32+x]=200;
+            for(var y=20;y<=21;y++)for(var x=25;x<=26;x++)ring[y*32+x]=200;using var rings=HalImage.CreateFromBytes(ring,32,24,1);
+            var judgments=settings.Judgments.Select(r=>r.Key=="per-blob-area"?r with{Enabled=true,Minimum=10,Maximum=9999}:r).ToArray();
+            using(var output=Run(rings,settings with{OutputBoundary=true,Judgments=judgments}))
             {
-                Require(actual.IsSuccess&&actual.FilteredBlobCount==2&&actual.FilteredTotalArea==211&&!actual.IsPass,"兼容入口丢失最终集合/NG："+actual.ErrorMessage);
-                var core=(BlobOutput?)typeof(BlobAnalysisResults).GetProperty("RuntimeOutput",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(actual);
-                Require(core is not null&&core.Measurements[0].Boundary.Count==3&&core.Measurements[0].Area==207,"入口未持有真实Runtime完整边界");
-                Require(actual.BlobAreas.SequenceEqual(core!.Measurements.Select(x=>x.Area))&&actual.BlobRegions!.PixelCount==211,"兼容输出数组/区域与内核不一致");
-                using var retained=core.Region.AcquireReader();actual.Resources.Dispose();
-                Require(retained.RunCount>0,"旧结果释放破坏已有Runtime读者");
+                Require(output.Count==2&&output.TotalArea==211&&!output.IsPass&&output.Measurements[0].Boundary.Count==3,"多孔/判定丢失");
+                using var reader=output.Region.AcquireReader();output.Dispose();Require(reader.RunCount>0,"输出退出破坏独立读者");
             }
-            finally{actual.Resources.Dispose();}
-            Console.WriteLine("通过：旧入口委派真实内核，双孔/NG/数组/区域一致，旧结果释放由scope承接");
+            Console.WriteLine("通过：单一Runtime输出保留双孔边界/NG及独立Region读者");
             using var dark=HalImage.CreateFromBytes(new byte[64],8,8,1);
-            var empty=Settings();empty.ResolvedInputImage=dark;
-            empty.ResultPresentation.Judgments.Single(x=>x.Key=="output-not-empty").Enabled=true;
-            var noBlob=new BlobAnalysisTool().Run(empty);
-            try{Require(noBlob.IsSuccess&&!noBlob.IsPass&&noBlob.FilteredBlobCount==0,"布尔非空判定被错当成范围判定");}
-            finally{noBlob.Resources.Dispose();}
-            Console.WriteLine("通过：空结果保持执行成功/业务NG，兼容布尔判断语义");
-            Console.WriteLine("S3算法/兼容入口检查：5组通过；可选编辑器、正式发现装配及完整阶段仍未核收。");
-            return 0;
+            using(var output=Run(dark,settings with{Judgments=settings.Judgments.Select(r=>r.Key=="output-not-empty"?r with{Enabled=true}:r).ToArray()}))Require(output.Count==0&&!output.IsPass,"空结果应为执行成功、业务NG");
+            Console.WriteLine("通过：空结果执行完成且业务判定NG");Console.WriteLine("S3 Runtime算法检查：5组通过；不代表完整宿主、VM视觉或人工验收。");return 0;
         }
-        catch (Exception error) { Console.Error.WriteLine(error); return 1; }
-        finally
-        {
-            HOperatorSet.SetSystem("max_connection", originalLimit);
-            HOperatorSet.SetSystem("tsp_neighborhood", originalNeighborhood);
-            originalLimit.Dispose(); originalNeighborhood.Dispose();
-        }
+        catch(Exception e){Console.Error.WriteLine(e);return 1;}
+        finally{HOperatorSet.SetSystem("max_connection",limit);HOperatorSet.SetSystem("tsp_neighborhood",previous);limit.Dispose();previous.Dispose();}
     }
-    static void Require(bool condition, string error) { if(!condition) throw new Exception(error); }
+    private static void Require(bool value,string error){if(!value)throw new Exception(error);}
 }

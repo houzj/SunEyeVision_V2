@@ -51,108 +51,26 @@ internal static class S2DocumentEditingCases
             Require(components.Count(c=>c.ToolId=="BlobAnalysis"&&c.Role==ToolComponentRole.Editor)==(expectEditor?1:0),"可选Editor登记不符");
             Console.WriteLine("通过：正式PluginManager发现/准入/注册，单ToolId及组件角色正确");
             VerifyRuntimeConfiguration();
-            var parameters=ToolRegistry.CreateParameters("BlobAnalysis");
-            void Set(string name,object value)=>parameters.GetType().GetProperty(name)!.SetValue(parameters,value);
-            Set("Threshold",100);Set("IsAreaFilterEnabled",false);Set("IsBlobCountFilterEnabled",false);Set("OutputBlobImage",true);
-            var node=new WorkflowNodeBase("blob","blob","Blob","BlobAnalysis"){Parameters=parameters};
-            var tool=node.CreateInstance()??throw new Exception("节点无法创建工具");
-            var editor=ToolRegistry.CreateEditorFactory(tool);
-            Require(editor is null,"Blob结果页仍依赖旧SDK视图工厂");
-            EnsurePresentationApplication();
-            VerifySettingsView(expectEditor);
-            using var resultView=ToolRegistry.CreateResultView("BlobAnalysis")??throw new Exception("Runtime声明没有结果视图");
+            var node=new WorkflowNodeBase("blob","blob","Blob","BlobAnalysis"){
+                RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis").WithOverrides(new Dictionary<string,object?>{{"Threshold",100},{"IsAreaFilterEnabled",false},{"OutputGrayImage",true}})};
+            EnsurePresentationApplication();VerifySettingsView(expectEditor);
+            using var resultView=ToolRegistry.CreateResultView("BlobAnalysis")??throw new Exception("Runtime没有结果视图");
             if(expectEditor)
             {
-                var debug=SunEyeVision.UI.Services.Editing.ToolConfigurationEditors.CreateControl(tool);
-                Require(debug is SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl
-                    &&resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","默认配置或独立Wpf结果视图装配错误");
+                Require(resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","可选Wpf结果视图错误");
                 var refs=resultView.View.GetType().Assembly.GetReferencedAssemblies().Select(reference=>reference.Name).ToArray();
-                Require(!refs.Contains("SunEyeVision.Plugin.SDK")&&!refs.Contains("SunEyeVision.UI"),"Blob.Wpf直接依赖SDK或UI宿主");
-                Console.WriteLine("通过：Runtime提供结果声明、可选Wpf中立工厂供应结果页且不引用SDK；配置仍由宿主声明页组装");
+                Require(!refs.Contains("SunEyeVision.Plugin.SDK")&&!refs.Contains("SunEyeVision.UI"),"Blob.Wpf依赖SDK或UI宿主");
+                Console.WriteLine("通过：可选Wpf中立工厂供应真实Runtime结果页，不依赖SDK或UI宿主");
             }
             else
             {
-                Require(resultView is SunEyeVision.Plugin.Wpf.Presenters.Results.DeclaredResultTable,"缺少Wpf时没有通用声明结果表");
-                Console.WriteLine("通过：缺少Wpf时保留算法与通用声明结果表");
-            }
-            if(!expectEditor)
-            {
-                void Progress(string step){Console.WriteLine("降级窗口进度："+step);File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"fallback-editor-progress.log"),step+Environment.NewLine);}
-                EnsurePresentationApplication();
-                System.Threading.SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher));
-                var documentFolder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"fallback-document");Directory.CreateDirectory(documentFolder);
-                ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(documentFolder);
-                var context=new SunEyeVision.UI.Services.Editing.NodeOpenContext(null!,null);
-                Progress("创建真实节点打开链");
-                Require(new SunEyeVision.UI.Services.Editing.NodeOpenDecisionChain().Execute(node,context)
-                    &&context.DebugControl is SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl
-                    &&context.CreatedWindow is not null,"缺编辑器时真实节点打开链没有基础配置入口");
-                var fallback=(SunEyeVision.UI.Services.Editing.DeclaredToolConfigurationControl)context.DebugControl;
-                Progress("节点打开链已创建基础窗口");
-                var editorFlow=new SunEyeVision.Workflow.Workflow("component-editor","缺少可选组件的配置草稿");editorFlow.Nodes.Add(node);
-                var editorSolution=new Solution();editorSolution.Workflows.Add(editorFlow);
-                ServiceInitializer.SolutionManager.SetCurrentSolution(editorSolution);
-                var edits=ServiceInitializer.SolutionManager.Session!.Editing;
-                void BindDraft(WorkflowNodeBase draft){fallback.SetCurrentNode(draft);fallback.SetParameters(draft.Parameters);fallback.SetDataProvider(new DataSourceQueryService());}
-                using var draftContext=new SunEyeVision.UI.Services.Editing.ProductionEditorContext(edits.Host,editorFlow.Id,node,()=>true,BindDraft,documentEdits:edits);
-                BindDraft(draftContext.DraftNode);
-                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.AttachDraftContext(fallback,draftContext);
-                var formalThreshold=parameters.GetType().GetProperty("Threshold")!.GetValue(parameters);
-                Progress("私有草稿上下文已附着");
-                var thresholdId=SunEyeVision.Tool.BlobAnalysis.BlobInputContract.Fields.Single(field=>field.LegacyPath=="Threshold").Port.Id;
-                if(!context.CreatedWindow.IsVisible)context.CreatedWindow.Show();
-                Progress("窗口已显示");
-                context.CreatedWindow.UpdateLayout();
-                Progress("窗口同步布局已完成");
-                var dispatcher=System.Windows.Threading.Dispatcher.CurrentDispatcher;
-                Require(!dispatcher.HasShutdownStarted,"验证宿主Dispatcher提前关闭");
-                var frame=new System.Windows.Threading.DispatcherFrame();
-                dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));
-                System.Windows.Threading.Dispatcher.PushFrame(frame);
-                Progress("真实模板已完成布局");
-                var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(fallback).Single();
-                var pages=Find<System.Windows.Controls.TabControl>(fields).Single();
-                pages.SelectedItem=pages.Items.Cast<System.Windows.Controls.TabItem>().Single(tab=>Equals(tab.Header,"运行参数"));
-                context.CreatedWindow.UpdateLayout();
-                dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                var threshold=fields.Fields.Single(field=>field.FieldId==thresholdId).InputElement as System.Windows.Controls.TextBox
-                    ??throw new Exception("真实数值模板没有输入框");
-                Require(threshold.IsVisible&&threshold.ActualWidth>0,"降级窗口没有显示实际待检数值字段");
-                DependencyObject? ancestor=threshold;
-                var ancestry=new List<string>();
-                while(ancestor is not null&&ancestor is not SunEyeVision.Plugin.Wpf.Fields.NativeNumberField)
-                {
-                    ancestry.Add(ancestor.GetType().AssemblyQualifiedName!);
-                    ancestor=System.Windows.Media.VisualTreeHelper.GetParent(ancestor);
-                }
-                Require(ancestor is SunEyeVision.Plugin.Wpf.Fields.NativeNumberField numeric&&ReferenceEquals(numeric.TextEditor,threshold)
-                    &&numeric.NativeControl is SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange,
-                    "降级窗口未使用已迁入的数值控件模板；实际="+(ancestor is SunEyeVision.Plugin.Wpf.Fields.NativeNumberField actual?actual.NativeControl.GetType().AssemblyQualifiedName:"无适配祖先："+string.Join(" → ",ancestry)));
-                threshold.Text="210";
-                Progress("有效数字已键入");
-                Require(Convert.ToInt32(draftContext.DraftNode.Parameters.GetType().GetProperty("Threshold")!.GetValue(draftContext.DraftNode.Parameters))==210
-                    &&Equals(parameters.GetType().GetProperty("Threshold")!.GetValue(parameters),formalThreshold),"默认配置页未写入私有草稿或提前污染正式参数");
-                threshold.Text="invalid";
-                Progress("无效数字已键入");
-                Require(!fallback.TryValidateEditor(out var invalid)&&invalid.Length>0,"基础配置入口接受了无效数字");
-                threshold.Text="100";
-                Progress("已修正数字");
-                Require(fallback.TryValidateEditor(out _),"基础配置入口无法从无效草稿恢复");
-                context.CreatedWindow.Close();
-                Progress("窗口已关闭");
-                Require(Equals(parameters.GetType().GetProperty("Threshold")!.GetValue(parameters),formalThreshold),"关闭降级窗口未丢弃私有草稿");
-                Console.WriteLine("通过：缺专用编辑器时，真实节点打开基础配置窗口并按声明编辑参数");
+                Require(resultView is SunEyeVision.Plugin.Wpf.Presenters.Results.DeclaredResultTable,"缺Wpf时没有通用声明结果表");
+                Console.WriteLine("通过：缺Wpf时保留新Runtime配置和通用声明结果表；真实窗口另由RuntimeEditor轨道验证");
             }
             using var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)200,64).ToArray(),8,8,1);
             {
                 var runtime=ToolRegistry.CreateRuntime("BlobAnalysis");var state=runtime.CreateSettings();var schema=runtime.Describe(state);
                 Require(state.GetType()==runtime.SettingsType,"注册入口未创建真实运行参数类型");
-                foreach(var name in new[]{"Type","SortMode","SegmentationMode"})
-                    Require(parameters.GetType().GetProperty(name)!.PropertyType==runtime.SettingsType.GetProperty(name)!.PropertyType,
-                        "配置消费仍使用重复枚举类型："+name);
-                foreach(var name in new[]{"ThresholdType","BlobSortMode","BlobSegmentationMode"})
-                    Require(parameters.GetType().Assembly.GetType("SunEyeVision.Tool.BlobAnalysis."+name) is null,
-                        "旧Blob枚举仍在外层程序集："+name);
                 var imagePort=schema.Inputs.Single(port=>port.Type.Shape==ValueShape.Resource&&port.Type.Resource==ResourceKind.Image);
                 using var frozen=image.CaptureSnapshot(new(Guid.NewGuid(),"registered-runtime-input"));
                 using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
@@ -173,11 +91,12 @@ internal static class S2DocumentEditingCases
             using var execution=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image)));
             Require(execution.Success&&execution.NodeResults.TryGetValue("blob",out var nodeResult),"正式工作流失败："+string.Join(";",execution.Errors??new()));
             var result=execution.NodeResults["blob"].Result??throw new Exception("工作流没有Blob结果");
-            var runtimeOutput=result.GetType().GetProperty("RuntimeOutput",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.GetValue(result)!;
-            Require(ReferenceEquals(runtimeOutput.GetType().GetProperty("Measurements")!.GetValue(runtimeOutput),result.GetType().GetProperty("FilteredBlobs")!.GetValue(result))
-                &&result.GetType().Assembly.GetType("SunEyeVision.Tool.BlobAnalysis.BlobResult") is null,
-                "现行外壳仍复制逐Blob结果，或旧BlobResult模型未删除");
-            Require(result.IsSuccess&&Convert.ToInt32(result.GetType().GetProperty("FilteredBlobCount")!.GetValue(result))==1&&Convert.ToDouble(result.GetType().GetProperty("FilteredTotalArea")!.GetValue(result))==64,"真实节点结果不符");
+            var runtimeResult=(RuntimeToolResults)result;
+            Require(runtimeResult.Output is not null,"缺少实际Runtime输出");
+            var resultValues=new InputValues(runtimeResult.BindingOutputSchema!.Outputs,runtimeResult.Output!.ToValues());
+            var rowPort=((SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)ToolRegistry.CreateRuntime("BlobAnalysis")).ResultProjection.Rows!.PortId;
+            var resultRows=resultValues.Get<SequenceValue>(rowPort);
+            Require(resultRows.Count==1&&((RecordValue)resultRows[0]!).Get<double>("area")==64,"新Runtime真实节点结果不符");
             Require(execution.DeclaredOutputs.Count==1,"正式执行未发布声明结果");
             Console.WriteLine("通过：正式节点与WorkflowExecutionEngine真实HALCON执行、声明结果发布，Blob面积64");
             {
@@ -206,7 +125,7 @@ internal static class S2DocumentEditingCases
             {
                 using var repeated=WithoutUiPump(start);
                 Require(repeated.Success&&executor.CurrentState==WorkflowExecutionState.Idle&&executor.CurrentContext is null,
-                    "兼容执行入口仍依赖UI回调或未释放会话");
+                    "公开执行入口仍依赖UI回调或未释放会话");
             }
             Console.WriteLine("通过：三个正式执行入口在WPF上下文且不处理UI消息时完成真实HALCON执行与会话清理");
             using(var cancelledSource=new CancellationTokenSource())
@@ -220,7 +139,7 @@ internal static class S2DocumentEditingCases
             using(var recovered=WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image))))
                 Require(recovered.Success,"取消清理后无法开始下一次运行");
             Console.WriteLine("通过：已取消请求在无UI消息泵时返回Cancelled并清理，下一次真实运行成功");
-            Console.WriteLine($"S3组件消费：{(expectEditor?9:10)}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
+            Console.WriteLine($"S3组件消费：{9}组通过；Editor={(expectEditor?"存在":"缺席")}。不是完整新UI或整个S3验收。");return 0;
         }
         catch(Exception e){Console.Error.WriteLine(e);return 1;}
     }
@@ -350,7 +269,7 @@ internal static class S2DocumentEditingCases
         Reject(()=>mismatch.Deserialize<Solution>(WorkflowSerializationOptions.Default));
         var absent=JsonNode.Parse(json)!;absent["Workflows"]![0]!["Nodes"]![0]!["RuntimeConfiguration"]=null;
         Reject(()=>absent.Deserialize<Solution>(WorkflowSerializationOptions.Default));
-        Console.WriteLine("通过：中立Runtime设置进入实际节点编辑/冻结/冲突/撤销重做/接受回滚、正式保存重开及节点直接HALCON执行，拒绝缺失/重复/错型和双模型；工具箱/参数页默认入口尚未切换；新调度链另见RuntimeWorkflow用例");
+        Console.WriteLine("通过：中立Runtime设置进入实际节点编辑/冻结/冲突/撤销重做/接受回滚、正式保存重开及节点直接HALCON执行，拒绝缺失/重复/错型和双模型；默认UI整链另见FullChain，调度链另见RuntimeWorkflow用例");
     }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
     private sealed class DirectRuntimeContext(IOutputResources resources,string nodeId="direct-runtime"):IToolExecutionContext

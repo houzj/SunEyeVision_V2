@@ -4,6 +4,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 . "$PSScriptRoot/Release.Common.ps1"
 $root=Split-Path -Parent $PSScriptRoot
+$appRoot=[IO.Path]::TrimEndingDirectorySeparator((Resolve-Path -LiteralPath $AppPath).Path)
+$retiredBlob=[IO.Path]::GetFullPath((Join-Path $appRoot 'plugins/SunEyeVision.Tool.BlobAnalysis'))
+$expectedRetired=[IO.Path]::Combine($appRoot,'plugins','SunEyeVision.Tool.BlobAnalysis')
+if($retiredBlob -cne $expectedRetired -or -not $retiredBlob.StartsWith($appRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw '退出工程清理路径越界'}
+if(Test-Path -LiteralPath $retiredBlob){Remove-Item -LiteralPath $retiredBlob -Recurse -Force;Write-Output '已清理退出的Blob SDK发布目录。'}
 [xml]$solution=Get-Content (Join-Path $root 'SunEyeVision.slnx') -Raw
 $tools=@($solution.SelectNodes('//Project')|ForEach-Object{Get-Item (Join-Path $root $_.Path)}|
     Where-Object{(Get-Content $_.FullName -Raw)-match '<IsToolPlugin>true</IsToolPlugin>'})

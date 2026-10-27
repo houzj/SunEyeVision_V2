@@ -9,6 +9,11 @@ using SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 internal static class S2DocumentEditingCases
 {
+    private static IReadOnlyList<BlobJudgment> Rules(BlobJudgment rule)
+    {
+        var rules=new BlobSettings().Judgments;return rules.Any(r=>r.Key==rule.Key)
+            ?rules.Select(r=>r.Key==rule.Key?rule:r).ToArray():rules.Append(rule).ToArray();
+    }
     private static int _passed;
     private static readonly BlobSettings Basic = new() { IsAreaFilterEnabled = false, OutputGrayImage = false, IsBlobCountFilterEnabled = false };
     private static int Main()
@@ -88,7 +93,7 @@ internal static class S2DocumentEditingCases
                 Require(settings.Threshold==128&&settings.UpperThreshold==255&&settings.FilterAreaMin==10&&settings.FilterAreaMax==999999
                     &&settings.BlobCountLimit==1000&&settings.OutputGrayImage&&!settings.OutputBinaryImage&&settings.Judgments.Count==12,"XML默认值未生效");
                 var changed=settings with{Threshold=73,UpperThreshold=211,FilterAreaMax=9999999,BlobCountLimit=993,
-                    Judgments=new[]{new BlobJudgment("per-blob-area",true,true,19,750)}};
+                    Judgments=Rules(new BlobJudgment("per-blob-area",true,true,19,750))};
                 var restored=JsonSerializer.Deserialize<BlobSettings>(JsonSerializer.Serialize(changed))!;
                 Require(restored.Threshold==73&&restored.UpperThreshold==211&&restored.FilterAreaMax==9999999&&restored.BlobCountLimit==993
                     &&restored.Judgments.SequenceEqual(changed.Judgments),"XML默认覆盖已保存的用户值");
@@ -97,14 +102,16 @@ internal static class S2DocumentEditingCases
             Case("Runtime直接调用按XML拒绝越界与伪造判定，不依赖SDK界面校验",()=>{
                 IToolDefinition definition=new BlobTool();
                 var invalid=new[] {
+                    new BlobSettings { Judgments=Array.Empty<BlobJudgment>() },
+                    new BlobSettings { Judgments=new BlobSettings().Judgments.Skip(1).ToArray() },
                     new BlobSettings { BlobCountLimit=20001 },
                     new BlobSettings { FilterAreaMax=10000000 },
                     new BlobSettings { SegmentationMode=BlobSegmentationMode.DoubleThreshold,Threshold=200,UpperThreshold=199 },
-                    new BlobSettings { Judgments=new[]{new BlobJudgment("white-ratio",false,true,0,101)} },
-                    new BlobSettings { Judgments=new[]{new BlobJudgment("average-circularity",false,true,-0.01,1)} },
-                    new BlobSettings { Judgments=new[]{new BlobJudgment("per-blob-area",true,false,0,1,BlobJudgmentKind.Boolean)} },
-                    new BlobSettings { Judgments=new[]{new BlobJudgment("output-not-empty",true,false,0,0,BlobJudgmentKind.Boolean)} },
-                    new BlobSettings { Judgments=new[]{new BlobJudgment("unknown",false,false,0,1)} }
+                    new BlobSettings { Judgments=Rules(new BlobJudgment("white-ratio",false,true,0,101)) },
+                    new BlobSettings { Judgments=Rules(new BlobJudgment("average-circularity",false,true,-0.01,1)) },
+                    new BlobSettings { Judgments=Rules(new BlobJudgment("per-blob-area",true,false,0,1,BlobJudgmentKind.Boolean)) },
+                    new BlobSettings { Judgments=Rules(new BlobJudgment("output-not-empty",true,false,0,0,BlobJudgmentKind.Boolean)) },
+                    new BlobSettings { Judgments=Rules(new BlobJudgment("unknown",false,false,0,1)) }
                 };
                 using var resources=new FrozenOutputResources();
                 var inputs=new InputValues(Array.Empty<Port>(),new Dictionary<string,object?>());
@@ -178,7 +185,7 @@ internal static class S2DocumentEditingCases
             Case("最终集合、双孔边界、NG保留和请求输出", () => {
                 using var factory = new FrozenOutputResources();
                 using var input = Image(32,24,(r,c) => r>=2&&r<=16&&c>=2&&c<=16 && !(r>=5&&r<=7&&c>=5&&c<=7) && !(r>=10&&r<=12&&c>=10&&c<=12) || r>=20&&r<=21&&c>=25&&c<=26);
-                using var result = new BlobSession().Execute(Basic with { Judgments = new[] {new BlobJudgment("per-blob-area", true, true, 10, 9999)} }, input, factory, requested: BlobOutputRequest.GrayImage|BlobOutputRequest.BinaryImage|BlobOutputRequest.Boundary);
+                using var result = new BlobSession().Execute(Basic with { Judgments = Rules(new BlobJudgment("per-blob-area", true, true, 10, 9999)) }, input, factory, requested: BlobOutputRequest.GrayImage|BlobOutputRequest.BinaryImage|BlobOutputRequest.Boundary);
                 Require(result.Count==2 && result.TotalArea==211 && result.Measurements[0].Area==207 && !result.IsPass, "最终集合或NG被过滤");
                 var ring=result.Measurements[0];
                 Require(ring.Boundary.Count==3 && ring.Boundary.Count(p=>p.Role=="hole"&&p.ParentId is not null)==2, "双孔边界拓扑丢失");

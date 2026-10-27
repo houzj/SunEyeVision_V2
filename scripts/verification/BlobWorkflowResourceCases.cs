@@ -6,7 +6,8 @@ using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Tool.BlobAnalysis;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Workflow;
 
 internal static class WorkflowCases
@@ -16,23 +17,21 @@ internal static class WorkflowCases
   try {
    var pixels=new byte[32*32];for(int y=4;y<8;y++)for(int x=3;x<7;x++)pixels[y*32+x]=255;
    using var input=HalImage.CreateFromBytes(pixels,32,32,1);
-   ToolRegistry.RegisterTool(typeof(BlobAnalysisTool));
+   if(!PluginLoader.LoadPlugins(Path.Combine(Environment.GetEnvironmentVariable("S1_PRODUCT_ROOT")!,"plugins")))throw new Exception("Runtime registration failed");
    var logger=new FixtureLogger();var engine=new WorkflowEngine(logger);var flow=engine.CreateWorkflow("s1-fixed-native-chain","Blob actual native chain");
-   var parameters=new BlobAnalysisParameters{IsAreaFilterEnabled=false,IsCircularityFilterEnabled=false,IsRectangularityFilterEnabled=false,IsBlobCountFilterEnabled=false,Threshold=128,UpperThreshold=255,OutputBlobImage=true,OutputBinaryImage=true,OutputContours=true};
-   flow.AddNode(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=parameters});
+   flow.AddNode(new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings{IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,OutputBoundary=true})});
    var runner=new WorkflowExecutionEngine(engine,new UnusedPluginManager(),logger);
    using var run=await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,inputImage:input)).WaitAsync(TimeSpan.FromSeconds(30));
    if(!run.Success)throw new Exception("Actual Workflow failed: "+string.Join(";",run.Errors));
    var output=run.DeclaredOutputs.Single();
    var first=run.AcquireDeclaredOutput(output.Identity);var second=run.AcquireDeclaredOutput(output.Identity);
-   var records=second.Values!.Read(BlobOutputContract.BlobsPortId);
+   var records=second.Values!.Read(BlobSchema.BlobsPort);
    if(records.Count!=1||records.GetElement(0).GetField("area").GetScalar<double>()!=16)throw new Exception("Native Blob record differs from 4x4 fixture");
-   var port=BindingClrAdapter.DescribeOutput(BlobOutputContract.Describe().Single(o=>o.Name=="GrayImage"));
-   var image=second.Values.Get<IReadOnlyImage>(port.Id);
+   var image=second.Values.Get<IReadOnlyImage>(BlobSchema.Field(5));
    // S3 captures the actual input snapshot before the kernel runs. Gray/Binary/Region retain that
    // physical source; publication has its separate output.Identity and must not relabel the frame.
    var blobRegion=second.Values.Get<IReadOnlyRegion>(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSchema.RegionPort);
-   if(image.Frame.ProducerRun!=output.Identity||image.Frame.SourcePortId!=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool.ImageInput
+   if(image.Frame.ProducerRun is not null||image.Frame.SourcePortId is not null||image.Frame.SourceId!="workflow-input:"+output.Identity.RunId.ToString("N")
       ||image.EffectiveDomain.SourceFrame!=image.Frame||blobRegion.SourceFrame!=image.Frame)
        throw new Exception("Actual input capture / output publication / Region provenance is inconsistent");
    var frame=image.Frame;var pixelLease=image.AcquirePixels();var region=pixelLease.AcquireDomainReader();

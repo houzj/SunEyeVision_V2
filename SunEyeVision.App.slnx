@@ -19,7 +19,8 @@
   <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   <Project Path="Src/UI/SunEyeVision.UI.csproj" />
   <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
-  <Project Path="tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
+  <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
+  <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
   <Project Path="tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
   <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
   <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />

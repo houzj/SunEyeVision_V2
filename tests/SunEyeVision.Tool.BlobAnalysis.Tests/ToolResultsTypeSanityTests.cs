@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Tool.BlobAnalysis;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using Xunit;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Tests;
@@ -27,7 +27,7 @@ public class ToolResultsTypeSanityTests
         var ns = type.Namespace ?? string.Empty;
 
         // 具体实现/UI 专属命名空间：拦截（含数组/泛型元素的同名命名空间判断由调用方完成）
-        if (ns.StartsWith("OpenCvSharp") ||
+        if (ns.StartsWith("OpenCvSharp") || ns.StartsWith("HalconDotNet") || ns.StartsWith("SunEyeVision.Plugin.SDK") ||
             ns.StartsWith("System.Windows.Media") ||
             ns.StartsWith("System.Drawing") ||
             ns.StartsWith("System.Windows.Media.Imaging"))
@@ -60,14 +60,14 @@ public class ToolResultsTypeSanityTests
     }
 
     [Fact]
-    public void BlobAnalysisResults_NoConcreteTypeLeak()
+    public void BlobOutput_NoConcreteTypeLeak()
     {
-        AssertNoConcreteTypeLeak(typeof(BlobAnalysisResults));
+        AssertNoConcreteTypeLeak(typeof(BlobOutput));
     }
 
     [Fact]
     public void RuntimeBlobMeasurement_NoConcreteTypeLeak()
     {
-        AssertNoConcreteTypeLeak(typeof(Runtime.BlobMeasurement));
+        AssertNoConcreteTypeLeak(typeof(BlobMeasurement));
     }
 }

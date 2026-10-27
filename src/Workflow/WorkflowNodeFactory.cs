@@ -70,8 +70,11 @@ namespace SunEyeVision.Workflow
 return null;
                 }
 
-                if(parameters is null&&ToolRegistry.HasRuntime(toolId))
+                if(ToolRegistry.HasRuntime(toolId))
+                {
+                    if(parameters is not null)throw new ArgumentException("Runtime工具不接受SDK参数。",nameof(parameters));
                     return new AlgorithmNode(nodeId,nodeName,dispName,RuntimeToolConfiguration.Create(toolId));
+                }
 
                 // 创建工具实例
                 var tool = ToolRegistry.CreateToolInstance(toolId);

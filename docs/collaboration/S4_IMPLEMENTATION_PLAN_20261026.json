@@ -2,9 +2,19 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27 Runtime与现行SDK图像消费者和主图像已接通，真实HALCON及实际窗口验证通过；继续删除根SDK Blob工程、旧模型/转换并改写剩余消费者。",
-  "summaryStatus": "Runtime图像混合链七组/七组、真实主图像宿主整链七组/七组、部署十九项及关联回归通过；最终两工程、完整VM交互/显示和真实验收未完成。",
+  "current": "2026-10-27 Blob已成为Runtime/Wpf两个工程，旧入口/模型/桥接及旧发布目录退出，正式创建、编辑、执行、结果、下游及保存重开通过。继续补完整显示、ROI/绑定消费和同一真实UI的设计时支持。",
+  "summaryStatus": "两工程结构已落实，正式UI/全量0错误及18项部署检查通过；完整G2/M1、VM全部交互/显示、设计器可用和真实外观验收尚未完成。",
   "rows": [
+    [
+      "Blob两工程及旧SDK实现退出",
+      "Blob根SDK工程、旧入口/参数/结果/输入输出合同/转换桥和旧别名退出；根目录只剩Runtime/Wpf两个工程，两份slnx、测试及发布规则同步。正常发布即无旧Blob SDK目录；缺Runtime配置及SDK双模型明确拒绝，不补默认值。直接Runtime判定集合完整对应XML，缺项/未知/重复均拒绝。",
+      "最终串行UI002为0错误/6613警告160.96秒，全量003为0错误/6624警告110.05秒。正式Runtime单元9组、算法9组、原生算法5组、内核16组、公共事务27项、字段8组及有无Wpf参数窗口/真实默认整链/图像混合/调试通过；部署18项，3文件及清单原SHA恢复。26份现存源码增量、14删除项、760发布项和619加载记录同源。 结构已是两个工程，但G2/M1尚未整体完成：完整BlobDisplay图形文本及样式持久化、本地ROI/位置/全局变量/缺省输入快照、现行变量生产者与子流程等消费覆盖、全部VM原件/交互，以及设计时独立创建/完整显示和真实用户验收继续实施。旧专项测试退出不等于新合同全部等价覆盖。"
+    ],
+    [
+      "同一真实UI的设计时支持",
+      "同一真实工具UI同时供VS设计器和正式运行使用；设计时可用是基础交付门槛。保留C#动态字段生成，只需设计器用示例数据走同一组装链，不要求把所有字段手写成XAML；不另建预览页面或工程。",
+      "基础交付必需项；当前运行时可用，设计时独立创建及完整显示尚未实施/验收。"
+    ],
     [
       "Runtime图像混合消费与主图像",
       "公共宿主保留Runtime规范输出，以可选HALCON工厂按正式端口缓存精确像素/实际Domain副本供现行SDK和主图像使用；不复制Blob DTO。稳定Owner及读者覆盖副本生成到最终释放，保坐标声明才传播原始完整帧。精确图像端口拒绝伪造路径、集合目标及数值转换。",
@@ -4672,9 +4682,9 @@
     "remaining": "双端范围仍由RangeField/SDK提取RangeSlider组合，原PCUI between组合尚未整体替换；其他旧SDK消费者退出、全VM显示对象、typed新run、VS和用户人工仍未完成。"
   },
   "blobFileStructure": {
-    "status": "已纳入正式执行目标G2：以本处文件树为唯一结构定义，按G2Acceptance硬性验收；实现尚未完成。",
+    "status": "目标树不变；两工程及旧SDK实现退出已落实，但G2全部生产输入/显示/交互与验收仍未完成。",
     "decision": "Runtime必需、Wpf可选；XML为新工具默认值及编辑/显示元数据唯一来源，C#属性保存当前值，用户值随方案保存。新建读取XML，恢复方案不覆盖用户值；不保留旧项目兼容链。",
-    "currentFacts": "仍3工程。Runtime/Wpf工程文件现为SunEyeVision.BlobAnalysis.Runtime.csproj、SunEyeVision.BlobAnalysis.Wpf.csproj，解决方案/引用已同步，程序集身份尚未改。BlobResult.cs与逐Blob结果复制删除；BlobAnalysisResults外壳直接转发Runtime测量、统计、阈值及判定信息。BlobAnalysisParameters、根SDK入口、输入/资源边界及参数Views仍待替换。",
+    "currentFacts": "现为Runtime/Wpf两个工程，根目录只剩这两个目录。旧BlobAnalysisTool/Parameters/Results、输入输出合同与转换桥、根工程及锁文件已删除；程序集身份仍为Tool.BlobAnalysis.Runtime/Wpf。正式发布无旧SDK Blob目录；新Runtime配置、默认UI、执行、结果表/主图像及保存重开已有证据，完整显示/本地ROI/设计时仍未完成。",
     "tree": "tools/SunEyeVision.BlobAnalysis/\n├─ Runtime/\n│  ├─ SunEyeVision.BlobAnalysis.Runtime.csproj\n│  ├─ BlobTool.cs                 # 本工具单次执行入口，不调度工作流\n│  ├─ Parameters/\n│  │  ├─ BlobSettings.cs          # 当前运行参数及判定配置\n│  │  └─ BlobInput.cs             # 冻结的图像/ROI/位置输入\n│  ├─ Results/\n│  │  └─ BlobOutput.cs            # 唯一结果及资源所有权\n│  ├─ Algorithms/                 # 分割/连通域/特征/筛选/判定\n│  └─ Resources/\n│     ├─ BlobParameters.xml       # 默认值、参数分组、编辑元数据\n│     └─ BlobDisplay.xml          # 图形/文本/表格定义与结果字段映射\n└─ Wpf/\n   ├─ SunEyeVision.BlobAnalysis.Wpf.csproj\n   ├─ BlobEditorFactory.cs\n   ├─ BlobResultViewFactory.cs\n   └─ Views/\n      ├─ BlobParameterEditor.xaml\n      └─ BlobResultView.xaml",
     "fileRows": [
       [
@@ -4773,7 +4783,7 @@
         "公共结果视图接已发布快照/lease，结果替换、节点切换、关闭和卸载及时释放；复用当前资源所有权与RunIdentity，不另起一套生命周期协议。"
       ]
     ],
-    "implementation": "先完成结构改造前源码中文提交和origin/main推送，再继续已保存的XML/目录增量；同步改造公共宿主和消费者，删除旧桥接，执行正式UI/全量Release及同源运行回归。",
+    "implementation": "结构改造前f1d42c80已提交推送。当前按同一批准树落实两工程及新生产消费链，继续补完整输入/显示、所需VM交互、设计时独立显示和真实验收；不恢复旧入口或兼容模型。",
     "boundaries": "此为自研目标结构，不冒充VM原始工程布局。需同步替换宿主的SDK发现/参数持久化/执行/结果消费，并核XML类型/字段/资源部署；不能只改目录就称完成。"
   },
   "s4GoalPlan": {
@@ -5192,6 +5202,78 @@
     "sourceBaseCommit": "744b1d0ffaeafdc9285fb82daf3027d83047862c",
     "implementation": "公共宿主保留Runtime规范输出，以可选HALCON工厂按正式端口缓存精确像素/实际Domain副本供现行SDK和主图像使用；不复制Blob DTO。稳定Owner及读者覆盖副本生成到最终释放，保坐标声明才传播原始完整帧。精确图像端口拒绝伪造路径、集合目标及数值转换。",
     "verification": "最终串行UI/全量均0错误；6613/6575警告，耗时00:02:02.69/00:01:34.51。Runtime图像消费有Wpf及无SDK Blob入口/Wpf各七组，实际Runtime→现行二值化→Runtime，检查Domain/帧/缓存/异常/先后读者释放；真实主窗口整链各七组，主图像和自身来源列表实际显示。部署十九项通过，四文件与发布清单原SHA恢复，关联回归同源。",
-    "remaining": "根SDK Blob工程/旧参数/结果/转换及剩余测试引用尚未删除，缺件试验不代表最终两工程完成。完整显示XML图形文本、本地ROI/位置常量/全局变量/缺省输入、全部VM原件及交互、VS设计时和真实人工验收继续未完成，M1/M2/M3未完成。"
+    "remaining": "根SDK Blob工程/旧参数/结果/转换及剩余测试引用尚未删除，缺件试验不代表最终两工程完成。完整显示XML图形文本、本地ROI/位置常量/全局变量/缺省输入、全部VM原件及交互、VS设计时和真实人工验收继续未完成，M1/M2/M3未完成。",
+    "subsequentProgress": "根SDK Blob工程/旧模型/转换及发布残留已删除，见blobTwoProjectCheckpoint；本检查点原证据不改写，完整输入/显示/设计时及消费者继续未完。"
+  },
+  "uiDesignTimePlan": {
+    "status": "基础交付必需项；当前运行时可用，设计时独立创建及完整显示尚未实施/验收。",
+    "decision": "同一真实工具UI同时供VS设计器和正式运行使用；设计时可用是基础交付门槛。保留C#动态字段生成，只需设计器用示例数据走同一组装链，不要求把所有字段手写成XAML；不另建预览页面或工程。",
+    "sourceThreadId": "01a17adf-f347-7781-9247-07f4ca161fb1",
+    "facts": "BlobParameterEditor.xaml当前仅为空EditorHost；代码只有接收IToolSettingsDraft/Options的有参构造，运行时new DeclaredSettingsView。公共Presenter也只有有参构造并在C#组装字段。结果页已有真实XAML及设计宽高，但缺设计结果数据/自足主题。当前不能称完整VS设计器预览已完成，单补d:DataContext不足以解决运行时才生成的视觉树。",
+    "rows": [
+      [
+        "真实视图及组装链",
+        "工具XAML承载真实视图入口及可调整布局/模板；C#动态生成字段可以保留，设计器与运行时走同一条组装链。XML继续唯一声明默认值、分组/顺序、约束和编辑元数据。",
+        "不为了设计器手写重复字段，不维护第二份默认值或另一套预览UI。"
+      ],
+      [
+        "公共Presenter入口",
+        "DeclaredSettingsView增加无参创建和可绑定Draft/Options或统一中立上下文；设计/运行数据就绪后走同一组装流程。",
+        "入口当前尚不存在；重绑先解除旧监听，卸载释放视觉订阅，草稿生命周期仍归正式编辑事务。"
+      ],
+      [
+        "设计数据",
+        "现有Blob.Wpf内仅增加必要的Design/BlobDesignData.cs；用真实Runtime设置和同一XML默认值，结果提供少量成功、NG、空状态数据。",
+        "d:DataContext/d:DesignWidth/Height配合mc:Ignorable；不复制业务模型或硬编码第二份默认值，不污染正式参数。"
+      ],
+      [
+        "资源与运行边界",
+        "工具视图/公共Presenter可独立取得正式VM控件模板、资源和主题。设计时不依赖UI主窗口启动。",
+        "不启动插件发现、工作流或算法，不读写用户方案，不执行HALCON/加密狗交互；Runtime仍无WPF/UI，公共控件无Blob业务依赖。"
+      ],
+      [
+        "正式工厂",
+        "正式工厂注入真实草稿和选项；设计器仅换数据来源。",
+        "同一控件类型、模板、主题及绑定装配流程；不保留两套独立实现。"
+      ],
+      [
+        "使用及验证",
+        "直接打开两份工具XAML调整页面和控件组合；公共VM外观改同一公共XAML模板；字段元数据改XML。",
+        "滑条、焦点、Enter、订阅、显隐、颜色/样式弹层仍在正式Release的同一真实视图验证，运行验证不是第二套UI。"
+      ]
+    ],
+    "acceptance": [
+      "基础交付门槛：真实视图脱离主程序、工作流和算法执行，也能在VS设计器独立创建并完整显示；运行时可用不能替代设计时可用。",
+      "VS设计器直接打开BlobParameterEditor.xaml与BlobResultView.xaml即可显示有内容的真实界面，无需运行主程序。",
+      "设计时与运行时使用相同控件类型、模板、主题；布局修改在设计器可见并同步影响正式界面。",
+      "默认值和字段元数据仍来自同一XML，示例数据不进入正式配置或用户方案。",
+      "加载、重绑、卸载无事件或资源泄漏，设计器不启动算法/工作流/插件发现或HALCON交互。",
+      "分别记录VS实际设计器通过、正式Release运行交互通过和用户人工外观验收；设计时构建、d属性或示例图不替代这三项证据。"
+    ]
+  },
+  "blobTwoProjectCheckpoint": {
+    "status": "TWO_PROJECT_STRUCTURE_VERIFIED_NOT_G2_OR_M1_COMPLETE",
+    "evidence": "docs/collaboration/evidence/O06_BLOB_TWO_PROJECT_CHECKPOINT_20261027.json",
+    "sourceBaseCommit": "246093e68145d5dab9a17f3fdc07f9ed38132089",
+    "implementation": "Blob根SDK工程、旧入口/参数/结果/输入输出合同/转换桥和旧别名退出；根目录只剩Runtime/Wpf两个工程，两份slnx、测试及发布规则同步。正常发布即无旧Blob SDK目录；缺Runtime配置及SDK双模型明确拒绝，不补默认值。直接Runtime判定集合完整对应XML，缺项/未知/重复均拒绝。",
+    "verification": "最终串行UI002为0错误/6613警告160.96秒，全量003为0错误/6624警告110.05秒。正式Runtime单元9组、算法9组、原生算法5组、内核16组、公共事务27项、字段8组及有无Wpf参数窗口/真实默认整链/图像混合/调试通过；部署18项，3文件及清单原SHA恢复。26份现存源码增量、14删除项、760发布项和619加载记录同源。",
+    "remaining": "结构已是两个工程，但G2/M1尚未整体完成：完整BlobDisplay图形文本及样式持久化、本地ROI/位置/全局变量/缺省输入快照、现行变量生产者与子流程等消费覆盖、全部VM原件/交互，以及设计时独立创建/完整显示和真实用户验收继续实施。旧专项测试退出不等于新合同全部等价覆盖。",
+    "coverageChanges": [
+      {
+        "retired": "S3ConsumptionCases/InputBoundaryCases、S4BindingEditingCases/RoiEditingCases旧SDK专项入口",
+        "current": "RuntimeWorkflow/RuntimeImage/RuntimeDebug/RuntimeEditor/RuntimeKernel及真实默认整链",
+        "notEquivalent": "变量生产者/子流程输出需求、完整输入边界组合、动态成员选择、本地ROI/位置UI尚需按新合同补齐，不称旧全部分数已经迁移通过。"
+      },
+      {
+        "retired": "旧S1 Owner/Snapshot入口及Doc旧Blob专属覆盖用例",
+        "current": "公共事务27项、Runtime配置/窗口8项与新工作流/调试专项；S1 Fields4项和Workflow9检查",
+        "notEquivalent": "旧S1 Owner/Snapshot档案仅保留历史，不能用作当前结果；Blob本地ROI覆盖生命周期仍未闭合。"
+      },
+      {
+        "retired": "WindowPresentation旧Blob五显示对象/ROI集成末项",
+        "current": "保留十项公共VM控件检查，末项核新Runtime三页/58字段/XML布局/草稿隔离，共11项",
+        "notEquivalent": "新Runtime图形/文本样式及本地ROI完整消费仍未完成，不能沿用旧界面成绩。"
+      }
+    ]
   }
 }

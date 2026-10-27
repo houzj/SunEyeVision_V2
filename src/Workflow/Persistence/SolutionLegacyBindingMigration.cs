@@ -10,7 +10,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 namespace SunEyeVision.Workflow.Persistence;
 
 /// <summary>Candidate document owner migration. Uses frozen declarations, never current result values or display names.
-/// Only unchanged declarations and explicit Blob legacy aliases are accepted; no lossy schema conversion is inferred.</summary>
+/// Only unchanged declarations are accepted; no aliases or lossy schema conversion are inferred.</summary>
 internal static class SolutionLegacyBindingMigration
 {
     internal static void Prepare(Solution candidate, List<PersistenceDiagnostic> diagnostics, bool legacyDocument = true)
@@ -69,7 +69,7 @@ internal static class SolutionLegacyBindingMigration
                     throw new JsonException("Runtime sources do not accept legacy binding aliases.");
                 var portId = legacy.PortId;
                 if (approvedLegacyAliases && portId.StartsWith("name:", StringComparison.Ordinal))
-                    portId = LegacyBlobFieldAliases.Resolve(source.ToolType, portId);
+                    throw new JsonException("Legacy named output aliases are not supported.");
                 var port = declarations[legacy.NodeId].Schema.Outputs.SingleOrDefault(output => output.Id == portId)
                     ?? throw new JsonException("Legacy field has no unique approved declaration.");
                 if (legacy.Type != port.Type || legacy.Storage != NumericStorageRules.Effective(port.Type, port.Storage))
@@ -151,27 +151,3 @@ internal static class SolutionLegacyBindingMigration
     }
 }
 
-/// <summary>Approved version-4 Blob output aliases. No reflection, display-name matching or computed IDs.</summary>
-internal static class LegacyBlobFieldAliases
-{
-    private static readonly IReadOnlyDictionary<string, string> Ports = new Dictionary<string, string>(StringComparer.Ordinal)
-    {
-        ["name:ExecutionTimeMs"]="field:8ca10000000040008000000000000001", ["name:ExecutionStatusText"]="field:8ca10000000040008000000000000002",
-        ["name:JudgmentStatus"]="field:8ca10000000040008000000000000003", ["name:IsPass"]="field:8ca10000000040008000000000000004",
-        ["name:GrayImage"]="field:8ca10000000040008000000000000005", ["name:BinaryMask"]="field:8ca10000000040008000000000000006",
-        ["name:OverlayImage"]="field:8ca10000000040008000000000000007", ["name:ThresholdMinUsed"]="field:8ca10000000040008000000000000008",
-        ["name:ThresholdMaxUsed"]="field:8ca10000000040008000000000000009", ["name:TypeUsed"]="field:8ca10000000040008000000000000010",
-        ["name:FilteredBlobCount"]="field:8ca10000000040008000000000000011", ["name:FilteredTotalArea"]="field:8ca10000000040008000000000000012",
-        ["name:AverageArea"]="field:8ca10000000040008000000000000013", ["name:AverageCircularity"]="field:8ca10000000040008000000000000014",
-        ["name:AverageRectangularity"]="field:8ca10000000040008000000000000015", ["name:WhitePixelRatio"]="field:8ca10000000040008000000000000016",
-        ["name:HistogramData"]="field:8ca10000000040008000000000000017", ["name:ChannelMeans"]="field:8ca10000000040008000000000000018",
-        ["name:BlobAreas"]="field:8ca10000000040008000000000000019", ["name:BlobPerimeters"]="field:8ca10000000040008000000000000020",
-        ["name:BlobCentroidXs"]="field:8ca10000000040008000000000000021", ["name:BlobCentroidYs"]="field:8ca10000000040008000000000000022",
-        ["name:BlobCircularities"]="field:8ca10000000040008000000000000023", ["name:BlobRectangularities"]="field:8ca10000000040008000000000000024",
-        ["name:BlobBoundingWidths"]="field:8ca10000000040008000000000000025", ["name:BlobBoundingHeights"]="field:8ca10000000040008000000000000026",
-        ["name:BlobBoundingRects"]="field:8ca10000000040008000000000000027", ["name:InspectionGeometries"]="field:8ca10000000040008000000000000028",
-        ["name:MaskGeometries"]="field:8ca10000000040008000000000000029", ["name:FilteredBlobs"]="field:8ca10000000040008000000000000100"
-    };
-    internal static string Resolve(string toolId, string oldPortId) => toolId == "BlobAnalysis" && Ports.TryGetValue(oldPortId, out var field)
-        ? field : throw new JsonException("Legacy output alias has no approved tool/version mapping.");
-}

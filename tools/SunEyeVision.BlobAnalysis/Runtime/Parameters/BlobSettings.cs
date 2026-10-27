@@ -128,6 +128,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         }
         Check(Judgments.Select(x => x.Key).Distinct(StringComparer.Ordinal).Count() == Judgments.Count, "结果判定键不得重复。");
         var declared = definition.CreateJudgments().ToDictionary(x => x.Key, StringComparer.Ordinal);
+        Check(Judgments.Select(x => x.Key).ToHashSet(StringComparer.Ordinal).SetEquals(declared.Keys), "结果判定集合必须完整对应XML声明，不能缺项或增加未知项。");
         var metadata = definition.JudgmentMetadata.ToDictionary(x => (string)x.Attribute("key")!, StringComparer.Ordinal);
         foreach (var rule in Judgments)
         {

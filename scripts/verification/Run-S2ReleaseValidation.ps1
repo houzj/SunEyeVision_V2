@@ -1,9 +1,9 @@
-﻿[CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeCatalog','RuntimeEditor','Components','Consumption','InputBoundaries','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
+[CmdletBinding()]
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
-if($Track -in @('RuntimeKernel','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeCatalog','Components','Consumption','InputBoundaries','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','FieldEditing','BindingEditing','RoiEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
+if($Track -in @('RuntimeEditor','FieldEditing','FullChain','WindowPresentation') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -12,8 +12,7 @@ $attempt=1;while(Test-Path -LiteralPath (Join-Path $dir ('attempt-{0:d3}' -f $at
 $logDir=Join-Path $dir ('attempt-{0:d3}' -f $attempt)
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $references=@(Get-ChildItem -LiteralPath $product -File -Filter 'SunEyeVision*.dll')
-$sdkBlob=Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll'
-if(Test-Path -LiteralPath $sdkBlob){$references+=Get-Item -LiteralPath $sdkBlob}
+$references+=Get-Item (Join-Path $product 'plugins/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.dll')
 $references+=Get-Item (Join-Path $product 'halcondotnetxl.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Json.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Encodings.Web.dll')
@@ -29,16 +28,14 @@ if($Stage -eq 'S3' -and $Track -eq 'RoiComposition'){$source='O06RoiCompositionC
 if($Stage -eq 'S3' -and $Track -eq 'RoiBindings'){$source='O06RoiBindingCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Algorithm'){$source='O06AlgorithmCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeKernel'){$source='S3RuntimeKernelCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'RuntimeAlgorithm'){$source='S3BlobRuntimeCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeWorkflow'){$source='S3RuntimeWorkflowCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeDebug'){$source='S3RuntimeDebugCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeImage'){$source='S3RuntimeImageCases.cs'}
+if($Stage -eq 'S3' -and $Track -eq 'RuntimeUnits'){$source='S3RuntimeUnitCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'RuntimeCatalog'){$source='S3RuntimeCatalogCases.cs'}
 if($Stage -eq 'S3' -and $Track -eq 'Components'){$source='S3ComponentCases.cs'}
-if($Stage -eq 'S3' -and $Track -eq 'Consumption'){$source='S3ConsumptionCases.cs'}
-if($Stage -eq 'S3' -and $Track -eq 'InputBoundaries'){$source='S3InputBoundaryCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'FieldEditing'){$source='S4FieldEditingCases.cs'}
-if($Stage -eq 'S4' -and $Track -eq 'BindingEditing'){$source='S4BindingEditingCases.cs'}
-if($Stage -eq 'S4' -and $Track -eq 'RoiEditing'){$source='S4RoiEditingCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'FullChain'){$source='S4FullChainCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'WindowPresentation'){$source='O06WindowPresentationCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'RuntimeEditor'){$source='S4RuntimeEditorCases.cs'}
@@ -70,7 +67,7 @@ internal static class SafeEntry {
    };
    AppDomain.CurrentDomain.ProcessExit+=(_,_)=>{try {
     var log=Environment.GetEnvironmentVariable("S2_CASE_ROOT")!;
-    var rows=AppDomain.CurrentDomain.GetAssemblies().Where(a=>a.GetName().Name!.StartsWith("SunEyeVision")&&!a.IsDynamic).Select(a=>{
+    var rows=AppDomain.CurrentDomain.GetAssemblies().Where(a=>a.GetName().Name!.StartsWith("SunEyeVision")&&!a.GetName().Name!.EndsWith(".Tests")&&!a.IsDynamic).Select(a=>{
      var p=a.Location;return a.GetName().Name+"\t"+p+"\t"+Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(p)));
     });File.WriteAllLines(Path.Combine(log,"loaded-product.tsv"),rows);
    }catch(Exception e){Console.Error.WriteLine(e);}};

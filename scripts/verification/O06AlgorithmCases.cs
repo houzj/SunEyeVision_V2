@@ -19,7 +19,6 @@ using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.Wpf.Fields;
-using SunEyeVision.Tool.BlobAnalysis;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Workflow;
 using Mode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode;
@@ -64,50 +63,41 @@ internal static class S2DocumentEditingCases
                 using var staleRegion=new FrozenRegionResource(BlobSchema.ImageFrame,prior.Frame,new[]{new RegionRun(0,1,1)});
                 Throws(()=>new BlobSession().Execute(settings,current,resources,staleRegion),"frame");
             });
-            Case("Facade nullable实际阈值与正式声明、canonical图像来源保留",()=>{
+            Case("Runtime规范值可空阈值和最终集合统计",()=>{
                 using var image=HalImage.CreateFromBytes(new byte[]{0,255,255,0},4,1,1);
-                var p=new BlobAnalysisParameters{ResolvedInputImage=image,SegmentationMode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode.None,IsAreaFilterEnabled=false,OutputBinaryImage=true};
-                var result=new BlobAnalysisTool().Run(p);try{
-                    Require(result.IsSuccess&&result.ThresholdMinUsed is null&&result.ThresholdMaxUsed is null,result.ErrorMessage??"None门面失败");
-                    foreach(var name in new[]{"ThresholdMinUsed","ThresholdMaxUsed"}){var field=result.GetOutputVariables().Single(f=>f.Name==name);Require(field.AllowsNull&&BindingClrAdapter.DescribeOutput(field).Nullable&&field.RuntimeValue is null,"Nullable正式声明丢失");}
-                    Require(result.GetOutputVariables().Single(f=>f.Name=="GrayImage").RuntimeValue is IVisionImage,"SDK图像类型被替换");
-                    Require(result.TryGetDeclaredOutputValue(BlobSchema.Field(5),out var canonical)&&canonical is IReadOnlyImage,"canonical override丢失");
-                }finally{result.Resources.Dispose();}
-                var many=new byte[16*16];many[2*16+2]=255;for(int y=8;y<10;y++)for(int x=8;x<10;x++)many[y*16+x]=255;
+                using var invocation=ExecuteBlob(image,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,OutputGrayImage=true});
+                var result=(RuntimeToolResults)invocation.NodeResults["blob"].Result!;var output=(BlobOutput)result.Output!;
+                Require(invocation.Success&&output.ThresholdMinUsed is null&&output.ThresholdMaxUsed is null,"None阈值不应伪造");
+                foreach(var id in new[]{BlobSchema.Field(8),BlobSchema.Field(9)})
+                    Require(result.GetOutputVariables().Single(v=>v.PortId==id).AllowsNull&&result.Values[id] is null,"可空正式声明丢失");
+                Require(result.Values[BlobSchema.Field(5)] is IReadOnlyImage,"规范图像类型改变");
+                var many=new byte[16*16];many[2*16+2]=255;for(var y=8;y<10;y++)for(var x=8;x<10;x++)many[y*16+x]=255;
                 using var multiple=HalImage.CreateFromBytes(many,16,16,1);
-                var limited=new BlobAnalysisParameters{ResolvedInputImage=multiple,SegmentationMode=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSort.AreaDesc};
-                var final=new BlobAnalysisTool().Run(limited);try{
-                    Require(final.IsSuccess&&final.FilteredBlobCount==1&&final.MinimumArea==4&&final.MaximumArea==4,"Facade min/max没有来自限数后的最终集合");
-                    var runtime=typeof(BlobAnalysisResults).GetProperty("RuntimeOutput",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(final)!;
-                    Require((double)runtime.GetType().GetProperty("MinimumArea")!.GetValue(runtime)! ==final.MinimumArea&&(double)runtime.GetType().GetProperty("MaximumArea")!.GetValue(runtime)! ==final.MaximumArea,"Facade/Runtime min/max不一致");
-                    foreach(var name in new[]{"MinimumArea","MaximumArea"}){var declared=final.GetOutputVariables().Single(v=>v.Name==name);Require(Convert.ToDouble(((Array)declared.RuntimeValue!).GetValue(0))==4,"正式SDK声明min/max与最终集合不一致");}
-                }finally{final.Resources.Dispose();}
+                using var final=ExecuteBlob(multiple,new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,IsBlobCountFilterEnabled=true,BlobCountLimit=1,SortMode=BlobSort.AreaDesc});
+                var limited=(BlobOutput)((RuntimeToolResults)final.NodeResults["blob"].Result!).Output!;
+                Require(final.Success&&limited.Count==1&&limited.MinimumArea==4&&limited.MaximumArea==4,"统计未来自最终限数集合");
             });
-            Case("退出字段/绑定明确拒绝，合法来源同名不误拒绝",()=>{
-                var policy=typeof(SolutionRepository).Assembly.GetType("SunEyeVision.Workflow.Persistence.SolutionCompatibilityAdapter")!;
-                var prepare=policy.GetMethod("Prepare",BindingFlags.Static|BindingFlags.Public)!;
-                var diagnosticsType=prepare.GetParameters()[1].ParameterType;
-                JsonObject Document()=>JsonNode.Parse("{\"Id\":\"doc\",\"SchemaVersion\":2,\"Workflows\":[{\"Id\":\"flow\",\"Name\":\"flow\",\"Nodes\":[{\"Id\":\"blob\",\"ToolType\":\"BlobAnalysis\",\"Parameters\":{},\"ParamSettings\":{\"Settings\":[]}}],\"Connections\":[]}]}")!.AsObject();
-                void Check(JsonObject doc)=>prepare.Invoke(null,new object[]{doc,Activator.CreateInstance(diagnosticsType)!,false});
-                var old=Document();old["Workflows"]![0]!["Nodes"]![0]!["Parameters"]!["IsMorphologyEnabled"]=true;Throws(()=>Check(old),"旧分割/预处理/形态学");
-                var oldBinding=Document();oldBinding["Workflows"]![0]!["Nodes"]![0]!["ParamSettings"]!["Settings"]!.AsArray().Add(new JsonObject{["ParameterName"]="MaxValue",["BindingType"]=0});Throws(()=>Check(oldBinding),"旧字段绑定");
-                var valid=Document();valid["Workflows"]![0]!["Nodes"]![0]!["ParamSettings"]!["Settings"]!.AsArray().Add(new JsonObject{["ParameterName"]="Threshold",["BindingType"]=0,["SourceProperty"]="MaxValue"});Check(valid);
+            Case("拒绝缺失Runtime配置和SDK双模型，不补默认配置",()=>{
+                var flow=new Workflow("strict-runtime","严格配置");flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id)});
+                var json=JsonSerializer.SerializeToNode(flow,WorkflowSerializationOptions.Default)!;
+                json["Nodes"]![0]!.AsObject().Remove("RuntimeConfiguration");
+                Throws(()=>json.Deserialize<Workflow>(WorkflowSerializationOptions.Default),"RuntimeConfiguration");
+                json=JsonSerializer.SerializeToNode(flow,WorkflowSerializationOptions.Default)!;json["Nodes"]![0]!["Parameters"]=new JsonObject();
+                Throws(()=>json.Deserialize<Workflow>(WorkflowSerializationOptions.Default),"SDK Parameters");
+                Require(WorkflowNodeFactory.CreateAlgorithmNode(BlobTool.Id,"bad","bad","bad",new GenericToolParameters()) is null,"Runtime接受了SDK参数");
             });
-            Case("单/双/None保存重开且旧参数不再写出",()=>{
-                foreach(var mode in Enum.GetValues<SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSegmentationMode>()){
-                    var p=ToolRegistry.CreateParameters("BlobAnalysis");Set(p,"SegmentationMode",mode.ToString());Set(p,"Threshold",100);Set(p,"UpperThreshold",200);
-                    var json=JsonSerializer.Serialize<ToolParameters>(p,ParameterTypeRegistry.SerializationOptions);
-                    Require(!json.Contains("IsMorphologyEnabled")&&!json.Contains("Preprocess")&&!json.Contains("\"MaxValue\""),"旧参数仍保存");
-                    var restored=JsonSerializer.Deserialize<ToolParameters>(json,ParameterTypeRegistry.SerializationOptions)!;
-                    Require(restored.GetType().GetProperty("SegmentationMode")!.GetValue(restored)!.ToString()==mode.ToString()&&(int)restored.GetType().GetProperty("UpperThreshold")!.GetValue(restored)! ==200&&restored.Validate().IsValid,"新分割配置不能保存重开");
-                    var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"save-"+mode);Directory.CreateDirectory(folder);
-                    var repository=new SolutionRepository(Path.Combine(folder,"recovery"));var solution=new Solution{Id="new-"+mode,SchemaVersion=2};var flow=new Workflow("flow","flow");
-                    flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob","BlobAnalysis"){Parameters=p});solution.Workflows.Add(flow);
-                    var path=Path.Combine(folder,"new.solution");Require(repository.Save(solution,path),repository.LastError??"新配置不能保存");
-                    Require(repository.LoadCandidate(path).Candidate is not null,repository.LastError??"新配置不能真实重开");
-                    var legacy=JsonNode.Parse(File.ReadAllText(path))!;legacy["Workflows"]![0]!["Nodes"]![0]!["Parameters"]!["IsPreprocessingEnabled"]=true;
-                    var legacyPath=Path.Combine(folder,"old.solution");File.WriteAllText(legacyPath,legacy.ToJsonString());var before=File.ReadAllBytes(legacyPath);
-                    Require(repository.LoadCandidate(legacyPath).Candidate is null&&before.SequenceEqual(File.ReadAllBytes(legacyPath)),"真实仓库未拒绝旧已启用设置或改写源文件");
+            Case("三种分割模式正式保存重开，缺字段拒绝且源文件不改写",()=>{
+                foreach(var mode in Enum.GetValues<Mode>()){
+                    var settings=new BlobSettings{SegmentationMode=mode,Threshold=100,UpperThreshold=200};
+                    var flow=new Workflow("flow","分割");flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(settings)});
+                    var solution=new Solution();solution.Workflows.Add(flow);
+                    var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"modes",mode.ToString());Directory.CreateDirectory(folder);
+                    var path=Path.Combine(folder,"new.solution");var repository=new SolutionRepository();Require(repository.Save(solution,path),repository.LastError??"保存失败");
+                    var loaded=repository.LoadCandidate(path).Candidate??throw new Exception("重开失败");
+                    Require(((BlobSettings)loaded.Workflows[0].Nodes[0].RuntimeConfiguration!.CaptureSettings()).SegmentationMode==mode,"分割模式丢失");
+                    var missing=JsonNode.Parse(File.ReadAllText(path))!;missing["Workflows"]![0]!["Nodes"]![0]!["RuntimeConfiguration"]!["Settings"]!.AsObject().Remove("Threshold");
+                    var invalid=Path.Combine(folder,"invalid.solution");File.WriteAllText(invalid,missing.ToJsonString());var bytes=File.ReadAllBytes(invalid);
+                    Require(repository.LoadCandidate(invalid).Candidate is null&&bytes.SequenceEqual(File.ReadAllBytes(invalid)),"缺字段被默认值掩盖或源文件被修改");
                 }
             });
             Case("严格形态学拒绝隐式128、非byte和彩色，保全部操作及Circle",()=>{
@@ -155,24 +145,21 @@ internal static class S2DocumentEditingCases
             });
             Case("有限不等条件、三模式字段显示与模式常量约束",()=>{
                 if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
-                var p=new BlobAnalysisParameters();var accessors=p.GetConfigurationFields();
-                var view=new DeclaredFieldsView(accessors.Select(f=>(f.Port,f.Presentation,(ParameterSetting)new ConstantSetting(f.Read()))),(_,_)=>{},_=>null);
-                DeclaredFieldEditor Field(string path)=>view.Fields.Single(f=>f.FieldId==accessors.Single(a=>a.StoragePath==path).Port.Id);
+                var provider=(IToolSettingsFields)new BlobTool();var schema=provider.SettingsSchema;
+                using var settingsView=ToolRegistry.CreateSettingsView(BlobTool.Id,new BlobSettings(),new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(SelectReference:_=>null));
+                var view=Logical(settingsView.View).OfType<DeclaredFieldsView>().Single();
+                DeclaredFieldEditor Field(string path)=>view.Fields.Single(f=>f.FieldId==schema.Presentation!.Fields.Single(a=>a.DisplayName==BlobParameterDefinition.Instance.Label(path)).FieldId);
                 var mode=Field("SegmentationMode");var lower=Field("Threshold");var upper=Field("UpperThreshold");var type=Field("Type");
                 Require(lower.Visibility==Visibility.Visible&&upper.Visibility==Visibility.Collapsed,"Single字段显示错误");
-                mode.TrySetConstant("DoubleThreshold");Require(lower.Visibility==Visibility.Visible&&upper.Visibility==Visibility.Visible&&type.Visibility==Visibility.Visible,"Double隐藏下限或极性");
+                mode.TrySetConstant("DoubleThreshold");Require(lower.Visibility==Visibility.Visible&&upper.Visibility==Visibility.Visible&&type.Visibility==Visibility.Visible,"Double隐藏有效字段");
                 mode.TrySetConstant("None");Require(lower.Visibility==Visibility.Collapsed&&upper.Visibility==Visibility.Collapsed&&type.Visibility==Visibility.Collapsed,"None仍显示阈值");
-                Require(accessors.Single(a=>a.StoragePath=="SortMode").Presentation.ChoiceLabels["None"]=="无","Sort.None被误标成不二值化");
                 mode.TrySetConstant("DoubleThreshold");
                 Logical(upper).OfType<ToggleButton>().Single(button=>Equals(button.ToolTip,"切换为订阅")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                Require(upper.HasInvalidText&&!view.TryValidate(out _)&&view.HasInvalidActiveFields,"活动Upper未选订阅来源不阻塞");
-                mode.TrySetConstant("SingleThreshold");Require(upper.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&view.TryValidate(out _)&&!view.HasInvalidActiveFields,"Single被隐藏Upper pending阻塞或清掉草稿");
-                mode.TrySetConstant("None");Require(view.TryValidate(out _)&&upper.Setting is ConstantSetting{Value:255L},"None隐字段pending改写了常量或阻塞");
-                mode.TrySetConstant("DoubleThreshold");Require(!view.TryValidate(out _)&&view.HasInvalidActiveFields,"切回Double没有恢复pending阻塞");
+                Require(upper.HasInvalidText&&!settingsView.TryCapture(out _,out _,out _),"活动Upper没有来源仍可提交");
+                mode.TrySetConstant("SingleThreshold");Require(upper.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
+                mode.TrySetConstant("DoubleThreshold");Require(!settingsView.TryCapture(out _,out _,out _),"恢复Double未恢复待选错误");
                 Logical(upper).OfType<ToggleButton>().Single(button=>Equals(button.ToolTip,"切换为数值编辑")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                Require(view.TryValidate(out _),"恢复数值后仍阻塞");
-                Require(BlobInputContract.Fields.Single(f=>f.LegacyPath=="SegmentationMode").Port.EditModes==FieldEditModes.Constant,"模式允许订阅");
-                Require(p.ValidateStoredConfiguration(new[]{"SegmentationMode"}).Count>0,"模式订阅未被存储拒绝");
+                Require(settingsView.TryCapture(out _,out _,out _)&&schema.Inputs.Single(p=>p.Id==mode.FieldId).EditModes==FieldEditModes.Constant,"模式常量或恢复值错误");
                 var controlling=new Port("controller",DataType.Text,EditModes:FieldEditModes.Constant|FieldEditModes.Reference,Choices:new TextChoiceConstraint(new[]{"a","b"}));
                 var dependent=new Port("dependent",DataType.Integer);var source=new ReferenceSetting(new OutputReference("node","out",DataType.Text));
                 var referenced=new DeclaredFieldsView(new[]{(controlling,new FieldPresentation("controller","mode","g",0,FieldEditorKind.Choice,new[]{"a","b"}),(ParameterSetting)source),(dependent,new FieldPresentation("dependent","value","g",1,FieldEditorKind.Scalar){Layout=new("p","s",new("controller","a",true))},(ParameterSetting)new ConstantSetting(1L))},(_,_)=>{});
@@ -192,25 +179,33 @@ internal static class S2DocumentEditingCases
         var filter=Node("filter","ImageFilter");Set(filter.Parameters,"FilterTypeValue","HistogramEqualization");flow.Nodes.Add(filter);
         var threshold=Node("threshold","ImageThreshold");Set(threshold.Parameters,"Method","InRange");Set(threshold.Parameters,"MinThreshold",100);Set(threshold.Parameters,"MaxThreshold",255);Set(threshold.Parameters,"MaxValue",200);Source(threshold,"filter","OutputImage");flow.Nodes.Add(threshold);
         var morphology=Node("morphology","Morphology");Set(morphology.Parameters,"Operation","Open");Set(morphology.Parameters,"KernelShape","Circle");Source(morphology,"threshold","BinaryMask");flow.Nodes.Add(morphology);
-        var blob=Node("blob","BlobAnalysis");Set(blob.Parameters,"SegmentationMode","None");Set(blob.Parameters,"IsAreaFilterEnabled",false);Set(blob.Parameters,"OutputBinaryImage",true);Source(blob,"morphology","BinaryMask");flow.Nodes.Add(blob);
+        var blob=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings{SegmentationMode=Mode.None,IsAreaFilterEnabled=false,OutputBinaryImage=true})};
+        var sourcePort=BindingClrAdapter.DescribeOutput(new OutputBindingChangeService().ReadContract(morphology)!.Single(p=>p.Name=="BinaryMask"));
+        blob.ParamSettings.SetSetting(new ParamSetting{ParameterName=BlobTool.ImageInput,BindingType=BindingType.Binding,ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(morphology.Id,sourcePort.Id,sourcePort.Type,scopeId:flow.Id))});flow.Nodes.Add(blob);
         var bytes=new byte[32*32];for(int y=6;y<26;y++)for(int x=6;x<26;x++)bytes[y*32+x]=200;
         using var input=HalImage.CreateFromBytes(bytes,32,32,1);var executor=new WorkflowExecutionEngine(engine,plugins,new CheckLogger());
         using var run=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).GetAwaiter().GetResult();
         Require(run.Success,string.Join(";",run.Errors??new()));var result=run.NodeResults["blob"].Result!;
-        Require((int)result.GetType().GetProperty("FilteredBlobCount")!.GetValue(result)! ==1&&result.GetType().GetProperty("ThresholdMinUsed")!.GetValue(result) is null&&(string)result.GetType().GetProperty("SegmentationModeUsed")!.GetValue(result)! =="None","真实链未消费严格二值");
+        Require(((RuntimeToolResults)result).Output is BlobOutput{Count:1,ThresholdMinUsed:null,SegmentationModeUsed:"None"},"真实链未消费严格二值");
         using var read=run.DeclaredOutputs.Single(o=>o.Identity.NodeId=="blob").AcquireReader();
         Require(read.Values!.Get<long?>(BlobSchema.Field(8)) is null,"Workflow nullable阈值丢失");
         var image=read.Values.Get<IReadOnlyImage>(BlobSchema.Field(6));var region=read.Values.Get<IReadOnlyRegion>(BlobSchema.RegionPort);Require(image.Frame==region.SourceFrame,"二值图/Region错帧");
-        var required=Node("required-threshold","BlobAnalysis");flow.Nodes.Add(required);
-        required.ParamSettings.SetSetting(new ParamSetting{ParameterName="Threshold",BindingType=BindingType.Binding,SourceNodeId="blob",SourceWorkflowId=flow.Id,SourceProperty="ThresholdMinUsed",
-            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference("blob",BlobSchema.Field(8),DataType.Integer,scopeId:flow.Id,storage:NumericStorage.Int32))});
+        var required=new WorkflowNodeBase("required-threshold","required-threshold","required-threshold",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id)};flow.Nodes.Add(required);
+        required.ParamSettings.SetSetting(new ParamSetting{ParameterName=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label("Threshold")).FieldId,BindingType=BindingType.Binding,SourceNodeId="blob",SourceWorkflowId=flow.Id,SourceProperty="ThresholdMinUsed",
+            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference("blob",BlobSchema.Field(8),DataType.Integer,scopeId:flow.Id,storage:NumericStorage.Int64))});
         using var rejected=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).GetAwaiter().GetResult();
         Require(!rejected.Success,"nullable阈值null被下游必需参数默认为0");
         Require(new[]{"filter","threshold","morphology","blob"}.All(id=>rejected.NodeResults.TryGetValue(id,out var prior)&&prior.Success),"nullable拒绝前四个节点出现了其他失败");
         Require(rejected.NodeResults.TryGetValue("required-threshold",out var missing)&&!missing.Success,"缺少目标Threshold失败记录");
         var reason=string.Join(";",missing!.ErrorMessages)+";"+missing.Result?.ErrorMessage;
         Console.WriteLine("nullable目标绑定实际拒绝："+reason);
-        Require(reason.Contains("null",StringComparison.OrdinalIgnoreCase)&&(reason.Contains("Threshold",StringComparison.Ordinal)||reason.Contains("field:43bda03261df55b88f963bd18f2ba4d9",StringComparison.Ordinal)),"拒绝没有证明来自Threshold/null绑定："+reason);
+        Require(reason.Contains("null",StringComparison.OrdinalIgnoreCase),"拒绝没有证明来自Threshold/null绑定："+reason);
+    }
+    private static ExecutionResult ExecuteBlob(IVisionImage image,BlobSettings settings)
+    {
+        var engine=new WorkflowEngine(new CheckLogger());var flow=engine.CreateWorkflow(Guid.NewGuid().ToString(),"Runtime算法");
+        flow.Nodes.Add(new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(settings)});
+        return new WorkflowExecutionEngine(engine,new PluginManager(),new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,image)).GetAwaiter().GetResult();
     }
     private static void Source(WorkflowNodeBase target,string node,string property)=>target.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(target.Parameters,new ImageSourceReference(node,property,node,property));
     private static void Set(object p,string key,object value){var property=p.GetType().GetProperty(key)!;property.SetValue(p,property.PropertyType.IsEnum?Enum.Parse(property.PropertyType,(string)value):value);}

@@ -42,6 +42,8 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
                 if (string.IsNullOrWhiteSpace(node.Id) || !ids.Add(node.Id)) throw new JsonException("Empty or duplicate node Id.");
                 if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                     throw new JsonException("Runtime configuration ToolId differs from the node identity.");
+                if (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.HasRuntime(node.ToolType) && node.RuntimeConfiguration is null)
+                    throw new JsonException("Runtime tool requires its persisted RuntimeConfiguration.");
                 workflow.Nodes.Add(node);
                 nodeIndex++;
             }
@@ -62,8 +64,12 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
     public override void Write(Utf8JsonWriter writer, Workflow value, JsonSerializerOptions options)
     {
         foreach (var node in value.Nodes)
+        {
             if (node.RuntimeConfiguration is { } configuration && configuration.ToolId != node.ToolType)
                 throw new JsonException("Runtime configuration ToolId differs from the node identity.");
+            if (SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.HasRuntime(node.ToolType) && node.RuntimeConfiguration is null)
+                throw new JsonException("Runtime tool requires its persisted RuntimeConfiguration.");
+        }
         writer.WriteStartObject();
         writer.WriteString("Id", value.Id); writer.WriteString("Name", value.Name); writer.WriteBoolean("IsSubroutine", value.IsSubroutine);
         writer.WritePropertyName("Nodes"); JsonSerializer.Serialize(writer, value.Nodes, options);

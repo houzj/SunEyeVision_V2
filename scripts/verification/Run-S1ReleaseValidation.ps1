@@ -1,15 +1,13 @@
 [CmdletBinding()]
-param([ValidateSet('Contracts','Owner','Fields','Native','Workflow','Snapshot','Dialog')][string[]]$Tracks=@('Contracts','Owner','Fields','Native','Workflow','Snapshot','Dialog'),[string]$SnapshotFilter='',[string]$CrossVolumeDataRoot='',[ValidatePattern('^[A-Za-z0-9_-]+$')][string]$ValidationName='S1-20261025')
+param([ValidateSet('Contracts','Fields','Native','Workflow','Dialog')][string[]]$Tracks=@('Contracts','Fields','Native','Workflow','Dialog'),[string]$SnapshotFilter='',[string]$CrossVolumeDataRoot='',[ValidatePattern('^[A-Za-z0-9_-]+$')][string]$ValidationName='S1-20261025')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $validation=Join-Path $root ('Release/_validation/' + $ValidationName)
 $sources=@{
  Contracts='artifacts/validation/blob-s1-contracts-next/Runner/Program.cs'
- Owner='artifacts/validation/blob-s1-owner/Host/Program.cs'
  Fields='scripts/verification/BlobFieldSchemaCases.cs'
  Native='artifacts/validation/blob-s1-contracts-next/NativeCheck/Program.cs'
- Snapshot='artifacts/validation/blob-s1-snapshot/Host/Program.cs'
 }
 $bootstrap=@'
 using System.IO;
@@ -23,7 +21,7 @@ internal static class ReleaseBootstrap {
   var root=Environment.GetEnvironmentVariable("S1_PRODUCT_ROOT") ?? throw new Exception("Missing official product root");
   Environment.SetEnvironmentVariable("PATH",root+";"+Path.Combine(root,"runtimes","win-x64","native")+";"+Environment.GetEnvironmentVariable("PATH"));
   AssemblyLoadContext.Default.Resolving+=(_,name)=>{
-   var candidates=new[]{Path.Combine(root,name.Name+".dll"),Path.Combine(root,"plugins",name.Name!,name.Name+".dll"),Path.Combine(root,"plugins","SunEyeVision.Tool.BlobAnalysis",name.Name+".dll")};
+   var candidates=new[]{Path.Combine(root,name.Name+".dll"),Path.Combine(root,"plugins",name.Name!,name.Name+".dll")};
    foreach(var path in candidates)if(File.Exists(path))return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
    if(!name.Name!.StartsWith("SunEyeVision.") && Environment.GetEnvironmentVariable("S1_TEST_HELPERS") is string helper){var p=Path.Combine(helper,name.Name+".dll");if(File.Exists(p))return AssemblyLoadContext.Default.LoadFromAssemblyPath(p);}
    return null;
@@ -77,7 +75,6 @@ $references=@(Get-ChildItem -LiteralPath $product -File -Filter 'SunEyeVision*.d
 $references+=Get-Item (Join-Path $product 'halcondotnetxl.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Json.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Encodings.Web.dll')
-$references+=Get-Item (Join-Path $product 'plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll')
 $refs=($references | ForEach-Object {'<Reference Include="'+[Security.SecurityElement]::Escape($_.BaseName)+'"><HintPath>'+[Security.SecurityElement]::Escape($_.FullName)+'</HintPath><Private>false</Private></Reference>'}) -join "`n"
 $receipts=[Collections.Generic.List[object]]::new()
 $receiptPath=Join-Path $validation 'validation-receipt.json'

@@ -247,7 +247,7 @@ public sealed class RootWorkspaceHostTests
   void CheckButton(Button button)
   {
    button.ApplyTemplate();button.UpdateLayout();Assert.Equal(32,button.ActualWidth);Assert.Equal(23,button.ActualHeight);
-   var image=Assert.IsType<Image>(button.Content);var source=Assert.IsType<BitmapImage>(image.Source);Assert.Equal(32,source.PixelWidth);Assert.Equal(23,source.PixelHeight);
+   var image=Assert.IsType<Image>(button.Content);var source=Assert.IsAssignableFrom<BitmapSource>(image.Source);Assert.Equal(32,source.PixelWidth);Assert.Equal(23,source.PixelHeight);
    var bounds=image.TransformToAncestor(button).TransformBounds(new Rect(image.RenderSize));Assert.InRange(bounds.Left,-.01,.01);Assert.InRange(bounds.Top,-.01,.01);Assert.InRange(bounds.Right,31.99,32.01);Assert.InRange(bounds.Bottom,22.99,23.01);
    var inOwner=button.TransformToAncestor(owner).TransformBounds(new Rect(button.RenderSize));Assert.True(inOwner.Right<owner.ActualWidth&&inOwner.Bottom<owner.ActualHeight);
   }
@@ -263,7 +263,21 @@ public sealed class RootWorkspaceHostTests
  }
  private static void SaveMenuVisual(FrameworkElement visual,string name)
  {
-  visual.UpdateLayout();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(visual.ActualWidth),(int)Math.Ceiling(visual.ActualHeight),96,96,PixelFormats.Pbgra32);bitmap.Render(visual);
+  visual.UpdateLayout();BitmapSource bitmap;
+  var owner=Window.GetWindow(visual);
+  if(owner!=null&&owner.IsAncestorOf(visual))
+  {
+   // 右下角覆盖层带父级布局偏移：先渲染真实窗口，再以窗口坐标裁取，避免空图。
+   var whole=new RenderTargetBitmap((int)Math.Ceiling(owner.ActualWidth),(int)Math.Ceiling(owner.ActualHeight),96,96,PixelFormats.Pbgra32);whole.Render(owner);
+   var bounds=visual.TransformToAncestor(owner).TransformBounds(new Rect(visual.RenderSize));
+   var left=(int)Math.Floor(bounds.Left);var top=(int)Math.Floor(bounds.Top);
+   bitmap=new CroppedBitmap(whole,new Int32Rect(left,top,(int)Math.Ceiling(bounds.Right)-left,(int)Math.Ceiling(bounds.Bottom)-top));
+  }
+  else
+  {
+   var direct=new RenderTargetBitmap((int)Math.Ceiling(visual.ActualWidth),(int)Math.Ceiling(visual.ActualHeight),96,96,PixelFormats.Pbgra32);direct.Render(visual);bitmap=direct;
+  }
+  var pixels=new byte[bitmap.PixelWidth*bitmap.PixelHeight*4];bitmap.CopyPixels(pixels,bitmap.PixelWidth*4,0);Assert.Contains(Enumerable.Range(0,bitmap.PixelWidth*bitmap.PixelHeight),index=>pixels[index*4+3]>0);
   var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using var output=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png"));encoder.Save(output);
  }
  private static void SaveConfiguration(Window window,string theme)

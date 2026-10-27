@@ -6340,7 +6340,7 @@
   },
   "currentCanvasNavigationHistoryMigration": {
     "baseline": "3864379f",
-    "status": "D3已贯通，385同版281通过及正常起始页启动，待用户人工验收",
+    "status": "389小地图人工反馈修复已验证并正常启动，待用户验收",
     "scope": [
       "C01-C12画布与流程切换",
       "H01-H08统一历史与会话边界"
@@ -6444,7 +6444,7 @@
       "manual": "待用户；VS/物理/DPI未通过",
       "startupCorrection": "384正常启动因误删SDK棋盘key失败；恢复32px SDK资源、独立6px工作流网格及实际ThemeManager全键验证，385正常启动确认"
     },
-    "productSource": "2bef5bcf5314ed0a65c70c04ceb214fab6fb7293",
+    "productSource": "34d066d81dc2b9efa98be136d8891307e1834adc",
     "implementationSources": [
       {
         "path": "src/Workflow/DocumentHistoryCoordinator.cs",
@@ -6553,6 +6553,71 @@
           "path": "tests/SunEyeVision.UI.Tests/RootWorkspaceHostTests.cs",
           "sha256": "606CE94F4716928E7E9A889380185472BECB60BF7500952678D1425FBFEA5099"
         }
+      ]
+    },
+    "miniMapParityFix": {
+      "status": "已交付待用户",
+      "uiBuild": "0错误/1334警告/196.34秒",
+      "validation": {
+        "actualHost": 1,
+        "themeStartup": 1,
+        "mode": 1,
+        "canvasAndTransaction": 155,
+        "distinctTotal": 158,
+        "probeExit": 0,
+        "normalStartup": {
+          "windowTitle": "SunEyeVision · 起始页",
+          "responding": true,
+          "visualStudioDesigner": "未验证",
+          "checkedAt": "2026-10-27T21:48:22.4575912+08:00",
+          "physicalOleAndMultiDpi": "待人工",
+          "productSource": "34d066d81dc2b9efa98be136d8891307e1834adc",
+          "pid": 29160,
+          "manualAcceptance": "待用户"
+        }
+      },
+      "changes": [
+        "透明网格与独立底色分层，SDK棋盘保留",
+        "187×150单描边/无内部溢出、11px原锚点/原阴影",
+        "32×23零padding原图，自有模板与动态主题悬停/按下"
+      ],
+      "actualImages": [
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Dark-normal.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Dark-hover.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Dark-pressed.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Dark-collapsed-hover.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Light-normal.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Light-hover.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Light-pressed.png",
+        "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-389/minimap-Light-collapsed-hover.png"
+      ],
+      "sources": [
+        {
+          "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+          "sha256": "DA36CDF49C9096023CD8D14B4032DE5C42CB02573BF456508D999F88E220A986"
+        },
+        {
+          "path": "src/UI/Themes/Dark/DarkTheme.xaml",
+          "sha256": "98BED743E029D0B27723EFA385CE6B6296209D961A3A3DF20760AF477D006E9F"
+        },
+        {
+          "path": "src/UI/Themes/Light/LightTheme.xaml",
+          "sha256": "6624680271B8528B3A05ED8D33F673F91398B59E2C8B8353C5A05044DC02D85D"
+        },
+        {
+          "path": "tests/SunEyeVision.UI.Tests/RootWorkspaceHostTests.cs",
+          "sha256": "82B3FD7EFAE749FF465613DFCAE0B532332D82BE4B8E5CEEF6AFC4FE2CFFA269"
+        },
+        {
+          "path": "tests/SunEyeVision.UI.Tests/ThemeStartupContractTests.cs",
+          "sha256": "3323CAD13FADC0592A1056696F069142474FA4B3BEFC2D906A5831AF2EC1E6FC"
+        }
+      ],
+      "limits": [
+        "Group冻结",
+        "未扩展其他主界面按钮",
+        "VS/物理/DPI/用户待验",
+        "不主仓同步/合并"
       ]
     }
   }

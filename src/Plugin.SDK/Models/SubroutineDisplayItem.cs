@@ -80,6 +80,7 @@ namespace SunEyeVision.Plugin.SDK.Models
         {
             SubroutineDisplayType.Circle => typeof(Circle2d[]),
             SubroutineDisplayType.Arc => typeof(Arc2d[]),
+            SubroutineDisplayType.AnnularSector => typeof(Annulus2d[]),
             SubroutineDisplayType.Point => typeof(Geometry.Point2d[]),
             SubroutineDisplayType.Cross => typeof(Geometry.Point2d[]),
             SubroutineDisplayType.Line => typeof(Line2d[]),
@@ -129,7 +130,7 @@ namespace SunEyeVision.Plugin.SDK.Models
 
     public enum SubroutineDisplayType
     {
-        Point, Line, Rectangle, Circle, Arc, Polygon, Contour, Arrow, Cross, CoordinateSystem, Text, Image
+        Point, Line, Rectangle, Circle, Arc, Polygon, Contour, Arrow, Cross, CoordinateSystem, Text, Image, AnnularSector
     }
 
     public class DisplayTypeOption
@@ -151,6 +152,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [SubroutineDisplayType.Line] = "\u76f4\u7ebf",
             [SubroutineDisplayType.Rectangle] = "\u77e9\u5f62",
             [SubroutineDisplayType.Circle] = "\u5706",
+            [SubroutineDisplayType.AnnularSector] = "环形扇区",
             [SubroutineDisplayType.Arc] = "\u5706\u5f27",
             [SubroutineDisplayType.Polygon] = "\u591a\u8fb9\u5f62",
             [SubroutineDisplayType.Contour] = "\u8f6e\u5ed3",

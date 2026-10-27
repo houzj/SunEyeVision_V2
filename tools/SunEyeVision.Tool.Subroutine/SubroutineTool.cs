@@ -753,6 +753,14 @@ namespace SunEyeVision.Tool.Subroutine
             // 真实类型分发：优先匹配解析出的运行时类型
             switch (value)
             {
+                case Annulus2d annulus:
+                    result.Display.AddAnnulus(style, annulus, isPass);
+                    break;
+
+                case Annulus2d[] annuli:
+                    foreach (var annulus in annuli) result.Display.AddAnnulus(style, annulus, isPass);
+                    break;
+
                 case Arc2d arc:
                     result.Display.AddArc(style, arc, isPass);
                     break;
@@ -873,6 +881,10 @@ namespace SunEyeVision.Tool.Subroutine
             var style = displayItem.GraphicsStyle;
             switch (sp.Geometry)
             {
+                case Annulus2d annulus:
+                    result.Display.AddAnnulus(style, annulus, isPass);
+                    break;
+
                 case Arc2d arc:
                     result.Display.AddArc(style, arc, isPass);
                     break;

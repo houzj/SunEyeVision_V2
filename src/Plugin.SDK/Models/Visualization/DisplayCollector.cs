@@ -145,6 +145,13 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             AppendGeometry(item, arc, isPass);
         }
 
+        /// <summary>双半径环形扇区，保留内外边界及弧度起止角；整环没有径向接缝。</summary>
+        public void AddAnnulus(GraphicsStyle style, Annulus2d annulus, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Annulus);
+            AppendGeometry(item, annulus, isPass);
+        }
+
         // ===== 文本按需收集 =====
 
         /// <summary>添加文本数组（每个元素独立定位）</summary>

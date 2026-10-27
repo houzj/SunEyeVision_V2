@@ -63,6 +63,31 @@ public class SubroutineToolDisplayContractTests
         };
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void Annular_sector_preserves_both_radii_and_angles_for_scalar_array_and_roi(bool array, bool roi)
+    {
+        var shape = new Annulus2d(new Point(70, 80), 12, 28, 5.5, 8.2);
+        object value = roi ? (array ? new[] { new RoiShape { Geometry = shape }, new RoiShape { Geometry = shape } } : (object)new RoiShape { Geometry = shape })
+            : array ? new[] { shape, shape } : (object)shape;
+        var source = new GenericToolResults(); source.AddResultItem("Sectors", value);
+        var parameters = MakeParams(p => p.DisplayConfigs.Add(new() { DisplayName = "环形扇区", DisplayType = SubroutineDisplayType.AnnularSector, BindingSource = "internalNode.Sectors[]" }), source);
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage);
+            var item = Assert.IsType<GraphicsDisplayItem>(Assert.Single(result.Display.Items));
+            Assert.Equal(GraphicsType.Annulus, item.Type);
+            Assert.Equal(array ? 2 : 1, item.Geometries.Length);
+            foreach (var geometry in item.Geometries) Assert.Equal(shape, Assert.IsType<Annulus2d>(geometry));
+            Assert.Same(parameters.DisplayConfigs[0].GraphicsStyle, item.Style);
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
     [Fact]
     public void CircleOutput_IsRenderedAsTrueCircle_NotContour()
     {

@@ -6119,19 +6119,19 @@
       "id": "W01",
       "entry": "ShellWorkspaceControl.xaml→WorkflowTabControlViewModel/WorkflowTabViewModel→RunButtons/现行根运行命令",
       "scope": "完整栏/标签/配置状态灯/变量配置入口/运行停止新增下拉；状态不按当前子节点集合决定根执行",
-      "remaining": "原模板状态及整窗同态物理验收"
+      "remaining": "配置校验/流程配置/局部变量基础缺失，入口灰显占位；整窗状态待人工"
     },
     {
       "id": "W02",
       "entry": "MainWindowSolutionEditing/WorkflowTabControlViewModel→正式定义事务→WorkflowOwnership/DocumentEditSession",
       "scope": "创建复制重命名删除及菜单，独占定义/序号/引用/Undo/保存同批",
-      "remaining": "逐入口全部命令签名与原件行为仍须核，不以菜单存在清零"
+      "remaining": "新增改名删除可验；整流程复制、间隔超时缺方案级事务或运行配置合同，灰显占位；不得把节点复制Undo当整流程管理完成"
     },
     {
       "id": "W03",
       "entry": "MainWindowWorkflowSearch→ShellWorkspaceControl.Search→正式导航→ViewState",
       "scope": "标题注释/搜索ID与名称/当前及全部根/嵌套Group导航/滚动背景",
-      "remaining": "已核搜索中心偏移错误；标题注释/独立ID及物理滚动待补"
+      "remaining": "353补独立ID精确搜索及正式导航链；标题注释缺模型/事务，灰显占位；滚动/DPI/物理交互待人工"
     },
     {
       "id": "W04",
@@ -6250,5 +6250,11 @@
       ]
     },
     "status": "本批源码/自动验证可交付；完整目标及人工验收未完成"
+  },
+  "currentNonGroupDelivery": {
+    "baseline": "8d412813",
+    "validationDirectory": "Release/_validation/Toolbox-IsolatedPreview-20261026/NonGroup-353",
+    "group": "用户冻结，未获确认不得续做",
+    "manualAcceptance": "待用户真实验收；原76与W01-W05保留，缺基础占位不计实现完成"
   }
 }

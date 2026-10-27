@@ -106,6 +106,13 @@
                       <ContextMenu>
                         <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
                         <Separator/>
+                        <MenuItem Header="复制流程（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待方案级流程复制事务、独立身份及拥有关系重映射接入；节点片段复制已可使用。"/>
+                        <MenuItem Header="运行间隔/超时（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程级运行配置、执行快照和取消合同接入；当前不提供无效设置。"/>
+                        <MenuItem Header="配置就绪状态（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待正式配置校验模型接入；不以节点数量或运行结果代替配置就绪状态。"/>
+                        <MenuItem Header="流程配置（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程级配置合同和编辑事务具备后接入。"/>
+                        <MenuItem Header="流程变量（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程局部变量作用域及保存、执行快照能力具备后接入。"/>
+                        <MenuItem Header="标题注释（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待画布注释模型、编辑事务及保存复制合同具备后接入。"/>
+                        <Separator/>
                         <MenuItem Header="删除" Click="TabItem_ContextMenu_Delete_Click"/>
                       </ContextMenu>
                     </Grid.ContextMenu>

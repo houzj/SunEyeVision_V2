@@ -1,4 +1,4 @@
-using SunEyeVision.UI.Services.Workflow;
+﻿using SunEyeVision.UI.Services.Workflow;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
@@ -7,6 +7,8 @@ public partial class MainWindowViewModel
   if(DocumentManager.CurrentSolution is not {} solution||!all&&WorkflowTabViewModel.SelectedTab==null)return Array.Empty<WorkflowSearchEntry>();
   return WorkflowSearchCatalog.Search(solution.Workflows,all?null:WorkflowTabViewModel.SelectedTab!.RootWorkflowId,query);
  }
+ internal IReadOnlyList<WorkflowSearchEntry> FindWorkflowNodesById(string query)
+  => DocumentManager.CurrentSolution is {} solution ? WorkflowSearchCatalog.FindById(solution.Workflows,query) : Array.Empty<WorkflowSearchEntry>();
  internal bool NavigateSearchResult(WorkflowSearchEntry entry)
  {
   var solution=DocumentManager.CurrentSolution;

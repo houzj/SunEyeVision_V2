@@ -12,5 +12,6 @@
    </Popup>
   </Grid>
   <ToggleButton x:Name="Expand" Width="32" Height="40" Checked="ExpandChanged" Unchecked="ExpandChanged" ToolTip="搜索模块"><ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Image x:Name="icon" Stretch="None" Source="/SunEyeVision.UI;component/Resources/Workflow/ic_note_search_normal.png"/><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_note_search_click.png"/></Trigger><Trigger Property="IsChecked" Value="True"><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_rightarrow32_normal.png"/></Trigger><MultiTrigger><MultiTrigger.Conditions><Condition Property="IsChecked" Value="True"/><Condition Property="IsMouseOver" Value="True"/></MultiTrigger.Conditions><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_rightarrow32_click.png"/></MultiTrigger></ControlTemplate.Triggers></ControlTemplate></ToggleButton.Template></ToggleButton>
+  <Button x:Name="IdSearch" Width="32" Height="40" Content="ID" ToolTip="按节点序号或稳定ID定位（全部流程）" Click="IdSearchClick"/>
  </StackPanel></Border>
 </UserControl>

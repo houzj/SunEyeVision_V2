@@ -9,12 +9,24 @@ public partial class WorkflowSearchControl:UserControl
  public static readonly DependencyProperty DefinitionIdentityProperty=DependencyProperty.Register("DefinitionIdentity",typeof(object),typeof(WorkflowSearchControl),new PropertyMetadata(null,(d,_)=>((WorkflowSearchControl)d).CloseSearch()));
  internal Func<string,bool,IReadOnlyList<WorkflowSearchEntry>>? QuerySources {get;set;}
  internal Func<WorkflowSearchEntry,bool>? Navigate {get;set;}
+ internal Func<string,string?>? NavigateId {get;set;}
+ private SunEyeVision.UI.Shell.Windows.WorkflowIdSearchWindow? _idSearchWindow;
+ internal void OpenIdSearch()
+ {
+  if(_idSearchWindow!=null){_idSearchWindow.Activate();return;}
+  _searchTimer.Stop();ResultsPopup.IsOpen=false;
+  var window=new SunEyeVision.UI.Shell.Windows.WorkflowIdSearchWindow();
+  window.Navigate=query=>NavigateId?.Invoke(query)??(NavigateId==null?"搜索服务尚未就绪。":null);
+  window.Owner=Window.GetWindow(this);window.Closed+=(_,_)=>{window.Navigate=null;if(ReferenceEquals(_idSearchWindow,window))_idSearchWindow=null;};
+  _idSearchWindow=window;window.Show();
+ }
+ private void IdSearchClick(object sender,RoutedEventArgs e)=>OpenIdSearch();
  private bool _setting;private Window? _owner;
  private readonly System.Windows.Threading.DispatcherTimer _searchTimer=new(){Interval=TimeSpan.FromMilliseconds(100)};
  public WorkflowSearchControl(){_searchTimer.Tick+=(_,_)=>{_searchTimer.Stop();Refresh();};InitializeComponent();Loaded+=(_,_)=>{_owner=Window.GetWindow(this);if(_owner!=null){_owner.Deactivated+=OwnerDeactivated;_owner.LocationChanged+=OwnerMoved;}};Unloaded+=(_,_)=>{CloseSearch();if(_owner!=null){_owner.Deactivated-=OwnerDeactivated;_owner.LocationChanged-=OwnerMoved;}_owner=null;};}
  private void OwnerMoved(object? sender,EventArgs e){if(ResultsPopup.IsOpen){var offset=ResultsPopup.HorizontalOffset;ResultsPopup.HorizontalOffset=offset+0.1;ResultsPopup.HorizontalOffset=offset;}}
  private void OwnerDeactivated(object? sender,EventArgs e){_searchTimer.Stop();ResultsPopup.IsOpen=false;}
- internal void CloseSearch(){_searchTimer.Stop();if(ResultsPopup==null)return;ResultsPopup.IsOpen=false;Results.ItemsSource=null;Expand.IsChecked=false;}
+ internal void CloseSearch(){_idSearchWindow?.Close();_searchTimer.Stop();if(ResultsPopup==null)return;ResultsPopup.IsOpen=false;Results.ItemsSource=null;Expand.IsChecked=false;}
  private void ExpandChanged(object sender,RoutedEventArgs e){if(SearchFields==null)return;SearchFields.Visibility=Expand.IsChecked==true?Visibility.Visible:Visibility.Collapsed;if(Expand.IsChecked==true){Query.Focus();Refresh();}else{_searchTimer.Stop();ResultsPopup.IsOpen=false;}}
  private void QueryLostFocus(object sender,RoutedEventArgs e){_searchTimer.Stop();ResultsPopup.IsOpen=false;}
  private void QueryChanged(object sender,TextChangedEventArgs e){if(_setting||ResultsPopup==null)return;_searchTimer.Stop();if(string.IsNullOrEmpty(Query.Text)){ResultsPopup.IsOpen=false;return;}if(Expand.IsChecked==true)_searchTimer.Start();}

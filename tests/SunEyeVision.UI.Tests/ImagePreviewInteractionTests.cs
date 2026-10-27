@@ -88,22 +88,55 @@ public sealed partial class SolutionManagerUiTests
     }
 
     [Fact]
-    public void Restoring_images_filters_missing_files_and_remaps_selection_by_path()
+    public void Restoring_images_preserves_missing_references_selection_and_run_flags_without_rewriting_configuration()
     {
         Sta(() =>
         {
-            var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
+            var root = Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? throw new InvalidOperationException("Missing validation root"), "restore-images", Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
             try
             {
                 var a = Path.Combine(root, "a.png"); var b = Path.Combine(root, "b.png");
                 File.WriteAllBytes(a, new byte[] { 1 }); File.WriteAllBytes(b, new byte[] { 2 });
                 var config = new ImageSourceConfig { FilePaths = new() { Path.Combine(root, "missing.png"), a, Path.Combine(root, "lost.png"), b }, CurrentIndex = 3, ForRunPaths = new() { b } };
-                var source = new ImageInputSource("node"); source.LoadFromConfig(config);
-                Assert.Equal(2, source.Count); Assert.Equal(1, source.CurrentIndex);
+                var source = new ImageInputSource("node");
+                var resolver = new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(root);
+                source.LoadFromConfig(config, resolver);
+                Assert.Equal(4, source.Count); Assert.Equal(3, source.CurrentIndex);
                 Assert.Equal(b, source.CurrentImage!.FilePath); Assert.True(source.CurrentImage.IsForRun);
-                Assert.Equal(4, config.FilePaths.Count); Assert.Equal(2, source.ToConfig().FilePaths.Count);
-                config.CurrentIndex = 0; source.LoadFromConfig(config); Assert.Equal(-1, source.CurrentIndex);
+                Assert.Equal(config.FilePaths, source.ToConfig().FilePaths);
+                Assert.Equal(config.ForRunPaths, source.ToConfig().ForRunPaths);
+                config.CurrentIndex = 0; source.LoadFromConfig(config, resolver); Assert.Equal(0, source.CurrentIndex);
+                Assert.Equal(config.FilePaths[0], source.CurrentImage!.SourceReference);
+                Assert.False(File.Exists(source.CurrentImage.FilePath));
                 source.ClearImages(); Assert.True(File.Exists(a)); Assert.True(File.Exists(b));
+            }
+            finally { Directory.Delete(root, true); }
+        });
+    }
+
+    [Fact]
+    public void Unresolved_relative_image_keeps_reference_and_can_be_resolved_without_current_directory_fallback()
+    {
+        Sta(() =>
+        {
+            var root = Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")
+                ?? throw new InvalidOperationException("Missing validation root"), "relative-image", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            var file = Path.Combine(root, "sample.png"); File.WriteAllBytes(file, new byte[] { 1 });
+            try
+            {
+                var config = new ImageSourceConfig { FilePaths = new() { "sample.png" }, ForRunPaths = new() { "sample.png" }, CurrentIndex = 0 };
+                var source = new ImageInputSource("relative");
+                source.LoadFromConfig(config, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
+                var unresolved = Assert.Single(source.Images);
+                Assert.Equal("sample.png", unresolved.SourceReference); Assert.Empty(unresolved.FilePath);
+                Assert.False(string.IsNullOrWhiteSpace(unresolved.ResourceError)); Assert.True(unresolved.IsForRun);
+                Assert.Equal(config.FilePaths, source.ToConfig().FilePaths);
+                source.LoadFromConfig(config, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(root));
+                var resolved = Assert.Single(source.Images);
+                Assert.Equal(file, resolved.FilePath); Assert.Null(resolved.ResourceError); Assert.True(resolved.IsForRun);
+                Assert.Equal("sample.png", Assert.Single(source.ToConfig().FilePaths));
+                source.ClearImages(); Assert.True(File.Exists(file));
             }
             finally { Directory.Delete(root, true); }
         });

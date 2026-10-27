@@ -28,6 +28,60 @@ public sealed class WorkflowSearchTests
   Assert.True(WorkflowSearchCatalog.IsCurrent(current[0],flows));flows[1].Nodes[0]=new("same","Camera1","Camera1","ImageLoad");Assert.False(WorkflowSearchCatalog.IsCurrent(current[0],flows));
  }
  [Fact]
+ public async Task Node_metrics_can_be_read_on_a_worker_then_used_on_the_canvas_thread()
+ {
+  var values=await Task.Run(()=>{var style=new SunEyeVision.UI.Shared.NodeStyleConfig();return(style.NodeWidth,style.NodeHeight,style.PortSize,style.PortMargin,style.CornerRadius,style.ContentMargin);});
+  Assert.Equal((110d,30d,10d,10d,4d,0d),values);
+  Sta(()=>{var style=new SunEyeVision.UI.Shared.NodeStyleConfig();Assert.Equal(values.Item5,style.CornerRadius);Assert.Equal(new Rect(45,85,110,30),style.GetNodeRect(new Point(100,100)));});
+ }
+ [Fact]
+ public void Id_search_is_exact_and_reachable_and_keeps_ambiguous_identities_separate()
+ {
+  var flows=Definitions();
+  Assert.Same(flows[1].Nodes[0],Assert.Single(WorkflowSearchCatalog.FindById(flows," 1 ")).Node);
+  Assert.Empty(WorkflowSearchCatalog.FindById(flows,"Camera1"));
+  Assert.Empty(WorkflowSearchCatalog.FindById(flows,"-1"));
+  Assert.Empty(WorkflowSearchCatalog.FindById(flows,"01"));
+  Assert.Empty(WorkflowSearchCatalog.FindById(flows,"orphan-node"));
+  var matches=WorkflowSearchCatalog.FindById(flows,"same");Assert.Equal(2,matches.Count);
+  Assert.NotSame(matches[0].Root,matches[1].Root);Assert.Equal("流程A.组.Camera1",matches[0].FullPath);
+  flows[0].Nodes.Clear();Assert.Single(WorkflowSearchCatalog.FindById(flows,"same"));
+  Assert.False(WorkflowSearchCatalog.IsCurrent(matches[0],flows));
+ }
+ [Theory]
+ [InlineData("Dark")]
+ [InlineData("Light")]
+ public void Id_window_validates_input_preserves_failures_and_closes_only_after_navigation(string theme)=>Sta(()=>
+ {
+  var window=new SunEyeVision.UI.Shell.Windows.WorkflowIdSearchWindow{Left=-10000,ShowActivated=false};
+  foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/"+theme+"/"+theme+"Theme.xaml"})window.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+  var count=0;string? submitted=null;
+  window.Navigate=query=>{count++;submitted=query;return count==1?"未找到该ID。":null;};
+  try
+  {
+   window.Show();window.UpdateLayout();var query=(TextBox)window.FindName("Query");var button=(Button)window.FindName("Search");var error=(TextBlock)window.FindName("Error");
+   button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Assert.Equal(0,count);Assert.NotEmpty(error.Text);
+   query.Text=" 1 ";Assert.Empty(error.Text);button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Assert.Equal("1",submitted);Assert.True(window.IsVisible);Assert.NotEmpty(error.Text);
+   window.UpdateLayout();var content=(FrameworkElement)window.Content;
+   var visual=new DrawingVisual();using(var drawing=visual.RenderOpen()){drawing.DrawRectangle(window.Background,null,new Rect(0,0,content.ActualWidth,content.ActualHeight));drawing.DrawRectangle(new VisualBrush(content),null,new Rect(0,0,content.ActualWidth,content.ActualHeight));}
+   var image=new RenderTargetBitmap((int)Math.Ceiling(content.ActualWidth),(int)Math.Ceiling(content.ActualHeight),96,96,PixelFormats.Pbgra32);image.Render(visual);Save(image,"workflow-id-search-"+theme+".png");
+   button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Assert.Equal(2,count);Assert.False(window.IsVisible);Assert.Null(window.Navigate);
+  }
+  finally{window.Close();}
+ });
+ [Fact]
+ public void Id_search_entry_reuses_one_window_and_scope_change_closes_it()=>Sta(()=>
+ {
+  var control=new WorkflowSearchControl();var owner=new Window{Content=control,Left=-10000,ShowActivated=false,Width=600,Height=300};
+  try
+  {
+   owner.Show();control.OpenIdSearch();var first=Assert.Single(owner.OwnedWindows.Cast<Window>());control.OpenIdSearch();Assert.Same(first,Assert.Single(owner.OwnedWindows.Cast<Window>()));
+   control.SetValue(WorkflowSearchControl.ScopeIdentityProperty,"changed");Assert.False(first.IsVisible);Assert.Empty(owner.OwnedWindows.Cast<Window>());
+   control.OpenIdSearch();var second=Assert.Single(owner.OwnedWindows.Cast<Window>());control.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));Assert.False(second.IsVisible);
+  }
+  finally{owner.Close();}
+ });
+ [Fact]
  public void Catalog_guards_cycles_and_rejects_replaced_or_reowned_Group_paths()
  {
   var flows=Definitions();var entry=WorkflowSearchCatalog.Search(flows,"root","Camera1").Single();flows[1].Nodes.Add(new("loop","循环组","循环组","Subroutine"){SubroutineId="child"});Assert.Single(WorkflowSearchCatalog.Search(flows,"root","循环"));

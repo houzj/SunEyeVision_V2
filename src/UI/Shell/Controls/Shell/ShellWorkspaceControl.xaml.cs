@@ -83,7 +83,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _viewModel = viewModel;
             SetBinding(WorkflowEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditWorkflowCanvas)) { Source = viewModel });
             SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
-            WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;
+            WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;WorkflowSearch.NavigateId=SearchNavigateId;
             WorkflowSearch.SetBinding(WorkflowSearchControl.ScopeIdentityProperty,new System.Windows.Data.Binding("SelectedTab.CurrentWorkflowId"){Source=viewModel.WorkflowTabViewModel});
             WorkflowSearch.SetBinding(WorkflowSearchControl.DefinitionIdentityProperty,new System.Windows.Data.Binding("SelectedTab.WorkflowNodes"){Source=viewModel.WorkflowTabViewModel});
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionTextProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.WorkflowExecutionText)){Source=viewModel.StatusBar});
@@ -575,6 +575,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void TabItem_Rename_Click(object sender, RoutedEventArgs e)
         {
+            if (_viewModel?.CanEditWorkflowCanvas != true) return;
             var workflow = GetWorkflowFromContextMenu(sender);
             if (workflow == null) return;
             workflow.BeginRename();
@@ -600,7 +601,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (e.Key == Key.Enter)
                 {
-                    workflow.ConfirmRename();
+                    if (_viewModel?.CanEditWorkflowCanvas == true) workflow.ConfirmRename();
+                    else workflow.CancelRename();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Escape)
@@ -620,7 +622,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (workflow.IsEditingName)
                 {
-                    workflow.ConfirmRename();
+                    if (_viewModel?.CanEditWorkflowCanvas == true) workflow.ConfirmRename();
+                    else workflow.CancelRename();
                 }
             }
         }

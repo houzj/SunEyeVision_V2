@@ -11,6 +11,17 @@ internal static class WorkflowSearchCatalog
  public static IReadOnlyList<WorkflowSearchEntry> Search(IEnumerable<SunEyeVision.Workflow.Workflow> definitions,string? rootId,string query)
  {
   if(string.IsNullOrEmpty(query))return Array.Empty<WorkflowSearchEntry>();
+  return SearchCore(definitions,rootId,(node,name)=>name.Contains(query,StringComparison.Ordinal));
+ }
+ public static IReadOnlyList<WorkflowSearchEntry> FindById(IEnumerable<SunEyeVision.Workflow.Workflow> definitions,string query)
+ {
+  query=query.Trim();
+  if(query.Length==0)return Array.Empty<WorkflowSearchEntry>();
+  return SearchCore(definitions,null,(node,_)=>string.Equals(node.Id,query,StringComparison.Ordinal)
+   ||node.GlobalIndex>=0&&node.GlobalIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)==query);
+ }
+ private static IReadOnlyList<WorkflowSearchEntry> SearchCore(IEnumerable<SunEyeVision.Workflow.Workflow> definitions,string? rootId,Func<WorkflowNodeBase,string,bool> matches)
+ {
   var flows=definitions.ToArray();var byId=flows.ToDictionary(f=>f.Id,StringComparer.Ordinal);var result=new List<WorkflowSearchEntry>();
   void Walk(SunEyeVision.Workflow.Workflow root,SunEyeVision.Workflow.Workflow flow,List<WorkflowSearchHop> hops,string prefix,HashSet<string> path)
   {
@@ -18,7 +29,7 @@ internal static class WorkflowSearchCatalog
    try{foreach(var node in flow.Nodes)
    {
     var name=string.IsNullOrWhiteSpace(node.DispName)?(string.IsNullOrWhiteSpace(node.Name)?node.Id:node.Name):node.DispName;var full=prefix+"."+name;
-    if(name.Contains(query,StringComparison.Ordinal))result.Add(new(root,flow,node,hops.ToArray(),name,full));
+    if(matches(node,name))result.Add(new(root,flow,node,hops.ToArray(),name,full));
     if(node.ToolType=="Subroutine"&&node.SubroutineId is {} childId&&byId.TryGetValue(childId,out var child)&&child.IsSubroutine)
     {hops.Add(new(flow,node,child));Walk(root,child,hops,full,path);hops.RemoveAt(hops.Count-1);}
    }}finally{path.Remove(flow.Id);}

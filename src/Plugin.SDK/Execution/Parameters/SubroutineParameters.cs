@@ -37,6 +37,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
             if(DisplayConfigs.Any(d=>d is null)){result.AddError("Group显示项缺失。");return result;}
+            if(DisplayConfigs.Any(d=>!d.DisplayType.IsSupported()))result.AddError("Group包含尚未支持的显示类型，请先移除该占位项。 ");
             if(DisplayConfigs.Any(d=>!SubroutineIoRules.IsValidName(d.DisplayName,32)))result.AddError("Group显示名称不能为空、超过32字符或包含非法字符。");
             if(DisplayConfigs.Select(d=>d.DisplayName).Distinct(StringComparer.Ordinal).Count()!=DisplayConfigs.Count)result.AddError("Group显示名称不能重复。");
             if(DisplayConfigs.Any(d=>d.FieldId==Guid.Empty)||DisplayConfigs.Select(d=>d.FieldId).Distinct().Count()!=DisplayConfigs.Count)result.AddError("Group显示字段身份无效或重复。");

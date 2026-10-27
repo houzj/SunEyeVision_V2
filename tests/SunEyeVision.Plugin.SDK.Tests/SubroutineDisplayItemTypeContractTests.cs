@@ -40,6 +40,28 @@ public class SubroutineDisplayItemTypeContractTests
             MakeDs("Text", typeof(string[])),
         };
 
+    [Theory]
+    [InlineData(typeof(string), true)]
+    [InlineData(typeof(string[]), true)]
+    [InlineData(typeof(bool), true)]
+    [InlineData(typeof(bool[]), true)]
+    [InlineData(typeof(double), true)]
+    [InlineData(typeof(double[]), true)]
+    [InlineData(typeof(IVisionImage), false)]
+    [InlineData(typeof(Circle2d[]), false)]
+    public void Formal_Group_text_binding_contract_accepts_declared_text_boolean_numeric_values_and_rejects_geometry_image(Type type, bool accepted)
+    {
+        var p = new SubroutineParameters { SubroutineId="child" };
+        var display = new SubroutineDisplayItem { DisplayName="文本", DisplayType=SubroutineDisplayType.Text, TextStyle=new() };
+        p.DisplayConfigs.Add(display);
+        var input = BindingInputCatalog.Describe(p).Single(i => i.Key=="Display:"+display.FieldId);
+        var contract = new[] { new SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable
+        { Name="Value", DeclaredType=type, VariableType=SdkTypeVocabulary.ToTypeVocabulary(type)!, IsCollection=type.IsArray } };
+        var result = BindingContractValidator.Validate(contract,type.IsArray?"Value[]":"Value",input.AllowedTypes);
+        Assert.Equal(accepted,result.State is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional);
+        Assert.True(input.InternalProjection); Assert.Equal("child",input.ReadWorkflowId!());
+    }
+
     #region 契约：ParamType 类型映射
 
     [Fact]

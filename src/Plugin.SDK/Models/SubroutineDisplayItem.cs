@@ -137,6 +137,8 @@ namespace SunEyeVision.Plugin.SDK.Models
     {
         public string DisplayName { get; }
         public SubroutineDisplayType Value { get; }
+        public bool IsAvailable => Value.IsSupported();
+        public string AvailabilityText => IsAvailable ? DisplayName : DisplayName + "（待完善）";
         public DisplayTypeOption(string displayName, SubroutineDisplayType value)
         {
             DisplayName = displayName;
@@ -165,6 +167,9 @@ namespace SunEyeVision.Plugin.SDK.Models
 
         public static string GetChineseName(this SubroutineDisplayType type)
             => ChineseNames.TryGetValue(type, out var name) ? name : type.ToString();
+
+        public static bool IsSupported(this SubroutineDisplayType type)
+            => Enum.IsDefined(type) && type is not SubroutineDisplayType.Arrow and not SubroutineDisplayType.CoordinateSystem;
 
         public static List<DisplayTypeOption> GetAllOptions()
             => ChineseNames.Select(kvp => new DisplayTypeOption(kvp.Value, kvp.Key)).ToList();

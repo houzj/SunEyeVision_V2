@@ -415,9 +415,14 @@
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedDisplayType}"
                                           Height="26" MinWidth="120" VerticalAlignment="Center">
+                                    <ComboBox.ItemContainerStyle>
+                                        <Style TargetType="ComboBoxItem">
+                                            <Setter Property="IsEnabled" Value="{Binding IsAvailable}"/>
+                                        </Style>
+                                    </ComboBox.ItemContainerStyle>
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayName}"/>
+                                            <TextBlock Text="{Binding AvailabilityText}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
@@ -425,6 +430,10 @@
                                         Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddDisplayItemCommand}"
                                         ToolTip="添加显示项"/>
+                                <Button Content="导入内部显示对象（待完善）" IsEnabled="False"
+                                        Margin="12,0,0,0" Padding="8,2" Height="26"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        ToolTip="暂不支持批量导入内部模块的显示对象，可先手动添加显示项。"/>
                             </StackPanel>
                         </Border>
                     </Grid>

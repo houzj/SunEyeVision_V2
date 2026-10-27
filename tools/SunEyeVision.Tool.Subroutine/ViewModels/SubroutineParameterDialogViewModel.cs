@@ -99,7 +99,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
             AddInputCommand = new RelayCommand(AddInput,()=>!_isDisposed&&Inputs.Count<SubroutineIoRules.MaximumItems);
             AddOutputCommand = new RelayCommand(AddOutput,()=>!_isDisposed&&Outputs.Count<SubroutineIoRules.MaximumItems);
-            AddDisplayItemCommand = new RelayCommand(AddDisplayItem);
+            AddDisplayItemCommand = new RelayCommand(AddDisplayItem, () => SelectedDisplayType.IsSupported());
             RemoveItemCommand = new RelayCommand<object>(ExecuteRemoveItem);
             RemoveDisplayItemCommand = new RelayCommand<SubroutineDisplayItem>(ExecuteRemoveDisplayItem);
 
@@ -216,6 +216,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddDisplayItem()
         {
+            if (!SelectedDisplayType.IsSupported()) return;
             var prefix=SelectedDisplayType.GetChineseName();
             var names=DisplayItems.Select(d=>d.DisplayName).ToHashSet(StringComparer.Ordinal);
             var name=prefix;

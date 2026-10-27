@@ -101,7 +101,7 @@ public static class BindingInputCatalog
                 var original = row.BoundDataSource;
                 inputs.Add(new("Display:" + row.FieldId, row.DisplayName, () => row.BoundDataSource?.GetBindingPath() ?? row.BindingSource,
                     text => { row.BindingSource = text; row.BoundDataSource = RewriteSource(original, text); if (text.Length == 0) row.BindingDisplayText = ""; },
-                    row.ParamType == null ? Array.Empty<Type>() : new[] { row.ParamType }, ReadWorkflowId: () => subroutine.SubroutineId, ReferenceOnly: true, InternalProjection: true) { Owner = row, MemberPath = nameof(row.BindingSource) });
+                    row.AllowedParamTypes ?? Array.Empty<Type>(), ReadWorkflowId: () => subroutine.SubroutineId, ReferenceOnly: true, InternalProjection: true) { Owner = row, MemberPath = nameof(row.BindingSource) });
             }
             var loop = subroutine.LoopConfig;
             foreach (var key in new[] { "StartValueBinding", "EndValueBinding", "SourceCompareBinding", "TargetCompareBinding" })

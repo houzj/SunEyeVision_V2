@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -26,6 +26,16 @@ public sealed class GroupDisplaySourceTypeTests
         try
         {
             foreach (var resource in new[] { "Shell/Resources/AppResources.xaml", "Resources/Styles/CommonStyleResources.xaml", "Themes/Dark/DarkTheme.xaml" }) window.Resources.MergedDictionaries.Add(new() { Source = new Uri("/SunEyeVision.UI;component/" + resource, UriKind.Relative) });
+            var model = control.DataContext;
+            var selectedType = model.GetType().GetProperty("SelectedDisplayType")!;
+            var add = (System.Windows.Input.ICommand)model.GetType().GetProperty("AddDisplayItemCommand")!.GetValue(model)!;
+            foreach (var unsupported in new[] { SubroutineDisplayType.Arrow, SubroutineDisplayType.CoordinateSystem })
+            {
+                selectedType.SetValue(model, unsupported);
+                Assert.False(add.CanExecute(null)); add.Execute(null);
+                Assert.Single(parameters.DisplayConfigs);
+            }
+            selectedType.SetValue(model, SubroutineDisplayType.Text); Assert.True(add.CanExecute(null));
             window.Show(); Visual<TabControl>(control).First().SelectedIndex = 3; window.UpdateLayout();
             window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ContextIdle); window.UpdateLayout();
             var binding = Visual<ParamBinding>(control).Single(b => ReferenceEquals(b.DataContext, display));

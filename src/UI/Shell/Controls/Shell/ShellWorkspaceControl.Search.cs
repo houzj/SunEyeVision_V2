@@ -14,7 +14,7 @@ public partial class ShellWorkspaceControl
    var viewer=GetCurrentScrollViewer();if(viewer==null)return;
    viewer.UpdateLayout();var node=entry.Node;
    if(double.IsFinite(node.Position.X)&&double.IsFinite(node.Position.Y)&&double.IsFinite(node.Width)&&double.IsFinite(node.Height))
-   {viewer.ScrollToHorizontalOffset(Math.Clamp((node.Position.X+node.Width/2)*tab.CurrentScale-viewer.ViewportWidth/2,0,viewer.ScrollableWidth));viewer.ScrollToVerticalOffset(Math.Clamp((node.Position.Y+node.Height/2)*tab.CurrentScale-viewer.ViewportHeight/2,0,viewer.ScrollableHeight));ScheduleMiniMapRedraw();}
+   {viewer.ScrollToHorizontalOffset(Math.Clamp(node.Position.X*tab.CurrentScale-viewer.ViewportWidth/2,0,viewer.ScrollableWidth));viewer.ScrollToVerticalOffset(Math.Clamp(node.Position.Y*tab.CurrentScale-viewer.ViewportHeight/2,0,viewer.ScrollableHeight));ScheduleMiniMapRedraw();}
   }));return true;
  }
 }

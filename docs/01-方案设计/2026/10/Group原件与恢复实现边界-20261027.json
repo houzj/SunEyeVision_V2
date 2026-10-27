@@ -1,0 +1,284 @@
+﻿{
+  "evidence": "集中审核路径只读复核；非新原厂SDK/实机验证",
+  "files": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\DynamicObjectConfigControl\\Apps.XmlParser.ParamTab\\SetInternalObjectToParentObjectOperation.cs",
+      "kind": "原件托管反编译静态",
+      "sha256": "DEF84530256B8A23E8CF4C48852AB76DA579580ABDD32378E1CE8C8D97D9CD2B",
+      "hits": [
+        {
+          "term": "SetRalationObject",
+          "line": 82,
+          "context": "\t\t{\n\t\t\tObject targetObj = enumerable.Single((Object p) => AppLocalizationService.GetLang(p.NameA) == subString[1]);\n\t\t\tSetRalationObject(obj, targetObj);\n\t\t\tobj?.UpdateValue(new PropertyEventArgs\n\t\t\t{\n\t\t\t\tPropertyName = nameValueItem.NameA\n\t\t\t});\n\t\t}\n\t}\n"
+        },
+        {
+          "term": "SetRalationObject",
+          "line": 90,
+          "context": "\t}\n\n\tpublic static void SetRalationObject(Object sourceObject, Object targetObj)\n\t{\n\t\tVmModule node = sourceObject.Owner as VmModule;\n\t\tList<VmIO> list = new List<VmIO>();\n\t\tif (sourceObject.TypeA == \"image\" || sourceObject.TypeA == \"pixelinfoimage\")\n\t\t{\n\t\t\tList<VmIO> allTopMappingIO = targetObj.GetAllTopMappingIO();\n\t\t\tforeach (VmIO item in allTopMappingIO.Where((VmIO p) => p.TypeName == \"IMAGE\" || p.TypeName == \"PIXELIMAGE\"))"
+        },
+        {
+          "term": "CreatOutputIOByOldIO",
+          "line": 99,
+          "context": "\t\t\tforeach (VmIO item in allTopMappingIO.Where((VmIO p) => p.TypeName == \"IMAGE\" || p.TypeName == \"PIXELIMAGE\"))\n\t\t\t{\n\t\t\t\tlist.Add(CreatOutputIOByOldIO(node, item));\n\t\t\t}\n\t\t}\n\t\telse if (sourceObject.TypeA == \"PointCloud3DImage\")\n\t\t{\n\t\t\tList<VmIO> allTopMappingIO2 = targetObj.GetAllTopMappingIO();\n\t\t\tlist.Add(CreatOutputIOByOldIO(node, allTopMappingIO2[0]));\n\t\t}"
+        },
+        {
+          "term": "CreatOutputIOByOldIO",
+          "line": 105,
+          "context": "\t\t{\n\t\t\tList<VmIO> allTopMappingIO2 = targetObj.GetAllTopMappingIO();\n\t\t\tlist.Add(CreatOutputIOByOldIO(node, allTopMappingIO2[0]));\n\t\t}\n\t\tswitch (sourceObject.TypeA)\n\t\t{\n\t\tcase \"image\":\n\t\tcase \"PointCloud3DImage\":\n\t\t\tSetImageObjectMapByIO(sourceObject, list.Single((VmIO p) => p.TypeName == \"IMAGE\"));\n\t\t\tbreak;"
+        },
+        {
+          "term": "CreatOutputIOByOldIO",
+          "line": 169,
+          "context": "\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t\tlist.Add(CreatOutputIOByOldIO(node, mapIO));\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t{\n\t\t\t\t\tlist.Add(null);\n\t\t\t\t}\n\t\t\t}\n\t\t\tfeatureBase.MappingA = string.Join(\",\", list.Select((VmIO p) => p?.Name ?? \"\"));"
+        },
+        {
+          "term": "CreatOutputIOByOldIO",
+          "line": 184,
+          "context": "\t}\n\n\tpublic static VmIO CreatOutputIOByOldIO(VmModule node, VmIO oldIO)\n\t{\n\t\tVmIO vmIO = null;\n\t\tvmIO = ((!oldIO.IsLeafNode) ? AddCombinationIO(node, oldIO.TypeName, node, node.Outputs, null, IsNeedIncludeModuleName: false, visible: false, isReturnRelateValue: false) : AddLeafIO(node, oldIO.TypeName, node, node.Outputs, null, IsNeedIncludeModuleName: false, oldIO.Name, visible: false, isReturnRelateValue: false));\n\t\tint num = node.Outputs.GetAllLeafIO().Count();\n\t\tif (num > 1024)\n\t\t{\n\t\t\tLogHelper.Error(AppLocalizationService.GetLang(\"Io数量超出最大限制！\") + \" Io name: \" + vmIO.FullName);"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\VmModuleBaseDecorator.cs",
+      "kind": "原件托管反编译静态",
+      "sha256": "F124B9A5E3CE5B8E2E856D3E325B00A4B143F7074513CCC74D542EC35C2695DD",
+      "hits": [
+        {
+          "term": "CheckAndClearDisplayObjectFromParent",
+          "line": 896,
+          "context": "\t\t\t{\n\t\t\t}\n\t\t\tCheckAndClearDisplayObjectFromParent(vmModule);\n\t\t\tIList preModules = vmModule.PreModules;\n\t\t\tIList nextModules = vmModule.NextModules;\n\t\t\tif (preModules.Count > 0 && nextModules.Count > 0)\n\t\t\t{\n\t\t\t\tforeach (object item3 in nextModules)\n\t\t\t\t{\n\t\t\t\t\tforeach (object item4 in preModules)"
+        },
+        {
+          "term": "CheckAndClearDisplayObjectFromParent",
+          "line": 948,
+          "context": "\t/// </summary>\n\t/// <param name=\"module\"></param>\n\tprivate void CheckAndClearDisplayObjectFromParent(IVmModule module)\n\t{\n\t\tif (!(module.Parent is IVmModuleSet vmModuleSet))\n\t\t{\n\t\t\treturn;\n\t\t}\n\t\tList<VmIO> outputs = (module.Outputs as VmIOCollection).GetAllIO();\n\t\tif (!(VmSolution.Instance[(vmModuleSet as IVmFullPath).FullPath + \".[Display]\"] is ParamRoot paramRoot))"
+        },
+        {
+          "term": "ClearModuleInfoFromObject",
+          "line": 966,
+          "context": "\t\t\tif (source.Any((VmIO p) => outputs.Contains(p)))\n\t\t\t{\n\t\t\t\tClearModuleInfoFromObject(item);\n\t\t\t}\n\t\t}\n\t}\n\n\tpublic static void ClearModuleInfoFromObject(Apps.XmlParser.Object sourceObject)\n\t{\n\t\tIEnumerable<DynamicVmIO> enumerable = sourceObject.GetAllTopMappingIO().OfType<DynamicVmIO>();"
+        },
+        {
+          "term": "ClearModuleInfoFromObject",
+          "line": 971,
+          "context": "\t}\n\n\tpublic static void ClearModuleInfoFromObject(Apps.XmlParser.Object sourceObject)\n\t{\n\t\tIEnumerable<DynamicVmIO> enumerable = sourceObject.GetAllTopMappingIO().OfType<DynamicVmIO>();\n\t\tVmModule vmModule = sourceObject.Owner as VmModule;\n\t\tforeach (DynamicVmIO item in enumerable)\n\t\t{\n\t\t\tif (!item.Visible)\n\t\t\t{"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\VmIO.cs",
+      "kind": "原件托管反编译静态",
+      "sha256": "15E1832243422B6BFA2714F300B796D54C365950573639EB1039C5DF58E99CB0",
+      "hits": [
+        {
+          "term": "public void RemoveSelf",
+          "line": 730,
+          "context": "\t/// 删除自身\n\t/// </summary>\n\tpublic void RemoveSelf()\n\t{\n\t\tClearRelation();\n\t\tCollectionParent.Remove(this);\n\t}\n\n\tpublic bool CanRegisterSubscribe(IBuilder builder, IUnRedoOperation unRedoOperation)\n\t{"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\DynamicObjectConfigControl\\DynamicObjectConfigControl\\DisplayObjectDecorate.cs",
+      "kind": "原件托管反编译静态",
+      "sha256": "EF4108C958B373743622942F61C2776D0E4B3057A84352BB21F40B0D19224474",
+      "hits": [
+        {
+          "term": "RemoveSelf",
+          "line": 297,
+          "context": "\t\tforeach (VmIO item in allTopMappingIO)\n\t\t{\n\t\t\titem.RemoveSelf();\n\t\t}\n\t\tif (allTopMappingIO.Count > 0)\n\t\t{\n\t\t\t(Owner.Owner as IVMGroup)?.SetIoParams();\n\t\t\t(Owner.Owner as IVmProcedure)?.SetIoParams();\n\t\t}\n\t\tDecorateSource.RemoveSelf();"
+        },
+        {
+          "term": "RemoveSelf",
+          "line": 304,
+          "context": "\t\t\t(Owner.Owner as IVmProcedure)?.SetIoParams();\n\t\t}\n\t\tDecorateSource.RemoveSelf();\n\t\tAlgorithmTabRoot algorithmTabRoot = Owner.Owner?.Params.GetParamRoot();\n\t\tif (algorithmTabRoot != null)\n\t\t{\n\t\t\talgorithmTabRoot.SelectedSubscribeParam = null;\n\t\t}\n\t}\n"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionFramework\\GroupOutputAccumulator.cs",
+      "kind": "恢复实现源码",
+      "sha256": "0E40FF1CC5B1764E97537D55B3EF9F6F8A45E394D83C46210CC8973E82CD45F8",
+      "hits": [
+        {
+          "term": "GrayImage",
+          "line": 9,
+          "context": " readonly Dictionary<string,int> elementCounts=new(StringComparer.Ordinal);\n readonly Dictionary<string,List<PortValue>> accumulated=new(StringComparer.Ordinal);int count;\n public void Add(ExecutionSessionResult iteration){foreach(var spec in body.Configuration.Displays){if(!iteration.WorkflowDisplays.TryGetValue(spec.Name,out var values))continue;if(!displays.TryGetValue(spec.Name,out var frames))displays[spec.Name]=frames=new();if(!spec.Accumulate||spec.Kind==DataKind.GrayImage){displayCount-=frames.Sum(v=>v.ElementCount);frames.Clear();}if(values.Sum(v=>(long)v.ElementCount)>1000000-displayCount)throw new InvalidOperationException(\"Independent display frame limit is 1000000.\");displayCount+=values.Sum(v=>v.ElementCount);frames.AddRange(values);}foreach(var spec in body.Configuration.Outputs.Where(o=>o.Accumulate&&GroupBreak.Accumulatable(o.Kind))){if(!iteration.WorkflowOutputs.TryGetValue(spec.Name,out var value))continue;int length=value.ElementCount;if(length>1000000-count)throw new InvalidOperationException(\"Independent accumulated output element limit is 1000000.\");count+=length;elementCounts[spec.Name]=elementCounts.GetValueOrDefault(spec.Name)+length;if(!accumulated.TryGetValue(spec.Name,out var list))accumulated[spec.Name]=list=new();list.Add(value);}}\n public PortValue ReadSelfElement(string name,int index,ExecutionSessionResult? last){\n  var spec=body.Configuration.Outputs.SingleOrDefault(o=>o.Name==name)??throw new InvalidDataException(\"Group self output no longer exists.\");\n  if(!spec.Accumulate||!GroupBreak.Accumulatable(spec.Kind))return (last?.WorkflowOutputs.GetValueOrDefault(name)??throw new InvalidDataException(\"Group self output unavailable.\")).Element(index);\n  if(index<0||index>=elementCounts.GetValueOrDefault(name))throw new InvalidDataException(\"Group self output element is unavailable.\");\n  foreach(var value in accumulated[name]){int length=value.ElementCount;if(index<length)return value.Element(index);index-=length;}throw new InvalidDataException(\"Group self output unavailable.\");\n }\n public IReadOnlyDictionary<string,IReadOnlyList<PortValue>> FinishDisplays()=>new ReadOnlyDictionary<string,IReadOnlyList<PortValue>>(displays.ToDictionary(p=>p.Key,p=>(IReadOnlyList<PortValue>)Array.AsReadOnly(p.Value.ToArray()),StringComparer.Ordinal));"
+        },
+        {
+          "term": "Accumulate",
+          "line": 9,
+          "context": " readonly Dictionary<string,int> elementCounts=new(StringComparer.Ordinal);\n readonly Dictionary<string,List<PortValue>> accumulated=new(StringComparer.Ordinal);int count;\n public void Add(ExecutionSessionResult iteration){foreach(var spec in body.Configuration.Displays){if(!iteration.WorkflowDisplays.TryGetValue(spec.Name,out var values))continue;if(!displays.TryGetValue(spec.Name,out var frames))displays[spec.Name]=frames=new();if(!spec.Accumulate||spec.Kind==DataKind.GrayImage){displayCount-=frames.Sum(v=>v.ElementCount);frames.Clear();}if(values.Sum(v=>(long)v.ElementCount)>1000000-displayCount)throw new InvalidOperationException(\"Independent display frame limit is 1000000.\");displayCount+=values.Sum(v=>v.ElementCount);frames.AddRange(values);}foreach(var spec in body.Configuration.Outputs.Where(o=>o.Accumulate&&GroupBreak.Accumulatable(o.Kind))){if(!iteration.WorkflowOutputs.TryGetValue(spec.Name,out var value))continue;int length=value.ElementCount;if(length>1000000-count)throw new InvalidOperationException(\"Independent accumulated output element limit is 1000000.\");count+=length;elementCounts[spec.Name]=elementCounts.GetValueOrDefault(spec.Name)+length;if(!accumulated.TryGetValue(spec.Name,out var list))accumulated[spec.Name]=list=new();list.Add(value);}}\n public PortValue ReadSelfElement(string name,int index,ExecutionSessionResult? last){\n  var spec=body.Configuration.Outputs.SingleOrDefault(o=>o.Name==name)??throw new InvalidDataException(\"Group self output no longer exists.\");\n  if(!spec.Accumulate||!GroupBreak.Accumulatable(spec.Kind))return (last?.WorkflowOutputs.GetValueOrDefault(name)??throw new InvalidDataException(\"Group self output unavailable.\")).Element(index);\n  if(index<0||index>=elementCounts.GetValueOrDefault(name))throw new InvalidDataException(\"Group self output element is unavailable.\");\n  foreach(var value in accumulated[name]){int length=value.ElementCount;if(index<length)return value.Element(index);index-=length;}throw new InvalidDataException(\"Group self output unavailable.\");\n }\n public IReadOnlyDictionary<string,IReadOnlyList<PortValue>> FinishDisplays()=>new ReadOnlyDictionary<string,IReadOnlyList<PortValue>>(displays.ToDictionary(p=>p.Key,p=>(IReadOnlyList<PortValue>)Array.AsReadOnly(p.Value.ToArray()),StringComparer.Ordinal));"
+        },
+        {
+          "term": "Accumulate",
+          "line": 12,
+          "context": " public PortValue ReadSelfElement(string name,int index,ExecutionSessionResult? last){\n  var spec=body.Configuration.Outputs.SingleOrDefault(o=>o.Name==name)??throw new InvalidDataException(\"Group self output no longer exists.\");\n  if(!spec.Accumulate||!GroupBreak.Accumulatable(spec.Kind))return (last?.WorkflowOutputs.GetValueOrDefault(name)??throw new InvalidDataException(\"Group self output unavailable.\")).Element(index);\n  if(index<0||index>=elementCounts.GetValueOrDefault(name))throw new InvalidDataException(\"Group self output element is unavailable.\");\n  foreach(var value in accumulated[name]){int length=value.ElementCount;if(index<length)return value.Element(index);index-=length;}throw new InvalidDataException(\"Group self output unavailable.\");\n }\n public IReadOnlyDictionary<string,IReadOnlyList<PortValue>> FinishDisplays()=>new ReadOnlyDictionary<string,IReadOnlyList<PortValue>>(displays.ToDictionary(p=>p.Key,p=>(IReadOnlyList<PortValue>)Array.AsReadOnly(p.Value.ToArray()),StringComparer.Ordinal));\n public IReadOnlyDictionary<string,PortValue> Finish(ExecutionSessionResult? last){var outputs=last?.WorkflowOutputs.ToDictionary(p=>p.Key,p=>p.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);foreach(var spec in body.Configuration.Outputs.Where(o=>o.Accumulate&&GroupBreak.Accumulatable(o.Kind))){var values=accumulated.GetValueOrDefault(spec.Name)??[];outputs[spec.Name]=PortValue.JoinArray(spec.Kind,values);}return new ReadOnlyDictionary<string,PortValue>(outputs);}\n}"
+        },
+        {
+          "term": "Accumulate",
+          "line": 17,
+          "context": " }\n public IReadOnlyDictionary<string,IReadOnlyList<PortValue>> FinishDisplays()=>new ReadOnlyDictionary<string,IReadOnlyList<PortValue>>(displays.ToDictionary(p=>p.Key,p=>(IReadOnlyList<PortValue>)Array.AsReadOnly(p.Value.ToArray()),StringComparer.Ordinal));\n public IReadOnlyDictionary<string,PortValue> Finish(ExecutionSessionResult? last){var outputs=last?.WorkflowOutputs.ToDictionary(p=>p.Key,p=>p.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);foreach(var spec in body.Configuration.Outputs.Where(o=>o.Accumulate&&GroupBreak.Accumulatable(o.Kind))){var values=accumulated.GetValueOrDefault(spec.Name)??[];outputs[spec.Name]=PortValue.JoinArray(spec.Kind,values);}return new ReadOnlyDictionary<string,PortValue>(outputs);}\n}"
+        }
+      ]
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\GroupConfigurationControls.cs",
+      "kind": "恢复实现源码",
+      "sha256": "C5635A8491574A4633F6DA14B955E399623BCC7C0D88EC4790A2CEB91F2F0D12",
+      "hits": [
+        {
+          "term": "1024",
+          "line": 61,
+          "context": "   var delete=new Button{Content=\"×\",Tag=\"GroupOutputDelete:\"+item.Id,Padding=new Thickness(0),Margin=new Thickness(1),MinWidth=20};NativeGroupIcon(delete,\"delete\");Grid.SetColumn(delete,4);delete.Click+=(_,_)=>Safe(()=>SaveOutputs(GroupBody().Configuration.Outputs.Where(o=>o.Id!=item.Id)));row.Children.Add(delete);panel.Children.Add(row);\n  }\n  var addRow=new StackPanel{Orientation=System.Windows.Controls.Orientation.Horizontal,Margin=new Thickness(0,0,0,6)};var types=new ComboBox{ItemsSource=GroupIoTypes(),SelectedIndex=0,Width=80,Height=32,Tag=\"GroupOutputAddType\",ToolTip=\"选择可用 IO 类型；多选可从流程模块选择现有 IO\",ItemContainerStyle=GroupIoTypeContainerStyle()};var add=new Button{Tag=\"GroupOutputAdd\",Width=32,Height=32,Margin=new Thickness(7,0,0,0)};NativeGroupIcon(add,\"add\");add.Click+=(_,_)=>Safe(()=>{var choice=types.SelectedItem as GroupIoTypeChoice??throw new InvalidOperationException(\"请选择输出类型。\");if(choice.Kind is {} kind){AddOutput(kind,choice.Cardinality);return;}if(choice.Missing is not null)throw new InvalidOperationException(choice.Missing);var options=(groupSources?.Invoke(null)??[]).Where(o=>o.NodeId.Length>0&&o.Port.Length>0).ToArray();var picker=new WorkflowSourcePicker(options,true){Owner=this};if(picker.ShowDialog()!=true)return;var config=GroupBody().Configuration;var outputs=config.Outputs.ToList();if(outputs.Count+picker.Selections.Count>1024)throw new InvalidOperationException(\"最多添加1024个输出。\");foreach(var option in picker.Selections){var stem=picker.IncludeModuleName?option.Label.Replace('.','_'):option.Port;stem=new string(stem.Where(c=>!\"?;./\\\\`{}[]<>()%\".Contains(c)).ToArray());if(stem.Length==0)stem=\"out\";if(stem.Length>32)stem=stem[..32];var name=stem;int index=0;var used=outputs.Select(o=>o.Name).Concat(config.Inputs.Select(i=>i.Name)).ToHashSet(StringComparer.Ordinal);while(used.Contains(name))name=stem+(index++);outputs.Add(new(Guid.NewGuid().ToString(\"N\"),name,option.Kind,option.NodeId,option.Port){Cardinality=option.Cardinality});}SaveOutputs(outputs);});addRow.Children.Add(types);addRow.Children.Add(add);panel.Children.Add(addRow);\n }\n void AddOutput(DataKind kind,ValueCardinality cardinality=ValueCardinality.Scalar){var config=GroupBody().Configuration;var items=config.Outputs;if(items.Count>=1024)throw new InvalidOperationException(\"最多添加1024个输出。\");var name=\"out\";int index=0;while(items.Any(o=>o.Name==name)||config.Inputs.Any(i=>i.Name==name))name=\"out\"+index++;SaveOutputs(items.Append(new(Guid.NewGuid().ToString(\"N\"),name,kind){Cardinality=cardinality}));}\n}"
+        },
+        {
+          "term": "1024",
+          "line": 63,
+          "context": "  var addRow=new StackPanel{Orientation=System.Windows.Controls.Orientation.Horizontal,Margin=new Thickness(0,0,0,6)};var types=new ComboBox{ItemsSource=GroupIoTypes(),SelectedIndex=0,Width=80,Height=32,Tag=\"GroupOutputAddType\",ToolTip=\"选择可用 IO 类型；多选可从流程模块选择现有 IO\",ItemContainerStyle=GroupIoTypeContainerStyle()};var add=new Button{Tag=\"GroupOutputAdd\",Width=32,Height=32,Margin=new Thickness(7,0,0,0)};NativeGroupIcon(add,\"add\");add.Click+=(_,_)=>Safe(()=>{var choice=types.SelectedItem as GroupIoTypeChoice??throw new InvalidOperationException(\"请选择输出类型。\");if(choice.Kind is {} kind){AddOutput(kind,choice.Cardinality);return;}if(choice.Missing is not null)throw new InvalidOperationException(choice.Missing);var options=(groupSources?.Invoke(null)??[]).Where(o=>o.NodeId.Length>0&&o.Port.Length>0).ToArray();var picker=new WorkflowSourcePicker(options,true){Owner=this};if(picker.ShowDialog()!=true)return;var config=GroupBody().Configuration;var outputs=config.Outputs.ToList();if(outputs.Count+picker.Selections.Count>1024)throw new InvalidOperationException(\"最多添加1024个输出。\");foreach(var option in picker.Selections){var stem=picker.IncludeModuleName?option.Label.Replace('.','_'):option.Port;stem=new string(stem.Where(c=>!\"?;./\\\\`{}[]<>()%\".Contains(c)).ToArray());if(stem.Length==0)stem=\"out\";if(stem.Length>32)stem=stem[..32];var name=stem;int index=0;var used=outputs.Select(o=>o.Name).Concat(config.Inputs.Select(i=>i.Name)).ToHashSet(StringComparer.Ordinal);while(used.Contains(name))name=stem+(index++);outputs.Add(new(Guid.NewGuid().ToString(\"N\"),name,option.Kind,option.NodeId,option.Port){Cardinality=option.Cardinality});}SaveOutputs(outputs);});addRow.Children.Add(types);addRow.Children.Add(add);panel.Children.Add(addRow);\n }\n void AddOutput(DataKind kind,ValueCardinality cardinality=ValueCardinality.Scalar){var config=GroupBody().Configuration;var items=config.Outputs;if(items.Count>=1024)throw new InvalidOperationException(\"最多添加1024个输出。\");var name=\"out\";int index=0;while(items.Any(o=>o.Name==name)||config.Inputs.Any(i=>i.Name==name))name=\"out\"+index++;SaveOutputs(items.Append(new(Guid.NewGuid().ToString(\"N\"),name,kind){Cardinality=cardinality}));}\n}"
+        }
+      ]
+    }
+  ],
+  "unproven": [
+    "原厂mode0/1多轮、空轮、失败、图像、停止重跑返回语义",
+    "原厂显示对象与完整clone配置的Undo复原范围",
+    "共享子叶映射时原版预检与实际新增叶数的一致性"
+  ],
+  "loopDesignAudit": {
+    "nature": "原件既有静态审计及本地生产源码复核；无新原厂动态执行",
+    "sources": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\docs\\GROUP-BREAK-ACCUMULATION.md",
+        "sha256": "0AC886BCA81D5B753119DB73F4C2DD007E035483F072DB7C112C02FD02CB228D"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\group-native-audit\\prepare-output-native.txt",
+        "sha256": "F8146A51D2B4E479C56202D70F5E85F68E33FA54AD2A574751BEFA3F95E1393A"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\group-native-audit\\group-report-mode-map.c",
+        "sha256": "FA41EE36736CAE347933BF651AD1B48D1A1DFAC3CBF48EA638D9AF922F690316"
+      },
+      {
+        "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\tools\\SunEyeVision.Tool.Subroutine\\SubroutineTool.cs",
+        "sha256": "4BFECC31EA16564739EDBF634ACB0FEEF5E3558B05D08571707B6E03C9934E2D"
+      }
+    ],
+    "currentProductionDifferences": [
+      "ExecuteWithLoop当前执行后比较，而原件每轮执行前比较",
+      "AccumulateIteration缺失值跳过可能保留前轮普通值",
+      "图像累积勾选当前报错，而原件图像替换",
+      "公共与隐藏映射尚无统一正式计划"
+    ],
+    "design": "原主方案D1.4b",
+    "notExecuted": [
+      "原厂空轮/失败/停止重跑动态差分",
+      "新设计集成向量",
+      "原厂Group资源回调"
+    ]
+  },
+  "typeCollectionAudit": {
+    "nature": "已有原件反编译静态消费复核与当前产品源，不是原厂动态观察",
+    "sources": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\Object.cs",
+        "sha256": "FEED3ECC1A21DE9E05092B5895A7DC369A947C20CA2B3CF63B5D8E7B125CE0C1"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\ObjectBase.cs",
+        "sha256": "73168438E06DFD74CAE70F910DB9AECDABF313DB0C376753652180C5BC35D006"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser\\FeatureBase.cs",
+        "sha256": "672D0B57519FA4E750E38E627910B9F11F1B28DA86E9E1980C607004954E5EAD"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Commom\\DrawShapeHelper.cs",
+        "sha256": "2E9DE01E1C58D15B46C0419C76041C363B3843699C0734C67FCFB49D9150E148"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\CoordinateShape.cs",
+        "sha256": "39AF518B4EF74FC1E1C14FFFCD5CA7B7F431DF1781B024C360DC78203A0242AF"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\LineAngleShape.cs",
+        "sha256": "ECF507847D394D98D28B324BE5A50C2C4A5EA936C6AF116872A2B035838B595F"
+      },
+      {
+        "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Contracts\\GeometryValues.cs",
+        "sha256": "77D7406F48059FE6E887127C0C9F3945BFB6F04DBCE01D653EB6F7CBEE94FFCB"
+      },
+      {
+        "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.SDK\\UI\\Controls\\ImageControl\\ResultRenderLayer.cs",
+        "sha256": "85DC03457BC14DD5A31FDFF18B75186E28DAFF53E9C8B973050771E56096C4E3"
+      }
+    ],
+    "confirmed": [
+      "Object文本以Content决定数量",
+      "普通回调特征越界索引回0，Type=Array整体返回",
+      "多映射文本逐输入首项回退",
+      "polygon按PointNum前缀和切片",
+      "路径点与20%至80%单向段，段色取后一项/透明度取前一项",
+      "coordinate独立轴归一化/图像宽5%/箭头标签",
+      "outline原生bytes交ExternPoint_Buffer/CreatPointK，尚未解码"
+    ],
+    "remaining": [
+      "SkewAngleX形态",
+      "原chunk布局",
+      "像素附加信息最终控件消费",
+      "LineAngle完整渲染形态",
+      "原厂十五类动态差分"
+    ],
+    "design": "原主方案D1.4d"
+  },
+  "remainingShapeAudit": {
+    "kind": "原件静态消费方法体与模板本地复核；非运行差分",
+    "sources": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\RectShape.cs",
+        "sha256": "8BF3182DF668051CB087A85CB988D000E6A45209F7BDA1C75489232B2B8BF791"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ImageView\\HikImageView.xaml.cs",
+        "sha256": "F7A12451506EB57FE896DAF264866CA7796AE76F08D4F89BC90E6C2B661C9B02"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
+        "sha256": "2092BAB5093C476C124D317F425C5EA5A2105FB55B5E6E64EB31D68621C43B4E"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\RenderControlBase.xaml.cs",
+        "sha256": "E13F97E8E82616056BF1CA02EFB61F15527FA7CE8CA0724EF501C9A8F5EFAC67"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\iMVS-6000PlatformSDKCS.PublicAudit\\iMVS_6000PlatformSDKCS\\ImvsSdkPFDefine.cs",
+        "sha256": "079ECE0C0C94F67F59AF42A8DCD28E92D50BF1B576BBB97DE0E5196A8457AFD4"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\shape\\lineangleshape\\lineangleshapestyle.xaml",
+        "sha256": "672ADF0B0AA38B398D5948186243F7588F24F245822A1D7B94756D17D0D0DDC3"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\LineAndAngle.xaml",
+        "sha256": "00394AEB4DED180CA9F67FE842727213EAEAAC00E5C31893D799835F5BB9A1C8"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\LineAndAngle.xaml.cs",
+        "sha256": "D2389E6972960BFF00162B327F80F90DED8B062139DBB00871B321BB0EBFC484"
+      }
+    ],
+    "confirmed": [
+      "通用矩形先负斜切再旋转，旧helper传0另路",
+      "outline点X/Y/Score/Index，Score三色，2x2屏幕点，无已证分段",
+      "像素附加信息通用Rgb24分类色值/旧Gray8灰值两路",
+      "LineAngleShape模板实例化LineAndAngle圆弧和旋转文字"
+    ],
+    "designCorrection": "outlinepoint不再采用闭合轮廓段，改类型化点记录/三态分数；原D1.4d当前行已同步修正",
+    "remaining": [
+      "GetClassImageGrayVal函数体及分类色值编码",
+      "实际原厂动态路径及差分",
+      "完整模板几何移植与WPF验证"
+    ],
+    "design": "原主方案D1.4g"
+  }
+}

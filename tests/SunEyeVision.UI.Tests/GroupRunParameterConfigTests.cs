@@ -303,10 +303,13 @@ public sealed class GroupRunParameterConfigTests
         }
         finally{window.Close();}
     });
-    [Fact]
-    public void File_save_reopen_preserves_Group_metadata_and_all_related_values_and_rejects_invalid_draft_before_rewrite()
+    [Theory]
+    [InlineData("float","7","Double",typeof(double),"7")]
+    [InlineData("int","9","Integer",typeof(long),"9")]
+    [InlineData("string","中文来源","String",typeof(string),"中文来源")]
+    public void File_save_reopen_preserves_Group_metadata_and_all_related_values_and_rejects_invalid_draft_before_rewrite(string dataType,string input,string vocabulary,Type sourceType,string expectedText)
     {
-        using var f=new Fixture(configure:flow=>{var output=(ProtocolParseParameters)flow.Nodes.Single(n=>n.Id=="a").Parameters;output.Outputs[0].Name="Value";output.Outputs[0].DataType="float";output.InputText="7";});var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing test root"),"group-file",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
+        using var f=new Fixture(configure:flow=>{var output=(ProtocolParseParameters)flow.Nodes.Single(n=>n.Id=="a").Parameters;output.Outputs[0].Name="Value";output.Outputs[0].DataType=dataType;output.InputText=input;});var root=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")??throw new InvalidOperationException("Missing test root"),"group-file",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
         SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(typeof(ProtocolParseTool));
         var hostRoot=typeof(GroupRunParameterConfigTests).Assembly.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
         var plugin=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(hostRoot,"plugins","SunEyeVision.Tool.Subroutine","SunEyeVision.Tool.Subroutine.dll"));
@@ -323,7 +326,7 @@ public sealed class GroupRunParameterConfigTests
         var group=editor.AddGroup();group.Name="通信";var source=editor.Available().Single(s=>s.Target.NodeId=="a"&&s.Target.PropertyName==nameof(ProtocolParseParameters.Separator));var item=editor.Add(group,source);editor.AddTarget(item,editor.Available().Single(s=>s.Target.NodeId=="b"&&s.Target.PropertyName==nameof(ProtocolParseParameters.Separator)));editor.Write(item,";");
         var fieldId=producer.Outputs[0].FieldId;var fieldKey=producer.Outputs[0].OutputDefinition().BindingKey;
         var display=new SubroutineDisplayItem{DisplayName="数值",DisplayType=SubroutineDisplayType.Text,TextStyle=new(),BindingSource="a."+fieldKey,IsAccumulated=true,
-            BoundDataSource=new(){SourceWorkflowId="child",SourceNodeId="a",SourceFieldId=fieldId,PropertyName=fieldKey,PropertyType=typeof(double),VariableType="Double"}};
+            BoundDataSource=new(){SourceWorkflowId="child",SourceNodeId="a",SourceFieldId=fieldId,PropertyName=fieldKey,PropertyType=sourceType,VariableType=vocabulary}};
         display.GraphicsStyle.LineWidth=5;display.GraphicsStyle.Opacity=0.6;
         ((SubroutineParameters)context.DraftNode.Parameters).DisplayConfigs.Add(display);
         ((SubroutineParameters)context.DraftNode.Parameters).DisplayConfigs.Add(new(){DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc});
@@ -339,14 +342,14 @@ public sealed class GroupRunParameterConfigTests
         var reopened=reader.OpenSolution(path)!;Assert.NotNull(reopened);Assert.NotSame(f.Model,reopened);
         var saved=(SubroutineParameters)reopened.Workflows.Single(w=>w.Id=="parent").Nodes.Single().Parameters;
         Assert.Equal(2,saved.DisplayConfigs.Count);Assert.Equal(typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Arc2d[]),saved.DisplayConfigs.Single(d=>d.DisplayType==SubroutineDisplayType.Arc).ParamType);var restoredDisplay=saved.DisplayConfigs.Single(d=>d.DisplayType==SubroutineDisplayType.Text);Assert.Equal(display.FieldId,restoredDisplay.FieldId);Assert.Equal(SubroutineDisplayType.Text,restoredDisplay.DisplayType);Assert.Equal("a."+fieldKey,restoredDisplay.BindingSource);Assert.True(restoredDisplay.IsAccumulated);
-        Assert.Equal("child",restoredDisplay.BoundDataSource!.SourceWorkflowId);Assert.Equal("a",restoredDisplay.BoundDataSource.SourceNodeId);Assert.Equal(fieldId,restoredDisplay.BoundDataSource.SourceFieldId);Assert.Equal(typeof(double),restoredDisplay.BoundDataSource.PropertyType);Assert.Null(restoredDisplay.BoundDataSource.CurrentValue);
+        Assert.Equal("child",restoredDisplay.BoundDataSource!.SourceWorkflowId);Assert.Equal("a",restoredDisplay.BoundDataSource.SourceNodeId);Assert.Equal(fieldId,restoredDisplay.BoundDataSource.SourceFieldId);Assert.Equal(sourceType,restoredDisplay.BoundDataSource.PropertyType);Assert.Null(restoredDisplay.BoundDataSource.CurrentValue);
         Assert.NotSame(display.GraphicsStyle,restoredDisplay.GraphicsStyle);Assert.Equal(5,restoredDisplay.GraphicsStyle.LineWidth);Assert.Equal(0.6,restoredDisplay.GraphicsStyle.Opacity);
         var alias=Assert.Single(Assert.Single(saved.RunParameterGroups).Parameters);Assert.Equal(item.Id,alias.Id);Assert.Equal(2,alias.Targets.Count);Assert.Equal("ProtocolParse",alias.SourceToolType);Assert.Equal(nameof(ProtocolParseParameters.Separator),alias.SourceParameterName);
         Assert.All(reopened.Workflows.Single(w=>w.Id=="child").Nodes,n=>Assert.Equal(";",((ProtocolParseParameters)n.Parameters).Separator));
         var actualChild=new ProtocolParseTool().Run((ProtocolParseParameters)reopened.Workflows.Single(w=>w.Id=="child").Nodes.Single(n=>n.Id=="a").Parameters);Assert.True(actualChild.IsSuccess,actualChild.ErrorMessage);
         saved.ExecuteSubWorkflowAsync=(_,_,_)=>System.Threading.Tasks.Task.FromResult(new SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult{Success=true,NodeResults=new Dictionary<string,SunEyeVision.Plugin.SDK.Execution.Results.NodeExecutionResult>{["a"]=new(){Result=actualChild}}});
         var actualGroup=(SunEyeVision.Plugin.SDK.Execution.Results.ToolResults)plugin.GetType("SunEyeVision.Tool.Subroutine.SubroutineTool",true)!.GetMethod("Run",new[]{typeof(SubroutineParameters)})!.Invoke(Activator.CreateInstance(plugin.GetType("SunEyeVision.Tool.Subroutine.SubroutineTool",true)!),new object[]{saved})!;
-        try{Assert.True(actualGroup.IsSuccess,actualGroup.ErrorMessage);var text=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.TextDisplayItem>(Assert.Single(actualGroup.Display.Items));Assert.Equal("7",Assert.Single(text.Texts).Content);}
+        try{Assert.True(actualGroup.IsSuccess,actualGroup.ErrorMessage);var text=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.TextDisplayItem>(Assert.Single(actualGroup.Display.Items));Assert.Equal(expectedText,Assert.Single(text.Texts).Content);}
         finally{actualGroup.Resources?.Dispose();actualChild.Resources?.Dispose();reader.CloseSolution(saveChanges:false);}
 
     }

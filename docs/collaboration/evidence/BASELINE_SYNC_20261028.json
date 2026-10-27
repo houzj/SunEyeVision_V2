@@ -1,0 +1,175 @@
+{
+  "date": "2026-10-28",
+  "request": "先同步工作流分支，统一开发基线，再各自独立开发",
+  "productBaseline": "88eb971197a05736ab3ddc289061880a9c812eb0",
+  "workflowBefore": "9f8506f0e37137590b80fd38d02ecfb64ee0ec36",
+  "divergenceBefore": {
+    "mainOnly": 2,
+    "workflowOnly": 0
+  },
+  "strategy": "仅将工作流快进到主线已提交基线；没有分叉，不创建产品合并提交",
+  "includedCommits": [
+    "88eb971197a05736ab3ddc289061880a9c812eb0 接通原多边形参数与同帧图像编辑并封存正式回归",
+    "8f1cd141726524c11345760ce1267fa3c99489fd 修复多边形原数值和点投影依赖并封存正式回归"
+  ],
+  "excludedWorkingTree": [
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "status": " M",
+      "sha256": "4d63b9917985f909e6f5a08d79790e93819eb7439ff6121d38842e2ecd367410",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "status": " M",
+      "sha256": "d004104cfba1b6bf46a6f8316a3b48b4ed59d8203ffac9e021244b6942fd1a4a",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "status": " M",
+      "sha256": "d142c141d01385ef3a8b842a834bc7730f2486856e723c28de195cdbac11b379",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "status": " M",
+      "sha256": "6ce95a8baf887d257814a0e040d84c060937d712fc70e49286a4dc5470b91dd1",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ItemCheckConverter.cs.pending",
+      "status": " D",
+      "sha256": null,
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LeftWidthConverter.cs.pending",
+      "status": " D",
+      "sha256": null,
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.cs.pending",
+      "status": " D",
+      "sha256": null,
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs.pending",
+      "status": " D",
+      "sha256": null,
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "status": " M",
+      "sha256": "bb5099b4f221a857c48d5b5f2c7d4fc98492f9f85de41ca299220cd4681fb680",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "status": " M",
+      "sha256": "f0ce82b488e5ff43ebf19f5b9c59e6a5f3d915c04fcb1197e9a38ce0755c9fd7",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+      "status": " M",
+      "sha256": "cdd4420aca88a8ca5e21058f71f3e2c71f3b928de079603478e53d40510a8778",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "status": " M",
+      "sha256": "dedfa3ca76e63bb9d38a92b579bc590db654c37c04cf820161462ec0804e31e7",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "status": " M",
+      "sha256": "c93213d8207a0dd9fc020ad9d6a55326128e3a3fbb6b000398e76d02734098e8",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml",
+      "status": " M",
+      "sha256": "a4ea8aa8a6eabedd4f699223afcb4e0ee64b75cae5cdecd30a88591f11d781bc",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.pending",
+      "status": " D",
+      "sha256": null,
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.pending",
+      "status": " D",
+      "sha256": null,
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "status": " M",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
+      "status": "??",
+      "sha256": "ea84b72dd728231f54f43b8d18c5e66932fe004f605c9aa2a45373bab1e789cc",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ItemCheckConverter.cs",
+      "status": "??",
+      "sha256": "46cad9c1c6d855b1130392cd52bbadeac4e540964363c341a0f2a2cbfbf4248d",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/LeftWidthConverter.cs",
+      "status": "??",
+      "sha256": "2d8913038690975ea3d3e0716ea26104d2f6c6359bffad83a8733bf853e8a95d",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml.cs",
+      "status": "??",
+      "sha256": "ae074af68327c3a3bafbd25d69a1268b152441c669d325bc6b3feead5d872a4e",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml.cs",
+      "status": "??",
+      "sha256": "586061953171d280f1da36fa3464cb274c4d8c7349d404115562abc5b862b3d7",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamListView.xaml",
+      "status": "??",
+      "sha256": "2ed6851fe643371627b342a3116ef943b582d58435a85b7f7c1cf547272426b3",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamUserControl.xaml",
+      "status": "??",
+      "sha256": "6da2d0e6e38da2184c6b58836d9ab6dfe9296284b85397efde83b609fac93b54",
+      "excludedFromSharedBaseline": true
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/resourcedictionaries/globalresources.xaml",
+      "status": "??",
+      "sha256": "97f6afa11bdf2d5767fb66f3a61c65df534b923064d44cb65638957165b43ed6",
+      "excludedFromSharedBaseline": true
+    }
+  ],
+  "validationBoundary": "沿用两批提交各自封存的构建及回归证据；本次仅同步提交及交接文档，不构建、不覆盖正式Release。未提交C01候选尚未完成最终构建及验收，不交付工作流。",
+  "evidence": [
+    "O06_POLYGON_PREREQUISITES_CHECKPOINT_20261027.json",
+    "O06_POLYGON_SCENE_CHECKPOINT_20261027.json"
+  ],
+  "workflowStatusBefore": "工作区干净",
+  "remotePush": false,
+  "manualAcceptance": "本轮未新增VS/VM/物理指针人工验收；第一阶段未完成"
+}

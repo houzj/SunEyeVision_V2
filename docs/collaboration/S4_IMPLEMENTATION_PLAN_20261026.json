@@ -7351,6 +7351,18 @@
       "failures": "Window042=24过1失败：裁图辅助错误使用主窗祖先；043=25过1失败：测试未区分默认方式Checkbox与树Checkbox。FieldEditing061选择刷新前旧节点被身份门禁拒绝，现改选真实当前树后复验；原日志全部保留。",
       "boundary": "本批实际WPF PNG已查看；不代VM实机像素或真实VS用户验收。C08原ROI栈/同帧图像、完整显示/窗口/命名仍未落实，第二阶段未准入。",
       "evidence": "docs/collaboration/evidence/O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json：12源码增量、760发布项、224加载SHA记录及九轨源码同源；所有原来源SHA再次核对。"
+    },
+    "nativeBoxSceneCandidate": {
+      "status": "C08原Box子集已通过本批自动验证；完整多形状/真实VS与VM同态用户验收仍缺，第一阶段未退出，Blob业务重组冻结。",
+      "implementation": "原RoiSelectControl Box分支、同模板expand/ROIListStyle、BoxROIStack和五个Apps.XmlUI.SliderArrangeFloat；同一个INormalizedRectROI投影由原ImageViewBox/NormalizedRectROI与原参数栈共享。宿主仅持权威RoiEditItem，投影暂存本次未接纳候选。",
+      "identity": "固定实际ImageFrameAddress及图像宽高，Group+Guid定位且核对象成员身份；失效/旧选中/删改/宿主拒绝不写入；外部读和Acquire同步关闭/重绑须再次核代次。显式宿主scene revision/ABA合同尚缺，不能称身份全闭合。",
+      "adaptation": "原内部布局四个DP用SetCurrentValue保OneWayToSource到实际ContainerItem；原ROIItem转换器在资源声明后引用；BGR/BGRA与行跨度；本方生命周期适配完成必要通知后传播异常。LeftRightControl原ParamListView祖先目前改ItemsControl，仅本批Box样例，完整C01宿主仍待恢复。数字按InvariantCulture解析；没有另造近似图形。",
+      "verification": "最终规定UI013零错误6621警告76.94秒、全量Release003零错误6654警告54.30秒；WindowPresentation058=31、FieldEditing063=31、RuntimeEditor043=10、DesignTime019=28、FullChain102=7、Components187=9；正式EXE exit0/22工具。",
+      "failures": "Window045未取得原T1名称域；046缺原ROI资源闭包；047转换器资源引用顺序；048/049内部尺寸检查通过但实际矩形未显示，050加真实容器断言暴露绑定被覆盖，051修后截图可见；053/054卸载重载原文35.125被格式成35.13，055确认缺绑定测试ClearBinding暴露模板层表达式，改SetValue注入；UI008新增恢复代码误放作用域产生3错误，已修。全部原日志保留。；Window056 SetValue覆盖仍暴露模板表达式，057改为显式坏路径Binding注入后31组通过；最终058也31组。另补宿主Loaded当场选择ROI时取消旧恢复不残留suspended门禁。",
+      "sourceEvidence": "Catalog新增C08.original-box-scene-candidate及27原来源记录；NumCompare源自安装件定向静态反编译，SHA/MVID/Token/IL摘要见O06_BOX_NUM_COMPARE_SOURCE_20261027.json，未运行VM。Apps.XmlUI和VM.PcUI数值家族未混用。",
+      "remaining": "原完整多形状/绘制/继承/复制删除撤销、真实鼠标拖动旋转顶点、独立VS同一视图样例、Frame+scene revision宿主集成、完整主窗口/显示组合与命名治理仍缺；矩形DP/命令自动验证不冒称真实指针拖动或VM/用户人工验收。",
+      "nextEvidence": "O06_ROI_NEXT_COMPOSITIONS_STATIC_20261027.json：Sector原model四角度CIL及缓存副作用、GetIndexConverter安装件IL、Group.xml绘制继承与Radio原模板/Point编辑器已核；主线核Apps.Data与Group.xml安装件SHA，尚未实施后续组合。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_BOX_CHECKPOINT_20261027.json（本批6轨同源，不套历史9轨；760发布项及当前加载SHA以检查点实测为准）"
     }
   },
   "vmFrameworkArchitectureReference": {

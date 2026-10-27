@@ -59,7 +59,8 @@ public partial class SliderArrangeFloat : SliderArrangeBase, IComponentConnector
 			{
 				Source = this,
 				Mode = BindingMode.TwoWay,
-				StringFormat = GetDecimalStr(DecimalDigits)
+				ConverterCulture = System.Globalization.CultureInfo.InvariantCulture,
+                StringFormat = GetDecimalStr(DecimalDigits)
 			});
 		}
 		catch
@@ -76,7 +77,8 @@ public partial class SliderArrangeFloat : SliderArrangeBase, IComponentConnector
 			{
 				Source = this,
 				Mode = BindingMode.TwoWay,
-				StringFormat = GetDecimalStr(DecimalDigits)
+				ConverterCulture = System.Globalization.CultureInfo.InvariantCulture,
+                StringFormat = GetDecimalStr(DecimalDigits)
 			});
 		}
 		catch

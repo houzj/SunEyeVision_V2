@@ -1,5 +1,17 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 C08原Box同帧组合集中批（自动验证已通过）
+
+- 基线fa6200a5/main；主线唯一产品写者，三路只读完成Box渲染/数值/生命周期核证后已自动补位Sector、Polygon及绘制/继承组合。第一阶段继续，Blob业务重组冻结。
+- 激活原RoiSelectControl仅Box分支、同名称域expand/ROIListStyle、BoxROIStack和五项Apps.XmlUI.SliderArrangeFloat；参数与原ImageViewBox/NormalizedRectROI共享同一固定物理帧、Group+Guid投影，暂存整次候选后一次宿主接纳。不是完整C08，不以SDK旧ROI冒充。
+- 实际截图曾缺矩形：旧内部尺寸断言假绿，补实际ContainerItem尺寸/Canvas位置断言后查明SetValue覆盖原OneWayToSource；四布局DP保绑定后真实矩形/手柄可见。原ROIItem资源引用顺序、BGR/BGRA位图/跨度、精度和Enter、坏绑定拒绝与宿主拒绝已覆盖。
+- 卸载原文35.125曾变35.13；现先冻结raw，屏蔽旧UI命令，带会话/对象/加载代次排一次恢复，不循环刷新。观察者异常不阻断关键失效通知和帧释放，Acquire同步重绑旧候选只释放自身，读取回调关闭不复活旧对象。
+- 最终UI013零错误6621警告76.94秒，全量Release003零错误6654警告54.30秒；Window058=31、FieldEditing063=31、RuntimeEditor043=10、DesignTime019=28、FullChain102=7、Components187=9；正式EXE exit0/22工具。O06_BLOB_NATIVE_BOX_CHECKPOINT_20261027.json核24源码增量、760发布项、174加载SHA和本批六轨；未套历史九轨成绩。UI008作用域3错误及Window045—056失败均保留，具体见原方案nativeBoxSceneCandidate。
+- Catalog C08记录27原来源和五程序集身份；全部101个已列原来源SHA复核，本方Session/投影/Presenter不伪称原件。LeftRightControl原ParamListView祖先暂适配ItemsControl，完整C01宿主未完；原数值InvariantCulture与布局生命周期适配明确登记。
+- 已新增O06_ROI_NEXT_COMPOSITIONS_STATIC_20261027.json：Sector角度正向跨度/360与缓存副作用、GetIndexConverter原IL、绘制继承Group.xml和Radio模板/Point编辑器；主线核Apps.Data/Group.xml安装件SHA。仅静态，未实施后续组合。全部自有构建/检查/探针句柄已终止。
+- 未完：多形状完整选择/绘制/继承/复制删除撤销、真实鼠标拖动旋转顶点、独立VS原场景样例、宿主scene revision/ABA与帧合同、VM同态/用户验收、命名治理。Box原DP/命令自动测试不称真实指针验收。用户BlobParameterEditor.xaml索引2保留未提交，准备中文本地检查点，不推送。
+
+
 ## 2026-10-27 C07原扩展订阅窗口已通过自动验证（最新）
 
 - 编译基线f13cf433/main；Codex主线唯一产品写者，三路只读核证并已补位C08原Box/展开行/图像事件。Blob业务重组冻结，第二阶段未准入。

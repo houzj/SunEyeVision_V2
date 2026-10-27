@@ -55,7 +55,9 @@ public class Byte2ImageSource
 	{
 		return name switch
 		{
-			"Gray8" => PixelFormats.Gray8, 
+			"Gray8" => PixelFormats.Gray8,
+            "Bgr24" => PixelFormats.Bgr24,
+            "Bgra32" => PixelFormats.Bgra32,
 			"Rgb24" => PixelFormats.Rgb24, 
 			"Rgb24_P3" => PixelFormats.Rgb24, 
 			_ => PixelFormats.Gray8, 
@@ -212,7 +214,7 @@ public class Byte2ImageSource
 			{
 				return null;
 			}
-			int num9 = ((pixelFormat == PixelFormats.Gray8) ? 1 : 3);
+			int num9 = (pixelFormat.BitsPerPixel / 8);
 			if (isDirect || (long)image.Width * (long)image.Height * num9 > int.MaxValue)
 			{
 				if (GetImageBufferByFileNameDirectly(writeableBitmap, width, height, image.MemoryAddress, image.Width, image.Height, pixelFormat, image.PixelFormat, executeCount, ref status, offSetXPixel, offSetYPixel, clipXPixel, clipYPixel, num4, num6) == null)
@@ -227,7 +229,7 @@ public class Byte2ImageSource
 		{
 			return null;
 		}
-		int num10 = ((pixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		int num10 = (pixelFormat.BitsPerPixel / 8);
 		if (image.Buffer.Length != image.Width * image.Height * num10)
 		{
 			return null;
@@ -354,7 +356,7 @@ public class Byte2ImageSource
 		{
 			return null;
 		}
-		int num3 = ((pixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		int num3 = (pixelFormat.BitsPerPixel / 8);
 		if (image.Buffer.Length != image.Width * image.Height * num3)
 		{
 			return null;
@@ -540,7 +542,7 @@ public class Byte2ImageSource
 		{
 			return null;
 		}
-		int num = ((pixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		int num = (pixelFormat.BitsPerPixel / 8);
 		if (image.Buffer.Length != image.Width * image.Height * num)
 		{
 			return null;
@@ -1034,7 +1036,7 @@ public class Byte2ImageSource
 	public ImageSource BuiltImageSource(IImageData image)
 	{
 		PixelFormat pixelFormat = StringToPixelFormat(image.PixelFormat);
-		int num = ((pixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		int num = (pixelFormat.BitsPerPixel / 8);
 		if (image.Buffer.Length != image.Width * image.Height * num)
 		{
 			return null;
@@ -1136,7 +1138,7 @@ public class Byte2ImageSource
 			}
 			image.Buffer = array;
 		}
-		int num9 = ((pixelFormat == PixelFormats.Gray8) ? 1 : 3);
+		int num9 = (pixelFormat.BitsPerPixel / 8);
 		if (image.Buffer.Length != image.Width * image.Height * num9)
 		{
 			return null;

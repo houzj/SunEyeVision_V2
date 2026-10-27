@@ -2,6 +2,7 @@ using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -181,7 +182,7 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 	{
 		get
 		{
-			if (double.TryParse(Text, out var result))
+			if (double.TryParse(Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
 			{
 				_Value = result;
 			}
@@ -190,7 +191,7 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 		set
 		{
 			_Value = value;
-			Text = _Value.ToString();
+			Text = _Value.ToString(CultureInfo.InvariantCulture);
 		}
 	}
 

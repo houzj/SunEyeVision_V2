@@ -1819,7 +1819,12 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			b = b2;
 			break;
 		}
-		case "Rgb24":
+		case "Bgr24":
+        case "Bgra32":
+            num4 = num2 * num3 + pixelFormat.BitsPerPixel * num / 8;
+            b = ptr[num4]; g = (ptr + num4)[1]; r = (ptr + num4)[2];
+            break;
+        case "Rgb24":
 			num4 = num2 * num3 + pixelFormat.BitsPerPixel * num / 8;
 			r = ptr[num4];
 			g = (ptr + num4)[1];

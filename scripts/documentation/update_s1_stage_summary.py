@@ -304,6 +304,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['nativeExpandedReferenceCandidate'].items()])
                if plan.get('nativeExpandedReferenceCandidate') else '')
+            + ('<h5>C08原Box参数与同帧图像组合候选</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativeBoxSceneCandidate'].items()])
+               if plan.get('nativeBoxSceneCandidate') else '')
             + ('<p><b>失败记录保留：</b>' + escape('；'.join(plan['implementationFailures'])) + '</p>' if plan.get('implementationFailures') else '')
             + '<h5>完整控件与组合清单</h5><p>' + escape(plan['inventoryRule']) + '</p>'
             + table(['编号 / 组合','Blob消费位置','VM控件 / 模板 / 组合链','已有成果及处理','证据 / 缺口','验收标准'], plan['compositions'])

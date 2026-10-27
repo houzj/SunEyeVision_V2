@@ -890,6 +890,14 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 		}
 	}
 
+    // Use the same original virtual initialization when a designer materializes the template off-window.
+    internal (NumericControl Left,NumericControl Right) EnsureTemplateInputs()
+    {
+        var box=(ComboBox)FindName("CBox");box.ApplyTemplate();
+        var left=box.Template.FindName("T1",box) as NumericControl??throw new InvalidOperationException("原参数栈缺少T1。");
+        var right=box.Template.FindName("T2",box) as NumericControl??throw new InvalidOperationException("原参数栈缺少T2。");
+        T1_Loaded(left,new RoutedEventArgs());T2_Loaded(right,new RoutedEventArgs());return(left,right);
+    }
 	protected void T1_LostFocus(object sender, RoutedEventArgs e)
 	{
 		DoStartValueChange();

@@ -1,0 +1,76 @@
+<Control x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelectControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localParserTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:BaseData="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:paramtabcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
+<!-- Original Box-only branch. Complete multi-shape selector remains a tracked C08 requirement. -->
+<FrameworkElement.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Regions/BoxRoiResources.xaml"/></ResourceDictionary.MergedDictionaries><local:ROIDefaultValueToVisibilityConvert x:Key="ROIDefaultValueToVisibilityConvert"/><BaseData:NumCompareConverter x:Key="NumCompareConverter"/><sys:Int32 x:Key="CompareNum">0</sys:Int32><DataTemplate x:Key="BoxTemplate">
+        <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Box}" ToolTip="{DynamicResource Box}" Background="#00FFFFFF" Style="{StaticResource BoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
+      </DataTemplate></ResourceDictionary></FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <localParamTab:LeftRightControl>
+          <localParamTab:LeftRightControl.LeftContent>
+            <Control Template="{StaticResource TextLeft}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <WrapPanel Orientation="Horizontal">
+              
+              
+              
+              
+              <ContentPresenter ContentTemplate="{StaticResource BoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Box}}" />
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+            </WrapPanel>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <ToggleButton Name="expand" Grid.Row="1" Height="30" Margin="0,0,40,0" HorizontalAlignment="Right" Padding="6,0,0,0" VerticalContentAlignment="Center" Content="{DynamicResource ROI参数}">
+          <FrameworkElement.Style>
+            <Style BasedOn="{StaticResource ExpandButtonStyle}" TargetType="{x:Type ToggleButton}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Setter Property="ToggleButton.IsChecked" Value="False" />
+              <Style.Triggers>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Value="True" Binding="{Binding IsHaveData}" />
+                    <Condition Value="1" Binding="{Binding ImageWidth, Converter={StaticResource NumCompareConverter}, ConverterParameter={StaticResource CompareNum}, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                    <Condition Value="1" Binding="{Binding ImageHeight, Converter={StaticResource NumCompareConverter}, ConverterParameter={StaticResource CompareNum}, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding CurROIData}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Value="True" Binding="{Binding Is3DROI}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </ToggleButton>
+        <Grid Row="2">
+          <StackPanel>
+            <ContentControl Style="{StaticResource ROIListStyle}" Content="{Binding}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

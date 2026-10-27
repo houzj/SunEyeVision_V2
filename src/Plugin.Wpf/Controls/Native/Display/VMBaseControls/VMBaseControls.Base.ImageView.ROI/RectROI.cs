@@ -20,6 +20,7 @@ namespace SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.R
 public class RectROI : ROIControlBase
 {
 	protected static RectROISubstitute ROISubstitute;
+    private FrameworkElement? _interactionHandle;
 
 	protected static Func<Rect, double, ROIItemsPage, object> GetDataFunc;
 
@@ -93,7 +94,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerWidthProperty, value);
+			SetCurrentValue(ContainerWidthProperty, value);
 		}
 	}
 
@@ -105,7 +106,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerHeightProperty, value);
+			SetCurrentValue(ContainerHeightProperty, value);
 		}
 	}
 
@@ -117,7 +118,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerAngleProperty, value);
+			SetCurrentValue(ContainerAngleProperty, value);
 		}
 	}
 
@@ -378,7 +379,9 @@ public class RectROI : ROIControlBase
 
 	protected void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
+		CancelInteraction();
+        FrameworkElement frameworkElement = sender as FrameworkElement;
+        _interactionHandle=frameworkElement;
 		clickPoint = e.GetPosition(parent);
 		this.GetParent<ListViewItem>().RaiseEvent(e);
 		frameworkElement.CaptureMouse();
@@ -557,18 +560,32 @@ public class RectROI : ROIControlBase
 		frameworkElement.MouseMove -= Move_MouseMove;
 		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
 		frameworkElement.ReleaseMouseCapture();
+        _interactionHandle=null;
 		if (frameworkElement.Name == "move")
 		{
 			frameworkElement.MouseWheel -= userControl_MouseWheel;
 		}
-		if (_isMove)
-		{
-			NotifyROIParamChanged();
-			_isMove = false;
-		}
-		AfterMouseUp();
+        try{if(_isMove)NotifyROIParamChanged();}
+        finally{_isMove=false;AfterMouseUp();}
 	}
 
+    // Re-run the original layout projection after a consumer attaches the original style off-theme.
+    internal void RefreshGeometryLayout()
+    {
+        ChangeContainerWidth();ChangeContainerHeight();ChangeContainerPosition();ContainerAngle=RectAngle;
+    }
+    // A host cancellation must detach the gesture without executing the native mouse-up commit.
+    internal void CancelInteraction()
+    {
+        var handle=_interactionHandle;_interactionHandle=null;
+        if(handle is not null)
+        {
+            handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;
+            handle.MouseWheel-=userControl_MouseWheel;
+            if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();
+        }
+        _isMove=false;AfterMouseUp();
+    }
 	private void ChangeContainerWidth()
 	{
 		ContainerWidth = RectWidth * ControlToImageRadio;

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
-using Apps.XmlParser.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
 

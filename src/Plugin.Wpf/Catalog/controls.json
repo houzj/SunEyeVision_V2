@@ -1493,6 +1493,285 @@
         "visual": "实际原窗口PNG已查看；新增无Application/宿主原窗构造与正式资源检查通过；真实VS及VM同态用户验收仍缺，不代签。",
         "evidence": "docs/collaboration/evidence/O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json"
       }
+    },
+    {
+      "id": "C08.original-box-scene-candidate",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "assemblyIdentities": [
+        {
+          "assembly": "Apps.XmlUI",
+          "mvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+          "sha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd"
+        },
+        {
+          "assembly": "Apps.Style",
+          "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Style.dll",
+          "sha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63"
+        },
+        {
+          "assembly": "Apps.XmlParser",
+          "mvid": "d0604401-ab61-48a4-938b-faad16d74e7c",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlParser.dll",
+          "sha256": "78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1"
+        },
+        {
+          "assembly": "VMBaseControls",
+          "mvid": "47136107-aecc-42c7-bdbd-a8641253cae6",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMBaseControls.dll",
+          "sha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555"
+        },
+        {
+          "assembly": "Apps.BaseData",
+          "mvid": "b537fea2-7c48-4764-95c5-67bf1b261b29",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+          "sha256": "435628fd494d33dbd4c242d98939162e0406101b1e77287556b1a04c7a4e1d6a"
+        }
+      ],
+      "selectionEvidence": "Original RoiSelectControl BoxTemplate -> BoxRoiBtnStyle -> same-template expand/ROIListStyle -> BoxROIStack -> Apps.XmlUI.SliderArrangeFloat; INormalizedRectROI -> original NormalizedRectROI/ImageViewBox",
+      "sourceFiles": [
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.BoxROIStack",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml",
+          "originalSha256": "2c55fe06bb710704155c77f0f0ae1eb0f7eb8a01a9cdb3c667ee54d9da93d893",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml",
+          "localSha256": "a6c3fc060110b49edd6b99eb28620ac5f63d0cccfaa7e041b4681cdd67d5a8f3",
+          "coverage": "whole original file with local dependency adaptation"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.BoxROIStack",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BoxROIStack.xaml.cs",
+          "originalSha256": "16b010837e5be76d454a4115c36ded2919885bc186e472a201dfaf46a4fedb38",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BoxROIStack.xaml.cs",
+          "localSha256": "720a4510d243ba53a20fb4df2339b80283a4c27ca172e6e485853ebc29fa00b8",
+          "coverage": "whole original file with local dependency adaptation"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.RoiSelectControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
+          "originalSha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml",
+          "localSha256": "c30668e83de169d4527a4a5722c1763f0a9acb92e35f89ee4ea6ed1a34dc31a9",
+          "coverage": "Box-only original branch"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.RoiSelectControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml.cs",
+          "originalSha256": "dccfea1f6206cbbccaac11e788fa8fe57c78a9f5e2f52274c9017dc5f219a7df",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml.cs",
+          "localSha256": "b80d9a93b0a6d00d8b1f20a42f08d8b5e021278f7d0253a2b0ce86dab36f69fa",
+          "coverage": "whole original file with local dependency adaptation"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTab.LeftRightControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml",
+          "originalSha256": "e8c7c8ccb10faf3691e7ef786920c3a2cee49522aafe2053e1b6bce11c4190b3",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml",
+          "localSha256": "04810cc9b694f3b7f802c404728ce361874a7b8ef3d86dccd5517d90deb12171",
+          "coverage": "whole original file with local dependency adaptation"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTab.LeftRightControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml.cs",
+          "originalSha256": "80d64fbd024bf2b135c220525c9cbf97327353c5104a040ed3ef8464d941bb86",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
+          "localSha256": "e9e08125ce36b950605166ee19ef1ac0072053780d4ac4e18e6b97812b1dae6f",
+          "coverage": "whole original file with local dependency adaptation"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.ROIStackControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\ROIStackControl.cs",
+          "originalSha256": "a2042dee4151fe4551b50846b54995add1d4e4bff5d8fa8c269e64d2baa1008c",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/ROIStackControl.cs",
+          "localSha256": "26e5d6afc35a954083ae46accf3b6e0bc5afcd5e1cf2d8ac592faefa799cfac6"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.IImageSizeControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\IImageSizeControl.cs",
+          "originalSha256": "c5adeb02f3656aa32f6b022a371d4a5e00191ed8b106580f87778ca4e4f75e6f",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/IImageSizeControl.cs",
+          "localSha256": "f350dda3f3d83ad9eeedc7f44e227bac5c0a90636fbe812f60e89c7263bb9487"
+        },
+        {
+          "originalType": "Apps.XmlUI.ROIDefaultValueToVisibilityConvert",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ROIDefaultValueToVisibilityConvert.cs",
+          "originalSha256": "79186d0ecb57c89b0cd12f765569ff2591a9ba272b026cb6e1569cd106f11eb6",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ROIDefaultValueToVisibilityConvert.cs",
+          "localSha256": "ff6623a7e83d06c6df697f9e6edcd39f04d251c587caefa0e1d8e422015cd5af"
+        },
+        {
+          "originalType": "Apps.XmlParser.ParamTab.RoiType / ROIType",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\RoiType.cs",
+          "originalSha256": "c47e969a4e3bf839052ba1340cd2ab1b6632a67d0fdd9779a67df122004607a6",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.XmlParser/RoiType.cs",
+          "localSha256": "53593f0f629adbf1a4b81b8db0cdcd7614b624f936c9d2c33bc59cd3ebb76aff"
+        },
+        {
+          "originalType": "ExpandButtonStyle:83-121",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+          "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/BoxRoiResources.xaml",
+          "localSha256": "293a742715f69c6c1e1417897d0ec02806ef076024a9a15bb3aac30ba74f09b8",
+          "coverage": "selected original fragments only"
+        },
+        {
+          "originalType": "BoxRoiBtnStyle:1566-1594",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+          "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/BoxRoiResources.xaml",
+          "localSha256": "293a742715f69c6c1e1417897d0ec02806ef076024a9a15bb3aac30ba74f09b8",
+          "coverage": "selected original fragments only"
+        },
+        {
+          "originalType": "TextLeft:34-36",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+          "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/BoxRoiResources.xaml",
+          "localSha256": "293a742715f69c6c1e1417897d0ec02806ef076024a9a15bb3aac30ba74f09b8",
+          "coverage": "selected original fragments only"
+        },
+        {
+          "originalType": "ROIStackStyle/BoxROI/ROIListStyle Box trigger:26-32,76-90",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
+          "originalSha256": "16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/BoxRoiResources.xaml",
+          "localSha256": "293a742715f69c6c1e1417897d0ec02806ef076024a9a15bb3aac30ba74f09b8",
+          "coverage": "selected original fragments only"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.SliderArrangeBase",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangeBase.cs",
+          "originalSha256": "c0ce5f2e2d27151db5d68e1884a69c80156f10168da2b4d628cfd55d834b2662",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeBase.cs",
+          "localSha256": "659aadd155a97d30dead66216263e77109a0a466a0e37685368d7af04718065e"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.SliderArrangeFloat",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangeFloat.xaml.cs",
+          "originalSha256": "10e549d1d9e5446d5218b4fcd939e8d22e75a9c579967e89beee6448f310873a",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeFloat.xaml.cs",
+          "localSha256": "2f9aa3e6b1337885aae431b47aea82853eb6ad6c3c87975565507cbe68e495e8"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.NumericControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\NumericControl.xaml.cs",
+          "originalSha256": "4a685fab058afa2276cafeb62ced030295cc3d03c5635fa2d2669068607acba7",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml.cs",
+          "localSha256": "05efb9cf86c737ca54a8a75953ed284813e2673dbe40d4dbd5658c9b176fffec"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.RangeRule",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RangeRule.cs",
+          "originalSha256": "e2a085ece2124bee2c2f6b3f1eb076fcbbe2683608e87fd1dad0a74c598b0fd3",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/RangeRule.cs",
+          "localSha256": "90259caed36eb53388f7f34673f887b918efe3807c76edb6649d06f11faf8be4"
+        },
+        {
+          "originalType": "VMBaseControls.ROIControlBase",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\ROIControlBase.cs",
+          "originalSha256": "3542ea201074b6c98c45c02b726a9dc1259944023f46f8ff6337548bf15cca1e",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs",
+          "localSha256": "b2e8f3e72b37098cf998219b0e680bf792a0def59148e4da0b74b24a56183d62"
+        },
+        {
+          "originalType": "VMBaseControls.RectROI",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RectROI.cs",
+          "originalSha256": "416d2dd6c68913eaa269a47797d82e63454366e215d87061260c5674a5a71a14",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs",
+          "localSha256": "2333b21dd212f926e838e2489be2a5ef17aebc1314298677339fc99a9b92b7d4"
+        },
+        {
+          "originalType": "VMBaseControls.NormalizedRectROI",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\NormalizedRectROI.cs",
+          "originalSha256": "1995e3a6a1d5903abbf74abdb1e71d063bdbd4a6d73ed145afa3978d8a0f41ac",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedRectROI.cs",
+          "localSha256": "eb2359cd17dbc12300cda9f2cd6e0b01ea3111cd0a1f680fb7aca6b3a2db1504"
+        },
+        {
+          "originalType": "VMBaseControls.ROIItem",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView\\ROIItem.xaml",
+          "originalSha256": "90815a3894402e95832d24a89706edf94e27f2488855bc91f90aec4d3a54a8d8",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ROIItem.xaml",
+          "localSha256": "46be7426b29ca5575bf1258b34d10b833ce73679cab978bbd2eeaff70b8dc55e"
+        },
+        {
+          "originalType": "VMBaseControls.ImageViewBox",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
+          "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+          "localSha256": "999eae0af42122ddbdcdac40b7f1885c256577a0d183f07a05c943d010645718"
+        },
+        {
+          "originalType": "VMBaseControls original ROI style",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\roiitemspagestyle.xaml",
+          "originalSha256": "ff0b678abf2fb7b1a3f526ebb978605b44beded1b3949fa83eb4901139e37e95",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roiitemspagestyle.xaml",
+          "localSha256": "cea774b3f426941a610cd457c329a029f7e132a23c98831a78ae39e4099413d7"
+        },
+        {
+          "originalType": "VMBaseControls original ROI style",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\subroiitemspagestyle.xaml",
+          "originalSha256": "8cd7525542410bf9c2b94e93e3cf074d52d88529098deebf7d5153dca50f464c",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml",
+          "localSha256": "288e189cb525857d00bba940cb51beb6220e981b2f4b601fba44fdd1480cdd0d"
+        },
+        {
+          "originalType": "VMBaseControls original ROI style",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\rectroi\\rectroistyle.xaml",
+          "originalSha256": "819b7e5a26ba66318da1f851539d6111ded55d2ac3a8c087b277c2be478041ea",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
+          "localSha256": "54e9ba1fbec17ac0ee35685757f1af1901914fc8e3d7b47654744ad071accbbf"
+        },
+        {
+          "originalType": "Apps.BaseData.NumCompareConverter",
+          "originalPath": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.BaseData.dll",
+          "originalSha256": "435628fd494d33dbd4c242d98939162e0406101b1e77287556b1a04c7a4e1d6a",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/NumCompareConverter.cs",
+          "localSha256": "c7593eaaa9fd1e801b3c1d8c22a922061a052067c5812a63a1c2d06841a7f280",
+          "evidence": "docs/collaboration/evidence/O06_BOX_NUM_COMPARE_SOURCE_20261027.json",
+          "convertToken": "0x06000021",
+          "convertIlSha256": "94ac9d7f4d10a9a658cdc07e44a132278e49f627c5d1d99acd89b47df1665841"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeBoxRoiSession.cs",
+          "sha256": "59b80f0e405c343f327325b8e01121767147dae0bb87b126eeded494c7abc568"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
+          "sha256": "5292830c0bccba344c0440fb3ac20dc9be4558d845a37564c5025c5eac58cead"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeBoxRoiEditor.cs",
+          "sha256": "a6075982d6a060a15d0c6ef640f5bcd23dc87a1114f4186a48190eaeebbf07ab"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeBoxRoiViewport.cs",
+          "sha256": "b2f5e09f2ff6eab4a4763fa2c68a716ece3fb10c8aa1d391c1c4a2adeb3f40f4"
+        }
+      ],
+      "consumers": [
+        "O06WindowPresentationCases.VerifyNativeBox actual formal Release WPF scene"
+      ],
+      "status": "PARTIAL_BOX_AUTOMATED_CHECKS_PASSED_FULL_C08_AND_MANUAL_PENDING",
+      "adaptation": "Box-only selector; local resource closure and URI/namespaces; LeftRightControl ParamListView ancestor adapted to ItemsControl pending full C01 host; invariant number parsing; native layout DP SetCurrentValue preserves original container bindings; ROIItem resource declaration before use; cancellation detaches exact gesture; BGR/BGRA display format support. New session/projection/presenters are local lifetime adapters, not vendor original source.",
+      "remaining": [
+        "Other required shapes and full original selector",
+        "Same real scene independent VS designer creation",
+        "Actual pointer drag/rotation/vertex, drawing/copy/delete/undo/redo",
+        "Host scene revision/ABA and physical frame contract integration",
+        "VM same-state and user manual acceptance",
+        "Product responsibility naming governance"
+      ],
+      "validation": {
+        "buildAndChecks": "最终规定UI013零错误6621警告76.94秒、全量Release003零错误6654警告54.30秒；WindowPresentation058=31、FieldEditing063=31、RuntimeEditor043=10、DesignTime019=28、FullChain102=7、Components187=9；正式EXE exit0/22工具。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_BOX_CHECKPOINT_20261027.json（本批6轨同源，不套历史9轨；760发布项及当前加载SHA以检查点实测为准）",
+        "visual": "本批实际Box参数/图形PNG已查看；容器实际宽高和位置、原结束命令单次接纳已验证；未模拟真实鼠标拖动，不代真实VS或VM同态及用户验收。"
+      }
     }
   ]
 }

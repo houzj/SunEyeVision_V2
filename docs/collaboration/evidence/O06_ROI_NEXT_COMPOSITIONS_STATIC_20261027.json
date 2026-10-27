@@ -1,0 +1,68 @@
+{
+  "scope": "C08下一批Sector/Polygon/绘制继承组合的只读静态证据；不是已迁入/已执行VM验收。",
+  "sector": {
+    "assembly": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Data.dll",
+    "sha256": "2ad51c179d4a5cf7e0c0373cd1526de8a75d53a3ea6cbe3ef73c0c5268e1c55c",
+    "mvid": "cb38f3bc-780b-400d-89f5-0ba51ce23489",
+    "evidenceId": "ev_6b090bcc7e8e2d75e7f306578daba8bb1dfa0a5f253668b95a297c0ead3e2ff6",
+    "type": "SectorROIModel 0x0200002c / NormalizedSectorROIModel 0x0200002b",
+    "tokens": {
+      "start": "06000130/131",
+      "end": "06000132/133",
+      "range": "06000134/135",
+      "begin": "06000136/137",
+      "normalizedCtor": "06000123 -> 06000139"
+    },
+    "rules": [
+      "BeginAngle getter=StartAngle；setter严格先读oldRange，再StartAngle=value，再AngleRange=oldRange。",
+      "Range getter令vs=(cos(start),sin(start)), ve=(cos(end),sin(end)); signed=Vector.AngleBetween(ve,vs); cache=360-(signed<0?360+signed:signed)。同向为360，170到-170为20，-170到170为340。",
+      "Range setter仅缓存不等value才旋转start向量value度，以atan2求end；abs(end-start)<0.0009时设end=start；setter本身不写Range缓存。",
+      "原通知可在StartAngle改变时同步读Range更新缓存；脱离WPF直接复制会有旧缓存跳过setter风险，应投影显式维护完整规范几何而不复制厂商业务模型。",
+      "Radius小于MinRadius时联动内径；MinRadius大于Radius时联动外径；当前宿主必须整组接纳，不能逐属性写权威模型。"
+    ],
+    "limits": "只有静态CIL证据，不证明真实VM交互；原0/360重合行为与自研严格执行几何分别记录。"
+  },
+  "polygonIndex": {
+    "assembly": "Apps.BaseData.dll",
+    "sha256": "435628fd494d33dbd4c242d98939162e0406101b1e77287556b1a04c7a4e1d6a",
+    "mvid": "b537fea2-7c48-4764-95c5-67bf1b261b29",
+    "type": "Apps.BaseData.GetIndexConverter 0x02000010",
+    "convertToken": "0x06000027",
+    "convertRva": "0x2840",
+    "convertIL": "24 bytes / 11 instructions complete",
+    "backToken": "0x06000028",
+    "backRva": "0x2859",
+    "backIL": "6 bytes / 2 instructions complete",
+    "evidenceId": "ev_8a2cb44b3de45d21b44ade92bd09a75ce53f761392e1694555db426b998ebe85",
+    "rule": "value==null ? 0 : unchecked(System.Convert.ToInt32(value)+1)；ConvertBack抛NotImplementedException；不使用传入culture。原Polygon传AlternationIndex。",
+    "limits": "安装件IL等价恢复，不声称存在厂商源码文件；尚未激活产品类。"
+  },
+  "sourceGroups": {
+    "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+    "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc",
+    "declarations": [
+      "RoiSelectGroup:42-110，RadioSelecter 0绘制/1继承",
+      "InheritWayGroup2:1308-2118，RadioSelecter3矩形整体/参数、ROIANNULUS整体/参数，不是CircleMes",
+      "ExternROITypeGroup:2489-2603，原屏蔽绘制仅Polygon；继承InputBlindPolygonString字符串",
+      "InputMaskImageGroup:2621起，RadioSelecterEx2实际DisplayType=RadioSelecter；MaskImage=EnumerationG",
+      "AssistGroup:243-980，Assist0 + RadioSelecter3 SelectWay，FIXTURE/点/坐标来源"
+    ],
+    "adaptationRequirement": "类型/状态/显隐与来源清理为一次候选接纳；自研屏蔽多形状是明确差异。"
+  },
+  "radio": {
+    "actualViews": "RadioSelecter两固定槽 / RadioSelecter3五固定槽；Content=null由原NormalRadioButton折叠；未选可为-1。",
+    "binding": "EqualConverter只接受int，OneWay MultiBinding CurValueA和ValueA；Checked传真实int选项至ValueChangedCommand。",
+    "keyboard": "样式Focusable=false被模板局部Focusable=true覆盖；保原WPF RadioButton行为；尚无VM动态键盘证据。",
+    "reject": "候选未预写；成功/拒绝均强制通知CurValueA恢复所有原单选状态，投影期间屏蔽Checked重入；回调重绑/Dispose后停止旧视图通知。"
+  },
+  "polygon": {
+    "pointEditor": "SliderArrangePoint入口ToBtn、PopupWithTopmost、模板T1/T2；第三层PointSource MultiBinding，不是Box CBox/StartValue。",
+    "risks": [
+      "原点哈希首次匹配需替换为稳定顶点槽+列表代次，重复坐标/碰撞不改错点。",
+      "原点集合converter及图像对象只处理Replace；新集合/点数/Reset需明确退订与整形刷新。",
+      "原PopupWithTopmost匿名Window.LocationChanged订阅需所有权/换目标/卸载退订。",
+      "原参数栈没有现有顶点插入删除按钮；只证绘制左键添点和右键撤点。"
+    ]
+  },
+  "verification": "子智能体只读返回；主线核两安装件SHA及现存source records；未修改产品/构建/执行VM。"
+}

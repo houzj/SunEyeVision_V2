@@ -1,0 +1,18 @@
+{
+  "scope": "C08原展开行NumCompareConverter的定向静态补证，不是整程序集或动态验收",
+  "assembly": "Apps.BaseData, Version=1.0.0.0",
+  "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.BaseData.dll",
+  "sha256": "435628fd494d33dbd4c242d98939162e0406101b1e77287556b1a04c7a4e1d6a",
+  "mvid": "b537fea2-7c48-4764-95c5-67bf1b261b29",
+  "artifactEvidenceId": "ev_8c68ba52e71fbaedc0819c39a328f1c8525bb9db7f3589089f7b7d59123a57b5",
+  "membersEvidenceId": "ev_8a2cb44b3de45d21b44ade92bd09a75ce53f761392e1694555db426b998ebe85",
+  "type": "Apps.BaseData.NumCompareConverter",
+  "typeToken": "0x0200000e",
+  "convertToken": "0x06000021",
+  "convertIlSha256": "94ac9d7f4d10a9a658cdc07e44a132278e49f627c5d1d99acd89b47df1665841",
+  "convertBackToken": "0x06000022",
+  "decompiler": "ilspycmd 11.1.0.9782，指定类型，不执行厂商目标",
+  "originalSource": "using System;\nusing System.Globalization;\nusing System.Windows.Data;\nnamespace Apps.BaseData;\npublic class NumCompareConverter : IValueConverter\n{\n public object Convert(object value, Type targetType, object parameter, CultureInfo culture)\n {\n  if (parameter.GetType().IsValueType && value.GetType().IsValueType)\n  {\n   double num = System.Convert.ToDouble(value);\n   double num2 = System.Convert.ToDouble(parameter);\n   return (num > num2) ? 1 : ((num < num2) ? (-1) : 0);\n  }\n  return 0;\n }\n public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)\n {\n  throw new NotImplementedException();\n }\n}\n",
+  "confirmedUse": "原展开行CompareNum=0且条件Value=1，明确为ImageWidth>0与ImageHeight>0。原null抛异常、非值类型返回0、Convert.ToDouble不使用传入culture，迁入不增猜测容错。",
+  "limits": "REA成员清单全程序集coverage为partial；指定类型三方法完整解码无截断。资料由只读取证智能体返回，主线另核安装件SHA/MVID；未启动VM作动态确认。"
+}

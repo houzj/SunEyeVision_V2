@@ -53,7 +53,8 @@ public class ROIControlBase : ROIControlFrame
 		}
 		set
 		{
-			SetValue(ContainerPositionProperty, value);
+			// Preserve the original OneWayToSource binding to the actual Canvas container.
+			SetCurrentValue(ContainerPositionProperty, value);
 		}
 	}
 

@@ -1,6 +1,6 @@
 {
-  "scope": "当前原件与正式合同只读核对，供下一批直接实施；不是已迁移、构建、VM动态或用户验收证据",
-  "baseline": "b12656d8 plus current native Sector checkpoint delta",
+  "scope": "原始只读取证与实施队列保留；currentStatus引用正式聚焦检查点，不代表VM动态或用户验收。",
+  "baseline": "8f1cd141 plus native Polygon focused checkpoint delta",
   "sectorRing": {
     "source": "原SectorRingROIStack、ROISelecter.GetRoiModelType:1860-1873、Apps.Data NormalizedCircleROIModel(02000026)/CircleROIModel(02000027)，详见既有原ROI静态取证及本批交接",
     "implementation": [
@@ -10,7 +10,8 @@
       "CircleROI五个几何/布局setter保Binding；旧3个部件MouseDown退订、记录实际捕获部件、正常MouseUp先清手柄再释放capture、finally清拖动、失捕取消；Refresh复用原布局算法",
       "通用Viewport加原Circle样式/Refresh/Cancel/LostCapture分支，Editor复用四字段链，不复制视口"
     ],
-    "remaining": "全部尚未实施；半径联动不能放宽零厚度正式几何拒绝门禁"
+    "remaining": "四项原链已做聚焦自动验证，见O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json；物理与VS/VM未完。",
+    "previousRemaining": "全部尚未实施；半径联动不能放宽零厚度正式几何拒绝门禁"
   },
   "polygon": {
     "source": "原PolygonROIStack/SliderArrangePoint/PolygonROI/PointListRightFixdMultiplicationConverter",
@@ -25,7 +26,8 @@
       "PopupWithTopmost目前匿名Window.LocationChanged不退订，目标尚未Loaded无补绑；改存target/owner具名事件，换根/关闭/卸载/owner关闭释放；保原Opened语义",
       "SliderArrangePoint从实际ToBtn所在祖先找并存ScrollViewer；开关层、卸载、换模板直接退保存实例；原偏移超过3关闭规则保留",
       "UpdateWindow的Auto尺寸转int未证安全；原句柄可用时仅改Z序的NOSIZE/NOMOVE/NOACTIVATE，不能传NaN尺寸"
-    ]
+    ],
+    "currentStatus": "原参数栈/投影/图像聚焦自动链已过，见O06_POLYGON_SCENE_CHECKPOINT_20261027.json；绘制拓扑/原宿主/独立VS/物理指针仍未完。"
   },
   "drawingInheritance": {
     "source": "安装Module(sp)/Group.xml:42-110,1308-2118,2489-2603,2621起；原Radio模板pending:1336-1447",
@@ -34,7 +36,8 @@
       "原屏蔽string多边形来源与检测矩形/环形类型不同；图像型为IMAGE，不能套Region资源",
       "退出绘制不仅隐藏还拒编辑；退出来源分支失效C07请求与Popup；模式/来源更改revision取消旧候选",
       "当前RegionSourceModeSelector手工Radio缓存不能当最终原件；本批不接Blob字段或SDK"
-    ]
+    ],
+    "concreteGap": "原按钮传RoiType但Session无参DrawRequested丢弃；Viewport未订阅。原PrepareRawRoi -> static Draw会Activator创建可写原数据并在AddROI后通知，不能对只读ProjectionRows直接挂接。须原AddROI前接中立完整候选出口、宿主分配新ID和一次snapshot接纳；不增VM业务模型或可写正式集合。"
   },
   "c01Host": {
     "source": "原Apps.XmlUI ParamListView/ParamUserControl/globalresources/LeftRightControl；原SHA由只读核收给出，激活前再次独立复核",
@@ -57,7 +60,8 @@
         "VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml": "48E61504B406D8FDE65E8F20539ACC6780871132CD684288D72668B7BDC4E409"
       },
       "evidence": "VMControls.WPF static REA ev_3eb1fd75ae8c1c32c6ae332a1cf0b6d1ea816b3794cf22eee230719d5af4dcd6; direct targeted installed-DLL ILSpy and recovered resources; no VM runtime executed"
-    }
+    },
+    "reviewedClosure": "ParamListView + ParamUserControl + globalresources原行组/滚动模板；每页一宿主，整体替换DeclaredFieldsView自建StackPanel/组头/ScrollViewer，避免双边距/双滚动。行仅借用唯一FieldAccess/State和既有控件，不复制值/default。"
   },
   "designScene": {
     "implementation": [
@@ -70,10 +74,10 @@
     ]
   },
   "nextPriority": [
-    "SectorRing original full chain",
-    "Polygon/Point and popup lifecycle",
-    "ParamListView and same-chain design scene",
-    "Drawing/inheritance/pose integration contract and original radio"
+    "C01 original ParamListView and row/group resources",
+    "Same-chain NativeRoiScene and independent VS design sample",
+    "Original drawing/inheritance/pose typed request and host atomic operations",
+    "Multi-object create/delete/paste with host history and actual pointer acceptance"
   ],
   "multiObjectActions": {
     "originalEntry": "ContainerItem.xaml Ctrl+C/Delete -> mROIView/ImageViewItemsPageStyle commands; ImageViewBox.xaml Ctrl+V and Lang_Paste context menu; selection via ListViewItem/ROIControlFrame.IsSelected and RoiSelectedCommand",
@@ -89,5 +93,6 @@
     "contract": "Assist and ROI share host edit root and Stamp; one complete mode/reference/local-geometry proposal; no transformed-coordinate writeback into authoritative ROI. Current input.pose final Affine2D cannot persist full configuration.",
     "originalInconsistency": "Clear target FixtureInitPoint differs from actual OriginPoint field; do not copy ineffective string lookup.",
     "remaining": "Actual native transform direction/order/zero-scale and runtime clearing semantics unproven; do not infer matrix formulas from Group.xml."
-  }
+  },
+  "previousBaseline": "b12656d8 plus current native Sector checkpoint delta"
 }

@@ -4,7 +4,7 @@
         <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Box}" ToolTip="{DynamicResource Box}" Background="#00FFFFFF" Style="{StaticResource BoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
       </DataTemplate><DataTemplate x:Key="SectorRingTemplate"><ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SectorRing}" ToolTip="{DynamicResource SectorRing}" Background="#00FFFFFF" Style="{StaticResource RingRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorRingA, Mode=TwoWay}"/></DataTemplate><DataTemplate x:Key="SectorTemplate">
         <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Sector}" ToolTip="{DynamicResource Sector}" Background="#00FFFFFF" Style="{StaticResource SectorRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorA, Mode=TwoWay}" />
-      </DataTemplate></ResourceDictionary></FrameworkElement.Resources>
+      </DataTemplate><DataTemplate x:Key="PolygonTemplate"><ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Polygon}" ToolTip="{DynamicResource Polygon}" Background="#00FFFFFF" Style="{StaticResource PolygonRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding PolygonA, Mode=TwoWay}"/></DataTemplate></ResourceDictionary></FrameworkElement.Resources>
   <Control.Template>
     <ControlTemplate>
       <Grid>
@@ -42,6 +42,7 @@
 
 
 
+<ContentPresenter ContentTemplate="{StaticResource PolygonTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Polygon}}"/>
             </WrapPanel>
           </localParamTab:LeftRightControl.RightContent>
         </localParamTab:LeftRightControl>

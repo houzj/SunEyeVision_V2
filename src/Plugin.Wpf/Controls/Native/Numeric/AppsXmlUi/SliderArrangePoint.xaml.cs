@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +18,7 @@ public partial class SliderArrangePoint : SliderArrangeBase
     public static readonly DependencyProperty NeedSliderProperty=DependencyProperty.Register("NeedSlider",typeof(bool),typeof(SliderArrangePoint),new PropertyMetadata(true));
     private bool _projecting;
     private Func<double,bool>? _stage;
+    private Action? _beforeRelease;
     private long _leaseGeneration;
     private ScrollViewer? _scroll;
     private double _verticalOffset,_horizontalOffset;
@@ -49,10 +50,12 @@ public partial class SliderArrangePoint : SliderArrangeBase
             if(!stage(StartValue)&&generation==_leaseGeneration)ProjectPoint();
         }
     }
-    internal IDisposable BindStage(Func<double,bool> stage)
+    internal IDisposable BindStage(Func<double,bool> stage)=>BindSlot(stage,()=>{});
+    internal IDisposable BindSlot(Func<double,bool> stage,Action beforeRelease)
     {
-        ArgumentNullException.ThrowIfNull(stage);var generation=++_leaseGeneration;_stage=stage;
-        return new StageLease(()=>{if(generation==_leaseGeneration){_stage=null;_leaseGeneration++;}});
+        ArgumentNullException.ThrowIfNull(stage);ArgumentNullException.ThrowIfNull(beforeRelease);
+        var generation=++_leaseGeneration;_stage=stage;_beforeRelease=beforeRelease;
+        return new StageLease(()=>{if(generation==_leaseGeneration){_stage=null;_beforeRelease=null;_leaseGeneration++;}});
     }
     private sealed class StageLease(Action release):IDisposable
     {private Action? _release=release;public void Dispose(){var release=_release;_release=null;release?.Invoke();}}
@@ -65,8 +68,15 @@ public partial class SliderArrangePoint : SliderArrangeBase
     internal void ClosePointPopup()=>ToBtn.SetCurrentValue(ToggleButton.IsCheckedProperty,false);
     private void ReleaseInput()
     {
-        _leaseGeneration++;_stage=null;DetachScroll();ClosePointPopup();
-        if(_leaf is not null)BindingOperations.ClearBinding(_leaf,NumericControl.TextProperty);
+        var generation=++_leaseGeneration;var before=_beforeRelease;var leaf=_leaf;var scroll=_scroll;
+        _stage=null;_beforeRelease=null;_scroll=null;
+        try{before?.Invoke();}
+        finally
+        {
+            if(scroll is not null)scroll.ScrollChanged-=ScrollChanged;
+            if(generation==_leaseGeneration)
+            {ClosePointPopup();if(leaf is not null)BindingOperations.ClearBinding(leaf,NumericControl.TextProperty);}
+        }
     }
     protected override void T1_Loaded(object sender,RoutedEventArgs args)
     {

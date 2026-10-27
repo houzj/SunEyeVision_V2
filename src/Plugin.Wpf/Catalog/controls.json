@@ -1561,7 +1561,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
           "originalSha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml",
-          "localSha256": "c64535de298b490e4f3d90defd3d16e36ce630a842dbda9e040005c486ba5a90",
+          "localSha256": "52191dd6cbdeed3fbed02c71a378610cb1d5fd9314fb26f0c2ceb08291ec84c6",
           "coverage": "Original Box and Sector branches only"
         },
         {
@@ -1621,7 +1621,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
           "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "71dac13c65b9e7037065e9d89f3f8a55bfcdae0ec246675b47bfe19940663d11",
+          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
           "coverage": "selected original fragments only"
         },
         {
@@ -1629,7 +1629,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
           "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "71dac13c65b9e7037065e9d89f3f8a55bfcdae0ec246675b47bfe19940663d11",
+          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
           "coverage": "selected original fragments only"
         },
         {
@@ -1637,7 +1637,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "71dac13c65b9e7037065e9d89f3f8a55bfcdae0ec246675b47bfe19940663d11",
+          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
           "coverage": "selected original fragments only"
         },
         {
@@ -1645,7 +1645,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
           "originalSha256": "16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "71dac13c65b9e7037065e9d89f3f8a55bfcdae0ec246675b47bfe19940663d11",
+          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
           "coverage": "selected original fragments only"
         },
         {
@@ -1852,7 +1852,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml.cs",
           "originalSha256": "9bf26a80723344a306fa6a7070bdbb0ec10b5d51673c870ea48ff1737cd26d84",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml.cs",
-          "localSha256": "43da0594833cae42198ee9c4a11eafc17079ce5f605ff532bc23024e81aa10f6"
+          "localSha256": "23541b7f7ebb13d51dd19ccab8cc3204dc833e3f7ed39981f1583e6fd244798b"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.PopupWithTopmost",
@@ -1868,12 +1868,103 @@
           "localPath": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs",
           "localSha256": "23dd430e83375b1d7438ec36905253011b3ef7e5741386b05b1b7463b67b3c4f",
           "evidenceNote": "Recovered source CRLF SHA; LF-normalized 84dda1ea17e4fd452dd256be6235258bb5b8fe85f5a29c0e858b91d4663a5caf matches original migration manifest. Actual bytes and normalized identity distinguished."
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.PolygonROIStack.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml",
+          "originalSha256": "e5f2425a2e6f68abe97752692bd3daae7ce8b246e9b435db2adbefbe2f697e17",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml",
+          "localSha256": "e16640f80fee2c14ce67c03f4b850a31c6c39a22d135a0cdf185768fcc2af85e"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.PolygonROIStack.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml.cs",
+          "originalSha256": "1960be508e7c79f60c6a0d57d58c9160431441abb52d3f75ba3e0416f77ccd94",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
+          "localSha256": "9958c7b4d3bca7bedbf839cb0a5360da35c7a7f16675e57a7c664e20e8e440a0"
+        },
+        {
+          "originalType": "itemscontrolstyle.itemscontrolstyle.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\itemscontrolstyle\\itemscontrolstyle.xaml",
+          "originalSha256": "fb05637d2c3bc8b556d8c0c095d852dda97fb18d9414fbc2fafe987932913027",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/ItemsControlStyle/PolygonItemsControlStyle.xaml",
+          "localSha256": "fcf7fa1fc18cdca06232e445831ce52ddaa97b4fef809481b9c157d60a59829e"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.PolygonROI.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolygonROI.cs",
+          "originalSha256": "b40603dbec7355829739a55225c0c470b83bb2e9d072c13a4f2a2f13a0d894c5",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
+          "localSha256": "56e7f83a61eb52c4a365edb62eef8dead8a3899ef143b2ff1f764ffccb64cd94"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedPolygonROI.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\NormalizedPolygonROI.cs",
+          "originalSha256": "3fad5480e8d34fbdf1d0441587b26857feae02dc09689b76414c620f32cd9957",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPolygonROI.cs",
+          "localSha256": "471c612e7641bedcf177f39f97343c4bfd750cfddd945ced0e734314f181eabb"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.MoveAreaPage.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MoveAreaPage.xaml",
+          "originalSha256": "1eb5efdc44c8d5eaa37c7695451fab2c2f6f4f372a41b499eefb5588968b8258",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveAreaPage.xaml",
+          "localSha256": "56bd829cdeb11f83f1405ee01134e2ed6f49fd0b81fc5dc8c9355d2f01a313d0"
+        },
+        {
+          "originalType": "VMBaseControls.Base.ImageView.ROI.MoveAreaPage.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\MoveAreaPage.xaml.cs",
+          "originalSha256": "0bcc44049f2839e8ec6f42672741b19ce719face7cc793c38466548bd8411193",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveAreaPage.xaml.cs",
+          "localSha256": "85cdbf92d453cdb69c59f0d912252d08667fcaa96c57fe09e966ca2256224e2f"
+        },
+        {
+          "originalType": "polygonroi.polygonroistyle.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\roi\\polygonroi\\polygonroistyle.xaml",
+          "originalSha256": "6aea687b461081648da832e7552fd07fcf01c195f0f6698675f318b7beb3ced2",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/polygonroi/polygonroistyle.xaml",
+          "localSha256": "151b9c057a3e73e8f40ae6109804b540c07876cfa02abfe384ed1aa0a2291873"
+        },
+        {
+          "originalType": "normalizedpolygonroi.normalizedpolygonroistyle.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\base\\imageview\\normalizedroi\\normalizedpolygonroi\\normalizedpolygonroistyle.xaml",
+          "originalSha256": "951b75eb9c8ea7a50703f36464233345f47d30dd978c1e3b7b995c634db8a16b",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/normalizedroi/normalizedpolygonroi/normalizedpolygonroistyle.xaml",
+          "localSha256": "e04c42a7ef7e5fffbc6921fc6fe13ec0f44fb06ae958068958174ef221077a8e"
+        },
+        {
+          "originalType": "resources.roi_polygon_normal.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_polygon_normal.png",
+          "originalSha256": "2a3e99d975668d294553923a6d1f7787524ba850ffd04b51b05812eebef3971e",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/roi_polygon_normal.png",
+          "localSha256": "2a3e99d975668d294553923a6d1f7787524ba850ffd04b51b05812eebef3971e"
+        },
+        {
+          "originalType": "resources.roi_polygon_click.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_polygon_click.png",
+          "originalSha256": "24c7a5b1ed7eae18682e06673cbbe4535a551a49d3b09cbed398b464c5fee4ba",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/roi_polygon_click.png",
+          "localSha256": "24c7a5b1ed7eae18682e06673cbbe4535a551a49d3b09cbed398b464c5fee4ba"
+        },
+        {
+          "originalType": "resources.roi_屏蔽polygon_normal.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_屏蔽polygon_normal.png",
+          "originalSha256": "2fa429366449e60cd1f52878a2fcb060183e9cdfc745469bae94d2f73ea3b6a8",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/roi_屏蔽polygon_normal.png",
+          "localSha256": "2fa429366449e60cd1f52878a2fcb060183e9cdfc745469bae94d2f73ea3b6a8"
+        },
+        {
+          "originalType": "resources.roi_屏蔽polygon_click.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_屏蔽polygon_click.png",
+          "originalSha256": "88092cd14d3e63aeb18bf94a9a4e532e95fb73687a7450dba1bac2a9684b4ddf",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/roi_屏蔽polygon_click.png",
+          "localSha256": "88092cd14d3e63aeb18bf94a9a4e532e95fb73687a7450dba1bac2a9684b4ddf"
         }
       ],
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "e045b5c04aa5da7be7f732ec4492cee1a9c5d9a6bc2ffc89b4ce74aa7d499714"
+          "sha256": "5b84a2fce897eb89308bb4157b0193183b3cc6dd0c007e2b45d680a8d9517d26"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
@@ -1881,15 +1972,19 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
-          "sha256": "2c444a74114c87c56f38022fc2486d2e0333520459dcf3cd2344f7ae3860e2c4"
+          "sha256": "c2395ea53de7a53312921fc65c0c6ac52203e46cc1726fc97441233fab7ccc64"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "f4da55344ac84c897f866a249c836f5ac69f2f6487a09b6155f2b209dfd0d7c8"
+          "sha256": "d428b761b505ce2ca9600f695ad839e3ba448e068bba566cac4070d376f2ccfb"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
-          "sha256": "b3bd2e740d27e117dc29fd6bae35edff60ca7208cf9cc6d7b03a44d63a34e4bd"
+          "sha256": "47cc664ecbcac4bd142be2489349e003578b0b4ff82f9b8176dc8f7ea9683ff1"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativePolygonRoiInputs.cs",
+          "sha256": "d53cb5b2dab057bd9589e80cfc92aa981d4853cbf0daf6aecac9f89b1fb90ffc"
         }
       ],
       "consumers": [
@@ -1914,12 +2009,48 @@
         "checkpoint": "O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json"
       },
       "polygonPrerequisites": {
-        "status": "IMPLEMENTED_PENDING_FORMAL_PRODUCT_TESTS_NOT_POLYGON_COMPLETE",
+        "status": "FOCUSED_FORMAL_AUTOMATION_PASSED",
         "adaptation": "Original ToBtn/T1 point entry; exact axis staging lease replaces hash-based source mutation; original binding format and base leaf registration retained. Named popup target/owner and scroll subscription lifecycle; native positioning never coerces Auto dimensions. Point-list converter uses ordered slot Replace, dimension/input versions and coalesced reentrant projection. Original converter recovered source is recorded with actual CRLF and separately identified LF manifest SHA.",
         "remaining": [
           "Polygon original parameter stack/editor/viewport not activated",
           "Actual VS/VM same-state and physical pointer unverified",
           "Raw unload/retemplate integration requires editor slot lease before Point binding disposal"
+        ],
+        "validation": "O06_POLYGON_PREREQUISITES_CHECKPOINT_20261027.json and current polygon checkpoint; no full C08/manual acceptance"
+      },
+      "polygonButtonSource": {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+        "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
+        "fragment": "PolygonRoiBtnStyle lines1647-1691, ordinary and avoid branches",
+        "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
+        "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044"
+      },
+      "polygonIndexSource": {
+        "sourceKind": "original-il",
+        "assemblyPath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.BaseData.dll",
+        "assemblySha256": "435628fd494d33dbd4c242d98939162e0406101b1e77287556b1a04c7a4e1d6a",
+        "mvid": "b537fea2-7c48-4764-95c5-67bf1b261b29",
+        "type": "Apps.BaseData.GetIndexConverter",
+        "typeToken": "0x02000010",
+        "convertToken": "0x06000027",
+        "convertRva": "0x2840",
+        "convertBackToken": "0x06000028",
+        "evidence": "docs/collaboration/evidence/O06_ROI_NEXT_COMPOSITIONS_STATIC_20261027.json#polygonIndex",
+        "localPath": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/GetIndexConverter.cs",
+        "localSha256": "6bf11ae7b5eb8a8db351367dcf2697bd7eedd6298946d2a24a4c3898c4f32621"
+      },
+      "polygonSceneCandidate": {
+        "status": "FOCUSED_FORMAL_AUTOMATION_PASSED_FULL_C08_INCOMPLETE",
+        "consumer": "NativeRoiSession / NativeRoiEditor / NativePolygonRoiInputs / NativeRoiViewport",
+        "adaptation": "Ordered neutral vertices remain sole accepted geometry. Original stack and ToBtn/T1 leaves use slot/topology/raw leases and one host acceptance. Native Polygon uses ordered snapshot and captured handle/collection/topology/index; abnormal capture cancellation bubbles to session. Local label foreground isolates host implicit text style. Original drawing/ROI composition gates and actual pointer/VS/VM acceptance still open.",
+        "firstCandidate": "UI002 and Window079=45 passed before final lifecycle and foreground corrections; not final evidence.",
+        "verification": "UI003/full001 zero errors; Window083=48, PolygonPrimitives002=10, Field/Design/RuntimeEditor/FullChain current receipts; formal EXE exit0/22 tools/15 categories",
+        "evidence": "docs/collaboration/evidence/O06_POLYGON_SCENE_CHECKPOINT_20261027.json",
+        "remaining": [
+          "C01 original parameter-list layout host",
+          "Same-chain standalone VS scene",
+          "Original drawing/inheritance/pose and host-owned add/delete/paste/history",
+          "Actual physical pointer, VM same-state and user visual acceptance"
         ]
       }
     }

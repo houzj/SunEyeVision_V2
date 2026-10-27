@@ -1,3 +1,12 @@
+## 2026-10-27 C08原Polygon参数与图像集中批
+
+- 基线8f1cd141，主线唯一产品写者，三路只读核证/评审核收后已自动补位C01、原绘制入口和独立Scene设计。Blob业务继续冻结；用户页索引2未变、未提交。
+- 激活原PolygonROIStack/ToBtn双Point/原普通与屏蔽图标；有序规范RecordValue与暂存normalized集合、拓扑/槽/raw租约、整组先安装/单项Replace/重入通知版本门禁。图像原Polygon/四手柄/布局绑定与模板退订；真实失捕有明确路由取消，正常MouseUp不取消。
+- 最终UI003零错6202警告65.14秒，全量001零错6481警告75.35秒。Window083=48、PolygonPrimitives002=10、Field069=31、Design024=28、RuntimeEditor050=10、FullChain110=8；正式EXE工具箱exit0/22工具15分类。782发布文件及75加载记录SHA、129原来源SHA通过；实际PNG已查看。证据O06_POLYGON_SCENE_CHECKPOINT_20261027.json。
+- Window080/081失败保留：测试ClearBinding后原模板重新提供Active绑定，实际未损坏，不能据此称产品坏绑定通过。改显式错误路径且先断言原MultiBinding缺席，082定向及083全48组通过。最终产物不套079早期45组。
+- 非完整C08或第一阶段：C01正式行组宿主、同链独立VS场景、绘制/继承/位姿/新增删除粘贴和宿主历史、真实指针及VM/用户验收未完。现Session仅替换几何，原AddROI会直接写只读Items，必须在原新增前接宿主一次提案；不能只加Action<RoiType>冒称绘制已贯通。
+- 原O06/队列/Catalog更新。Catalog最终验收元数据是构建后记录，非编译/发布输入，证据保留其前后SHA；其余产品源未在最终构建后修改。所有自有构建/验证句柄结束，释放工作流正式Release窗口。不推送，目标仍active。
+
 ## 2026-10-27 C08 Polygon原数值/点列表依赖检查点
 
 - 基线9f8506f0，主线唯一产品写者，三路只读核证并核收。原Point ToBtn/T1绑定、轴投影及暂存租约，Popup确切Owner/target/scroll退订，有序顶点converter输入版本与重入同步泵已实施；删除Hash直接回写。原来源与必要适配分别登记Catalog；converter原文件位于被忽略artifacts取证目录，CRLF实SHA和LF清单SHA明确区分。

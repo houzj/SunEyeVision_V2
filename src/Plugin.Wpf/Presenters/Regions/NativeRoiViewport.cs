@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -27,11 +27,13 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/circleroi/circleroistyle.xaml",
+            "Themes/Native/Display/VMBaseControls/base/imageview/roi/polygonroi/polygonroistyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml"})
             NativeView.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/"+resource,UriKind.Relative)});
         Child=NativeView;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
+        NativeView.AddHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled),true);
         PreviewMouseDown+=OnPreviewMouse;PreviewKeyDown+=OnKey;
     }
     public void Bind(NativeRoiSession? session)
@@ -94,6 +96,12 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
                 roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
                 roi.ApplyTemplate();roi.RefreshGeometryLayout();
             }
+            foreach(var roi in Descendants<PolygonROI>(NativeView))
+            {
+                roi.SetResourceReference(FrameworkElement.StyleProperty,typeof(PolygonROI));
+                roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
+                roi.ApplyTemplate();roi.RefreshGeometryLayout();
+            }
             foreach(var list in Descendants<ListView>(NativeView).Where(list=>ReferenceEquals(list.ItemsSource,_session.Items)))
                 list.SelectedItem=_session.CurROIData;
         }
@@ -105,16 +113,21 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     {
         NativeRoiCallbacks.Run(Descendants<RectROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)
             .Concat(Descendants<SectorROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction))
-            .Concat(Descendants<CircleROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)));
+            .Concat(Descendants<CircleROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction))
+            .Concat(Descendants<PolygonROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)));
     }
     private void OnPreviewMouse(object sender,MouseButtonEventArgs args)
     {if(_session?.PrepareEditor()!=true)args.Handled=true;}
+    private void OnPolygonCancelled(object sender,RoutedEventArgs args)
+    {if(!_disposed&&args.OriginalSource is PolygonROI {DataContext:NativePolygonRoiProjection item}&&_session?.Owns(item)==true)
+        NativeRoiCallbacks.Run([CancelInteraction,_session.CancelPending]);}
     private void OnLostCapture(object sender,MouseEventArgs args)
     {
         if(_disposed)return;
         if(!Descendants<RectROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
            !Descendants<SectorROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
-           !Descendants<CircleROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
+           !Descendants<CircleROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
+           !Descendants<PolygonROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
         NativeRoiCallbacks.Run([CancelInteraction,()=>_session?.CancelPending()]);
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
@@ -129,6 +142,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         if(_disposed)return;_disposed=true;_generation++;
         Loaded-=OnLoaded;Unloaded-=OnUnloaded;PreviewMouseDown-=OnPreviewMouse;PreviewKeyDown-=OnKey;
         NativeView.RemoveHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture));
+        NativeView.RemoveHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled));
         var previous=_session;_session=null;
         if(previous is not null&&_changed is not null)previous.Changed-=_changed;_changed=null;
         NativeRoiCallbacks.Run([()=>previous?.CancelPending(),ReleaseFrame,()=>NativeView.RoiSelectedCommand=null,()=>Child=null]);

@@ -135,6 +135,52 @@
     </Setter>
   </Style>
 <DataTemplate x:Key="SectorRingROI"><localcontrol:SectorRingROIStack Style="{StaticResource ROIStackStyle}"/></DataTemplate>
+<Style x:Key="PolygonRoiBtnStyle" TargetType="{x:Type ToggleButton}">
+    <Setter Property="Height" Value="34" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Margin" Value="0,0,27,0" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ToggleButton}">
+          <Grid Background="#00FFFFFF">
+            <Image Name="bg" Width="36" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_选中但未绘制_bg.png" />
+            <Image Name="icon" Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_polygon_normal.png" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="True" Binding="{Binding IsAvoid}" />
+                <Condition Value="False" Binding="{Binding PolygonEnable_ModuleEnableA}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_屏蔽polygon_normal.png" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="True" Binding="{Binding IsAvoid}" />
+                <Condition Value="True" Binding="{Binding PolygonEnable_ModuleEnableA}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_屏蔽polygon_click.png" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsAvoid}" />
+                <Condition Value="True" Binding="{Binding PolygonEnable_ModuleEnableA}" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_polygon_click.png" />
+            </MultiDataTrigger>
+            <DataTrigger Value="True" Binding="{Binding PolygonA}">
+              <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+            </DataTrigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+<DataTemplate x:Key="PolygonROI"><localcontrol:PolygonROIStack Style="{StaticResource ROIStackStyle}"/></DataTemplate>
 <Style x:Key="ROIListStyle" TargetType="{x:Type ContentControl}">
     <Setter Property="ContentTemplate" Value="{x:Null}" />
     <Setter Property="Visibility" Value="Collapsed" />
@@ -146,6 +192,7 @@
         </MultiDataTrigger.Conditions>
         <Setter Property="Visibility" Value="Visible" />
       </MultiDataTrigger>
+      <DataTrigger Value="True" Binding="{Binding PolygonEnable_ModuleEnableA}"><Setter Property="ContentTemplate" Value="{StaticResource PolygonROI}"/></DataTrigger>
       <DataTrigger Value="True" Binding="{Binding SectorRingEnable_ModuleEnableA}"><Setter Property="ContentTemplate" Value="{StaticResource SectorRingROI}"/></DataTrigger>
       <DataTrigger Value="True" Binding="{Binding SectorEnable_ModuleEnableA}"><Setter Property="ContentTemplate" Value="{StaticResource SectorROI}"/></DataTrigger>
 <DataTrigger Value="True" Binding="{Binding BoxEnable_ModuleEnableA}">

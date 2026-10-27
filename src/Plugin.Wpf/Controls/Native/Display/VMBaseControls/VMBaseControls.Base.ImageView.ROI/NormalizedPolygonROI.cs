@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+﻿using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
@@ -18,5 +18,8 @@ public class NormalizedPolygonROI : PolygonROI
 		ResourceDictionary resourceDictionary = (ResourceDictionary)Application.LoadComponent(resourceLocator);
 		BindingBase binding = resourceDictionary["PolygonPointsBinding"] as BindingBase;
 		SetBinding(PolygonROI.PolygonPointsProperty, binding);
+        var converter=((MultiBinding)binding).Converter as SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData.PointListRightFixdMultiplicationConverter;
+        Unloaded+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,this)){CancelInteraction();converter?.Disconnect();}};
+        Loaded+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,this))BindingOperations.GetMultiBindingExpression(this,PolygonPointsProperty)?.UpdateTarget();};
 	}
 }

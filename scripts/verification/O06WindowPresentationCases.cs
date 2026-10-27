@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
@@ -32,7 +32,7 @@ internal static class S2DocumentEditingCases
 {
  static Window owner=null!;static StackPanel host=null!;static int passed,failed;
  static void Require(bool value,string message){if(!value)throw new Exception(message);}
- static void Test(string name,Action run){try{run();passed++;Console.WriteLine("PASS "+name);}catch(Exception e){failed++;Console.WriteLine("FAIL "+name+": "+e);}}
+ static void Test(string name,Action run){var filter=Environment.GetEnvironmentVariable("O06_WINDOW_CASE_FILTER");if(!string.IsNullOrEmpty(filter)&&!name.Contains(filter,StringComparison.Ordinal))return;try{run();passed++;Console.WriteLine("PASS "+name);}catch(Exception e){failed++;Console.WriteLine("FAIL "+name+": "+e);}}
  static void Pump()=>Dispatcher.CurrentDispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
  sealed class ColorLifetimeDraft : IToolSettingsDraft
  {
@@ -531,14 +531,14 @@ internal static class S2DocumentEditingCases
  }
  sealed class RoiHost(IReadOnlyImage image,params RoiEditItem[] rows)
  {
-  internal readonly List<RoiEditItem> Rows=rows.ToList();internal long Revision;internal int Writes,Reads;
+  internal readonly List<RoiEditItem> Rows=rows.ToList();internal long Revision;internal int Writes,Reads,Attempts;
   internal bool Alive=true,Reject;internal Action? OnRead,BeforeAccept;
   internal Guid ScopeId=Guid.NewGuid();
   internal RoiEditStamp Stamp=>new(ScopeId,Revision,image.Frame);
   internal RoiEditSnapshot Read(){Reads++;OnRead?.Invoke();return new(Stamp,Rows.ToArray());}
   internal RoiEditAcceptance Accept(RoiEditStamp expected,RoiGeometryChange change)
   {
-   var before=BeforeAccept;BeforeAccept=null;before?.Invoke();
+   Attempts++;var before=BeforeAccept;BeforeAccept=null;before?.Invoke();
    if(expected!=Stamp||Reject)return new(false,new(Stamp,Rows.ToArray()),"宿主拒绝或旧根");
    var index=Rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.Id);Require(index>=0,"提交身份丢失");
    Rows[index]=Rows[index] with{Geometry=change.Geometry};Revision++;Writes++;return new(true,new(Stamp,Rows.ToArray()));
@@ -743,6 +743,113 @@ internal static class S2DocumentEditingCases
    Require(!editor.TryCommitPending()&&oldModel.Writes==0&&newModel.Writes==0,"绑定重入仍写旧/新根");Pump();var current=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(editor).ToArray();Require(current.Length==4&&Math.Abs(current[0].StartValue-200.123456)<1e-8,"旧六项绑定继续污染新四项");Show(new TextBlock());
   });
  }
+ static RecordValue PolygonShape()=>RoiGeometryEditing.Create("polygon",new(0,0),new(0,0),new[]{new Point2(40.123456,30.987654),new Point2(40.123456,30.987654),new Point2(240.345678,40.123456),new Point2(220.765432,180.987654)});
+ static TextBox PointText(Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint field)
+ {
+  var button=(ToggleButton)field.FindName("ToBtn");
+  var leaf=(Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)button.Template.FindName("T1",button);
+  Require(BindingOperations.GetBinding(leaf,Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl.TextProperty)?.Source==field,"产品未初始化真实Point绑定");
+  return (TextBox)leaf.FindName("ValueText");
+ }
+ static void VerifyNativePolygon()
+ {
+  Test("原Polygon有序重复点、真实参数栈与同帧图像双向一次接纳",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));
+   using var session=model.Open();using var editor=new NativeRoiEditor();using var viewport=new NativeRoiViewport();
+   editor.Bind(session);viewport.Bind(session);var scene=new Grid{Height=500};scene.ColumnDefinitions.Add(new(){Width=new GridLength(420)});scene.ColumnDefinitions.Add(new());
+   scene.Children.Add(editor);scene.Children.Add(viewport);Grid.SetColumn(viewport,1);owner.Width=1000;Show(scene);session.Select("detect",model.Rows[0].Id);Pump();
+   ((ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView)).IsChecked=true;Pump();
+   var stack=Visuals<Native.Composition.Apps.XmlUI.ParamTabControl.PolygonROIStack>(editor).Single();
+   var fields=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(stack).ToArray();Require(fields.Length==8,"未取得原四顶点八坐标："+fields.Length);
+   var selected=(NativePolygonRoiProjection)session.CurROIData!;Require(ReferenceEquals(stack.ROIData,selected),"原参数栈非同一选中对象");
+   var before=RoiGeometryEditing.Vertices(model.Rows[0].Geometry);var secondX=PointText(fields.Where(field=>field.IsX).ElementAt(1));
+   secondX.Focus();Pump();secondX.Text="80.125";SendKey(secondX,Key.Enter,true);Pump();
+   var after=RoiGeometryEditing.Vertices(model.Rows[0].Geometry);
+   Require(!Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(editor).Any(field=>PointText(field).IsKeyboardFocused),"当前新Point槽仍持焦");
+   Require(model.Writes==1&&!secondX.IsKeyboardFocused&&!editor.HasInvalidText,"Polygon Enter未单次失焦："+editor.Error+"；writes="+model.Writes);
+   Require(after[0]==before[0]&&after[1].X==80.125&&after[1].Y==before[1].Y&&after[2]==before[2]&&after[3]==before[3],"重复点改错槽或未编辑顶点精度丢失");
+   var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedPolygonROI>(viewport).Single();
+   var container=Visuals<Native.Display.VMBaseControls.Base.ImageView.ContainerItem>(viewport).Single(item=>ReferenceEquals(item.DataContext,selected));
+   Require(container.ActualWidth>1&&container.ActualHeight>1&&roi.Points.Count==4,"原Polygon图形实际容器缺失");
+   Require(Math.Abs(roi.PolygonPoints[1].X-80.125)<1e-8,"参数编辑未到原图像像素点");
+   var polygon=(System.Windows.Shapes.Polygon)roi.Template.FindName("mPolygon",roi);
+   Require(polygon.Points.SequenceEqual(roi.PolygonPoints)&&polygon.RenderedGeometry.Bounds.Width>0&&polygon.RenderedGeometry.Bounds.Height>0&&polygon.StrokeThickness>0,"实际原Polygon几何未绘制");
+   var handles=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.MoveArea>(roi).ToArray();Require(handles.Length==4,"原顶点手柄缺失");
+   foreach(var handle in handles)
+   {var ellipse=(System.Windows.Shapes.Ellipse)handle.Template.FindName("SizeRectX",handle);Require(ellipse.IsVisible&&!ellipse.RenderedGeometry.IsEmpty(),"顶点手柄未实际绘制");}
+
+   roi.PolygonPoints[2]=new Point(260.25,60.5);
+   typeof(Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase).GetMethod("NotifyROIParamChanged",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(roi,null);Pump();
+   Require(model.Writes==2&&RoiGeometryEditing.Vertices(model.Rows[0].Geometry)[2]==new Point2(260.25,60.5),"原图像点编辑未完整单次接纳");
+   CaptureInline(scene,"native-polygon-scene.png");Show(new TextBlock{Text="多边形卸载"});owner.Width=530;
+  });
+  Test("Polygon旧集合与有序身份失效，实际CollectionView只收到单项完整快照通知",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();session.Select("detect",model.Rows[0].Id);
+   var item=(NativePolygonRoiProjection)session.CurROIData!;var points=item.PolygonPoints;_=CollectionViewSource.GetDefaultView(points);var notifications=0;
+   points.CollectionChanged+=(_,args)=>{Require(args.NewItems?.Count==1&&args.OldItems?.Count==1,"范围Replace不受WPF支持");notifications++;};
+   points[1]=new Point(.2,.3);Require(notifications==1&&item.HasPending,"有序点未暂存");
+   Require(session.TryCommit(item)&&model.Writes==1,"完整顶点未接纳");
+   var rejected=false;try{points[1]=new(.4,.5);}catch(InvalidOperationException){rejected=true;}Require(rejected,"接纳后旧集合仍可写入");
+   var values=RoiGeometryEditing.Values(model.Rows[0].Geometry);var vertices=RoiGeometryEditing.Vertices(model.Rows[0].Geometry);Array.Reverse(vertices);
+   values["vertices"]=new SequenceValue(RoiDeclarations.Shape.Fields.Single(field=>field.Id=="vertices").Type,vertices.Select(point=>(object?)RoiGeometryEditing.Point(point)));
+   model.Rows[0]=model.Rows[0] with{Geometry=RoiGeometryEditing.Checked(values)};
+   rejected=false;try{session.Refresh();}catch(InvalidOperationException){rejected=true;}Require(rejected,"同中心不同顺序被当作无变化");
+  });
+  Test("Polygon实际两槽非法与宿主拒绝不半写，纠正后完整接纳且旧控件拒写",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();using var editor=new NativeRoiEditor();editor.Bind(session);Show(editor);session.Select("detect",model.Rows[0].Id);Pump();
+   ((ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView)).IsChecked=true;Pump();
+   var fields=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(editor).ToArray();var firstY=PointText(fields.Where(field=>!field.IsX).First());var secondX=PointText(fields.Where(field=>field.IsX).ElementAt(1));
+   var accepted=RoiGeometryEditing.Vertices(model.Rows[0].Geometry);
+   firstY.Focus();Pump();firstY.Text="40000";secondX.Focus();Pump();secondX.Text="99.125";SendKey(secondX,Key.Enter,true);
+   Require(model.Writes==0&&firstY.Text=="40000"&&secondX.Text=="99.125"&&editor.HasInvalidText,"非法整组发生半写或原文丢失："+editor.Error);
+   model.Reject=true;firstY.Focus();Pump();firstY.Text="45.625";var attempts=model.Attempts;SendKey(firstY,Key.Enter,true);
+   Require(model.Writes==0&&model.Attempts==attempts+1&&firstY.Text=="45.625"&&secondX.Text=="99.125"&&accepted.SequenceEqual(RoiGeometryEditing.Vertices(model.Rows[0].Geometry)),"宿主拒绝未保整组原文");
+   var item=(NativePolygonRoiProjection)session.CurROIData!;var points=item.PolygonPoints;_=CollectionViewSource.GetDefaultView(points);var observed=false;
+   points.CollectionChanged+=(_,args)=>{Require(args.NewItems?.Count==1,"WPF范围通知");if(!observed){observed=true;Require(points[0].Y==45.625/320&&points[1].X==99.125/640,"观察者看到半组候选");}};
+   model.Reject=false;SendKey(firstY,Key.Enter,true);Pump();
+   var next=RoiGeometryEditing.Vertices(model.Rows[0].Geometry);Require(observed&&model.Writes==1&&next[0].Y==45.625&&next[1].X==99.125&&next[3]==accepted[3],"修正未一次完整接纳："+editor.Error);
+   fields[0].StartValue=1234;Require(model.Writes==1,"旧Point控件仍写入");Show(new TextBlock{Text="结束"});
+  });
+  Test("Polygon损坏真实PointSource绑定阻断Enter且原文留焦",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();using var editor=new NativeRoiEditor();editor.Bind(session);Show(editor);session.Select("detect",model.Rows[0].Id);Pump();
+   ((ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView)).IsChecked=true;Pump();
+   var field=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(editor).First();var text=PointText(field);var before=RoiGeometryEditing.Vertices(model.Rows[0].Geometry);
+   BindingOperations.SetBinding(field,Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint.PointSourceProperty,new Binding("MissingPolygonPoint"){Source=new object()});
+   Require(BindingOperations.GetMultiBindingExpression(field,Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint.PointSourceProperty) is null,"测试未破坏原PointSource模板绑定");
+   text.Focus();Pump();Require(text.IsKeyboardFocused,"损坏绑定用例未取得真实焦点；loaded="+text.IsLoaded+"；member="+Visuals<TextBox>(editor).Contains(text));text.Text="75.125";SendKey(text,Key.Enter,true);
+   Require(model.Writes==0&&editor.HasInvalidText&&text.IsKeyboardFocused&&text.Text=="75.125"&&before.SequenceEqual(RoiGeometryEditing.Vertices(model.Rows[0].Geometry)),"坏PointSource未阻断或丢原文："+editor.Error+"；writes="+model.Writes+"；focus="+text.IsKeyboardFocused+"；raw="+text.Text+"；binding="+BindingOperations.GetMultiBindingExpression(field,Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint.PointSourceProperty)?.Status+"；member="+Visuals<TextBox>(editor).Contains(text));
+   Show(new TextBlock{Text="结束"});
+  });
+  Test("原顶点手柄重复坐标按实际容器序号选择",()=>
+  {
+   var points=new System.Collections.ObjectModel.ObservableCollection<Point>{new(10,10),new(10,10),new(50,60)};
+   var page=new Native.Display.VMBaseControls.Base.ImageView.ROI.MoveAreaPage{ItemsSource=points,Width=200,Height=120};Show(page);Pump();
+   var second=(Native.Display.VMBaseControls.Base.ImageView.ROI.MoveArea)page.ItemContainerGenerator.ContainerFromIndex(1);
+   second.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+   Require(page.SelectedIndex==1,"重复点手柄仍按Hash选中首槽");Show(new TextBlock{Text="结束"});
+  });
+  Test("Polygon卸载重载保留原Point键入精度并拒绝旧命令",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();using var editor=new NativeRoiEditor();editor.Bind(session);Show(editor);session.Select("detect",model.Rows[0].Id);Pump();
+   ((ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView)).IsChecked=true;Pump();
+   var text=PointText(Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(editor).First());text.Focus();Pump();text.Text="35.125";
+   var context=editor.NativeView.DataContext;var command=(ICommand)context.GetType().GetProperty("ROIValueChangedCommand")!.GetValue(context)!;
+   Show(new TextBlock{Text="卸载"});command.Execute(null);Require(model.Writes==0,"卸载旧命令写入");Show(editor);Pump();
+   var restored=PointText(Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(editor).First());
+   Require(restored.Text=="35.125"&&model.Writes==0,"卸载丢失原文："+restored.Text);
+   Require(editor.TryCommitPending()&&model.Writes==1&&RoiGeometryEditing.Vertices(model.Rows[0].Geometry)[0].X==35.125,"重载后无法捕获原文："+editor.Error);
+   Show(new TextBlock{Text="结束"});
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -767,6 +874,7 @@ internal static class S2DocumentEditingCases
    VerifyNativeBox();
    VerifyNativeSector();
    VerifyNativeRing();
+   VerifyNativePolygon();
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);

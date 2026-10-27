@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,6 +18,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     private sealed record Input(Numbers.SliderArrangeFloat View,Numbers.NumericControl Leaf,TextBox Text)
     {internal string Baseline="";internal string? Raw;}
     private readonly List<Input> _inputs=new();
+    private readonly NativePolygonRoiInputs _polygon;
     private NativeRoiSession? _session;
     private NativeRoiSession? _projectedSession;
     private NativeRoiProjection? _projectedItem;
@@ -34,6 +35,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public bool HasInvalidText=>Error.Length!=0;
     public NativeRoiEditor()
     {
+        _polygon=new(NativeView,()=>!_disposed&&!_projecting&&!_suspended&&IsLoaded);
         Language=XmlLanguage.GetLanguage("en-US");Child=NativeView;
         NativeView.LayoutUpdated+=OnLayout;PreviewKeyDown+=OnKey;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
     }
@@ -59,6 +61,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         {
             Error="";foreach(var input in _inputs)input.Raw=null;
             var session=_session;
+            _polygon.Bind(session,session?.CurROIData as NativePolygonRoiProjection);
             NativeView.IsEnabled=session?.IsCurrent==true;
             NativeView.ImageWidth=session?.ImageWidth??0;NativeView.ImageHeight=session?.ImageHeight??0;
             NativeView.DataContext=session is null?null:new Context(this,session,_generation,session.CurROIData);
@@ -98,13 +101,14 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {
         if(!ReferenceEquals(args.OriginalSource,this)||_disposed)return;
         if(!_suspended)_savedRaw=_inputs.Select(input=>input.Raw).ToArray();_suspended=true;
-        _uiGeneration++;_resume?.Abort();_resume=null;
+        _polygon.Suspend();_uiGeneration++;_resume?.Abort();_resume=null;
         _projecting=true;
         try{foreach(var input in _inputs)((ComboBox)input.View.FindName("CBox")).SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);}
         finally{_projecting=false;}
     }
     private void AttachInputs()
     {
+        _polygon.Attach();
         var views=Descendants<Numbers.SliderArrangeFloat>(NativeView).ToArray();
         if(views.SequenceEqual(_inputs.Select(input=>input.View)))return;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
@@ -134,6 +138,18 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         if(_disposed||_committing||_session?.IsCurrent!=true)return false;
         var session=_session;
         if(session.CurROIData is not {} item)return _inputs.All(input=>input.Raw is null);
+        if(item is NativePolygonRoiProjection)
+        {
+            var polygonGeneration=_generation;_committing=true;
+            try
+            {
+                var accepted=_polygon.TryCommit();
+                if(!_disposed&&polygonGeneration==_generation&&ReferenceEquals(_session,session)&&ReferenceEquals(session.CurROIData,item))
+                {Error=_polygon.Error;if(accepted)Project(true);}
+                return accepted;
+            }
+            finally{_committing=false;}
+        }
         AttachInputs();if(_inputs.Count==0)return true;
         var fields=item.Fields;
         if(_inputs.Count!=fields.Count){Error="原区域参数栈缺少真实数值字段。";return false;}
@@ -214,7 +230,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     }
     private void OnKey(object sender,KeyEventArgs args)
     {
-        if(args.Key!=Key.Enter||!_inputs.Any(input=>input.Text.IsKeyboardFocused))return;
+        if(args.Key!=Key.Enter||(!_inputs.Any(input=>input.Text.IsKeyboardFocused)&&!_polygon.HasFocus))return;
         args.Handled=true;
         if(TryCommitPending())
         {foreach(var input in _inputs)((ComboBox)input.View.FindName("CBox")).SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);Keyboard.ClearFocus();}
@@ -225,7 +241,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         _registration?.Dispose();_registration=null;if(_session is not null)_session.Changed-=Project;
         _session=null;_projectedSession=null;_projectedItem=null;_projectedStamp=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
-        _inputs.Clear();NativeView.DataContext=null;Child=null;
+        _inputs.Clear();_polygon.Dispose();NativeView.DataContext=null;Child=null;
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject
     {
@@ -249,6 +265,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool SectorA {get=>_session.SectorA;set=>_session.SectorA=value;}
         public bool SectorRingEnable_ModuleEnableA=>_session.SectorRingEnable_ModuleEnableA;
         public bool SectorRingA {get=>_session.SectorRingA;set=>_session.SectorRingA=value;}
+        public bool PolygonEnable_ModuleEnableA=>_session.PolygonEnable_ModuleEnableA;
+        public bool PolygonA {get=>_session.PolygonA;set=>_session.PolygonA=value;}
+        public bool IsAvoid=>_session.IsAvoid;
         public bool Is3DROI=>false;
         public string ROISelectionA=>_session.ROISelectionA;
         public string DisplayNameA=>_session.DisplayNameA;

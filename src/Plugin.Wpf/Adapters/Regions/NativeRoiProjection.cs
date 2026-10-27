@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
@@ -32,7 +32,8 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     protected NativeRoiProjection(NativeRoiSession scope,RoiEditItem item)
     {_scope=scope;Accepted=item;ImageWidth=scope.ImageWidth;ImageHeight=scope.ImageHeight;DataChangedCommand=new CommitCommand(this);}
     internal static NativeRoiProjection Create(NativeRoiSession scope,RoiEditItem item)=>item.Geometry.Get<string>("kind") switch
-    {"rectangle"=>new NativeBoxRoiProjection(scope,item),"sector"=>new NativeSectorRoiProjection(scope,item),"annulus"=>new NativeRingRoiProjection(scope,item),_=>throw new NotSupportedException()};
+    {"rectangle"=>new NativeBoxRoiProjection(scope,item),"sector"=>new NativeSectorRoiProjection(scope,item),"annulus"=>new NativeRingRoiProjection(scope,item),"polygon"=>new NativePolygonRoiProjection(scope,item),_=>throw new NotSupportedException()};
+    protected bool CanStage=>_scope is {} scope&&scope.CanEdit(this);
     protected abstract double AcceptedValue(string key);
     protected double Value(string key)=>_pending.TryGetValue(key,out var value)?value:AcceptedValue(key);
     protected void Stage(string key,double value)
@@ -53,8 +54,13 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     public Point CenterPoint {get=>new(CenterX,CenterY);set{CenterX=value.X;CenterY=value.Y;}}
     internal bool Matches(RoiEditItem row)=>row.Group==Group&&row.Id==Id&&row.Enabled==Enabled&&row.Visible==Visible&&row.Name==Accepted.Name&&
         MatchesGeometry(row.Geometry,Accepted.Geometry);
-    internal bool MatchesGeometry(RecordValue left,RecordValue right)=>left.Get<string>("kind")==right.Get<string>("kind")&&
-        RoiGeometryEditing.Center(left)==RoiGeometryEditing.Center(right)&&GeometryKeys.All(key=>left.Get<double>(key)==right.Get<double>(key));
+    internal bool MatchesGeometry(RecordValue left,RecordValue right)
+    {
+        var kind=left.Get<string>("kind");
+        if(kind!=right.Get<string>("kind"))return false;
+        if(kind=="polygon")return RoiGeometryEditing.Vertices(left).SequenceEqual(RoiGeometryEditing.Vertices(right));
+        return RoiGeometryEditing.Center(left)==RoiGeometryEditing.Center(right)&&GeometryKeys.All(key=>left.Get<double>(key)==right.Get<double>(key));
+    }
     protected abstract IEnumerable<string> GeometryKeys {get;}
     internal abstract RecordValue Prepare();
     protected Dictionary<string,object?> PrepareCenter()
@@ -65,12 +71,15 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
         if(Changed("x")||Changed("y"))values["center"]=RoiGeometryEditing.Point(new(Value("x"),Value("y")));
         return values;
     }
-    internal void Install(RoiEditItem accepted,bool cancel){Accepted=accepted;if(cancel){_pending.Clear();PendingStamp=null;}}
+    internal void Install(RoiEditItem accepted,bool cancel){Accepted=accepted;if(cancel){_pending.Clear();PendingStamp=null;}OnInstalled(cancel);}
     public void Cancel(){_pending.Clear();PendingStamp=null;Notify();}
-    internal void Detach(){_scope=null;_pending.Clear();PendingStamp=null;PropertyChanged=null;}
+    internal void Detach(){_scope=null;_pending.Clear();PendingStamp=null;OnDetached();PropertyChanged=null;}
+    protected virtual void OnInstalled(bool cancel){}
+    protected virtual void OnDetached(){}
+    protected virtual IEnumerable<Action> AdditionalNotifications()=>Array.Empty<Action>();
     internal void Notify()
     {
-        var callbacks=new List<Action>();
+        var callbacks=new List<Action>(AdditionalNotifications());
         var handlers=PropertyChanged?.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray()??[];
         foreach(var property in PropertyNames.Concat(new[]{nameof(CenterX),nameof(CenterY),nameof(CenterPoint),nameof(IsVisible),nameof(Enabled)}))
             foreach(var handler in handlers)callbacks.Add(()=>handler(this,new(property)));
@@ -193,5 +202,96 @@ public sealed class NativeRingRoiProjection : NativeRoiProjection,INormalizedCir
         var values=PrepareCenter();values["outer-radius"]=outer;values["inner-radius"]=inner;
         // The four-field editor does not reinterpret, round or replace the accepted full-circle angles.
         return RoiGeometryEditing.Checked(values);
+    }
+}
+
+/// <summary>Ordered vertex projection over the sole host-owned neutral geometry record.</summary>
+public sealed class NativePolygonRoiProjection : NativeRoiProjection,INormalizedPolygonROI
+{
+    private VertexPoints _points;
+    private long _topology;
+    public long TopologyGeneration=>_topology;
+    internal NativePolygonRoiProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item)
+    {_points=new(this,++_topology,Normalized());}
+    internal override IReadOnlyList<NativeRoiField> Fields=>Enumerable.Range(0,RoiGeometryEditing.Vertices(Accepted.Geometry).Length)
+        .SelectMany(index=>new[]{new NativeRoiField(Key(index,true),true),new NativeRoiField(Key(index,false),true)}).ToArray();
+    protected override IEnumerable<string> PropertyNames=>new[]{nameof(PolygonPoints),nameof(TopologyGeneration)};
+    protected override IEnumerable<string> GeometryKeys=>Array.Empty<string>();
+    private static string Key(int index,bool x)=>$"vertex:{index}:{(x?"x":"y")}";
+    protected override double AcceptedValue(string key)
+    {
+        if(key is "x" or "y"){var center=RoiGeometryEditing.Center(Accepted.Geometry);return key=="x"?center.X:center.Y;}
+        var parts=key.Split(':');var point=RoiGeometryEditing.Vertices(Accepted.Geometry)[int.Parse(parts[1],System.Globalization.CultureInfo.InvariantCulture)];
+        return parts[2]=="x"?point.X:point.Y;
+    }
+    public System.Collections.ObjectModel.ObservableCollection<Point> PolygonPoints
+    {get=>_points;set{if(!ReferenceEquals(value,_points))throw new InvalidOperationException("正式顶点拓扑只能由区域宿主接纳。");}}
+    internal bool TryStageVertex(long topology,int index,bool x,double pixelValue)
+    {
+        if(!CanStage||topology!=_topology||index<0||index>=_points.Count)return false;
+        if(!double.IsFinite(pixelValue)||pixelValue is < -30000 or >30000)throw new ArgumentException("多边形顶点超出原参数范围。");
+        StageFields(new Dictionary<int,double>{{index*2+(x?0:1),pixelValue}});return true;
+    }
+    private Point[] Normalized()=>Enumerable.Range(0,RoiGeometryEditing.Vertices(Accepted.Geometry).Length)
+        .Select(index=>new Point(Value(Key(index,true))/ImageWidth,Value(Key(index,false))/ImageHeight)).ToArray();
+    protected override void OnInstalled(bool cancel)
+    {
+        if(cancel)_points=new(this,++_topology,Normalized());
+    }
+    protected override void OnDetached(){_topology++;}
+    protected override IEnumerable<Action> AdditionalNotifications()
+    {
+        var points=_points;var changes=points.Install(Normalized());var version=points.Version;
+        return changes.Select(change=>(Action)(()=>points.Publish(change,version))).ToArray();
+    }
+    internal override RecordValue Prepare()
+    {
+        var points=RoiGeometryEditing.Vertices(Accepted.Geometry);
+        for(var index=0;index<points.Length;index++)
+        {
+            var x=Value(Key(index,true));var y=Value(Key(index,false));
+            if(!double.IsFinite(x)||!double.IsFinite(y)||x is < -30000 or >30000||y is < -30000 or >30000)
+                throw new ArgumentException("多边形顶点超出原参数范围。");
+            points[index]=new(x,y);
+        }
+        var values=RoiGeometryEditing.Values(Accepted.Geometry);
+        values["vertices"]=new SequenceValue(RoiDeclarations.Shape.Fields.Single(field=>field.Id=="vertices").Type,
+            points.Select(point=>(object?)RoiGeometryEditing.Point(point)));
+        return RoiGeometryEditing.Checked(values);
+    }
+    private sealed class VertexPoints: System.Collections.ObjectModel.ObservableCollection<Point>
+    {
+        private readonly NativePolygonRoiProjection _owner;private readonly long _generation;
+        internal long Version {get;private set;}
+        internal VertexPoints(NativePolygonRoiProjection owner,long generation,IEnumerable<Point> points):base(points){_owner=owner;_generation=generation;}
+        private void Current(){if(!ReferenceEquals(_owner._points,this)||_generation!=_owner._topology||!_owner.CanStage)throw new InvalidOperationException("多边形顶点租约已失效。");}
+        protected override void SetItem(int index,Point value)
+        {
+            Current();if(index<0||index>=Count)throw new ArgumentOutOfRangeException(nameof(index));
+            var x=value.X*_owner.ImageWidth;var y=value.Y*_owner.ImageHeight;
+            if(!double.IsFinite(x)||!double.IsFinite(y)||x is < -30000 or >30000||y is < -30000 or >30000)throw new ArgumentException("多边形顶点超出原参数范围。");
+            _owner.StageFields(new Dictionary<int,double>{{index*2,x},{index*2+1,y}});
+        }
+        protected override void InsertItem(int index,Point value){Current();throw new NotSupportedException("顶点拓扑由区域宿主一次接纳。");}
+        protected override void RemoveItem(int index){Current();throw new NotSupportedException("顶点拓扑由区域宿主一次接纳。");}
+        protected override void ClearItems(){Current();throw new NotSupportedException("顶点拓扑由区域宿主一次接纳。");}
+        protected override void MoveItem(int oldIndex,int newIndex){Current();throw new NotSupportedException("顶点拓扑由区域宿主一次接纳。");}
+        internal IReadOnlyList<System.Collections.Specialized.NotifyCollectionChangedEventArgs> Install(Point[] values)
+        {
+            var before=this.ToArray();if(before.SequenceEqual(values))return Array.Empty<System.Collections.Specialized.NotifyCollectionChangedEventArgs>();
+            Version++;Items.Clear();foreach(var point in values)Items.Add(point);
+            if(before.Length!=values.Length)return new[]{new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Reset)};
+            return values.Select((point,index)=>(point,index)).Where(pair=>pair.point!=before[pair.index])
+                .Select(pair=>new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Replace,pair.point,before[pair.index],pair.index)).ToArray();
+        }
+        public override event System.Collections.Specialized.NotifyCollectionChangedEventHandler? CollectionChanged;
+        protected override void OnCollectionChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs change)=>Publish(change,Version);
+        internal void Publish(System.Collections.Specialized.NotifyCollectionChangedEventArgs change,long version)
+        {
+            bool Current()=>ReferenceEquals(_owner._points,this)&&_owner._topology==_generation&&Version==version;
+            NativeRoiCallbacks.Run((CollectionChanged?.GetInvocationList().Cast<System.Collections.Specialized.NotifyCollectionChangedEventHandler>()??Enumerable.Empty<System.Collections.Specialized.NotifyCollectionChangedEventHandler>())
+                .Select(handler=>(Action)(()=>{if(Current())handler(this,change);}))); 
+        }
+
     }
 }

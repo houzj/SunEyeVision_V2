@@ -7415,6 +7415,26 @@
         "真实VS/VM同态/物理交互/用户验收未通过；不得据基础依赖通过进入Blob重组。"
       ],
       "evidence": "docs/collaboration/evidence/O06_POLYGON_PREREQUISITES_CHECKPOINT_20261027.json；整体设计 O06_POLYGON_COMPOSITION_DESIGN_20261027.json"
+    },
+    "nativePolygonSceneCandidate": {
+      "baseline": "8f1cd141 + 本批源码增量；封存提交未冒称已构建",
+      "status": "原Polygon参数栈/同帧图像有序顶点聚焦自动验证已通过；完整C08及第一阶段仍未完成，Blob重组冻结。",
+      "implementation": [
+        "原PolygonROIStack、双Point/T1、原图标普通/屏蔽两分支；使用真实有序顶点槽/拓扑代次，不按点Hash定位。",
+        "正式RecordValue唯一权威、normalized集合仅暂存；整组先安装，单项Replace兼容WPF，通知版本门禁防同步重入旧payload。",
+        "真实键入原文按slot缓存，绑定两级验证，合法Enter一次接纳失焦；非法/坏绑定/宿主拒绝保原文；卸载前冻结、旧控件租约失效。",
+        "原Polygon图形/四手柄，保持布局绑定、旧模板退订、捕获身份及异常取消路由；实际指针移动未代验。"
+      ],
+      "validation": "最终UI003=0错6202警告65.14秒，全量001=0错6481警告75.35秒。Window083=48、PolygonPrimitives002=10、Field069=31、Design024=28、RuntimeEditor050=10、FullChain110=8均通过；正式EXE探针exit0/22工具15分类。782发布文件/75加载记录SHA，129原来源SHA再核。",
+      "failurePreserved": "Window080/081损坏绑定用例实际ClearBinding后模板原绑定仍Active，未制造损坏；改显式错误路径并断言原MultiBinding缺席，082定向通过，083全量48过。早期UI/Window079不套最终成绩。",
+      "visual": "native-polygon-scene.png实看闭合蓝色Polygon、四手柄、八坐标；原标签前景隔离宿主主题。未签VM同态、实际VS或用户视觉。",
+      "remaining": [
+        "原C01参数列表及行组布局宿主，消除原LeftRightControl临时ItemsControl祖先替代。",
+        "同一真实Scene的独立设计入口和用户VS验收。",
+        "原绘制/继承/位姿与多对象操作：原AddROI/Paste/Remove直接写列表须改为宿主一次提案；现Session仅几何Replace不足新增/删除。",
+        "真实物理拖动/取消/多DPI、VM同状态、用户验收。"
+      ],
+      "evidence": "docs/collaboration/evidence/O06_POLYGON_SCENE_CHECKPOINT_20261027.json"
     }
   },
   "vmFrameworkArchitectureReference": {

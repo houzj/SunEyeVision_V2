@@ -1,0 +1,215 @@
+{
+  "baseline": "8f1cd141726524c11345760ce1267fa3c99489fd",
+  "productSourceCommit": "8f1cd141726524c11345760ce1267fa3c99489fd",
+  "sourceIdentity": "baseline plus recorded working-tree source delta; later checkpoint commit not claimed as already built",
+  "sourceDelta": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
+      "sha256": "47cc664ecbcac4bd142be2489349e003578b0b4ff82f9b8176dc8f7ea9683ff1",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+      "sha256": "5b84a2fce897eb89308bb4157b0193183b3cc6dd0c007e2b45d680a8d9517d26",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Catalog/controls.json",
+      "sha256": "144fbf94dfaaf9b4697821890f8703de9163565f9300f6872403c132e6359e42",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs",
+      "sha256": "9958c7b4d3bca7bedbf839cb0a5360da35c7a7f16675e57a7c664e20e8e440a0",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.cs.pending",
+      "sha256": null,
+      "deleted": true,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/GetIndexConverter.cs",
+      "sha256": "6bf11ae7b5eb8a8db351367dcf2697bd7eedd6298946d2a24a4c3898c4f32621",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/MoveAreaPage.xaml.cs",
+      "sha256": "85cdbf92d453cdb69c59f0d912252d08667fcaa96c57fe09e966ca2256224e2f",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/NormalizedPolygonROI.cs",
+      "sha256": "471c612e7641bedcf177f39f97343c4bfd750cfddd945ced0e734314f181eabb",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
+      "sha256": "56e7f83a61eb52c4a365edb62eef8dead8a3899ef143b2ff1f764ffccb64cd94",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml.cs",
+      "sha256": "23541b7f7ebb13d51dd19ccab8cc3204dc833e3f7ed39981f1583e6fd244798b",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativePolygonRoiInputs.cs",
+      "sha256": "d53cb5b2dab057bd9589e80cfc92aa981d4853cbf0daf6aecac9f89b1fb90ffc",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
+      "sha256": "c2395ea53de7a53312921fc65c0c6ac52203e46cc1726fc97441233fab7ccc64",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+      "sha256": "d428b761b505ce2ca9600f695ad839e3ba448e068bba566cac4070d376f2ccfb",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/itemscontrolstyle/PolygonItemsControlStyle.xaml",
+      "sha256": "fcf7fa1fc18cdca06232e445831ce52ddaa97b4fef809481b9c157d60a59829e",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml",
+      "sha256": "e16640f80fee2c14ce67c03f4b850a31c6c39a22d135a0cdf185768fcc2af85e",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/PolygonROIStack.xaml.pending",
+      "sha256": null,
+      "deleted": true,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml",
+      "sha256": "52191dd6cbdeed3fbed02c71a378610cb1d5fd9314fb26f0c2ceb08291ec84c6",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
+      "sha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
+      "deleted": false,
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+      "deleted": false,
+      "userOwnedNotCommitted": true
+    }
+  ],
+  "postBuildMetadataOnly": {
+    "path": "src\\Plugin.Wpf\\Catalog\\controls.json",
+    "beforeSha256": "ab2f3c69e4e2bb2763c66964d836e540634c35d68a445599a0d824158b6da9ff",
+    "afterSha256": "144fbf94dfaaf9b4697821890f8703de9163565f9300f6872403c132e6359e42",
+    "scope": "Catalog only records final receipts, not compiled/deployed runtime source"
+  },
+  "builds": {
+    "ui": {
+      "log": "Release/_validation/polygon-scene-ui-20261027-003.log",
+      "errors": 0,
+      "warnings": 6202,
+      "seconds": 65.14
+    },
+    "full": {
+      "log": "Release/_validation/polygon-scene-full-20261027-001.log",
+      "errors": 0,
+      "warnings": 6481,
+      "seconds": 75.35
+    }
+  },
+  "tracks": {
+    "WindowPresentation": {
+      "attempt": "attempt-083",
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-083\\receipt.json",
+      "caseSourceSha256": "167798A7A0BD364502BD1C03BCB3916A6F5055192EDADDF40048A91D8CAD14DC",
+      "exit": 0
+    },
+    "PolygonPrimitives": {
+      "attempt": "attempt-002",
+      "receipt": "Release\\_validation\\S4-20261025\\PolygonPrimitives\\attempt-002\\receipt.json",
+      "caseSourceSha256": "E83FB866FA16E3C32D1C50DD3FEE47553EDD933CA00BE0037CF718FB3C999990",
+      "exit": 0
+    },
+    "FieldEditing": {
+      "attempt": "attempt-069",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-069\\receipt.json",
+      "caseSourceSha256": "7D87D2A406902DCDEE33024C8E5CD39BDFD1D3AFB9B2CBECDFF9A6C92D443757",
+      "exit": 0
+    },
+    "DesignTime": {
+      "attempt": "attempt-024",
+      "receipt": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-024\\receipt.json",
+      "caseSourceSha256": "83891346C506288F28417F2D60EFFC842F180454B4D44C243E02FB39C47E4776",
+      "exit": 0
+    },
+    "RuntimeEditor": {
+      "attempt": "attempt-050",
+      "receipt": "Release\\_validation\\S4-20261025\\RuntimeEditor\\attempt-050\\receipt.json",
+      "caseSourceSha256": "1A382B3C771831CD3341FADF4294A1B029AAB7B73DA57A94CC955900003316FB",
+      "exit": 0
+    },
+    "FullChain": {
+      "attempt": "attempt-110",
+      "receipt": "Release\\_validation\\S4-20261025\\FullChain\\attempt-110\\receipt.json",
+      "caseSourceSha256": "98FCD240A66EEA6621844ECD001499C7E96F7781B06C0AAE41C5F6936091F37F",
+      "exit": 0
+    }
+  },
+  "verifiedPayloadFiles": 782,
+  "verifiedLoadedRecords": 75,
+  "payloadSha256": "7a288f64f1e03b56e75e84d00d23f44f34bf2a1dffbe814b377f57dce2ced4df",
+  "verifiedOriginalSourceShaRecords": 129,
+  "actualSceneImage": {
+    "path": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-083\\native-polygon-scene.png",
+    "sha256": "cb3d2777af95c6f0f3d379295ab59e9c7650dc08db600fda80ec2a860eb286ed",
+    "viewed": true,
+    "scope": "Actual WPF scene with original Polygon and four handles/eight coordinates; labels fixed; C01 layout and full VM visual not accepted"
+  },
+  "preservedFailures": [
+    "Window079=45 passed early candidate before final fixes",
+    "Window080=47 passed/1 failed: ClearBinding test did not actually break templated binding",
+    "Window081=0 passed/1 failed focused diagnosis proved original binding Active and writes1",
+    "Window082=1 passed focused actual invalid path binding; not broad acceptance"
+  ],
+  "status": "POLYGON_FOCUSED_INTEGRATION_PASSED_NOT_FULL_C08_OR_STAGE1",
+  "manual": {
+    "VisualStudio": "not verified",
+    "VM_same_state": "not verified",
+    "physical_pointer": "not verified; DP/command tests are not actual drag",
+    "user": "not verified"
+  },
+  "remaining": [
+    "C01 original parameter-list layout host",
+    "Same-chain standalone VS scene",
+    "Original drawing/inheritance/pose and host-owned add/delete/paste/history",
+    "Actual physical pointer, VM same-state and user visual acceptance"
+  ],
+  "formalExeProbe": {
+    "receipt": "Release\\_validation\\Toolbox-20261026\\attempt-004\\receipt.json",
+    "sha256": "045668ed94453ba567e7bc103be91b2f45910d2c97204c9f079ee23f3db28bcb",
+    "exit": 0,
+    "toolCount": 22,
+    "categoryCount": 15
+  }
+}

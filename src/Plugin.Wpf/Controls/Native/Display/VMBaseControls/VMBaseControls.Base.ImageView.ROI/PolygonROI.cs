@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+﻿using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
@@ -54,6 +54,19 @@ public class PolygonROI : ROIControlBase
 
 	private MoveAreaPage Rects;
 
+    private FrameworkElement? _handle;
+    private ObservableCollection<Point>? _gesturePoints;
+    private long _topology,_gestureTopology;
+    private int _vertex=-1;
+    public FrameworkElement? InteractionHandle=>_handle;
+    public static readonly RoutedEvent InteractionCancelledEvent=EventManager.RegisterRoutedEvent("InteractionCancelled",RoutingStrategy.Bubble,typeof(RoutedEventHandler),typeof(PolygonROI));
+    public PolygonROI()
+    {
+        Unloaded+=(_,_)=>CancelInteraction();
+        DataContextChanged+=(_,_)=>CancelInteraction();
+        AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler((_,args)=>{if(ReferenceEquals(args.OriginalSource,_handle)){try{CancelInteraction();}finally{RaiseEvent(new RoutedEventArgs(InteractionCancelledEvent,this));}}}),true);
+    }
+
 	public static int MaxPolygonPointNum
 	{
 		[CompilerGenerated]
@@ -76,7 +89,7 @@ public class PolygonROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerWidthProperty, value);
+			SetCurrentValue(ContainerWidthProperty, value);
 		}
 	}
 
@@ -88,7 +101,7 @@ public class PolygonROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerHeightProperty, value);
+			SetCurrentValue(ContainerHeightProperty, value);
 		}
 	}
 
@@ -100,7 +113,7 @@ public class PolygonROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(PolygonPointsProperty, value);
+			SetCurrentValue(PolygonPointsProperty, value);
 		}
 	}
 
@@ -112,7 +125,7 @@ public class PolygonROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(PointsProperty, value);
+			SetCurrentValue(PointsProperty, value);
 		}
 	}
 
@@ -279,170 +292,94 @@ public class PolygonROI : ROIControlBase
 		ROISubstitute = null;
 	}
 
-	private static void OnPolygonPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		PolygonROI polygonROI = d as PolygonROI;
-		if (e.OldValue != null)
-		{
-			CollectionChangedEventManager.RemoveHandler(e.OldValue as INotifyCollectionChanged, polygonROI.PolygonPoints_CollectionChanged);
-		}
-		if (e.NewValue is ObservableCollection<Point> observableCollection)
-		{
-			if (observableCollection.Count < 3)
-			{
-				throw new ArgumentException("PolygonPoints Invalid");
-			}
-			polygonROI.ChangeContainerSize();
-			polygonROI.ChangeContainerPosition();
-			polygonROI.Points = new PointCollection(observableCollection);
-			CollectionChangedEventManager.AddHandler(observableCollection, polygonROI.PolygonPoints_CollectionChanged);
-		}
-	}
-
-	private void PolygonPoints_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-	{
-		ChangeContainerSize();
-		ChangeContainerPosition();
-		NotifyCollectionChangedAction action = e.Action;
-		if (action != NotifyCollectionChangedAction.Replace)
-		{
-			return;
-		}
-		for (int i = 0; i < e.NewItems.Count; i++)
-		{
-			int num = Points.Select((Point p) => p.GetHashCode()).ToList().IndexOf(e.OldItems[i].GetHashCode());
-			if (num >= 0)
-			{
-				Points[num] = (Point)e.NewItems[i];
-			}
-		}
-		Rects?.CalculateSize();
-	}
-
-	public override void OnApplyTemplate()
-	{
-		base.OnApplyTemplate();
-		move = Template.FindName("move", this) as Grid;
-		move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
-		Rects = Template.FindName("Rects", this) as MoveAreaPage;
-		Rects.MouseLeftButtonDown += Move_MouseLeftButtonDown;
-		mPolygon = Template.FindName("mPolygon", this) as Polygon;
-		mPolygon.MouseLeftButtonDown += Move_MouseLeftButtonDown;
-		parent = this.GetParent<ImageViewItemsPage>();
-	}
-
-	private void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
-		clickPoint = e.GetPosition(parent);
-		this.GetParent<ListViewItem>().RaiseEvent(e);
-		frameworkElement.CaptureMouse();
-		this.GetParent<ImageViewBox>().IsDragROI = true;
-		frameworkElement.MouseMove += Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
-		e.Handled = true;
-	}
-
-	private void MoveStep(Vector vector)
-	{
-		for (int i = 0; i < PolygonPoints.Count; i++)
-		{
-			ChangePoint(i, vector);
-		}
-		ChangeContainerPosition();
-		mPolygon.InvalidateMeasure();
-		mPolygon.InvalidateVisual();
-		for (int j = 0; j < PolygonPoints.Count; j++)
-		{
-			Points[j] = PolygonPoints[j];
-		}
-		Rects.InvalidateMeasure();
-	}
-
-	private void Move_MouseMove(object sender, MouseEventArgs e)
-	{
-		if (e.LeftButton != MouseButtonState.Pressed)
-		{
-			return;
-		}
-		_isMove = true;
-		FrameworkElement frameworkElement = sender as FrameworkElement;
-		Point position = e.GetPosition(parent);
-		Vector vector = (position - clickPoint) / ControlToImageRadio;
-		string name = frameworkElement.Name;
-		if (!(name == "mPolygon"))
-		{
-			if (name == "Rects")
-			{
-				int selectedIndex = Rects.SelectedIndex;
-				ChangePoint(selectedIndex, vector);
-				clickPoint = position;
-			}
-		}
-		else
-		{
-			MoveStep(vector);
-			clickPoint = position;
-		}
-	}
-
-	private void ChangePoint(int index, Vector offSet)
-	{
-		try
-		{
-			double x = PolygonPoints[index].X + offSet.X;
-			double y = PolygonPoints[index].Y + offSet.Y;
-			PolygonPoints[index] = new Point(x, y);
-		}
-		catch (Exception ex)
-		{
-			Trace.WriteLine(ex.StackTrace);
-			Trace.WriteLine((DataContext == null) ? "数据源不在" : "数据源在");
-			if (DataContext != null)
-			{
-				ImageViewBox imageViewBox = this.GetParent<ImageViewBox>();
-				Trace.WriteLine((imageViewBox == null) ? "父控件不在" : "父控件在");
-				IList rOIList;
-				if (imageViewBox != null && (rOIList = imageViewBox.ROIList) != null && rOIList.Count > 0)
-				{
-					for (int i = 0; i < rOIList.Count; i++)
-					{
-						if (rOIList[i] is IList list)
-						{
-							Trace.WriteLine((!list.Contains(this)) ? "数据不在" : "数据在");
-						}
-					}
-				}
-			}
-			throw ex;
-		}
-	}
-
-	private void ChangePosition(int index)
-	{
-		double x = PolygonPoints[index].X;
-		double y = PolygonPoints[index].Y;
-		mPolygon.Points[index] = new Point(x, y);
-		ChangeContainerSize();
-		ChangeContainerPosition();
-		mPolygon.InvalidateMeasure();
-		mPolygon.InvalidateVisual();
-		Rects.InvalidateMeasure();
-	}
-
-	private void Move_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
-		frameworkElement.MouseMove -= Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-		frameworkElement.ReleaseMouseCapture();
-		if (_isMove)
-		{
-			NotifyROIParamChanged();
-			_isMove = false;
-		}
-		AfterMouseUp();
-	}
+    private static void OnPolygonPointsChanged(DependencyObject d,DependencyPropertyChangedEventArgs e)
+    {
+        var roi=(PolygonROI)d;roi.CancelInteraction();roi._topology++;
+        if(e.OldValue is INotifyCollectionChanged old)CollectionChangedEventManager.RemoveHandler(old,roi.PolygonPoints_CollectionChanged);
+        if(e.NewValue is INotifyCollectionChanged next)CollectionChangedEventManager.AddHandler(next,roi.PolygonPoints_CollectionChanged);
+        roi.RefreshGeometryLayout();
+    }
+    private void PolygonPoints_CollectionChanged(object? sender,NotifyCollectionChangedEventArgs e)
+    {
+        if(!ReferenceEquals(sender,PolygonPoints))return;
+        if(e.Action!=NotifyCollectionChangedAction.Replace){_topology++;CancelInteraction();}
+        // Ordered snapshot, including duplicate points. Never identify a vertex by its value/hash.
+        RefreshGeometryLayout();
+    }
+    public void RefreshGeometryLayout()
+    {
+        var snapshot=PolygonPoints?.ToArray()??Array.Empty<Point>();
+        var source=PolygonPoints;var topology=_topology;var context=DataContext;
+        Points=new PointCollection(snapshot);
+        if(!ReferenceEquals(source,PolygonPoints)||topology!=_topology||!ReferenceEquals(context,DataContext))return;
+        ChangeContainerSize();ChangeContainerPosition();Rects?.CalculateSize();
+    }
+    public override void OnApplyTemplate()
+    {
+        CancelInteraction();
+        if(move is not null)move.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
+        if(Rects is not null)Rects.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
+        if(mPolygon is not null)mPolygon.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
+        base.OnApplyTemplate();
+        move=GetTemplateChild("move") as Grid;Rects=GetTemplateChild("Rects") as MoveAreaPage;mPolygon=GetTemplateChild("mPolygon") as Polygon;
+        if(move is not null)move.MouseLeftButtonDown+=Move_MouseLeftButtonDown;
+        if(Rects is not null)Rects.MouseLeftButtonDown+=Move_MouseLeftButtonDown;
+        if(mPolygon is not null)mPolygon.MouseLeftButtonDown+=Move_MouseLeftButtonDown;
+        parent=this.GetParent<ImageViewItemsPage>();RefreshGeometryLayout();
+    }
+    private void Move_MouseLeftButtonDown(object sender,MouseButtonEventArgs e)
+    {
+        if(_handle is not null||sender is not FrameworkElement handle||parent is null||PolygonPoints is null||!IsEnabled||!IsHitTestVisible)return;
+        var points=PolygonPoints;var topology=_topology;var index=ReferenceEquals(handle,Rects)?Rects.SelectedIndex:-1;
+        if(ReferenceEquals(handle,Rects)&&(index<0||index>=points.Count))return;
+        clickPoint=e.GetPosition(parent);this.GetParent<ListViewItem>()?.RaiseEvent(e);
+        if(!IsLoaded||!ReferenceEquals(points,PolygonPoints)||topology!=_topology)return;
+        _handle=handle;_gesturePoints=points;_gestureTopology=topology;_vertex=index;
+        handle.MouseMove+=Move_MouseMove;handle.MouseLeftButtonUp+=Move_MouseLeftButtonUp;
+        if(!handle.CaptureMouse()){CancelInteraction();return;}
+        if(!Current(handle)){CancelInteraction();return;}
+        if(this.GetParent<ImageViewBox>() is {} image)image.IsDragROI=true;
+        e.Handled=true;
+    }
+    private bool Current(FrameworkElement handle)=>ReferenceEquals(_handle,handle)&&ReferenceEquals(_gesturePoints,PolygonPoints)&&_gestureTopology==_topology&&IsLoaded&&ReferenceEquals(Mouse.Captured,handle);
+    private bool MoveStep(Vector vector)
+    {
+        var points=PolygonPoints;var topology=_topology;
+        var context=DataContext;
+        if(points is null)return false;
+        for(var index=0;index<points.Count;index++)
+        {
+            if(!ReferenceEquals(context,DataContext)||!ReferenceEquals(points,PolygonPoints)||topology!=_topology)return false;
+            points[index]=points[index]+vector;
+        }
+        if(!ReferenceEquals(context,DataContext)||!ReferenceEquals(points,PolygonPoints)||topology!=_topology)return false;
+        RefreshGeometryLayout();return true;
+    }
+    private void Move_MouseMove(object sender,MouseEventArgs e)
+    {
+        if(sender is not FrameworkElement handle||!Current(handle))return;
+        if(e.LeftButton!=MouseButtonState.Pressed){CancelInteraction();return;}
+        if(!double.IsFinite(ControlToImageRadio)||ControlToImageRadio<=0)return;
+        var position=e.GetPosition(parent);var vector=(position-clickPoint)/ControlToImageRadio;
+        _isMove=true;
+        if(_vertex>=0){var points=_gesturePoints!;if(_vertex>=points.Count){CancelInteraction();return;}points[_vertex]=points[_vertex]+vector;}
+        else MoveStep(vector);
+        if(Current(handle))clickPoint=position;
+    }
+    private void Move_MouseLeftButtonUp(object sender,MouseButtonEventArgs e)
+    {
+        if(sender is not FrameworkElement handle||!Current(handle))return;
+        var changed=_isMove;var context=DataContext;var points=PolygonPoints;var topology=_topology;
+        try{CancelInteraction();if(changed&&IsLoaded&&IsEnabled&&IsHitTestVisible&&ReferenceEquals(context,DataContext)&&ReferenceEquals(points,PolygonPoints)&&topology==_topology)NotifyROIParamChanged();}
+        finally{AfterMouseUp();}
+    }
+    public void CancelInteraction()
+    {
+        var handle=_handle;_handle=null;_gesturePoints=null;_vertex=-1;_isMove=false;
+        if(handle is not null)
+        {handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();}
+        if(this.GetParent<ImageViewBox>() is {} image)image.IsDragROI=false;
+    }
 
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
@@ -465,7 +402,7 @@ public class PolygonROI : ROIControlBase
 
 	private void ChangeContainerSize()
 	{
-		if (PolygonPoints == null)
+		if (PolygonPoints == null || PolygonPoints.Count == 0)
 		{
 			ContainerWidth = 0.0;
 			ContainerHeight = 0.0;
@@ -481,35 +418,19 @@ public class PolygonROI : ROIControlBase
 
 	private void ChangeContainerPosition()
 	{
-		if (PolygonPoints == null)
+		if (PolygonPoints == null || PolygonPoints.Count == 0)
 		{
-			ContainerPosition = default;
+			SetCurrentValue(ContainerPositionProperty, default(Point));
 			return;
 		}
 		double x = (PolygonPoints.Min((Point p) => p.X) + 0.0) * ControlToImageRadio;
 		double y = (PolygonPoints.Min((Point p) => p.Y) + 0.0) * ControlToImageRadio;
-		ContainerPosition = new Point(x, y);
+		SetCurrentValue(ContainerPositionProperty, new Point(x, y));
 	}
 
-	protected override bool Move(ROIMoveDirection rOIMoveDirection)
-	{
-		switch (rOIMoveDirection)
-		{
-		case ROIMoveDirection.Left:
-			MoveStep(new Vector(-1.0, 0.0));
-			break;
-		case ROIMoveDirection.Right:
-			MoveStep(new Vector(1.0, 0.0));
-			break;
-		case ROIMoveDirection.Up:
-			MoveStep(new Vector(0.0, -1.0));
-			break;
-		case ROIMoveDirection.Down:
-			MoveStep(new Vector(0.0, 1.0));
-			break;
-		default:
-			return false;
-		}
-		return true;
-	}
+    protected override bool Move(ROIMoveDirection direction)=>direction switch
+    {
+        ROIMoveDirection.Left=>MoveStep(new(-1,0)),ROIMoveDirection.Right=>MoveStep(new(1,0)),
+        ROIMoveDirection.Up=>MoveStep(new(0,-1)),ROIMoveDirection.Down=>MoveStep(new(0,1)),_=>false
+    };
 }

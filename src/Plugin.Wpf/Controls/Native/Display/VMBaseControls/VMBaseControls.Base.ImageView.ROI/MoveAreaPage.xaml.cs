@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+﻿using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
@@ -117,7 +117,7 @@ public partial class MoveAreaPage : ItemsControl, IComponentConnector
 
 	internal void CalculateSize()
 	{
-		if (ItemsSource != null)
+		if (ItemsSource != null && ItemsSource.OfType<Point>().Any())
 		{
 			IEnumerable<Point> source = ItemsSource.OfType<Point>();
 			OriPoint = new Point(source.Min((Point p) => p.X), source.Min((Point p) => p.Y));
@@ -177,8 +177,7 @@ public partial class MoveAreaPage : ItemsControl, IComponentConnector
 	{
 		if (ItemsSource != null)
 		{
-			SelectedIndex = (from p in ItemsSource.OfType<Point>()
-				select p.GetHashCode()).ToList().IndexOf((sender as FrameworkElement).DataContext.GetHashCode());
+			SelectedIndex = ItemContainerGenerator.IndexFromContainer(sender as DependencyObject);
 		}
 	}
 

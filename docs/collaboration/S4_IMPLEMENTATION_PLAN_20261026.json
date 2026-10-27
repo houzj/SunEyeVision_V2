@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-28第一阶段继续：共同基线6c381072；本批图形/图像模式、字段ID原EnumerationG及父条件AND组合、隐藏引用提交生命周期。UI003/全量001零错，八轨282组与正式EXE通过；完整C09/阶段一及真实VS/VM人工未完成，Blob重组未准入。",
+  "current": "2026-10-28第一阶段继续：基线b56e43d4，本批四方式原Radio及矩形五/圆环六ButtonSelecter引用组合、未完成编辑/捕获分离；最终八轨287组及正式EXE通过。常量/索引/Float32来源组合、完整C09、实际VS/VM同态及阶段一仍未完成，Blob重组未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -7618,6 +7618,16 @@
       "构建与自动验证": "UI003零错6206警告59.34秒；全量Release001零错6573警告82.11秒。Window149=120、Design046=81、Field081=31、RuntimeEditor063=10、FullChain121=8、Components203=9、ThemeStartup006=1、Resources015=22，共282组。正式EXE014 exit0/22工具15分类；检查点O06_IMAGE_MODE_CHECKPOINT_20261028.json核13源码增量（含用户XAML）、792发布项、107加载记录。",
       "失败与证据边界": "RuntimeEditor061/062两次失败保留：重绑后停用户页索引2及阈值页，却操作隐藏图像选择器；修测试真实选页/可见与实际解绑断言，063全过。产品不放松隐藏拒写。窗口与独立设计PNG已查看，不代真实VS设计器/VM同态/物理指针/用户验收。",
       "下一批与缺口": "完整四继承方式另接原RadioSelecter3，创建二态不可混作四态；整体ROIBOX/ROIANNULUS与矩形五/圆环六ButtonSelecter来源分支，解决初次来源配置的可编辑中间态及同快照解析，不默认选首源、不套屏蔽侧。原删除/粘贴在集合变更前接宿主操作，不能让原菜单直接Remove只读快照；撤销修订递增。位姿原生单位/公式仍未证，不伪造等价。完整阶段一及Blob阶段二保持未完成。"
+    },
+    "fourWayReferenceCandidate": {
+      "范围与原证": "Group.xml四方式RadioSelecter3五槽填4项，-1未选；5/6独立ButtonSelecter不是数值滑条。原静态空来源/常量/float与int索引行为及SHA见O06_FOUR_WAY_SOURCE_AUDIT_20261028.json；本批未导入新视觉原件，160唯一原来源SHA复核。",
+      "组装": "保创建绘制/继承二态，另接矩形整体/矩形参数/圆环整体/圆环参数四态；父图形+继承AND分支条件。纯Reference数值字段显式走原ReferencePresenter、不套Slider、不另加本方清除按钮。Options声明可选未选值，空末槽不伪造值。样例共19字段，样例起始四方式0仅为示例状态，不是工具默认值来源。",
+      "编辑与捕获": "允许空继承及清空为编辑状态，缺任一活动来源不生成该组图形、不回落本地、捕获给具体缺项。其他屏蔽组保持独立。本方夹具以固定只读来源记录完成当前Root同帧解析；非法身份/跨帧/完整非法几何整组拒绝。正式工具后续必须复用ParameterBindingService及同一run/published快照，不能用样例字典代替执行绑定。",
+      "几何与生命周期": "整体与派生两参数族各稳定ID，派生只读；按规范字段构矩形/annulus，非零start与end=start+sweep有数值断言。矩形角为现行degrees、环角radians，只是本方合同，不声称VM native单位。保本地对象及选择记忆，按根revision一次刷新；观察异常聚合仍更新显隐与选择，旧绘制/帧不复活。",
+      "验证": "最终UI003零错6216警告64.15秒，全量Release001零错6559警告81.97秒。Window153=123、Design047=83、Field082=31、RuntimeEditor064=10、FullChain122=8、Components204=9、ThemeStartup007=1、Resources016=22，共287组；正式EXE015 exit0/22工具15分类。5源增量含用户XAML、793发布项、107加载记录核对；O06_FOUR_WAY_CHECKPOINT_20261028.json。",
+      "失败与视觉边界": "Window151全回归122过1败：测试API显隐后未Pump到真实Loaded即触发圆环Checked。补Loaded/Visible断言及SetCurrentValue保绑定，152定向3组过，153全123过；产品门禁未放松。实际窗口与独立XAML PNG已看；窗口重绘态四选文字较淡，需进一步同态核主题/文字继承，不能计视觉通过。真实VS/VM同态、物理指针及用户本批未签。",
+      "下一批必要缺口": "同原文本槽Constant/Reference/Unset、序列[]到常量/动态索引及严格投影Float32来源/Int32索引尚未覆盖，本批标量Float64夹具不是完整VM float过滤。统一一次provider返回Sources/Indices并迁现行所有消费者，不保混合候选兼容双轨；成员存储沿正式字段路径，索引按现合同先根再成员，禁止默认首项。",
+      "后续控件": "ROI菜单Delete/Copy/Paste须在只读集合变更前路由宿主，撤销修订递增。C13需原IText->PretreatTexts->IMultiText->TextShape，不用TextBlock替代；C14原10列DataGrid、500条增量及同帧选择仍缺组合。位姿公式/单位未证不伪造，Blob业务冻结，完整目标保持active。"
     }
   },
   "vmFrameworkArchitectureReference": {

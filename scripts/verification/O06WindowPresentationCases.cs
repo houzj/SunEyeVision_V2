@@ -1616,7 +1616,7 @@ internal static class S2DocumentEditingCases
    Require(sample.Session.Items.Count(x=>x.Group=="detect")==1&&sample.LocalItems.Count==count,"多本地对象被复制成多份继承来源");
    Require(sample.Fields.TrySetFields(Values(("detect.mode",0L)))&&sample.Session.Items.Count(x=>x.Group=="detect")==2,"切回本地集合丢失");Show(new TextBlock{Text="完成"});
   });
-  Test("整组继承原来源树双击与原单选接纳并拒绝错误帧和清除",()=>
+  Test("整组继承原来源树双击与原单选接纳，空态可编辑但不可捕获",()=>
   {
    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=800};Show(sample);
    var source=sample.Fields.Fields.Single(x=>x.FieldId=="detect.source");var mode=sample.Fields.Fields.Single(x=>x.FieldId=="detect.mode");
@@ -1642,12 +1642,13 @@ internal static class S2DocumentEditingCases
     leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});Pump();
     return popup.IsDropDownOpen||content.IsOpen;
    }
-   Require(Choose("detect-foreign")&&sample.Revision==0&&source.Setting is UnsetSetting&&source.HasInvalidText,"外帧来源未拒绝或强制关闭");
-   Require(!Choose("detect-source")&&sample.Revision==1&&source.Setting is ReferenceSetting r&&r.Reference.NodeId=="detect-source"&&!source.HasInvalidText,"原树合法来源未接纳");
    var inherit=Visuals<RadioButton>(mode.View).Single(x=>Equals(x.Content,"继承"));inherit.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
-   Require(sample.Revision==2&&sample.Session.Stamp.Revision==2&&!sample.Session.Items.Single(x=>x.Group=="detect").Enabled,"原单选没有接通继承根");
-   Require(Choose(null)&&sample.Revision==2&&source.Setting is ReferenceSetting&&source.HasInvalidText,"继承清除留下半根或丢来源");
-   Require(!Choose("detect-source")&&sample.Revision==2&&!source.HasInvalidText,"同值合法来源不能修复错误");
+   Require(sample.Revision==1&&!sample.Session.Items.Any(x=>x.Group=="detect")&&sample.Session.Items.Any(x=>x.Group=="mask")&&!sample.TryCapture(out _,out var missing)&&missing.Contains("detect.source"),"空继承态未接纳或回落本地几何/错误捕获");
+   Require(Choose("detect-foreign")&&sample.Revision==1&&source.Setting is UnsetSetting&&source.HasInvalidText,"外帧来源未拒绝或强制关闭");
+   Require(!Choose("detect-source")&&sample.Revision==2&&source.Setting is ReferenceSetting r&&r.Reference.NodeId=="detect-source"&&!source.HasInvalidText,"原树合法来源未接纳");
+   Require(!sample.Session.Items.Single(x=>x.Group=="detect").Enabled&&sample.TryCapture(out _,out _),"完整来源未投影或无法捕获");
+   Require(!Choose(null)&&sample.Revision==3&&source.Setting is UnsetSetting&&!sample.Session.Items.Any(x=>x.Group=="detect")&&!sample.TryCapture(out _,out _),"清除未成为明确的未完成编辑态");
+   Require(!Choose("detect-source")&&sample.Revision==4&&sample.TryCapture(out _,out _),"清除后来源不能修复");
    Show(new TextBlock{Text="完成"});
   });
   Test("整组来源空串清除拒绝不自动提交已有索引原文",()=>
@@ -2054,6 +2055,80 @@ internal static class S2DocumentEditingCases
      Require(rejected&&calls==0,"非法图像字段配置已执行来源函数");
     }
     var failed=false;try{using var fields=new DeclaredFieldsView(declaration,_=>{},parentConditions:new Dictionary<string,IReadOnlyList<FieldCondition>>{["value"]=new[]{new FieldCondition("missing",0L)}});}catch(ArgumentException){failed=true;}Require(failed,"未知父条件被静默接受");
+   });
+   Test("四方式原Radio进入未完成分支，五个ButtonSelecter同帧完整后才投影",()=>
+   {
+    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=1100};Show(sample);
+    var local=sample.LocalItems.ToArray();var fields=sample.Fields;
+    var creation=fields.Fields.Single(field=>field.FieldId=="detect.mode");
+    Visuals<RadioButton>(creation.View).Single(radio=>Equals(radio.Content,"继承")).IsChecked=true;Pump();
+    var way=fields.Fields.Single(field=>field.FieldId=="detect.inherit-way");var radios=Visuals<RadioButton>(way.View).ToArray();
+    Require(radios.Length==5&&radios.Count(radio=>radio.IsVisible)==4,"原四方式没有五槽填四项/空末槽");
+    radios[1].SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
+    Require(((ConstantSetting)way.Setting).Value.Equals(1L)&&!sample.TryCapture(out _,out var missing)&&missing.Contains("detect.rect.x")&&!sample.Session.Items.Any(item=>item.Group=="detect"),"原Checked未进入可编辑未完成分支");
+    var ids=new[]{"detect.rect.x","detect.rect.y","detect.rect.width","detect.rect.height","detect.rect.angle"};
+    foreach(var id in ids)
+    {
+     var field=fields.Fields.Single(item=>item.FieldId==id);
+     Require(field.View.IsVisible&&Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Any(popup=>popup.Name=="rt")&&!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(field.View).Any(),"参数继承槽误用数值条或未显示："+id);
+     if(id==ids[0])
+     {
+      var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+      var content=(Popup)popup.Template.FindName("PART_Popup",popup);var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actualTree=(TreeView)tree.FindName("treeView");
+      var group=(TreeViewItem)actualTree.ItemContainerGenerator.ContainerFromIndex(1);group.IsExpanded=true;group.UpdateLayout();Pump();
+      var leaf=(TreeViewItem)group.ItemContainerGenerator.ContainerFromIndex(0);leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});Pump();
+      Require(field.Setting is ReferenceSetting selected&&selected.Reference.NodeId==sample.ComponentReference(id).NodeId,"原分量来源树双击未接纳");
+     }
+     else Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{id,new ReferenceSetting(sample.ComponentReference(id))}}),"分量来源拒绝："+field.Error);
+     if(id!=ids[^1])Require(!sample.Session.Items.Any(item=>item.Group=="detect")&&!sample.TryCapture(out _,out _),"未齐分量产生半组几何");
+    }
+    Require(sample.TryCapture(out var captured,out _)&&captured!.Stamp==sample.Session.Stamp,"完整分量不能同修订捕获");
+    var expected=local.Single(item=>item.Group=="detect").Geometry;var actual=captured!.Items.Single(item=>item.Group=="detect").Geometry;
+    Require(RoiGeometryEditing.Center(actual)==RoiGeometryEditing.Center(expected)&&new[]{"width","height","angle-degrees"}.All(key=>actual.Get<double>(key)==expected.Get<double>(key)),"矩形五分量输出字段/单位映射错误");
+    var inherited=sample.Session.Items.Single(item=>item.Group=="detect");var idBefore=inherited.Id;
+    Require(!inherited.Enabled&&inherited is NativeBoxRoiProjection&&sample.LocalItems.SequenceEqual(local),"参数继承错误可编辑或污染本地");
+    var revision=sample.Revision;
+    Require(!fields.TrySetFields(new Dictionary<string,ParameterSetting>{{ids[0],new ReferenceSetting(sample.ComponentReference(ids[0],true))}})&&sample.Revision==revision&&sample.Session.Items.Single(item=>item.Group=="detect").Id==idBefore,"跨帧分量被接纳或破坏稳定ID");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{ids[0],new ReferenceSetting(sample.ComponentReference(ids[0]))}}),"同值修复失败");
+    radios[0].IsChecked=true;Pump();Require(!sample.Session.Items.Any(item=>item.Group=="detect")&&!sample.TryCapture(out _,out _),"空整体来源回落到分量或本地");
+    radios[1].IsChecked=true;Pump();Require(sample.Session.Items.Single(item=>item.Group=="detect").Id==idBefore,"切回参数分支丢稳定身份");
+    CaptureInline(sample,"native-four-way-rectangle-components.png");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(0L)}})&&sample.Session.CurROIData?.Id==local.Single(item=>item.Group=="detect").Id,"返回本地未恢复稳定对象选中");
+   });
+   Test("四方式圆环整体及六分量、未选择值与清除恢复保持分支状态",()=>
+   {
+    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=1100};Show(sample);var fields=sample.Fields;
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)}}),"继承模式不可配置");
+    Pump();var way=fields.Fields.Single(field=>field.FieldId=="detect.inherit-way");var areaRadio=Visuals<RadioButton>(way.View).ElementAt(2);
+    Require(areaRadio.IsLoaded&&areaRadio.IsVisible,"圆环原项尚未完成布局加载");areaRadio.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
+    Require(((ConstantSetting)way.Setting).Value.Equals(2L),"原圆环整体Checked未接纳");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.annulus-source",new ReferenceSetting(sample.DetectionAnnulusReference)}})&&sample.TryCapture(out _,out _),"整体圆环不能捕获");
+    var whole=sample.Session.Items.Single(item=>item.Group=="detect");Require(whole is NativeInheritedAnnulusProjection,"整体部分圆环未走原只读显示链");
+    Require(sample.TryCapture(out var wholeSnapshot,out _),"整体圆环捕获失败");var expected=wholeSnapshot!.Items.Single(item=>item.Group=="detect").Geometry;
+    Visuals<RadioButton>(way.View).ElementAt(3).SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();Require(((ConstantSetting)way.Setting).Value.Equals(3L)&&!sample.TryCapture(out _,out _),"原圆环参数Checked未进入未完成分支");
+    var changes=new Dictionary<string,ParameterSetting>();
+    var ids=new[]{"detect.annulus.x","detect.annulus.y","detect.annulus.inner","detect.annulus.outer","detect.annulus.start","detect.annulus.sweep"};
+    foreach(var id in ids)changes[id]=new ReferenceSetting(sample.ComponentReference(id));
+    var before=sample.Revision;Require(fields.TrySetFields(changes)&&sample.Revision==before+1&&sample.TryCapture(out _,out _),"六分量未一次完整接纳");
+    var components=sample.Session.Items.Single(item=>item.Group=="detect");Require(sample.TryCapture(out var snapshot,out _),"完整圆环捕获失败");var geometry=snapshot!.Items.Single(item=>item.Group=="detect").Geometry;
+    Require(!components.Enabled&&geometry.Get<string>("kind")=="annulus"&&components.Id!=whole.Id,"两方式混用投影身份");
+    Require(RoiGeometryEditing.Center(geometry)==RoiGeometryEditing.Center(expected)&&new[]{"inner-radius","outer-radius","start-radians","end-radians"}.All(key=>Math.Abs(geometry.Get<double>(key)-expected.Get<double>(key))<1e-12)&&Math.Abs(geometry.Get<double>("start-radians"))>1,"圆环六分量或非零起角+sweep映射错误");
+    before=sample.Revision;
+    Require(!fields.TrySetFields(new Dictionary<string,ParameterSetting>{{ids[2],new ReferenceSetting(sample.ComponentReference(ids[3]))},{ids[3],new ReferenceSetting(sample.ComponentReference(ids[2]))}})&&sample.Revision==before,"非法完整半径组未原子拒绝");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{ids[2],new ReferenceSetting(sample.ComponentReference(ids[2]))},{ids[3],new ReferenceSetting(sample.ComponentReference(ids[3]))}}),"合法半径不能修复");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.inherit-way",new ConstantSetting(-1L)}})&&!sample.TryCapture(out _,out var error)&&error.Contains("继承方式")&&!sample.Session.Items.Any(item=>item.Group=="detect"),"原未选择值未作为中间态或错误捕获");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.inherit-way",new ConstantSetting(3L)},{ids[0],new UnsetSetting()}})&&!sample.TryCapture(out _,out _),"清除分量未成为未完成态");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{ids[0],new ReferenceSetting(sample.ComponentReference(ids[0]))}})&&sample.Session.Items.Single(item=>item.Group=="detect").Id==components.Id,"分量恢复丢稳定ID");
+    CaptureInline(sample,"native-four-way-annulus-components.png");
+   });
+   Test("四方式接纳后观察异常仍安装显隐并能继续当前根",()=>
+   {
+    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var local=sample.Session.CurROIData!;
+    Action broken=()=>throw new InvalidOperationException("来源样例观察异常");sample.Session.Changed+=broken;var threw=false;
+    try{sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}});}catch(InvalidOperationException error){threw=error.Message.Contains("来源样例观察异常");}
+    finally{sample.Session.Changed-=broken;}
+    Require(threw&&sample.Revision==1&&sample.Session.Stamp.Revision==1&&sample.Session.Items.Count==0&&sample.Scene.ParameterHost.Visibility==Visibility.Collapsed,"观察异常导致已接纳模式与显隐分裂");
+    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(0L)}})&&sample.Session.CurROIData?.Id==local.Id&&sample.Scene.ParameterHost.Visibility==Visibility.Visible,"观察异常后不能恢复本地选中");
    });
    Console.WriteLine($"O06独立窗口检查：{passed}组通过，{failed}组失败。仅自动交互，不代人工外观验收。");return failed==0?0:1;
   }

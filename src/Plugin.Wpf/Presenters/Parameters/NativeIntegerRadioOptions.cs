@@ -9,14 +9,16 @@ public sealed class NativeIntegerRadioOptions
 {
     public IReadOnlyList<NativeIntegerRadioChoice> Choices {get;}
     public bool UseFiveSlotTemplate {get;}
-    public NativeIntegerRadioOptions(IEnumerable<NativeIntegerRadioChoice> choices,bool useFiveSlotTemplate=false)
+    public int? UnselectedValue {get;}
+    public NativeIntegerRadioOptions(IEnumerable<NativeIntegerRadioChoice> choices,bool useFiveSlotTemplate=false,int? unselectedValue=null)
     {
         ArgumentNullException.ThrowIfNull(choices);
         var values=choices.ToArray();
         if(values.Length==0||values.Length>(useFiveSlotTemplate?5:2))throw new ArgumentException("原整数单选模板的选项数量超出槽位。",nameof(choices));
         if(values.Any(x=>x is null||string.IsNullOrWhiteSpace(x.Label))||values.Select(x=>x.Value).Distinct().Count()!=values.Length)
             throw new ArgumentException("整数单选需要非空标签和唯一值。",nameof(choices));
-        Choices=Array.AsReadOnly(values);UseFiveSlotTemplate=useFiveSlotTemplate;
+        if(unselectedValue is {} empty&&values.Any(value=>value.Value==empty))throw new ArgumentException("未选择值不能占用可见选项。");
+        Choices=Array.AsReadOnly(values);UseFiveSlotTemplate=useFiveSlotTemplate;UnselectedValue=unselectedValue;
     }
     internal void ValidatePort(Port port)
     {
@@ -25,6 +27,6 @@ public sealed class NativeIntegerRadioOptions
             throw new ArgumentException("原整数单选要求必填、常量编辑的Int64字段。");
     }
     internal string? Validate(ParameterSetting setting)=>setting is ConstantSetting{Value:long value}
-        &&value>=int.MinValue&&value<=int.MaxValue&&Choices.Any(x=>x.Value==value)
+        &&value>=int.MinValue&&value<=int.MaxValue&&(Choices.Any(x=>x.Value==value)||UnselectedValue==value)
             ?null:"当前整数值不在声明的单选项中，请重新选择。";
 }

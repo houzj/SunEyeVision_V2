@@ -71,7 +71,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
+          "sha256": "d41dae791cb79e608bf94c26a45cecff2222811bfcc4321296043e221cc5a570"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
@@ -280,7 +280,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
+          "sha256": "d41dae791cb79e608bf94c26a45cecff2222811bfcc4321296043e221cc5a570"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
@@ -524,7 +524,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
+          "sha256": "d41dae791cb79e608bf94c26a45cecff2222811bfcc4321296043e221cc5a570"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -610,7 +610,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "2cd7ab4aa57d623af4be4ecbf3f068483605c68bb5e48b436b99c4a189209f7e"
+          "sha256": "e2e3f7eec5c9d1ef684255b9221cb477fc23a69e8aa997f71f5a6b8f8b128734"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -691,7 +691,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
+          "sha256": "d41dae791cb79e608bf94c26a45cecff2222811bfcc4321296043e221cc5a570"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -765,7 +765,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
+          "sha256": "d41dae791cb79e608bf94c26a45cecff2222811bfcc4321296043e221cc5a570"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -1085,6 +1085,10 @@
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
           "sha256": "fc3fa842cf4bbb0c54874b19c8157934b3af6b26148952e736138c68e2461b31"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
+          "sha256": "2f58fb4c21407f11042f86e736bb2ce579725f00fc72cb86f03b2f4d4a068bf7"
         }
       ],
       "dependencyCatalogRefs": [
@@ -1128,7 +1132,8 @@
         "runtime": "WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；实际正式EXE exit0/22工具。",
         "visual": "实际原窗口PNG已查看；新增无Application/宿主原窗构造与正式资源检查通过；真实VS及VM同态用户验收仍缺，不代签。",
         "evidence": "docs/collaboration/evidence/O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json"
-      }
+      },
+      "fourWayReferenceComposition20261028": "原四选/五槽、未选-1及5/6独立ButtonSelecter；允许缺源编辑，显式捕获只核活动族，完整后一次同根投影。Frame/非法半径拒绝、不回落本地、两派生稳定ID、本地选中恢复及观察异常聚合。Window153/Design047与八轨287组通过。尚缺原VmConstantIO内联常量、Float32/序列/动态索引完整组合，示例Float64是本方夹具；不计完整C09、实际VM同态或用户验收。"
     },
     {
       "id": "C05.original-number-composition",
@@ -2805,7 +2810,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioOptions.cs",
-          "sha256": "7ffa0ba9f26e786a06a166a7861b047b6d3c287a418b4dbcf62338490a9fe8dd"
+          "sha256": "af7178cd977c05c7a775bf7e7838db77f9fece570d70fceddb7cc0622e8f9a97"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioPresenter.cs",
@@ -2813,7 +2818,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
+          "sha256": "d41dae791cb79e608bf94c26a45cecff2222811bfcc4321296043e221cc5a570"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -2877,7 +2882,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "2cd7ab4aa57d623af4be4ecbf3f068483605c68bb5e48b436b99c4a189209f7e"
+          "sha256": "e2e3f7eec5c9d1ef684255b9221cb477fc23a69e8aa997f71f5a6b8f8b128734"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -2886,6 +2891,10 @@
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
           "sha256": "4c1ec660b02330e32ac1d080c48cb15d6c83ac49dc38d9d60c7b7c262fd7741b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
+          "sha256": "2f58fb4c21407f11042f86e736bb2ce579725f00fc72cb86f03b2f4d4a068bf7"
         }
       ],
       "dependencyCatalogRefs": [
@@ -2926,7 +2935,8 @@
         ],
         "validation": "Window142=109; Field079=31; Design041=74; RuntimeEditor059=10; FullChain119=8; Components201=9; ThemeStartup004=1; Resources013=22; formal EXE012 exit0/22 tools/15 categories"
       },
-      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。"
+      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。",
+      "fourWayReferenceComposition20261028": "原四选/五槽、未选-1及5/6独立ButtonSelecter；允许缺源编辑，显式捕获只核活动族，完整后一次同根投影。Frame/非法半径拒绝、不回落本地、两派生稳定ID、本地选中恢复及观察异常聚合。Window153/Design047与八轨287组通过。尚缺原VmConstantIO内联常量、Float32/序列/动态索引完整组合，示例Float64是本方夹具；不计完整C09、实际VM同态或用户验收。"
     },
     {
       "id": "C09.original-inherited-annulus-display",
@@ -3105,7 +3115,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "2cd7ab4aa57d623af4be4ecbf3f068483605c68bb5e48b436b99c4a189209f7e"
+          "sha256": "e2e3f7eec5c9d1ef684255b9221cb477fc23a69e8aa997f71f5a6b8f8b128734"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -3118,6 +3128,10 @@
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
           "sha256": "4c1ec660b02330e32ac1d080c48cb15d6c83ac49dc38d9d60c7b7c262fd7741b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
+          "sha256": "2f58fb4c21407f11042f86e736bb2ce579725f00fc72cb86f03b2f4d4a068bf7"
         }
       ],
       "dependencyCatalogRefs": [
@@ -3142,7 +3156,8 @@
         "Native result display angle=degree does not establish input contract unit",
         "Complete stage1 and real VS/VM/manual acceptance remain open"
       ],
-      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。"
+      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。",
+      "fourWayReferenceComposition20261028": "原四选/五槽、未选-1及5/6独立ButtonSelecter；允许缺源编辑，显式捕获只核活动族，完整后一次同根投影。Frame/非法半径拒绝、不回落本地、两派生稳定ID、本地选中恢复及观察异常聚合。Window153/Design047与八轨287组通过。尚缺原VmConstantIO内联常量、Float32/序列/动态索引完整组合，示例Float64是本方夹具；不计完整C09、实际VM同态或用户验收。"
     }
   ]
 }

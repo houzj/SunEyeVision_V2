@@ -19,7 +19,7 @@ public partial class NativeRoiInheritancePreview : UserControl,IDisposable
 }
 
 /// <summary>One preview-only owner for fields, local geometry and revision. No tool defaults or execution.</summary>
-public sealed class NativeRoiInheritanceSample : Grid,IDisposable
+public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
 {
     private sealed record Root(long Revision,IReadOnlyDictionary<string,ParameterSetting> Fields,IReadOnlyList<RoiEditItem> LocalItems);
     private sealed record SourceValue(Guid Id,string Node,string Group,RecordValue Geometry,ImageFrameAddress Frame);
@@ -27,6 +27,8 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
     private readonly Guid _scope=Guid.NewGuid();
     private readonly SourceValue[] _sources;
     private Root _root;
+    private RoiEditTarget? _lastLocalSelection;
+    private long _projectedRevision=-1;
     private bool _disposed;
     public DeclaredFieldsView Fields {get;}
     public NativeRoiScene Scene {get;}=new();
@@ -46,33 +48,35 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
             new KeyValuePair<string,ParameterSetting>(Mode(group),new ConstantSetting(0L)),
             new KeyValuePair<string,ParameterSetting>(Source(group),new UnsetSetting())})
             .Concat(new[]{new KeyValuePair<string,ParameterSetting>("area.mode",new ConstantSetting(0L)),
-                new KeyValuePair<string,ParameterSetting>("mask.image",new UnsetSetting())})),Array.AsReadOnly(items));
+                new KeyValuePair<string,ParameterSetting>("mask.image",new UnsetSetting())}).Concat(ComponentInitial())),Array.AsReadOnly(items));
         _sources=items.SelectMany(row=>new[]{new SourceValue(Guid.NewGuid(),row.Group+"-source",row.Group,row.Geometry,_image.Frame),
             new SourceValue(Guid.NewGuid(),row.Group+"-foreign",row.Group,row.Geometry,new(Guid.NewGuid(),"different-physical-frame"))}).ToArray();
         var partial=RoiGeometryEditing.Values(items.Single(row=>row.Group=="mask").Geometry);
         partial["start-radians"]=170*Math.PI/180;partial["end-radians"]=380*Math.PI/180;
         _sources=_sources.Append(new SourceValue(Guid.NewGuid(),"mask-partial","mask",RoiGeometryEditing.Checked(partial),_image.Frame)).ToArray();
+        _sources=_sources.Append(new SourceValue(Guid.NewGuid(),"detect-annulus-source","detect",RoiGeometryEditing.Checked(partial),_image.Frame)).ToArray();
+        InitializeComponentSources(items);
         Session=new(_image,Read,AcceptGeometry,()=>!_disposed,"detect",canDraw:group=>!_disposed&&GraphicMode&&Local(group));
         var declarations=groups.SelectMany((group,i)=>new[]{
             (new Port(Mode(group),DataType.Integer,EditModes:FieldEditModes.Constant),
              new FieldPresentation(Mode(group),group=="detect"?"ROI创建":"屏蔽区创建","来源组合",i*2,FieldEditorKind.Scalar),_root.Fields[Mode(group)]),
             (new Port(Source(group),RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
-             new FieldPresentation(Source(group),group=="detect"?"检测区域来源":"屏蔽区域来源","来源组合",i*2+1,FieldEditorKind.Record),_root.Fields[Source(group)])})
+             new FieldPresentation(Source(group),group=="detect"?"检测区域来源":"屏蔽区域来源","来源组合",i*2+1,FieldEditorKind.Record){Layout=new("来源组合","来源组合",VisibleWhen:group=="detect"?new("detect.inherit-way",0L):null)},_root.Fields[Source(group)])})
             .Concat(new[]{
                 (new Port("area.mode",DataType.Integer),new FieldPresentation("area.mode","ROI区域类型","来源组合",-2,FieldEditorKind.Scalar),_root.Fields["area.mode"]),
                 (new Port("mask.image",TypeRef.ResourceOf(ResourceKind.Image),Required:false,EditModes:FieldEditModes.Reference),
                     new FieldPresentation("mask.image","屏蔽图像","来源组合",-1,FieldEditorKind.Image){Layout=new("来源组合","来源组合",VisibleWhen:new("area.mode",1L))},_root.Fields["mask.image"])
-            }).ToArray();
+            }).Concat(ComponentDeclarations()).ToArray();
         var options=groups.ToDictionary(Mode,_=>new NativeIntegerRadioOptions(new[]{new NativeIntegerRadioChoice(0,"绘制"),new NativeIntegerRadioChoice(1,"继承")}),StringComparer.Ordinal);
         options.Add("area.mode",new(new[]{new NativeIntegerRadioChoice(0,"图形类型"),new NativeIntegerRadioChoice(1,"图像类型")}));
+        options.Add("detect.inherit-way",InheritanceOptions());
         try
         {
-            Fields=new(declarations,AcceptFields,new ReferenceFieldOptions(port=>_sources.Where(x=>Source(x.Group)==port.Id)
-                .Select(x=>new DeclaredReferenceCandidate(x.Node,x.Node,null,new Port("geometry",RoiDeclarations.Shape),Array.Empty<string>())).ToArray()),
+            Fields=new(declarations,AcceptFields,new ReferenceFieldOptions(Candidates),
                 integerRadios:options,validateComposition:ValidateFields,isCurrent:()=>!_disposed,
                 imageSources:new Dictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>{["mask.image"]=()=>new[]{
                     new DeclaredReferenceCandidate("同帧屏蔽图像","mask-image",null,new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),Array.Empty<string>())}},
-                parentConditions:groups.SelectMany(group=>new[]{Mode(group),Source(group)}).ToDictionary(id=>id,_=>(IReadOnlyList<FieldCondition>)new[]{new FieldCondition("area.mode",0L)},StringComparer.Ordinal));
+                parentConditions:ParentConditions());
             foreach(var field in Fields.Fields)field.Changed+=OnFieldsChanged;
             RowDefinitions.Add(new(){Height=GridLength.Auto});RowDefinitions.Add(new(){Height=new GridLength(1,GridUnitType.Star)});
             Fields.Width=380;Fields.HorizontalAlignment=HorizontalAlignment.Left;Children.Add(Fields);
@@ -88,11 +92,11 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
         =>new ReadOnlyDictionary<string,ParameterSetting>(values.ToDictionary(x=>x.Key,x=>DeclaredFieldState.CopySetting(x.Value),StringComparer.Ordinal));
     public OutputReference Reference(string group,bool foreignFrame=false)
     {
-        var value=_sources.Single(x=>x.Group==group&&x.Node.EndsWith(foreignFrame?"-foreign":"-source",StringComparison.Ordinal));
+        var value=_sources.Single(x=>x.Node==group+(foreignFrame?"-foreign":"-source"));
         return new(value.Node,"geometry",RoiDeclarations.Shape);
     }
     public OutputReference PartialAnnulusReference=>new("mask-partial","geometry",RoiDeclarations.Shape);
-    private SourceValue Resolve(string group,ReferenceSetting reference)
+    private SourceValue Resolve(string group,ReferenceSetting reference,string? expectedKind=null)
     {
         var value=_sources.SingleOrDefault(x=>x.Group==group&&x.Node==reference.Reference.NodeId);
         if(value is null||reference.Reference.PortId!="geometry"||reference.Reference.Type!=RoiDeclarations.Shape
@@ -100,23 +104,20 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
             throw new ArgumentException("整体ROI来源必须是明确的结构化几何单项。");
         if(value.Frame!=_image.Frame)throw new ArgumentException("继承ROI与当前图像不是同一物理帧。");
         var kind=value.Geometry.Get<string>("kind");
-        if(kind!=(group=="detect"?"rectangle":"annulus"))throw new ArgumentException("整体ROI来源形状不匹配。");
+        var expected=expectedKind??(group=="detect"?"rectangle":"annulus");
+        if(kind!=expected)throw new ArgumentException("整体ROI来源形状不匹配。");
         return value;
     }
     private string? ValidateFields(FieldGroupCandidate candidate)
     {
-        foreach(var group in new[]{"detect","mask"})
-        {
-            if(candidate.Proposed[Source(group)] is ReferenceSetting reference)Resolve(group,reference);
-            if(candidate.Proposed[Mode(group)] is ConstantSetting{Value:1L}&&candidate.Proposed[Source(group)] is not ReferenceSetting)
-                return "继承模式必须与有效来源一起接纳。";
-        }
-        return null;
+        return ValidateInheritance(candidate);
     }
     private void AcceptFields(IReadOnlyDictionary<string,ParameterSetting> changes)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var current=_root;var fields=current.Fields.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal);
+        if(Session.CurROIData is {Enabled:true} selected&&current.LocalItems.Any(item=>item.Group==selected.Group&&item.Id==selected.Id))
+            _lastLocalSelection=new(selected.Group,selected.Id);
         foreach(var change in changes)fields[change.Key]=change.Value;
         _root=current with{Revision=current.Revision+1,Fields=Freeze(fields)};
         // No Session callbacks here: fields install accepted states before Changed refreshes the scene.
@@ -124,8 +125,12 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
     private void OnFieldsChanged()
     {
         if(_disposed)return;
-        Session.Refresh();
-        Scene.ParameterHost.Visibility=GraphicMode?Visibility.Visible:Visibility.Collapsed;
+        var root=_root;if(_projectedRevision==root.Revision)return;_projectedRevision=root.Revision;
+        bool Current()=>!_disposed&&ReferenceEquals(root,_root);
+        NativeRoiCallbacks.Run(new Action[]{
+            ()=>{if(Current())Session.Refresh();},
+            ()=>{if(Current())Scene.ParameterHost.Visibility=GraphicMode?Visibility.Visible:Visibility.Collapsed;},
+            ()=>{if(Current()&&GraphicMode&&Session.CurROIData is null&&_lastLocalSelection is {} selection&&Local(selection.Group))Session.Select(selection.Group,selection.Id);}});
     }
     private RoiEditSnapshot Read()
     {
@@ -136,8 +141,10 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
             if(Local(group))rows.AddRange(root.LocalItems.Where(row=>row.Group==group));
             else
             {
-                var source=Resolve(group,(ReferenceSetting)root.Fields[Source(group)]);
-                rows.Add(new(group,source.Id,source.Node,source.Geometry,Enabled:false));
+                if(group=="detect")
+                {if(TryDetect(root.Fields,out var detected,out _))rows.Add(detected!);}
+                else if(root.Fields[Source(group)] is ReferenceSetting reference)
+                {var source=Resolve(group,reference);rows.Add(new(group,source.Id,source.Node,source.Geometry,Enabled:false));}
             }
         return new(new(_scope,root.Revision,_image.Frame),Array.AsReadOnly(rows.ToArray()));
     }

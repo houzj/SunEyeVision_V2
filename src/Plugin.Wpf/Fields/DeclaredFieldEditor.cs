@@ -160,7 +160,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             _integerRadio=new NativeIntegerRadioPresenter(_state,_label.Text,_integerRadioOptions);
             InputElement=_integerRadio;_body.Children.Add(_integerRadio);return;
         }
-        var numeric=_port.Type.Shape==ValueShape.Scalar&&_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
+        var numeric=_port.EditModes!=FieldEditModes.Reference&&_port.Type.Shape==ValueShape.Scalar&&_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
         var composedNumeric=numeric&&NativeNumberPresenter.UsesOriginalModes(_port,_presentation);
         var canReference=_referenceOptions is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
         if(canReference&&!composedNumeric&&(_port.EditModes&FieldEditModes.Constant)!=0)
@@ -169,7 +169,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             mode.SetResourceReference(StyleProperty,"EditLinkButton");
             mode.Click+=(_,_)=>{if(!CurrentRender()||!mode.IsEnabled)return;if(_referenceMode){if(!_state.TryUseConstant())return;}else _state.EnterReferenceMode();Render();};_actions.Children.Add(mode);
         }
-        if(!_port.Required&&_setting is not UnsetSetting)
+        if(!_port.Required&&_setting is not UnsetSetting&&_port.EditModes!=FieldEditModes.Reference)
         {
             var clear=new Button {Content="×",Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip="清除可选项"};
             clear.Click+=(_,_)=>{if(CurrentRender()&&clear.IsEnabled&&Set(new UnsetSetting()))Render();};_actions.Children.Add(clear);

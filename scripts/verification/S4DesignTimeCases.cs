@@ -31,7 +31,7 @@ internal static class S2DocumentEditingCases
             {
                 Render(entry,"native-roi-inheritance-xaml-entry.png",1020,800);
                 var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample>(entry).Single();
-                Check(Application.Current is null&&sample.Fields.Fields.Count==6&&sample.Session.Frame==sample.Frame,
+                Check(Application.Current is null&&sample.Fields.Fields.Count==19&&sample.Session.Frame==sample.Frame,
                     "整体来源与ROI真实XAML入口无Application并共用字段及物理帧");
                 Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.source",new ReferenceSetting(sample.Reference("detect"))}})
                     &&sample.Session.Stamp.Revision==sample.Revision&&sample.Session.Items.Single(x=>x.Group=="detect").Enabled==false,
@@ -52,6 +52,12 @@ internal static class S2DocumentEditingCases
                     "图像分支使用真实EnumerationG选择器");
                 Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(0L)}})&&sample.Session.Items.Count==2,
                     "图形分支恢复同一来源及本地对象");
+                var components=new Dictionary<string,ParameterSetting>{{"detect.inherit-way",new ConstantSetting(1L)}};
+                foreach(var id in new[]{"detect.rect.x","detect.rect.y","detect.rect.width","detect.rect.height","detect.rect.angle"})components[id]=new ReferenceSetting(sample.ComponentReference(id));
+                Check(sample.Fields.TrySetFields(components)&&sample.TryCapture(out _,out _),"独立设计五分量来源同根捕获");
+                Render(entry,"native-four-way-components-xaml-entry.png",1020,1100);
+                Check(Descendants<RadioButton>(sample.Fields.Fields.Single(field=>field.FieldId=="detect.inherit-way").View).Count()==5,
+                    "独立设计四方式保原五槽模板");
             }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
             {

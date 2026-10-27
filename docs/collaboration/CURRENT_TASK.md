@@ -1,4 +1,11 @@
 ﻿# 独立工作区当前任务：节点样式、交互与连线移植
+
+2026-10-27 整体设计D2合同已归并原主方案：Session.History唯一cursor；根画布/根管理/正式参数receipt同序；参数回放按CommitId+语义签名，不能猜Host当前Undo；结构重基不改已提交receipt；无根仍可主历史Undo；Group局部行为冻结，外部修改栅栏阻止根历史跨越；跨方案.sol恢复排除本轮并明示；历史明细逐EntryId同路跳转。原件TitleMenueItemData主入口/模块窗门禁、UnRedoService CIL root/part已核，未执行原DLL。新代码实施尚未开始，现有未提交小改仅草稿；先以D2合同写集中验收场景再整体接线，不再零散报背景按钮完成。
+
+2026-10-27 用户最新顺序已明确：先对画布/流程切换/UndoRedo原件整体对照与设计，再集中迁移，完成启动；主界面整体迁移后续另做。原主方案已新增D1 C01—C12/H01—H08、双方组装链、坐标/导航/Session统一历史/事务回执/生命周期/验收批次，索引原件SHA及REA身份。发现核心三栈割裂（画布/根管理/参数），不能将375顶部按钮接当前canvas栈称VM完整历史。已有背景/普通节点过滤/主工具栏修改仅未提交验证草稿；375 UI0错746警告67.19秒、129回归+host1过，host首次缺MenuStyle夹具资源已按App补齐；不当整题完成。原VM.UnRedo CIL及UNDO-ROUND2现成报告已找到，SHA同安装原件；D1尚需冻结参数提交回执及Group历史隔离，再集中编码。当前目录单写、不另启AI、不主仓同步，未启动新草稿给用户。
+
+
+2026-10-27 人工反馈新批进行中：用户要求按VM迁移并包括工作流画布。原件DiagramGroupListUI绑定DecorateChildren，VmModuleBaseDecorator只OfType<IVmModuleSet>且AddChild仅流程/Group，证明恢复项目普通节点叶为扩展，已修目录过滤并改专项断言；既有Group导航不改。原件DiagramPage.xaml为6像素线网/20坐标十字Pen5，ZoomArea底色+colorstyle1/3暗亮#46474A/#404042与#E7E7E7/#E2E2E2；已替换当前32像素棋盘，专用WorkflowCanvasGridBrush不碰SDK图像棋盘。尚未构建/渲染，不能记通过。Undo/Redo当前Tab专用根历史属迁移偏差，待按主工具栏及原件历史消费链整体修正；用户要求画布完整对照（视口/滚动/平移/缩放/小地图/手势/连线刷新/退出）。当前目录单写、Group及公共SDK冻结，不同步main、不另启AI。
 2026-10-27 目标交付闭口审核：原主方案R01—R18逐项实施/依赖占位及来源边界已记录，94项最终同版测试、正式EXE准入、代表WPF暗亮核查、中文阶段提交和正式程序启动均有当前证据；工作树产品e9836b58，阶段c366b4ce/9cacfd03。实施与交付目标完成，不将原厂未知语义、VS设计时、多DPI、物理OLE或用户人工验收算通过。后续按用户验收反馈修复；Group与公共合同仍冻结，未同步main。
 
 

@@ -6337,5 +6337,74 @@
     ],
     "scopeCorrection": "CategoryId/Relations属于Group消费者；根运行参数为平铺单目标，不迁入Group语义。依据554c1399及D最终b6f7db64，原误列已撤回。",
     "sourceCandidate": "e9836b58"
+  },
+  "currentCanvasNavigationHistoryMigration": {
+    "baseline": "3864379f",
+    "status": "D1整体设计中；原小改为未提交验证草稿，不当完整迁移",
+    "scope": [
+      "C01-C12画布与流程切换",
+      "H01-H08统一历史与会话边界"
+    ],
+    "evidence": [
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/ZoomArea.xaml",
+        "sha256": "37DD4DA10633BCF55E785FEA8682A38165E613B68F82389002C13B1EF053CF96",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/ZoomArea.xaml.cs",
+        "sha256": "61120E13AAE9F048FF3340D09C44DB2FA642369C29F4DE1DEE43F5535F4EFC91",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml",
+        "sha256": "906E1E21324EE23D6E2F15853FA54AFE5C268539FFF49A252020DE0E94C8D4C4",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/ItemsPage.cs",
+        "sha256": "BC3A7A487A75BE202162BBE4BA6D6202B9B0E6EE9B618A9DB9373A299091491B",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/DiagramGroupListUI.xaml",
+        "sha256": "0CE58D2A404479F39D67CD6AF8AEDAAD253920778EFAFAD8737207505D0216D8",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs",
+        "sha256": "F124B9A5E3CE5B8E2E856D3E325B00A4B143F7074513CCC74D542EC35C2695DD",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VisionMaster.Exe.Audit/VisionMaster.AppMainWindow/TitleMenueItemData.cs",
+        "sha256": "B1C349C4808C0CE49C45E6FCCA2972D370ED5A8F3E96AC51A157A680B42C9187",
+        "kind": "历史原件反编译，非实机"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/full-audit/mf04-unredo/VM.UnRedo.il",
+        "sha256": "981835AD9230585A0DF83B7FE38C7013BEE514105CC11C47B99482DCB965A3B2",
+        "kind": "已存原DLL CIL，非执行"
+      }
+    ],
+    "nativeUnredo": {
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.UnRedo.dll",
+      "sha256": "AA719D093C948E8E6573D20C0198B60EF493F2BED8C029CAAB95ED5621A7AAA2",
+      "mvid": "05297188-764c-48da-a387-1ca4029dd9b8",
+      "reaEvidence": "ev_dfa8463577a4a813c34d018a98de91a35493282640a53ca9f68b3e15b3c0b8aa",
+      "mode": "只读静态身份，未实例化/执行"
+    },
+    "draftValidation": {
+      "ui375": "0错误746警告67.19秒",
+      "canvasRegression": 129,
+      "host": 1,
+      "warning": "局部草稿通过不等于整体H02/H05统一历史完成"
+    },
+    "frozen": [
+      "Group新增与内部行为",
+      "插件公共合同",
+      "主界面整体迁移后续另做",
+      "main不同步"
+    ]
   }
 }

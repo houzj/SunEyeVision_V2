@@ -41,7 +41,10 @@ namespace SunEyeVision.Plugin.SDK.Models
             set
             {
                 if (SetProperty(ref _displayType, value))
+                {
                     OnPropertyChanged(nameof(ParamType));
+                    OnPropertyChanged(nameof(AllowedParamTypes));
+                }
             }
         }
 
@@ -87,6 +90,14 @@ namespace SunEyeVision.Plugin.SDK.Models
             SubroutineDisplayType.Text => typeof(double[]),
             _ => null,
         };
+
+        private static readonly IReadOnlyList<Type> TextParamTypes = Array.AsReadOnly(new[]
+        { typeof(double[]), typeof(string[]), typeof(bool[]) });
+
+        /// <summary>文本可来自数值、字符串或布尔；主类型仍负责数值几何字段的树形投影。</summary>
+        [JsonIgnore]
+        public IReadOnlyList<Type>? AllowedParamTypes => DisplayType == SubroutineDisplayType.Text
+            ? TextParamTypes : ParamType is {} type ? new[] { type } : null;
 
         public string BindingSource
         {

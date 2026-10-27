@@ -98,14 +98,11 @@ public class SubroutineDisplayItemTypeContractTests
     }
 
     [Fact]
-    public void TextDisplayItem_Filter_NumericSourcesAndDrillableGeometry()
+    public void TextDisplayItem_Filter_TextBooleanNumericSourcesAndDrillableGeometry()
     {
-        // 文本显示项目标为数字（Double）。候选 = 纯数值源 + **可下钻到数值字段**的几何数组：
-        //   - 规则 2/3：同词目与 Integer↔Double 互通（Value）
-        //   - 规则 3.6：几何数组有声明字段 → 放行（选区数组后下钻 半径/中心X；Polygon 顶点数组无标量字段，不放行）
-        //   - 其余（Image / String）精确匹配不互通 → 过滤
         var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Text };
-        var filtered = ParamBindingBase.FilterDataSourcesByType(MakeAllSources(), item.ParamType!);
+        var sources = MakeAllSources(); sources.Add(MakeDs("Flag", typeof(bool[])));
+        var filtered = ParamBindingBase.FilterDataSourcesByTypes(sources, item.AllowedParamTypes!);
 
         var names = filtered.Select(d => d.PropertyName).ToList();
 
@@ -116,7 +113,9 @@ public class SubroutineDisplayItemTypeContractTests
         Assert.Contains("Rect", names);       // 可下钻 中心X / 宽 / 高 / 角度
         Assert.DoesNotContain("Polygon", names); // 顶点数组无标量字段，放行会导致展开后无可绑叶
         Assert.DoesNotContain("Image", names);
-        Assert.DoesNotContain("Text", names);
+        Assert.Contains("Text", names);
+        Assert.Contains("Flag", names);
+        Assert.Equal(names.Count, names.Distinct().Count());
     }
 
     [Fact]

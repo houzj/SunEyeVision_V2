@@ -1,5 +1,17 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 整组接纳基础已验证（最新）
+
+- 基线fdf4c672/main，Codex主线唯一写者；三路只读核C05、C06和必要SDK消费。第一阶段继续；尚未替换原单值/between生产视图，没有调整Blob业务XML或批量改名。
+- IToolSettingsDraft.ApplyFields现唯一(changes,acceptCandidate)签名；Runtime完整准备与验证后，向宿主提供独立冻结候选，一次回调通过才安装；拒绝/重入不改旧草稿。设计草稿和当前检查消费者直接新合同，无旧重载。
+- SettingsView统一WriteGroup，先准备常量组及完整引用映射，再一次宿主候选预检；固定node/context/generation暂装整份设置/绑定，finally仅恢复旧节点，重绑拒绝。当前FieldsView仍是单字段进入，不能声称C06生产组消费完成。
+- DeclaredFieldState单值/多端共享TrySetGroup：全部端点先准备、一次writer、所有Accepted/备份/模式先安装再通知；有效监听逐一通知，异常留到通知完成后重抛，不回滚或误记拒绝。新用例实测第二端非法、宿主拒绝、重入、后续/右端监听，以及混合常量+引用拒绝和回调重绑。
+- 最终UI002零错误6619警告123.89秒；全量002零错误6613警告101.19秒。RuntimeKernel036十七组、FieldEditing053三十一组、RuntimeEditor037十组、DesignTime013二十七组、FullChain096七组、WindowPresentation033十三组、Components181九组通过；实际EXE22工具准入。
+- 同源证据O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json核8源码增量、760发布项及178加载记录。所有本批进程已结束，无活动构建/检查句柄。首版001虽绿但观察者异常会截断通知，已修并加实际到达断言，001成绩仅留历史。
+- 下一工作仍是C05原数值/订阅两态和C06一份between。SDK整组消费不能node.Clone后编辑共享Parameters；需CopyParameters、候选预检、整份接纳，再非视觉重接accessors/preview/ROI来源目标，不调用SetParameters重建UI丢焦。三路已给准确位置和ROI稳定Guid身份合同。
+- 大面积域已核两处溢出：原ClipSilder先乘、net9 Track.ComputeSliderLengths先乘。Track三个映射/排列可覆写，须保原Thumb/按钮/样式及业务值域；尚未实施/运行。VM只有每Blob面积/总面积两组1..999999999，本方另外三组不伪称VM原有，五组现业务域不静默缩小。
+- 原方案/Catalog/失败与剩余同步；真实VS/用户及VM同态未验，不代签。用户BlobParameterEditor.xaml手工页索引原样保留不提交；准备固定中文本地检查点，不推送。完整目标active。
+
 ## 2026-10-27 原订阅生产组合本批已验证（最新）
 
 - 基线223d80d3/main，Codex主线唯一写者；三路只读逐控件核收后已补位C05单值、C06范围及C07扩展订阅。第一阶段继续，未做整库改名，未进入Blob重组。

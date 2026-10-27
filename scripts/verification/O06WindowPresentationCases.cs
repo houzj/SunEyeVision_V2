@@ -40,11 +40,13 @@ internal static class S2DocumentEditingCases
     new FieldPresentation("rgba","OK颜色","图像显示",1,FieldEditorKind.Record){Layout=new("结果显示","图像显示",DialogGroup:"shape",DialogTitle:"Blob")}}));
   public object CaptureSettings()=>ReadFields();
   public InputValues ReadFields()=>new(Schema.Inputs,_values);
-  public void ApplyFields(IReadOnlyDictionary<string,object?> changes)
+  public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
   {
    var next=new Dictionary<string,object?>(_values);
    foreach(var item in changes)next[item.Key]=item.Value;
-   _values=new InputValues(Schema.Inputs,next).CopyValues().ToDictionary(item=>item.Key,item=>item.Value);Writes++;
+   var prepared=new InputValues(Schema.Inputs,next);
+   acceptCandidate(prepared);
+   _values=prepared.CopyValues().ToDictionary(item=>item.Key,item=>item.Value);Writes++;
   }
  }
  sealed class ExportImage : Native.Dependencies.VMControls.RenderInterface.IImageData,Native.Dependencies.VMControls.RenderInterface.IRangeImageData

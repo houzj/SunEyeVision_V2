@@ -9,6 +9,7 @@ public sealed class ToolSettingsEditSession : IToolSettingsDraft
     private readonly IToolDefinition _definition;
     private readonly IToolSettingsFields _fields;
     private object _settings;
+    private bool _applying;
     public ToolSettingsEditSession(IToolDefinition definition,object settings)
     {
         _definition=definition??throw new ArgumentNullException(nameof(definition));
@@ -27,10 +28,19 @@ public sealed class ToolSettingsEditSession : IToolSettingsDraft
         _=new InputValues(_fields.SettingsSchema.Inputs,_fields.ReadSettings(candidate).CopyValues());
         return candidate;
     }
-    public void ApplyFields(IReadOnlyDictionary<string,object?> changes)
+    public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
     {
         ArgumentNullException.ThrowIfNull(changes);
-        // A failed field or cross-field validation never replaces the last valid state.
-        _settings=Prepare(_fields.ApplySettings(CaptureSettings(),changes));
+        ArgumentNullException.ThrowIfNull(acceptCandidate);
+        if(_applying)throw new InvalidOperationException("A settings proposal is already being accepted.");
+        _applying=true;
+        try
+        {
+            var candidate=Prepare(_fields.ApplySettings(CaptureSettings(),changes));
+            // The callback receives a separate frozen value, never the draft's next mutable instance.
+            acceptCandidate(_definition.FreezeSettings(candidate));
+            _settings=candidate;
+        }
+        finally{_applying=false;}
     }
 }

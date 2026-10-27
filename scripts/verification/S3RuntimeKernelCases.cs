@@ -28,17 +28,40 @@ internal static class S2DocumentEditingCases
                 var threshold=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
                 var upper=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
                 var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
-                draft.ApplyFields(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}});
+                draft.ApplyFields(new Dictionary<string,object?>{{threshold,73L},{upper,211L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}},_=>{});
                 Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&original.Threshold==128
                     &&draft.ReadFields().Get<long>(threshold)==73,"字段编辑产生第二模型或污染原配置");
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,220L},{upper,210L}}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,300L}}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{mode,"undefined"}}));
-                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{"unknown",1L}}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,220L},{upper,210L}},_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{threshold,300L}},_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{mode,"undefined"}},_=>{}));
+                Throws<ArgumentException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{"unknown",1L}},_=>{}));
                 Require(((BlobSettings)draft.CaptureSettings()).Threshold==73&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==211,"拒绝提案污染私有状态");
                 var rule=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.Layout?.Page=="结果显示"&&f.Layout.PairWith is not null&&f.DisplayName=="Blob数量下限");
-                draft.ApplyFields(new Dictionary<string,object?>{{rule.FieldId,19d}});
+                draft.ApplyFields(new Dictionary<string,object?>{{rule.FieldId,19d}},_=>{});
                 Require(draft.ReadFields().Get<double>(rule.FieldId)==19&&original.Judgments.SequenceEqual(new BlobSettings().Judgments),"判定编辑修改原记录");
+            });
+            Case("设置整组候选只预检一次，拒绝或回调重入均不改变草稿",()=>{
+                var tool=new BlobTool();var draft=new ToolSettingsEditSession(tool,new BlobSettings());
+                string Field(string label)=>draft.Schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
+                var low=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.Threshold)));
+                var high=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.UpperThreshold)));
+                var mode=Field(BlobParameterDefinition.Instance.Label(nameof(BlobSettings.SegmentationMode)));
+                var calls=0;
+                draft.ApplyFields(new Dictionary<string,object?>{{low,220L},{high,230L},{mode,nameof(BlobSegmentationMode.DoubleThreshold)}},candidate=>
+                {
+                    calls++;var next=(BlobSettings)candidate;
+                    Require(next.Threshold==220&&next.UpperThreshold==230&&((BlobSettings)draft.CaptureSettings()).Threshold==128,
+                        "候选不完整或宿主接纳前污染草稿");
+                });
+                Require(calls==1&&((BlobSettings)draft.CaptureSettings()).Threshold==220,"整组未单次接纳");
+                Throws<InvalidOperationException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>throw new InvalidOperationException("宿主拒绝")));
+                Require(((BlobSettings)draft.CaptureSettings()).Threshold==220,"宿主拒绝污染草稿");
+                Throws<InvalidOperationException>(()=>draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>
+                    draft.ApplyFields(new Dictionary<string,object?>{{high,240L}},_=>{})));
+                Require(((BlobSettings)draft.CaptureSettings()).Threshold==220&&((BlobSettings)draft.CaptureSettings()).UpperThreshold==230,
+                    "回调重入污染整组草稿");
+                draft.ApplyFields(new Dictionary<string,object?>{{low,221L}},_=>{});
+                Require(((BlobSettings)draft.CaptureSettings()).Threshold==221,"拒绝后提交门没有恢复");
             });
             Case("宿主中立入口保留模型身份、冻结参数并在无UI回调时清理",()=>{
                 using var resources=new FrozenOutputResources();

@@ -36,15 +36,23 @@ public static class BlobDesignData
     {
         internal BlobTool Tool {get;}=new();
         private BlobSettings _settings=new(); // All defaults come from the actual embedded BlobParameters.xml.
+        private bool _applying;
         public ToolSchema Schema=>Tool.SettingsSchema;
         public object CaptureSettings()=>_settings.Freeze();
         public InputValues ReadFields()=>Tool.ReadSettings(_settings);
-        public void ApplyFields(IReadOnlyDictionary<string,object?> changes)
+        public void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate)
         {
+            if(_applying)throw new InvalidOperationException("A settings proposal is already being accepted.");
+            _applying=true;
+            try
+            {
             var candidate=(BlobSettings)Tool.ApplySettings(_settings,changes);
             var errors=Tool.Validate(candidate);
             if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
+            acceptCandidate(candidate.Freeze());
             _settings=candidate.Freeze();
+            }
+            finally{_applying=false;}
         }
     }
 }

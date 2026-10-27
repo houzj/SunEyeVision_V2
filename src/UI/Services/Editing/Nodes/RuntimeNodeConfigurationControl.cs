@@ -95,7 +95,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             _=>ReadReferenceCandidates(generation));
         _inputs.AddRange(panel.Fields);
         _view=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
-            new(references,referenceOptions,FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel));
+            new(references,referenceOptions,FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel,
+                (candidate,bindings)=>ValidateSettingsCandidate(candidate,bindings,generation)));
         _view.Changed+=Changed;Content=_view.View;
     }
     private void Changed(){if(!_syncing&&!_capturing)TryCapture(out _);}
@@ -210,6 +211,30 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             {var next=path.Append(member.Id).ToArray();var name=label+" / "+member.Id;candidates.Add(new(name,id,_query.WorkflowId,root,next));AddMembers(member.Type,next,name,id,root);}
         }
         return candidates.AsReadOnly();
+    }
+    private void ValidateSettingsCandidate(object settings,IReadOnlyDictionary<string,ReferenceSetting> references,long generation)
+    {
+        var node=_node;
+        if(_disposed||generation!=_generation
+            ||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
+            throw new InvalidOperationException("参数编辑已失效，请使用当前参数页。");
+        var priorBindings=node.ParamSettings;var priorConfiguration=node.RuntimeConfiguration!;
+        try
+        {
+            var candidate=priorConfiguration.WithSettings(settings);
+            if(_disposed||generation!=_generation||!ReferenceEquals(node,_node))
+                throw new InvalidOperationException("参数编辑已失效，请使用当前参数页。");
+            var bindings=priorBindings.Clone();
+            foreach(var port in candidate.SettingsSchema!.Inputs)
+                if(references.TryGetValue(port.Id,out var reference))bindings.SetSetting(ToSetting(node,port.Id,reference.Reference));
+                else bindings.RemoveSetting(port.Id);
+            node.RuntimeConfiguration=candidate;node.ParamSettings=bindings;
+            context.Host.Validate(context.PreparedDraft);
+            if(_disposed||generation!=_generation||!context.IsValid||!ReferenceEquals(_node,node)
+                ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context))
+                throw new InvalidOperationException("参数编辑已失效，请使用当前参数页。");
+        }
+        finally{node.RuntimeConfiguration=priorConfiguration;node.ParamSettings=priorBindings;}
     }
     private string? ValidateProposal(Port target,ConfigurationSetting proposal,long generation)
     {

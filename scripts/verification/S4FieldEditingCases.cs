@@ -59,6 +59,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：下拉选项直接消费正式声明");
             VerifyNativeInputs();
             VerifyFieldState();
+            VerifyAtomicFieldGroup();
             VerifyReferenceComposition();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
@@ -162,6 +163,7 @@ internal static class S2DocumentEditingCases
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool=>tool.Id));
             var definition=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");var settings=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings();
             var access=definition.SettingsSchema;Require(access.Inputs.Count==54&&access.Inputs.Select(p=>p.Id).Distinct().Count()==54,"XML设置字段不完整或重复");
+            VerifySettingsCandidate(definition,settings);
             using var xmlStream=definition.GetType().Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")!;
             var xml=System.Xml.Linq.XDocument.Load(xmlStream);var rule=xml.Descendants("Judgment").Single(e=>(string?)e.Attribute("key")=="total-area");
             var key=(string)rule.Attribute("minimumFieldId")!;
@@ -184,7 +186,7 @@ internal static class S2DocumentEditingCases
             Pump();((TextBox)Descendants(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="215";
             context.Discard();Require(Threshold()==201,"取消改变已确认值");edits.Close();
             Console.WriteLine("通过：真实Runtime字段控件只写私有草稿，确认发布当前范围，取消保留已确认值");
-            Console.WriteLine("S4字段编辑：28组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
+            Console.WriteLine("S4字段编辑：31组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
@@ -288,6 +290,94 @@ internal static class S2DocumentEditingCases
         finally{((INotifyPropertyChanged)refreshSession).PropertyChanged-=observer;}
         Require(!refreshField.HasInvalidText&&refreshWrites==0,"刷新观察者异常被误标为来源错误");
         Console.WriteLine("通过：原订阅树刷新及投影失败不半替换，恢复不写入，观察者异常不误判为读源失败");
+    }
+    private static void VerifySettingsCandidate(IToolSettingsFields definition,object settings)
+    {
+        var tool=(IToolDefinition)definition;
+        var draft=new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,settings);
+        var schema=draft.Schema;
+        string Id(string label)=>schema.Presentation!.Fields.Single(field=>field.DisplayName==label).FieldId;
+        var low=Id("阈值");var high=Id("阈值上限");var highPort=schema.Inputs.Single(port=>port.Id==high);
+        var source=new DeclaredReferenceCandidate("来源","producer",null,highPort,Array.Empty<string>());
+        var calls=0;var reject=true;var rebind=false;
+        using var view=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView();
+        var options=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(AcceptCandidate:(candidate,references)=>
+        {
+            calls++;
+            Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)candidate).Threshold==73
+                &&references.Count==1&&references[high].Reference.NodeId=="producer"
+                &&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)draft.CaptureSettings()).Threshold==128,
+                "宿主没有取得完整常量和引用候选，或预检前污染草稿");
+            if(reject)throw new InvalidOperationException("整组候选拒绝");
+            if(rebind)view.Bind(new SunEyeVision.Plugin.Runtime.ToolSettingsEditSession(tool,settings));
+        });
+        view.Bind(draft,options);
+        var method=typeof(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView).GetMethod("WriteGroup",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var group=new Dictionary<string,ParameterSetting>{{low,new ConstantSetting(73L)},{high,new ReferenceSetting(source.Reference(BindingSelection.All))}};
+        void Apply()=>method.Invoke(view,new object[]{group});
+        try{Apply();throw new Exception("整组宿主拒绝被忽略");}
+        catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException {Message:"整组候选拒绝"}){}
+        Require(calls==1&&view.TryCapture(out var captured,out var refs,out _)
+            &&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)captured).Threshold==128&&refs.Count==0,
+            "混合常量和引用拒绝后缓存已污染");
+        reject=false;rebind=true;
+        try{Apply();throw new Exception("候选回调重绑仍接纳旧提案");}
+        catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException){}
+        Require(((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)draft.CaptureSettings()).Threshold==128
+            &&view.TryCapture(out captured,out refs,out _)&&((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)captured).Threshold==128&&refs.Count==0,
+            "候选回调重绑污染旧草稿或新视图");
+        Console.WriteLine("通过：混合设置与引用候选一次预检，宿主拒绝及同步重绑不污染草稿或引用缓存");
+    }
+    private static void VerifyAtomicFieldGroup()
+    {
+        using var left=new DeclaredFieldEditor(new("low",DataType.Number),"下限",new ConstantSetting(10d),_=>throw new Exception("不能逐字段写入"));
+        using var right=new DeclaredFieldEditor(new("high",DataType.Number),"上限",new ConstantSetting(20d),_=>throw new Exception("不能逐字段写入"));
+        var stateField=typeof(DeclaredFieldEditor).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var a=stateField.GetValue(left)!;var b=stateField.GetValue(right)!;var stateType=a.GetType();
+        var tupleType=typeof(ValueTuple<,>).MakeGenericType(stateType,typeof(ParameterSetting));
+        var method=stateType.GetMethod("TrySetGroup",BindingFlags.Static|BindingFlags.NonPublic)!;
+        bool Apply(double low,double high,Action<IReadOnlyDictionary<string,ParameterSetting>> writer)
+        {
+            var values=Array.CreateInstance(tupleType,2);
+            values.SetValue(Activator.CreateInstance(tupleType,a,new ConstantSetting(low)),0);
+            values.SetValue(Activator.CreateInstance(tupleType,b,new ConstantSetting(high)),1);
+            try{return (bool)method.Invoke(null,new object[]{values,writer})!;}
+            catch(TargetInvocationException error)when(error.InnerException is not null)
+            {System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error.InnerException).Throw();throw;}
+        }
+        double Low()=> (double)((ConstantSetting)left.Setting).Value!;
+        double High()=> (double)((ConstantSetting)right.Setting).Value!;
+        var writes=0;
+        Require(!Apply(30,double.PositiveInfinity,_=>writes++)&&writes==0&&Low()==10&&High()==20,"第二端非法仍写入第一端");
+        left.Changed+=()=>Require(Low()==30&&High()==40,"通知看到半组新状态");
+        right.Changed+=()=>Require(Low()==30&&High()==40,"右端通知看到半组新状态");
+        Require(Apply(30,40,proposal=>
+        {
+            Require(Low()==10&&High()==20&&proposal.Count==2,"宿主写入前已改变状态或提案不完整");
+            Require(!left.TrySetConstant(99d),"组内重入单字段写入没有拒绝");writes++;
+        })&&writes==1&&Low()==30&&High()==40,"合法整组没有单次接纳");
+        Require(!Apply(50,60,_=>throw new InvalidOperationException("拒绝整组"))&&Low()==30&&High()==40,"宿主拒绝污染一端");
+        Console.WriteLine("通过：范围两字段先完整准备再一次宿主接纳，通知只见完整状态，非法或重入不半写");
+
+        using var observedLeft=new DeclaredFieldEditor(new("a",DataType.Number),"A",new ConstantSetting(1d),_=>{});
+        using var observedRight=new DeclaredFieldEditor(new("b",DataType.Number),"B",new ConstantSetting(2d),_=>{});
+        var values=Array.CreateInstance(tupleType,2);
+        values.SetValue(Activator.CreateInstance(tupleType,stateField.GetValue(observedLeft),new ConstantSetting(3d)),0);
+        values.SetValue(Activator.CreateInstance(tupleType,stateField.GetValue(observedRight),new ConstantSetting(4d)),1);
+        var rightNotified=false;var laterStateListener=false;
+        observedRight.Changed+=()=>rightNotified=true;
+        observedLeft.Changed+=()=>throw new InvalidOperationException("组观察者异常");
+        stateType.GetEvent("Changed")!.AddEventHandler(stateField.GetValue(observedLeft),(Action)(()=>laterStateListener=true));
+        try
+        {
+            method.Invoke(null,new object[]{values,(Action<IReadOnlyDictionary<string,ParameterSetting>>)(_=>{})});
+            throw new Exception("组观察者异常被吞掉");
+        }
+        catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException {Message:"组观察者异常"}){}
+        Require(Equals(((ConstantSetting)observedLeft.Setting).Value,3d)&&Equals(((ConstantSetting)observedRight.Setting).Value,4d)
+            &&!observedLeft.HasInvalidText&&!observedRight.HasInvalidText&&rightNotified&&laterStateListener,
+            "观察者异常回滚整组、截断后续监听或误记宿主拒绝");
+        Console.WriteLine("通过：整组观察者异常保留已接纳两端，不误记宿主拒绝");
     }
     private static void VerifyFieldState()
     {

@@ -6964,15 +6964,20 @@
         "C07完整订阅生产候选",
         "已接原两Popup/树/文本与正式候选身份、私有预检及重绑保护，旧模态入口退出。",
         "本批六轨及正式EXE准入已通过；扩展订阅未落、C07未完成；真实VS/VM同态用户验收待进行。产品目录未批量改名。"
+      ],
+      [
+        "C05/C06范围原子接纳基础",
+        "真实Draft先完整候选/一次宿主预检再接纳；唯一状态多端共同更新后通知，避免两个TrySet冒充原子。",
+        "本批七轨与实际EXE准入已通过；原单值/between及SDK非视觉重接仍未完成，不宣布控件交付。"
       ]
     ],
     "candidateCheckpoint": {
-      "evidence": "docs/collaboration/evidence/O06_BLOB_REFERENCE_COMPOSITION_CHECKPOINT_20261027.json",
-      "sourceBaseline": "223d80d3",
-      "buildId": "development-fae8dea1a4bf4bf7aea1d4066023529c",
-      "checks": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；真实EXE22工具准入。UI005零错误6619警告227.32秒，全量004零错误6628警告113.97秒。18源码增量、760发布项和174加载记录SHA核对。",
-      "identity": "同主仓正式Release，无产品/算法/仓库副本；源码/产物SHA见证据。用户手工XAML页索引参与当前构建但不纳入本轮提交。",
-      "status": "原订阅双树组合正式消费已验证；扩展订阅及C05/C06仍待实现，C07和第一阶段未完成；真实VS/用户、VM同态尚待验。"
+      "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+      "sourceBaseline": "fdf4c672",
+      "buildId": "development-e82812f180e347f3ab731fb6ccf7450e",
+      "checks": "最终UI002零错误6619警告123.89秒，全量002零错误6613警告101.19秒。RuntimeKernel036=17；FieldEditing053=31；RuntimeEditor037=10；DesignTime013=27；FullChain096=7；WindowPresentation033=13；Components181=9；实际EXE22工具准入。8源码增量、760发布项和178加载记录SHA核对。",
+      "identity": "单主仓正式Release，8项源码增量、760发布项及178加载记录同源；用户页索引保留但不纳入本批提交。",
+      "status": "整组接纳基础已验证；C05/C06原生产组合及SDK非视觉接纳未完成，C07扩展和真实人工仍未完成；不进入第二阶段。"
     },
     "candidateCheckpointHistory": [
       {
@@ -7007,6 +7012,14 @@
         "checks": "FieldEditing046=23；DesignTime010=26；WindowPresentation030=13；RuntimeEditor034=9；FullChain091=7；Components178=9；实际Release EXE22工具准入。",
         "identity": "最终UI002：0错误/6619警告156.17秒；全量002：0错误/6629警告114.24秒。7项源码增量、760发布项及174加载记录SHA核对；blob-field-state前缀。",
         "status": "唯一字段状态及视图/宿主捕获重入基础已落码验证；原数值/范围/完整订阅组合未替换，C05/C06/C07未完成；新产物真实VS/用户及VM同态验收仍待进行。"
+      },
+      {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_REFERENCE_COMPOSITION_CHECKPOINT_20261027.json",
+        "sourceBaseline": "223d80d3",
+        "buildId": "development-fae8dea1a4bf4bf7aea1d4066023529c",
+        "checks": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；真实EXE22工具准入。UI005零错误6619警告227.32秒，全量004零错误6628警告113.97秒。18源码增量、760发布项和174加载记录SHA核对。",
+        "identity": "同主仓正式Release，无产品/算法/仓库副本；源码/产物SHA见证据。用户手工XAML页索引参与当前构建但不纳入本轮提交。",
+        "status": "原订阅双树组合正式消费已验证；扩展订阅及C05/C06仍待实现，C07和第一阶段未完成；真实VS/用户、VM同态尚待验。"
       }
     ],
     "implementationFailures": [
@@ -7020,7 +7033,8 @@
       "FieldEditing044验证宿主同名变量CS0136两错误保留；仅改测试变量名后045通过，正式产物未重建。",
       "状态首版UI001及全量001虽0错误，静态复核发现初始错误缺少首次文字投影；补构造末尾UpdateErrorDisplay后UI002/全量002及FieldEditing046通过。001不作最终候选身份。",
       "C07候选：UI001类型别名编译失败；FieldEditing047测试模式编译失败，048/049尾部草稿因查询服务门禁误拒绝，050集合来源错误路径未预检，均保留证据并修后重新验证。",
-      "FullChain092检查宿主Control方法名遮蔽Control类型，093未切输入页即找原Popup，均为测试修正；094修后整链7组通过，无产品重建。检查点首次审计发现旧Catalog依赖SHA，按已审查源码增量同步后通过。"
+      "FullChain092检查宿主Control方法名遮蔽Control类型，093未切输入页即找原Popup，均为测试修正；094修后整链7组通过，无产品重建。检查点首次审计发现旧Catalog依赖SHA，按已审查源码增量同步后通过。",
+      "C05/C06组基础首版自动用例未断言右端及后续监听到达，静态复核定位异常截断；补齐通知及断言后重建，001成绩留作历史，不覆盖002。"
     ],
     "manualReviewFreeze": {
       "status": "本批集中修改、构建与回归已结束；用户实际检查期间不重建或替换程序集",
@@ -7160,6 +7174,45 @@
         ]
       },
       "evidence": "docs/collaboration/evidence/O06_BLOB_REFERENCE_COMPOSITION_CHECKPOINT_20261027.json"
+    },
+    "numericGroupCandidate": {
+      "status": "FOUNDATION_AUTOMATED_CHECKS_PASSED_NATIVE_COMPOSITIONS_PENDING",
+      "baseline": "fdf4c672",
+      "implementation": [
+        "IToolSettingsDraft.ApplyFields只有(changes,acceptCandidate)签名；完整候选先业务校验，宿主回调一次，通过才接纳；拒绝和回调重入不污染原草稿。",
+        "DeclaredSettingsView.WriteGroup先准备常量变化及完整引用映射，一次候选预检后共同接纳；Runtime宿主暂装整份设置/引用，固定node/context/generation校验并恢复原私有节点。",
+        "DeclaredFieldState单值与多端共享TrySetGroup：所有端点先准备，一次host write，所有Accepted/备份/模式更新后才通知；观察者异常不当宿主拒绝。",
+        "设计时真实Draft与现有检查消费者已直接新签名，无兼容重载。",
+        "所有仍有效状态监听逐个通知；观察者异常收集到通知结束后原样重抛，多个异常聚合，不回滚接纳值、不误记编辑拒绝。"
+      ],
+      "remaining": [
+        "原C05/C06 Presenter和FieldView成组消费尚未替换；不能把本次基础当原数值/范围交付。",
+        "SDK字段消费者需真实参数深复制及不重建UI的非视觉引用接纳，之后才能统一FieldsView组writer；不能先写live再逐项回滚。"
+      ],
+      "sdkEvidence": [
+        "WorkflowNodeBase.Clone共享Parameters，不能编辑它当副本；现ToolExecutionPreparation.CopyParameters可复制真实配置。",
+        "ToolParameters.CopyFrom逐属性SetValue不是原子接纳；SetParameters重建FieldsView及区域来源会丢焦。",
+        "需要重接accessors/base preview监听/ROI来源闭包后整份接纳，不能留下旧模型写回。"
+      ],
+      "numericDomainEvidence": [
+        "VM原XML只有每Blob面积与总面积两组，父/两端为1..999999999；不存在本方average/max/min三组同名原声明。",
+        "原XML SHA34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec；原ClipSilder width*mid/span先乘溢出。",
+        "本方五组[0,double.MaxValue]业务域不偷偷缩小，后续按先归一化再乘像素保域；不把两组VM上限套给五组本方能力。",
+        "本机net9 PresentationFramework.Track.ComputeSliderLengths也含remainingTrackLength*offset/range先乘溢出，SHA606f66cd157c7b4088f1588c9e281b768518bd784b3b3eb9b2a3c64c4da31e36，MVID338e9705-3e65-4848-baa5-ea69b3cb9a40；不能只修原Clip便称全域已支持。",
+        "Track.ValueFromPoint/ValueFromDistance均public virtual，ArrangeOverride可覆盖；可保原Thumb/两RepeatButton/样式派生稳定Track，同时接管排列与两个映射，内部私有Density/中心不可沿用。尚未实施/运行，不改系统DLL或重绑0..1。"
+      ],
+      "verification": "最终UI002零错误6619警告123.89秒，全量002零错误6613警告101.19秒。RuntimeKernel036=17；FieldEditing053=31；RuntimeEditor037=10；DesignTime013=27；FullChain096=7；WindowPresentation033=13；Components181=9；实际EXE22工具准入。8源码增量、760发布项和178加载记录SHA核对。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+      "largeRangeMapping": {
+        "status": "SOURCE_AND_BINARY_EVIDENCE_CONFIRMED_ADAPTATION_NOT_IMPLEMENTED",
+        "vmXml": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+        "framework": "C:/Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/9.0.20/PresentationFramework.dll",
+        "frameworkSha256": "606f66cd157c7b4088f1588c9e281b768518bd784b3b3eb9b2a3c64c4da31e36",
+        "frameworkMvid": "338e9705-3e65-4848-baa5-ea69b3cb9a40",
+        "computeSliderLengthsToken": "0x060084d1",
+        "computeSliderLengthsIlSha256": "5f094d71f6c74a58fc9815ea82144d0c12d939bca89af9e53e8fca577388ce23",
+        "boundary": "原件Clip与框架Track两处先乘中间溢出；派生Track须同时覆写排列/ValueFromDistance/ValueFromPoint，自有跨度/中心缓存，保原Thumb按钮样式及业务域；有限ViewportSize仍交基类。未做0..1绑定或修改系统DLL，尚无运行成绩。"
+      }
     }
   }
 }

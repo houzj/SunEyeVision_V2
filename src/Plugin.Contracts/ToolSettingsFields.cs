@@ -17,5 +17,7 @@ public interface IToolSettingsDraft
     ToolSchema Schema { get; }
     object CaptureSettings();
     InputValues ReadFields();
-    void ApplyFields(IReadOnlyDictionary<string,object?> changes);
+    /// <summary>Prepare the complete candidate, call the host once, then install it.
+    /// A rejected or reentrant callback leaves this draft unchanged.</summary>
+    void ApplyFields(IReadOnlyDictionary<string,object?> changes,Action<object> acceptCandidate);
 }

@@ -146,7 +146,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
+          "sha256": "4027e034fd77eee18dcc9cd82583af535aab33d8a2579ef734d06c0d2d90edcb"
         }
       ],
       "themeKeys": [
@@ -174,7 +174,11 @@
         "remaining": "完整库及Blob显示/ROI生产消费未完成，实际VS/用户外观待反馈；原Advanced初始化分支待VM实机核对。"
       },
       "toolConsumerStatus": "公共RGBA字段/样式字段已消费此原件；BlobDisplay图形/文本完整生产编辑入口仍待C11/C13集中组装，不把定向库检查冒称Blob整页已接完。",
-      "standaloneLeafAdaptation": "FirstItem局部合原LocalizationResourceDictionary，承接原父白背景；原命令/色块/字体/模板保留。独立叶仅验资源布局，选色提交须在真实父组合验证。"
+      "standaloneLeafAdaptation": "FirstItem局部合原LocalizationResourceDictionary，承接原父白背景；原命令/色块/字体/模板保留。独立叶仅验资源布局，选色提交须在真实父组合验证。",
+      "sharedStateValidation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+        "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
+      }
     },
     {
       "id": "C02.vm-enumeration-g-image-source",
@@ -285,7 +289,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
+          "sha256": "4027e034fd77eee18dcc9cd82583af535aab33d8a2579ef734d06c0d2d90edcb"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -323,7 +327,11 @@
           "originalSha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
         }
       ],
-      "textInheritanceBoundary": "仅解除ContentPresenter自动生成文字受到的宿主隐式Style，保留原模板、显式Style与继承值；Loaded/选择/展开合并排队，Unloaded取消及代次失效。最新补充断言尚未运行，不计视觉通过。"
+      "textInheritanceBoundary": "仅解除ContentPresenter自动生成文字受到的宿主隐式Style，保留原模板、显式Style与继承值；Loaded/选择/展开合并排队，Unloaded取消及代次失效。最新补充断言尚未运行，不计视觉通过。",
+      "sharedStateValidation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+        "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
+      }
     },
     {
       "id": "C04.apps-xmlui-boolean",
@@ -385,7 +393,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
+          "sha256": "4027e034fd77eee18dcc9cd82583af535aab33d8a2579ef734d06c0d2d90edcb"
         }
       ],
       "consumers": [
@@ -400,6 +408,10 @@
         "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
         "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
         "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      },
+      "sharedStateValidation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+        "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
       }
     },
     {
@@ -459,7 +471,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
+          "sha256": "4027e034fd77eee18dcc9cd82583af535aab33d8a2579ef734d06c0d2d90edcb"
         }
       ],
       "consumers": [
@@ -478,7 +490,11 @@
         "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
         "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
       },
-      "textInheritanceBoundary": "仅解除ContentPresenter自动生成文字受到的宿主隐式Style，保留原模板、显式Style与继承值；Loaded/选择/展开合并排队，Unloaded取消及代次失效。最新补充断言尚未运行，不计视觉通过。"
+      "textInheritanceBoundary": "仅解除ContentPresenter自动生成文字受到的宿主隐式Style，保留原模板、显式Style与继承值；Loaded/选择/展开合并排队，Unloaded取消及代次失效。最新补充断言尚未运行，不计视觉通过。",
+      "sharedStateValidation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+        "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
+      }
     },
     {
       "id": "C07.apps-pcui-popup-foundation",
@@ -708,7 +724,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
+          "sha256": "4027e034fd77eee18dcc9cd82583af535aab33d8a2579ef734d06c0d2d90edcb"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
@@ -750,6 +766,10 @@
         "build": "blob-reference-ui-005：0错误6619警告227.32秒；全量004：0错误6628警告113.97秒。",
         "runtime": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；实际Release EXE22工具准入。",
         "visual": "完整订阅组合独立设计PNG已检查，可见原文本/链图标；真实VS/VM同态用户验收仍缺，不代签。扩展订阅未接，完整C07未完成。"
+      },
+      "sharedStateValidation": {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
+        "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
       }
     }
   ]

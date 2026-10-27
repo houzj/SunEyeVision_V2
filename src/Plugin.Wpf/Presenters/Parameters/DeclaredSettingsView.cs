@@ -67,8 +67,9 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         }),(id,value)=>
         {
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
-            Write(id,value);
-        },options.ReferenceOptions,id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference);
+            WriteGroup(new Dictionary<string,ParameterSetting>{{id,value}});
+        },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
+            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference);
         foreach(var field in _fields.Fields)field.Changed+=OnChanged;
         if(options.InputContent is not null)
         {
@@ -80,18 +81,36 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     private static void SelectPage(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(view._fields is not null)view._fields.SelectedPageIndex=(int)args.NewValue;}
     private void OnPageChanged()=>SetCurrentValue(SelectedPageIndexProperty,_fields!.SelectedPageIndex);
-    private void Write(string id,ParameterSetting value)
+    private void WriteGroup(IReadOnlyDictionary<string,ParameterSetting> proposals)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
-        if(value is ConstantSetting constant)
-        {Draft!.ApplyFields(new Dictionary<string,object?>{{id,constant.Value}});_references.Remove(id);}
-        else if(value is ReferenceSetting reference)
+        var draft=Draft??throw new InvalidOperationException("A settings draft is required.");
+        var generation=_generation;var options=Options;
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(Draft,draft)&&ReferenceEquals(Options,options);
+        var constants=new Dictionary<string,object?>(StringComparer.Ordinal);
+        var nextReferences=new Dictionary<string,ReferenceSetting>(_references,StringComparer.Ordinal);
+        foreach(var (id,value) in proposals)
         {
-            var port=Draft!.Schema.Inputs.Single(p=>p.Id==id);
-            if((port.EditModes&FieldEditModes.Reference)==0)throw new ArgumentException("Settings field does not allow references.");
-            _references[id]=reference;
+            var port=draft.Schema.Inputs.SingleOrDefault(port=>port.Id==id)
+                ??throw new ArgumentException("Unknown settings field: "+id);
+            if(value is ConstantSetting constant)
+            {constants.Add(id,ValueRules.Freeze(port,constant.Value));nextReferences.Remove(id);}
+            else if(value is ReferenceSetting reference)
+            {
+                if((port.EditModes&FieldEditModes.Reference)==0)throw new ArgumentException("Settings field does not allow references.");
+                nextReferences[id]=reference;
+            }
+            else throw new ArgumentException("Settings require a current value or an explicit reference.");
         }
-        else throw new ArgumentException("Settings require a current value or an explicit reference.");
+        var frozenReferences=new ReadOnlyDictionary<string,ReferenceSetting>(nextReferences);
+        draft.ApplyFields(constants,candidate=>
+        {
+            if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
+            options?.AcceptCandidate?.Invoke(candidate,frozenReferences);
+            if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
+        });
+        if(!Current())throw new InvalidOperationException("The settings view has been rebound or disposed.");
+        _references=nextReferences;
     }
     private void OnChanged()=>Changed?.Invoke();
     public bool TryCapture(out object settings,out IReadOnlyDictionary<string,ReferenceSetting> references,out string error)

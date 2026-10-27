@@ -8,7 +8,8 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,ReferenceSetting>? References=null,
     ReferenceFieldOptions? ReferenceOptions=null,
     Func<OutputReference,string>? FormatReference=null,
-    string? InputSection=null,FrameworkElement? InputContent=null);
+    string? InputSection=null,FrameworkElement? InputContent=null,
+    Action<object,IReadOnlyDictionary<string,ReferenceSetting>>? AcceptCandidate=null);
 
 public interface IToolSettingsView : IDisposable
 {

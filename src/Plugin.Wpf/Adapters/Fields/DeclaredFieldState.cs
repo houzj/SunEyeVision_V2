@@ -40,53 +40,84 @@ internal sealed class DeclaredFieldState : IDisposable
         _allowUnboundReference = allowUnboundReference;
     }
 
-    public bool TrySet(ParameterSetting proposal)
+    public bool TrySet(ParameterSetting proposal)=>TrySetGroup(new[]{(this,proposal)},values=>
     {
-        if (IsDisposed || _writing) return false;
-        var changed = false;
-        var accepted = false;
-        _writing = true;
+        var value=values[Port.Id];
+        var error=_validate?.Invoke(CopySetting(value));
+        if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
+        if(!IsDisposed)_write!(CopySetting(value));
+    });
+
+    /// <summary>Prepare every endpoint before one host write; install every accepted value before notifying.</summary>
+    internal static bool TrySetGroup(IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)> proposals,
+        Action<IReadOnlyDictionary<string,ParameterSetting>> writeGroup)
+    {
+        ArgumentNullException.ThrowIfNull(writeGroup);
+        if(proposals.Count==0)return true;
+        var states=proposals.Select(item=>item.State).ToArray();
+        if(states.Distinct().Count()!=states.Length||states.Select(state=>state.Port.Id).Distinct(StringComparer.Ordinal).Count()!=states.Length)
+            throw new ArgumentException("A field may occur only once in a proposal group.");
+        if(states.Any(state=>state.IsDisposed||state._writing))return false;
+        var notifications=new HashSet<DeclaredFieldState>();
+        var accepted=false;
+        foreach(var state in states)state._writing=true;
         try
         {
-            if (proposal is UnsetSetting && Port.Required) throw new ArgumentException("必填项不能清除。");
-            if (proposal is ConstantSetting constant)
+            var prepared=proposals.Select(item=>(item.State,Value:item.State.PrepareProposal(item.Proposal))).ToArray();
+            if(prepared.Any(item=>item.State._referenceCleared||!SameSetting(item.State._accepted,item.Value)))
+                writeGroup(new System.Collections.ObjectModel.ReadOnlyDictionary<string,ParameterSetting>(
+                    prepared.ToDictionary(item=>item.State.Port.Id,item=>CopySetting(item.Value),StringComparer.Ordinal)));
+            if(states.Any(state=>state.IsDisposed))return false;
+            foreach(var (state,value) in prepared)
             {
-                if (Port.Type.Shape == ValueShape.Resource) throw new ArgumentException("图像和区域资源必须绑定本次执行来源。");
-                if (Port.EditModes != FieldEditModes.None && (Port.EditModes & FieldEditModes.Constant) == 0)
-                    throw new ArgumentException("此字段不允许常量。");
-                proposal = new ConstantSetting(ValueRules.Freeze(Port, constant.Value));
+                var referenceMode=value is ReferenceSetting||value is UnsetSetting&&state.IsReferenceMode;
+                if(!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0)
+                    notifications.Add(state);
+                state._accepted=value;
+                if(value is ConstantSetting constant)state._constantBackup=constant;
+                state.IsReferenceMode=referenceMode;state._referenceCleared=false;state.EditError="";
             }
-            else if (proposal is ReferenceSetting && (Port.EditModes & FieldEditModes.Reference) == 0)
-                throw new ArgumentException("此字段不允许订阅。");
-            var same = SameSetting(_accepted, proposal);
-            if (!same || _referenceCleared)
-            {
-                var error=_validate?.Invoke(CopySetting(proposal));
-                if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
-                if(IsDisposed)return false;
-                _write!(CopySetting(proposal));
-            }
-            // The real host callback can synchronously rebind and dispose this old session.
-            if (IsDisposed) return false;
-            var referenceMode = proposal is ReferenceSetting || proposal is UnsetSetting && IsReferenceMode;
-            changed = !same || _referenceCleared || IsReferenceMode != referenceMode || EditError.Length != 0;
-            _accepted = proposal;
-            if (proposal is ConstantSetting nextConstant) _constantBackup = nextConstant;
-            IsReferenceMode = referenceMode;
-            _referenceCleared = false;
-            EditError = "";
-            accepted = true;
+            accepted=true;
         }
-        catch (Exception error) when (error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
         {
-            if (IsDisposed) return false;
-            changed = EditError != error.Message;
-            EditError = error.Message;
+            if(states.Any(state=>state.IsDisposed))return false;
+            foreach(var state in states)
+            {
+                if(state.EditError!=error.Message)notifications.Add(state);
+                state.EditError=error.Message;
+            }
         }
-        finally { _writing = false; }
-        // Observer failures must not be mistaken for a rejected host proposal.
-        if (changed && !IsDisposed) Changed?.Invoke();
+        finally{foreach(var state in states)state._writing=false;}
+        // Observers see both endpoints installed; their exceptions are never interpreted as host rejection.
+        var failures=new List<Exception>();
+        foreach(var state in states)
+        {
+            if(state.IsDisposed||!notifications.Contains(state)||state.Changed is not {} changed)continue;
+            foreach(Action listener in changed.GetInvocationList())
+            {
+                if(state.IsDisposed)break;
+                try{listener();}catch(Exception error){failures.Add(error);}
+            }
+        }
+        if(failures.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        if(failures.Count>1)throw new AggregateException("Field observers failed after the group was accepted.",failures);
         return accepted;
+    }
+
+    private ParameterSetting PrepareProposal(ParameterSetting proposal)
+    {
+        if(proposal is UnsetSetting&&Port.Required)throw new ArgumentException("必填项不能清除。");
+        if(proposal is ConstantSetting constant)
+        {
+            if(Port.Type.Shape==ValueShape.Resource)throw new ArgumentException("图像和区域资源必须绑定本次执行来源。");
+            if(Port.EditModes!=FieldEditModes.None&&(Port.EditModes&FieldEditModes.Constant)==0)
+                throw new ArgumentException("此字段不允许常量。");
+            return new ConstantSetting(ValueRules.Freeze(Port,constant.Value));
+        }
+        if(proposal is ReferenceSetting&&(Port.EditModes&FieldEditModes.Reference)==0)
+            throw new ArgumentException("此字段不允许订阅。");
+        return proposal;
     }
 
     public void EnterReferenceMode()

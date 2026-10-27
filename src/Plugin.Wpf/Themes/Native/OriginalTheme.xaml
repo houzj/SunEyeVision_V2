@@ -1,0 +1,6 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ResourceDictionary.MergedDictionaries>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle.xaml"/>
+ </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

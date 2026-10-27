@@ -31,6 +31,22 @@ internal static class S2DocumentEditingCases
             Check(nativeColor.NativeView.CurrentColor.Color==Color.FromArgb(200,10,20,30)
                 &&nativeColor.NativeView.GetType().FullName=="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView"
                 &&Application.Current is null,"原色板及RGB真实视图可无Application/宿主独立设计渲染");
+            var paletteLeaf=new SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerFirstItem();
+            Render(paletteLeaf,"native-palette-leaf-independent.png",300,250);
+            var paletteLabels=Descendants<Label>(paletteLeaf).Select(label=>label.Content as string).ToArray();
+            Check(paletteLabels.Contains((string)paletteLeaf.FindResource("Lang_ThemeColors"))
+                &&paletteLabels.Contains((string)paletteLeaf.FindResource("Lang_StandardColors"))
+                &&((Grid)paletteLeaf.Content).Background is SolidColorBrush {Color:var paletteBackground}
+                &&paletteBackground==Colors.White&&Application.Current is null,
+                "直接创建原色板叶取得原标题语言资源与原父白背景，不依赖父视图或Application");
+            var nativeInputs=new StackPanel();
+            nativeInputs.Children.Add(new SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton());
+            nativeInputs.Children.Add(new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox{Text="设计来源"});
+            nativeInputs.Children.Add(new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.SubTreeView{Height=100});
+            nativeInputs.Children.Add(SunEyeVision.Plugin.Wpf.Presenters.Input.NativeInputFactory.Enumeration());
+            Render(nativeInputs,"native-input-family-independent.png",400,230);
+            Check(Application.Current is null&&nativeInputs.Children.Count==4,
+                "原Apps弹层文本树及枚举可无Application独立装配资源");
             using var first=new BlobParameterEditor();using var second=new BlobParameterEditor();
             var presenter=(DeclaredSettingsView)first.Content;
             var fields=(DeclaredFieldsView)presenter.Content;
@@ -71,7 +87,18 @@ internal static class S2DocumentEditingCases
             Check(previewSelected&&presenter.SelectedPageIndex==2,
                 "设计器SelectedPageIndex选页及运行时Tab反向同步走同一视图");
             for(var index=0;index<tabs.Items.Count;index++)
-            {tabs.SelectedIndex=index;Render(first,"parameters-"+index+".png",600,680);}
+            {
+                tabs.SelectedIndex=index;Render(first,"parameters-"+index+".png",600,680);
+                foreach(var tab in tabs.Items.Cast<TabItem>())
+                {
+                    var header=(ContentControl)tab.Template.FindName("Content",tab);
+                    var key=tab.IsSelected?"Col_ModuleConfig_Title_Selected_Foreground":"Col_ModuleConfig_Title_Foreground";
+                    Check(header.Foreground is SolidColorBrush actual
+                        &&tabs.FindResource(key) is SolidColorBrush expected&&actual.Color==expected.Color
+                        &&expected.Color==(tab.IsSelected?Color.FromRgb(31,14,1):Color.FromRgb(61,61,61)),
+                        "页签"+index+"/"+tab.Header+"保持原主题正常或选中标题颜色");
+                }
+            }
             Check(tabs.Items.Count==3&&fields.TryFindResource("TopTabItemStyle") is Style,
                 "三页及正式迁入模板独立可解析并渲染");
             using var result=new BlobResultView();Render(result,"results.png",900,350);

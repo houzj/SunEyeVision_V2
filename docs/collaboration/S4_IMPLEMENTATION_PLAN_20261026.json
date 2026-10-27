@@ -6877,13 +6877,13 @@
       ],
       [
         "Apps.PcUI PopupButton / SubTreeView / DeleteTextBox",
-        "原订阅组合家族已核齐；树仅叶双击提交，显示路径不作来源身份。DeleteTextBox真实父类Enter原样MoveFocus(Next)。",
-        "待实施；不得混用同名HikPcUI家族或静态VM业务缓存。"
+        "正确Apps.PcUI原件及树/文本叶已启用，树保持对象身份与叶双击、DeleteTextBox保持原Enter移焦；移除VM静态业务服务。",
+        "独立叶运行检查属前候选；完整生产订阅组合尚未接通，不以基础叶通过计C07完成。"
       ],
       [
         "BooleanControl",
-        "Blob实际消费Apps.XmlUI.ParamTabControl.BooleanControl，原两张PNG一致。SourceBooleanToggle为重复同源类型，消费者迁完后删除。",
-        "待集中实施；false按原HiddenOperation隐藏范围，不能只灰置。"
+        "普通布尔字段已使用Apps.XmlUI原BooleanControl及原48×32两张PNG，重复SourceBooleanToggle已删除；拒绝恢复/失效代次/禁用写入保护进入候选。",
+        "FieldEditing042拒绝恢复/失效及禁用检查通过；不覆盖图形eye/DialogPrimary分支或真实键鼠全部交互。"
       ],
       [
         "SectorRingROIStack",
@@ -6932,17 +6932,37 @@
       ],
       [
         "C02原主题差异",
-        "实际主题仍经EditorResources→Generic/VmFieldStyles继承，Col_Theme不同于原主题1；9张图及原源SHA已核。",
-        "目录已登记真实依赖/原滚动源；原主题隔离列入下一公共库批，不将原模板装载当视觉通过。"
+        "本批普通枚举及图像源局部加载原主题，并恢复生成文字的原继承；保留原Combo模板与正式SelectedValue身份。",
+        "FieldEditing042实际关闭/展开文字及PNG已核；同名标签和正式键未混用。真实VS与完整页面视觉仍待验。"
+      ],
+      [
+        "VS独立原色板真实反馈",
+        "已按原父资源边界补叶语言字典及白背景；实际独立PNG两个标题和白底可见，保留原149节点。",
+        "DesignTime009直接叶检查通过；需用户真实VS复验，不能代签。"
+      ],
+      [
+        "设计器闪烁的已确认原因",
+        "用户确认root连续构建替换程序集触发设计器反复重载；该判断已接受。",
+        "人工检查期间冻结构建/正式DLL/活动XAML；不为此新增刷新定时器或猜测产品循环。"
+      ],
+      [
+        "职责待归整",
+        "已将视觉创建移入Presenters/Input/NativeInputFactory，资源字典与枚举文字作用域留Adapters；新增页签标题有限作用域。",
+        "本批两次规定构建及六轨同源通过，职责拆分已落码；完整数值/订阅/ROI等仍待实施。"
+      ],
+      [
+        "C07树视觉未通过",
+        "FieldEditing042实际节点/文字非零尺寸、IsVisible=true/Opacity=1；ScrollContentPresenter有ItemsPresenter内容且尺寸230×200，不能再断言它缺内容。局部PNG仍250×200全透明。",
+        "native-tree-visual.tsv及前后点击PNG保留；下一步同一实际窗口与祖先裁剪/变换取证，未确定产品或捕获根因，不改原件猜修。"
       ]
     ],
     "candidateCheckpoint": {
-      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_LIFECYCLE_CHECKPOINT_20261027.json",
-      "sourceBaseline": "0de8f74e754b415425a6901e44d840e8d4e100ac",
-      "buildId": "development-3ca5b47c376441599acf1c1569e44d42",
-      "checks": "FieldEditing038=12；DesignTime007=15；WindowPresentation027=13；RuntimeEditor031=9；FullChain088=7；Components175=9；真实EXE工具箱22",
-      "identity": "19项源码增量、760发布项、174加载记录SHA逐项核对；编译身份仍0de8f74e加列明增量，不改写为后续提交。",
-      "status": "本批来源恢复/旧回调/递归释放已验证；不是控件库整体完成、完整Blob显示或真实VS/人工验收。"
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_DESIGN_REVIEW_CHECKPOINT_20261027.json",
+      "sourceBaseline": "b61047386c59ed66855f0e0d631eb54a3ed4f85d",
+      "buildId": "development-c212250b150044d48425109993408ecc",
+      "checks": "FieldEditing042=18；DesignTime009=26；WindowPresentation029=13；RuntimeEditor033=9；FullChain090=7；Components177=9；真实Release EXE探针22工具准入。",
+      "identity": "23项源码增量、760发布项、174加载记录SHA核对。UI001 0错误/6619警告189.64秒；全量001 0错误/6492警告91.47秒，blob-native-design-review前缀。",
+      "status": "独立色板资源、原枚举文字与原三页标题有限适配通过自动检查；C07树截图仍全透明未通过，未进行新一轮真实VS/用户验收；不是控件库或Blob整体完成。"
     },
     "candidateCheckpointHistory": [
       {
@@ -6952,11 +6972,100 @@
         "checks": "FieldEditing037=9；DesignTime006=15；WindowPresentation025=11；RuntimeEditor030=9；FullChain087=7；Components174=9；实际EXE工具箱22",
         "identity": "17份源码增量、760发布项、174加载记录逐SHA核对；后续修改须重新构建，不能套本候选成绩。",
         "status": "候选验证记录，不是本批完整交付/控件库阶段完成/人工验收。"
+      },
+      {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_LIFECYCLE_CHECKPOINT_20261027.json",
+        "sourceBaseline": "0de8f74e754b415425a6901e44d840e8d4e100ac",
+        "buildId": "development-3ca5b47c376441599acf1c1569e44d42",
+        "checks": "FieldEditing038=12；DesignTime007=15；WindowPresentation027=13；RuntimeEditor031=9；FullChain088=7；Components175=9；真实EXE工具箱22",
+        "identity": "19项源码增量、760发布项、174加载记录SHA逐项核对；编译身份仍0de8f74e加列明增量，不改写为后续提交。",
+        "status": "本批来源恢复/旧回调/递归释放已验证；不是控件库整体完成、完整Blob显示或真实VS/人工验收。"
       }
     ],
     "implementationFailures": [
       "保留此前WPF临时生成、Popup资源顺序、标题继承与局部payload SHA拒绝记录。",
-      "WindowPresentation026两失败为测试夹具DialogGroup的子字段缺DialogTitle，被正式元数据合同拒绝；补完整夹具后027十三组通过，未修改产品合同绕过。"
-    ]
+      "WindowPresentation026两失败为测试夹具DialogGroup的子字段缺DialogTitle，被正式元数据合同拒绝；补完整夹具后027十三组通过，未修改产品合同绕过。",
+      "native-input-family-ui-001原树EventSetter属性顺序MC3088失败，按原事件语义重排后构建通过。",
+      "FieldEditing039原Boolean未挂接面相对BitmapImage URI解析失败，改绝对pack URI；保留失败。",
+      "FieldEditing040实际枚举截图浅字、树截图因父布局偏移需本地VisualBrush规范化；最新修复/补充断言未运行，不称视觉通过。",
+      "用户VS色板标题/背景及页签文字反馈未通过；设计器闪烁为连续构建导致，已冻结人工检查窗口。",
+      "FieldEditing042树透明截图保留：VisualBrush本地范围未消除；实际布局存在，根因待证，不记树视觉通过。"
+    ],
+    "manualReviewFreeze": {
+      "status": "用户已允许本批集中修改构建；本批构建回归结束，交验期间不再重建或替换程序集",
+      "sourceBaseline": "b61047386c59ed66855f0e0d631eb54a3ed4f85d",
+      "latestBuilds": "23项源码增量、760发布项、174加载记录SHA核对。UI001 0错误/6619警告189.64秒；全量001 0错误/6492警告91.47秒，blob-native-design-review前缀。",
+      "evidenceBoundary": "独立色板资源、原枚举文字与原三页标题有限适配通过自动检查；C07树截图仍全透明未通过，未进行新一轮真实VS/用户验收；不是控件库或Blob整体完成。",
+      "allowedWork": "只读核证、Catalog及原方案维护；三路各单控件只读分析，root唯一写者。",
+      "nextBatch": "独立资源与文字、组装职责归整；完整数值/范围/订阅仍待集中替换。"
+    },
+    "productNamingPlan": {
+      "decision": "产品目录/命名空间/类型/资源文件采用SunEyeVision职责命名，不使用VM、Hik、HikPcUI及原厂程序集树作为产品结构；来源名仅保留在Catalog、原始证据、来源/许可说明。",
+      "status": "命名结构方案已记录，尚未批量重命名；当前批先收口独立资源/标题/组装职责。",
+      "structure": [
+        [
+          "Controls/Native/Input",
+          "Enumeration、Text、Popup、References；按真实职责分组，不按反编译程序集划目录。"
+        ],
+        [
+          "Controls/Native/Numeric",
+          "Integer、FloatingPoint、Range与实际共享叶；同一真实控件保持唯一实现。"
+        ],
+        [
+          "Controls/Native/Display",
+          "Color、Image、Overlay、Results；ROI形状/图形与视口的真实平台依赖分开。"
+        ],
+        [
+          "Controls/Native/Composition",
+          "Parameters、Roi、DisplaySettings、Window；仅复用原控件模板，不复制VM业务模型。"
+        ],
+        [
+          "Controls/Native/Dependencies",
+          "按Events、Commands、Converters、Geometry、Imaging职责归类；保留确需第三方依赖的归属说明。"
+        ],
+        [
+          "Themes/Native与Themes/Assets",
+          "与职责目录对应；原图标字节不改，资源URI及LogicalName随路径同步。"
+        ],
+        [
+          "Adapters / Presenters / Catalog",
+          "Adapters仅非视觉；Presenters创建控件并选模板；Catalog保存原程序集/MVID/类型/源SHA→本方路径/类型/依赖SHA一对一映射。"
+        ]
+      ],
+      "migrationRules": [
+        "先列当前已编译文件/资源及真实消费者的完整映射，再以一个依赖闭包同时更改目录、namespace、x:Class、clr-namespace、pack URI、EmbeddedResource LogicalName、反射类型名和测试定位。",
+        "原Apps.PcUI与VM.PcUI的同名Popup行为不同，按文本编辑弹层与颜色选择弹层的实际用途核名，分别保留实现；不得合并成一个近似Popup或简单改为A/B。",
+        "原件来源字段原样保留，localPath/localType及本地SHA随迁移更新；不得批量替换原originalPath/originalType/originalSha。",
+        "未完成源.pending保持未完成状态，不能借重命名宣布迁移完成；不为旧名字保别名、兼容目录或类型转发。",
+        "逐闭包静态解析、统一UI/全量Release构建、正式同源运行和设计器复验；不在用户验收窗口批量替换。"
+      ],
+      "firstClosureMapping": [
+        [
+          "HikPcUI.Controls.PopupButton",
+          "Input/Popups/ContentPopupButton",
+          "普通内容弹层；无额外IsPopupOpen焦点门控。"
+        ],
+        [
+          "Apps.PcUI.Controls.PopupButton",
+          "Input/Popups/ReferencePopupButton",
+          "原订阅组合的焦点门控及实际下拉反向同步；保独立实现。"
+        ],
+        [
+          "Apps.PcUI.Controls.HikTextBox",
+          "Input/Text/AdvanceTextBox",
+          "原Enter只向下一焦点移动，不把该行为命名为业务提交。"
+        ],
+        [
+          "Apps.XmlUI.ParamTab.DeleteTextBox",
+          "Input/Text/ReferenceTextBox",
+          "引用显示及索引编辑、Delete整文本清除；正式身份不从显示文本反建。"
+        ],
+        [
+          "Apps.XmlUI.ParamTab.SubTreeView",
+          "Input/Trees/ReferenceTreeView",
+          "原对象恢复、组节点不提交、叶双击提交；VM静态业务缓存不迁。"
+        ]
+      ]
+    }
   }
 }

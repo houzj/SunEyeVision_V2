@@ -20,7 +20,6 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using NumericUpDown=SunEyeVision.Plugin.Wpf.Controls.NumericUpDown;
-using ToggleSwitch=SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Workflow;
 using Native=SunEyeVision.Plugin.Wpf.Native;

@@ -2,6 +2,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
+using NativeBoolean=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl;
+using NativeTree=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.SubTreeView;
+using NativeText=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox;
+using AppsPopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -48,9 +52,10 @@ internal static class S2DocumentEditingCases
 
             var choiceValue="Binary";var choice=new DeclaredFieldEditor(new("type",DataType.Text,Choices:new TextChoiceConstraint(new[]{"Binary","BinaryInv"})),"极性",
                 new ConstantSetting(choiceValue),next=>choiceValue=(string)((ConstantSetting)next).Value!);
-            ((ComboBox)choice.InputElement!).SelectedItem="BinaryInv";Require(choiceValue=="BinaryInv","已声明选项未提交到草稿");
+            ((ComboBox)choice.InputElement!).SelectedValue="BinaryInv";Require(choiceValue=="BinaryInv","已声明选项未提交到草稿");
             Require(((ComboBox)choice.InputElement!).Items.Count==2,"选项不是来自正式闭合声明");
             Console.WriteLine("通过：下拉选项直接消费正式声明");
+            VerifyNativeInputs();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
@@ -174,10 +179,141 @@ internal static class S2DocumentEditingCases
             Pump();((TextBox)Descendants(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="215";
             context.Discard();Require(Threshold()==201,"取消改变已确认值");edits.Close();
             Console.WriteLine("通过：真实Runtime字段控件只写私有草稿，确认发布当前范围，取消保留已确认值");
-            Console.WriteLine("S4字段编辑：12组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
+            Console.WriteLine("S4字段编辑：18组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
+    }
+    private sealed record TreeNode(string Name,IReadOnlyList<TreeNode> EnumEntrysA)
+    {public bool IsChecked {get;set;}}
+    private static void VerifyNativeInputs()
+    {
+        var boolWrites=0;var booleanValue=false;var boolReject=true;
+        using var boolean=new DeclaredFieldEditor(new("enabled",DataType.Boolean),"使能",new ConstantSetting(false),setting=>
+        {if(boolReject)throw new InvalidOperationException("布尔写入拒绝");booleanValue=(bool)((ConstantSetting)setting).Value!;boolWrites++;});
+        Show(boolean);var toggle=(NativeBoolean)boolean.InputElement!;
+        Require(boolWrites==0&&toggle.OffContent is Image {Source:BitmapSource off}&&off.PixelWidth==48&&off.PixelHeight==32&&toggle.OnContent is Image {Source:BitmapSource on}&&on.PixelWidth==48&&on.PixelHeight==32,"原开关图片尺寸不符或初始化写入");
+        toggle.IsChecked=true;Require(toggle.IsChecked==false&&!booleanValue&&boolWrites==0&&boolean.HasInvalidText,"开关拒绝未恢复");
+        boolReject=false;toggle.IsChecked=true;Require(booleanValue&&boolWrites==1&&!boolean.HasInvalidText,"原开关修正未写入");
+        toggle.IsChecked=true;Require(boolWrites==1,"重复同步写入布尔草稿");
+        toggle.IsEnabled=false;toggle.IsChecked=false;Require(boolWrites==1,"禁用开关仍写入");
+        Require(typeof(DeclaredFieldEditor).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle")==null,"同源重复开关仍为产品后备");
+        Console.WriteLine("通过：原Apps.XmlUI开关图片、初始化无写入、拒绝回滚、去重和禁用保护");
+
+        var choiceWrites=0;var choiceReject=true;
+        using var choice=new DeclaredFieldEditor(new("enum",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"枚举",new ConstantSetting("a"),_=>
+        {if(choiceReject)throw new InvalidOperationException("枚举写入拒绝");choiceWrites++;},choiceLabels:new Dictionary<string,string>{{"a","同名"},{"b","同名"}});
+        Show(choice);var combo=(ComboBox)choice.InputElement!;
+        Require(((SolidColorBrush)combo.FindResource("Col_Theme")).Color==Color.FromRgb(231,105,0),"旧宿主主题覆盖原组合框主题");
+        combo.SelectedValue="b";Require(Equals(combo.SelectedValue,"a")&&choice.HasInvalidText&&choiceWrites==0,"拒绝枚举没有恢复正式键");
+        choiceReject=false;combo.SelectedValue="b";Require(Equals(((ConstantSetting)choice.Setting).Value,"b")&&choiceWrites==1&&!choice.HasInvalidText,"同名显示标签影响正式枚举键");
+        combo.SelectedValue="b";Require(choiceWrites==1,"枚举同值重复提交");
+        var oldCombo=combo;Require(choice.TrySetConstant("a"),"枚举重绘提案未接纳");
+        combo=(ComboBox)choice.InputElement!;var beforeOld=choiceWrites;oldCombo.SelectedValue="a";
+        Require(choiceWrites==beforeOld&&Equals(combo.SelectedValue,"a"),"旧枚举回调污染新状态");
+        combo.SelectedValue="b";Require(choiceWrites==beforeOld+1,"新枚举实例不能继续选择");
+        using var missingChoice=new DeclaredFieldEditor(new("enum-missing",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"未知枚举",new ConstantSetting("removed"),_=>choiceWrites++);
+        Require(missingChoice.HasInvalidText&&((ComboBox)missingChoice.InputElement!).SelectedIndex==-1,"未知初值被静默替换");
+        ((ComboBox)missingChoice.InputElement!).SelectedValue="b";
+        Require(!missingChoice.HasInvalidText&&Equals(((ConstantSetting)missingChoice.Setting).Value,"b"),"未知枚举不能显式修复");
+        owner.UpdateLayout();Pump();
+        Require(NativeDescendants(combo).OfType<TextBlock>().Any(text=>text.Text=="同名"),"原枚举实际选中标签未渲染");
+        Require(NativeDescendants(combo).OfType<TextBlock>().Where(text=>text.Text=="同名").All(text=>
+            text.Foreground is SolidColorBrush foreground&&combo.Foreground is SolidColorBrush original&&foreground.Color==original.Color),"深色宿主隐式样式覆盖原枚举文字");
+        combo.IsDropDownOpen=true;Pump();
+        var listPopup=(Popup)combo.Template.FindName("Popup",combo);
+        Require(NativeDescendants(listPopup.Child).OfType<TextBlock>().Any(text=>text.Text=="同名"),"原下拉选项标签未渲染");
+        Require(NativeDescendants(listPopup.Child).OfType<TextBlock>().Where(text=>text.Text=="同名").All(text=>
+            text.Foreground is SolidColorBrush foreground&&combo.Foreground is SolidColorBrush original&&foreground.Color==original.Color),"深色宿主隐式样式覆盖原枚举下拉文字");
+        CaptureNativeInput((FrameworkElement)listPopup.Child,"native-enumeration-popup.png");combo.IsDropDownOpen=false;Pump();
+        CaptureNativeInput(combo,"native-enumeration.png");
+        Console.WriteLine("通过：原枚举主题、正式键与同名标签分离、拒绝恢复和同值去重");
+
+        var nativeText=new NativeText{Text="abc",Width=180};var next=new TextBox{Width=180};
+        var textPanel=new StackPanel();textPanel.Children.Add(nativeText);textPanel.Children.Add(next);Show(textPanel);
+        Require(nativeText.IsReadOnly&&((TextBox)nativeText).IsReadOnly&&BindingOperations.IsDataBound(nativeText,TextBox.IsReadOnlyProperty),"原DeleteTextBox默认只读或真实基类绑定缺失");
+        nativeText.IsReadOnly=false;Pump();Require(!((TextBox)nativeText).IsReadOnly,"原只读投影没有同步基类");
+        nativeText.IsReadOnly=true;Pump();Require(((TextBox)nativeText).IsReadOnly,"原只读恢复未同步基类");
+        nativeText.Focus();Pump();Require(nativeText.IsKeyboardFocused,"原文本Enter检查缺焦点前置");
+        var enter=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(owner)!,Environment.TickCount,Key.Return){RoutedEvent=Keyboard.PreviewKeyDownEvent};
+        nativeText.RaiseEvent(enter);Pump();Require(enter.Handled&&next.IsKeyboardFocused,"原Apps.PcUI文本父类Enter未移焦");
+        nativeText.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(owner)!,Environment.TickCount,Key.Delete){RoutedEvent=Keyboard.KeyUpEvent});
+        Require(string.IsNullOrEmpty(nativeText.Text),"原Delete未清空整文本");
+        Console.WriteLine("通过：原文本父类Enter移焦及Delete整文本清除");
+
+        var leaf=new TreeNode("来源",Array.Empty<TreeNode>());var group=new TreeNode("节点",new[]{leaf});
+        var tree=new NativeTree{ItemSource=new[]{group},SelectedItem=leaf,Height=200,Width=250};var executions=0;object? chosen=null;
+        tree.OnTreeNodeDoubleClick+=(_,args)=>{executions++;chosen=args.Param;};Show(tree);Pump();
+        var actual=(TreeView)tree.FindName("treeView");
+        var root=(TreeViewItem)actual.ItemContainerGenerator.ContainerFromIndex(0);root.IsExpanded=true;root.UpdateLayout();Pump();
+        var item=(TreeViewItem)root.ItemContainerGenerator.ContainerFromIndex(0);
+        Require(item.IsSelected&&ReferenceEquals(tree.SelectedItem,leaf),"原树没有按对象恢复叶选中");
+        // A generated/selected item is not proof that the native header is actually painted.
+        var visualRows=new List<string>();
+        void InspectVisual(DependencyObject node)
+        {
+            if(node is FrameworkElement element)
+                visualRows.Add($"{element.GetType().Name}\t{element.Name}\t{element.ActualWidth}\t{element.ActualHeight}\t{element.IsVisible}\t{element.Opacity}\t{(element is TextBlock text?text.Text:element is ContentPresenter presenter?presenter.Content?.GetType().Name:"")}");
+            if(node is Visual)for(var index=0;index<VisualTreeHelper.GetChildrenCount(node);index++)InspectVisual(VisualTreeHelper.GetChild(node,index));
+        }
+        InspectVisual(tree);
+        File.WriteAllLines(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-tree-visual.tsv"),visualRows);
+        CaptureNativeInput(tree,"native-reference-tree-before-click.png");
+        void DoubleClick(TreeViewItem target)=>target.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});
+        DoubleClick(root);Require(executions==0,"分组双击错误提交");DoubleClick(item);
+        Require(executions==1&&ReferenceEquals(chosen,leaf),"叶双击没有原样回传投影对象");
+        CaptureNativeInput(tree,"native-reference-tree.png");
+        tree.SelectedItem=null;Require(!item.IsSelected,"空选中没有清原视觉高亮");
+        Console.WriteLine("通过：原树对象选中恢复、分组不提交与叶双击单次回传；图像可见性另核，不计视觉通过");
+
+        var popup=new AppsPopup();var content=new FrameworkElementFactory(typeof(TextBlock));content.SetValue(TextBlock.TextProperty,"原Popup内容");popup.SubContent=new DataTemplate{VisualTree=content};
+        Show(popup);popup.ApplyTemplate();popup.IsDropDownOpen=true;Pump();
+        Require(popup.IsPopupOpen&&popup.Template.FindName("PART_Popup",popup) is Popup {IsOpen:true},"Apps原弹层实际开层或状态同步失败");
+        popup.IsDropDownOpen=false;Pump();Require(!popup.IsPopupOpen,"Apps弹层关闭未同步原状态");
+        Require(NativeDescendants(popup).OfType<Image>().Any(image=>image.Source is BitmapSource bitmap&&bitmap.PixelWidth>0),"AppsPopup原编辑图标未渲染");
+        Console.WriteLine("通过：原Apps.PcUI弹层资源、编辑图标与实际开关状态同步");
+
+        using var pages=new DeclaredFieldsView(Enumerable.Range(0,3).Select(index=>
+        {
+            var id="header-test-"+index;var page=new[]{"基本参数","运行参数","结果显示"}[index];
+            return (new Port(id,DataType.Boolean),
+                new FieldPresentation(id,"使能",page,index,FieldEditorKind.Scalar){Layout=new FieldLayout(page,"参数")},
+                (ParameterSetting)new ConstantSetting(false));
+        }),(_,_)=>{});
+        var tabs=(TabControl)pages.Content;
+        var hostileText=new Style(typeof(TextBlock));
+        hostileText.Setters.Add(new Setter(TextBlock.ForegroundProperty,Brushes.White));
+        hostileText.Setters.Add(new Setter(TextBlock.FontWeightProperty,FontWeights.Light));
+        hostileText.Setters.Add(new Setter(TextBlock.FontSizeProperty,29d));
+        tabs.Resources[typeof(TextBlock)]=hostileText;
+        Show(pages);Require(tabs.IsLoaded,"页签标题检查没有进入实际Loaded窗口");
+        void CheckHeaders()
+        {
+            foreach(var tab in tabs.Items.Cast<TabItem>())
+            {
+                var header=(ContentControl)tab.Template.FindName("Content",tab);
+                var text=NativeDescendants(header).OfType<TextBlock>().Single(item=>Equals(item.Text,tab.Header?.ToString()));
+                var key=tab.IsSelected?"Col_ModuleConfig_Title_Selected_Foreground":"Col_ModuleConfig_Title_Foreground";
+                var expected=(SolidColorBrush)tabs.FindResource(key);
+                Require(text.Foreground is SolidColorBrush actual&&actual.Color==expected.Color,
+                    "宿主隐式白字覆盖原页签标题："+tab.Header);
+                Require(text.FontWeight==header.FontWeight&&text.FontSize==header.FontSize&&Equals(header.Content,tab.Header),
+                    "原页签字体继承或Header绑定被改变："+tab.Header);
+            }
+        }
+        for(var index=0;index<3;index++){tabs.SelectedIndex=index;Pump();CheckHeaders();}
+        CaptureNativeInput(pages,"native-tab-headers.png");
+        Show(new TextBlock{Text="临时卸载"});Show(pages);tabs.SelectedIndex=1;Pump();CheckHeaders();
+        Console.WriteLine("通过：真实窗口原三页标题抵御宿主隐式样式，选中及临时卸载重载保持继承");
+    }
+    private static void CaptureNativeInput(FrameworkElement element,string name)
+    {
+        element.UpdateLayout();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth),(int)Math.Ceiling(element.ActualHeight),96,96,PixelFormats.Pbgra32);
+        // Render the actual visual without its parent layout offset (e.g. a centered 250px tree).
+        var bounds=new Rect(0,0,element.ActualWidth,element.ActualHeight);var drawing=new DrawingVisual();
+        using(var context=drawing.RenderOpen())context.DrawRectangle(new VisualBrush(element){ViewboxUnits=BrushMappingMode.Absolute,Viewbox=bounds,ViewportUnits=BrushMappingMode.Absolute,Viewport=bounds},null,bounds);
+        bitmap.Render(drawing);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));encoder.Save(stream);
     }
     private static void Click(DependencyObject control,string tooltip)
     {

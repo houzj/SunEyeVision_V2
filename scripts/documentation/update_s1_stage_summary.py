@@ -272,6 +272,12 @@ def render_blob_control_plan(plan):
                + table(['控件','已确认事实','实施边界'], plan['recentControlFindings']) if plan.get('recentControlFindings') else '')
             + ('<h5>本批源码与正式产物检查点</h5>'
                + table(['项目','证据'], list(plan['candidateCheckpoint'].items())) if plan.get('candidateCheckpoint') else '')
+            + ('<h5>当前人工检查窗口与最新候选边界</h5>'
+               + table(['项目','实际状态'], list(plan['manualReviewFreeze'].items())) if plan.get('manualReviewFreeze') else '')
+            + ('<h5>产品职责命名与来源映射方案</h5><p>' + escape(plan['productNamingPlan']['decision'])
+               + '</p><p>' + escape(plan['productNamingPlan']['status']) + '</p>'
+               + table(['产品目录','职责'], plan['productNamingPlan']['structure'])
+               + '<p>' + escape('；'.join(plan['productNamingPlan']['migrationRules'])) + '</p>' if plan.get('productNamingPlan') else '')
             + ('<p><b>失败记录保留：</b>' + escape('；'.join(plan['implementationFailures'])) + '</p>' if plan.get('implementationFailures') else '')
             + '<h5>完整控件与组合清单</h5><p>' + escape(plan['inventoryRule']) + '</p>'
             + table(['编号 / 组合','Blob消费位置','VM控件 / 模板 / 组合链','已有成果及处理','证据 / 缺口','验收标准'], plan['compositions'])

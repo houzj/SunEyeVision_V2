@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Adapters.Resources;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Finite page/section/conditional composition. No workflow access or publication.</summary>
@@ -14,6 +15,7 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  private readonly List<(FrameworkElement View,FieldCondition Condition)> _conditions=new();
  private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
  private readonly TabControl _tabs;
+ private readonly NativeTabHeaderTextScope _tabTextScope;
  public int SelectedPageIndex
  {
   get=>_tabs.SelectedIndex;
@@ -50,6 +52,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
   var tabs=_tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
+  tabs.Resources.MergedDictionaries.Add(OriginalThemeResources.Create());
+  _tabTextScope=new NativeTabHeaderTextScope(tabs);
   tabs.SetResourceReference(StyleProperty,"TabControlStyle");
   tabs.SelectionChanged+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,tabs))PageChanged?.Invoke();};
   foreach(var page in all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group))
@@ -102,6 +106,7 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  public void Dispose()
  {
   if(_disposed)return;_disposed=true;
+  _tabTextScope.Dispose();
   foreach(var composition in _displayCompositions)composition.Dispose();
   foreach(var field in _fields){field.Changed-=UpdateVisibility;field.Dispose();}
   _displayCompositions.Clear();_fields.Clear();_conditions.Clear();_fieldConditions.Clear();_groups.Clear();

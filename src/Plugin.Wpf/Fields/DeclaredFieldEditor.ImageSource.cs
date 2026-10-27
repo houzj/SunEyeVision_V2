@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Presenters.Input;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
@@ -24,13 +25,7 @@ public sealed partial class DeclaredFieldEditor
 
     private void RenderImageSource()
     {
-        var combo=new ComboBox{Height=30,HorizontalAlignment=HorizontalAlignment.Stretch};
-        // These are migrated VM dictionaries, including the original lower-right triangle and popup template.
-        combo.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri(
-            "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",UriKind.Relative)});
-        combo.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri(
-            "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",UriKind.Relative)});
-        combo.SetResourceReference(StyleProperty,"ListViewComboBoxStyle");
+        var combo=NativeInputFactory.Enumeration();
         var generation=_renderGeneration;
         var refreshing=false;
         bool Current()=>!_disposed&&generation==_renderGeneration;

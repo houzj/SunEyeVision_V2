@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:localControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls">
+  <Style x:Key="LinkPopButton" TargetType="{x:Type localControl:PopupButton}">
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Width" Value="32" />
+    <Setter Property="localControl:PopupButton.ButtonStyle">
+      <Setter.Value>
+        <Style TargetType="{x:Type ToggleButton}">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                <Image Name="icon" Height="32" Width="32" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_normal.png" />
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_hover.png" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_click.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="{x:Type localControl:PopupButton}" TargetType="{x:Type localControl:PopupButton}">
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Width" Value="32" />
+    <Setter Property="localControl:PopupButton.ButtonStyle">
+      <Setter.Value>
+        <Style TargetType="{x:Type ToggleButton}">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                <Image Name="icon" Height="28" Width="28" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_normal.png" />
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_click.png" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_click.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

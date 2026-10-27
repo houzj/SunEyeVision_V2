@@ -35,7 +35,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerFirstItem.xaml",
           "originalSha256": "0663bb265659db60fbff40c195d0f201265cca567c9862b1ab0bbf60e6254a47",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
-          "localSha256": "58d3e84f2634a3a3630be83a34dba59f84365c9561154ed3a06902e066bfa672"
+          "localSha256": "e21fd7e9579b8ae65506b601147ac9b83b31db4a6e3e736b0dd291d569431008"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -169,7 +169,8 @@
         "visual": "已查看最终FieldEditing037默认/更多原生渲染，蓝色粗体标题恢复。真实VS/用户外观尚未确认，原Advanced初始化分支待VM实机核对，不代签。",
         "remaining": "完整库及Blob显示/ROI生产消费未完成，实际VS/用户外观待反馈；原Advanced初始化分支待VM实机核对。"
       },
-      "toolConsumerStatus": "公共RGBA字段/样式字段已消费此原件；BlobDisplay图形/文本完整生产编辑入口仍待C11/C13集中组装，不把定向库检查冒称Blob整页已接完。"
+      "toolConsumerStatus": "公共RGBA字段/样式字段已消费此原件；BlobDisplay图形/文本完整生产编辑入口仍待C11/C13集中组装，不把定向库检查冒称Blob整页已接完。",
+      "standaloneLeafAdaptation": "FirstItem局部合原LocalizationResourceDictionary，承接原父白背景；原命令/色块/字体/模板保留。独立叶仅验资源布局，选色提交须在真实父组合验证。"
     },
     {
       "id": "C02.vm-enumeration-g-image-source",
@@ -198,11 +199,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
-          "sha256": "c6cdd4ba5a275e9ccf35aeddedaa1adfd9160a6ca252db1aee124ddf7474ac36"
+          "sha256": "81dd32245fe197928b47cb2cd23e72eb15f1988748437f78438dc50031d9e175"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "a0c3f24d96a4eea6a000efe0b3ada87b3dc8c7e357d1f30b8e077cf9f88cfe87"
+          "sha256": "eb8bb3bbae57a93db1be77bd5e68f119569c45fc1b50bcbf3179619f3edf13cf"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -249,6 +250,34 @@
           "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
           "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7",
           "role": "当前实际主题继承路径；原件主题隔离待集中处理"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
+          "sha256": "fd04582cefd81b0031d0579abe3e90063ae8cec2e1a8071538496c34dc0b5f04"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+          "sha256": "708aba4bec618332bcb3ec63dde51d247abe55fbb401e776fd2cddcb829d0a22"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/OriginalThemeResources.cs",
+          "sha256": "d905397f6e3533016e74cb83c3afe43fa85b797b2aeb04a596c75c8e9c8ea612"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
+          "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -266,7 +295,7 @@
         "build": "生命周期UI001：0错误/6613警告174.95秒；全量Release001：0错误/6627警告106.82秒，串行。",
         "runtime": "同源FieldEditing038十二组、WindowPresentation027十三组、DesignTime007十五组、RuntimeEditor031九组、FullChain088七组、Components175九组，实际EXE22工具准入；待证据生成器逐SHA核收。",
         "visual": "原三角实际渲染已核，真实VS全布局及用户外观未验收。",
-        "remaining": "新增来源异常恢复/错误隔离/旧回调与Dispose已同源通过；实际主题仍继承Generic/VmFieldStyles，Col_Theme与原主题1不同，需下一公共原主题批集中隔离并同态核收；真实VS/用户尚未签。"
+        "remaining": "C02局部原主题已接，原Col_Theme不再被Generic覆盖；本批真实运行同态/VS/用户待核。数值内部旧VmFieldStyles仍未处理，不能套此结论。"
       },
       "toolConsumerStatus": "已由真实Blob输入组合及运行宿主消费；不是完整订阅树/ROI输入或控件库整体完成。",
       "selectionSources": [
@@ -285,7 +314,349 @@
           "role": "ImageSourceGroup声明来源选择链",
           "originalSha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
         }
-      ]
+      ],
+      "textInheritanceBoundary": "仅解除ContentPresenter自动生成文字受到的宿主隐式Style，保留原模板、显式Style与继承值；Loaded/选择/展开合并排队，Unloaded取消及代次失效。最新补充断言尚未运行，不计视觉通过。"
+    },
+    {
+      "id": "C04.apps-xmlui-boolean",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceFiles": [
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.BooleanControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BooleanControl.xaml",
+          "originalSha256": "dc32518f4f08c24619ea8da7e7c6657b75b61d3c074e233e7f19c6fa92bc3c7a",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml",
+          "localSha256": "2700daf3a8956a9ffec7a7b570ea94d7c60f3c98bf8695e70230cf5118efd1c2"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.BooleanControl",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\BooleanControl.xaml.cs",
+          "originalSha256": "8760a110405d4cf95890433b999b1d5dfeefbe0e5eff8afc6a720c02685657dc",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/BooleanControl.xaml.cs",
+          "localSha256": "2c4a929c76ede0c7b1b2a3380ba85626d7bf5353c4b4ed28423133a3e8c6e642"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+          "sha256": "eb8bb3bbae57a93db1be77bd5e68f119569c45fc1b50bcbf3179619f3edf13cf"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
+          "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_off.png",
+          "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+          "sha256": "708aba4bec618332bcb3ec63dde51d247abe55fbb401e776fd2cddcb829d0a22"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/OriginalThemeResources.cs",
+          "sha256": "d905397f6e3533016e74cb83c3afe43fa85b797b2aeb04a596c75c8e9c8ea612"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
+          "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
+        }
+      ],
+      "consumers": [
+        "DeclaredFieldEditor普通Boolean分支"
+      ],
+      "retired": [
+        "Controls/Native/Common/SourceBooleanToggle.xaml/.cs"
+      ],
+      "adaptation": "使用原BooleanControl及PNG；初始赋值后观察原事件，正式bool校验、相同值去重、拒绝恢复、渲染代次与禁用保护为非视觉适配。未把图形眼睛替换为开关。",
+      "status": "SOURCE_INTEGRATED_PENDING_VALIDATION",
+      "validation": {
+        "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
+        "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
+        "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      }
+    },
+    {
+      "id": "C03.original-enumeration",
+      "assembly": "Apps.Style",
+      "assemblyMvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+      "assemblySha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63",
+      "sourceFiles": [
+        {
+          "originalType": "ListViewComboBoxStyle及同原字典资源",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\comboboxstyle\\listviewcomboboxstyle.xaml",
+          "originalSha256": "e29b9d9fdb7fcf4f91ea3c7140a04a762b68ad3341d0dcaf84a5cb6769289a97",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+          "localSha256": "117e99a64f3dd86fa8dd4f6d64a7648a454f62e2c0ea30381e3a06986d9e7fc3"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+          "sha256": "eb8bb3bbae57a93db1be77bd5e68f119569c45fc1b50bcbf3179619f3edf13cf"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+          "sha256": "117e99a64f3dd86fa8dd4f6d64a7648a454f62e2c0ea30381e3a06986d9e7fc3"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+          "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
+          "sha256": "fd04582cefd81b0031d0579abe3e90063ae8cec2e1a8071538496c34dc0b5f04"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+          "sha256": "708aba4bec618332bcb3ec63dde51d247abe55fbb401e776fd2cddcb829d0a22"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/OriginalThemeResources.cs",
+          "sha256": "d905397f6e3533016e74cb83c3afe43fa85b797b2aeb04a596c75c8e9c8ea612"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
+          "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
+        }
+      ],
+      "consumers": [
+        "DeclaredFieldEditor普通闭集choices分支"
+      ],
+      "retired": [
+        "普通ComboBox自制ItemTemplate"
+      ],
+      "adaptation": "保原Combo模板/滚动/图标和局部原色；正式Key与显示Label投影分离，未知初值明确阻断，拒绝后恢复已接纳键。可订阅枚举及Region模式特殊分支仍待迁。",
+      "dependencyCatalogRefs": [
+        "C02.vm-enumeration-g-image-source"
+      ],
+      "status": "SOURCE_INTEGRATED_PENDING_VALIDATION",
+      "validation": {
+        "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
+        "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
+        "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      },
+      "textInheritanceBoundary": "仅解除ContentPresenter自动生成文字受到的宿主隐式Style，保留原模板、显式Style与继承值；Loaded/选择/展开合并排队，Unloaded取消及代次失效。最新补充断言尚未运行，不计视觉通过。"
+    },
+    {
+      "id": "C07.apps-pcui-popup-foundation",
+      "assembly": "Apps.PcUI",
+      "assemblyMvid": "380598ff-2817-448e-bad2-2350035a99a0",
+      "assemblySha256": "bc47626c5064cf4a28e0cfa8344c07c4d186c5a9efd321988de9482dfb10fd74",
+      "sourceFiles": [
+        {
+          "originalType": "Apps.PcUI.Controls.PopupButton",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml",
+          "originalSha256": "b492249955b5866cad766131bb691884c6ff77337e54207087dbd62a53295637",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml",
+          "localSha256": "e7205f546b467bdc5f2426a9e913436a0a364374a87a0fc56becf54d13219db9"
+        },
+        {
+          "originalType": "Apps.PcUI.Controls.PopupButton",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml.cs",
+          "originalSha256": "41b3966b44560d8282f3116032dd69815a1c0d7bedd5d00fe97acbf537e455c9",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/PopupButton.xaml.cs",
+          "localSha256": "f39d64de32774515549f8f655ff6d36826ae77a054803cfa78e4555b6be146a7"
+        },
+        {
+          "originalType": "Apps.PcUI.Controls.HikTextBox",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\HikTextBox.cs",
+          "originalSha256": "67294acd06026f230aee30e84c87f6b603b513f54de11bbd3bf612b3ee689915",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+          "localSha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0"
+        },
+        {
+          "originalType": "PopbuttonTemplate",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Controls\\CommomDictionary.xaml",
+          "originalSha256": "ca6260d1623cd583aff96560d72879f38a1a9308138508cb0b4cbc0ce1bb4426",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Controls/CommomDictionary.xaml",
+          "localSha256": "0fd6fb8973267e0ec03f6d88cb68e80b548d1241c849660a8f0aac24c84b8d30"
+        },
+        {
+          "originalType": "Apps.PcUI Popup Styles",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Styles\\PcUIStyle.xaml",
+          "originalSha256": "6f65b4bf5bc604dd966dc71b8c2f48c1f8a81f2a8392851d9d1867f54bc2e4d2",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml",
+          "localSha256": "04a1f9bfa0738f420c707c59dc673923b5448432be42a71e840d48f201bdcfa6"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_normal.png",
+          "sha256": "cc7b05a48dba2b4e08abda4b8d3c30afd0b27ddc25b5993082f8cb24220de953"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_hover.png",
+          "sha256": "071249f8f391fb02deb36c49cdbcfd9e4acf595365bc00314eda95595dafc3e2"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_关联_click.png",
+          "sha256": "c1c062a0866b15a7b741519e4a863a96082c788f31f4ca94e71fa11e5068c8bd"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_normal.png",
+          "sha256": "1dbf4f14abf519f7c04332802bfaea70fa1b063d7c433a628e420e7ce38334c2"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/edit_click.png",
+          "sha256": "a7b3fe62930d3a17fbd5029c5950b324a089b07212c0b00954ca226ed1ef7315"
+        }
+      ],
+      "consumers": [
+        "独立原件组装及正式Release字段验证；完整订阅/图形样式生产组合待接"
+      ],
+      "retired": [],
+      "adaptation": "保原IsPopupOpen焦点门控及反向同步；仅先装本地字典再解析原Template、改命名空间/pack URI；与VM.PcUI同名原件保持各自本地资源，不全局替换。",
+      "status": "SOURCE_INTEGRATED_PENDING_VALIDATION",
+      "validation": {
+        "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
+        "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
+        "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      }
+    },
+    {
+      "id": "C07.original-reference-tree-text-foundation",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceFiles": [
+        {
+          "originalType": "Apps.XmlUI.ParamTab.SubTreeView",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml",
+          "originalSha256": "6ecb778a669c66f23d9880d80e3cd388c4c497aee5791eaef86af2f70ec0da65",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+          "localSha256": "abf18ca29160bc5371eeb75c27cf9a821612f188a692cf5da3a4a3e03fb28a14"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTab.SubTreeView",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\SubTreeView.xaml.cs",
+          "originalSha256": "125d85828d6abfc811ce41106b790065393814d79eb339b0c7b2d32254e8c3ab",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+          "localSha256": "76b3216f56c985282109c1abb4e5d7eb6c5f06fa1f6ca5453d66247941d62f3b"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTab.DeleteTextBox",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml",
+          "originalSha256": "ae96024ed98c8c4f90a4e545d2c9d5d7774889800205ed703aa074b8622f78f9",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml",
+          "localSha256": "689c393f7212fbd2bab2f990df0b7000a635713d605c0b7e7f361fa19865e05f"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTab.DeleteTextBox",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml.cs",
+          "originalSha256": "303385857c5c26740d3d2634d149e90bf610c1677cb94d99e3ed39bfa069525a",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+          "localSha256": "d743aee3cbb11458f82150b0db20dcbdeef83a4926112bc0a0c0c90e5e6db306"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeViewResources.xaml",
+          "sha256": "3c31109c3dcec61ef4d4772cab8e44cd7837283b676ece0dac61ad9928c9bd13"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/ObjectEventArgs.cs",
+          "sha256": "e93b86ba21a8bd8fc883deb5167615e528c2c499bad1612eda543dd994ab1d89"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.UIHelper/TextBoxFocusEventArgs.cs",
+          "sha256": "6d3d11fbf6d8872f1e25affe324db792e31d3465bb708074c92c48d15e18cda6"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/LeftMarginMultiplierConverter.cs",
+          "sha256": "96d7ec1847ee51295dd71af45d9153cd3962f79c157eb13df1f2c1014d949e25"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Utility.Convert/TreeViewItemExtensions.cs",
+          "sha256": "8c2729e001be7d6a2b47fcb49559e2ef62cd6ab949831f5d6c48bc80b4fa171e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+          "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_uparrow.png",
+          "sha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_downarrow.png",
+          "sha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check2-box_off.png",
+          "sha256": "c0d428ae5edc804f9146f0350b7bbc9b651c3d587f56bd8378d8eac661efacd4"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/check2-box_on.png",
+          "sha256": "55ffb3d6668938a73075c3c002b225481e43cbda41e6304cf8da473bdf651e1c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
+          "sha256": "708aba4bec618332bcb3ec63dde51d247abe55fbb401e776fd2cddcb829d0a22"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/OriginalThemeResources.cs",
+          "sha256": "d905397f6e3533016e74cb83c3afe43fa85b797b2aeb04a596c75c8e9c8ea612"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
+          "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C07.apps-pcui-popup-foundation"
+      ],
+      "consumers": [
+        "独立设计/运行原件；正式订阅模式与索引组合消费待接"
+      ],
+      "retired": [
+        "原树静态LastItemName、Holder/VmIO/ButtonSelecter/VM.Core/日志业务查找"
+      ],
+      "adaptation": "保原树视觉/叶双击和原文本行为；树对象ItemSource/SelectedItem投影及恢复替换VM业务依赖，新增三字段临时焦点事件投影；原树EventSetter移到Style.Triggers前满足WPF属性元素顺序，不改原事件。",
+      "status": "SOURCE_INTEGRATED_PENDING_VALIDATION",
+      "validation": {
+        "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
+        "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
+        "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      }
     }
   ]
 }

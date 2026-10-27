@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using SunEyeVision.Plugin.Wpf.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
+using SunEyeVision.Plugin.Wpf.Presenters.Input;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
@@ -158,12 +159,19 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
                     eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
-                var input = new SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle
-                    { IsChecked = value as bool? == true,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Center };
+                var generation=_renderGeneration;
+                var input = new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl
+                    { IsChecked = value as bool? == true,IsThreeState=false,
+                      OffContent=NativeInputFactory.BooleanImage(false),OnContent=NativeInputFactory.BooleanImage(true),
+                      HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Center };
                 input.OnCheckedChange += (_, _) =>
                 {
-                    if(_updatingInput||Set(new ConstantSetting(input.IsChecked==true)))return;
-                    _updatingInput=true;try{input.IsChecked=((ConstantSetting)_setting).Value as bool?==true;}finally{_updatingInput=false;}
+                    if(_disposed||generation!=_renderGeneration||_updatingInput||!input.IsEnabled)return;
+                    if(input.IsChecked is bool proposed&&_setting is ConstantSetting {Value:bool accepted}&&proposed==accepted&&_editError.Length==0)return;
+                    if(Set(new ConstantSetting(input.IsChecked)))return;
+                    _updatingInput=true;
+                    try{input.SetCurrentValue(ToggleButton.IsCheckedProperty,((ConstantSetting)_setting).Value as bool?==true);}
+                    finally{_updatingInput=false;}
                 };
                 InputElement = input; _body.Children.Add(input);
             }
@@ -174,15 +182,24 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
                     var selector=new RegionSourceModeSelector((string)value!,key=>Set(new ConstantSetting(key)));
                     InputElement=selector;_body.Children.Add(selector);return;
                 }
-                var input = new ComboBox { ItemsSource = choices.Keys, SelectedItem = value };
+                var generation=_renderGeneration;
+                var input=NativeInputFactory.Enumeration();
+                input.DisplayMemberPath=nameof(ChoiceItem.Label);input.SelectedValuePath=nameof(ChoiceItem.Key);
+                input.ItemsSource=choices.Keys.Select(key=>new ChoiceItem(key,_choiceLabels?.GetValueOrDefault(key,key)??key)).ToArray();
+                input.SelectedValue=value;
+                if(value is not string current||!choices.Keys.Contains(current))
+                {_editError="当前枚举值不在声明选项中，请重新选择。";UpdateErrorDisplay();}
+                var restoring=false;
+                input.SelectionChanged += (_, _) =>
                 {
-                    var label=new FrameworkElementFactory(typeof(TextBlock));
-                    label.SetValue(TextBlock.ForegroundProperty,new SolidColorBrush(Color.FromRgb(102,102,102)));
-                    label.SetValue(TextBlock.FontWeightProperty,FontWeights.Normal);
-                    label.SetBinding(TextBlock.TextProperty,_choiceLabels is {Count:>0}?new Binding{Converter=new ChoiceLabelConverter(_choiceLabels)}:new Binding());
-                    input.ItemTemplate=new DataTemplate{VisualTree=label};
-                }
-                input.SelectionChanged += (_, _) => { if (input.SelectedItem is string key) Set(new ConstantSetting(key)); }; InputElement = input; _body.Children.Add(input);
+                    if(_disposed||generation!=_renderGeneration||restoring||!input.IsEnabled||input.SelectedValue is not string key)return;
+                    if(_setting is ConstantSetting accepted&&Equals(accepted.Value,key)&&_editError.Length==0)return;
+                    if(Set(new ConstantSetting(key)))return;
+                    restoring=true;
+                    try{input.SetCurrentValue(ComboBox.SelectedValueProperty,((ConstantSetting)_setting).Value);}
+                    finally{restoring=false;}
+                };
+                InputElement=input;_body.Children.Add(input);
             }
             else
             {
@@ -294,11 +311,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;Content=null;
     }
 
-    private sealed class ChoiceLabelConverter(IReadOnlyDictionary<string,string> labels):IValueConverter
-    {
-        public object Convert(object value,Type target,object parameter,CultureInfo culture)=>value is string key?labels.GetValueOrDefault(key,key):value;
-        public object ConvertBack(object value,Type target,object parameter,CultureInfo culture)=>throw new NotSupportedException();
-    }
+    private sealed record ChoiceItem(string Key,string Label);
 
     private static object? Default(TypeRef type) => type.Shape switch
     {

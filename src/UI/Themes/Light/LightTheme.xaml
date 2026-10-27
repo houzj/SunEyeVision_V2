@@ -246,6 +246,30 @@
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxToggleBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBorder}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxBadgeBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxBadge}}"/>
 
+    <!-- SDK 图像/插件透明背景资源合同，独立保留；工作流采用下方专用网格。 -->
+    <DrawingBrush x:Key="{x:Static base:ThemeKeys.CheckerboardBackgroundBrush}"
+                  TileMode="Tile" Viewport="0,0,32,32" ViewportUnits="Absolute">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <!-- 底色（亮格） -->
+                <GeometryDrawing Brush="{StaticResource {x:Static base:ThemeKeys.CanvasBackgroundBrush}}">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,32,32"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- 对角两暗格 -->
+                <GeometryDrawing Brush="{StaticResource {x:Static base:ThemeKeys.CanvasGridMinorBrush}}">
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <RectangleGeometry Rect="0,0,16,16"/>
+                            <RectangleGeometry Rect="16,16,16,16"/>
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
     <!-- 原件 DiagramPage.xaml + ZoomArea.xaml：6像素线网；独立于图像透明棋盘。 -->
     <DrawingBrush x:Key="{x:Static base:ThemeKeys.WorkflowCanvasGridBrush}"
                   TileMode="Tile" Viewport="0,0,6,6" ViewportUnits="Absolute">

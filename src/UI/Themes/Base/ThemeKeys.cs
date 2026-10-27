@@ -144,7 +144,10 @@
         /// <summary>画布节点边框</summary>
         public const string CanvasNodeBorder = "ThemeCanvasNodeBorder";
         public const string CanvasNodeBorderBrush = "ThemeCanvasNodeBorderBrush";
-        /// <summary>工作流画布原件6像素线网；与图像透明棋盘资源分离。</summary>
+        /// <summary>SDK图像和插件控件使用的透明棋盘背景资源合同。</summary>
+        public const string CheckerboardBackgroundBrush = "ThemeCheckerboardBackgroundBrush";
+
+        /// <summary>工作流画布原件6像素线网；独立于SDK图像透明棋盘。</summary>
         public const string WorkflowCanvasGridBrush = "ThemeWorkflowCanvasGridBrush";
 
         // ============ 图像区 / 缩略图（批次2） ============

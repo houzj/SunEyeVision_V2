@@ -8,7 +8,7 @@ namespace SunEyeVision.Plugin.Wpf.Fields;
 public sealed partial class DeclaredFieldEditor
 {
     private Func<IReadOnlyList<DeclaredReferenceCandidate>>? _imageSources;
-    private string _imageRefreshError="";
+    private string _imageRefreshError=>_state.SourceError;
     private Action? _detachImageSource;
 
     private void DetachImageSource(){_detachImageSource?.Invoke();_detachImageSource=null;}
@@ -32,7 +32,7 @@ public sealed partial class DeclaredFieldEditor
         void ChangeRefreshError(string value)
         {
             if(!Current()||_imageRefreshError==value)return;
-            _imageRefreshError=value;UpdateErrorDisplay();Changed?.Invoke();
+            _state.SetSourceError(value);
         }
         bool Matches(ComboBoxItem item)=>item.Tag is ReferenceSetting selected&&_setting is ReferenceSetting current
             ?SameImageReference(selected.Reference,current.Reference):item.Tag is UnsetSetting&&_setting is UnsetSetting;

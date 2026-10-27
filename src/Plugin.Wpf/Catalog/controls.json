@@ -143,6 +143,10 @@
           "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/resources/colorchart.png",
           "sha256": "866ca8200dfc6ab593845fb81f0a1734e3c1ddb9178b475534144f5c6d4aa423",
           "role": "原AdvancedColorPickerDialog更多页色谱；项目原Resource规则已包含"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
         }
       ],
       "themeKeys": [
@@ -199,11 +203,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
-          "sha256": "81dd32245fe197928b47cb2cd23e72eb15f1988748437f78438dc50031d9e175"
+          "sha256": "c4dee97c3606c58a3e0bce3a6eb3c98b930906670f778226d2d2ad15711360ac"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "eb8bb3bbae57a93db1be77bd5e68f119569c45fc1b50bcbf3179619f3edf13cf"
+          "sha256": "a8d70e5fec19d29f87314465a8e2f8a941e7fc341e7d244ac9f5a9fd9e4019cf"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -278,6 +282,10 @@
         {
           "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
           "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -353,7 +361,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "eb8bb3bbae57a93db1be77bd5e68f119569c45fc1b50bcbf3179619f3edf13cf"
+          "sha256": "a8d70e5fec19d29f87314465a8e2f8a941e7fc341e7d244ac9f5a9fd9e4019cf"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -374,6 +382,10 @@
         {
           "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
           "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
         }
       ],
       "consumers": [
@@ -419,7 +431,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "eb8bb3bbae57a93db1be77bd5e68f119569c45fc1b50bcbf3179619f3edf13cf"
+          "sha256": "a8d70e5fec19d29f87314465a8e2f8a941e7fc341e7d244ac9f5a9fd9e4019cf"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -444,6 +456,10 @@
         {
           "path": "src/Plugin.Wpf/Adapters/Resources/NativeEnumerationTextScope.cs",
           "sha256": "11e37135774c24c8b4c573f2fee528e35fedae199b9c0846385022e51a7a323e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
         }
       ],
       "consumers": [

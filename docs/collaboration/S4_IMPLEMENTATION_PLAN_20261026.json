@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27 第一阶段执行中。已完成原色板/图像源候选及本批来源错误恢复、重绘失效、递归释放修复。最终UI生命周期001和全量Release001均0错误；正式同源六轨检查及实际EXE22工具准入通过，19项源码增量/760发布项/174加载记录SHA核对。原主题隔离、完整数值订阅/ROI/显示/窗口组合及真实VS/用户验收仍未完成，第二阶段尚未准入。",
+  "current": "2026-10-27 第一阶段执行中。原输入/色板及本批唯一字段状态、错误/引用隔离、捕获重入基础已落码；最终blob-field-state UI002与全量002均0错误，六轨正式同源回归和实际EXE22工具准入通过。7项源码增量、760发布项、174加载记录SHA核对。订阅树透明图已证为验证坐标错误，不改原件。原单值/范围/完整订阅/ROI/显示/窗口组合、产品职责命名迁移及真实VS/VM同态人工仍未完成，第二阶段未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -325,7 +325,7 @@
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
   "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "按已冻结的依赖图集中替换数值单/双端与订阅组合：提取同一非视觉字段状态，一份原SliderArrange/Float构成单值或between，不保隐藏双UI/NativeNumberField改写/自制RangeField。同步启用正确Apps.PcUI.PopupButton/树/文本闭包，隔离公共原主题。完成Blob所需库全部L1—L3后进入Blob重组，当前不改Blob业务。",
+  "next": "复用已落码的唯一字段状态，集中接原单值/between与完整订阅组合：原文两级绑定提交、左右独立引用与一次ApplyFields原子接纳、实际私有宿主立即图校验、活动编辑先提交后捕获；同步退出NativeNumberField改写、自制RangeField与模态来源UI。产品职责命名已有方案，按完整依赖闭包迁移，不混原件家族。完成全部Blob所需库L1—L3后进入Blob重组。",
   "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -6951,18 +6951,23 @@
         "本批两次规定构建及六轨同源通过，职责拆分已落码；完整数值/订阅/ROI等仍待实施。"
       ],
       [
-        "C07树视觉未通过",
-        "FieldEditing042实际节点/文字非零尺寸、IsVisible=true/Opacity=1；ScrollContentPresenter有ItemsPresenter内容且尺寸230×200，不能再断言它缺内容。局部PNG仍250×200全透明。",
-        "native-tree-visual.tsv及前后点击PNG保留；下一步同一实际窗口与祖先裁剪/变换取证，未确定产品或捕获根因，不改原件猜修。"
+        "C07树取图缺陷已定位修复",
+        "同一产物owner整帧可见原树，实际居中偏移217.67/241.33落在旧绝对采样区域之外；按真实祖先变换裁取后文字、展开图标、选中背景均可见。",
+        "FieldEditing045十八组和实际PNG核收；没有修改原件或重建产品；完整订阅、VM同态及人工仍待验。"
+      ],
+      [
+        "唯一字段状态已落码验证",
+        "DeclaredFieldState承接原已接纳值/常量备份/模式/编辑与来源错误，视图只投影；数组隔离、引用索引语义比较、同值无通知、观察者异常与宿主拒绝分离及同步释放检查通过。",
+        "FieldEditing046新增五组及关联六轨通过。原文提交适配/原单值between/完整订阅仍待实现；不以基础状态完成宣布控件迁移完成。"
       ]
     ],
     "candidateCheckpoint": {
-      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_DESIGN_REVIEW_CHECKPOINT_20261027.json",
-      "sourceBaseline": "b61047386c59ed66855f0e0d631eb54a3ed4f85d",
-      "buildId": "development-c212250b150044d48425109993408ecc",
-      "checks": "FieldEditing042=18；DesignTime009=26；WindowPresentation029=13；RuntimeEditor033=9；FullChain090=7；Components177=9；真实Release EXE探针22工具准入。",
-      "identity": "23项源码增量、760发布项、174加载记录SHA核对。UI001 0错误/6619警告189.64秒；全量001 0错误/6492警告91.47秒，blob-native-design-review前缀。",
-      "status": "独立色板资源、原枚举文字与原三页标题有限适配通过自动检查；C07树截图仍全透明未通过，未进行新一轮真实VS/用户验收；不是控件库或Blob整体完成。"
+      "evidence": "docs/collaboration/evidence/O06_BLOB_FIELD_STATE_CHECKPOINT_20261027.json",
+      "sourceBaseline": "3f2f893d",
+      "buildId": "development-5de23e2242df49958fa934010da001fd",
+      "checks": "FieldEditing046=23；DesignTime010=26；WindowPresentation030=13；RuntimeEditor034=9；FullChain091=7；Components178=9；实际Release EXE22工具准入。",
+      "identity": "最终UI002：0错误/6619警告156.17秒；全量002：0错误/6629警告114.24秒。7项源码增量、760发布项及174加载记录SHA核对；blob-field-state前缀。",
+      "status": "唯一字段状态及视图/宿主捕获重入基础已落码验证；原数值/范围/完整订阅组合未替换，C05/C06/C07未完成；新产物真实VS/用户及VM同态验收仍待进行。"
     },
     "candidateCheckpointHistory": [
       {
@@ -6980,6 +6985,15 @@
         "checks": "FieldEditing038=12；DesignTime007=15；WindowPresentation027=13；RuntimeEditor031=9；FullChain088=7；Components175=9；真实EXE工具箱22",
         "identity": "19项源码增量、760发布项、174加载记录SHA逐项核对；编译身份仍0de8f74e加列明增量，不改写为后续提交。",
         "status": "本批来源恢复/旧回调/递归释放已验证；不是控件库整体完成、完整Blob显示或真实VS/人工验收。"
+      },
+      {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_DESIGN_REVIEW_CHECKPOINT_20261027.json",
+        "sourceBaseline": "b61047386c59ed66855f0e0d631eb54a3ed4f85d",
+        "buildId": "development-c212250b150044d48425109993408ecc",
+        "checks": "FieldEditing045=18（同产物取图修正补验）；DesignTime009=26；WindowPresentation029=13；RuntimeEditor033=9；FullChain090=7；Components177=9；真实Release EXE探针22工具准入。",
+        "identity": "23项源码增量、760发布项、174加载记录SHA核对。UI001 0错误/6619警告189.64秒；全量001 0错误/6492警告91.47秒，blob-native-design-review前缀。",
+        "status": "独立色板资源、枚举文字、原三页标题及树原件实际绘制通过自动检查；树透明PNG已证为取图视口错误，原件未改。完整订阅组合/数值范围/ROI等及真实VS/用户仍未验收，第一阶段未完成。",
+        "supplementaryEvidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_TREE_CAPTURE_20261027.json"
       }
     ],
     "implementationFailures": [
@@ -6989,13 +7003,15 @@
       "FieldEditing039原Boolean未挂接面相对BitmapImage URI解析失败，改绝对pack URI；保留失败。",
       "FieldEditing040实际枚举截图浅字、树截图因父布局偏移需本地VisualBrush规范化；最新修复/补充断言未运行，不称视觉通过。",
       "用户VS色板标题/背景及页签文字反馈未通过；设计器闪烁为连续构建导致，已冻结人工检查窗口。",
-      "FieldEditing042树透明截图保留：VisualBrush本地范围未消除；实际布局存在，根因待证，不记树视觉通过。"
+      "FieldEditing042树透明截图保留：VisualBrush本地范围未消除；实际布局存在，根因待证，不记树视觉通过。",
+      "FieldEditing044验证宿主同名变量CS0136两错误保留；仅改测试变量名后045通过，正式产物未重建。",
+      "状态首版UI001及全量001虽0错误，静态复核发现初始错误缺少首次文字投影；补构造末尾UpdateErrorDisplay后UI002/全量002及FieldEditing046通过。001不作最终候选身份。"
     ],
     "manualReviewFreeze": {
-      "status": "用户已允许本批集中修改构建；本批构建回归结束，交验期间不再重建或替换程序集",
+      "status": "本批集中修改、构建与回归已结束；用户实际检查期间不重建或替换程序集",
       "sourceBaseline": "b61047386c59ed66855f0e0d631eb54a3ed4f85d",
-      "latestBuilds": "23项源码增量、760发布项、174加载记录SHA核对。UI001 0错误/6619警告189.64秒；全量001 0错误/6492警告91.47秒，blob-native-design-review前缀。",
-      "evidenceBoundary": "独立色板资源、原枚举文字与原三页标题有限适配通过自动检查；C07树截图仍全透明未通过，未进行新一轮真实VS/用户验收；不是控件库或Blob整体完成。",
+      "latestBuilds": "最终UI002：0错误/6619警告156.17秒；全量002：0错误/6629警告114.24秒。7项源码增量、760发布项及174加载记录SHA核对；blob-field-state前缀。",
+      "evidenceBoundary": "唯一字段状态及视图/宿主捕获重入基础已落码验证；原数值/范围/完整订阅组合未替换，C05/C06/C07未完成；新产物真实VS/用户及VM同态验收仍待进行。",
       "allowedWork": "只读核证、Catalog及原方案维护；三路各单控件只读分析，root唯一写者。",
       "nextBatch": "独立资源与文字、组装职责归整；完整数值/范围/订阅仍待集中替换。"
     },
@@ -7066,6 +7082,40 @@
           "原对象恢复、组节点不提交、叶双击提交；VM静态业务缓存不迁。"
         ]
       ]
-    }
+    },
+    "nextIntegratedNumericReferenceBatch": [
+      [
+        "唯一字段状态",
+        "提取现FieldEditor已接纳值/常量备份/模式/编辑错误和来源错误；视觉仅借用，配对借两端状态，不创建隐藏两套UI。"
+      ],
+      [
+        "完整订阅",
+        "原两Popup/文本/索引树/来源树组装，现候选和完整引用身份投影；私有宿主校验通过才接纳，清空订阅保持未完成错误。"
+      ],
+      [
+        "原单值及范围",
+        "单值与between各一个原SliderArrange/Float；按实际原叶验证、两级绑定更新、已接纳值去重及拒绝恢复。范围整组提案，不先写一端造成非法中间态。"
+      ],
+      [
+        "捕获与重入",
+        "活动原文提交→条件/字段校验→CaptureSettings；防Commit→Changed→RuntimeNode.TryCapture递归，同值无模式/错误变化不再通知。"
+      ],
+      [
+        "消费者与清理",
+        "FieldsView持状态和Presenter所有权，输入入口各自持资源输入状态；重绑/取消/关闭使事件和任务代次失效。现行消费者及测试同步，不留旧数字/范围兼容链。"
+      ],
+      [
+        "现有原子合同",
+        "IToolSettingsDraft.ApplyFields已能原子接纳两常量；WPF准备两state提案→一次宿主ApplyFields→一起接纳及通知，不连调两次TrySet。"
+      ],
+      [
+        "真实配对准入",
+        "Blob现54字段/14配对同区及精度合法；仍须拒绝缺呈现/跨组/互指/重复端点/Dialog竞争。5个面积判定允许double.MaxValue，原滑条映射可能溢出，须凭VM字段证据明确显示域，不能静默截断业务值。"
+      ],
+      [
+        "来源立即校验",
+        "抽取现SelectReference私有快照安装/Validate/finally恢复，替换模态选择器；候选只读，校验通过才接纳引用或常量，不在校验器中调用TryCapture。"
+      ]
+    ]
   }
 }

@@ -56,6 +56,7 @@ internal static class S2DocumentEditingCases
             Require(((ComboBox)choice.InputElement!).Items.Count==2,"选项不是来自正式闭合声明");
             Console.WriteLine("通过：下拉选项直接消费正式声明");
             VerifyNativeInputs();
+            VerifyFieldState();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
@@ -179,13 +180,63 @@ internal static class S2DocumentEditingCases
             Pump();((TextBox)Descendants(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="215";
             context.Discard();Require(Threshold()==201,"取消改变已确认值");edits.Close();
             Console.WriteLine("通过：真实Runtime字段控件只写私有草稿，确认发布当前范围，取消保留已确认值");
-            Console.WriteLine("S4字段编辑：18组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
+            Console.WriteLine("S4字段编辑：23组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
     }
     private sealed record TreeNode(string Name,IReadOnlyList<TreeNode> EnumEntrysA)
     {public bool IsChecked {get;set;}}
+    private static void VerifyFieldState()
+    {
+        var writes=0;var changes=0;
+        using var scalar=new DeclaredFieldEditor(new("state-value",DataType.Integer,Storage:NumericStorage.Int32),"数值",new ConstantSetting(3L),_=>writes++);
+        scalar.Changed+=()=>changes++;
+        Require(scalar.TrySetConstant(3L)&&writes==0&&changes==0,"同值提案仍重复写入或通知");
+        Require(!scalar.TrySetConstant((long)int.MaxValue+1)&&scalar.HasInvalidText&&writes==0,"越界提案未拒绝");
+        Require(scalar.TrySetConstant(5L)&&!scalar.HasInvalidText&&writes==1,"有错误的状态不能用合法值修复");
+        Console.WriteLine("通过：唯一字段状态同值无重复写入通知，非法后可显式修复");
+
+        var initial=new[]{1d,2d};var arrayWrites=0;
+        using var array=new DeclaredFieldEditor(new("state-array",DataType.NumberArray),"数组",new ConstantSetting(initial),setting=>
+        {arrayWrites++;((double[])((ConstantSetting)setting).Value!)[0]=999;});
+        initial[0]=77;
+        Require(((double[])((ConstantSetting)array.Setting).Value!)[0]==1,"初始数组引用泄漏进状态");
+        var exposed=(double[])((ConstantSetting)array.Setting).Value!;exposed[0]=88;
+        Require(((double[])((ConstantSetting)array.Setting).Value!)[0]==1,"读取状态暴露可变数组");
+        Require(array.TrySetConstant(new[]{3d,4d})&&((double[])((ConstantSetting)array.Setting).Value!)[0]==3,"宿主回调原地修改污染已接纳状态");
+        Require(array.TrySetConstant(new[]{3d,4d})&&arrayWrites==1,"内容相同数组重复写入");
+        Console.WriteLine("通过：初值、读取及宿主提案数组相互隔离，按规范内容去重");
+
+        var referenceWrites=0;
+        OutputReference Source()=>new("producer","values",TypeRef.SequenceOf(DataType.Integer),selection:new BindingSelection.AtConstant(2));
+        using var reference=new DeclaredFieldEditor(new("state-reference",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"来源",
+            new ConstantSetting(7L),_=>referenceWrites++,_=>new ReferenceSetting(Source()));
+        Show(reference);Click(reference,"切换为订阅");Click(reference,"选择订阅来源");Click(reference,"选择订阅来源");
+        Require(referenceWrites==1&&reference.Setting is ReferenceSetting,"相同新建索引引用没有语义去重");
+        using var noBackup=new DeclaredFieldEditor(new("no-backup",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"无备份",
+            new ReferenceSetting(Source()),_=>throw new Exception("不得猜默认写入"),_=>null);
+        Show(noBackup);Click(noBackup,"切换为数值编辑");
+        Require(noBackup.Setting is ReferenceSetting&&noBackup.HasInvalidText&&noBackup.Error.Contains("常量"),"缺少备份时制造了默认常量");
+        Console.WriteLine("通过：索引引用按完整身份去重，无常量备份时明确拒绝恢复");
+
+        var observed=0;
+        using var observer=new DeclaredFieldEditor(new("observer",DataType.Integer),"观察者",new ConstantSetting(1L),_=>observed++);
+        observer.Changed+=()=>throw new InvalidOperationException("观察者失败");
+        try{observer.TrySetConstant(2L);throw new Exception("观察者异常被吞掉");}
+        catch(InvalidOperationException error)when(error.Message=="观察者失败"){}
+        Require(observed==1&&Equals(((ConstantSetting)observer.Setting).Value,2L)&&!observer.HasInvalidText,"观察者异常被误判为宿主拒绝");
+        DeclaredFieldEditor? rebound=null;var oldChanges=0;
+        rebound=new DeclaredFieldEditor(new("rebind-state",DataType.Integer),"重绑",new ConstantSetting(1L),_=>rebound!.Dispose());
+        rebound.Changed+=()=>oldChanges++;
+        Require(!rebound.TrySetConstant(2L)&&oldChanges==0,"宿主同步释放后旧会话继续通知");
+        Console.WriteLine("通过：观察者异常不回滚已接纳值，宿主同步释放后旧状态不通知");
+
+        using var missing=new DeclaredFieldEditor(new("required",DataType.Integer),"必填",new UnsetSetting(),_=>{});
+        Require(missing.HasInvalidText&&missing.Error.Contains("必填"),"必填未设置状态被当作合法");
+        Require(Descendants(missing).OfType<TextBlock>().Any(text=>text.Text==missing.Error),"初始错误没有投影到实际错误文字");
+        Console.WriteLine("通过：必填未设置明确阻断确认，不猜默认值");
+    }
     private static void VerifyNativeInputs()
     {
         var boolWrites=0;var booleanValue=false;var boolReject=true;
@@ -253,18 +304,35 @@ internal static class S2DocumentEditingCases
         void InspectVisual(DependencyObject node)
         {
             if(node is FrameworkElement element)
-                visualRows.Add($"{element.GetType().Name}\t{element.Name}\t{element.ActualWidth}\t{element.ActualHeight}\t{element.IsVisible}\t{element.Opacity}\t{(element is TextBlock text?text.Text:element is ContentPresenter presenter?presenter.Content?.GetType().Name:"")}");
+                visualRows.Add($"{element.GetType().Name}\t{element.Name}\t{element.ActualWidth}\t{element.ActualHeight}\t{element.IsVisible}\t{element.Opacity}\t{(element is TextBlock text?text.Text:element is ContentPresenter presenter?presenter.Content?.GetType().Name:"")}\toffset={VisualTreeHelper.GetOffset(element)}\tclip={System.Windows.Controls.Primitives.LayoutInformation.GetLayoutClip(element)}\ttransform={element.RenderTransform}");
             if(node is Visual)for(var index=0;index<VisualTreeHelper.GetChildrenCount(node);index++)InspectVisual(VisualTreeHelper.GetChild(node,index));
         }
         InspectVisual(tree);
         File.WriteAllLines(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-tree-visual.tsv"),visualRows);
         CaptureNativeInput(tree,"native-reference-tree-before-click.png");
+        var frame=new RenderTargetBitmap((int)Math.Ceiling(owner.ActualWidth),(int)Math.Ceiling(owner.ActualHeight),96,96,PixelFormats.Pbgra32);
+        frame.Render(owner);
+        void SaveTreeFrame(BitmapSource source,string name)
+        {
+            var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(source));
+            using var output=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));encoder.Save(output);
+        }
+        SaveTreeFrame(frame,"native-reference-tree-window.png");
+        var treeBounds=tree.TransformToAncestor(owner).TransformBounds(new Rect(tree.RenderSize));
+        File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-tree-window-bounds.txt"),treeBounds.ToString());
+        var treeFrame=new CroppedBitmap(frame,new Int32Rect((int)treeBounds.X,(int)treeBounds.Y,(int)treeBounds.Width,(int)treeBounds.Height));
+        SaveTreeFrame(treeFrame,"native-reference-tree-window-crop.png");
+        var treePixels=new byte[treeFrame.PixelWidth*treeFrame.PixelHeight*4];
+        treeFrame.CopyPixels(treePixels,treeFrame.PixelWidth*4,0);
+        Require(Enumerable.Range(0,treePixels.Length/4).Any(index=>treePixels[index*4+3]>128
+            &&treePixels[index*4]<128&&treePixels[index*4+1]<128&&treePixels[index*4+2]<128),
+            "实际窗口树区域未绘制文字或展开图标");
         void DoubleClick(TreeViewItem target)=>target.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});
         DoubleClick(root);Require(executions==0,"分组双击错误提交");DoubleClick(item);
         Require(executions==1&&ReferenceEquals(chosen,leaf),"叶双击没有原样回传投影对象");
         CaptureNativeInput(tree,"native-reference-tree.png");
         tree.SelectedItem=null;Require(!item.IsSelected,"空选中没有清原视觉高亮");
-        Console.WriteLine("通过：原树对象选中恢复、分组不提交与叶双击单次回传；图像可见性另核，不计视觉通过");
+        Console.WriteLine("通过：原树实际窗口绘制、对象选中恢复、分组不提交与叶双击单次回传；不代完整订阅或人工验收");
 
         var popup=new AppsPopup();var content=new FrameworkElementFactory(typeof(TextBlock));content.SetValue(TextBlock.TextProperty,"原Popup内容");popup.SubContent=new DataTemplate{VisualTree=content};
         Show(popup);popup.ApplyTemplate();popup.IsDropDownOpen=true;Pump();
@@ -308,8 +376,23 @@ internal static class S2DocumentEditingCases
     }
     private static void CaptureNativeInput(FrameworkElement element,string name)
     {
+        // VisualBrush bounds include the referenced root's offset. For inline controls,
+        // capture the same actual window first and crop using its accumulated transform.
+        if(element.IsDescendantOf(owner))
+        {
+            owner.UpdateLayout();
+            var frame=new RenderTargetBitmap((int)Math.Ceiling(owner.ActualWidth),(int)Math.Ceiling(owner.ActualHeight),96,96,PixelFormats.Pbgra32);
+            frame.Render(owner);
+            var area=element.TransformToAncestor(owner).TransformBounds(new Rect(element.RenderSize));
+            var left=Math.Max(0,(int)Math.Floor(area.Left));var top=Math.Max(0,(int)Math.Floor(area.Top));
+            var right=Math.Min(frame.PixelWidth,(int)Math.Ceiling(area.Right));var bottom=Math.Min(frame.PixelHeight,(int)Math.Ceiling(area.Bottom));
+            Require(right>left&&bottom>top,"实际窗口取图区域为空");
+            var inlineEncoder=new PngBitmapEncoder();inlineEncoder.Frames.Add(BitmapFrame.Create(new CroppedBitmap(frame,new Int32Rect(left,top,right-left,bottom-top))));
+            using var inlineStream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));inlineEncoder.Save(inlineStream);
+            return;
+        }
         element.UpdateLayout();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth),(int)Math.Ceiling(element.ActualHeight),96,96,PixelFormats.Pbgra32);
-        // Render the actual visual without its parent layout offset (e.g. a centered 250px tree).
+        // Popup has a separate visual root; retain its own content capture.
         var bounds=new Rect(0,0,element.ActualWidth,element.ActualHeight);var drawing=new DrawingVisual();
         using(var context=drawing.RenderOpen())context.DrawRectangle(new VisualBrush(element){ViewboxUnits=BrushMappingMode.Absolute,Viewbox=bounds,ViewportUnits=BrushMappingMode.Absolute,Viewport=bounds},null,bounds);
         bitmap.Render(drawing);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));

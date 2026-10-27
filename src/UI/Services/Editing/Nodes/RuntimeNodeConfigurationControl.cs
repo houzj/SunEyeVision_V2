@@ -26,7 +26,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     private IToolSettingsView? _view;
     private DataSourceQueryService? _query;
     private readonly List<DeclaredFieldEditor> _inputs=new();
-    private bool _syncing,_disposed;
+    private bool _syncing,_disposed,_capturing;
     private long _generation;
     private bool _running;
     private Func<WorkflowNodeBase,RuntimeDebugInvocation>? _captureDebug;
@@ -96,7 +96,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             new(references,target=>SelectReference(target,generation),FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel));
         _view.Changed+=Changed;Content=_view.View;
     }
-    private void Changed(){if(!_syncing)TryCapture(out _);}
+    private void Changed(){if(!_syncing&&!_capturing)TryCapture(out _);}
     public bool TryValidateEditor(out string error)
     {
         if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
@@ -113,6 +113,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     public bool TryCapture(out string error)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
+        if(_capturing){error="参数捕获正在进行。";return false;}
+        _capturing=true;
+        try
+        {
         if(_inputs.FirstOrDefault(f=>f.HasInvalidText) is { } invalid){error=invalid.Error;return false;}
         if(_view is null){error="配置尚未初始化。";return false;}
         if(!_view.TryCapture(out var settings,out var references,out error))return false;
@@ -128,6 +132,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         }
         catch(Exception exception)when(exception is ArgumentException or InvalidOperationException){error=exception.Message;return false;}
         finally{_syncing=false;}
+        }
+        finally{_capturing=false;}
     }
     private ParamSetting ToSetting(string id,OutputReference reference)
     {

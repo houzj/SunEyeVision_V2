@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "generatedUtc": "2026-10-27T05:33:41.643313+00:00",
+  "sourceBaseline": "3f2f893d",
+  "scope": "同一正式产物的订阅树实际绘制与取图修正；不是完整C07订阅或人工验收",
+  "previousCheckpoint": {
+    "path": "docs/collaboration/evidence/O06_BLOB_NATIVE_DESIGN_REVIEW_CHECKPOINT_20261027.json",
+    "sha256": "8370771b3d907e5067a386a277c5e7570b08007dd47ff699ce73a6efeb794021"
+  },
+  "product": {
+    "buildId": "development-c212250b150044d48425109993408ecc",
+    "payloadSha256": "ddcf79aaa074978e310eab45fc4d178b1a0a4e58c40ec85ae16dcb4953290272",
+    "verifiedEntries": 760,
+    "rebuilt": false
+  },
+  "check": {
+    "receipt": "Release/_validation/S4-20261025/FieldEditing/attempt-045/receipt.json",
+    "receiptSha256": "b968469c25eb538e0e2ff29bcecc3baa8deee783ad1497f9b57b6cf0db9d77cb",
+    "caseSourceSha256": "72323d2b385b18161ddb4ca4634ce3b15727eabca1122623921a0c527f4fe64f",
+    "exit": 0,
+    "passedGroups": 18,
+    "loadedRecordsVerified": 33
+  },
+  "diagnosis": {
+    "rootOffsetDip": [
+      217.66666666666669,
+      241.33333333333331
+    ],
+    "controlSizeDip": [
+      250,
+      200
+    ],
+    "oldAbsoluteViewbox": [
+      0,
+      0,
+      250,
+      200
+    ],
+    "conclusion": "VisualBrush引用根的外部偏移未被本地绝对Viewbox消除；原区域与实际树绘制区域无交集。owner整帧加真实TransformToAncestor裁取后节点/文字/选中态可见。只改取图验证，不改原控件。",
+    "normalization": "96 DPI, DIP归一化实际WPF窗口截图，非物理显示器像素取证"
+  },
+  "images": [
+    {
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-045/native-reference-tree.png",
+      "sha256": "a6622c7132ac30b2fe53b9559cfda5ca66c0e4d7e760af7c99bba58d34577075",
+      "size": [
+        251,
+        201
+      ],
+      "nontransparentPixels": 50451,
+      "darkInkPixels": 220
+    },
+    {
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-045/native-reference-tree-window.png",
+      "sha256": "a65123dd17061e417471c85444585bc9db124210117ff8c7399b3834bf4e0038"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-045/native-reference-tree-window-crop.png",
+      "sha256": "3b86a5f067c5acef651e3db76137f54850badac5ecff7064f3a2e1af06029b35"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-045/native-tree-visual.tsv",
+      "sha256": "65b601e593825a3a6289f17ee658eaf2377849b42703380e42da6d6a5aaca89c"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/FieldEditing/attempt-045/native-tree-window-bounds.txt",
+      "sha256": "dee5c82fa1fb46492984439946b53922bc308d202cead4768f86ec8d2f867af9"
+    }
+  ],
+  "failuresPreserved": [
+    "attempt-041/042全透明PNG",
+    "attempt-044验证宿主两个CS0136同名变量错误；修测试局部变量名后045通过，未重建产品"
+  ],
+  "remaining": [
+    "完整订阅组合、图校验拒绝恢复与解绑",
+    "数值/范围真实原组合和捕获重入保护",
+    "真实VS及VM同态人工验收"
+  ]
+}

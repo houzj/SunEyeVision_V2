@@ -103,7 +103,7 @@ def main():
             or not probe.get('commit') or not base.startswith(probe['commit'])):
         raise ValueError('真实Release工具箱探针未证明22工具准入: ' + str(probe_path))
     result = dict(schemaVersion=1, generatedUtc=datetime.now(timezone.utc).isoformat(),
-                  scope='Blob所需公共原色板及输入源候选的本批验证；不是全部控件、完整Blob显示/ROI或整体目标验收',
+                  scope='Blob所需公共原控件及组合的当前集中批验证；范围以所列源码增量和实际检查为准，不是全部控件、完整Blob显示/ROI或整体目标验收',
                   source=dict(compiledBase=base, headAtAudit=git('rev-parse', 'HEAD'), delta=delta),
                   payload=dict(path=payload_path.relative_to(ROOT).as_posix(), buildId=payload['buildId'],
                                sha256=sha(payload_path), verifiedEntries=len(entries)),

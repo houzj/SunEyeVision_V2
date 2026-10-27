@@ -16,6 +16,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     private long _generation;
     private bool _binding;
     private bool _disposed;
+    private bool _capturing;
     public static readonly DependencyProperty DraftProperty=DependencyProperty.Register(nameof(Draft),typeof(IToolSettingsDraft),typeof(DeclaredSettingsView),new PropertyMetadata(null,Rebind));
     public static readonly DependencyProperty OptionsProperty=DependencyProperty.Register(nameof(Options),typeof(ToolSettingsViewOptions),typeof(DeclaredSettingsView),new PropertyMetadata(null,Rebind));
     public static readonly DependencyProperty SelectedPageIndexProperty=DependencyProperty.Register(nameof(SelectedPageIndex),typeof(int),typeof(DeclaredSettingsView),
@@ -97,8 +98,17 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(Draft is null||_fields is null)throw new InvalidOperationException("A settings draft is required.");
-        settings=Draft.CaptureSettings();references=new ReadOnlyDictionary<string,ReferenceSetting>(new Dictionary<string,ReferenceSetting>(_references,StringComparer.Ordinal));
-        return _fields.TryValidate(out error);
+        settings=null!;references=new ReadOnlyDictionary<string,ReferenceSetting>(new Dictionary<string,ReferenceSetting>(StringComparer.Ordinal));
+        if(_capturing){error="参数捕获正在进行，请等待当前提交完成。";return false;}
+        _capturing=true;
+        try
+        {
+            if(!_fields.TryValidate(out error))return false;
+            settings=Draft.CaptureSettings();
+            references=new ReadOnlyDictionary<string,ReferenceSetting>(new Dictionary<string,ReferenceSetting>(_references,StringComparer.Ordinal));
+            return true;
+        }
+        finally{_capturing=false;}
     }
     public void Dispose()
     {

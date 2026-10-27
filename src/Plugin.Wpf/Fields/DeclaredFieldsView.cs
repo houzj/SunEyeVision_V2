@@ -3,12 +3,14 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Resources;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Finite page/section/conditional composition. No workflow access or publication.</summary>
 public sealed class DeclaredFieldsView : UserControl,IDisposable
 {
  private readonly List<DeclaredFieldEditor> _fields=new();
+ private readonly List<DeclaredFieldState> _fieldStates=new();
  private readonly List<DisplayObjectField> _displayCompositions=new();
  private bool _disposed;
  private readonly Dictionary<string,StackPanel> _groups=new(StringComparer.Ordinal);
@@ -48,7 +50,9 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   foreach(var field in all)
   {
    if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
-   var editor=new DeclaredFieldEditor(field.Port,field.Presentation.DisplayName,field.Value,value=>writeDraft(field.Port.Id,value),selectReference,constantBackup?.Invoke(field.Port.Id),formatReference,field.Presentation.ChoiceLabels,field.Presentation);
+   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(field.Port.Id,value),constantBackup?.Invoke(field.Port.Id));
+   _fieldStates.Add(state);
+   var editor=new DeclaredFieldEditor(state,field.Presentation.DisplayName,selectReference,formatReference,field.Presentation.ChoiceLabels,field.Presentation);
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
   var tabs=_tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
@@ -109,6 +113,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   _tabTextScope.Dispose();
   foreach(var composition in _displayCompositions)composition.Dispose();
   foreach(var field in _fields){field.Changed-=UpdateVisibility;field.Dispose();}
+  foreach(var state in _fieldStates)state.Dispose();
+  _fieldStates.Clear();
   _displayCompositions.Clear();_fields.Clear();_conditions.Clear();_fieldConditions.Clear();_groups.Clear();
   PageChanged=null;_tabs.Items.Clear();Content=null;
  }

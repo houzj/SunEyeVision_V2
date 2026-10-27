@@ -6496,7 +6496,7 @@
       }
     ],
     "rightClickAddTools": {
-      "status": "386实际Host通过，固定提交后387验证启动待验",
+      "status": "388正式同版162专项通过，正常启动68752，待用户人工验收",
       "scope": "空白画布右键，Group冻结",
       "chains": [
         "原件DiagramPage infos分组/MenuItem_Click，ItemsPage ptPos",
@@ -6512,6 +6512,46 @@
         {
           "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml",
           "sha256": "906E1E21324EE23D6E2F15853FA54AFE5C268539FFF49A252020DE0E94C8D4C4"
+        }
+      ],
+      "productSource": "ead81c37a1b262a5ed3f42b70f14a1b2b17c98fb",
+      "uiBuild": "0错误/1334警告/90.60秒",
+      "validation": {
+        "actualHost": 1,
+        "toolbox": 5,
+        "themeStartup": 1,
+        "canvasAndTransaction": 155,
+        "total": 162,
+        "probeExit": 0,
+        "binaryReceipt": "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-388/binary-receipt.json",
+        "normalStartup": {
+          "responding": true,
+          "checkedAt": "2026-10-27T21:07:47.8828458+08:00",
+          "pid": 68752,
+          "visualStudioDesigner": "未验证",
+          "physicalOleAndMultiDpi": "待人工",
+          "manualAcceptance": "待用户",
+          "windowTitle": "SunEyeVision · 起始页",
+          "productSource": "ead81c37a1b262a5ed3f42b70f14a1b2b17c98fb"
+        }
+      },
+      "visualCorrection": "387核图发现禁用文字没有暗显，388局部opacity0.45修复并复核，不改全局菜单模板",
+      "sources": [
+        {
+          "path": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ToolContextMenu.cs",
+          "sha256": "6F743AC6E3BEBFE859A1310124BDA55EBE85D059BA2A7E7E4E9E03F56D75AF19"
+        },
+        {
+          "path": "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Clipboard.cs",
+          "sha256": "7734BB44C3DF08D3CF876CF758979BF3DAF987663F401A8FE266238D0F425212"
+        },
+        {
+          "path": "src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs",
+          "sha256": "574972BE50435076EFEE7B40606F20F9EC3F5A04DFB405E6DF57A27E65BA4F8B"
+        },
+        {
+          "path": "tests/SunEyeVision.UI.Tests/RootWorkspaceHostTests.cs",
+          "sha256": "606CE94F4716928E7E9A889380185472BECB60BF7500952678D1425FBFEA5099"
         }
       ]
     }

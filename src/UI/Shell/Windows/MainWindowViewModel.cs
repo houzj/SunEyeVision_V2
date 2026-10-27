@@ -2525,7 +2525,7 @@ SplitterPosition = position;
 
             var firstImageSource = queryService.GetAvailableDataSources(node.Id)
                 .FirstOrDefault(ds => ds.PropertyType != null
-                    && typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+                    && (typeof(IVisionImage).IsAssignableFrom(ds.PropertyType)||typeof(Plugin.Contracts.IReadOnlyImage).IsAssignableFrom(ds.PropertyType)));
 
             if (firstImageSource != null)
             {

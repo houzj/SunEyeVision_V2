@@ -31,6 +31,7 @@ internal static class S2DocumentEditingCases
     private static int Run()
     {
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        SunEyeVision.Plugin.SDK.Vision.Hosting.VisionImageFactoryLocator.Current=new SunEyeVision.HalAdapter.HalImageFactory();
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
         foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/NodeStyleResources.xaml","Resources/Styles/ConnectionStyleResources.xaml","Resources/Styles/CanvasStyleResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
             app.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
@@ -45,8 +46,12 @@ internal static class S2DocumentEditingCases
         var tab=vm.WorkflowTabViewModel.SelectedTab!;var canvasControl=new WorkflowCanvasControl{DataContext=tab,Width=600,Height=400};
         var canvas=(Canvas)canvasControl.FindName("WorkflowCanvas");var resultHost=new ContentControl{Width=620};
         resultHost.SetBinding(ContentControl.ContentProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=vm});
-        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(resultHost);
-        var shell=new Window{Content=panel,Width=1240,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
+        var image=new ImageControl{Width=400,Height=400};vm.GetMainImageControl=()=>image;
+        image.SetBinding(ImageControl.SourceImageProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.DisplayImage)){Source=vm.ImageResult});
+        var resultManager=(SunEyeVision.UI.Services.Workflow.NodeResultManager)typeof(MainWindowViewModel).GetField("_nodeResultManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
+        resultManager.SetResultRenderLayer(image.ResultRenderLayerControl);
+        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(image);panel.Children.Add(resultHost);
+        var shell=new Window{Content=panel,Width=1640,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var drop=new WorkflowDragDropHandler(canvasControl){TabViewModel=vm.WorkflowTabViewModel};
         typeof(WorkflowDragDropHandler).GetField("_cachedViewModel",BindingFlags.NonPublic|BindingFlags.Static)!.SetValue(null,vm);
         typeof(WorkflowDragDropHandler).GetField("_viewModelCacheTime",BindingFlags.NonPublic|BindingFlags.Static)!.SetValue(null,DateTime.Now);
@@ -95,6 +100,7 @@ internal static class S2DocumentEditingCases
             Select(blob);Execute();Require(Count(blob.Id)==2&&Count(downstream.Id)==2,"默认入口真实HALCON结果不符");
             var output=(BlobOutput)Result(blob.Id).Output!;using var region=output.Region.AcquireReader();Require(output.GrayImage is not null&&output.GrayImage.Frame==region.SourceFrame,"物理帧丢失");
             Require(Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single().Items.Count==2,"正式结果未进入实际表");
+            Require(image.SourceImage?.PixelWidth==64&&vm.CreateDataSourceQueryService(flow.Id).GetImageDisplaySources(blob.Id).Any(s=>s.SourceNodeId==blob.Id&&s.PropertyName==BlobSchema.Field(5)),"Runtime主图像或自身图像来源未进入真实显示链");
         });
         Case("Runtime窗口编辑数量上限确认发布，下游实际来源弹窗订阅最终Region",()=>
         {

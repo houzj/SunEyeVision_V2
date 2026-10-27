@@ -137,6 +137,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.SetResolvedInputImage(parameters.ResolvedInputImage);
                 request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
                 var inputFrame = ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
+                var inputAddress=ImageFrameProvenance.CaptureAddress(parameters.ResolvedInputImage);
                 var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
                 request.AttachResultMetadata(result);
                 if (request.CancellationToken.IsCancellationRequested || request.ExecutionIdentity?.IsCurrent == false)
@@ -147,7 +148,8 @@ namespace SunEyeVision.Plugin.SDK.Core
                     return cancelled;
                 }
                 ImageFrameProvenance.RecordResult(result, inputFrame,
-                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown);
+                    (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown,
+                    inputAddress);
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
                 ApplyJudgmentStatus(parameters, result);

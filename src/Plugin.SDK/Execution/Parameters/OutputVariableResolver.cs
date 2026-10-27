@@ -42,6 +42,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>解析到的值</returns>
         public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null)
         {
+            if(result is RuntimeToolResults runtime&&runtime.BindingOutputSchema!.Outputs.Any(port=>port.Id==propertyPath&&
+                port.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Resource&&port.Type.Resource==SunEyeVision.Plugin.Contracts.ResourceKind.Image))
+                return runtime.GetImageView(propertyPath);
             var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
             if (parsedPath.Count == 0)
                 throw new InvalidOperationException($"属性路径为空: '{propertyPath}'");

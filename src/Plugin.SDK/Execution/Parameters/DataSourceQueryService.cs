@@ -372,7 +372,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             // 步骤 1: 当前节点自身的图像输出 (Distance=0)
             var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
             var nodeName = _nodeInfoProvider?.GetNodeName(currentNodeId) ?? currentNodeId;
-            if (nodeType != null)
+            if(FormalOutputContractReader is not null)
+            {
+                foreach(var source in GetNodeOutputProperties(currentNodeId).Where(IsImageSource))
+                {source.Distance=0;result.Add(source);}
+            }
+            else if (nodeType != null)
             {
                 var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
                 if (metadataList != null)

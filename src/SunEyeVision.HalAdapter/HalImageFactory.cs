@@ -7,10 +7,12 @@ namespace SunEyeVision.HalAdapter
     /// Halcon 侧图像加载工厂：实现 SDK <see cref="IVisionImageFactory"/>，
     /// 由主程序装配注册到 <see cref="VisionImageFactoryLocator"/>（对称架构 S5）。
     /// </summary>
-    public sealed class HalImageFactory : IVisionImageFactory
+    public sealed class HalImageFactory : IVisionImageFactory,IReadOnlyImageViewFactory
     {
         public bool CanCreateFromFile(string path) => true;
 
         public IVisionImage CreateFromFile(string path) => HalImage.CreateFromFile(path);
+        public IVisionImage CopyImage(SunEyeVision.Plugin.Contracts.IReadOnlyImage source)
+            =>new HalImage(HalconResourceBridge.CopyImage(source));
     }
 }

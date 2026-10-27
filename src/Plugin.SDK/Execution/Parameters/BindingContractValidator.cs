@@ -22,6 +22,16 @@ public static partial class BindingContractValidator
         BindingValidation Pending(string message) => new(BindingCompatibility.Unresolved, message);
         if(!Enum.IsDefined(conversion))return Bad("Unknown conversion operation.");
         if (contract == null) return Pending("上游输出契约暂不可用，等待校验");
+        var imagePort=contract.SingleOrDefault(output=>output.PortId==path&&output.Kind==OutputVariableKind.Data&&
+            output.ValueDeclaration is {Shape:SunEyeVision.Plugin.Contracts.ValueShape.Resource,Resource:SunEyeVision.Plugin.Contracts.ResourceKind.Image});
+        if(imagePort is not null)
+        {
+            if(conversion!=BindingConversion.Automatic)return Bad("图像端口不支持数值转换。");
+            if(allowed.Count==0)return Pending("输入图像类型要求尚未声明。");
+            if(!allowed.Any(type=>type==typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage)||type==typeof(SunEyeVision.Plugin.Contracts.IReadOnlyImage)))
+                return Bad("图像端口不符合当前输入要求。");
+            return new(imagePort.AllowsNull?BindingCompatibility.Conditional:BindingCompatibility.Compatible,"已声明图像端口",typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage));
+        }
         var parts = path.Split('.');
         if (parts.Length == 0 || parts.Any(p => !Regex.IsMatch(p, @"^[A-Za-z_\p{L}][\w]*(?:\[Type=[A-Za-z]+\])?(?:\[(?:[0-9]+)?\])?$")))
             return Bad("绑定元素路径格式无效，请重新绑定");

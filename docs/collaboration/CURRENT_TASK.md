@@ -257,3 +257,20 @@
 - 根SDK Blob工程及旧参数/结果/转换本轮尚未删除，不把缺件试验称源码已仅两工程。待迁消费者包括src/UI/Services/Editing/EditorDraftAdapter.cs、三个Blob单元测试文件及BlobFieldSchemaCases/BlobWorkflowResourceCases/O06AlgorithmCases/S2DocumentEditingCases/S3BlobRuntimeCases/S3ComponentCases等验证源码；按新合同改写，不做旧模型包装或兼容别名，然后删除根工程/类/锁文件及发布残留，更新两份slnx/引用和测试加载器。
 - 下一步需实际验证并接通Runtime→现行SDK图像消费边界：RuntimeToolResults发布IReadOnlyImage，SDK ToolExecutionPreparation.ResolveInputImage目前要求IVisionImage；不得把该混合方向当已通过，也不得用旧Blob结果模型包装。此项属于仍在使用的其他工具消费调整，不是旧项目兼容。同步补主图像/显示XML消费，再推进本地ROI/位置常量、全局变量和完整VM原件交互。
 - VS设计时未验证，无新人工验收，保留原视觉未通过反馈；缺省输入非推进快照、本地ROI、完整图形文本及其他未完成项继续在完整目标内。没有代签或宣告整体完成。
+
+## 2026-10-27 Runtime图像混合消费与真实主图像（最新）
+
+- 基线提交744b1d0ffaeafdc9285fb82daf3027d83047862c，分支main，执行者Codex，单工作树单产品写者。上一目标轮只核对已有目标，未推进实现；本轮继续实际源码/运行证据，不重建或缩减active目标。
+- 跨模块影响已评估：SDK图像输入/输出解析、正式绑定端口准入、结果资源Owner、物理帧传播、HALCON图像工厂、工作流发布及UI来源/主图像。Runtime Blob本身仍无SDK/WPF/UI依赖，未新增工程或Blob DTO转换。
+- RuntimeToolResults保留原始IToolOutput及IReadOnlyImage规范值；现行SDK消费者与主图像通过可选宿主工厂按正式端口取得精确像素/实际Domain副本。缓存与规范输出由同一个稳定Owner持有，不在发布后替换Owner；先取得的发布读者也保留后来生成的副本，最后读者退出释放。
+- HalImageFactory实现中立图像复制能力，复用现有HalconResourceBridge的像素/实际Domain复制；纯Runtime不要求SDK图像工厂。请求原生视图但无复制能力时明确拒绝；复制失败、验证与释放同时失败保留全部错误，恢复工厂后可继续读取，原输入不受释放影响。
+- 仅精确复制记录原完整帧地址；SDK工具显式PreserveCoordinates时才传播，未知/变换策略清除复制地址，不能凭尺寸/名称伪造同帧来源。正式图像端口按精确声明匹配，拒绝伪造路径后缀、集合目标及数值转换；普通CLR路径检查仍保留。
+- 当前节点图像来源列表读取正式输出声明；实际主图像控件已显示Runtime图像。默认工具箱真实Drop→自动来源→HALCON→结果表及主图像→私有调试→确认取消→保存重开在有Wpf及无旧SDK入口/Wpf下各七组通过，不以显示位图充当算法输入。
+- 最终串行UI004：0错误/6613警告122.69秒；全量release001：0错误/6575警告94.51秒，日志blob-runtime-image前缀。UI001—003为前序候选，不能套最终源码。正式清单buildId=o06-runtime-image-20261027-001，SHA F2E484BDF5FD2227D20BF91F4AB19B8AE448364D2AC92146AF6AEBCDED1BB3A2；编译身份仍744b1d0f加列明增量，不用随后提交号改写产物。
+- 正式RuntimeImage004/005有Wpf及无旧SDK入口/Wpf各七组：真实Runtime→现行ImageThreshold→Runtime及源Region、实际Domain100/目标面积16、原帧、规范值/原生缓存、读者与释放、工厂负向和恢复、端口负向。不是所有工具图像能力或完整VM视觉验收。
+- RuntimeEditor020/021各八组、RuntimeDebug008/009各七组、RuntimeCatalog015四组、RuntimeKernel032十六组、RuntimeWorkflow023十组、Components161九组/159无Wpf十组、Algorithm018九组、DocumentEditing040二十八组、FieldEditing019八组、FullChain077/079各七组同源通过。部分关联回归仍用旧SDK Blob API，不能计为旧模型已删除。
+- ComponentDeployment045十九项通过，新增旧SDK入口/Wpf均缺席时Runtime图像混合消费；实际Release EXE工具箱准入、缺Runtime/坏元数据拒绝、恢复准入均通过。临时四文件与清单原SHA恢复；17份源码增量、768发布项及496加载记录已核对，证据docs/collaboration/evidence/O06_RUNTIME_IMAGE_CHECKPOINT_20261027.json。
+- 失败保留：RuntimeImage001测试GenRectangle1整数重载歧义，改显式double；002真实SDK绑定把稳定端口ID当CLR路径拒绝，修正式图像端口准入/读取后通过。未删失败日志。已查看RuntimeEditor020真实运行图，当前布局/组合仍待VM同态核收，不将功能PASS算视觉通过。
+- 原O06/目标JSON已统一更新，硬性blobFileStructure和完整s4GoalPlan不变，生成器697锚点且幂等。VS设计时未验证，无新用户人工反馈，原视觉未通过反馈保留；M1/M2/M3及整体目标继续未完成/active。
+- 下一步删除根SDK Blob工程、旧参数/结果/转换并改写剩余消费者/测试/项目引用/加载器，清理发布残留；同步移除EditorDraftAdapter的ForBlob、SolutionCompatibilityAdapter旧Blob字段分支及SolutionLegacyBindingMigration内LegacyBlobFieldAliases，不保留旧项目兼容。现有后端仍需拒绝缺少RuntimeConfiguration的Blob旧配置，不能静默生成默认配置。
+- 本地ROI/位置常量、Runtime全局变量、缺省输入非推进快照、完整BlobDisplay图形文本消费、全部所需VM原件及完整交互仍待完成；不以本次主图像或混合链检查代替这些要求。

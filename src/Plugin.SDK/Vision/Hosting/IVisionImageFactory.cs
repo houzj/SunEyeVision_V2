@@ -2,6 +2,12 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Vision.Hosting
 {
+    /// <summary>Optional host capability for an owned, exact pixel/Domain copy of a
+    /// neutral image. Algorithm plugins do not depend on the selected backend.</summary>
+    public interface IReadOnlyImageViewFactory
+    {
+        IVisionImage CopyImage(SunEyeVision.Plugin.Contracts.IReadOnlyImage source);
+    }
     /// <summary>
     /// 图像创建工厂契约：算法库/适配层实现具体图像加载（HalImage/CvImage 等），
     /// 框架层只消费 IVisionImage，避免 SDK 反向依赖引擎。

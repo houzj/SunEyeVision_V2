@@ -250,10 +250,16 @@ internal sealed class WorkflowBindingContext : IDisposable
                     if(!actual.TryGetValue(output.Name,out var value))throw new InvalidOperationException("The formal output is absent from this invocation: "+output.Name+" ("+port.Id+").");
                     // This identity labels the actual immutable output capture, not an inferred camera frame.
                     // Physical source provenance comes from this admitted invocation and its stable output port.
+                    var actualValue=result.TryGetDeclaredOutputValue(port.Id,out var canonical)?canonical:value.RuntimeValue;
                     var frame = port.Type.Shape == ValueShape.Resource && port.Type.Resource == ResourceKind.Image
                         ? new ImageFrameAddress(Guid.NewGuid(), node.Id, node.AdmittedIdentity!.ToInvocationIdentity(node.Id),
                             port.Id, declaration.Source.SchemaRevision) : null;
-                    var actualValue=result.TryGetDeclaredOutputValue(port.Id,out var canonical)?canonical:value.RuntimeValue;
+                    if(frame is not null&&actualValue is SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage native)
+                    {
+                        if((node.Tool as SunEyeVision.Plugin.SDK.Execution.Helpers.IImageFramePolicyProvider)?.ImageFramePolicy==SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.PreserveCoordinates)
+                            frame=SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureAddress(native)??frame;
+                        else SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.ForgetAddress(native);
+                    }
                     values.Add(port.Id,BindingClrAdapter.NormalizeValue(port,actualValue,frame,result.RegisterOutputResource));
                 }
             }

@@ -42,7 +42,8 @@ public static class ToolExecutionPreparation
         if (reference == null) return fallback;
         if (!results.TryGetValue(reference.SourceNodeId, out var result) || !result.IsSuccess)
             throw new InvalidOperationException($"输入图像来源 {reference.SourceNodeId} 尚无有效结果，请先执行上游节点。");
-        var image = OutputVariableResolver.Resolve(result, reference.PropertyName, reference.SourceNodeId) as IVisionImage;
+        var image = result is RuntimeToolResults runtime?runtime.GetImageView(reference.PropertyName):
+            OutputVariableResolver.Resolve(result, reference.PropertyName, reference.SourceNodeId) as IVisionImage;
         if (image == null || image.IsEmpty) throw new InvalidOperationException("绑定的输入图像为空或无效。");
         return image;
     }

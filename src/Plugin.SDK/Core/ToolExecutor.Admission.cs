@@ -93,13 +93,15 @@ public partial class ToolExecutor
             request.CancellationToken.ThrowIfCancellationRequested();
             ToolExecutionPreparation.Apply(parameters,parameters.NodeResults);
             var input=ImageFrameProvenance.CaptureInput(parameters.ResolvedInputImage);
+            var inputAddress=ImageFrameProvenance.CaptureAddress(parameters.ResolvedInputImage);
             var result=tool.Run(parameters);request.AttachResultMetadata(result);
             if(request.CancellationToken.IsCancellationRequested||request.ExecutionIdentity?.IsCurrent==false)
             {
                 ReleaseRejectedResult(result);
                 return Terminal(ExecutionStatus.Cancelled,"Execution was cancelled or admission expired.");
             }
-            ImageFrameProvenance.RecordResult(result,input,(tool as IImageFramePolicyProvider)?.ImageFramePolicy??ImageFramePolicy.Unknown);
+            ImageFrameProvenance.RecordResult(result,input,(tool as IImageFramePolicyProvider)?.ImageFramePolicy??ImageFramePolicy.Unknown,
+                inputAddress);
             result.ExecutionTimeMs=watch.Elapsed.TotalMilliseconds;ApplyJudgmentStatus(parameters,result);return result;
         }
         catch(OperationCanceledException fault) when(request.CancellationToken.IsCancellationRequested&&fault.CancellationToken==request.CancellationToken)

@@ -100,6 +100,9 @@ try {
         & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S4 -Track FullChain
         if($LASTEXITCODE -ne 0){throw 'SDK入口及Wpf缺席时默认工具箱拖放/连线/Runtime运行及保存重开失败'}
         $results.Add([ordered]@{name='runtime-default-ui-without-sdk-frontend-and-editor';passed=$true;scope='实际工具箱Drop默认Runtime→语义图像自动绑定→HALCON及下游Region→私有调试→强类型保存重开'})
+        & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track RuntimeImage
+        if($LASTEXITCODE -ne 0){throw 'SDK Blob入口及Wpf缺席时Runtime与现行工具的图像消费失败'}
+        $results.Add([ordered]@{name='runtime-image-without-sdk-frontend-and-editor';passed=$true;scope='Runtime→现行SDK二值化→Runtime真实HALCON，像素/Domain/帧、精确端口准入及副本读者生命周期'})
     } finally {[IO.File]::WriteAllBytes($manifest,$original)}
     Restore-Held
 

@@ -64,7 +64,8 @@ public sealed class RootWorkspaceHostTests
     var leaves=category.Items.OfType<MenuItem>().ToArray();
     Assert.Contains(leaves,item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {ToolId:"vm:communication.send"}||item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {IsAvailable:false});
     var loadedLeaf=leaves.Single(item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {ToolId:"RootConfigurationProbe"});
-    Assert.True(loadedLeaf.IsEnabled);Assert.NotNull(loadedLeaf.Icon);
+    Assert.True(loadedLeaf.IsEnabled);Assert.NotNull(loadedLeaf.Icon);Assert.Equal(1,loadedLeaf.Opacity);
+    Assert.All(leaves.Where(item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {IsAvailable:false}),item=>{Assert.False(item.IsEnabled);Assert.Equal(.45,item.Opacity);});
     Assert.False(leaves.Single(item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {ToolId:"FailedContextTool"}).IsEnabled);
     var beforeContextHistory=manager.Session!.History.Position;
     loadedLeaf.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));Pump();

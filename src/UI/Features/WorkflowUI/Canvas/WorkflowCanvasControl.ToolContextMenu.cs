@@ -23,7 +23,7 @@ public partial class WorkflowCanvasControl
         menu.Items.Add(new Separator());
         foreach(var group in catalog.Categories)
         {
-            var category=new MenuItem{Header=group.Name,Tag=group.Name,IsEnabled=Current(),Icon=ToolMenuIcon(group.IconSource,true)};
+            var category=new MenuItem{Header=group.Name,Tag=group.Name,IsEnabled=Current(),Opacity=Current()?1:.45,Icon=ToolMenuIcon(group.IconSource,true)};
             category.Items.Add(new MenuItem{Header="加载工具分类",IsEnabled=false});
             category.SubmenuOpened+=(_,args)=>{
                 if(!ReferenceEquals(args.Source,category))return;
@@ -31,7 +31,7 @@ public partial class WorkflowCanvasControl
                 foreach(var tool in catalog.GetCategoryTools(group.Name))
                 {
                     var item=new MenuItem{Header=tool.Name,Tag=tool,IsEnabled=Current()&&tool.IsAvailable,
-                        ToolTip=tool.ToolTip,Icon=ToolMenuIcon(tool.IconSource,tool.IsAvailable)};
+                        ToolTip=tool.ToolTip,Opacity=tool.IsAvailable?1:.45,Icon=ToolMenuIcon(tool.IconSource,true)};
                     ToolTipService.SetShowOnDisabled(item,true);
                     item.Click+=(_,e)=>{
                         e.Handled=true;if(!Current()||!tool.IsAvailable)return;

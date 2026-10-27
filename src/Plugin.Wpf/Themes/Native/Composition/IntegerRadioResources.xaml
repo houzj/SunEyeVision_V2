@@ -26,7 +26,10 @@
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Image Name="icon" Width="24" Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/check-box_off.png" />
-            <ContentPresenter Margin="3,0,0,0" Focusable="False" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <ContentPresenter Margin="3,0,0,0" Focusable="False" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left">
+              <!-- Generated text lookup stops at this template boundary. Preserve the original Radio's text properties. -->
+              <ContentPresenter.Resources><Style TargetType="{x:Type TextBlock}" /></ContentPresenter.Resources>
+            </ContentPresenter>
           </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="ToggleButton.IsChecked" Value="True">

@@ -7628,6 +7628,16 @@
       "失败与视觉边界": "Window151全回归122过1败：测试API显隐后未Pump到真实Loaded即触发圆环Checked。补Loaded/Visible断言及SetCurrentValue保绑定，152定向3组过，153全123过；产品门禁未放松。实际窗口与独立XAML PNG已看；窗口重绘态四选文字较淡，需进一步同态核主题/文字继承，不能计视觉通过。真实VS/VM同态、物理指针及用户本批未签。",
       "下一批必要缺口": "同原文本槽Constant/Reference/Unset、序列[]到常量/动态索引及严格投影Float32来源/Int32索引尚未覆盖，本批标量Float64夹具不是完整VM float过滤。统一一次provider返回Sources/Indices并迁现行所有消费者，不保混合候选兼容双轨；成员存储沿正式字段路径，索引按现合同先根再成员，禁止默认首项。",
       "后续控件": "ROI菜单Delete/Copy/Paste须在只读集合变更前路由宿主，撤销修订递增。C13需原IText->PretreatTexts->IMultiText->TextShape，不用TextBlock替代；C14原10列DataGrid、500条增量及同帧选择仍缺组合。位姿公式/单位未证不伪造，Blob业务冻结，完整目标保持active。"
+    },
+    "inlineReferenceCandidate": {
+      "本批范围": "原ButtonSelecter同槽Constant/Reference/Unset、Float32原文、双通道来源目录与四选文字主题隔离；不新增业务工程，不修改Blob业务。基线ee0c7fc4已同步工作流，当前集中批尚不自动同步其独立开发。",
+      "原件与状态": "继续原DeleteTextBox/PopupButton/SubTreeView/专窗；文本与来源共一accepted字段，无额外模式按钮。合法Enter单次接纳并失焦；非法/宿主拒绝保原文。接纳后观察异常保accepted规范值、清失效pending；焦点归属复查防旧输入抢新焦点。",
+      "声明与校验": "FieldLayout.DecimalPlaces改可空且默认仍2；null明确表示不限制固定小数位，仅配置原内联文本可用，普通数值/滑条拒绝。初值、程序提案、文本提交共用InlineConstantRules，Float32先规范值再校验范围/固定精度；tiny和float.Epsilon通过，不用15冒充不限精度。",
+      "目录合同与现行消费者": "ReferenceFieldOptions.ReadCandidates一次读取冻结Sources/Indices；成员选中存储沿路径投影但引用保根声明；来源和索引身份隔离。RuntimeNodeConfigurationControl、DeclaredToolConfigurationControl及RootWorkflowReferencePicker直接新合同；资源过滤不提前丢索引，旧混合provider入口删除。刷新失败旧叶失效；成功安装后的观察异常向外聚合而不伪报SourceError或回滚新树。",
+      "独立设计及视觉": "同一真实XAML19字段样例，5/6分量改Float32常量/引用/空，原TextBox与Popup实例保持。原四选文字隐式样式查找停在ContentPresenter边界，局部空TextBlock样式隔离宿主，保原模板布局/图标/#666灰色。Window162及Design048实际PNG已看；原四词条/矩圆像素核对无重复，缩图误读已纠正。",
+      "最终验证": "UI005零错6396警告85.26秒；全量Release002零错6602警告65.86秒。Window162=129、Design048=85、Field083=31、RuntimeEditor065=10、FullChain123=8、Components205=9、ThemeStartup008=1、Resources017=22共295组。正式EXE016 exit0/22工具15分类；26源增量含用户XAML、796发布项、107加载记录、160唯一原来源SHA。权威O06_INLINE_REFERENCE_CHECKPOINT_20261028.json及SOURCE_AUDIT。",
+      "失败保留": "窗口001宿主编译局部expected重名，002抓到InlineRules误把ParameterSetting而非Constant.Value传入数值Freeze，已修；扩展窗旧混合目录前置条件改为同一可见组真实不同来源，不放松一次写断言。004全128过1败及005/006/007定向失败证明Radio边界样式污染；空样式放Presenter或Radio.Style资源不够，放实际ContentPresenter.Resources后008过，最终009完整129过。早期产品构建成绩不套最终源码。",
+      "剩余与门禁": "通用索引仍Int64语义，不称严格VM Int32全过滤；独立样例当前Float32标量/空索引通道，不冒称正式序列[]/固定/动态索引同run同帧解析完成。下一由宿主正式ParameterBindingService解析且Wpf仅依赖Contracts，不复制resolver、不默认首项。ROI菜单/history、位姿三方式及原文本/列表/底栏仍待完成；真实VS/VM同态/物理鼠标/用户本批未签。完整C09及阶段一未达标，Blob冻结，目标active。"
     }
   },
   "vmFrameworkArchitectureReference": {

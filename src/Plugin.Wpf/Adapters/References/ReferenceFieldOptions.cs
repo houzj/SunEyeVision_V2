@@ -4,10 +4,10 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 
 /// <summary>Host-owned declarations and private proposal validation; never a modal picker or a value store.</summary>
 public sealed record ReferenceFieldOptions(
-    Func<Port,IReadOnlyList<DeclaredReferenceCandidate>> Candidates,
+    Func<Port,ReferenceCandidates> ReadCandidates,
     Func<Port,ParameterSetting,string?>? ValidateProposal = null,
     bool EditableIndex = false,
     Action<ReferenceExpansionRequest>? Expand = null)
 {
-    public static ReferenceFieldOptions Empty { get; } = new(_ => Array.Empty<DeclaredReferenceCandidate>());
+    public static ReferenceFieldOptions Empty { get; } = new(_ => ReferenceCandidates.Empty);
 }

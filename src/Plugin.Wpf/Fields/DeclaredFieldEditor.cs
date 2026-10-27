@@ -43,6 +43,14 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private readonly NativeIntegerRadioOptions? _integerRadioOptions;
     private NativeIntegerRadioPresenter? _integerRadio;
     private bool _updatingInput;
+    private bool _inlineConstantReference;
+    internal void UseInlineConstantReference()
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if(_port.Type.Shape!=ValueShape.Scalar||_port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)
+            ||_port.EditModes!=(FieldEditModes.Constant|FieldEditModes.Reference))throw new ArgumentException("内联常量需要数值常量/引用字段。");
+        _inlineConstantReference=true;Render();
+    }
     private bool _disposed;
     private long _renderGeneration;
     private string _editError => _state.EditError;
@@ -154,6 +162,11 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         DetachOwnedEditors();
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         if(_imageSources is not null){RenderImageSource();return;}
+        if(_inlineConstantReference)
+        {
+            _referencePresenter=new NativeReferencePresenter(_state,_referenceOptions??ReferenceFieldOptions.Empty,_formatReference,true);
+            _referencePresenter.PrepareForVisibility(_presentationVisible);InputElement=_referencePresenter;_body.Children.Add(_referencePresenter);return;
+        }
         if(_integerRadioOptions is not null)
         {
             HideLabel();_row.Margin=new Thickness(0);

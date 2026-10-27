@@ -42,6 +42,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
     public NativeNumberPresenter(DeclaredFieldState state,FieldPresentation? presentation,ReferenceFieldOptions? references,Func<OutputReference,string>? format)
     {
         _state=state;_layout=presentation?.Layout;
+        if(_layout is {DecimalPlaces:null})throw new ArgumentException("原数值控件必须声明固定小数位；不限位数文本应选择原订阅同槽组合。");
         _allowNewReference=references is not null&&presentation?.Layout?.AllowReference!=false;
         if(!state.IsReferenceMode&&state.Accepted is ConstantSetting initial)NativeNumericCommit.EnsureRepresentable(initial);
         if(state.Port.Type.Scalar==ScalarKind.Float64&&_layout?.DecimalPlaces>9)

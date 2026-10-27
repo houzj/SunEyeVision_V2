@@ -111,7 +111,7 @@ internal static class S2DocumentEditingCases
             ParameterSetting bound=new ConstantSetting(7L);
             var reference=new OutputReference("producer","port",TypeRef.ScalarOf(ScalarKind.Int64));
             var binding=new DeclaredFieldEditor(new("optional",DataType.Integer,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"可选数值",bound,
-                next=>bound=next,new ReferenceFieldOptions(_=>new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("port",DataType.Integer),Array.Empty<string>())}));
+                next=>bound=next,new ReferenceFieldOptions(_=>new(new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("port",DataType.Integer),Array.Empty<string>())},Array.Empty<DeclaredReferenceCandidate>())));
             Show(binding);Click(binding,"切换为订阅");SelectReferenceLeaf(binding,c=>c.NodeId=="producer");Require(bound is ReferenceSetting source&&source.Reference.NodeId==reference.NodeId,"绑定意图未交给宿主");
             Click(binding,"切换为数值编辑");Require(bound is ConstantSetting restored&&Equals(restored.Value,7L),"常量备份没有恢复");
             Click(binding,"清除可选项");Require(bound is UnsetSetting,"清除可选项误变为空值或空集合");
@@ -201,7 +201,7 @@ internal static class S2DocumentEditingCases
         ParameterSetting accepted=new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(2)));
         var writes=0;
         using var field=new DeclaredFieldEditor(new("reference-enter",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",accepted,
-            value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new[]{source,alternate},EditableIndex:true));
+            value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new(new[]{source,alternate},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true));
         Show(field);
         var buttons=NativeDescendants(field).OfType<AppsPopup>().ToArray();
         Require(buttons.Length==2,"订阅未使用原两Popup组合");
@@ -269,7 +269,7 @@ internal static class S2DocumentEditingCases
             new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(2))),_=>refreshWrites++,new ReferenceFieldOptions(_=>
             {
                 if(refreshFails)throw new InvalidOperationException("目录读取失败");
-                return badProjection?new[]{source,source with{MemberPath=new[]{"不存在成员"}}}:new[]{source};
+                return new ReferenceCandidates(badProjection?new[]{source,source with{MemberPath=new[]{"不存在成员"}}}:new[]{source},Array.Empty<DeclaredReferenceCandidate>());
             }));
         Show(refreshField);
         var refreshSession=NativeDescendants(refreshField).OfType<ContentControl>().Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
@@ -403,7 +403,7 @@ internal static class S2DocumentEditingCases
         var referenceWrites=0;
         OutputReference Source()=>new("producer","values",TypeRef.SequenceOf(DataType.Integer),selection:new BindingSelection.AtConstant(2));
         using var reference=new DeclaredFieldEditor(new("state-reference",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"来源",
-            new ReferenceSetting(Source()),_=>referenceWrites++,new ReferenceFieldOptions(_=>new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>())}));
+            new ReferenceSetting(Source()),_=>referenceWrites++,new ReferenceFieldOptions(_=>new(new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>())},Array.Empty<DeclaredReferenceCandidate>())));
         Show(reference);SelectReferenceLeaf(reference,c=>c.NodeId=="producer");SelectReferenceLeaf(reference,c=>c.NodeId=="producer");
         Require(referenceWrites==0&&reference.Setting is ReferenceSetting,"相同新建索引引用没有语义去重");
         using var noBackup=new DeclaredFieldEditor(new("no-backup",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"无备份",

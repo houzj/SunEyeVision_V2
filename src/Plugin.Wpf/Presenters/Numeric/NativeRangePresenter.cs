@@ -52,7 +52,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0);MinHeight=32;
         Label=lower.DisplayName.Replace("下限","范围");
         var bounds=_states.Select((s,i)=>Bounds(s.Port,_presentations[i].Layout!)).ToArray();
-        NativeView=left.Port.Type.Scalar==ScalarKind.Int64?new Numbers.SliderArrange():new Numbers.SliderArrangeFloat{DecimalDigits=lower.Layout!.DecimalPlaces};
+        NativeView=left.Port.Type.Scalar==ScalarKind.Int64?new Numbers.SliderArrange():new Numbers.SliderArrangeFloat{DecimalDigits=lower.Layout!.DecimalPlaces??throw new ArgumentException("原范围滑条必须声明固定小数位。")};
         try
         {
         NativeView.Minimum=Math.Min(bounds[0].Min,bounds[1].Min);NativeView.Maximum=Math.Max(bounds[0].Max,bounds[1].Max);

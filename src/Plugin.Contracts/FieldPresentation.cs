@@ -2,9 +2,10 @@ namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>Finite UI-neutral layout; conditions address declared stable field IDs, never CLR paths.</summary>
 public sealed record FieldCondition(string FieldId, object? Value, bool Negate = false);
+/// <param name="DecimalPlaces">Fixed fractional digits, or null for an explicitly unformatted numeric text composition.</param>
 public sealed record FieldLayout(string Page, string Section, FieldCondition? VisibleWhen=null,
     string? PairWith=null, bool Advanced=false, double? Minimum=null, double? Maximum=null,
-    int DecimalPlaces=2, bool AllowReference=true,
+    int? DecimalPlaces=2, bool AllowReference=true,
     string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false,
     double Increment=1);
 

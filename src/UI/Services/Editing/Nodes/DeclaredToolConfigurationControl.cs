@@ -235,7 +235,8 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
                 ReferenceEquals(actual,context)&&RegionScopeCurrent();
         }
         void EnsureCurrent(){if(!Current())throw new InvalidOperationException("当前来源编辑范围已失效。");}
-        return new(_=>{EnsureCurrent();var candidates=ReadReferenceCandidates();EnsureCurrent();return candidates;},
+        return new(_=>{EnsureCurrent();var candidates=ReadReferenceCandidates();EnsureCurrent();return new(candidates,
+                candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));},
             (target,proposal)=>
             {
                 EnsureCurrent();var error=ValidateReferenceProposal(target,proposal,roiTarget);EnsureCurrent();return error;

@@ -87,7 +87,12 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             .ToDictionary(s=>s.ParameterName,s=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(s.ReferenceExpression!)),StringComparer.Ordinal);
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
-        var referenceOptions=new ReferenceFieldOptions(_=>ReadReferenceCandidates(generation),(target,proposal)=>ValidateProposal(target,proposal,generation));
+        var referenceOptions=new ReferenceFieldOptions(_=>
+        {
+            var candidates=ReadReferenceCandidates(generation);
+            if(_disposed||generation!=_generation)throw new InvalidOperationException("来源目录读取期间参数页已失效。");
+            return new(candidates,candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));
+        },(target,proposal)=>ValidateProposal(target,proposal,generation));
         var panel=new DeclaredInputFieldsView(schema,port=>
         {
             var saved=node.ParamSettings.GetSetting(port.Id);

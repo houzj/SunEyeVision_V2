@@ -90,7 +90,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 var result=pair.Value();
                 if(!Current())throw new InvalidOperationException("图像来源读取期间视图已重绑或释放。");
                 return result;
-            }),StringComparer.Ordinal),options.ParentConditions);
+            }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)

@@ -74,14 +74,15 @@ public sealed partial class DeclaredFieldsView
             foreach(var change in changes)
             {
                 var state=_fieldStates.Single(x=>x.Port.Id==change.Key);
+                if(_inlineConstants.Contains(change.Key))InlineConstantRules.Validate(state.Port,_groupPresentations[change.Key],change.Value);
                 if(change.Value is ConstantSetting number&&state.Port.Type.Shape==ValueShape.Scalar
                     &&state.Port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64)
                 {
                     var presentation=_groupPresentations[change.Key];
-                    if(NativeNumberPresenter.UsesOriginalModes(state.Port,presentation))NativeNumericCommit.EnsureRepresentable(number);
+                    if(!_inlineConstants.Contains(change.Key)&&NativeNumberPresenter.UsesOriginalModes(state.Port,presentation))NativeNumericCommit.EnsureRepresentable(number);
                     var value=Convert.ToDouble(number.Value,CultureInfo.InvariantCulture);
                     if(presentation.Layout is {} layout&&(value<layout.Minimum||value>layout.Maximum))throw new ArgumentException("数值超出声明的编辑范围。");
-                    if(number.Value is double real&&presentation.Layout is {} precision&&Math.Round(real,precision.DecimalPlaces,MidpointRounding.ToEven)!=real)
+                    if(!_inlineConstants.Contains(change.Key)&&number.Value is double real&&presentation.Layout?.DecimalPlaces is {} precision&&Math.Round(real,precision,MidpointRounding.ToEven)!=real)
                         throw new ArgumentException("组合提案超出声明的编辑精度，请提供规范值。");
                 }
                 if(_integerRadios.TryGetValue(change.Key,out var options)&&options.Validate(change.Value) is {} invalid)throw new ArgumentException(invalid);

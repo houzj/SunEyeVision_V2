@@ -31,8 +31,8 @@ public sealed partial class NativeRoiInheritanceSample
         foreach(var component in Components)
         {
             var id=ComponentId(component);
-            yield return(new(id,DataType.Number,Required:false,EditModes:FieldEditModes.Reference),
-                new FieldPresentation(id,AppLocalizationService.GetLang(component.Label),"来源组合",20+Array.IndexOf(Components,component),FieldEditorKind.Scalar){Layout=new("来源组合","来源组合",VisibleWhen:new("detect.inherit-way",(long)component.Way))},_root.Fields[id]);
+            yield return(new(id,DataType.Number,Required:false,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
+                new FieldPresentation(id,AppLocalizationService.GetLang(component.Label),"来源组合",20+Array.IndexOf(Components,component),FieldEditorKind.Scalar){Layout=new("来源组合","来源组合",VisibleWhen:new("detect.inherit-way",(long)component.Way),DecimalPlaces:null)},_root.Fields[id]);
         }
     }
     private static NativeIntegerRadioOptions InheritanceOptions()=>new(new[]{
@@ -62,19 +62,19 @@ public sealed partial class NativeRoiInheritanceSample
             foreach(var foreign in new[]{false,true})
             {
                 var node="component-"+component.Id+(foreign?"-foreign":"");
-                _numbers.Add(node,new(node,value,foreign?new(Guid.NewGuid(),"different-component-frame"):_image.Frame));
+                _numbers.Add(node,new(node,(double)(float)value,foreign?new(Guid.NewGuid(),"different-component-frame"):_image.Frame));
             }
         }
     }
     private static DeclaredReferenceCandidate NumberCandidate(NumberSource source)=>new(source.Node,source.Node,null,
-        new Port("value",DataType.Number,Storage:NumericStorage.Float64),Array.Empty<string>());
-    private IReadOnlyList<DeclaredReferenceCandidate> Candidates(Port port)
+        new Port("value",DataType.Number,Storage:NumericStorage.Float32),Array.Empty<string>());
+    private ReferenceCandidates Candidates(Port port)
     {
-        if(Components.Any(component=>ComponentId(component)==port.Id))return _numbers.Values.Select(NumberCandidate).ToArray();
+        if(Components.Any(component=>ComponentId(component)==port.Id))return new(_numbers.Values.Select(NumberCandidate),Array.Empty<DeclaredReferenceCandidate>());
         var group=port.Id=="mask.source"?"mask":"detect";
         var kind=port.Id=="detect.source"?"rectangle":"annulus";
-        return _sources.Where(source=>source.Group==group&&source.Geometry.Get<string>("kind")==kind)
-            .Select(source=>new DeclaredReferenceCandidate(source.Node,source.Node,null,new Port("geometry",RoiDeclarations.Shape),Array.Empty<string>())).ToArray();
+        return new(_sources.Where(source=>source.Group==group&&source.Geometry.Get<string>("kind")==kind)
+            .Select(source=>new DeclaredReferenceCandidate(source.Node,source.Node,null,new Port("geometry",RoiDeclarations.Shape),Array.Empty<string>())),Array.Empty<DeclaredReferenceCandidate>());
     }
     public OutputReference ComponentReference(string componentId,bool foreignFrame=false)
     {
@@ -86,7 +86,7 @@ public sealed partial class NativeRoiInheritanceSample
     {
         var reference=setting.Reference;
         if(!_numbers.TryGetValue(reference.NodeId,out var source)||reference.PortId!="value"||reference.Type!=DataType.Number
-            ||reference.Storage!=NumericStorage.Float64||reference.ScopeId is not null||reference.MemberFieldPath.Count!=0||reference.Selection is not BindingSelection.AllItems)
+            ||reference.Storage!=NumericStorage.Float32||reference.ScopeId is not null||reference.MemberFieldPath.Count!=0||reference.Selection is not BindingSelection.AllItems)
             throw new ArgumentException("参数来源必须是明确声明的浮点单项。");
         if(source.Frame!=_image.Frame)throw new ArgumentException("参数来源与当前图像不是同一物理帧。");
         if(!double.IsFinite(source.Value))throw new ArgumentException("参数来源不是有限数值。");
@@ -106,6 +106,12 @@ public sealed partial class NativeRoiInheritanceSample
             TryDetect(candidate.Proposed,out _,out _); // Incomplete is a valid edit state; invalid complete geometry throws.
         return null;
     }
+    private double ResolveComponent(ParameterSetting setting)=>setting switch
+    {
+        ConstantSetting {Value:double number} when double.IsFinite(number)=>number,
+        ReferenceSetting reference=>ResolveNumber(reference),
+        _=>throw new ArgumentException("参数必须是规范浮点常量或明确来源。")
+    };
     private bool TryDetect(IReadOnlyDictionary<string,ParameterSetting> fields,out RoiEditItem? item,out string error)
     {
         item=null;error="";
@@ -123,8 +129,8 @@ public sealed partial class NativeRoiInheritanceSample
         foreach(var component in Components.Where(component=>component.Way==way))
         {
             var id=ComponentId(component);
-            if(fields[id] is not ReferenceSetting reference){error="请选择来源："+id;return false;}
-            values.Add(component.GeometryField,ResolveNumber(reference));
+            if(fields[id] is UnsetSetting){error="请选择来源或输入常量："+id;return false;}
+            values.Add(component.GeometryField,ResolveComponent(fields[id]));
         }
         var geometry=new Dictionary<string,object?>{{"kind",way==1?"rectangle":"annulus"},{"center",RoiGeometryEditing.Point(new(values["x"],values["y"]))}};
         foreach(var value in values.Where(value=>value.Key is not ("x" or "y" or "sweep")))geometry.Add(value.Key,value.Value);

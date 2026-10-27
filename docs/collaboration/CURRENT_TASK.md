@@ -1,3 +1,12 @@
+## 2026-10-28 C07同槽常量与双通道目录集中批封存
+
+- 共同基线ee0c7fc4；主线唯一产品写者，三路只读核收后补位序列索引/ROI菜单历史/位姿原组合。原ButtonSelecter同槽常量/引用/空，原文本Popup/专窗共accepted；合法Enter单写失焦，非法/拒绝保raw，接纳后观察异常不回滚，旧焦点不能抢新输入。Blob业务未改。
+- 单ReadCandidates冻结Sources/Indices，成员storage投影与根声明分离，三现行UI消费者直接新合同；失败旧叶失效，成功安装通知异常聚合不伪报目录错误。FieldLayout.DecimalPlaces可空默认2，null只显式内联文本；初值/程序/文本共用范围及精度校验，Float32 tiny/Epsilon通过；普通数值拒无限位数声明。
+- 四选原ContentPresenter.Resources隔离宿主隐式TextBlock灰色污染，保持原尺寸/模板/图标；Window162和Design048真实PNG已看，四文案矩/圆核原词条及字形，缩图误读已纠正，不计完整视觉签署。
+- 最终UI005零错6396警告85.26秒；全量Release002零错6602警告65.86秒。Window162=129、Design048=85、Field083=31、RuntimeEditor065=10、FullChain123=8、Components205=9、ThemeStartup008=1、Resources017=22共295组；正式EXE016 exit0/22工具15分类。26源增量含用户XAML、796发布项、107加载记录、160唯一原来源SHA核对。权威O06_INLINE_REFERENCE_CHECKPOINT_20261028.json、SOURCE_AUDIT及HANDOFF_INLINE_REFERENCE_20261028.md。
+- 所有早期失败保留：窗口001编译局部重名，002校验器对象传错及旧混合目录测试；004全128过1败和005—007定向锁定自动文字资源边界，008定向过、009最终完整129过。最终两构建之后无产品源更改，仅Catalog非编译证据与文档。用户Blob页索引2/SHA保持且不提交，不推送；自有验证进程已全部终止。
+- 阶段一/完整C09未达标，Blob冻结、目标active。下一来源序列All/固定/动态索引走正式BindingService同快照，Wpf不得加Runtime依赖或近似resolver；现样例Float32标量和空索引，通用索引Int64不能称VM Int32全复刻。再ROI菜单历史、位姿三方式、原文本/10列表格/底栏；native单位公式仍未证，真实VS/VM同态/物理指针/用户本批未签。
+
 ## 2026-10-28 工作流与控件库双向统一开发基线
 
 - 主线已封存1553ece8，工作流检查点6fb17314；本次合并提交作为双方共同基线，随后各自在原独立分支/worktree继续开发。

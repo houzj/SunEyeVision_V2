@@ -78,7 +78,7 @@ internal sealed class NativeNumericCommit : IDisposable
         if(value is double number)
         {
             if(!double.IsFinite(number))throw new ArgumentException("请输入有限数值。");
-            if(_layout is not null)value=Math.Round(number,_layout.DecimalPlaces,MidpointRounding.ToEven);
+            if(_layout?.DecimalPlaces is {} digits)value=Math.Round(number,digits,MidpointRounding.ToEven);
         }
         var frozen=ValueRules.Freeze(_state.Port,value)!;
         var numeric=Convert.ToDouble(frozen,CultureInfo.InvariantCulture);

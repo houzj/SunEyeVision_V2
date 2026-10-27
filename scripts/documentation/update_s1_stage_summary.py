@@ -362,6 +362,9 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-four-way-reference">C09四方式与五／六参数来源组合</h5>'
                + table(['项目','本批结果与未完成边界'], list(plan['fourWayReferenceCandidate'].items()))
                if plan.get('fourWayReferenceCandidate') else '')
+            + ('<h5 id="o06-inline-reference">C07同槽常量、双通道目录与四选文字隔离</h5>'
+               + table(['项目','当前批结果与剩余边界'], list(plan['inlineReferenceCandidate'].items()))
+               if plan.get('inlineReferenceCandidate') else '')
             + ('<h5 id="o06-text-list-footer-audit">文本、结果列表与底栏的原组合缺口</h5>'
                + table(['组合','当前缺口与后续边界'], list(plan['remainingControlAudit20261028'].items()))
                if plan.get('remainingControlAudit20261028') else '')

@@ -58,6 +58,17 @@ internal static class S2DocumentEditingCases
                 Render(entry,"native-four-way-components-xaml-entry.png",1020,1100);
                 Check(Descendants<RadioButton>(sample.Fields.Fields.Single(field=>field.FieldId=="detect.inherit-way").View).Count()==5,
                     "独立设计四方式保原五槽模板");
+                var width=sample.Fields.Fields.Single(field=>field.FieldId=="detect.rect.width");
+                var text=Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(width.View).Single();
+                var popup=Descendants<SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton>(width.View).Single(item=>item.Name=="rt");
+                var other=components.Where(item=>item.Key!="detect.inherit-way"&&item.Key!="detect.rect.width").ToDictionary(item=>item.Key,item=>sample.Fields.Fields.Single(field=>field.FieldId==item.Key).Setting);
+                text.Text="0.125";text.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+                Check(width.TryCommitPending()&&width.Setting is ConstantSetting{Value:0.125d}&&sample.TryCapture(out _,out _),"设计时同槽常量沿原文本及owner捕获链接纳");
+                Render(entry,"native-four-way-constant-xaml-entry.png",1020,1100);
+                Check(Application.Current is null&&!text.IsReadOnly&&ReferenceEquals(text,Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(width.View).Single())
+                    &&ReferenceEquals(popup,Descendants<SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton>(width.View).Single(item=>item.Name=="rt"))
+                    &&!Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeFloat>(width.View).Any()
+                    &&other.All(item=>Equals(sample.Fields.Fields.Single(field=>field.FieldId==item.Key).Setting,item.Value)),"设计同槽切常量保原文本弹层实例及其余四分量来源");
             }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
             {

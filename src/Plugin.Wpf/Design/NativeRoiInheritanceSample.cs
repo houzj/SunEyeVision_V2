@@ -76,7 +76,7 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
                 integerRadios:options,validateComposition:ValidateFields,isCurrent:()=>!_disposed,
                 imageSources:new Dictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>{["mask.image"]=()=>new[]{
                     new DeclaredReferenceCandidate("同帧屏蔽图像","mask-image",null,new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),Array.Empty<string>())}},
-                parentConditions:ParentConditions());
+                parentConditions:ParentConditions(),inlineConstants:Components.Select(ComponentId).ToHashSet(StringComparer.Ordinal));
             foreach(var field in Fields.Fields)field.Changed+=OnFieldsChanged;
             RowDefinitions.Add(new(){Height=GridLength.Auto});RowDefinitions.Add(new(){Height=new GridLength(1,GridUnitType.Star)});
             Fields.Width=380;Fields.HorizontalAlignment=HorizontalAlignment.Left;Children.Add(Fields);

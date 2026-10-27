@@ -13,7 +13,7 @@ internal static class RootWorkflowReferencePicker
 {
  internal static ReferenceFieldOptions Options(RootWorkflowConfigurationContext context,RootParameterProxy proxy) => new(_ => Candidates(context,proxy),
   (_,proposal) => proposal is ReferenceSetting reference ? context.ValidateReference(proxy,reference.Reference) : null);
- internal static IReadOnlyList<DeclaredReferenceCandidate> Candidates(RootWorkflowConfigurationContext context,RootParameterProxy proxy)
+ internal static ReferenceCandidates Candidates(RootWorkflowConfigurationContext context,RootParameterProxy proxy)
  {
   var resource=context.Resolve(proxy).Resource;
   var query=context.Query;var candidates=new List<DeclaredReferenceCandidate>();var target=proxy.NodeId;
@@ -22,15 +22,16 @@ internal static class RootWorkflowReferencePicker
    foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<OutputVariable>())
    {
     if(output.Kind!=OutputVariableKind.Data)continue;Port port;try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
-    if(resource is not null&&port.Type!=resource.Port.Type)continue;
     var label=(names.GetValueOrDefault(id)??id)+" · "+(output.DisplayName??output.Name);
-    candidates.Add(new(label,id,query.WorkflowId,port,Array.Empty<string>()));if(resource is null)Members(port.Type,Array.Empty<string>(),label,id,port);
+    candidates.Add(new(label,id,query.WorkflowId,port,Array.Empty<string>()));Members(port.Type,Array.Empty<string>(),label,id,port);
    }
   void Members(TypeRef type,IReadOnlyList<string> path,string label,string nodeId,Port root)
   {
    while(type.Shape==ValueShape.Sequence)type=type.Element!;if(type.Shape!=ValueShape.Record)return;
    foreach(var field in type.Fields){var next=path.Append(field.Id).ToArray();var caption=label+" / "+field.Id;candidates.Add(new(caption,nodeId,query.WorkflowId,root,next));Members(field.Type,next,caption,nodeId,root);}
   }
-  return candidates;
+  _=context.Resolve(proxy);
+  return new(candidates.Where(candidate=>resource is null||candidate.SelectedType==resource.Port.Type),
+   candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));
  }
 }

@@ -80,7 +80,11 @@ internal sealed class ReferencePopupScope : IDisposable
         if(args.Key==Key.Enter)
         {
             args.Handled=true;
-            if(TryCommitPending()){ClosePopups();Keyboard.ClearFocus();}
+            var text=_text;
+            bool OwnsFocus()=>!_disposed&&ReferenceEquals(text,_text)&&_root.IsLoaded&&_root.IsVisible
+                &&(text?.IsKeyboardFocusWithin==true||Popups().Any(popup=>popup.IsKeyboardFocusWithin
+                    ||popup.Template?.FindName("PART_Popup",popup) is System.Windows.Controls.Primitives.Popup {Child:{IsKeyboardFocusWithin:true}}));
+            if(TryCommitPending()&&OwnsFocus()){ClosePopups();if(OwnsFocus())Keyboard.ClearFocus();}
         }
     }
     private void OnLostFocus(object sender,KeyboardFocusChangedEventArgs args)

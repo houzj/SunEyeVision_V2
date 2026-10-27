@@ -69,8 +69,8 @@ internal sealed class NativeIntegerRadioPresenter : Decorator,IDisposable,INotif
         finally{_projecting=false;}
     }
     public void PrepareForVisibility(bool visible){_hidden=!visible;}
-    private void OnLoaded(object sender,RoutedEventArgs args){LayoutUpdated-=OnLayout;LayoutUpdated+=OnLayout;Project();}
-    private void OnUnloaded(object sender,RoutedEventArgs args){LayoutUpdated-=OnLayout;}
+    private void OnLoaded(object sender,RoutedEventArgs args){if(_disposed||!ReferenceEquals(args.OriginalSource,this))return;LayoutUpdated-=OnLayout;LayoutUpdated+=OnLayout;Project();}
+    private void OnUnloaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,this))LayoutUpdated-=OnLayout;}
     private void OnLayout(object? sender,EventArgs args){if(!_disposed&&IsLoaded)NativeTextInheritance.Restore(NativeView);}
     public void Dispose()
     {

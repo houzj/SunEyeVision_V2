@@ -20,6 +20,7 @@ internal sealed class DeclaredFieldState : IDisposable
     public string EditError { get; private set; } = "";
     public string SourceError { get; private set; } = "";
     public bool IsDisposed { get; private set; }
+    internal long AcceptanceVersion {get;private set;}
     public bool ReferenceCleared => _referenceCleared;
     public bool MissingReference => IsReferenceMode && (_referenceCleared || _accepted is not ReferenceSetting)
         && !((_allowUnboundReference || !Port.Required) && _accepted is UnsetSetting);
@@ -93,6 +94,7 @@ internal sealed class DeclaredFieldState : IDisposable
                 state._accepted=value;
                 if(value is ConstantSetting constant)state._constantBackup=constant;
                 state.IsReferenceMode=referenceMode;state._referenceCleared=false;state.EditError="";
+                state.AcceptanceVersion++;
             }
             accepted=true;
         }

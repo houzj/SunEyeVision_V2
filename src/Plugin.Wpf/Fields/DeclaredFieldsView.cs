@@ -113,7 +113,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,NativeIntegerRadioOptions>? integerRadios=null,
   Func<FieldGroupCandidate,string?>? validateComposition=null,Func<bool>? isCurrent=null,
   IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? imageSources=null,
-  IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parentConditions=null)
+  IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parentConditions=null,IReadOnlySet<string>? inlineConstants=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
@@ -154,7 +154,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   }
   if(radios.Keys.Any(paired.Contains))throw new ArgumentException("整数单选不能同时作为范围的任一端点。");
   _pairedFields.UnionWith(paired);
-  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired);
+  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired,inlineConstants);
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
@@ -184,6 +184,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
     var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
         integerRadioOptions:radios.GetValueOrDefault(field.Port.Id));
     _editors.Add(field.Port.Id,editor);access.Add(field.Port.Id,new(editor));_rows.Add(field.Port.Id,editor);
+    if(_inlineConstants.Contains(field.Port.Id))editor.UseInlineConstantReference();
     if(imageProviders.TryGetValue(field.Port.Id,out var provider))
     {
      editor.UseImageSourceSelector(()=>
@@ -321,7 +322,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
-   _parentConditions.Clear();_rowGateAnchors.Clear();_advancedFields.Clear();
+   _parentConditions.Clear();_rowGateAnchors.Clear();_advancedFields.Clear();_inlineConstants.Clear();
    _groupPresentations=new Dictionary<string,FieldPresentation>();
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });

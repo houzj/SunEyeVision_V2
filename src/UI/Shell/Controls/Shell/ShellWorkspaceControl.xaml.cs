@@ -93,7 +93,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionTextProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.WorkflowExecutionText)){Source=viewModel.StatusBar});
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionDetailsCommandProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.ShowExecutionSnapshotCommand)){Source=viewModel.StatusBar});
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.StatusTextProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.StatusText)){Source=viewModel});
-            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ScaleProperty,new System.Windows.Data.Binding("SelectedTab.CurrentScale"){Source=viewModel.WorkflowTabViewModel,Mode=System.Windows.Data.BindingMode.OneWay});
+            RefreshRootWorkspacePresentation();
         }
 
         /// <summary>
@@ -282,6 +282,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var fixedButton = FindChildByName<Border>(tabControl, "FixedAddButtonBorder");
             if (scrollableButton == null || fixedButton == null)
                 return;
+            if(_rootOverviewActive){scrollableButton.Visibility=Visibility.Collapsed;fixedButton.Visibility=Visibility.Collapsed;return;}
             // ScrollableWidth > 0 表示有滚动条,即TabItems超出了可视区域
             var headers=FindChildByName<TabPanel>(tabControl,"HeaderPanel");
             if(headers==null||scrollViewer.ViewportWidth<=0)return;
@@ -761,7 +762,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
         private void WorkspaceScaleRequested(double scale)
         {
-            if (_rootOverviewActive) { RootOverview.Viewport=RootOverview.Viewport with {Scale=Math.Clamp(scale,.1,2)};return; }
+            if(_synchronizingWorkspaceScale)return;
+            if (_rootOverviewActive) { if(double.IsFinite(scale)) RootOverview.Viewport=RootOverview.Viewport with {Scale=Math.Clamp(scale,.1,2)};return; }
             var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
             if(tab==null||!double.IsFinite(scale))return;
             var viewer=GetCurrentScrollViewer();
@@ -851,7 +853,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                             {
                                 if (textBlock.Name == "ZoomIndicatorText")
                                 {
-                                    int percentage = (int)(_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale * 100);
+                                    int percentage = (int)((_rootOverviewActive?RootOverview.Viewport.Scale:_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale) * 100);
                                     textBlock.Text = $"{percentage}%";
                                     return;
                                 }
@@ -875,7 +877,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 {
                     if (_viewModel.WorkflowTabViewModel.SelectedTab != null)
                     {
-                        percentage = (int)(_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale * 100);
+                        percentage = (int)((_rootOverviewActive?RootOverview.Viewport.Scale:_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale) * 100);
                     }
                 }
                 catch (Exception)

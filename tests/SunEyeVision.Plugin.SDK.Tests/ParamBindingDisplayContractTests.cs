@@ -60,12 +60,35 @@ public class ParamBindingDisplayContractTests
             Assert.Equal("形状匹配1.位置修正[]", control.BindingDisplayText);
             Assert.Equal("形状匹配1.位置修正[]", control.GenerateBindingDisplayText(
                 source.SourceNodeId + "." + source.PropertyName));
-            Assert.Equal("missing.PositionCorrection[]",
+            Assert.Equal("已绑定（来源不可用）",
                 control.GenerateBindingDisplayText("missing.PositionCorrection[]"));
             Assert.Equal(source.GetBindingPath(), control.BindingSource);
             Assert.Same(source, parameters.PositionCorrectionBindingSource);
             Assert.NotNull(control.GetBindingExpression(ParamBinding.BindingSourceProperty));
             Assert.Equal(source.SourceNodeId, parameters.PositionCorrectionSource!.SourceNodeId);
+            return true;
+        });
+    }
+
+    [Fact]
+    public void Unavailable_source_keeps_binding_identity_and_recovers_readable_name_when_source_arrives()
+    {
+        RunOnSta(() =>
+        {
+            var sources = new System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>
+            {
+                new() { SourceNodeId="other", SourceNodeName="其他", PropertyName="Matrix", PropertyType=typeof(SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix[]) }
+            };
+            const string path="missing.PositionCorrection[]";
+            var control=new ParamBinding { DataType=typeof(SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix), AvailableDataSources=sources, BindingSource=path };
+            Assert.Equal("已绑定（来源不可用）",control.GenerateBindingDisplayText(path));
+            Assert.Equal(path,control.BindingSource);
+            sources.Add(new() { SourceNodeId="missing", SourceNodeName="恢复匹配", PropertyName="PositionCorrection", DisplayName="位置修正", PropertyType=typeof(SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix[]) });
+            var frame=new System.Windows.Threading.DispatcherFrame();
+            control.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));
+            System.Windows.Threading.Dispatcher.PushFrame(frame);
+            Assert.Equal(path,control.BindingSource);
+            Assert.Equal("恢复匹配.位置修正[]",control.GenerateBindingDisplayText(path));
             return true;
         });
     }

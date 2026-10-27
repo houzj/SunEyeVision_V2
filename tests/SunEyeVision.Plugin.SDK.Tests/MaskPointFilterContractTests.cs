@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.HalAdapter;
@@ -16,7 +16,7 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 ///   ① 落在任意启用屏蔽区内的点被剔除，不参与后续拟合
 ///   ② 无屏蔽区 / 全部禁用 → 全量保留（快路径）
 ///   ③ 位置修正矩阵作用到屏蔽几何后再判定（参考坐标 → 图像坐标）
-///   ④ 非直接绘制（绑定/计算）模式 → 显式报错（rule-015）
+///   ④ 绑定/拼装模式须提供结果上下文；缺少上下文显式报错，不退回本地几何
 /// </summary>
 public class MaskPointFilterContractTests
 {
@@ -188,13 +188,15 @@ public class MaskPointFilterContractTests
     }
 
     [Fact]
-    public void NonShapeParametersMask_ThrowsNotSupported()
+    public void Composed_mask_without_result_context_reports_missing_context()
     {
         var pts = Points((100, 100));
         var computed = Roi.CreateComposed("computed", ShapeType.RotatedRectangle);
 
-        Assert.Throws<NotSupportedException>(() =>
+        var error = Assert.Throws<InvalidOperationException>(() =>
             ToolRegionHelper.FilterPointsOutOfMaskRois(pts, new[] { computed }, null));
+        Assert.Contains("IParameterContext", error.Message);
+        Assert.Contains("computed", error.Message);
     }
 
     [Fact]

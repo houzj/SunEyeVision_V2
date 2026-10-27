@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27第一阶段继续：C07原扩展订阅窗已接引用/原single/between，共同Session及原树双击、焦点source/index/清空、Owner互斥/跟随/释放通过自动验证。最终UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。 C08原ROI栈/同帧图像、完整显示/窗口/命名和真实VS/VM同态用户验收仍缺，第二阶段未准入。",
+  "current": "2026-10-27已完成控件库与工作流开发基线合并及定向验收，产品提交8a98b488。正式UI/全量Release均0错，13轨道与18部署检查通过；实际起始页及主壳响应并正常关闭。详见原方案统一基线节和BASELINE_SYNC_RESULT。此为开发基线同步，第一阶段仍执行中、第二阶段仍未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -325,7 +325,7 @@
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
   "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "C08原Box五参数栈与图像事件的同Guid/同帧独立样例：Apps.XmlUI数值家族，不以VM.PcUI五single替代；原ROI展开行与ROIListStyle同名称域。其余第一阶段要求继续逐项落实，达标才继续Blob业务重组。",
+  "next": "共同基线确认后两分支各自在独立工作区开发；控件线继续原C08及第一阶段剩余门禁，满足后再继续Blob；工作流线保持Group冻结并处理既有工作流范围。用户Blob设计页索引改动保留。",
   "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -7388,6 +7388,17 @@
       "failures": "Window071测试两处EllipseGeometry同名歧义，明确WPF类型后编译；072/073=41过1失败，零厚度正确拒绝但通知Project清原文/error，已修为提交期同根延迟，成功force投影。UI001/002/003早期候选不套最终004。全部日志保留。",
       "limits": "半径联合用例证明正式投影两项暂存后一次Session接纳，不称两个文本框同时键入；CLR结束通知不代真实指针；实际圆环PNG已查看，不代VS/VM同态/用户验收。原列表宿主、Polygon、绘制/来源/复制删除撤销与同链Design未完。",
       "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json；Catalog C08=41源记录/5本方依赖，全部112原源SHA复核。"
+    },
+    "baselineSynchronization": {
+      "用户决定": "先统一控件库和工作流分支基线，再各自独立开发；本批不推送。",
+      "输入与合并": "main 6e43baed + workflow 5552fae8，共祖a6f58334，完整三方合并产品提交8a98b488；随后交接提交只含文档与已运行验收夹具。",
+      "实施": "真实Runtime组件准入与SDK目录懒加载共存；统一22工具/15分类。保多节点草稿和根配置原子回滚；根订阅接控件库；循环/Runtime图像身份校验；连线和自动图像来源共同进入可撤销命令。",
+      "关键修复": "真实整链发现AddConnection提交后才AutoBind，令Runtime目标配置不属于Host基线；已整合before/after快照、UndoRedo、失败回滚，未放宽基线校验。",
+      "最终构建": "正式UI Release 0错6635警告124.16秒；全量Release 0错1115警告53.75秒。产物sourceCommit=8a98b488，782文件SHA核对。",
+      "最终验证": "13条正式产物定向轨道全部通过：FullChain8、Workflow255、Host1、RuntimeEditor10、Window42、Field31、Design28、Kernel17、RuntimeImage8、Document30、Theme1、SDK19、Directory5；139条加载记录与正式文件一致。部署18项通过并原身份还原，正式EXE 22工具/15分类；实际起始页及主壳响应并正常关闭。",
+      "失败保留": "UI首次变量重名与旧订阅控件接口；全量测试构造参数；旧静态拖放缓存、开编辑窗后增节点、未初始化方案管理器、未枚举Theory及旧分裂历史假设夹具均保留日志并按现合同调整；实际连线基线问题在最终构建前修复。",
+      "边界": "用户Blob设计页索引2改动SHA不变且未提交。Group新增及Runtime曝光继续冻结；控件库阶段仍未全部准入，Blob业务重组仍冻结。VS、VM同态、物理交互、多DPI、人工外观未记通过；根配置浅字仍待工作流后续处理。",
+      "证据": "docs/collaboration/evidence/BASELINE_SYNC_RESULT_20261027.json；docs/collaboration/HANDOFF_BASELINE_SYNC_20261027.md。"
     }
   },
   "vmFrameworkArchitectureReference": {
@@ -7396,5 +7407,6 @@
     "sha256": "d84271444e83edab01cb6b38180dbe48bacde13b9c75a44e76ea413b10744770",
     "summary": "2026-10-27按用户要求逐字节整理VM原厂框架层级、源码组织及调用关系逆向文档；仅归档，供后续框架评估查阅。",
     "boundary": "此前本地SunEye项目分析是自研现状，不是VM原厂架构证据。当前材料来自VM程序集及反编译源码，仍不证明厂商原始物理工程树；原文静态/未知/未动态验证边界保留，尚未据此制定或实施重构。"
-  }
+  },
+  "baselineSyncPreviousCurrent": "2026-10-27第一阶段继续：C07原扩展订阅窗已接引用/原single/between，共同Session及原树双击、焦点source/index/清空、Owner互斥/跟随/释放通过自动验证。最终UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。 C08原ROI栈/同帧图像、完整显示/窗口/命名和真实VS/VM同态用户验收仍缺，第二阶段未准入。"
 }

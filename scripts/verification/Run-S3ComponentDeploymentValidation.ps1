@@ -45,7 +45,7 @@ function Invoke-Probe([string]$name,[bool]$reject,[string]$reason='') {
     $data=Get-Content -LiteralPath $output -Raw|ConvertFrom-Json -AsHashtable -Depth 100
     if($reject) {
         if($process.ExitCode -eq 0 -or $data.status -ne 'Rejected' -or $data.error -notmatch $reason){throw ('应明确拒绝 '+$name+'，实际：'+($data|ConvertTo-Json -Compress))}
-    } elseif($process.ExitCode -ne 0 -or @($data.toolboxTools).Count -ne 22){throw ('正式工具准入失败：'+$name)}
+    } elseif($process.ExitCode -ne 0 -or @($data.toolboxTools|Where-Object {$_.id -notlike 'vm:*'}).Count -ne 22){throw ('正式工具准入失败：'+$name)}
     $results.Add([ordered]@{name=$name;pid=$process.Id;exit=$process.ExitCode;expectedRejection=$reject;passed=$true})
 }
 function Reject-Metadata([string]$name,[scriptblock]$change,[string]$reason) {

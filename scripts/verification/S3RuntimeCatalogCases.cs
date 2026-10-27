@@ -26,7 +26,7 @@ internal static class S2DocumentEditingCases
             {
                 var catalog=((IToolCatalogProvider)definition).Catalog;
                 Require(metadata.ToolType==definition.GetType()&&metadata.RuntimeCatalog==catalog
-                    &&metadata.DisplayName=="Blob分析"&&metadata.Icon=="blob"&&metadata.Category=="区域分析"&&metadata.Order==10
+                    &&metadata.DisplayName=="Blob分析"&&metadata.Icon=="blob"&&metadata.Category=="定位"&&metadata.Order==10
                     &&ToolRegistry.ToolExists(BlobTool.Id)&&ToolRegistry.GetToolCount()==22,"目录未由Runtime提供");
                 if(!rootPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis")
                     &&ToolRegistry.CreateToolInstance(BlobTool.Id) is null,"移除SDK入口后仍加载/创建旧Blob");

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using SunEyeVision.Workflow;
 using SunEyeVision.Tool.ImageThreshold;
@@ -154,7 +154,7 @@ internal static class S2DocumentEditingCases
         var authority=Activator.CreateInstance(authorityType,BindingFlags.Instance|BindingFlags.NonPublic,null,
             new object[]{Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!},null)!;
         var components=(IReadOnlyList<SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolComponentRegistration>)authorityType
-            .GetMethod("LoadToolComponents",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(authority,null)!;
+            .GetMethod("LoadToolComponents",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(authority,new object?[]{null})!;
         using(var commit=SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.PrepareRegistration(new[]{typeof(ImageThresholdTool)},components).EnterCommit())commit.Publish();
         if(System.Windows.Application.Current is null)
         {
@@ -432,14 +432,17 @@ internal static class S2DocumentEditingCases
             Require(next.TryCommitEditor(out var error) && ((ImageThresholdParameters)added.Parameters).Threshold == 173,
                 "新增节点不能正常编辑：" + error);
         });
-        Case("新增节点不丢其他草稿，参数Undo保留新节点且不回退实时值", () => {
+        Case("新增节点不丢其他草稿，统一历史按顺序撤销参数与节点且不回退实时值", () => {
             var f = Create(); var live = AddVariable(f);
             using var a = new SunEyeVision.UI.Services.Editing.ProductionEditorContext(
                 f.Editing.Host, "flow", f.A, () => true, _ => { }, documentEdits: f.Editing);
             ((ImageThresholdParameters)a.DraftNode.Parameters).Threshold = 181; Require(a.TryCommitEditor(out _), "初次Apply失败");
             ((ImageThresholdParameters)a.DraftNode.Parameters).Threshold = 191;
             var added = new WorkflowNodeBase("c", "C", "C", "ImageThreshold") { Parameters = new ImageThresholdParameters() };
-            f.Document.Workflows[0].Nodes.Add(added);
+            var flow=f.Document.Workflows[0];
+            var canvasHistory=new SunEyeVision.UI.Features.WorkflowUI.Commands.CommandManager(flow.Nodes,flow.Connections);
+            canvasHistory.BindDocumentHistory(f.Editing.History,flow.Id,()=>f.Editing.Host.AcceptDocumentGraphHistory(),()=>NodeConfigurationEditHost.DocumentHistorySignature(f.Document));
+            canvasHistory.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.AddNodeCommand(flow.Nodes,added));
             using var c = new SunEyeVision.UI.Services.Editing.ProductionEditorContext(
                 f.Editing.Host, "flow", added, () => true, _ => { }, documentEdits: f.Editing);
             ((ImageThresholdParameters)c.DraftNode.Parameters).Threshold = 173; Require(c.TryCommitEditor(out _), "新增节点Apply失败");
@@ -447,9 +450,9 @@ internal static class S2DocumentEditingCases
                 "新增节点接受或丢失另一个草稿");
             f.Editing.AcceptAll(); live.Value = 99;
             f.Editing.Host.Undo(); Require(((ImageThresholdParameters)f.A.Parameters).Threshold == 181 && (int)live.Value! == 99, "Undo回退了实时值或没有恢复A");
-            f.Editing.Host.Undo(); f.Editing.Host.Undo();
-            Require(f.Document.Workflows[0].Nodes.Contains(added) && ((ImageThresholdParameters)f.A.Parameters).Threshold == 128 &&
-                ((ImageThresholdParameters)added.Parameters).Threshold == 128, "参数历史丢失或删除了新节点");
+            f.Editing.Host.Undo(); f.Editing.Host.Undo(); f.Editing.Host.Undo();
+            Require(!f.Document.Workflows[0].Nodes.Contains(added) && ((ImageThresholdParameters)f.A.Parameters).Threshold == 128 &&
+                ((ImageThresholdParameters)added.Parameters).Threshold == 128, "统一历史未按参数/节点顺序回放");
         });
         Case("删除节点仅退出该范围，其他草稿可保存且Undo不复活已删除节点", () => {
             var f = Create();

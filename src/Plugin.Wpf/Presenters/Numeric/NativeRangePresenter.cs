@@ -290,6 +290,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     void IParameterVisibility.PrepareForVisibility(bool visible)=>PrepareForVisibility(visible);
     private void PrepareForVisibility(bool visible)
     {
+        foreach(var scope in _scopes)scope?.PrepareForVisibility(visible);
         if(_disposed)return;
         if(!visible)
         {

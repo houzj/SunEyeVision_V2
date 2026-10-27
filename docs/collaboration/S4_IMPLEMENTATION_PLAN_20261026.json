@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-28第一阶段继续：基线81960d02，本批只读完整/部分annulus原显示链、混合集合时序及独立设计首帧修正；最终八轨道274组和正式EXE通过。完整C09与阶段一未完成，Blob重组未准入。",
+  "current": "2026-10-28第一阶段继续：共同基线6c381072；本批图形/图像模式、字段ID原EnumerationG及父条件AND组合、隐藏引用提交生命周期。UI003/全量001零错，八轨282组与正式EXE通过；完整C09/阶段一及真实VS/VM人工未完成，Blob重组未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -7609,6 +7609,15 @@
       "失败与修正": "Design042原ROITempConverter未知类型：Rows.Reset期间原ROI页借混合live集合，早于Session.Changed读到只读图形。改引用快照后Design043过；Window145全回归110过5败发现原ROIItemsPage.InnerROIList拒非泛型数组，改泛型只读集合，补矩形与部分环共存。预验146/044及最终147/045全过。三旧集合相等断言更新为逐对象身份序列并保全部原frame/lease条件，不保混合live集合的错误行为。早期UI001—003/全量001不作最终成绩。",
       "证据与人工边界": "O06_INHERITED_ANNULUS_CHECKPOINT_20261028.json及SOURCE_AUDIT；Window147组合/Design045真实XAML PNG已查看，实际VS/VM同态、物理键鼠与用户本批未签。",
       "剩余": "完整四继承方式、图像分支、位姿、多对象菜单/历史、文本列表底栏和真实验收继续。输入角度托管层原样传递，native最终单位仍未知；FIXTURE存在六FixMode，实际消费者公式/Blob选择仍未证，不伪造原生等价。阶段一未退出，第二阶段未准入。"
+    },
+    "nativeImageModeCandidate": {
+      "来源及范围": "原Group.xml ROIAreaType Ex2与MaskImage EnumerationG/InputMask声明；沿既有原模板/图标/引用树与原参数组资源，不新增近似控件、不改Blob业务。Catalog来源160唯一SHA再核，来源审计O06_IMAGE_MODE_SOURCE_AUDIT_20261028.json。",
+      "公共入口": "FieldsView/ToolSettingsViewOptions按字段ID提供ImageSources与ParentConditions；构造前验证标量Image引用、配对/弹层父条件一致性和已知条件字段，冻结配置；Settings provider前后同代次复核。",
+      "显隐与生命周期": "父条件AND原字段条件；附件继承锚点条件，高级展开状态保留；按实际全部行聚合原标题与首可见组。隐藏前暂停普通/数值/范围引用UI写入、失效扩展并关闭弹层；恢复不提交原文，owner显式离线捕获仍有效。选择要求真实Loaded/Visible/Enabled，旧代次拒写。",
+      "独立样例": "NativeRoiInheritanceScene同一真实XAML与运行组装链新增图形/图像二态和原MaskImage选择器，切模式同根递增修订，清空几何投影但保物理帧、本地集合及来源；取消旧绘制，切回恢复。示例图像候选仅声明，不代表InputMask算法已集成。",
+      "构建与自动验证": "UI003零错6206警告59.34秒；全量Release001零错6573警告82.11秒。Window149=120、Design046=81、Field081=31、RuntimeEditor063=10、FullChain121=8、Components203=9、ThemeStartup006=1、Resources015=22，共282组。正式EXE014 exit0/22工具15分类；检查点O06_IMAGE_MODE_CHECKPOINT_20261028.json核13源码增量（含用户XAML）、792发布项、107加载记录。",
+      "失败与证据边界": "RuntimeEditor061/062两次失败保留：重绑后停用户页索引2及阈值页，却操作隐藏图像选择器；修测试真实选页/可见与实际解绑断言，063全过。产品不放松隐藏拒写。窗口与独立设计PNG已查看，不代真实VS设计器/VM同态/物理指针/用户验收。",
+      "下一批与缺口": "完整四继承方式另接原RadioSelecter3，创建二态不可混作四态；整体ROIBOX/ROIANNULUS与矩形五/圆环六ButtonSelecter来源分支，解决初次来源配置的可编辑中间态及同快照解析，不默认选首源、不套屏蔽侧。原删除/粘贴在集合变更前接宿主操作，不能让原菜单直接Remove只读快照；撤销修订递增。位姿原生单位/公式仍未证，不伪造等价。完整阶段一及Blob阶段二保持未完成。"
     }
   },
   "vmFrameworkArchitectureReference": {

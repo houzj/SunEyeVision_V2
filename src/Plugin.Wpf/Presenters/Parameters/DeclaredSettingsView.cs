@@ -69,6 +69,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var schema=draft.Schema;var values=draft.ReadFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
         var references=options.References?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
+        var images=options.ImageSources?.ToDictionary(pair=>pair.Key,pair=>pair.Value??throw new ArgumentException("图像来源函数不能为空。"),StringComparer.Ordinal);
         foreach(var reference in references)
             if(!schema.Inputs.Any(p=>p.Id==reference.Key&&(p.EditModes&FieldEditModes.Reference)!=0))
                 throw new ArgumentException("Unknown or non-reference settings field: "+reference.Key);
@@ -82,7 +83,14 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
             WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
-            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current);
+            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current,
+            images?.ToDictionary(pair=>pair.Key,pair=>(Func<IReadOnlyList<SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate>>)(()=>
+            {
+                if(!Current())throw new InvalidOperationException("图像来源视图已重绑或释放。");
+                var result=pair.Value();
+                if(!Current())throw new InvalidOperationException("图像来源读取期间视图已重绑或释放。");
+                return result;
+            }),StringComparer.Ordinal),options.ParentConditions);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)

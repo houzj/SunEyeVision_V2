@@ -52,7 +52,7 @@ public sealed partial class DeclaredFieldEditor
                 // Build a complete candidate snapshot before replacing the accepted display.
                 var items=new List<ComboBoxItem>();
                 if(!_port.Required)items.Add(new ComboBoxItem{Content="",Tag=new UnsetSetting(),ToolTip="清除图像来源"});
-                var candidates=_imageSources!();
+                var candidates=_imageSources!()??throw new InvalidOperationException("图像来源函数返回了空列表。");
                 if(!Current())return;
                 foreach(var candidate in candidates)
                 {
@@ -88,7 +88,7 @@ public sealed partial class DeclaredFieldEditor
         void OnOpened(object? sender,EventArgs args)=>Refresh();
         void OnSelectionChanged(object sender,SelectionChangedEventArgs args)
         {
-            if(!Current()||refreshing||combo.SelectedItem is not ComboBoxItem {IsEnabled:true,Tag:ParameterSetting selected})return;
+            if(!Current()||!_presentationVisible||!IsEnabled||!combo.IsLoaded||!combo.IsVisible||!combo.IsEnabled||refreshing||combo.SelectedItem is not ComboBoxItem {IsEnabled:true,Tag:ParameterSetting selected})return;
             if(!Set(selected))RestoreSelection();
         }
         void OnUnloaded(object sender,RoutedEventArgs args)=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);

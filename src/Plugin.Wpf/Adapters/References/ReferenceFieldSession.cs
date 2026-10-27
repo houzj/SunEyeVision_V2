@@ -28,7 +28,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private readonly Func<OutputReference,string>? _format;
     private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
     private string? _pendingText;
-    private bool _disposed,_committing,_sourceOpen,_indexOpen;
+    private bool _disposed,_committing,_sourceOpen,_indexOpen,_suspended;
+    private long _uiGeneration;
+    internal void SetSuspended(bool suspended){if(_suspended==suspended)return;_suspended=suspended;_uiGeneration++;}
+    internal bool IsSuspended=>_suspended;
     private ReferenceTreeNode? _sourceNode,_indexNode;
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action? CloseRequested;
@@ -48,7 +51,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public bool IsSelectedSubscribeParam=>_expansion is {IsValid:true,HasSelection:true};
     public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;Notify(nameof(IsDropDownOpen));}}
     public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;Notify(nameof(IsTextDropDownOpen));}}
-    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(value.Length!=0&&_pendingText is not null)TryCommitPending();}}
+    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(!_suspended&&value.Length!=0&&_pendingText is not null)TryCommitPendingFromUi();}}
     public ICommand DropDownCommand {get;}
     public ICommand ClickCommand {get;}
     public ICommand IndexClickCommand {get;}
@@ -137,7 +140,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
 
     private void SelectSource(ReferenceTreeNode? node)
     {
-        if(_disposed||_state.IsDisposed||!_state.IsReferenceMode||!ContainsSourceNode(node))return;
+        if(_suspended||_disposed||_state.IsDisposed||!_state.IsReferenceMode||!ContainsSourceNode(node))return;
         if(node.Clear){ClearSource();return;}
         if(node.Candidate is not {} candidate)return;
         var selection=!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting old&&candidate.Output.Type.Shape==ValueShape.Sequence
@@ -146,7 +149,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private void SelectIndex(ReferenceTreeNode? node)
     {
-        if(_disposed||_state.IsDisposed||!_state.IsReferenceMode||!ContainsIndexNode(node)||_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted
+        if(_suspended||_disposed||_state.IsDisposed||!_state.IsReferenceMode||!ContainsIndexNode(node)||_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted
             ||accepted.Reference.Type.Shape!=ValueShape.Sequence||node is null)return;
         var selection=node.Clear?BindingSelection.All:node.Candidate is {} candidate
             ?new BindingSelection.AtField(candidate.Reference(BindingSelection.All)):null;
@@ -154,9 +157,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         var source=accepted.Reference;
         Submit(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
     }
-    private bool Submit(OutputReference reference)
+    private bool Submit(OutputReference reference,bool explicitCommit=false)
     {
-        if(_disposed||_state.IsDisposed)return false;
+        if(_suspended&&!explicitCommit||_disposed||_state.IsDisposed)return false;
         if(_accept(new ReferenceSetting(reference)))
         {_pendingText=null;RequestClose();OnStateChanged();return true;}
         RestoreSelection();Notify(nameof(CurValueA));return false;
@@ -165,7 +168,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public void ObserveText(string text)
     {
         if(_disposed||text==CurValueA)return;
-        if(text.Length==0){ClearSource();return;}
+        if(!_suspended&&text.Length==0){ClearSource();return;}
         _pendingText=text;
     }
     private void ClearSource()
@@ -202,8 +205,11 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
         {_state.SetEditError(error.Message);return false;}
     }
-    public bool TryCommitPending()
+    public bool TryCommitPending()=>CommitPending(null);
+    internal bool TryCommitPendingFromUi()=>!_suspended&&CommitPending(_uiGeneration);
+    private bool CommitPending(long? uiGeneration)
     {
+        // Explicit owner capture is allowed offscreen; only UI-triggered writes are suspended.
         if(_disposed||_state.IsDisposed)return false;
         if(_commitGroup is not null)return _commitGroup();
         if(_committing||_pendingText is null)return !_state.HasInvalidInput;
@@ -212,7 +218,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         try
         {
             if(!TryPreparePending(out var proposal))return false;
-            if(proposal is ReferenceSetting reference)return Submit(reference.Reference);
+            if(uiGeneration is {} generation&&(_suspended||generation!=_uiGeneration))return false;
+            if(proposal is ReferenceSetting reference)return Submit(reference.Reference,true);
             return _accept(proposal);
         }
         finally{_committing=false;}
@@ -221,7 +228,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
 
     private void FocusChanged(object? value)
     {
-        if(_disposed||_state.IsDisposed||!_state.IsReferenceMode||value is not TextBoxFocusEventArgs {Text:{} text} args)return;
+        if(_suspended||_disposed||_state.IsDisposed||!_state.IsReferenceMode||value is not TextBoxFocusEventArgs {Text:{} text} args)return;
         if(!args.IsFocus){IsTextDropDownOpen=false;return;}
         if(ReadOnlyA||args.SelectionStart<1||args.SelectionStart>text.Length)return;
         var before=text[..args.SelectionStart];var after=text[args.SelectionStart..];
@@ -229,13 +236,19 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             &&(after.IndexOf('[')<0||after.IndexOf(']')<after.IndexOf('['));
         if(_expansion?.IsValid==true){_expansion.SetIndex(inside,inside);Notify(nameof(IsSelectedSubscribeParam));RequestClose();return;}
         if(_preference().PreferExpanded){Expand(inside,inside);return;}
-        if(inside){Refresh();IsDropDownOpen=false;}IsTextDropDownOpen=inside;
+        if(inside)
+        {
+            var generation=_uiGeneration;Refresh();
+            if(_suspended||_disposed||_state.IsDisposed||generation!=_uiGeneration)return;
+            IsDropDownOpen=false;
+        }
+        IsTextDropDownOpen=inside;
     }
     internal bool ContainsSourceNode(object? node)=>Contains(SourceNodes,node);
     internal bool ContainsIndexNode(object? node)=>Contains(IndexNodes,node);
     private static bool Contains(IReadOnlyList<ReferenceTreeNode> roots,object? node)
         =>node is not null&&roots.Any(item=>ReferenceEquals(item,node)||Contains(item.EnumEntrysA,node));
-    internal bool IsExpansionCurrent(ReferenceExpansionRequest request,long generation)=>!_disposed&&!_state.IsDisposed&&_state.IsReferenceMode
+    internal bool IsExpansionCurrent(ReferenceExpansionRequest request,long generation)=>!_suspended&&!_disposed&&!_state.IsDisposed&&_state.IsReferenceMode
         &&generation==_expansionGeneration&&ReferenceEquals(_expansion,request);
     internal void ReleaseExpansion(ReferenceExpansionRequest request,long generation)
     {
@@ -250,7 +263,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private void Expand(bool index,bool hasSelection=true)
     {
-        if(_disposed||_state.IsDisposed||!_state.IsReferenceMode||_expand is null)return;
+        if(_suspended||_disposed||_state.IsDisposed||!_state.IsReferenceMode||_expand is null)return;
         var generation=_expansionGeneration+1;InvalidateExpansion();
         if(generation!=_expansionGeneration)return;
         Refresh();

@@ -246,6 +246,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
     {_active=false;_loadGeneration++;_resume?.Abort();_resume=null;_commit?.Suspend();ClosePopups();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;}
     internal void PrepareForVisibility(bool visible)
     {
+        _referenceScope?.PrepareForVisibility(visible);
         if(_disposed)return;
         if(!visible)
         {

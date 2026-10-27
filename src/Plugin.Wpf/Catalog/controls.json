@@ -67,11 +67,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "e4683f40bd40ad4427f54517ff7a1aa8d4553ad6fcfffa3056ec66bbaf354a62"
+          "sha256": "4d541f6c72578bde3bf8f08125dd9b13063e709e1e571497da2d2b52b399836f"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "654426c5bd94fd2fe7bb9febc127e73cdded43d78c247f7ccffd59ff67af37dd"
+          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
@@ -79,11 +79,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
+          "sha256": "8494fa7413da932698d8c51a3554d90f4cc7fbb3483ffcdf19ae8c19624cec64"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "f6445c046057e44133bef9dd5dd63604e7452cc580c32ecc106b788ab98d3599"
+          "sha256": "1c2a4afc81dff75055b8f06850334e4203c632d41803488f2ffaa1db7a455848"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
@@ -276,11 +276,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "e4683f40bd40ad4427f54517ff7a1aa8d4553ad6fcfffa3056ec66bbaf354a62"
+          "sha256": "4d541f6c72578bde3bf8f08125dd9b13063e709e1e571497da2d2b52b399836f"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "654426c5bd94fd2fe7bb9febc127e73cdded43d78c247f7ccffd59ff67af37dd"
+          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
@@ -288,7 +288,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "f6445c046057e44133bef9dd5dd63604e7452cc580c32ecc106b788ab98d3599"
+          "sha256": "1c2a4afc81dff75055b8f06850334e4203c632d41803488f2ffaa1db7a455848"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -296,11 +296,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "d1cbcac51ee4b03c7da9d9f86cca27678b279b3774e4f49c5e29a16012e071af"
+          "sha256": "e54391ecd209988c8ec0fd08f13ec26bcd111e621cdb01418291f5b5fd91bef5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "4d3fbebea6abf097ffa08532cbb2ca996779a0ae78394df0b8f3bff669a6f1f3"
+          "sha256": "935af1dc7c32576209e2c8b4d5a5229e2089b3bd79f980f3149c6174fc1bf971"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
@@ -312,7 +312,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "50335665890b30bd1dc855c5bb098e91ac9b36e9227fb772e45737be4b56702f"
+          "sha256": "f0142499fd810c3d4beb918db3b098a5341bbf36cbc945fd48e7e2fbbb66212d"
         }
       ]
     },
@@ -520,11 +520,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
-          "sha256": "3b0310aec3dcd0ab3ff3e13035faa4bcaea19c0dd49be4e92a702f2f52f389cc"
+          "sha256": "3b6f6b26ec84d68f200f6f8f4fb20973bc65227733fb9297653ea920a207e3fd"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "654426c5bd94fd2fe7bb9febc127e73cdded43d78c247f7ccffd59ff67af37dd"
+          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -603,6 +603,14 @@
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
           "sha256": "a51b76dcc3c177d104c09bca991f61a9e558ebba0f35e5a29913441ecd45b300"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+          "sha256": "4c1ec660b02330e32ac1d080c48cb15d6c83ac49dc38d9d60c7b7c262fd7741b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
+          "sha256": "2cd7ab4aa57d623af4be4ecbf3f068483605c68bb5e48b436b99c4a189209f7e"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -644,7 +652,8 @@
       "sharedStateValidation": {
         "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_ACCEPTANCE_CHECKPOINT_20261027.json",
         "status": "单值/成组统一准备与接纳，状态共同更新后完成全部有效监听，再传播观察者异常；新七轨及正式EXE准入通过。C05/C06生产原组合仍未替换。"
-      }
+      },
+      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。"
     },
     {
       "id": "C04.apps-xmlui-boolean",
@@ -682,7 +691,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "654426c5bd94fd2fe7bb9febc127e73cdded43d78c247f7ccffd59ff67af37dd"
+          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -756,7 +765,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "654426c5bd94fd2fe7bb9febc127e73cdded43d78c247f7ccffd59ff67af37dd"
+          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -1043,11 +1052,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "50335665890b30bd1dc855c5bb098e91ac9b36e9227fb772e45737be4b56702f"
+          "sha256": "f0142499fd810c3d4beb918db3b098a5341bbf36cbc945fd48e7e2fbbb66212d"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
-          "sha256": "61c88efbafc9d99803827632b5b35434160cbceeaf65377d69795326a64e716e"
+          "sha256": "f4663fbd9a37fa4d807126754a69dd3647a0ed0ac5596aac1b4cf01bf14cd53a"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -1075,7 +1084,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
+          "sha256": "fc3fa842cf4bbb0c54874b19c8157934b3af6b26148952e736138c68e2461b31"
         }
       ],
       "dependencyCatalogRefs": [
@@ -1309,11 +1318,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
+          "sha256": "8494fa7413da932698d8c51a3554d90f4cc7fbb3483ffcdf19ae8c19624cec64"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
+          "sha256": "fc3fa842cf4bbb0c54874b19c8157934b3af6b26148952e736138c68e2461b31"
         },
         {
           "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
@@ -1338,12 +1347,12 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "e4683f40bd40ad4427f54517ff7a1aa8d4553ad6fcfffa3056ec66bbaf354a62",
+          "sha256": "4d541f6c72578bde3bf8f08125dd9b13063e709e1e571497da2d2b52b399836f",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "50335665890b30bd1dc855c5bb098e91ac9b36e9227fb772e45737be4b56702f",
+          "sha256": "f0142499fd810c3d4beb918db3b098a5341bbf36cbc945fd48e7e2fbbb66212d",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1607,7 +1616,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
+          "sha256": "fc3fa842cf4bbb0c54874b19c8157934b3af6b26148952e736138c68e2461b31"
         },
         {
           "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
@@ -1632,12 +1641,12 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "e4683f40bd40ad4427f54517ff7a1aa8d4553ad6fcfffa3056ec66bbaf354a62",
+          "sha256": "4d541f6c72578bde3bf8f08125dd9b13063e709e1e571497da2d2b52b399836f",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "50335665890b30bd1dc855c5bb098e91ac9b36e9227fb772e45737be4b56702f",
+          "sha256": "f0142499fd810c3d4beb918db3b098a5341bbf36cbc945fd48e7e2fbbb66212d",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1647,7 +1656,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "f6445c046057e44133bef9dd5dd63604e7452cc580c32ecc106b788ab98d3599",
+          "sha256": "1c2a4afc81dff75055b8f06850334e4203c632d41803488f2ffaa1db7a455848",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         }
       ],
@@ -1754,11 +1763,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "50335665890b30bd1dc855c5bb098e91ac9b36e9227fb772e45737be4b56702f"
+          "sha256": "f0142499fd810c3d4beb918db3b098a5341bbf36cbc945fd48e7e2fbbb66212d"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
+          "sha256": "fc3fa842cf4bbb0c54874b19c8157934b3af6b26148952e736138c68e2461b31"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
@@ -1766,15 +1775,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
-          "sha256": "61c88efbafc9d99803827632b5b35434160cbceeaf65377d69795326a64e716e"
+          "sha256": "f4663fbd9a37fa4d807126754a69dd3647a0ed0ac5596aac1b4cf01bf14cd53a"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
+          "sha256": "8494fa7413da932698d8c51a3554d90f4cc7fbb3483ffcdf19ae8c19624cec64"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "f6445c046057e44133bef9dd5dd63604e7452cc580c32ecc106b788ab98d3599"
+          "sha256": "1c2a4afc81dff75055b8f06850334e4203c632d41803488f2ffaa1db7a455848"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
@@ -2804,23 +2813,23 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "654426c5bd94fd2fe7bb9febc127e73cdded43d78c247f7ccffd59ff67af37dd"
+          "sha256": "d0761ec524a9cb66ad11a08e3d5cc56962eb41d32ab10e3ed9e3fdbd4513e986"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
-          "sha256": "3b0310aec3dcd0ab3ff3e13035faa4bcaea19c0dd49be4e92a702f2f52f389cc"
+          "sha256": "3b6f6b26ec84d68f200f6f8f4fb20973bc65227733fb9297653ea920a207e3fd"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "e4683f40bd40ad4427f54517ff7a1aa8d4553ad6fcfffa3056ec66bbaf354a62"
+          "sha256": "4d541f6c72578bde3bf8f08125dd9b13063e709e1e571497da2d2b52b399836f"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "d1cbcac51ee4b03c7da9d9f86cca27678b279b3774e4f49c5e29a16012e071af"
+          "sha256": "e54391ecd209988c8ec0fd08f13ec26bcd111e621cdb01418291f5b5fd91bef5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "4d3fbebea6abf097ffa08532cbb2ca996779a0ae78394df0b8f3bff669a6f1f3"
+          "sha256": "935af1dc7c32576209e2c8b4d5a5229e2089b3bd79f980f3149c6174fc1bf971"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeIntegerRadioSample.cs",
@@ -2852,11 +2861,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "50335665890b30bd1dc855c5bb098e91ac9b36e9227fb772e45737be4b56702f"
+          "sha256": "f0142499fd810c3d4beb918db3b098a5341bbf36cbc945fd48e7e2fbbb66212d"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "f6445c046057e44133bef9dd5dd63604e7452cc580c32ecc106b788ab98d3599"
+          "sha256": "1c2a4afc81dff75055b8f06850334e4203c632d41803488f2ffaa1db7a455848"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
@@ -2868,11 +2877,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "afcb4cb33c626d29f1aa867cc81989b98f82cfda0118b80882d77bbf1a31b906"
+          "sha256": "2cd7ab4aa57d623af4be4ecbf3f068483605c68bb5e48b436b99c4a189209f7e"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
           "sha256": "3eacec674a6653566d1105db3254500903d971b6fda7c30c0f25f4c866f5d9cf"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+          "sha256": "4c1ec660b02330e32ac1d080c48cb15d6c83ac49dc38d9d60c7b7c262fd7741b"
         }
       ],
       "dependencyCatalogRefs": [
@@ -2912,7 +2925,8 @@
           "Four inheritance ways/image mode/pose/multi-object history and real VS/VM/manual acceptance remain incomplete"
         ],
         "validation": "Window142=109; Field079=31; Design041=74; RuntimeEditor059=10; FullChain119=8; Components201=9; ThemeStartup004=1; Resources013=22; formal EXE012 exit0/22 tools/15 categories"
-      }
+      },
+      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。"
     },
     {
       "id": "C09.original-inherited-annulus-display",
@@ -3091,7 +3105,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "afcb4cb33c626d29f1aa867cc81989b98f82cfda0118b80882d77bbf1a31b906"
+          "sha256": "2cd7ab4aa57d623af4be4ecbf3f068483605c68bb5e48b436b99c4a189209f7e"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -3100,6 +3114,10 @@
         {
           "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml",
           "sha256": "50ea233cc238b9af5df1cecee857ca57b677a0fecd0ed048a36d0a69e9e02f88"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+          "sha256": "4c1ec660b02330e32ac1d080c48cb15d6c83ac49dc38d9d60c7b7c262fd7741b"
         }
       ],
       "dependencyCatalogRefs": [
@@ -3123,7 +3141,8 @@
         "Full C09 four source modes/image/pose and scalar input native units remain incomplete",
         "Native result display angle=degree does not establish input contract unit",
         "Complete stage1 and real VS/VM/manual acceptance remain open"
-      ]
+      ],
+      "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。"
     }
   ]
 }

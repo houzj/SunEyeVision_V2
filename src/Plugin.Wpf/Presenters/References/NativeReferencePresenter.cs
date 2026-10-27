@@ -24,6 +24,11 @@ internal sealed class NativeReferencePresenter : Decorator,IDisposable
         _scope=new(this,_session,()=>!state.IsDisposed&&state.IsReferenceMode);
     }
     public bool TryCommitPending()=>!_disposed&&_session.TryCommitPending();
+    internal void PrepareForVisibility(bool visible)
+    {
+        if(_disposed)return;
+        _scope.PrepareForVisibility(visible);
+    }
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;

@@ -1995,6 +1995,66 @@ internal static class S2DocumentEditingCases
     context.Discard();edits.Close();
     // 旧SDK显示对象/ROI组合用例已退出；新Runtime对应完整显示及本地ROI仍未实现，不能按旧成绩算通过。
    });
+   Test("图像模式原EnumerationG与同根ROI切换保留对象并拒绝隐藏选择",()=>
+   {
+    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);
+    var local=sample.LocalItems.ToArray();var frame=sample.Frame;
+    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}}),"图像模式切换拒绝");Pump();
+    var image=sample.Fields.Fields.Single(field=>field.FieldId=="mask.image");var combo=(ComboBox)image.InputElement!;
+    Require(combo.IsVisible&&sample.Session.Items.Count==0&&sample.Scene.ParameterHost.Visibility==Visibility.Collapsed,"原图像分支未显示或几何未隐藏");
+    combo.SelectedIndex=1;Pump();Require(image.Setting is ReferenceSetting,"原图像选择未接纳");
+    var selected=((ReferenceSetting)image.Setting).Reference;combo=(ComboBox)image.InputElement!;
+    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(0L)}}),"图形模式切回失败");Pump();
+    var revision=sample.Revision;combo.SelectedIndex=0;Pump();
+    Require(!combo.IsVisible&&image.Setting is ReferenceSetting retained&&retained.Reference.NodeId==selected.NodeId&&retained.Reference.PortId==selected.PortId&&sample.Revision==revision,"隐藏旧图像事件写入字段");
+    Require(sample.Session.Items.Count==2&&sample.LocalItems.SequenceEqual(local)&&sample.Frame==frame,"模式切换破坏原对象或帧");
+    CaptureInline(sample,"native-inheritance-image-mode-restored.png");
+   });
+   Test("图像模式父条件与自身条件相与且附件和分组同步显隐",()=>
+   {
+    var values=new[]{
+     (new Port("mode",DataType.Integer),new FieldPresentation("mode","模式","模式",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(0L)),
+     (new Port("enabled",DataType.Boolean),new FieldPresentation("enabled","启用","模式",1,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(true)),
+     (new Port("value",DataType.Integer),new FieldPresentation("value","参数","图形",2,FieldEditorKind.Scalar){Layout=new("模式","图形",VisibleWhen:new("enabled",true))},(ParameterSetting)new ConstantSetting(10L))};
+    using var fields=new DeclaredFieldsView(values,_=>{},parentConditions:new Dictionary<string,IReadOnlyList<FieldCondition>>{["value"]=new[]{new FieldCondition("mode",0L)}});
+    var attachment=new TextBlock{Text="图形附件"};fields.AddAfterField("value",attachment);Show(fields);
+    Require(attachment.IsVisible,"初始附件隐藏");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"mode",new ConstantSetting(1L)}}),"父模式拒绝");Pump();
+    Require(!attachment.IsVisible,"父条件未传给附件");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"enabled",new ConstantSetting(false)},{"mode",new ConstantSetting(0L)}}),"分支恢复拒绝");Pump();
+    Require(!attachment.IsVisible,"自身条件被父条件覆盖");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"enabled",new ConstantSetting(true)}}),"启用拒绝");Pump();Require(attachment.IsVisible,"条件恢复后附件未显示");
+   });
+   Test("图像模式隐藏先暂停引用失焦写入且显式离线捕获仍有效",()=>
+   {
+    var writes=0;var source=new DeclaredReferenceCandidate("文本序列","texts",null,new Port("values",TypeRef.SequenceOf(DataType.Text)),Array.Empty<string>());
+    using var fields=new DeclaredFieldsView(new[]{
+     (new Port("mode",DataType.Integer),new FieldPresentation("mode","模式","组合",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(0L)),
+     (new Port("text",DataType.Text,Required:false,EditModes:FieldEditModes.Reference),new FieldPresentation("text","来源","组合",1,FieldEditorKind.Scalar),(ParameterSetting)new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))))},_=>writes++,
+     new ReferenceFieldOptions(_=>new[]{source},EditableIndex:true),parentConditions:new Dictionary<string,IReadOnlyList<FieldCondition>>{["text"]=new[]{new FieldCondition("mode",0L)}});
+    Show(fields);var field=fields.Fields.Single(item=>item.FieldId=="text");
+    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");
+    popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();var session=popup.DataContext;var type=session.GetType();
+    var current=(string)type.GetProperty("CurValueA")!.GetValue(session)!;var pending=current[..current.LastIndexOf('[')]+"[1]";
+    type.GetMethod("ObserveText")!.Invoke(session,new object[]{pending});
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"mode",new ConstantSetting(1L)}}),"隐藏拒绝");Pump();
+    var before=writes;type.GetProperty("CurValueA")!.SetValue(session,pending);Pump();
+    Require(writes==before&&!popup.IsDropDownOpen&&field.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:0}},"隐藏失焦写入或弹层未关闭");
+    Require(fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"mode",new ConstantSetting(0L)}}),"恢复拒绝");Pump();
+    Require(field.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:0}}&&(string)type.GetProperty("CurValueA")!.GetValue(session)! ==pending,"恢复时提交或丢失索引原文");
+    Show(new TextBlock{Text="离线捕获"});
+    Require(field.TryCommitPending()&&field.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:1}},"显式离线捕获被UI暂停错误阻断");
+   });
+   Test("图像模式配置前置拒绝未知字段和错型且来源函数不执行",()=>
+   {
+    var calls=0;var declaration=new[]{(new Port("value",DataType.Integer),new FieldPresentation("value","数值","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(1L))};
+    foreach(var id in new[]{"missing","value"})
+    {
+     var rejected=false;try{using var fields=new DeclaredFieldsView(declaration,_=>{},imageSources:new Dictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>{[id]=()=>{calls++;return Array.Empty<DeclaredReferenceCandidate>();}});}catch(ArgumentException){rejected=true;}
+     Require(rejected&&calls==0,"非法图像字段配置已执行来源函数");
+    }
+    var failed=false;try{using var fields=new DeclaredFieldsView(declaration,_=>{},parentConditions:new Dictionary<string,IReadOnlyList<FieldCondition>>{["value"]=new[]{new FieldCondition("missing",0L)}});}catch(ArgumentException){failed=true;}Require(failed,"未知父条件被静默接受");
+   });
    Console.WriteLine($"O06独立窗口检查：{passed}组通过，{failed}组失败。仅自动交互，不代人工外观验收。");return failed==0?0:1;
   }
   finally{foreach(var window in Application.Current.Windows.Cast<Window>().ToArray())window.Close();Application.Current.Shutdown();}

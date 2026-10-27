@@ -15,7 +15,9 @@ public sealed record ToolSettingsViewOptions(
     string? InputSection=null,FrameworkElement? InputContent=null,
     Action<object,IReadOnlyDictionary<string,ReferenceSetting>>? AcceptCandidate=null,
     IReadOnlyDictionary<string,NativeIntegerRadioOptions>? IntegerRadios=null,
-    Func<FieldGroupCandidate,string?>? ValidateComposition=null);
+    Func<FieldGroupCandidate,string?>? ValidateComposition=null,
+    IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? ImageSources=null,
+    IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? ParentConditions=null);
 
 public interface IToolSettingsView : IDisposable
 {

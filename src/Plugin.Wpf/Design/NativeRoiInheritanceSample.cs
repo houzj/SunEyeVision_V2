@@ -37,30 +37,42 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
     private static string Mode(string group)=>group+".mode";
     private static string Source(string group)=>group+".source";
     private bool Local(string group)=>_root.Fields[Mode(group)] is ConstantSetting{Value:0L};
+    public bool GraphicMode=>_root.Fields["area.mode"] is ConstantSetting{Value:0L};
     public NativeRoiInheritanceSample()
     {
         var items=NativeRoiSamples.CreateItems().Where(x=>x.Geometry.Get<string>("kind") is "rectangle" or "annulus").ToArray();
         var groups=new[]{"detect","mask"};
         _root=new(0,Freeze(groups.SelectMany(group=>new[]{
             new KeyValuePair<string,ParameterSetting>(Mode(group),new ConstantSetting(0L)),
-            new KeyValuePair<string,ParameterSetting>(Source(group),new UnsetSetting())})),Array.AsReadOnly(items));
+            new KeyValuePair<string,ParameterSetting>(Source(group),new UnsetSetting())})
+            .Concat(new[]{new KeyValuePair<string,ParameterSetting>("area.mode",new ConstantSetting(0L)),
+                new KeyValuePair<string,ParameterSetting>("mask.image",new UnsetSetting())})),Array.AsReadOnly(items));
         _sources=items.SelectMany(row=>new[]{new SourceValue(Guid.NewGuid(),row.Group+"-source",row.Group,row.Geometry,_image.Frame),
             new SourceValue(Guid.NewGuid(),row.Group+"-foreign",row.Group,row.Geometry,new(Guid.NewGuid(),"different-physical-frame"))}).ToArray();
         var partial=RoiGeometryEditing.Values(items.Single(row=>row.Group=="mask").Geometry);
         partial["start-radians"]=170*Math.PI/180;partial["end-radians"]=380*Math.PI/180;
         _sources=_sources.Append(new SourceValue(Guid.NewGuid(),"mask-partial","mask",RoiGeometryEditing.Checked(partial),_image.Frame)).ToArray();
-        Session=new(_image,Read,AcceptGeometry,()=>!_disposed,"detect",canDraw:group=>!_disposed&&Local(group));
+        Session=new(_image,Read,AcceptGeometry,()=>!_disposed,"detect",canDraw:group=>!_disposed&&GraphicMode&&Local(group));
         var declarations=groups.SelectMany((group,i)=>new[]{
             (new Port(Mode(group),DataType.Integer,EditModes:FieldEditModes.Constant),
              new FieldPresentation(Mode(group),group=="detect"?"ROI创建":"屏蔽区创建","来源组合",i*2,FieldEditorKind.Scalar),_root.Fields[Mode(group)]),
             (new Port(Source(group),RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
-             new FieldPresentation(Source(group),group=="detect"?"检测区域来源":"屏蔽区域来源","来源组合",i*2+1,FieldEditorKind.Record),_root.Fields[Source(group)])}).ToArray();
+             new FieldPresentation(Source(group),group=="detect"?"检测区域来源":"屏蔽区域来源","来源组合",i*2+1,FieldEditorKind.Record),_root.Fields[Source(group)])})
+            .Concat(new[]{
+                (new Port("area.mode",DataType.Integer),new FieldPresentation("area.mode","ROI区域类型","来源组合",-2,FieldEditorKind.Scalar),_root.Fields["area.mode"]),
+                (new Port("mask.image",TypeRef.ResourceOf(ResourceKind.Image),Required:false,EditModes:FieldEditModes.Reference),
+                    new FieldPresentation("mask.image","屏蔽图像","来源组合",-1,FieldEditorKind.Image){Layout=new("来源组合","来源组合",VisibleWhen:new("area.mode",1L))},_root.Fields["mask.image"])
+            }).ToArray();
         var options=groups.ToDictionary(Mode,_=>new NativeIntegerRadioOptions(new[]{new NativeIntegerRadioChoice(0,"绘制"),new NativeIntegerRadioChoice(1,"继承")}),StringComparer.Ordinal);
+        options.Add("area.mode",new(new[]{new NativeIntegerRadioChoice(0,"图形类型"),new NativeIntegerRadioChoice(1,"图像类型")}));
         try
         {
             Fields=new(declarations,AcceptFields,new ReferenceFieldOptions(port=>_sources.Where(x=>Source(x.Group)==port.Id)
                 .Select(x=>new DeclaredReferenceCandidate(x.Node,x.Node,null,new Port("geometry",RoiDeclarations.Shape),Array.Empty<string>())).ToArray()),
-                integerRadios:options,validateComposition:ValidateFields,isCurrent:()=>!_disposed);
+                integerRadios:options,validateComposition:ValidateFields,isCurrent:()=>!_disposed,
+                imageSources:new Dictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>{["mask.image"]=()=>new[]{
+                    new DeclaredReferenceCandidate("同帧屏蔽图像","mask-image",null,new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),Array.Empty<string>())}},
+                parentConditions:groups.SelectMany(group=>new[]{Mode(group),Source(group)}).ToDictionary(id=>id,_=>(IReadOnlyList<FieldCondition>)new[]{new FieldCondition("area.mode",0L)},StringComparer.Ordinal));
             foreach(var field in Fields.Fields)field.Changed+=OnFieldsChanged;
             RowDefinitions.Add(new(){Height=GridLength.Auto});RowDefinitions.Add(new(){Height=new GridLength(1,GridUnitType.Star)});
             Fields.Width=380;Fields.HorizontalAlignment=HorizontalAlignment.Left;Children.Add(Fields);
@@ -109,11 +121,17 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
         _root=current with{Revision=current.Revision+1,Fields=Freeze(fields)};
         // No Session callbacks here: fields install accepted states before Changed refreshes the scene.
     }
-    private void OnFieldsChanged(){if(!_disposed)Session.Refresh();}
+    private void OnFieldsChanged()
+    {
+        if(_disposed)return;
+        Session.Refresh();
+        Scene.ParameterHost.Visibility=GraphicMode?Visibility.Visible:Visibility.Collapsed;
+    }
     private RoiEditSnapshot Read()
     {
         var root=_root;
         var rows=new List<RoiEditItem>();
+        if(!GraphicMode)return new(new(_scope,root.Revision,_image.Frame),Array.AsReadOnly(rows.ToArray()));
         foreach(var group in new[]{"detect","mask"})
             if(Local(group))rows.AddRange(root.LocalItems.Where(row=>row.Group==group));
             else
@@ -125,7 +143,7 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
     }
     private RoiEditAcceptance AcceptGeometry(RoiEditStamp expected,RoiEditProposal proposal)
     {
-        var current=Read();if(_disposed||current.Stamp!=expected||!Local(proposal.Group))return new(false,current,Error:"区域来源或修订已改变。");
+        var current=Read();if(_disposed||current.Stamp!=expected||!GraphicMode||!Local(proposal.Group))return new(false,current,Error:"区域来源或修订已改变。");
         var rows=_root.LocalItems.ToList();Guid id;
         if(proposal.Operation==RoiEditOperation.Create){id=Guid.NewGuid();rows.Add(new(proposal.Group,id,"新区域",proposal.Geometry));}
         else

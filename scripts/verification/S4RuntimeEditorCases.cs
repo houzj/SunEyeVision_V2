@@ -113,9 +113,12 @@ internal static class S2DocumentEditingCases
             source.IsSelected=true;vm.SelectedNode=source;
             (vm.ActiveInputSource??throw new Exception("正式输入源面板未建立")).AddImage(new SunEyeVision.UI.Shell.Controls.Panels.ImageInfo{Name="Runtime调试输入",FilePath=imageFile,SourceReference=imageFile,IsForRun=true});
             source.IsSelected=false;node.IsSelected=true;vm.SelectedNode=node;Pump();
+            // The preceding rebind recreates the real view with the user's saved page index.
+            // Exercise the source on its visible page; hidden widgets must not accept UI events.
+            Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;first.UpdateLayout();Pump();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
             oldInputCombo=(ComboBox)input.InputElement!;
-            var combo=(ComboBox)input.InputElement!;combo.IsDropDownOpen=true;Pump();
+            var combo=(ComboBox)input.InputElement!;Require(combo.IsVisible&&combo.IsLoaded,"图像来源实际页未显示");combo.IsDropDownOpen=true;Pump();
             Require(!app.Windows.OfType<Window>().Any(w=>w.Title=="选择绑定来源"),"图像下拉仍打开通用订阅窗口");
             Require(((ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!).DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput) is null,
                 "刷新候选擅自写入了来源");
@@ -197,9 +200,12 @@ internal static class S2DocumentEditingCases
             var ready=Control(first).RunDebugAsync();PumpUntil(()=>ready.IsCompleted);ready.GetAwaiter().GetResult();
             var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"有效调试未恢复结果表");
             var prior=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.Clone();
+            Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;first.UpdateLayout();Pump();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
             var sourceCombo=(ComboBox)input.InputElement!;
+            Require(sourceCombo.IsVisible&&sourceCombo.IsLoaded,"解绑来源实际页未显示");
             sourceCombo.SelectedItem=sourceCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);
+            Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"可见来源未实际解绑");
             var failed=Control(first).RunDebugAsync();PumpUntil(()=>failed.IsCompleted);
             try{failed.GetAwaiter().GetResult();throw new Exception("缺少来源的调试竟然成功");}catch(InvalidOperationException){}
             Require(context.DebugResults.GetNodeResult(node.Id) is null&&table.Items.Count==0&&ReferenceEquals(formal,Context().GetNodeResult(node.Id)!.Result),"失败未清空私有预览或污染正式结果");

@@ -150,7 +150,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         if(_disposed)return;
         _renderGeneration++;
         var generation=_renderGeneration;
-        bool CurrentRender()=>!_disposed&&generation==_renderGeneration&&IsEnabled;
+        bool CurrentRender()=>!_disposed&&generation==_renderGeneration&&IsEnabled&&_presentationVisible;
         DetachOwnedEditors();
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         if(_imageSources is not null){RenderImageSource();return;}
@@ -182,6 +182,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         if(_referenceMode||_setting is ReferenceSetting||_allowUnboundReference&&_port.EditModes==FieldEditModes.Reference)
         {
             _referencePresenter=new NativeReferencePresenter(_state,_referenceOptions??ReferenceFieldOptions.Empty,_formatReference);
+            _referencePresenter.PrepareForVisibility(_presentationVisible);
             InputElement=_referencePresenter;_body.Children.Add(_referencePresenter);return;
         }
         if(_setting is UnsetSetting)
@@ -313,10 +314,13 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         return _children.All(child=>child.TryCommitPending());
     }
 
+    private bool _presentationVisible=true;
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {
         if(_disposed)return;
+        _presentationVisible=visible;
         var cleanup=new List<Action>{()=>_numeric?.PrepareForVisibility(visible)};
+        cleanup.Add(()=>_referencePresenter?.PrepareForVisibility(visible));
         cleanup.Add(()=>_integerRadio?.PrepareForVisibility(visible));
         cleanup.AddRange(_children.ToArray().Select(child=>(Action)(()=>((IParameterVisibility)child).PrepareForVisibility(visible))));
         if(!visible&&InputElement is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
@@ -341,7 +345,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     public void Dispose()
     {
         if(_disposed)return;
-        _disposed=true;_renderGeneration++;
+        _disposed=true;_renderGeneration++;_imageSources=null;
         _state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;Changed=null;
         var cleanup=new List<Action>();
         if(_ownsState)cleanup.Add(_state.Dispose);

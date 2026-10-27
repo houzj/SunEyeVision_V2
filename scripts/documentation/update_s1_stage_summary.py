@@ -356,6 +356,9 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-native-inherited-annulus">C09继承完整及部分圆环的原显示链</h5>'
                + table(['项目','本批结果与未完成边界'], list(plan['nativeInheritedAnnulusCandidate'].items()))
                if plan.get('nativeInheritedAnnulusCandidate') else '')
+            + ('<h5 id="o06-native-image-mode">C09图形与图像模式、父条件及引用隐藏生命周期</h5>'
+               + table(['项目','本批结果与未完成边界'], list(plan['nativeImageModeCandidate'].items()))
+               if plan.get('nativeImageModeCandidate') else '')
             + ('<h5 id="o06-text-list-footer-audit">文本、结果列表与底栏的原组合缺口</h5>'
                + table(['组合','当前缺口与后续边界'], list(plan['remainingControlAudit20261028'].items()))
                if plan.get('remainingControlAudit20261028') else '')

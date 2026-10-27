@@ -45,32 +45,36 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText);
  public IReadOnlyList<DeclaredFieldAccess> Fields=>_fields.AsReadOnly();
  public event Action? PageChanged;
- public void AddToGroup(string group,UIElement content,int? index=null)
+ public void AddToGroup(string group,UIElement content,int? index=null,FieldCondition? condition=null)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);
   if(!_groups.TryGetValue(group,out var page))throw new ArgumentException("Unknown declared presentation group.");
   if(content is not FrameworkElement view)throw new ArgumentException("参数组合必须提供真实FrameworkElement。");
+  ValidateCondition(condition);
   EnsureAttachable(view);var position=index??page.Rows.Count;
   if(position<0||position>page.Rows.Count)throw new ArgumentOutOfRangeException(nameof(index));
   var metadata=index.HasValue&&page.Rows.FirstOrDefault()?.GroupName is {DisplayType:"CategoryNoHead"} existing?existing:new NativeParameterGroup("",true);
   var row=BorrowRow(metadata,view);InstallRow(page,position,row,view);
+  _visibility.Add(view,(null,condition));UpdateVisibility();
  }
  public void AddAfterField(string fieldId,FrameworkElement content,FieldCondition? condition=null)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);EnsureAttachable(content);var anchor=_rows[fieldId];
+  ValidateCondition(condition);
   if(!_positions.TryGetValue(anchor,out var position))throw new InvalidOperationException("字段不属于当前原参数行宿主。");
   var advanced=_visibility.TryGetValue(anchor,out var policy)?policy.Advanced:null;
   _visibility.Add(content,(advanced,condition));
+  _rowGateAnchors.Add(content,fieldId);
   var row=BorrowRow(position.Row.GroupName,content);
   try
   {
-   content.Visibility=(advanced?.IsExpanded??true)&&(condition is null||Meets(condition))?Visibility.Visible:Visibility.Collapsed;
+   content.Visibility=(advanced?.IsExpanded??true)&&IsFieldActive(fieldId)&&(condition is null||Meets(condition))?Visibility.Visible:Visibility.Collapsed;
    ObjectDisposedException.ThrowIf(_disposed,this);
    InstallRow(position.Page,position.Page.Rows.IndexOf(position.Row)+1,row,content);
   }
   catch
   {
-   if(!_positions.ContainsKey(content)){_visibility.Remove(content);_parameterRows.Remove(row);row.Dispose();}
+   if(!_positions.ContainsKey(content)){_visibility.Remove(content);_rowGateAnchors.Remove(content);_parameterRows.Remove(row);row.Dispose();}
    throw;
   }
   UpdateVisibility();
@@ -107,7 +111,9 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   Action<IReadOnlyDictionary<string,ParameterSetting>> writeDraft,ReferenceFieldOptions? references=null,
   Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null,
   IReadOnlyDictionary<string,NativeIntegerRadioOptions>? integerRadios=null,
-  Func<FieldGroupCandidate,string?>? validateComposition=null,Func<bool>? isCurrent=null)
+  Func<FieldGroupCandidate,string?>? validateComposition=null,Func<bool>? isCurrent=null,
+  IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? imageSources=null,
+  IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parentConditions=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
@@ -148,6 +154,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   }
   if(radios.Keys.Any(paired.Contains))throw new ArgumentException("整数单选不能同时作为范围的任一端点。");
   _pairedFields.UnionWith(paired);
+  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired);
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
@@ -177,6 +184,17 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
     var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
         integerRadioOptions:radios.GetValueOrDefault(field.Port.Id));
     _editors.Add(field.Port.Id,editor);access.Add(field.Port.Id,new(editor));_rows.Add(field.Port.Id,editor);
+    if(imageProviders.TryGetValue(field.Port.Id,out var provider))
+    {
+     editor.UseImageSourceSelector(()=>
+     {
+      if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");
+      var candidates=provider();
+      if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");
+      return candidates;
+     });
+     if(!CurrentGroup()){Dispose();return;}
+    }
    }
   }
   foreach(var field in all){var item=access[field.Port.Id];_fields.Add(item);item.Changed+=UpdateVisibility;}
@@ -197,6 +215,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
     {
      advanced=new NativeAdvancedPresenter();_advanced.Add(advanced);advanced.Changed+=UpdateVisibility;
      var buttonRow=BorrowRow(metadata,advanced);pageRows.Rows.Add(buttonRow);_positions.Add(advanced,(pageRows,buttonRow));
+     _advancedFields.Add(advanced,section.Select(field=>field.Port.Id).ToArray());_visibility.Add(advanced,(null,null));
     }
     var rightEnds=section.Where(f=>f.Presentation.Layout?.PairWith is not null).Select(f=>f.Presentation.Layout!.PairWith!).ToHashSet();
     foreach(var field in section)
@@ -221,6 +240,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
       pageRows.Rows.Add(row);_positions.Add(view,(pageRows,row));
      }
      _visibility.Add(view,(advanced,field.Presentation.Layout?.VisibleWhen));
+     _rowGateAnchors.Add(view,field.Port.Id);
     }
    }
    var tab=new TabItem{Header=page.Key,Content=body};
@@ -231,7 +251,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException("参数宿主构造与清理均失败。",failure,cleanup);}throw;}
  }
  // Logical declaration activity is independent of selected tabs, collapsed Advanced sections, or attachment state.
- private bool IsFieldActive(string fieldId)=>!_fieldConditions.TryGetValue(fieldId,out var condition)||Meets(condition);
+ private bool IsFieldActive(string fieldId)=>(!_fieldConditions.TryGetValue(fieldId,out var condition)||Meets(condition))
+  &&(!_parentConditions.TryGetValue(fieldId,out var parents)||parents.All(Meets));
  private bool Meets(FieldCondition condition)
  {
   var source=_fields.SingleOrDefault(field=>field.FieldId==condition.FieldId);
@@ -248,13 +269,33 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    {
     _visibilityPending=false;var version=_visibilityVersion;
     bool Current()=>!_disposed&&version==_visibilityVersion;
-    var targets=_visibility.ToArray().Select(item=>(item.Key,Visible:(item.Value.Advanced?.IsExpanded??true)&&(item.Value.Condition is not {} condition||Meets(condition)))).ToArray();
+    var targets=_visibility.ToArray().Select(item=>(item.Key,Visible:(item.Value.Advanced?.IsExpanded??true)
+     &&(item.Value.Condition is not {} condition||Meets(condition))
+     &&(!_rowGateAnchors.TryGetValue(item.Key,out var anchor)||IsFieldActive(anchor))
+     &&(!_advancedFields.TryGetValue(item.Key,out var members)||members.Any(IsFieldActive)))).ToArray();
     try
     {
      ParameterCleanup.Run(targets.Select(item=>(Action)(()=>ParameterCleanup.Run(new Action[]{
       ()=>{if(Current())(item.Key as IParameterVisibility)?.PrepareForVisibility(item.Visible);},
       ()=>{if(Current())item.Key.Visibility=item.Visible?Visibility.Visible:Visibility.Collapsed;}
-     }))).Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(Current())row.Refresh();}))));
+     }))).Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(Current())row.Refresh();})))
+     .Append(()=>
+     {
+      var updates=new List<Action>();
+      foreach(var (page,_) in _pages.ToArray())
+      {
+       var first=true;
+       foreach(var group in page.Rows.GroupBy(row=>row.GroupName))
+       {
+        var visible=group.Any(row=>row.CustomVisibleA);
+        var isFirst=visible&&first;
+        updates.Add(()=>{if(Current())group.Key.CustomVisibleA=visible;});
+        updates.Add(()=>{if(Current())group.Key.IsFirst=isFirst;});
+        if(visible)first=false;
+       }
+      }
+      ParameterCleanup.Run(updates);
+     }));
     }
     catch(Exception failure){failures.Add(failure);}
    }
@@ -280,6 +321,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
+   _parentConditions.Clear();_rowGateAnchors.Clear();_advancedFields.Clear();
    _groupPresentations=new Dictionary<string,FieldPresentation>();
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });

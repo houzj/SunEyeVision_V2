@@ -31,7 +31,7 @@ internal static class S2DocumentEditingCases
             {
                 Render(entry,"native-roi-inheritance-xaml-entry.png",1020,800);
                 var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample>(entry).Single();
-                Check(Application.Current is null&&sample.Fields.Fields.Count==4&&sample.Session.Frame==sample.Frame,
+                Check(Application.Current is null&&sample.Fields.Fields.Count==6&&sample.Session.Frame==sample.Frame,
                     "整体来源与ROI真实XAML入口无Application并共用字段及物理帧");
                 Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.source",new ReferenceSetting(sample.Reference("detect"))}})
                     &&sample.Session.Stamp.Revision==sample.Revision&&sample.Session.Items.Single(x=>x.Group=="detect").Enabled==false,
@@ -43,6 +43,15 @@ internal static class S2DocumentEditingCases
                 Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(entry).Count()==1
                     &&!Descendants<SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedCircleROI>(entry).Any(),
                     "独立设计同时保留原矩形显示且只读部分环没有圆环编辑手柄");
+                var local=sample.LocalItems.ToArray();
+                Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}}),"设计入口切换图像分支");
+                Render(entry,"native-inheritance-image-mode-xaml-entry.png",1020,800);
+                Check(sample.Session.Items.Count==0&&sample.LocalItems.SequenceEqual(local)&&sample.Scene.ParameterHost.Visibility==Visibility.Collapsed,
+                    "图像分支隐藏几何且保留本地对象与物理帧");
+                Check(sample.Fields.Fields.Single(field=>field.FieldId=="mask.image").InputElement is ComboBox,
+                    "图像分支使用真实EnumerationG选择器");
+                Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(0L)}})&&sample.Session.Items.Count==2,
+                    "图形分支恢复同一来源及本地对象");
             }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
             {

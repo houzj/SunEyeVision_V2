@@ -859,6 +859,99 @@ internal static class S2DocumentEditingCases
    Show(new TextBlock{Text="结束"});
   });
  }
+ static DeclaredFieldsView AdvancedFields(Action<IReadOnlyDictionary<string,ParameterSetting>> write,ReferenceFieldOptions? references=null,ParameterSetting? firstValue=null)
+ {
+  var rows=new List<(Port,FieldPresentation,ParameterSetting)>();
+  foreach(var page in new[]{"甲页","乙页"})
+  {
+   var prefix=page=="甲页"?"a":"b";
+   rows.Add((new Port(prefix+".gate",DataType.Boolean),new FieldPresentation(prefix+".gate","条件","常规",rows.Count,FieldEditorKind.Scalar){Layout=new(page,"常规")},new ConstantSetting(true)));
+   rows.Add((new Port(prefix+".value",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation(prefix+".value","精确数值","高级",rows.Count,FieldEditorKind.Scalar){Layout=new(page,"高级",Advanced:true,VisibleWhen:new(prefix+".gate",true),Minimum:0,Maximum:100,DecimalPlaces:2)},prefix=="a"&&firstValue is not null?firstValue:new ConstantSetting(35d)));
+   rows.Add((new Port(prefix+".low",DataType.Integer),new FieldPresentation(prefix+".low","下限","高级",rows.Count,FieldEditorKind.Scalar){Layout=new(page,"高级",Advanced:true,PairWith:prefix+".high",Minimum:0,Maximum:100)},new ConstantSetting(10L)));
+   rows.Add((new Port(prefix+".high",DataType.Integer),new FieldPresentation(prefix+".high","上限","高级",rows.Count,FieldEditorKind.Scalar){Layout=new(page,"高级",Advanced:true,Minimum:0,Maximum:100)},new ConstantSetting(20L)));
+  }
+  return new(rows,write,references);
+ }
+ static NativeAdvancedPresenter Advanced(DeclaredFieldsView fields,int page)=>((Native.Composition.Apps.XmlUI.ParamListView)((TabControl)fields.Content).Items.Cast<TabItem>().ElementAt(page).Content).Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Select(row=>row.View).OfType<NativeAdvancedPresenter>().Single();
+ static void VerifyNativeAdvanced()
+ {
+  Test("原高级按钮同级行、条件与跨页独立，配对附件继承展开归属",()=>
+  {
+   var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);Pump();var first=Advanced(fields,0);var second=Advanced(fields,1);var button=first.NativeView;
+   Require(button.Height==30&&button.Margin==new Thickness(0,0,40,0)&&button.Padding==new Thickness(6,0,0,0)&&ReferenceEquals(button.Style,first.FindResource("ExpandButtonStyle")),"高级按钮未消费原模板和边距");
+   Require(!Find<Expander>(fields).Any()&&!first.IsExpanded&&!second.IsExpanded,"仍使用嵌套Expander或共享初始状态");
+   var value=fields.Fields.Single(field=>field.FieldId=="a.value");var range=fields.Fields.Single(field=>field.FieldId=="a.low").View;
+   var after=new TextBlock{Text="右端附件"};fields.AddAfterField("a.high",after,new("a.gate",true));
+   Require(value.View.Visibility==Visibility.Collapsed&&range.Visibility==Visibility.Collapsed&&after.Visibility==Visibility.Collapsed,"收起时高级行或附件泄漏");
+   first.IsExpanded=true;Pump();Require(value.View.IsVisible&&range.IsVisible&&after.IsVisible&&!second.IsExpanded,"展开未显示同级行或串页");
+   foreach(var actual in Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(value.View).Concat(Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(range)))
+   {
+    Require(actual.Margin==new Thickness(32,1,32,0)&&actual.ChildLeftWidth==89,"高级行原宿主边距或列宽未生效");
+   }
+   var cp=(ContentPresenter)button.Template.FindName("cp",button);var icon=(Image)button.Template.FindName("icon",button);
+   Require(Equals(cp.Content,first.FindResource("收起"))&&icon.Source.ToString()!.Contains("uparrow"),"原收起文字/图标未切换");
+   Require(Visuals<TextBlock>(cp).All(text=>Equals(text.Foreground.ToString(),button.Foreground.ToString())),"原高级按钮生成文字受宿主隐式样式污染");
+   var host=(Native.Composition.Apps.XmlUI.ParamListView)((TabItem)((TabControl)fields.Content).Items[0]).Content;
+   host.ChildLeftWidth=170;Pump();
+   Require(Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(value.View).Concat(Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(range)).All(row=>row.ChildLeftWidth==170),"高级行未跟随原宿主170列宽");
+   host.ChildLeftWidth=89;Pump();
+   fields.Fields.Single(field=>field.FieldId=="a.gate").TrySetConstant(false);Pump();Require(!value.View.IsVisible&&range.IsVisible&&!after.IsVisible,"高级展开覆盖字段自己的显示条件");
+   var before=writes;first.IsExpanded=false;second.IsExpanded=true;fields.Fields.Single(field=>field.FieldId=="a.gate").TrySetConstant(true);first.IsExpanded=true;Pump();
+   Require(second.IsExpanded&&writes==before+1&&value.View.IsVisible&&after.IsVisible,"展开状态写入参数或跨页共享");CaptureInline(fields,"native-advanced-rows.png");Show(new TextBlock());
+  });
+  Test("原高级收起保留浮点原文并关闭滑条，不接纳或改精度",()=>
+  {
+   var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
+   var access=fields.Fields.Single(field=>field.FieldId=="a.value");var text=(TextBox)access.InputElement!;var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var box=(ComboBox)original.FindName("CBox");
+   text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";Pump();var identity=access.View;Console.WriteLine("高级折叠前 writes="+writes+" raw="+text.Text+" value="+((ConstantSetting)access.Setting).Value+" popup="+box.IsDropDownOpen);
+   advanced.IsExpanded=false;Pump();Require(!box.IsDropDownOpen&&writes==0&&access.Setting is ConstantSetting{Value:double accepted}&&accepted==35,"收起提交待编辑值或未关滑条 writes="+writes+" raw="+text.Text+" value="+((ConstantSetting)access.Setting).Value+" popup="+box.IsDropDownOpen);
+   advanced.IsExpanded=true;Pump();Require(ReferenceEquals(access.View,identity)&&text.Text=="35.125"&&writes==0,"展开丢失高精度原文或重建编辑器");
+   text.Text="bad";advanced.IsExpanded=false;Pump();Require(!fields.TryValidate(out _)&&fields.HasInvalidActiveFields,"收起跳过非法高级字段校验");
+   fields.Fields.Single(field=>field.FieldId=="a.gate").TrySetConstant(false);Require(fields.TryValidate(out _),"业务条件失活仍校验隐藏数值");Show(new TextBlock());
+  });
+  Test("原高级双端滑条收起保留两端待编辑原文且无半写",()=>
+  {
+   var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
+   var lower=fields.Fields.Single(field=>field.FieldId=="a.low");var upper=fields.Fields.Single(field=>field.FieldId=="a.high");var low=(TextBox)lower.InputElement!;var high=(TextBox)upper.InputElement!;
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(lower.View).Single();var box=(ComboBox)native.FindName("CBox");box.IsDropDownOpen=true;Pump();low.Focus();low.Text="17";high.Text="23";
+   advanced.IsExpanded=false;Pump();Require(!box.IsDropDownOpen&&writes==0&&lower.Setting is ConstantSetting{Value:10L}&&upper.Setting is ConstantSetting{Value:20L},"双端折叠发生写入或半写");
+   advanced.IsExpanded=true;Pump();Require(low.Text=="17"&&high.Text=="23"&&writes==0,"双端折叠丢原文");Show(new TextBlock());
+  });
+  Test("原高级收起关闭扩展订阅窗且保留完整引用身份",()=>
+  {
+   var source=new DeclaredReferenceCandidate("浮点来源","source",null,new Port("float",DataType.Number),Array.Empty<string>());var initial=new ReferenceSetting(source.Reference(BindingSelection.All));var writes=0;
+   using var fields=AdvancedFields(_=>writes++,new ReferenceFieldOptions(_=>new[]{source}),initial);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
+   var access=fields.Fields.Single(field=>field.FieldId=="a.value");var before=System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference);
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var session=native.SubscribeDataLeft!;((ICommand)session.GetType().GetProperty("PopSubscribeWindowCommand")!.GetValue(session)!).Execute(null);Pump();
+   var window=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();var request=(ReferenceExpansionRequest)window.DataContext;
+   advanced.IsExpanded=false;Pump();Require(!window.IsVisible&&!request.IsValid&&writes==0&&before==System.Text.Json.JsonSerializer.Serialize(((ReferenceSetting)access.Setting).Reference),"折叠未关扩展窗或清除了引用");
+   advanced.IsExpanded=true;Pump();Require(access.Setting is ReferenceSetting&&writes==0,"展开恢复成其他模式");Show(new TextBlock());
+  });
+  Test("原高级隐藏捕获被宿主拒绝后保留原文并可修改重试",()=>
+  {
+   var attempts=0;var reject=true;using var fields=AdvancedFields(_=>{attempts++;if(reject)throw new ArgumentException("宿主拒绝");});Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
+   var access=fields.Fields.Single(field=>field.FieldId=="a.value");var text=(TextBox)access.InputElement!;text.Focus();text.Text="35.125";advanced.IsExpanded=false;Pump();
+   Require(attempts==0&&!fields.TryValidate(out _)&&attempts==1&&access.Setting is ConstantSetting{Value:35d},"隐藏捕获未被明确拒绝或污染accepted");
+   advanced.IsExpanded=true;Pump();Require(text.Text=="35.125","拒绝隐藏捕获后丢原文");reject=false;text.Text="36.25";SendKey(text,Key.Enter,true);Require(attempts==2&&access.Setting is ConstantSetting{Value:36.25d}&&!fields.HasInvalidActiveFields,"拒绝后修改重试未成功");Show(new TextBlock());
+  });
+  Test("原高级关层状态观察者异常仍隐藏全部目标并保原文",()=>
+  {
+   var writes=0;using var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();var access=fields.Fields.Single(field=>field.FieldId=="a.value");var text=(TextBox)access.InputElement!;
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(access.View).Single();var box=(ComboBox)native.FindName("CBox");text.Focus();box.IsDropDownOpen=true;Pump();text.Text="35.125";
+   var popup=(Popup)box.Template.FindName("PART_Popup",box);Require(popup.IsOpen,"实际滑条弹层未打开，不能测试关层异常");var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(ComboBox.IsDropDownOpenProperty,box.GetType());var invoked=false;EventHandler handler=(_,_)=>{if(!box.IsDropDownOpen){invoked=true;throw new InvalidOperationException("测试关层状态异常");}};descriptor.AddValueChanged(box,handler);
+   var reported=false;try{advanced.IsExpanded=false;}catch(Exception){reported=true;}finally{descriptor.RemoveValueChanged(box,handler);}Pump();
+   Require(invoked&&reported&&!box.IsDropDownOpen&&!popup.IsOpen&&access.View.Visibility==Visibility.Collapsed&&fields.Fields.Single(field=>field.FieldId=="a.low").View.Visibility==Visibility.Collapsed&&writes==0,"关层异常截断显隐或吞异常 invoked="+invoked+" reported="+reported+" popup="+box.IsDropDownOpen+" valueVisibility="+access.View.Visibility+" rangeVisibility="+fields.Fields.Single(field=>field.FieldId=="a.low").View.Visibility+" writes="+writes+" raw="+text.Text);
+   advanced.IsExpanded=true;Pump();Require(text.Text=="35.125"&&writes==0,"关层异常丢原文");Show(new TextBlock());
+  });
+  Test("原高级显隐通知重入保持最新展开状态且旧按钮释放后失效",()=>
+  {
+   var writes=0;var fields=AdvancedFields(_=>writes++);Show(fields);var advanced=Advanced(fields,0);advanced.IsExpanded=true;Pump();
+   var value=fields.Fields.Single(field=>field.FieldId=="a.value").View;var range=fields.Fields.Single(field=>field.FieldId=="a.low").View;var reentered=false;
+   value.IsVisibleChanged+=(_,_)=>{if(!value.IsVisible&&!reentered){reentered=true;advanced.IsExpanded=true;}};
+   advanced.IsExpanded=false;Pump();Require(reentered&&advanced.IsExpanded&&value.IsVisible&&range.IsVisible&&writes==0,"旧显隐循环覆盖同步展开新状态");
+   var old=advanced.NativeView;fields.Dispose();old.IsChecked=!old.IsChecked;Pump();Require(!old.IsEnabled&&fields.Content is null&&writes==0,"释放后旧按钮复活控件或写入");Show(new TextBlock());
+  });
+ }
  static void VerifyNativeParameterHost()
  {
   Test("原参数宿主换源枚举与首组通知重入，旧集合不能覆盖新根",()=>
@@ -964,6 +1057,7 @@ internal static class S2DocumentEditingCases
      Require(text.ActualHeight>=text.FontSize*1.2,"内部文字高度不足："+text.ActualHeight);
     }
    });
+   VerifyNativeAdvanced();
    VerifyNativeParameterHost();
    VerifyBetween();
    VerifyExpandedReference();

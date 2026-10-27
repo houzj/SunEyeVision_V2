@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -15,7 +15,7 @@ using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 
 /// <summary>One original between composition over two borrowed states and one group writer.</summary>
-internal sealed class NativeRangePresenter : UserControl,IDisposable
+internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterVisibility
 {
     private readonly DeclaredFieldState[] _states;
     private readonly FieldPresentation[] _presentations;
@@ -31,7 +31,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
     private Window? _owner;
     private DispatcherOperation? _pending,_resume;
     private long _generation;
-    private bool _disposed,_active,_syncing,_committing,_closing;
+    private bool _disposed,_active,_syncing,_committing,_closing,_presentationHidden;
     public Numbers.SliderArrangeBase NativeView {get;}
     public TextBox? Input(int endpoint)=>_commits[endpoint]?.Text;
     private bool Invalid=>_states.Any(state=>state.HasInvalidInput);
@@ -221,12 +221,12 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
         return TryAccept(null,null);
     }
     private void OnNativeValue(object sender,RoutedPropertyChangedEventArgs<double> args)
-    {if(_active&&!_disposed&&!_syncing&&!_closing)TryCommitPending();}
+    {if(_active&&!_disposed&&!_syncing&&!_closing&&!_presentationHidden)TryCommitPending();}
     private void OnLeftMode(object sender,RoutedPropertyChangedEventArgs<double> args)=>ChangeMode(0);
     private void OnRightMode(object sender,RoutedPropertyChangedEventArgs<double> args)=>ChangeMode(1);
     private void ChangeMode(int i)
     {
-        if(_disposed||_syncing)return;
+        if(_disposed||_syncing||_presentationHidden)return;
         try
         {
             if((bool)NativeView.GetValue(ModeProperty(i)))
@@ -245,7 +245,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=Window.GetWindow(this);if(_owner is not null)_owner.Deactivated+=OnDeactivated;
         Project(false);foreach(var scope in _scopes)scope?.Refresh();
         _resume?.Abort();_resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
-        {if(_disposed||!_active||generation!=_generation)return;_resume=null;foreach(var commit in _commits)commit?.Resume();}));
+        {if(_disposed||!_active||!IsVisible||_presentationHidden||generation!=_generation)return;_resume=null;foreach(var commit in _commits)commit?.Resume();}));
     }
     private void OnKey(object sender,KeyEventArgs args)
     {
@@ -262,10 +262,11 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
     }
     private void OnWheel(object sender,MouseWheelEventArgs args)
     {if(_commits.Any(commit=>commit?.Text.IsKeyboardFocused==true))Queue(()=>TryCommitPending());}
-    private void OnLostFocus(object sender,KeyboardFocusChangedEventArgs args)=>Queue(()=>
+    private void OnLostFocus(object sender,KeyboardFocusChangedEventArgs args)
     {
-        TryCommitPending();if(!IsKeyboardFocusWithin&&_box!.Template.FindName("PART_Popup",_box) is not Popup {Child:{IsKeyboardFocusWithin:true}})ClosePopups();
-    });
+        if(_presentationHidden)return;
+        Queue(()=>{TryCommitPending();if(!IsKeyboardFocusWithin&&_box!.Template.FindName("PART_Popup",_box) is not Popup {Child:{IsKeyboardFocusWithin:true}})ClosePopups();});
+    }
     private void ClosePopups()
     {
         _pending?.Abort();_pending=null;_closing=true;
@@ -274,7 +275,25 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {_active=false;_generation++;_resume?.Abort();_resume=null;foreach(var commit in _commits)commit?.Suspend();ClosePopups();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;}
-    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args){if(!IsVisible)ClosePopups();}
+    void IParameterVisibility.PrepareForVisibility(bool visible)=>PrepareForVisibility(visible);
+    private void PrepareForVisibility(bool visible)
+    {
+        if(_disposed)return;
+        if(!visible)
+        {
+            _presentationHidden=true;_generation++;_resume?.Abort();_resume=null;
+            foreach(var commit in _commits)commit?.Suspend();ClosePopups();
+        }
+        else
+        {
+            _presentationHidden=false;
+            if(!_active||!IsVisible||!_commits.Any(commit=>commit?.IsSuspended==true))return;
+            var generation=++_generation;_resume?.Abort();
+            _resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
+            {if(_disposed||!_active||!IsVisible||_presentationHidden||generation!=_generation)return;_resume=null;foreach(var commit in _commits)commit?.Resume();}));
+        }
+    }
+    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(IsVisible);
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
     private static IEnumerable<T> Visuals<T>(DependencyObject root)where T:DependencyObject
     {

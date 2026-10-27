@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Presenters.Display;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
@@ -36,6 +36,15 @@ internal static class S2DocumentEditingCases
                     &&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(list).Single().ChildLeftWidth==89,
                     "原参数宿主与原行无Application独立组装且不写草稿");
                 list.SetRows(null);
+            }
+            using(var advanced=new NativeAdvancedPresenter())
+            {
+                Render(advanced,"native-advanced-independent.png",500,80);
+                Check(Application.Current is null&&advanced.NativeView.Style is not null&&!advanced.IsExpanded,
+                    "原高级模板无Application独立创建且初始收起");
+                advanced.IsExpanded=true;Render(advanced,"native-advanced-expanded-independent.png",500,80);
+                Check(advanced.NativeView.IsChecked==true&&((ContentPresenter)advanced.NativeView.Template.FindName("cp",advanced.NativeView)).Content.Equals(advanced.FindResource("收起")),
+                    "独立高级模板沿同一状态链切换原收起文字");
             }
             var expanded=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamSubscribeWindow();
             try

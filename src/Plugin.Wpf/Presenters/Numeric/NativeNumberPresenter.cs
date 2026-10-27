@@ -31,7 +31,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
     private Window? _owner;
     private DispatcherOperation? _pending;
     private DispatcherOperation? _resume;
-    private bool _active,_disposed,_syncing,_committing,_closing,_showSlider;
+    private bool _active,_disposed,_syncing,_committing,_closing,_showSlider,_presentationHidden;
     private long _generation;
     private long _loadGeneration;
     public TextBox? TextEditor=>_commit?.Text;
@@ -111,7 +111,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
         ProjectState();_referenceScope?.Refresh();
         _resume?.Abort();
         _resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
-        {if(_disposed||!_active||generation!=_loadGeneration)return;_resume=null;_commit?.Resume();}));
+        {if(_disposed||!_active||!IsVisible||_presentationHidden||generation!=_loadGeneration)return;_resume=null;_commit?.Resume();}));
     }
     private void AttachInput()
     {
@@ -174,20 +174,21 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
             if(!_commit.TryPrepare(out var proposal))return false;
             if(_disposed||_state.IsDisposed)return false;
             // Host and observer failures are outside raw parsing and binding validation.
+            var raw=_commit.PendingRaw;
             var accepted=_state.TrySet(proposal);
             if(_disposed||_state.IsDisposed)return false;
-            _commit.ProjectAccepted();
+            if(accepted)_commit.ProjectAccepted();else _commit.RestoreRejected(raw);
             return accepted&&!_state.HasInvalidInput;
         }
         finally{_committing=false;}
     }
     private void OnNativeValue(object sender,RoutedPropertyChangedEventArgs<double> args)
-    {if(_active&&!_disposed&&!_syncing&&!_closing&&!_state.IsReferenceMode)TryCommitPending();}
+    {if(_active&&!_disposed&&!_syncing&&!_closing&&!_presentationHidden&&!_state.IsReferenceMode)TryCommitPending();}
     private void OnLeafValue(object? sender,EventArgs args)
-    {if(_active&&!_disposed&&!_syncing&&!_closing)TryCommitPending();}
+    {if(_active&&!_disposed&&!_syncing&&!_closing&&!_presentationHidden)TryCommitPending();}
     private void OnModeChanged(object sender,RoutedPropertyChangedEventArgs<double> args)
     {
-        if(_disposed||_syncing)return;
+        if(_disposed||_syncing||_presentationHidden)return;
         try
         {
             if(_arrange!.IsSubscribeLeft)
@@ -227,7 +228,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
     {if(!_state.IsReferenceMode&&TextEditor?.IsKeyboardFocused==true)Queue(()=>TryCommitPending());}
     private void OnLostFocus(object sender,KeyboardFocusChangedEventArgs args)
     {
-        if(_state.IsReferenceMode)return;
+        if(_state.IsReferenceMode||_presentationHidden)return;
         Queue(()=>
         {
             TryCommitPending();
@@ -243,7 +244,24 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {_active=false;_loadGeneration++;_resume?.Abort();_resume=null;_commit?.Suspend();ClosePopups();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;}
-    private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args){if(!IsVisible)ClosePopups();}
+    internal void PrepareForVisibility(bool visible)
+    {
+        if(_disposed)return;
+        if(!visible)
+        {
+            _presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
+            _commit?.Suspend();ClosePopups();
+        }
+        else
+        {
+            _presentationHidden=false;
+            if(!_active||!IsVisible||_commit?.IsSuspended!=true)return;
+            var generation=++_loadGeneration;_resume?.Abort();
+            _resume=Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>
+            {if(_disposed||!_active||!IsVisible||_presentationHidden||generation!=_loadGeneration)return;_resume=null;_commit?.Resume();}));
+        }
+    }
+    private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(IsVisible);
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
     public void Dispose()
     {

@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -21,6 +21,7 @@ internal sealed class NativeNumericCommit : IDisposable
     private string? _pendingRaw;
     private string _rawError="";
     public bool IsDirty {get;private set;}
+    public bool IsSuspended=>_suspended;
     public TextBox Text=>_text;
     public string? PendingRaw=>IsDirty?(_suspended?_pendingRaw:_text.Text):null;
     internal static void EnsureRepresentable(ConstantSetting setting)

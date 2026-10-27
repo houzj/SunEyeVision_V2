@@ -5427,8 +5427,8 @@
         "C10 高级折叠及页面滚动",
         "运行参数高级项、结果判定扩展",
         "Expand→原展开样式；原ScrollViewer/RecScrollViewer/ScrollBar",
-        "复用原样式；只承载当前真实字段，不靠展开按钮伪造未实现算法能力",
-        "E01/E04/E10；活动主题/折叠状态待核",
+        "原Expand按钮/共享原样式与箭头及同级行已迁入；隐藏原文/弹层/条件/重入清理和原祖先布局已实施。只表达真实字段。",
+        "E01/E04/E10；本批149组正式自动回归，证据O06_ADVANCED_PARAMETER_CHECKPOINT_20261028.json；VM同态/VS/用户未验。",
         "展开/收起/页切换不丢草稿；页面可达全部字段，滚动不误改数字、不把弹层留在错误锚点"
       ],
       [
@@ -7472,6 +7472,36 @@
         ]
       },
       "sourceAndPayload": "21项产品源码增量、782发布项及86加载记录SHA同源，原来源SHA复核140条；正式EXE22可用工具/15分类。Catalog最终元数据前后SHA单列，产品源未改。"
+    },
+    "nativeAdvancedCandidate": {
+      "status": "C10原高级按钮/同级行及隐藏生命周期本批正式自动回归通过；非完整C10或第一阶段",
+      "classification": "原清单C10=高级折叠及页面滚动；此前工作记录误称C15。本批不覆盖C15执行/连续/停止/确定及窗口退出。",
+      "baseline": "078b262d，双方共同基线；本批仅主线，用户Blob页索引2不改不提交",
+      "implementation": [
+        "原Expand DataTemplate及ExpandButtonStyle与原箭头资源共享，显示状态不存业务参数",
+        "原高级按钮控制同级原参数行；各页各组状态独立，配对附件跟随正确归属，业务条件与展开条件分别处理",
+        "隐藏前冻结单值/范围输入原文并关弹层，不触发writer；隐藏显式捕获可拒绝且保原文，重入及异常继续清理",
+        "LeftRight只重附精确原祖先失败绑定，保持原style优先级；cp生成文本隔离宿主隐式样式，排队具代次与释放门禁"
+      ],
+      "failuresPreserved": [
+        "Window091/092暴露收起会接纳35.125且变35.13，已补隐藏原文租约",
+        "Window094-097关层事件探针在延迟通知前退订，不能证明产品事件异常；改同步DP状态观察者",
+        "Window099功能通过但实际截图暴露高级行Margin失联/文字污染；Window100-103仅诊断，103测试手工重附不能算正式通过",
+        "Window104已删除测试修复，原高级7组过并查看实际PNG；修正后全Window105为60组过"
+      ],
+      "remaining": [
+        "独立ROI同链真实VS设计入口",
+        "绘制/继承/位姿与多对象宿主事务/撤销重做",
+        "正式VM同态和物理指针/VS/用户本批验收",
+        "C15固定底栏和完整执行退出职责独立验收"
+      ],
+      "evidence": "docs/collaboration/evidence/O06_ADVANCED_PARAMETER_CHECKPOINT_20261028.json",
+      "validation": {
+        "builds": "UI004零错6557警告134.66秒；全量Release002零错6584警告84.30秒",
+        "checks": "Window105=60、Field072=31、Design027=31、RuntimeEditor053=10、FullChain113=8、Components195=9，共149组；正式EXE007 exit0/22可用工具15分类",
+        "identity": "12项产品源增量、782发布文件、86加载记录、141原来源SHA核对",
+        "manual": "实际PNG已查看；VM同态/VS真实设计器/物理指针及用户未验，不代签"
+      }
     }
   },
   "vmFrameworkArchitectureReference": {

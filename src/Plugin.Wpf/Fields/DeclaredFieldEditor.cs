@@ -16,7 +16,7 @@ using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Edits one declared field on a host-owned draft. Never publishes, executes or reads resources.</summary>
-public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
+public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IParameterVisibility
 {
     private readonly Port _port;
     private readonly DeclaredFieldState _state;
@@ -274,6 +274,15 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         if(_numeric is not null&&!_numeric.TryCommitPending())return false;
         if(_referencePresenter is not null&&!_referencePresenter.TryCommitPending())return false;
         return _children.All(child=>child.TryCommitPending());
+    }
+
+    void IParameterVisibility.PrepareForVisibility(bool visible)
+    {
+        if(_disposed)return;
+        var cleanup=new List<Action>{()=>_numeric?.PrepareForVisibility(visible)};
+        cleanup.AddRange(_children.ToArray().Select(child=>(Action)(()=>((IParameterVisibility)child).PrepareForVisibility(visible))));
+        if(!visible&&InputElement is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
+        ParameterCleanup.Run(cleanup);
     }
 
     private void DetachOwnedEditors()

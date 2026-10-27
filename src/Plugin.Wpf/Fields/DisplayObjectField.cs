@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Presenters.Display;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -8,7 +8,7 @@ using System.Windows.Media;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Visibility inline, declared style fields in an anchored popup on the caller's draft.</summary>
-public sealed class DisplayObjectField : Grid,IDisposable
+public sealed class DisplayObjectField : Grid,IDisposable,SunEyeVision.Plugin.Wpf.Adapters.Fields.IParameterVisibility
 {
     private readonly IReadOnlyList<(DeclaredFieldEditor Editor, string Label)> _style;
     private readonly Button _edit;
@@ -74,6 +74,15 @@ public sealed class DisplayObjectField : Grid,IDisposable
         _popup.Closed += OnClosed;
         Unloaded += OnUnloaded;
         IsVisibleChanged += OnVisibilityChanged;
+    }
+
+    void SunEyeVision.Plugin.Wpf.Adapters.Fields.IParameterVisibility.PrepareForVisibility(bool visible)
+    {
+        if(_disposed)return;
+        var cleanup=new List<Action>{()=>((SunEyeVision.Plugin.Wpf.Adapters.Fields.IParameterVisibility)_visibility).PrepareForVisibility(visible)};
+        cleanup.AddRange(_style.Select(item=>(Action)(()=>((SunEyeVision.Plugin.Wpf.Adapters.Fields.IParameterVisibility)item.Editor).PrepareForVisibility(visible))));
+        if(!visible)cleanup.Add(CloseStyleEditor);
+        SunEyeVision.Plugin.Wpf.Adapters.Fields.ParameterCleanup.Run(cleanup);
     }
 
     public void OpenStyleEditor() { if (!_disposed && IsLoaded && IsVisible) _popup.IsOpen = true; }

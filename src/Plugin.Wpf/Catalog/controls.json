@@ -4,6 +4,124 @@
   "designAuthority": "docs/collaboration/S4_IMPLEMENTATION_PLAN_20261026.json#blobControlPrototypePlan",
   "entries": [
     {
+      "id": "C10.original-advanced-expand",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceAssemblies": [
+        {
+          "name": "Apps.Style",
+          "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "sha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63",
+          "evidence": "O06_RING_CIRCLE_ICON_SOURCE_20261027.json and VM_BLOB_UI_STATIC_SUPPLEMENT_20261026.json"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "Expand DataTemplate:367-369",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+          "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
+          "localSha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86",
+          "coverage": "original selected template/style; URI and IsExpanded property routing only"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "ExpandButtonStyle:83-121",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+          "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
+          "localSha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86",
+          "coverage": "original selected template/style; URI and IsExpanded property routing only"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "original image stream",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_downarrow.png",
+          "originalSha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_downarrow.png",
+          "localSha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "original image stream",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\Resources\\btn_高级参数_uparrow.png",
+          "originalSha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/btn_高级参数_uparrow.png",
+          "localSha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Presenters/Parameters/NativeAdvancedPresenter.cs",
+          "sha256": "0022fbb4d52f02b34ce47760340060757d99d584529c92b8c56c01fdc2985764"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/IParameterVisibility.cs",
+          "sha256": "370c9da9c2600ebbbc57d75d6b1353c78c45e0e1a1f44e9f76f138863c2b7512"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+          "sha256": "67edbc7659370078ddc22f16e2cda68f742fbf607ec6fc7bcca64675a11a4f88"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+          "sha256": "083f4fedd71e1b7ffdeaa61a4cc883aa6c89ea85738f34436f5c1d3876f7ca05"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+          "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+          "sha256": "189c410bd68075649cd0473dc519a465b87fb1ddca4363c91b0bfbd539342cb4"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
+          "sha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
+          "sha256": "0bc17e188bb6a4671923a107c8828fec757f2160da3320370e3580caf3eda1a6"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
+          "sha256": "fd04582cefd81b0031d0579abe3e90063ae8cec2e1a8071538496c34dc0b5f04"
+        }
+      ],
+      "composition": [
+        "Original Expand ToggleButton and shared ExpandButtonStyle, original two arrows and localized advanced/collapse text",
+        "Same-level native parameter rows, presentation-only expansion per section/page instance",
+        "Combined expansion and field conditions; attachments inherit section only; folding never skips validation or clears references"
+      ],
+      "adaptation": [
+        "CurValueA business property routed to view-only IsExpanded; no business Expand model or duplicate accepted values",
+        "Versioned visibility pump; pre-transition raw leases and popup close before native visibility/focus callbacks; explicit hidden capture remains valid",
+        "Callback cleanup aggregates and still applies current visibility; rejected hidden numeric capture restores raw",
+        "Source dictionary extracted once and merged by both ROI and advanced consumers; not a substitute skin"
+      ],
+      "consumers": [
+        "DeclaredFieldsView native same-level advanced sections",
+        "NativeRoiEditor original expand style import",
+        "No-Application same real NativeAdvancedPresenter in design verification"
+      ],
+      "validation": {
+        "status": "FOCUSED_FORMAL_AUTOMATION_PASSED_STAGE1_INCOMPLETE",
+        "evidence": "docs/collaboration/evidence/O06_ADVANCED_PARAMETER_CHECKPOINT_20261028.json",
+        "checks": "Window105=60、Field072=31、Design027=31、RuntimeEditor053=10、FullChain113=8、Components195=9；正式EXE007 exit0，22可用工具15分类",
+        "manual": "未取得本批实际VM同态/VS/指针/用户验收，不代签"
+      }
+    },
+    {
       "id": "C01.original-parameter-host",
       "assembly": "Apps.XmlUI",
       "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
@@ -89,22 +207,22 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "localSha256": "9c626e0cc7a2f9b1b80f2ead51119e0ef263ef520d674421f7c3a463f8ff9fd2",
+          "localSha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "localSha256": "c7a3e725fefc7448eb404f0ecfd66d7e248a97dba8a5ff98e07b1bd13fc5a714",
+          "localSha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
-          "localSha256": "cdd4420aca88a8ca5e21058f71f3e2c71f3b928de079603478e53d40510a8778",
+          "localSha256": "083f4fedd71e1b7ffdeaa61a4cc883aa6c89ea85738f34436f5c1d3876f7ca05",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "localSha256": "dedfa3ca76e63bb9d38a92b579bc590db654c37c04cf820161462ec0804e31e7",
+          "localSha256": "189c410bd68075649cd0473dc519a465b87fb1ddca4363c91b0bfbd539342cb4",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
@@ -158,19 +276,19 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "9c626e0cc7a2f9b1b80f2ead51119e0ef263ef520d674421f7c3a463f8ff9fd2"
+          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "c7a3e725fefc7448eb404f0ecfd66d7e248a97dba8a5ff98e07b1bd13fc5a714"
+          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
-          "sha256": "cdd4420aca88a8ca5e21058f71f3e2c71f3b928de079603478e53d40510a8778"
+          "sha256": "083f4fedd71e1b7ffdeaa61a4cc883aa6c89ea85738f34436f5c1d3876f7ca05"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "dedfa3ca76e63bb9d38a92b579bc590db654c37c04cf820161462ec0804e31e7"
+          "sha256": "189c410bd68075649cd0473dc519a465b87fb1ddca4363c91b0bfbd539342cb4"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -406,7 +524,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "c7a3e725fefc7448eb404f0ecfd66d7e248a97dba8a5ff98e07b1bd13fc5a714"
+          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -564,7 +682,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "c7a3e725fefc7448eb404f0ecfd66d7e248a97dba8a5ff98e07b1bd13fc5a714"
+          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -638,7 +756,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "c7a3e725fefc7448eb404f0ecfd66d7e248a97dba8a5ff98e07b1bd13fc5a714"
+          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -1183,7 +1301,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "218bb7f097da27f0f3966ae678d39fea60fbaf71130a298b8ed5ac9bc1fc020e"
+          "sha256": "67edbc7659370078ddc22f16e2cda68f742fbf607ec6fc7bcca64675a11a4f88"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -1191,7 +1309,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "debacac379fef37f5d32d7942930beee8b55ad43b05c7b2b3a6e56b5eda8012e"
+          "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
@@ -1220,7 +1338,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "9c626e0cc7a2f9b1b80f2ead51119e0ef263ef520d674421f7c3a463f8ff9fd2",
+          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1481,7 +1599,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "218bb7f097da27f0f3966ae678d39fea60fbaf71130a298b8ed5ac9bc1fc020e"
+          "sha256": "67edbc7659370078ddc22f16e2cda68f742fbf607ec6fc7bcca64675a11a4f88"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -1514,7 +1632,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "9c626e0cc7a2f9b1b80f2ead51119e0ef263ef520d674421f7c3a463f8ff9fd2",
+          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1529,7 +1647,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "dedfa3ca76e63bb9d38a92b579bc590db654c37c04cf820161462ec0804e31e7",
+          "sha256": "189c410bd68075649cd0473dc519a465b87fb1ddca4363c91b0bfbd539342cb4",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         }
       ],
@@ -1652,11 +1770,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "debacac379fef37f5d32d7942930beee8b55ad43b05c7b2b3a6e56b5eda8012e"
+          "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "dedfa3ca76e63bb9d38a92b579bc590db654c37c04cf820161462ec0804e31e7"
+          "sha256": "189c410bd68075649cd0473dc519a465b87fb1ddca4363c91b0bfbd539342cb4"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
@@ -1780,8 +1898,8 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\LeftRightControl.xaml.cs",
           "originalSha256": "80d64fbd024bf2b135c220525c9cbf97327353c5104a040ed3ef8464d941bb86",
           "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/LeftRightControl.xaml.cs",
-          "localSha256": "e9e08125ce36b950605166ee19ef1ac0072053780d4ac4e18e6b97812b1dae6f",
-          "coverage": "whole original file with local dependency adaptation"
+          "localSha256": "0bc17e188bb6a4671923a107c8828fec757f2160da3320370e3580caf3eda1a6",
+          "coverage": "whole original file; exact original ancestor binding reattachment on loaded/visible; style setter precedence and consumer local overrides retained"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.ROIStackControl",
@@ -1815,8 +1933,8 @@
           "originalType": "ExpandButtonStyle:83-121",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
           "originalSha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc",
-          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
+          "localSha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86",
           "coverage": "selected original fragments only"
         },
         {
@@ -1824,7 +1942,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
           "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
+          "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943",
           "coverage": "selected original fragments only"
         },
         {
@@ -1832,7 +1950,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
+          "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943",
           "coverage": "selected original fragments only"
         },
         {
@@ -1840,7 +1958,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
           "originalSha256": "16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044",
+          "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943",
           "coverage": "selected original fragments only"
         },
         {
@@ -2218,7 +2336,7 @@
         "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
         "fragment": "PolygonRoiBtnStyle lines1647-1691, ordinary and avoid branches",
         "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-        "localSha256": "7ccdbf084bd9ffd1a6cbd04435a03f6c990a088cf05cfa5c551edbddb46ac044"
+        "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943"
       },
       "polygonIndexSource": {
         "sourceKind": "original-il",

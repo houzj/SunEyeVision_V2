@@ -1,5 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -24,9 +25,11 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  private readonly Dictionary<string,NativeParameterPage> _groups=new(StringComparer.Ordinal);
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
  private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
- private readonly Dictionary<FrameworkElement,StackPanel> _advancedPositions=new();
+ private readonly List<NativeAdvancedPresenter> _advanced=new();
+ private readonly Dictionary<FrameworkElement,(NativeAdvancedPresenter? Advanced,FieldCondition? Condition)> _visibility=new();
+ private long _visibilityVersion;
+ private bool _updatingVisibility,_visibilityPending;
  private readonly List<NativeParameterRow> _parameterRows=new();
- private readonly List<(FrameworkElement View,FieldCondition Condition)> _conditions=new();
  private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
  private readonly TabControl? _tabs;
  private readonly NativeTabHeaderTextScope? _tabTextScope;
@@ -55,23 +58,26 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  public void AddAfterField(string fieldId,FrameworkElement content,FieldCondition? condition=null)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);EnsureAttachable(content);var anchor=_rows[fieldId];
-  if(_positions.TryGetValue(anchor,out var position))
+  if(!_positions.TryGetValue(anchor,out var position))throw new InvalidOperationException("字段不属于当前原参数行宿主。");
+  var advanced=_visibility.TryGetValue(anchor,out var policy)?policy.Advanced:null;
+  _visibility.Add(content,(advanced,condition));
+  var row=BorrowRow(position.Row.GroupName,content);
+  try
   {
-   var row=BorrowRow(position.Row.GroupName,content);InstallRow(position.Page,position.Page.Rows.IndexOf(position.Row)+1,row,content);
+   content.Visibility=(advanced?.IsExpanded??true)&&(condition is null||Meets(condition))?Visibility.Visible:Visibility.Collapsed;
+   ObjectDisposedException.ThrowIf(_disposed,this);
+   InstallRow(position.Page,position.Page.Rows.IndexOf(position.Row)+1,row,content);
   }
-  else if(_advancedPositions.TryGetValue(anchor,out var panel))
+  catch
   {
-   _advancedPositions.Add(content,panel);
-   try{panel.Children.Insert(panel.Children.IndexOf(anchor)+1,content);}
-   catch{if(!panel.Children.Contains(content))_advancedPositions.Remove(content);throw;}
+   if(!_positions.ContainsKey(content)){_visibility.Remove(content);_parameterRows.Remove(row);row.Dispose();}
+   throw;
   }
-  else throw new InvalidOperationException("字段不属于当前原参数行宿主。");
-  ObjectDisposedException.ThrowIf(_disposed,this);
-  if(condition is not null)_conditions.Add((content,condition));UpdateVisibility();
+  UpdateVisibility();
  }
  private void EnsureAttachable(FrameworkElement view)
  {
-  if(_positions.ContainsKey(view)||_advancedPositions.ContainsKey(view)||_rows.Values.Contains(view)||view.Parent is not null||VisualTreeHelper.GetParent(view) is not null)
+  if(_positions.ContainsKey(view)||_visibility.ContainsKey(view)||_rows.Values.Contains(view)||view.Parent is not null||VisualTreeHelper.GetParent(view) is not null)
    throw new ArgumentException("控件已经属于一个参数行或其他活动视图。");
  }
  private void InstallRow(NativeParameterPage page,int index,NativeParameterRow row,FrameworkElement view)
@@ -167,12 +173,11 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
    foreach(var section in page.GroupBy(field=>(field.Presentation.Layout?.Section??field.Presentation.Group,field.Presentation.Layout?.Advanced??false)))
    {
     var metadata=new NativeParameterGroup(section.Key.Item1,section.Key.Item2);
-    StackPanel? advanced=null;
+    NativeAdvancedPresenter? advanced=null;
     if(section.Key.Item2)
     {
-     advanced=new StackPanel();
-     var expander=new Expander{Header=new TextBlock{Text=section.Key.Item1,Margin=new Thickness(32,0,32,0),Foreground=Foreground},Content=advanced,IsExpanded=false,Margin=new Thickness(0,8,0,2)};
-     pageRows.Rows.Add(BorrowRow(metadata,expander));
+     advanced=new NativeAdvancedPresenter();_advanced.Add(advanced);advanced.Changed+=UpdateVisibility;
+     var buttonRow=BorrowRow(metadata,advanced);pageRows.Rows.Add(buttonRow);_positions.Add(advanced,(pageRows,buttonRow));
     }
     var rightEnds=section.Where(f=>f.Presentation.Layout?.PairWith is not null).Select(f=>f.Presentation.Layout!.PairWith!).ToHashSet();
     foreach(var field in section)
@@ -188,8 +193,6 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
       _displayCompositions.Add(composition);view=composition;
      }
      _rows[field.Port.Id]=view;
-     if(advanced is not null){advanced.Children.Add(view);_advancedPositions.Add(view,advanced);}
-     else
      {
       var affected=field.Presentation.Layout?.DialogGroup is {} displayGroup?section.Where(item=>item.Presentation.Layout?.DialogGroup==displayGroup).Select(item=>item.Port.Id).ToArray():
        field.Presentation.Layout?.PairWith is {} other?new[]{field.Port.Id,other}:new[]{field.Port.Id};
@@ -198,7 +201,7 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
        affected.Any(id=>states[id].HasInvalidInput)?NativeParameterItemState.WriteError:NativeParameterItemState.Normal);
       pageRows.Rows.Add(row);_positions.Add(view,(pageRows,row));
      }
-     if(field.Presentation.Layout?.VisibleWhen is {} condition)_conditions.Add((view,condition));
+     _visibility.Add(view,(advanced,field.Presentation.Layout?.VisibleWhen));
     }
    }
    var tab=new TabItem{Header=page.Key,Content=body};
@@ -218,15 +221,34 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  }
  private void UpdateVisibility()
  {
-  if(_disposed)return;
-  ParameterCleanup.Run(_conditions.ToArray().Select(item=>(Action)(()=>{if(!_disposed)item.View.Visibility=Meets(item.Condition)?Visibility.Visible:Visibility.Collapsed;}))
-   .Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(!_disposed)row.Refresh();}))));
+  if(_disposed)return;_visibilityVersion++;_visibilityPending=true;if(_updatingVisibility)return;
+  _updatingVisibility=true;var failures=new List<Exception>();
+  try
+  {
+   while(_visibilityPending&&!_disposed)
+   {
+    _visibilityPending=false;var version=_visibilityVersion;
+    bool Current()=>!_disposed&&version==_visibilityVersion;
+    var targets=_visibility.ToArray().Select(item=>(item.Key,Visible:(item.Value.Advanced?.IsExpanded??true)&&(item.Value.Condition is not {} condition||Meets(condition)))).ToArray();
+    try
+    {
+     ParameterCleanup.Run(targets.Select(item=>(Action)(()=>ParameterCleanup.Run(new Action[]{
+      ()=>{if(Current())(item.Key as IParameterVisibility)?.PrepareForVisibility(item.Visible);},
+      ()=>{if(Current())item.Key.Visibility=item.Visible?Visibility.Visible:Visibility.Collapsed;}
+     }))).Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(Current())row.Refresh();}))));
+    }
+    catch(Exception failure){failures.Add(failure);}
+   }
+  }
+  finally{_updatingVisibility=false;}
+  ParameterCleanup.Run(failures.Select(failure=>(Action)(()=>System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw())));
  }
  public void Dispose()
  {
-  if(_disposed)return;_disposed=true;
+  if(_disposed)return;_disposed=true;_visibilityVersion++;_visibilityPending=false;
   var cleanup=new List<Action>();
   if(_tabTextScope is not null)cleanup.Add(_tabTextScope.Dispose);
+  foreach(var advanced in _advanced.ToArray()){advanced.Changed-=UpdateVisibility;cleanup.Add(advanced.Dispose);}
   cleanup.AddRange(_parameterRows.ToArray().Select(row=>(Action)row.Dispose));
   foreach(var (page,host) in _pages.ToArray()){cleanup.Add(()=>host.SetRows(null));cleanup.Add(page.Dispose);}
   cleanup.AddRange(_displayCompositions.ToArray().Select(composition=>(Action)composition.Dispose));
@@ -236,8 +258,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
   cleanup.Add(()=>
   {
-   _parameterRows.Clear();_pages.Clear();_positions.Clear();_advancedPositions.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
-   _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_conditions.Clear();_fieldConditions.Clear();_groups.Clear();
+   _parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+   _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });
   ParameterCleanup.Run(cleanup);

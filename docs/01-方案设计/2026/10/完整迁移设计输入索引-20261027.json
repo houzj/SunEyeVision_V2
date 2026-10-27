@@ -6328,7 +6328,7 @@
     "validationDirectory": "Release/_validation/Toolbox-IsolatedPreview-20261026/RootWorkspace-373",
     "uniqueTestsPassed": 94,
     "manualAcceptance": "待用户，VS设计时/多DPI/物理OLE未验",
-    "goalStatus": "active",
+    "goalStatus": "实施与启动交付完成，人工与VS等未验",
     "remaining": [
       "根输入输出/局部变量/完整根显示合同明确占位",
       "ROI几何集合及矩阵专用编辑适配未具备，逐项禁用",

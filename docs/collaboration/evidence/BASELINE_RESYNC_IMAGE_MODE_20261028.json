@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-28",
+  "mainBaseline": "d87c76188d8e73cdbdb40f5d37fbe8deff5048e3",
+  "workflowBefore": "f0585b13aebc29e1ed133d1da19820c0adc8b537",
+  "workflowUniqueCommits": 0,
+  "includedCommits": [
+    "81960d02",
+    "d87c7618"
+  ],
+  "excludedUncommitted": [
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "50fc6ef20f22c755f47841b7e8ae30ec56199d857014ae38f2e644dc5723700e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "935af1dc7c32576209e2c8b4d5a5229e2089b3bd79f980f3149c6174fc1bf971"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+      "sha256": "4c1ec660b02330e32ac1d080c48cb15d6c83ac49dc38d9d60c7b7c262fd7741b"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    }
+  ],
+  "newBuildRun": false,
+  "push": false
+}

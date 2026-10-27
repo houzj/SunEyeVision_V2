@@ -324,6 +324,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['nativePolygonSceneCandidate'].items()])
                if plan.get('nativePolygonSceneCandidate') else '')
+            + ('<h5 id="o06-native-parameter-host">C01原参数行组宿主集中候选</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativeParameterHostCandidate'].items()])
+               if plan.get('nativeParameterHostCandidate') else '')
             + ('<h5 id="o06-baseline-sync-20261027">控件库与工作流统一开发基线</h5>'
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['baselineSynchronization'].items()])

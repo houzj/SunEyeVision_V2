@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Presenters.Display;
+﻿using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -12,6 +12,7 @@ public sealed class DisplayObjectField : Grid,IDisposable
 {
     private readonly IReadOnlyList<(DeclaredFieldEditor Editor, string Label)> _style;
     private readonly Button _edit;
+    private readonly DeclaredFieldEditor _visibility;
     private readonly Popup _popup;
     private readonly Border _surface;
     private Window? _owner;
@@ -24,11 +25,9 @@ public sealed class DisplayObjectField : Grid,IDisposable
     public DisplayObjectField(string title, DeclaredFieldEditor visibility,
         IReadOnlyList<(DeclaredFieldEditor Editor, string Label)> style)
     {
-        _style = style;
+        _style = style;_visibility=visibility;
         Margin = new Thickness(0, 1, 0, 1);
-        ColumnDefinitions.Add(new() { Width = new GridLength(138) });
-        ColumnDefinitions.Add(new() { Width = GridLength.Auto });
-        ColumnDefinitions.Add(new());
+
         visibility.SetLabel(title);
         Children.Add(visibility);
         _edit = new Button
@@ -37,8 +36,7 @@ public sealed class DisplayObjectField : Grid,IDisposable
             Width = 29, Height = 29, BorderThickness = new Thickness(0),
             Background = Brushes.Transparent, Margin = new Thickness(8, 0, 0, 0)
         };
-        SetColumn(_edit, 1);
-        Children.Add(_edit);
+        visibility.AddInlineAction(_edit);
 
         var content = new StackPanel { Margin = new Thickness(0, 6, 0, 6) };
         var additional = new StackPanel();
@@ -156,6 +154,6 @@ public sealed class DisplayObjectField : Grid,IDisposable
         CloseStyleEditor();
         _edit.Click-=OnEditClick;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibilityChanged;
         _surface.KeyDown-=OnStyleKeyDown;_popup.Opened-=OnOpened;_popup.Closed-=OnClosed;
-        _popup.Child=null;Children.Clear();
+        _visibility.RemoveInlineAction(_edit);_popup.Child=null;Children.Clear();
     }
 }

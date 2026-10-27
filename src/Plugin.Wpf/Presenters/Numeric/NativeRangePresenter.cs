@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -45,7 +45,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
         _expansion=new(this);
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
         _allow=_presentations.Select(p=>references is not null&&p.Layout?.AllowReference!=false).ToArray();
-        Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0,1,0,1);MinHeight=32;
+        Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0);MinHeight=32;
         Label=lower.DisplayName.Replace("下限","范围");
         var bounds=_states.Select((s,i)=>Bounds(s.Port,_presentations[i].Layout!)).ToArray();
         NativeView=left.Port.Type.Scalar==ScalarKind.Int64?new Numbers.SliderArrange():new Numbers.SliderArrangeFloat{DecimalDigits=lower.Layout!.DecimalPlaces};
@@ -72,10 +72,10 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
             _states[i].Changed+=OnStateChanged;
         }
         NativeView.SubscribeDataLeft=_references[0];NativeView.SubscribeDataRight=_references[1];
-        var row=new Grid();row.ColumnDefinitions.Add(new(){Width=new GridLength(89)});row.ColumnDefinitions.Add(new());
-        row.Children.Add(new TextBlock{Text=Label,ToolTip=Label,FontSize=14,VerticalAlignment=VerticalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis});
-        Grid.SetColumn(NativeView,1);row.Children.Add(NativeView);
-        var body=new StackPanel();body.Children.Add(row);_error.Margin=new Thickness(89,2,0,0);body.Children.Add(_error);Content=body;
+        var row=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl();
+        row.LeftContent=new TextBlock{Text=Label,ToolTip=Label,FontSize=14,VerticalAlignment=VerticalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis};
+        var body=new StackPanel();body.Children.Add(NativeView);_error.Margin=new Thickness(0,2,0,0);body.Children.Add(_error);
+        row.RightContent=body;Content=row;
         NativeView.OnStartValueChange+=OnNativeValue;NativeView.OnEndValueChange+=OnNativeValue;
         NativeView.OnLeftTypeChange+=OnLeftMode;NativeView.OnRightTypeChange+=OnRightMode;
         Loaded+=OnLoaded;Unloaded+=OnUnloaded;IsVisibleChanged+=OnVisibility;

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.ComponentModel;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
@@ -53,6 +53,7 @@ public sealed class ReferenceExpansionRequest : INotifyPropertyChanged,IDisposab
         RefreshCommand=new RequestCommand(_=>IsValid,_=>_session!.Refresh());
         session.PropertyChanged+=OnSessionChanged;preference.PropertyChanged+=OnPreferenceChanged;
     }
+    internal void ClearSelection(){if(IsValid)_session!.ClearExpandedSelection(this);}
     internal void SetIndex(bool index,bool hasSelection=true)
     {
         if(!IsValid)return;var changed=_hasSelection!=hasSelection;_hasSelection=hasSelection;

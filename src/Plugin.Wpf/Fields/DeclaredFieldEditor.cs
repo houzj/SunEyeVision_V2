@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using System.Globalization;
@@ -32,7 +32,10 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     private ConstantSetting? _constant => _state.ConstantBackup;
     private readonly FieldPresentation? _presentation;
     private bool _referenceMode => _state.IsReferenceMode;
-    private readonly Grid _row = new();
+    private readonly SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl _row = new();
+    private readonly StackPanel _externalActions=new(){Orientation=Orientation.Horizontal};
+    internal void AddInlineAction(UIElement action)=>_externalActions.Children.Add(action);
+    internal void RemoveInlineAction(UIElement action)=>_externalActions.Children.Remove(action);
     private readonly StackPanel _actions = new() { Orientation=Orientation.Horizontal };
     private readonly TextBlock _label = new();
     private NativeNumberPresenter? _numeric;
@@ -47,8 +50,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     public void SetLabel(string text)=>_label.Text=text;
     internal void SetLabelWidth(double width)
     {
-        _row.ColumnDefinitions[0].Width=new GridLength(width);
-        _error.Margin=new Thickness(width,2,0,0);
+        _row.ChildLeftWidth=width;
     }
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;Render();return true;}
     public bool TrySetConstant(object value)
@@ -64,13 +66,14 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         finally{_updatingInput=false;}
         return true;
     }
-    public void HideLabel() { _label.Visibility=Visibility.Collapsed;_row.ColumnDefinitions[0].Width=new GridLength(0); }
+    public void HideLabel() { _label.Visibility=Visibility.Collapsed;_row.ChildLeftWidth=0; }
     internal bool IsDisposed=>_disposed||_state.IsDisposed;
     public string FieldId => _port.Id;
     public ParameterSetting Setting => _setting;
     private FrameworkElement? _inputElement;
     public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_inputElement;private set=>_inputElement=value;}
     private bool MissingReference=>_state.MissingReference;
+    internal NativeParameterItemState NativeItemState=>_state.EditError.Length!=0?NativeParameterItemState.WriteError:_state.SourceError.Length!=0?NativeParameterItemState.ReadError:HasInvalidText?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
     public bool HasInvalidText => _state.HasInvalidInput || _children.Any(child => child.HasInvalidText);
     public string Error => _state.Error.Length!=0?_state.Error:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
     private void UpdateErrorDisplay()=>_error.Text=_state.Error;
@@ -94,11 +97,12 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         _state.Changed+=OnStateChanged;
         Resources.MergedDictionaries.Add(EditorResources.Create());
         _error.Style=EditorResources.ErrorStyle();
-        Tag=port.Id;Margin=new Thickness(0,1,0,1);MinHeight=32;
-        _row.ColumnDefinitions.Add(new(){Width=new GridLength(89)});_row.ColumnDefinitions.Add(new());_row.ColumnDefinitions.Add(new(){Width=GridLength.Auto});
+        Tag=port.Id;Margin=new Thickness(0);MinHeight=32;
         _label.Text=label;_label.VerticalAlignment=VerticalAlignment.Center;_label.TextTrimming=TextTrimming.CharacterEllipsis;_label.ToolTip=label;_label.FontSize=14;
-        _row.Children.Add(_label);Grid.SetColumn(_body,1);_row.Children.Add(_body);Grid.SetColumn(_actions,2);_row.Children.Add(_actions);
-        var panel=new StackPanel();panel.Children.Add(_row);_error.Margin=new Thickness(89,2,0,0);panel.Children.Add(_error);Content=panel;
+        var right=new Grid();right.ColumnDefinitions.Add(new());right.ColumnDefinitions.Add(new(){Width=GridLength.Auto});right.ColumnDefinitions.Add(new(){Width=GridLength.Auto});
+        right.Children.Add(_body);Grid.SetColumn(_actions,1);right.Children.Add(_actions);Grid.SetColumn(_externalActions,2);right.Children.Add(_externalActions);
+        var body=new StackPanel();body.Children.Add(right);_error.Margin=new Thickness(0,2,0,0);body.Children.Add(_error);
+        _row.LeftContent=_label;_row.RightContent=body;Content=_row;
         Render();
         UpdateErrorDisplay();
     }
@@ -290,7 +294,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         _disposed=true;_renderGeneration++;
         _state.Changed-=OnStateChanged;if(_ownsState)_state.Dispose();
         DetachOwnedEditors();Changed=null;
-        _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;Content=null;
+        _body.Children.Clear();_actions.Children.Clear();_externalActions.Children.Clear();InputElement=null;_numeric=null;Content=null;
     }
 
     private sealed record ChoiceItem(string Key,string Label);

@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
@@ -150,7 +150,16 @@ internal static class S2DocumentEditingCases
  static List<string> VisualContrast(DependencyObject root,Brush background){var failures=new List<string>();foreach(var text in Visuals<TextBlock>(root).Where(t=>t.IsVisible&&t.IsEnabled&&t.Opacity>=1&&!string.IsNullOrWhiteSpace(t.Text))){try{Contrast(text.Foreground,background,text.Text);}catch(Exception error){failures.Add(error.Message+"；Foreground="+text.Foreground+"；IsEnabled="+text.IsEnabled);}}return failures;}
  static void Show(UIElement view){host.Children.Clear();host.Children.Add(view);owner.UpdateLayout();Pump();}
  static IEnumerable<T> Find<T>(DependencyObject root) where T:DependencyObject
- {if(root is T item)yield return item;foreach(var child in LogicalTreeHelper.GetChildren(root))if(child is DependencyObject d)foreach(var found in Find<T>(d))yield return found;}
+ {
+        var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);
+        while(pending.Count>0)
+        {
+            var node=pending.Pop();if(!seen.Add(node))continue;if(node is T found)yield return found;
+            foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+                foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
+        }
+    }
  static Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
  {
   var original=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single();
@@ -850,6 +859,92 @@ internal static class S2DocumentEditingCases
    Show(new TextBlock{Text="结束"});
   });
  }
+ static void VerifyNativeParameterHost()
+ {
+  Test("原参数宿主换源枚举与首组通知重入，旧集合不能覆盖新根",()=>
+  {
+   using var a=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("A"),new TextBlock());
+   using var b=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("B"),new TextBlock());
+   using var c=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("C"),new TextBlock());
+   var list=new Native.Composition.Apps.XmlUI.ParamListView();
+   var old=new System.Collections.ObjectModel.ObservableCollection<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>{a,b};
+   var current=new System.Collections.ObjectModel.ObservableCollection<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>{c};
+   IEnumerable<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow> Reentrant(){list.SetRows(current);yield return a;}
+   list.SetRows(Reentrant());Require(list.Items.Count==1&&ReferenceEquals(list.Items[0],c),"枚举旧源覆盖同步换入的新源");
+   a.GroupName.PropertyChanged+=(_,args)=>{if(args.PropertyName=="IsFirst"&&a.GroupName.IsFirst)old.Remove(a);};
+   list.SetRows(old);Require(old.Count==1&&b.GroupName.IsFirst,"旧组序循环覆盖新首组");
+   list.SetRows(current);old.Add(a);Require(list.Items.Count==1&&ReferenceEquals(list.Items[0],c)&&c.GroupName.IsFirst,"旧集合通知污染当前宿主");
+   list.SetRows(null);current.Clear();Require(list.ItemsSource is null,"解除来源后旧通知恢复宿主");
+  });
+  Test("原输入分组无内部滚动，同实例重绑保留而替换和关闭释放",()=>
+  {
+   var schema=new ToolSchema(new[]{new Port("source",DataType.Integer,Required:false,EditModes:FieldEditModes.Reference)},Array.Empty<Port>(),
+    new ToolPresentation(new[]{new FieldPresentation("source","来源","输入",0,FieldEditorKind.Scalar){Layout=new("结果显示","图像输入")}}));
+   DeclaredInputFieldsView Create()=>new(schema,_=>new UnsetSetting(),(_,_)=>{},ReferenceFieldOptions.Empty);
+   var input=Create();var editor=input.Fields.Single();var row=input.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Single();
+   var draft=new ColorLifetimeDraft();using var settings=new DeclaredSettingsView(draft,new(InputSection:"结果显示",InputContent:input));Show(settings);Pump();
+   var outer=(Native.Composition.Apps.XmlUI.ParamListView)((TabControl)((DeclaredFieldsView)settings.Content).Content).Items.Cast<TabItem>().Single().Content;
+   Require(Visuals<ScrollViewer>(input).Count(scroll=>scroll.TemplatedParent is Native.Composition.Apps.XmlUI.ParamListView)==0&&Visuals<ScrollViewer>(outer).Count(scroll=>scroll.TemplatedParent is Native.Composition.Apps.XmlUI.ParamListView)==1,"输入组叠加滚动宿主 input="+Visuals<ScrollViewer>(input).Count()+" outer="+Visuals<ScrollViewer>(outer).Count()+" details="+string.Join(";",Visuals<ScrollViewer>(outer).Select(scroll=>scroll.Name+":"+scroll.TemplatedParent?.GetType().FullName)));
+   outer.ChildLeftWidth=170;Pump();Require(input.ChildLeftWidth==170&&Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(input).Single().ChildLeftWidth==170,"输入组未继承原宿主列宽");
+   settings.Bind(draft,new(InputSection:"结果显示",InputContent:input));Show(settings);Pump();
+   Require(ReferenceEquals(input.Fields.Single(),editor)&&ReferenceEquals(row.View,editor)&&row.ParamItemSelectedCommand.CanExecute(null),"同实例重绑提前释放输入组");
+   var next=Create();var nextRow=next.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Single();
+   settings.Bind(draft,new(InputSection:"结果显示",InputContent:next));Pump();Require(row.View is null&&input.ItemsSource is null&&!row.ParamItemSelectedCommand.CanExecute(null),"替换输入后旧行未失效");
+   settings.Dispose();Require(nextRow.View is null&&next.ItemsSource is null&&!nextRow.ParamItemSelectedCommand.CanExecute(null),"关闭未释放输入组");Show(new TextBlock());
+  });
+  Test("原参数宿主独立分组、行边距与89/170列宽及实例隔离",()=>
+  {
+   using var field=new DeclaredFieldEditor(new Port("enabled",DataType.Boolean),"启用",new ConstantSetting(true),_=>{});
+   using var row=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("原分组"),field);
+   var list=new Native.Composition.Apps.XmlUI.ParamListView();list.SetRows(new[]{row});Show(list);Pump();
+   var nativeRow=Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(field).Single();
+   Require(nativeRow.Margin==new Thickness(32,1,32,0)&&nativeRow.ChildLeftWidth==89&&Math.Abs(nativeRow.ColumnDefinitions[0].ActualWidth-89)<.1,"原行未取正式宿主margin/左宽");
+   Require(Visuals<ScrollViewer>(list).Count()==1,"参数页出现双滚动宿主");
+   var group=Visuals<GroupItem>(list).Single();Require(((FrameworkElement)group.Template.FindName("rec",group)).Visibility==Visibility.Collapsed,"首组分隔线未隐藏");
+   list.ChildLeftWidth=170;Pump();Require(nativeRow.ChildLeftWidth==170&&Math.Abs(nativeRow.ColumnDefinitions[0].ActualWidth-170)<.1,"正式宿主170列宽未传原行");
+   var other=new Native.Composition.Apps.XmlUI.ParamListView();other.SetRows(Array.Empty<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>());
+   Require(!ReferenceEquals(list.ItemsSource,other.ItemsSource)&&list.Items.Count==1&&other.Items.Count==0,"多个宿主共享CollectionViewSource");
+   CaptureInline(list,"native-parameter-host.png");list.SetRows(null);other.SetRows(null);Show(new TextBlock{Text="完成"});
+  });
+  Test("原参数宿主弹层子错误汇总与监听异常不截断其余行刷新",()=>
+  {
+   var draft=new ColorLifetimeDraft();var declarations=draft.Schema.Presentation!.Fields.Select(p=>(draft.Schema.Inputs.Single(port=>port.Id==p.FieldId),p,(ParameterSetting)new ConstantSetting(draft.ReadFields().Get<object?>(p.FieldId)))).ToList();
+   declarations.Add((new Port("other",DataType.Boolean),new FieldPresentation("other","其他","其他",2,FieldEditorKind.Scalar){Layout=new("结果显示","其他")},new ConstantSetting(true)));
+   var writes=0;using var fields=new DeclaredFieldsView(declarations,_=>writes++);
+   var list=(Native.Composition.Apps.XmlUI.ParamListView)((TabControl)fields.Content).Items.Cast<TabItem>().Single().Content;
+   var rows=list.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().ToArray();var later=0;
+   rows[0].PropertyChanged+=(_,args)=>{if(args.PropertyName=="MyItemState")throw new InvalidOperationException("测试正常刷新监听异常");};
+   rows[1].PropertyChanged+=(_,args)=>{if(args.PropertyName=="MyItemState")later++;};
+   Show(fields);Pump();
+   var editor=(DeclaredFieldEditor)fields.Fields.Single(field=>field.FieldId=="rgba").View;
+   var state=typeof(DeclaredFieldEditor).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(editor)!;
+   var border=(Border)VisualTreeHelper.GetParent(Visuals<Native.Composition.Apps.XmlUI.ParamUserControl>(list).First());
+   void Error(string method,string text){var prior=later;var threw=false;try{state.GetType().GetMethod(method)!.Invoke(state,new object[]{text});}catch(TargetInvocationException){threw=true;}Pump();Require(threw&&later>prior,"首行异常截断后续行刷新");}
+   Error("SetSourceError","来源错误");Require(rows[0].MyItemState==SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterItemState.ReadError&&((SolidColorBrush)border.BorderBrush).Color==Colors.Yellow,"弹层子来源错误未汇总黄框");
+   Error("SetEditError","编辑错误");Require(rows[0].MyItemState==SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterItemState.WriteError&&((SolidColorBrush)border.BorderBrush).Color==Colors.Red,"编辑错误未优先红框");
+   Error("SetEditError","");Require(((SolidColorBrush)border.BorderBrush).Color==Colors.Yellow,"清编辑错误未保来源错误");
+   Error("SetSourceError","");Require(((SolidColorBrush)border.BorderBrush).Color==Colors.Transparent&&writes==0,"清错误仍留框或写入业务值");Show(new TextBlock());
+  });
+  Test("原参数宿主配对右端附件、插入预检及观察者异常后完整释放",()=>
+  {
+   var low=new Port("low",DataType.Integer);var high=new Port("high",DataType.Integer);var writes=0;
+   var lower=new FieldPresentation("low","下限","g",0,FieldEditorKind.Scalar){Layout=new("参数","分组",Minimum:0,Maximum:100,DecimalPlaces:0,PairWith:"high")};
+   var upper=new FieldPresentation("high","上限","g",1,FieldEditorKind.Scalar){Layout=new("参数","分组",Minimum:0,Maximum:100,DecimalPlaces:0)};
+   using var fields=new DeclaredFieldsView(new[]{(low,lower,(ParameterSetting)new ConstantSetting(1L)),(high,upper,(ParameterSetting)new ConstantSetting(10L))},_=>writes++);
+   Show(fields);Pump();var list=(Native.Composition.Apps.XmlUI.ParamListView)((TabControl)fields.Content).Items.Cast<TabItem>().Single().Content;
+   Require(list.Items.Count==1&&fields.Fields.Count==2&&ReferenceEquals(fields.Fields[0].View,fields.Fields[1].View),"双端重复显示或状态分裂");
+   var after=new TextBlock{Text="同一配对行之后"};fields.AddAfterField("high",after);var prefix=new TextBlock{Text="前置输入"};fields.AddToGroup("参数",prefix,0);Pump();
+   var rows=list.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().ToArray();Require(rows.Length==3&&ReferenceEquals(rows[0].View,prefix)&&ReferenceEquals(rows[2].View,after),"附件插入顺序不符");
+   var rejected=false;try{fields.AddToGroup("参数",after);}catch(ArgumentException){rejected=true;}Require(rejected&&list.Items.Count==3,"重复view未预检");
+   rejected=false;try{fields.AddToGroup("参数",new TextBlock(),-1);}catch(ArgumentOutOfRangeException){rejected=true;}Require(rejected&&list.Items.Count==3,"非法索引留下半行");
+   var accesses=fields.Fields.ToArray();var notified=false;
+   rows[0].PropertyChanged+=(_,args)=>{if(args.PropertyName=="View")throw new InvalidOperationException("测试行释放监听异常");};
+   rows[0].PropertyChanged+=(_,args)=>{if(args.PropertyName=="View")notified=true;};
+   rejected=false;try{fields.Dispose();}catch(Exception){rejected=true;}
+   Require(rejected&&notified&&list.ItemsSource is null&&rows.All(row=>row.View is null)&&accesses.All(access=>!access.TrySetConstant(2L))&&writes==0,"清理异常跳过剩余状态或源解除");
+   Show(new TextBlock{Text="完成"});
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -869,6 +964,7 @@ internal static class S2DocumentEditingCases
      Require(text.ActualHeight>=text.FontSize*1.2,"内部文字高度不足："+text.ActualHeight);
     }
    });
+   VerifyNativeParameterHost();
    VerifyBetween();
    VerifyExpandedReference();
    VerifyNativeBox();

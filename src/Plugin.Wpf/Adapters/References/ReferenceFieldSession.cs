@@ -40,7 +40,12 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public bool ReadOnlyA=>!_options.EditableIndex;
     public bool IsTextPopupVisible=>_expansion is null;
     public bool SubscribeInPopWindowEnableA=>_expand is not null;
-    public bool IsSelectedSubscribeParam=>_expansion?.IsValid==true;
+    internal void ClearExpandedSelection(ReferenceExpansionRequest request)
+    {
+        if(_disposed||!ReferenceEquals(_expansion,request)||!request.IsValid)return;
+        request.SetIndex(request.IsIndex,false);Notify(nameof(IsSelectedSubscribeParam));
+    }
+    public bool IsSelectedSubscribeParam=>_expansion is {IsValid:true,HasSelection:true};
     public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;Notify(nameof(IsDropDownOpen));}}
     public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;Notify(nameof(IsTextDropDownOpen));}}
     public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(_pendingText is not null)TryCommitPending();}}
@@ -217,7 +222,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         var before=text[..args.SelectionStart];var after=text[args.SelectionStart..];
         var inside=before.LastIndexOf('[')>before.LastIndexOf(']')&&after.IndexOf(']')>=0
             &&(after.IndexOf('[')<0||after.IndexOf(']')<after.IndexOf('['));
-        if(_expansion?.IsValid==true){_expansion.SetIndex(inside,inside);RequestClose();return;}
+        if(_expansion?.IsValid==true){_expansion.SetIndex(inside,inside);Notify(nameof(IsSelectedSubscribeParam));RequestClose();return;}
         if(_preference().PreferExpanded){Expand(inside,inside);return;}
         if(inside){Refresh();IsDropDownOpen=false;}IsTextDropDownOpen=inside;
     }

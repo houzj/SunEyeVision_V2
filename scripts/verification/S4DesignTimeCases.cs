@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Presenters.Display;
+﻿using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
@@ -27,6 +27,16 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            using(var field=new DeclaredFieldEditor(new Port("host.enabled",DataType.Boolean),"启用",new ConstantSetting(true),_=>throw new Exception("设计宿主不得写参数")))
+            using(var row=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("独立原宿主"),field))
+            {
+                var list=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView();list.SetRows(new[]{row});
+                Render(list,"native-parameter-host-independent.png",500,220);
+                Check(Application.Current is null&&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamUserControl>(list).Count()==1
+                    &&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(list).Single().ChildLeftWidth==89,
+                    "原参数宿主与原行无Application独立组装且不写草稿");
+                list.SetRows(null);
+            }
             var expanded=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamSubscribeWindow();
             try
             {
@@ -71,8 +81,8 @@ internal static class S2DocumentEditingCases
             // inspecting its real visual template; preserve the saved XAML page index.
             var inputTabs=(TabControl)fields.Content;
             inputTabs.SelectedItem=inputTabs.Items.Cast<TabItem>().Single(tab=>
-                tab.Content is ScrollViewer {Content:StackPanel panel}
-                &&panel.Children.OfType<DeclaredInputFieldsView>().Any(view=>
+                tab.Content is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView native
+                &&native.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Select(row=>row.View).OfType<DeclaredInputFieldsView>().Any(view=>
                     view.Fields.Any(field=>field.FieldId==BlobTool.ImageInput)));
             Render(first,"parameters-initial.png",600,680);
             Check(fields.Fields.Count==54&&replacementInputCount(fields)==4,
@@ -167,8 +177,8 @@ internal static class S2DocumentEditingCases
     private static IEnumerable<DeclaredFieldEditor> InputFields(DeclaredFieldsView fields)
     {
         var tabs=(TabControl)fields.Content;
-        return tabs.Items.Cast<TabItem>().Select(tab=>(ScrollViewer)tab.Content)
-            .Select(scroll=>(StackPanel)scroll.Content).SelectMany(panel=>panel.Children.OfType<DeclaredInputFieldsView>())
+        return tabs.Items.Cast<TabItem>().Select(tab=>(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView)tab.Content)
+            .SelectMany(native=>native.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()).Select(row=>row.View).OfType<DeclaredInputFieldsView>()
             .SelectMany(input=>input.Fields);
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T:DependencyObject

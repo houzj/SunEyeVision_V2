@@ -77,9 +77,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var generation=++_generation;
-        if(_view is not null){_view.Changed-=Changed;Content=null;_view.Dispose();}
-        foreach(var input in _inputs)input.Dispose();
-        _node=node;_inputs.Clear();
+        var previous=_view;_view=null;_inputs.Clear();Content=null;
+        if(previous is not null){previous.Changed-=Changed;previous.Dispose();}
+        if(_disposed||generation!=_generation)return;
+        _node=node;
         var configuration=node.RuntimeConfiguration??throw new ArgumentException("Runtime configuration is required.");
         var settings=configuration.SettingsSchema??throw new ArgumentException("Runtime settings metadata is required.");
         var references=node.ParamSettings.Settings.Where(s=>settings.Inputs.Any(p=>p.Id==s.ParameterName)&&s.ReferenceExpression is not null)
@@ -93,11 +94,26 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             return saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
         },(port,setting)=>WriteInput(port,setting,generation),referenceOptions with {EditableIndex=true},FormatReference,
             _=>ReadReferenceCandidates(generation));
-        _inputs.AddRange(panel.Fields);
-        _view=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
+        IToolSettingsView? candidate=null;
+        try
+        {
+        if(_disposed||generation!=_generation){panel.Dispose();return;}
+        candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
             new(references,referenceOptions,FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel,
                 (candidate,bindings)=>ValidateSettingsCandidate(candidate,bindings,generation)));
+        if(_disposed||generation!=_generation){candidate.Dispose();panel.Dispose();return;}
+        _inputs.AddRange(panel.Fields);_view=candidate;
         _view.Changed+=Changed;Content=_view.View;
+        }
+        catch(Exception failure)
+        {
+            if(generation==_generation&&ReferenceEquals(_view,candidate))
+            {
+                _view=null;_inputs.Clear();if(candidate is not null)candidate.Changed-=Changed;Content=null;
+            }
+            try{try{candidate?.Dispose();}finally{panel.Dispose();}}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     private void Changed(){if(!_syncing&&!_capturing)TryCapture(out _);}
     public bool TryValidateEditor(out string error)
@@ -256,5 +272,5 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         finally{node.ParamSettings=priorBindings;node.RuntimeConfiguration=priorConfiguration;}
     }
     public void Dispose()
-    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;if(_view is not null){_view.Changed-=Changed;Content=null;_view.Dispose();}foreach(var input in _inputs)input.Dispose();_inputs.Clear();}
+    {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;var view=_view;_view=null;_inputs.Clear();Content=null;if(view is not null){view.Changed-=Changed;view.Dispose();}}
 }

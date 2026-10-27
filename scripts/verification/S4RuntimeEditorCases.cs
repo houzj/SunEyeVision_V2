@@ -239,7 +239,16 @@ internal static class S2DocumentEditingCases
         public void Dispose()=>inner.Dispose();
     }
     private static IEnumerable<DependencyObject> Logical(DependencyObject root)
-    {yield return root;foreach(var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())foreach(var found in Logical(child))yield return found;}
+    {
+        var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);
+        while(pending.Count>0)
+        {
+            var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
+            foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+                foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
+        }
+    }
     private static void Pump()
     {var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
     private static void PumpUntil(Func<bool> complete)

@@ -1,8 +1,11 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Collections.ObjectModel;
+using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView;
+using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Resources;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
@@ -18,7 +21,11 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  private readonly List<DeclaredFieldState> _fieldStates=new();
  private readonly List<DisplayObjectField> _displayCompositions=new();
  private bool _disposed;
- private readonly Dictionary<string,StackPanel> _groups=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,NativeParameterPage> _groups=new(StringComparer.Ordinal);
+ private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
+ private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
+ private readonly Dictionary<FrameworkElement,StackPanel> _advancedPositions=new();
+ private readonly List<NativeParameterRow> _parameterRows=new();
  private readonly List<(FrameworkElement View,FieldCondition Condition)> _conditions=new();
  private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
  private readonly TabControl? _tabs;
@@ -36,13 +43,52 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  public IReadOnlyList<DeclaredFieldAccess> Fields=>_fields.AsReadOnly();
  public event Action? PageChanged;
  public void AddToGroup(string group,UIElement content,int? index=null)
- {if(!_groups.TryGetValue(group,out var panel))throw new ArgumentException("Unknown declared presentation group.");if(index.HasValue)panel.Children.Insert(index.Value,content);else panel.Children.Add(content);}
+ {
+  ObjectDisposedException.ThrowIf(_disposed,this);
+  if(!_groups.TryGetValue(group,out var page))throw new ArgumentException("Unknown declared presentation group.");
+  if(content is not FrameworkElement view)throw new ArgumentException("参数组合必须提供真实FrameworkElement。");
+  EnsureAttachable(view);var position=index??page.Rows.Count;
+  if(position<0||position>page.Rows.Count)throw new ArgumentOutOfRangeException(nameof(index));
+  var metadata=index.HasValue&&page.Rows.FirstOrDefault()?.GroupName is {DisplayType:"CategoryNoHead"} existing?existing:new NativeParameterGroup("",true);
+  var row=BorrowRow(metadata,view);InstallRow(page,position,row,view);
+ }
  public void AddAfterField(string fieldId,FrameworkElement content,FieldCondition? condition=null)
  {
-  var editor=_rows[fieldId];
-  if(editor.Parent is not Panel panel)throw new InvalidOperationException("The declared field is not an inline attachment point.");
-  panel.Children.Insert(panel.Children.IndexOf(editor)+1,content);
+  ObjectDisposedException.ThrowIf(_disposed,this);EnsureAttachable(content);var anchor=_rows[fieldId];
+  if(_positions.TryGetValue(anchor,out var position))
+  {
+   var row=BorrowRow(position.Row.GroupName,content);InstallRow(position.Page,position.Page.Rows.IndexOf(position.Row)+1,row,content);
+  }
+  else if(_advancedPositions.TryGetValue(anchor,out var panel))
+  {
+   _advancedPositions.Add(content,panel);
+   try{panel.Children.Insert(panel.Children.IndexOf(anchor)+1,content);}
+   catch{if(!panel.Children.Contains(content))_advancedPositions.Remove(content);throw;}
+  }
+  else throw new InvalidOperationException("字段不属于当前原参数行宿主。");
+  ObjectDisposedException.ThrowIf(_disposed,this);
   if(condition is not null)_conditions.Add((content,condition));UpdateVisibility();
+ }
+ private void EnsureAttachable(FrameworkElement view)
+ {
+  if(_positions.ContainsKey(view)||_advancedPositions.ContainsKey(view)||_rows.Values.Contains(view)||view.Parent is not null||VisualTreeHelper.GetParent(view) is not null)
+   throw new ArgumentException("控件已经属于一个参数行或其他活动视图。");
+ }
+ private void InstallRow(NativeParameterPage page,int index,NativeParameterRow row,FrameworkElement view)
+ {
+  _positions.Add(view,(page,row));
+  try{page.Rows.Insert(index,row);}
+  catch
+  {
+   if(!page.Rows.Contains(row)){_positions.Remove(view);_parameterRows.Remove(row);row.Dispose();}
+   throw;
+  }
+  ObjectDisposedException.ThrowIf(_disposed,this);
+ }
+ private NativeParameterRow BorrowRow(NativeParameterGroup group,FrameworkElement view,Func<NativeParameterItemState>? state=null)
+ {
+  var row=new NativeParameterRow(group,view,state,()=>{if(!_disposed&&Window.GetWindow(this) is {} owner)ReferenceExpansionCoordinator.ClearSelectionFor(owner);});
+  _parameterRows.Add(row);return row;
  }
  public void UseRegionSourceSelector(string fieldId)=>_editors[fieldId].UseRegionSourceSelector();
  public bool TryValidate(out string error)
@@ -116,14 +162,18 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   tabs.SelectionChanged+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,tabs))PageChanged?.Invoke();};
   foreach(var page in all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group))
   {
-   // The scrollbar occupies its own 12 px column; retain 32 px left / 32 px total right inset.
-   var body=new StackPanel{Margin=new Thickness(32,4,20,18)};_groups[page.Key]=body;
-   foreach(var group in page.GroupBy(field=>field.Presentation.Group))_groups.TryAdd(group.Key,body);
+   var pageRows=new NativeParameterPage();var body=new NativeHost();body.SetRows(pageRows.Rows);_pages.Add((pageRows,body));_groups[page.Key]=pageRows;
+   foreach(var group in page.GroupBy(field=>field.Presentation.Group))_groups.TryAdd(group.Key,pageRows);
    foreach(var section in page.GroupBy(field=>(field.Presentation.Layout?.Section??field.Presentation.Group,field.Presentation.Layout?.Advanced??false)))
    {
-    var content=new StackPanel{Margin=new Thickness(0,12,0,4)};
-    if(section.Key.Item2)body.Children.Add(new Expander{Header=section.Key.Item1,Content=content,IsExpanded=false,Margin=new Thickness(0,8,0,2)});
-    else {body.Children.Add(new TextBlock{Text=section.Key.Item1,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,16,0,10)});body.Children.Add(content);}
+    var metadata=new NativeParameterGroup(section.Key.Item1,section.Key.Item2);
+    StackPanel? advanced=null;
+    if(section.Key.Item2)
+    {
+     advanced=new StackPanel();
+     var expander=new Expander{Header=new TextBlock{Text=section.Key.Item1,Margin=new Thickness(32,0,32,0),Foreground=Foreground},Content=advanced,IsExpanded=false,Margin=new Thickness(0,8,0,2)};
+     pageRows.Rows.Add(BorrowRow(metadata,expander));
+    }
     var rightEnds=section.Where(f=>f.Presentation.Layout?.PairWith is not null).Select(f=>f.Presentation.Layout!.PairWith!).ToHashSet();
     foreach(var field in section)
     {
@@ -137,16 +187,26 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
       var composition=new DisplayObjectField(display.DialogTitle!,_editors[field.Port.Id],style);
       _displayCompositions.Add(composition);view=composition;
      }
-     content.Children.Add(view);_rows[field.Port.Id]=view;
+     _rows[field.Port.Id]=view;
+     if(advanced is not null){advanced.Children.Add(view);_advancedPositions.Add(view,advanced);}
+     else
+     {
+      var affected=field.Presentation.Layout?.DialogGroup is {} displayGroup?section.Where(item=>item.Presentation.Layout?.DialogGroup==displayGroup).Select(item=>item.Port.Id).ToArray():
+       field.Presentation.Layout?.PairWith is {} other?new[]{field.Port.Id,other}:new[]{field.Port.Id};
+      var row=BorrowRow(metadata,view,()=>affected.Any(id=>states[id].EditError.Length!=0)?NativeParameterItemState.WriteError:
+       affected.Any(id=>states[id].SourceError.Length!=0)?NativeParameterItemState.ReadError:
+       affected.Any(id=>states[id].HasInvalidInput)?NativeParameterItemState.WriteError:NativeParameterItemState.Normal);
+      pageRows.Rows.Add(row);_positions.Add(view,(pageRows,row));
+     }
      if(field.Presentation.Layout?.VisibleWhen is {} condition)_conditions.Add((view,condition));
     }
    }
-   var tab=new TabItem{Header=page.Key,Content=new ScrollViewer{Style=(Style)FindResource("O06.PageScrollViewerStyle"),Content=body,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled}};
+   var tab=new TabItem{Header=page.Key,Content=body};
    tab.SetResourceReference(StyleProperty,"TopTabItemStyle");tabs.Items.Add(tab);
   }
   Content=tabs;UpdateVisibility();
   }
-  catch{Dispose();throw;}
+  catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException("参数宿主构造与清理均失败。",failure,cleanup);}throw;}
  }
  // Logical declaration activity is independent of selected tabs, collapsed Advanced sections, or attachment state.
  private bool IsFieldActive(string fieldId)=>!_fieldConditions.TryGetValue(fieldId,out var condition)||Meets(condition);
@@ -159,19 +219,27 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  private void UpdateVisibility()
  {
   if(_disposed)return;
-  foreach(var (view,condition) in _conditions)view.Visibility=Meets(condition)?Visibility.Visible:Visibility.Collapsed;
+  ParameterCleanup.Run(_conditions.ToArray().Select(item=>(Action)(()=>{if(!_disposed)item.View.Visibility=Meets(item.Condition)?Visibility.Visible:Visibility.Collapsed;}))
+   .Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(!_disposed)row.Refresh();}))));
  }
  public void Dispose()
  {
   if(_disposed)return;_disposed=true;
-  _tabTextScope?.Dispose();
-  foreach(var composition in _displayCompositions)composition.Dispose();
-  foreach(var field in _fields)field.Changed-=UpdateVisibility;
-  foreach(var range in _ranges)range.Dispose();
-  foreach(var editor in _editors.Values)editor.Dispose();_ranges.Clear();_editors.Clear();_rows.Clear();
-  foreach(var state in _fieldStates)state.Dispose();
-  _fieldStates.Clear();
-  _displayCompositions.Clear();_fields.Clear();_conditions.Clear();_fieldConditions.Clear();_groups.Clear();
-  PageChanged=null;_tabs?.Items.Clear();Content=null;
+  var cleanup=new List<Action>();
+  if(_tabTextScope is not null)cleanup.Add(_tabTextScope.Dispose);
+  cleanup.AddRange(_parameterRows.ToArray().Select(row=>(Action)row.Dispose));
+  foreach(var (page,host) in _pages.ToArray()){cleanup.Add(()=>host.SetRows(null));cleanup.Add(page.Dispose);}
+  cleanup.AddRange(_displayCompositions.ToArray().Select(composition=>(Action)composition.Dispose));
+  foreach(var field in _fields.ToArray())cleanup.Add(()=>field.Changed-=UpdateVisibility);
+  cleanup.AddRange(_ranges.ToArray().Select(range=>(Action)range.Dispose));
+  cleanup.AddRange(_editors.Values.ToArray().Select(editor=>(Action)editor.Dispose));
+  cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
+  cleanup.Add(()=>
+  {
+   _parameterRows.Clear();_pages.Clear();_positions.Clear();_advancedPositions.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+   _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_conditions.Clear();_fieldConditions.Clear();_groups.Clear();
+   PageChanged=null;_tabs?.Items.Clear();Content=null;
+  });
+  ParameterCleanup.Run(cleanup);
  }
 }

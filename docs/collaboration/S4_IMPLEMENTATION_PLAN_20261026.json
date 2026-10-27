@@ -7435,6 +7435,43 @@
         "真实物理拖动/取消/多DPI、VM同状态、用户验收。"
       ],
       "evidence": "docs/collaboration/evidence/O06_POLYGON_SCENE_CHECKPOINT_20261027.json"
+    },
+    "nativeParameterHostCandidate": {
+      "status": "本批原行组/输入宿主正式自动回归通过；完整C01/第一阶段未验收",
+      "baseline": "b07a870b，工作流和主线共同基线；C01候选仅主线",
+      "implementation": [
+        "原ParamListView/ParamUserControl/LeftRight及行/组/滚动模板；正常字段/双端范围/图形样式复用现权威状态，无第二份accepted值",
+        "原无内层滚动样式用于输入组：原真实consumer是ContainerFidScroller，本方仅提取共享样式，不称该consumer已迁入",
+        "行/组显隐及原读黄/写红错误；弹层子字段汇总；Source/order重入门禁、通知异常继续、明确借用和输入所有权",
+        "C07原行点击仅清扩展选择高亮，不提交、不执行、不冒用其他程序集同名命令"
+      ],
+      "sourceBoundary": "原GroupIndexConverter源未获得，以本方IsFirst metadata适配。ParamUserControl不扫描工具业务程序集，显式原模板选择。89中文宿主/90fallback/170英文默认区分，直接设170只证明传播。",
+      "failuresPreserved": [
+        "Window084:40过13失败，原root静态资源在Resources前解析，改延迟样式引用",
+        "Window085:4失败，CVS自动view再显式.View导致空集合，恢复原绑定语义",
+        "Window087/088:输入滚动测试误计TextBox的PART_ContentHost；实际input2/outer3中仅1个原参数宿主，改断言真正参数页滚动归属，089定向通过"
+      ],
+      "remaining": [
+        "C15原高级展开同级行，当前Expander未迁入；不签完整C01和第一阶段",
+        "同链独立ROI真实VS设计入口",
+        "绘制/继承/位姿与多对象宿主事务/历史",
+        "VM同状态、真实指针及用户验收未证"
+      ],
+      "evidence": "docs/collaboration/evidence/O06_PARAMETER_HOST_CHECKPOINT_20261028.json",
+      "validation": {
+        "status": "FOCUSED_FORMAL_AUTOMATION_PASSED_STAGE1_INCOMPLETE",
+        "builds": "UI006 0错误6060警告56.82秒；全量Release002 0错误6577警告63.48秒",
+        "regression": "Window090=53、Field070=31、Design025=29、RuntimeEditor051=10、FullChain111=8、Components193=9，同源正式产物",
+        "executable": "正式EXE探针005 exit0，22可用工具/15分类；目录144项含未实现占位，非144已实现工具",
+        "evidence": "docs/collaboration/evidence/O06_PARAMETER_HOST_CHECKPOINT_20261028.json",
+        "remaining": [
+          "C15原高级参数同级行及展开按钮；当前Expander仍待替换",
+          "同链独立ROI真实VS设计入口和用户VS验收",
+          "绘制/继承/位姿、多对象操作和宿主历史",
+          "实际VM同状态、真实指针与用户验收，非完整C01/C08/阶段一"
+        ]
+      },
+      "sourceAndPayload": "21项产品源码增量、782发布项及86加载记录SHA同源，原来源SHA复核140条；正式EXE22可用工具/15分类。Catalog最终元数据前后SHA单列，产品源未改。"
     }
   },
   "vmFrameworkArchitectureReference": {

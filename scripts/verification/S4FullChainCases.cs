@@ -181,7 +181,16 @@ internal static class S2DocumentEditingCases
             Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis"),"缺少SDK入口时仍加载旧Blob");
         shell.Close();dialogs.Stop();Console.WriteLine($"S4真实Runtime宿主连续链：{_passed}组通过；默认工具箱/真实Drop/连线/运行/ROI引用/私有调试/保存重开；未验证本地ROI、全部VM视觉或人工验收。");return 0;
     }
-    private static IEnumerable<DependencyObject> Logical(DependencyObject root){yield return root;foreach(var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())foreach(var item in Logical(child))yield return item;}
+    private static IEnumerable<DependencyObject> Logical(DependencyObject root){
+        var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);
+        while(pending.Count>0)
+        {
+            var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
+            foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+                foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
+        }
+    }
     private static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
     private static void Until(Func<bool> complete){var end=DateTime.UtcNow.AddSeconds(30);while(!complete()){if(DateTime.UtcNow>end)throw new TimeoutException("实际宿主操作超时");Pump();Thread.Sleep(5);}Pump();}
     private static void Await(Task task){Until(()=>task.IsCompleted);task.GetAwaiter().GetResult();}

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
@@ -39,30 +40,42 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     }
     private static void Rebind(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(!view._binding)view.Rebuild();}
-    private void Detach()
+    private void Detach(FrameworkElement? retainInput=null)
     {
         _generation++;
-        if(_fields is not null)
-        {foreach(var field in _fields.Fields)field.Changed-=OnChanged;_fields.PageChanged-=OnPageChanged;}
-        if(_inputContent?.Parent is Panel parent)parent.Children.Remove(_inputContent);
-        _fields?.Dispose();
-        _inputContent=null;_fields=null;Content=null;_references.Clear();
+        var fields=_fields;var input=_inputContent;
+        _fields=null;_inputContent=ReferenceEquals(input,retainInput)?input:null;
+        _references=new(StringComparer.Ordinal);
+        var cleanup=new List<Action>{()=>Content=null};
+        if(fields is not null)
+        {
+            foreach(var field in fields.Fields)field.Changed-=OnChanged;
+            fields.PageChanged-=OnPageChanged;cleanup.Add(fields.Dispose);
+        }
+        if(input is IDisposable disposable&&!ReferenceEquals(input,retainInput))cleanup.Add(disposable.Dispose);
+        ParameterCleanup.Run(cleanup);
     }
     private void Rebuild()
     {
-        ObjectDisposedException.ThrowIf(_disposed,this);Detach();
-        if(Draft is not {} draft)return;
-        var generation=_generation;var options=Options??new();
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var draft=Draft;var options=Options??new();var optionsIdentity=Options;
+        var nextInput=draft is null?null:options.InputContent;
+        var generation=_generation+1;
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(Draft,draft)&&ReferenceEquals(Options,optionsIdentity);
+        DeclaredFieldsView? candidate=null;
+        try
+        {
+            Detach(nextInput);if(!Current()||draft is null)return;
         var schema=draft.Schema;var values=draft.ReadFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
-        _references=options.References?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
-        foreach(var reference in _references)
+        var references=options.References?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
+        foreach(var reference in references)
             if(!schema.Inputs.Any(p=>p.Id==reference.Key&&(p.EditModes&FieldEditModes.Reference)!=0))
                 throw new ArgumentException("Unknown or non-reference settings field: "+reference.Key);
-        _fields=new(schema.Presentation.Fields.Select(presentation=>
+        candidate=new(schema.Presentation.Fields.Select(presentation=>
         {
             var port=schema.Inputs.Single(p=>p.Id==presentation.FieldId);
-            ParameterSetting initial=_references.TryGetValue(port.Id,out var reference)?reference:new ConstantSetting(values.Get<object?>(port.Id));
+            ParameterSetting initial=references.TryGetValue(port.Id,out var reference)?reference:new ConstantSetting(values.Get<object?>(port.Id));
             return(port,presentation,initial);
         }),proposals=>
         {
@@ -70,13 +83,26 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
             id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference);
-        foreach(var field in _fields.Fields)field.Changed+=OnChanged;
-        if(options.InputContent is not null)
-        {
-            _inputContent=options.InputContent;
-            _fields.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),_inputContent,0);
+
+            if(!Current()){candidate.Dispose();return;}
+            if(nextInput is not null)
+                candidate.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),nextInput,0);
+            if(!Current()){candidate.Dispose();return;}
+            candidate.SelectedPageIndex=SelectedPageIndex;
+            foreach(var field in candidate.Fields)field.Changed+=OnChanged;
+            candidate.PageChanged+=OnPageChanged;
+            _fields=candidate;_inputContent=nextInput;_references=references;
+            Content=candidate;
         }
-        Content=_fields;_fields.SelectedPageIndex=SelectedPageIndex;_fields.PageChanged+=OnPageChanged;
+        catch(Exception failure)
+        {
+            try
+            {
+                ParameterCleanup.Run(new Action[]{()=>{if(Current())Detach();},()=>candidate?.Dispose()});
+            }
+            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     private static void SelectPage(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(view._fields is not null)view._fields.SelectedPageIndex=(int)args.NewValue;}
@@ -132,9 +158,9 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        Detach();Changed=null;
+        try{Detach();}finally{Changed=null;
         _binding=true;
         try {ClearValue(DraftProperty);ClearValue(OptionsProperty);}
-        finally {_binding=false;}
+        finally {_binding=false;}}
     }
 }

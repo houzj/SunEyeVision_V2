@@ -4,6 +4,9 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
+/// <summary>InputContent ownership transfers to the settings view on successful attachment.
+/// Rebinding the same instance retains it; replacement and final disposal release IDisposable content.
+/// If creation fails before attachment, the creating caller releases its unaccepted content.</summary>
 public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,ReferenceSetting>? References=null,
     ReferenceFieldOptions? ReferenceOptions=null,

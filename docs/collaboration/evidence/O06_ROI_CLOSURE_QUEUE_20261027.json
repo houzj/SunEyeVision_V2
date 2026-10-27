@@ -74,7 +74,7 @@
     ]
   },
   "nextPriority": [
-    "C01 original ParamListView and row/group resources",
+    "C15 original advanced toggle and same-level rows; no nested Expander",
     "Same-chain NativeRoiScene and independent VS design sample",
     "Original drawing/inheritance/pose typed request and host atomic operations",
     "Multi-object create/delete/paste with host history and actual pointer acceptance"
@@ -94,5 +94,11 @@
     "originalInconsistency": "Clear target FixtureInitPoint differs from actual OriginPoint field; do not copy ineffective string lookup.",
     "remaining": "Actual native transform direction/order/zero-scale and runtime clearing semantics unproven; do not infer matrix formulas from Group.xml."
   },
-  "previousBaseline": "b12656d8 plus current native Sector checkpoint delta"
+  "previousBaseline": "b12656d8 plus current native Sector checkpoint delta",
+  "parameterHostCheckpoint": "O06_PARAMETER_HOST_CHECKPOINT_20261028.json",
+  "advancedEvidence": {
+    "original": "Apps.XmlUI/styles/paramusercontroldatatemplate.xaml:367-369 and Apps.Style/buttonstyle/bottombuttonstyle.xaml:83-122; Blob AlgorithmTab546-621/1658-1720",
+    "composition": "Original ToggleButton Height30/Margin0,0,40,0 right aligned, ExpandButtonStyle; controls same-level rows, not nested Expander. Fold is presentation-only and must not clear references or skip business validation.",
+    "status": "source reviewed, not implemented"
+  }
 }

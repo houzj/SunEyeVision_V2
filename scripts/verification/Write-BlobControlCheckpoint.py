@@ -99,7 +99,7 @@ def main():
                 raise ValueError('控件清单依赖SHA已过时: ' + item['path'])
     probe_path = ROOT / args.probe
     probe = read(probe_path)
-    if (probe.get('status') == 'Rejected' or len(probe.get('toolboxTools', [])) != 22
+    if (probe.get('status') == 'Rejected' or sum(tool.get('available') is True for tool in probe.get('toolboxTools', [])) != 22
             or not probe.get('commit') or not base.startswith(probe['commit'])):
         raise ValueError('真实Release工具箱探针未证明22工具准入: ' + str(probe_path))
     result = dict(schemaVersion=1, generatedUtc=datetime.now(timezone.utc).isoformat(),

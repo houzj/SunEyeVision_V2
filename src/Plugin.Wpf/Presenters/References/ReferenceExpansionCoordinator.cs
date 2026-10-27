@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Windows;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
@@ -28,6 +28,9 @@ internal sealed class ReferenceExpansionCoordinator : IDisposable
     }
     internal ReferenceExpansionPreference Preference()=>Window.GetWindow(_root) is {} owner
         ?Owners.GetValue(owner,_=>new()).Preference:_unownedPreference;
+
+    internal static void ClearSelectionFor(Window owner)
+    {if(Owners.TryGetValue(owner,out var scope))scope.Active?._request?.ClearSelection();}
 
     internal void Open(ReferenceExpansionRequest request)
     {

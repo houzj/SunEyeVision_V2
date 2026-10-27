@@ -217,4 +217,112 @@ public class SubroutineToolDisplayContractTests
         finally{result.Resources?.Dispose();}
     }
 
+    public static IEnumerable<object[]> TextArrayCases()
+    {
+        yield return new object[] { new string?[] { "首行", null, "", "  ", "末行" }, new[] { "首行", "", "", "  ", "末行" } };
+        yield return new object[] { new[] { 1, -2, 3 }, new[] { "1", "-2", "3" } };
+        yield return new object[] { new[] { true, false }, new[] { "True", "False" } };
+        yield return new object[] { Array.Empty<string>(), Array.Empty<string>() };
+    }
+    [Theory]
+    [MemberData(nameof(TextArrayCases))]
+    public void Text_arrays_create_one_display_entry_per_content_element(object value, string[] expected)
+    {
+        var source = new GenericToolResults(); source.AddResultItem("Content", value);
+        var style = new TextStyle { PositionX = 12, PositionY = 34 };
+        var parameters = MakeParams(p => p.DisplayConfigs.Add(new()
+        { DisplayName = "文本", DisplayType = SubroutineDisplayType.Text,
+          BindingSource = "internalNode.Content[]", TextStyle = style }), source);
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage);
+            var items = result.Display.Items.OfType<TextDisplayItem>().ToArray();
+            var texts = items.SelectMany(item => item.Texts).ToArray();
+            Assert.Equal(expected, texts.Select(text => text.Content));
+            Assert.All(items, item => Assert.Same(style, item.Style));
+            Assert.All(texts, text => { Assert.Equal(12, text.X); Assert.Equal(34, text.Y); });
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+    [Theory]
+    [InlineData("en-US", "1.5")]
+    [InlineData("fr-FR", "1,5")]
+    public void Numeric_text_elements_use_current_culture_without_array_type_names(string culture, string expected)
+    {
+        var previous = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            var source = new GenericToolResults(); source.AddResultItem("Content", new[] { 1.5 });
+            var parameters = MakeParams(p => p.DisplayConfigs.Add(new()
+            { DisplayName = "文本", DisplayType = SubroutineDisplayType.Text,
+              BindingSource = "internalNode.Content[]", TextStyle = new TextStyle() }), source);
+            var result = Run(parameters);
+            try
+            {
+                Assert.True(result.IsSuccess, result.ErrorMessage);
+                Assert.Equal(expected, Assert.Single(Assert.IsType<TextDisplayItem>(Assert.Single(result.Display.Items)).Texts).Content);
+            }
+            finally { result.Resources?.Dispose(); }
+        }
+        finally { System.Globalization.CultureInfo.CurrentCulture = previous; }
+    }
+    [Fact]
+    public void Scalar_string_remains_a_single_text_instead_of_characters()
+    {
+        var source = new GenericToolResults(); source.AddResultItem("Content", "完整文本");
+        var parameters = MakeParams(p => p.DisplayConfigs.Add(new()
+        { DisplayName = "文本", DisplayType = SubroutineDisplayType.Text,
+          BindingSource = "internalNode.Content", TextStyle = new TextStyle() }), source);
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage);
+            Assert.Equal("完整文本", Assert.Single(Assert.IsType<TextDisplayItem>(Assert.Single(result.Display.Items)).Texts).Content);
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
+    [Fact]
+    public void Loop_text_arrays_accumulate_elements_while_ordinary_display_keeps_last_round()
+    {
+        var count = 0;
+        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        parent.AddResultItem("Start", 0); parent.AddResultItem("End", 3);
+        var accumulatedStyle = new TextStyle { PositionX = 10 };
+        var lastStyle = new TextStyle { PositionX = 20 };
+        var parameters = new SubroutineParameters
+        {
+            SubroutineId = "child", SubroutineName = "循环文本",
+            NodeResults = new Dictionary<string, ToolResults> { ["parent"] = parent },
+            LoopConfig = new() { EnableLoop = true, EnableBreak = false,
+                StartValueBinding = "parent.Start", EndValueBinding = "parent.End" },
+            ExecuteSubWorkflowAsync = (_, _, _) =>
+            {
+                count++;
+                var values = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+                values.AddResultItem("Content", new[] { count + "a", count + "b" });
+                return Task.FromResult(new ExecutionResult { Success = true,
+                    NodeResults = new Dictionary<string, NodeExecutionResult> { ["internalNode"] = new() { Result = values } } });
+            }
+        };
+        parameters.Inputs.Add(new() { Name = "input" }); parameters.Outputs.Add(new() { Name = "output" });
+        parameters.DisplayConfigs.Add(new() { DisplayName = "累积", DisplayType = SubroutineDisplayType.Text,
+            BindingSource = "internalNode.Content[]", TextStyle = accumulatedStyle, IsAccumulated = true });
+        parameters.DisplayConfigs.Add(new() { DisplayName = "最后", DisplayType = SubroutineDisplayType.Text,
+            BindingSource = "internalNode.Content[]", TextStyle = lastStyle });
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage); Assert.Equal(3, count);
+            var items = result.Display.Items.OfType<TextDisplayItem>().ToArray();
+            Assert.Equal(new[] { "1a", "1b", "2a", "2b", "3a", "3b" },
+                items.Where(item => ReferenceEquals(item.Style, accumulatedStyle)).SelectMany(item => item.Texts).Select(text => text.Content));
+            Assert.Equal(new[] { "3a", "3b" },
+                items.Where(item => ReferenceEquals(item.Style, lastStyle)).SelectMany(item => item.Texts).Select(text => text.Content));
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
 }

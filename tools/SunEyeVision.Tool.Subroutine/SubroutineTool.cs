@@ -836,13 +836,22 @@ namespace SunEyeVision.Tool.Subroutine
             var style = displayItem.GraphicsStyle;
             var textStyle = displayItem.TextStyle;
 
-            // 文本显示：数字/字符串等标量统一按文本渲染（依赖样式定位）
+            // 文本 Content 按元素生成；字符串本身是标量，不枚举为字符。
             if (displayItem.DisplayType == SubroutineDisplayType.Text)
             {
                 if (textStyle == null)
                     throw new InvalidOperationException($"显示项 '{displayItem.DisplayName}' 为文本类型但未配置 TextStyle");
-                result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
-                    value.ToString() ?? string.Empty, isPass);
+                if (value is Array values)
+                {
+                    foreach (var item in values)
+                        result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
+                            item?.ToString() ?? string.Empty, isPass);
+                }
+                else
+                {
+                    result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
+                        value.ToString() ?? string.Empty, isPass);
+                }
                 return;
             }
 

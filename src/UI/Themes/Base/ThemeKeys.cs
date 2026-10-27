@@ -149,6 +149,7 @@
 
         /// <summary>工作流画布原件6像素线网；独立于SDK图像透明棋盘。</summary>
         public const string WorkflowCanvasGridBrush = "ThemeWorkflowCanvasGridBrush";
+        public const string WorkflowCanvasSurfaceBrush = "ThemeWorkflowCanvasSurfaceBrush";
 
         // ============ 图像区 / 缩略图（批次2） ============
         /// <summary>图像显示区背景</summary>

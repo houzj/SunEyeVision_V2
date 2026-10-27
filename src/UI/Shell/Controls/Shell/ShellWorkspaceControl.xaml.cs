@@ -1074,7 +1074,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
         /// <summary>
         /// 画布容器尺寸跟随缩放：容器 = 画布缩放后尺寸（滚动范围 = 画布大小，对齐 VM）。
-        /// 缩放由画布内部 RenderTransform 实现，故画布控件保持固定 6000×6000 左上对齐，
+        /// 缩放由画布内部 RenderTransform 实现，故画布控件保持固定 5000×5000 左上对齐，
         /// 仅容器 Grid 尺寸放大以匹配放大后的画布视觉区域；画布外露出 ScrollViewer 深灰工作区。
         /// </summary>
         private void UpdateCanvasSizingGridSize()
@@ -1140,7 +1140,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// 按节点/连线数据绘制小地图：固定按 10000×10000 画布全景等比例显示（不拉伸、居中）
+        /// 采样透明网格与节点/连线内容，按原件187×150映射5000×5000逻辑页；独立底色不进入采样
         /// 节点按真实坐标与真实宽高比严格 1:1 摆放（不做任何"为了看得清"的尺寸钳制）；
         /// 连线细线显示流程走向；半透明视口框标出主画布当前可视区域（与真实视口严格 1:1）。
         /// </summary>

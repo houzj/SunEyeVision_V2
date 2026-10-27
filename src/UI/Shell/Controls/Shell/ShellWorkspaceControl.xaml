@@ -12,7 +12,26 @@
   <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="/SunEyeVision.UI;component/Shell/Controls/Shell/WorkflowTabButtonStyles.xaml"/>
     <ResourceDictionary Source="/SunEyeVision.UI;component/Shell/Controls/Shell/RootWorkflowOverviewDrawings.xaml"/>
-  </ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+  </ResourceDictionary.MergedDictionaries>
+    <Style x:Key="MiniMapToggleButtonStyle" TargetType="Button">
+      <Setter Property="Width" Value="32"/><Setter Property="Height" Value="23"/>
+      <Setter Property="MinWidth" Value="0"/><Setter Property="MinHeight" Value="0"/>
+      <Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/>
+      <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/><Setter Property="SnapsToDevicePixels" Value="True"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="Chrome" Background="{TemplateBinding Background}" CornerRadius="2">
+          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/></Trigger>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}"/></Trigger>
+          <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+  </ResourceDictionary></UserControl.Resources>
 
   <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
   <Grid>
@@ -320,7 +339,7 @@
                                                       Background="{DynamicResource {x:Static base:ThemeKeys.WorkspaceBackgroundBrush}}">
                         <!-- 画布容器：尺寸 = 画布缩放后尺寸（跟随缩放），滚动范围 = 画布大小（对齐 VM）。
                              画布外露出 ScrollViewer 深灰工作区；画布左上对齐。 -->
-                        <Grid x:Name="CanvasSizingGrid">
+                        <Grid x:Name="CanvasSizingGrid" Background="{DynamicResource {x:Static base:ThemeKeys.WorkflowCanvasSurfaceBrush}}">
                           <canvas:WorkflowCanvasControl
                                                     x:Name="WorkflowCanvasHost"
                                                     Width="5000" Height="5000"
@@ -356,12 +375,13 @@
       <Border x:Name="MiniMapBorder"
                   Width="187" Height="150"
                   Background="Transparent"
-                  BorderBrush="Black" BorderThickness="1"
+                  BorderThickness="0"
                   IsHitTestVisible="True"
                   MouseLeftButtonDown="MiniMapBorder_MouseLeftButtonDown"
                   MouseLeftButtonUp="MiniMapBorder_MouseLeftButtonUp"
                   MouseMove="MiniMapBorder_MouseMove"
                   LostMouseCapture="MiniMapBorder_LostMouseCapture" PreviewMouseWheel="MiniMap_PreviewMouseWheel">
+        <Border.Effect><DropShadowEffect Opacity="0.45" ShadowDepth="2" BlurRadius="8" Color="Black"/></Border.Effect>
         <Grid>
           <Canvas x:Name="MiniMapCanvas"
                         Width="187" Height="150"
@@ -370,48 +390,27 @@
 
           <!-- 右下角收起按钮（右下箭头 ↘，点击把面板收向角落） -->
           <Button x:Name="MiniMapMinimizeButton"
-                      Width="20" Height="20"
-                      Margin="0,0,3,3"
+                      Style="{StaticResource MiniMapToggleButtonStyle}"
                       HorizontalAlignment="Right" VerticalAlignment="Bottom"
                       Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                       ToolTip="最小化小地图"
                       Click="MiniMapMinimizeButton_Click"
                       Cursor="Hand">
-            <Button.Style>
-              <Style TargetType="Button">
-                <Setter Property="Opacity" Value="0.85"/>
-                <Style.Triggers>
-                  <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="1.0"/>
-                  </Trigger>
-                </Style.Triggers>
-              </Style>
-            </Button.Style>
-            <Image Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_retract_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_retract_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
+            <Image Width="32" Height="23" Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_retract_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_retract_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
           </Button>
         </Grid>
       </Border>
 
       <!-- 状态 B：还原按钮（小地图收起后显示，左上箭头 ↖，从角落展开） -->
       <Button x:Name="MiniMapRestoreButton"
-                  Width="24" Height="24"
+                  Style="{StaticResource MiniMapToggleButtonStyle}"
                   HorizontalAlignment="Right" VerticalAlignment="Bottom"
                   Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                   Visibility="Collapsed"
                   ToolTip="展开小地图"
                   Click="MiniMapRestoreButton_Click"
                   Cursor="Hand">
-        <Button.Style>
-          <Style TargetType="Button">
-            <Setter Property="Opacity" Value="0.9"/>
-            <Style.Triggers>
-              <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Opacity" Value="1.0"/>
-              </Trigger>
-            </Style.Triggers>
-          </Style>
-        </Button.Style>
-        <Image Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
+        <Image Width="32" Height="23" Stretch="None"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_normal.png"/><Style.Triggers><DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/ic_expand_click.png"/></DataTrigger></Style.Triggers></Style></Image.Style></Image>
       </Button>
     </Grid>
     <shell:RootWorkflowOverviewControl x:Name="RootOverview" Margin="0,40,0,0" Panel.ZIndex="120" Visibility="Collapsed"/>

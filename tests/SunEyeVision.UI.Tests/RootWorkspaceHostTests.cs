@@ -35,9 +35,9 @@ public sealed class RootWorkspaceHostTests
     owner=new Window{Content=workspace,Width=1100,Height=800,Left=-10000,ShowActivated=false};
     owner.Show();Pump();
     Assert.Equal(new Rect(0,0,6,6),Assert.IsType<DrawingBrush>(Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WorkflowCanvasGridBrush)).Viewport);
-    SaveConfiguration(owner,"Canvas-Dark");
+    VerifyMiniMap(shell,owner,"Dark");SaveConfiguration(owner,"Canvas-Dark");
     var canvasLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
-    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();SaveConfiguration(owner,"Canvas-Light");
+    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();VerifyMiniMap(shell,owner,"Light");SaveConfiguration(owner,"Canvas-Light");
     Application.Current.Resources.MergedDictionaries.Remove(canvasLight);Pump();
     var manager=ServiceInitializer.SolutionManager;var document=manager.CurrentSolution!;
     var source=Assert.Single(document.Workflows.Where(w=>!w.IsSubroutine));var sourceTab=Assert.Single(viewModel.WorkflowTabViewModel.Tabs);
@@ -231,6 +231,35 @@ public sealed class RootWorkspaceHostTests
    finally{owner?.Close();}
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+ }
+ private static void VerifyMiniMap(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,Window owner,string theme)
+ {
+  var host=(FrameworkElement)shell.FindName("MiniMapHost");var map=(Border)shell.FindName("MiniMapBorder");
+  var mapCanvas=(System.Windows.Controls.Canvas)shell.FindName("MiniMapCanvas");
+  var retract=(Button)shell.FindName("MiniMapMinimizeButton");var expand=(Button)shell.FindName("MiniMapRestoreButton");
+  Assert.Equal(187,mapCanvas.ActualWidth);Assert.Equal(150,mapCanvas.ActualHeight);Assert.Equal(new Thickness(0),map.BorderThickness);
+  var sample=Assert.IsType<VisualBrush>(Assert.IsType<System.Windows.Shapes.Rectangle>(mapCanvas.Children[0]).Fill);
+  var drawing=new DrawingVisual();using(var context=drawing.RenderOpen())context.DrawRectangle(sample,null,new Rect(0,0,187,150));
+  var bitmap=new RenderTargetBitmap(187,150,96,96,PixelFormats.Pbgra32);bitmap.Render(drawing);var pixels=new byte[187*150*4];bitmap.CopyPixels(pixels,187*4,0);
+  Assert.True(Enumerable.Range(0,187*150).Count(index=>pixels[index*4+3]<255)>187*150/2,"小地图不得采样独立的实色底层");
+  var hoverKey=(DependencyPropertyKey)typeof(UIElement).GetField("IsMouseOverPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var pressedKey=(DependencyPropertyKey)typeof(System.Windows.Controls.Primitives.ButtonBase).GetField("IsPressedPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  void CheckButton(Button button)
+  {
+   button.ApplyTemplate();button.UpdateLayout();Assert.Equal(32,button.ActualWidth);Assert.Equal(23,button.ActualHeight);
+   var image=Assert.IsType<Image>(button.Content);var source=Assert.IsType<BitmapImage>(image.Source);Assert.Equal(32,source.PixelWidth);Assert.Equal(23,source.PixelHeight);
+   var bounds=image.TransformToAncestor(button).TransformBounds(new Rect(image.RenderSize));Assert.InRange(bounds.Left,-.01,.01);Assert.InRange(bounds.Top,-.01,.01);Assert.InRange(bounds.Right,31.99,32.01);Assert.InRange(bounds.Bottom,22.99,23.01);
+   var inOwner=button.TransformToAncestor(owner).TransformBounds(new Rect(button.RenderSize));Assert.True(inOwner.Right<owner.ActualWidth&&inOwner.Bottom<owner.ActualHeight);
+  }
+  CheckButton(retract);SaveMenuVisual(host,"minimap-"+theme+"-normal");
+  retract.SetValue(hoverKey,true);Pump();var chrome=(Border)retract.Template.FindName("Chrome",retract);
+  Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush)).Color,Assert.IsType<SolidColorBrush>(chrome.Background).Color);
+  SaveMenuVisual(host,"minimap-"+theme+"-hover");
+  retract.SetValue(pressedKey,true);Pump();Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonPressedBackgroundBrush)).Color,Assert.IsType<SolidColorBrush>(chrome.Background).Color);SaveMenuVisual(host,"minimap-"+theme+"-pressed");
+  retract.SetValue(pressedKey,false);retract.SetValue(hoverKey,false);retract.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+  Assert.Equal(Visibility.Collapsed,map.Visibility);Assert.Equal(Visibility.Visible,expand.Visibility);CheckButton(expand);
+  expand.SetValue(hoverKey,true);Pump();SaveMenuVisual(host,"minimap-"+theme+"-collapsed-hover");expand.SetValue(hoverKey,false);
+  expand.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();Assert.Equal(Visibility.Visible,map.Visibility);Assert.Equal(Visibility.Collapsed,expand.Visibility);
  }
  private static void SaveMenuVisual(FrameworkElement visual,string name)
  {

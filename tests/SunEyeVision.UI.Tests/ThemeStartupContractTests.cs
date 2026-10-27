@@ -25,6 +25,8 @@ public sealed class ThemeStartupContractTests
                 var image=Assert.IsType<DrawingBrush>(dictionary[ThemeKeys.CheckerboardBackgroundBrush]);
                 var workflow=Assert.IsType<DrawingBrush>(dictionary[ThemeKeys.WorkflowCanvasGridBrush]);
                 Assert.Equal(new Rect(0,0,32,32),image.Viewport);Assert.Equal(new Rect(0,0,6,6),workflow.Viewport);Assert.NotSame(image,workflow);
+                Assert.IsType<SolidColorBrush>(dictionary[ThemeKeys.WorkflowCanvasSurfaceBrush]);
+                Assert.Null(Assert.IsType<GeometryDrawing>(Assert.IsType<DrawingGroup>(workflow.Drawing).Children.Single()).Brush);
             }
         }catch(Exception error){failure=error;}});thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(20)));
         if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();

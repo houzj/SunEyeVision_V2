@@ -273,12 +273,12 @@
         </DrawingBrush.Drawing>
     </DrawingBrush>
 
-    <!-- 原件 DiagramPage.xaml + ZoomArea.xaml：6像素线网；独立于图像透明棋盘。 -->
+    <!-- ZoomArea底色与DiagramPage透明网格分层；小地图只采样网格和节点，不采样底色。 -->
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.WorkflowCanvasSurfaceBrush}" Color="#46474A"/>
     <DrawingBrush x:Key="{x:Static base:ThemeKeys.WorkflowCanvasGridBrush}"
                   TileMode="Tile" Viewport="0,0,6,6" ViewportUnits="Absolute">
         <DrawingBrush.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#46474A"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,20,20"/></GeometryDrawing.Geometry></GeometryDrawing>
                 <GeometryDrawing>
                     <GeometryDrawing.Geometry><GeometryGroup><LineGeometry StartPoint="0,10" EndPoint="20,10"/><LineGeometry StartPoint="10,0" EndPoint="10,20"/></GeometryGroup></GeometryDrawing.Geometry>
                     <GeometryDrawing.Pen><Pen Thickness="5" Brush="#404042"/></GeometryDrawing.Pen>

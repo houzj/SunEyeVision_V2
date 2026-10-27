@@ -42,3 +42,17 @@
 ## 未完成与集成下一步
 
 主集成负责总览入口及主界面组装、实际完成事件统计、开根/配置/运行门禁、DocumentIdentity/revision校验、正式坐标命令与历史、整流程复制及位置传入、保存重开和根画布/总览视口分离。先完整接线再统一构建和专用/原回归，暗亮实际WPF全窗检查与用户验收后如实记录。仅本呈现分支不能宣称R15/R16完整生产链已完成。
+
+## 总览模式切换资源补充
+
+集成沿 WorkflowTabs.cs:144 → SetWorkflowIcon 核查发现，ic_全局/ic_单个 是36×36原PNG，并非 WorkflowDrawings.xaml 矢量。每组仅normal/disable真实文件，hover/click按恢复件实际代码回退normal。本字典新增八个 `ic_全局normalDrawingImage` 等 ImageSource 类型 BitmapImage 键，统一供集成四态模板引用，键名 DrawingImage 仅沿已约定消费键，不表示资源实际类型是DrawingImage；消费者应按ImageSource使用。新增原PNG四张，未描摹伪造矢量。原文件身份如下：
+
+- `D:\MyWork\REA逆向测试\analysis\ui-assets\wpf\ic_全局_normal.png` SHA256 `bdaf3231b6b7ff2814800d8506aecf528fd1e9e9f0d193e20b9f4713bb388e33`
+
+- `D:\MyWork\REA逆向测试\analysis\ui-assets\wpf\ic_全局_disable.png` SHA256 `4aa836dde13ec5dfb09a094716eabe04191f760b6fc4f03c887199de8e819bc9`
+
+- `D:\MyWork\REA逆向测试\analysis\ui-assets\wpf\ic_单个_normal.png` SHA256 `8649a72d069624159f1b722b04d2dd62fa2d245e50f655ce952cfd97a3870a63`
+
+- `D:\MyWork\REA逆向测试\analysis\ui-assets\wpf\ic_单个_disable.png` SHA256 `cfb927894b9b0db7be7059562c2a4d7026a9414697c0e49d0a31357838915eaf`
+
+静态XML解析成功，新增八个ImageSource键及四个pack资源路径存在；没有子worktree构建，实际WPF加载由主集成同版Release验。

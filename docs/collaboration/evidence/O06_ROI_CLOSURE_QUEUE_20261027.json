@@ -1,0 +1,93 @@
+{
+  "scope": "当前原件与正式合同只读核对，供下一批直接实施；不是已迁移、构建、VM动态或用户验收证据",
+  "baseline": "b12656d8 plus current native Sector checkpoint delta",
+  "sectorRing": {
+    "source": "原SectorRingROIStack、ROISelecter.GetRoiModelType:1860-1873、Apps.Data NormalizedCircleROIModel(02000026)/CircleROIModel(02000027)，详见既有原ROI静态取证及本批交接",
+    "implementation": [
+      "激活原SectorRingROIStack XAML/cs pending，四项CX/CY/Radius/MinRadius；原常量10000复用，不激活HikCoverCircle2",
+      "RoiResources加原RingRoiBtnStyle/SectorRingROI模板/原circle图标；原RoiSelectControl加SectorRing分支",
+      "现通用Session/Projection支持完整annulus/INormalizedCircleROI；圆环不是Sector360，不吞部分角区间",
+      "CircleROI五个几何/布局setter保Binding；旧3个部件MouseDown退订、记录实际捕获部件、正常MouseUp先清手柄再释放capture、finally清拖动、失捕取消；Refresh复用原布局算法",
+      "通用Viewport加原Circle样式/Refresh/Cancel/LostCapture分支，Editor复用四字段链，不复制视口"
+    ],
+    "remaining": "全部尚未实施；半径联动不能放宽零厚度正式几何拒绝门禁"
+  },
+  "polygon": {
+    "source": "原PolygonROIStack/SliderArrangePoint/PolygonROI/PointListRightFixdMultiplicationConverter",
+    "implementation": [
+      "Point模板入口ToBtn，不是CBox；T1初始化走原Point专用链；几何层校验PointSource MultiBinding，不是假StartValue外绑定",
+      "顶点租约=(projection实例,topologyGeneration,index,axis)，按原顺序替换Hash定位；同一Session/帧/选中对象；拓扑增删重排/换集合使旧租约失效",
+      "单一正式RecordValue几何，临时归一化ObservableCollection由原参数和图像共享；普通坐标Replace不换拓扑代次",
+      "原Recycling栈不能要求所有2N输入视觉实现；逻辑raw按有效租约保存，未编辑/未实现顶点保权威几何",
+      "修原converter换源退订/整形事件及原PolygonROI Hash写入；Enter/滚动/关层/回收按顶点租约处理"
+    ],
+    "popupDependencies": [
+      "PopupWithTopmost目前匿名Window.LocationChanged不退订，目标尚未Loaded无补绑；改存target/owner具名事件，换根/关闭/卸载/owner关闭释放；保原Opened语义",
+      "SliderArrangePoint从实际ToBtn所在祖先找并存ScrollViewer；开关层、卸载、换模板直接退保存实例；原偏移超过3关闭规则保留",
+      "UpdateWindow的Auto尺寸转int未证安全；原句柄可用时仅改Z序的NOSIZE/NOMOVE/NOACTIVATE，不能传NaN尺寸"
+    ]
+  },
+  "drawingInheritance": {
+    "source": "安装Module(sp)/Group.xml:42-110,1308-2118,2489-2603,2621起；原Radio模板pending:1336-1447",
+    "contract": "同角色的正式来源字段映射、模式/OutputReference、本地Items与同Scope/Revision/Frame由宿主冻结读取；accept从几何变更扩展为字段集合+可选几何的一次提案，先完整验证再原子接纳。不是新持久化来源业务模型。",
+    "boundaries": [
+      "原屏蔽string多边形来源与检测矩形/环形类型不同；图像型为IMAGE，不能套Region资源",
+      "退出绘制不仅隐藏还拒编辑；退出来源分支失效C07请求与Popup；模式/来源更改revision取消旧候选",
+      "当前RegionSourceModeSelector手工Radio缓存不能当最终原件；本批不接Blob字段或SDK"
+    ]
+  },
+  "c01Host": {
+    "source": "原Apps.XmlUI ParamListView/ParamUserControl/globalresources/LeftRightControl；原SHA由只读核收给出，激活前再次独立复核",
+    "implementation": [
+      "先原ParamListView行组滚动资源及布局DP(ChildLeftWidth/ChildMargin/ChildHeaderMargin/Instance)，再恢复LeftRightControl真实祖先；普通ItemsControl缺ChildMargin",
+      "ParamUserControl/UserTempConverter取消按业务程序集隐式查资源和全局缓存，使用当前实例明确原模板闭包；缺模板明确失败",
+      "公共行/组非视觉投影承接EnableA/CustomVisibleA/MyItemState/命令/GroupName，不复制VM NameValueItem业务",
+      "已核实际fallback页宿主为ParamsTabUserControl+原TabControlStyle(PART_SelectedContentHost)，不得激活另一ParamsTabControlPanal空holder；完整固定底栏保留。"
+    ],
+    "resolvedEntry": {
+      "chain": "ProcedureConfigControl.xaml.cs:739 fallback ParamsTabControlBase -> ParamsConfigControlBase.xaml:5 -> Apps.XmlUI.ParamsTabUserControl -> TabControlFx + original TabControlStyle PART_SelectedContentHost",
+      "notTheEntry": "ParamsTabControlPanal is a different original resource with empty PART_ItemsHolder; no production consumer found in checked recovered tree. Do not guess replacement with TabControlEx. Dynamic external resource overrides remain unproven.",
+      "adaptation": "ParamsTabUserControl code has an unused private TabControlEx cast inconsistent with actual Fx XAML; remove only that invalid unused lookup if necessary, do not replace the original visual type.",
+      "filesRoot": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled",
+      "sourceHashesRecheckedByRoot": {
+        "Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml": "521817A08E66898BA9ACBCCE6753716713149C878270C524E1E3CE9550F3C8C7",
+        "Apps.XmlUI/Apps.XmlUI/ParamsTabUserControl.xaml.cs": "895EB5C20F494CBA01E919B0C40722296A8CC3AD975DDBDA6040059EEBC2F2BD",
+        "Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml": "FB05637D2C3BC8B556D8C0C095D852DDA97FB18D9414FBC2FAFE987932913027",
+        "VMControls.WPF/VMControls.WPF/ParamsTabControlBase.xaml": "30AE71B37D6D0FD6DEC5CF584763E051B9FA61C6493B8BB9A82037251DC3621D",
+        "VMControls.WPF/VMControls.WPF/ParamsConfigControlBase.xaml": "48E61504B406D8FDE65E8F20539ACC6780871132CD684288D72668B7BDC4E409"
+      },
+      "evidence": "VMControls.WPF static REA ev_3eb1fd75ae8c1c32c6ae332a1cf0b6d1ea816b3794cf22eee230719d5af4dcd6; direct targeted installed-DLL ILSpy and recovered resources; no VM runtime executed"
+    }
+  },
+  "designScene": {
+    "implementation": [
+      "当前Plugin.Wpf无ROI Design入口；两个空构造都不Bind，单d:DataContext无效",
+      "真实NativeRoiScene XAML仅组合现Editor/Viewport并同Session Bind；设计attached fixture经DesignerProperties注入正式合同样本",
+      "SelectedSampleIndex切稳定形状选择、ExpandParameters驱动原expand；不加运行时页签，不重建Session/Frame",
+      "Design图像仅Contracts接口的不可变样本像素/Domain；不引用Runtime/算法/Blob，不复制业务模型/默认值",
+      "root/pixel/domain reader各自持样本状态，父释放后已取reader存活，释放reader全读接口拒绝；域/帧/布局/行padding按正式合同验证",
+      "真实VS无主程序打开、切选择/展开可见真实图像和原参数仍必须用户验收，自动无Application资源检查不可代签"
+    ]
+  },
+  "nextPriority": [
+    "SectorRing original full chain",
+    "Polygon/Point and popup lifecycle",
+    "ParamListView and same-chain design scene",
+    "Drawing/inheritance/pose integration contract and original radio"
+  ],
+  "multiObjectActions": {
+    "originalEntry": "ContainerItem.xaml Ctrl+C/Delete -> mROIView/ImageViewItemsPageStyle commands; ImageViewBox.xaml Ctrl+V and Lang_Paste context menu; selection via ListViewItem/ROIControlFrame.IsSelected and RoiSelectedCommand",
+    "gap": "ImageViewBox RemoveROI/PasteROI currently mutate list before callbacks; current ProjectionRows is read-only and Session accepts geometry replace only. Do not expose writable rows. Add pre-mutation operation request and host acceptance snapshot.",
+    "hostContract": "expected Stamp + Create/Replace/Delete/Paste + Group/stable target Guid + candidate geometry/source identity; host handles validation/capacity/new IDs, successful new snapshot before selection. Original hash-based clone/group lookup cannot be business identity.",
+    "capacity": "Blob Mul/Max16 XML; not a control-library constant. Original CanCopy/CanDelete based on SelectType/FullScreenEnable.",
+    "undo": "No undo entry in checked original control sources; not proof vendor lacks it. Undo/redo history belongs to host transaction, no duplicate UI history stack."
+  },
+  "assistGroup": {
+    "source": "Group.xml SHA9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc; Blob AlgorithmTab117-118 -> AssistGroup243",
+    "fields": "Assist0 boolean false; SelectWay0信息/1点/2坐标; CorrectInfo FIXTURE; OriginPoint/RunPoint POINT; BaseX/Y/Angle/ScaleX/Y and runtime equivalents all float-filtered ButtonSelecter references, not numeric sliders",
+    "template": "RadioSelecter3 original five fixed radio slots; only three EnumEntry, null slots collapse. Reuse C07 original ButtonSelecter trees/expanded window.",
+    "contract": "Assist and ROI share host edit root and Stamp; one complete mode/reference/local-geometry proposal; no transformed-coordinate writeback into authoritative ROI. Current input.pose final Affine2D cannot persist full configuration.",
+    "originalInconsistency": "Clear target FixtureInitPoint differs from actual OriginPoint field; do not copy ineffective string lookup.",
+    "remaining": "Actual native transform direction/order/zero-scale and runtime clearing semantics unproven; do not infer matrix formulas from Group.xml."
+  }
+}

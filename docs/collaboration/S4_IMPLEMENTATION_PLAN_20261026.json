@@ -7073,7 +7073,8 @@
       "C07候选：UI001类型别名编译失败；FieldEditing047测试模式编译失败，048/049尾部草稿因查询服务门禁误拒绝，050集合来源错误路径未预检，均保留证据并修后重新验证。",
       "FullChain092检查宿主Control方法名遮蔽Control类型，093未切输入页即找原Popup，均为测试修正；094修后整链7组通过，无产品重建。检查点首次审计发现旧Catalog依赖SHA，按已审查源码增量同步后通过。",
       "C05/C06组基础首版自动用例未断言右端及后续监听到达，静态复核定位异常截断；补齐通知及断言后重建，001成绩留作历史，不覆盖002。",
-      "Window042=24过1失败：裁图辅助错误使用主窗祖先；043=25过1失败：测试未区分默认方式Checkbox与树Checkbox。FieldEditing061选择刷新前旧节点被身份门禁拒绝，现改选真实当前树后复验；原日志全部保留。"
+      "Window042=24过1失败：裁图辅助错误使用主窗祖先；043=25过1失败：测试未区分默认方式Checkbox与树Checkbox。FieldEditing061选择刷新前旧节点被身份门禁拒绝，现改选真实当前树后复验；原日志全部保留。",
+      "C08 Sector及数值文字集中批：059—069的资源/集合/捕获/360渲染与F2格式误接纳、诊断宿主编译失败均保留；最终070及本批六轨通过。细节见nativeSectorSceneCandidate，完整C08/VS/VM人工仍未完成。"
     ],
     "manualReviewFreeze": {
       "status": "本批集中修改、构建与回归已结束；用户实际检查期间不重建或替换程序集",
@@ -7362,7 +7363,21 @@
       "sourceEvidence": "Catalog新增C08.original-box-scene-candidate及27原来源记录；NumCompare源自安装件定向静态反编译，SHA/MVID/Token/IL摘要见O06_BOX_NUM_COMPARE_SOURCE_20261027.json，未运行VM。Apps.XmlUI和VM.PcUI数值家族未混用。",
       "remaining": "原完整多形状/绘制/继承/复制删除撤销、真实鼠标拖动旋转顶点、独立VS同一视图样例、Frame+scene revision宿主集成、完整主窗口/显示组合与命名治理仍缺；矩形DP/命令自动验证不冒称真实指针拖动或VM/用户人工验收。",
       "nextEvidence": "O06_ROI_NEXT_COMPOSITIONS_STATIC_20261027.json：Sector原model四角度CIL及缓存副作用、GetIndexConverter安装件IL、Group.xml绘制继承与Radio原模板/Point编辑器已核；主线核Apps.Data与Group.xml安装件SHA，尚未实施后续组合。",
-      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_BOX_CHECKPOINT_20261027.json（本批6轨同源，不套历史9轨；760发布项及当前加载SHA以检查点实测为准）"
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_BOX_CHECKPOINT_20261027.json（本批6轨同源，不套历史9轨；760发布项及当前加载SHA以检查点实测为准）",
+      "historicalBoundary": "此前Box专属路径为该历史批次状态；当前已被nativeSectorSceneCandidate的公共NativeRoi路径替代，不能将旧Box成绩套当前产物。"
+    },
+    "nativeSectorSceneCandidate": {
+      "status": "第一阶段继续，Box/Sector子集通过本批六轨；完整C08未通过，第二阶段未准入。",
+      "baseline": "b12656d8/main；主线唯一产品写者，三路逐控件只读核证；用户BlobParameterEditor.xaml页索引2保留未提交。",
+      "implementation": "NativeRoiSession/Projection/Editor/Viewport取代Box专属入口；原Box五项与原Sector六项、同原expand/ROIListStyle、原图像/手柄共享同一个按Group+Guid定位的投影与物理帧。Sector用显式sector类型、内外半径按W、Y按H、正向角跨度与完整360语义，不把annulus或原Circle混作扇形。",
+      "contract": "宿主持唯一accepted几何，快照含ScopeId/单调Revision/Frame；accept必须原子比较expected stamp，接纳回执须版本前进并包含目标完整几何，失效/重入/换根拒旧候选。观察者异常完成关键收尾后传播；宿主在可失败通知前返回接纳，不能由UI缓存替代原子合同。完整来源模式/引用提案合同仍待扩展和生产接入。",
+      "resources": "原SectorROIStack与六个Apps.XmlUI SliderArrangeFloat激活，原选择图标/模板和NormalizedSectorROI局部资源闭包；原受绑定属性保留表达式、换模板退旧手柄事件、捕获失败/丢失取消。原扇形完整360恢复件出现径向线，使用原完整圆环的双EllipseGeometry EvenOdd绘图基元修复该渲染状态，保留Sector类型和六项参数。此为本方迁移修复，不称VM原运行时缺陷。",
+      "numericFix": "页面隐式TextBox MinHeight=30污染原内层，已隔离两套NumericControl及NumericUpDown内部叶样式；三种真实文字区域边界检查及实际PNG均已核。原0.00与F2中点格式不同，现基线读真实Binding.StringFormat，320.125提交、重复捕获及关闭Popup不再量化/重复写入。",
+      "verification": "UI011=0错误/6645警告/101.16秒，全量Release002=0错误/6655警告/70.75秒；Window070=36、FieldEditing064=31、RuntimeEditor044=10、DesignTime020=28、FullChain103=7、Components188=9；正式EXE exit0/22工具。检查点核20源码增量、760发布项、174加载SHA和本批六轨源码，包含用户未提交XAML，不套历史九轨。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_SECTOR_CHECKPOINT_20261027.json；O06_NUMERIC_TEXT_LAYOUT_FIX_20261027.json。Catalog C08共33源文件、5本方依赖，全部104条原来源SHA复核；本方适配不冒称厂商源码。",
+      "failures": "Window059—064暴露非泛型只读行集合不被原ROIItemsPage识别、模板前引用/错放、捕获失败残留、360径向线及重复接纳；部分测试夹具观察者在Dispose再次抛错、library-only产物清单SHA被正确拒绝。后续065—069定位到F2/0.00误写；其中一次诊断用错RecordValue.CopyValues仅测试宿主编译失败。最终070才36组通过。全部日志保留。",
+      "remaining": "SectorRing/Polygon原栈与完整图形交互、绘制/继承/位姿、多选/复制删除撤销、独立无Application同真实链Design场景、正式ParamListView行宿主及页签、生产原子stamp集成、VM同态/真实指针/用户VS验收、职责命名治理未完成。自动设计检查不代VS；捕获环境失败收尾不代真实物理拖动。",
+      "next": "先SectorRing四字段及原CircleROI完整双圆环，再Polygon/Point租约与拓扑代次；同时按优先队列核原Radio与ParamListView/设计场景闭包。缺原证据定向补，禁止本方近似皮肤或旧SDK视觉后备。"
     }
   },
   "vmFrameworkArchitectureReference": {

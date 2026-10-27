@@ -1,5 +1,27 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 C08公共ROI与原Sector集中批封存（第一阶段仍未完成）
+
+- 本轮承接上一轮已验证的数值文字修复，属于明确进展。基线b12656d8/main；主线唯一产品写者，三路逐控件只读核证及自动补位。用户BlobParameterEditor.xaml索引2未改未提交；Blob业务重组仍冻结。
+- 公共NativeRoiSession/Projection/Editor/Viewport替代Box专属类；原Box与原Sector同一个Group+Guid投影及固定物理帧。ScopeId/Revision/Frame快照和expected stamp原子接纳合同，读/重绑/观察者异常/只读集合完整安装门禁已补；生产宿主原子比较仍需第二阶段真实接入，不冒称已集成。
+- 原Sector六项、原图标/参数栈/局部资源与原NormalizedSectorROI已接；完整360渲染恢复件径向线由原双Ellipse基元局部修复，保Sector类型/六参数，不称VM实机固有bug。几何/布局保绑定，捕获失败/丢失取消及旧模板事件退订已覆盖，物理指针未代签。
+- 最终沿用UI011/全量Release002零错误，不重建。Window070=36、FieldEditing064=31、RuntimeEditor044=10、DesignTime020=28、FullChain103=7、Components188=9，同一正式产物；实际EXE探针exit0/22工具。检查点O06_BLOB_NATIVE_SECTOR_CHECKPOINT_20261027.json核20源码增量、760发布项、174加载SHA、本批六轨源码；包括用户XAML增量，不套历史九轨。
+- Catalog现33个C08原源/5本方依赖，全部104条原源SHA复核。原O06增加nativeSectorSceneCandidate，701唯一锚点、两次生成SHA相同。全部失败日志保留，完整C08/VS/VM人工未通过；不以自动设计资源28组代VS同图形场景。
+- 三路核收SectorRing四字段原Circle圆环（非Sector360）、Polygon/Point槽位租约及Popup退订、绘制/继承一次提案与C01 ParamListView闭包/真实Design入口；具体存O06_ROI_CLOSURE_QUEUE_20261027.json。下一优先SectorRing→Polygon，再原行宿主/Design及绘制继承；不扩大到非Blob全库。
+- 本轮验证句柄均结束。准备有意义中文本地检查点，不推送；本轮仅资源清单/方案封存与关联回归，无新程序集构建。后续实际用户设计器检查期间继续避免构建；未收到人工通过，不签第一阶段准入。
+
+
+## 2026-10-27 用户反馈：数值文字偏下/裁切的公共控件修复
+
+- 基线仍为 b12656d8；未提交、未推送。当前工作区另有 C08 Sector/公共 ROI 会话集中候选，不能把本条当作整个 C08 完成。BlobParameterEditor.xaml 用户页索引保持不动。
+- 已确认 Plugin.Wpf/Themes/Generic.xaml 的隐式 TextBox MinHeight=30 污染原数值内层（原边距后高度不足30）。AppsXmlUi、PcUi 两套 NumericControl 的 ValueText，以及 PcUiControls/NumericUpDown 的 tbValue 显式隔离隐式样式；保留原模板、边距、绑定和事件。单值/双端范围/Box与Sector参数共享此修复。
+- 新增三种实际内部编辑框的布局断言（最小高度、文字区域落在控件内、字体可容纳）。WindowPresentation070 共36组通过，FieldEditing064 共31组通过；实际 native-sector-scene.png 已查看，六项文字完整居中。颜色/订阅/范围相关现有回归通过，不宣称所有控件和DPI组合均完成人工验收。
+- 同时定位 Sector 重复接纳：F2 与原 StringFormat=0.00 在320.125临界值的格式化不同，Popup关闭误将320.13再写回；NativeRoiEditor现读取真实原绑定StringFormat作为显示基线。三次无变化捕获及关闭弹层不再追加写入。
+- 最终 UI011 零错误6645警告101.16秒；全量 Release002 零错误6655警告70.75秒。日志均在 Release/_validation/O06-RoiCore-20261026/。正式程序 numeric-layout-toolbox-probe.json exit0，22工具。
+- 失败保留：Window065/后续定位尝试的额外接纳；一次诊断测试误用RecordValue.CopyValues导致测试宿主编译失败（产品无此编译错误），已移除临时诊断。最终Window070为当前最终程序集，不能套前候选成绩。
+- 本条验证已结束；不再为本次文字反馈重建，方便用户VS检查。真实VS设计器、VM同态人工及物理指针未代签。整个Sector批次目录SHA/原方案/六轨检查点封存仍待主线后续统一完成；本次只证明两轨和当前正式程序准入。
+
+
 ## 2026-10-27 C08原Box同帧组合集中批（自动验证已通过）
 
 - 基线fa6200a5/main；主线唯一产品写者，三路只读完成Box渲染/数值/生命周期核证后已自动补位Sector、Polygon及绘制/继承组合。第一阶段继续，Blob业务重组冻结。

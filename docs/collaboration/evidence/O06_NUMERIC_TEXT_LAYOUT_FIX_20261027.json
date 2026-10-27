@@ -1,0 +1,18 @@
+{
+  "scope": "用户数值文字偏下/裁切反馈；不替代完整控件库验收",
+  "cause": "隐式TextBox MinHeight=30超出原件内部可用高度；内部编辑框隔离页面隐式样式",
+  "sourceHashes": {
+    "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/NumericControl.xaml": "2bb477173083cfc5bb02301b71716c8d9065b6921e35328ce7fd9aed8aca87c8",
+    "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml": "483798f31b271a11779da6992aaec57325ae32842cafe1a7c0c21602a34dcffe",
+    "src/Plugin.Wpf/Controls/Native/Numeric/PcUiControls/NumericUpDown.xaml": "18d08319d9fd1d310fa6a5e9082d918759e346ca4ff3547a60724b8d7b37a435",
+    "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs": "9d2a0927a2d37c313ce86b0c878a0ab3e6c52710629b21acc5b57ecaee92c64e",
+    "scripts/verification/O06WindowPresentationCases.cs": "8c8bdacf05184d71c6f5f1f0fdb08db26f263a78de4683749b0f79ddd1671f60"
+  },
+  "windowReceipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-070/receipt.json",
+  "fieldReceipt": "Release/_validation/S4-20261025/FieldEditing/attempt-064/receipt.json",
+  "uiLog": "Release/_validation/O06-RoiCore-20261026/blob-native-sector-ui-011.log",
+  "releaseLog": "Release/_validation/O06-RoiCore-20261026/blob-native-sector-release-002.log",
+  "probe": "Release/_validation/O06-RoiCore-20261026/numeric-layout-toolbox-probe.json",
+  "manual": "已查看实际WPF截图；VS设计器用户验收未完成",
+  "remaining": "整体C08仍未完成；批次Catalog SHA、完整封存待后续统一处理"
+}

@@ -52,7 +52,7 @@
       <ColumnDefinition Width="1*" />
       <ColumnDefinition Width="16" />
     </Grid.ColumnDefinitions>
-    <TextBox Name="tbValue" HorizontalAlignment="Stretch" Template="{DynamicResource TextBoxBaseControlTemplate1}" Height="{Binding Height, ElementName=ucNumericUpDown}" Grid.ColumnSpan="{Binding ShowButtons, Converter={StaticResource BtnShowGridConverter}}" />
+    <TextBox Name="tbValue" Style="{x:Null}" HorizontalAlignment="Stretch" Template="{DynamicResource TextBoxBaseControlTemplate1}" Height="{Binding Height, ElementName=ucNumericUpDown}" Grid.ColumnSpan="{Binding ShowButtons, Converter={StaticResource BtnShowGridConverter}}" />
     <Border BorderBrush="#CCCCCC" BorderThickness="0,1,1,1" Grid.Column="1">
       <Grid Background="#FFFFFFFF" Visibility="{Binding ShowButtons, Converter={StaticResource BtnShowConverter}}">
         <Grid.RowDefinitions>

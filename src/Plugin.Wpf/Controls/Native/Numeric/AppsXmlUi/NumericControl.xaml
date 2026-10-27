@@ -20,7 +20,7 @@
           <ScaleTransform ScaleY="1" CenterX="5" ScaleX="{Binding ElementName=UserControl, Path=SymbolDir}" />
         </UIElement.RenderTransform>
       </Grid>
-      <TextBox Name="ValueText" Background="#00FFFFFF" Margin="7,4,2,3" Grid.Column="1" input:InputMethod.IsInputMethodEnabled="False" BorderThickness="0,0,0,0" VerticalContentAlignment="Center" IsReadOnly="{Binding ElementName=UserControl, Path=IsReadOnly}" Foreground="{Binding ElementName=UserControl, Path=Foreground}" BorderBrush="{x:Null}" Text="{Binding Path=Text, ElementName=UserControl, UpdateSourceTrigger=LostFocus}" MouseWheel="ValueText_MouseWheel" />
+      <TextBox Name="ValueText" Style="{x:Null}" Background="#00FFFFFF" Margin="7,4,2,3" Grid.Column="1" input:InputMethod.IsInputMethodEnabled="False" BorderThickness="0,0,0,0" VerticalContentAlignment="Center" IsReadOnly="{Binding ElementName=UserControl, Path=IsReadOnly}" Foreground="{Binding ElementName=UserControl, Path=Foreground}" BorderBrush="{x:Null}" Text="{Binding Path=Text, ElementName=UserControl, UpdateSourceTrigger=LostFocus}" MouseWheel="ValueText_MouseWheel" />
       <Grid Grid.Column="2">
         <Grid.RowDefinitions>
           <RowDefinition Height="*" />

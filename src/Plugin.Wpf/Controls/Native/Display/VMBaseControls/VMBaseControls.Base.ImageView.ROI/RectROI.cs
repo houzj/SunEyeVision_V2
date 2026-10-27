@@ -21,6 +21,7 @@ public class RectROI : ROIControlBase
 {
 	protected static RectROISubstitute ROISubstitute;
     private FrameworkElement? _interactionHandle;
+    internal FrameworkElement? InteractionHandle=>_interactionHandle;
 
 	protected static Func<Rect, double, ROIItemsPage, object> GetDataFunc;
 
@@ -150,7 +151,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(RectWidthProperty, value);
+			SetCurrentValue(RectWidthProperty, value);
 		}
 	}
 
@@ -162,7 +163,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(RectHeightProperty, value);
+			SetCurrentValue(RectHeightProperty, value);
 		}
 	}
 
@@ -174,7 +175,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(RectCenterPointProperty, value);
+			SetCurrentValue(RectCenterPointProperty, value);
 		}
 	}
 
@@ -186,7 +187,7 @@ public class RectROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(RectAngleProperty, value);
+			SetCurrentValue(RectAngleProperty, value);
 		}
 	}
 
@@ -302,7 +303,10 @@ public class RectROI : ROIControlBase
 
 	public override void OnApplyTemplate()
 	{
-		base.OnApplyTemplate();
+        CancelInteraction();
+        foreach(var element in new FrameworkElement?[]{move,rect1,rect2,rect3,rect4,left,top,right,bottom,topLeftRotate,topRightRotate,bottomLeftRotate,bottomRightRotate})
+            if(element is not null)element.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
+        base.OnApplyTemplate();
 		if (!IsFullScreen)
 		{
 			move = Template.FindName("move", this) as Grid;
@@ -384,7 +388,7 @@ public class RectROI : ROIControlBase
         _interactionHandle=frameworkElement;
 		clickPoint = e.GetPosition(parent);
 		this.GetParent<ListViewItem>().RaiseEvent(e);
-		frameworkElement.CaptureMouse();
+		if(!frameworkElement.CaptureMouse()||!ReferenceEquals(Mouse.Captured,frameworkElement)||!ReferenceEquals(_interactionHandle,frameworkElement)){CancelInteraction();return;}
 		ImageViewBox imageViewBox = this.GetParent<ImageViewBox>();
 		if (imageViewBox != null)
 		{
@@ -559,8 +563,8 @@ public class RectROI : ROIControlBase
 		FrameworkElement frameworkElement = sender as FrameworkElement;
 		frameworkElement.MouseMove -= Move_MouseMove;
 		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-		frameworkElement.ReleaseMouseCapture();
-        _interactionHandle=null;
+		_interactionHandle=null;
+        frameworkElement.ReleaseMouseCapture();
 		if (frameworkElement.Name == "move")
 		{
 			frameworkElement.MouseWheel -= userControl_MouseWheel;

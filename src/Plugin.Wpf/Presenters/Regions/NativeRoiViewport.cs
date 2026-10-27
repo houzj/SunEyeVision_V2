@@ -12,28 +12,30 @@ using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 /// <summary>The original ImageViewBox and normalized ROI handles over the same objects as the parameter stack.</summary>
-public sealed class NativeBoxRoiViewport : Decorator,IDisposable
+public sealed class NativeRoiViewport : Decorator,IDisposable
 {
-    private NativeBoxRoiSession? _session;
+    private NativeRoiSession? _session;
     private NativeRoiImageFrame? _frame;
     private Action? _changed;
     private long _generation;
     private bool _disposed,_projecting;
     public ImageViewBox NativeView {get;}=new();
-    public NativeBoxRoiViewport()
+    public NativeRoiViewport()
     {
         foreach(var resource in new[]{"Themes/Native/OriginalTheme.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/roiitemspagestyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml",
-            "Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml"})
+            "Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
+            "Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml"})
             NativeView.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/"+resource,UriKind.Relative)});
         Child=NativeView;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
+        NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
         PreviewMouseDown+=OnPreviewMouse;PreviewKeyDown+=OnKey;
     }
-    public void Bind(NativeBoxRoiSession? session)
+    public void Bind(NativeRoiSession? session)
     {
-        Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeBoxRoiViewport));
+        Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeRoiViewport));
         var generation=++_generation;var previous=_session;_session=null;
         if(previous is not null&&_changed is not null)previous.Changed-=_changed;
         _changed=null;
@@ -76,7 +78,13 @@ public sealed class NativeBoxRoiViewport : Decorator,IDisposable
             {
                 // Select the original base template explicitly for normalized derived native controls.
                 roi.SetResourceReference(FrameworkElement.StyleProperty,typeof(RectROI));
-                roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeBoxRoiProjection.Enabled)));
+                roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
+                roi.ApplyTemplate();roi.RefreshGeometryLayout();
+            }
+            foreach(var roi in Descendants<SectorROI>(NativeView))
+            {
+                roi.SetResourceReference(FrameworkElement.StyleProperty,typeof(SectorROI));
+                roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
                 roi.ApplyTemplate();roi.RefreshGeometryLayout();
             }
             foreach(var list in Descendants<ListView>(NativeView).Where(list=>ReferenceEquals(list.ItemsSource,_session.Items)))
@@ -87,9 +95,19 @@ public sealed class NativeBoxRoiViewport : Decorator,IDisposable
     private void OnKey(object sender,KeyEventArgs args)
     {if(args.Key==Key.Escape){CancelInteraction();_session?.CancelPending();args.Handled=true;}}
     private void CancelInteraction()
-    {foreach(var roi in Descendants<RectROI>(NativeView))roi.CancelInteraction();}
+    {
+        NativeRoiCallbacks.Run(Descendants<RectROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)
+            .Concat(Descendants<SectorROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)));
+    }
     private void OnPreviewMouse(object sender,MouseButtonEventArgs args)
     {if(_session?.PrepareEditor()!=true)args.Handled=true;}
+    private void OnLostCapture(object sender,MouseEventArgs args)
+    {
+        if(_disposed)return;
+        if(!Descendants<RectROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
+           !Descendants<SectorROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
+        NativeRoiCallbacks.Run([CancelInteraction,()=>_session?.CancelPending()]);
+    }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {if(!ReferenceEquals(args.OriginalSource,this))return;NativeRoiCallbacks.Run([()=>_session?.CancelPending(),ReleaseFrame]);}
     private void ReleaseFrame()
@@ -101,6 +119,7 @@ public sealed class NativeBoxRoiViewport : Decorator,IDisposable
     {
         if(_disposed)return;_disposed=true;_generation++;
         Loaded-=OnLoaded;Unloaded-=OnUnloaded;PreviewMouseDown-=OnPreviewMouse;PreviewKeyDown-=OnKey;
+        NativeView.RemoveHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture));
         var previous=_session;_session=null;
         if(previous is not null&&_changed is not null)previous.Changed-=_changed;_changed=null;
         NativeRoiCallbacks.Run([()=>previous?.CancelPending(),ReleaseFrame,()=>NativeView.RoiSelectedCommand=null,()=>Child=null]);
@@ -110,12 +129,12 @@ public sealed class NativeBoxRoiViewport : Decorator,IDisposable
         for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)
         {var child=VisualTreeHelper.GetChild(root,i);if(child is T match)yield return match;foreach(var nested in Descendants<T>(child))yield return nested;}
     }
-    private sealed class SelectionCommand(NativeBoxRoiViewport view):ICommand
+    private sealed class SelectionCommand(NativeRoiViewport view):ICommand
     {
         public bool CanExecute(object? parameter)=>!view._disposed&&view._session?.IsCurrent==true;
         public void Execute(object? parameter)
         {
-            if(CanExecute(parameter)&&parameter is RoiWithTagEventArgs {Roi:NativeBoxRoiProjection item}&&view._session!.Owns(item))
+            if(CanExecute(parameter)&&parameter is RoiWithTagEventArgs {Roi:NativeRoiProjection item}&&view._session!.Owns(item))
                 {view._session!.Select(item.Group,item.Id);view.OnChanged();}
         }
         public event EventHandler? CanExecuteChanged{add{}remove{}}

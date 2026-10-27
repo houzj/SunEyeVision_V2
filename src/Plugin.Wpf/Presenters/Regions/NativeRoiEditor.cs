@@ -13,12 +13,12 @@ using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 /// <summary>Original Box selector branch, expand namescope and five-field parameter stack.</summary>
-public sealed class NativeBoxRoiEditor : Decorator,IDisposable
+public sealed class NativeRoiEditor : Decorator,IDisposable
 {
     private sealed record Input(Numbers.SliderArrangeFloat View,Numbers.NumericControl Leaf,TextBox Text)
     {internal string Baseline="";internal string? Raw;}
     private readonly List<Input> _inputs=new();
-    private NativeBoxRoiSession? _session;
+    private NativeRoiSession? _session;
     private IDisposable? _registration;
     private bool _disposed,_projecting,_committing;
     private long _generation;
@@ -29,14 +29,14 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
     public RoiSelectControl NativeView {get;}=new();
     public string Error {get;private set;}="";
     public bool HasInvalidText=>Error.Length!=0;
-    public NativeBoxRoiEditor()
+    public NativeRoiEditor()
     {
         Language=XmlLanguage.GetLanguage("en-US");Child=NativeView;
         NativeView.LayoutUpdated+=OnLayout;PreviewKeyDown+=OnKey;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
     }
-    public void Bind(NativeBoxRoiSession? session)
+    public void Bind(NativeRoiSession? session)
     {
-        Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeBoxRoiEditor));
+        Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeRoiEditor));
         _resume?.Abort();_resume=null;_savedRaw=null;_suspended=false;_registration?.Dispose();_registration=null;
         if(_session is not null)_session.Changed-=Project;
         _session=session;
@@ -54,7 +54,7 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
             NativeView.ImageWidth=session?.ImageWidth??0;NativeView.ImageHeight=session?.ImageHeight??0;
             NativeView.DataContext=session is null?null:new Context(this,session,_generation,session.CurROIData);
             NativeView.ApplyTemplate();NativeView.UpdateLayout();AttachInputs();
-            foreach(var input in _inputs)input.Baseline=input.Text.Text;
+            foreach(var input in _inputs)input.Baseline=DisplayBaseline(input);
         }
         finally{_projecting=false;}
     }
@@ -103,7 +103,7 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
         {
             view.ApplyTemplate();var leaf=view.EnsureTemplateInputs().Left;
             var text=(TextBox)leaf.FindName("ValueText");
-            var input=new Input(view,leaf,text){Baseline=text.Text};_inputs.Add(input);
+            var input=new Input(view,leaf,text);input.Baseline=DisplayBaseline(input);_inputs.Add(input);
             text.TextChanged+=OnText;leaf.Loaded+=OnLeafLoaded;
         }
     }
@@ -118,20 +118,22 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
         var input=_inputs.SingleOrDefault(input=>ReferenceEquals(input.Text,sender));
         if(input is not null&&input.Text.IsKeyboardFocused){input.Raw=input.Text.Text==input.Baseline?null:input.Text.Text;Error="";}
     }
+    private static string DisplayBaseline(Input input)=>input.View.StartValue.ToString(BindingOperations.GetBinding(input.Leaf,Numbers.NumericControl.TextProperty)?.StringFormat??"0.00",CultureInfo.InvariantCulture);
     public bool TryCommitPending()
     {
         if(_disposed||_committing||_session?.IsCurrent!=true)return false;
         var session=_session;
         if(session.CurROIData is not {} item)return _inputs.All(input=>input.Raw is null);
         AttachInputs();if(_inputs.Count==0)return true;
-        if(_inputs.Count!=5){Error="原Box参数栈缺少五项真实数值。";return false;}
+        var fields=item.Fields;
+        if(_inputs.Count!=fields.Count){Error="原区域参数栈缺少真实数值字段。";return false;}
         var accepting=false;var generation=_generation;var changed=new Dictionary<int,double>();
         var raw=_savedRaw??_inputs.Select(input=>input.Raw).ToArray();
         _committing=true;
         try
         {
             // Parse the whole dirty group before updating any of the three original binding layers.
-            for(var i=0;i<5;i++)
+            for(var i=0;i<fields.Count;i++)
             {
                 if(raw[i] is not {} value)continue;
                 if(!double.TryParse(value,NumberStyles.Float,CultureInfo.InvariantCulture,out var number)||!double.IsFinite(number)
@@ -140,8 +142,8 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
                 changed.Add(i,number);
             }
             // Native arrows/sliders update StartValue before their final command, rather than typing text.
-            for(var i=0;i<5;i++)
-                if(raw[i] is null&&_inputs[i].View.StartValue.ToString("F2",CultureInfo.InvariantCulture)!=_inputs[i].Baseline)
+            for(var i=0;i<fields.Count;i++)
+                if(raw[i] is null&&DisplayBaseline(_inputs[i])!=_inputs[i].Baseline)
                     changed[i]=_inputs[i].View.StartValue;
             if(changed.Count==0){item.Cancel();return true;}
             item.Cancel();
@@ -156,17 +158,15 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
                 var outer=BindingOperations.GetBindingExpressionBase(input.View,Numbers.SliderArrangeBase.StartValueProperty);
                 if(outer is null||outer.Status!=BindingStatus.Active)
                     throw new ArgumentException("原Box外层几何绑定缺失或失效。");
-                if(i<4&&outer is MultiBindingExpression multi)multi.UpdateSource();
-                else if(i==4&&outer is BindingExpression single)single.UpdateSource();
+                if(fields[i].MultiBinding&&outer is MultiBindingExpression multi)multi.UpdateSource();
+                else if(!fields[i].MultiBinding&&outer is BindingExpression single)single.UpdateSource();
                 else throw new ArgumentException("原Box外层几何绑定类型不符。");
                 if(Validation.GetHasError(input.Text)||Validation.GetHasError(input.Leaf)||Validation.GetHasError(input.View))
                     throw new ArgumentException("原Box数值绑定校验未通过。");
             }
             if(_disposed||generation!=_generation||!ReferenceEquals(session,_session)||!session.IsCurrent||!ReferenceEquals(item,session.CurROIData))return false;
             // Keep unedited high precision components from the authoritative record.
-            item.Cancel();foreach(var (i,value) in changed)
-                switch(i){case 0:item.CenterX=value/session.ImageWidth;break;case 1:item.CenterY=value/session.ImageHeight;break;
-                    case 2:item.Width=value/session.ImageWidth;break;case 3:item.Height=value/session.ImageHeight;break;case 4:item.Angle=value;break;}
+            item.Cancel();item.StageFields(changed);
             accepting=true;
             if(!session.TryCommit(item)){Error=session.Error;RestoreRaw(raw,item);return false;}
             if(!_disposed&&generation==_generation)Project();
@@ -176,7 +176,7 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
         {item.Cancel();Error=error.Message;RestoreRaw(raw,item);return false;}
         finally{try{if(!accepting)item.Cancel();}finally{_committing=false;}}
     }
-    private void RestoreRaw(string?[] raw,NativeBoxRoiProjection item)
+    private void RestoreRaw(string?[] raw,NativeRoiProjection item)
     {
         if(_disposed||_session?.IsCurrent!=true||!ReferenceEquals(_session.CurROIData,item))return;_projecting=true;
         try
@@ -212,17 +212,19 @@ public sealed class NativeBoxRoiEditor : Decorator,IDisposable
     }
     private sealed class Context
     {
-        private readonly NativeBoxRoiSession _session;
-        public Context(NativeBoxRoiEditor owner,NativeBoxRoiSession session,long generation,NativeBoxRoiProjection? item)
+        private readonly NativeRoiSession _session;
+        public Context(NativeRoiEditor owner,NativeRoiSession session,long generation,NativeRoiProjection? item)
         {
             _session=session;var uiGeneration=owner._uiGeneration;
             ROIValueChangedCommand=new CommitCommand(()=>
             {if(!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded&&uiGeneration==owner._uiGeneration&&owner._generation==generation&&ReferenceEquals(owner._session,session)&&ReferenceEquals(session.CurROIData,item))owner.TryCommitPending();});
         }
-        public NativeBoxRoiProjection? CurROIData=>_session.CurROIData;
+        public NativeRoiProjection? CurROIData=>_session.CurROIData;
         public bool IsHaveData=>_session.IsHaveData;
         public bool BoxEnable_ModuleEnableA=>_session.BoxEnable_ModuleEnableA;
+        public bool SectorEnable_ModuleEnableA=>_session.SectorEnable_ModuleEnableA;
         public bool BoxA {get=>_session.BoxA;set=>_session.BoxA=value;}
+        public bool SectorA {get=>_session.SectorA;set=>_session.SectorA=value;}
         public bool Is3DROI=>false;
         public string ROISelectionA=>_session.ROISelectionA;
         public string DisplayNameA=>_session.DisplayNameA;

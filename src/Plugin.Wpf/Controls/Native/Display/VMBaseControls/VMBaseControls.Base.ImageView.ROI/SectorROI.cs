@@ -67,6 +67,8 @@ public class SectorROI : ROIControlBase
 	public static readonly DependencyProperty CircleCenterPointProperty;
 
 	private Grid move;
+    private FrameworkElement? _interactionHandle;
+    internal FrameworkElement? InteractionHandle=>_interactionHandle;
 
 	private Area minMiddlePoint;
 
@@ -98,6 +100,21 @@ public class SectorROI : ROIControlBase
 
 	public const double MaxRadius = 10000.0;
 
+    // Port fix: a WPF ArcSegment with coincident endpoints cannot draw a full revolution.
+    // Keep Sector's original six parameters and handles; use the original circle template's
+    // exact two-ellipse primitive only for this rendering state, never change the ROI type.
+    public Geometry FullCircleGeometry
+    {
+        get
+        {
+            var center=new Point(ContainerWidth/2,ContainerHeight/2);
+            var geometry=new GeometryGroup{FillRule=FillRule.EvenOdd};
+            geometry.Children.Add(new EllipseGeometry(center,MaxSize.Width,MaxSize.Height));
+            geometry.Children.Add(new EllipseGeometry(center,MinSize.Width,MinSize.Height));
+            geometry.Freeze();return geometry;
+        }
+    }
+
 	public double ContainerWidth
 	{
 		get
@@ -106,7 +123,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerWidthProperty, value);
+			SetCurrentValue(ContainerWidthProperty, value);
 		}
 	}
 
@@ -118,7 +135,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerHeightProperty, value);
+			SetCurrentValue(ContainerHeightProperty, value);
 		}
 	}
 
@@ -274,7 +291,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(CircleRadiusProperty, value);
+			SetCurrentValue(CircleRadiusProperty, value);
 		}
 	}
 
@@ -295,7 +312,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(MinRadiusProperty, value);
+			SetCurrentValue(MinRadiusProperty, value);
 		}
 	}
 
@@ -307,7 +324,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(StartAngleProperty, value);
+			SetCurrentValue(StartAngleProperty, value);
 		}
 	}
 
@@ -319,7 +336,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(EndAngleProperty, value);
+			SetCurrentValue(EndAngleProperty, value);
 		}
 	}
 
@@ -367,7 +384,7 @@ public class SectorROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(CircleCenterPointProperty, value);
+			SetCurrentValue(CircleCenterPointProperty, value);
 		}
 	}
 
@@ -607,7 +624,10 @@ public class SectorROI : ROIControlBase
 
 	public override void OnApplyTemplate()
 	{
-		base.OnApplyTemplate();
+		CancelInteraction();
+        foreach(var element in new FrameworkElement?[]{move,minMiddlePoint,middlePoint,middleStartPoint,middleEndPoint,arcPoint,arcArrow,startArrow,endArrow,startPoint,endPoint})
+            if(element is not null)element.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
+        base.OnApplyTemplate();
 		move = Template.FindName("move", this) as Grid;
 		move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
 		minMiddlePoint = Template.FindName("minMiddlePoint", this) as Area;
@@ -636,12 +656,14 @@ public class SectorROI : ROIControlBase
 
 	private void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
+		CancelInteraction();
+        FrameworkElement frameworkElement = sender as FrameworkElement;
+        _interactionHandle=frameworkElement;
 		clickPoint = e.GetPosition(parent);
 		curRadius = CircleRadius;
 		curMinRadius = MinRadius;
 		this.GetParent<ListViewItem>().RaiseEvent(e);
-		frameworkElement.CaptureMouse();
+		if(!frameworkElement.CaptureMouse()||!ReferenceEquals(Mouse.Captured,frameworkElement)||!ReferenceEquals(_interactionHandle,frameworkElement)){CancelInteraction();return;}
 		this.GetParent<ImageViewBox>().IsDragROI = true;
 		frameworkElement.MouseMove += Move_MouseMove;
 		frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
@@ -938,19 +960,28 @@ public class SectorROI : ROIControlBase
 		FrameworkElement frameworkElement = sender as FrameworkElement;
 		frameworkElement.MouseMove -= Move_MouseMove;
 		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-		frameworkElement.ReleaseMouseCapture();
-		if (_isMove)
-		{
-			NotifyROIParamChanged();
-			_isMove = false;
-		}
-		AfterMouseUp();
+		_interactionHandle=null;
+        frameworkElement.ReleaseMouseCapture();
+        try{if(_isMove)NotifyROIParamChanged();}
+        finally{_isMove=false;AfterMouseUp();}
 	}
 
+    internal void RefreshGeometryLayout()=>SetNewShape();
+    internal void CancelInteraction()
+    {
+        var handle=_interactionHandle;_interactionHandle=null;
+        if(handle is not null)
+        {
+            handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;
+            if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();
+        }
+        _isMove=false;AfterMouseUp();
+    }
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
 		string name = e.Property.Name;
+		if(name is "ContainerWidth" or "ContainerHeight" or "MaxSize" or "MinSize")OnPropertyChanged(nameof(FullCircleGeometry));
 		if (!(name == "ControlToImageRadio"))
 		{
 			if (name == "StrokeThickness")

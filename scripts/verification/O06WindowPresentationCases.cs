@@ -25,6 +25,8 @@ using NumericUpDown=SunEyeVision.Plugin.Wpf.Controls.NumericUpDown;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Workflow;
 using Native=SunEyeVision.Plugin.Wpf.Native;
+using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 internal static class S2DocumentEditingCases
 {
@@ -361,6 +363,16 @@ internal static class S2DocumentEditingCases
    finally{window.Close();}
   });
  }
+ static SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiSession CreateRoiSession(IReadOnlyImage image,Func<IReadOnlyList<RoiEditItem>> read,Func<ImageFrameAddress,RoiGeometryChange,bool> accept,Func<bool> current)
+ {
+  var scope=Guid.NewGuid();long revision=0;
+  SunEyeVision.Plugin.Wpf.Adapters.Regions.RoiEditSnapshot Snapshot()=>new(new(scope,revision,image.Frame),read());
+  return new(image,Snapshot,(expected,change)=>
+  {
+   if(expected.ScopeId!=scope||expected.Revision!=revision||expected.Frame!=image.Frame)return new(false,Snapshot(),"过期候选");
+   if(!accept(expected.Frame,change))return new(false,Snapshot(),"宿主拒绝");revision++;return new(true,Snapshot());
+  },current);
+ }
  static void VerifyNativeBox()
  {
   Test("原Box分支展开与五参数、实际归一化图形同对象双向及单次接纳",()=>
@@ -371,14 +383,14 @@ internal static class S2DocumentEditingCases
    var shape=SunEyeVision.Plugin.Wpf.Regions.RoiGeometryEditing.Create("rectangle",new(20.123456,30.987654),new(110.543216,160.123458));
    var rows=new List<SunEyeVision.Plugin.Wpf.Regions.RoiEditItem>{new("detect",first,"检测一",shape),new("mask",second,"屏蔽一",SunEyeVision.Plugin.Wpf.Regions.RoiGeometryEditing.Create("rectangle",new(160,80),new(250,180)))};
    var writes=0;var alive=true;var reject=false;
-   using var session=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(image,()=>rows,(frame,change)=>
+   using var session=CreateRoiSession(image,()=>rows,(frame,change)=>
    {
     Require(frame==image.Frame&&alive,"物理帧身份丢失");if(reject)return false;
     var index=rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.Id);Require(index>=0,"目标ID丢失");
     rows[index]=rows[index] with{Geometry=change.Geometry};writes++;return true;
    },()=>alive);
-   using var editor=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeBoxRoiEditor();editor.Bind(session);
-   using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeBoxRoiViewport();viewport.Bind(session);
+   using var editor=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiEditor();editor.Bind(session);
+   using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiViewport();viewport.Bind(session);
    var scene=new Grid{Height=420};scene.ColumnDefinitions.Add(new(){Width=new GridLength(420)});scene.ColumnDefinitions.Add(new());
    scene.Children.Add(editor);Grid.SetColumn(viewport,1);scene.Children.Add(viewport);owner.Width=1000;Show(scene);
    session.Select("detect",first);Pump();editor.NativeView.ApplyTemplate();
@@ -404,9 +416,9 @@ internal static class S2DocumentEditingCases
    typeof(Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase).GetMethod("NotifyROIParamChanged",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(roi,null);Pump();
    Require(writes==2&&rows[0].Geometry.Get<double>("width")==120,"原图形结束通知未恰好写一次同Guid几何");
    CaptureInline(scene,"native-box-scene.png");
-   var stale=session.CurROIData!;session.Select("mask",second);Pump();
+   var stale=(SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiProjection)session.CurROIData!;session.Select("mask",second);Pump();
    stale.Width=.8;stale.DataChangedCommand.Execute(stale);Require(writes==2,"旧选中对象回调仍写入");
-   var selected=session.CurROIData!;reject=true;selected.Width=.4;Require(!session.TryCommit(selected)&&writes==2&&!selected.HasPending,"宿主拒绝未撤整组候选");reject=false;
+   var selected=(SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiProjection)session.CurROIData!;reject=true;selected.Width=.4;Require(!session.TryCommit(selected)&&writes==2&&!selected.HasPending,"宿主拒绝未撤整组候选");reject=false;
    var currentField=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(editor).First();
    var currentCombo=(ComboBox)currentField.FindName("CBox");currentCombo.ApplyTemplate();
    var currentNumeric=(Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)currentCombo.Template.FindName("T1",currentCombo);
@@ -432,8 +444,8 @@ internal static class S2DocumentEditingCases
     for(var row=0;row<2;row++)for(var x=0;x<2;x++)for(var channel=0;channel<bpp;channel++)
      bytes[row*stride+x*bpp+channel]=expected[(row*2+x)*bpp+channel]=(byte)(10+row*60+x*20+channel*7);
     var image=resources.CreateImage(new(2,2,stride,format),frame,domain,bytes);
-    using var session=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(image,()=>Array.Empty<RoiEditItem>(),(_,_)=>throw new Exception("显示不应写几何"),()=>true);
-    using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeBoxRoiViewport();viewport.Bind(session);Show(viewport);Pump();
+    using var session=CreateRoiSession(image,()=>Array.Empty<RoiEditItem>(),(_,_)=>throw new Exception("显示不应写几何"),()=>true);
+    using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiViewport();viewport.Bind(session);Show(viewport);Pump();
     var source=viewport.NativeView.Source as BitmapSource;Require(source is not null&&source.PixelWidth==2&&source.PixelHeight==2,"实际彩色位图缺失");
     Require(source!.Format==(bpp==3?PixelFormats.Bgr24:PixelFormats.Bgra32),"像素格式被替换");
     var actual=new byte[expected.Length];source.CopyPixels(actual,2*bpp,0);Require(actual.SequenceEqual(expected),"行padding进入画面或BGRA通道丢失");
@@ -446,8 +458,8 @@ internal static class S2DocumentEditingCases
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
    var image=new TrackedRoiImage(resources.CreateGray8(8,8,new byte[64]));
    var rows=new[]{new RoiEditItem("detect",Guid.NewGuid(),"一",RoiGeometryEditing.Create("rectangle",new(1,1),new(5,5)))};
-   using var session=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(image,()=>rows,(_,_)=>false,()=>true);
-   var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeBoxRoiViewport();viewport.Bind(session);Show(viewport);session.Select("detect",rows[0].Id);Pump();
+   using var session=CreateRoiSession(image,()=>rows,(_,_)=>false,()=>true);
+   var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiViewport();viewport.Bind(session);Show(viewport);session.Select("detect",rows[0].Id);Pump();
    Require(image.Active==1,"显示未保持实际帧租约");session.CurROIData!.PropertyChanged+=(_,_)=>throw new InvalidOperationException("几何观察者异常");
    var rejected=false;try{viewport.Dispose();}catch(Exception){rejected=true;}
    Require(rejected&&image.Active==0&&viewport.Child is null&&viewport.NativeView.ImageDataSource is null,"观察者异常跳过视口清理");
@@ -455,8 +467,8 @@ internal static class S2DocumentEditingCases
    ((System.Collections.Specialized.INotifyCollectionChanged)session.Items).CollectionChanged+=(_,_)=>throw new InvalidOperationException("集合观察者异常");
    try{session.Dispose();}catch(Exception){}
    Require(invalidated&&!session.IsCurrent&&session.Items.Count==0,"关闭异常跳过失效通知或保留旧对象");
-   SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession? closing=null;
-   using var readSession=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(image,()=>{closing?.Dispose();return rows;},(_,_)=>false,()=>true);
+   SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiSession? closing=null;
+   using var readSession=CreateRoiSession(image,()=>{closing?.Dispose();return rows;},(_,_)=>false,()=>true);
    closing=readSession;readSession.Refresh();Require(!readSession.IsCurrent&&readSession.Items.Count==0,"读取回调关闭后重建旧对象");
    Show(new TextBlock{Text="异常释放完成"});
   });
@@ -465,9 +477,9 @@ internal static class S2DocumentEditingCases
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
    var oldImage=new TrackedRoiImage(resources.CreateGray8(8,8,new byte[64]));
    var newImage=new TrackedRoiImage(resources.CreateGray8(8,8,Enumerable.Repeat((byte)199,64).ToArray()));
-   using var oldSession=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(oldImage,()=>Array.Empty<RoiEditItem>(),(_,_)=>false,()=>true);
-   using var newSession=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(newImage,()=>Array.Empty<RoiEditItem>(),(_,_)=>false,()=>true);
-   using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeBoxRoiViewport();Show(viewport);
+   using var oldSession=CreateRoiSession(oldImage,()=>Array.Empty<RoiEditItem>(),(_,_)=>false,()=>true);
+   using var newSession=CreateRoiSession(newImage,()=>Array.Empty<RoiEditItem>(),(_,_)=>false,()=>true);
+   using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiViewport();Show(viewport);
    oldImage.OnAcquire=()=>viewport.Bind(newSession);viewport.Bind(oldSession);Pump();
    Require(oldImage.Active==0&&newImage.Active==1&&ReferenceEquals(viewport.NativeView.ROIList,newSession.Items),"旧Acquire覆盖或泄漏新帧");
    viewport.Dispose();Require(newImage.Active==0,"最终新帧租约未释放");Show(new TextBlock{Text="重绑完成"});
@@ -476,8 +488,8 @@ internal static class S2DocumentEditingCases
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,100,new byte[10000]);
    var row=new RoiEditItem("detect",Guid.NewGuid(),"一",RoiGeometryEditing.Create("rectangle",new(10,10),new(50,50)));var writes=0;
-   using var session=new SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeBoxRoiSession(image,()=>new[]{row},(_,change)=>{row=row with{Geometry=change.Geometry};writes++;return true;},()=>true);
-   using var editor=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeBoxRoiEditor();editor.Bind(session);
+   using var session=CreateRoiSession(image,()=>new[]{row},(_,change)=>{row=row with{Geometry=change.Geometry};writes++;return true;},()=>true);
+   using var editor=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiEditor();editor.Bind(session);
    editor.Loaded+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,editor))session.Select("detect",row.Id);};
    Show(editor);Pump();
    var expand=(ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView);expand.IsChecked=true;Pump();
@@ -510,6 +522,129 @@ internal static class S2DocumentEditingCases
    public void Dispose(){if(disposed)return;disposed=true;try{source.Dispose();}finally{owner.Active--;}}
   }
  }
+ static RecordValue SectorShape(double start=170,double sweep=40,double outer=110.123456,double inner=40.234567)
+ {
+  var values=RoiGeometryEditing.Values(RoiGeometryEditing.Create("annulus",new(220.123456,130.987654),new(330.123456,130.987654)));
+  values["kind"]="sector";values["inner-radius"]=inner;values["outer-radius"]=outer;
+  values["start-radians"]=start*Math.PI/180;values["end-radians"]=(start+sweep)*Math.PI/180;
+  return RoiGeometryEditing.Checked(values);
+ }
+ sealed class RoiHost(IReadOnlyImage image,params RoiEditItem[] rows)
+ {
+  internal readonly List<RoiEditItem> Rows=rows.ToList();internal long Revision;internal int Writes,Reads;
+  internal bool Alive=true,Reject;internal Action? OnRead,BeforeAccept;
+  internal Guid ScopeId=Guid.NewGuid();
+  internal RoiEditStamp Stamp=>new(ScopeId,Revision,image.Frame);
+  internal RoiEditSnapshot Read(){Reads++;OnRead?.Invoke();return new(Stamp,Rows.ToArray());}
+  internal RoiEditAcceptance Accept(RoiEditStamp expected,RoiGeometryChange change)
+  {
+   var before=BeforeAccept;BeforeAccept=null;before?.Invoke();
+   if(expected!=Stamp||Reject)return new(false,new(Stamp,Rows.ToArray()),"宿主拒绝或旧根");
+   var index=Rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.Id);Require(index>=0,"提交身份丢失");
+   Rows[index]=Rows[index] with{Geometry=change.Geometry};Revision++;Writes++;return new(true,new(Stamp,Rows.ToArray()));
+  }
+  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive);
+ }
+ static TextBox RoiText(Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat field)
+ {
+  var box=(ComboBox)field.FindName("CBox");box.ApplyTemplate();
+  return (TextBox)((Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)box.Template.FindName("T1",box)).FindName("ValueText");
+ }
+ static void VerifyNativeSector()
+ {
+  Test("原Sector六项/非方帧换算、跨180扫角、实际原图形和单次提交",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+   var image=resources.CreateGray8(640,320,Enumerable.Repeat((byte)90,640*320).ToArray());
+   var hostModel=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"扇形",SectorShape()));
+   using var session=hostModel.Open();using var editor=new NativeRoiEditor();using var viewport=new NativeRoiViewport();
+   editor.Bind(session);viewport.Bind(session);var scene=new Grid{Height=500};scene.ColumnDefinitions.Add(new(){Width=new GridLength(420)});scene.ColumnDefinitions.Add(new());
+   scene.Children.Add(editor);scene.Children.Add(viewport);Grid.SetColumn(viewport,1);owner.Width=1000;Show(scene);
+   session.Select("detect",hostModel.Rows[0].Id);Pump();
+   ((ToggleButton)editor.NativeView.Template.FindName("expand",editor.NativeView)).IsChecked=true;Pump();
+   var stack=Visuals<Native.Composition.Apps.XmlUI.ParamTabControl.SectorROIStack>(editor).Single();
+   var fields=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(stack).ToArray();Require(fields.Length==6,"未取得原六参数");
+   var selected=(NativeSectorRoiProjection)session.CurROIData!;
+   Require(ReferenceEquals(stack.ROIData,selected)&&Math.Abs(fields[1].StartValue-130.987654)<1e-8&&Math.Abs(fields[2].StartValue-110.123456)<1e-8,"Y或半径非原W/H尺度");
+   var old=hostModel.Rows[0].Geometry;var x=RoiText(fields[0]);x.Focus();Pump();x.Text="320.125";SendKey(x,Key.Enter,true);
+   Require(hostModel.Writes==1&&!x.IsKeyboardFocused&&!editor.HasInvalidText,"原扇形Enter未单次失焦提交："+editor.Error);
+   var next=hostModel.Rows[0].Geometry;Require(RoiGeometryEditing.Center(next).X==320.125&&RoiGeometryEditing.Center(next).Y==RoiGeometryEditing.Center(old).Y&&next.Get<double>("inner-radius")==old.Get<double>("inner-radius")&&next.Get<double>("start-radians")==old.Get<double>("start-radians"),"单项编辑量化其他分量");
+   for(var repeat=0;repeat<3;repeat++)Require(editor.TryCommitPending()&&hostModel.Writes==1,"持焦高精度原文格式化后被误判再次写入");
+   var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedSectorROI>(viewport).Single();
+   var container=Visuals<Native.Display.VMBaseControls.Base.ImageView.ContainerItem>(viewport).Single(item=>ReferenceEquals(item.DataContext,selected));
+   Require(roi.Template is not null&&container.ActualWidth>1&&container.ActualHeight>1&&container.Position.X>0,"原扇形实际容器未显示");
+   Require(Math.Abs(roi.CircleCenterPoint.Y-RoiGeometryEditing.Center(next).Y)<1e-8&&Math.Abs(roi.CircleRadius-next.Get<double>("outer-radius"))<1e-8,"原手柄不属于同帧像素");
+   roi.CircleRadius=125.5;
+   Require(BindingOperations.GetMultiBindingExpression(roi,Native.Display.VMBaseControls.Base.ImageView.ROI.SectorROI.CircleRadiusProperty)?.Status==BindingStatus.Active,"原手柄CLR赋值覆盖归一化绑定");
+   typeof(Native.Display.VMBaseControls.Base.ImageView.ROI.ROIControlBase).GetMethod("NotifyROIParamChanged",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(roi,null);Pump();
+   Require(hostModel.Writes==2&&Math.Abs(hostModel.Rows[0].Geometry.Get<double>("outer-radius")-125.5)<1e-8,"原手柄结束未接纳同对象");
+   Require(Math.Abs(selected.AngleRange-40)<1e-8&&selected.EndAngle<0,"跨180把Range当end或短弧");
+   CaptureInline(scene,"native-sector-scene.png");
+   selected.AngleRange=360;Require(session.TryCommit(selected),"实际视口整圆未接纳");Pump();
+   CaptureInline(scene,"native-sector-full-circle.png");
+   var path=(System.Windows.Shapes.Path)roi.Template.FindName("path",roi);
+   Require(path.Data.Bounds.Width>=roi.ContainerWidth*.95&&path.Data.Bounds.Height>=roi.ContainerHeight*.95,
+       "整圆退成径向线："+path.Data.Bounds+"；container="+roi.ContainerWidth+","+roi.ContainerHeight);
+   var move=(Grid)roi.Template.FindName("move",roi);
+   move.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+   if(ReferenceEquals(Mouse.Captured,move))
+   {
+    roi.CircleRadius=130;Mouse.Capture(null);Pump();
+    Require(!selected.HasPending&&!viewport.NativeView.IsDragROI&&hostModel.Writes==3,"外部丢失捕获未撤手势或误提交");
+    Console.WriteLine("取证：原扇形实际捕获及外部释放已执行；不代真实指针移动。");
+   }
+   else
+   {
+    Require(!viewport.NativeView.IsDragROI&&!selected.HasPending&&hostModel.Writes==3,"捕获失败仍残留拖动或写入：drag="+viewport.NativeView.IsDragROI+"；pending="+selected.HasPending+"；writes="+hostModel.Writes);
+    Console.WriteLine("未证：本进程无实际鼠标捕获，仅验证失败拒绝与收尾；真实捕获丢失/指针交互仍需验收。");
+   }
+   Show(new TextBlock{Text="扇形卸载"});owner.Width=530;
+  });
+  Test("原Sector内外半径联合候选、零角拒绝与整圆保真",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);
+   var model=new RoiHost(image,new RoiEditItem("mask",Guid.NewGuid(),"扇形",SectorShape(15,90,50,40)));
+   using var session=model.Open();session.Select("mask",model.Rows[0].Id);var item=(NativeSectorRoiProjection)session.CurROIData!;
+   item.Radius=80d/640;item.MinRadius=60d/640;Require(session.TryCommit(item)&&model.Writes==1&&model.Rows[0].Geometry.Get<double>("inner-radius")==60,"完整新半径被中间状态拒绝");
+   item.MinRadius=90d/640;Require(!session.TryCommit(item)&&model.Writes==1&&!item.HasPending,"零厚度原联动候选未被规范几何拒绝");
+   item.AngleRange=0;Require(!session.TryCommit(item)&&model.Writes==1,"退化零扫角通过");
+   item.AngleRange=360;Require(session.TryCommit(item)&&model.Writes==2,"整圆被拒绝");
+   item.AngleRange=360.01;Require(!session.TryCommit(item)&&model.Writes==2,"原最大360范围被放大");
+   var values=RoiGeometryEditing.Values(model.Rows[0].Geometry);values["start-radians"]=1.72d;values["end-radians"]=1.72+2*Math.PI;
+   model.Rows[0]=model.Rows[0] with{Geometry=RoiGeometryEditing.Checked(values)};model.Revision++;session.Refresh();
+   var before=model.Rows[0].Geometry;item.Radius=100d/640;Require(session.TryCommit(item),"浮点整圆投影越过360");
+   Require(model.Rows[0].Geometry.Get<double>("start-radians")==before.Get<double>("start-radians")&&model.Rows[0].Geometry.Get<double>("end-radians")==before.Get<double>("end-radians"),"无关半径编辑改动整圆角度原值");
+   var errors=0;session.PropertyChanged+=(_,e)=>{if(e.PropertyName=="Error"&&session.Error.Length>0)errors++;};
+   model.Reject=true;item.CenterX=.4;Require(!session.TryCommit(item)&&errors>0&&!item.HasPending,"同版本宿主拒绝未通知错误或撤候选");
+  });
+  Test("区域版本拒绝同ID重建及接纳前换根，非变化刷新保留手势",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(32,32,new byte[1024]);
+   var row=new RoiEditItem("detect",Guid.NewGuid(),"矩形",RoiGeometryEditing.Create("rectangle",new(2,2),new(10,10)));
+   var model=new RoiHost(image,row);using var session=model.Open();session.Select(row.Group,row.Id);var item=(NativeBoxRoiProjection)session.CurROIData!;
+   item.Width=.5;session.Refresh();Require(item.HasPending&&item.Width==.5,"无变化Refresh丢手势");
+   model.Rows.Clear();model.Rows.Add(row with{});model.Revision++;Require(!session.TryCommit(item)&&model.Writes==0&&!item.HasPending,"同ID同几何重建未拒绝旧版本");
+   item.Width=.6;model.BeforeAccept=()=>model.Revision++;
+   Require(!session.TryCommit(item)&&model.Writes==0&&!item.HasPending,"read后原子accept前换根仍接纳");
+   var count=model.Reads;model.OnRead=()=>session.Refresh();session.Refresh();model.OnRead=null;Require(model.Reads==count+1,"快照read回调Refresh递归");
+   var notifications=0;var reentry=false;
+   ((System.Collections.Specialized.INotifyCollectionChanged)session.Items).CollectionChanged+=(_,_)=>{if(!session.IsCurrent)return;Require(session.Items.Count==2,"观察到半集合");reentry=session.Select(row.Group,row.Id);throw new InvalidOperationException("集合观察者");};
+   ((System.Collections.Specialized.INotifyCollectionChanged)session.Items).CollectionChanged+=(_,_)=>notifications++;
+   model.Rows.Add(row with{Id=Guid.NewGuid()});model.Revision++;
+   try{session.Refresh();}catch(InvalidOperationException){}
+   Require(session.Items.Count==2&&!reentry&&notifications==1,"通知重入编辑或首个错误阻断后续集合通知");
+  });
+  Test("取消通知中关闭不复活选择，接纳后观察者异常不伪装拒绝",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(32,32,new byte[1024]);
+   var first=new RoiEditItem("detect",Guid.NewGuid(),"一",RoiGeometryEditing.Create("rectangle",new(2,2),new(8,8)));var second=first with{Id=Guid.NewGuid()};
+   var model=new RoiHost(image,first,second);using var session=model.Open();session.Select(first.Group,first.Id);var item=(NativeBoxRoiProjection)session.CurROIData!;
+   var errorObserver=false;Action observer=()=>{if(model.Writes>0){errorObserver=true;throw new InvalidOperationException("已接纳后观察者错误");}};session.Changed+=observer;
+   item.Width=.4;var threw=false;try{session.TryCommit(item);}catch(InvalidOperationException){threw=true;}
+   Require(threw&&errorObserver&&model.Writes==1&&!item.HasPending&&model.Rows[0].Geometry.Get<double>("width")==.4*32,"接纳后错误被当作拒绝或模型回滚");
+   session.Changed-=observer;item.PropertyChanged+=(_,_)=>session.Dispose();Require(!session.Select(second.Group,second.Id)&&session.CurROIData is null,"取消回调关闭后重新选择已Detach对象");
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -517,9 +652,22 @@ internal static class S2DocumentEditingCases
   owner=new Window{Width=530,Height=700,Title="O06独立真实窗口验证",Content=host=new StackPanel()};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
   try
   {
+   Test("原数值内部文字不继承页面最小高度且完整落在边框内",()=>
+   {
+    foreach(var leaf in new FrameworkElement[]{new Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl(),new Native.Numeric.HikPcUI.ListView.NumericControl(),new Native.Numeric.HikPcUI.Controls.NumericUpDown()})
+    {
+     Show(leaf);Pump();
+     var text=Visuals<TextBox>(leaf).Single();text.Text="320.13";Pump();
+     Require(text.MinHeight==0&&text.Style is null,"内部编辑框被宿主隐式样式污染："+leaf.GetType().FullName);
+     var bounds=text.TransformToAncestor(leaf).TransformBounds(new Rect(text.RenderSize));
+     Require(bounds.Top>=0&&bounds.Bottom<=leaf.ActualHeight+.1,"文字编辑区域超出原件："+bounds+" / "+leaf.ActualHeight);
+     Require(text.ActualHeight>=text.FontSize*1.2,"内部文字高度不足："+text.ActualHeight);
+    }
+   });
    VerifyBetween();
    VerifyExpandedReference();
    VerifyNativeBox();
+   VerifyNativeSector();
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);
@@ -728,6 +876,7 @@ internal static class S2DocumentEditingCases
   finally{foreach(var window in Application.Current.Windows.Cast<Window>().ToArray())window.Close();Application.Current.Shutdown();}
  }
 }
+
 
 
 

@@ -92,6 +92,10 @@
             </Canvas>
           </Grid>
           <ControlTemplate.Triggers>
+            <!-- Local full-circle rendering fix; the original partial-sector geometry and handles remain. -->
+            <DataTrigger Binding="{Binding AngleRange}" Value="360">
+              <Setter TargetName="path" Property="Data" Value="{Binding FullCircleGeometry, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+            </DataTrigger>
             <MultiDataTrigger>
               <MultiDataTrigger.Conditions>
                 <Condition Value="True" Binding="{Binding Converter={StaticResource typeFilterConverter}, ConverterParameter={x:Type vm_port_0:IROIUIType}}" />

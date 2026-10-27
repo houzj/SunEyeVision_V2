@@ -1460,6 +1460,210 @@ internal static class S2DocumentEditingCases
    Reject(()=>new DeclaredFieldsView(new[]{Field("two",10)},_=>{},integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"missing",Options()}}));
   });
  }
+ static void VerifyFieldGroups()
+ {
+  (Port,FieldPresentation,ParameterSetting) Field(string id,long value,int order=0)=>
+    (new Port(id,DataType.Integer),new FieldPresentation(id,id,"组合",order,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(value));
+  Dictionary<string,ParameterSetting> Values(params (string Id,object Value)[] values)=>values.ToDictionary(x=>x.Id,x=>(ParameterSetting)new ConstantSetting(x.Value));
+  Test("整组字段同值仍验证且重入不写宿主",()=>
+  {
+   var writes=0;var validations=0;var reject=true;DeclaredFieldsView? fields=null;
+   fields=new(new[]{Field("a",10),Field("b",30,1)},_=>writes++,validateComposition:snapshot=>
+   {
+    validations++;Require(snapshot.Current.Count==2&&snapshot.Changes.Count==1&&snapshot.Proposed.Count==2,"组合快照不完整");
+    Require(!fields!.TrySetFields(Values(("b",99L)))&&!fields.Fields[1].TrySetConstant(99L),"校验回调重入提交成功");
+    return reject?"纯校验拒绝":null;
+   });
+   using(fields)
+   {
+    Show(fields);Require(!fields.TrySetFields(Values(("a",10L)))&&validations==1&&writes==0&&fields.Fields[0].HasInvalidText,"同值跳过校验");
+    reject=false;Require(fields.TrySetFields(Values(("a",10L)))&&validations==2&&writes==0&&!fields.Fields[0].HasInvalidText,"同值不能修复或重复writer");
+    Require(fields.TrySetFields(Values(("a",20L)))&&validations==3&&writes==1,"变化提案没有一次写入");
+    Show(new TextBlock{Text="完成"});
+   }
+  });
+  Test("整组字段数组和调用者字典与校验副本相互隔离",()=>
+  {
+   var array=new[]{1d,2d};var input=Values(("array",array),("a",20L));var writes=0;
+   var declarations=new[]{Field("a",10),(new Port("array",TypeRef.SequenceOf(DataType.Number)),new FieldPresentation("array","数组","组合",1,FieldEditorKind.Sequence),(ParameterSetting)new ConstantSetting(new[]{3d,4d}))};
+   using var fields=new DeclaredFieldsView(declarations,changes=>
+   {
+    writes++;Require(((ConstantSetting)changes["a"]).Value.Equals(20L)&&((double[])((ConstantSetting)changes["array"]).Value!).SequenceEqual(new[]{1d,2d}),"writer读到被校验污染的值");
+   },validateComposition:snapshot=>
+   {
+    array[0]=99;input["a"]=new ConstantSetting(99L);
+    ((double[])((ConstantSetting)snapshot.Changes["array"]).Value!)[0]=88;
+    ((double[])((ConstantSetting)snapshot.Proposed["array"]).Value!)[1]=77;
+    return null;
+   });
+   Show(fields);Require(fields.TrySetFields(input)&&writes==1,"数组组合未接纳");
+   Require(((double[])((ConstantSetting)fields.Fields.Single(x=>x.FieldId=="array").Setting).Value!).SequenceEqual(new[]{1d,2d}),"accepted数组被外部副本改写");
+   Require(((ConstantSetting)fields.Fields.Single(x=>x.FieldId=="a").Setting).Value.Equals(20L),"调用者字典重写污染accepted");Show(new TextBlock{Text="完成"});
+  });
+  Test("整组字段未知身份提前拒绝且接纳通知看到全部最终值",()=>
+  {
+   var writes=0;var validations=0;var after=0;
+   using var fields=new DeclaredFieldsView(new[]{Field("a",10),Field("b",30,1)},_=>writes++,validateComposition:_=>{validations++;return null;});
+   Show(fields);var failedIdentity=false;try{fields.TrySetFields(Values(("a",20L),("unknown",40L)));}catch(ArgumentException){failedIdentity=true;}
+   Require(failedIdentity&&writes==0&&validations==0&&fields.Fields.All(x=>!x.HasInvalidText),"未知字段留下部分错误/修改");
+   Action fail=()=>{Require(((ConstantSetting)fields.Fields[0].Setting).Value.Equals(20L)&&((ConstantSetting)fields.Fields[1].Setting).Value.Equals(40L),"通知看到半安装值");throw new InvalidOperationException("接纳后组观察异常");};
+   fields.Fields[0].Changed+=fail;fields.Fields[1].Changed+=()=>after++;
+   var thrown=false;try{fields.TrySetFields(Values(("a",20L),("b",40L)));}catch(Exception error){thrown=error.ToString().Contains("接纳后组观察异常");}finally{fields.Fields[0].Changed-=fail;}
+   Require(thrown&&writes==1&&after==1&&fields.Fields.All(x=>!x.HasInvalidText),"观察异常误作拒绝或跳过另一字段通知");Show(new TextBlock{Text="完成"});
+  });
+  Test("整组字段校验失效与生命周期回调重入不安装旧范围",()=>
+  {
+   foreach(var disposeInWriter in new[]{false,true})
+   {
+    var writes=0;DeclaredFieldsView? fields=null;fields=new(new[]{Field("a",10)},_=>{writes++;if(disposeInWriter)fields!.Dispose();},
+     validateComposition:_=>{if(!disposeInWriter)fields!.Dispose();return null;});
+    Show(fields);var old=fields.Fields.Single();Require(!fields.TrySetFields(Values(("a",20L)))&&writes==(disposeInWriter?1:0)&&!old.TrySetConstant(30L),"失效范围继续安装或写入");fields.Dispose();Show(new TextBlock{Text="下一项"});
+   }
+   var count=0;var nested=true;var active=false;DeclaredFieldsView? current=null;
+   current=new(new[]{Field("a",10)},_=>count++,isCurrent:()=>{if(active)nested=current!.TrySetFields(Values(("a",99L)));return true;});
+   using(current){Show(current);active=true;Require(current.TrySetFields(Values(("a",20L)))&&!nested&&count==1,"isCurrent入口回调绕过重入门禁");Show(new TextBlock{Text="完成"});}
+  });
+  Test("整组字段成功同步真实布尔枚举文字颜色与参与数值且保留旁侧原文",()=>
+  {
+   var ports=new[]{new Port("flag",DataType.Boolean),new Port("choice",DataType.Text,Choices:new TextChoiceConstraint(new[]{"x","y"})),new Port("text",DataType.Text),new Port("color",PresentationDeclarations.Rgba),new Port("number",DataType.Number),new Port("other",DataType.Number)};
+   var values=new object[]{false,"x","old",PresentationDeclarations.Color(1,2,3,255),1d,2d};
+   using var fields=new DeclaredFieldsView(ports.Select((p,i)=>(p,new FieldPresentation(p.Id,p.Id,"组合",i,FieldEditorKind.Scalar){Layout=new("页","组",Minimum:p.Type==DataType.Number?0:null,Maximum:p.Type==DataType.Number?10:null,DecimalPlaces:2)},(ParameterSetting)new ConstantSetting(values[i]))),_=>{});
+   Show(fields);var number=fields.Fields.Single(x=>x.FieldId=="number");var other=fields.Fields.Single(x=>x.FieldId=="other");
+   ((TextBox)OriginalNumberInput(number.View).FindName("ValueText")).Text="7.77";
+   var untouched=(TextBox)OriginalNumberInput(other.View).FindName("ValueText");untouched.Text="8.88";
+   Require(!fields.TrySetFields(Values(("number",.12345)))&&((TextBox)OriginalNumberInput(number.View).FindName("ValueText")).Text=="7.77","精度错误被接受或拒绝丢原文");
+   Require(fields.TrySetFields(Values(("flag",true),("choice","y"),("text","new"),("color",PresentationDeclarations.Color(22,33,44,255)),("number",.12))),"多控件组合被拒绝");Pump();
+   var flag=fields.Fields.Single(x=>x.FieldId=="flag");Require(((Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl)flag.InputElement!).IsChecked==true,"布尔没有投影");
+   Require(((ComboBox)fields.Fields.Single(x=>x.FieldId=="choice").InputElement!).SelectedValue?.Equals("y")==true,"枚举没有投影");
+   Require(((TextBox)fields.Fields.Single(x=>x.FieldId=="text").InputElement!).Text=="new","文本没有投影");
+   Require(((NativeColorPresenter)fields.Fields.Single(x=>x.FieldId=="color").InputElement!).SelectedColor==Color.FromArgb(255,22,33,44),"颜色没有投影");
+   Require(((TextBox)OriginalNumberInput(number.View).FindName("ValueText")).Text=="0.12"&&ReferenceEquals(untouched,OriginalNumberInput(other.View).FindName("ValueText"))&&untouched.Text=="8.88","参与数值未替换pending或未参与原文被误提交");
+   Show(new TextBlock{Text="完成"});
+  });
+  Test("整组字段Settings重绑阻止旧候选进入新草稿",()=>
+  {
+   var oldDraft=new ColorLifetimeDraft();var next=new ColorLifetimeDraft();DeclaredSettingsView? view=null;var rebind=false;
+   view=new(oldDraft,new(ValidateComposition:_=>{if(rebind)view!.Bind(next);return null;}));
+   using(view){Show(view);rebind=true;Require(!view.TrySetFields(Values(("visible",false)))&&oldDraft.Writes==0&&next.Writes==0,"旧候选写入重绑草稿");Require(view.TryCapture(out _,out _,out _),"新范围不能继续捕获");Show(new TextBlock{Text="完成"});}
+  });
+  Test("整组接纳重绘后旧字符串和眼睛回调失效且新输入继续工作",()=>
+  {
+   var writes=0;
+   using var fields=new DeclaredFieldsView(new[]{
+    (new Port("text",DataType.Text),new FieldPresentation("text","文字","组合",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting("old")),
+    (new Port("eye",DataType.Boolean),new FieldPresentation("eye","显示","组合",1,FieldEditorKind.Scalar){Layout=new("页","组",DialogPrimary:true)},(ParameterSetting)new ConstantSetting(false))},_=>writes++);
+   Show(fields);var text=fields.Fields.Single(x=>x.FieldId=="text");var eye=fields.Fields.Single(x=>x.FieldId=="eye");
+   var oldText=(TextBox)text.InputElement!;var oldEye=(ToggleButton)eye.InputElement!;
+   Require(fields.TrySetFields(Values(("text","accepted"),("eye",true)))&&writes==1,"初次整组未接纳");
+   oldText.Text="过期输入";oldEye.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+   Require(writes==1&&((ConstantSetting)text.Setting).Value.Equals("accepted")&&((ConstantSetting)eye.Setting).Value.Equals(true),"旧控件回调写入新渲染");
+   ((TextBox)text.InputElement!).Text="current";((ToggleButton)eye.InputElement!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+   Require(writes==3&&((ConstantSetting)text.Setting).Value.Equals("current")&&((ConstantSetting)eye.Setting).Value.Equals(false),"新控件不能继续编辑");Show(new TextBlock{Text="完成"});
+  });
+  Test("整组范围接纳后观察异常仍投影规范值且不重新提交旧原文",()=>
+  {
+   var writes=0;
+   using var fields=new DeclaredFieldsView(new[]{
+    (new Port("low",DataType.Number),new FieldPresentation("low","下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:100,DecimalPlaces:2)},(ParameterSetting)new ConstantSetting(10d)),
+    (new Port("high",DataType.Number),new FieldPresentation("high","上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:100,DecimalPlaces:2)},(ParameterSetting)new ConstantSetting(20d))},_=>writes++);
+   Show(fields);var low=fields.Fields[0];var input=(TextBox)low.InputElement!;input.Focus();input.Text="15.125";
+   Action observer=()=>throw new InvalidOperationException("范围接纳后通知异常");low.Changed+=observer;
+   var thrown=false;try{low.TryCommitPending();}catch(Exception error){thrown=error.ToString().Contains("范围接纳后通知异常");}finally{low.Changed-=observer;}
+   Require(thrown&&writes==1&&((ConstantSetting)low.Setting).Value.Equals(15.12d)&&input.Text=="15.12"&&!low.HasInvalidText,"接纳后异常恢复旧raw或误作拒绝");
+   Require(low.TryCommitPending()&&writes==1,"旧raw重新写入宿主");Show(new TextBlock{Text="完成"});
+  });
+  Test("整组绘制准入回调递归请求立即拒绝且外层可继续或拒绝",()=>
+  {
+   foreach(var allow in new[]{false,true})
+   {
+    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image);
+    NativeRoiSession? session=null;var calls=0;var innerAccepted=false;
+    session=new(image,model.Read,model.Accept,()=>model.Alive,"detect",canDraw:_=>{calls++;innerAccepted|=session!.BeginDraw("rectangle") is not null;return allow;});
+    using(session){session.DrawRequested+=_=>{};var result=session.BeginDraw("rectangle");Require(!innerAccepted&&calls>0&&(result is not null)==allow,"准入递归或外层结果错误");session.CancelDraw();}
+   }
+  });
+  Test("整组继承同根修订取消旧绘制且检测屏蔽独立并保本地身份",()=>
+  {
+   var width=owner.Width;var height=owner.Height;owner.Width=1100;owner.Height=950;
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=800};
+   try
+   {
+    Show(sample);var local=sample.LocalItems.Single(x=>x.Group=="detect");var old=sample.Session.BeginDraw("rectangle");Require(old is not null,"本地原请求未建立");
+    var changes=Values(("detect.mode",1L));changes["detect.source"]=new ReferenceSetting(sample.Reference("detect"));
+    Require(sample.Fields.TrySetFields(changes)&&sample.Revision==1&&sample.Session.Stamp.Revision==1&&sample.Session.ActiveDraw is null,"字段与几何修订未统一或旧绘制未取消");
+    Require(!sample.Session.CompleteDraw(old!,local.Geometry)&&sample.Session.BeginDraw("rectangle") is null,"继承模式旧完成/新绘制仍被接纳");
+    Require(sample.Session.Items.Single(x=>x.Group=="detect") is {Enabled:false} source&&source.Id!=local.Id&&sample.LocalItems.Single(x=>x.Id==local.Id).Geometry==local.Geometry,"继承污染本地或借用本地ID");
+    Pump();var inherited=sample.Session.Items.Single(x=>x.Group=="detect");
+    var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(sample.Scene.Viewport).Single(x=>ReferenceEquals(x.DataContext,inherited));
+    var container=Visuals<Native.Display.VMBaseControls.Base.ImageView.ContainerItem>(sample.Scene.Viewport).Single(x=>ReferenceEquals(x.DataContext,inherited));
+    var outline=(System.Windows.Shapes.Rectangle)roi.Template.FindName("rc",roi);
+    Require(roi.IsVisible&&!roi.IsHitTestVisible&&container.ActualWidth>1&&container.ActualHeight>1&&outline.RenderedGeometry.Bounds.Width>1&&outline.RenderedGeometry.Bounds.Height>1,"来源原图形未实际显示或仍命中编辑");
+    Require(!Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(sample.Scene.Viewport).Any(x=>x.DataContext is NativeBoxRoiProjection p&&p.Id==local.Id)&&!sample.Session.Select("detect",inherited.Id),"本地图形残留或继承对象可编辑");
+    Require(((FrameworkElement)roi.Template.FindName("rect1",roi)).Visibility==Visibility.Collapsed,"继承对象角点未退出");CaptureInline(sample,"native-roi-inheritance-active.png");
+    sample.Session.SetDrawingGroup("mask");Require(sample.Session.BeginDraw("annulus") is not null,"检测继承误禁屏蔽本地");sample.Session.CancelDraw();sample.Session.SetDrawingGroup("detect");
+    Require(sample.Fields.TrySetFields(Values(("detect.mode",0L)))&&sample.Session.Stamp.Revision==2&&sample.Session.Items.Any(x=>x.Id==local.Id&&x.Enabled)&&sample.Session.Select(local.Group,local.Id),"切回未恢复原本地身份");
+    CaptureInline(sample,"native-roi-inheritance.png");
+   }
+   finally{Show(new TextBlock{Text="完成"});owner.Width=width;owner.Height=height;}
+  });
+  Test("整组继承错误物理帧整组拒绝且继承只投影一个来源对象",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=800};Show(sample);
+   var before=sample.Session.Stamp;var changes=Values(("detect.mode",1L));changes["detect.source"]=new ReferenceSetting(sample.Reference("detect",true));
+   Require(!sample.Fields.TrySetFields(changes)&&sample.Revision==0&&sample.Session.Stamp==before&&((ConstantSetting)sample.Fields.Fields.Single(x=>x.FieldId=="detect.mode").Setting).Value.Equals(0L),"错误帧留下部分接纳");
+   var request=sample.Session.BeginDraw("rectangle")!;Require(request is not null&&sample.Session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(30,40),new(130,140))),"未产生第二本地对象");
+   var count=sample.LocalItems.Count;changes["detect.source"]=new ReferenceSetting(sample.Reference("detect"));Require(sample.Fields.TrySetFields(changes),"合法来源未修复");
+   Require(sample.Session.Items.Count(x=>x.Group=="detect")==1&&sample.LocalItems.Count==count,"多本地对象被复制成多份继承来源");
+   Require(sample.Fields.TrySetFields(Values(("detect.mode",0L)))&&sample.Session.Items.Count(x=>x.Group=="detect")==2,"切回本地集合丢失");Show(new TextBlock{Text="完成"});
+  });
+  Test("整组继承原来源树双击与原单选接纳并拒绝错误帧和清除",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=800};Show(sample);
+   var source=sample.Fields.Fields.Single(x=>x.FieldId=="detect.source");var mode=sample.Fields.Fields.Single(x=>x.FieldId=="detect.mode");
+   bool Choose(string? node)
+   {
+    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(source.View).Single(x=>x.Name=="rt");
+    popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+    var content=(Popup)popup.Template.FindName("PART_Popup",popup);
+    var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
+    TreeViewItem? Find(ItemsControl parent)
+    {
+     for(var i=0;i<parent.Items.Count;i++)
+     {
+      if(parent.ItemContainerGenerator.ContainerFromIndex(i) is not TreeViewItem row)continue;
+      var data=row.DataContext;
+      if(data is not null&&(node is null?data.GetType().GetProperty("Clear")?.GetValue(data) is true:
+       data.GetType().GetProperty("Candidate")?.GetValue(data) is DeclaredReferenceCandidate c&&c.NodeId==node))return row;
+      row.IsExpanded=true;row.UpdateLayout();Pump();var nested=Find(row);if(nested is not null)return nested;
+     }
+     return null;
+    }
+    var leaf=Find(actual)??throw new Exception("原来源树缺正式候选或清除叶");
+    leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});Pump();
+    return popup.IsDropDownOpen||content.IsOpen;
+   }
+   Require(Choose("detect-foreign")&&sample.Revision==0&&source.Setting is UnsetSetting&&source.HasInvalidText,"外帧来源未拒绝或强制关闭");
+   Require(!Choose("detect-source")&&sample.Revision==1&&source.Setting is ReferenceSetting r&&r.Reference.NodeId=="detect-source"&&!source.HasInvalidText,"原树合法来源未接纳");
+   var inherit=Visuals<RadioButton>(mode.View).Single(x=>Equals(x.Content,"继承"));inherit.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
+   Require(sample.Revision==2&&sample.Session.Stamp.Revision==2&&!sample.Session.Items.Single(x=>x.Group=="detect").Enabled,"原单选没有接通继承根");
+   Require(Choose(null)&&sample.Revision==2&&source.Setting is ReferenceSetting&&source.HasInvalidText,"继承清除留下半根或丢来源");
+   Require(!Choose("detect-source")&&sample.Revision==2&&!source.HasInvalidText,"同值合法来源不能修复错误");
+   Show(new TextBlock{Text="完成"});
+  });
+  Test("整组来源空串清除拒绝不自动提交已有索引原文",()=>
+  {
+   var writes=0;var candidate=new DeclaredReferenceCandidate("文本序列","texts",null,new Port("values",TypeRef.SequenceOf(DataType.Text)),Array.Empty<string>());
+   using var fields=new DeclaredFieldsView(new[]{(new Port("text",DataType.Text,Required:false,EditModes:FieldEditModes.Reference),new FieldPresentation("text","文本来源","组合",0,FieldEditorKind.Scalar),(ParameterSetting)new ReferenceSetting(candidate.Reference(new BindingSelection.AtConstant(0))))},_=>writes++,
+    new ReferenceFieldOptions(_=>new[]{candidate},EditableIndex:true),validateComposition:group=>group.Proposed["text"] is UnsetSetting?"拒绝清除":null);
+   Show(fields);var access=fields.Fields.Single();var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(access.View).Single(x=>x.Name=="rt");
+   popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();var session=popup.DataContext;var type=session.GetType();
+   var current=(string)type.GetProperty("CurValueA")!.GetValue(session)!;var pending=current[..current.LastIndexOf('[')]+"[1]";
+   type.GetMethod("ObserveText")!.Invoke(session,new object[]{pending});type.GetProperty("CurValueA")!.SetValue(session,"");
+   Require(writes==0&&access.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:0}}&&access.HasInvalidText&&popup.IsDropDownOpen
+    &&(bool)type.GetProperty("HasPendingText")!.GetValue(session)!&&(string)type.GetProperty("CurValueA")!.GetValue(session)! == pending,"清除拒绝后自动提交旧索引或关层丢原文");
+   Require((bool)type.GetMethod("TryCommitPending")!.Invoke(session,null)!&&writes==1&&access.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:1}},"保留的索引不能显式提交修复");Show(new TextBlock{Text="完成"});
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -1479,6 +1683,7 @@ internal static class S2DocumentEditingCases
      Require(text.ActualHeight>=text.FontSize*1.2,"内部文字高度不足："+text.ActualHeight);
     }
    });
+   VerifyFieldGroups();
    VerifyNativeIntegerRadio();
    VerifyNativeAdvanced();
    VerifyNativeParameterHost();

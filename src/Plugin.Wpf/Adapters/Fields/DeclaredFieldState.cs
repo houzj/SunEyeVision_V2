@@ -7,6 +7,7 @@ internal sealed class DeclaredFieldState : IDisposable
 {
     private Action<ParameterSetting>? _write;
     private Func<ParameterSetting,string?>? _validate;
+    private Func<ParameterSetting,bool>? _propose;
     private ParameterSetting _accepted;
     private ConstantSetting? _constantBackup;
     private readonly bool _allowUnboundReference;
@@ -28,11 +29,13 @@ internal sealed class DeclaredFieldState : IDisposable
         : MissingReference ? "请选择订阅来源，或切回数值模式。"
         : _accepted is UnsetSetting && Port.Required && !_allowUnboundReference ? "必填项尚未设置。" : "";
     public event Action? Changed;
+    internal event Action? ExplicitlyAccepted;
 
     public DeclaredFieldState(Port port, ParameterSetting initial, Action<ParameterSetting> write,
-        ConstantSetting? constantBackup = null, bool allowUnboundReference = false,Func<ParameterSetting,string?>? validate=null)
+        ConstantSetting? constantBackup = null, bool allowUnboundReference = false,Func<ParameterSetting,string?>? validate=null,
+        Func<ParameterSetting,bool>? propose=null)
     {
-        Port = port; _write = write;_validate=validate;
+        Port = port; _write = write;_validate=validate;_propose=propose;
         _accepted = PrepareInitial(initial);
         _constantBackup = initial is ConstantSetting ? (ConstantSetting)CopySetting(_accepted)
             : constantBackup is null ? null : (ConstantSetting)PrepareInitial(constantBackup);
@@ -40,38 +43,52 @@ internal sealed class DeclaredFieldState : IDisposable
         _allowUnboundReference = allowUnboundReference;
     }
 
-    public bool TrySet(ParameterSetting proposal)=>TrySetGroup(new[]{(this,proposal)},values=>
+    public bool TrySet(ParameterSetting proposal)
     {
-        var value=values[Port.Id];
-        var error=_validate?.Invoke(CopySetting(value));
-        if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
-        if(!IsDisposed)_write!(CopySetting(value));
-    });
+        if(IsDisposed||_writing)return false;
+        if(_propose is {} propose)return propose(CopySetting(proposal));
+        return TrySetGroup(new[]{(this,proposal)},values=>_write!(CopySetting(values[Port.Id])),values=>
+        {
+            var error=_validate?.Invoke(CopySetting(values[Port.Id]));
+            if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
+        });
+    }
 
     /// <summary>Prepare every endpoint before one host write; install every accepted value before notifying.</summary>
     internal static bool TrySetGroup(IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)> proposals,
-        Action<IReadOnlyDictionary<string,ParameterSetting>> writeGroup)
+        Action<IReadOnlyDictionary<string,ParameterSetting>> writeGroup,
+        Action<IReadOnlyDictionary<string,ParameterSetting>>? validatePrepared=null,Func<bool>? isCurrent=null,bool replacePending=false,Action? installed=null)
     {
         ArgumentNullException.ThrowIfNull(writeGroup);
-        if(proposals.Count==0)return true;
+        proposals=proposals.ToArray();
+        if(proposals.Count==0)return isCurrent?.Invoke()!=false;
         var states=proposals.Select(item=>item.State).ToArray();
+        bool Current()
+        {
+            if(states.Any(state=>state.IsDisposed))return false;
+            var current=isCurrent?.Invoke()!=false;
+            return current&&states.All(state=>!state.IsDisposed);
+        }
         if(states.Distinct().Count()!=states.Length||states.Select(state=>state.Port.Id).Distinct(StringComparer.Ordinal).Count()!=states.Length)
             throw new ArgumentException("A field may occur only once in a proposal group.");
-        if(states.Any(state=>state.IsDisposed||state._writing))return false;
+        if(!Current()||states.Any(state=>state._writing))return false;
         var notifications=new HashSet<DeclaredFieldState>();
         var accepted=false;
         foreach(var state in states)state._writing=true;
         try
         {
             var prepared=proposals.Select(item=>(item.State,Value:item.State.PrepareProposal(item.Proposal))).ToArray();
+            IReadOnlyDictionary<string,ParameterSetting> CopyPrepared()=>new System.Collections.ObjectModel.ReadOnlyDictionary<string,ParameterSetting>(
+                prepared.ToDictionary(item=>item.State.Port.Id,item=>CopySetting(item.Value),StringComparer.Ordinal));
+            validatePrepared?.Invoke(CopyPrepared());
+            if(!Current())return false;
             if(prepared.Any(item=>item.State._referenceCleared||!SameSetting(item.State._accepted,item.Value)))
-                writeGroup(new System.Collections.ObjectModel.ReadOnlyDictionary<string,ParameterSetting>(
-                    prepared.ToDictionary(item=>item.State.Port.Id,item=>CopySetting(item.Value),StringComparer.Ordinal)));
-            if(states.Any(state=>state.IsDisposed))return false;
+                writeGroup(CopyPrepared());
+            if(!Current())return false;
             foreach(var (state,value) in prepared)
             {
                 var referenceMode=value is ReferenceSetting||value is UnsetSetting&&state.IsReferenceMode;
-                if(!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0)
+                if(replacePending||!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0)
                     notifications.Add(state);
                 state._accepted=value;
                 if(value is ConstantSetting constant)state._constantBackup=constant;
@@ -81,7 +98,7 @@ internal sealed class DeclaredFieldState : IDisposable
         }
         catch(Exception error)when(error is ArgumentException or InvalidOperationException or FormatException or OverflowException)
         {
-            if(states.Any(state=>state.IsDisposed))return false;
+            if(!Current())return false;
             foreach(var state in states)
             {
                 if(state.EditError!=error.Message)notifications.Add(state);
@@ -91,6 +108,14 @@ internal sealed class DeclaredFieldState : IDisposable
         finally{foreach(var state in states)state._writing=false;}
         // Observers see both endpoints installed; their exceptions are never interpreted as host rejection.
         var failures=new List<Exception>();
+        if(accepted&&installed is not null)try{installed();}catch(Exception error){failures.Add(error);}
+        if(accepted&&replacePending)
+            foreach(var state in states)
+                foreach(Action listener in state.ExplicitlyAccepted?.GetInvocationList()??Array.Empty<Delegate>())
+                {
+                    if(state.IsDisposed)break;
+                    try{listener();}catch(Exception error){failures.Add(error);}
+                }
         foreach(var state in states)
         {
             if(state.IsDisposed||!notifications.Contains(state)||state.Changed is not {} changed)continue;
@@ -115,9 +140,14 @@ internal sealed class DeclaredFieldState : IDisposable
                 throw new ArgumentException("此字段不允许常量。");
             return new ConstantSetting(ValueRules.Freeze(Port,constant.Value));
         }
-        if(proposal is ReferenceSetting&&(Port.EditModes&FieldEditModes.Reference)==0)
-            throw new ArgumentException("此字段不允许订阅。");
-        return proposal;
+        if(proposal is ReferenceSetting reference)
+        {
+            if(reference.Reference is null)throw new ArgumentException("订阅设置缺少正式引用。");
+            if((Port.EditModes&FieldEditModes.Reference)==0)throw new ArgumentException("此字段不允许订阅。");
+            return proposal;
+        }
+        if(proposal is UnsetSetting)return proposal;
+        throw new ArgumentException("不支持的字段设置类型。");
     }
 
     public void EnterReferenceMode()
@@ -178,7 +208,7 @@ internal sealed class DeclaredFieldState : IDisposable
         }
     }
 
-    private static ParameterSetting CopySetting(ParameterSetting value) => value is ConstantSetting { Value: double[] array }
+    internal static ParameterSetting CopySetting(ParameterSetting value) => value is ConstantSetting { Value: double[] array }
         ? new ConstantSetting(array.ToArray()) : value;
 
     internal static bool SameReference(OutputReference a, OutputReference b) => SameSource(a,b) && SameSelection(a.Selection,b.Selection);
@@ -214,6 +244,6 @@ internal sealed class DeclaredFieldState : IDisposable
     public void Dispose()
     {
         if (IsDisposed) return;
-        IsDisposed = true; Changed = null; _write = null;_validate=null;
+        IsDisposed = true; Changed = null;ExplicitlyAccepted=null; _write = null;_validate=null;_propose=null;
     }
 }

@@ -82,7 +82,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
             WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
-            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference,options.IntegerRadios);
+            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)
@@ -107,6 +107,11 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     private static void SelectPage(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(view._fields is not null)view._fields.SelectedPageIndex=(int)args.NewValue;}
     private void OnPageChanged()=>SetCurrentValue(SelectedPageIndexProperty,_fields!.SelectedPageIndex);
+    public bool TrySetFields(IReadOnlyDictionary<string,ParameterSetting> proposals)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        return (_fields??throw new InvalidOperationException("A settings draft is required.")).TrySetFields(proposals);
+    }
     private void WriteGroup(IReadOnlyDictionary<string,ParameterSetting> proposals)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);

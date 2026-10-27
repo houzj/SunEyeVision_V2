@@ -37,11 +37,12 @@
       "退出绘制不仅隐藏还拒编辑；退出来源分支失效C07请求与Popup；模式/来源更改revision取消旧候选",
       "当前RegionSourceModeSelector手工Radio缓存不能当最终原件；本批不接Blob字段或SDK"
     ],
-    "concreteGap": "原按钮保RoiType/组/版本并由唯一视口接收；四原替身→原完成入口→宿主Create分配ID已通过自动链。仍缺原多边形超限模态、继承/来源、位姿、多对象菜单/宿主历史、物理指针及VM/VS人工。不计完整C08或阶段一。",
+    "concreteGap": "原四形状绘制及原多边形提示窗、本批整组字段/独立继承原型已自动验证；完整继承方式/图像模式/位姿、多对象菜单历史和真实VS/VM/物理指针/用户验收仍未完，不计完整C08/C09或阶段一。",
     "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json",
     "modalStatus": "原HikMessageBox与原模板资源已接，确切Owner/同租约恢复、取消/修订/重绑/Owner关闭及观察者异常均有当前正式回归；继承/来源/位姿仍未完成。",
     "integerRadio": "原两槽/五槽及同一long状态、独立XAML入口已自动验证，见O06_NATIVE_INTEGER_RADIO_CHECKPOINT_20261028.json；未完成继承/位姿组合。",
-    "nextContract": "组合级TrySetFields + always pure prepared group validation；保原Range候选上下文，writer只装根，accepted之后Refresh。同族显示清空与持久引用删除分开，整体ROI禁止偷换Region资源。"
+    "nextContract": "基础TrySetFields/同值纯组验证/一次writer/全部安装后Refresh已实现并经当前检查点。下一补完整四继承方式、图像模式、位姿及正确部分环只读消费；持久引用清理不能从展示清空推断。",
+    "fieldGroupCheckpoint": "O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json"
   },
   "c01Host": {
     "source": "原Apps.XmlUI ParamListView/ParamUserControl/globalresources/LeftRightControl；原SHA由只读核收给出，激活前再次独立复核",

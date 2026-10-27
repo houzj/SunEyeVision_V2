@@ -1,3 +1,13 @@
+## 2026-10-28 C09整组字段与同根ROI来源独立原型集中批封存
+
+- 共同基线f0585b13；主线唯一产品写者，三路只读核证后已补位完整四继承方式/部分环消费及位姿公式证据。字段全部Freeze→同值也纯组校验→一次writer→全state安装→通知；当前代次/重入/Dispose拒绝，原Range保同时候选绑定上下文及整个提交租约。Settings同代次接纳，不新增工具/业务工程。
+- 独立NativeRoiInheritanceScene真实XAML入口与原FieldsView/ROI Scene/Session共链；仅预览owner字段/本地几何/Revision根，混帧拒绝，来源独立稳定ID/每组单投影，本地集合保留，切换取消旧绘制并保检测/屏蔽独立状态。共享原预览图像夹具不复制算法模型。严格示例策略要求先有来源或整组切换，不冒称VM全部继承编辑行为。
+- 修整组显式接纳仅重绘参与字段，旧字符串/眼睛/模式/清除/设置输入代次失效；范围接纳后观察异常仍投影规范值。C07清除被组合拒绝不再关Popup/丢来源；空串拒绝不自动提交已有索引pending。原来源树双击与原Radio Checked实际联通。
+- 最终UI004零错6062警告56.40秒；全量Release001零错6484警告84.58秒。Window142=109、Field079=31、Design041=74、RuntimeEditor059=10、FullChain119=8、Components201=9、ThemeStartup004=1、Resources013=22共264组。正式EXE012 exit0/22可用工具15分类；15源增量含用户XAML、788发布项、107加载记录、146唯一原来源SHA核对。Window142继承态/Design041真实入口PNG已看，不代实际VS/VM同态、物理指针及用户验收。
+- 失败保留Window139测试错定位原Radio参数；140抓到清除拒绝关Popup产品缺陷，修后141定向14过及142全109过。Field078反射调用缺当前可选参数，更新原断言后079全31过；UI001—003不套最终成绩。最终构建后仅Catalog非编译元数据及文档/检查点更新，产品源未变。
+- 原O06更新711唯一锚点/幂等；权威evidence/O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json及SOURCE_AUDIT；交接HANDOFF_FIELD_GROUP_INHERITANCE_20261028.md。用户Blob页索引2/SHA不变、不提交，不推送。自有构建/验收/探针均终止。
+- 完整C09/阶段一未完成，Blob业务冻结，目标active。四方式是RadioSelecter3五槽填4项；Ex2是图形/图像两槽。参数继承是5/6个ButtonSelecter并非Range。原屏蔽string/Polygon与本方多形状差异须明示。部分ROIANNULUS尚缺正确显示消费，不得忽略角度/强制整圆；原FIXTURE生产模块只发十float，单位/旋转缩放顺序需追实际原生消费者，不能以本方矩阵公式冒称原生等价。下一批先完整来源组合与这些关键证据，再位姿及菜单历史/文本列表底栏。
+
 ## 2026-10-28 整组字段候选期间统一工作流基线
 
 - 用户要求先同步再独立开发。主线已封存20aff9e4，工作流863c0ce1且干净、无独有提交，差异2/0；包含本记录的交接提交作为双方共同基线，工作流直接快进。

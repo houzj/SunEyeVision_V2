@@ -108,6 +108,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             if(integerRadioOptions.Validate(_state.Accepted) is {} error)_state.SetEditError(error);
         }
         _state.Changed+=OnStateChanged;
+        _state.ExplicitlyAccepted+=OnExplicitlyAccepted;
         Resources.MergedDictionaries.Add(EditorResources.Create());
         _error.Style=EditorResources.ErrorStyle();
         Tag=port.Id;Margin=new Thickness(0);MinHeight=32;
@@ -138,11 +139,18 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         if(_disposed)return;
         UpdateErrorDisplay();Changed?.Invoke();
     }
+    private void OnExplicitlyAccepted()
+    {
+        if(_disposed)return;
+        Render();UpdateErrorDisplay();
+    }
 
     private void Render()
     {
         if(_disposed)return;
         _renderGeneration++;
+        var generation=_renderGeneration;
+        bool CurrentRender()=>!_disposed&&generation==_renderGeneration&&IsEnabled;
         DetachOwnedEditors();
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         if(_imageSources is not null){RenderImageSource();return;}
@@ -159,12 +167,12 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         {
             var mode=new ToggleButton {Content=_referenceMode?"✎":"⇄",IsChecked=_referenceMode,Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip=_referenceMode?"切换为数值编辑":"切换为订阅"};
             mode.SetResourceReference(StyleProperty,"EditLinkButton");
-            mode.Click+=(_,_)=>{if(_referenceMode){if(!_state.TryUseConstant())return;}else _state.EnterReferenceMode();Render();};_actions.Children.Add(mode);
+            mode.Click+=(_,_)=>{if(!CurrentRender()||!mode.IsEnabled)return;if(_referenceMode){if(!_state.TryUseConstant())return;}else _state.EnterReferenceMode();Render();};_actions.Children.Add(mode);
         }
         if(!_port.Required&&_setting is not UnsetSetting)
         {
             var clear=new Button {Content="×",Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip="清除可选项"};
-            clear.Click+=(_,_)=>{if(Set(new UnsetSetting()))Render();};_actions.Children.Add(clear);
+            clear.Click+=(_,_)=>{if(CurrentRender()&&clear.IsEnabled&&Set(new UnsetSetting()))Render();};_actions.Children.Add(clear);
         }
         if(composedNumeric&&(_setting is not UnsetSetting||_referenceMode))
         {
@@ -182,7 +190,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             if(_port.Type.Shape!=ValueShape.Resource&&(_port.EditModes==FieldEditModes.None||(_port.EditModes&FieldEditModes.Constant)!=0))
             {
                 var create=new Button{Content="设置",Height=26,ToolTip="设置此可选项"};
-                create.Click+=(_,_)=>{if(_state.TryUseConstant())Render();};_actions.Children.Add(create);
+                create.Click+=(_,_)=>{if(CurrentRender()&&create.IsEnabled&&_state.TryUseConstant())Render();};_actions.Children.Add(create);
             }
             return;
         }
@@ -196,10 +204,9 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                 {
                     var eye=new ToggleButton{IsChecked=value as bool?==true,ToolTip="显示 / 隐藏",Width=36,Height=30};
                     eye.SetResourceReference(StyleProperty,"eyeToggleButton");
-                    eye.Click+=(_,_)=>{var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
+                    eye.Click+=(_,_)=>{if(!CurrentRender()||!eye.IsEnabled)return;var visible=((ConstantSetting)_setting).Value as bool?!=true;if(Set(new ConstantSetting(visible)))eye.IsChecked=visible;};
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
-                var generation=_renderGeneration;
                 var input = new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl
                     { IsChecked = value as bool? == true,IsThreeState=false,
                       OffContent=NativeInputFactory.BooleanImage(false),OnContent=NativeInputFactory.BooleanImage(true),
@@ -219,10 +226,9 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             {
                 if(_regionSourceSelector)
                 {
-                    var selector=new RegionSourceModeSelector((string)value!,key=>Set(new ConstantSetting(key)));
+                    var selector=new RegionSourceModeSelector((string)value!,key=>CurrentRender()&&Set(new ConstantSetting(key)));
                     InputElement=selector;_body.Children.Add(selector);return;
                 }
-                var generation=_renderGeneration;
                 var input=NativeInputFactory.Enumeration();
                 input.DisplayMemberPath=nameof(ChoiceItem.Label);input.SelectedValuePath=nameof(ChoiceItem.Key);
                 input.ItemsSource=choices.Keys.Select(key=>new ChoiceItem(key,_choiceLabels?.GetValueOrDefault(key,key)??key)).ToArray();
@@ -251,7 +257,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                 else
                 {
                     var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center,Text=Convert.ToString(value,CultureInfo.InvariantCulture)??""};
-                    input.TextChanged+=(_,_)=>{if(!_updatingInput)Set(new ConstantSetting(input.Text));};
+                    input.TextChanged+=(_,_)=>{if(CurrentRender()&&!_updatingInput&&input.IsEnabled)Set(new ConstantSetting(input.Text));};
                     InputElement=input;_body.Children.Add(input);
                 }
             }
@@ -336,7 +342,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     {
         if(_disposed)return;
         _disposed=true;_renderGeneration++;
-        _state.Changed-=OnStateChanged;Changed=null;
+        _state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;Changed=null;
         var cleanup=new List<Action>();
         if(_ownsState)cleanup.Add(_state.Dispose);
         cleanup.Add(DetachOwnedEditors);

@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27已完成控件库与工作流开发基线合并及定向验收，产品提交8a98b488。正式UI/全量Release均0错，13轨道与18部署检查通过；实际起始页及主壳响应并正常关闭。详见原方案统一基线节和BASELINE_SYNC_RESULT。此为开发基线同步，第一阶段仍执行中、第二阶段仍未准入。",
+  "current": "2026-10-28第一阶段继续：共同基线f0585b13，本批整组字段与同根ROI来源独立原型自动回归264组及正式EXE通过，见fieldGroupInheritanceCandidate及检查点；完整C09和第一阶段未完成，第二阶段未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -7580,9 +7580,23 @@
     "inheritanceCompositionAudit": {
       "整体来源": "原ROIBOX/ROIANNULUS是结构化几何（矩形五分量/环形六分量），不是ResourceKind.Region；树按正式原类型筛选，复用C07视觉而由host提供TypeRef/kind/角度映射/索引/真实帧验证。全环与部分环不可静默互转。",
       "原模式与显示": "0/1矩形整体/参数，2/3环形整体/参数；目标矩形族清环形7项展示，目标环形族清矩形6项展示；同族不互清，隐藏清13项展示。SetValueNull只置CurValueA，参数变更需old/new均非null，因此删除持久引用尚未证实，不把展示清空冒充数据删除。",
-      "原子入口": "下一新增FieldsView组合TrySetFields，复用同states与一次writer；纯validatePrepared在全部Freeze后且同值判断前运行。不能把旧逐字段校验搬到所有PrepareProposal，避免破坏Range既有同时候选上下文。",
+      "原子入口": "FieldsView TrySetFields与同值纯组验证已实施并经本批回归；保持原Range完整候选上下文。当前只是基础入口及严格策略独立原型，完整C09仍未完成。",
       "修订顺序": "host writer仅完整校验并安装不可变字段/本地几何/Revision根，不在writer中Session.Refresh。全部字段accepted安装后Changed观察者Refresh，旧绘制取消和新stamp安装；观察异常是接纳后错误，不回滚。",
-      "静态边界": "evidence/O06_INHERITANCE_COMPOSITION_STATIC_20261028.json，尚未实现或验收。先库内独立owner样例，不接Blob，不新造几何Replace或业务默认值。"
+      "静态边界": "原静态证据保持O06_INHERITANCE_COMPOSITION_STATIC_20261028.json；基础接纳及独立原型见fieldGroupInheritanceCandidate。原SetValueNull不证明最终删除持久引用，四方式/位姿及全部UI仍未实施完成。",
+      "部分环显示补证": "原Blob Display.xml Annular/annularsector -> Apps.Data.ShapeDefine.AnnularSector:IAnnularSector -> ShapeItemsPage/AnnularSectorShape，既有原源码已活动；显示端StartAngle/AngleRange为度/扫角。输入经native到输出的单位仍未知；非整圆Session接入尚未做，不改kind为sector。原安装件与本地源码SHA见O06_INHERITANCE_COMPOSITION_STATIC_20261028.json followup20261028。"
+    },
+    "fieldGroupInheritanceCandidate": {
+      "范围": "第一阶段C09整组接纳与同根来源/ROI独立原型；基线f0585b13。不是完整C09或Blob重组交付。",
+      "接纳": "FieldsView公开TrySetFields复用同一字段state，冻结调用者/校验/写者副本；全部Freeze后纯组校验同值也执行，生命周期及重入门禁前置；一次writer后全部state安装再通知。SettingsView透传实际代次，writer只安装根，Changed再刷新Session。",
+      "原范围": "两端仍在原Range候选上下文准备及Binding校验，再进入统一组接纳，整段持有提交租约；显式TrySetFields拒绝直接写配对端点，不绕原验证。规范精度之外的批提案明确拒绝。",
+      "交互修复": "显式组接纳只重绘参与字段并替换pending，保留未参与原文；旧字符串/眼睛/模式/清除/设置回调按render代次失效。安装标记区分接纳后观察异常，范围保持规范值而不复活旧raw。C07清除拒绝保来源/Popup，空串不自动提交已有索引原文。",
+      "独立真实入口": "NativeRoiInheritanceScene.xaml显式InitializeComponent，同FieldsView+原NativeRoiScene/Session；共享已抽取预览图像夹具，检测/屏蔽独立模式、同一修订根，继承只投影一个独立稳定来源对象，保留本地集合/ID，切换取消旧绘制，混物理帧拒绝。",
+      "原型限制": "当前示例要求先给有效来源再切继承或组提交，不等于VM可先进入未完成继承态。示例两组均结构化几何不冒称原屏蔽string/Polygon；最终自研多形状屏蔽要求保留。四继承方式/图像型/位姿/多对象菜单历史/文本列表底栏未完。",
+      "最终构建": "UI004零错误6062警告56.40秒；全量Release001零错误6484警告84.58秒。最终构建后产品源码未变，Catalog仅非编译来源元数据更新。",
+      "最终自动回归": "Window142=109、Field079=31、Design041=74、RuntimeEditor059=10、FullChain119=8、Components201=9、ThemeStartup004=1、Resources013=22，共264组；正式EXE012 exit0/22可用工具15分类。",
+      "失败保留": "Window139测试误按Button.CommandParameter找原Radio，改走原Checked；140捕获清除拒绝仍关Popup的实际问题，修复后141定向14过，142全部109过。Field078旧反射调用未传现可选参数，补参数不减断言，079全部31过。UI001—003非最终成绩。",
+      "证据与人工边界": "O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json及SOURCE_AUDIT；146唯一原来源SHA复核。Window142继承态和Design041真实XAML入口PNG已查看；只自动WPF事件，不代物理鼠标、真实VS/VM同态及用户验收。",
+      "下一步": "继续完整C09四继承方式/图像模式/位姿来源和正确部分环显示；核原持久化未知与类型/角度/物理帧合同。阶段一未退出，Blob业务冻结，完整目标active。"
     }
   },
   "vmFrameworkArchitectureReference": {

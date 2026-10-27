@@ -20,6 +20,7 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     private readonly Func<RoiEditSnapshot> _read;
     private readonly Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> _accept;
     private readonly Func<bool> _isCurrent;
+    private readonly Func<string,bool>? _canDraw;
     private Dictionary<(string,Guid),NativeRoiProjection> _items=new();
     private readonly ProjectionRows<NativeRoiProjection> _rows=new();
     private bool _disposed,_invalid,_committing,_selecting,_refreshing,_reading;
@@ -61,11 +62,12 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     public event Action<RoiDrawRequest>? DrawRequested;
     public event Action<RoiDrawRequest>? DrawCancelled;
     public NativeRoiSession(IReadOnlyImage image,Func<RoiEditSnapshot> read,
-        Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> accept,Func<bool> isCurrent,string drawingGroup,bool isAvoid=false)
+        Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> accept,Func<bool> isCurrent,string drawingGroup,bool isAvoid=false,
+        Func<string,bool>? canDraw=null)
     {
         ResourceContractRules.ValidateImage(image);
         if(string.IsNullOrWhiteSpace(drawingGroup))throw new ArgumentException("绘制组必须由宿主明确提供。",nameof(drawingGroup));
-        DrawingGroup=drawingGroup;
+        DrawingGroup=drawingGroup;_canDraw=canDraw;
         IsAvoid=isAvoid;Image=image;Frame=image.Frame;ImageWidth=image.Width;ImageHeight=image.Height;
         _read=read;_accept=accept;_isCurrent=isCurrent;
         ROIValueChangedCommand=new EditCommand(_=>{if(_selected is {} selected)TryCommit(selected);});
@@ -204,6 +206,13 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
         return request is null?[]:(DrawCancelled?.GetInvocationList().Cast<Action<RoiDrawRequest>>()??[]).Select(handler=>(Action)(()=>handler(request))).ToArray();
     }
     public void CancelDraw()=>NativeRoiCallbacks.Run(InvalidateDraw());
+    private bool CanDrawGroup(string group)
+    {
+        if(!IsCurrent)return false;
+        var stamp=_stamp;var groups=_groupGeneration;var draws=_drawGeneration;
+        var allowed=_canDraw?.Invoke(group)!=false;
+        return allowed&&IsCurrent&&stamp==_stamp&&groups==_groupGeneration&&draws==_drawGeneration&&DrawingGroup==group;
+    }
     public RoiDrawRequest? BeginDraw(string kind)
     {
         if(!IsCurrent||_committing||_refreshing||_reading||_selecting||_requesting)return null;
@@ -213,11 +222,12 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
         _requesting=true;var group=DrawingGroup;var groupGeneration=_groupGeneration;
         try
         {
-            if(!PrepareEditor()||!IsCurrent||groupGeneration!=_groupGeneration)return null;
+            if(!CanDrawGroup(group)||groupGeneration!=_groupGeneration)return null;
+            if(!PrepareEditor()||!IsCurrent||groupGeneration!=_groupGeneration||!CanDrawGroup(group))return null;
             var stamp=Stamp;var generation=_drawGeneration+1;CancelPending();
-            if(!IsCurrent||Stamp!=stamp||generation!=_drawGeneration||groupGeneration!=_groupGeneration)return null;
+            if(!IsCurrent||Stamp!=stamp||generation!=_drawGeneration||groupGeneration!=_groupGeneration||!CanDrawGroup(group))return null;
             var snapshot=Capture(ReadCurrent());
-            if(!IsCurrent||generation!=_drawGeneration||groupGeneration!=_groupGeneration)return null;
+            if(!IsCurrent||generation!=_drawGeneration||groupGeneration!=_groupGeneration||!CanDrawGroup(group))return null;
             if(snapshot.Stamp!=stamp){Error="区域根已改变，请在当前范围重新绘制。";Install(snapshot);return null;}
             handlers=DrawRequested?.GetInvocationList().Cast<Action<RoiDrawRequest>>().ToArray()??[];
             if(handlers.Length!=1){Error="绘制需要一份明确的视口接收器。";Notify();return null;}
@@ -245,11 +255,12 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
         try
         {
             bool Current()=>IsCurrent&&generation==_drawGeneration&&Stamp==request.Stamp;
-            if(!Current())return false;
+            if(!Current()||!CanDrawGroup(request.Group)||!Current())return false;
             ValidateNativeGeometry(geometry);
             if(geometry.Get<string>("kind")!=request.Kind)throw new ArgumentException("完成形状与原绘制请求不符。",nameof(geometry));
             var current=Capture(ReadCurrent());if(!Current())return false;
             if(current.Stamp!=request.Stamp){Error="绘制期间区域根已改变。";InstallAfterCommit(current);return false;}
+            if(!CanDrawGroup(request.Group)||!Current())return false;
             var proposal=new RoiEditProposal(RoiEditOperation.Create,request.Group,null,geometry);
             var result=_accept(current.Stamp,proposal);
             if(!Current())return result.Accepted;

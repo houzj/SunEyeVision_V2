@@ -48,7 +48,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public bool IsSelectedSubscribeParam=>_expansion is {IsValid:true,HasSelection:true};
     public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;Notify(nameof(IsDropDownOpen));}}
     public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;Notify(nameof(IsTextDropDownOpen));}}
-    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(_pendingText is not null)TryCommitPending();}}
+    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(value.Length!=0&&_pendingText is not null)TryCommitPending();}}
     public ICommand DropDownCommand {get;}
     public ICommand ClickCommand {get;}
     public ICommand IndexClickCommand {get;}
@@ -138,7 +138,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private void SelectSource(ReferenceTreeNode? node)
     {
         if(_disposed||_state.IsDisposed||!_state.IsReferenceMode||!ContainsSourceNode(node))return;
-        if(node.Clear){_pendingText=null;ClearReference();OnStateChanged();RequestClose();return;}
+        if(node.Clear){ClearSource();return;}
         if(node.Candidate is not {} candidate)return;
         var selection=!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting old&&candidate.Output.Type.Shape==ValueShape.Sequence
             ?old.Reference.Selection:BindingSelection.All;
@@ -165,13 +165,18 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public void ObserveText(string text)
     {
         if(_disposed||text==CurValueA)return;
-        if(text.Length==0){_pendingText=null;ClearReference();OnStateChanged();RequestClose();return;}
+        if(text.Length==0){ClearSource();return;}
         _pendingText=text;
     }
-    private void ClearReference()
+    private void ClearSource()
     {
-        if(_state.Port.Required)_state.ClearReference();
-        else _accept(new UnsetSetting());
+        if(!ClearReference()){RestoreSelection();Notify(nameof(CurValueA));return;}
+        _pendingText=null;OnStateChanged();RequestClose();
+    }
+    private bool ClearReference()
+    {
+        if(_state.Port.Required){_state.ClearReference();return !_disposed&&!_state.IsDisposed&&_state.ReferenceCleared;}
+        return _accept(new UnsetSetting());
     }
     public bool TryPreparePending(out ParameterSetting proposal)
     {

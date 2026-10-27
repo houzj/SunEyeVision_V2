@@ -70,5 +70,64 @@
     "dispose/rebind during validation and writer",
     "post-accept observer errors preserve installed states",
     "array and caller dictionary mutation cannot corrupt prepared snapshot"
-  ]
+  ],
+  "followup20261028": {
+    "classification": "静态原件/既有恢复资料，只作下一实施边界；不计VM动态等价",
+    "fieldGroupCheckpoint": "O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json",
+    "radio": "InheritWay使用RadioSelecter3五槽填4项；ROIAreaType Ex2是两槽",
+    "parameterInheritance": "原五矩形/六环形ButtonSelecter float来源，不是Range。AngleExtend是扫角；消费者单位仍需补证。",
+    "partialAnnulus": "当前Session仅完整annulus四项，不能把原六项部分环忽略角度/强制整圆/暗改sector；正确原显示消费者待核。",
+    "fixture": "原生产Process只缓存发布十float，不计算矩阵；既有重建姿态公式不是原公式证据。单位/方向/旋转缩放顺序须追原生消费者。",
+    "evidence": [
+      {
+        "path": "D:/MyWork/REA逆向测试/docs/plugins/FIXTURE-SOURCE-RECOVERY.md",
+        "sha256": "76377cd21d8bb2a39dc305e51f263a4febb18f898113aa2a0d9f5aeb4288c84f"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/docs/plugins/FIXTURE-IMPLEMENTATION-EXIT.md",
+        "sha256": "2af6e05b52e41025d9d4510d2a83b8f7c2c3bd008c94d5c0d2a170d38eed0712"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/docs/FIXTURE-NATIVE-FIELD-AUDIT.md",
+        "sha256": "05006bc0fe76fca1125f5f7e8eec52ad7fd1718c6d2825960166529082e75b41"
+      }
+    ],
+    "annularDisplay": {
+      "chain": "Blob Display.xml Annular Type=annularsector -> ObjectBase.GetShape -> Apps.Data.ShapeDefine.AnnularSector : IAnnularSector -> SetShapeProperty -> ShapeItemsPage -> AnnularSectorShape",
+      "mapping": "CenterX/Y OuterRadius InnerRadius StartAngle AngleRange；AngleRange来自DetectAnnulusAngleExtend。显示接口为度/扫角，360有闭合分支；不是本地Sector编辑器。",
+      "boundary": "静态定点ILSpy原DLL证据，不把DLL SHA冒作源码SHA；输入订阅经native到输出的角度转换仍未证。无物理帧元数据，宿主同帧验证必需；当前非整圆annulus Session仍未接入。",
+      "originalArtifacts": [
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuDisplay.xml",
+          "sha256": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112"
+        },
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.XmlParser.dll",
+          "sha256": "78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1"
+        },
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Data.dll",
+          "sha256": "2ad51c179d4a5cf7e0c0373cd1526de8a75d53a3ea6cbe3ef73c0c5268e1c55c"
+        },
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMBaseControls.dll",
+          "sha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555"
+        },
+        {
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VMControls.RenderInterface.dll",
+          "sha256": "67d5988152401745e160f0e6a0dd257a3451c519f7740334887bacd202622ac2"
+        }
+      ],
+      "existingLocalSources": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
+          "sha256": "88c119b2782c35bc5cf08a6494d85bcba7813bd27f4e1005824fdcb1458d1961"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/AnnularSectorShape.cs",
+          "sha256": "a83fd9c7354faa02a2653f61ea09b5779fa5475f42044510c5e93a2fc34551cc"
+        }
+      ]
+    }
+  }
 }

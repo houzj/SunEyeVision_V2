@@ -27,6 +27,16 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritancePreview())
+            {
+                Render(entry,"native-roi-inheritance-xaml-entry.png",1020,800);
+                var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample>(entry).Single();
+                Check(Application.Current is null&&sample.Fields.Fields.Count==4&&sample.Session.Frame==sample.Frame,
+                    "整体来源与ROI真实XAML入口无Application并共用字段及物理帧");
+                Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.source",new ReferenceSetting(sample.Reference("detect"))}})
+                    &&sample.Session.Stamp.Revision==sample.Revision&&sample.Session.Items.Single(x=>x.Group=="detect").Enabled==false,
+                    "独立原继承样例沿同一组接纳链切换显示修订");
+            }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
             {
                 Render(entry,"native-integer-radio-xaml-entry.png",600,300);

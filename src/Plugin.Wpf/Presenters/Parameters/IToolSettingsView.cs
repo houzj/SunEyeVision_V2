@@ -1,6 +1,7 @@
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Fields;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
@@ -13,7 +14,8 @@ public sealed record ToolSettingsViewOptions(
     Func<OutputReference,string>? FormatReference=null,
     string? InputSection=null,FrameworkElement? InputContent=null,
     Action<object,IReadOnlyDictionary<string,ReferenceSetting>>? AcceptCandidate=null,
-    IReadOnlyDictionary<string,NativeIntegerRadioOptions>? IntegerRadios=null);
+    IReadOnlyDictionary<string,NativeIntegerRadioOptions>? IntegerRadios=null,
+    Func<FieldGroupCandidate,string?>? ValidateComposition=null);
 
 public interface IToolSettingsView : IDisposable
 {

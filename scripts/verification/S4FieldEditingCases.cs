@@ -341,7 +341,7 @@ internal static class S2DocumentEditingCases
             var values=Array.CreateInstance(tupleType,2);
             values.SetValue(Activator.CreateInstance(tupleType,a,new ConstantSetting(low)),0);
             values.SetValue(Activator.CreateInstance(tupleType,b,new ConstantSetting(high)),1);
-            try{return (bool)method.Invoke(null,new object[]{values,writer})!;}
+            try{return (bool)method.Invoke(null,new object?[]{values,writer,null,null,false,null})!;}
             catch(TargetInvocationException error)when(error.InnerException is not null)
             {System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error.InnerException).Throw();throw;}
         }
@@ -370,7 +370,7 @@ internal static class S2DocumentEditingCases
         stateType.GetEvent("Changed")!.AddEventHandler(stateField.GetValue(observedLeft),(Action)(()=>laterStateListener=true));
         try
         {
-            method.Invoke(null,new object[]{values,(Action<IReadOnlyDictionary<string,ParameterSetting>>)(_=>{})});
+            method.Invoke(null,new object?[]{values,(Action<IReadOnlyDictionary<string,ParameterSetting>>)(_=>{}),null,null,false,null});
             throw new Exception("组观察者异常被吞掉");
         }
         catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException {Message:"组观察者异常"}){}

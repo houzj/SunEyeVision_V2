@@ -13,7 +13,7 @@ using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Finite page/section/conditional composition. No workflow access or publication.</summary>
-public sealed class DeclaredFieldsView : UserControl,IDisposable
+public sealed partial class DeclaredFieldsView : UserControl,IDisposable
 {
  private readonly List<DeclaredFieldAccess> _fields=new();
  private readonly Dictionary<string,DeclaredFieldEditor> _editors=new(StringComparer.Ordinal);
@@ -106,15 +106,20 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  public DeclaredFieldsView(IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> fields,
   Action<IReadOnlyDictionary<string,ParameterSetting>> writeDraft,ReferenceFieldOptions? references=null,
   Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null,
-  IReadOnlyDictionary<string,NativeIntegerRadioOptions>? integerRadios=null)
+  IReadOnlyDictionary<string,NativeIntegerRadioOptions>? integerRadios=null,
+  Func<FieldGroupCandidate,string?>? validateComposition=null,Func<bool>? isCurrent=null)
  {
+  ArgumentNullException.ThrowIfNull(writeDraft);
+  _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
   Resources.MergedDictionaries.Add(EditorResources.Create());Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
   try
   {
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();
   var declarations=all.ToDictionary(field=>field.Port.Id,StringComparer.Ordinal);
+  _groupPresentations=all.ToDictionary(field=>field.Port.Id,field=>field.Presentation,StringComparer.Ordinal);
   var paired=new HashSet<string>(StringComparer.Ordinal);
   var radios=integerRadios?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
+  _integerRadios=radios;
   foreach(var option in radios)
   {
    if(!declarations.TryGetValue(option.Key,out var declared)||option.Value is null)throw new ArgumentException("整数单选选项引用了未知字段。");
@@ -122,13 +127,6 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
    if(declared.Presentation.Layout?.PairWith is not null||declared.Presentation.Layout?.DialogGroup is not null)
     throw new ArgumentException("整数单选不能同时声明范围配对或显示弹层。");
   }
-  var accept=writeDraft;
-  writeDraft=proposals=>
-  {
-   foreach(var proposal in proposals)
-    if(radios.TryGetValue(proposal.Key,out var option)&&option.Validate(proposal.Value) is {} error)throw new ArgumentException(error);
-   accept(proposals);
-  };
   // Validate the complete topology before constructing any original view or subscribing listeners.
   foreach(var field in all)
   {
@@ -149,11 +147,13 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
    if(a.Minimum>b.Maximum)throw new ArgumentException("配对范围没有可行值。");
   }
   if(radios.Keys.Any(paired.Contains))throw new ArgumentException("整数单选不能同时作为范围的任一端点。");
+  _pairedFields.UnionWith(paired);
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
    if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
-   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),validate:proposal=>references?.ValidateProposal?.Invoke(field.Port,proposal));
+   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),
+       propose:proposal=>ProposeSingle(field.Port.Id,proposal));
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
   }
   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);
@@ -162,7 +162,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
    if(field.Presentation.Layout?.PairWith is {} id)
    {
     var other=declarations[id];var left=states[field.Port.Id];var right=states[id];
-    var range=new NativeRangePresenter(left,right,field.Presentation,other.Presentation,writeDraft,references,formatReference);_ranges.Add(range);
+    var range=new NativeRangePresenter(left,right,field.Presentation,other.Presentation,writeDraft,references,formatReference,
+        SubmitRange,BeginRange);_ranges.Add(range);
     foreach(var (state,endpoint) in new[]{(left,0),(right,1)})
     {
      var i=endpoint;
@@ -278,6 +279,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   {
    _parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
+   _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
+   _groupPresentations=new Dictionary<string,FieldPresentation>();
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });
   ParameterCleanup.Run(cleanup);

@@ -24,6 +24,8 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private readonly ReferencePopupScope?[] _scopes=new ReferencePopupScope?[2];
     private readonly ReferenceExpansionCoordinator _expansion;
     private readonly Action<IReadOnlyDictionary<string,ParameterSetting>> _write;
+    private readonly Func<IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)>,Action,bool>? _acceptPrepared;
+    private readonly Func<IDisposable?>? _beginGroup;
     private readonly bool[] _allow;
     private readonly Func<Port,ParameterSetting,string?>? _validate;
     private readonly TextBlock _error=new(){TextWrapping=TextWrapping.Wrap};
@@ -40,10 +42,12 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
     private static DependencyProperty ModeProperty(int i)=>i==0?Numbers.SliderArrangeBase.IsSubscribeLeftProperty:Numbers.SliderArrangeBase.IsSubscribeRightProperty;
 
     public NativeRangePresenter(DeclaredFieldState left,DeclaredFieldState right,FieldPresentation lower,FieldPresentation upper,
-        Action<IReadOnlyDictionary<string,ParameterSetting>> write,ReferenceFieldOptions? references,Func<OutputReference,string>? format)
+        Action<IReadOnlyDictionary<string,ParameterSetting>> write,ReferenceFieldOptions? references,Func<OutputReference,string>? format,
+        Func<IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)>,Action,bool>? acceptPrepared=null,Func<IDisposable?>? beginGroup=null)
     {
         _expansion=new(this);
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
+        _acceptPrepared=acceptPrepared;_beginGroup=beginGroup;
         _allow=_presentations.Select(p=>references is not null&&p.Layout?.AllowReference!=false).ToArray();
         Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0);MinHeight=32;
         Label=lower.DisplayName.Replace("下限","范围");
@@ -154,9 +158,11 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         if(_disposed||_states.Any(state=>state.IsDisposed||state.SourceError.Length!=0))return false;
         if(_committing)return false;
         _committing=true;
-        var raw=_commits.Select(commit=>commit?.PendingRaw).ToArray();var candidateInstalled=false;var accepted=false;
+        IDisposable? group=null;
+        var raw=_commits.Select(commit=>commit?.PendingRaw).ToArray();var candidateInstalled=false;var accepted=false;var projected=false;
         try
         {
+            if(_beginGroup is not null){group=_beginGroup();if(group is null)return false;}
             var proposals=new ParameterSetting[2];
             for(var i=0;i<2;i++)
             {
@@ -184,12 +190,16 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                 for(var i=0;i<2;i++)if(proposals[i] is ConstantSetting number&&!_commits[i]!.ValidatePreparedBindings(number))return false;
             }
             finally{_syncing=false;}
-            accepted=DeclaredFieldState.TrySetGroup(new[]{(_states[0],proposals[0]),(_states[1],proposals[1])},_write);
+            var prepared=new[]{(_states[0],proposals[0]),(_states[1],proposals[1])};
+            accepted=_acceptPrepared is {} submit?submit(prepared,()=>accepted=true):DeclaredFieldState.TrySetGroup(prepared,_write,installed:()=>accepted=true);
             if(_disposed||_states.Any(state=>state.IsDisposed))return false;
-            if(accepted)Project(true);return accepted&&!Invalid;
+            if(accepted){Project(true);projected=true;}return accepted&&!Invalid;
         }
         finally
         {
+            try
+            {
+            if(!_disposed&&accepted&&!projected&&!_states.Any(state=>state.IsDisposed))Project(true);
             if(!_disposed&&candidateInstalled&&!accepted&&!_states.Any(state=>state.IsDisposed))
             {
                 _syncing=true;
@@ -205,6 +215,8 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                 finally{_syncing=false;}
             }
             _committing=false;if(!_disposed)Project(false);
+            }
+            finally{_committing=false;group?.Dispose();}
         }
     }
     public bool TryCommitPending(bool explicitRetry=false)

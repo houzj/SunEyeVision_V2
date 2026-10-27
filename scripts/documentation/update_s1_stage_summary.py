@@ -350,6 +350,9 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-inheritance-composition-audit">C09继承组合原子接纳与来源证据</h5>'
                + table(['项目','边界与待实施内容'], list(plan['inheritanceCompositionAudit'].items()))
                if plan.get('inheritanceCompositionAudit') else '')
+            + ('<h5 id="o06-field-group-inheritance">C09整组字段与同根ROI来源独立原型</h5>'
+               + table(['项目','本批结果及未完成边界'], list(plan['fieldGroupInheritanceCandidate'].items()))
+               if plan.get('fieldGroupInheritanceCandidate') else '')
             + ('<h5 id="o06-text-list-footer-audit">文本、结果列表与底栏的原组合缺口</h5>'
                + table(['组合','当前缺口与后续边界'], list(plan['remainingControlAudit20261028'].items()))
                if plan.get('remainingControlAudit20261028') else '')

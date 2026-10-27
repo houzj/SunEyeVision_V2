@@ -6340,7 +6340,7 @@
   },
   "currentCanvasNavigationHistoryMigration": {
     "baseline": "3864379f",
-    "status": "D3生产链及383自动回归280通过，固定提交后复建启动待人工验收",
+    "status": "D3已贯通，385同版281通过及正常起始页启动，待用户人工验收",
     "scope": [
       "C01-C12画布与流程切换",
       "H01-H08统一历史与会话边界"
@@ -6418,16 +6418,82 @@
       "VS/物理/DPI/用户验收未通过"
     ],
     "currentValidation": {
-      "full383": "0错误/968警告/54.06秒",
+      "ui385": "0错误/1334警告/76.46秒",
+      "preFixFull384": "0错误/1359警告/69.19秒",
       "historyAndDocument": 117,
       "transactionAndConfiguration": 7,
       "canvasNavigation": 153,
       "actualHost": 1,
       "actualMode": 1,
       "actualTools": 1,
-      "distinctTotal": 280,
-      "manual": "尚未启动本批；VS设计时/物理/DPI/用户验收待记录",
-      "knownFailures": "379/380引用编译；381探针同名需隔离；382新增构造/自连接夹具；383旧反射夹具及显示DP/关闭动画断言已修，历史日志保留"
-    }
+      "actualThemeStartup": 1,
+      "distinctTotal": 281,
+      "formalProbeExit": 0,
+      "loadedAssemblies": 22,
+      "binaryReceipt": "Release/_validation/Toolbox-IsolatedPreview-20261026/CanvasParity-385/binary-receipt.json",
+      "normalStartup": {
+        "manualAcceptance": "待用户",
+        "physicalOleAndMultiDpi": "待人工",
+        "pid": 49508,
+        "checkedAt": "2026-10-27T17:09:28.7851822+08:00",
+        "visualStudioDesigner": "未验证",
+        "productSource": "2bef5bcf5314ed0a65c70c04ceb214fab6fb7293",
+        "windowTitle": "SunEyeVision · 起始页",
+        "responding": true
+      },
+      "manual": "待用户；VS/物理/DPI未通过",
+      "startupCorrection": "384正常启动因误删SDK棋盘key失败；恢复32px SDK资源、独立6px工作流网格及实际ThemeManager全键验证，385正常启动确认"
+    },
+    "productSource": "2bef5bcf5314ed0a65c70c04ceb214fab6fb7293",
+    "implementationSources": [
+      {
+        "path": "src/Workflow/DocumentHistoryCoordinator.cs",
+        "sha256": "2DF0E396CB67C64C93084AABDAC87DFE8BA37395865505258B9404D3CF6415B6"
+      },
+      {
+        "path": "src/Workflow/DocumentEditSession.cs",
+        "sha256": "A5533B71B83B403F85D37C19C99A5D226993E86B99A0AD46A8E2C82E9D923BC2"
+      },
+      {
+        "path": "src/Workflow/SolutionSession.cs",
+        "sha256": "D5ECD6159EF5660739B4AA84F4A56E31349C285C53EE9CC1D1E88534CF2B47F2"
+      },
+      {
+        "path": "src/Workflow/NodeConfigurationEditHost.DocumentHistory.cs",
+        "sha256": "EB76321EA90D7AA06FD14F7E9C00645CC68AEDF74904EC7ABDC20094F426CF5C"
+      },
+      {
+        "path": "src/UI/Features/WorkflowUI/Commands/CommandManager.cs",
+        "sha256": "548D4B646247124F9C5DB7E140BC46B7425972E9E655A32ED0E51CCEEB26CF81"
+      },
+      {
+        "path": "src/UI/Shell/Windows/MainWindowDocumentHistory.cs",
+        "sha256": "07D853FE37786CD84BEDEB8A397F684745BC28E6B18CD4596DD4138400C062EB"
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.ViewState.cs",
+        "sha256": "740AFF7700B55CBC8EA6B5FB5F892135D4B419703B834101AF2878E3C076ACAF"
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs",
+        "sha256": "B439112C166DEE8DA4FFB486541609F32A176C7C15DEECE928E4C3285BC7F9C5"
+      },
+      {
+        "path": "src/UI/Themes/Dark/DarkTheme.xaml",
+        "sha256": "70A49B632AFEC871E96F2C6A1479F4568DEA83BF26F116A47418F97C879AB94F"
+      },
+      {
+        "path": "src/UI/Themes/Light/LightTheme.xaml",
+        "sha256": "7DF7BEB637A3FE92C71D37221639FB4BB020461B3DFABD5CAD88C3B9052E2C55"
+      },
+      {
+        "path": "tests/SunEyeVision.UI.Tests/RootWorkspaceHostTests.cs",
+        "sha256": "452C41BBFB1A2EA35E7F41C9CFE25EF0A2D2D02477A7475C11766EA020780246"
+      },
+      {
+        "path": "tests/SunEyeVision.UI.Tests/ThemeStartupContractTests.cs",
+        "sha256": "77D316986C0CFE074C6CBB3BD81AA113E1BB07002281BF29DC913230FF6AEFE6"
+      }
+    ]
   }
 }

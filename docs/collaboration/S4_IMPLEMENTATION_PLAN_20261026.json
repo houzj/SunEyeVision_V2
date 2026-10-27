@@ -2,8 +2,8 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27 Blob已成为Runtime/Wpf两个工程，旧入口/模型/桥接及旧发布目录退出，正式创建、编辑、执行、结果、下游及保存重开通过。继续补完整显示、ROI/绑定消费和同一真实UI的设计时支持。",
-  "summaryStatus": "两工程结构已落实，正式UI/全量0错误及18项部署检查通过；完整G2/M1、VM全部交互/显示、设计器可用和真实外观验收尚未完成。",
+  "current": "2026-10-27 设计时真实视图、样例、正式资源与根XAML组装已实现；已暴露原Tab选中索引，未新增页签。独立13项和相称运行回归通过；用户已看见三页签，选页属性实际复验与完整外观待反馈。Blob两工程及其他目标余项继续未完。",
+  "summaryStatus": "两工程已落实，设计时基础代码/独立检查及运行回归通过；实际VS仅确认三个页签可见，选页和完整人工验收待定，G2/M1/M2/M3未完成。",
   "rows": [
     [
       "Blob两工程及旧SDK实现退出",
@@ -13,7 +13,7 @@
     [
       "同一真实UI的设计时支持",
       "同一真实工具UI同时供VS设计器和正式运行使用；设计时可用是基础交付门槛。保留C#动态字段生成，只需设计器用示例数据走同一组装链，不要求把所有字段手写成XAML；不另建预览页面或工程。",
-      "基础交付必需项；当前运行时可用，设计时独立创建及完整显示尚未实施/验收。"
+      "最终串行UI005为0错误/6613警告126.64秒，全量003为0错误/6525警告74.01秒。正式Release独立设计13项、RuntimeEditor8、FieldEditing8、WindowPresentation11、FullChain7、Components9通过；正式EXE22工具准入。12份源码、760发布项和174加载记录同源。独立根XAML检查不代替VS实际或用户外观验收。 独立设计/根XAML/选页同步13项及相称运行回归通过；用户已看到三个页签，设计器选页属性补齐后实际复验待反馈。"
     ],
     [
       "Runtime图像混合消费与主图像",
@@ -5206,10 +5206,10 @@
     "subsequentProgress": "根SDK Blob工程/旧模型/转换及发布残留已删除，见blobTwoProjectCheckpoint；本检查点原证据不改写，完整输入/显示/设计时及消费者继续未完。"
   },
   "uiDesignTimePlan": {
-    "status": "基础交付必需项；当前运行时可用，设计时独立创建及完整显示尚未实施/验收。",
+    "status": "独立设计/根XAML/选页同步13项及相称运行回归通过；用户已看到三个页签，设计器选页属性补齐后实际复验待反馈。",
     "decision": "同一真实工具UI同时供VS设计器和正式运行使用；设计时可用是基础交付门槛。保留C#动态字段生成，只需设计器用示例数据走同一组装链，不要求把所有字段手写成XAML；不另建预览页面或工程。",
     "sourceThreadId": "01a17adf-f347-7781-9247-07f4ca161fb1",
-    "facts": "BlobParameterEditor.xaml当前仅为空EditorHost；代码只有接收IToolSettingsDraft/Options的有参构造，运行时new DeclaredSettingsView。公共Presenter也只有有参构造并在C#组装字段。结果页已有真实XAML及设计宽高，但缺设计结果数据/自足主题。当前不能称完整VS设计器预览已完成，单补d:DataContext不足以解决运行时才生成的视觉树。",
+    "facts": "同一真实参数/结果XAML使用正式公共控件与资源；独立设计草稿来自真实XML，输入区同一公共组装。根XAML直接附加参数样例及正式结果列，不依赖外层构造。现有Tab的SelectedPageIndex可在XAML用0/1/2选页，运行Tab反向同步；没有新增可见页签/按钮。",
     "rows": [
       [
         "真实视图及组装链",
@@ -5219,12 +5219,12 @@
       [
         "公共Presenter入口",
         "DeclaredSettingsView增加无参创建和可绑定Draft/Options或统一中立上下文；设计/运行数据就绪后走同一组装流程。",
-        "入口当前尚不存在；重绑先解除旧监听，卸载释放视觉订阅，草稿生命周期仍归正式编辑事务。"
+        "无参入口及可绑定Draft/Options已实现；重绑解除旧监听、移出复用输入树，并按代次拒绝旧控件写入。Dispose清除草稿、选项、视觉树与Changed订阅；实际VS卸载仍待人工核对。"
       ],
       [
         "设计数据",
         "现有Blob.Wpf内仅增加必要的Design/BlobDesignData.cs；用真实Runtime设置和同一XML默认值，结果提供少量成功、NG、空状态数据。",
-        "d:DataContext/d:DesignWidth/Height配合mc:Ignorable；不复制业务模型或硬编码第二份默认值，不污染正式参数。"
+        "实际设计草稿读取真实BlobSettings/XML默认值；结果使用现有BlobAnalysisRow示例，两行及空状态已检查。其他NG显示态随完整显示功能继续补齐；无第二份业务模型/默认值，不写用户方案。"
       ],
       [
         "资源与运行边界",
@@ -5274,6 +5274,17 @@
         "current": "保留十项公共VM控件检查，末项核新Runtime三页/58字段/XML布局/草稿隔离，共11项",
         "notEquivalent": "新Runtime图形/文本样式及本地ROI完整消费仍未完成，不能沿用旧界面成绩。"
       }
-    ]
+    ],
+    "subsequentProgress": "设计时同一真实视图基础实现与独立组装已推进，见uiDesignTimeCheckpoint；旧检查点身份/成绩保持。"
+  },
+  "uiDesignTimeCheckpoint": {
+    "status": "INDEPENDENT_REAL_VIEW_VERIFIED_VS_VISIBLE_PAGE_SELECTION_PENDING",
+    "sourceBaseCommit": "cbb8f1ef7586db70ebe7ced6a12bdb671345c564",
+    "evidence": "docs/collaboration/evidence/O06_BLOB_DESIGN_TIME_CHECKPOINT_20261027.json",
+    "implementation": "同一真实参数/结果XAML使用正式公共控件与资源；独立设计草稿来自真实XML，输入区同一公共组装。根XAML直接附加参数样例及正式结果列，不依赖外层构造。现有Tab的SelectedPageIndex可在XAML用0/1/2选页，运行Tab反向同步；没有新增可见页签/按钮。",
+    "verification": "最终串行UI005为0错误/6613警告126.64秒，全量003为0错误/6525警告74.01秒。正式Release独立设计13项、RuntimeEditor8、FieldEditing8、WindowPresentation11、FullChain7、Components9通过；正式EXE22工具准入。12份源码、760发布项和174加载记录同源。独立根XAML检查不代替VS实际或用户外观验收。",
+    "manual": "初次VS无效标记截图保留。用户随后反馈“可以看到三项，但是好像三个tab无法切换”；已补原Tab选中索引并说明非新增页签，实际VS用SelectedPageIndex选页待复验。尚未确认全部控件、结果页、布局刷新或VM外观。",
+    "limits": "独立WPF设计标记和渲染检查不等同Visual Studio设计器实测；本轮未补全部NG显示、本地ROI或完整VM视觉，不新增工程/预览UI，不缩小原目标。",
+    "diagnostics": "DesignTime/attempt-004最终13项；attempt-003原12项、attempt-002松散XAML命名空间检查失败保留。初次Debug配置缺程序集，Release ResolveReferences实际指向正式根。"
   }
 }

@@ -3,12 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:design="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Wpf.Design"
+        xmlns:presentation="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Presentation"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=design:BlobResultDesignData, IsDesignTimeCreatable=True}"
         d:DesignHeight="350" d:DesignWidth="700">
-
+    <UserControl.Resources>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Generic.xaml"/>
+    </UserControl.Resources>
     <DockPanel>
         <!-- 统计摘要区域（顶部固定） -->
-        <Border DockPanel.Dock="Top" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource O06.PanelBackgroundBrush}" BorderBrush="{DynamicResource O06.BorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -21,37 +26,38 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Blob: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    <TextBlock Text="Blob: " Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="面积: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding FilteredTotalArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
-                    <TextBlock Text=" px²" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10"/>
+                    <TextBlock Text="面积: " Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding FilteredTotalArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <TextBlock Text=" px²" Foreground="{DynamicResource O06.TextSecondaryBrush}" FontSize="10"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="均值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding AverageArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    <TextBlock Text="均值: " Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding AverageArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="最大: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding MaxArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    <TextBlock Text="最大: " Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding MaxArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="阈值范围: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding ThresholdRangeText, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    <TextBlock Text="阈值范围: " Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ThresholdRangeText, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource O06.TextSecondaryBrush}"/>
                 </StackPanel>
 
-                <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding ThresholdTypeText, Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="11"/>
+                <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding ThresholdTypeText, Mode=OneWay}" Foreground="{DynamicResource O06.TextSecondaryBrush}" FontSize="11"/>
             </Grid>
         </Border>
 
         <!-- Blob 详细数据表格 -->
         <DataGrid x:Name="BlobDataGrid"
+                  presentation:BlobResultColumns.Enabled="True"
                   ItemsSource="{Binding FilteredBlobs}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
@@ -64,16 +70,16 @@
                   FontSize="11"
                   BorderThickness="0"
                   GridLinesVisibility="Horizontal"
-                  Background="{DynamicResource ThemeTableRowBackgroundBrush}"
-                  RowBackground="{DynamicResource ThemeTableRowBackgroundBrush}"
-                  Foreground="{DynamicResource ThemeTextPrimaryBrush}"
-                  AlternatingRowBackground="{DynamicResource ThemeTableRowHoverBackgroundBrush}"
+                  Background="{DynamicResource O06.InputBackgroundBrush}"
+                  RowBackground="{DynamicResource O06.InputBackgroundBrush}"
+                  Foreground="{DynamicResource O06.TextSecondaryBrush}"
+                  AlternatingRowBackground="{DynamicResource O06.ControlHoverBackgroundBrush}"
                   SelectionChanged="BlobDataGrid_SelectionChanged">
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="{DynamicResource ThemeTableHeaderBackgroundBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource O06.PanelBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource O06.TextSecondaryBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource O06.BorderBrush}"/>
                     <Setter Property="BorderThickness" Value="0,0,1,1"/>
                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 </Style>

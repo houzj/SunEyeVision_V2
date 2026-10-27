@@ -9,13 +9,16 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 /// The document owner decides when to capture, commit, cancel and dispose.</summary>
 public partial class BlobParameterEditor : UserControl,IToolSettingsView
 {
-    private readonly DeclaredSettingsView _editor;
+    public BlobParameterEditor()
+    {
+        InitializeComponent();
+    }
     public BlobParameterEditor(IToolSettingsDraft draft,ToolSettingsViewOptions options)
-    {InitializeComponent();_editor=new(draft,options);EditorHost.Content=_editor;}
+        :this()=>Editor.Bind(draft,options);
     public FrameworkElement View=>this;
-    public bool HasInvalidInput=>_editor.HasInvalidInput;
-    public event Action? Changed {add=>_editor.Changed+=value;remove=>_editor.Changed-=value;}
+    public bool HasInvalidInput=>Editor.HasInvalidInput;
+    public event Action? Changed {add=>Editor.Changed+=value;remove=>Editor.Changed-=value;}
     public bool TryCapture(out object settings,out IReadOnlyDictionary<string,ReferenceSetting> references,out string error)
-        =>_editor.TryCapture(out settings,out references,out error);
-    public void Dispose(){_editor.Dispose();EditorHost.Content=null;}
+        =>Editor.TryCapture(out settings,out references,out error);
+    public void Dispose()=>Editor.Dispose();
 }

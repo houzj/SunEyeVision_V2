@@ -11,6 +11,16 @@ public sealed class DeclaredFieldsView : UserControl
  private readonly Dictionary<string,StackPanel> _groups=new(StringComparer.Ordinal);
  private readonly List<(FrameworkElement View,FieldCondition Condition)> _conditions=new();
  private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
+ private readonly TabControl _tabs;
+ public int SelectedPageIndex
+ {
+  get=>_tabs.SelectedIndex;
+  set
+  {
+   if(value<0||value>=_tabs.Items.Count)throw new ArgumentOutOfRangeException(nameof(value));
+   _tabs.SelectedIndex=value;
+  }
+ }
  public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText);
  public IReadOnlyList<DeclaredFieldEditor> Fields=>_fields.AsReadOnly();
  public event Action? PageChanged;
@@ -37,7 +47,7 @@ public sealed class DeclaredFieldsView : UserControl
    var editor=new DeclaredFieldEditor(field.Port,field.Presentation.DisplayName,field.Value,value=>writeDraft(field.Port.Id,value),selectReference,constantBackup?.Invoke(field.Port.Id),formatReference,field.Presentation.ChoiceLabels,field.Presentation);
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
-  var tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
+  var tabs=_tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
   tabs.SetResourceReference(StyleProperty,"TabControlStyle");
   tabs.SelectionChanged+=(_,args)=>{if(ReferenceEquals(args.OriginalSource,tabs))PageChanged?.Invoke();};
   foreach(var page in all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group))

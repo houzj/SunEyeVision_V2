@@ -33,14 +33,13 @@ public partial class BlobResultView : UserControl, IToolResultView, INotifyPrope
     public BlobResultView()
     {
         InitializeComponent();
-        foreach(var column in BlobDisplayDefinition.Instance.Table.Columns)
-            BlobDataGrid.Columns.Add(new DataGridTextColumn {
-                Header=column.DisplayName,
-                Binding=new System.Windows.Data.Binding("["+column.Value.MemberFieldPath.Single()+"]") {
-                    Mode=System.Windows.Data.BindingMode.OneWay,
-                    StringFormat=column.Value.MemberFieldPath.Single()=="bounds"?null:"{0:F"+column.DecimalPlaces+"}" },
-                Width=DataGridLength.SizeToHeader });
         DataContext=this;
+        if(DesignerProperties.GetIsInDesignMode(this))
+        {
+            var settings=new BlobSettings();
+            PresentRows(Wpf.Design.BlobDesignData.ResultRows,2,336,168,96,240,
+                settings.Threshold,settings.UpperThreshold,settings.Type.ToString());
+        }
     }
 
     private void BlobDataGrid_SelectionChanged(object sender,SelectionChangedEventArgs e)
@@ -66,6 +65,13 @@ public partial class BlobResultView : UserControl, IToolResultView, INotifyPrope
         var minimum=values.Get<object?>(BlobSchema.Field(8));var maximum=values.Get<object?>(BlobSchema.Field(9));
         var minArea=values.Get<double>(BlobSchema.Field(30));var maxArea=values.Get<double>(BlobSchema.Field(31));
         var thresholdType=values.Get<string>(BlobSchema.Field(10));
+        PresentRows(rows,count,total,average,minArea,maxArea,minimum,maximum,thresholdType);
+    }
+
+    private void PresentRows(IReadOnlyList<BlobAnalysisRow> rows,int count,double total,double average,
+        double minArea,double maxArea,object? minimum,object? maximum,string thresholdType)
+    {
+        FilteredBlobs.Clear();
         foreach(var row in rows)FilteredBlobs.Add(row);
         FilteredBlobCount=count;TotalArea=total;AverageArea=average;MinArea=minArea;MaxArea=maxArea;
         ThresholdRangeText=string.Create(CultureInfo.InvariantCulture,$"{minimum}–{maximum}");

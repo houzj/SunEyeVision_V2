@@ -1,5 +1,11 @@
 <UserControl x:Class="SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
- <ContentControl x:Name="EditorHost"/>
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:parameters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Parameters;assembly=SunEyeVision.Plugin.Wpf"
+ xmlns:design="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Wpf.Design"
+ mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="680">
+ <!-- 设计器预览页：0=基本参数，1=运行参数，2=结果显示；运行时单击Tab也同步此属性。 -->
+ <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="0" design:BlobDesignData.ParameterSample="True"/>
 </UserControl>

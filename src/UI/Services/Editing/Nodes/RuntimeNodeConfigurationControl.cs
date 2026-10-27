@@ -84,21 +84,12 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             .ToDictionary(s=>s.ParameterName,s=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(s.ReferenceExpression!)),StringComparer.Ordinal);
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
-        var panel=new StackPanel();
-        foreach(var group in schema.Presentation.Fields.GroupBy(f=>f.Layout!.Section))
+        var panel=new DeclaredInputFieldsView(schema,port=>
         {
-            panel.Children.Add(new TextBlock{Text=group.Key,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,14,0,10)});
-            foreach(var field in group)
-            {
-                var port=schema.Inputs.Single(p=>p.Id==field.FieldId);
-                var saved=node.ParamSettings.GetSetting(port.Id);
-                ConfigurationSetting value=saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
-                var editor=new DeclaredFieldEditor(port with{Required=port.Required&&schema.WorkflowImageInputId!=port.Id,EditModes=FieldEditModes.Reference},
-                    field.DisplayName,value,setting=>WriteInput(port,setting,generation),target=>SelectReference(target,generation),formatReference:FormatReference,
-                    presentation:field,allowUnboundReference:!port.Required||schema.WorkflowImageInputId==port.Id);
-                _inputs.Add(editor);panel.Children.Add(editor);
-            }
-        }
+            var saved=node.ParamSettings.GetSetting(port.Id);
+            return saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
+        },(port,setting)=>WriteInput(port,setting,generation),target=>SelectReference(target,generation),FormatReference);
+        _inputs.AddRange(panel.Fields);
         _view=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
             new(references,target=>SelectReference(target,generation),FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel));
         _view.Changed+=Changed;Content=_view.View;

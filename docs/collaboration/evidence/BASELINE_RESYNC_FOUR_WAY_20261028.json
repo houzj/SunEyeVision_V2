@@ -1,0 +1,97 @@
+{
+  "mainBefore": "1553ece8",
+  "workflowCheckpoint": "6fb17314",
+  "previousCommon": "6c381072",
+  "excludedUncommitted": [
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "250f473c7d8f1ba9e7fc92b97fe02192a0e30bf64f6970ea681dfceefe02eb6d"
+    },
+    {
+      "path": "scripts/verification/S4FieldEditingCases.cs",
+      "sha256": "bcbf76c7b7f051d431a60ade2c96415a4d5083c2747c52417027d0a6a5e4cd95"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "sha256": "b0d123547b76fbe7ddb36d02a1056d76cbc0d7d16171630660f6491607f45b22"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "sha256": "dec6f119b89a92b4e24c55e3cf58ba1601349c6fba0308b9f70c2ea0a45b30b2"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "sha256": "0415e7392b12f5bda6acf485537f1bab1fea110900bb619c7613ed76601e8f5a"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "sha256": "3366fe91d3a17d57710c9a8394b46b49a537f790666aeaae53993f48561e9bdc"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
+      "sha256": "23000014322f1a8a8de95a4b55174b616b76828588dee3a798dd942001e79b69"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
+      "sha256": "82b92e9099553ca8cddb67b15daa75e18a72ba1907dc3321d643a47dc0fa5d03"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "ba09269de8109fcafb27e923a627a612b9c2ea336dfa9f78e49e96ca7b253125"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
+      "sha256": "8dac8af6125a856962f2f491acf1b7787e431d5f78d14d47da27db1b0117e371"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+      "sha256": "2e6e6cf58a60d75ae28cf76a683684c121345d00b3c10c15ef67e5d6e4ed5c54"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "940972a4c4fda860cbc16a53bd698130d375a214387b40bdb5fcecd396dd3d3e"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "32f491c965c72bea75c84e76760eadf4262b55a7c481829e8064fed21fb3041f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "804002a5e50b0c8f41a144cd8841da8139d25d40bb1a01de410514d7e1a83cab"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioPresenter.cs",
+      "sha256": "42df88fd4d77389e87d5f3ec98d62ca0541e7d1ede37a396b98c6e44197b636c"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "sha256": "3356487a7f63df3d98382d192ecbb1a90349dccbb5ecbb795fc3e45f2f62cbf5"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+      "sha256": "5eb86972845790c1c0cae41bac6db0810ccf7cf3472efaf66b5ffee16efa7be9"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "9adb5642c9ea9ad8b12f95f83ef1170ada6351e8657e184ce490fb203c667aaa"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowReferencePicker.cs",
+      "sha256": "b991853566d80c52bc8451b1e81bfd1931ab65da99bf882e0e383ff5344ffad1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "sha256": "e784eeff3728abb2d8a11205cf169374f310d16718f301de736e7881b021da42"
+    }
+  ],
+  "validation": "同步不构建；工作流主题为未验收候选；主线候选未编译",
+  "push": false
+}

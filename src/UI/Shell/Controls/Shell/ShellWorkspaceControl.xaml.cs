@@ -763,7 +763,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void WorkspaceScaleRequested(double scale)
         {
             if(_synchronizingWorkspaceScale)return;
-            if (_rootOverviewActive) { if(double.IsFinite(scale)) RootOverview.Viewport=RootOverview.Viewport with {Scale=Math.Clamp(scale,.1,2)};return; }
+            if (_rootOverviewActive) { if(double.IsFinite(scale)) RootOverview.Viewport=RootOverview.Viewport with {Scale=Math.Clamp(scale,.1,WorkspaceStatusBar.MaximumScale)};return; }
             var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
             if(tab==null||!double.IsFinite(scale))return;
             var viewer=GetCurrentScrollViewer();

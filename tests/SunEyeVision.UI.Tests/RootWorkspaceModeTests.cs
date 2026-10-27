@@ -42,7 +42,10 @@ public sealed class RootWorkspaceModeTests
     Assert.Equal(Visibility.Collapsed,locations.Visibility);
     Assert.Equal(Visibility.Collapsed,((FrameworkElement)tabs.Template.FindName("PART_SelectedContentHost",tabs)).Visibility);
     var mode=(Button)tabs.Template.FindName("WorkflowViewButton",tabs);Assert.Equal("子流程",mode.ToolTip);
-    overview.Viewport=new(3.4,40,60);Pump();
+    overview.Viewport=new(1.7,40,60);Pump();
+    var zoom=(Slider)footer.FindName("ZoomSlider");
+    zoom.Value=2.5;Pump();Assert.Equal(2.5,overview.Viewport.Scale,6);
+    zoom.Value=3.4;Pump();
     Assert.Equal(3.4,footer.Scale,6);Assert.Equal(1.3,vm.WorkflowTabViewModel.SelectedTab.CurrentScale,6);
     shell.SetOverviewVisible(false);Pump();
     Assert.False(shell.IsRootOverviewVisible);Assert.Equal(Visibility.Visible,locations.Visibility);

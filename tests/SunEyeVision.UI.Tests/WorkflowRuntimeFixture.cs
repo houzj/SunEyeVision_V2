@@ -1,0 +1,12 @@
+﻿using System.IO;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
+namespace SunEyeVision.UI.Tests;
+/// <summary>运行管理器与画布共享正式方案/通讯服务，集合显式初始化而非依赖其他测试的先后顺序。</summary>
+public sealed class WorkflowRuntimeFixture
+{
+ public WorkflowRuntimeFixture()
+ {
+  var root=Environment.GetEnvironmentVariable("S2_CASE_ROOT")??Path.Combine(AppContext.BaseDirectory,"_validation");
+  ServiceInitializer.InitializeSolutionManager(Path.Combine(root,"workflow-runtime-data"));
+ }
+}

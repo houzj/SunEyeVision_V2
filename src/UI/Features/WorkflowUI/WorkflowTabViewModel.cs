@@ -30,6 +30,17 @@ namespace SunEyeVision.UI.Features.WorkflowUI
     {
         private string _id;
         private string _name;
+        private SunEyeVision.Workflow.Workflow? _rootDefinition;
+        public SunEyeVision.Workflow.RootWorkspaceSettings RootSettings => _rootDefinition?.WorkspaceSettings ?? new();
+        internal void BindRootDefinition(SunEyeVision.Workflow.Workflow definition)
+        {
+            if(ReferenceEquals(_rootDefinition,definition))return;
+            if(_rootDefinition!=null)_rootDefinition.PropertyChanged-=RootDefinitionChanged;
+            _rootDefinition=definition;_rootDefinition.PropertyChanged+=RootDefinitionChanged;
+            OnPropertyChanged(nameof(RootSettings));
+        }
+        private void RootDefinitionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
+        {if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.WorkspaceSettings))OnPropertyChanged(nameof(RootSettings));}
         private bool _isRunning;
         private RunMode _runMode;
         private WorkflowState _state;
@@ -207,6 +218,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI
                     OnPropertyChanged(nameof(EffectiveDisplayName));
                 }
             }
+        }
+
+        internal void SynchronizeRootName(string name)
+        {
+            _name=name;OnPropertyChanged(nameof(Name));
+            if(!IsInSubroutine){_currentWorkflowName=name;OnPropertyChanged(nameof(EffectiveDisplayName));}
         }
 
         #region 行内重命名

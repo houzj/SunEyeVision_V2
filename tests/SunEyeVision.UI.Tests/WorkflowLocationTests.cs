@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,20 +21,22 @@ public sealed class WorkflowLocationTests
         var nested = new Flow("nested", "内部二") { IsSubroutine = true };
         root.Nodes.Add(new("image", "图像源", "图像源", "ImageLoad"));
         root.Nodes.Add(new("owner", "组一", "组一", "Subroutine") { SubroutineId = child.Id });
+        child.Nodes.Add(new("internal", "内部工具", "内部工具", "ImageLoad"));
         child.Nodes.Add(new("owner", "组二", "组二", "Subroutine") { SubroutineId = nested.Id });
         nested.Nodes.Add(new("loop", "循环", "循环", "Subroutine") { SubroutineId = child.Id });
         return new[] { root, child, nested, new Flow("other", "流程二"), new Flow("orphan", "孤立") { IsSubroutine = true } };
     }
     [Fact]
-    public void Tree_contains_only_reachable_containers_and_rejects_replaced_or_reowned_paths()
+    public void Tree_contains_reachable_nodes_and_containers_and_rejects_replaced_or_reowned_paths()
     {
         var flows = Definitions(); var roots = WorkflowLocationCatalog.Build(flows);
         Assert.Equal(2, roots.Count); Assert.Empty(roots[1].Children);
-        var child = Assert.Single(roots[0].Children); var nested = Assert.Single(child.Children);
+        var leaf=Assert.Single(roots[0].Children.Where(item=>item.Node!=null));Assert.Same(flows[0].Nodes[0],leaf.Node!.Node);Assert.True(WorkflowLocationCatalog.IsCurrent(leaf,flows));
+        var child = Assert.Single(roots[0].Children.Where(item=>item.Node==null)); var nested = Assert.Single(child.Children);
         Assert.Equal("组一", child.Name); Assert.Equal("组二", nested.Name); Assert.Empty(nested.Children);
         Assert.Equal(2, nested.Hops.Count); Assert.True(WorkflowLocationCatalog.IsCurrent(nested, flows));
-        flows[1].Nodes[0].SubroutineId = "orphan"; Assert.False(WorkflowLocationCatalog.IsCurrent(nested, flows));
-        flows[1].Nodes[0].SubroutineId = "nested";
+        flows[1].Nodes[1].SubroutineId = "orphan"; Assert.False(WorkflowLocationCatalog.IsCurrent(nested, flows));
+        flows[1].Nodes[1].SubroutineId = "nested";
         var replaced = flows.ToArray(); replaced[2] = new Flow("nested", "替换") { IsSubroutine = true };
         Assert.False(WorkflowLocationCatalog.IsCurrent(nested, replaced));
         Assert.False(WorkflowLocationCatalog.IsCurrent(roots[0], flows.Skip(1)));
@@ -61,7 +63,7 @@ public sealed class WorkflowLocationTests
             Assert.True(popup.IsOpen); Assert.Equal(2, tree.Items.Count);
             var rootRow = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromIndex(0);
             Assert.True(rootRow.IsExpanded); rootRow.UpdateLayout();
-            var childRow = (TreeViewItem)rootRow.ItemContainerGenerator.ContainerFromIndex(0);
+            var childRow = (TreeViewItem)rootRow.ItemContainerGenerator.ContainerFromIndex(1);
             Assert.True(childRow.IsExpanded); childRow.UpdateLayout();
             Assert.Equal(((SolidColorBrush)owner.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.TextPrimaryBrush)).Color,
                 ((SolidColorBrush)childRow.Foreground).Color);

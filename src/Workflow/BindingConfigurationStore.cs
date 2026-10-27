@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -308,7 +308,7 @@ public sealed class BindingConfigurationStore
             SchemaVersion = source.SchemaVersion, Version = source.Version };
         foreach (var workflow in source.Workflows)
         {
-            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine };
+            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings };
             foreach (var node in workflow.Nodes)
                 flow.Nodes.Add(new WorkflowNodeBase(node.Id, node.Name, node.DispName, node.ToolType)
                 {

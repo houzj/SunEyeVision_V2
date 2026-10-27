@@ -105,7 +105,7 @@ public partial class MainWindowViewModel
                 CurrentWorkflowContext?.RemoveNodeResult(affected.NodeId);
         if (SelectedNode is { } selected && selected.Parameters is IOutputContractProvider outputs)
             UpdateModuleResults(new ContractToolResults(outputs.GetOutputContract()), selected.Name, selected.ToolType, selected.Id, selected.Parameters);
-        BuildFlatRows();
+        BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));
     }
     private static System.Collections.Generic.Dictionary<string, object?> CaptureGlobalVariables(Solution document)
     {

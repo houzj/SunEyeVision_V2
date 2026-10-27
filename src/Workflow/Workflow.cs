@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -38,6 +38,13 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
     public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
 
     private string _name = "新建工作流";
+    private RootWorkspaceSettings _workspaceSettings = new();
+    /// <summary>仅根流程使用；Group执行与配置不消费该设置。</summary>
+    public RootWorkspaceSettings WorkspaceSettings
+    {
+        get => _workspaceSettings;
+        set { ArgumentNullException.ThrowIfNull(value);value.Validate();SetProperty(ref _workspaceSettings,value); }
+    }
 
     /// <summary>
     /// 工作流唯一标识符
@@ -106,7 +113,8 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
         {
             Id = Guid.NewGuid().ToString(),
             AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
-            Name = $"{Name} (副本)"
+            Name = $"{Name} (副本)",
+            WorkspaceSettings = WorkspaceSettings
         };
 
         // 克隆节点

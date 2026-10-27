@@ -198,7 +198,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 if (SetProperty(ref _isRunning, value))
                 {
                     Status = _isRunning ? "运行中" : "已停止";
-                    OnPropertyChanged(nameof(CanEditWorkflowCanvas));
+                    OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
                 }
             }
         }
@@ -920,12 +920,6 @@ SplitterPosition = position;
             // 订阅工作流状态变化
             WorkflowTabViewModel.WorkflowStatusChanged += OnWorkflowStatusChanged;
 
-            // 订阅工作流添加事件（注册引擎 + 同步 solution.Workflows）
-            WorkflowTabViewModel.WorkflowAdded += OnWorkflowAdded;
-
-            // Phase 3: 订阅工作流删除事件（清理引擎和 Solution）
-            WorkflowTabViewModel.WorkflowDeleted += OnWorkflowDeleted;
-
             // 订阅控制流节点打开事件（由 NodeOpenDecisionChain 统一路由）
             NodeOpenDecisionChain.OnControlFlowNodeOpen += OnControlFlowNodeOpen;
 
@@ -1008,7 +1002,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnSelectedTabChanged(object? sender, EventArgs e)
         {
-            OnPropertyChanged(nameof(CanEditWorkflowCanvas));
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
             CloseExecutionSnapshotDetails();
             RefreshStatusBarExecutionSnapshot();
             // 更新命令管理器
@@ -1069,7 +1063,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowStatusChanged(object? sender, EventArgs e)
         {
-            OnPropertyChanged(nameof(CanEditWorkflowCanvas));
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
             // 所有工作流状态
             IsAllWorkflowsRunning = WorkflowTabViewModel.IsAnyWorkflowRunning;
             AllWorkflowsRunButtonText = IsAllWorkflowsRunning ? "停止" : "运行";
@@ -1077,44 +1071,6 @@ SplitterPosition = position;
             // 更新CanExecute状态
             (RunAllWorkflowsCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (ToggleContinuousAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        }
-
-        /// <summary>
-        /// 工作流删除事件处理（Phase 3: 清理引擎和 Solution 中的对应工作流 + DSQS 缓存）
-        /// </summary>
-        /// <summary>
-        /// 工作流添加事件处理 — 统一注册引擎 + 同步 solution.Workflows
-        /// </summary>
-        /// <remarks>
-        /// 由 WorkflowTabViewModel.AddWorkflow 触发。
-        /// 解决历史 Bug：UI 按钮 / Ctrl+N 添加工作流后，solution.Workflows 未更新，
-        /// 导致全局变量对话框等只读 solution.Workflows 的 UI 看不到新工作流。
-        /// </remarks>
-        private void OnWorkflowAdded(object? sender, WorkflowTabViewModel addedTab)
-        {
-            if (addedTab == null)
-                return;
-
-            // 1. 引擎内复用同一实例（idempotent：OnSelectedTabChanged 通常已先创建）
-            //    引擎没有时才创建。后续 Solution 与 Engine 共享同一 Workflow 引用，
-            //    避免双实例漂移（节点加在引擎实例、Solution 实例始终为空）。
-            var engineWorkflow = _workflowEngine.GetWorkflowById(addedTab.Id);
-            if (engineWorkflow == null)
-            {
-                engineWorkflow = _workflowDefinitions.GetOrCreate(addedTab.Id, addedTab.Name);
-            }
-            else if (engineWorkflow.Name != addedTab.Name)
-            {
-                // 同步名称（用户在 Tab 上改名时引擎实例可能先于事件到达）
-                engineWorkflow.Name = addedTab.Name;
-            }
-
-            // 2. 先把 Tab 接到引擎定义的同一份节点/连接集合。
-            //    新建 Tab 可能已经在 UI 集合中添加了节点，此时迁移一次后立即切换为共享集合。
-            AttachTabToWorkflowDefinition(addedTab, engineWorkflow);
-
-            // 3. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
-            SyncWorkflowToSolution(engineWorkflow, addedTab.Name);
         }
 
         /// <summary>
@@ -1165,50 +1121,12 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 将工作流实例同步到 Solution（确保运行时目标参数选择树可以看到工作流中的工具参数）。
-        /// 根流程同步入口 — 独占Group定义由图编辑事务注册，
-        /// 避免重复代码，且确保所有创建路径都经过同一同步点。
-        /// </summary>
-        private void SyncWorkflowToSolution(SunEyeVision.Workflow.Workflow workflow, string? displayName = null)
-        {
-            if (workflow == null) return;
-            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-            var solution = solutionManager?.CurrentSolution;
-            if (solution != null && !solution.Workflows.Any(w => w.Id == workflow.Id))
-            {
-                _workflowDefinitions.AttachToSolution(solution, workflow);
-                var name = displayName ?? workflow.Name;
-                _logger?.LogInfo(
-                    $"SyncWorkflowToSolution: {name} (ID: {workflow.Id}, IsSubroutine: {workflow.IsSubroutine})");
-            }
-        }
-
-        private void OnWorkflowDeleted(object? sender, WorkflowTabViewModel deletedTab)
-        {
-            if (deletedTab == null)
-                return;
-
-            // 1. 从引擎中移除
-            _workflowEngine.DeleteWorkflow(deletedTab.Id);
-
-            // 2. 从 Solution 中移除
-            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-            if (solutionManager?.CurrentSolution != null)
-            {
-                _workflowDefinitions.DetachFromSolution(solutionManager.CurrentSolution, deletedTab.Id);
-                LogSuccess($"工作流删除事件处理：已从引擎和解决方案中移除工作流: {deletedTab.Name}");
-            }
-
-            // 3. 清理按 Workflow 缓存的 DSQS
-            _workflowDsqsCache.Remove(deletedTab.Id);
-        }
-
-        /// <summary>
         /// Tab 重命名提交事件 — 同步更新引擎中对应 Workflow 的 Name
         /// </summary>
         private void OnTabNameCommitted(object? sender, string newName)
         {
             if (sender is not WorkflowTabViewModel tab) return;
+            if(!tab.IsInSubroutine){RenameRootWorkspace(tab,newName);return;}
 
             // 更新引擎中当前显示的工作流名称
             var engineWorkflow = _workflowEngine.GetWorkflow(tab.CurrentWorkflowId);
@@ -1304,6 +1222,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnCurrentCommandManagerStateChanged(object? sender, EventArgs e)
         {
+            OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));
             UpdateUndoRedoCommands();
             UpdateCurrentSolutionInfo();
         }
@@ -1377,17 +1296,7 @@ SplitterPosition = position;
 
         private void ExecuteNewWorkflow()
         {
-            var tabControl = WorkflowTabViewModel;
-            if (tabControl == null)
-                return;
-
-            // AddWorkflow 内部会触发 WorkflowAdded 事件，由 OnWorkflowAdded 统一处理
-            // 引擎注册 + solution.Workflows 同步，避免双路径遗漏。
-            tabControl.AddWorkflow();
-            if (tabControl.SelectedTab != null)
-            {
-                LogSuccess($"创建新工作流: {tabControl.SelectedTab.Name}");
-            }
+            if(AddRootWorkspace())LogSuccess($"创建新工作流: {WorkflowTabViewModel.SelectedTab?.Name}");
         }
 
         private void ExecuteOpenWorkflow()
@@ -1623,6 +1532,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
+            _rootHistoryDocument=null;_rootHistory=null;
             CloseExecutionSnapshotDetails();
             ReleaseProductionEditors();
             _logger?.LogInfo($"[StartupTrace] MainWindowViewModel.OnCurrentSolutionChanged begin | solutionId={e.SolutionId}", "MainWindowViewModel");
@@ -1842,6 +1752,7 @@ SplitterPosition = position;
             var tabViewModel = new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel();
             tabViewModel.Id = workflow.Id;
             tabViewModel.Name = workflow.Name;
+            tabViewModel.BindRootDefinition(workflow);
 
             // 订阅重命名事件（更新引擎中的 Workflow.Name）
             tabViewModel.NameCommitted += OnTabNameCommitted;
@@ -2001,7 +1912,7 @@ SplitterPosition = position;
                 // 验证加载结果
                 if (WorkflowTabViewModel.Tabs.Count == 0)
                 {
-                    WorkflowTabViewModel.AddWorkflow();
+                    WorkflowTabViewModel.SetSelectedTab(null);
                 }
                 else
                 {
@@ -5567,13 +5478,13 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         private bool _transitionPreparationInProgress;
         internal bool CanAcceptExternalActivation => _solutionTransitionLease == null && !_transitionPreparationInProgress
             && (Application.Current is not App app || !app.HasPendingWorkspaceDeviceRestore);
-        public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; OnPropertyChanged(nameof(CanEditWorkflowCanvas)); }
+        public void EndSolutionTransition() { _solutionTransitionLease?.Dispose(); _solutionTransitionLease = null; OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace)); }
         public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync(bool reload = false, Window? owner = null)
         {
             if (_transitionPreparationInProgress) return false;
             owner = ResolveSolutionDialogOwner(owner);
             _transitionPreparationInProgress = true;
-            OnPropertyChanged(nameof(CanEditWorkflowCanvas));
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
             try
             {
                 var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
@@ -5604,7 +5515,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
                 return false;
             }
-            finally { _transitionPreparationInProgress = false; OnPropertyChanged(nameof(CanEditWorkflowCanvas)); }
+            finally { _transitionPreparationInProgress = false; OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace)); }
         }
 
         /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>

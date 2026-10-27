@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,8 +33,8 @@ public sealed class WorkflowTabButtonTests
         {
             owner.Show(); owner.UpdateLayout(); Pump();
             Assert.False(single.IsEnabled); Assert.False(continuous.IsEnabled);
-            shell.WorkflowEditingAllowed = false; Pump(); Assert.False(add.IsEnabled); Assert.Contains("disable", Icon(add));
-            shell.WorkflowEditingAllowed = true; Pump(); Assert.True(add.IsEnabled);
+            shell.RootWorkspaceEditingAllowed = false; Pump(); Assert.False(add.IsEnabled); Assert.Contains("disable", Icon(add));
+            shell.RootWorkspaceEditingAllowed = true; Pump(); Assert.True(add.IsEnabled);
             Assert.Contains("disable", Icon(single)); Assert.Contains("disable", Icon(continuous));
             tab.WorkflowNodes.Add(new("node", "图像", "图像", "ImageLoad")); Pump();
             Assert.True(single.IsEnabled); Assert.True(continuous.IsEnabled);

@@ -318,6 +318,8 @@ namespace SunEyeVision.UI.Services.Workflow
                                     }
                                 }
                                 firstIteration = false;
+                                RootWorkspaceSettings runPolicy;
+                                lock(_lock)runPolicy=_preparedRunInputs[workflowId].Configuration.GetRootSettings(workflowId);
                                 ExecutionResult? execution = null;
                                 try
                                 {
@@ -348,11 +350,11 @@ namespace SunEyeVision.UI.Services.Workflow
                                 if (!execution.Success)
                                 {
                                     OnWorkflowExecutionError(workflowId, string.Join("; ", execution.Errors));
-                                    if (cameraFeed is null)
-                                        await Task.Delay(250, cts.Token);
+
                                 }
-                                if (stopAfterCurrent)
+                                if (stopAfterCurrent || runPolicy.ShouldStopAfter(execution))
                                 {
+                                    if(!stopAfterCurrent)InvokeOnUI(()=>WorkflowExecutionProgress?.Invoke(this,new WorkflowExecutionProgressEventArgs(workflowId,"检测NG，按根流程策略停止连续运行。")));
                                     canceled = true;
                                     break;
                                 }
@@ -366,8 +368,9 @@ namespace SunEyeVision.UI.Services.Workflow
                                     nextCameraSummary = DateTime.UtcNow.AddSeconds(1);
                                 }
 
-                                if (cameraFeed is null)
-                                    await Task.Delay(10, cts.Token);
+                                var interval=execution.Success?runPolicy.RunIntervalMs:Math.Max(250,runPolicy.RunIntervalMs);
+                                if(interval>0)await Task.Delay(interval,cts.Token);
+                                else await Task.Yield();
                                 }
                                 finally { execution?.Dispose(); }
                             }
@@ -1042,6 +1045,15 @@ namespace SunEyeVision.UI.Services.Workflow
                 });
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, $"[ERROR] ExecuteWorkflowInternal异常: {ex.Message}")));
                 throw;
+            }
+        }
+
+        internal void ForgetWorkspaceSnapshot(string workflowId)
+        {
+            lock(_lock)
+            {
+                if(_activeWorkflowIds.Contains(workflowId))throw new InvalidOperationException("运行中的流程不能移除工作区快照。");
+                _executionSnapshots.Remove(workflowId);_preparedRunInputs.Remove(workflowId);
             }
         }
 

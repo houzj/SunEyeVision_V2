@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -326,4 +326,4 @@ public sealed class VmGestureTests
 
 }
 [CollectionDefinition("VM canvas UI", DisableParallelization = true)]
-public sealed class VmCanvasUiCollection { }
+public sealed class VmCanvasUiCollection : ICollectionFixture<WorkflowRuntimeFixture> { }

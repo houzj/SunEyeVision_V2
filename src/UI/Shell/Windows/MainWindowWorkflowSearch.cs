@@ -22,7 +22,7 @@ public partial class MainWindowViewModel
   => DocumentManager.CurrentSolution is {} solution ? WorkflowLocationCatalog.Build(solution.Workflows) : Array.Empty<WorkflowLocationEntry>();
  internal bool NavigateWorkflowLocation(WorkflowLocationEntry entry)
   => DocumentManager.CurrentSolution is {} solution && WorkflowLocationCatalog.IsCurrent(entry,solution.Workflows)
-     && NavigateWorkflowContainer(entry.Root,entry.Hops);
+     && (entry.Node is {} node ? NavigateSearchResult(node) : NavigateWorkflowContainer(entry.Root,entry.Hops));
  private bool NavigateWorkflowContainer(SunEyeVision.Workflow.Workflow root,IReadOnlyList<WorkflowSearchHop> hops)
  {
   if(!CanEditWorkflowCanvas)return false;

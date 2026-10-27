@@ -1,0 +1,44 @@
+﻿using SunEyeVision.Workflow;
+using SunEyeVision.UI.Features.WorkflowUI.Commands;
+using NSubstitute;
+using SunEyeVision.Plugin.SDK.Logging;
+using Xunit;
+using Flow=SunEyeVision.Workflow.Workflow;
+namespace SunEyeVision.UI.Tests;
+[Collection("VM canvas UI")]
+public sealed class RootWorkflowCollectionTests
+{
+ [Fact]
+ public void Add_rename_delete_and_history_keep_definition_identity_and_order_and_reject_stale_edits()
+ {
+  var source=new Flow("source","源");var other=new Flow("other","其他");var document=new Solution{Workflows=new(){source,other}};
+  var engine=new WorkflowEngine(Substitute.For<ILogger>());foreach(var flow in document.Workflows)engine.RegisterWorkflow(flow);
+  var candidate=new Flow("new","副本"){WorkspaceSettings=new(){RunIntervalMs=41}};
+  var history=new RootWorkflowCollectionHistory();var visible=new List<string>{"source","other"};
+  void Refresh(bool attach){if(attach)visible.Insert(1,candidate.Id);else visible.Remove(candidate.Id);}
+  history.Execute(new RootWorkflowCollectionCommand(document,engine,candidate,Array.Empty<Flow>(),true,1,"新增",Refresh));
+  Assert.Same(candidate,document.Workflows[1]);Assert.Same(candidate,engine.GetWorkflowById(candidate.Id));Assert.Equal(new[]{"source","new","other"},visible);
+  history.Execute(new RootWorkflowNameCommand(document,candidate,"重命名",()=>{}));Assert.Equal("重命名",candidate.Name);history.Undo();Assert.Equal("副本",candidate.Name);
+  other.WorkspaceSettings=new(){RunIntervalMs=9};Assert.False(history.CanUndo);Assert.False(history.CanRedo);
+  other.WorkspaceSettings=new();Assert.True(history.CanUndo);history.Undo();Assert.Null(engine.GetWorkflowById("new"));Assert.Equal(new[]{source,other},document.Workflows);
+  history.Redo();Assert.Same(candidate,document.Workflows[1]);Assert.Equal(41,candidate.WorkspaceSettings.RunIntervalMs);
+  history.Execute(new RootWorkflowCollectionCommand(document,engine,candidate,Array.Empty<Flow>(),false,1,"删除",attach=>{if(attach)visible.Insert(1,candidate.Id);else visible.Remove(candidate.Id);}));
+  Assert.Null(engine.GetWorkflowById("new"));history.Undo();Assert.Same(candidate,document.Workflows[1]);Assert.Equal(3,visible.Count);
+ }
+ [Fact]
+ public void Failed_host_refresh_rolls_back_engine_solution_and_bindings_without_history_entry()
+ {
+  var source=new Flow("source","源");var document=new Solution{Workflows=new(){source}};var engine=new WorkflowEngine(Substitute.For<ILogger>());engine.RegisterWorkflow(source);
+  var candidate=new Flow("new","副本");var history=new RootWorkflowCollectionHistory();
+  Assert.Throws<InvalidOperationException>(()=>history.Execute(new RootWorkflowCollectionCommand(document,engine,candidate,Array.Empty<Flow>(),true,1,"新增",attach=>{if(attach)throw new InvalidOperationException("模拟宿主刷新失败");})));
+  Assert.Same(source,Assert.Single(document.Workflows));Assert.Null(engine.GetWorkflowById("new"));Assert.False(history.CanUndo);
+ }
+ [Fact]
+ public void Global_runtime_values_are_not_replayed_by_root_management_undo()
+ {
+  var source=new Flow("source","源");var variable=new GlobalVariable{Name="计数",Value=1};var document=new Solution{Workflows=new(){source},GlobalVariables=new(){variable}};
+  var engine=new WorkflowEngine(Substitute.For<ILogger>());engine.RegisterWorkflow(source);var candidate=new Flow("new","新");var history=new RootWorkflowCollectionHistory();
+  history.Execute(new RootWorkflowCollectionCommand(document,engine,candidate,Array.Empty<Flow>(),true,1,"新增",_=>{}));variable.Value=99;
+  Assert.True(history.CanUndo);history.Undo();Assert.Equal(99,variable.Value);Assert.Same(source,Assert.Single(document.Workflows));
+ }
+}

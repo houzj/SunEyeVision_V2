@@ -23,6 +23,7 @@ using Xunit;
 
 namespace SunEyeVision.UI.Tests;
 
+[Collection("VM canvas UI")]
 public sealed class CommunicationAutomationTests
 {
     [Fact]

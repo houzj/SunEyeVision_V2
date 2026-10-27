@@ -1,4 +1,4 @@
-using SunEyeVision.Workflow;
+﻿using SunEyeVision.Workflow;
 using SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -14,7 +14,7 @@ public partial class MainWindowViewModel
     }
     private void AuxiliaryParameterWindowsChanged(object? sender,EventArgs e)
     {
-        OnPropertyChanged(nameof(IsDebugWindowOpen));OnPropertyChanged(nameof(CanEditWorkflowCanvas));
+        OnPropertyChanged(nameof(IsDebugWindowOpen));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
         System.Windows.Input.CommandManager.InvalidateRequerySuggested();
     }
     private bool TryCloseParameterWindowsForTransition()

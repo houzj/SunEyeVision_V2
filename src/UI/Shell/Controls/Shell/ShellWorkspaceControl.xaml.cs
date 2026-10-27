@@ -82,6 +82,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             _viewModel = viewModel;
             SetBinding(WorkflowEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditWorkflowCanvas)) { Source = viewModel });
+            SetBinding(RootWorkspaceEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditRootWorkspace)) { Source = viewModel });
+            SetBinding(RootUndoAllowedProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanUndoRootWorkspace)){Source=viewModel});
+            SetBinding(RootRedoAllowedProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanRedoRootWorkspace)){Source=viewModel});
             SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
             WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;WorkflowSearch.NavigateId=SearchNavigateId;
             WorkflowSearch.SetBinding(WorkflowSearchControl.ScopeIdentityProperty,new System.Windows.Data.Binding("SelectedTab.CurrentWorkflowId"){Source=viewModel.WorkflowTabViewModel});
@@ -389,8 +392,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void AddWorkflow_Click(object sender, RoutedEventArgs e)
         {
-            if (_viewModel?.CanEditWorkflowCanvas != true) return;
-            _viewModel.WorkflowTabViewModel.AddWorkflow();
+            if (_viewModel?.CanEditRootWorkspace != true) return;
+            if(!_viewModel.AddRootWorkspace())return;
             _viewModel.StatusText = "已添加新工作流";
             // 自动滚动到新添加的TabItem，使其居中显示
             Dispatcher.BeginInvoke(new Action(() =>
@@ -996,8 +999,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null || MiniMapCanvas == null)
-            { UnbindMiniMapContent(); return; }
-
+            {
+                UnbindMiniMapContent();_miniMapThrottleTimer.Stop();MiniMapCanvas?.Children.Clear();
+                MiniMapHost.Visibility=Visibility.Collapsed;
+                _currentWorkflowCanvas?.SetCurrentValue(DataContextProperty,null);_currentWorkflowCanvas=null;_canvasScrollViewer=null;
+                _restoringContainerView=false;WorkflowSearch.CloseSearch();return;
+            }
+            MiniMapHost.Visibility=Visibility.Visible;
             UnbindMiniMapContent();
             _miniMapObservedTab=selectedTab;
             _miniMapObservedNodes=selectedTab.WorkflowNodes;
@@ -1430,14 +1438,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 owner);
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                if (_viewModel.WorkflowTabViewModel.DeleteWorkflow(workflow))
+                if (_viewModel.DeleteRootWorkspace(workflow))
                 {
                     _viewModel.StatusText = $"已删除工作流: {workflow.Name}";
                 }
                 else
                 {
                     ThemeMessageDialog.Show(
-                        "至少需要保留一个工作流",
+                        "当前流程不可删除，请确认运行、参数编辑和引用状态。",
                         "提示",
                         System.Windows.MessageBoxButton.OK,
                         ThemeMessageDialog.MessageIcon.Warning,

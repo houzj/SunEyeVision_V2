@@ -46,7 +46,8 @@
                     <!-- 左侧:TabItems区域 -->
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="32"/>
-                    <!-- 右侧:添加按钮及流程列表 -->
+                    <ColumnDefinition Width="32"/><ColumnDefinition Width="32"/>
+                    <!-- 根管理历史常驻，删除最后一个Tab后仍可撤销。 -->
                   </Grid.ColumnDefinitions>
 
                   <!-- 左侧:ScrollViewer包裹TabPanel和可滚动添加按钮 -->
@@ -72,6 +73,8 @@
                   </ScrollViewer>
 
                   <shell:WorkflowLocationControl Grid.Column="2" Loaded="WorkflowLocationsLoaded"/>
+                  <Button Grid.Column="3" Content="↶" FontSize="20" Style="{StaticResource WorkflowImageButton}" ToolTip="撤销流程管理操作（新增/复制/删除/重命名）" IsEnabled="{Binding RootUndoAllowed,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Click="RootUndoClick"/>
+                  <Button Grid.Column="4" Content="↷" FontSize="20" Style="{StaticResource WorkflowImageButton}" ToolTip="重做流程管理操作" IsEnabled="{Binding RootRedoAllowed,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Click="RootRedoClick"/>
 
                   <!-- 右侧:固定的添加工作流按钮 - 当TabItems多时显示 -->
                   <Border Grid.Column="1"
@@ -103,11 +106,15 @@
                 <ControlTemplate TargetType="TabItem">
                   <Grid>
                     <Grid.ContextMenu>
-                      <ContextMenu>
+                      <ContextMenu Opened="RootMenuOpened">
                         <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
                         <Separator/>
-                        <MenuItem Header="复制流程（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待方案级流程复制事务、独立身份及拥有关系重映射接入；节点片段复制已可使用。"/>
-                        <MenuItem Header="运行间隔/超时（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程级运行配置、执行快照和取消合同接入；当前不提供无效设置。"/>
+                        <MenuItem Header="复制流程" Tag="RootEdit" Click="RootCopyClick"/>
+                        <MenuItem Header="撤销流程管理操作" Tag="RootUndo" Click="RootUndoClick" ToolTip="新增/复制/删除的方案级历史；后续画布或参数修改须先撤销，避免覆盖其他流程。"/>
+                        <MenuItem Header="重做流程管理操作" Tag="RootRedo" Click="RootRedoClick"/>
+                        <MenuItem Header="设置运行间隔" Tag="RootEdit" Click="RootRunSettingsClick"/>
+                        <MenuItem Header="NG时停止流程" Tag="RootEdit" IsCheckable="True" IsChecked="{Binding RootSettings.StopOnNg,Mode=OneWay}" Click="RootStopOnNgClick"/>
+                        <MenuItem Header="流程等待超时（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="需完成原件等待超时语义与根执行协作取消、资源释放完整链；不提供仅保存无执行的设置。"/>
                         <MenuItem Header="配置就绪状态（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待正式配置校验模型接入；不以节点数量或运行结果代替配置就绪状态。"/>
                         <MenuItem Header="流程配置（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程级配置合同和编辑事务具备后接入。"/>
                         <MenuItem Header="流程变量（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程局部变量作用域及保存、执行快照能力具备后接入。"/>
@@ -291,10 +298,16 @@
       </TabControl>
     </Border>
 
+    <StackPanel x:Name="RootEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="10">
+      <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Items.Count,ElementName=WorkflowTabControl}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+      <TextBlock Text="暂无流程" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+      <Button Content="添加流程" Padding="20,6" Click="AddWorkflow_Click" IsEnabled="{Binding RootWorkspaceEditingAllowed,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}"/>
+    </StackPanel>
+
     <shell:WorkflowSearchControl x:Name="WorkflowSearch" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,42,12,0" Panel.ZIndex="110"/>
 
     <!-- ========== 右下角小地图（整画布快照 + 黑框标记画布边界，支持最小化/还原） ========== -->
-    <Grid HorizontalAlignment="Right"
+    <Grid x:Name="MiniMapHost" HorizontalAlignment="Right"
           VerticalAlignment="Bottom"
           Margin="0,0,11,11"
           Panel.ZIndex="100">

@@ -1,5 +1,8 @@
 ﻿# 根流程工作区并行只读核验交接
 
+> 当前纠正（最终候选3be9a94b）：撤回本报告历史上将CategoryId/Relations列为根运行参数缺项的判断。已复核554c1399的完整入口证据：根WorkflowConfigurationWindow为平铺单目标；分类/多关联由GroupRunConfigurationWindow消费。共享DTO有字段不能证明根入口具备该功能，之前源审由模型字段越过消费者推断，结论不成立。历史文字保留仅为审计来源，不再作为根剩余任务；Group继续冻结。输入槽订阅另由本次704de93e真实实现核验，不与分类关系混同。
+
+
 - 基线提交：adc727ba1eabf1d3af3bbbf2e5d22494fb402597（固定版本）
 - 当前分支：codex/workflow-review
 - 当前执行者：D 只读核验
@@ -90,3 +93,13 @@
 - OLE同文档同修订统计刷新延后到手势结束，保留源visual和ghost；修订/源失效先清deferred再取消，避免旧投影覆盖新文档。drop先退出手势再交宿主，宿主复核文档身份/修订。DoDragDrop异常已有DragFailed可诊断取消。前次源审的两项静态疑点已承接。
 
 **本次未发现新增足以阻止该集成批继续收尾的明确源码缺陷。** 这不等于完整迁移或人工通过：真实OLE嵌套刷新、物理鼠标、多DPI、整窗主题及VS设计时仍由集成实际验收记录承担；本路线未执行构建/测试。负责人提供的366/367构建与98回归、host-reference-copy结果仅作为其验证报告引用，不记为本路线重跑。未改产品、测试、共享账本；Group和公共合同冻结不变。
+
+## 最终资源订阅与模式差异核验
+
+固定候选：3be9a94b6fd397b0be24912eeae0a3b16c5d6eba；新增源自704de93e、a157e5f0与A MaximumScale合同。仅源审，不重跑构建。
+
+**明确P2缺陷：总览底栏缩放上限与宿主不一致。** `ShellWorkspaceControl.RootPresentation.SynchronizeWorkspaceScale`总览设置MaximumScale=4，RootOverview.Viewport本身支持0.1—4；但`ShellWorkspaceControl.xaml.cs`的WorkspaceScaleRequested总览分支仍`Math.Clamp(scale,.1,2)`。用户Ctrl滚轮可达400%，改用底栏滑块请求300/400%却被截成200%，与控件公开范围矛盾。应将宿主总览分支与4上限统一，并补实际Slider请求>2且根Tab比例不变的专项；现369模式仅1.7不能覆盖此分支。
+
+资源链未发现新增明确阻断：图像订阅写正式ImageSourceRef并清运行时ImageSource，区域写类型化ParamSettings；Reference-only拒常量、拒跨根与子字段/切片，按正式端口类型匹配。临时ValidateReference捕获并finally还原设置、图像来源、来源身份及pending/rebinding标记，未发布正式节点。Unset清来源与对应身份，移除代理恢复打开时绑定；复制继续沿正式资源ID/作用域重映射。资源槽不将运行图像或区域实例持久化为常量。
+
+模式切换集中关闭名称/ID搜索、位置弹层、耗时窗和小地图捕获，取消当前画布/总览手势；切入捕获根视口，切回排队恢复，底栏ExecutionText绑定按模式切断/恢复。MaximumScale DP校验有效范围，ScaleRequested消费仍有上述上限遗漏。真实369反馈仅由集成负责人提供，本路线不据此声明物理交互、多DPI/VS/人工达标。370资源正式运行验证仍由A承担。

@@ -75,3 +75,18 @@
 - C窗口Closed清ItemsSource与DataContext而不清共享快照集合；与现有Presenter单窗所有权相容。窗口层没有新增执行/图像资源所有权。切根/切方案实际关闭仍由A宿主链验证。
 
 本次仍未构建、未部署、未运行原厂或产品；真实OLE、多DPI、暗亮布局、VS设计时与用户人工验收均未通过本次源审替代。A固定提交收到后，重点核缺值合同与共享接线，避免重复R全表。
+
+## A固定集成增量核验：ba889d4a
+
+对象：`ba889d4a46c01bfc554775df41ec31aa99ca4261`。范围限根代理事务、结构历史、复制、窗口草稿/结果、OLE延后刷新与计时，不重列原R表或明确后续的分类/多关联/模式chrome。
+
+- 根目录与多节点候选走同一次DocumentEditSession冻结、ValidateBatch、CommitBatch；ComposeRoots核owner/consumed/精确正式对象/根签名及去重。代理值仍存节点，目录不可变，未发现第二套运行值。
+- AcceptProjection在写之前完整准备根before/after和节点旧参数/设置，实际根写走raw赋值；失败Restore恢复根及节点，Applied=false阻止失败后根变更通知；通知在接受结束后发出。未发现新增根写在事务成功之前泄露给视图的路径。
+- 结构RebaseStructure把历史参数与根目录投影到当前拓扑，保留当前WorkspaceSettings；已删节点代理保留为失效目录而非错误复活节点。该选择与显式修复占位一致，正式就绪检查拒绝失效代理。
+- 根复制收集当前根节点ID映射，代理重新分配Guid、映射NodeId；实际参数/引用复制仍沿既有WorkflowFragmentCopy。未知旧来源保留为失效身份，不按名称误配。
+- RootWorkflowConfigurationContext校验方案/根/节点精确对象；候选字段和绑定留私有草稿，Apply冻结后一次发布，关闭注销参与者。Undo/Redo按本窗口提交计数和Host版本作范围门禁，避免撤销其他编辑。主窗单窗登记、重复激活、失败释放和窗口Timer退出均有承接。
+- 结果读取限定根运行上下文；标量输出由正式目录读取，图像需OutputCache.LastResult与本次上下文结果同对象才显示。窗口不处置共享图像；已冻结Bitmap直接借用、可变Bitmap克隆后冻结。未把计时摘要伪装成完整根显示映射。
+- 原增量的计时缺值问题已由HasModuleTiming/HasAlgorithmTiming与FlowElapsedText承接；真实零时长与未提供可区分，Begin清标记，窗口和底栏统一消费。根未运行不再显示0.00。
+- OLE同文档同修订统计刷新延后到手势结束，保留源visual和ghost；修订/源失效先清deferred再取消，避免旧投影覆盖新文档。drop先退出手势再交宿主，宿主复核文档身份/修订。DoDragDrop异常已有DragFailed可诊断取消。前次源审的两项静态疑点已承接。
+
+**本次未发现新增足以阻止该集成批继续收尾的明确源码缺陷。** 这不等于完整迁移或人工通过：真实OLE嵌套刷新、物理鼠标、多DPI、整窗主题及VS设计时仍由集成实际验收记录承担；本路线未执行构建/测试。负责人提供的366/367构建与98回归、host-reference-copy结果仅作为其验证报告引用，不记为本路线重跑。未改产品、测试、共享账本；Group和公共合同冻结不变。

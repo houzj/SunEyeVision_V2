@@ -1,0 +1,3791 @@
+﻿{
+  "purpose": "工作流分支统一基线审查清单；仅封存，不自行同步或推送",
+  "branch": "codex/workflow-toolbox-dataflow",
+  "preSealHead": "17dd1858eda8de616cce0ca3fdb4111259285dbc",
+  "mainAtInspection": "81d0c7386ad21da57bafb78938dc935b30c9f285",
+  "mergeBase": "a6f58334ac9eb4bd67cdfd74896798681d0f1ed5",
+  "branchOnlyCommitCount": 74,
+  "changedPathCount": 576,
+  "pathGroups": {
+    "AGENTS.md": 1,
+    "docs": 15,
+    "installer": 1,
+    "scripts": 1,
+    "src/Plugin.Infrastructure": 6,
+    "src/Plugin.SDK": 25,
+    "src/UI": 417,
+    "src/Workflow": 23,
+    "tests": 70,
+    "tools": 17
+  },
+  "uncommittedBeforeSeal": "",
+  "runtimeProductSource": "34d066d81dc2b9efa98be136d8891307e1834adc",
+  "latestValidation": "CanvasParity-389：正式UI0错误/1334警告，158专项通过，准入0，三DLL同SHA；最新产物未做全量slnx验证",
+  "lastFullSolutionValidation": "CanvasParity-384，3feaadf9源码，全量0错误/1359警告；不是最新34d066d8的全量验证",
+  "runtimeNow": "验收进程29160已退出，当前未检测到SunEyeVision.UI进程",
+  "manualStatus": "待用户，VS/物理/DPI未验",
+  "mainUserChangeToPreserve": "主线BlobParameterEditor.xaml页索引2未提交修改由主线保留，本分支未触碰主线工作目录",
+  "frozenScope": [
+    "停止新增功能并保持代码不变",
+    "Group后续迁移仍暂停，分支历史含早期Group及SDK/运行层修改，必须完整审查",
+    "主界面整体迁移尚未实施",
+    "不自行merge/rebase/cherry-pick主线，不推送",
+    "主线合并验证后通知新的共同基线，再按通知推进并继续独立开发"
+  ],
+  "commits": [
+    {
+      "sha": "17dd1858eda8de616cce0ca3fdb4111259285dbc",
+      "title": "完善小地图逐态截图并记录正式验收交付"
+    },
+    {
+      "sha": "34d066d81dc2b9efa98be136d8891307e1834adc",
+      "title": "修正小地图透明分层、按钮裁切及主题交互状态"
+    },
+    {
+      "sha": "6ce94fc68ae2005c88f8a3ea1f45ddcaba8e0d4a",
+      "title": "记录右键添加工具正式验证与人工交付"
+    },
+    {
+      "sha": "ead81c37a1b262a5ed3f42b70f14a1b2b17c98fb",
+      "title": "补齐右键工具禁用项的暗显反馈"
+    },
+    {
+      "sha": "6f3c85854dbe90d9d083749387913cd28986e5b9",
+      "title": "补齐画布右键分类添加工具与统一撤销链"
+    },
+    {
+      "sha": "2e2ca81802700842631ec88dc3c1880586fc8192",
+      "title": "记录统一历史正式验证与主题启动修复后的人工交付"
+    },
+    {
+      "sha": "2bef5bcf5314ed0a65c70c04ceb214fab6fb7293",
+      "title": "恢复SDK主题棋盘资源并补实际启动契约验证"
+    },
+    {
+      "sha": "3feaadf95b41b56ed978ae3d299b9dc3851fe10b",
+      "title": "贯通画布、流程切换与方案统一撤销重做生产链"
+    },
+    {
+      "sha": "45fa0db21efbd81bca60f4f7a53389b0b1e825cb",
+      "title": "制定画布导航与统一撤销重做的原件整体迁移设计和验收合同"
+    },
+    {
+      "sha": "3864379f86ece0bd12424cc49e5c2201c86f5aea",
+      "title": "闭口根流程工作区实施交付并独立保留人工待验状态"
+    },
+    {
+      "sha": "9cacfd034aac441e8823991d039870c93f80b3c6",
+      "title": "记录正式验收程序启动与人工验证交接状态"
+    },
+    {
+      "sha": "c366b4ce3adc18b47216208045170a6045a0715f",
+      "title": "固定根流程迁移验收候选并归并同版验证与占位清单"
+    },
+    {
+      "sha": "e9836b58f71a784dbd61e33026dcbee930615e13",
+      "title": "统一默认流程命名并纠正资源生产测试的正式契约及宿主边界"
+    },
+    {
+      "sha": "77a352e3200eca5bf7551c6362f53cb506375d58",
+      "title": "修正总览底栏缩放上限并补充跨百分之二百的路由验证"
+    },
+    {
+      "sha": "d8ba39d6c39105e1d80264a8e2655e362adf6975",
+      "title": "核验资源订阅并纠正根参数范围及缩放差异"
+    },
+    {
+      "sha": "3be9a94b6fd397b0be24912eeae0a3b16c5d6eba",
+      "title": "完善根总览缩放合同并固定资源生产验收候选"
+    },
+    {
+      "sha": "9c2859036b9ed921358e912ce20d77b6e61f4ed4",
+      "title": "接通根流程图像与像素区域的仅订阅代理"
+    },
+    {
+      "sha": "24876e593dcba7d8efbee4724d3b8e3a8266a790",
+      "title": "贯通总览与根画布模式切换及临时界面清理"
+    },
+    {
+      "sha": "c2e01b816b8693027d3bf074389a4b079addee79",
+      "title": "核清根参数与Group分类关联的真实职责范围"
+    },
+    {
+      "sha": "dc6b14dae7a7d11c52997e5586b77065fa08895d",
+      "title": "核验根配置集成的事务与退出完整链"
+    },
+    {
+      "sha": "ba889d4a46c01bfc554775df41ec31aa99ca4261",
+      "title": "集成根配置事务与总览底栏生产链"
+    },
+    {
+      "sha": "302706d58ecd2a738d803448a92697bca1f2ca23",
+      "title": "补充总览拖放与耗时缺值的固定提交核验"
+    },
+    {
+      "sha": "e7f3e30c101173ff069e2c5e9b8ee0f5c875bfb1",
+      "title": "补齐总览模式切换的原始位图资源"
+    },
+    {
+      "sha": "80b5ee439d374f1162d8ab4fe02c4e6dfc31336a",
+      "title": "迁移根流程总览卡片与独立视口交互"
+    },
+    {
+      "sha": "852a678ef445c7724a982e601dbed7247cae1295",
+      "title": "核验根工作区迁移范围与正式能力缺口"
+    },
+    {
+      "sha": "f08c4d8e0c635a3c3755789594a3d328f6812132",
+      "title": "迁移根流程底栏三项计时与原件耗时窗布局"
+    },
+    {
+      "sha": "adc727ba1eabf1d3af3bbbf2e5d22494fb402597",
+      "title": "迁移根流程标签布局与配置检查状态"
+    },
+    {
+      "sha": "7b3ae5d754f28cb307762f8c78af76ab9c870b49",
+      "title": "完善根流程管理事务与连续运行策略"
+    },
+    {
+      "sha": "cf081910adcd00a2e70803c4034385572a98b931",
+      "title": "集中收尾非Group工作区并准备人工验收"
+    },
+    {
+      "sha": "8d4128139b6a727aa111f6d8fd474bda156d0fce",
+      "title": "完善Group基础闭环验证并禁用未具备能力的入口"
+    },
+    {
+      "sha": "0eb9d60a3d91b1faaae64954bff22ca67ae4597a",
+      "title": "校正SDK现行合同回归并补齐作用域与快照验证"
+    },
+    {
+      "sha": "8d8e8cfbde08c6bbefc78885cb9d9612ad58de7f",
+      "title": "补齐组环形扇区类型绑定与双半径绘制链"
+    },
+    {
+      "sha": "06b111a9f274a3910ad36cdc26db2a3882073566",
+      "title": "修复组文本显示来源筛选并记录显示对象树迁移合同"
+    },
+    {
+      "sha": "fd81580b64d13a4cbe7b0bb6ba73ddcc902c2a9a",
+      "title": "保留组累积显示配置样式并修复混合几何分组"
+    },
+    {
+      "sha": "434d44d6cd560a67fe439c231d0f104b78d13470",
+      "title": "按原件内容语义逐项生成组内文本数组显示"
+    },
+    {
+      "sha": "6acb744d56e849ad7dacbc3e0ce49e385942a518",
+      "title": "统一顶部根运行作用域并修复下钻标签恢复"
+    },
+    {
+      "sha": "05156327848fcfcec78931f06c726de28a53db1f",
+      "title": "迁移流程运行停止及新增按钮的原件资源与状态"
+    },
+    {
+      "sha": "f76260b87492ff7e75c78a0dd7f3e98525c2de27",
+      "title": "迁移流程与嵌套组的层级列表入口"
+    },
+    {
+      "sha": "bab376856fae97e8d9167f9c0f1832b068d9d474",
+      "title": "迁移流程名称搜索与嵌套节点导航"
+    },
+    {
+      "sha": "f7b6864cc6d70e006ade0a2d6461b3b6a668cb22",
+      "title": "对齐耗时详情单窗与切换关闭生命周期"
+    },
+    {
+      "sha": "ffffb3691c672b737c6b35e41d9726d9c39ae331",
+      "title": "接入根流程耗时详情并修正Group视图快照作用域"
+    },
+    {
+      "sha": "0400cc204002f30ea87fed21a46159552a257bfe",
+      "title": "接入流程工作区底部状态与缩放控件"
+    },
+    {
+      "sha": "8a26857e926157a10678e9bff8033d04c0657cfe",
+      "title": "验证Group真实嵌套引擎及父子取消传播"
+    },
+    {
+      "sha": "b1612d43e40ccfbbbba48e8abb86f6608d775241",
+      "title": "验证Group显示保存重开及独占复制隔离"
+    },
+    {
+      "sha": "361809bb9b672f1dcdd57f77657e29eaeb847768",
+      "title": "补齐Group圆弧来源过滤与显示执行链"
+    },
+    {
+      "sha": "953141e03a1cdc4752237c5e5efb21fa45493f1d",
+      "title": "对齐Group显示行布局及独立名称校验"
+    },
+    {
+      "sha": "bb9cdc96f1a8d40719754bcbe2048c4ffd77ab4e",
+      "title": "修复Group显示换源并统一稳定字段解析"
+    },
+    {
+      "sha": "c7e4f7310b6f6fd9e48b36cc4d78cd2b09afc546",
+      "title": "迁移Group来源批选并完善类型资源与编辑门禁"
+    },
+    {
+      "sha": "3f4e078a942628e8f89f7fa7d37e185aae866ee1",
+      "title": "对齐Group输入输出规则及行布局"
+    },
+    {
+      "sha": "d7da0fb65a1e4c4d9dcd2158ac86067b4dcce69f",
+      "title": "完善Group循环类型与取消及区域作用域"
+    },
+    {
+      "sha": "7b932c69797e7cb9aba6a8f986c65e1ce4706cd0",
+      "title": "接入Group区域参数编辑与共享图像释放链"
+    },
+    {
+      "sha": "1a113b2dbdf285f68a4a999954ea3d4b206d2c9d",
+      "title": "迁移Group独立运行参数配置窗与关联关闭链"
+    },
+    {
+      "sha": "87e21775d495b7a6c4608e976ec701248f992335",
+      "title": "实现Group运行参数页初版与多目标配置保存"
+    },
+    {
+      "sha": "44d22ab72eb6cc3663f31ee813433b1ac11f94d5",
+      "title": "将Group关联参数接入正式组合草稿与作用域校验"
+    },
+    {
+      "sha": "37096aa06141929098722d727e623609f8c73522",
+      "title": "补齐Group组合配置事务并记录运行参数完整迁移清单"
+    },
+    {
+      "sha": "5a64cda34fbd95cc214f7f44e27a6b81460cd7a5",
+      "title": "接入Group正式候选编辑并修正方案切换关闭顺序"
+    },
+    {
+      "sha": "5ee609935a984fc942b0e53d49dc9d582b7e60ba",
+      "title": "原子创建Group并统一递归所有权与重做配置"
+    },
+    {
+      "sha": "0fa7dfeb6ea9f0db54f6911950488193777b37d1",
+      "title": "登记Group参数窗口并贯通编辑门禁与切换关闭"
+    },
+    {
+      "sha": "189116b0a9e76bf61e895f10c8d974ed393df8ac",
+      "title": "贯通节点重命名撤销并补新增与编辑会话门禁"
+    },
+    {
+      "sha": "2d60126a9a8225c816e4ec729129cde7f40da909",
+      "title": "按连线焦点接入独立删除并保护节点选择"
+    },
+    {
+      "sha": "3fbcd5c073af7f4c74c049a735553df1ff8a847f",
+      "title": "恢复流程容器视图并保留完整Group导航帧"
+    },
+    {
+      "sha": "90872bd73ef70a94b2a99da3391eefcb5f3017e9",
+      "title": "保持流程容器编辑历史并配对清理小地图订阅"
+    },
+    {
+      "sha": "f715a63a23fb42e25cff746b11c43bd224f6d5b0",
+      "title": "统一画布编辑门禁并校验手势配置与容器身份"
+    },
+    {
+      "sha": "9f6393005017483cdfb90241b2a6c9ce89777933",
+      "title": "迁入VM子程序原模板并贯通节点删除补线与绑定撤销"
+    },
+    {
+      "sha": "4bcf421063fc7a0e45dffea0f2f458d7a519b1d9",
+      "title": "记录复制迁移检查点与目标面板终检状态"
+    },
+    {
+      "sha": "d760c3a34259566118695f625d026eafe67d4612",
+      "title": "迁入画布复制粘贴与独占子程序并按原件保留同流程前驱入线"
+    },
+    {
+      "sha": "950dae1f84bdec815c30dd959591811ac0a11404",
+      "title": "迁入VM组选对齐分布和节点启用禁用并验证撤销连线"
+    },
+    {
+      "sha": "bc81098dbe3159d20e94fb257f77824d2088578a",
+      "title": "按VM原件修正节点重连端口和移动镜像合同"
+    },
+    {
+      "sha": "ac30607315a04be5706f2dedc308a0f2653f3be6",
+      "title": "贯通画布手势与节点移动对齐自动连线及插线事务"
+    },
+    {
+      "sha": "fc1517f043d423c62ac42cf691d775b9a7a247a8",
+      "title": "移植VM节点基础和小地图并贯通连线编辑保存撤销"
+    },
+    {
+      "sha": "5af496a7c460cc61b8d5ec6ebd616cad265c7474",
+      "title": "完善工具箱完整目录与加载状态并固定隔离预览检查点"
+    },
+    {
+      "sha": "a02cc0a5cf84cc83716c8e7ad6b68d6ab52c00c1",
+      "title": "实现目录驱动与VM双模工具箱源码候选"
+    },
+    {
+      "sha": "ff8eea9581afb6ccd8ad42a83fddacc9c59eb690",
+      "title": "统一工具箱目录发现方案与实际部署双模预览"
+    },
+    {
+      "sha": "385e0284f99eeab523e2548ad6b5e45d6dda1fae",
+      "title": "补充工作流调用环保护并优化绑定候选与工具箱生命周期"
+    }
+  ],
+  "changes": [
+    {
+      "status": "M",
+      "paths": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/01-方案设计/2026/08/11/画布节点样式与状态体系优化方案-20260811-103552.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/01-方案设计/2026/10/Group原件与恢复实现边界-20261027.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/01-方案设计/2026/10/Group正式呈现字段合同设计-20261027.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/01-方案设计/2026/10/完整迁移设计输入索引-20261027.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/01-方案设计/2026/10/工具箱分类排序与图标基线-20261012.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/01-方案设计/2026/10/工具箱双模预览-20261026.html"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o02.html"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/optimization-o03.html"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/collaboration/CURRENT_TASK.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/collaboration/subtasks/overview.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/collaboration/subtasks/root-parameter-relations-design.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/collaboration/subtasks/root-resource-proxies.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/collaboration/subtasks/timing-footer.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/collaboration/subtasks/workflow-mode-closeout.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/collaboration/subtasks/workflow-review.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "installer/Release.Common.ps1"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "scripts/verification/Run-ToolboxReleaseValidation.ps1"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.Infrastructure/Managers/Plugin/PluginLoader.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.Infrastructure/Managers/Plugin/ReleasePayloadAuthority.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Plugin.Infrastructure/Managers/Plugin/ToolDirectoryCatalog.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.Infrastructure/Managers/Tool/ToolRegistry.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Core/ToolAttribute.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Core/ToolCategories.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Execution/Parameters/BindingInputCatalog.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Plugin.SDK/Execution/Parameters/GroupParameterCatalog.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Execution/Parameters/ISubroutineDebugService.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Execution/Parameters/OutputVariableResolver.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Execution/Parameters/ParameterResolver.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Execution/Parameters/SubroutineParameters.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Execution/Results/SubroutineResults.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Plugin.SDK/Metadata/ToolGroups.xml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Metadata/ToolMetadata.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Models/SubroutineDisplayItem.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Models/SubroutineInputConfig.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Plugin.SDK/Models/SubroutineIoRules.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Models/SubroutineLoopConfig.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Models/SubroutineOutputConfig.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Plugin.SDK/Models/SubroutineRunParameterGroup.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Models/Visualization/DisplayCollector.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/Models/Visualization/GraphicsType.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/UI/Controls/ParamBinding.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/UI/Windows/CustomDebugWindow.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/App.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Converters/Node/VmGroupBackgroundConverter.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Converters/Node/VmNodeIconConverter.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Core/IRootCoordinator.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Clipboard.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ConfigurationStamp.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ConnectionGestures.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.GeometryTracking.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.GroupSelection.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.InsertionGestures.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.NodeGestures.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.PlacementFeedback.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.Rename.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.ToolContextMenu.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.WireEditing.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/AddConnectionCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/AddGroupNodeCommand.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/BatchDeleteNodesAndConnectionsCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/ChangeRootWorkspaceSettingsCommand.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/CommandManager.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/DeleteWorkflowItemsCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/EditConnectionPathCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/EditConnectionPortsCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/InsertNodeIntoConnectionCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/MoveNodesSnapshotCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/PasteWorkflowFragmentCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/RenameCanvasNodeCommand.cs"
+      ]
+    },
+    {
+      "status": "D",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/ReplaceConnectionCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/RootOverviewPositionCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/RootWorkflowCollectionCommand.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/Commands/SetNodesEnabledCommand.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Features/WorkflowUI/WorkflowTabViewModel.Readiness.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/GlobalUsings.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Resources/Styles/NodeStyleResources.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/AndModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/BranchModule_STDImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/BranchStringCpmLImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CalculationImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CalculationImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CalculatorModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CalibrationImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CalibrationImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CameraIOModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CollectionImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CollectionImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ColorProcessingImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ColorProcessingImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CommunicationImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CommunicationImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CoordinateModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/CoordinateTransformImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataAnalysisModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataAssembleModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataClassificationModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataFilterModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataRecordModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataSetModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DataSortModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DefectDetectionImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/DefectDetectionImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/FormatModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/GeometryCreateImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/GraphicsSetModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/GroupToolsImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/GroupToolsImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVS2dArrayCorrectModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVS2dBcrModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSAffineTransformModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSAngleBisectorFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBcrModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBinaryModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBlobFindLabelsModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBlobFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBoxFilterModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBoxMergeModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSBoxOverlapCalculationModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSC2CMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCalibBoardCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCalibTransformModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCaliperCornerModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCaliperEdgeModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCaliperModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCameraMapModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCircleEdgeInspModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCircleEdgePairInspModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCircleFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSCircleFitModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSColorExtractModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSColorImageGenerationModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSColorMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSColorRecognitionModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSColorSegmentModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSColorTransformModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSContourMatchModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSDivideImageModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgeFlawInspModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgeInspGroupModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgePairFlawInspModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgePairInspGroupModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgePairPosTrendAnalyModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgePosTrendAnalyModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEdgeWidthFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEllipseFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSEllipseFitModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSFastFeatureMatchModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSFixtureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSFrameMeanModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSGeometricTransformModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSGluePathConductModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSGrayMatchModuVAImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSGroupImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSHPFeatureMatchModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSHistToolModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageCombineProcessModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageCorrectCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageCorrectManualModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageEnhanceModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageFilterModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageFixtureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageMathModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageMorphModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageNormlizeModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageResizeModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImageSharpnessModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSImgStitchCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSInspectModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSIntensityMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSInverseAffineTransformModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSL2CMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSL2LMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSLineAlignModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSLineEdgeInspModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSLineEdgePairInspModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSLineFindGroupModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSLineFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSLineFitModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMachineLearningClassifierModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMapCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMarkFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMarkInspModuVAImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMatrixCircleFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMedianLineFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMultiImageFusionModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMultiLabelFilterModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMultiLineFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSMultiPointAlignModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSNImageCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSNPointCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSOcrModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSP2CMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSP2LMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSP2PMeasureModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSPairLineModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSParallelCalculateModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSPeakFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSPixelCountModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSPixelCountModuVAImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSPolarUnwarpModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSQuadrangleFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSRectFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSRegionCopyModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSRotateCalculateModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSScaleTransformModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSShadeCorrectModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSSinglePointAlignModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSSurfaceDefectFilterModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSTargetTrackModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IMVSVerticalLineFindModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IfBranchModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/IfModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageAcquisitionModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageBufferModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageGenerationImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageGenerationImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageProcessingImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageProcessingImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ImageSourceModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/LightModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/LocationImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/LocationImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/LogicImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/LogicImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/MeasurementImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/MeasurementImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/PointSetMODU_STDImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/PyShellModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ReadCalibFileModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ReadDatasModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/RecognitionImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/RecognitionImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/RotateCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SaveImageImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SaveTextModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SendDatasModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/ShellModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SinglePointGrabModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SinglePointMapAlignModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SinglePointRectifyModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SplitCombinationImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/SplitCombinationImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/StringCompareModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/TimeStatisticModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/TranslationCalibModuImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/TriggerModuleImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/UserToolsImageEnable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/UserToolsImageHover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/VmToolCatalog.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/asset-provenance.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-assemble.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-axes.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-binarize.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-blob.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-branch.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-circle-circle.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-circle.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-code.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-generic.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-image.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-line-circle.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-line-line.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-line.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-match.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-morphology.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-parse.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-point-circle.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-point-line.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-point-point.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-receive.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-send.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-sliders.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-subroutine.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/tool-threshold.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/toolbox-category-closed.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/toolbox-category-open.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/toolbox-expand-hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/toolbox-expand-normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Toolbox/vm-catalog-provenance.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/asset-provenance.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/bottombar_abnormal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/bottombar_config.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/bottombar_run.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_bg.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_bg_focus.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_bg_forbidden.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_bg_load_fail.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_ng.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_ng_selected.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_ok.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/group_ok_selected.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_closeGrey32_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_closeGrey32_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_cycle_right.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_cycle_right_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_expand_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_expand_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_flow_group_notice.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_group_configuration_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_group_configuration_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_group_configuration_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_hu_add_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_hu_add_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_hu_add_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_hu_add_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_local-variable_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_local-variable_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_local-variable_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_local-variable_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_note_search_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_note_search_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_play_单流程_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_play_单流程_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_play_单流程_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_play_单流程_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_retract_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_retract_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_rightarrow32_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_rightarrow32_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_downarrow_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_downarrow_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_downarrow_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_downarrow_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_group_configuration_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_group_configuration_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_group_configuration_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_tab_group_configuration_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_停止运行_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_停止运行_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_停止运行_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_停止运行_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_全局_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_全局_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_单个_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_单个_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_多次运行_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_多次运行_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_多次运行_hover.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_多次运行_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_展开_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/ic_展开_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/toolbar_ic_topbar_redo_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/toolbar_ic_topbar_redo_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/toolbar_ic_topbar_undo_disable.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Resources/Workflow/toolbar_ic_topbar_undo_normal.png"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Connection/ConnectionPathCache.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Connection/ConnectionPathService.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Connection/ConnectionService.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Editing/EditorDraftAdapter.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/GroupRegionParameterControl.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/GroupRunParameterConfigWindow.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/GroupRunParameterSession.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/GroupRunParametersControl.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/ParameterWindowRegistry.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Editing/ProductionEditorContext.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/RootParameterCatalog.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/RootResourceProxyBinding.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/RootWorkflowConfigurationContext.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Editing/RootWorkflowReferencePicker.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/ConnectionCreator.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/ConnectionDragHandler.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/ConnectionManager.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/DragDropHandler.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/NodeInteractionHandler.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/PortInteractionHandler.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/PortInteractionHandler2.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Interaction/PortPositionService.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Interaction/VmPlacementCalculator.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Interaction/VmSelectionLayout.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Node/PortService.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Path/IPathCalculator.cs"
+      ]
+    },
+    {
+      "status": "D",
+      "paths": [
+        "src/UI/Services/Path/WorkflowPathCalculator.cs"
+      ]
+    },
+    {
+      "status": "D",
+      "paths": [
+        "src/UI/Services/PathCalculators/BezierPathCalculator.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/PathCalculators/PathCalculatorFactory.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/RecoveredConnectionDrag.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmPathCalculator.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/APoint.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/AStar.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/ConnectorOrientation.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/Geometry.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/POINT.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/PathFinder.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/RouteTypes.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/VmOrthogonalRouter.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/PathCalculators/VmRouting/source-provenance.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Rendering/VmExecutionPort.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Workflow/RootWorkflowReadiness.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Workflow/WorkflowExecutionManager.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Workflow/WorkflowExecutionSnapshot.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Workflow/WorkflowExecutionSnapshotPresenter.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Workflow/WorkflowLocationCatalog.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Services/Workflow/WorkflowNodeFactory.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Services/Workflow/WorkflowSearchCatalog.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shared/NodeStyleConfig.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shared/WorkflowNodeModel.Presentation.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shared/WorkflowNodeModel.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/RootWorkflowOverviewControl.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/RootWorkflowOverviewControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/RootWorkflowOverviewDrawings.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/RootWorkflowOverviewEntry.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellTopBarViewModel.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.Locations.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.RootPresentation.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.RootWorkspace.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.RunButtons.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.Search.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.ViewState.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkflowLocationControl.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkflowLocationControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkflowSearchControl.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkflowSearchControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkflowTabButtonStyles.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkflowTabViewport.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkspaceStatusBarControl.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Shell/WorkspaceStatusBarControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolItem.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxDesignData.cs"
+      ]
+    },
+    {
+      "status": "D",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxInteractionTimer.cs"
+      ]
+    },
+    {
+      "status": "D",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxPopupStateManager.cs"
+      ]
+    },
+    {
+      "status": "D",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxToolCacheManager.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindow.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindow.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowCanvasContext.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowCanvasDefinitions.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowDocumentHistory.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowGroupEditing.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowProductionEditing.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowRootConfiguration.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowRootOverview.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowRootWorkspace.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowViewModel.CanvasClipboard.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowViewModel.CanvasEditing.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowViewModel.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/MainWindowWorkflowSearch.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/RootWorkflowRunSettingsWindow.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/RootWorkflowRunSettingsWindow.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Windows/WorkflowExecutionSnapshotWindow.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Shell/Windows/WorkflowExecutionSnapshotWindow.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/WorkflowIdSearchWindow.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/UI/Shell/Windows/WorkflowIdSearchWindow.xaml.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/SunEyeVision.UI.csproj"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Themes/Base/ThemeKeys.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Themes/Dark/DarkTheme.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/UI/Themes/Light/LightTheme.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/BindingConfigurationStore.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/DocumentEditSession.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/DocumentHistoryCoordinator.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/ExecutionConnectionPolicy.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/GraphBindingUndoSnapshot.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/NodeConfigurationEditHost.DocumentHistory.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/NodeConfigurationEditHost.RootConfiguration.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/NodeConfigurationEditHost.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/OutputBindingChangeService.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/Persistence/SolutionCompatibilityAdapter.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/RootWorkflowConfiguration.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/RootWorkspaceSettings.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/SolutionManager.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/SolutionSession.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/ToolParameterSnapshot.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/Workflow.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/WorkflowDefinitionService.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/WorkflowFragmentCopy.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/WorkflowJsonConverter.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/WorkflowNode.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "src/Workflow/WorkflowOwnership.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/WorkflowRunConfiguration.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "src/Workflow/WorkflowRunSession.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.Infrastructure.Tests/PluginLoadingSmokeTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.Plugin.Infrastructure.Tests/ToolDirectoryCatalogTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/AnnularSectorDisplayContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/CommunicationBinaryPayloadTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/DesignTimeInitializationContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/DisplayCollectorGeometryContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/GeometryFieldSchemaContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/ImageFrameProvenanceTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/MaskPointFilterContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/OutputVariableResolverScalarArrayTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/ParamBindingDisplayContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/SdkTypeVocabularyContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/SolutionExecutionDependencyGraphTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/SubroutineDisplayItemTypeContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Plugin.SDK.Tests/WorkflowRunSessionTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.Tool.Subroutine.Tests/SubroutineIoMigrationTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.Tool.Subroutine.Tests/SubroutineLoopMigrationTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.Tool.Subroutine.Tests/SubroutineToolDisplayContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/BindingAdaptationB2Tests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/CanvasDocumentHistoryTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/CommunicationAutomationTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/ContinuousRunStopNotificationTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/DocumentHistoryCoordinatorTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/GroupCompositeDocumentEditTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/GroupDisplaySourceTypeTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/GroupFoundationLifecycleTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/GroupRunParameterConfigTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/GroupRunParameterPageTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/GroupWorkflowExecutionTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/NodeConfigurationEditHostTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/OutputBindingChangeTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/ProductionEditorContextTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootConfigurationTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootResourceProductionTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootResourceProxyTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootTabStateTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootWorkflowCollectionTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootWorkflowOverviewTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootWorkspaceHostTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootWorkspaceModeTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/RootWorkspaceSettingsTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/SolutionManagementTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/SolutionTransitionTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/ThemeStartupContractTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/ToolboxPresentationTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmCanvasAssemblyTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmConnectionPolicyTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmContainerHistoryTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmDeleteRepairTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmDeleteTransactionTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmFragmentCopyTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmGestureTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmGroupCreationTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmGroupWindowLifecycleTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmPathCalculatorTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmPlacementTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmRenameTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmSelectionLayoutTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/VmWireEditingTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowDefinitionValidatorTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowExecutionSnapshotPresenterTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowLocationTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowRootScopeTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowRuntimeFixture.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowSearchTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkflowTabButtonTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkspaceStatusBarTests.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tests/SunEyeVision.UI.Tests/WorkspaceTimingPresentationTests.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.BlobAnalysis/BlobAnalysisTool.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdParameters.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseParameters.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.Script/ScriptTool.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/IoTreeStyle.xaml"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/add_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/add_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/delete_click.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/delete_normal.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/tree_collapsed.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Resources/GroupIo/tree_expanded.png"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/ViewModels/SubroutineParameterDialogViewModel.cs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml.cs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineIoPicker.cs"
+      ]
+    }
+  ]
+}

@@ -50,7 +50,12 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
     var row=new DockPanel{Margin=new Thickness(0,3,0,3)};var delete=new Button{Content="×",Width=28,ToolTip="移除该运行参数代理"};DockPanel.SetDock(delete,Dock.Right);delete.Click+=(_,_)=>Safe(()=>_context.Remove(proxy));row.Children.Add(delete);
     try
     {
-     var field=_context.Resolve(proxy).Field!;
+     var candidate=_context.Resolve(proxy);
+     if(candidate.Resource is not null)
+     {
+      row.Children.Add(ResourceReferenceRow(proxy,candidate));Parameters.Children.Add(row);continue;
+     }
+     var field=candidate.Field!;
      var editor=new DeclaredFieldEditor(field.Port,_context.Resolve(proxy).Node.DispName+"."+proxy.DisplayName,_context.Read(proxy),setting=>_context.Write(proxy,setting),
       _=>RootWorkflowReferencePicker.Pick(this,_context,proxy),new ConstantSetting(field.Read()),reference=>FormatReference(reference),field.Presentation.ChoiceLabels,field.Presentation);
      editor.Changed+=RefreshState;_fields.Add(editor);row.Children.Add(editor);
@@ -62,6 +67,21 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
    RefreshState();
   }
   finally{_rebuilding=false;}
+ }
+ private FrameworkElement ResourceReferenceRow(RootParameterProxy proxy,RootParameterCandidate candidate)
+ {
+  var panel=new DockPanel();
+  var clear=new Button{Content="×",Width=28,ToolTip="解除输入来源"};DockPanel.SetDock(clear,Dock.Right);panel.Children.Add(clear);
+  var select=new Button{Content="订阅",Width=48,ToolTip="选择正式资源来源"};DockPanel.SetDock(select,Dock.Right);panel.Children.Add(select);
+  var name=new TextBlock{Text=candidate.Node.DispName+"."+proxy.DisplayName,Width=155,VerticalAlignment=VerticalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis};DockPanel.SetDock(name,Dock.Left);panel.Children.Add(name);
+  var value=new TextBox{IsReadOnly=true,VerticalContentAlignment=VerticalAlignment.Center,Height=30};panel.Children.Add(value);
+  void Refresh()
+  {
+   try{value.Text=_context.Read(proxy) is ReferenceSetting reference?FormatReference(reference.Reference):"尚未选择来源";value.ToolTip=value.Text;}
+   catch(Exception error){value.Text="来源失效，请解除或重新选择";value.ToolTip=error.Message;}
+  }
+  select.Click+=(_,_)=>Safe(()=>{if(RootWorkflowReferencePicker.Pick(this,_context,proxy) is {} reference){_context.Write(proxy,reference);Refresh();}});
+  clear.Click+=(_,_)=>Safe(()=>{_context.Write(proxy,new UnsetSetting());Refresh();});Refresh();return panel;
  }
  private string FormatReference(OutputReference reference)
  {

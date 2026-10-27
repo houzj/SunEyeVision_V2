@@ -12,14 +12,16 @@ internal static class RootWorkflowReferencePicker
 {
  internal static ReferenceSetting? Pick(Window owner,RootWorkflowConfigurationContext context,RootParameterProxy proxy)
  {
+  var resource=context.Resolve(proxy).Resource;
   var query=context.Query;var candidates=new List<DeclaredReferenceCandidate>();var target=proxy.NodeId;
   var names=query.GetAvailableDataSources(target,null,true).Where(s=>!s.SourceNodeId.StartsWith("__",StringComparison.Ordinal)).GroupBy(s=>s.SourceNodeId).ToDictionary(g=>g.Key,g=>g.First().SourceNodeName);
   foreach(var id in query.BindingCandidateNodeIds?.Invoke(target)??names.Keys.ToArray())
    foreach(var output in query.FormalOutputContractReader?.Invoke(id)??Array.Empty<OutputVariable>())
    {
     if(output.Kind!=OutputVariableKind.Data)continue;Port port;try{port=BindingClrAdapter.DescribeOutput(output);}catch(ArgumentException){continue;}
+    if(resource is not null&&port.Type!=resource.Port.Type)continue;
     var label=(names.GetValueOrDefault(id)??id)+" · "+(output.DisplayName??output.Name);
-    candidates.Add(new(label,id,query.WorkflowId,port,Array.Empty<string>()));Members(port.Type,Array.Empty<string>(),label,id,port);
+    candidates.Add(new(label,id,query.WorkflowId,port,Array.Empty<string>()));if(resource is null)Members(port.Type,Array.Empty<string>(),label,id,port);
    }
   void Members(TypeRef type,IReadOnlyList<string> path,string label,string nodeId,Port root)
   {

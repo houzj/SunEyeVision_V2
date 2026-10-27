@@ -58,13 +58,15 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
    // 失效代理仍可明确移除；无法解析的字段不猜写值。
    var field=RootParameterCatalog.Describe(draft.Node).SingleOrDefault(f=>f.FieldId==proxy.FieldId&&f.StoragePath==proxy.StoragePath)?.Field;
    var opening=RootParameterCatalog.Describe(original).SingleOrDefault(f=>f.FieldId==proxy.FieldId&&f.StoragePath==proxy.StoragePath)?.Field;
-   if(field!=null&&opening!=null){field.Write(opening.Read());var prior=original.ParamSettings.GetSetting(proxy.StoragePath)?.Clone();if(prior==null)draft.Node.ParamSettings.RemoveSetting(proxy.StoragePath);else draft.Node.ParamSettings.SetSetting(prior);}
+   var resource=RootParameterCatalog.Describe(draft.Node).SingleOrDefault(f=>f.FieldId==proxy.FieldId&&f.StoragePath==proxy.StoragePath)?.Resource;
+   if(resource!=null)resource.RestoreOpening(draft.Node,original);
+   else if(field!=null&&opening!=null){field.Write(opening.Read());var prior=original.ParamSettings.GetSetting(proxy.StoragePath)?.Clone();if(prior==null)draft.Node.ParamSettings.RemoveSetting(proxy.StoragePath);else draft.Node.ParamSettings.SetSetting(prior);}
   }
   _root.Configuration=_root.Configuration with{RunParameters=_root.Configuration.RunParameters.Remove(proxy)};Changed?.Invoke();
  }
  internal Setting Read(RootParameterProxy proxy)
  {
-  var target=Resolve(proxy);var field=target.Field!;var stored=target.Node.ParamSettings.GetSetting(field.StoragePath);
+  var target=Resolve(proxy);if(target.Resource is {} resource)return resource.Read(target.Node,Query,Root.Id);var field=target.Field!;var stored=target.Node.ParamSettings.GetSetting(field.StoragePath);
   if(stored?.ReferenceExpression is {} expression)return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression));
   if(stored?.BindingType==BindingType.Binding)
   {
@@ -75,7 +77,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  }
  internal void Write(RootParameterProxy proxy,Setting setting)
  {
-  Ensure(true);var target=Resolve(proxy);var field=target.Field!;
+  Ensure(true);var target=Resolve(proxy);if(target.Resource is {} resource){resource.Write(target.Node,setting,Query,Root.Id);return;}var field=target.Field!;
   if(setting is ConstantSetting constant){field.Write(constant.Value);target.Node.ParamSettings.RemoveSetting(field.StoragePath);}
   else if(setting is ReferenceSetting reference)target.Node.ParamSettings.SetSetting(ToSetting(field,reference.Reference));
   else throw new InvalidOperationException("此参数不支持空设置。");
@@ -88,7 +90,15 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  }
  internal string? ValidateReference(RootParameterProxy proxy,OutputReference reference)
  {
-  Ensure(true);var target=Resolve(proxy);var prior=target.Node.ParamSettings.GetSetting(proxy.StoragePath)?.Clone();
+  Ensure(true);var target=Resolve(proxy);
+  if(target.Resource is {} resource)
+  {
+   var restore=resource.CaptureRestore(target.Node);
+   try{resource.Write(target.Node,new ReferenceSetting(reference),Query,Root.Id);_host.ValidateBatch(_nodes.Values.ToArray(),null,new[]{_root});return null;}
+   catch(Exception error){return error.Message;}
+   finally{restore();}
+  }
+  var prior=target.Node.ParamSettings.GetSetting(proxy.StoragePath)?.Clone();
   try{target.Node.ParamSettings.SetSetting(ToSetting(target.Field!,reference));_host.ValidateBatch(_nodes.Values.ToArray(),null,new[]{_root});return null;}
   catch(Exception error){return error.Message;}
   finally{if(prior==null)target.Node.ParamSettings.RemoveSetting(proxy.StoragePath);else target.Node.ParamSettings.SetSetting(prior);}

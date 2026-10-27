@@ -1,0 +1,41 @@
+{
+  "mainBefore": "cfd03f9c89996e55c040a0d38ebafbb4b404e81d",
+  "workflowBefore": "e8b27e54501535b7973dbc403b2a284e4db215ee",
+  "aheadBehind": "1/0",
+  "workflowClean": true,
+  "excludedFiles": [
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "992e314a1829ff12f9d8cccf6a34b7de255302406d8c1102a024dd08c9722571"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "ebf5e1f26d4803787a7a723a0bf2783238ff58e91d2936399204b7c3c6e748d6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+      "sha256": "cde519250590bfbc2fe09b4eedb02139974c520516a0fe9ee8c9a0870f0e7af9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml",
+      "sha256": "cb5e251ac561bc9062aebd7a508e7ffeafc29587d535746879e91d9a1080bcc0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
+      "sha256": "16408ec4a0c07a19adf7296e02d5a281487d27e428c6ca264268550e2c3f6147"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs",
+      "sha256": "5df1d95820b9df12125d2bab4f6116604e24cba3dafb3357ec3feaf244e4ad29"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+      "sha256": "7811dcc2bc3b9d3d196e2e7a83204d2e1ecf56fa0952cbe4aad077af0d29de39"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    }
+  ],
+  "validation": "本轮仅同步已封存提交与协作文档，不构建、不部署、不推送。"
+}

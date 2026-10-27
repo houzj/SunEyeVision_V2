@@ -5419,7 +5419,7 @@
         "C09 位置来源、继承方式与坐标编辑",
         "input.pose、IsPositionCorrectionEnabled、ROI继承",
         "InheritWayGroup/ExternROITypeGroup→RadioSelecter3/原单选样式+位姿/引用组合",
-        "复用原单选及参数组合；重做通用引用框代替完整位姿编辑的缺失；不引入第二个Pose模型",
+        "原两槽/五槽基础已按nativeIntegerRadioCandidate自动验证；完整继承/位姿组合仍待实施。复用C07正式类型来源，不引入第二Pose模型或用像素Region资源代结构化ROI。",
         "E01/E02/E04/E10；GAP04分量继承与本方合同映射",
         "来源/分量/本地常量按真实能力编辑；关闭修正不改原数据；帧不一致明确拒绝；保存重开与执行快照一致"
       ],
@@ -7564,6 +7564,25 @@
       "C14结果列表": "原Display XML是序号及Area/Perimeter/CentroidX/CentroidY/Angle/LongAxis/ShortAxis/Circularity/Rectangularity十列。当前8列及均值/最大/阈值摘要非该原组合。公共库仅迁CurResultDataGridStyle等原列表依赖，不迁整个VM业务。Runtime当前缺Angle/LongAxis/ShortAxis，应留第二阶段实际算法/合同处理，不能用Bounds宽高冒充。Update(null)不能区分Empty/Failed，需显式显示状态。",
       "C15底栏": "原BottomCommandGroup→ParamsTabUserControl两行ItemsControl→四原执行模板→BottomButtonStyle；不是ComprehensiveConfigControl。库只发宿主执行/停止/确定请求，不保DefaultDebugWindow内Task.Delay/Dispatcher连续循环；运行冻结/取消与结果租约由宿主执行层负责。",
       "优先顺序": "先原整数Radio与继承/来源/位姿，再原对象菜单和宿主历史；并行只读补C13/C14/C15证据。根唯一写者，不为赶进度增加多写者或缩减最终清单。"
+    },
+    "nativeIntegerRadioCandidate": {
+      "范围": "C09所需原整数单选模板基础，当前仅公共库及独立样例；不冒领完整继承/位姿或Blob业务。基线a20a25a4。",
+      "原件与接入": "从原paramusercontroldatatemplate提取TextLeft/RadioSelecter两槽/RadioSelecter3五槽，原NormalRadioButton、Apps.XmlUI.EqualConverter和两张原图标。FieldsView/FieldEditor及SettingsView显式字段ID→IntegerRadios选项，无新工程、无旧SDK视觉或VM参数模型。",
+      "唯一状态": "同一DeclaredFieldState保存long，原模板只投影盒装int；未用槽(null,null)，真实0/-1及Int32边界不作哨兵。初始未知值保留并明确报错，程序同值不能绕过选项验证。拒绝恢复全部原Radio；同值不重复writer。",
+      "布局与设计": "外层借用包装不重复页面Margin/标签列宽，原内层LeftRight保原布局；两槽当前语言89/165，五槽随宿主137→151验证。NativeIntegerRadioScene.xaml→Preview.InitializeComponent→Sample→同一真实FieldsView；两槽/五槽/非法值/普通行对照，无Application和算法依赖。",
+      "生命周期": "旧Checked命令在隐藏/卸载/释放后无效；通知异常保留已接纳值并完成投影；writer或Changed同步Dispose不复活。FieldEditor自有/借用state明确，构造与多子项清理先摘引用并聚合，单项异常不跳后续视觉/监听解除。",
+      "最终构建": "UI003零错误6559警告98.38秒；全量Release002零错误6487警告70.59秒。构建后仅Catalog非编译来源/验收元数据更新，产品源不变。",
+      "最终回归": "Window137=96、Field077=31、Design040=72、RuntimeEditor058=10、FullChain118=8、Components200=9、ThemeStartup003=1、Resources012=22，共249组。正式EXE011 exit0/22可用工具15分类。11源增量含用户XAML、787发布项、107加载记录、146唯一原来源SHA核验。",
+      "失败与覆盖纠正": "UI001因示例误用不存在DataType.Int64失败；改现Integer。Window134因测试误把FieldPresentation当record使用with编译失败，135定向8过。UI002/full001及Window136/Design039覆盖内部Sample，但原XAML运行实例尚缺InitializeComponent，不能代入口验收；补真实Preview构造及入口断言后最终UI003/full002和Design040重新验证。",
+      "证据": "evidence/O06_NATIVE_INTEGER_RADIO_CHECKPOINT_20261028.json；SOURCE_AUDIT同日前缀；Window137与Design040实际PNG查看。只覆盖当前进程语言，不称两种语言均已验收；真实VS/VM同态/物理键鼠与用户本批仍未签。",
+      "剩余": "C09整组继承/来源/位姿及共用ROI修订；多对象菜单/历史；文本/列表/底栏及完整人工验收。仍是阶段一，Blob业务冻结，完整目标active。"
+    },
+    "inheritanceCompositionAudit": {
+      "整体来源": "原ROIBOX/ROIANNULUS是结构化几何（矩形五分量/环形六分量），不是ResourceKind.Region；树按正式原类型筛选，复用C07视觉而由host提供TypeRef/kind/角度映射/索引/真实帧验证。全环与部分环不可静默互转。",
+      "原模式与显示": "0/1矩形整体/参数，2/3环形整体/参数；目标矩形族清环形7项展示，目标环形族清矩形6项展示；同族不互清，隐藏清13项展示。SetValueNull只置CurValueA，参数变更需old/new均非null，因此删除持久引用尚未证实，不把展示清空冒充数据删除。",
+      "原子入口": "下一新增FieldsView组合TrySetFields，复用同states与一次writer；纯validatePrepared在全部Freeze后且同值判断前运行。不能把旧逐字段校验搬到所有PrepareProposal，避免破坏Range既有同时候选上下文。",
+      "修订顺序": "host writer仅完整校验并安装不可变字段/本地几何/Revision根，不在writer中Session.Refresh。全部字段accepted安装后Changed观察者Refresh，旧绘制取消和新stamp安装；观察异常是接纳后错误，不回滚。",
+      "静态边界": "evidence/O06_INHERITANCE_COMPOSITION_STATIC_20261028.json，尚未实现或验收。先库内独立owner样例，不接Blob，不新造几何Replace或业务默认值。"
     }
   },
   "vmFrameworkArchitectureReference": {

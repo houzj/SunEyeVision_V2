@@ -1,0 +1,74 @@
+{
+  "status": "STATIC_ONLY_C09_NOT_IMPLEMENTED",
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\IVmROIBox.cs",
+      "sha256": "302f06d6ff99245cc913449832de4309295a1a5b5fee53ca82ce4262e78cdd5b"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Core\\VM.Core\\IVmROIAnnulus.cs",
+      "sha256": "ab7bd595e29301db4700eccb8d3f6e7267c1a10b235e0eab578bbbdbe91784b4"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\GetFrontCombinationTreeOperation.cs",
+      "sha256": "d1f883bcb856aa004ef70c95ed89fff5139b847d0f863c25d2cd593adadd416f"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\VmModuleExtern.cs",
+      "sha256": "4d4b726df4eac492c955502cb90118e793679ee74718b900e62625cfe2de2c9c"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\SetValueNullOperaion.cs",
+      "sha256": "c9d3fb14793256a5acd7150d43e45174ac942d20e782d1b5f4fc2f40a263faea"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\DoInitOperaion.cs",
+      "sha256": "047aff0c693f4a9803b97c61f083a62d2c0e6197d297993812d4d9d1c1b9eb7d"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ButtonSelecter.cs",
+      "sha256": "a04c04dc557328269a06d67c194f6c3a64b68659acc1f76e4de778f5da858931"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\RadioSelecterEx2.cs",
+      "sha256": "7a59bde22ebba7b2eaf1da9b008a4f6e9d0129b512ba006e56d41d492a1b8ab9"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+    }
+  ],
+  "wholeRoi": "ROIBOX/ROIANNULUS are structured geometry, not ResourceKind.Region. NativeRing currently full annulus only; partial annulus must be explicit sector mapping or reject. Host must validate formal TypeRef/kind, angle mapping, index/collection and physical frame. No fallback to local geometry for missing/invalid source.",
+  "tree": "Original GetFrontCombinationTree -> GetCombinationNode selects visible exact ROIBOX/ROIANNULUS trunks, preserving parent path. Reuse C07 visual/session lifetime; host supplies typed candidates and one authoritative reference identity.",
+  "displayClear": {
+    "rectangleFamily": [
+      "Region",
+      "ROICenterX",
+      "ROICenterY",
+      "ROIWidth",
+      "ROIHeight",
+      "ROIAngle"
+    ],
+    "annulusFamily": [
+      "Region2",
+      "ROIAnnulusCenterX",
+      "ROIAnnulusCenterY",
+      "InnerRadius",
+      "OuterRadius",
+      "StartAngle",
+      "AngleExtend"
+    ],
+    "rules": "0/1 clear annulus display family; 2/3 clear rectangle display family. Same-family whole/parameters retains other same-family fields; CustomVisible=false clears all13 displayed values.",
+    "evidenceBoundary": "SetValueNull only writes CurValueA=null; ButtonSelecter change notification requires old and new both nonnull. Persistent reference deletion NOT proved. Do not equate presentation clearing with accepted reference deletion."
+  },
+  "groupPrimitive": "TrySetGroup optional validatePrepared runs once after all values frozen, before same-value test/writer. Single TrySet moves own validator into always callback; do not automatically reapply old per-field validators to Range, which already owns simultaneous two-DP candidate binding validation. FieldsView TrySetFields supplies pure full-candidate group validation, one writer; unknown IDs rejected before mutation.",
+  "owner": "writeDraft validates expected immutable root, installs full fields/local geometry+revision without notifications. After all states accepted, owner Changed calls Session.Refresh; exceptions are post-accept observer failures. Never Refresh inside writer. Read disabled local geometry for inherited modes preserving Group+Guid; geometry proposal compares same current revision.",
+  "nextTests": [
+    "same-value group validation with zero writer",
+    "complete candidate/changed IDs frozen and old state visible during validation",
+    "unknown ID all-or-nothing",
+    "dispose/rebind during validation and writer",
+    "post-accept observer errors preserve installed states",
+    "array and caller dictionary mutation cannot corrupt prepared snapshot"
+  ]
+}

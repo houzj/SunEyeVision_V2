@@ -1,3 +1,12 @@
+## 2026-10-28 C09原整数单选基础集中批封存
+
+- 基线a20a25a4；主线唯一产品写者、三路只读核收后已补位C09整体几何来源/组校验/修订owner。原两槽/五槽模板、NormalRadioButton、正确Apps.XmlUI.EqualConverter和原图标接同一long字段state，IntegerRadios仅Wpf视觉选项。空槽null不伪造0/-1，未知初值同值不可绕验，范围任一端点冲突明确拒绝。
+- 修外层借用行重复Margin，原内行保完整语言/宿主列宽；构造及多子项清理聚合，旧命令在禁用/隐藏/卸载/释放失效，通知异常不回滚，writer/Changed同步释放不复活。真实XAML入口显式InitializeComponent，样例与运行共用FieldsView，无Application/Blob/算法依赖。
+- 最终UI003零错6559警告98.38秒；全量Release002零错6487警告70.59秒。Window137=96、Field077=31、Design040=72、RuntimeEditor058=10、FullChain118=8、Components200=9、ThemeStartup003=1、Resources012=22，共249组。正式EXE011 exit0/22工具15分类。11源增量含用户XAML、787发布项、107加载记录、146唯一原来源SHA核对。实际Window137/Design040 PNG已查看，只当前进程语言，不代真实VS/VM同态/物理键鼠/用户。
+- 失败与覆盖纠正保留：UI001示例枚举名错；Window134测试错误with构造；135八组定向过。UI002/full001及Window136/Design039未覆盖缺InitializeComponent的XAML实例；补入口断言后最终003/002/040重新验，不套旧成绩。Catalog最后仅非编译来源/验收元数据更新，产品源码未变。
+- 原O06统一710唯一锚点/幂等，C09静态缺口另列：整体ROIBOX/ROIANNULUS是几何不是Region资源；原显示清空不证明删除持久引用；下一组合TrySetFields纯组校验同值也执行，保原Range候选上下文；writer只装根，accepted后Refresh，使模式与几何共用修订。未实施者不计完成。
+- 交接HANDOFF_NATIVE_INTEGER_RADIO_20261028.md，权威evidence/O06_NATIVE_INTEGER_RADIO_CHECKPOINT_20261028.json。用户Blob页索引2/SHA不改不提交，不推送。所有自有构建/验证/探针终止。第一阶段及完整C09未完成，Blob业务仍冻结，目标active。
+
 ## 2026-10-28 C08原多边形超限模态集中批封存
 
 - 同步基线863c0ce1，主线唯一产品写者、三路只读核收后自动补位原整数Radio/C09继承；Blob业务继续冻结。原HikMessageBox/BaseWindow及19文件来源闭包接入Polygon上限，捕获暂停/同request-stamp-frame-template恢复、取消/修订/重绑/Owner关闭无旧候选复活。原窗口不再销毁WPF管理句柄；Closing/Closed观察者异常记录并完成相应取消/清理。实际原PNG按钮文字已核。

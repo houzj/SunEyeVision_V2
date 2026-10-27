@@ -105,7 +105,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
  }
  public DeclaredFieldsView(IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> fields,
   Action<IReadOnlyDictionary<string,ParameterSetting>> writeDraft,ReferenceFieldOptions? references=null,
-  Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null)
+  Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null,
+  IReadOnlyDictionary<string,NativeIntegerRadioOptions>? integerRadios=null)
  {
   Resources.MergedDictionaries.Add(EditorResources.Create());Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
   try
@@ -113,6 +114,21 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();
   var declarations=all.ToDictionary(field=>field.Port.Id,StringComparer.Ordinal);
   var paired=new HashSet<string>(StringComparer.Ordinal);
+  var radios=integerRadios?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
+  foreach(var option in radios)
+  {
+   if(!declarations.TryGetValue(option.Key,out var declared)||option.Value is null)throw new ArgumentException("整数单选选项引用了未知字段。");
+   option.Value.ValidatePort(declared.Port);
+   if(declared.Presentation.Layout?.PairWith is not null||declared.Presentation.Layout?.DialogGroup is not null)
+    throw new ArgumentException("整数单选不能同时声明范围配对或显示弹层。");
+  }
+  var accept=writeDraft;
+  writeDraft=proposals=>
+  {
+   foreach(var proposal in proposals)
+    if(radios.TryGetValue(proposal.Key,out var option)&&option.Validate(proposal.Value) is {} error)throw new ArgumentException(error);
+   accept(proposals);
+  };
   // Validate the complete topology before constructing any original view or subscribing listeners.
   foreach(var field in all)
   {
@@ -132,6 +148,7 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
     throw new ArgumentException("范围声明边界必须有限且有序。");
    if(a.Minimum>b.Maximum)throw new ArgumentException("配对范围没有可行值。");
   }
+  if(radios.Keys.Any(paired.Contains))throw new ArgumentException("整数单选不能同时作为范围的任一端点。");
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
@@ -156,7 +173,8 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
    }
    else if(!paired.Contains(field.Port.Id))
    {
-    var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation);
+    var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
+        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id));
     _editors.Add(field.Port.Id,editor);access.Add(field.Port.Id,new(editor));_rows.Add(field.Port.Id,editor);
    }
   }

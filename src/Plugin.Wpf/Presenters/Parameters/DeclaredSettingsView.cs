@@ -82,7 +82,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
             WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
-            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference);
+            id=>new ConstantSetting(draft.ReadFields().Get<object?>(id)),options.FormatReference,options.IntegerRadios);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)

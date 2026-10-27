@@ -12,7 +12,7 @@ public sealed partial class DeclaredFieldEditor
     private string _imageRefreshError=>_state.SourceError;
     private Action? _detachImageSource;
 
-    private void DetachImageSource(){_detachImageSource?.Invoke();_detachImageSource=null;}
+    private void DetachImageSource(){var detach=_detachImageSource;_detachImageSource=null;detach?.Invoke();}
 
     /// <summary>VM EnumerationG uses ComboBox/ListViewComboBoxStyle, not a ButtonSelecter link popup.
     /// The host supplies declarations and owns validation, draft writes and execution.</summary>

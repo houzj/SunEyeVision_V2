@@ -27,6 +27,21 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
+            {
+                Render(entry,"native-integer-radio-xaml-entry.png",600,300);
+                Check(Application.Current is null&&Descendants<RadioButton>(entry).Count()==9,
+                    "原整数单选真实XAML入口独立实例化并显示全部槽位");
+            }
+            using(var radio=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioSample())
+            {
+                Render(radio,"native-integer-radio-design.png",600,300);
+                Check(Application.Current is null&&Descendants<RadioButton>(radio).Count()==9,
+                    "原两槽五槽及非法初值无Application沿真实字段模板独立显示");
+                var invalid=radio.Fields.Fields.Single(x=>x.FieldId=="invalid");
+                Check(invalid.HasInvalidText&&!invalid.TrySetConstant(99L)&&invalid.TrySetConstant(1L),
+                    "独立设计原单选示例可显式修复非法初值且不回退首项");
+            }
             using(var field=new DeclaredFieldEditor(new Port("host.enabled",DataType.Boolean),"启用",new ConstantSetting(true),_=>throw new Exception("设计宿主不得写参数")))
             using(var row=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("独立原宿主"),field))
             {

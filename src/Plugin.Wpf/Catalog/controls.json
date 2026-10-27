@@ -67,11 +67,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3"
+          "sha256": "12dbbdd988e1d108a2796df258fdc076e4223363ee455f4d4eb3cf2e2e77621b"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+          "sha256": "16647ed1c3c2665c3a8bab4abc6176f1a95c5d2727a48d067f610c76ab3431dc"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
@@ -276,11 +276,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3"
+          "sha256": "12dbbdd988e1d108a2796df258fdc076e4223363ee455f4d4eb3cf2e2e77621b"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+          "sha256": "16647ed1c3c2665c3a8bab4abc6176f1a95c5d2727a48d067f610c76ab3431dc"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
@@ -296,11 +296,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "9abbebc36f75f8ac0b1f99bbf7502d104f63a3ba1dbdfe0c5d29a734423826c2"
+          "sha256": "f5de81efcfb2119471b96ea8d681181adf13e4a6b96f4f4d7b54546500a809e1"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "39bec38c0322e9fbbd5e981003c995c493cb7aa7a3d60db4c8a7c616667ed4ac"
+          "sha256": "33a642da4910c192dd887f2338a9c9f883bfe4977b39f8a04e9de22e238b6476"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
@@ -520,11 +520,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
-          "sha256": "5c9a6c2ddb8a4e2d711b0e44861ed220014d9eebf7b6042a94882b1dbd83c6f4"
+          "sha256": "3b0310aec3dcd0ab3ff3e13035faa4bcaea19c0dd49be4e92a702f2f52f389cc"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+          "sha256": "16647ed1c3c2665c3a8bab4abc6176f1a95c5d2727a48d067f610c76ab3431dc"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -682,7 +682,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+          "sha256": "16647ed1c3c2665c3a8bab4abc6176f1a95c5d2727a48d067f610c76ab3431dc"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -756,7 +756,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+          "sha256": "16647ed1c3c2665c3a8bab4abc6176f1a95c5d2727a48d067f610c76ab3431dc"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -1338,7 +1338,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3",
+          "sha256": "12dbbdd988e1d108a2796df258fdc076e4223363ee455f4d4eb3cf2e2e77621b",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1632,7 +1632,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3",
+          "sha256": "12dbbdd988e1d108a2796df258fdc076e4223363ee455f4d4eb3cf2e2e77621b",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -2703,6 +2703,166 @@
         "screenshot": "Release/_validation/S4-20261025/WindowPresentation/attempt-132/native-polygon-limit-warning.png",
         "manual": "Actual current WPF PNG inspected. No real VS/VM same-state/physical pointer/user acceptance claimed."
       }
+    },
+    {
+      "id": "C09.original-integer-radio",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "assemblyIdentities": [
+        {
+          "assembly": "Apps.XmlUI",
+          "mvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+          "sha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd"
+        },
+        {
+          "assembly": "Apps.Style",
+          "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Style.dll",
+          "sha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63"
+        },
+        {
+          "assembly": "Apps.XmlParser",
+          "mvid": "d0604401-ab61-48a4-938b-faad16d74e7c",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlParser.dll",
+          "sha256": "78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "TextLeft; RadioSelecter:1336-1372; RadioSelecter3:1373-1449; selected original fragments only",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+          "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/IntegerRadioResources.xaml",
+          "localSha256": "8fc6e2ed1fbd33b6937a1e73051f0cafd6f7c097f64097802f3661dc6e9dd929",
+          "coverage": "TextLeft; RadioSelecter:1336-1372; RadioSelecter3:1373-1449; selected original fragments only"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "NormalRadioButton:6-44; original template/layout, URI adaptation only",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\radiobuttonstyle\\radiobuttonstyle.xaml",
+          "originalSha256": "7f886b12556a96cdd53d991c68dbba7078c5a8a566fd41e7bac91aef2226d5ca",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/IntegerRadioResources.xaml",
+          "localSha256": "8fc6e2ed1fbd33b6937a1e73051f0cafd6f7c097f64097802f3661dc6e9dd929",
+          "coverage": "NormalRadioButton:6-44; original template/layout, URI adaptation only"
+        },
+        {
+          "originalAssembly": "Apps.XmlUI",
+          "originalType": "exact original integer comparison, not another assembly same-name converter",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\EqualConverter.cs",
+          "originalSha256": "563531fe969ce0a4df43c42fc3ef84b94814dab86889369c89fbee5acbeaf2b7",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/EqualConverter.cs",
+          "localSha256": "48b8fc264962de49b9e04d355b6e7711a0f6afc051f53775a5bf3a70ae8cb0df",
+          "coverage": "exact original integer comparison, not another assembly same-name converter"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "original bitmap bytes unchanged",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check-box_on.png",
+          "originalSha256": "e9693e37c209b37ff9473ae816ad31bc1331dd831f3616519e30d883ae812655",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/check-box_on.png",
+          "localSha256": "e9693e37c209b37ff9473ae816ad31bc1331dd831f3616519e30d883ae812655",
+          "coverage": "original bitmap bytes unchanged"
+        },
+        {
+          "originalAssembly": "Apps.Style",
+          "originalType": "original bitmap bytes unchanged",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check-box_off.png",
+          "originalSha256": "cb3ee5d0093a0ef7a38ecabe6e71be305319b4b32d4d6c3c9e6b8324a6ec55de",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/check-box_off.png",
+          "localSha256": "cb3ee5d0093a0ef7a38ecabe6e71be305319b4b32d4d6c3c9e6b8324a6ec55de",
+          "coverage": "original bitmap bytes unchanged"
+        }
+      ],
+      "behaviorEvidence": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\RadioSelecter.cs",
+          "sha256": "b35facd3f1e42c2153a9ac2a00c0b5783388cba8f53b014195b37f55d3169791",
+          "usage": "original behavior evidence only; vendor parser/business class not copied"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\RadioSelecter3.cs",
+          "sha256": "294af8d285cd8d679165edaf060b4582f23eb8fca3a2a1716995186d0f02280e",
+          "usage": "original behavior evidence only; vendor parser/business class not copied"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\RadioSelecterEx2.cs",
+          "sha256": "7a59bde22ebba7b2eaf1da9b008a4f6e9d0129b512ba006e56d41d492a1b8ab9",
+          "usage": "original behavior evidence only; vendor parser/business class not copied"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioOptions.cs",
+          "sha256": "7ffa0ba9f26e786a06a166a7861b047b6d3c287a418b4dbcf62338490a9fe8dd"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioPresenter.cs",
+          "sha256": "8504fcdfc0d3751eeec94d8916ab51fdba5718994251b474394aea8cad42d9aa"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+          "sha256": "16647ed1c3c2665c3a8bab4abc6176f1a95c5d2727a48d067f610c76ab3431dc"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
+          "sha256": "3b0310aec3dcd0ab3ff3e13035faa4bcaea19c0dd49be4e92a702f2f52f389cc"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+          "sha256": "12dbbdd988e1d108a2796df258fdc076e4223363ee455f4d4eb3cf2e2e77621b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+          "sha256": "f5de81efcfb2119471b96ea8d681181adf13e4a6b96f4f4d7b54546500a809e1"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+          "sha256": "33a642da4910c192dd887f2338a9c9f883bfe4977b39f8a04e9de22e238b6476"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeIntegerRadioSample.cs",
+          "sha256": "6a919c02ccddc111b6053bfa579d90d5510c05ff12cfb926911b3bf18f315e71"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeIntegerRadioScene.xaml",
+          "sha256": "36e6044c1d07cfe47632d66ac59e9b4b36a8a70a75664e5557142a49b431813f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
+          "sha256": "fd04582cefd81b0031d0579abe3e90063ae8cec2e1a8071538496c34dc0b5f04"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
+          "sha256": "cd3944f83b4027ae03f98f49c5b7aab6985d81f6335f3bf97ba8d97583680688"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C01.original-parameter-host"
+      ],
+      "consumers": [
+        "DeclaredFieldEditor + DeclaredFieldsView integerRadios field-ID option map",
+        "DeclaredSettingsView ToolSettingsViewOptions.IntegerRadios",
+        "Design/NativeIntegerRadioScene.xaml -> NativeIntegerRadioPreview -> NativeIntegerRadioSample -> same production FieldsView"
+      ],
+      "status": "FORMAL_AUTOMATION_PASSED_C09_INHERITANCE_INCOMPLETE",
+      "adaptation": "No vendor parameter model copied. One borrowed DeclaredFieldState long value, original EqualConverter boxed int projection, constant-only explicit options. Fixed two/five slots; unused slots remain null, never numeric sentinels. Same-value unknown initial values cannot clear errors. Unknown/paired-right/dialog configurations rejected before composition. Outer borrowed row has zero margin/label width; original inner LeftRight owns real layout, two-slot original language width, five-slot real host width. Original generated text inheritance isolated from host styles. Old commands disabled on hide/unload/disposal; constructor and multi-child cleanup aggregate failures. Labels are explicit final display labels; this does not claim a live language-switch mechanism.",
+      "validation": {
+        "checkpoint": "evidence/O06_NATIVE_INTEGER_RADIO_CHECKPOINT_20261028.json",
+        "focusedWindow": 135,
+        "finalWindow": 137,
+        "design": 40,
+        "ui": "integer-radio-ui-20261028-003.log",
+        "release": "integer-radio-release-20261028-002.log",
+        "manual": "Actual current WPF and independent XAML-entry PNG inspected. Current process language only; no real VS/VM same-state/physical keyboard-pointer/user acceptance claimed."
+      },
+      "remaining": [
+        "C09 complete inheritance source/mode/pose and shared revision identity",
+        "Real VS and VM same-state/user acceptance",
+        "Other-locale runtime evidence and naming governance"
+      ]
     }
   ]
 }

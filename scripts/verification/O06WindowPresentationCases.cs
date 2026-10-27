@@ -1341,6 +1341,125 @@ internal static class S2DocumentEditingCases
    Show(new TextBlock{Text="完成"});
   });
  }
+ static void VerifyNativeIntegerRadio()
+ {
+  NativeIntegerRadioOptions Options(bool five=false)=>new(new[]{new NativeIntegerRadioChoice(10,"绘制"),new NativeIntegerRadioChoice(30,"继承")},five);
+  (Port,FieldPresentation,ParameterSetting) Field(string id,long value,int order=0)=>
+   (new Port(id,DataType.Integer,EditModes:FieldEditModes.Constant),new FieldPresentation(id,id,"单选",order,FieldEditorKind.Scalar),new ConstantSetting(value));
+  RadioButton[] Buttons(DependencyObject view)=>Visuals<RadioButton>(view).ToArray();
+  Test("原整数单选非连续值及程序修改沿唯一long状态不重复写入",()=>
+  {
+   var writes=0;var reject=false;
+   using var fields=new DeclaredFieldsView(new[]{Field("two",10)},values=>{if(reject)throw new ArgumentException("拒绝继承");Require(((ConstantSetting)values["two"]).Value is long,"正式状态不是long");writes++;},integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"two",Options()}});
+   Show(fields);var access=fields.Fields.Single();var input=access.InputElement!;var buttons=Buttons(input);
+   Require(buttons.Length==2&&buttons[0].IsChecked==true&&buttons[1].IsChecked==false&&writes==0,"原两槽初始投影误写或选中错误");
+   var command=(System.Windows.Input.ICommand)buttons[0].DataContext.GetType().GetProperty("ValueChangedCommand")!.GetValue(buttons[0].DataContext)!;
+   buttons[1].SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
+   Require(((ConstantSetting)access.Setting).Value is long value&&value==30&&writes==1,"Checked写位置索引或未接纳");
+   Require(access.TrySetConstant(10L)&&ReferenceEquals(input,access.InputElement)&&buttons[0].IsChecked==true&&writes==2,"程序写没有同步同一原视图");
+   Require(access.TrySetConstant(10L)&&writes==2,"相同值重复writer");
+   reject=true;buttons[1].SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
+   Require(((ConstantSetting)access.Setting).Value.Equals(10L)&&buttons[0].IsChecked==true&&buttons[1].IsChecked==false&&access.HasInvalidText&&writes==2,"宿主拒绝没有统一回投影");
+   reject=false;Require(access.TrySetConstant(30L)&&!access.HasInvalidText&&writes==3,"拒绝修复未清错误");
+   input.IsEnabled=false;command.Execute(10);Require(writes==3,"禁用控件接受旧命令");input.IsEnabled=true;
+   Show(new TextBlock{Text="卸载"});command.Execute(10);Require(writes==3,"卸载后旧Checked仍写");
+   Show(fields);fields.Dispose();command.Execute(10);Require(writes==3&&!access.TrySetConstant(10L),"释放后旧命令或字段访问仍写");
+   Show(new TextBlock{Text="完成"});
+  });
+  Test("原整数单选未知值同值及超Int32初值始终明确拒绝",()=>
+  {
+   foreach(var value in new[]{99L,(long)int.MaxValue+1})
+   {
+    var writes=0;using var fields=new DeclaredFieldsView(new[]{Field("unknown",value)},_=>writes++,integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"unknown",Options()}});
+    Show(fields);var access=fields.Fields.Single();
+    Require(access.HasInvalidText&&Buttons(access.View).All(x=>x.IsChecked!=true),"未知初值被默认选第一项");
+    Require(!access.TrySetConstant(value)&&access.HasInvalidText&&writes==0&&((ConstantSetting)access.Setting).Value.Equals(value),"未知同值绕过闭集验证");
+    Require(!access.TrySetConstant(0L)&&writes==0,"闭集外值写入宿主");
+    Require(access.TrySetConstant(30L)&&!access.HasInvalidText&&writes==1,"未知初值不能显式修复");
+    Show(new TextBlock{Text="下一项"});
+   }
+  });
+  Test("原整数单选五槽空槽折叠且负值边界值不是占位符",()=>
+  {
+   var choices=new NativeIntegerRadioOptions(new[]{new NativeIntegerRadioChoice(-1,"负值"),new NativeIntegerRadioChoice(int.MaxValue,"上界"),new NativeIntegerRadioChoice(int.MinValue,"下界")},true);
+   var writes=0;using var fields=new DeclaredFieldsView(new[]{Field("five",-1)},_=>writes++,integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"five",choices}});
+   Show(fields);var access=fields.Fields.Single();var buttons=Buttons(access.View);
+   Require(buttons.Length==5&&buttons[0].IsChecked==true&&buttons.Skip(3).All(x=>x.Content is null&&x.Visibility==Visibility.Collapsed),"原五槽空项没有按Content null折叠");
+   foreach(var value in new[]{(long)int.MaxValue,int.MinValue,-1})Require(access.TrySetConstant(value),"Int32有效值不能投影");
+   Require(writes==3&&buttons[0].IsChecked==true,"边界转换溢出或负值当空哨兵");
+   CaptureInline(fields,"native-integer-radio-five.png");Show(new TextBlock{Text="完成"});
+  });
+  Test("原整数单选同级标签不重复页面边距并保原图标与完整文字",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioSample();Show(sample);
+   var fields=sample.Fields;var first=fields.Fields.First(x=>x.FieldId=="two");var second=fields.Fields.First(x=>x.FieldId=="five");
+   var a=Visuals<TextBlock>(first.View).Single(x=>x.Text=="两项选择"&&x.IsVisible);
+   var b=Visuals<TextBlock>(second.View).Single(x=>x.Text=="五槽选择"&&x.IsVisible);
+   var ordinary=Visuals<TextBlock>(fields.Fields.Single(x=>x.FieldId=="ordinary").View).Single(x=>x.Text=="普通参数"&&x.IsVisible);
+   Require(Math.Abs(a.TransformToAncestor(fields).Transform(new Point()).X-b.TransformToAncestor(fields).Transform(new Point()).X)<.1,"两槽/五槽标签行边距不一致");
+   Require(Math.Abs(a.TransformToAncestor(fields).Transform(new Point()).X-ordinary.TransformToAncestor(fields).Transform(new Point()).X)<.1,"单选原行重复计算页面边距");
+   var originalRow=Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(first.InputElement!).Single();
+   var expected=Native.Common.Localization.LocalizationResourceDictionary.Instance.CultureName.StartsWith("zh",StringComparison.OrdinalIgnoreCase)?89:165;
+   Require(originalRow.ChildLeftWidth==expected,"原两槽语言列宽未生效");
+   var page=Visuals<Native.Composition.Apps.XmlUI.ParamListView>(fields).Single();
+   var fiveRow=Visuals<Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(second.InputElement!).Single();
+   page.ChildLeftWidth=137;Pump();Require(fiveRow.ChildLeftWidth==137&&originalRow.ChildLeftWidth==expected,"五槽宿主列宽或两槽本地语言绑定失效");
+   page.ChildLeftWidth=151;Pump();Require(fiveRow.ChildLeftWidth==151,"原五槽列宽未动态更新");
+   foreach(var button in Buttons(sample).Where(x=>x.IsVisible))
+   {
+    var icon=Visuals<Image>(button).Single();Require(icon.ActualWidth==24&&icon.ActualHeight==24&&icon.Source is BitmapSource,"原单选图标尺寸或资源不正确");
+    var text=Visuals<TextBlock>(button).Single(x=>!string.IsNullOrEmpty(x.Text));
+    Require(text.ActualHeight>=text.FontSize&&text.Style is null,"原单选文字被暗色宿主隐式样式污染");
+   }
+   CaptureInline(sample,"native-integer-radio-independent.png");Show(new TextBlock{Text="完成"});
+  });
+  Test("原整数单选接纳后通知异常不回滚且继续投影",()=>
+  {
+   var writes=0;using var fields=new DeclaredFieldsView(new[]{Field("two",10)},_=>writes++,integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"two",Options()}});
+   Show(fields);var access=fields.Fields.Single();var buttons=Buttons(access.View);
+   var context=buttons[0].DataContext;var command=(System.Windows.Input.ICommand)context.GetType().GetProperty("ValueChangedCommand")!.GetValue(context)!;
+   Action fail=()=>throw new InvalidOperationException("接纳后观察者异常");access.Changed+=fail;
+   var thrown=false;try{command.Execute(30);}catch(Exception error){thrown=error.ToString().Contains("接纳后观察者异常");}finally{access.Changed-=fail;}
+   Require(thrown&&writes==1&&((ConstantSetting)access.Setting).Value.Equals(30L)&&buttons[1].IsChecked==true&&!access.HasInvalidText,"通知异常被误当候选拒绝或未完成投影");
+   Require(access.TrySetConstant(10L)&&writes==2,"观察者异常后字段不能继续用");Show(new TextBlock{Text="完成"});
+  });
+  Test("原整数单选写入或通知同步释放不复活旧命令",()=>
+  {
+   foreach(var inWriter in new[]{false,true})
+   {
+    var writes=0;DeclaredFieldsView? current=null;
+    current=new(new[]{Field("two",10)},_=>{writes++;if(inWriter)current!.Dispose();},integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"two",Options()}});
+    Show(current);var access=current.Fields.Single();var context=Buttons(access.View)[0].DataContext;
+    var command=(System.Windows.Input.ICommand)context.GetType().GetProperty("ValueChangedCommand")!.GetValue(context)!;
+    if(!inWriter)access.Changed+=()=>current.Dispose();
+    command.Execute(30);command.Execute(10);
+    Require(writes==1&&!access.TrySetConstant(10L)&&current.Content is null,"同步释放后旧根仍写或复活");current.Dispose();
+    Show(new TextBlock{Text="下一项"});
+   }
+  });
+  Test("原整数单选清理一项异常仍退出所有字段监听和视觉",()=>
+  {
+   var writes=0;var editor=new DeclaredFieldEditor(new Port("two",DataType.Integer,EditModes:FieldEditModes.Constant),"two",new ConstantSetting(10L),_=>writes++,integerRadioOptions:Options());
+   Show(editor);var context=Buttons(editor)[0].DataContext;var command=(System.Windows.Input.ICommand)context.GetType().GetProperty("ValueChangedCommand")!.GetValue(context)!;
+   var original=((Decorator)context).Child as FrameworkElement;
+   typeof(DeclaredFieldEditor).GetField("_detachImageSource",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(editor,(Action)(()=>throw new InvalidOperationException("测试清理异常")));
+   var thrown=false;try{editor.Dispose();}catch(Exception error){thrown=error.ToString().Contains("测试清理异常");}
+   command.Execute(30);Require(thrown&&editor.Content is null&&!editor.TrySetConstant(30L)&&writes==0,"清理错误跳过原单选释放或视觉解除");
+   Require(((Decorator)context).Child is null&&original is {DataContext:null,IsEnabled:false},"原单选只卸载却未真正执行Dispose");
+   editor.Dispose();Show(new TextBlock{Text="完成"});
+  });
+  Test("原整数单选配置冲突在构造前拒绝不静默转成范围",()=>
+  {
+   void Reject(Action build){var rejected=false;try{build();}catch(ArgumentException){rejected=true;}Require(rejected,"非法原单选声明未拒绝");}
+   Reject(()=>new NativeIntegerRadioOptions(new[]{new NativeIntegerRadioChoice(1,"甲"),new NativeIntegerRadioChoice(1,"乙")}));
+   Reject(()=>new NativeIntegerRadioOptions(Array.Empty<NativeIntegerRadioChoice>()));
+   var left=Field("left",10);var right=Field("right",30,1);
+   left.Item2=new FieldPresentation("left","left","单选",0,FieldEditorKind.Scalar){Layout=new("页","组",PairWith:"right")};
+   right.Item2=new FieldPresentation("right","right","单选",1,FieldEditorKind.Scalar){Layout=new("页","组")};
+   Reject(()=>new DeclaredFieldsView(new[]{left,right},_=>{},integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"right",Options()}}));
+   Reject(()=>new DeclaredFieldsView(new[]{Field("two",10)},_=>{},integerRadios:new Dictionary<string,NativeIntegerRadioOptions>{{"missing",Options()}}));
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -1360,6 +1479,7 @@ internal static class S2DocumentEditingCases
      Require(text.ActualHeight>=text.FontSize*1.2,"内部文字高度不足："+text.ActualHeight);
     }
    });
+   VerifyNativeIntegerRadio();
    VerifyNativeAdvanced();
    VerifyNativeParameterHost();
    VerifyBetween();

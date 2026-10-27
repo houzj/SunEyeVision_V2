@@ -12,7 +12,8 @@ public sealed record ToolSettingsViewOptions(
     ReferenceFieldOptions? ReferenceOptions=null,
     Func<OutputReference,string>? FormatReference=null,
     string? InputSection=null,FrameworkElement? InputContent=null,
-    Action<object,IReadOnlyDictionary<string,ReferenceSetting>>? AcceptCandidate=null);
+    Action<object,IReadOnlyDictionary<string,ReferenceSetting>>? AcceptCandidate=null,
+    IReadOnlyDictionary<string,NativeIntegerRadioOptions>? IntegerRadios=null);
 
 public interface IToolSettingsView : IDisposable
 {

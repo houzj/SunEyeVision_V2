@@ -12,6 +12,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Input;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
@@ -39,6 +40,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private readonly StackPanel _actions = new() { Orientation=Orientation.Horizontal };
     private readonly TextBlock _label = new();
     private NativeNumberPresenter? _numeric;
+    private readonly NativeIntegerRadioOptions? _integerRadioOptions;
+    private NativeIntegerRadioPresenter? _integerRadio;
     private bool _updatingInput;
     private bool _disposed;
     private long _renderGeneration;
@@ -47,14 +50,15 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private readonly bool _allowUnboundReference;
     public void UseRegionSourceSelector(){_regionSourceSelector=true;HideLabel();Render();}
     public UIElement EditorBody => _row;
-    public void SetLabel(string text)=>_label.Text=text;
+    public void SetLabel(string text){_label.Text=text;_integerRadio?.SetLabel(text);}
     internal void SetLabelWidth(double width)
     {
-        _row.ChildLeftWidth=width;
+        if(_integerRadioOptions is null)_row.ChildLeftWidth=width;
     }
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;Render();return true;}
     public bool TrySetConstant(object value)
     {
+        if(_integerRadio is not null)return _integerRadio.TrySetConstant(value);
         if(_numeric is not null)return _numeric.TrySetConstant(value);
         if(!Set(new ConstantSetting(value)))return false;
         _updatingInput=true;
@@ -81,19 +85,28 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
         ReferenceFieldOptions? references = null, ConstantSetting? constantBackup = null,
-        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false)
-        : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>references?.ValidateProposal?.Invoke(port,proposal)),label,
-            references,formatReference,choiceLabels,presentation,allowUnboundReference)
-    { _ownsState=true; }
+        Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,
+        NativeIntegerRadioOptions? integerRadioOptions=null)
+        : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>integerRadioOptions?.Validate(proposal)??references?.ValidateProposal?.Invoke(port,proposal)),label,
+            references,formatReference,choiceLabels,presentation,allowUnboundReference,integerRadioOptions,ownsState:true)
+    { }
 
     internal DeclaredFieldEditor(DeclaredFieldState state,string label,
         ReferenceFieldOptions? references=null,Func<OutputReference,string>? formatReference=null,
-        IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false)
+        IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,NativeIntegerRadioOptions? integerRadioOptions=null,bool ownsState=false)
     {
         var port=state.Port;
-        _state=state;_port=state.Port;_referenceOptions=references;
+        _state=state;_port=state.Port;_referenceOptions=references;_ownsState=ownsState;
         _formatReference=formatReference;_choiceLabels=choiceLabels;_presentation=presentation;
+        _integerRadioOptions=integerRadioOptions;
         _allowUnboundReference=allowUnboundReference;
+        try
+        {
+        if(integerRadioOptions is not null)
+        {
+            integerRadioOptions.ValidatePort(port);
+            if(integerRadioOptions.Validate(_state.Accepted) is {} error)_state.SetEditError(error);
+        }
         _state.Changed+=OnStateChanged;
         Resources.MergedDictionaries.Add(EditorResources.Create());
         _error.Style=EditorResources.ErrorStyle();
@@ -105,9 +118,21 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         _row.LeftContent=_label;_row.RightContent=body;Content=_row;
         Render();
         UpdateErrorDisplay();
+        }
+        catch(Exception failure)
+        {
+            try{Dispose();}
+            catch(Exception cleanup){throw new AggregateException("字段视图构造和清理均失败。",failure,cleanup);}
+            throw;
+        }
     }
 
-    private bool Set(ParameterSetting next)=>!_disposed&&_state.TrySet(next);
+    private bool Set(ParameterSetting next)
+    {
+        if(_disposed)return false;
+        if(_integerRadioOptions?.Validate(next) is {} error){_state.SetEditError(error);return false;}
+        return _state.TrySet(next);
+    }
     private void OnStateChanged()
     {
         if(_disposed)return;
@@ -121,6 +146,12 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         DetachOwnedEditors();
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         if(_imageSources is not null){RenderImageSource();return;}
+        if(_integerRadioOptions is not null)
+        {
+            HideLabel();_row.Margin=new Thickness(0);
+            _integerRadio=new NativeIntegerRadioPresenter(_state,_label.Text,_integerRadioOptions);
+            InputElement=_integerRadio;_body.Children.Add(_integerRadio);return;
+        }
         var numeric=_port.Type.Shape==ValueShape.Scalar&&_port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
         var composedNumeric=numeric&&NativeNumberPresenter.UsesOriginalModes(_port,_presentation);
         var canReference=_referenceOptions is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
@@ -280,6 +311,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     {
         if(_disposed)return;
         var cleanup=new List<Action>{()=>_numeric?.PrepareForVisibility(visible)};
+        cleanup.Add(()=>_integerRadio?.PrepareForVisibility(visible));
         cleanup.AddRange(_children.ToArray().Select(child=>(Action)(()=>((IParameterVisibility)child).PrepareForVisibility(visible))));
         if(!visible&&InputElement is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
         ParameterCleanup.Run(cleanup);
@@ -287,23 +319,30 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     private void DetachOwnedEditors()
     {
-        _referencePresenter?.Dispose();_referencePresenter=null;
-        _numeric?.Dispose();_numeric=null;
-        DetachImageSource();
-        if(InputElement is ComboBox combo)combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
-        if(InputElement is NativeColorPresenter color)
-        {color.SelectedColorChanged-=OnNativeColorChanged;color.Dispose();}
-        foreach(var child in _children)child.Dispose();
-        _children.Clear();
+        var reference=_referencePresenter;var numeric=_numeric;var radio=_integerRadio;var input=InputElement;
+        var children=_children.ToArray();_children.Clear();
+        _referencePresenter=null;_numeric=null;_integerRadio=null;
+        var cleanup=new List<Action>{DetachImageSource};
+        if(reference is not null)cleanup.Add(reference.Dispose);
+        if(numeric is not null)cleanup.Add(numeric.Dispose);
+        if(radio is not null)cleanup.Add(radio.Dispose);
+        if(input is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
+        if(input is NativeColorPresenter color)cleanup.Add(()=>{color.SelectedColorChanged-=OnNativeColorChanged;color.Dispose();});
+        cleanup.AddRange(children.Select(child=>(Action)child.Dispose));
+        ParameterCleanup.Run(cleanup);
     }
 
     public void Dispose()
     {
         if(_disposed)return;
         _disposed=true;_renderGeneration++;
-        _state.Changed-=OnStateChanged;if(_ownsState)_state.Dispose();
-        DetachOwnedEditors();Changed=null;
-        _body.Children.Clear();_actions.Children.Clear();_externalActions.Children.Clear();InputElement=null;_numeric=null;Content=null;
+        _state.Changed-=OnStateChanged;Changed=null;
+        var cleanup=new List<Action>();
+        if(_ownsState)cleanup.Add(_state.Dispose);
+        cleanup.Add(DetachOwnedEditors);
+        cleanup.Add(()=>_body.Children.Clear());cleanup.Add(()=>_actions.Children.Clear());cleanup.Add(()=>_externalActions.Children.Clear());
+        cleanup.Add(()=>{InputElement=null;_numeric=null;Content=null;});
+        ParameterCleanup.Run(cleanup);
     }
 
     private sealed record ChoiceItem(string Key,string Label);

@@ -42,6 +42,14 @@ public sealed class WorkflowTabButtonTests
             Assert.Contains("ic_多次运行_normal", Uri.UnescapeDataString(Icon(continuous)));
             Assert.Equal(32, single.ActualWidth); Assert.Equal(32, continuous.ActualHeight);
             Save(frame, "workflow-tab-buttons-idle-" + theme + ".png");
+            var rootNodes = tab.RootWorkflowNodes; var rootEdges = tab.WorkflowConnections;
+            tab.NavigateToSubroutine("empty-child", "空Group", null, "owner");
+            tab.SetContent(new(), new()); Pump();
+            Assert.Empty(tab.WorkflowNodes); Assert.Same(rootNodes, tab.RootWorkflowNodes);
+            Assert.True(single.IsEnabled); Assert.True(continuous.IsEnabled);
+            tab.BindRootWorkflowNodes(new()); Pump(); Assert.False(single.IsEnabled); Assert.False(continuous.IsEnabled);
+            tab.BindRootWorkflowNodes(rootNodes); Pump(); Assert.True(single.IsEnabled); Assert.True(continuous.IsEnabled);
+            tab.ResetNavigation(); tab.SetContent(rootNodes, rootEdges); Pump();
             shell.SingleExecutionBusy = true; Pump();
             Assert.False(single.IsEnabled); Assert.False(continuous.IsEnabled);
             Save(frame, "workflow-tab-buttons-busy-" + theme + ".png");

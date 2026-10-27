@@ -1020,13 +1020,6 @@ SplitterPosition = position;
             // 更新当前显示
             UpdateCurrentCanvasType();
 
-            // 更新 SmartPathConverter 的节点集合
-            if (WorkflowTabViewModel?.SelectedTab != null)
-            {
-                Converters.Path.SmartPathConverter.Nodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes;
-                Converters.Path.SmartPathConverter.Connections = WorkflowTabViewModel.SelectedTab.WorkflowConnections;
-            }
-
             // Fix: Set WorkflowEngine.CurrentWorkflow
             if (_workflowEngine != null && WorkflowTabViewModel?.SelectedTab != null)
             {
@@ -1043,14 +1036,22 @@ SplitterPosition = position;
                 else
                 {
                     // 标签页切换只允许绑定到已有定义，不能让 UI 保留另一份节点/连接集合。
-                    AttachTabToWorkflowDefinition(
+                    BindExistingWorkflowTab(
                         WorkflowTabViewModel.SelectedTab,
-                        _workflowEngine.GetWorkflowById(selectedId)!);
+                        _workflowEngine.GetWorkflowById(selectedId)!,
+                        _workflowEngine.GetWorkflowById);
                 }
 
                 // 设置当前工作流（引擎是SSOT，无需额外同步）
                 _workflowEngine.SetCurrentWorkflow(selectedId);
                 _logger?.LogInfo($"OnSelectedTabChanged: Current workflow set to {selectedName} (ID: {selectedId})");
+            }
+
+            // 更新 SmartPathConverter 的节点集合
+            if (WorkflowTabViewModel?.SelectedTab != null)
+            {
+                Converters.Path.SmartPathConverter.Nodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes;
+                Converters.Path.SmartPathConverter.Connections = WorkflowTabViewModel.SelectedTab.WorkflowConnections;
             }
 
             // ★ 切换标签页时清除选中状态（避免旧标签页的选中节点引用残留）
@@ -2135,10 +2136,15 @@ SplitterPosition = position;
             }
 
             AddLog($"📋 当前工作流: {WorkflowTabViewModel.SelectedTab.Name}");
-            AddLog($"📊 节点数量: {WorkflowTabViewModel.SelectedTab.WorkflowNodes.Count}");
-            AddLog($"🔗 连接数量: {WorkflowTabViewModel.SelectedTab.WorkflowConnections.Count}");
-
-            if (WorkflowTabViewModel.SelectedTab.WorkflowNodes.Count == 0)
+            var executionRoot = ResolveRootExecutionDefinition(WorkflowTabViewModel.SelectedTab, _workflowEngine.GetWorkflowById);
+            if (executionRoot == null)
+            {
+                AddLog("正式根流程不存在，已拒绝执行。");
+                return;
+            }
+            AddLog($"📊 根流程节点数量: {executionRoot.Nodes.Count}");
+            AddLog($"🔗 根流程连接数量: {executionRoot.Connections.Count}");
+            if (executionRoot.Nodes.Count == 0)
             {
                 AddLog("⚠️ 当前工作流没有节点");
                 AddLog("💡 请从工具箱拖拽算法节点到画布");

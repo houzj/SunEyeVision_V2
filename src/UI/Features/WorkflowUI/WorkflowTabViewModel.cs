@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -34,6 +34,15 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         private RunMode _runMode;
         private WorkflowState _state;
         private ObservableCollection<WorkflowNodeBase> _workflowNodes;
+        private ObservableCollection<WorkflowNodeBase> _rootWorkflowNodes;
+        /// <summary>根流程的正式节点集合；下钻时不随可见容器切换。</summary>
+        public ObservableCollection<WorkflowNodeBase> RootWorkflowNodes => _rootWorkflowNodes;
+        internal void BindRootWorkflowNodes(ObservableCollection<WorkflowNodeBase> nodes)
+        {
+            if (ReferenceEquals(_rootWorkflowNodes, nodes)) return;
+            _rootWorkflowNodes = nodes;
+            OnPropertyChanged(nameof(RootWorkflowNodes));
+        }
         private ObservableCollection<WorkflowConnection> _workflowConnections;
         private ScaleTransform _scaleTransform;
         private double _currentScale;
@@ -152,6 +161,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             State = WorkflowState.Stopped;
             RunMode = RunMode.Single;
             _workflowNodes = new ObservableCollection<WorkflowNodeBase>();
+            _rootWorkflowNodes = _workflowNodes;
             _workflowConnections = new ObservableCollection<WorkflowConnection>();
             CurrentScale = 1.0;
             ScaleTransform = new ScaleTransform(1.0, 1.0);
@@ -399,6 +409,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public void SetContent(ObservableCollection<WorkflowNodeBase> nodes, ObservableCollection<WorkflowConnection> connections)
         {
             ArgumentNullException.ThrowIfNull(nodes); ArgumentNullException.ThrowIfNull(connections);
+            if (CurrentWorkflowId == RootWorkflowId) BindRootWorkflowNodes(nodes);
             if (ReferenceEquals(_workflowNodes,nodes) && ReferenceEquals(_workflowConnections,connections)) return;
             WorkflowContentChanging?.Invoke(this,EventArgs.Empty);
             SaveContainerView();
@@ -591,6 +602,24 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             OnPropertyChanged(nameof(CurrentOwnerNodeId));
         }
 
+        /// <summary>复核整条导航链的实际拥有关系，不能仅凭子定义仍存在就复用旧页面。</summary>
+        internal bool IsNavigationCurrent(Func<string, SunEyeVision.Workflow.Workflow?> resolve)
+        {
+            var frames = _navigationStack.Reverse().Append(new NavigationFrame(
+                CurrentWorkflowId, _currentWorkflowName, SubroutineIcon, _currentOwnerNodeId)).ToArray();
+            if (frames.Length == 0 || frames[0].Id != RootWorkflowId) return false;
+            var seen = new HashSet<string>(StringComparer.Ordinal) { RootWorkflowId };
+            for (var index = 1; index < frames.Length; index++)
+            {
+                var parent = resolve(frames[index - 1].Id);
+                var child = resolve(frames[index].Id);
+                var owners = parent?.Nodes.Where(n => n.Id == frames[index].OwnerNodeId).ToArray();
+                if (child == null || !child.IsSubroutine || !seen.Add(child.Id) || owners?.Length != 1 ||
+                    owners[0].ToolType != "Subroutine" || owners[0].SubroutineId != child.Id) return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// 返回上一层
         /// </summary>
@@ -608,6 +637,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
+            OnPropertyChanged(nameof(NavigationAncestorIds));
+            OnPropertyChanged(nameof(CurrentOwnerNodeId));
 
             return true;
         }

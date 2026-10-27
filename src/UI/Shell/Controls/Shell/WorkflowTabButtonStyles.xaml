@@ -40,7 +40,7 @@
   <Setter Property="ToolTip" Value="单次运行"/><Setter Property="Template" Value="{StaticResource WorkflowSingleTemplate}"/>
   <Style.Triggers>
    <DataTrigger Binding="{Binding IsRunning}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
-   <DataTrigger Binding="{Binding WorkflowNodes.Count}" Value="0"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+   <DataTrigger Binding="{Binding RootWorkflowNodes.Count}" Value="0"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
    <DataTrigger Binding="{Binding SingleExecutionBusy, RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
   </Style.Triggers>
  </Style>
@@ -52,7 +52,7 @@
     <Condition Binding="{Binding IsRunning}" Value="False"/>
     <Condition Binding="{Binding SingleExecutionBusy, RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="True"/>
    </MultiDataTrigger.Conditions><Setter Property="IsEnabled" Value="False"/></MultiDataTrigger>
-   <DataTrigger Binding="{Binding WorkflowNodes.Count}" Value="0"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+   <DataTrigger Binding="{Binding RootWorkflowNodes.Count}" Value="0"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
   </Style.Triggers>
  </Style>
  <Style x:Key="WorkflowAddButton" TargetType="Button" BasedOn="{StaticResource WorkflowImageButton}">

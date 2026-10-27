@@ -1,0 +1,65 @@
+{
+  "productBaseline": "f880ccaab9d6dae87e29fa57dadbd1a27a91b6bb",
+  "workflowPrevious": "b07a870b190602681a19df124bdbbecfe5e5dc62",
+  "sync": "fast-forward",
+  "workflowClean": true,
+  "excludedUncommitted": [
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "5123da5374bd82b4c58b701da811a3a31f6e658cb42fbfdcd71c00b0452d98e3"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "d8f3243562613f0f0265cf6bd694eccec31e2f03d00b21a3f08ac4afb191e241"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "67edbc7659370078ddc22f16e2cda68f742fbf607ec6fc7bcca64675a11a4f88"
+    },
+    {
+      "path": "src/Plugin.Wpf/Catalog/controls.json",
+      "sha256": "0f32c85967d5abddd1759d42ece96001c966ddf2b63b43819fcc5676c7bb50b4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "e2cdfa926b1eaec7818d3e2650668a88a0d151d791ef5033c21e8b66855b6e50"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "a48c64238d393fd1365f0a175c8e77d4cbee55621d71d91ac1e0c98f0bd9fff3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+      "sha256": "083f4fedd71e1b7ffdeaa61a4cc883aa6c89ea85738f34436f5c1d3876f7ca05"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+      "sha256": "e0a76566f4e3163b2e03eedd39dc095b0952058ae3d205314d64ff4d5392d4cb"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "sha256": "189c410bd68075649cd0473dc519a465b87fb1ddca4363c91b0bfbd539342cb4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
+      "sha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/IParameterVisibility.cs",
+      "sha256": "370c9da9c2600ebbbc57d75d6b1353c78c45e0e1a1f44e9f76f138863c2b7512"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NativeAdvancedPresenter.cs",
+      "sha256": "98f5f7bfa68253dbaf84eb27b7c00973a57fdc45352db3fa0df8ba58eea76dbc"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/ExpandResources.xaml",
+      "sha256": "770f694ddb2971eff522519429c5108772e9eeaa3505c836af943156b7f0db86"
+    }
+  ],
+  "validation": "沿用该产品提交的C01检查点，本次仅快进，不重新构建；高级参数候选未交付。"
+}

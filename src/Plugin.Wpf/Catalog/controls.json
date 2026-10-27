@@ -726,15 +726,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
-          "sha256": "e5534009808869687cdef47ab5b99d916655efeab42ee0de3ee5f9646cf740ef"
+          "sha256": "a37abb108eb4e93dccee7f5b41a0c45e850395509fd7b5c37b6e85ff2d6b0366"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "ced846f416a95f74377e30597e7c510d4c401ee9789a5c026e38d78fe26bcf61"
+          "sha256": "9ff09b896bea314c7e54fbebb5dd08d7ed112f9b95b28c4011f8d82522c3f6da"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
-          "sha256": "76c1bf4d5093eb43fa2c130b3e2e8352f9ef59f48774545423067bf33e514702"
+          "sha256": "61c88efbafc9d99803827632b5b35434160cbceeaf65377d69795326a64e716e"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -762,7 +762,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "ab5d734225669bc5a4ceeccb13be2bc3e9c645f31aa1808dc20c53b337aff873"
+          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
         }
       ],
       "dependencyCatalogRefs": [
@@ -778,8 +778,8 @@
       "retired": [
         "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs 模态选择路径"
       ],
-      "adaptation": "原布局/双Popup/树/文本/模板；仅显式绑定正式候选树、身份/索引状态与生命周期。普通数值原版readonly，输入Combination可编辑括号。不存在真实Expand能力时隐藏扩展按钮，不声称扩展完成。",
-      "status": "NUMERIC_INTEGRATION_AUTOMATED_CHECKS_PASSED_EXTENSION_AND_MANUAL_PENDING",
+      "adaptation": "原布局/双Popup/树/文本/模板及真实扩展专窗；仅显式绑定正式候选树、身份/索引状态与生命周期。普通数值原版readonly，输入Combination可编辑括号。扩展使用同Session请求并由公共Presenter托管实际Owner。",
+      "status": "EXPANDED_WINDOW_AUTOMATED_CHECKS_PASSED_MANUAL_PENDING",
       "validation": {
         "build": "blob-reference-ui-005：0错误6619警告227.32秒；全量004：0错误6628警告113.97秒。",
         "runtime": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；实际Release EXE22工具准入。",
@@ -800,6 +800,12 @@
         "baseline": "a4526449",
         "verification": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
         "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json"
+      },
+      "expandedWindowValidation": {
+        "build": "UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。",
+        "runtime": "WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；实际正式EXE exit0/22工具。",
+        "visual": "实际原窗口PNG已查看；新增无Application/宿主原窗构造与正式资源检查通过；真实VS及VM同态用户验收仍缺，不代签。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json"
       }
     },
     {
@@ -990,11 +996,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "bd9f6c8bf8ce5898e65b3829b0d99bbf32dc57f9150cabe4b9e12e7e8f099911"
+          "sha256": "debacac379fef37f5d32d7942930beee8b55ad43b05c7b2b3a6e56b5eda8012e"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "ab5d734225669bc5a4ceeccb13be2bc3e9c645f31aa1808dc20c53b337aff873"
+          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
         },
         {
           "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
@@ -1024,7 +1030,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "ced846f416a95f74377e30597e7c510d4c401ee9789a5c026e38d78fe26bcf61",
+          "sha256": "9ff09b896bea314c7e54fbebb5dd08d7ed112f9b95b28c4011f8d82522c3f6da",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1288,7 +1294,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
-          "sha256": "ab5d734225669bc5a4ceeccb13be2bc3e9c645f31aa1808dc20c53b337aff873"
+          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
         },
         {
           "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
@@ -1318,7 +1324,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "ced846f416a95f74377e30597e7c510d4c401ee9789a5c026e38d78fe26bcf61",
+          "sha256": "9ff09b896bea314c7e54fbebb5dd08d7ed112f9b95b28c4011f8d82522c3f6da",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1328,7 +1334,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "dc4ca3e5a57180c3245db158c5cf191c79b4eea3db27305770e049d115d3ae1e",
+          "sha256": "f15c607854499394779664a1e8396c94c1bc543352a2ca47daae32de6843ee08",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         }
       ],
@@ -1399,6 +1405,94 @@
       ],
       "presenter": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
       "adapter": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
+    },
+    {
+      "id": "C07.original-expanded-reference-window",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceFiles": [
+        {
+          "originalType": "Apps.XmlUI.ParamSubscribeWindow",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamSubscribeWindow.xaml",
+          "originalSha256": "146d6411e3aedf19f70b167411114fa87f9a7d70cec1edb199f50bc04eae93a0",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+          "localSha256": "c35ff489d52bc2753ae83cfbfab03b7769c1125d0e631117da6b674b80877552"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamSubscribeWindow",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamSubscribeWindow.xaml.cs",
+          "originalSha256": "bd82e6e2e36c4e7350f79d529ac33500269911e743d2e59cbdfe2804211288cc",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml.cs",
+          "localSha256": "3dcfdf1425246db98658208fcec06c73993bdc0b8caa2456a47842102eecf528"
+        },
+        {
+          "originalType": "NormalCheckBoxStyle",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\checkboxstyle\\checkboxstyle.xaml",
+          "originalSha256": "26174951a0b4ec4a52f2c1b89353ebe0f58375cc1b7dcec579bc765654e9a0b1",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml",
+          "localSha256": "01fed8884e12c41d2b501a7b49b450a6e7c923d365ced94cd45182781047a569"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+          "sha256": "236c774459d5752c9369f83c38c504fe7c5ec832d386addb54155bc13c2451af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+          "sha256": "9ff09b896bea314c7e54fbebb5dd08d7ed112f9b95b28c4011f8d82522c3f6da"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+          "sha256": "bd84834717dc1921145d809e17e7ee4f86c08d04466668ebf8a9ffb960ccb4ef"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+          "sha256": "9b25e8aedd10ab22b4203a49c0a85278172446c33ab6d7638b6814730861f34a"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+          "sha256": "61c88efbafc9d99803827632b5b35434160cbceeaf65377d69795326a64e716e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
+          "sha256": "debacac379fef37f5d32d7942930beee8b55ad43b05c7b2b3a6e56b5eda8012e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+          "sha256": "f15c607854499394779664a1e8396c94c1bc543352a2ca47daae32de6843ee08"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+          "sha256": "cdee0461c2cfd98580012dbaea90e077006dff32a78828a9dbce53330dbb640b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+          "sha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C07.original-reference-composition",
+        "C07.original-reference-tree-text-foundation"
+      ],
+      "consumers": [
+        "NativeReferencePresenter",
+        "NativeNumberPresenter",
+        "NativeRangePresenter both endpoints"
+      ],
+      "adaptation": "原专窗/标题/Checkbox/双树/Owner跟随；绑定借用的代次请求及同一Session，未复制VM业务根。默认方式只在实际Owner共享，不声称Solution持久化；括号外清空当前专窗树。",
+      "status": "AUTOMATED_CHECKS_PASSED_REAL_VM_AND_VS_MANUAL_PENDING",
+      "validation": {
+        "build": "UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。",
+        "runtime": "WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；实际正式EXE exit0/22工具。",
+        "visual": "实际原窗口PNG已查看；新增无Application/宿主原窗构造与正式资源检查通过；真实VS及VM同态用户验收仍缺，不代签。",
+        "evidence": "docs/collaboration/evidence/O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json"
+      }
     }
   ]
 }

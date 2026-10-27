@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Windows;
@@ -7,7 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using VM.PlatformSDKCS;
+
 
 namespace SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
 
@@ -18,6 +18,7 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
 	public static readonly DependencyProperty MyWindowStateProperty = DependencyProperty.Register("MyWindowState", typeof(WindowState), typeof(ParamSubscribeWindow), new PropertyMetadata(WindowState.Normal, OnMyWindowStateChanged));
 
 	private bool isMovingByOwner = false;
+    private Window? attachedOwner;
 
 	private bool isMovingBySelf = false;
 
@@ -48,7 +49,10 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
 	public ParamSubscribeWindow()
 	{
 		InitializeComponent();
-		SetBinding(IsSubscribeIndexProperty, new Binding("IsSubscribeIndex"));
+        SetBinding(IsSubscribeIndexProperty, new Binding("IsIndex"));
+        SetResourceReference(StyleProperty, typeof(BaseWindow));
+        Loaded += ParamSubscribeWindow_Loaded;
+        Closed += ParamSubscribeWindow_Closed;
 	}
 
 	private static void OnMyWindowStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -59,52 +63,35 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
 		}
 	}
 
-	public ParamSubscribeWindow(Window owner, IntPtr intPtr)
-	{
-		InitializeComponent();
-		SetBinding(IsSubscribeIndexProperty, new Binding("IsSubscribeIndex"));
-		if (owner != null)
-		{
-			Owner = owner;
-			if (owner is BaseWindow || !CVmObjectBase.GetIsSDKMode())
-			{
-				owner.LocationChanged += Owner_LocationOrSizeChanged;
-				owner.SizeChanged += Owner_LocationOrSizeChanged;
-				Loaded += ParamSubscribeWindow_Loaded;
-				Closed += ParamSubscribeWindow_Closed;
-			}
-			if (Application.Current?.MainWindow != null)
-			{
-				SetBinding(MyWindowStateProperty, new Binding("WindowState")
-				{
-					Source = Application.Current.MainWindow
-				});
-			}
-		}
-		else if (intPtr != IntPtr.Zero)
-		{
-			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this)
-			{
-				Owner = intPtr
-			};
-		}
-	}
+    public ParamSubscribeWindow(Window owner) : this()
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        Owner=owner;attachedOwner=owner;WindowStartupLocation=WindowStartupLocation.Manual;
+        owner.LocationChanged+=Owner_LocationOrSizeChanged;owner.SizeChanged+=Owner_LocationOrSizeChanged;
+        owner.Closed+=Owner_Closed;
+        SetBinding(MyWindowStateProperty,new Binding(nameof(WindowState)){Source=owner});
+    }
+    private void Owner_Closed(object? sender,EventArgs args)=>Close();
 
-	private void ParamSubscribeWindow_Closed(object sender, EventArgs e)
-	{
-		if (Owner != null)
-		{
-			Owner.LocationChanged -= Owner_LocationOrSizeChanged;
-			Owner.SizeChanged -= Owner_LocationOrSizeChanged;
-		}
-	}
+    private void ParamSubscribeWindow_Closed(object? sender,EventArgs e)
+    {
+        if(attachedOwner is {} owner)
+        {
+            owner.LocationChanged-=Owner_LocationOrSizeChanged;owner.SizeChanged-=Owner_LocationOrSizeChanged;
+            owner.Closed-=Owner_Closed;attachedOwner=null;
+        }
+        LocationChanged-=ParamSubscribeWindow_LocationChanged;Loaded-=ParamSubscribeWindow_Loaded;
+        Closed-=ParamSubscribeWindow_Closed;BindingOperations.ClearBinding(this,MyWindowStateProperty);
+        BindingOperations.ClearBinding(this,IsSubscribeIndexProperty);
+    }
 
 	private void ParamSubscribeWindow_Loaded(object sender, RoutedEventArgs e)
 	{
 		if (Owner != null)
 		{
 			ChangeLocationAndSizeByOwner();
-			LocationChanged += ParamSubscribeWindow_LocationChanged;
+            LocationChanged -= ParamSubscribeWindow_LocationChanged;
+            LocationChanged += ParamSubscribeWindow_LocationChanged;
 		}
 	}
 
@@ -113,8 +100,8 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
 		if (!isMovingBySelf)
 		{
 			isMovingByOwner = true;
-			ChangeLocationAndSizeByOwner();
-			isMovingByOwner = false;
+            try{ChangeLocationAndSizeByOwner();}
+            finally{isMovingByOwner=false;}
 		}
 	}
 
@@ -123,8 +110,8 @@ public partial class ParamSubscribeWindow : BaseWindow, IComponentConnector
 		if (!isMovingByOwner)
 		{
 			isMovingBySelf = true;
-			ChangeOwnerLocation();
-			isMovingBySelf = false;
+            try{ChangeOwnerLocation();}
+            finally{isMovingBySelf=false;}
 		}
 	}
 

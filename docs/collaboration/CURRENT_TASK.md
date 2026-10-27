@@ -1,5 +1,16 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 C07原扩展订阅窗口已通过自动验证（最新）
+
+- 编译基线f13cf433/main；Codex主线唯一产品写者，三路只读核证并已补位C08原Box/展开行/图像事件。Blob业务重组冻结，第二阶段未准入。
+- 激活原ParamSubscribeWindow/BaseWindow/Checkbox及双树资源；引用、原single、between同一Session借用请求与共同组writer，不增第二份accepted模型。来源双击、括号内索引、括号外按原代码清空树、默认UI方式、实际Owner互斥/双向跟随均已接。
+- 代次在失效通知前固定，拒旧节点/隐藏树/旧请求；选择不误关专窗，关闭/卸载/退出模式释放。默认方式仅Owner UI作用域共享，不冒称VM Solution持久化。原命名治理未实施。
+- 最终UI002零错误6641警告82.57秒，全量Release002零错误1286警告49.28秒；WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。
+- O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json核12源码增量、760发布项、224加载SHA和九轨源码；Catalog全部已列原来源SHA再核。实际原专窗PNG已查看，无Application/宿主原窗资源及双树检查通过，不代真实VS/VM同态用户验收。
+- 保留Window042=24过1失败（裁图辅助误用主窗祖先）、043=25过1失败（测试Checkbox未筛绑定）；FieldEditing061取刷新前旧节点被拒，改取真实当前树后062通过。UI001/全量001是早期候选，不套最终成绩。
+- 本批全部自有构建/验证/正式探针均已结束。用户BlobParameterEditor.xaml SelectedPageIndex=2保持未提交；准备有意义中文本地检查点，不推送。
+- 下一C08：原Box使用Apps.XmlUI.SliderArrangeFloat五项（前四归一化、角度直接），原expand与ROIListStyle同模板名称域；按Group+Guid+帧代次共享INormalizedRectROI投影，图像多属性拖动聚候选后一次接纳。不可借SDK ROI或五个PcUI single冒充原组合完成；详见本批交接。
+
 ## 2026-10-27 C06原between实际组合已通过自动验证（最新）
 
 - 编译基线49cc2685/main；主线唯一产品写者、三路只读核C06/C07/C08。原框架参考仅归档，未实施框架重构；用户BlobParameterEditor.xaml手工页索引2保持未提交。

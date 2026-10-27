@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Contracts;
+﻿using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.References;
 
@@ -11,6 +11,3 @@ public sealed record ReferenceFieldOptions(
 {
     public static ReferenceFieldOptions Empty { get; } = new(_ => Array.Empty<DeclaredReferenceCandidate>());
 }
-
-public sealed record ReferenceExpansionRequest(Port Target, bool IsIndex,
-    IReadOnlyList<DeclaredReferenceCandidate> Candidates, Func<OutputReference,bool> Submit);

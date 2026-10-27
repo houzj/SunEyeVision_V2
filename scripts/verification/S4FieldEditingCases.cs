@@ -234,8 +234,8 @@ internal static class S2DocumentEditingCases
         var sessionType=session.GetType();
         object Property(string name)=>sessionType.GetProperty(name)!.GetValue(session)!;
         void Command(string name,object? argument)=>((ICommand)Property(name)).Execute(argument);
-        var clear=((System.Collections.IEnumerable)Property("SourceNodes")).Cast<object>().Single(node=>(bool)node.GetType().GetProperty("Clear")!.GetValue(node)!);
         sourceButton.Focus();sourceButton.IsDropDownOpen=true;Pump();
+        var clear=((System.Collections.IEnumerable)Property("SourceNodes")).Cast<object>().Single(node=>(bool)node.GetType().GetProperty("Clear")!.GetValue(node)!);
         var beforeClear=writes;Command("ClickCommand",clear);Pump();
         Require(field.HasInvalidText&&text.Text==""&&writes==beforeClear,"必填清空未保持未完成状态");
         Require(buttons.All(button=>!button.IsDropDownOpen&&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),

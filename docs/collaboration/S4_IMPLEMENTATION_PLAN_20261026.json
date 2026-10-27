@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27第一阶段继续：原between已替换RangeField，保54字段/14对及一份原双端视图，C05共享依赖回归通过。最终UI004零错误6276警告50.13秒；全量Release001零错误6546警告57.78秒。WindowPresentation041=22、FieldEditing060=31、RuntimeEditor041=10、DesignTime017=27、FullChain100=7、Components185=9、RuntimeKernel039=17、Algorithm024=9、DocumentEditing048=30；正式EXE exit0/22工具。 C07扩展、C08原ROI栈/图像事件、完整显示/窗口/命名和真实VS/VM同态/用户验收仍缺，第二阶段未准入。",
+  "current": "2026-10-27第一阶段继续：C07原扩展订阅窗已接引用/原single/between，共同Session及原树双击、焦点source/index/清空、Owner互斥/跟随/释放通过自动验证。最终UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。 C08原ROI栈/同帧图像、完整显示/窗口/命名和真实VS/VM同态用户验收仍缺，第二阶段未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -325,7 +325,7 @@
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
   "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "优先C07原扩展订阅窗口：单Session请求转发、动态source/index模式及Owner释放；随后C08原参数栈与图像事件同Guid/同帧独立样例；其余第一阶段要求逐项落实后才继续Blob业务重组。",
+  "next": "C08原Box五参数栈与图像事件的同Guid/同帧独立样例：Apps.XmlUI数值家族，不以VM.PcUI五single替代；原ROI展开行与ROIListStyle同名称域。其余第一阶段要求继续逐项落实，达标才继续Blob业务重组。",
   "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -7072,7 +7072,8 @@
       "状态首版UI001及全量001虽0错误，静态复核发现初始错误缺少首次文字投影；补构造末尾UpdateErrorDisplay后UI002/全量002及FieldEditing046通过。001不作最终候选身份。",
       "C07候选：UI001类型别名编译失败；FieldEditing047测试模式编译失败，048/049尾部草稿因查询服务门禁误拒绝，050集合来源错误路径未预检，均保留证据并修后重新验证。",
       "FullChain092检查宿主Control方法名遮蔽Control类型，093未切输入页即找原Popup，均为测试修正；094修后整链7组通过，无产品重建。检查点首次审计发现旧Catalog依赖SHA，按已审查源码增量同步后通过。",
-      "C05/C06组基础首版自动用例未断言右端及后续监听到达，静态复核定位异常截断；补齐通知及断言后重建，001成绩留作历史，不覆盖002。"
+      "C05/C06组基础首版自动用例未断言右端及后续监听到达，静态复核定位异常截断；补齐通知及断言后重建，001成绩留作历史，不覆盖002。",
+      "Window042=24过1失败：裁图辅助错误使用主窗祖先；043=25过1失败：测试未区分默认方式Checkbox与树Checkbox。FieldEditing061选择刷新前旧节点被身份门禁拒绝，现改选真实当前树后复验；原日志全部保留。"
     ],
     "manualReviewFreeze": {
       "status": "本批集中修改、构建与回归已结束；用户实际检查期间不重建或替换程序集",
@@ -7340,6 +7341,16 @@
         "WindowPresentation040：20过2失败；来源恢复用例缺实际焦点、跨页14对用视觉树找未装入视图。修为持焦后Enter及逻辑树定位，产品未变，041=22过。",
         "Algorithm023检查编译失败CS1503，两处旧Logical(upper)；改访问句柄真实View并通过原CBox模板按钮实际切换，024九组过。失败原日志保留。"
       ]
+    },
+    "nativeExpandedReferenceCandidate": {
+      "status": "C07原扩展订阅集中批自动验证已通过；真实VS/VM同态用户验收未通过，第一阶段仍未退出。",
+      "implementation": "原ParamSubscribeWindow/BaseWindow、标题Checkbox和双SubTreeView；引用、原single和between共用Presenter协调器。请求只转发同一Session及组writer，没有第二份accepted模型。",
+      "interaction": "来源树原双击接纳，括号内切索引树，括号外按原代码清空当前树；窗口保持打开，关闭/退出引用/卸载释放并使旧请求无效；当前候选对象身份和模式门禁拒旧事件；失效通知重入不覆盖新请求。",
+      "owner": "实际Owner右侧跟随、逆向移动及状态绑定；同Owner入口互斥。默认方式只在Owner UI作用域共享，不声称VM Solution持久化。",
+      "verification": "最终UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。",
+      "failures": "Window042=24过1失败：裁图辅助错误使用主窗祖先；043=25过1失败：测试未区分默认方式Checkbox与树Checkbox。FieldEditing061选择刷新前旧节点被身份门禁拒绝，现改选真实当前树后复验；原日志全部保留。",
+      "boundary": "本批实际WPF PNG已查看；不代VM实机像素或真实VS用户验收。C08原ROI栈/同帧图像、完整显示/窗口/命名仍未落实，第二阶段未准入。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_EXPANDED_REFERENCE_CHECKPOINT_20261027.json：12源码增量、760发布项、224加载SHA记录及九轨源码同源；所有原来源SHA再次核对。"
     }
   },
   "vmFrameworkArchitectureReference": {

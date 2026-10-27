@@ -27,6 +27,15 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            var expanded=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamSubscribeWindow();
+            try
+            {
+                Render((FrameworkElement)expanded.Content,"native-expanded-independent.png",240,480);
+                Check(Application.Current is null&&expanded.Style is not null
+                    &&expanded.FindName("treeView") is not null&&expanded.FindName("indextreeView") is not null,
+                    "原扩展订阅专窗无Application和UI宿主可取得正式资源及双树");
+            }
+            finally{expanded.Close();}
             var nativeColor=new NativeColorPresenter {SelectedColor=Color.FromArgb(200,10,20,30)};
             Render(nativeColor,"native-color-independent.png",394,38);
             Check(nativeColor.NativeView.CurrentColor.Color==Color.FromArgb(200,10,20,30)

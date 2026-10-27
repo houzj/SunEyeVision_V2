@@ -279,6 +279,88 @@ internal static class S2DocumentEditingCases
    CaptureInline(fields,"native-between-extreme.png");
   });
  }
+ static void VerifyExpandedReference()
+ {
+  var sequence=new DeclaredReferenceCandidate("数值来源","source",null,new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>());
+  var index=new DeclaredReferenceCandidate("索引来源","source",null,new Port("index",DataType.Integer),Array.Empty<string>());
+  FieldPresentation presentation=new("expanded","数量","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:1000)};
+  DeclaredFieldEditor Create(Action<ParameterSetting> write,Action<ReferenceExpansionRequest>? expand=null)=>new(
+   new("expanded",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"数量",
+   new ReferenceSetting(sequence.Reference(BindingSelection.All)),write,new ReferenceFieldOptions(_=>new[]{sequence,index},EditableIndex:true,Expand:expand),
+   new ConstantSetting(7L),presentation:presentation);
+  object Session(DeclaredFieldEditor field)=>Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field).Single().SubscribeDataLeft!;
+  void Command(object session,string name,object? argument=null)=>((ICommand)session.GetType().GetProperty(name)!.GetValue(session)!).Execute(argument);
+  object Leaf(System.Collections.IEnumerable roots)=>roots.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).First();
+  Test("原扩展订阅窗实际Owner、原树选择、跟随与关闭释放",()=>
+  {
+   var writes=0;using var field=Create(_=>writes++);Show(field);var session=Session(field);
+   Command(session,"PopSubscribeWindowCommand");Pump();
+   var window=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   Require(window.Owner==owner&&window.IsVisible&&window.Style is not null,"原窗未取得实际Owner或正式样式");
+   var request=(ReferenceExpansionRequest)window.DataContext;
+   var tree=(Native.Composition.Apps.XmlUI.ParamTab.SubTreeView)window.FindName("treeView");
+   Require(ReferenceEquals(tree.ItemSource,request.SourceNodes),"专窗复制了来源树");
+   var node=request.SourceNodes.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).Last();
+   tree.UpdateLayout();var leaf=Visuals<TreeViewItem>(tree).Single(item=>ReferenceEquals(item.DataContext,node));
+   leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});Pump();
+   Require(writes==1&&request.IsValid&&window.IsVisible&&field.Setting is ReferenceSetting,"选源关闭专窗或脱离字段状态");
+   var oldLeft=owner.Left;owner.Left+=10;Pump();Require(Math.Abs(window.Left-owner.Left-owner.ActualWidth)<2,"专窗未跟随Owner");
+   window.Left+=12;Pump();Require(Math.Abs(owner.Left-oldLeft-22)<2,"移动专窗未同步Owner");
+   var bitmap=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(window);
+   var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));using(var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-expanded-source.png")))png.Save(stream);
+   window.Close();Pump();Require(!request.IsValid,"关闭后请求仍有效");
+   var before=writes;request.ClickCommand.Execute(node);Require(writes==before,"已关闭请求仍可写入");
+   Command(session,"PopSubscribeWindowCommand");Pump();
+   var reopened=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   var active=(ReferenceExpansionRequest)reopened.DataContext;Show(new TextBlock{Text="卸载"});
+   Require(!active.IsValid&&!reopened.IsVisible,"字段卸载未关窗或未失效");
+  });
+  Test("扩展请求刷新旧节点、模式隔离与失效回调重入",()=>
+  {
+   var requests=new List<ReferenceExpansionRequest>();var writes=0;
+   using var field=Create(_=>writes++,request=>requests.Add(request));Show(field);var session=Session(field);
+   Command(session,"PopSubscribeWindowCommand");var first=requests.Single();var stale=Leaf(first.SourceNodes);
+   first.RefreshCommand.Execute(null);first.ClickCommand.Execute(stale);Require(writes==0,"刷新后旧树节点仍有效");
+   first.ClickCommand.Execute(Leaf(first.SourceNodes));Require(first.IsValid,"来源选择使专窗请求过早失效");
+   var focusType=typeof(Native.Dependencies.Apps.UIHelper.Extern.TextBoxFocusEventArgs);
+   var focus=Activator.CreateInstance(focusType)!;
+   // The original focus command receives the same bracket caret event as its real text control.
+   focusType.GetProperty("Text")!.SetValue(focus,"数值来源 []");focusType.GetProperty("IsFocus")!.SetValue(focus,true);
+   focusType.GetProperty("SelectionStart")!.SetValue(focus,6);
+   Command(session,"FocusedCommand",focus);Require(first.IsIndex,"括号焦点未切换索引树");
+   var before=writes;first.ClickCommand.Execute(Leaf(first.SourceNodes));Require(writes==before,"隐藏来源树迟到命令仍写入");
+   first.IndexClickCommand.Execute(Leaf(first.IndexNodes));Require(writes==before+1&&field.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtField},"索引树未通过同一writer接纳");
+   focusType.GetProperty("SelectionStart")!.SetValue(focus,1);Command(session,"FocusedCommand",focus);
+   Require(!first.HasSelection&&!first.SourceNodes.Cast<object>().Any()&&!first.IndexNodes.Cast<object>().Any(),"光标移出括号未按原行为清空专窗当前内容");
+   first.Invalidated+=()=>Command(session,"PopSubscribeWindowCommand");
+   Command(session,"PopSubscribeWindowCommand");Require(requests.Count==2&&requests[1].IsValid&&!first.IsValid,"外层展开覆盖失效回调中新请求");
+   field.Dispose();Require(!requests[1].IsValid,"释放未使最新借用请求失效");
+  });
+  Test("原扩展窗默认方式仅在同一Owner共享且不同入口互斥",()=>
+  {
+   using var a=Create(_=>{});using var b=Create(_=>{});Show(a);host.Children.Add(b);owner.UpdateLayout();Pump();
+   var sa=Session(a);var sb=Session(b);Command(sa,"PopSubscribeWindowCommand");Pump();
+   var first=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   var request=(ReferenceExpansionRequest)first.DataContext;
+   var check=Visuals<CheckBox>(first).Single(check=>check.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="PreferExpanded");check.SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
+   Require(request.PreferExpanded,"原默认方式CheckBox未写UI偏好");
+   Command(sb,"DropDownCommand");Pump();
+   var second=owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single();
+   Require(!request.IsValid&&second!=first,"跨入口未互斥或未共享Owner默认方式");
+   second.Close();Pump();
+   using var other=Create(_=>{});var separate=new Window{Width=500,Height=400,Content=other};
+   try{separate.Show();Pump();Command(Session(other),"DropDownCommand");Pump();Require(separate.OwnedWindows.Count==0,"UI偏好泄漏至另一Owner");}
+   finally{separate.Close();}
+   Command(sb,"PopSubscribeWindowCommand");Pump();
+   ((ReferenceExpansionRequest)owner.OwnedWindows.Cast<Window>().OfType<Native.Composition.Apps.XmlUI.ParamSubscribeWindow>().Single().DataContext).PreferExpanded=false;
+  });
+  Test("原扩展窗可独立构造取得模板和双树",()=>
+  {
+   var window=new Native.Composition.Apps.XmlUI.ParamSubscribeWindow();
+   try{window.Show();Pump();Require(window.Style is not null&&window.FindName("treeView") is not null&&window.FindName("indextreeView") is not null,"独立构造缺原资源或双树");}
+   finally{window.Close();}
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -287,6 +369,7 @@ internal static class S2DocumentEditingCases
   try
   {
    VerifyBetween();
+   VerifyExpandedReference();
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);

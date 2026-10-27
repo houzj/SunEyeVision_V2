@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Presenters.References;
 using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
@@ -21,6 +22,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
     private readonly NativeNumericCommit?[] _commits=new NativeNumericCommit?[2];
     private readonly ReferenceFieldSession?[] _references=new ReferenceFieldSession?[2];
     private readonly ReferencePopupScope?[] _scopes=new ReferencePopupScope?[2];
+    private readonly ReferenceExpansionCoordinator _expansion;
     private readonly Action<IReadOnlyDictionary<string,ParameterSetting>> _write;
     private readonly bool[] _allow;
     private readonly Func<Port,ParameterSetting,string?>? _validate;
@@ -40,6 +42,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
     public NativeRangePresenter(DeclaredFieldState left,DeclaredFieldState right,FieldPresentation lower,FieldPresentation upper,
         Action<IReadOnlyDictionary<string,ParameterSetting>> write,ReferenceFieldOptions? references,Func<OutputReference,string>? format)
     {
+        _expansion=new(this);
         _states=new[]{left,right};_presentations=new[]{lower,upper};_write=write;_validate=references?.ValidateProposal;
         _allow=_presentations.Select(p=>references is not null&&p.Layout?.AllowReference!=false).ToArray();
         Language=XmlLanguage.GetLanguage("en-US");Margin=new Thickness(0,1,0,1);MinHeight=32;
@@ -63,7 +66,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
             var endpoint=i;
             if((_states[i].Port.EditModes&FieldEditModes.Reference)!=0&&(_allow[i]||_states[i].IsReferenceMode))
             {
-                _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitPending(true));
+                _references[i]=new(_states[i],references??ReferenceFieldOptions.Empty,format,proposal=>TryAccept(endpoint,proposal),()=>TryCommitPending(true),_expansion.Open,_expansion.Preference);
                 _scopes[i]=new(this,_references[i]!,()=>!_disposed&&_states[endpoint].IsReferenceMode);
             }
             _states[i].Changed+=OnStateChanged;
@@ -284,6 +287,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable
         NativeView.OnStartValueChange-=OnNativeValue;NativeView.OnEndValueChange-=OnNativeValue;
         NativeView.OnLeftTypeChange-=OnLeftMode;NativeView.OnRightTypeChange-=OnRightMode;
         NativeView.SubscribeDataLeft=null;NativeView.SubscribeDataRight=null;
+        _expansion.Dispose();
         for(var i=0;i<2;i++){_states[i].Changed-=OnStateChanged;_commits[i]?.Dispose();_scopes[i]?.Dispose();_references[i]?.Dispose();}
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;
         Loaded-=OnLoaded;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibility;PreviewKeyDown-=OnKey;PreviewMouseWheel-=OnWheel;LostKeyboardFocus-=OnLostFocus;Content=null;

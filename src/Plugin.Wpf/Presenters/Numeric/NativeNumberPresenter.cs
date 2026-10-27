@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Presenters.References;
 using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
@@ -23,6 +24,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
     private readonly bool _allowNewReference;
     private readonly ReferenceFieldSession? _reference;
     private readonly ReferencePopupScope? _referenceScope;
+    private readonly ReferenceExpansionCoordinator? _expansion;
     private NativeNumericCommit? _commit;
     private Numbers.NumericControl? _leaf;
     private ComboBox? _box;
@@ -67,7 +69,8 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
             {
                 Resources.MergedDictionaries.Add(new ResourceDictionary
                 {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)});
-                _reference=new(state,references??ReferenceFieldOptions.Empty,format);
+                _expansion=new(this);
+                _reference=new(state,references??ReferenceFieldOptions.Empty,format,expand:_expansion.Open,preference:_expansion.Preference);
                 _arrange.SubscribeTemplate=(DataTemplate)FindResource("ButtonSelecter_sub");
                 _arrange.SubscribeDataLeft=_reference;
                 _arrange.IsSubscribeVisible=(references is not null||state.IsReferenceMode)&&(state.Port.EditModes&FieldEditModes.Constant)!=0?Visibility.Visible:Visibility.Collapsed;
@@ -250,7 +253,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
         if(_arrange is not null){_arrange.OnStartValueChange-=OnNativeValue;_arrange.OnLeftTypeChange-=OnModeChanged;_arrange.SubscribeDataLeft=null;}
         else if(_leaf is not null)_leaf.OnNumericClick-=OnLeafValue;
         if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;
-        _commit?.Dispose();_referenceScope?.Dispose();_reference?.Dispose();
+        _expansion?.Dispose();_commit?.Dispose();_referenceScope?.Dispose();_reference?.Dispose();
         Loaded-=OnLoaded;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibilityChanged;
         PreviewKeyDown-=OnKey;PreviewMouseWheel-=OnWheel;LostKeyboardFocus-=OnLostFocus;
         Child=null;

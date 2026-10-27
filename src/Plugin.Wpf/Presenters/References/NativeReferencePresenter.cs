@@ -10,12 +10,14 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.References;
 internal sealed class NativeReferencePresenter : Decorator,IDisposable
 {
     private readonly ReferenceFieldSession _session;
+    private readonly ReferenceExpansionCoordinator _expansion;
     private readonly ReferencePopupScope _scope;
     private readonly ContentControl _content;
     private bool _disposed;
     internal NativeReferencePresenter(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format)
     {
-        _session=new(state,options,format);
+        _expansion=new(this);
+        _session=new(state,options,format,expand:_expansion.Open,preference:_expansion.Preference);
         Resources.MergedDictionaries.Add(new ResourceDictionary
         {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)});
         _content=new ContentControl{Content=_session,ContentTemplate=(DataTemplate)FindResource("ButtonSelecter_sub")};Child=_content;
@@ -25,6 +27,6 @@ internal sealed class NativeReferencePresenter : Decorator,IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        _scope.Dispose();_session.Dispose();_content.Content=null;Child=null;
+        _expansion.Dispose();_scope.Dispose();_session.Dispose();_content.Content=null;Child=null;
     }
 }

@@ -76,9 +76,9 @@ internal sealed class ReferencePopupScope : IDisposable
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
-        ClosePopups();DetachText();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;
+        _session.InvalidateExpansion();ClosePopups();DetachText();if(_owner is not null)_owner.Deactivated-=OnDeactivated;_owner=null;
     }
-    private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args){if(!_root.IsVisible)ClosePopups();}
+    private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args){if(!_root.IsVisible){_session.InvalidateExpansion();ClosePopups();}}
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
     private void Cancel(){_generation++;_pending?.Abort();_pending=null;}
     public void ClosePopups()

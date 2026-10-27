@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -41,6 +41,7 @@ public sealed class SolutionManagementTests
         using var fixture = new Fixture();
         var manager = fixture.Manager();
         var metadata = Create(manager);
+        Assert.Equal("流程1", Assert.Single(manager.CurrentSolution!.Workflows).Name);
         fixture.Locations.Remember(fixture.Paths);
         Assert.Equal(fixture.Paths.ConfigFile, manager.ConfigurationPath);
         Assert.StartsWith(fixture.Paths.SolutionsDirectory, metadata.FilePath);

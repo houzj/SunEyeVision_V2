@@ -29,7 +29,7 @@ public sealed class RootResourceProxyTests
  public sealed class Results:ToolResults {public override List<PropertyMapEntry> GetPropertyMap()=>new();}
  [Tool("RootResourceProxyProbe","根资源订阅探针")]
  public sealed class Probe:IToolPlugin<Parameters,Results>{public Results Run(Parameters parameters)=>new(){Status=ExecutionStatus.Success};}
- private static IReadOnlyList<OutputVariable> Outputs()=>new[]{new OutputVariable{Name="Image",DisplayName="图像",FieldId=ImageField,DeclaredType=typeof(IReadOnlyImage),ValueDeclaration=TypeRef.ResourceOf(ResourceKind.Image)},new OutputVariable{Name="Region",DisplayName="区域",FieldId=RegionField,DeclaredType=typeof(IReadOnlyRegion),ValueDeclaration=TypeRef.ResourceOf(ResourceKind.Region)}};
+ private static IReadOnlyList<OutputVariable> Outputs()=>new[]{new OutputVariable{Name="Image",DisplayName="图像",FieldId=ImageField,DeclaredType=typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage),ValueDeclaration=TypeRef.ResourceOf(ResourceKind.Image)},new OutputVariable{Name="Region",DisplayName="区域",FieldId=RegionField,DeclaredType=typeof(IReadOnlyRegion),ValueDeclaration=TypeRef.ResourceOf(ResourceKind.Region)}};
  private static (SolutionSession Session,Flow Root,RootWorkflowConfigurationContext Context,DataSourceQueryService Query) Model()
  {
   ToolRegistry.RegisterTool(typeof(Probe));SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();

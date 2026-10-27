@@ -106,7 +106,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
             var defaultWorkflow = new WorkflowTabViewModel
             {
-                Name = "工作流1"
+                Name = "流程1"
             };
             // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
             defaultWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
@@ -139,7 +139,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             // 创建新的默认工作流（新对象，彻底清空节点和连接）
             var defaultWorkflow = new WorkflowTabViewModel
             {
-                Name = "工作流1"
+                Name = "流程1"
             };
             // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
             defaultWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());

@@ -11,7 +11,7 @@ using SunEyeVision.Workflow;
 using Xunit;
 using Flow=SunEyeVision.Workflow.Workflow;
 namespace SunEyeVision.UI.Tests;
-/// <summary>单独进程运行：正式Release准入、实际ImageLoad和Blob，无模拟资源或算法。</summary>
+/// <summary>单独进程运行：正式Release同版实际ImageLoad和Blob（准入由正式EXE另验），无模拟资源或算法。</summary>
 [Collection("VM canvas UI")]
 public sealed class RootResourceProductionTests
 {
@@ -24,7 +24,14 @@ public sealed class RootResourceProductionTests
   {
    AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
    Assert.Equal(Path.TrimEndingDirectorySeparator(Path.GetFullPath(host)),Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
-   var plugins=new PluginManager(VisionLogger.Instance);plugins.LoadPlugins(Path.Combine(host,"plugins"));Assert.Null(plugins.LastAdmissionError);
+   var plugins=new PluginManager(VisionLogger.Instance);
+   // 测试进程程序集位于测试目录，不能冒充正式宿主准入；实际插件按同版字节加载，准入由正式EXE另验。
+   foreach(var name in new[]{"ImageLoad","BlobAnalysis"})
+   {
+    var assembly=System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.GetFullPath(Path.Combine(host,"plugins","SunEyeVision.Tool."+name,"SunEyeVision.Tool."+name+".dll")));
+    ToolRegistry.RegisterTool(assembly.GetType("SunEyeVision.Tool."+name+"."+name+"Tool",true)!);
+   }
+   PluginLoader.MarkAsLoaded();
    var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"root-real-resources");Directory.CreateDirectory(directory);
    var imagePath=Path.Combine(directory,"native-input.bmp");WriteImage(imagePath);
    var imageParameters=ToolRegistry.CreateParameters("ImageLoad");imageParameters.GetType().GetProperty("FilePath")!.SetValue(imageParameters,imagePath);

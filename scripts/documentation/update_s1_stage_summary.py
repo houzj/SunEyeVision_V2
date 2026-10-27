@@ -244,6 +244,55 @@ def render_s2_stage(page):
     return page
 
 
+def render_blob_control_plan(plan):
+    if not plan:
+        return ''
+    return ('<section id="o06-blob-control-prototype-plan"><h4>Blob先行：所需控件、组合及单工具原型准入</h4>'
+            + '<p><b>' + escape(plan['decision']) + '</b></p><p>' + escape(plan['status']) + '</p>'
+            + ('<aside id="o06-blob-two-stage-goal"><h5>新目标：先控件库，再Blob重组</h5><p>'
+               + escape(plan['twoStageGoal']['state']) + '</p>'
+               + table(['阶段','交付范围','退出条件'], plan['twoStageGoal']['stages'])
+               + '<h5>优先级与自动补位队列</h5>'
+               + table(['优先级','工作','关键要求'], plan['twoStageGoal']['priorityQueue'])
+               + '<p>' + escape(plan['twoStageGoal']['preservedRequirements']) + '</p><p>'
+               + escape(plan['twoStageGoal']['maskAndRoi']) + '</p><p>'
+               + escape(plan['twoStageGoal']['manual']) + '</p></aside>' if plan.get('twoStageGoal') else '')
+            + ('<aside><h5>用户最终UI对照基准</h5><p><a href="' + escape(plan['finalUiReference']['href'], quote=True)
+               + '"><b>打开VM原件生成的最终Blob UI预览</b></a></p><p>' + escape(plan['finalUiReference']['decision'])
+               + '</p><p>' + escape(plan['finalUiReference']['maskExtension']) + '</p><p>'
+               + escape(plan['finalUiReference']['acceptance']) + '</p></aside>' if plan.get('finalUiReference') else '')
+            + '<h5>范围及实施顺序</h5>' + table(['阶段','工作及退出条件'], plan['sequence'])
+            + ('<h5>四路并行核证与汇总</h5>' + table(['路线','范围','交付物与依赖'], plan['parallelLanes'])
+               + '<p>' + escape(plan['parallelProtocol']) + '</p>' if plan.get('parallelLanes') else '')
+            + ('<h5>SDK可视退出的实际消费者与合同处理</h5>'
+               + table(['当前入口 / 消费者','具体耦合或缺口','集中承接与验收'], plan['hostExitRows']) if plan.get('hostExitRows') else '')
+            + ('<h5>本轮四路核证结果</h5>'
+               + table(['路线','精确源码链及本方差距','处理结论与边界'], plan['sourceAuditFindings']) if plan.get('sourceAuditFindings') else '')
+            + ('<h5>逐控件补位核收记录</h5>'
+               + table(['控件','已确认事实','实施边界'], plan['recentControlFindings']) if plan.get('recentControlFindings') else '')
+            + ('<h5>本批源码与正式产物检查点</h5>'
+               + table(['项目','证据'], list(plan['candidateCheckpoint'].items())) if plan.get('candidateCheckpoint') else '')
+            + ('<p><b>失败记录保留：</b>' + escape('；'.join(plan['implementationFailures'])) + '</p>' if plan.get('implementationFailures') else '')
+            + '<h5>完整控件与组合清单</h5><p>' + escape(plan['inventoryRule']) + '</p>'
+            + table(['编号 / 组合','Blob消费位置','VM控件 / 模板 / 组合链','已有成果及处理','证据 / 缺口','验收标准'], plan['compositions'])
+            + '<details><summary>当前全部XML字段与组合逐项对应</summary>'
+            + table(['页面 / 分组','字段或显示项','对应组合','说明'], plan['fieldCoverage']) + '</details>'
+            + '<details><summary>VM原Blob页声明逐项对照：已映射与能力缺项</summary>'
+            + table(['VM页面 / 分组','原声明','所需组合','本方对应 / 未完成能力'], plan['vmDeclarationCoverage']) + '</details>'
+            + '<h5>证据目录与可信边界</h5>' + table(['证据号','可定位来源','身份 / 已确认范围'], plan['evidence'])
+            + '<h5>集中补证清单</h5>' + table(['缺口','已有依据','最小补证 / 影响范围'], plan['evidenceGaps'])
+            + ('<details><summary>数值家族完整交互的原源码依据</summary>'
+               + table(['行为','原源码定位','已证范围 / 未证边界'], plan['numericBehaviorEvidence']) + '</details>' if plan.get('numericBehaviorEvidence') else '')
+            + '<h5>公共库组织与管理</h5><pre>' + escape(plan['tree']) + '</pre>'
+            + ('<h5>选中ROI的参数显示与图像双向交互</h5><p>' + escape(plan['roiInteractionContract']['ownership'])
+               + '</p><ul>' + ''.join('<li>' + escape(x) + '</li>' for x in plan['roiInteractionContract']['acceptance'])
+               + '</ul><p>' + escape(plan['roiInteractionContract']['status']) + '</p>' if plan.get('roiInteractionContract') else '')
+            + table(['职责','管理要求'], plan['management'])
+            + '<h5>满足这些条件，立即继续Blob</h5>' + table(['准入门','通过条件','当前状态'], plan['gates'])
+            + '<h5>Blob单工具整链验证</h5><ol>' + ''.join('<li>' + escape(x) + '</li>' for x in plan['prototype'])
+            + '</ol><p>' + escape(plan['boundary']) + '</p></section>')
+
+
 def render_s4_stage(page):
     path = ROOT / 'docs/collaboration/S4_IMPLEMENTATION_PLAN_20261026.json'
     if not path.exists():
@@ -260,7 +309,8 @@ def render_s4_stage(page):
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
              + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if 'preview' in s4.get('uiReview', {}) else '')
-             + ('<p><a href="#o06-current-control-mapping"><b>直接审核31类新职责、VM源、去留与文件组织</b></a> · 8项提取复用 / 15项重组 / 8项旧类退出；完整交互见同段下方。</p>' if (ROOT/'docs/collaboration/evidence/O06_CONTROL_REORGANIZATION_20261026.json').exists() else '')
+             + ('<p><a href="#o06-blob-control-prototype-plan"><b>审核Blob所需控件、组合与接入条件</b></a> · 原31类仅作历史功能追踪；不要求先迁完整个VM控件库。</p>' if s4.get('blobControlPrototypePlan') else '')
+             + render_blob_control_plan(s4.get('blobControlPrototypePlan'))
              + ('<aside id="o06-vm-control-library-reference"><h4>VM控件库逆向参考快照</h4><p><a href="' + escape(s4['vmControlLibraryReference']['entry'], quote=True) + '">打开归档说明、原始目标页及机器证据</a>。' + escape(s4['vmControlLibraryReference']['summary']) + '</p><p>' + escape(s4['vmControlLibraryReference']['boundary']) + '</p></aside>' if s4.get('vmControlLibraryReference') else '')
              + ('<details id="o06-native-numeric-consumer"><summary>原VM数值控件的真实消费与宿主适配</summary>' + table(['项目','当前事实'], [[label,s4['nativeNumericConsumer'][key]] for key,label in [('status','验证状态'),('chain','完整消费链'),('draft','草稿与校验'),('remaining','未完成')]]) + '<ul>' + ''.join('<li>'+escape(item)+'</li>' for item in s4['nativeNumericConsumer']['adaptations']) + '</ul></details>' if s4.get('nativeNumericConsumer') else '')
              + ('<section id="o06-blob-file-structure"><h4>Blob目标文件结构：不保留旧项目兼容</h4><p><b>' + escape(s4['blobFileStructure']['decision']) + '</b></p><p>' + escape(s4['blobFileStructure']['status']) + '。' + escape(s4['blobFileStructure']['currentFacts']) + '</p><pre>' + escape(s4['blobFileStructure']['tree']) + '</pre>' + table(['职责','目标文件','承接方式'],s4['blobFileStructure']['fileRows']) + '<details><summary>旧文件去留、状态归属与公共合同缺口</summary>' + table(['现有文件','目标处理'],s4['blobFileStructure']['removeRows']) + table(['数据类别','唯一所有者','边界'],s4['blobFileStructure']['stateOwnership']) + table(['共同改造点','当前实际缺口与处理'],s4['blobFileStructure']['commonContractGaps']) + '</details><p>' + escape(s4['blobFileStructure']['implementation']) + '</p><p>' + escape(s4['blobFileStructure']['boundaries']) + '</p></section>' if s4.get('blobFileStructure') else '')

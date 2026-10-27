@@ -1,3 +1,7 @@
+using System.Windows.Media.Imaging;
+using System.Windows.Data;
+using System.Windows.Input;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -50,9 +54,42 @@ internal static class S2DocumentEditingCases
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
-            Show(record);var colorInput=(ColorField)record.InputElement!;
+            Show(record);var colorInput=(NativeColorPresenter)record.InputElement!;
+            var nativeColorCommand=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand;
+            void Pick(NativeColorPresenter target,Color value)=>nativeColorCommand.Execute(new SolidColorBrush(value),target.NativeView);
+            Pick(colorInput,Color.FromArgb(200,255,20,30));
+            Pick(colorInput,Color.FromArgb(123,32,64,128));
+            Require(!record.HasInvalidText&&color.Get<long>("r")==32&&color.Get<long>("a")==123&&colorWrites==2,"原调色命令连续写入RGBA失败");
+            Require(BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty),"原调色命令切断双向绑定");
             colorInput.SelectedColor=Color.FromArgb(200,255,20,30);
-            Require(!record.HasInvalidText&&color.Get<long>("r")==255&&color.Get<long>("a")==200&&colorWrites==1,"实际颜色控件未原子更新RGBA记录");
+            Require(colorInput.NativeView.CurrentColor.Color==colorInput.SelectedColor,"外部颜色恢复没有同步原件");
+            colorInput.Palette.IsDropDownOpen=true;Pump();
+            var palettePopup=(Popup)colorInput.Palette.Template.FindName("PART_Popup",colorInput.Palette);
+            var paletteTabs=NativeDescendants(palettePopup.Child).OfType<TabControl>().Single();
+            Require(paletteTabs.Items.Count==2,"原默认/更多页不完整");
+            void CapturePalette(string file)
+            {
+                var element=(FrameworkElement)palettePopup.Child;var bitmap=new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth),(int)Math.Ceiling(element.ActualHeight),96,96,PixelFormats.Pbgra32);
+                bitmap.Render(element);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,file));encoder.Save(stream);
+            }
+            paletteTabs.SelectedIndex=1;Pump();CapturePalette("native-palette-more.png");
+            Require(NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Any(),"更多页未接原AdvancedColorPickerDialog");
+            paletteTabs.SelectedIndex=0;Pump();CapturePalette("native-palette-default.png");
+            Require(NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerFirstItem>().Any(),"默认页未接原主题/标准色板");
+            var originalHeader=NativeDescendants(palettePopup.Child).OfType<Label>().First();
+            var headerText=NativeDescendants(originalHeader).OfType<TextBlock>().First();
+            Require(headerText.Foreground is SolidColorBrush headerBrush&&headerBrush.Color==Color.FromRgb(0,0,139)&&headerText.FontWeight==FontWeights.Bold,"宿主全局文字样式覆盖原色板标题");
+            Require(typeof(NativeColorPresenter).Assembly.GetType("SunEyeVision.Plugin.Wpf.Fields.ColorField")==null&&typeof(NativeColorPresenter).Assembly.GetType("SunEyeVision.Plugin.Wpf.Controls.VmColorPicker")==null,"自制色板仍作为产品后备路径");
+            colorInput.ClosePalette();
+            var rejectColor=true;var guardedColor=PresentationDeclarations.Color(1,2,3);
+            var guardedEditor=new DeclaredFieldEditor(new("guarded-color",PresentationDeclarations.Rgba),"拒绝颜色",new ConstantSetting(guardedColor),next=>
+            {if(rejectColor)throw new InvalidOperationException("颜色草稿已失效");guardedColor=(RecordValue)((ConstantSetting)next).Value!;});
+            colorInput.Palette.IsDropDownOpen=true;Show(guardedEditor);Require(!colorInput.Palette.IsDropDownOpen,"卸载未关闭原色板");
+            var guardedPicker=(NativeColorPresenter)guardedEditor.InputElement!;Pick(guardedPicker,Colors.Red);
+            Require(guardedEditor.HasInvalidText&&guardedColor.Get<long>("r")==1&&guardedPicker.SelectedColor==Color.FromRgb(1,2,3)&&guardedPicker.NativeView.CurrentColor.Color==Color.FromRgb(1,2,3),"拒绝颜色未回滚原件或污染草稿");
+            rejectColor=false;Pick(guardedPicker,Colors.Blue);Require(!guardedEditor.HasInvalidText&&guardedColor.Get<long>("b")==255,"拒绝回滚后原色板不能恢复写入");
+            Console.WriteLine("通过：原VM色板默认/更多、重复原调色命令、外部恢复、RGBA、拒绝回滚及卸载关闭");
             var channelType=TypeRef.RecordOf("test.channel",new[]{new Port("r",DataType.Integer,Storage:NumericStorage.UInt8)});
             var channelValue=new RecordValue(channelType,new Dictionary<string,object?>{{"r",10L}});var channelWrites=0;
             var channel=new DeclaredFieldEditor(new("channel",channelType),"通道",new ConstantSetting(channelValue),next=>{channelValue=(RecordValue)((ConstantSetting)next).Value!;channelWrites++;});
@@ -75,6 +112,42 @@ internal static class S2DocumentEditingCases
             var names=typeof(DeclaredFieldEditor).Assembly.GetReferencedAssemblies().Select(assembly=>assembly.Name!).ToArray();
             Require(!names.Any(name=>name.Contains("Plugin.SDK")||name.Contains("Halcon",StringComparison.OrdinalIgnoreCase)||name=="SunEyeVision.UI"),"公共字段层倒置依赖");
             Console.WriteLine("通过：失效范围拒绝且保留原值；公共字段程序集不依赖SDK、HALCON或UI宿主");
+            var imageType=TypeRef.ResourceOf(ResourceKind.Image);
+            var sourceA=new DeclaredReferenceCandidate("A · 图像","A","workflow",new Port("output",imageType),Array.Empty<string>());
+            var sourceB=new DeclaredReferenceCandidate("B · 图像","B","workflow",new Port("output",imageType),Array.Empty<string>());
+            ParameterSetting imageAccepted=new ReferenceSetting(sourceA.Reference(BindingSelection.All));
+            var imageWrites=0;var imageRefreshFails=false;var imageWriteRejected=false;
+            using var imageEditor=new DeclaredFieldEditor(new("input",imageType,Required:false,EditModes:FieldEditModes.Reference),"输入源",imageAccepted,next=>
+            {if(imageWriteRejected)throw new InvalidOperationException("写入被宿主拒绝");imageAccepted=next;imageWrites++;});
+            imageEditor.UseImageSourceSelector(()=>
+            {if(imageRefreshFails)throw new InvalidOperationException("候选来源读取失败");return new[]{sourceA,sourceB};});
+            Show(imageEditor);var imageCombo=(ComboBox)imageEditor.InputElement!;
+            void RefreshImageSources()
+            {imageCombo.IsDropDownOpen=false;Pump();imageCombo.IsDropDownOpen=true;Pump();imageCombo.IsDropDownOpen=false;Pump();}
+            ComboBoxItem ImageSourceItem(ComboBox combo,string nodeId)=>combo.Items.OfType<ComboBoxItem>().Single(item=>
+                item.Tag is ReferenceSetting reference&&reference.Reference.NodeId==nodeId);
+            var imagePriorItem=imageCombo.SelectedItem;imageRefreshFails=true;RefreshImageSources();
+            Require(imageEditor.HasInvalidText&&ReferenceEquals(imageCombo.SelectedItem,imagePriorItem)&&imageWrites==0
+                &&((ReferenceSetting)imageAccepted).Reference.NodeId=="A","候选读取失败破坏已接受来源或显示");
+            imageRefreshFails=false;RefreshImageSources();
+            Require(!imageEditor.HasInvalidText&&imageWrites==0&&((ReferenceSetting)imageAccepted).Reference.NodeId=="A","来源恢复后错误残留或擅自写入");
+            Console.WriteLine("通过：来源刷新失败保留显示与身份，恢复只清除刷新错误");
+            imageWriteRejected=true;imageCombo.SelectedItem=ImageSourceItem(imageCombo,"B");
+            Require(imageEditor.HasInvalidText&&imageEditor.Error.Contains("写入被宿主拒绝")&&ReferenceEquals(imageCombo.SelectedItem,ImageSourceItem(imageCombo,"A"))&&imageWrites==0,"写入拒绝没有恢复原选中");
+            imageRefreshFails=true;RefreshImageSources();imageRefreshFails=false;RefreshImageSources();
+            Require(imageEditor.HasInvalidText&&imageEditor.Error.Contains("写入被宿主拒绝")&&imageWrites==0,"刷新恢复吞掉独立写入错误");
+            imageWriteRejected=false;imageCombo.SelectedItem=ImageSourceItem(imageCombo,"B");
+            Require(!imageEditor.HasInvalidText&&imageWrites==1&&((ReferenceSetting)imageAccepted).Reference.NodeId=="B","合法修正未恢复");
+            Console.WriteLine("通过：刷新恢复不吞写入拒绝，合法修正后恢复");
+            var staleImageCombo=imageCombo;staleImageCombo.IsDropDownOpen=true;Pump();
+            imageEditor.UseImageSourceSelector(()=>new[]{sourceA,sourceB});owner.UpdateLayout();Pump();imageCombo=(ComboBox)imageEditor.InputElement!;
+            Require(!ReferenceEquals(imageCombo,staleImageCombo)&&!staleImageCombo.IsDropDownOpen,"重绘没有替换旧下拉并关闭弹层");
+            var beforeStale=imageWrites;staleImageCombo.SelectedItem=ImageSourceItem(staleImageCombo,"A");Pump();
+            Require(imageWrites==beforeStale&&((ReferenceSetting)imageAccepted).Reference.NodeId=="B"&&!imageEditor.HasInvalidText,"旧下拉回调改变当前来源或错误");
+            imageEditor.Dispose();imageCombo.SelectedItem=ImageSourceItem(imageCombo,"A");
+            Require(imageWrites==beforeStale,"Dispose后的来源事件仍写入");
+            Console.WriteLine("通过：重绘关闭旧弹层，旧选择及释放后回调不写当前字段");
+
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
             var manager=new PluginManager();manager.LoadPlugins(Path.Combine(product,"plugins"));
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool=>tool.Id));
@@ -101,7 +174,7 @@ internal static class S2DocumentEditingCases
             Pump();((TextBox)Descendants(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="215";
             context.Discard();Require(Threshold()==201,"取消改变已确认值");edits.Close();
             Console.WriteLine("通过：真实Runtime字段控件只写私有草稿，确认发布当前范围，取消保留已确认值");
-            Console.WriteLine("S4字段编辑：8组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
+            Console.WriteLine("S4字段编辑：12组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
@@ -114,6 +187,16 @@ internal static class S2DocumentEditingCases
     {
         foreach(var item in LogicalTreeHelper.GetChildren(parent))if(item is DependencyObject child)
         {yield return child;foreach(var descendant in Descendants(child))yield return descendant;}
+    }
+    private static IEnumerable<DependencyObject> NativeDescendants(DependencyObject root)
+    {
+        var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);
+        while(pending.Count>0)
+        {
+            var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
+            foreach(var item in LogicalTreeHelper.GetChildren(node))if(item is DependencyObject child)pending.Push(child);
+            if(node is Visual)for(var i=0;i<VisualTreeHelper.GetChildrenCount(node);i++)pending.Push(VisualTreeHelper.GetChild(node,i));
+        }
     }
     private static void Require(bool condition,string error){if(!condition)throw new Exception(error);}
 }

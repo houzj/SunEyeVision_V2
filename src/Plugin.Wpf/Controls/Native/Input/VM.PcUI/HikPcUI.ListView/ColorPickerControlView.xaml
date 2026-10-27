@@ -137,6 +137,14 @@
       <PCControls:PopupButton.SubContent>
         <DataTemplate>
           <Border BorderThickness="0" BorderBrush="#FFA9A9A9">
+            <!-- Popup content has its own scope for the original theme resources. -->
+            <Border.Resources>
+              <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml" />
+                </ResourceDictionary.MergedDictionaries>
+              </ResourceDictionary>
+            </Border.Resources>
             <Grid Background="#FFFFFFFF">
               <TabControl Focusable="False">
                 <TabItem Header="{DynamicResource 默认}" Content="{Binding FirstItem, Mode=OneTime}" />

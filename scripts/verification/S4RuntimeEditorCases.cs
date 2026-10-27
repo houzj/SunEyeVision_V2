@@ -63,7 +63,7 @@ internal static class S2DocumentEditingCases
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
         var path=Path.Combine(folder,"runtime-editor.solution");
         Require(solutions.SaveCurrentDocument(path).FileWritten,"初始化测试文件位置失败");
-        DeclaredFieldEditor? oldInput=null;
+        ComboBox? oldInputCombo=null;
         string? sourceNodeId=null;
         var first=Open();
         Case("默认UI工厂创建Runtime节点，真实MainWindow打开中立窗口与58个XML字段",()=>
@@ -72,12 +72,21 @@ internal static class S2DocumentEditingCases
                 &&Control(first).GetType()==typeof(RuntimeNodeConfigurationControl),"窗口借用SDK Blob参数或未保留Runtime配置");
             Require(Logical(Control(first)).OfType<DeclaredFieldEditor>().Count()==58,"XML输入及设置字段未进入真实窗口");
             Require(solutions.Session!.Editing.RegisteredScopeCount==1,"实际窗口未登记文档事务");
+            // Inspect rendered input controls on their actual page, independently of the
+            // user's saved designer SelectedPageIndex.
+            Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;
+            first.UpdateLayout();Pump();
             var sourceButtons=Visual(Control(first)).OfType<Button>().Where(b=>Equals(b.ToolTip,"选择订阅来源")).ToArray();
-            Require(sourceButtons.Length==4&&sourceButtons.All(b=>Visual(b).OfType<Image>().Any(i=>i.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&i.ActualWidth>0)),
+            Require(sourceButtons.Length==3&&sourceButtons.All(b=>Visual(b).OfType<Image>().Any(i=>i.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&i.ActualWidth>0)),
                 "来源按钮没有实际显示迁入图标");
+            var image=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
+            Require(image.InputElement is ComboBox combo&&combo.Resources.MergedDictionaries.Any(dictionary=>dictionary.Source?.OriginalString.EndsWith("SourceComboBoxes.xaml")==true)
+                &&!Logical(image).OfType<Button>().Any(),"图像输入源未使用VM EnumerationG原ComboBox，或仍有链/清除按钮");
+            Require(Visual(image).OfType<Image>().Any(icon=>icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&icon.ActualWidth>0),
+                "VM输入源右下角原三角图标未实际渲染");
             Capture(first,"runtime-editor-basic.png");
         });
-        Case("实际来源弹窗从声明选择图像，未确认引用只写私有节点",()=>
+        Case("VM图像输入源下拉从正式声明选择，未确认引用只写私有节点",()=>
         {
             var source=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");
             sourceNodeId=source.Id;
@@ -89,20 +98,37 @@ internal static class S2DocumentEditingCases
             (vm.ActiveInputSource??throw new Exception("正式输入源面板未建立")).AddImage(new SunEyeVision.UI.Shell.Controls.Panels.ImageInfo{Name="Runtime调试输入",FilePath=imageFile,SourceReference=imageFile,IsForRun=true});
             source.IsSelected=false;node.IsSelected=true;vm.SelectedNode=node;Pump();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
-            oldInput=input;
-            var pick=Logical(input).OfType<Button>().Single(b=>Equals(b.ToolTip,"选择订阅来源"));
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>
-            {
-                var window=app.Windows.OfType<Window>().Single(w=>w.Title=="选择绑定来源");
-                var picker=Logical(window).OfType<ReferenceSelectionControl>().Single();
-                picker.SelectedCandidate=Logical(picker).OfType<ListBox>().Single().Items.OfType<DeclaredReferenceCandidate>()
-                    .First(c=>c.NodeId==source.Id&&c.MemberPath.Count==0&&c.Output.Type.Resource==ResourceKind.Image);
-                Logical(window).OfType<Button>().Single(b=>Equals(b.Content,"确定")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            }));
-            pick.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+            oldInputCombo=(ComboBox)input.InputElement!;
+            var combo=(ComboBox)input.InputElement!;combo.IsDropDownOpen=true;Pump();
+            Require(!app.Windows.OfType<Window>().Any(w=>w.Title=="选择绑定来源"),"图像下拉仍打开通用订阅窗口");
+            Require(((ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!).DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput) is null,
+                "刷新候选擅自写入了来源");
+            combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().First(item=>item.Tag is ReferenceSetting reference&&reference.Reference.NodeId==source.Id
+                &&reference.Reference.MemberFieldPath.Count==0&&reference.Reference.Type.Resource==ResourceKind.Image);
+            combo.IsDropDownOpen=false;Pump();
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
             Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)?.SourceNodeId==source.Id
-                &&node.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"来源弹窗未写草稿或污染正式引用");
+                &&node.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"来源下拉未写草稿或污染正式引用");
+        });
+        Case("图像下拉拒绝真实自引用并恢复原草稿，刷新不改引用，修正后可继续",()=>
+        {
+            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
+            var combo=(ComboBox)input.InputElement!;var priorItem=(ComboBoxItem)combo.SelectedItem;
+            var reference=((ReferenceSetting)priorItem.Tag).Reference;
+            var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
+            var expression=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression;
+            var invalid=new ComboBoxItem{Content="自引用拒绝检查",Tag=new ReferenceSetting(new OutputReference(node.Id,BlobSchema.Field(5),
+                TypeRef.ResourceOf(ResourceKind.Image),scopeId:reference.ScopeId))};
+            combo.Items.Add(invalid);combo.SelectedItem=invalid;Pump();
+            Require(input.HasInvalidText&&ReferenceEquals(combo.SelectedItem,priorItem)
+                &&context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==expression,
+                "自引用未被生产合同拒绝或污染了原来源");
+            combo.Items.Remove(invalid);
+            combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);combo.SelectedItem=priorItem;Pump();
+            Require(!input.HasInvalidText,"修正来源后仍无法继续");
+            combo.IsDropDownOpen=true;Pump();combo.IsDropDownOpen=false;
+            Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression==expression
+                &&node.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"刷新候选写入了草稿或正式节点");
         });
         Case("真实未失焦数值进入私有Runtime草稿，隐藏窗口后文档保存接受它并可重开",()=>
         {
@@ -120,7 +146,8 @@ internal static class S2DocumentEditingCases
         {
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
             var prior=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.ReferenceExpression;
-            Logical(oldInput!).OfType<Button>().Single(b=>Equals(b.Content,"×")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var combo=oldInputCombo!;
+            combo.SelectedItem=combo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);
             Require(context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)?.ReferenceExpression==prior,"旧控件事件写入了新草稿");
         });
         Case("真实工作流发布来源后，窗口执行命令只更新私有调试结果，连续运行可停止",()=>
@@ -155,7 +182,8 @@ internal static class S2DocumentEditingCases
             var table=Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single();Require(table.Items.Count==1,"有效调试未恢复结果表");
             var prior=context.DraftNode.ParamSettings.GetSetting(BlobTool.ImageInput)!.Clone();
             var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
-            Logical(input).OfType<Button>().Single(b=>Equals(b.Content,"×")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var sourceCombo=(ComboBox)input.InputElement!;
+            sourceCombo.SelectedItem=sourceCombo.Items.OfType<ComboBoxItem>().Single(item=>item.Tag is UnsetSetting);
             var failed=Control(first).RunDebugAsync();PumpUntil(()=>failed.IsCompleted);
             try{failed.GetAwaiter().GetResult();throw new Exception("缺少来源的调试竟然成功");}catch(InvalidOperationException){}
             Require(context.DebugResults.GetNodeResult(node.Id) is null&&table.Items.Count==0&&ReferenceEquals(formal,Context().GetNodeResult(node.Id)!.Result),"失败未清空私有预览或污染正式结果");

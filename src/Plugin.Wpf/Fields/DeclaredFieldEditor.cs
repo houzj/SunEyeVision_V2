@@ -6,11 +6,12 @@ using System.Windows.Data;
 using System.Windows.Controls.Primitives;
 using SunEyeVision.Plugin.Wpf.Controls;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Edits one declared field on a host-owned draft. Never publishes, executes or reads resources.</summary>
-public sealed class DeclaredFieldEditor : UserControl
+public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
 {
     private readonly Port _port;
     private readonly Action<ParameterSetting> _write;
@@ -29,6 +30,9 @@ public sealed class DeclaredFieldEditor : UserControl
     private readonly TextBlock _label = new();
     private NativeNumberField? _numeric;
     private bool _updatingInput;
+    private bool _disposed;
+    private long _renderGeneration;
+    private string _editError="";
     private bool _pairedSlider;
     private bool _regionSourceSelector;
     private readonly bool _allowUnboundReference;
@@ -62,8 +66,9 @@ public sealed class DeclaredFieldEditor : UserControl
     public FrameworkElement? InputElement { get; private set; }
     private string NumericError => _numeric is not null&&!_numeric.TryValidatePendingEdit(out var error)?error:"";
     private bool MissingReference=>_referenceMode&&_setting is not ReferenceSetting&&!(_allowUnboundReference&&_setting is UnsetSetting);
-    public bool HasInvalidText => MissingReference || _error.Text.Length != 0 || NumericError.Length!=0 || _children.Any(child => child.HasInvalidText);
-    public string Error => MissingReference ? "请选择订阅来源，或切回数值模式。" : _error.Text.Length != 0 ? _error.Text : NumericError is {Length:>0} numericError?numericError:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    public bool HasInvalidText => MissingReference || _editError.Length != 0 || _imageRefreshError.Length!=0 || NumericError.Length!=0 || _children.Any(child => child.HasInvalidText);
+    public string Error => MissingReference ? "请选择订阅来源，或切回数值模式。" : _editError.Length != 0 ? _editError : _imageRefreshError.Length!=0?_imageRefreshError:NumericError is {Length:>0} numericError?numericError:_children.FirstOrDefault(child => child.HasInvalidText)?.Error ?? "";
+    private void UpdateErrorDisplay()=>_error.Text=_editError.Length!=0?_editError:_imageRefreshError;
     public event Action? Changed;
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
@@ -86,6 +91,7 @@ public sealed class DeclaredFieldEditor : UserControl
 
     private bool Set(ParameterSetting next)
     {
+        if(_disposed)return false;
         try
         {
             if (next is UnsetSetting && _port.Required) throw new ArgumentException("必填项不能清除。");
@@ -97,15 +103,19 @@ public sealed class DeclaredFieldEditor : UserControl
             }
             _write(next); _setting = next;
             if (next is ConstantSetting accepted) _constant = accepted;
-            _error.Text = ""; Changed?.Invoke(); return true;
+            _editError = ""; UpdateErrorDisplay(); Changed?.Invoke(); return true;
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or FormatException or OverflowException)
-        { _error.Text = exception.Message; Changed?.Invoke(); return false; }
+        { _editError = exception.Message; UpdateErrorDisplay(); Changed?.Invoke(); return false; }
     }
 
     private void Render()
     {
-        _body.Children.Clear();_children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
+        if(_disposed)return;
+        _renderGeneration++;
+        DetachOwnedEditors();
+        _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
+        if(_imageSources is not null){RenderImageSource();return;}
         var canReference=_selectReference is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
         if(canReference&&(_port.EditModes&FieldEditModes.Constant)!=0)
         {
@@ -186,7 +196,7 @@ public sealed class DeclaredFieldEditor : UserControl
                     try
                     {
                         if(_numeric is not null&&!_numeric.TryValidatePendingEdit(out var numericError))
-                        { _error.Text=numericError;Changed?.Invoke();return; }
+                        { _editError=numericError;UpdateErrorDisplay();Changed?.Invoke();return; }
                         object parsed = _port.Type.Scalar switch
                         {
                             ScalarKind.Int64 => long.Parse(input.Text, CultureInfo.InvariantCulture),
@@ -196,7 +206,7 @@ public sealed class DeclaredFieldEditor : UserControl
                         Set(new ConstantSetting(parsed));
                     }
                     catch (Exception exception) when (exception is FormatException or OverflowException)
-                    { _error.Text = "请输入有效的" + (_port.Type.Scalar == ScalarKind.Int64 ? "整数。" : "数字。"); Changed?.Invoke(); }
+                    { _editError = "请输入有效的" + (_port.Type.Scalar == ScalarKind.Int64 ? "整数。" : "数字。"); UpdateErrorDisplay(); Changed?.Invoke(); }
                 };
                 input.KeyDown+=(_,args)=>
                 {
@@ -227,10 +237,10 @@ public sealed class DeclaredFieldEditor : UserControl
         {
             if (_port.Type.Equals(PresentationDeclarations.Rgba))
             {
-                var input=new ColorField {Height=32,SelectedColor=Color.FromArgb(
+                var input=new NativeColorPresenter {Height=32,SelectedColor=Color.FromArgb(
                     checked((byte)record.Get<long>("a")),checked((byte)record.Get<long>("r")),
                     checked((byte)record.Get<long>("g")),checked((byte)record.Get<long>("b")))};
-                input.SelectedColorChanged+=(_,e)=>Set(new ConstantSetting(PresentationDeclarations.Color(e.NewValue.R,e.NewValue.G,e.NewValue.B,e.NewValue.A)));
+                input.SelectedColorChanged+=OnNativeColorChanged;
                 InputElement=input;_body.Children.Add(input);return;
             }
             foreach (var field in _port.Type.Fields)
@@ -252,6 +262,36 @@ public sealed class DeclaredFieldEditor : UserControl
             // ToString textbox is an editable typed value, or inspect a borrowed resource.
             _body.Children.Add(new TextBlock { Text = "此字段由专用区域或集合编辑器处理。", TextWrapping = TextWrapping.Wrap });
         }
+    }
+
+    private void OnNativeColorChanged(object sender,RoutedPropertyChangedEventArgs<Color> e)
+    {
+        if(_disposed||_updatingInput||sender is not NativeColorPresenter input||!ReferenceEquals(input,InputElement))return;
+        if(Set(new ConstantSetting(PresentationDeclarations.Color(e.NewValue.R,e.NewValue.G,e.NewValue.B,e.NewValue.A))))return;
+        var accepted=(RecordValue)((ConstantSetting)_setting).Value!;
+        _updatingInput=true;
+        try{input.SetCurrentValue(NativeColorPresenter.SelectedColorProperty,Color.FromArgb(
+            checked((byte)accepted.Get<long>("a")),checked((byte)accepted.Get<long>("r")),
+            checked((byte)accepted.Get<long>("g")),checked((byte)accepted.Get<long>("b"))));}
+        finally{_updatingInput=false;}
+    }
+
+    private void DetachOwnedEditors()
+    {
+        DetachImageSource();
+        if(InputElement is ComboBox combo)combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
+        if(InputElement is NativeColorPresenter color)
+        {color.SelectedColorChanged-=OnNativeColorChanged;color.Dispose();}
+        foreach(var child in _children)child.Dispose();
+        _children.Clear();
+    }
+
+    public void Dispose()
+    {
+        if(_disposed)return;
+        _disposed=true;_renderGeneration++;
+        DetachOwnedEditors();Changed=null;
+        _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;Content=null;
     }
 
     private sealed class ChoiceLabelConverter(IReadOnlyDictionary<string,string> labels):IValueConverter

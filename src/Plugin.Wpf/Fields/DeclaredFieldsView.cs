@@ -5,9 +5,11 @@ using SunEyeVision.Plugin.Contracts;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Finite page/section/conditional composition. No workflow access or publication.</summary>
-public sealed class DeclaredFieldsView : UserControl
+public sealed class DeclaredFieldsView : UserControl,IDisposable
 {
  private readonly List<DeclaredFieldEditor> _fields=new();
+ private readonly List<DisplayObjectField> _displayCompositions=new();
+ private bool _disposed;
  private readonly Dictionary<string,StackPanel> _groups=new(StringComparer.Ordinal);
  private readonly List<(FrameworkElement View,FieldCondition Condition)> _conditions=new();
  private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
@@ -70,7 +72,8 @@ public sealed class DeclaredFieldsView : UserControl
      {
       var style=section.Where(item=>item.Presentation.Layout?.DialogGroup==dialogGroup&&!item.Presentation.Layout.DialogPrimary)
        .Select(item=>(editors[item.Port.Id],item.Presentation.DisplayName.Split(" · ")[^1])).ToArray();
-      view=new DisplayObjectField(display.DialogTitle!,editors[field.Port.Id],style);
+      var composition=new DisplayObjectField(display.DialogTitle!,editors[field.Port.Id],style);
+      _displayCompositions.Add(composition);view=composition;
      }
      if(field.Presentation.Layout?.PairWith is {} partner&&editors.TryGetValue(partner,out var maximum))
      {view=new RangeField(editors[field.Port.Id],maximum,field.Presentation.Layout);editors[field.Port.Id].SetLabel(field.Presentation.DisplayName.Replace("下限","范围"));}
@@ -93,6 +96,15 @@ public sealed class DeclaredFieldsView : UserControl
  }
  private void UpdateVisibility()
  {
+  if(_disposed)return;
   foreach(var (view,condition) in _conditions)view.Visibility=Meets(condition)?Visibility.Visible:Visibility.Collapsed;
+ }
+ public void Dispose()
+ {
+  if(_disposed)return;_disposed=true;
+  foreach(var composition in _displayCompositions)composition.Dispose();
+  foreach(var field in _fields){field.Changed-=UpdateVisibility;field.Dispose();}
+  _displayCompositions.Clear();_fields.Clear();_conditions.Clear();_fieldConditions.Clear();_groups.Clear();
+  PageChanged=null;_tabs.Items.Clear();Content=null;
  }
 }

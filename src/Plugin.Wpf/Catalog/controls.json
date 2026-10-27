@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "scope": "Blob实际所需公共控件及完整组合；不要求194项目录全部迁入",
+  "designAuthority": "docs/collaboration/S4_IMPLEMENTATION_PLAN_20261026.json#blobControlPrototypePlan",
+  "entries": [
+    {
+      "id": "C12.vm-pcui-color-picker",
+      "assembly": "VM.PcUI",
+      "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
+      "selectionEvidence": "Apps.XmlUI/styles/paramusercontroldatatemplate.xaml:2,2528,2529,2611; PCListView=HikPcUI.ListView;assembly=VM.PcUI",
+      "composition": [
+        "ColorPickerControlView original RGB surface / PopupButton",
+        "ColorPickerFirstItem original theme and standard colors",
+        "ColorPickerSecondItem original more tab",
+        "AdvancedColorPickerDialog original color chart / brightness"
+      ],
+      "sourceFiles": [
+        {
+          "originalType": "HikPcUI.ListView.ColorPickerControlView",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml",
+          "originalSha256": "96c074711b1fd1575aeae9aa0eb57da8411bb4601790d2aa2d42347c053ea60e",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
+          "localSha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+        },
+        {
+          "originalType": "HikPcUI.ListView.ColorPickerControlView",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
+          "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
+          "localSha256": "6995ce727e47fe612defa44f097ab48bdd49a00eaeaa602ec56d99eaeeeb5640"
+        },
+        {
+          "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerFirstItem.xaml",
+          "originalSha256": "0663bb265659db60fbff40c195d0f201265cca567c9862b1ab0bbf60e6254a47",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
+          "localSha256": "58d3e84f2634a3a3630be83a34dba59f84365c9561154ed3a06902e066bfa672"
+        },
+        {
+          "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerFirstItem.xaml.cs",
+          "originalSha256": "a819c5da93a401f2fbb16e554014e3a3a7199f0567c75d5c104606657409c592",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml.cs",
+          "localSha256": "5043873a25062edf6b0e72dba7a74add367804257274cfafef9c450ff230e131"
+        },
+        {
+          "originalType": "HikPcUI.ListView.ColorPickerSecondItem",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerSecondItem.xaml",
+          "originalSha256": "37d9330aaf157b5f3140007c6d1e50b26053be8b3b9fcc7de0d4e468bdb8447c",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
+          "localSha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+        },
+        {
+          "originalType": "HikPcUI.ListView.ColorPickerSecondItem",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerSecondItem.xaml.cs",
+          "originalSha256": "45231f35626d6ec442c4c10ae16e15c9ed9e8d7be108cd636fcd18b941667012",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml.cs",
+          "localSha256": "5dee5b3d01d0faeff3ffd185f64cd83721576faf2613da95e4086b7755e53b2b"
+        },
+        {
+          "originalType": "HikPcUI.ListView.AdvancedColorPickerDialog",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\AdvancedColorPickerDialog.xaml",
+          "originalSha256": "116a22a9cd2844581ad002bda7d2f22f37038592788551f1ac205bee08623a80",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml",
+          "localSha256": "4be2b797be2745d2aa3aab923e65b0e654414a5fa2aedc0c58a18d52e7de0c36"
+        },
+        {
+          "originalType": "HikPcUI.ListView.AdvancedColorPickerDialog",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\AdvancedColorPickerDialog.xaml.cs",
+          "originalSha256": "7c631ba8831fd778abe58c2b2468370fd3df022f3e28f28ec2650204ea9200cc",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
+          "localSha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/PopupButton.xaml",
+          "sha256": "2fc1db187877d31022b56c545a657e9c7dbb36222d00ff93950fb750860afba7"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Controls/PopupButton.xaml.cs",
+          "sha256": "d9a56aa16ab502f764e4eb2ecc7edfdc1cb04d1e1b0aff6d176e2ec8484b3b1e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/Brush2ColorConverter.cs",
+          "sha256": "573de35b8c11c972a1caa8cc9021362c5cae0e59ae31e38d544ba211ce141163"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/NegateConverter.cs",
+          "sha256": "c1ade8015c966b4eea3bd619de8a621c29a26c4dceefa105c62eb4bd429ae4b9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Input/VM.PcUI/controls/commomdictionary.xaml",
+          "sha256": "60454e2f6b841e667c15ebfc4df5902959c9a60141e6f77cab77f5f75b4dad61"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
+          "sha256": "ec26255bb5112a91defd4b334ef239ddaf7e466bce847fea558bf6a3ee235dd8"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+          "sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Localization/en-us.xaml",
+          "sha256": "3e6897213458fa5f1df6dd8a535cd238e6a4ca171ed048a8640d17cf81e7ca89"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/BitmapContext.cs",
+          "sha256": "3dbe13586291b12eb545a37545f559783c27c3c2ddc82178e8b45a0f9e439011"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/BitmapFactory.cs",
+          "sha256": "1eaada5d68284b6986559c7176fb316e770416d1f817666135cc761a647ecfb8"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/NativeMethods.cs",
+          "sha256": "7ab245a4b8606e941b479b36fe137e3beee5a20f189e0fb0e993cfd4c9eb74ea"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/ReadWriteMode.cs",
+          "sha256": "d4f2498a9ccea7c14339f0eb4750e950347190a86ecf9deca94fe39e7be006d9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/WriteableBitmapContextExtensions.cs",
+          "sha256": "a2dde68913e17ba99dbb551398d6df8dcdfc5ca808b550c32deef4b7e764c137"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/WriteableBitmapExtensions.cs",
+          "sha256": "937b01f537e7b99955b2406dbd80884d0158f50dcf9ae6e70520c53b52a70863"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
+          "sha256": "fd04582cefd81b0031d0579abe3e90063ae8cec2e1a8071538496c34dc0b5f04"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VM.PcUI/resources/colorchart.png",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/resources/colorchart.png",
+          "sha256": "866ca8200dfc6ab593845fb81f0a1734e3c1ddb9178b475534144f5c6d4aa423",
+          "role": "原AdvancedColorPickerDialog更多页色谱；项目原Resource规则已包含"
+        }
+      ],
+      "themeKeys": [
+        "Col_Theme",
+        "Col_Theme_Light"
+      ],
+      "presenter": "src/Plugin.Wpf/Presenters/Display/NativeColorPresenter.cs",
+      "adapter": "src/Plugin.Wpf/Adapters/Fields/ColorBrushAdapter.cs",
+      "consumers": [
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs: RGBA declared record",
+        "src/Plugin.Wpf/Fields/DisplayObjectField.cs: nested palette ownership"
+      ],
+      "retired": [
+        "src/Plugin.Wpf/Fields/ColorField.cs",
+        "src/Plugin.Wpf/Controls/VmColorPicker.cs",
+        "Themes/Generic.xaml ColorField replacement template"
+      ],
+      "adaptation": "原件仅使用此前统一的命名空间/pack URI/本地语言依赖迁移；新Presenter不自绘可视树，Adapter只Color与SolidColorBrush转换；规范RGBA记录、写入拒绝回滚及事务归调用方。 原PopupButton的PopbuttonTemplate仍用原字典，改为先合并本地字典再解析ComboBox.Template，消除对厂商全局资源装载顺序的依赖；无自制模板。 原主题1资源在原Popup内容与Presenter内局部加载；只对ContentPresenter自动生成且无显式样式的文字解除宿主隐式样式，恢复原Label已有颜色/字体继承；开层和切页后处理，关闭卸载解除原内容选页监听；不设替代颜色/字体，不重绘模板。",
+      "lifecycle": "原色板临时Unloaded/不可见只关闭，最终Dispose解除具名监听、取消排队任务、清绑定与Child。字段重绘释放旧色板；SettingsView→FieldsView先关闭自有样式组合再释放统一字段；借入InputContent不双重释放，Runtime宿主自行释放它创建的输入字段。",
+      "status": "SOURCE_AND_RUNTIME_VERIFIED_PENDING_VISUAL_ACCEPTANCE",
+      "validation": {
+        "build": "生命周期UI001：0错误/6613警告174.95秒；全量Release001：0错误/6627警告106.82秒，串行。",
+        "runtime": "同源FieldEditing038十二组、WindowPresentation027十三组、DesignTime007十五组、RuntimeEditor031九组、FullChain088七组、Components175九组，实际EXE22工具准入；待证据生成器逐SHA核收。",
+        "visual": "已查看最终FieldEditing037默认/更多原生渲染，蓝色粗体标题恢复。真实VS/用户外观尚未确认，原Advanced初始化分支待VM实机核对，不代签。",
+        "remaining": "完整库及Blob显示/ROI生产消费未完成，实际VS/用户外观待反馈；原Advanced初始化分支待VM实机核对。"
+      },
+      "toolConsumerStatus": "公共RGBA字段/样式字段已消费此原件；BlobDisplay图形/文本完整生产编辑入口仍待C11/C13集中组装，不把定向库检查冒称Blob整页已接完。"
+    },
+    {
+      "id": "C02.vm-enumeration-g-image-source",
+      "assembly": "Apps.Style",
+      "assemblyMvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+      "assemblySha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63",
+      "selectionEvidence": "Apps.XmlUI/styles/paramusercontroldatatemplate.xaml:845–850 EnumerationG；ComboBox/ListViewComboBoxStyle；ImageSourceGroup选择链独立核证。",
+      "composition": [
+        "原ComboBox/ListViewComboBoxStyle",
+        "原RecScrollViewer与滚动条/三角PNG",
+        "正式OutputReference候选投影；不是字符串路径身份"
+      ],
+      "sourceFiles": [
+        {
+          "originalType": "ListViewComboBoxStyle及同原字典资源",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\comboboxstyle\\listviewcomboboxstyle.xaml",
+          "originalSha256": "e29b9d9fdb7fcf4f91ea3c7140a04a762b68ad3341d0dcaf84a5cb6769289a97",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+          "localSha256": "117e99a64f3dd86fa8dd4f6d64a7648a454f62e2c0ea30381e3a06986d9e7fc3"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+          "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
+          "sha256": "c6cdd4ba5a275e9ccf35aeddedaa1adfd9160a6ca252db1aee124ddf7474ac36"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+          "sha256": "a0c3f24d96a4eea6a000efe0b3ada87b3dc8c7e357d1f30b8e077cf9f88cfe87"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
+          "sha256": "be2c6c437df328fb1aa8efaf6361b9f851f218045c277d57c165aae019566fa0"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_normal.png",
+          "sha256": "397439a8e64d1f24566e479439b31447f508b567e7afe5e7a0d759d0d46b1209"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_click.png",
+          "sha256": "349d0d34e2e9bb85b13d6e15f3f1f18a47347769281c8c6174461d5d9f749a3b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_disable.png",
+          "sha256": "7dd16d3c9961bf3fdb88162369b7c02333c81d19a5676fec9240915d982cd7d1"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_hover.png",
+          "sha256": "8437a6551a359bac673d90c2ccd2a1840d69215522f8cab6136032976519525b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_tab_downarrow_normal.png",
+          "sha256": "767e0ff5b870108c17ba5f09c104435935653273ee4ce33f20ec682232597f48"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_click.png",
+          "sha256": "800e1ba59374c7679b8949e4466cd2ced1007563de6127c26fadb266a07733dd"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_disable.png",
+          "sha256": "e9a7a690f292ed8a142bc4d99031e664f99278bb39667d7bbb86af8365caf27f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/ic_清空图片_normal.png",
+          "sha256": "1fe8dee1866625893e33c52e8fb758c5338f6221b6cb2765e8e6fc9e1672e760"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Generic.xaml",
+          "sha256": "bae81c60c2e9c63f760455d26dcf7199e317f06a9b7844199e811e4cbdfa218c",
+          "role": "当前实际主题继承路径；原件主题隔离待集中处理"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+          "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7",
+          "role": "当前实际主题继承路径；原件主题隔离待集中处理"
+        }
+      ],
+      "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
+      "consumers": [
+        "DeclaredInputFieldsView的正式WorkflowImageInputId",
+        "RuntimeNodeConfigurationControl正式来源声明/私有草稿"
+      ],
+      "retired": [
+        "图像源专用入口原链按钮/清除按钮/模态来源窗口（其他订阅组合仍待迁）"
+      ],
+      "adaptation": "保原视觉与图标；候选来源保持正式引用身份，拒序列/非法图引用，刷新先完整准备再替换、不写草稿；错误归属分离；具名事件/渲染代次及最终Dispose解除旧回调。",
+      "lifecycle": "临时卸载只关实际下拉；重绘/Dispose先失效代次再解绑/关闭。宿主拥有输入字段并在重绑/关闭最终Dispose。",
+      "status": "RUNTIME_VERIFIED_THEME_ALIGNMENT_PENDING",
+      "validation": {
+        "build": "生命周期UI001：0错误/6613警告174.95秒；全量Release001：0错误/6627警告106.82秒，串行。",
+        "runtime": "同源FieldEditing038十二组、WindowPresentation027十三组、DesignTime007十五组、RuntimeEditor031九组、FullChain088七组、Components175九组，实际EXE22工具准入；待证据生成器逐SHA核收。",
+        "visual": "原三角实际渲染已核，真实VS全布局及用户外观未验收。",
+        "remaining": "新增来源异常恢复/错误隔离/旧回调与Dispose已同源通过；实际主题仍继承Generic/VmFieldStyles，Col_Theme与原主题1不同，需下一公共原主题批集中隔离并同态核收；真实VS/用户尚未签。"
+      },
+      "toolConsumerStatus": "已由真实Blob输入组合及运行宿主消费；不是完整订阅树/ROI输入或控件库整体完成。",
+      "selectionSources": [
+        {
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\scrollbarstyle\\recscrollbarstyle.xaml",
+          "originalSha256": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b",
+          "role": "SourceScrollBars原滚动条模板"
+        },
+        {
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+          "role": "EnumerationG:845–850选择原ListViewComboBoxStyle",
+          "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+        },
+        {
+          "originalPath": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/Group.xml",
+          "role": "ImageSourceGroup声明来源选择链",
+          "originalSha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+        }
+      ]
+    }
+  ]
+}

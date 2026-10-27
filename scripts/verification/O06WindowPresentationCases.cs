@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -29,6 +31,23 @@ internal static class S2DocumentEditingCases
  static void Require(bool value,string message){if(!value)throw new Exception(message);}
  static void Test(string name,Action run){try{run();passed++;Console.WriteLine("PASS "+name);}catch(Exception e){failed++;Console.WriteLine("FAIL "+name+": "+e);}}
  static void Pump()=>Dispatcher.CurrentDispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
+ sealed class ColorLifetimeDraft : IToolSettingsDraft
+ {
+  private Dictionary<string,object?> _values=new(){["visible"]=true,["rgba"]=PresentationDeclarations.Color(10,20,30,200)};
+  public int Writes {get;private set;}
+  public ToolSchema Schema {get;}=new(new Port[]{new("visible",DataType.Boolean),new("rgba",PresentationDeclarations.Rgba)},Array.Empty<Port>(),
+   new ToolPresentation(new[]{
+    new FieldPresentation("visible","Blob","图像显示",0,FieldEditorKind.Scalar){Layout=new("结果显示","图像显示",DialogGroup:"shape",DialogTitle:"Blob",DialogPrimary:true)},
+    new FieldPresentation("rgba","OK颜色","图像显示",1,FieldEditorKind.Record){Layout=new("结果显示","图像显示",DialogGroup:"shape",DialogTitle:"Blob")}}));
+  public object CaptureSettings()=>ReadFields();
+  public InputValues ReadFields()=>new(Schema.Inputs,_values);
+  public void ApplyFields(IReadOnlyDictionary<string,object?> changes)
+  {
+   var next=new Dictionary<string,object?>(_values);
+   foreach(var item in changes)next[item.Key]=item.Value;
+   _values=new InputValues(Schema.Inputs,next).CopyValues().ToDictionary(item=>item.Key,item=>item.Value);Writes++;
+  }
+ }
  sealed class ExportImage : Native.Dependencies.VMControls.RenderInterface.IImageData,Native.Dependencies.VMControls.RenderInterface.IRangeImageData
  {
   public int Width{get;init;} public int Height{get;init;} public string PixelFormat{get;init;}="Rgb24";
@@ -235,18 +254,48 @@ internal static class S2DocumentEditingCases
     {
      Require(Find<DeclaredFieldEditor>(surface).Contains(line),"样式字段仍为第二套临时副本");
      ((TextBox)line.InputElement!).Text="7";Require(width==7&&writes>0,"样式未更新调用方草稿");
-     var field=(ColorField)rgba.InputElement!;field.BeginEdit();Pump();Require(display.IsStyleEditorOpen,"嵌套色板打开关闭了样式父层");
-     var picker=(VmColorPicker)field.Template.FindName("PART_ColorPicker",field);picker.SelectedColor=Color.FromArgb(123,32,64,128);
-     Require(color.Get<long>("a")==123&&color.Get<long>("b")==128,"颜色没有进入窗口草稿或丢失RGBA");field.ApplyEdit();
+     var field=(NativeColorPresenter)rgba.InputElement!;field.Palette.IsDropDownOpen=true;Pump();Require(display.IsStyleEditorOpen,"嵌套色板打开关闭了样式父层");
+     var picker=field.NativeView;
+     SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute(new SolidColorBrush(Color.FromArgb(123,32,64,128)),picker);
+     Require(color.Get<long>("a")==123&&color.Get<long>("b")==128,"颜色没有进入窗口草稿或丢失RGBA");field.ClosePalette();
      Require(!Find<Button>(surface).Any(button=>Equals(button.Content,"确定")||Equals(button.Content,"取消")),"样式层仍保留独立保存按钮");
-     field.BeginEdit();Pump();SendKey(picker,Key.Escape,true);
-     Require(display.IsStyleEditorOpen&&!((Popup)field.Template.FindName("PART_ColorPickerPopup",field)).IsOpen,"第一次Escape没有只关闭嵌套色板");
-     SendKey((UIElement)field.Template.FindName("PART_SelectorBorder",field),Key.Escape);
+     field.Palette.IsDropDownOpen=true;Pump();SendKey(field.Palette,Key.Escape);
+     Require(display.IsStyleEditorOpen&&!field.Palette.IsDropDownOpen,"第一次Escape没有只关闭嵌套色板");
+     SendKey(field.Palette,Key.Escape);
      Require(!display.IsStyleEditorOpen,"第二次Escape没有关闭样式父层");
     });
     Require(width==7&&color.Get<long>("a")==123&&!display.IsStyleEditorOpen,"收起样式层丢失草稿或弹层残留");
     StylePopup(display,_=>{reject=true;((TextBox)line.InputElement!).Text="9";Require(line.HasInvalidText&&width==7,"草稿写入拒绝未保留错误和值");reject=false;((TextBox)line.InputElement!).Text="7";Require(!line.HasInvalidText,"修正后错误未清除");((TextBox)line.InputElement!).Text="bad";Require(line.HasInvalidText&&width==7,"非法输入写入草稿");((TextBox)line.InputElement!).Text="7";});
     display.OpenStyleEditor();Pump();Show(new TextBlock{Text="卸载弹层宿主"});Require(!display.IsStyleEditorOpen,"宿主卸载后样式弹层仍打开");
+   });
+   Test("公共设置视图重绑释放样式父层和原色板",()=>
+   {
+    var oldDraft=new ColorLifetimeDraft();using var settings=new DeclaredSettingsView(oldDraft);Show(settings);
+    var oldFields=(DeclaredFieldsView)settings.Content;
+    var oldField=oldFields.Fields.Single(field=>field.FieldId=="rgba");
+    var display=Find<DisplayObjectField>(settings).Single();display.OpenStyleEditor();Pump();
+    var oldColor=(NativeColorPresenter)oldField.InputElement!;oldColor.Palette.IsDropDownOpen=true;Pump();
+    Require(display.IsStyleEditorOpen&&oldColor.Palette.IsDropDownOpen,"未实际打开父样式层及原色板");
+    var nextDraft=new ColorLifetimeDraft();settings.Bind(nextDraft);Pump();
+    Require(!display.IsStyleEditorOpen&&!oldColor.Palette.IsDropDownOpen,"重绑未关闭父子浮层");
+    oldColor.SelectedColor=Colors.Red;
+    Require(!oldField.TrySetConstant(PresentationDeclarations.Color(255,0,0)),"已释放字段仍接纳编辑");
+    Require(oldDraft.Writes==0&&nextDraft.Writes==0&&((DeclaredFieldsView)settings.Content).Fields.Count==2,"旧回调污染草稿或新字段树不完整");
+    settings.Dispose();settings.Dispose();oldColor.Dispose();Require(oldColor.Child is null,"色板释放没有拆实际原视图");
+   });
+   Test("公共字段重绘释放旧原色板且临时卸载不失效",()=>
+   {
+    var draft=new ColorLifetimeDraft();using var settings=new DeclaredSettingsView(draft);Show(settings);
+    var field=((DeclaredFieldsView)settings.Content).Fields.Single(item=>item.FieldId=="rgba");
+    var display=Find<DisplayObjectField>(settings).Single();display.OpenStyleEditor();Pump();
+    var oldColor=(NativeColorPresenter)field.InputElement!;oldColor.Palette.IsDropDownOpen=true;Pump();
+    Require(field.TrySetConstant(PresentationDeclarations.Color(32,64,128,123)),"字段重绘提案未接纳");Pump();
+    var current=(NativeColorPresenter)field.InputElement!;
+    Require(!ReferenceEquals(oldColor,current)&&!oldColor.Palette.IsDropDownOpen&&oldColor.Child is null,"Render未释放被替换色板");
+    var writes=draft.Writes;oldColor.SelectedColor=Colors.Red;Pump();
+    Require(draft.Writes==writes&&current.SelectedColor==Color.FromArgb(123,32,64,128),"旧色板仍影响新字段或草稿");
+    Show(new TextBlock{Text="暂时卸载"});Show(settings);display.OpenStyleEditor();Pump();current.Palette.IsDropDownOpen=true;Pump();
+    Require(current.Palette.IsDropDownOpen,"临时卸载错误地永久释放当前色板");
    });
    Test("真实数值模板输入同步及Enter失焦",()=>
    {

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
@@ -25,12 +26,29 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            var nativeColor=new NativeColorPresenter {SelectedColor=Color.FromArgb(200,10,20,30)};
+            Render(nativeColor,"native-color-independent.png",394,38);
+            Check(nativeColor.NativeView.CurrentColor.Color==Color.FromArgb(200,10,20,30)
+                &&nativeColor.NativeView.GetType().FullName=="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView"
+                &&Application.Current is null,"原色板及RGB真实视图可无Application/宿主独立设计渲染");
             using var first=new BlobParameterEditor();using var second=new BlobParameterEditor();
             var presenter=(DeclaredSettingsView)first.Content;
             var fields=(DeclaredFieldsView)presenter.Content;
+            // The user's designer may select another page. Materialize the input page before
+            // inspecting its real visual template; preserve the saved XAML page index.
+            var inputTabs=(TabControl)fields.Content;
+            inputTabs.SelectedItem=inputTabs.Items.Cast<TabItem>().Single(tab=>
+                tab.Content is ScrollViewer {Content:StackPanel panel}
+                &&panel.Children.OfType<DeclaredInputFieldsView>().Any(view=>
+                    view.Fields.Any(field=>field.FieldId==BlobTool.ImageInput)));
             Render(first,"parameters-initial.png",600,680);
             Check(fields.Fields.Count==54&&replacementInputCount(fields)==4,
                 "独立无参真实参数视图包含54设置及4输入，未启动宿主");
+            var inputFields=InputFields(fields);
+            var image=inputFields.Single(field=>field.FieldId==BlobTool.ImageInput);
+            Check(image.InputElement is ComboBox combo&&combo.Resources.MergedDictionaries.Any(dictionary=>dictionary.Source?.OriginalString.EndsWith("SourceComboBoxes.xaml")==true)
+                &&Descendants<Image>(image).Any(icon=>icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0),
+                "真实设计视图输入源使用VM EnumerationG下拉及原图标");
             var defaults=new BlobSettings();
             Check(first.TryCapture(out var captured,out _,out _)&&((BlobSettings)captured).Threshold==defaults.Threshold,
                 "设计草稿默认值来自真实XML");
@@ -101,11 +119,13 @@ internal static class S2DocumentEditingCases
         return document.ToString();
     }
     private static int replacementInputCount(DeclaredFieldsView fields)
+        =>InputFields(fields).Count();
+    private static IEnumerable<DeclaredFieldEditor> InputFields(DeclaredFieldsView fields)
     {
         var tabs=(TabControl)fields.Content;
         return tabs.Items.Cast<TabItem>().Select(tab=>(ScrollViewer)tab.Content)
             .Select(scroll=>(StackPanel)scroll.Content).SelectMany(panel=>panel.Children.OfType<DeclaredInputFieldsView>())
-            .Sum(input=>input.Fields.Count);
+            .SelectMany(input=>input.Fields);
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T:DependencyObject
     {

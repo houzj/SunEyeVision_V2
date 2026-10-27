@@ -304,3 +304,56 @@
 - 正式清单development-3db00533c7014cdaa103690ad576996a，760项；Core/清单编译身份cbb8f1ef加列明12份源码，174加载记录SHA核对。证据docs/collaboration/evidence/O06_BLOB_DESIGN_TIME_CHECKPOINT_20261027.json。原O06目标JSON/HTML已同步，698锚点且幂等；完整s4GoalPlan/目标树未变。
 - 实际VS当前状态为三个页签可见，SelectedPageIndex实际切页、结果页及布局刷新仍待用户复验。初次无效标记失败截图保留。完整NG/图形文本、ROI/位置/全局变量/缺省输入及全部VM原件交互等原目标余项继续未完，不报告M1/M2/M3或整体完成。
 - 下一步按用户真实设计器反馈修复同一视图；通过后继续原目标完整显示与输入编辑生产链。单工作树单产品写者，无其他分支代码同步，无新增工程/预览程序，无远程推送。
+
+## 2026-10-27 用户调整优先级：先确定并完成公共控件库
+
+- 用户认为Blob基础能力和控件库设计/实施存在问题，要求“UI需要的控件库先做好”，随后明确先确定控件库所在层、管理方式和文件结构，并询问是否需要逆向证据。当前先做整库职责与所需控件/组合清单设计，不继续扩展Blob产品功能，不零散移植。
+- 本轮输入源核对已确认：Blob AlgorithmTab→ImageSourceGroup→EnumerationG→普通ComboBox加原ListViewComboBoxStyle，候选/选中/写入分别GetFrontParamItemsOperation(IMAGE)/GetSelectedCombinationOperation/SetCombinationSourceOperation(InputImage)。原Apps.Style MVID cea1d44f-00ec-4cd0-922d-f70ad89b818c、SHA8980A996...；Apps.XmlUI MVID a00f8b40-7a51-4c6d-8aeb-cad134724f1f、SHA639D0FB9...。两个三角PNG与原件逐字SHA一致。静态证据不代VM实际交互验收。
+- 工作区有未提交输入源修正：公共DeclaredFieldEditor.ImageSource、DeclaredInputFieldsView和RuntimeNodeConfigurationControl及对应验证/原方案。尚未交付，不报告成功；UI构建blob-image-source-ui-001失败8项，公共Wpf诊断001失败17项，均在GenerateTemporaryTargetAssembly的迁入XAML连接接口实现阶段，未做全量Release/新产物验收。不能用上一0de8f74e检查点成绩套当前修改。下一步在已批准控件库整体设计下先修清洁构建，不通过随意移除控件或保留旧实现绕过。
+- 建议库继续归现有src/Plugin.Wpf公共WPF层；Native原件/正式主题资源、非视觉Adapters、复用原件的Presenters、独立Design数据各有职责。只依赖中立Contracts及确需的平台库，不依赖Blob/Workflow/UI宿主/旧SDK，不新增产品层或第二套控件库；CommonControl现为脚本编辑器等另一职责，不借名称混放VM迁入控件。
+- 后续按控件及完整组合管理原件身份/依赖闭包/现行适配/真实消费者/独立设计时/运行时/用户视觉状态，先把实际需要的控件清单与组合规则统一进原O06，再集中实施验收，Blob仅作消费者，不以导入文件数或局部绿测称完成。
+- 用户已确认“看到了，就是改page索引就能切换”：VS页签可见及索引切换有真实反馈；结果页、全布局刷新和完整VM外观未确认。保留初次设计器失败截图，不代签整体通过。
+
+## 2026-10-27 本批范围定为Blob先行公共控件与单工具原型
+
+- 基线0de8f74e754b415425a6901e44d840e8d4e100ac，main，Codex单写者。用户进一步明确：本次先做好Blob需要的控件，满足优化条件后立即继续Blob，以一个工具验证完整链路；不用先做全部VM控件。后续全部工具UI通过公共控件库组织，不再使用本方SDK层可视控件。已写入AGENTS长期规则。
+- 原S4_IMPLEMENTATION_PLAN_20261026.json新增blobControlPrototypePlan，统一层次/文件树/管理要求、17项完整组合、现行58输入/设置字段加5图形/1文本/8表列共72条覆盖，以及VM原AlgorithmTab全部96条非注释直接声明对照。全部数量仅说明本次清单，不代表控件完成或VM算法等价。Group引用仍须按Group.xml展开；额外原生算法/输出能力未映射明确标缺项，不靠空UI冒充。
+- 复用原安装AlgorithmTab/Group/Display、反编译模板与数值源码、已迁入Combo/颜色样式及用户截图，记录11组可定位证据和文件SHA；列9项集中补证缺口。静态证据、用户截图、VM实机和本方验收分开；没有执行新的VM或产品运行测试。
+- SDK退出范围包含数值/范围/开关/下拉/颜色/ROI/结果编辑/图像及现有DefaultDebugWindow视觉消费；当前RuntimeNodeConfigurationControl仍有SDK窗口/通知依赖，明确列消费者合同缺口，不能称已退出。非视觉绑定/事务/图像所有权正确部分按职责提取，不删执行能力、不搬旧控件改名。其他工具后续同步迁移后删除无消费者代码，不留兼容回退。
+- P0设计→P1集中实施Blob所需库→L1源件闭包/L2独立设计交互/L3构建与同态验收→立即P2 Blob组装→P3真实工具箱/输入ROI位姿/执行/图像图形文本表格/持久化/退出整链；不等待全VM库或其他工具。完整S4目标与Blob两工程树保留。
+- 本次只改方案JSON、原O06 HTML生成器/输出、规则和协作记录；不继续修改Blob、公共库或UI产品代码。之前未提交输入源候选与失败8/17项原样保留，尚未修复或交付；正式旧产物成绩不套当前。当前原方案已供整体审核，确定后才集中实施本批。
+
+### 本轮四路并行核证已汇总（用户明确授权）
+
+- 用户再次提供REA原始VM控件库逆向目标页，并明确要求最快速度、设计多路并行。已启动并核收三个只读子智能体：输入/订阅、数值/开关、ROI/显示；主线核窗口/SDK退出与统一方案。全部只读产品，只有主线维护文档；不是多写者开发。旧优先级已由最新Blob先行范围取代。
+- 已读用户最新原页及目标JSON/Blob专项JSON，源索引生成于2026-10-27；原始证据及具体新增原件在原方案E12—E18记录。主要原件资料已有，不将.pending或当前错误组装归因为未逆向。
+- 核实真实家族：Integer/Float/between与色板来自HikPcUI.ListView、VM.PcUI；ButtonSelecter_sub的PopupButton来自Apps.PcUI.Controls，不能用同名HikPcUI控件替代。ROI四形状原模板已齐。当前RangeField仍自制RangeSlider/Popup；NativeNumberField重写LostFocus/动态模式/边界，ColorField/VmColorPicker及SDK窗口仍有视觉退出工作。
+- 原Result List九列，本方八列不同；缺Angle/LongAxis/ShortAxis独立列应核真实结果成员承接，不伪造。原图形弹层尺寸/条件字段已有确证，不再列缺布局。Enter失焦有用户VM反馈但原NumericControl叶未证明宿主按键链，需一次最小实机组合场景核时序；静态/运行分开记录。
+- 原方案包含四路范围/协议/已核结果、实际SDK消费者合同缺口、逐项覆盖、缺证和准入矩阵；HTML生成校验幂等与唯一锚点。本轮无新构建、无VM运行、无产品改动、无提交/推送，不冒用历史通过状态。下一步整体确定后集中实施Blob所需公共库，满足准入即继续Blob单工具原型。
+
+## 2026-10-27 新目标：严格先控件库、后Blob重组（当前）
+
+- 基线0de8f74e754b415425a6901e44d840e8d4e100ac，main，Codex唯一产品写者。用户已关闭旧目标；核对goal为null后已创建新两阶段active目标，未缩减原S4/G2要求。第一阶段完成Blob所需公共原控件及全部组合，L1—L3通过才进入第二阶段Blob Runtime/Wpf重组及正式整链；不等待全VM库/历史31类/194项。
+- 四路含主线。三个只读子智能体逐控件完成即补位：已核输入Combo/Apps.PcUI.PopupButton/SubTreeView/DeleteTextBox/订阅组合、原整数浮点单范围/NumericControl/Boolean/Enumeration、ROI四参数栈/原视口、样式及窗口组合。主线核收写入原方案，子智能体未改代码或构建，不构成同目录多写者。
+- 用户最终VM UI预览按原SHA归档references/vm-blob-ui-target-20261027.html。屏蔽区与检测ROI同样支持多形状；选中图像ROI显示对应原参数栈并展开收起，图形与数值同一Guid/帧双向交互，均保留为必须交付要求。
+- 本批启用VM.PcUI原ColorPickerControlView/FirstItem及已有Advanced，新增非视觉ColorBrushAdapter和NativeColorPresenter，删除自制ColorField/VmColorPicker及替代模板；原Popup资源先加载再解析，局部恢复原Label继承，未重画色板。图像源候选使用EnumerationG原Combo模板及完整正式引用。Blob完整图形/文本生产入口未完成，不因RGBA字段已消费称已接完整显示。
+- 真实构建：此前图像源临时WPF生成失败保留；完整Rebuild刷新生成缓存后正常，未删除连接接口/造InitializeComponent桩。最终UI004为0错误/3943警告99.76秒，全量Release003为0错误/6627警告93.68秒；此前候选不得套用。日志blob-native-palette前缀。
+- 当前正式候选development-cbb0eb9e8e5a40ae88f1c85371077736：FieldEditing037九组、DesignTime006十五组、WindowPresentation025十一组、RuntimeEditor030九组、FullChain087七组、Components174九组通过；真实Release EXE探针22工具准入。17项源码增量、760发布项和174加载记录SHA核对，证据O06_BLOB_NATIVE_PALETTE_CHECKPOINT_20261027.json。已查看最终默认/更多原色板图片，不能代VS/人工验收。
+- DesignTime005和RuntimeEditor029失败是检查默认基本页的假设与用户保存SelectedPageIndex=1冲突；测试显式切实际输入页后通过，保留用户XAML索引与失败记录。其余局部SHA拒绝/资源/标题定位失败均保留，不绕过准入清单。
+- 尚有明确P0待修：来源刷新先清列表后查询，提供器失败会破坏展示且成功刷新不清旧错误；同字段Render旧Combo回调缺失效代次。原色板最终递归Dispose所有者及排队回调失效尚未补齐。已记录候选缺口，不称本批完整交付或第一阶段完成。Advanced初始化灰色分支为原件固有问题，待原VM实机核对，不擅改高级算法。
+- 当前自动补位：输入路准备该图像源两缺陷最小整体修法/回归，数值路核原色板Dispose真实所有者，ROI路核RoiSelectControl实际激活闭包；均只读。主线下一步成片修P0后串行构建回归，再依依赖推进数值/订阅/ROI/显示/窗口，暂不继续Blob业务重组。
+- 用户已实际确认VS三页可见及索引切页；本批新色板、所有页完整布局/结果页/ROI及最终VM外观未人工通过。原失败反馈保留，不代签。无新提交、无推送，当前源码和方案均未提交；后续完整成果再归并中文检查点。
+
+### 2026-10-27 原色板与图像源：异常恢复及真实释放链检查点
+
+- 基线0de8f74e754b415425a6901e44d840e8d4e100ac/main，Codex单写者，三路仅只读。上一目标轮有实际进展：创建新两阶段目标、原件接入及候选证据；本轮继续第一阶段，未进入Blob业务重组。
+- 已修来源读取失败先清Items导致显示丢失、刷新成功仍残留错误、同字段Render旧Combo能写现会话三项。候选先完整准备再替换，编辑与来源错误分离，具名事件/渲染代次/最终Dispose失效；普通Unloaded只关闭下拉。正式OutputReference身份、宿主生产图校验及私有草稿链不变。
+- 已实现NativeColorPresenter最终Dispose、具名监听、排队Dispatcher任务取消及代次检查，拒绝恢复从最近已接纳RGBA读取。SettingsView摘下借入InputContent后Dispose自有FieldsView；FieldsView先收样式父子层，再释放统一字段；FieldEditor重绘和最终Dispose释放原色板与子字段。DisplayObjectField不重复释放借入字段，Runtime宿主释放自己创建的输入字段，临时Tab卸载不永久Dispose。
+- 最终串行构建blob-native-lifecycle-ui-001：0错误/6613警告174.95秒；release-001：0错误/6627警告106.82秒。同源FieldEditing038十二组、WindowPresentation027十三组、DesignTime007十五组、RuntimeEditor031九组、FullChain088七组、Components175九组全部通过。实际Release EXE工具箱22工具准入。没有以旧成绩替新产物。
+- 正式清单development-3ca5b47c376441599acf1c1569e44d42，SHA 2df4a01ec722cbf821e388e25ecf81bd6a3411d2dec2efdc91a88eb54faa29c3；编译身份仍旧基线加19份列明源码增量，760发布项/174加载记录逐SHA核对。证据O06_BLOB_NATIVE_LIFECYCLE_CHECKPOINT_20261027.json；此前色板候选证据保历史。
+- WindowPresentation026测试夹具子字段缺DialogTitle，被正式元数据合同拒绝；补齐夹具后027通过，未弱化产品校验。失败日志保留。当前原方案JSON/HTML/生成器同步本批事实、残留及下一集中批，700唯一锚点并幂等。
+- Catalog已含原色板和真实图像源两个实际组合，登记原程序集/MVID/源/图标/滚动源及本地依赖SHA。C02仍继承Generic/VmFieldStyles的旧主题色，已明确列下一公共原主题批处理，不声称全视觉对齐。原Advanced初始化分支仍待VM实机，不擅改原高级算法。
+- 新核证：VM结果表是9特征列加Number共10列，本方缺Angle/LongAxis/ShortAxis正式输出；原TextDisplayGroup七字段且显示XY可用自身结果。ROI四栈、原视口和两缺失转换器、LeftRight/ROIStack及订阅最小闭包均已静态核齐，不冒称已接入生产。
+- 下一批按已核完整设计集中替换数值/范围/订阅：统一非视觉字段状态，真实原SliderArrange/Float单值或between；同步实际消费者与验证，删除NativeNumberField改写、自制RangeField及隐藏双UI路径；启用正确Apps.PcUI Popup/树/文本并统一原主题边界。只做Blob所需库，第二阶段保持未准入。
+- 已请用户用Release配置人工核原ColorPickerFirstItem.xaml设计器及Blob三页索引切换，尚未得到本批反馈；此前三页可见/索引切换真实确认继续保留。未代签VS/完整布局/VM同态。用户手动保存的BlobParameterEditor.xaml SelectedPageIndex=1保留，不纳入本轮产品修改提交。
+- 本批准备固定有意义的中文本地检查点；不推远端，不改写产物编译身份。完整库/ROI位姿/图形文本/SDK视觉退出等未完，目标继续active。

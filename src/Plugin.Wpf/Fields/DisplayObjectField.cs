@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -7,7 +8,7 @@ using System.Windows.Media;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Visibility inline, declared style fields in an anchored popup on the caller's draft.</summary>
-public sealed class DisplayObjectField : Grid
+public sealed class DisplayObjectField : Grid,IDisposable
 {
     private readonly IReadOnlyList<(DeclaredFieldEditor Editor, string Label)> _style;
     private readonly Button _edit;
@@ -15,6 +16,7 @@ public sealed class DisplayObjectField : Grid
     private readonly Border _surface;
     private Window? _owner;
     private bool _listening;
+    private bool _disposed;
 
     public bool IsStyleEditorOpen => _popup.IsOpen;
     public FrameworkElement StyleEditorContent => _surface;
@@ -69,25 +71,31 @@ public sealed class DisplayObjectField : Grid
             // Child popup placement targets form the same ownership chain.
             StaysOpen = true, Child = _surface
         };
-        _edit.Click += (_, _) => { if (_popup.IsOpen) CloseStyleEditor(); else OpenStyleEditor(); };
+        _edit.Click += OnEditClick;
         _popup.Opened += OnOpened;
         _popup.Closed += OnClosed;
-        Unloaded += (_, _) => CloseStyleEditor();
-        IsVisibleChanged += (_, _) => { if (!IsVisible) CloseStyleEditor(); };
+        Unloaded += OnUnloaded;
+        IsVisibleChanged += OnVisibilityChanged;
     }
 
-    public void OpenStyleEditor() { if (IsLoaded && IsVisible) _popup.IsOpen = true; }
+    public void OpenStyleEditor() { if (!_disposed && IsLoaded && IsVisible) _popup.IsOpen = true; }
+    private void OnEditClick(object sender,RoutedEventArgs args)
+    {if(_disposed)return;if(_popup.IsOpen)CloseStyleEditor();else OpenStyleEditor();}
+    private void OnUnloaded(object sender,RoutedEventArgs args)=>CloseStyleEditor();
+    private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
+    {if(!IsVisible)CloseStyleEditor();}
 
     public void CloseStyleEditor()
     {
         foreach (var item in _style)
-            if (item.Editor.InputElement is ColorField color) color.CancelEdit();
+            if (item.Editor.InputElement is NativeColorPresenter color) color.ClosePalette();
         _popup.IsOpen = false;
         StopListening();
     }
 
     private void OnOpened(object? sender, EventArgs args)
     {
+        if (_disposed){CloseStyleEditor();return;}
         if (_listening) return;
         _listening = true;
         InputManager.Current.PreProcessInput += OnInput;
@@ -115,6 +123,7 @@ public sealed class DisplayObjectField : Grid
 
     private void OnInput(object sender, PreProcessInputEventArgs args)
     {
+        if(_disposed)return;
         if (args.StagingItem.Input is not MouseButtonEventArgs { ButtonState: MouseButtonState.Pressed } mouse) return;
         if (!OwnsInput(Mouse.DirectlyOver as DependencyObject ?? mouse.OriginalSource as DependencyObject)) CloseStyleEditor();
     }
@@ -133,10 +142,20 @@ public sealed class DisplayObjectField : Grid
 
     private void OnStyleKeyDown(object sender, KeyEventArgs args)
     {
+        if(_disposed)return;
         // Inner controls handle their own Escape first; unhandled Escape closes this level only.
         if (args.Key != Key.Escape) return;
         CloseStyleEditor();
         _edit.Focus();
         args.Handled = true;
+    }
+
+    public void Dispose()
+    {
+        if(_disposed)return;_disposed=true;
+        CloseStyleEditor();
+        _edit.Click-=OnEditClick;Unloaded-=OnUnloaded;IsVisibleChanged-=OnVisibilityChanged;
+        _surface.KeyDown-=OnStyleKeyDown;_popup.Opened-=OnOpened;_popup.Closed-=OnClosed;
+        _popup.Child=null;Children.Clear();
     }
 }

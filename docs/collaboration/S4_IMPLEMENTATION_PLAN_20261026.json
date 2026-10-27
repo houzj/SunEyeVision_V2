@@ -2,8 +2,8 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27 设计时真实视图、样例、正式资源与根XAML组装已实现；已暴露原Tab选中索引，未新增页签。独立13项和相称运行回归通过；用户已看见三页签，选页属性实际复验与完整外观待反馈。Blob两工程及其他目标余项继续未完。",
-  "summaryStatus": "两工程已落实，设计时基础代码/独立检查及运行回归通过；实际VS仅确认三个页签可见，选页和完整人工验收待定，G2/M1/M2/M3未完成。",
+  "current": "2026-10-27 第一阶段执行中。已完成原色板/图像源候选及本批来源错误恢复、重绘失效、递归释放修复。最终UI生命周期001和全量Release001均0错误；正式同源六轨检查及实际EXE22工具准入通过，19项源码增量/760发布项/174加载记录SHA核对。原主题隔离、完整数值订阅/ROI/显示/窗口组合及真实VS/用户验收仍未完成，第二阶段尚未准入。",
+  "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
       "Blob两工程及旧SDK实现退出",
@@ -325,8 +325,8 @@
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
   "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "替换WorkflowNodeBase.Parameters的SDK约束、AlgorithmNode的SDK Tool/参数执行入口，以及SolutionSession/NodeConfigurationEditHost的SDK参数多态持久化；编辑器直接编辑Runtime设置，删除根SDK工程及剩余参数/资源桥接，不新增Blob转换模型。",
-  "estimate": "当前为ROI分层实施检查点；下一实际进度/阻塞负责人和检查点时间由根主动报告，不把后台或窗口局部通过当完整ROI交付。",
+  "next": "按已冻结的依赖图集中替换数值单/双端与订阅组合：提取同一非视觉字段状态，一份原SliderArrange/Float构成单值或between，不保隐藏双UI/NativeNumberField改写/自制RangeField。同步启用正确Apps.PcUI.PopupButton/树/文本闭包，隔离公共原主题。完成Blob所需库全部L1—L3后进入Blob重组，当前不改Blob业务。",
+  "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
     "build": {
@@ -991,7 +991,7 @@
       "vmChain": "Blob XML ImageSourceGroup → Group.xml EnumerationG(ImageSource) → GetFrontParamItemsOperation(IMAGE)/GetSelectedCombinationOperation(InputImage) → EnumerationG DataTemplate → ListViewComboBoxStyle；选择触发SetCombinationSourceOperation(InputImage)。",
       "localRestoration": "VisionUi SourceControlResources → SourceControlStyles.xaml → SourceComboBoxes.xaml（ListViewComboBoxStyle/ComboxStyleBtn）及SourceAssets图标；存在源文件不等于本轮已运行核收。",
       "distinction": "NativeCompoundSourceSelector对应ButtonSelecter_sub的订阅树，不能替代EnumerationG输入源下拉。",
-      "engineering": "用户最新范围：整套VM控件库有哪些就移植全部，不限Blob当前可见控件或原31类；样式/模板/图标优先直接移植原资源及已核本地还原，不再近似自画。保留原目录/版本/依赖与来源，仅作pack URI、现行中立合同和必要两态绑定适配，不依赖逆向工程DLL；正式去重控件数以inventory为准，不用cs文件数冒充。 已有VisionUi SourceControlStyles/SourceComboBoxes/SourceAssets等具体资源链保留；来源候选/typed执行/草稿依旧归现行宿主，原资源移植不恢复字符串解析或调度耦合。",
+      "engineering": "当前范围以blobControlPrototypePlan为准：优先复用已有原控件/资源，先迁Blob实际所需完整组合与闭包；其他工具后续推广。不再按历史“整库全部迁完”的表述安排本批。来源候选/规范引用/执行/草稿归现行中立合同及宿主，不复制VM业务服务，不用SDK可视控件作回退。",
       "sources": [
         {
           "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
@@ -4873,7 +4873,7 @@
         "固定正式候选及证据，解决同范围问题后完成交付。"
       ]
     ],
-    "executionOrder": "以实际可运行链推进：公共新合同与Blob结构/XML→Runtime及宿主完整链→全部所需VM控件与交互→正式Release/关联回归/真实验收；每个可运行检查点可交付试用。",
+    "executionOrder": "新目标分两阶段，先库后Blob。第一阶段完成Blob实际所需C01—C17公共原控件/组合及递归闭包，L1/L2/L3全部具备证据后准入；第二阶段继续既定Runtime必需/Wpf可选两工程树及完整运行/输入ROI位姿/显示/持久化/退出链。旧目标已由用户关闭，不沿用其运行状态；其有效成果与最终要求仍保留。",
     "constraints": "单工作树单产品写者；不恢复旧管理角色或新增副本；不为旧项目/SDK/旧格式/旧测试保留兼容；HALCON沿用加密狗；已知问题、未知VM能力、自动与人工成绩分列；不以检查点代目标完成。",
     "deliveryStatus": "新目标保留；当前XML基础增量已构建回归，不再称未编译。混合控件、旧SDK消费与最终结构未完成，VS设计时/用户新候选验收无证据。",
     "approvedAt": "2026-10-27",
@@ -4916,8 +4916,8 @@
   },
   "vmCommonControls": {
     "decision": "公共VM控件只放现有Plugin.Wpf工程，不新增控件中间工程；Blob.Wpf只组装公共原VM控件和绑定自身字段。所有Blob可见控件/模板/图标/交互组合均以原件迁移为准，旧本方控件不作最终替代。",
-    "scope": "当前迁移范围为Blob实际所需控件及完整依赖闭包；194项和7目录/双版本资料用于查源，原31仅历史功能核对。本轮不以整套VM库全部迁完为完成条件。",
-    "tree": "src/Plugin.Wpf/\n├─ SunEyeVision.Plugin.Wpf.csproj\n├─ Controls/Native/\n│  ├─ Common/           # 原开关、基础按钮、窗口相关控件\n│  ├─ Input/            # 原输入源、下拉、订阅选择相关控件\n│  ├─ Numeric/          # 原NumericControl/SliderArrange/Float及between模式\n│  ├─ Display/          # 原图像视图、ROI及图形相关控件\n│  ├─ Composition/      # 原参数页/样式弹层/颜色等组合控件\n│  └─ Dependencies/     # 上述原件实际依赖的有限源码\n├─ Themes/\n│  ├─ Native/           # 配对的原XAML模板/样式/资源字典\n│  └─ Assets/           # 配对的原图标/PNG/游标等资源\n├─ Adapters/            # 新职责：仅字段/来源/资源快照/生命周期绑定，无自绘界面\n└─ Presenters/          # 新职责：按声明选原VM模板并组装页面，不复制Blob业务模型",
+    "scope": "本批仅Blob所需控件、完整组合及递归依赖；库准入后立即继续Blob单工具链路原型。其他工具后续同样由公共库组织，SDK不再提供工具可视控件；全VM清单和31类仅查源/历史追踪，不是本批前置。",
+    "tree": "src/Plugin.Wpf/\n├─ SunEyeVision.Plugin.Wpf.csproj\n├─ NativeItems.props                 # 目标：Blob闭包明确编译清单，整合现NativeResources.props\n├─ Controls/Native/{Common,Input,Numeric,Display,Composition,Dependencies}/\n├─ Themes/Native/                    # 与原控件配对的XAML、样式和资源字典\n├─ Themes/Assets/Native/             # 原图标/PNG/游标；保留有效pack URI\n├─ Adapters/{Fields,References,Lifecycle}/  # 非视觉值/引用/验证/释放适配\n├─ Presenters/\n│  ├─ Inputs/                       # 图像源/ROI/位姿不同入口\n│  ├─ Parameters/                   # 单值/范围/订阅/开关/枚举完整组合\n│  ├─ Regions/                      # 原ROI选择与形状/图像联动组合\n│  ├─ Display/                      # 图形行/样式面板/色板/文本\n│  ├─ Results/                      # 实际结果表与空/失败状态\n│  └─ Windows/                      # 原窗口/三页/底栏；不执行调度\n├─ Design/                          # 独立示例走同一真实组装链\n└─ Catalog/controls.json             # 实施时建立：本批仅登记Blob消费闭包\n\ntools/SunEyeVision.BlobAnalysis/\n├─ Runtime/                         # 既定设置/输入/输出/算法及两份XML\n└─ Wpf/                             # 声明Blob字段和组装公共库；无专属基础控件副本",
     "layers": [
       [
         "Plugin.Contracts",
@@ -4946,7 +4946,8 @@
       "字段和工具专属参数留Blob.Runtime/Blob.Wpf；公共控件不得包含BlobSettings、工作流节点或HALCON业务。",
       "每项记录原程序集/MVID/类型、源码及资源SHA、目标控件/模板/图标、宿主适配、Blob消费位置和实际验证。",
       "分别核收源码/资源闭包、编译、真实消费交互、VM同状态视觉及人工反馈；源码导入或仅使用VM风格不算控件完成迁移。",
-      "查当前归档VM控件库目标与实际原件优先；缺少控件/模板/资源/状态证据时继续VM逆向，禁止用本方近似控件补空。"
+      "查当前归档VM控件库目标与实际原件优先；缺少控件/模板/资源/状态证据时继续VM逆向，禁止用本方近似控件补空。",
+      "后续全部工具UI统一Plugin.Wpf；先以Blob验证公共控件→工具组装→宿主/执行→结果→持久化/退出链，再推广其他工具，禁止要求全库迁完才继续Blob。"
     ]
   },
   "supersededGoalPlans": [
@@ -5278,13 +5279,1684 @@
     "subsequentProgress": "设计时同一真实视图基础实现与独立组装已推进，见uiDesignTimeCheckpoint；旧检查点身份/成绩保持。"
   },
   "uiDesignTimeCheckpoint": {
-    "status": "INDEPENDENT_REAL_VIEW_VERIFIED_VS_VISIBLE_PAGE_SELECTION_PENDING",
+    "status": "VS_PAGE_INDEX_SWITCH_USER_CONFIRMED_FULL_VISUAL_PENDING",
     "sourceBaseCommit": "cbb8f1ef7586db70ebe7ced6a12bdb671345c564",
     "evidence": "docs/collaboration/evidence/O06_BLOB_DESIGN_TIME_CHECKPOINT_20261027.json",
     "implementation": "同一真实参数/结果XAML使用正式公共控件与资源；独立设计草稿来自真实XML，输入区同一公共组装。根XAML直接附加参数样例及正式结果列，不依赖外层构造。现有Tab的SelectedPageIndex可在XAML用0/1/2选页，运行Tab反向同步；没有新增可见页签/按钮。",
     "verification": "最终串行UI005为0错误/6613警告126.64秒，全量003为0错误/6525警告74.01秒。正式Release独立设计13项、RuntimeEditor8、FieldEditing8、WindowPresentation11、FullChain7、Components9通过；正式EXE22工具准入。12份源码、760发布项和174加载记录同源。独立根XAML检查不代替VS实际或用户外观验收。",
-    "manual": "初次VS无效标记截图保留。用户随后反馈“可以看到三项，但是好像三个tab无法切换”；已补原Tab选中索引并说明非新增页签，实际VS用SelectedPageIndex选页待复验。尚未确认全部控件、结果页、布局刷新或VM外观。",
+    "manual": "用户已实际确认三页签可见，修改SelectedPageIndex可切换；完整参数/结果页控件、布局刷新及VM外观尚未全部验收。初次XDG0008失败记录保留。",
     "limits": "独立WPF设计标记和渲染检查不等同Visual Studio设计器实测；本轮未补全部NG显示、本地ROI或完整VM视觉，不新增工程/预览UI，不缩小原目标。",
     "diagnostics": "DesignTime/attempt-004最终13项；attempt-003原12项、attempt-002松散XAML命名空间检查失败保留。初次Debug配置缺程序集，Release ResolveReferences实际指向正式根。"
+  },
+  "inputSourceCorrectionPlan": {
+    "status": "设计已明确，待按完整来源选择链实施",
+    "problem": "Runtime输入区把图像输入源装成通用只读引用框与链按钮，未消费VM EnumerationG，违反对标；用户已指出。",
+    "evidenceChain": "Blob AlgorithmTab引用ImageSourceGroup；Group.xml中EnumerationG ImageSource由GetFrontParamItemsOperation(IMAGE)取候选、GetSelectedCombinationOperation读选中、SetCombinationSourceOperation(InputImage)写选择；EnumerationG模板直接使用ComboBox+ListViewComboBoxStyle，非ButtonSelecter订阅弹窗。",
+    "sources": [
+      {
+        "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/Group.xml",
+        "sha256": "9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC"
+      },
+      {
+        "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+        "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC"
+      },
+      {
+        "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml",
+        "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Themes\\Native\\Input\\VisionUi\\SourceComboBoxes.xaml",
+        "sha256": "117E99A64F3DD86FA8DD4F6D64A7648A454F62E2C0EA30381E3A06986D9E7FC3"
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Themes\\Native\\Input\\VisionUi\\SourceScrollBars.xaml",
+        "sha256": "B262ACAC5D898B26EE0D84441CBCA986D2C6996E8C9BE17D26B4CE515D7FD509"
+      }
+    ],
+    "implementation": [
+      "公共输入组装按正式workflowImageInputId选用原ComboBox及Native字典/图标；通用数值/ROI/位置订阅仍保留各自职责，不全局替换参考选择器。",
+      "下拉候选由现行宿主正式输出目录供应，限单图像声明；稳定Node/Scope/Port/成员身份不变，不引入VM业务全局服务或新参数模型。",
+      "共用原私有节点草稿写入，选择前准入当前编辑代次和正式文档验证，失败原子恢复；刷新候选不写草稿，已失效来源显示保留但不静默变更。",
+      "允许空来源时在下拉清除，不额外加链按钮/清除按钮/应用按钮；保存、重开、确认取消、自动连接所有权及迟到事件按原合同验证。",
+      "设计时同一控件及正式资源，空候选可正常显示；不启动主程序/工作流/算法。"
+    ],
+    "validation": [
+      "原图标/模板解析与运行图核对；真实下拉候选按图像类型、作用域与稳定身份；刷新不写、选择写私有草稿、非法候选回滚。",
+      "真实默认窗口选源→HALCON执行/私有调试→确认取消/关闭→保存重开、旧事件失效；保留其他三输入/设置订阅与关联整链。",
+      "集中执行规定UI/全量串行构建和相称Release回归，实际VS和VM外观由用户反馈独立记录。"
+    ]
+  },
+  "blobControlPrototypePlan": {
+    "decision": "以Blob为首个工具链路原型，先集中做好它实际需要的公共控件和完整组合，达到接入条件即回到Blob；不等待全VM控件库或其他工具迁移。所有后续工具UI统一由Plugin.Wpf控件库组织，不再使用SDK层可视控件。",
+    "status": "STAGE_1_ACTIVE_STAGE_2_GATED",
+    "inventoryRule": "下列C01—C17是Blob所需的完整组合职责，不是17个新控件类。每个组合按原件及递归依赖闭包管理，现行全部58个输入/设置字段及5图形/1文本/8表列逐项映射如下。VM额外参数和显示项列为能力差异，不凭控件迁移新增算法或伪造输出。另附VM原AlgorithmTab全部非注释直接声明对照，未映射字段均明确标为能力缺口；Group引用还须按E02展开闭包。原31/194项不作为完成计数。",
+    "sequence": [
+      [
+        "P0 本次：统一设计",
+        "核完整Blob输入/三页/弹层/窗口/图像组合及SDK退出链、证据缺口、资源和生命周期；原方案统一审核，暂不继续修改Blob产品代码。"
+      ],
+      [
+        "P1 集中实施Blob所需公共库",
+        "在既有Plugin.Wpf组织C01—C17及必要依赖；有源正确部分复用，错误消费重组，旧SDK可视路径退出。非Blob控件不扩迁。先修WPF源码/XAML编译闭包，统一构建验证。"
+      ],
+      [
+        "P2 准入即回Blob",
+        "C01—C17适用部分达到下述库准入门后立即组装Blob真实视图，贯通当前未完成ROI/位姿/显示等业务；不等待其他工具或194项目录清零。"
+      ],
+      [
+        "P3 单工具闭环",
+        "从真实工具箱到编辑/执行/结果/保存重开/取消关闭完成Blob原型验收；暴露的公共缺口回补同一库。通过后再推广其他工具，原S4余项仍逐项兑现。"
+      ]
+    ],
+    "compositions": [
+      [
+        "C01 窗口、三页、分组与标签行",
+        "基本参数/运行参数/结果显示全部行",
+        "ParamsTabUserControl→TabControlFx/ParamListView→LeftRightControl；原窗口/页签/组样式",
+        "复用原布局/样式资源；重组现有DeclaredSettingsView/DeclaredFieldsView的模板选择，不增加第二套Blob页面",
+        "E01/E04/E10；页签索引已获用户确认；尺寸/DPI和完整外观未通过",
+        "三页同一实例切换；设计器索引0/1/2独立看全页；标签列一致，滚动不移动底栏，长标签/缩放不遮挡"
+      ],
+      [
+        "C02 图像输入源下拉",
+        "input.image",
+        "ImageSourceGroup→EnumerationG→ComboBox/ListViewComboBoxStyle；IMAGE候选→InputImage当前值→SetCombinationSourceOperation",
+        "复用E07原字典/三角PNG；重做现有文本框+链按钮组合。未提交修正仅候选，不能计完成",
+        "E01/E02/E04/E07/E11；空源/过期源/键盘与刷新时序补证GAP01",
+        "整行下拉，无额外链按钮；打开/刷新不写值；选择写规范引用；空/错型/失效源有明确状态；不隐式执行上游"
+      ],
+      [
+        "C03 普通枚举与可订阅枚举",
+        "分割、极性、排序等",
+        "Enumeration/Enumeration_Sub→原ComboBox样式；可订阅时另接订阅组合",
+        "复用原字典/项样式；重做一律同模板的类型猜测；本方枚举语义保持XML定义",
+        "E01/E04/E07；本方SortMode合并VM SortFeature/SortMode，是业务差异须明示",
+        "标签与真实值映射稳定；键盘/滚轮/禁用/订阅按原件；切模式只改变适用字段，不丢合法配置"
+      ],
+      [
+        "C04 开关及开关与参数排布",
+        "位置修正、筛选、数量、输出、12组判定使能",
+        "Boolean_sub→BooleanControl及原swith_on/off图标→字段可见/可用规则",
+        "保留一个可追溯BooleanControl原件及原On/Off位图，去重SourceBooleanToggle/Composition BooleanControl；退出本方/SDK ToggleSwitch视觉。",
+        "E01/E04/E10；禁用/订阅状态逐项核原源码",
+        "开关正确显示开关态/焦点/禁用；键盘可用；相关字段按声明显隐，隐藏非法值策略明确，不错误参与执行"
+      ],
+      [
+        "C05 整数/小数单值与单滑条",
+        "阈值、查找数量、字号、透明度、线宽、坐标等",
+        "Integer_Sub/Float_sub→PCListView:SliderArrange/SliderArrangeFloat（模板xmlns指HikPcUI.ListView;assembly=VM.PcUI）→NumericControl/原Slider Popup",
+        "复用原数值源码/模板/资源；重做本方NativeNumberField等视觉包装中偏差；非视觉校验可提取",
+        "E04/E05/E06/E09；GAP02：Enter/外点/拖动边界",
+        "数字↔滑块双向；Enter合法值提交并失焦收起；非法输入明确拒绝；步进/精度/上下界一致；数量上限获得焦点也有滑条；短量程验证避免大范围像素误判 视觉值与业务提交通知分开，遵循原LostFocus/ForceUpdateSource时机；不强制IsDynamicValue=true，也不为旧存储值扩大上下界。"
+      ],
+      [
+        "C06 整数/小数范围与双滑条",
+        "面积/圆度/矩形度筛选、全部范围判定",
+        "IntegerBettween_Sub/FloatBettween_sub→VM.PcUI的SliderArrange/SliderArrangeFloat between→双端NumericControl及SubscribeTemplate；不是Apps.XmlUI同名版本",
+        "复用原双端滑条与原两端控件；重组现有RangeInput/RangeSlider消费；不把范围存成字符串",
+        "E01/E04/E05/E09；GAP02双端混合订阅与焦点",
+        "任端数字/箭头/拖块双向同步；禁止越界/交叉；左右可独立订阅；进入弹层不误失焦；离开组合后收起；步进与精度来自声明 任一端订阅时按原SliderVisibility收起滑条；不是保持一端可拖的自定行为。"
+      ],
+      [
+        "C07 订阅切换、来源树、解绑",
+        "数值/枚举/开关的可订阅字段和图形位置",
+        "EditLinkButton切模式→ButtonSelecter_sub→PControl:PopupButton（Apps.PcUI.Controls;assembly=Apps.PcUI）+Apps.XmlUI.ParamTab.DeleteTextBox/SubTreeView；不可替成HikPcUI.Controls同名PopupButton",
+        "复用原可视树/按钮/图标；重做当前简易来源Window；宿主提供真实候选和草稿，不复制VM全局模块服务",
+        "E04/E05/E10；GAP03：树分支、解绑/取消及集合成员交互",
+        "模式切换不等于选源；标量/集合/成员/变量身份稳定；错型/循环/删除源拒绝；取消不写；保存重开不靠显示字符串解析"
+      ],
+      [
+        "C08 检测ROI、屏蔽ROI与形状参数",
+        "input.inspection.region、input.mask.region及本地ROI；屏蔽区按用户最终预览支持与检测ROI一致的多形状结构/图标/顺序/布局（明确自研扩展）",
+        "RoiSelectControl→RoiSelectDataTemplate→ROIStackStyle(CurROIData→ROIData、IsDraging反向→CanUpDateROI)→BoxROIStack/SectorRingROIStack/SectorROIStack/PolygonROIStack；ROIListStyle按真实类型选模板",
+        "复用所需原控件/图标/几何交互闭包；重做本方/SDK ROI编辑视觉；沿用正确规范区域/帧身份合同",
+        "E01/E02/E04/E10；原声明四种形状、多ROI最多16；GAP04本方表达能力与所有权需核；四形状原源码已具备，本方仍.pending属于未贯通，不是缺原件证据",
+        "图像绘制↔参数联动，形状切换/增删/撤销重做；引用与本地互斥；检测/屏蔽独立；坐标帧、取消/关闭/异常释放正确；不暗删VM已声明形状 屏蔽区各启用形状并集扣除，位姿同步；与检测区同组件/可视结构，独立数据；非仅多边形。 选中图形与原参数栈以同一稳定ROI身份双向绑定；图形移动/缩放/旋转/顶点变化同步参数，参数修改同步原图形；展开收起、多对象选中、撤销与切帧均验收。"
+      ],
+      [
+        "C09 位置来源、继承方式与坐标编辑",
+        "input.pose、IsPositionCorrectionEnabled、ROI继承",
+        "InheritWayGroup/ExternROITypeGroup→RadioSelecter3/原单选样式+位姿/引用组合",
+        "复用原单选及参数组合；重做通用引用框代替完整位姿编辑的缺失；不引入第二个Pose模型",
+        "E01/E02/E04/E10；GAP04分量继承与本方合同映射",
+        "来源/分量/本地常量按真实能力编辑；关闭修正不改原数据；帧不一致明确拒绝；保存重开与执行快照一致"
+      ],
+      [
+        "C10 高级折叠及页面滚动",
+        "运行参数高级项、结果判定扩展",
+        "Expand→原展开样式；原ScrollViewer/RecScrollViewer/ScrollBar",
+        "复用原样式；只承载当前真实字段，不靠展开按钮伪造未实现算法能力",
+        "E01/E04/E10；活动主题/折叠状态待核",
+        "展开/收起/页切换不丢草稿；页面可达全部字段，滚动不误改数字、不把弹层留在错误锚点"
+      ],
+      [
+        "C11 图形显示行及样式弹层",
+        "Blob、质心、轮廓、检测区、屏蔽区及VM对照差项",
+        "ImageViewConfig→眼睛/可选编辑按钮→OK色/NG色/透明度/粗细面板→颜色展开",
+        "复用原行模板/眼睛/编辑/面板；重做通用HEX/RGB对话框；按对象能力决定是否有编辑按钮",
+        "E03/E04/E09；GAP05九项VM显示映射与当前5项差异；E14已证260宽、120/150高、StrokeThicknessConfigEnable条件粗细",
+        "可见/编辑独立；编辑按钮按声明；锚点弹层不遮必需操作；四项即时预览及确认/取消遵循原证据；仅改显示配置，不重跑算法"
+      ],
+      [
+        "C12 颜色块/RGB及默认/更多色板",
+        "图形OK/NG，文本OK/NG",
+        "ImageViewConfig_subContent/ColorConfig→PCListView:ColorPickerControlView（HikPcUI.ListView;assembly=VM.PcUI）→FirstItem默认/SecondItem更多→AdvancedColorPickerDialog",
+        "复用已逆向VM.PcUI完整View/FirstItem/SecondItem/AdvancedColorPicker及原资源，补齐当前.pending消费；重组本方ColorField→VmColorPicker；不选Apps.XmlUI同名色板",
+        "E04/E08/E09；GAP06选择/拖动/外点关闭及原颜色服务依赖",
+        "默认/更多页完整；主题/标准色/色谱/亮度可用；RGB与色块一致；嵌套色板内操作不提前关闭父面板；取消/确认边界不丢原值"
+      ],
+      [
+        "C13 文本内容及字体/位置组合",
+        "BlobDisplay.Texts：内容、OK/NG、字号、透明度、X/Y",
+        "TextDisplayGroup→文本编辑/ColorConfig/单值数值及位置订阅",
+        "复用原模板并重组真实显示配置；文本OK/NG直接弹色板，不套图形四项面板",
+        "E02/E03/E04/E09；GAP05文本令牌/位置绑定缺口",
+        "内容字段引用稳定、空/未知令牌有提示；颜色、字号、透明度、X/Y可编辑持久化；Enter失焦；结果改变后正确刷新，不回写算法设置"
+      ],
+      [
+        "C14 结果表、统计和空/失败状态",
+        "BlobOutput逐项结果、8列及汇总",
+        "Display XML记录/列表→原表格/列/选择/滚动样式→真实结果字段",
+        "复用已实现BlobResultColumns/XML稳定映射与真实行模型；补原VM列表模板；不新建第二份算法结果DTO",
+        "E03/E10；原VM具体列表模板/选择语义GAP07；E03原Result List九列（Area/Perimeter/CentroidX/CentroidY/Angle/LongAxis/ShortAxis/Circularity/Rectangularity），本方八列非同列，须补差异映射",
+        "列映射、顺序/单位/精度一致；成功、零结果、NG、取消、失败不残留旧行；只读真实已发布结果，不在UI重算判定"
+      ],
+      [
+        "C15 执行/连续/停止/确定及窗口退出",
+        "Blob工具窗口固定底栏/关闭/恢复默认",
+        "原底部按钮/窗口样式→宿主命令→草稿事务和执行服务",
+        "复用原按钮/窗口外观；重组现有SDK DefaultDebugWindow/ToolDebugControlBase消费；调度和事务留宿主/执行层",
+        "E04/E10；恢复默认及关闭时序GAP08；当前SDK窗口依赖未退出",
+        "运行前提交有效编辑并冻结快照；算法不等待UI；连续停止、取消、确定、关闭只执行各自职责；默认值唯一来自XML；关闭退订/退役资源"
+      ],
+      [
+        "C16 焦点、错误、主题与资源闭包",
+        "全部控件/Popup/设计器",
+        "原Apps.Style/VM.PcUI颜色字典、FocusVisualStyle、原图标及递归依赖",
+        "复用原资源；修正当前外扩橙border偏差；精简实际闭包并配对XAML/codebehind，不能删接口造桩消编译错误",
+        "E04/E10/E11；当前WPF临时程序集8/17错误未解决，活动主题GAP09",
+        "焦点不挤占布局，主题/禁用/错误同状态对照；无缺资源；源码/模板/图片身份可追溯；无SDK控件回落；正式构建与VS均通过"
+      ],
+      [
+        "C17 图像承载、叠加与ROI交互面",
+        "Blob输入图/输出图/二值图、图形/文本绘制",
+        "原ImageViewBox/Shape/ROI图层及实际Display映射→中立图像/显示适配",
+        "复用所需原图像控件/图层；退出SDK ImageControl可视消费。正确的非视觉图像生命周期可提取承接，不能搬旧控件改名",
+        "E03/E10；GAP04/05：原像素/Domain/帧与原绘图层接合",
+        "实际像素/Domain/坐标帧保持；原图缩放平移时叠加一致；ROI编辑与结果层隔离；显示不驱动执行；读者租约、换帧、关闭释放无悬挂"
+      ]
+    ],
+    "fieldCoverage": [
+      [
+        "基本参数/图像输入",
+        "input.image · 输入源",
+        "C02",
+        "现行输入声明；本地编辑/引用/图像交互组合不能省略"
+      ],
+      [
+        "基本参数/ROI区域",
+        "input.inspection.region · 检测区域来源",
+        "C07/C08/C17",
+        "现行输入声明；本地编辑/引用/图像交互组合不能省略"
+      ],
+      [
+        "基本参数/ROI区域",
+        "input.mask.region · 屏蔽区域来源",
+        "C07/C08/C17",
+        "现行输入声明；本地编辑/引用/图像交互组合不能省略"
+      ],
+      [
+        "基本参数/ROI区域",
+        "input.pose · 位置来源",
+        "C07/C09",
+        "现行输入声明；本地编辑/引用/图像交互组合不能省略"
+      ],
+      [
+        "基本参数/ROI区域",
+        "IsPositionCorrectionEnabled · 位置修正",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/运行参数",
+        "Threshold · 阈值",
+        "C05/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/运行参数",
+        "UpperThreshold · 阈值上限",
+        "C05/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/运行参数",
+        "SegmentationMode · 分割方式",
+        "C03",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/运行参数",
+        "Type · 极性",
+        "C03/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "IsAreaFilterEnabled · 面积使能",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "FilterAreaMin · 面积下限",
+        "C06/C07",
+        "按XML可见规则/边界/精度；范围首端→FilterAreaMax"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "FilterAreaMax · 面积上限",
+        "C06/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "IsCircularityFilterEnabled · 圆度使能",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "FilterCircularityMin · 圆度下限",
+        "C06/C07",
+        "按XML可见规则/边界/精度；范围首端→FilterCircularityMax"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "FilterCircularityMax · 圆度上限",
+        "C06/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "IsRectangularityFilterEnabled · 矩形度使能",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "FilterRectangularityMin · 矩形度下限",
+        "C06/C07",
+        "按XML可见规则/边界/精度；范围首端→FilterRectangularityMax"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "FilterRectangularityMax · 矩形度上限",
+        "C06/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "IsBlobCountFilterEnabled · 数量使能",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "BlobCountLimit · 查找数量",
+        "C05/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/Blob筛选",
+        "SortMode · 排序方式",
+        "C03/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/输出",
+        "OutputGrayImage · Blob图像输出",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/输出",
+        "OutputBinaryImage · 二值化图像输出",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "运行参数/输出",
+        "OutputBoundary · 轮廓输出",
+        "C04/C07",
+        "按XML可见规则/边界/精度；同一真实强类型配置"
+      ],
+      [
+        "结果显示/结果判定",
+        "output-not-empty/enabledFieldId · 输出不为空",
+        "C04",
+        "稳定字段 field:4712e8a0ae495b84a014e0a0880efa0f；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "white-ratio/enabledFieldId · 白色像素比例",
+        "C04",
+        "稳定字段 field:c1d661cc9b735a37a41776b91a655948；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "white-ratio/minimumFieldId · 白色像素比例",
+        "C06",
+        "稳定字段 field:ec03ec4e7dea59fa803a03135783e39a；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "white-ratio/maximumFieldId · 白色像素比例",
+        "C06",
+        "稳定字段 field:e2e7bf232c0c5ec9aef17cd8579f0b4d；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "blob-count/enabledFieldId · Blob数量",
+        "C04",
+        "稳定字段 field:fa6fb37f3a3e5fde8a7f15becfbedf07；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "blob-count/minimumFieldId · Blob数量",
+        "C06",
+        "稳定字段 field:bb037ce3fa405b059d7cb3e696e4138c；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "blob-count/maximumFieldId · Blob数量",
+        "C06",
+        "稳定字段 field:4eb2a3d85f9a5d508eb0aa0cf7bc6441；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "total-area/enabledFieldId · 总面积",
+        "C04",
+        "稳定字段 field:8cfe4c6052205c02b371a9daea87cdee；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "total-area/minimumFieldId · 总面积",
+        "C06",
+        "稳定字段 field:a85b9625a1ef541996884792eedff37f；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "total-area/maximumFieldId · 总面积",
+        "C06",
+        "稳定字段 field:cbd526e730565d1083f3cabee5fdcd58；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-area/enabledFieldId · 平均面积",
+        "C04",
+        "稳定字段 field:1835663d737d542e8e0270cd06d83d17；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-area/minimumFieldId · 平均面积",
+        "C06",
+        "稳定字段 field:a653407b754f5d0096d83cf7c1bacd43；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-area/maximumFieldId · 平均面积",
+        "C06",
+        "稳定字段 field:a1c005062b3e5a81b5d1a361434dc173；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "max-area/enabledFieldId · 最大面积",
+        "C04",
+        "稳定字段 field:9eaa03e3e6e05b51b8174dfc9c435090；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "max-area/minimumFieldId · 最大面积",
+        "C06",
+        "稳定字段 field:7fd604b9d8555aa3826b45029853b2b0；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "max-area/maximumFieldId · 最大面积",
+        "C06",
+        "稳定字段 field:42c2a7324de4545aa02a3bcfb84c5907；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "min-area/enabledFieldId · 最小面积",
+        "C04",
+        "稳定字段 field:5bfeec01d7005b0e90170ef80ed6d230；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "min-area/minimumFieldId · 最小面积",
+        "C06",
+        "稳定字段 field:f2814936d672562a955fb24dca5c576b；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "min-area/maximumFieldId · 最小面积",
+        "C06",
+        "稳定字段 field:ec4476e706675d638854baa0b91c3697；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-circularity/enabledFieldId · 平均圆度",
+        "C04",
+        "稳定字段 field:2be4fec3157d5786bccc6886c1433647；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-circularity/minimumFieldId · 平均圆度",
+        "C06",
+        "稳定字段 field:3fff5a2ad66758dbb77395bbab1067fd；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-circularity/maximumFieldId · 平均圆度",
+        "C06",
+        "稳定字段 field:2b5f664a86525f2caffe9ebd660744e1；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-rectangularity/enabledFieldId · 平均矩形度",
+        "C04",
+        "稳定字段 field:64113348eb3a59db9738154af5e52eb6；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-rectangularity/minimumFieldId · 平均矩形度",
+        "C06",
+        "稳定字段 field:9b6d822f13915ca686a3aeaef565ed7c；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "average-rectangularity/maximumFieldId · 平均矩形度",
+        "C06",
+        "稳定字段 field:10d45000f04e5dd9916f71dc5f8d6e3b；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-area/enabledFieldId · 每个Blob面积",
+        "C04",
+        "稳定字段 field:3ec4b56acf04560a8ee358e3f6a62a7a；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-area/minimumFieldId · 每个Blob面积",
+        "C06",
+        "稳定字段 field:a23947d00c145eef89c0df677f1c7319；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-area/maximumFieldId · 每个Blob面积",
+        "C06",
+        "稳定字段 field:575ce2d6f76852eabd58878c271ba311；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-circularity/enabledFieldId · 每个Blob圆度",
+        "C04",
+        "稳定字段 field:519633b41eb555538b4c3b1be1376207；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-circularity/minimumFieldId · 每个Blob圆度",
+        "C06",
+        "稳定字段 field:4f7fc3f2e7cc5238974d91445344c1bb；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-circularity/maximumFieldId · 每个Blob圆度",
+        "C06",
+        "稳定字段 field:d50b7c786f355610b128a86cb3c29cf3；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-rectangularity/enabledFieldId · 每个Blob矩形度",
+        "C04",
+        "稳定字段 field:c6b64142ea7a5980aff24f3c8b050107；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-rectangularity/minimumFieldId · 每个Blob矩形度",
+        "C06",
+        "稳定字段 field:9ba8df161ea95631a57b83bee5f3d8d7；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/结果判定",
+        "per-blob-rectangularity/maximumFieldId · 每个Blob矩形度",
+        "C06",
+        "稳定字段 field:53c33a20309c5acb874144509c443b9a；属于算法判定参数，不是显示样式"
+      ],
+      [
+        "结果显示/图形",
+        "blobs · 外接矩形",
+        "C11/C12/C16/C17",
+        "scope=Output；port=field:8ca10000000040008000000000000100；member=rotated-bounds"
+      ],
+      [
+        "结果显示/图形",
+        "centroids · 质心",
+        "C11/C12/C16/C17",
+        "scope=Output；port=field:8ca10000000040008000000000000100；member=centroid"
+      ],
+      [
+        "结果显示/图形",
+        "contours · 轮廓",
+        "C11/C12/C16/C17",
+        "scope=Output；port=field:8ca10000000040008000000000000100；member=contour"
+      ],
+      [
+        "结果显示/图形",
+        "inspection-roi · 检测区",
+        "C11/C12/C16/C17",
+        "scope=Input；port=input.inspection.region；member="
+      ],
+      [
+        "结果显示/图形",
+        "mask-roi · 屏蔽区",
+        "C11/C12/C16/C17",
+        "scope=Input；port=input.mask.region；member="
+      ],
+      [
+        "结果显示/文本",
+        "area · 面积列表",
+        "C12/C13/C17",
+        "内容/颜色/字号/透明度/位置完整组合；显示配置独立于运行设置"
+      ],
+      [
+        "结果表",
+        "label · 序号",
+        "C14",
+        "member=label；精度=0；单位="
+      ],
+      [
+        "结果表",
+        "area · 面积",
+        "C14",
+        "member=area；精度=0；单位=px²"
+      ],
+      [
+        "结果表",
+        "perimeter · 周长",
+        "C14",
+        "member=perimeter；精度=1；单位=px"
+      ],
+      [
+        "结果表",
+        "centroid-x · 中心X",
+        "C14",
+        "member=centroid-x；精度=1；单位=px"
+      ],
+      [
+        "结果表",
+        "centroid-y · 中心Y",
+        "C14",
+        "member=centroid-y；精度=1；单位=px"
+      ],
+      [
+        "结果表",
+        "circularity · 圆度",
+        "C14",
+        "member=circularity；精度=3；单位="
+      ],
+      [
+        "结果表",
+        "rectangularity · 矩形度",
+        "C14",
+        "member=rectangularity；精度=3；单位="
+      ],
+      [
+        "结果表",
+        "bounds · 边框",
+        "C14",
+        "member=bounds；精度=0；单位=px"
+      ]
+    ],
+    "evidence": [
+      [
+        "E01",
+        "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+        "SHA256 34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec；已读原安装声明：三页、各字段类型、ROI四形状及16个上限；不证明当前VM运行分支"
+      ],
+      [
+        "E02",
+        "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+        "SHA256 9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc；已读原共享声明；ImageSourceGroup/EnumerationG/InputImage来源操作"
+      ],
+      [
+        "E03",
+        "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuDisplay.xml",
+        "SHA256 b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112；已读原图形/文本/数据记录/列表声明；不等同本方算法已提供全部输出"
+      ],
+      [
+        "E04",
+        "D:\\MyWork\\REA逆向测试\\analysis\\selfdev-support\\VM-CONTROL-BLOB-ASSEMBLY-20261024\\root\\current-xmlui\\styles\\paramusercontroldatatemplate.xaml",
+        "SHA256 96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63；模板键及控件组合；原完整定位同时见S4_UI_REVIEW_20261026.json.controlStyleSources"
+      ],
+      [
+        "E05",
+        "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrange.xaml",
+        "SHA256 d396aba95014be30b78cafefc199f85fe1be41af5910e9d9b36333f640b985fb；已归档单值/范围、订阅及焦点组合源码；实际时序需配代码及实机"
+      ],
+      [
+        "E06",
+        "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\NumericControl.xaml",
+        "SHA256 6d0a82850fdd0e98f4182fda7c6aacd08f135bd20fc37068729bf3075af72f63；文本更新和数值模板；并非单独证明Enter完整行为"
+      ],
+      [
+        "E07",
+        "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Themes\\Native\\Input\\VisionUi\\SourceComboBoxes.xaml",
+        "SHA256 117e99a64f3dd86fa8dd4f6d64a7648a454f62e2c0ea30381e3a06986d9e7fc3；已迁入ListViewComboBoxStyle/ComboxStyleBtn；不等于当前Blob消费已通过"
+      ],
+      [
+        "E08",
+        "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Themes\\Native\\Display\\VisionUi\\SourceColorPickerStyles.xaml",
+        "SHA256 cbc5f35a098b8fa94ece3a8a3a74f2d6ed9d1b9a7a5e5b65b1a67a9e4bd2391d；已迁入颜色样式候选；需按真实ColorConfig消费链选用，不能按类名认定等价"
+      ],
+      [
+        "E09",
+        "D:\\Temp\\codex-clipboard-977e6b87-9e0a-4fdf-85c3-0b4b2e97bcba.png SHA256=a17a67a9bed5bdb2c33645a6d1c8bd90a515e897b386fd62b47b6d44732bde4f；D:\\Temp\\codex-clipboard-060ed169-6d7f-4065-acf7-d19f1ea515ba.png SHA256=26f019151836efabff30485a9eb4d58188c01edb02f876bce29e02433b639734；D:\\Temp\\codex-clipboard-0e6338ae-b6e9-47e3-b69a-48c97ad94541.png SHA256=63ec5070e13e953e9340aed502a0c3d14e0b6f4f7aa5ce09c02645867c66c6c0；D:\\Temp\\codex-clipboard-095e0a7d-d6da-4363-ac42-1de55048cbc7.png SHA256=2219048afa17b572fa3241168a773cfa84466ef3e84dca22673a28d5328c2796；D:\\Temp\\codex-clipboard-44cc3c66-1e03-450b-b897-c3c83a34df20.png SHA256=7b1df87ad599410e1ff1e910283566248177bf3f4f00d9b5115af928ea81d6cc；本对话用户Enter失焦/无焦点隐藏滑条反馈",
+        "直接观察：图形样式含OK/NG/透明度/粗细，颜色展开默认/更多；文本颜色直接展开色板。仅证明所示状态；拖动/提交/外点时序仍需源码或实机"
+      ],
+      [
+        "E10",
+        "docs/collaboration/evidence/S4_UI_REVIEW_20261026.json；原方案references/vm-control-library-20261026/VM控件库逆向目标.html",
+        "复用已有源码定位和逆向索引；31/194数量均不是本批迁移范围或完成指标"
+      ],
+      [
+        "E11",
+        "原Apps.Style.dll：MVID cea1d44f-00ec-4cd0-922d-f70ad89b818c；Apps.XmlUI.dll：MVID a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+        "本轮前已核静态原件身份。Apps.Style SHA256 8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63；Apps.XmlUI SHA256 639D0FB9DFCA81E38DF690E201B73874CE006D1361B689DDC6D5F41F7B0B04FD；不证明VM实机页已验收"
+      ],
+      [
+        "E12",
+        "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\VM控件库逆向目标.html",
+        "SHA256 9e27ac1493a59e078585eb02fbe4d8ec7e2e5234b3b05e3b69d173a588bc358f；用户本次指定的最新优先索引；源页明确结构预览不等于像素级复刻"
+      ],
+      [
+        "E13",
+        "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\VM控件库目标清单.json",
+        "SHA256 5b36838fbe919a9b1a8c777c3935c35ef9e70c6311af1db60dd38154db6d607e；2026-10-27当前清单：194个直接目标、180有源码定义外观、14有补充代码外观证据；只作精确身份/来源索引，不把数量当Blob依赖或运行通过"
+      ],
+      [
+        "E14",
+        "D:\\MyWork\\REA逆向测试\\docs\\架构逆向与实现对照文档\\清单\\VM控件库Blob外观证据.json",
+        "SHA256 13419eaabf69d73744a22968c1988bbe89184ad29ffa8f73c6e668bb63c933b1；Blob专项证据：七项Popup审计、15项模板/模型源记录、节点/触发声明；已确认ImageViewConfig_subContent为260宽、120/150高且粗细条件显示；与当前HEX模态框不同"
+      ],
+      [
+        "E15",
+        "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.PcUI.ImageSourceAudit\\Apps.PcUI.Controls\\PopupButton.xaml",
+        "SHA256 b492249955b5866cad766131bb691884c6ff77337e54207087dbd62a53295637；ButtonSelecter_sub实际Apps.PcUI原件，而不是HikPcUI同名类"
+      ],
+      [
+        "E16",
+        "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml",
+        "SHA256 96c074711b1fd1575aeae9aa0eb57da8411bb4601790d2aa2d42347c053ea60e；真实默认/更多色板View入口"
+      ],
+      [
+        "E17",
+        "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
+        "SHA256 16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03；四ROI形状/列表样式及拖动中更新抑制绑定"
+      ],
+      [
+        "E18",
+        "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.PcUI.dll",
+        "SHA256 87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42；真实数值/色板家族，SliderArrange/Float/ColorPickerControlView，不等同Apps.XmlUI同名家族"
+      ],
+      [
+        "E19",
+        "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\27\\01a17adf-f347-7781-9247-07f4ca161fb1\\vm-blob-target.html → docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/references/vm-blob-ui-target-20261027.html",
+        "SHA256 df78ec69e42eb8c0585eabcead0f52f046d77168fa476fca0bf6a2774bd0c44a；用户最终视觉基准，屏蔽区多形状是批准的自研差异；已按字节归档，未修改源工件"
+      ],
+      [
+        "E20",
+        "D:\\Temp\\codex-clipboard-54ead980-a2a6-4b8d-9f49-1d0df2bb3286.png",
+        "SHA256 bd894bc350b399426c1c2921ded952e0ff89e447d990fe4900d3a9a5eabed3a5；用户原VM选中ROI参数展开截图及明确双向交互要求"
+      ]
+    ],
+    "evidenceGaps": [
+      [
+        "GAP01 输入源",
+        "原静态EnumerationG及本地原字典已齐；无完整VM键盘/空源/过期源运行记录",
+        "先核原事件代码；仅对无法确定分支补VM最小场景录像/操作记录。不阻塞其他已证组合设计。"
+      ],
+      [
+        "GAP02 数值/范围",
+        "原VM.PcUI源码已证明LostFocus/ForceUpdateSource、焦点开Popup、左右订阅态、双向属性、步进/精度/边界；用户确认Enter失焦。原叶未见Enter处理，不能把自行补键规则称原件。",
+        "一次真实Blob数值家族场景合并补证：数字逐字符还是提交后联动、Enter/Tab/外点/Escape/窗口滚动的焦点与收起、单/双端订阅及切回常量值保持；源码已证部分不重复逆向。"
+      ],
+      [
+        "GAP03 订阅树",
+        "原ButtonSelecter_sub/SubTreeView等已有；现行使用自制来源Window；原SubTreeView叶节点双击、DeleteTextBox Delete KeyUp及ButtonSelecter索引处理源码已具备。",
+        "复用已证Apps.PcUI PopupButton+原SubTreeView/DeleteTextBox；仅核未能从静态确定的空引用/取消/切回常量的状态保持。模块Holder/VmIO业务服务替换为现行中立候选/回调，不整套照搬。"
+      ],
+      [
+        "GAP04 ROI/位姿/图像",
+        "VM声明Box/SectorRing/Polygon/Sector、多ROI16；本方只有引用基础，本地ROI/位置常量未闭环；RoiSelectDataTemplate原四形状模板与继承Group触发已找到，本方.pending是移植集成缺口。；用户最终预览明确屏蔽区扩展为与检测ROI相同多形状工具，不能沿用原VM仅多边形约束。",
+        "无需重逆向四形状外观；核现有规范Region/Pose与原IROI/ROIData/CanUpDateROI的字段及生命周期接合。按原Group显隐/清理切换；只有无法由原代码确定的交互才补最小实机记录。"
+      ],
+      [
+        "GAP05 图形/文本差异",
+        "VM声明九图形行，当前XML五行；图形样式和色板有用户截图；E14已提供九行及260×120/150原弹层布局，不能再把该布局列为未逆向。",
+        "逐项映射Blob/最大内接矩形/检测区/轮廓点/定位点/文本/屏蔽/扇环；有结果就接，无输出明确能力缺项，不能空控件冒充完成。核文本令牌及显示配置持久化。"
+      ],
+      [
+        "GAP06 颜色",
+        "原色板候选和默认/更多截图齐；已迁入AdvancedColorPicker不自动等于此入口；E14及其15项原模板来源优先复用，仅余具体事件/服务接合核验。",
+        "色板家族与默认/更多结构已从原模板确认，不再列为待逆向。只补多层Popup关闭/拖拽时序及活动主题同态核验；原件依赖已有就直接复用。"
+      ],
+      [
+        "GAP07 列表",
+        "原Result List明确九列，本方八列是不同映射：现行有序号/边框，缺独立Angle/LongAxis/ShortAxis列。原声明已有，不得再列成未逆向；原样式/生产消费者仍需核。",
+        "先核BlobOutput真实角度/长短轴成员及现行契约：有数据则接原列表；缺成员明确API缺口，不能假填。再核原表格模板及明确支持操作；本批不凭列数称等价。"
+      ],
+      [
+        "GAP08 窗口动作与SDK退出",
+        "当前RuntimeNodeConfigurationControl仍访问SDK DefaultDebugWindow/ToolDebugControlBase及UI事件",
+        "列真实打开→宿主命令→事务→执行→结果→退出消费者；提取中立编辑/执行通知合同，公共Wpf提供原件外观，UI宿主执行协调；不搬SDK窗口改名保留耦合。"
+      ],
+      [
+        "GAP09 资源/焦点/编译",
+        "原样式已归档；当前WPF临时程序集报8/17项生成连接错误",
+        "核Page/codebehind/生成文件及pack URI配对和实际依赖；保留失败；焦点/主题同状态对照，不用删除控件/接口或假InitializeComponent绕过。"
+      ]
+    ],
+    "tree": "src/Plugin.Wpf/\n├─ SunEyeVision.Plugin.Wpf.csproj\n├─ NativeItems.props                 # 目标：Blob闭包明确编译清单，整合现NativeResources.props\n├─ Controls/Native/{Common,Input,Numeric,Display,Composition,Dependencies}/\n├─ Themes/Native/                    # 与原控件配对的XAML、样式和资源字典\n├─ Themes/Assets/Native/             # 原图标/PNG/游标；保留有效pack URI\n├─ Adapters/{Fields,References,Lifecycle}/  # 非视觉值/引用/验证/释放适配\n├─ Presenters/\n│  ├─ Inputs/                       # 图像源/ROI/位姿不同入口\n│  ├─ Parameters/                   # 单值/范围/订阅/开关/枚举完整组合\n│  ├─ Regions/                      # 原ROI选择与形状/图像联动组合\n│  ├─ Display/                      # 图形行/样式面板/色板/文本\n│  ├─ Results/                      # 实际结果表与空/失败状态\n│  └─ Windows/                      # 原窗口/三页/底栏；不执行调度\n├─ Design/                          # 独立示例走同一真实组装链\n└─ Catalog/controls.json             # 实施时建立：本批仅登记Blob消费闭包\n\ntools/SunEyeVision.BlobAnalysis/\n├─ Runtime/                         # 既定设置/输入/输出/算法及两份XML\n└─ Wpf/                             # 声明Blob字段和组装公共库；无专属基础控件副本",
+    "management": [
+      [
+        "唯一公共可视入口",
+        "Plugin.Wpf；只依赖中立合同及确需WPF平台库，不引用Blob/Workflow/UI宿主/Plugin.SDK；CommonControl不混放迁移控件。"
+      ],
+      [
+        "原件、适配、组合",
+        "Native保原控件模板和资源；Adapters只做非视觉适配；Presenters显式选用原件完整组合，不让一个万能FieldEditor猜全部控件职责。"
+      ],
+      [
+        "管理条目",
+        "每个真实控件/组合登记ID、版本/MVID/类型/模板/源路径及SHA、必要改动、递归依赖和资源、实际消费者、释放/异常/设计/运行/视觉证据。原方案为本次设计依据；Catalog在实施时承接，不能另造冲突清单。"
+      ],
+      [
+        "SDK可视退出",
+        "SDK/UI/Controls的ImageSourceSelector、NumericUpDown、RangeInput/RangeSlider、ToggleSwitch、ParamComboBox、ColorPicker、Roi、ResultPresentation、ImageControl及DefaultDebugWindow等不再作为目标工具UI来源。按Blob实际消费链替换并删除无消费者旧代码；仍有其他现行工具调用者的在推广批同步迁移后删除，不留兼容回退。"
+      ],
+      [
+        "可视与非视觉分开",
+        "SDK现有绑定、图像所有权、事务等正确非视觉能力按实际消费者核合同并提取至合适中立层；不能以禁用SDK控件为由删除执行/持久化能力，也不要求本批重写全部SDK。"
+      ],
+      [
+        "构建资源闭包",
+        "源码/codebehind/Page/Resource/EmbeddedResource成对列入；依赖真实需要就纳入，不为压数量剪断。归档.pending不算已迁入完成；无消费者重复实现待替换完成后删除。"
+      ],
+      [
+        "变更边界",
+        "本次仅方案/生成器/协作记录；冻结既有未验证输入源产品修改，不加新Blob功能、不迁其他工具、不复制逆向程序库。"
+      ]
+    ],
+    "gates": [
+      [
+        "L1 源件与组合闭包",
+        "C01—C17每个适用入口有原控件/模板/图标/状态及递归依赖；关键未证行为补证；SDK视觉替代对象及承接无空档",
+        "未通过：原色板家族本批已接入，其余数值/订阅/ROI/显示/窗口消费及递归闭包仍需完成。"
+      ],
+      [
+        "L2 独立设计与运行",
+        "同一公共组合脱离主程序/工作流/算法可完整显示；独立样例；值/滑条/订阅/弹层/焦点完整交互；资源与释放通过",
+        "未通过：本批独立15/字段12/窗口13验证范围内交互与释放已通过；并非C01—C17全部组合完备。"
+      ],
+      [
+        "L3 编译及库同态核收",
+        "规定UI→全量Release串行构建通过；正式同源产物实际运行；原VM同尺寸/DPI/主题/状态对照，有实际人工反馈",
+        "未通过：本批UI001与Release001均0错误、六轨及EXE准入同源通过；原主题差异、全组合VM同态及真实VS/用户仍待核收。"
+      ],
+      [
+        "第二阶段准入",
+        "第一阶段L1—L3全部通过，满足Blob适用能力后立即进入Blob组装和完整业务链；禁止因局部PASS提前跨阶段。",
+        "不依赖全VM、其他工具或历史31/194项全部迁移。"
+      ]
+    ],
+    "prototype": [
+      "真实工具箱创建Blob→唯一XML默认设置→打开三页，全部字段及Popup使用公共库，无SDK可视回落。",
+      "选真实图像源、检测/屏蔽ROI、位姿、本地/引用与适用变量，编辑/切页/订阅/撤销重做；保存、重开、复制删除后身份正确。",
+      "运行前提交合法编辑、冻结输入/参数/全局变量快照；真实HALCON执行与取消独立于UI线程，不隐式重跑上游。",
+      "真实图像、Domain/帧、结果图形/文本/表格及OK/NG正确刷新；显示样式独立持久化且不触发算法。",
+      "私有调试、单次/连续停止、失败/无结果、确定/取消/关闭均验证；关闭退订、读者/图像/ROI资源释放正确。",
+      "正式同版本Release自动回归、实际VS设计器三页/结果/布局刷新及用户VM对照验收分别记录；逐项列残余，不用控件数量或局部绿测代签整链。"
+    ],
+    "boundary": "本方案仅收敛推进顺序和首个消费范围，不删除原S4完整目标/两工程结构/无旧兼容要求；当前58字段与VM全部参数不是等同关系，额外VM算法能力按原目标差异处理。本次未实施控件库、未修复构建、未作新增运行/视觉验收。",
+    "vmDeclarationCoverage": [
+      [
+        "Tab_Basic Params/ImageSourceGroup",
+        "GroupLinkItem ImageSourceGroup",
+        "C02",
+        "input.image"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "GroupLinkItem OutputMaskImageGroup",
+        "C08/C09（须展开Group核对）",
+        "需核组展开与当前输入/输出合同；未完成映射"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "GroupLinkItem InputMaskImageGroup",
+        "C08/C09（须展开Group核对）",
+        "input.mask.region仅部分；组展开须核"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "GroupLinkItem RoiSelectGroup",
+        "C08/C09（须展开Group核对）",
+        "C08选择入口待接"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "ROISelecter RoiType",
+        "C08/C17",
+        "本地ROI待完成；VM支持四种形状、多ROI16"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "GroupLinkItem InheritWayGroup",
+        "C09",
+        "input.pose/位置修正不等于完整继承组合，待C09"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "GroupLinkItem ExternROITypeGroup",
+        "C08/C09（须展开Group核对）",
+        "检测/屏蔽ROI来源及本地组合待C08"
+      ],
+      [
+        "Tab_Basic Params/Tab_ROI Area",
+        "GroupLinkItem AssistGroup",
+        "C08/C09（须展开Group核对）",
+        "需核真实组展开/用途；未完成映射"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Enumeration ThresholdType",
+        "C03/C07",
+        "SegmentationMode（VM更多分割选项须按算法差异单列）"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Enumeration Polarity",
+        "C03/C07",
+        "Type"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer LowThreshold",
+        "C05/C07",
+        "Threshold"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer HightThreshold",
+        "C05/C07",
+        "UpperThreshold"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween ThresholdRangArea",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer Softness",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer SoftLeftRatio",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer SoftRightRatio",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer SoftLowRatio",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer SoftHighRatio",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer FindNum",
+        "C05/C07",
+        "BlobCountLimit/IsBlobCountFilterEnabled"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer HoleMinArea",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByArea",
+        "C04/C07",
+        "IsAreaFilterEnabled"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangArea",
+        "C06/C07",
+        "FilterAreaMin/FilterAreaMax"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Enumeration BlobContourType",
+        "C03/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean BolbImageEnable",
+        "C04/C07",
+        "OutputGrayImage"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean BinaryImageEnable",
+        "C04/C07",
+        "OutputBinaryImage"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Expand Expert",
+        "C10",
+        "高级折叠C10，实际字段能力逐项核"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByHistInfo",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByBoxAngle",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangBoxAngle",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByRectWidth",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangRectWidth",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByRectHeight",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangRectHeight",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByPerimeter",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangPerimeter",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByShortAxis",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangShortAxis",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByLongAxis",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "IntegerBettween RangLongAxis",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByCircularuty",
+        "C04/C07",
+        "IsCircularityFilterEnabled"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "FloatBettween RangCircularity",
+        "C06/C07",
+        "FilterCircularityMin/Max"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByRectangularity",
+        "C04/C07",
+        "IsRectangularityFilterEnabled"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "FloatBettween RangRectangularity",
+        "C06/C07",
+        "FilterRectangularityMin/Max"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean SelectByCentraBias",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "FloatBettween RangCenterBias",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean AxisRatioEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "FloatBettween AxisRatioRange",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Enumeration SortFeature",
+        "C03/C07",
+        "SortMode（本方合并特征及方向）"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Enumeration SortMode",
+        "C03/C07",
+        "SortMode（本方合并特征及方向）"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Enumeration connectivity",
+        "C03/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer MaxAreaInnerRectNum",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer OverlapRatio",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Boolean MaxOutPixelNumEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "Tab_Run Params/Tab_Run Params",
+        "Integer MaxOutPixelNum",
+        "C05/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean OKWhenNumIsZero",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean BlobNumLimitEnable",
+        "C04/C07",
+        "Judgments/blob-count"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "IntegerBettween RangBlobNumLimit",
+        "C06/C07",
+        "Judgments/blob-count范围"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean BlobAreaLimitEnable",
+        "C04/C07",
+        "Judgments/per-blob-area（按实际语义核是否逐项）"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangBlobAreaLimit",
+        "C06/C07",
+        "Judgments/per-blob-area范围"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean BlobTotalAreaLimitEnable",
+        "C04/C07",
+        "Judgments/total-area"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangBlobTotalAreaLimit",
+        "C06/C07",
+        "Judgments/total-area范围"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Expand (无Name的展开项)",
+        "C10",
+        "结果判定高级折叠；未映射的判定能力仍单列"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean CentroidXLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangCentroidXLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean CentroidYLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangCentroidYLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean AngleLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangAngleLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean CenterXLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangCenterXLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean CenterYLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangCenterYLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean BoxHeightLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween BoxHeightLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean BoxWidthLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween BoxWidthLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean PerimeterLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangPerimeterLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean LongAxisLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangLongAxisLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean ShortAxisLimitEnable",
+        "C04/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangShortAxisLimit",
+        "C06/C07",
+        "未形成现行字段的一一映射；按既定算法目标核能力缺口，不能因模板可用就称功能已支持"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean CircularityLimitEnable",
+        "C04/C07",
+        "Judgments/per-blob-circularity"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangCircularityLimit",
+        "C06/C07",
+        "Judgments/per-blob-circularity范围"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "Boolean RectangularityLimitEnable",
+        "C04/C07",
+        "Judgments/per-blob-rectangularity"
+      ],
+      [
+        "ResultShow/Tab_Check Result",
+        "FloatBettween RangRectangularityLimit",
+        "C06/C07",
+        "Judgments/per-blob-rectangularity范围"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig BlobFiled",
+        "C11/C12/C17",
+        "Graphics/blobs（原Blob几何与当前rotated-bounds需核同义）"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig BlobMaxAreaInnerRect",
+        "C11/C12/C17",
+        "无当前结果成员：最大内接矩形，不伪造"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig CheckZone",
+        "C11/C12/C17",
+        "Graphics/inspection-roi"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig MatchLocation",
+        "C11/C12/C17",
+        "Graphics/contours候选；原名与轮廓点语义须核"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig FixtureInitPoint",
+        "C11/C12/C17",
+        "无一一对应：定位前点与质心不同"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig FixtureRunPoint",
+        "C11/C12/C17",
+        "无一一对应：定位后点与质心不同"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig ResutlText",
+        "C11/C12/C17",
+        "Texts/area仅部分；另有文本显示组"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig BlindZone",
+        "C11/C12/C17",
+        "Graphics/mask-roi"
+      ],
+      [
+        "ResultShow/Tab_Image Display",
+        "ImageViewConfig CheckZoneAnnular",
+        "C11/C12/C17",
+        "扇环检测区须由真实ROI几何承接"
+      ],
+      [
+        "ResultShow/TextDisplayGroup",
+        "GroupLinkItem TextDisplayGroup",
+        "C13/C12",
+        "C13文本显示全组合，当前仅area一项"
+      ]
+    ],
+    "parallelLanes": [
+      [
+        "A 输入引用（只读）",
+        "已核AppsPopup四文件/HikTextBox父类/SubTree最小闭包；当前核正式树身份投影方案",
+        "仅必要依赖闭包；完成核收后自动补位下一个单控件，不扩整个家族。"
+      ],
+      [
+        "B 数值状态（只读）",
+        "已核原数值组合替换设计/实际消费者；当前准备唯一非视觉状态提取建议",
+        "给精确规范值/事件/拒绝恢复/释放建议，主线合并同一非视觉字段状态，避免第二套模型。"
+      ],
+      [
+        "C ROI显示（只读）",
+        "已核ROI四栈/视口/转换器、文本/10列表格/LeftRight/ROIStack；当前C02主题边界核收",
+        "一次只负责一个控件；核参数投影/图像联动合同和依赖，图像场景合同缺项不得写成已支持。"
+      ],
+      [
+        "D 集成（主线唯一写者）",
+        "本批源候选及P0修复已同源验证，维护原方案与本地中文检查点；下一批数值订阅集中替换",
+        "核收各路源身份/SHA/闭包/建议，串行构建验收；第一阶段不继续Blob业务重组。"
+      ]
+    ],
+    "parallelProtocol": "用户明确授权四路含主线。三个子智能体同目录只读逆向/分析/评审，每次一个控件或一个完整组合及其必要依赖；交付即核收并自动领取队列下一项。主线为唯一产品写者，集中实施、串行验证和维护原方案；不自行增加多写者、产品/算法库/仓库副本或旧审批岗位。静态核证完成、源码集成、运行通过、真实VS/用户验收分别记账。",
+    "hostExitRows": [
+      [
+        "src/UI/Services/Editing/Nodes/NodeOpenDecisionChain.cs:114,170—172",
+        "已创建RuntimeNodeConfigurationControl，但窗口仍DefaultDebugWindow；不能因Blob.Wpf无SDK引用就称整窗已退出SDK",
+        "Plugin.Wpf公共原件窗口承载真实视图；UI打开链提供Owner/节点草稿/命令/结果展示，执行仍交现行执行服务。真实工具箱打开和关闭链回归。"
+      ],
+      [
+        "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs:36—73",
+        "SDK Execute命令、DefaultDebugWindow具体类型判断及ToolDebugControlBase.ToolExecutionCompletedEvent路由事件",
+        "公共库只接非业务命令/状态；UI宿主负责现行RuntimeDebugInvocation捕获与任务执行、结果归属及代次检查。原窗口继承/事件不得成为新工具控件基类约束。"
+      ],
+      [
+        "src/Plugin.SDK/UI/Controls/ToolEditorCommit.cs:15—45及后续扫描",
+        "IToolEditorCommitParticipant/PendingState/DraftContext无业务UI依赖，但绑定在SDK类及ToolDebugControlBase全局注册/旧NumericUpDown扫描中",
+        "按职责提取中立编辑会话/有效性/提交/丢弃合同和Wpf绑定入口；不复制LegacyBaseline/旧控件类型扫描。ProductionEditorContext仍是正式发布/保存事务所有者；非法隐藏值/保存重开/取消关闭完整验证。"
+      ],
+      [
+        "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+        "已有TryCapture/HasInvalidInput/Changed/Dispose和ToolSettingsViewOptions；缺明确适用输入组合、编辑会话及窗口动作的完整消费约定",
+        "正确合同复用；按真实缺项集中补最少接口/属性，输入源、订阅树、ROI/位姿显式区分，不叠另一个通用万能视图。设计器使用同一组合及独立示例。"
+      ],
+      [
+        "SDK ImageControl/ResultPresentation/Roi与宿主当前消费者",
+        "共享像素、Domain、坐标帧、显示配置/结果读者生命周期不能随旧视觉删除一起丢失；仍需查清所有实际消费者",
+        "C08/C11—C14/C17承接原VM可视层；中立图像/ROI/结果/显示合同与资源所有权留各正确层。逐个实际调用点切换后删无消费者旧视觉，不保留SDK可视后备路径。"
+      ]
+    ],
+    "sourceAuditFindings": [
+      [
+        "A 输入/订阅",
+        "Group.xml:5—37→模板:846输入下拉；Enumeration_Sub:369—385；ButtonSelecter_sub:255—336使用Apps.PcUI PopupButton；SubTreeView.xaml:85/.cs:106叶节点双击；DeleteTextBox.xaml.cs:54—62 Delete清空",
+        "复用原字典/PopupButton/树/文本原件，重组ReferenceSelectionControl的模态ListBox；规范引用/图校验/事务非视觉保留。本路只读完成，无VM运行验证。"
+      ],
+      [
+        "B 数值/开关",
+        "原模板:2精确映射HikPcUI.ListView/VM.PcUI；本方RangeField仍自制RangeSlider/Popup；NativeNumberField改变LostFocus绑定和布局/动态模式",
+        "原件源码/资源已足够定型：整组替换RangeField自制范围；拆NativeNumberField的OneWay/TextChanged、强制IsDynamicValue=true、边界扩展与Insets改写，仅保留规范类型/草稿/代次/释放的非视觉适配；去重Boolean原件。Enter失焦为用户原机反馈，原NumericControl叶未证该宿主链。本路只读完成，无构建/VM运行。"
+      ],
+      [
+        "C ROI/显示",
+        "ROI原模板26—47四形状及CurROIData/CanUpDateROI；ImageViewConfig_subContent:2503、ColorConfig:2608→VM.PcUI色板View→FirstItem/SecondItem→Advanced；E03九列表声明",
+        "原件已具备，主要缺.pending到正式消费、非视觉几何/图像所有权适配。替换DisplayObjectField/ColorField→VmColorPicker自制链；完整窗口同态仍未验。本路只读完成。"
+      ],
+      [
+        "D 窗口/SDK退出",
+        "ParamsTabUserControl.xaml:38原三页Tab，底栏BottomExcuteButtonsLeftA/BottomExcuteButtonsA；本方NodeOpenDecisionChain:170—172仍SDK窗口；RuntimeNodeConfigurationControl:36—73仍SDK事件命令",
+        "公共Wpf承接原窗口可视和显式组合，UI宿主提供事务/命令/结果；提取非视觉会话合同，禁止迁入VM调度或保留SDK可视回退。原方案已统一；本轮未改产品/构建。"
+      ]
+    ],
+    "numericBehaviorEvidence": [
+      [
+        "焦点/打开/关闭",
+        "VM.PcUI/HikPcUI.ListView/NumericControl.xaml.cs:305；SliderArrange.xaml.cs:19/25/33",
+        "GotFocus经IsFocusedP双向打开Popup；输入点击可重开；宽随组合；关闭T1/T2.ForceUpdateSource并发值变更。"
+      ],
+      [
+        "值联动与提交",
+        "NumericControl.xaml:23；NumericControl.xaml.cs:407；SliderArrangeBase.cs:100,878—910",
+        "LostFocus及显式ForceUpdateSource与滑块双向属性分开；IsDynamicValue默认false，不统一改true。"
+      ],
+      [
+        "数值规则",
+        "NumericControl.xaml.cs:321—383；RangeRule.cs:11；SliderArrangeFloat.xaml.cs:65—112",
+        "RepeatButton步进/极值、聚焦滚轮、浮点DecimalDigits；拒绝解析失败/NaN/Infinity/越界。"
+      ],
+      [
+        "范围与订阅",
+        "SliderArrangeBase.cs:1032/1066/1184/1193；SliderArrange.xaml.cs:59；SliderArrangeFloat.xaml.cs:149",
+        "between约束Start≤End和各端边界；左右独立订阅，但任一端订阅时滑条隐藏；浮点NeedSlider=false也隐藏。"
+      ],
+      [
+        "Enter与键盘边界",
+        "用户VM反馈；NumericControl原叶未找到Enter清焦；HikTextBox虽有Return→MoveFocus但本叶为普通TextBox",
+        "只采纳用户需求，不虚称已证同一链；一次最小VM操作核宿主按键/焦点流，现行自加键规则不作为原件证据。"
+      ]
+    ],
+    "finalUiReference": {
+      "decision": "用户2026-10-27提供并确认此份从VM原件生成的最终Blob UI预览作为布局、字段顺序、模板/图标和同状态外观对照基准；屏蔽区多形状为用户明确批准的自研扩展，不归称原VM能力。",
+      "source": "C:\\Users\\houzhongjie\\.codex\\visualizations\\2026\\10\\27\\01a17adf-f347-7781-9247-07f4ca161fb1\\vm-blob-target.html",
+      "snapshot": "docs/04-工具设计/架构对照/2026/10/21/自研架构文档维护/优化方案/references/vm-blob-ui-target-20261027.html",
+      "href": "references/vm-blob-ui-target-20261027.html",
+      "sha256": "df78ec69e42eb8c0585eabcead0f52f046d77168fa476fca0bf6a2774bd0c44a",
+      "maskExtension": "检测ROI和屏蔽区使用同一套形状工具结构、原件图标、顺序和布局；屏蔽区不限定多边形。形状取原RoiType.ROISelection（Box/SectorRing/Polygon/Sector）及FullScreenEnable声明，不自行替换成圆形等其他语义。绘制/继承及参数展开使用同一组合，分别绑定检测/屏蔽数据。启用屏蔽区先并集再从检测域扣除；位置修正对两者同步变换，严格核帧身份和生命周期。",
+      "acceptance": "按该预览三页及弹层逐项对照正式WPF；多形状屏蔽逐形状绘制/参数/继承/增删/保存重开、并集扣除/同步位姿、取消释放有真实证据。原HTML辅助说明、示例交互和执行记录不作为算法或WPF已实现依据。"
+    },
+    "roiInteractionContract": {
+      "requirement": "用户2026-10-27补充：选中图像上ROI后的参数显示及参数/图像完整双向交互，含原参数展开/收起。",
+      "evidence": "D:\\Temp\\codex-clipboard-54ead980-a2a6-4b8d-9f49-1d0df2bb3286.png",
+      "sha256": "bd894bc350b399426c1c2921ded952e0ff89e447d990fe4900d3a9a5eabed3a5",
+      "observed": "原VM截图：选中蓝框ROI带编辑柄，参数区显示中心点X/Y、宽、高、角度及收起入口；该图直接支持所示矩形选中态，其他形状交互按原件源码及实际运行分别核证。",
+      "ownership": "同一私有编辑会话中的稳定ROI对象身份同时驱动图形选中和原形状参数栈；不能仅凭列表顺序/显示文本识别对象。检测区和屏蔽区各有数据与选中状态，执行消费开始时冻结的规范几何快照。",
+      "acceptance": [
+        "选择某个ROI→高亮对应对象及编辑柄→参数栈显示该形状的真实几何值；选择变化只换活动对象，不复制第二套几何。",
+        "图像中移动/缩放/旋转/修改顶点→参数区同步该对象；参数合法编辑/步进/Enter提交→同一对象几何与编辑柄同步，双向更新设重入保护且不形成通知循环。",
+        "展开/收起只改变参数栈展示，不丢当前对象/几何；切页、工具模式、绘制/继承、检测/屏蔽选择时状态和可编辑性正确。",
+        "多ROI使用稳定身份切换；删活动对象、复制、撤销重做、引用失效后不得残留错误参数或把旧事件写到另一个对象。",
+        "图像缩放平移和ROI坐标帧保持一致；检测区/屏蔽区同一原件组合但独立数据，位姿修正同步两者；图形结果展示与可编辑ROI分层。",
+        "非法几何/参数不污染草稿；取消不改正式配置；保存重开还原真实几何；换帧/取消/关闭/卸载解除监听和释放资源。"
+      ],
+      "status": "已明确设计与验收要求，实际生产双向链尚未完成，不以HTML选中图标或静态参数行计完成。"
+    },
+    "twoStageGoal": {
+      "state": "新目标active，第一阶段执行中；本批P0修复通过，完整库与第二阶段仍未完成。",
+      "stages": [
+        [
+          "第一阶段：Blob所需控件库",
+          "只迁Blob实际需要的原控件、完整组合和递归依赖，统一Plugin.Wpf管理；原SDK可视控件退出，数据/绑定/生命周期非视觉适配复用正确部分。",
+          "L1源件闭包、L2独立设计/完整交互、L3规定构建/同源正式运行/VM同态与真实人工验收全部具备。"
+        ],
+        [
+          "第二阶段：Blob重组与原型整链",
+          "按原目标Runtime必需/Wpf可选两项目树，XML唯一元数据/显示映射，贯通图像/ROI/屏蔽/位姿、快照、真实HALCON、显示和持久化。",
+          "正式Release完整生产链、有无Wpf/缺Runtime、异常取消/所有权/退出及设计运行人工验收通过，才完成目标。"
+        ]
+      ],
+      "priorityQueue": [
+        [
+          "P0",
+          "当前原色板/图像源候选统一验证归档；数值单/双端、整数/浮点与订阅共享状态及统一提交",
+          "修复非法原文误提交旧DP；Enter合法失焦/非法留焦，保留原绑定与事件。"
+        ],
+        [
+          "P1",
+          "原订阅Popup/树/删除文本组合；原开关/枚举；ROI选择及四形状参数栈",
+          "原件身份与正式来源/几何唯一模型不混用，补必要视口非视觉合同。"
+        ],
+        [
+          "P2",
+          "图形样式/文本显示/结果列表、窗口三页/底栏/主题/资源与SDK视觉退出",
+          "适用组合独立设计、完整交互和真实消费均到位，不能仅导入文件。"
+        ]
+      ],
+      "preservedRequirements": "原s4GoalPlan/G2Acceptance、Blob两工程目标树及完整链路要求均保留；历史31类/194项不作为阶段一数量或前置条件。",
+      "maskAndRoi": "最终UI基准使用已归档vm-blob-ui-target-20261027.html；屏蔽区支持与检测ROI一致的多形状，选中ROI显示原几何参数栈，图形与参数双向编辑并保稳定身份/帧/检测屏蔽隔离。",
+      "manual": "VS已有人确认三页可见及SelectedPageIndex切页；本批新色板和全布局、完整ROI及最终外观尚未人工通过，不代签。"
+    },
+    "recentControlFindings": [
+      [
+        "NumericControl",
+        "原叶RangeRule验证原文；ForceUpdateSource不检查错误，旧StartValue合法不能证明本次输入合法。统一先内后外刷新并检查两级Validation及非空，业务事件提交后按规范值去重。",
+        "待集中实施；不采用TextChanged实时写草稿。"
+      ],
+      [
+        "Apps.PcUI PopupButton / SubTreeView / DeleteTextBox",
+        "原订阅组合家族已核齐；树仅叶双击提交，显示路径不作来源身份。DeleteTextBox真实父类Enter原样MoveFocus(Next)。",
+        "待实施；不得混用同名HikPcUI家族或静态VM业务缓存。"
+      ],
+      [
+        "BooleanControl",
+        "Blob实际消费Apps.XmlUI.ParamTabControl.BooleanControl，原两张PNG一致。SourceBooleanToggle为重复同源类型，消费者迁完后删除。",
+        "待集中实施；false按原HiddenOperation隐藏范围，不能只灰置。"
+      ],
+      [
+        "SectorRingROIStack",
+        "原件仅中心X/Y、外/内半径，是完整圆环；两半径都按图宽归一化。",
+        "规范annulus使用0至2π，不写零跨度，不吞已有部分角区间。"
+      ],
+      [
+        "PolygonROIStack",
+        "原件是点X/Y列表，未提供增删按钮；SliderArrangePoint原哈希定位有重复点串改风险。",
+        "按同ROI/代次/顶点槽位非视觉适配，拓扑由图像合同承接；当前仍有合同缺口。"
+      ],
+      [
+        "SectorROIStack",
+        "原BeginAngle+AngleRange表示顺时针正跨度，非EndAngle；起始角修改保持跨度，跨零不折最短弧。",
+        "规范annulus保start至start+sweep，整环明确2π，不能零跨度。"
+      ],
+      [
+        "ROI图像视口",
+        "原ImageViewBox→ROIItemsPage已有2D层；选择实际走RoiSelectedCommand，非未触发的RoiSelectedEvent。",
+        "SDK ImageControl+自绘RoiLayer待退出，场景/帧/手势预览提交合同需集中补齐。"
+      ],
+      [
+        "图形样式原组合",
+        "Apps.PcUI.PopupButton，260宽/120或150高/102标签列，原OK/NG/透明度/条件粗细，无局部确定取消。",
+        "立即写外层私有显示草稿；现DisplayObjectField整组待替换，不冒称已接Blob完整显示。"
+      ],
+      [
+        "本批来源候选审查",
+        "Refresh先清Items后查询会丢展示且错误不能自动恢复；同字段Render旧Combo回调缺代次。",
+        "已修并通过正式FieldEditing038新增三组：失败恢复/错误隔离/旧渲染及Dispose迟到事件；生产图与保存链仍由RuntimeEditor031验证。"
+      ],
+      [
+        "本批色板审查",
+        "原默认/更多、双向绑定/拒绝恢复已同源通过；Catalog补色谱原图SHA。",
+        "递归Dispose、排队任务失效和真实所有者已修并通过WindowPresentation027两组；原Advanced初始化分支及真实VS/用户另待核。"
+      ],
+      [
+        "原文本显示组",
+        "原七字段为内容、OK/NG、字号6–72、透明度0–1、位置XY；后两项可引用当前节点结果。",
+        "非算法参数；Blob显示生产消费尚缺，不套输入图禁止自引用规则。"
+      ],
+      [
+        "原结果列表纠正",
+        "Display原9特征列外，ModuleResultView另加Number序号，实际10列；本方Angle/LongAxis/ShortAxis缺正式成员。",
+        "原DataGrid样式闭包可复用，不能用bounds/label冒充轴长/序号，不声明VM数值等价。"
+      ],
+      [
+        "C02原主题差异",
+        "实际主题仍经EditorResources→Generic/VmFieldStyles继承，Col_Theme不同于原主题1；9张图及原源SHA已核。",
+        "目录已登记真实依赖/原滚动源；原主题隔离列入下一公共库批，不将原模板装载当视觉通过。"
+      ]
+    ],
+    "candidateCheckpoint": {
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_LIFECYCLE_CHECKPOINT_20261027.json",
+      "sourceBaseline": "0de8f74e754b415425a6901e44d840e8d4e100ac",
+      "buildId": "development-3ca5b47c376441599acf1c1569e44d42",
+      "checks": "FieldEditing038=12；DesignTime007=15；WindowPresentation027=13；RuntimeEditor031=9；FullChain088=7；Components175=9；真实EXE工具箱22",
+      "identity": "19项源码增量、760发布项、174加载记录SHA逐项核对；编译身份仍0de8f74e加列明增量，不改写为后续提交。",
+      "status": "本批来源恢复/旧回调/递归释放已验证；不是控件库整体完成、完整Blob显示或真实VS/人工验收。"
+    },
+    "candidateCheckpointHistory": [
+      {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_PALETTE_CHECKPOINT_20261027.json",
+        "sourceBaseline": "0de8f74e754b415425a6901e44d840e8d4e100ac",
+        "buildId": "development-cbb0eb9e8e5a40ae88f1c85371077736",
+        "checks": "FieldEditing037=9；DesignTime006=15；WindowPresentation025=11；RuntimeEditor030=9；FullChain087=7；Components174=9；实际EXE工具箱22",
+        "identity": "17份源码增量、760发布项、174加载记录逐SHA核对；后续修改须重新构建，不能套本候选成绩。",
+        "status": "候选验证记录，不是本批完整交付/控件库阶段完成/人工验收。"
+      }
+    ],
+    "implementationFailures": [
+      "保留此前WPF临时生成、Popup资源顺序、标题继承与局部payload SHA拒绝记录。",
+      "WindowPresentation026两失败为测试夹具DialogGroup的子字段缺DialogTitle，被正式元数据合同拒绝；补完整夹具后027十三组通过，未修改产品合同绕过。"
+    ]
   }
 }

@@ -11,7 +11,8 @@ public sealed class DeclaredInputFieldsView : StackPanel
     public IReadOnlyList<DeclaredFieldEditor> Fields { get; }
     public DeclaredInputFieldsView(ToolSchema schema, Func<Port,ParameterSetting> read,
         Action<Port,ParameterSetting> write, Func<Port,ReferenceSetting?> select,
-        Func<OutputReference,string>? format=null)
+        Func<OutputReference,string>? format=null,
+        Func<Port,IReadOnlyList<DeclaredReferenceCandidate>>? referenceCandidates=null)
     {
         var fields=new List<DeclaredFieldEditor>();
         foreach(var group in (schema.Presentation??throw new ArgumentException("Input presentation is required.")).Fields.GroupBy(f=>f.Layout!.Section))
@@ -23,6 +24,8 @@ public sealed class DeclaredInputFieldsView : StackPanel
                 var editor=new DeclaredFieldEditor(port with{Required=port.Required&&schema.WorkflowImageInputId!=port.Id,EditModes=FieldEditModes.Reference},
                     field.DisplayName,read(port),setting=>write(port,setting),select,formatReference:format,
                     presentation:field,allowUnboundReference:!port.Required||schema.WorkflowImageInputId==port.Id);
+                if(port.Id==schema.WorkflowImageInputId)
+                    editor.UseImageSourceSelector(()=>referenceCandidates?.Invoke(port)??Array.Empty<DeclaredReferenceCandidate>());
                 fields.Add(editor);Children.Add(editor);
             }
         }

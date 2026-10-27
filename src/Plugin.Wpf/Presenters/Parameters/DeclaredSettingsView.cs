@@ -44,6 +44,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         if(_fields is not null)
         {foreach(var field in _fields.Fields)field.Changed-=OnChanged;_fields.PageChanged-=OnPageChanged;}
         if(_inputContent?.Parent is Panel parent)parent.Children.Remove(_inputContent);
+        _fields?.Dispose();
         _inputContent=null;_fields=null;Content=null;_references.Clear();
     }
     private void Rebuild()

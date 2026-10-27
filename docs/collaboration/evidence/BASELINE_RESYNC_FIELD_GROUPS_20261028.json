@@ -1,0 +1,73 @@
+{
+  "mainBefore": "20aff9e4937547b19711eda1129cf7b874081eba",
+  "workflowBefore": "863c0ce1e93e9c8fd7e82288fc4423abca6d0618",
+  "aheadBehind": "2/0",
+  "workflowClean": true,
+  "excludedFiles": [
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "e85139b30f0321ad25abda0c1fc4178522622e2e782861a5c1d7a93fd51c0242"
+    },
+    {
+      "path": "scripts/verification/S4DesignTimeCases.cs",
+      "sha256": "4cd727bcec4dbbbfa6c72124a389174747ba0f4d6854791f8fbef939e2e18bbd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "c61d6dca306e2a1336ea9518b10c863523b335672b62f280155f39c6da25b009"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
+      "sha256": "8c007f11d8d6a367401775bbbf9368598e29c6f52b38feae67a54d5b9ddebfb9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeRoiDesignData.cs",
+      "sha256": "ed38c4c40ae5096a78d90601feb85a51a98adeab820af02a5e5115dd756ab727"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "8854a348e819dcf2cc149639a3075a569e151a43a36de11ab7d9e58b2ccc91b9"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "e4683f40bd40ad4427f54517ff7a1aa8d4553ad6fcfffa3056ec66bbaf354a62"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "sha256": "62122404a306b12cd50565e25081b3bca5573d30aa4412fe078af3d39980e93b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "d1cbcac51ee4b03c7da9d9f86cca27678b279b3774e4f49c5e29a16012e071af"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "4d3fbebea6abf097ffa08532cbb2ca996779a0ae78394df0b8f3bff669a6f1f3"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
+      "sha256": "fed8a221c0b49032c8802964b6992abd26b53b093b4f29e33a42eca0feecde77"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
+      "sha256": "3eacec674a6653566d1105db3254500903d971b6fda7c30c0f25f4c866f5d9cf"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeRoiSamples.cs",
+      "sha256": "d968d687af6f95cbb2bd56fddad13be450645188a7f0ff51d6fc41c794d42c6d"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
+      "sha256": "6fa5a38dcbebf0c2c88efb237427e007db04e4856713f66442abaab4b05311cd"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/FieldGroupCandidate.cs",
+      "sha256": "4ec4e69b2de4de056ad7b684e17804db212412eb2328049db251d2b87eae913f"
+    }
+  ],
+  "validation": "同步已封存提交，不重建、不部署、不推送。当前候选UI001零错误6559警告，仅候选编译，未完成回归，不纳入共同基线。"
+}

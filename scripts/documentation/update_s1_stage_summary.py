@@ -340,6 +340,13 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['nativeRoiDrawingCandidate'].items()])
                if plan.get('nativeRoiDrawingCandidate') else '')
+            + ('<h5 id="o06-native-polygon-modal">C08原多边形上限提示窗与租约恢复</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativePolygonModalCandidate'].items()])
+               if plan.get('nativePolygonModalCandidate') else '')
+            + ('<h5 id="o06-text-list-footer-audit">文本、结果列表与底栏的原组合缺口</h5>'
+               + table(['组合','当前缺口与后续边界'], list(plan['remainingControlAudit20261028'].items()))
+               if plan.get('remainingControlAudit20261028') else '')
             + ('<h5 id="o06-baseline-sync-20261027">控件库与工作流统一开发基线</h5>'
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['baselineSynchronization'].items()])

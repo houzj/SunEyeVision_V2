@@ -27,7 +27,7 @@
       "SliderArrangePoint从实际ToBtn所在祖先找并存ScrollViewer；开关层、卸载、换模板直接退保存实例；原偏移超过3关闭规则保留",
       "UpdateWindow的Auto尺寸转int未证安全；原句柄可用时仅改Z序的NOSIZE/NOMOVE/NOACTIVATE，不能传NaN尺寸"
     ],
-    "currentStatus": "原参数栈/投影/图像聚焦自动链已过，见O06_POLYGON_SCENE_CHECKPOINT_20261027.json；绘制拓扑/原宿主/独立VS/物理指针仍未完。"
+    "currentStatus": "原参数栈/投影/图像/四形状绘制及原上限模态已完成本批聚焦自动验证；最新O06_NATIVE_POLYGON_MODAL_CHECKPOINT_20261028.json。不是完整C08、真实VS/VM同态/物理指针或用户验收。"
   },
   "drawingInheritance": {
     "source": "安装Module(sp)/Group.xml:42-110,1308-2118,2489-2603,2621起；原Radio模板pending:1336-1447",
@@ -38,7 +38,8 @@
       "当前RegionSourceModeSelector手工Radio缓存不能当最终原件；本批不接Blob字段或SDK"
     ],
     "concreteGap": "原按钮保RoiType/组/版本并由唯一视口接收；四原替身→原完成入口→宿主Create分配ID已通过自动链。仍缺原多边形超限模态、继承/来源、位姿、多对象菜单/宿主历史、物理指针及VM/VS人工。不计完整C08或阶段一。",
-    "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json"
+    "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json",
+    "modalStatus": "原HikMessageBox与原模板资源已接，确切Owner/同租约恢复、取消/修订/重绑/Owner关闭及观察者异常均有当前正式回归；继承/来源/位姿仍未完成。"
   },
   "c01Host": {
     "source": "原Apps.XmlUI ParamListView/ParamUserControl/globalresources/LeftRightControl；原SHA由只读核收给出，激活前再次独立复核",

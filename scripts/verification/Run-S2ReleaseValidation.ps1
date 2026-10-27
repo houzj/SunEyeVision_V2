@@ -97,7 +97,7 @@ $process.StartInfo=$launch
 if(-not $process.Start()){throw 'S2自有检查进程启动失败'}
 $stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync()
 $finished=$process.WaitForExit(90000)
-if(-not $finished){$process.Kill();$process.WaitForExit()}
+if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 [IO.File]::WriteAllText((Join-Path $logDir 'run-error.log'),$stderr.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
 if(-not $finished){throw 'S2自有检查进程超时，已停止该自有进程'}

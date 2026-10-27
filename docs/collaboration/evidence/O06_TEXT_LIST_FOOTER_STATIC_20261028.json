@@ -1,0 +1,57 @@
+{
+  "status": "STATIC_ONLY_NOT_IMPLEMENTED_OR_ACCEPTED",
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\StringConfig.cs",
+      "sha256": "323dca952ffa87ec774c8546f3949cc5205a1e9860bd70361efe1e5c91f3cfce"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\DeleteTextBox.xaml.cs",
+      "sha256": "303385857c5c26740d3d2634d149e90bf610c1677cb94d99e3ed39bfa069525a"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.Commom\\ParamsEventCommand.cs",
+      "sha256": "8c8bf72b18872fde6eb30f3b0a8a949f86a4db39a5bc16eab440d6505d89d806"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+      "sha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "sha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\docs\\architecture-recovery\\tool-rendering-entry-audit.resources\\IMVSBlobFindModuDisplay.xml",
+      "sha256": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\styles\\moduleviewstyle.xaml",
+      "sha256": "2e195d69c45de43c2dca7528705959f4127207722abde533b49f7d3e70305d9b"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI\\ParamsTabUserControl.xaml",
+      "sha256": "521817a08e66898ba9acbcce6753716713149c878270c524e1e3ce9550f3c8c7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+      "sha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc"
+    }
+  ],
+  "findings": {
+    "C13文本显示": "原7行：StringConfig占位符内容、OK/NG原色板、字号原Float 6..72步1、透明度0..1步0.1、X/Y原ButtonSelecter订阅。当前DisplayObjectField自绘铅笔/更多和普通字符串框不是原完整组合；字号1..1000及常量X/Y也未对齐。FocusedCommand来自DeleteTextBox.SelectionChanged，IndexClickCommand替换光标花括号内部而非C07列表索引；宿主文本解析/格式化执行链未证，不冒称动态文本完成。",
+    "C14结果列表": "原Display XML是序号及Area/Perimeter/CentroidX/CentroidY/Angle/LongAxis/ShortAxis/Circularity/Rectangularity十列。当前8列及均值/最大/阈值摘要非该原组合。公共库仅迁CurResultDataGridStyle等原列表依赖，不迁整个VM业务。Runtime当前缺Angle/LongAxis/ShortAxis，应留第二阶段实际算法/合同处理，不能用Bounds宽高冒充。Update(null)不能区分Empty/Failed，需显式显示状态。",
+    "C15底栏": "原BottomCommandGroup→ParamsTabUserControl两行ItemsControl→四原执行模板→BottomButtonStyle；不是ComprehensiveConfigControl。库只发宿主执行/停止/确定请求，不保DefaultDebugWindow内Task.Delay/Dispatcher连续循环；运行冻结/取消与结果租约由宿主执行层负责。",
+    "优先顺序": "先原整数Radio与继承/来源/位姿，再原对象菜单和宿主历史；并行只读补C13/C14/C15证据。根唯一写者，不为赶进度增加多写者或缩减最终清单。"
+  },
+  "stringInsertion": {
+    "selection": "SelectionChanged only no selection or full selection; Text/IsFocused/SelectionStart payload",
+    "example": "aa{old}bb -> aa{ModulePathName}bb",
+    "identity": "host must provide stable output expression formatting; do not substitute display labels or BindingSelection",
+    "lifecycle": "verify current owner/text/caret bracket span/candidate generation; refresh does not write; stale/hide/unload cancels"
+  }
+}

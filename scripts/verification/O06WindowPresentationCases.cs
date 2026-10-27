@@ -664,23 +664,114 @@ internal static class S2DocumentEditingCases
   const BindingFlags hidden=BindingFlags.Instance|BindingFlags.NonPublic;
   object Drawing(NativeRoiViewport view)=>typeof(NativeRoiViewport).GetField("_drawing",hidden)!.GetValue(view)!;
   void Step(object drawing,string method,params object[] args)=>drawing.GetType().GetMethod(method,hidden)!.Invoke(drawing,args);
+  void Prime(Window window,FrameworkElement element,Point point)
+  {
+   if(!window.IsVisible||!element.IsLoaded)return;
+   var position=element.TranslatePoint(point,window);position=PresentationSource.FromVisual(element)!.CompositionTarget.TransformToDevice.Transform(position);
+   SendMessage(new System.Windows.Interop.WindowInteropHelper(window).Handle,0x0200,IntPtr.Zero,new IntPtr(((int)position.Y<<16)|((int)position.X&0xffff)));
+  }
   Native.Display.VMBaseControls.Base.ImageView.ROIItemsPage Begin(NativeRoiScene scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType type,Point start)
   {
-   owner.Width=1040;scene.Height=500;owner.UpdateLayout();owner.Activate();Pump();
+   var window=Window.GetWindow(scene)!;window.Width=1040;scene.Height=500;window.UpdateLayout();window.Activate();Pump();
    var button=Visuals<ToggleButton>(scene.Editor).Single(item=>Equals(item.CommandParameter,type));
    Require(button.Command?.CanExecute(button.CommandParameter)==true,"原选择按钮不可执行");button.Command!.Execute(button.CommandParameter);
    var view=scene.Viewport.NativeView;view.ApplyTemplate();
    var page=(Native.Display.VMBaseControls.Base.ImageView.ROIItemsPage)view.Template.FindName("mROIView",view);
    // Prime only this owned window's input provider; geometry methods below remain semantic automation.
-   var position=page.TranslatePoint(new Point(start.X*page.ControlToImageRadio,start.Y*page.ControlToImageRadio),owner);
-   position=PresentationSource.FromVisual(page)!.CompositionTarget.TransformToDevice.Transform(position);
-   var hwnd=new System.Windows.Interop.WindowInteropHelper(owner).Handle;var coordinates=new IntPtr(((int)position.Y<<16)|((int)position.X&0xffff));
-   var before=$"request={scene.Session?.ActiveDraw?.Kind},page={page.ImageWidth}x{page.ImageHeight},loaded={page.IsLoaded},visible={page.IsVisible},enabled={page.IsEnabled},hit={page.IsHitTestVisible},host={page.SubstituteHost},ratio={page.ControlToImageRadio},size={page.ActualWidth}x{page.ActualHeight},active={owner.IsActive},viewport={scene.Viewport.ActualWidth}x{scene.Viewport.ActualHeight}";
-   SendMessage(hwnd,0x0200,IntPtr.Zero,coordinates);
+   var before=$"request={scene.Session?.ActiveDraw?.Kind},page={page.ImageWidth}x{page.ImageHeight},loaded={page.IsLoaded},visible={page.IsVisible},enabled={page.IsEnabled},hit={page.IsHitTestVisible},host={page.SubstituteHost},ratio={page.ControlToImageRadio},size={page.ActualWidth}x{page.ActualHeight},active={window.IsActive},viewport={scene.Viewport.ActualWidth}x{scene.Viewport.ActualHeight}";
+   Prime(window,page,new(start.X*page.ControlToImageRadio,start.Y*page.ControlToImageRadio));
    var startHook=(Delegate)view.GetType().GetProperty("NativeDrawStart",hidden)!.GetValue(view)!;
    Require((bool)startHook.DynamicInvoke(page,new Point(start.X*page.ControlToImageRadio,start.Y*page.ControlToImageRadio))!,"原视口未开始绘制："+before+",capture="+Mouse.Captured+",error="+scene.Session?.Error);
    Require(page.SubstituteHost.Children.OfType<Native.Display.VMBaseControls.Base.ImageView.ROI.ROISubstitute>().Count()==1&&ReferenceEquals(Mouse.Captured,page),"未使用原替身或未持有捕获");return page;
   }
+  void Warning(NativeRoiScene scene,object drawing,Action<Native.Display.VMControls.HikMessageBox> inspect)
+  {
+   var window=Window.GetWindow(scene)!;var page=(Native.Display.VMBaseControls.Base.ImageView.ROIItemsPage)drawing.GetType().GetProperty("Page",hidden)!.GetValue(drawing)!;
+   var timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromMilliseconds(20)};var deadline=DateTime.UtcNow.AddSeconds(8);Exception? error=null;var observed=false;
+   EventHandler tick=(_,_)=>
+   {
+    var dialog=window.OwnedWindows.OfType<Native.Display.VMControls.HikMessageBox>().SingleOrDefault(item=>item.IsVisible&&item.IsLoaded);
+    if(dialog is null){if(DateTime.UtcNow>deadline){error=new Exception("原警告窗未在限时内加载");timer.Stop();((IDisposable)drawing).Dispose();}return;}
+    timer.Stop();observed=true;
+    try{inspect(dialog);}catch(Exception exception){error=exception;}
+    finally
+    {
+     try{if(dialog.IsVisible)((Button)dialog.FindName("OkBtn")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Prime(window,page,new(20*page.ControlToImageRadio,20*page.ControlToImageRadio));}
+     catch(Exception exception){error=error is null?exception:new AggregateException(error,exception);}
+    }
+   };
+   timer.Tick+=tick;timer.Start();try{Step(drawing,"Click",1);}finally{timer.Stop();timer.Tick-=tick;}
+   if(error is not null)throw error;Require(observed,"超限未经过原模态警告窗");
+  }
+  void AtLimit(object drawing,double ratio)
+  {
+   Step(drawing,"Move",new Point(100*ratio,20*ratio),true);Step(drawing,"Click",1);
+   Step(drawing,"Move",new Point(80*ratio,100*ratio),true);Step(drawing,"Click",1);Step(drawing,"Move",new Point(20*ratio,90*ratio),true);
+  }
+  Test("原绘制上限原警告窗真实Owner模板与暂停恢复",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(640,320,new byte[204800]));using var session=model.Open();using var scene=new NativeRoiScene{Session=session};Show(scene);
+   scene.Viewport.NativeView.SetValue(Native.Display.VMBaseControls.Base.ImageView.ROI.PolygonROIAttach.CustomMaxPointNumProperty,3);
+   var page=Begin(scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon,new(20,20));var drawing=Drawing(scene.Viewport);AtLimit(drawing,page.ControlToImageRadio);
+   Warning(scene,drawing,dialog=>
+   {
+    Require(ReferenceEquals(dialog.Owner,owner)&&dialog.Template is not null&&Native.Display.VMControls.HikMessageBox.Alive&&dialog.Message.EndsWith(" 3",StringComparison.Ordinal),$"未使用原Owner/模板/消息/模态计数：owner={ReferenceEquals(dialog.Owner,owner)},template={dialog.Template},alive={Native.Display.VMControls.HikMessageBox.Alive},message={dialog.Message}");
+    Require(((Image)dialog.FindName("Icon")).Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&((Button)dialog.FindName("GetInfo")).IsVisible,"原Warning图标或原按钮缺失");
+    var ok=(Button)dialog.FindName("OkBtn");var caption=Visuals<TextBlock>(ok).Single(text=>text.Text==ok.Content?.ToString());
+    Require(dialog.IsEnabled&&ok.IsVisible&&ok.IsEnabled&&caption.Foreground is SolidColorBrush foreground&&ok.Foreground is SolidColorBrush expected&&foreground.Color==expected.Color,"原确定按钮不可用或文字被宿主隐式样式污染");
+    var diagnostic=(string)dialog.GetType().GetMethod("WriteDiagnostic",hidden)!.Invoke(dialog,null)!;
+    Require(File.Exists(diagnostic)&&File.ReadAllText(diagnostic).Contains("WriteDiagnostic",StringComparison.Ordinal),"独立原窗诊断目录/文件未创建");
+    Require(!ReferenceEquals(Mouse.Captured,page)&&!(bool)scene.Viewport.NativeView.GetType().GetProperty("IsDrawingOfROI",hidden)!.GetValue(scene.Viewport.NativeView)!,"模态期间未暂停原绘制/捕获");
+    var polygon=(Native.Display.VMBaseControls.Base.ImageView.ROI.PolygonROISubstitute)drawing.GetType().GetProperty("Substitute",hidden)!.GetValue(drawing)!;var before=polygon.Points.ToArray();
+    Step(drawing,"Move",new Point(300,200),true);Step(drawing,"Back");Step(drawing,"Click",2);Require(polygon.Points.SequenceEqual(before)&&model.Attempts==0,"模态期间仍能修改/提交图形");
+    var snapshot=new RenderTargetBitmap((int)Math.Ceiling(dialog.ActualWidth),(int)Math.Ceiling(dialog.ActualHeight),96,96,PixelFormats.Pbgra32);snapshot.Render(dialog);
+    var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(snapshot));using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-polygon-limit-warning.png"));encoder.Save(file);
+   });
+   Require(session.ActiveDraw is not null&&ReferenceEquals(Mouse.Captured,page)&&!Native.Display.VMControls.HikMessageBox.Alive,"模态结束未恢复同请求捕获或漏计数");
+   Step(drawing,"Move",new Point(80*page.ControlToImageRadio,100*page.ControlToImageRadio),true);Step(drawing,"Click",1);Step(drawing,"Click",2);
+   Require(model.Writes==1&&RoiGeometryEditing.Vertices(model.Rows[0].Geometry).Length==3&&session.ActiveDraw is null,"超限回退后未能完成原三顶点候选");
+  });
+  foreach(var action in new[]{"取消","版本变化","重绑","Owner关闭"})
+  Test("原绘制上限模态期间"+action+"不恢复旧捕获与回写",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);var model=new RoiHost(image);var next=new RoiHost(image);using var session=model.Open();using var nextSession=next.Open();using var scene=new NativeRoiScene{Session=session};
+   Window? separate=null;
+   try
+   {
+    if(action=="Owner关闭"){separate=new Window{Width=1040,Height=600,Content=scene};separate.Show();Pump();}else Show(scene);
+    scene.Viewport.NativeView.SetValue(Native.Display.VMBaseControls.Base.ImageView.ROI.PolygonROIAttach.CustomMaxPointNumProperty,3);
+    var page=Begin(scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon,new(20,20));var drawing=Drawing(scene.Viewport);var canvas=page.SubstituteHost;AtLimit(drawing,page.ControlToImageRadio);
+    Warning(scene,drawing,_=>{if(action=="取消")session.CancelDraw();else if(action=="版本变化"){model.Revision++;session.Refresh();}else if(action=="重绑"){scene.Session=nextSession;Require(nextSession.BeginDraw("rectangle") is not null,"新会话未准备绘制");}else{Console.WriteLine("TRACE 自有Owner关闭前");separate!.Close();Console.WriteLine("TRACE 自有Owner关闭返回");}});
+    Require(session.ActiveDraw is null&&model.Attempts==0&&!ReferenceEquals(Mouse.Captured,page)&&!canvas.Children.OfType<Native.Display.VMBaseControls.Base.ImageView.ROI.ROISubstitute>().Any()&&!Native.Display.VMControls.HikMessageBox.Alive,"旧模态复活/写入/漏替身或计数");
+    if(action=="重绑"){Require(nextSession.ActiveDraw is not null,"旧模态取消新会话请求");nextSession.CancelDraw();}
+   }
+   finally{separate?.Close();}
+  });
+  Test("原绘制上限警告创建未显示就取消或抛错不污染Alive计数",()=>
+  {
+   var show=typeof(Native.Display.VMControls.HikMessageBox).GetMethod("ShowOwnedWarning",BindingFlags.Static|BindingFlags.NonPublic)!;
+   show.Invoke(null,new object[]{owner,"测试",new Action<Native.Display.VMControls.HikMessageBox>(window=>window.Close()),new Func<bool>(()=>false)});
+   Require(!Native.Display.VMControls.HikMessageBox.Alive,"未显示关闭减坏计数");
+   var threw=false;try{show.Invoke(null,new object[]{owner,"测试",new Action<Native.Display.VMControls.HikMessageBox>(_=>throw new InvalidOperationException("预期创建取消")),new Func<bool>(()=>true)});}catch(TargetInvocationException error)when(error.InnerException is InvalidOperationException){threw=true;}
+   Require(threw&&!Native.Display.VMControls.HikMessageBox.Alive,"创建异常漏窗或污染模态计数");
+  });
+  Test("原绘制上限Closing拒绝及异常与Closed失败都保留清理",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(640,320,new byte[204800]));using var session=model.Open();using var scene=new NativeRoiScene{Session=session};Show(scene);
+   scene.Viewport.NativeView.SetValue(Native.Display.VMBaseControls.Base.ImageView.ROI.PolygonROIAttach.CustomMaxPointNumProperty,3);
+   var page=Begin(scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon,new(20,20));var drawing=Drawing(scene.Viewport);AtLimit(drawing,page.ControlToImageRadio);
+   Native.Display.VMControls.HikMessageBox? closed=null;var closedNotifications=0;
+   Warning(scene,drawing,dialog=>
+   {
+    System.ComponentModel.CancelEventHandler? reject=null;reject=(_,args)=>{dialog.Closing-=reject;args.Cancel=true;};dialog.Closing+=reject;((Window)dialog).Close();
+    Require(dialog.IsVisible&&Native.Display.VMControls.HikMessageBox.Alive,"一次Closing拒绝伪装已经关闭");
+    System.ComponentModel.CancelEventHandler? broken=null;broken=(_,_)=>{dialog.Closing-=broken;throw new InvalidOperationException("预期Closing通知失败");};dialog.Closing+=broken;
+    ((Window)dialog).Close();
+    Require(dialog.LastCloseError is InvalidOperationException&&dialog.IsVisible&&Native.Display.VMControls.HikMessageBox.Alive,"Closing异常未记录、丢失窗口或提前退休计数");
+    closed=dialog;dialog.Closed+=(_,_)=>{closedNotifications++;throw new InvalidOperationException("预期Closed通知失败");};
+   });
+   Require(session.ActiveDraw is not null&&!Native.Display.VMControls.HikMessageBox.Alive&&closed?.LastCloseError is InvalidOperationException&&!closed.IsVisible&&closedNotifications==1,"关闭通知失败后漏窗/计数或丢绘制");closed.Close();Require(closedNotifications==1,"重复清理重新触发已关闭通知");session.CancelDraw();
+  });
   foreach(var type in new[]{Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Sector,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon})
   Test("原绘制视口原按钮到替身及完成入口一次宿主创建："+type,()=>
   {

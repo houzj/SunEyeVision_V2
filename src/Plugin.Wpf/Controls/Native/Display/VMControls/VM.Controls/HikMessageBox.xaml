@@ -3,6 +3,7 @@
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml" />
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/buttonsstyle.xaml" />
         <x:StaticExtension Member="vm_port_0:LocalizationResourceDictionary.Instance" />
       </ResourceDictionary.MergedDictionaries>
@@ -170,7 +171,7 @@
               </Grid>
               <ControlTemplate.Triggers>
                 <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="Image" Property="Image.Source" Value="../Resources/ic_log_fold_click.png" />
+                  <Setter TargetName="Image" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_click.png" />
                 </Trigger>
               </ControlTemplate.Triggers>
             </ControlTemplate>
@@ -184,10 +185,10 @@
               </Grid>
               <ControlTemplate.Triggers>
                 <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="Image" Property="Image.Source" Value="../Resources/msg_close_click.png" />
+                  <Setter TargetName="Image" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/resources/msg_close_click.png" />
                 </Trigger>
                 <Trigger Property="ButtonBase.IsPressed" Value="True">
-                  <Setter TargetName="Image" Property="Image.Source" Value="../Resources/msg_close_click.png" />
+                  <Setter TargetName="Image" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Display/VMControls/resources/msg_close_click.png" />
                 </Trigger>
               </ControlTemplate.Triggers>
             </ControlTemplate>

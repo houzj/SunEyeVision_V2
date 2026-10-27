@@ -1778,7 +1778,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
-          "sha256": "cdee0461c2cfd98580012dbaea90e077006dff32a78828a9dbce53330dbb640b"
+          "sha256": "cde519250590bfbc2fe09b4eedb02139974c520516a0fe9ee8c9a0870f0e7af9"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
@@ -2377,7 +2377,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "eeb7cd1e5479d7065d64b570cfc2da9dcceef1d839e20f65eb7c569e20a2d95e"
+          "sha256": "7811dcc2bc3b9d3d196e2e7a83204d2e1ecf56fa0952cbe4aad077af0d29de39"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
@@ -2401,7 +2401,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs",
-          "sha256": "a313a19a8b4c3f3cb8b69576c07d36dc5aacff74e1edfb99e818f9fc282797f6"
+          "sha256": "5df1d95820b9df12125d2bab4f6116604e24cba3dafb3357ec3feaf244e4ad29"
         },
         {
           "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs",
@@ -2414,7 +2414,7 @@
         "NativeRoiScene + Design/NativeRoiScene.xaml via same real Editor/Viewport/Session and original parameter host"
       ],
       "status": "BOX_RING_SECTOR_FOCUSED_AUTOMATION_PASSED_FULL_C08_INCOMPLETE",
-      "adaptation": "Common fixed-frame session and transient projections; atomic host-owned ScopeId/Revision/Frame acceptance contract; read-only row collection installed before observer notifications. Original bound geometry/layout properties use SetCurrentValue, exact capture-failure cleanup and template detachment. Original Sector full-circle migration render fix uses two EllipseGeometry EvenOdd, preserving six-field Sector identity; this local fix does not prove a vendor runtime bug. Internal numeric TextBox leaves isolate page implicit MinHeight; dirty baseline uses actual original binding StringFormat. InvariantCulture parsing. Local resource closure and URI/namespace adaptations. LeftRightControl ParamListView ancestor remains temporarily ItemsControl until full C01 host. Session/projections/presenters are local lifecycle adapters, not vendor source. Original Circle geometry/layout setters preserve bindings; exact capture/template lifecycle cleanup. Reentrant binding update and reject recovery freeze real inputs and verify current lease; same-root rejection defers notification projection, explicit success forces final projection. Full annulus only, original endpoints preserved; no CircleMes single-radius substitute. Explicit Create/Replace and affected host identity; original four substitute visuals and selected mouse geometry with instance-owned capture/template/frame lease. Both original completion entrances intercept before IList mutation. Drawing capture capability is separate from original ROIHitTestVisible business gates; original ItemsPresenter branch consumes its own host-hit DP. Direct radius avoids center-add/subtract cancellation. Polygon limit warning remains status-only, not original modal behavior.",
+      "adaptation": "Common fixed-frame session and transient projections; atomic host-owned ScopeId/Revision/Frame acceptance contract; read-only row collection installed before observer notifications. Original bound geometry/layout properties use SetCurrentValue, exact capture-failure cleanup and template detachment. Original Sector full-circle migration render fix uses two EllipseGeometry EvenOdd, preserving six-field Sector identity; this local fix does not prove a vendor runtime bug. Internal numeric TextBox leaves isolate page implicit MinHeight; dirty baseline uses actual original binding StringFormat. InvariantCulture parsing. Local resource closure and URI/namespace adaptations. LeftRightControl ParamListView ancestor remains temporarily ItemsControl until full C01 host. Session/projections/presenters are local lifecycle adapters, not vendor source. Original Circle geometry/layout setters preserve bindings; exact capture/template lifecycle cleanup. Reentrant binding update and reject recovery freeze real inputs and verify current lease; same-root rejection defers notification projection, explicit success forces final projection. Full annulus only, original endpoints preserved; no CircleMes single-radius substitute. Explicit Create/Replace and affected host identity; original four substitute visuals and selected mouse geometry with instance-owned capture/template/frame lease. Both original completion entrances intercept before IList mutation. Drawing capture capability is separate from original ROIHitTestVisible business gates; original ItemsPresenter branch consumes its own host-hit DP. Direct radius avoids center-add/subtract cancellation. Original polygon limit modal now connected; see C08.original-polygon-limit-warning for exact source closure and lease adaptations.",
       "remaining": [
         "Polygon original branch; complete drawing and creation host contract",
         "Drawing/inheritance/pose source compositions",
@@ -2430,7 +2430,8 @@
         "iconSource": "O06_RING_CIRCLE_ICON_SOURCE_20261027.json",
         "checkpoint": "O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json",
         "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json",
-        "drawingStatus": "Current batch: UI004/full001 zero errors; Window final 81 including 17 drawing protocol/composition cases; six-track checkpoint authoritative. Native pointer/VS/VM/manual and full C08 incomplete."
+        "drawingStatus": "Current batch: UI004/full001 zero errors; Window final 81 including 17 drawing protocol/composition cases; six-track checkpoint authoritative. Native pointer/VS/VM/manual and full C08 incomplete.",
+        "modalCheckpoint": "O06_NATIVE_POLYGON_MODAL_CHECKPOINT_20261028.json"
       },
       "polygonPrerequisites": {
         "status": "FOCUSED_FORMAL_AUTOMATION_PASSED",
@@ -2489,6 +2490,218 @@
         ],
         "evidence": "docs/collaboration/evidence/O06_STANDALONE_ROI_SCENE_CHECKPOINT_20261028.json",
         "validation": "UI006/全量Release002零错误；Window110=64、Field073=31、Design036=69、RuntimeEditor054=10、FullChain114=8、Components196=9；正式EXE008 exit0，22可用工具15分类。四形状实际PNG查看，不代VS/VM/人工。"
+      }
+    },
+    {
+      "id": "C08.original-polygon-limit-warning",
+      "assembly": "VM.Controls",
+      "assemblyMvid": "2d174a48-36d4-4962-85a0-0f67865e316f",
+      "assemblySha256": "d36462c981f1db26a377c84a7e0c7de26f0f14eef92e41a4ed0acc24e4adb222",
+      "assemblyPath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VM.Controls.dll",
+      "identityEvidence": "Installed PE metadata read-only audit 2026-10-28; no assembly execution. Exact raw decompiled sources independently SHA checked.",
+      "sourceFiles": [
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "BaseWindow.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\BaseWindow.cs",
+          "originalSha256": "03be64f4c22440f32a3a80b974aa7e95a776a82252797c6a0106346a591e3b93",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+          "localSha256": "cde519250590bfbc2fe09b4eedb02139974c520516a0fe9ee8c9a0870f0e7af9",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "HikMessageBox.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\HikMessageBox.xaml",
+          "originalSha256": "85b1d9d829d9c76a3ee06db41eb468f40c4c60c552fb4ff094397ce9ca0a4df3",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml",
+          "localSha256": "cb5e251ac561bc9062aebd7a508e7ffeafc29587d535746879e91d9a1080bcc0",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "HikMessageBox.xaml.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\HikMessageBox.xaml.cs",
+          "originalSha256": "d9551bdef67bf1324ef7d2a726f2afc191ddc2bebfdfb86f8021c42e594319f1",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/HikMessageBox.xaml.cs",
+          "localSha256": "16408ec4a0c07a19adf7296e02d5a281487d27e428c6ca264268550e2c3f6147",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "DialogResult.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\DialogResult.cs",
+          "originalSha256": "533159bc01e6a922478cb4685d729ef99e9aa0e45bdaa5b491a9640765917493",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/DialogResult.cs",
+          "localSha256": "11efa3211445df2682f9facc4fe0d76d536d9f720979759c1d4da10f1d4f4fd5",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "MessageButtons.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\MessageButtons.cs",
+          "originalSha256": "703f8e7f1d81a2009e127bf54f80c351093c860fabd48de4d51615c602da2a7a",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MessageButtons.cs",
+          "localSha256": "cae575e3d0e793764fa2e05c6b1f31e8580ab73c10dcabb59af7140335b4f643",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "MessageIcons.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\MessageIcons.cs",
+          "originalSha256": "905a3345f642e1577bd5e4a6033bb32357b545a0c5f399f99a8d79be826a49e8",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/MessageIcons.cs",
+          "localSha256": "e5d362c120b7d371c565a4554b22084a478246818260944d6ab9cbe7af67d96d",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "FouerColorBorder.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\FouerColorBorder.cs",
+          "originalSha256": "892e3de452e903e5c43495d7eb1b3863f4c8cd5d99e251c523d8dfe2300ebc51",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/FouerColorBorder.cs",
+          "localSha256": "9a110d549e20f28fba8ff741af30ce9015cf750530e35b4c1cafb087b703e041",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "SelectAbleTextBlock.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\SelectAbleTextBlock.cs",
+          "originalSha256": "5addb94b54d0aadc561ca091d6c656fc8a3d557f2c6804252640c58cd432a0e1",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/SelectAbleTextBlock.cs",
+          "localSha256": "a358aa85dc46e27dced419f38db9a50cb8c6730a4de57e5aedc8cb53b6869390",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "basewindowstyle.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\basewindowstyle.xaml",
+          "originalSha256": "46989e854d2dc8f66c9e05b06aad8f48995a0d8f963566371efaab0dd71a1e27",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+          "localSha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "buttonsstyle.xaml",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\styles\\buttonsstyle.xaml",
+          "originalSha256": "238781dffa6780f1c2209d19bcf283f35882aab95f1b0e98767dd61362ac5b0e",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/buttonsstyle.xaml",
+          "localSha256": "53a880ce6c3a251f22af6e051b47716826c19307f9fc8a5a33be3f9c60269c2f",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "BottomCornerRadiusConvert.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\BottomCornerRadiusConvert.cs",
+          "originalSha256": "c1b4ca0599ad5128f5fd9b9501515a8f8230112680b9fb71cabfb95235e35ff5",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BottomCornerRadiusConvert.cs",
+          "localSha256": "2b9355702cbbc2517b77c4d217105eb17a6cfdda12458faff3cfdfdad4886662",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "TopCornerRadiusConvert.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\TopCornerRadiusConvert.cs",
+          "originalSha256": "31a8c5cd05724f24658575c1ebf7c6628bf05de4cbd3d7a59b7c72e060104066",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopCornerRadiusConvert.cs",
+          "localSha256": "15be653f2d408adcb53c11b539d39c51b39fae075f13e5f5f31999a7c2f2765c",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "TopThicknessConvert.cs",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\TopThicknessConvert.cs",
+          "originalSha256": "7ed23aef92974445ca7d0dbadf97c091b49bbb10027ddaba1189a01c9b541793",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/TopThicknessConvert.cs",
+          "localSha256": "39e5bf652bdf99fbd3c7d49957132f016f902e699f88f07a93716f475ad1a1c2",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "waring.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\waring.png",
+          "originalSha256": "81ad52443294990cdd4c1d779deaf1508ff9f4e138ca90c99a69efc6fa28fb27",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/waring.png",
+          "localSha256": "81ad52443294990cdd4c1d779deaf1508ff9f4e138ca90c99a69efc6fa28fb27",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "default.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\default.png",
+          "originalSha256": "8db5346ba6741b8b4133f737e4ca3690c9e30fa88d4bd7162b0fb79d09b52344",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/default.png",
+          "localSha256": "8db5346ba6741b8b4133f737e4ca3690c9e30fa88d4bd7162b0fb79d09b52344",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "msg_close_normal.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\msg_close_normal.png",
+          "originalSha256": "0f4714eab21fed1c6a1c39b8e9842668bab55572101ced871e5c199dc04c739e",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/msg_close_normal.png",
+          "localSha256": "0f4714eab21fed1c6a1c39b8e9842668bab55572101ced871e5c199dc04c739e",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "msg_close_click.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\msg_close_click.png",
+          "originalSha256": "24b406738080b8d424fddcb529c140d0dbe32184d762d0aa83b631804d65e037",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/msg_close_click.png",
+          "localSha256": "24b406738080b8d424fddcb529c140d0dbe32184d762d0aa83b631804d65e037",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "ic_log_fold_normal.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ic_log_fold_normal.png",
+          "originalSha256": "14903b71fdac11766316fe3a283a6fa88b1d03e25ebfd5f6254efab7e9a6d4dd",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_normal.png",
+          "localSha256": "14903b71fdac11766316fe3a283a6fa88b1d03e25ebfd5f6254efab7e9a6d4dd",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        },
+        {
+          "originalAssembly": "VM.Controls",
+          "originalType": "ic_log_fold_click.png",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\resources\\ic_log_fold_click.png",
+          "originalSha256": "d1e361ed29fa554e1ce8165177c43873f51471b92200c4663932fe24b65220d9",
+          "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/ic_log_fold_click.png",
+          "localSha256": "d1e361ed29fa554e1ce8165177c43873f51471b92200c4663932fe24b65220d9",
+          "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs",
+          "sha256": "5df1d95820b9df12125d2bab4f6116604e24cba3dafb3357ec3feaf244e4ad29"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
+          "sha256": "7811dcc2bc3b9d3d196e2e7a83204d2e1ecf56fa0952cbe4aad077af0d29de39"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
+          "sha256": "fd04582cefd81b0031d0579abe3e90063ae8cec2e1a8071538496c34dc0b5f04"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C08.original-roi-scene",
+        "C07.original-expanded-reference-window"
+      ],
+      "consumers": [
+        "NativeRoiDrawing.WarnLimit: original PolygonROISubstitute upper-limit path",
+        "O06WindowPresentationCases.VerifyNativeRoiDrawingViewport: seven modal lifecycle cases"
+      ],
+      "status": "FORMAL_AUTOMATION_PASSED_NOT_FULL_C08_OR_STAGE1",
+      "adaptation": "Owned original warning uses original template, assets, localized message and diagnostic writer. Pause original drawing state, release only exact capture owner, resume only same request/stamp/frame/template after original fixed-point removal. Dialog closes on owner closing, cancel, rebind and lease disposal. BaseWindow observes closing callback failure as cancel with LastCloseError; closed callback failure recorded while own hook/timer cleanup always runs; WPF owns HwndSource and modal restoration. Count only shown dialogs with finally. Original text inheritance isolated from host implicit TextBlock style. No new warning skin or status-only fallback.",
+      "validation": {
+        "checkpoint": "evidence/O06_NATIVE_POLYGON_MODAL_CHECKPOINT_20261028.json",
+        "windowAttempt": 133,
+        "modalFocusedAttempt": 132,
+        "screenshot": "Release/_validation/S4-20261025/WindowPresentation/attempt-132/native-polygon-limit-warning.png",
+        "manual": "Actual current WPF PNG inspected. No real VS/VM same-state/physical pointer/user acceptance claimed."
       }
     }
   ]

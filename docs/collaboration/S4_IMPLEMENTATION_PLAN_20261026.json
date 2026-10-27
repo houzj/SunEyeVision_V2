@@ -7546,6 +7546,24 @@
       "失败保留": "Window112—123包含捕获/夹具诊断失败；SubstituteHost还含ItemsPresenter，已纠正错误总数断言。受限进程捕获失败，正常桌面针对性124=17过，最终125=81过。不放宽capture门禁，不移动系统cursor；SendMessage仅预热自有窗口，几何由真实生产方法程序驱动，非物理指针验收。",
       "证据": "evidence/O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json，原来源与递归依赖SHA逐字节复核。Catalog最终只更新非编译验收元数据，产品源码未变。",
       "剩余": "Polygon超限原模态交互仍缺，当前仅状态提示；继承/来源/位姿/多对象菜单及宿主历史未完。真实VS/VM同态/物理指针与用户本批验收未签；Blob重组冻结。"
+    },
+    "nativePolygonModalCandidate": {
+      "范围": "C08原Polygon超限模态及共享原窗口生命周期，基线863c0ce1；不是完整C08、第一阶段或Blob业务交付。",
+      "原件": "原HikMessageBox/BaseWindow、原Warning图标/按钮/模板/日志入口共19个文件来源，VM.Controls安装件SHA与MVID及142个唯一原来源逐字节核对见SOURCE_AUDIT。原标识只作来源记录，产品命名治理仍待落实。",
+      "行为": "原预览尾点计数超限→暂停绘制并只释放当前capture租约→实际Owner原模态→原固定点回退→同request/stamp/frame/ratio/template仍有效才恢复并重捕。弹窗期间忽略绘图输入；取消、重绑、修订、Owner关闭均终止旧租约，无幽灵提交。",
+      "窗口清理": "显示计数仅包ShowDialog且finally归还；未显示即关或构造回调异常不污染计数。Closing观察者异常取消关闭并记录LastCloseError；Closed异常记录且继续退hook/timer。不再改Owner/销毁WPF管理的HwndSource。原按钮文字隔离宿主隐式TextBlock样式。",
+      "最终构建": "UI008：0错误6559警告92.65秒；全量Release002：0错误6481警告71.63秒。构建后产品源码未变；Catalog为非编译来源/验证元数据更新。",
+      "最终回归": "Window133=88、Field075=31、Design038=69、RuntimeEditor056=10、FullChain116=8、Components198=9、ThemeStartup001=1、Resources010=22，共238组。正式EXE010 exit0/22可用工具15分类。",
+      "资源测试迁移": "Resources009失败1项：旧测试通过ToolRegistry.CreateParameters创建已移除Blob入口。只迁测试到真实Runtime配置与正式输出引用，保留真实四工具和全部三级所有权/失败清理断言；Resources010全部通过。不恢复旧Blob入口，不改Blob业务。",
+      "失败保留": "Window126测试命名空间编译错；127缺BaseWindow样式及Owner关闭异常；128/129 Owner关闭挂起；130 Closing异常逃逸；131功能过但实图按钮白字不合格。修后132定向7过且实际PNG文字正确，133全88过。UI002/003输出被自有残留测试进程锁住，核身份只结束自有进程；测试超时现终止自有进程树。UI001/004—007和全量001均非最终成绩。",
+      "证据": "evidence/O06_NATIVE_POLYGON_MODAL_CHECKPOINT_20261028.json；evidence/O06_NATIVE_POLYGON_MODAL_SOURCE_AUDIT_20261028.json；Window132/native-polygon-limit-warning.png实际查看。正常桌面自动化仍非物理指针/真实VS/VM同态或用户验收。",
+      "剩余": "原整数Radio/继承/图像模式/完整位姿、多对象菜单和宿主历史；C13文本原组合和表达式消费者、C14原结果列表/缺字段、C15原底栏/执行归宿。实际VS/VM同态/物理指针/用户本批仍未签；阶段一未退出，Blob业务冻结。"
+    },
+    "remainingControlAudit20261028": {
+      "C13文本显示": "原7行：StringConfig占位符内容、OK/NG原色板、字号原Float 6..72步1、透明度0..1步0.1、X/Y原ButtonSelecter订阅。当前DisplayObjectField自绘铅笔/更多和普通字符串框不是原完整组合；字号1..1000及常量X/Y也未对齐。FocusedCommand来自DeleteTextBox.SelectionChanged，IndexClickCommand替换光标花括号内部而非C07列表索引；宿主文本解析/格式化执行链未证，不冒称动态文本完成。",
+      "C14结果列表": "原Display XML是序号及Area/Perimeter/CentroidX/CentroidY/Angle/LongAxis/ShortAxis/Circularity/Rectangularity十列。当前8列及均值/最大/阈值摘要非该原组合。公共库仅迁CurResultDataGridStyle等原列表依赖，不迁整个VM业务。Runtime当前缺Angle/LongAxis/ShortAxis，应留第二阶段实际算法/合同处理，不能用Bounds宽高冒充。Update(null)不能区分Empty/Failed，需显式显示状态。",
+      "C15底栏": "原BottomCommandGroup→ParamsTabUserControl两行ItemsControl→四原执行模板→BottomButtonStyle；不是ComprehensiveConfigControl。库只发宿主执行/停止/确定请求，不保DefaultDebugWindow内Task.Delay/Dispatcher连续循环；运行冻结/取消与结果租约由宿主执行层负责。",
+      "优先顺序": "先原整数Radio与继承/来源/位姿，再原对象菜单和宿主历史；并行只读补C13/C14/C15证据。根唯一写者，不为赶进度增加多写者或缩减最终清单。"
     }
   },
   "vmFrameworkArchitectureReference": {

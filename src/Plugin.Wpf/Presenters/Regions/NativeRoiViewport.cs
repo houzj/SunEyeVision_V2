@@ -41,7 +41,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         NativeView.SizeChanged+=OnDesignSize;
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
         NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=()=>CancelDrawing(true);
-        NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelDrawing(true);};
+        NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelDrawing(true);};
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
         NativeView.AddHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled),true);
         PreviewMouseDown+=OnPreviewMouse;PreviewKeyDown+=OnKey;
@@ -101,7 +101,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
                 &&ReferenceEquals(_session,session)&&session.IsCurrent&&session.Stamp==request.Stamp&&ReferenceEquals(session.ActiveDraw,request),
             ()=>{if(ReferenceEquals(_drawing,drawing))CancelDrawing(true);},
             error=>{if(ReferenceEquals(_drawing,drawing)){CancelDrawing(false);session.DrawStatus(request,error,true);}},
-            message=>session.DrawStatus(request,message,false),maximum);
+            active=>{if(ReferenceEquals(_drawing,drawing)&&generation==_generation)NativeView.IsDrawingOfROI=active;},maximum);
         if(_disposed||generation!=_generation||!ReferenceEquals(_drawRequest,request)){drawing.Dispose();return false;}
         _drawing=drawing;NativeView.IsDrawingOfROI=true;
         if(drawing.Start())return true;

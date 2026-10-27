@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Text.Json;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Core;
@@ -38,7 +40,12 @@ internal static class S2DocumentEditingCases
         var filter=Node("filter","ImageFilter");Set(filter.Parameters,"FilterTypeValue","HistogramEqualization");flow.Nodes.Add(filter);
         var threshold=Node("threshold","ImageThreshold");Set(threshold.Parameters,"Method","InRange");Set(threshold.Parameters,"MinThreshold",100);Set(threshold.Parameters,"MaxThreshold",255);Source(threshold,"filter","OutputImage");flow.Nodes.Add(threshold);
         var morphology=Node("morphology","Morphology");Set(morphology.Parameters,"Operation","Open");Set(morphology.Parameters,"KernelShape","Circle");Source(morphology,"threshold","BinaryMask");flow.Nodes.Add(morphology);
-        var blob=Node("blob","BlobAnalysis");Set(blob.Parameters,"SegmentationMode","None");Set(blob.Parameters,"IsAreaFilterEnabled",false);Source(blob,"morphology","BinaryMask");flow.Nodes.Add(blob);
+        var blob=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id)
+            .WithSettings(new BlobSettings{SegmentationMode=BlobSegmentationMode.None,IsAreaFilterEnabled=false,OutputGrayImage=true})};
+        var source=BindingClrAdapter.DescribeOutput(new OutputBindingChangeService().ReadContract(morphology)!.Single(p=>p.Name=="BinaryMask"));
+        blob.ParamSettings.SetSetting(new ParamSetting{ParameterName=BlobTool.ImageInput,BindingType=BindingType.Binding,
+            ReferenceExpression=BindingReferenceSerializer.Serialize(new OutputReference(morphology.Id,source.Id,source.Type,scopeId:flow.Id)),
+            SourceNodeId=morphology.Id,SourceProperty=source.Id,SourceWorkflowId=flow.Id});flow.Nodes.Add(blob);
         var bytes=new byte[32*32];for(int y=6;y<26;y++)for(int x=6;x<26;x++)bytes[y*32+x]=200;
         using var input=HalImage.CreateFromBytes(bytes,32,32,1);var executor=new WorkflowExecutionEngine(engine,plugins,new CheckLogger());
         var run=executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).GetAwaiter().GetResult();
@@ -46,19 +53,23 @@ internal static class S2DocumentEditingCases
         try
         {
             Require(run.Success,string.Join(";",run.Errors??new()));
+            Require(run.NodeResults["blob"].Result is RuntimeToolResults{Output:BlobOutput{GrayImage:not null}},"第四节点未执行正式Runtime Blob或未产生灰图");
+            var blobOutput=(BlobOutput)((RuntimeToolResults)run.NodeResults["blob"].Result!).Output!;
             foreach(var id in new[]{"filter","threshold","morphology","blob"})
             {
                 native.AddRange(run.NodeResults[id].Result!.GetDisplayImages().Values.Where(i=>i is not null).Cast<IVisionImage>());
                 var reader=run.DeclaredOutputs.Single(o=>o.Identity.NodeId==id).AcquireReader();readers.Add(reader);
-                var field=reader.Snapshot.Fields.Single(f=>f.Value.Name==(id=="blob"?"GrayImage":"OutputImage")).Key;
+                var field=id=="blob"?BlobSchema.Field(5):reader.Snapshot.Fields.Single(f=>f.Value.Name=="OutputImage").Key;
                 var image=reader.Values!.Get<IReadOnlyImage>(field);typed.Add(image);pixels.Add(image.AcquirePixels());
             }
             run.Dispose();Require(native.All(image=>image.Width==32),"run.Dispose破坏仍持declared reader的原图");
+            _=blobOutput.ToValues();foreach(var image in typed)Require(image.CopyPixels().Length==32*32,"declared reader未保活规范输出");
             foreach(var reader in readers)reader.Dispose();readers.Clear();
             var alive=0;foreach(var image in native){try{if(image.Width==32)alive++;}catch(ObjectDisposedException){}}
             Console.WriteLine($"上游原图总数={native.Count}，run及最后declared reader释放后仍可访问={alive}");
             Require(alive==0,"UPSTREAM_NATIVE_OWNER_LEAK: 原始HalImage未随最后结果租约释放。");
             Require(input.Width==32&&input.GetPixelData().SequenceEqual(bytes),"输出owner错误释放或修改调用者输入");
+            Disposed(()=>blobOutput.ToValues());
             foreach(var image in typed)Disposed(()=>image.CopyPixels());
             foreach(var lease in pixels)Require(lease.GetRow(0).Length==32,"已取得pixel lease未独立保活");
             foreach(var lease in pixels){lease.Dispose();Disposed(()=>lease.GetRow(0).ToArray());}

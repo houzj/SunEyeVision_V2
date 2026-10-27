@@ -64,6 +64,14 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 
 	public static bool Alive => _alivecount > 0;
 
+    internal static void ShowOwnedWarning(Window owner,string message,Action<HikMessageBox> created,Func<bool> current)
+    {
+        owner.Dispatcher.VerifyAccess();
+        var window=new HikMessageBox(message,MessageIcons.Warning);
+        try{window.Owner=owner;window.WindowStartupLocation=WindowStartupLocation.CenterOwner;created(window);if(current())window.ShowDialog();}
+        finally{window.Close();}
+    }
+
 	public new event PropertyChangedEventHandler PropertyChanged;
 
 	private static IEnumerable<string> GetCommandLines(int id)
@@ -658,6 +666,7 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 	private void Initialize()
 	{
 		InitializeComponent();
+        SetResourceReference(StyleProperty,typeof(BaseWindow));
 		MinButtonVisibility = Visibility.Collapsed;
 		OkBtn.Click += OnOkClick;
 		YesBtn.Click += OnYesClick;
@@ -806,7 +815,6 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 		NoBtn.Click -= OnNoClick;
 		CancelBtn.Click -= OnCancelClick;
 		base.OnClosed(e);
-		_alivecount--;
 	}
 
 	private new DialogResult ShowDialog()
@@ -816,8 +824,8 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 			return DialogResult.None;
 		}
 		_alivecount++;
-		base.ShowDialog();
-		return DialogResult;
+		try{base.ShowDialog();return DialogResult;}
+		finally{_alivecount--;}
 	}
 
 	private void Close_OnClick(object sender, RoutedEventArgs e)
@@ -825,13 +833,14 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 		Close();
 	}
 
-	private void GetInfo_Click(object sender, RoutedEventArgs e)
+    internal string WriteDiagnostic()
 	{
 		StackTrace stackTrace = new StackTrace();
 		string path = AppDomain.CurrentDomain.BaseDirectory + "\\log\\" + DateTime.Now.ToString("yyyyMMddHHmmss") + "ExternError.txt";
 		TextWriter textWriter = null;
 		try
 		{
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 			if (File.Exists(path))
 			{
 				File.Delete(path);
@@ -845,6 +854,12 @@ public partial class HikMessageBox : BaseWindow, INotifyPropertyChanged, ICompon
 		{
 			textWriter?.Close();
 		}
+        return path;
+    }
+
+    private void GetInfo_Click(object sender,RoutedEventArgs e)
+    {
+        var path=WriteDiagnostic();
 		try
 		{
 			Process.Start("explorer.exe", Path.GetFullPath(Path.GetDirectoryName(path)));

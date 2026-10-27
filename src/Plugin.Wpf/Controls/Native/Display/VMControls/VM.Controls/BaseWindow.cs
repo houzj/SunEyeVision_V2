@@ -5,6 +5,7 @@ using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -2021,8 +2022,11 @@ public class BaseWindow : Window, INotifyPropertyChanged
 				ActivatedWindows.Remove(this);
 			}
 		}
-		base.OnClosed(e);
 		_isclosed = true;
+        try{base.OnClosed(e);}
+        catch(Exception error){LastCloseError=error;Trace.TraceError(error.ToString());}
+        finally
+        {
 		if (_header != null)
 		{
 			_header.RemoveHandler(UIElement.MouseLeftButtonDownEvent, DragMouseEvent);
@@ -2040,28 +2044,19 @@ public class BaseWindow : Window, INotifyPropertyChanged
 			_borderClip.PreviewMouseDown -= _borderClip_PreviewMouseDown;
 			_borderClip.RemoveHandler(UIElement.MouseUpEvent, RestCursorEvent);
 		}
-		WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
-		_ = windowInteropHelper.Owner;
-		if (windowInteropHelper.Owner != IntPtr.Zero)
-		{
-			SetForegroundWindow(windowInteropHelper.Owner);
-		}
-		if (_hs != null)
-		{
-			_hs.RemoveHook(WindowProc);
-			_hs.Dispose();
-			_hs = null;
-			if (Owner != null)
-			{
-				Owner = null;
-			}
-			closeTimer?.Stop();
-		}
+        // Window owns its HWND source and modal owner restoration. Retire only our hook here;
+        // disposing WPF's source or rewriting Owner during WM_DESTROY interrupts modal teardown.
+        var source=_hs;_hs=null;
+        try{if(source is not null&&!source.IsDisposed)source.RemoveHook(WindowProc);}
+        finally{closeTimer?.Stop();}
+        }
 	}
 
 	protected override void OnClosing(CancelEventArgs e)
 	{
-		base.OnClosing(e);
+        LastCloseError=null;
+        try{base.OnClosing(e);}
+        catch(Exception error){e.Cancel=true;LastCloseError=error;Trace.TraceError(error.ToString());return;}
 		if (e.Cancel)
 		{
 			return;
@@ -2077,6 +2072,9 @@ public class BaseWindow : Window, INotifyPropertyChanged
 		}
 		Owner?.Activate();
 	}
+
+    /// <summary>Observer failures must not escape a native WM_CLOSE callback or lose a live window.</summary>
+    public Exception? LastCloseError {get;private set;}
 
 	[DllImport("user32.dll", SetLastError = true)]
 	private static extern IntPtr MonitorFromPoint(Point pt, MonitorOptions dwFlags);

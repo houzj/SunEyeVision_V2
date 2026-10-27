@@ -24,7 +24,6 @@
                     SelectedItem="{Binding SelectedTab, Mode=OneWay}"
                     IsSynchronizedWithCurrentItem="True"
                     SelectionChanged="WorkflowTabControl_SelectionChanged"
-                    PreviewMouseLeftButtonDown="WorkflowTabControl_PreviewMouseLeftButtonDown"
                     Loaded="WorkflowTabControl_Loaded">
 
 
@@ -38,7 +37,7 @@
               </Grid.RowDefinitions>
 
               <!-- TabPanel区域,分为两列:左侧TabItems可滚动,右侧添加按钮固定 -->
-              <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
+              <Border x:Name="TabHeaderBar" Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
                                 ClipToBounds="True">
                 <Grid>
                   <Grid.ColumnDefinitions>
@@ -99,7 +98,8 @@
         <TabControl.ItemContainerStyle>
           <Style TargetType="TabItem">
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="4,1,0,0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="Template">
               <Setter.Value>
@@ -115,7 +115,7 @@
                         <MenuItem Header="设置运行间隔" Tag="RootEdit" Click="RootRunSettingsClick"/>
                         <MenuItem Header="NG时停止流程" Tag="RootEdit" IsCheckable="True" IsChecked="{Binding RootSettings.StopOnNg,Mode=OneWay}" Click="RootStopOnNgClick"/>
                         <MenuItem Header="流程等待超时（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="需完成原件等待超时语义与根执行协作取消、资源释放完整链；不提供仅保存无执行的设置。"/>
-                        <MenuItem Header="配置就绪状态（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待正式配置校验模型接入；不以节点数量或运行结果代替配置就绪状态。"/>
+                        <MenuItem Header="配置检查" Click="RootReadinessClick"/>
                         <MenuItem Header="流程配置（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程级配置合同和编辑事务具备后接入。"/>
                         <MenuItem Header="流程变量（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待流程局部变量作用域及保存、执行快照能力具备后接入。"/>
                         <MenuItem Header="标题注释（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="待画布注释模型、编辑事务及保存复制合同具备后接入。"/>
@@ -124,22 +124,22 @@
                       </ContextMenu>
                     </Grid.ContextMenu>
                     <Border x:Name="TabBorder"
-                                          Background="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"
+                                          Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}"
                                           BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
-                                          BorderThickness="1,1,1,0"
-                                          CornerRadius="6,6,0,0"
+                                          BorderThickness="0,0,1,1"
+                                          CornerRadius="0"
                                           Padding="0"
                                           Margin="0,0,0,0"
                                           ClipToBounds="True">
                     <Grid>
-                      <!-- 选中态顶部指示条：平时隐藏，选中时显示 1px 主题色条（VS Code 风格） -->
+                      <!-- Group既有指示样式保留；根Tab使用恢复件矩形40px布局。 -->
                       <Rectangle x:Name="SelectedIndicator"
                                                  Height="2"
                                                  Margin="6,0,6,0"
                                                  VerticalAlignment="Top"
                                                  Fill="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
                                                  Visibility="Collapsed"/>
-                      <Grid Margin="6,0">
+                      <Grid x:Name="HeaderLayout" Margin="0,0,8,0">
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="Auto"/>
                           <ColumnDefinition Width="Auto"/>
@@ -214,12 +214,25 @@
                           </Button.Style>
                         </Button>
 
+                        <StackPanel x:Name="RootTabTools" Grid.Column="1" Orientation="Horizontal" Visibility="Collapsed" VerticalAlignment="Center">
+                          <Button x:Name="RootConfigurationBtn" Style="{StaticResource RootConfigurationButton}"/>
+                          <Button x:Name="RootVariablesBtn" Style="{StaticResource RootVariablesButton}"/>
+                          <Border Width="1" Height="30" Background="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}" Margin="0,0,8,0"/>
+                        </StackPanel>
                         <!-- 工作流名称（支持行内重命名） -->
-                        <Grid Grid.Column="2" Margin="0,0,8,0">
+                        <StackPanel x:Name="NameHost" Grid.Column="2" Margin="8,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+                          <Ellipse x:Name="RootReadinessIndicator" Width="8" Height="8" Fill="#EC0000" Margin="0,0,8,0" ToolTip="{Binding RootConfigurationSummary}">
+                            <Ellipse.Style><Style TargetType="Ellipse"><Style.Triggers>
+                              <DataTrigger Binding="{Binding IsRootConfigurationReady}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                              <DataTrigger Binding="{Binding IsInSubroutine}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                            </Style.Triggers></Style></Ellipse.Style>
+                          </Ellipse>
+                          <Grid>
                           <TextBlock x:Name="TabNameText"
                                                            Text="{Binding EffectiveDisplayName}"
-                                                           FontSize="13"
-                                                           FontWeight="SemiBold"
+                                                           FontSize="14"
+                                                           FontWeight="Normal"
+                                                           MaxWidth="240" TextTrimming="CharacterEllipsis"
                                                            Foreground="{DynamicResource {x:Static base:ThemeKeys.TabItemTextBrush}}"
                                                            VerticalAlignment="Center"/>
                           <TextBox x:Name="TabNameEditor"
@@ -232,7 +245,8 @@
                                                          Visibility="Collapsed"
                                                          KeyDown="TabRenameTextBox_KeyDown"
                                                          LostFocus="TabRenameTextBox_LostFocus"/>
-                        </Grid>
+                          </Grid>
+                        </StackPanel>
 
                         <Button x:Name="SingleRunBtn" Grid.Column="3" Tag="{Binding}" Click="TabItem_SingleRun_Click"
                                 Style="{StaticResource WorkflowSingleButton}" Visibility="Collapsed"/>
@@ -245,14 +259,37 @@
                   </Grid>
                   <ControlTemplate.Triggers>
                     <Trigger Property="IsSelected" Value="True">
-                      <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"/>
-                      <Setter TargetName="SelectedIndicator" Property="Visibility" Value="Visible"/>
+                      <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                      <Setter TargetName="TabNameText" Property="FontWeight" Value="Bold"/>
                       <Setter TargetName="SingleRunBtn" Property="Visibility" Value="Visible"/>
                       <Setter TargetName="ContinuousRunBtn" Property="Visibility" Value="Visible"/>
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                      <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                      <Setter Property="Cursor" Value="Hand"/>
                     </Trigger>
+                    <MultiDataTrigger><MultiDataTrigger.Conditions>
+                      <Condition Binding="{Binding IsSelected,RelativeSource={RelativeSource Self}}" Value="True"/>
+                      <Condition Binding="{Binding IsInSubroutine}" Value="False"/>
+                    </MultiDataTrigger.Conditions><Setter TargetName="RootTabTools" Property="Visibility" Value="Visible"/></MultiDataTrigger>
+                    <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                      <Setter Property="Margin" Value="4,1,0,0"/>
+                      <Setter TargetName="HeaderLayout" Property="Margin" Value="6,0"/>
+                      <Setter TargetName="NameHost" Property="Margin" Value="0,0,8,0"/>
+                      <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"/>
+                      <Setter TargetName="TabNameText" Property="MaxWidth" Value="Infinity"/>
+                      <Setter TargetName="TabBorder" Property="CornerRadius" Value="6,6,0,0"/>
+                      <Setter TargetName="TabBorder" Property="BorderThickness" Value="1,1,1,0"/>
+                      <Setter TargetName="TabNameText" Property="FontSize" Value="13"/>
+                      <Setter TargetName="TabNameText" Property="FontWeight" Value="SemiBold"/>
+                    </DataTrigger>
+                    <MultiDataTrigger><MultiDataTrigger.Conditions>
+                      <Condition Binding="{Binding IsSelected,RelativeSource={RelativeSource Self}}" Value="True"/>
+                      <Condition Binding="{Binding IsInSubroutine}" Value="True"/>
+                    </MultiDataTrigger.Conditions><Setter TargetName="SelectedIndicator" Property="Visibility" Value="Visible"/></MultiDataTrigger>
+                    <MultiDataTrigger><MultiDataTrigger.Conditions>
+                      <Condition Binding="{Binding IsMouseOver,RelativeSource={RelativeSource Self}}" Value="True"/>
+                      <Condition Binding="{Binding IsInSubroutine}" Value="True"/>
+                    </MultiDataTrigger.Conditions><Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/></MultiDataTrigger>
                     <DataTrigger Binding="{Binding IsEditingName}" Value="True">
                       <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>
                       <Setter TargetName="TabNameEditor" Property="Visibility" Value="Visible"/>

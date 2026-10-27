@@ -1222,6 +1222,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnCurrentCommandManagerStateChanged(object? sender, EventArgs e)
         {
+            RefreshRootTabReadiness();
             OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));
             UpdateUndoRedoCommands();
             UpdateCurrentSolutionInfo();
@@ -1752,7 +1753,7 @@ SplitterPosition = position;
             var tabViewModel = new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel();
             tabViewModel.Id = workflow.Id;
             tabViewModel.Name = workflow.Name;
-            tabViewModel.BindRootDefinition(workflow);
+            tabViewModel.BindRootDefinition(workflow,_workflowEngine.GetWorkflowById);
 
             // 订阅重命名事件（更新引擎中的 Workflow.Name）
             tabViewModel.NameCommitted += OnTabNameCommitted;

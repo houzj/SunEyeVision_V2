@@ -8,6 +8,8 @@ using SunEyeVision.UI.Features.WorkflowUI.Commands;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
+ private void RefreshRootTabReadiness()
+ {foreach(var tab in WorkflowTabViewModel.Tabs)tab.RefreshRootReadiness();}
  private Solution? _rootHistoryDocument;
  private RootWorkflowCollectionHistory? _rootHistory;
  public bool CanEditRootWorkspace => DocumentManager.CurrentSolution!=null&&!IsRunning&&!IsDebugWindowOpen

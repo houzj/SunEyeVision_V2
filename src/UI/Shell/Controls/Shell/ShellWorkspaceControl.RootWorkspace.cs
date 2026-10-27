@@ -4,6 +4,8 @@ using SunEyeVision.UI.Shell.Windows;
 namespace SunEyeVision.UI.Shell.Controls.Shell;
 public partial class ShellWorkspaceControl
 {
+ private void RootReadinessClick(object sender,RoutedEventArgs e)
+ {if(GetWorkflowFromContextMenu(sender) is {} tab){tab.RefreshRootReadiness();MessageBox.Show(Window.GetWindow(this),tab.RootConfigurationSummary,"流程配置检查",MessageBoxButton.OK,MessageBoxImage.Information);}}
  private void RootCopyClick(object sender,RoutedEventArgs e)
  {if(GetWorkflowFromContextMenu(sender) is {} tab)_viewModel?.CopyRootWorkspace(tab);}
  private void RootUndoClick(object sender,RoutedEventArgs e)=>_viewModel?.UndoRootWorkspace();

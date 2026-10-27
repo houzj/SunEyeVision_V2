@@ -6256,5 +6256,62 @@
     "validationDirectory": "Release/_validation/Toolbox-IsolatedPreview-20261026/NonGroup-353",
     "group": "用户冻结，未获确认不得续做",
     "manualAcceptance": "待用户真实验收；原76与W01-W05保留，缺基础占位不计实现完成"
+  },
+  "currentRootWorkspaceMigration": {
+    "baseline": "7b3ae5d7",
+    "goalStatus": "active",
+    "scope": "原主方案R01—R18，Group冻结，独立分支不主仓同步",
+    "implemented": [
+      "根管理统一事务及独立历史/复制/零根/正式保存重开执行",
+      "根间隔与NG停止同代快照",
+      "根Tab布局和原图标（配置与局部变量尚禁用）",
+      "根设计期检查红点与正式发布刷新",
+      "30px边缘滚动/稳定溢出/实际缩放窗口验证"
+    ],
+    "evidenceKind": "恢复源码与资源+当前正式Release同版自动宿主；非原厂动态/人工等价证明",
+    "source": [
+      {
+        "path": "src/UI/Services/Workflow/RootWorkflowReadiness.cs",
+        "sha256": "20027041A7010C4DFB2D5BD5743F1B4E25DF60B0CBCCFD323A742680C9B542B8"
+      },
+      {
+        "path": "src/UI/Features/WorkflowUI/WorkflowTabViewModel.Readiness.cs",
+        "sha256": "305E4EBCAFCFF11310017309732AD06FD35F6DE4F7C6D761A98BCFC1FE7AA8EB"
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+        "sha256": "27D5965F856CEDFEA341BFC9282CC275585F92A6C88741BC9EA8F373E526FD06"
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/WorkflowTabViewport.cs",
+        "sha256": "36149BCE1B115F140A994DC586F050788CE1C5A5211BFF6F169624020A2E084D"
+      },
+      {
+        "path": "src/UI/Shell/Controls/Shell/WorkflowTabButtonStyles.xaml",
+        "sha256": "C0D5080E1D98B4AFA563624DDDBBFCB6040876E993AE2657D8CE49AD73560C11"
+      }
+    ],
+    "validation": {
+      "directory": "Release/_validation/Toolbox-IsolatedPreview-20261026/RootWorkspace-362",
+      "uiErrors": 0,
+      "uiWarnings": 1184,
+      "regressionPassed": 136,
+      "actualShellPassed": 1,
+      "sameArtifacts": "receipt-same-artifacts.json",
+      "wpfComponents": [
+        "root-tabs-Dark.png",
+        "root-tabs-Light.png",
+        "root-tabs-Errors-Dark.png"
+      ]
+    },
+    "remaining": [
+      "根配置整窗与根运行参数代理（已有正式描述符/多节点事务，必须继续实施）",
+      "根输入/输出/显示/局部作用域具体合同判断与精准占位",
+      "等待超时完整取消链",
+      "根总览",
+      "原件耗时详情剩余布局",
+      "VS设计时/多DPI/物理及用户人工验收"
+    ],
+    "manualAcceptance": "未执行，不预填通过"
   }
 }

@@ -26,18 +26,22 @@ namespace SunEyeVision.UI.Features.WorkflowUI
     /// <summary>
     /// 工作流标签页ViewModel
     /// </summary>
-    public class WorkflowTabViewModel : ObservableObject
+    public partial class WorkflowTabViewModel : ObservableObject
     {
         private string _id;
         private string _name;
         private SunEyeVision.Workflow.Workflow? _rootDefinition;
         public SunEyeVision.Workflow.RootWorkspaceSettings RootSettings => _rootDefinition?.WorkspaceSettings ?? new();
-        internal void BindRootDefinition(SunEyeVision.Workflow.Workflow definition)
+        internal void BindRootDefinition(SunEyeVision.Workflow.Workflow definition, Func<string,SunEyeVision.Workflow.Workflow?>? resolve = null)
         {
-            if(ReferenceEquals(_rootDefinition,definition))return;
+            _readinessResolver=resolve??_readinessResolver;
+            if(ReferenceEquals(_rootDefinition,definition)){RefreshRootReadiness();return;}
+            UnbindRootReadiness();
             if(_rootDefinition!=null)_rootDefinition.PropertyChanged-=RootDefinitionChanged;
             _rootDefinition=definition;_rootDefinition.PropertyChanged+=RootDefinitionChanged;
             OnPropertyChanged(nameof(RootSettings));
+            BindRootReadiness();
+            OnPropertyChanged(nameof(IsRootConfigurationReady));OnPropertyChanged(nameof(RootConfigurationSummary));
         }
         private void RootDefinitionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
         {if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.WorkspaceSettings))OnPropertyChanged(nameof(RootSettings));}

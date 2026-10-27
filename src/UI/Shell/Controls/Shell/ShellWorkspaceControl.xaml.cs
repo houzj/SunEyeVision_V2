@@ -29,7 +29,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     public partial class ShellWorkspaceControl : UserControl
     {
         private MainWindowViewModel _viewModel = null!;
-        private bool _isTabItemClick;  // 标记是否是通过点击TabItem触发的切换
+        private ScrollViewer? _tabHeaderScrollViewer;
         private WorkflowCanvasControl? _currentWorkflowCanvas;  // 当前显示的WorkflowCanvasControl
         private (string Parent,string Workflow,string Node)? _openSubroutineDebugIdentity;
         private Window? _openSubroutineDebugWindow;  // 子程序调试窗口单例跟踪
@@ -61,7 +61,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             InitializeComponent();
             WorkspaceStatusBar.ScaleRequested += WorkspaceScaleRequested;
             Loaded += (_, _) => { if (_viewModel != null) { RefreshMiniMap(); QueueRestoreWorkspaceView(); } };
-            Unloaded += (_, _) => { _viewModel?.CloseExecutionSnapshotDetails(); CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
+            Unloaded += (_, _) => { UnbindTabHeaderScroll(); _viewModel?.CloseExecutionSnapshotDetails(); CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
             // 小地图重绘节流定时器：单次触发，Tick 时重绘一次后停止
             _miniMapThrottleTimer = new System.Windows.Threading.DispatcherTimer
@@ -242,7 +242,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (scrollViewer != null)
             {
                 // 监听ScrollViewer的SizeChanged事件
+                UnbindTabHeaderScroll();
+                _tabHeaderScrollViewer=scrollViewer;
                 scrollViewer.SizeChanged += ScrollViewer_SizeChanged;
+                scrollViewer.ScrollChanged += TabHeaderScrollChanged;
                 // 初始检查 - 需要传入TabControl的视觉树根元素来查找两个按钮
                 UpdateAddButtonPosition(WorkflowTabControl);
             }
@@ -279,7 +282,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (scrollableButton == null || fixedButton == null)
                 return;
             // ScrollableWidth > 0 表示有滚动条,即TabItems超出了可视区域
-            bool isOverflow = scrollViewer.ScrollableWidth > 0;
+            var headers=FindChildByName<TabPanel>(tabControl,"HeaderPanel");
+            if(headers==null||scrollViewer.ViewportWidth<=0)return;
+            // 只测标题，不把滚动新增按钮反过来计入溢出判定；固定按钮宽度归还后再比较。
+            double available=scrollViewer.ViewportWidth+(fixedButton.Visibility==Visibility.Visible?fixedButton.ActualWidth:0);
+            bool isOverflow = headers.ActualWidth+40>available;
             if (isOverflow)
             {
                 // 超出时:显示右侧固定按钮,隐藏滚动区域内的按钮
@@ -346,15 +353,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             // 优化：合并Dispatcher调用，减少UI重绘次数
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                // 只有通过下拉器切换时才滚动到中间，点击TabItem时不滚动
-                if (!_isTabItemClick)
-                {
-                    ScrollToSelectedTabItem();
-                }
+                // 鼠标、键盘和列表共用可见范围与30px边缘余量，避免强制居中。
+                ScrollToSelectedTabItem();
                 // 更新添加按钮位置
                 UpdateAddButtonPosition(WorkflowTabControl);
-                // 重置标志
-                _isTabItemClick = false;
                 // 应用缩放
                 var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
                 if (workflow != null)
@@ -370,24 +372,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// TabControl 预览鼠标左键按下事件 - 检测是否点击了TabItem
-        /// </summary>
-        private void WorkflowTabControl_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // 检查点击的是否是TabItem
-            var source = e.OriginalSource as DependencyObject;
-            if (source != null)
-            {
-                var tabItem = FindVisualParent<TabItem>(source);
-                if (tabItem != null)
-                {
-                    // 标记为TabItem点击
-                    _isTabItemClick = true;
-                }
-            }
-        }
-
-        /// <summary>
         /// 添加工作流点击事件
         /// </summary>
         private void AddWorkflow_Click(object sender, RoutedEventArgs e)
@@ -395,7 +379,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (_viewModel?.CanEditRootWorkspace != true) return;
             if(!_viewModel.AddRootWorkspace())return;
             _viewModel.StatusText = "已添加新工作流";
-            // 自动滚动到新添加的TabItem，使其居中显示
+            // 自动显示新增Tab，保留边缘余量
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 ScrollToSelectedTabItem();
@@ -413,32 +397,27 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// 滚动到选中的TabItem，使其显示在可见范围的中间
+        /// 显示选中的TabItem，沿恢复件保留边缘余量
         /// </summary>
         private void ScrollToSelectedTabItem()
         {
-            var selectedTabItem = FindTabItem(_viewModel.WorkflowTabViewModel.SelectedTab);
-            if (selectedTabItem != null)
-            {
-                // 找到ScrollViewer
-                var scrollViewer = FindVisualParent<ScrollViewer>(selectedTabItem);
-                if (scrollViewer != null)
-                {
-                    // 获取TabPanel（内容容器）
-                    var tabPanel = FindVisualChild<TabPanel>(scrollViewer);
-                    if (tabPanel == null)
-                        return;
-                    // 计算TabItem相对于TabPanel的位置（内容区域的绝对位置）
-                    var transform = selectedTabItem.TransformToVisual(tabPanel);
-                    var position = transform.Transform(new Point(0, 0));
-                    // 计算使TabItem居中的滚动位置
-                    var targetOffset = position.X + (selectedTabItem.ActualWidth / 2) - (scrollViewer.ViewportWidth / 2);
-                    // 确保滚动位置在有效范围内
-                    targetOffset = Math.Max(0, Math.Min(targetOffset, scrollViewer.ScrollableWidth));
-                    // 滚动到目标位置，使TabItem居中显示
-                    scrollViewer.ScrollToHorizontalOffset(targetOffset);
-                }
-            }
+            var selected=FindTabItem(_viewModel.WorkflowTabViewModel.SelectedTab);
+            var viewer=_tabHeaderScrollViewer;
+            if(selected==null||viewer==null||viewer.ViewportWidth<=0)return;
+            var left=selected.TransformToAncestor(viewer).Transform(new Point()).X;
+            viewer.ScrollToHorizontalOffset(WorkflowTabViewport.SelectedOffset(viewer.HorizontalOffset,left,
+                selected.ActualWidth,viewer.ViewportWidth,viewer.ScrollableWidth,WorkflowTabControl.Items.IndexOf(selected.DataContext)==0));
+        }
+        private void UnbindTabHeaderScroll()
+        {
+            if(_tabHeaderScrollViewer==null)return;
+            _tabHeaderScrollViewer.SizeChanged-=ScrollViewer_SizeChanged;
+            _tabHeaderScrollViewer.ScrollChanged-=TabHeaderScrollChanged;
+            _tabHeaderScrollViewer=null;
+        }
+        private void TabHeaderScrollChanged(object sender,ScrollChangedEventArgs e)
+        {
+            if(e.ExtentWidthChange!=0||e.ViewportWidthChange!=0)UpdateAddButtonPosition(WorkflowTabControl);
         }
 
         /// <summary>

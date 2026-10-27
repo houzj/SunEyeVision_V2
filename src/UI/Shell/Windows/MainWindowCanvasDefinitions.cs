@@ -12,7 +12,7 @@ public partial class MainWindowViewModel
     {
         if (root.Id != tab.RootWorkflowId || root.IsSubroutine)
             throw new InvalidOperationException("标签页根流程身份不一致。");
-        tab.BindRootDefinition(root);
+        tab.BindRootDefinition(root,resolve);
         tab.BindRootWorkflowNodes(root.Nodes);
         if (!tab.IsNavigationCurrent(resolve)) tab.ResetNavigation();
         var visible = tab.IsInSubroutine ? resolve(tab.CurrentWorkflowId)! : root;

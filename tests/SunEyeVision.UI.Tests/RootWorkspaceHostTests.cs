@@ -1,6 +1,9 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
@@ -38,6 +41,21 @@ public sealed class RootWorkspaceHostTests
     var copied=document.Workflows.Single(w=>!w.IsSubroutine&&w.Id!=source.Id);var copyTab=viewModel.WorkflowTabViewModel.SelectedTab!;
     Assert.Equal(2,copied.Nodes.Count);Assert.Equal("自定义入口",copied.Nodes[0].DispName);Assert.Equal(3,copied.Nodes[0].LocalIndex);Assert.Equal(41,copied.WorkspaceSettings.RunIntervalMs);
     Assert.NotEqual(first.Id,copied.Nodes[0].Id);Assert.Equal(copied.Nodes[0].Id,Assert.Single(copied.Connections).SourceNodeId);Assert.NotSame(first.Parameters,copied.Nodes[0].Parameters);
+    var tabs=(TabControl)shell.FindName("WorkflowTabControl");Pump();
+    var active=(TabItem)tabs.ItemContainerGenerator.ContainerFromItem(copyTab);active.ApplyTemplate();
+    var inactive=(TabItem)tabs.ItemContainerGenerator.ContainerFromItem(sourceTab);inactive.ApplyTemplate();
+    Assert.Equal(40,active.ActualHeight);Assert.Equal(new CornerRadius(0),((Border)active.Template.FindName("TabBorder",active)).CornerRadius);
+    Assert.Equal(Visibility.Visible,((FrameworkElement)active.Template.FindName("RootTabTools",active)).Visibility);
+    Assert.Equal(Visibility.Collapsed,((FrameworkElement)inactive.Template.FindName("RootTabTools",inactive)).Visibility);
+    Assert.False(((Button)active.Template.FindName("RootVariablesBtn",active)).IsEnabled);
+    first.Parameters.BindingValidationPending["InputImage"]="待确认";sourceTab.RefreshRootReadiness();Assert.False(sourceTab.IsRootConfigurationReady);Assert.True(copyTab.IsRootConfigurationReady);
+    viewModel.SetSelectedTab(sourceTab);Pump();
+    Assert.Equal(Visibility.Visible,((FrameworkElement)inactive.Template.FindName("RootReadinessIndicator",inactive)).Visibility);
+    first.LastResult=new RootWorkspaceSettingsTests.ProbeResults{Status=SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Failed};sourceTab.RefreshRootReadiness();Assert.False(sourceTab.IsRootConfigurationReady); // 运行结果不能把坏配置变成就绪。
+    SaveHeader(tabs,"Errors-Dark");
+    first.Parameters.BindingValidationPending.Clear();sourceTab.RefreshRootReadiness();Assert.True(sourceTab.IsRootConfigurationReady);Pump();
+    Assert.Equal(Visibility.Collapsed,((FrameworkElement)inactive.Template.FindName("RootReadinessIndicator",inactive)).Visibility);
+    viewModel.SetSelectedTab(copyTab);Pump();
     var copyId=copied.Id;Assert.True(viewModel.CanUndoRootWorkspace);viewModel.UndoRootWorkspace();Assert.Single(document.Workflows);viewModel.RedoRootWorkspace();Assert.Same(copied,document.Workflows.Single(w=>w.Id==copyId));
     Assert.True(viewModel.DeleteRootWorkspace(copyTab),viewModel.StatusText);Assert.Single(document.Workflows);
     Assert.True(viewModel.DeleteRootWorkspace(sourceTab),viewModel.StatusText);Assert.Empty(document.Workflows);Assert.Null(viewModel.WorkflowTabViewModel.SelectedTab);Pump();
@@ -50,11 +68,33 @@ public sealed class RootWorkspaceHostTests
     var engine=new WorkflowEngine(VisionLogger.Instance);foreach(var flow in reopened.Workflows)engine.RegisterWorkflow(flow);
     var runner=new WorkflowExecutionEngine(engine,new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager(VisionLogger.Instance),VisionLogger.Instance);
     using var run=runner.ExecuteWorkflowAsync(copyId,null).GetAwaiter().GetResult();Assert.True(run.Success,string.Join(";",run.Errors));Assert.Equal(2,run.NodeResults.Count);
+    for(int i=0;i<8;i++)Assert.True(viewModel.AddRootWorkspace());
+    owner.Width=540;Pump();owner.UpdateLayout();Pump();
+    var viewer=(ScrollViewer)tabs.Template.FindName("TabPanelScrollViewer",tabs);
+    var fixedAdd=(Border)tabs.Template.FindName("FixedAddButtonBorder",tabs);
+    Assert.Equal(Visibility.Visible,fixedAdd.Visibility);
+    var resizedSelected=(TabItem)tabs.ItemContainerGenerator.ContainerFromItem(viewModel.WorkflowTabViewModel.SelectedTab);
+    var resizedLeft=resizedSelected.TransformToAncestor(viewer).Transform(new Point()).X;
+    Assert.True(resizedLeft+resizedSelected.ActualWidth<=viewer.ViewportWidth+1,"缩窄窗口后活动Tab未完整可见");
+    var last=viewModel.WorkflowTabViewModel.Tabs.Last();viewModel.SetSelectedTab(sourceTab);Pump();Pump();Assert.Equal(0,viewer.HorizontalOffset);
+    viewModel.SetSelectedTab(last);Pump();Pump();owner.UpdateLayout();
+    active=(TabItem)tabs.ItemContainerGenerator.ContainerFromItem(last);var left=active.TransformToAncestor(viewer).Transform(new Point()).X;
+    Assert.InRange(left,-1,viewer.ViewportWidth);Assert.True(left+active.ActualWidth<=viewer.ViewportWidth+1);
+    SaveHeader(tabs,"Dark");
+    Application.Current.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)});Pump();SaveHeader(tabs,"Light");
+    owner.Width=2000;Pump();Pump();Assert.Equal(Visibility.Collapsed,fixedAdd.Visibility);
+
    }
    catch(Exception error){failure=error;}
    finally{owner?.Close();}
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+ }
+ private static void SaveHeader(TabControl tabs,string theme)
+ {
+  var bar=(FrameworkElement)tabs.Template.FindName("TabHeaderBar",tabs);bar.UpdateLayout();
+  var image=new RenderTargetBitmap((int)Math.Ceiling(bar.ActualWidth),(int)Math.Ceiling(bar.ActualHeight),96,96,PixelFormats.Pbgra32);image.Render(bar);
+  var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(image));using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"root-tabs-"+theme+".png"));encoder.Save(file);
  }
  private static void Pump()
  {

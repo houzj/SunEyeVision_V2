@@ -38,6 +38,21 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
     public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
 
     private string _name = "新建工作流";
+    private RootWorkflowConfiguration _rootConfiguration=new();
+    public RootWorkflowConfiguration RootConfiguration
+    {
+        get=>_rootConfiguration;
+        set{ArgumentNullException.ThrowIfNull(value);value.Validate();if(IsSubroutine&&value.RunParameters.Length!=0)throw new InvalidOperationException("Group不承接根参数代理。");SetProperty(ref _rootConfiguration,value);}
+    }
+    internal void ApplyRootConfigurationRaw(RootWorkflowConfiguration value)=>_rootConfiguration=value;
+    internal void EmitRootConfigurationChanged()=>OnPropertyChanged(nameof(RootConfiguration));
+    private RootWorkspaceSettings _workspaceSettings = new();
+    /// <summary>仅根流程使用；Group执行与配置不消费该设置。</summary>
+    public RootWorkspaceSettings WorkspaceSettings
+    {
+        get => _workspaceSettings;
+        set { ArgumentNullException.ThrowIfNull(value);value.Validate();SetProperty(ref _workspaceSettings,value); }
+    }
 
     /// <summary>
     /// 工作流唯一标识符
@@ -106,7 +121,8 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
         {
             Id = Guid.NewGuid().ToString(),
             AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
-            Name = $"{Name} (副本)"
+            Name = $"{Name} (副本)",
+            WorkspaceSettings = WorkspaceSettings, RootConfiguration=RootConfiguration
         };
 
         // 克隆节点
@@ -124,7 +140,8 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
                 SourceNodeId = connection.SourceNodeId,
                 SourcePort = connection.SourcePort,
                 TargetNodeId = connection.TargetNodeId,
-                TargetPort = connection.TargetPort
+                TargetPort = connection.TargetPort,
+                ManualPathPoints = connection.ManualPathPoints?.ToArray()
             });
         }
 
@@ -499,6 +516,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
         if (!Nodes.Any(n => n.Id == connection.TargetNodeId))
             throw new ArgumentException($"目标节点不存在: {connection.TargetNodeId}", nameof(connection));
 
+        ExecutionConnectionPolicy.EnsureCanAdd(Connections, connection);
         Connections.Add(connection);
 
         // 增量更新：连接建立时，更新目标节点的上游节点池
@@ -526,6 +544,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
             SourcePort = "output",
             TargetPort = "input"
         };
+        ExecutionConnectionPolicy.EnsureCanAdd(Connections, connection);
         Connections.Add(connection);
         return connection;
     }
@@ -840,6 +859,13 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
 
         [JsonIgnore]
         public ObservableCollection<Point> PathPoints { get; set; } = new();
+
+        /// <summary>用户编辑的连线路径；自动计算路径仍只存于渲染缓存。</summary>
+        public Point[]? ManualPathPoints { get; set; }
+
+        [JsonIgnore]
+        public Point[]? PreviewPathPoints { get; set; }
+
 
         [JsonIgnore]
         public bool IsSelected

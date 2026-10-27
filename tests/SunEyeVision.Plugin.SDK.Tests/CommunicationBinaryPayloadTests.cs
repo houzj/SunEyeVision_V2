@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -17,9 +17,12 @@ public sealed class CommunicationBinaryPayloadTests
     [Fact]
     public void Binary_contract_uses_current_development_baseline_without_legacy_support()
     {
-        Assert.True(SunEyeVision.Plugin.SDK.Core.ToolContract.Minor >= 1);
+        Assert.Equal("3.0", SunEyeVision.Plugin.SDK.Core.ToolContract.Version);
+        Assert.True(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(3, 0)));
         Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(2, 0)));
-        Assert.True(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(2, 1)));
+        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(2, 1)));
+        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(3, 1)));
+        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(null));
     }
 
     [Fact]
@@ -95,8 +98,10 @@ public sealed class CommunicationBinaryPayloadTests
     [Fact]
     public void Malformed_persisted_payload_does_not_become_an_empty_success_value()
     {
-        var loaded = JsonSerializer.Deserialize<Holder>("{\"Value\":{\"Type\":\"Binary\",\"Value\":[\"not base64!\"]}}")!;
-        Assert.Null(loaded.Value); // Existing converter records the parse failure; no fake empty payload.
+        var error = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Holder>(
+            "{\"Value\":{\"Type\":\"Binary\",\"Value\":[\"not base64!\"]}}"));
+        Assert.IsType<FormatException>(error.InnerException);
+        Assert.Contains("Binary", error.Message);
     }
 
     private sealed class PayloadResult : ToolResults

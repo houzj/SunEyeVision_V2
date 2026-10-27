@@ -319,10 +319,10 @@ namespace SunEyeVision.UI.Services.Interaction
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)
             {
-                _viewModel.AddConnectionToWorkflow(connection);
+                if (!_viewModel.AddConnectionToWorkflow(connection)) return null;
             }
 
-            return connection;
+            return _viewModel?.WorkflowTabViewModel.SelectedTab?.WorkflowConnections.FirstOrDefault(c => c.SourceNodeId == sourceNode.Id && c.TargetNodeId == targetNode.Id);
         }
 
         /// <summary>

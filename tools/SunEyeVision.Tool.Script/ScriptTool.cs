@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +20,7 @@ namespace SunEyeVision.Tool.Script
         displayName: "Script",
         Description = "Execute user-defined C# script with DLL references and Init/Process lifecycle",
         Icon = "code", Order = 10,
-        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Script,
+        Category = SunEyeVision.Plugin.SDK.Core.ToolCategories.Control,
         Version = "2.0.0",
         HasDebugWindow = true
     )]

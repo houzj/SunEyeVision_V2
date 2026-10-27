@@ -1,0 +1,239 @@
+﻿[
+  {
+    "file": "ic_expand_click.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_expand_click.png",
+    "sha256": "9203FDC6C12A565B3AE36D1B5A6E9C31F0888F18460A3092D4E0BBBBBCA8ECC1"
+  },
+  {
+    "file": "ic_expand_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_expand_normal.png",
+    "sha256": "056216F4B0B1A47E4791FC2094E4B51D4081FDD16CC369E7666D6423660B9DEA"
+  },
+  {
+    "file": "ic_retract_click.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_retract_click.png",
+    "sha256": "3724FDEA0FA1245BB2F8C3623E4F2D45932ABC7AADC2A53D9DB8CFF5887E8BC2"
+  },
+  {
+    "file": "ic_retract_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_retract_normal.png",
+    "sha256": "FC94A8DDBDD92A61FDB1B966945FED2463AB4E6060FB4AE1AEC792F891862EA7"
+  },
+  {
+    "file": "group_bg.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg.png",
+    "sha256": "4041D5515234D57253B80E1E5A5F0152B91F59A93F52563A72697399DCC91311",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_bg_focus.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg_focus.png",
+    "sha256": "E3D5490C0C2D50C93D545731CA28B27E772C4DB106B661D66A9FEDF9A5378887",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_bg_forbidden.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg_forbidden.png",
+    "sha256": "8FE9A7131CB35B53A9DFF251C965DE9B66C56E448BA94F1EBD8C7E8A1FA1307D",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_bg_load_fail.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_bg_load_fail.png",
+    "sha256": "541A0236AF726393AC49B728803D913FDDCB0C56400927C4C587112E991ACBC0",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ng.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e5%bc%82%e5%b8%b8.png",
+    "sha256": "04E7FC00FA1BA386BD2DCE7D6A63AF5D3B24169F48954EE098EBC9A35F9036A8",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ng_selected.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e5%bc%82%e5%b8%b8%e9%80%89%e4%b8%ad.png",
+    "sha256": "33B470378AFE3FD843CF5C18C91A2B4BA407356AF8B71D7A3400DE544487810E",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ok.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e6%ad%a3%e5%b8%b8.png",
+    "sha256": "A6B8F6DE1FBA02C2E072F86963F7FB32AC084B9F688106DE2F18E6F535B6E97E",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "group_ok_selected.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/group_%e6%ad%a3%e5%b8%b8%e9%80%89%e4%b8%ad.png",
+    "sha256": "F25715F22A052745F8697ACD8BB62F74BE648939B5E38C620FF2B7F5652CB036",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_cycle_right.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_cycle_right.png",
+    "sha256": "18EFAE324C82042AECB0E2BDBEBB08658F6F8D2F9CF3DEE77E26BEB942BDA035",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_cycle_right_disable.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_cycle_right_disable.png",
+    "sha256": "067EA60ABF881FC946802C59DB687DC6D8AA1F877EA29FC67E387979119D4984",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_flow_group_notice.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_flow_group_notice.png",
+    "sha256": "6975CCFEAEAE483CE6556393BB21FA46BBAF740949CFED394CE0CD0A47B9DBC5",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_group_configuration_click.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_group_configuration_click.png",
+    "sha256": "086BBC11AA131B37C78BF6430BCC17E2E37BC71B83B8541F7F59BA51E5DD6327",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_group_configuration_disable.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_group_configuration_disable.png",
+    "sha256": "CF1BC64CE15BACED7C402F048033A2F1CF25C006A122966F9D246D54D50A8DE8",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_group_configuration_normal.png",
+    "source": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+    "resource": "resources/ic_group_configuration_normal.png",
+    "sha256": "1541529DBE85F4632F0772596D396A364210F83E0B9280C214818D8CC8D1D239",
+    "assemblySha256": "8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63",
+    "evidence": "ev_9774b325aa0403965147d851dfb5af17f1879b7ef00ce94051958b606c7c2254"
+  },
+  {
+    "file": "ic_tab_group_configuration_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_tab_group_configuration_normal.png",
+    "sha256": "0AC7848267E03C4470B6B90C5ACD320085AC57FBB1E05BC47ACF9125DCF595B2"
+  },
+  {
+    "file": "ic_tab_group_configuration_hover.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_tab_group_configuration_hover.png",
+    "sha256": "09C2209DFA7D54D905C114BADF06F9465A43C1C033E33329890BB674798C4C6A"
+  },
+  {
+    "file": "ic_tab_group_configuration_click.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_tab_group_configuration_click.png",
+    "sha256": "093C2AC2EF00FE5BA03C0662267D75011B2A9E785E17AE521D9BAE3CF08FFE05"
+  },
+  {
+    "file": "ic_tab_group_configuration_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_tab_group_configuration_disable.png",
+    "sha256": "C219A1877A59DE2DDB2DA8950BE7ED44CB17A45CA919E9F24F1BE8AB95BACE4D"
+  },
+  {
+    "file": "ic_local-variable_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_local-variable_normal.png",
+    "sha256": "4D4985D448D0BDD050754E4311B24CDFDAFCF4CF58BA27B1DEA1404119312830"
+  },
+  {
+    "file": "ic_local-variable_hover.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_local-variable_hover.png",
+    "sha256": "DDB3F54B4CA2C9BCF4E6804016AA1A4C7DA12394B3B54EE490020C4E1100C321"
+  },
+  {
+    "file": "ic_local-variable_click.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_local-variable_click.png",
+    "sha256": "592CE41616ED2C4C9FDD95FB11E3AE8D96D4BCCB086B782F2B673C1AF32B012B"
+  },
+  {
+    "file": "ic_local-variable_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_local-variable_disable.png",
+    "sha256": "DDA8D1B2D8A4909679D1865B7CD0FE9471F099043DE24FF71AE8226ACC443FF2"
+  },
+  {
+    "file": "bottombar_config.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/bottombar_config.png",
+    "sha256": "22F055F81430A04E687C270FA8A4DD15F516AEACC39CC9599B0F04AB78312AED"
+  },
+  {
+    "file": "bottombar_run.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/bottombar_run.png",
+    "sha256": "64DD85B1B30BAC4858537705265858D623F61782CFF06B76E6250FB6B1E1902D"
+  },
+  {
+    "file": "bottombar_abnormal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/bottombar_abnormal.png",
+    "sha256": "6C2414C4F5CA186539C5E5D6EA73F9AEDB3369F2F858E67BC79A9C7FC7B14B19"
+  },
+  {
+    "file": "ic_展开_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_展开_normal.png",
+    "sha256": "7D7A99560EB53A0AD7856EA16638652B3DA1E63319ECEDFB91D6C956590009F8"
+  },
+  {
+    "file": "ic_展开_click.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_展开_click.png",
+    "sha256": "57EE2E94C5B65838BB42C458DF7AC9327F3E3D3BD52AFFEA95DC0B2065D89044"
+  },
+  {
+    "file": "ic_全局_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_全局_normal.png",
+    "sha256": "BDAF3231B6B7FF2814800D8506AECF528FD1E9E9F0D193E20B9F4713BB388E33"
+  },
+  {
+    "file": "ic_全局_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_全局_disable.png",
+    "sha256": "4AA836DDE13EC5DFB09A094716EABE04191F760B6FC4F03C887199DE8E819BC9"
+  },
+  {
+    "file": "ic_单个_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_单个_normal.png",
+    "sha256": "8649A72D069624159F1B722B04D2DD62FA2D245E50F655CE952CFD97A3870A63"
+  },
+  {
+    "file": "ic_单个_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_单个_disable.png",
+    "sha256": "CFB927894B9B0DB7BE7059562C2A4D7026A9414697C0E49D0A31357838915EAF"
+  },
+  {
+    "file": "toolbar_ic_topbar_undo_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_undo_normal.png",
+    "sha256": "80DFC328894846F7321EE9DDA086DC5CD2E0460683F3E8BD33943C8DF0DA06C7"
+  },
+  {
+    "file": "toolbar_ic_topbar_undo_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_undo_disable.png",
+    "sha256": "CC929DB55853659607D30B9A04F58B3B47CEDAA526F7A748890B71A61E4AB813"
+  },
+  {
+    "file": "toolbar_ic_topbar_redo_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_redo_normal.png",
+    "sha256": "0728EC4E041F2FD8B62EEF7E36A59F5B54720B636E60B375138E0F2FFEDD987C"
+  },
+  {
+    "file": "toolbar_ic_topbar_redo_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_redo_disable.png",
+    "sha256": "8062CEB22C7888DC1FE8C9A1730FD7C6511D50593122447817CA22633B2921F1"
+  }
+]

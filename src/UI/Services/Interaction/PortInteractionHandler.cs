@@ -26,13 +26,13 @@ namespace SunEyeVision.UI.Services.Interaction
 
         // 连接拖拽相关
         private bool _isDraggingConnection;
-        private Ellipse? _dragSourcePort;
+        private VmExecutionPort? _dragSourcePort;
         private WorkflowNode? _dragSourceNode;
         private System.Windows.Point _dragConnectionStartPoint;
         private int _dragMoveCounter;
 
         // 目标端口高亮相关
-        private Ellipse? _highlightedTargetPort;
+        private VmExecutionPort? _highlightedTargetPort;
 
         public WorkflowPortInteractionHandler(
             WorkflowCanvasControl canvasControl,
@@ -51,7 +51,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void Port_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is not Ellipse port || port.Tag is not WorkflowNode node)
+            if (sender is not VmExecutionPort port || port.Tag is not WorkflowNode node)
                 return;
 
             _isDraggingConnection = true;
@@ -61,7 +61,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
             // 获取端口位置
             var portPosition = port.TransformToVisual(_canvasControl.WorkflowCanvas)
-                .Transform(new System.Windows.Point(port.ActualWidth / 2, port.ActualHeight / 2));
+                .Transform(port.Anchor);
             _dragConnectionStartPoint = portPosition;
 
             // 显示临时连接收?
@@ -195,15 +195,15 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// HitTest 查找目标端口
         /// </summary>
-        private Ellipse? HitTestForPort(System.Windows.Point position, WorkflowNode targetNode)
+        private VmExecutionPort? HitTestForPort(System.Windows.Point position, WorkflowNode targetNode)
         {
             var hitResult = VisualTreeHelper.HitTest(_canvasControl.WorkflowCanvas, position);
             if (hitResult?.VisualHit is DependencyObject obj)
             {
-                // 向上查找 Ellipse（端口）
+                // 向上查找 VmExecutionPort（端口）
                 while (obj != null)
                 {
-                    if (obj is Ellipse ellipse && ellipse.Name?.Contains("Port") == true)
+                    if (obj is VmExecutionPort ellipse && ellipse.Name?.Contains("Port") == true)
                     {
                         // 检查是否属于目标节点?
                         var parent = VisualTreeHelper.GetParent(ellipse);
@@ -226,7 +226,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 高亮目标端口
         /// </summary>
-        private void HighlightTargetPort(WorkflowNode targetNode, Ellipse sourcePort)
+        private void HighlightTargetPort(WorkflowNode targetNode, VmExecutionPort sourcePort)
         {
             var sourcePortName = sourcePort.Name ?? "";
             bool isSourceInput = sourcePortName.Contains("Input");
@@ -238,14 +238,14 @@ namespace SunEyeVision.UI.Services.Interaction
 
             if (targetNodeElement == null) return;
 
-            var targetPorts = WorkflowVisualHelper.FindAllVisualChildren<Ellipse>(targetNodeElement)
+            var targetPorts = WorkflowVisualHelper.FindAllVisualChildren<VmExecutionPort>(targetNodeElement)
                 .Where(e => e.Name?.Contains("Port") == true)
                 .ToList();
 
             if (targetPorts.Count == 0) return;
 
             // 根据源端口方向选择目标端口
-            Ellipse? targetPort = null;
+            VmExecutionPort? targetPort = null;
             if (isSourceInput)
             {
                 // 源是输入端口，目标应该是输出端口
@@ -266,7 +266,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <summary>
         /// 高亮指定端口
         /// </summary>
-        private void HighlightSpecificPort(Ellipse port)
+        private void HighlightSpecificPort(VmExecutionPort port)
         {
             if (_highlightedTargetPort == port) return;
 

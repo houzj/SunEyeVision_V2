@@ -76,7 +76,22 @@ public class GeometryFieldSchemaContractTests
         var radius = children.Single(c => c.Text == "半径");
         // 树内路径与运行期绑定路径：属性名.字段（无 [Type=] 前缀，几何数组是同质的）
         Assert.Equal("Circle.Radius", radius.BindingPath);
-        Assert.Equal("Node1.Circle.Radius", radius.DataSource!.GetBindingPath());
+        Assert.Equal("Node1.Circle.Radius[]", radius.DataSource!.GetBindingPath());
+        Assert.True(radius.DataSource.IsArraySemantics);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void Geometry_field_tree_binding_preserves_collection_for_zero_one_many_values(int count)
+    {
+        var source = MakeDataSource("Circle", typeof(Circle2d[]));
+        var radius = ArrayTreeFormatter.BuildGeometryFieldChildren(source, typeof(Circle2d)).Single(c => c.Text == "半径");
+        var path = radius.DataSource!.GetBindingPath();
+        var result = new GeometryPointSourceResults { Circle = Enumerable.Range(0,count).Select(i => new Circle2d(i,i,i+2)).ToArray() };
+        var resolved = OutputVariableResolver.Resolve(result, path[(path.IndexOf('.')+1)..]);
+        Assert.Equal(Enumerable.Range(0,count).Select(i => (double)(i+2)), Assert.IsType<double[]>(resolved));
     }
 
     [Fact]

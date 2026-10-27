@@ -12,7 +12,7 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public const string MaskInput = "input.mask.region";
     public const string PoseInput = "input.pose";
     public string ToolId => Id;
-    public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","区域分析",10);
+    public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10);
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs);
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema SettingsSchema=>BlobParameterDefinition.Instance.SettingsSchema;

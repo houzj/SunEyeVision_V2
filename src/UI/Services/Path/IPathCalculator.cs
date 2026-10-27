@@ -10,19 +10,8 @@ namespace SunEyeVision.UI.Services.Path
     /// </summary>
     public interface IPathCalculator
     {
-        /// <summary>
-        /// 计算正交折线路径点集合（基础方法）
-        /// </summary>
-        /// <param name="sourcePosition">源端口位置</param>
-        /// <param name="targetPosition">目标端口位置</param>
-        /// <param name="sourceDirection">源端口方向</param>
-        /// <param name="targetDirection">目标端口方向</param>
-        /// <returns>路径点集合（包括起点和终点）</returns>
-        Point[] CalculateOrthogonalPath(
-            Point sourcePosition,
-            Point targetPosition,
-            PortDirection sourceDirection,
-            PortDirection targetDirection);
+        /// <summary>新建连线预览：鼠标为自由终点，源节点边界必须取实际模板尺寸。</summary>
+        Point[] CalculatePreviewPath(Point sourcePosition, Point pointer, PortDirection sourceDirection, Rect sourceNodeRect);
 
         /// <summary>
         /// 计算正交折线路径点集合（增强方法，带节点信息）

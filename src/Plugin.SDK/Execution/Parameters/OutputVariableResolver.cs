@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -24,13 +24,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public static object? Resolve(
             IDictionary<string, ToolResults> nodeResults,
             string nodeId,
-            string propertyPath)
+            string propertyPath, Guid? sourceFieldId = null)
         {
             if (!nodeResults.TryGetValue(nodeId, out var result) || result is null)
                 throw new InvalidOperationException(
                     $"绑定源节点 '{nodeId}' 不在执行结果中。可用节点: [{string.Join(", ", nodeResults.Keys)}]");
 
-            return Resolve(result, propertyPath, nodeId);
+            return Resolve(result, propertyPath, nodeId, sourceFieldId);
         }
 
         /// <summary>
@@ -40,19 +40,28 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="propertyPath">属性路径</param>
         /// <param name="nodeId">节点 ID（仅用于错误信息）</param>
         /// <returns>解析到的值</returns>
-        public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null)
+        public static object? Resolve(ToolResults result, string propertyPath, string? nodeId = null, Guid? sourceFieldId = null)
         {
             if(result is RuntimeToolResults runtime&&runtime.BindingOutputSchema!.Outputs.Any(port=>port.Id==propertyPath&&
                 port.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Resource&&port.Type.Resource==SunEyeVision.Plugin.Contracts.ResourceKind.Image))
+            {
+                if(sourceFieldId.HasValue)throw new InvalidOperationException($"Runtime输出 '{propertyPath}' 使用Port身份，不接受不存在的字段身份 '{sourceFieldId}'。");
                 return runtime.GetImageView(propertyPath);
+            }
             var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
             if (parsedPath.Count == 0)
                 throw new InvalidOperationException($"属性路径为空: '{propertyPath}'");
 
             var (firstName, firstIndex, firstTypeFilter) = parsedPath[0];
             var variables = result.GetOutputVariables();
-            var variable = variables.FirstOrDefault(v =>
-                string.Equals(v.Name, firstName, StringComparison.OrdinalIgnoreCase));
+            var matches = sourceFieldId.HasValue
+                ? variables.Where(v => v.FieldId == sourceFieldId.Value).ToArray()
+                : variables.Where(v => string.Equals(v.Name, firstName, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (matches.Length > 1)
+                throw new InvalidOperationException($"节点 '{nodeId}' 输出字段身份或名称不唯一。");
+            var variable = matches.SingleOrDefault();
+            if (sourceFieldId.HasValue && variable is null)
+                throw new InvalidOperationException($"节点 '{nodeId}' 无输出字段身份 '{sourceFieldId}'，请重新绑定。");
 
             if (variable == null)
             {

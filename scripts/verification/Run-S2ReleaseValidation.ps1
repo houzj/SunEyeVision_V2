@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','DesignTime','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','DesignTime','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ThemeStartup','SdkBaseline','InfrastructureBaseline')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
@@ -40,6 +40,7 @@ if($Stage -eq 'S4' -and $Track -eq 'FullChain'){$source='S4FullChainCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'WindowPresentation'){$source='O06WindowPresentationCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'RuntimeEditor'){$source='S4RuntimeEditorCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'DesignTime'){$source='S4DesignTimeCases.cs'}
+if($Track -in @('WorkflowBaseline','WorkflowHost','ThemeStartup','SdkBaseline','InfrastructureBaseline')){$source=$Track+'Cases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
 Copy-Item -LiteralPath (Join-Path $dir 'Cases.cs') -Destination (Join-Path $logDir 'cases.cs.txt')
 $caseSourceSha=(Get-FileHash -LiteralPath (Join-Path $logDir 'cases.cs.txt') -Algorithm SHA256).Hash

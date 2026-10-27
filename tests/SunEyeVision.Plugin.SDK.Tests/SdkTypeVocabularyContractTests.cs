@@ -197,15 +197,13 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void ParseLegacyScalarJson_LosesValueAfterStep7()
+    public void ParseLegacyScalarJson_IsRejectedInsteadOfSilentlyLosingValue()
     {
-        // 验收 #8（破坏性）：历史以标量形态存储的全局变量（如 "Value":3.14）
-        // 在强制 T[] 后无法解析，ParseAdaptive 抛异常、转换器记录日志并置空值，
-        // 需用户重新保存升级为 T[] 形态（而非静默保留错误数据）。
+        // The current reader rejects scalar payloads explicitly; loading must not succeed with a lost value.
         const string legacyScalarJson = "{\"Value\":{\"Type\":\"Double\",\"Value\":3.14}}";
-        var back = JsonSerializer.Deserialize<ValueHolder>(legacyScalarJson);
-        Assert.NotNull(back);
-        Assert.Null(back!.Value);
+        var error=Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<ValueHolder>(legacyScalarJson));
+        Assert.IsType<NotSupportedException>(error.InnerException);
+        Assert.Contains("Double",error.Message);
     }
 
     #endregion

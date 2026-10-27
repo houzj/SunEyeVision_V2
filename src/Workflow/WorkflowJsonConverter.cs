@@ -9,7 +9,7 @@ namespace SunEyeVision.Workflow;
 /// <summary>Reads a pure candidate document. UI conversion belongs to workspace activation.</summary>
 public class WorkflowJsonConverter : JsonConverter<Workflow>
 {
-    private static readonly HashSet<string> Known = new(StringComparer.Ordinal) { "Id", "Name", "IsSubroutine", "Nodes", "Connections" };
+    private static readonly HashSet<string> Known = new(StringComparer.Ordinal) { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections" };
     public override Workflow Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
@@ -18,6 +18,13 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
         if (string.IsNullOrWhiteSpace(id)) throw new JsonException("Workflow Id is required.");
         var workflow = new Workflow(id, root.GetProperty("Name").GetString() ?? "");
         if (root.TryGetProperty("IsSubroutine", out var sub)) workflow.IsSubroutine = sub.GetBoolean();
+        if (!workflow.IsSubroutine && root.TryGetProperty("WorkspaceSettings", out var settings))
+        {
+            try { workflow.WorkspaceSettings = JsonSerializer.Deserialize<RootWorkspaceSettings>(settings.GetRawText(),options) ?? throw new JsonException("根流程工作区配置缺失。"); }
+            catch(Exception error) { throw new JsonException("根流程工作区配置无效。",error); }
+        }
+        if(!workflow.IsSubroutine&&root.TryGetProperty("RootConfiguration",out var rootConfiguration))
+        {try{workflow.RootConfiguration=JsonSerializer.Deserialize<RootWorkflowConfiguration>(rootConfiguration.GetRawText(),options)??throw new JsonException("根流程配置缺失。");}catch(Exception error){throw new JsonException("根流程配置无效。",error);}}
         if (root.TryGetProperty("Nodes", out var nodes))
         {
             var ids = new HashSet<string>(StringComparer.Ordinal);
@@ -72,6 +79,8 @@ public class WorkflowJsonConverter : JsonConverter<Workflow>
         }
         writer.WriteStartObject();
         writer.WriteString("Id", value.Id); writer.WriteString("Name", value.Name); writer.WriteBoolean("IsSubroutine", value.IsSubroutine);
+        if(!value.IsSubroutine){value.WorkspaceSettings.Validate();writer.WritePropertyName("WorkspaceSettings");JsonSerializer.Serialize(writer,value.WorkspaceSettings,options);}
+        if(!value.IsSubroutine){value.RootConfiguration.Validate();writer.WritePropertyName("RootConfiguration");JsonSerializer.Serialize(writer,value.RootConfiguration,options);}
         writer.WritePropertyName("Nodes"); JsonSerializer.Serialize(writer, value.Nodes, options);
         writer.WritePropertyName("Connections"); JsonSerializer.Serialize(writer, value.Connections, options);
         if (value.AdditionalData != null)

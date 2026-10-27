@@ -146,10 +146,11 @@ namespace SunEyeVision.UI.Services.Interaction
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)
             {
-                _viewModel.AddConnectionToWorkflow(newConnection);
+                if (!_viewModel.AddConnectionToWorkflow(newConnection)) return;
             }
             else
             {
+                if (SunEyeVision.Workflow.ExecutionConnectionPolicy.Rejection(selectedTab.WorkflowConnections, newConnection) != null) return;
                 selectedTab.WorkflowConnections.Add(newConnection);
             }
         }
@@ -290,10 +291,11 @@ namespace SunEyeVision.UI.Services.Interaction
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)
             {
-                _viewModel.AddConnectionToWorkflow(newConnection);
+                if (!_viewModel.AddConnectionToWorkflow(newConnection)) return;
             }
             else
             {
+                if (SunEyeVision.Workflow.ExecutionConnectionPolicy.Rejection(selectedTab.WorkflowConnections, newConnection) != null) return;
                 selectedTab.WorkflowConnections.Add(newConnection);
             }
 

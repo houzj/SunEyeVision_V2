@@ -21,4 +21,4 @@
   &quot;accept&quot;: &quot;多流程依赖、双入口重入、慢原生、取消排空/再运行矩阵通过；日志反映真实终态。&quot;,
   &quot;depends&quot;: &quot;O01身份、O03快照、O04资源合同。&quot;,
   &quot;status&quot;: &quot;设计任务已定义，未在本轮实施&quot;
-}</pre></details></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>
+}</pre></details><section id="workflow-toolbox-dataflow-source-20261026"><h2>2026-10-26 独立分支源码检查点：调用环保护待集成</h2><p>固定基线 a6f58334ac9eb4bd67cdfd74896798681d0f1ed5，分支 codex/workflow-toolbox-dataflow。此记录覆盖原 forward-O02-call-cycle 的首批源码，历史“未实施”描述为原审查时点；尚未正式构建或验收，不代表 O02 整包完成。</p><p>定义校验沿冻结配置解析子程序图，用显式栈区分当前路径与已完成共享子图，报告 A→B→A 路径并检查嵌套缺引用；WorkflowRunSession 创建子作用域时核祖先 WorkflowId，拒绝递归且不注册失败作用域，允许兄弟调用复用同一子图。沿用默认拒环取舍，不增加递归配置。</p><p>新增6个回归用例（两层/三层环、菱形共享、嵌套缺引用、运行祖先回调、兄弟复用），仅已准备、未运行。源码差异空白检查通过。未改执行队列排空、停止完成、运行范围、子程序终态、ROI与工具执行接口；这些仍按原方案待实施。</p><p>下一验收：唯一主仓正式 Release 集成候选中运行新增及既有定义/会话回归，核根运行在节点派发前拒环、合法子调用与取消不回退。须记录候选源码提交与产物身份；不复用主仓旧DLL证明本分支通过。</p></section></main><footer>当前事实 / 拟议设计 / 未知分开。文档交付不等产品验收；原49 / 41 / 42口径保持。</footer><script src="../公共资源/architecture-doc-site.js"></script></body></html>

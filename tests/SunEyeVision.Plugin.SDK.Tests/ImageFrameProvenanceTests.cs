@@ -1,4 +1,4 @@
-using NSubstitute;
+﻿using NSubstitute;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -14,13 +14,16 @@ public class ImageFrameProvenanceTests
     public sealed class Results : ToolResults
     {
         public IVisionImage? Image { get; set; }
+        public AffineMatrix[]? Matrices { get; set; }
+        public override List<PropertyMapEntry> GetPropertyMap() => new() { new(nameof(Matrices), "位置修正") };
         public override Dictionary<string, IVisionImage?> GetDisplayImages() => new() { ["Image"] = Image };
     }
     private class ImageTool : IToolPlugin<Parameters, Results>, IImageFramePolicyProvider
     {
         public IVisionImage? Output;
+        public AffineMatrix[]? Matrices;
         public ImageFramePolicy ImageFramePolicy { get; init; }
-        public Results Run(Parameters p) => new() { Status = ExecutionStatus.Success, Image = Output };
+        public Results Run(Parameters p) => new() { Status = ExecutionStatus.Success, Image = Output, Matrices = Matrices };
     }
     private sealed class AsyncImageTool : ImageTool, IAsyncToolPlugin
     {
@@ -36,7 +39,8 @@ public class ImageFrameProvenanceTests
         var producer = new ImageTool { Output = image, ImageFramePolicy = ImageFramePolicy.NewFrame };
         executor.Run<Parameters, Results>(producer, new Parameters());
         var firstFrame = ImageFrameProvenance.CaptureInput(image);
-        var filter = new ImageTool { Output = derived, ImageFramePolicy = ImageFramePolicy.PreserveCoordinates };
+        var filter = new ImageTool { Output = derived, ImageFramePolicy = ImageFramePolicy.PreserveCoordinates,
+            Matrices = new[] { new AffineMatrix(1,0,0,1,3,4) } };
         var matching = executor.Run<Parameters, Results>(filter, new Parameters { ResolvedInputImage = image });
         Assert.Equal(firstFrame, ImageFrameProvenance.CaptureInput(derived));
         Assert.Equal(firstFrame, ImageFrameProvenance.GetInputFrame(matching));
@@ -46,6 +50,8 @@ public class ImageFrameProvenanceTests
         Assert.Equal(PositionCorrectionState.Valid, PositionCorrectionResolution.Capture(p).State);
         Assert.True(PositionCorrectionResolution.Capture(p).FramePairingVerified);
         var resolution = PositionCorrectionResolution.Capture(p);
+        Assert.Equal(3, resolution.Matrix!.OffsetX); // source result wins over the editor's cached Identity
+        Assert.Equal(4, resolution.Matrix.OffsetY);
         Assert.Equal(PositionCorrectionState.ImageFrameMismatch, resolution.ForPreview(Guid.NewGuid(), true).State);
         Assert.Equal(PositionCorrectionState.WaitingForSource, resolution.ForPreview(null, false).State);
         Assert.False(resolution.ForPreview(null, true).FramePairingVerified);
@@ -58,6 +64,19 @@ public class ImageFrameProvenanceTests
         Assert.Equal(PositionCorrectionState.ImageFrameMismatch, PositionCorrectionResolution.Capture(p).State);
         p.IsPositionCorrectionEnabled = false;
         Assert.Equal(PositionCorrectionState.Disabled, PositionCorrectionResolution.Capture(p).State);
+    }
+
+    [Fact]
+    public void Explicit_result_snapshot_with_no_matrix_does_not_reuse_editor_cached_value()
+    {
+        var source = new Results { Status = ExecutionStatus.Success };
+        var p = new MeasureGuideParameters { IsPositionCorrectionEnabled = true,
+            PositionCorrectionBindingSource = new() { SourceNodeId="match", PropertyName="Matrices", CurrentValue=AffineMatrix.Identity },
+            NodeResults = new Dictionary<string, ToolResults> { ["match"]=source } };
+        var captured = PositionCorrectionResolution.Capture(p);
+        Assert.Equal(PositionCorrectionState.WaitingForSource, captured.State);
+        Assert.Null(captured.Matrix);
+        Assert.False(captured.CanUse);
     }
 
     [Fact]

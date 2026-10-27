@@ -31,7 +31,7 @@ namespace SunEyeVision.UI.Services.Node
         public string PortName { get; set; } = string.Empty;
         public PortDirection Direction { get; set; }
         public Point Position { get; set; }
-        public Ellipse? Element { get; set; }
+        public VmExecutionPort? Element { get; set; }
     }
 
     /// <summary>
@@ -42,22 +42,22 @@ namespace SunEyeVision.UI.Services.Node
         /// <summary>
         /// 获取指定节点的端口元素?
         /// </summary>
-        Ellipse? GetPortElement(string nodeId, string portName);
+        VmExecutionPort? GetPortElement(string nodeId, string portName);
 
         /// <summary>
         /// 从端口元素获取对应的节点
         /// </summary>
-        WorkflowNode? GetNodeFromPort(Ellipse port);
+        WorkflowNode? GetNodeFromPort(VmExecutionPort port);
 
         /// <summary>
         /// 在指定位置查找端口?
         /// </summary>
-        Ellipse? FindPortAtPosition(Point position);
+        VmExecutionPort? FindPortAtPosition(Point position);
 
         /// <summary>
         /// 高亮端口
         /// </summary>
-        void HighlightPort(Ellipse port, bool highlight);
+        void HighlightPort(VmExecutionPort port, bool highlight);
 
         /// <summary>
         /// 清除所有端口高度?
@@ -77,7 +77,7 @@ namespace SunEyeVision.UI.Services.Node
         /// <summary>
         /// 获取端口信息
         /// </summary>
-        PortInfo? GetPortInfo(Ellipse port);
+        PortInfo? GetPortInfo(VmExecutionPort port);
 
         /// <summary>
         /// 清除端口缓存
@@ -91,7 +91,7 @@ namespace SunEyeVision.UI.Services.Node
     public class PortService : IPortService
     {
         private readonly System.Windows.Controls.Canvas _canvas;
-        private readonly Dictionary<string, Ellipse> _portCache;
+        private readonly Dictionary<string, VmExecutionPort> _portCache;
         private readonly object _cacheLock;
 
         /// <summary>
@@ -107,11 +107,11 @@ namespace SunEyeVision.UI.Services.Node
         public PortService(System.Windows.Controls.Canvas canvas)
         {
             _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
-            _portCache = new Dictionary<string, Ellipse>();
+            _portCache = new Dictionary<string, VmExecutionPort>();
             _cacheLock = new object();
         }
 
-        public Ellipse? GetPortElement(string nodeId, string portName)
+        public VmExecutionPort? GetPortElement(string nodeId, string portName)
         {
             if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(portName))
             {
@@ -129,7 +129,7 @@ namespace SunEyeVision.UI.Services.Node
                 }
 
                 // 查找端口元素
-                var port = FindVisualChild<Ellipse>(_canvas,
+                var port = FindVisualChild<VmExecutionPort>(_canvas,
                     e => e.Name == portName &&
                          GetNodeIdFromElement(e) == nodeId);
 
@@ -143,7 +143,7 @@ namespace SunEyeVision.UI.Services.Node
             }
         }
 
-        public WorkflowNode? GetNodeFromPort(Ellipse port)
+        public WorkflowNode? GetNodeFromPort(VmExecutionPort port)
         {
             if (port == null)
             {
@@ -159,43 +159,32 @@ namespace SunEyeVision.UI.Services.Node
             return null;
         }
 
-        public Ellipse? FindPortAtPosition(Point position)
+        public VmExecutionPort? FindPortAtPosition(Point position)
         {
             // 使用 HitTest 查找端口
             var hitResults = VisualTreeHelper.HitTest(_canvas, position);
             if (hitResults != null)
             {
-                var port = FindVisualParent<Ellipse>(hitResults.VisualHit);
+                var port = FindVisualParent<VmExecutionPort>(hitResults.VisualHit);
                 return port;
             }
             return null;
         }
 
-        public void HighlightPort(Ellipse port, bool highlight)
+        public void HighlightPort(VmExecutionPort port, bool highlight)
         {
             if (port == null)
             {
                 return;
             }
 
-            if (highlight)
-            {
-                port.Stroke = Brushes.LimeGreen;
-                port.StrokeThickness = 3;
-                port.Opacity = 1.0;
-            }
-            else
-            {
-                port.Stroke = Brushes.Gray;
-                port.StrokeThickness = 1;
-                port.Opacity = 0.7;
-            }
+            port.IsHighlighted=highlight;
         }
 
         public void ClearAllHighlights()
         {
             // 查找所有端口并清除高亮
-            var allPorts = FindAllVisualChildren<Ellipse>(_canvas);
+            var allPorts = FindAllVisualChildren<VmExecutionPort>(_canvas);
             foreach (var port in allPorts)
             {
                 HighlightPort(port, false);
@@ -241,7 +230,7 @@ namespace SunEyeVision.UI.Services.Node
             };
         }
 
-        public PortInfo? GetPortInfo(Ellipse port)
+        public PortInfo? GetPortInfo(VmExecutionPort port)
         {
             if (port == null)
             {

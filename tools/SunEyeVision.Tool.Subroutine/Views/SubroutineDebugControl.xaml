@@ -1,10 +1,11 @@
-<!-- 子程序调试控件 — 提取自 SubroutineParameterDialog 的 TabControl，由 DefaultDebugWindow 包裹 -->
+﻿<!-- 子程序调试控件 — 提取自 SubroutineParameterDialog 的 TabControl，由 DefaultDebugWindow 包裹 -->
 <UserControl x:Class="SunEyeVision.Tool.Subroutine.Views.SubroutineDebugControl"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:local="clr-namespace:SunEyeVision.Tool.Subroutine.Views"
+        xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.Models;assembly=SunEyeVision.Plugin.SDK"
         Background="{DynamicResource ThemePanelBackgroundBrush}">
 
     <UserControl.Resources>
@@ -32,6 +33,27 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+            </Style>
+
+            <Style x:Key="VmIoAddButton" TargetType="Button">
+                <Setter Property="Width" Value="24"/><Setter Property="Height" Value="32"/>
+                <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                    <Image x:Name="icon" Stretch="None" Source="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/add_normal.png"/>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/add_click.png"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="icon" Property="Opacity" Value="0.4"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate></Setter.Value></Setter>
+            </Style>
+            <Style x:Key="VmIoDeleteButton" TargetType="Button">
+                <Setter Property="Width" Value="28"/><Setter Property="Height" Value="32"/>
+                <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                    <Image x:Name="icon" Stretch="None" Source="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/delete_normal.png"/>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="icon" Property="Source" Value="/SunEyeVision.Tool.Subroutine;component/Resources/GroupIo/delete_click.png"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="icon" Property="Opacity" Value="0.4"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate></Setter.Value></Setter>
             </Style>
 
             <!-- 添加按钮样式 -->
@@ -81,7 +103,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="0" MaxWidth="520">
+    <Grid Margin="0">
         <!-- TabControl -->
         <TabControl BorderThickness="0" Background="{DynamicResource ThemePanelBackgroundBrush}">
             <!-- Tab 0: 输入设置 -->
@@ -93,7 +115,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <DataGrid ItemsSource="{Binding Inputs}"
+                        <DataGrid Margin="18,0,2,0" ItemsSource="{Binding Inputs}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   CanUserAddRows="False"
@@ -104,17 +126,17 @@
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*">
+                                <DataGridTemplateColumn Header="参数名称" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox MaxLength="{x:Static models:SubroutineIoRules.MaximumNameLength}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
                                                      BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="类型" Width="60">
+                                <DataGridTemplateColumn Header="类型" Width="68">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
@@ -128,7 +150,7 @@
                                 <DataGridTemplateColumn Header="订阅关系" Width="*" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <controls:ParamBinding
+                                            <controls:ParamBinding BindingSourceSelected="OnIoBindingChanged"
                                                 AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -138,10 +160,10 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="操作" Width="Auto">
+                                <DataGridTemplateColumn Header="" Width="42">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="✕" Style="{StaticResource TabHeaderButton}"
+                                            <Button Style="{StaticResource VmIoDeleteButton}"
                                                     Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" ToolTip="删除此项"/>
                                         </DataTemplate>
@@ -151,20 +173,20 @@
                         </DataGrid>
 
                         <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
-                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="18,4,2,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableTypes}"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedInputTypeName}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                          Height="32" Width="68" VerticalAlignment="Center">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Content="+" Height="26" Margin="4,0,0,0"
-                                        Style="{StaticResource AddButton}"
+                                <Button Margin="7,0,0,0"
+                                        Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddInputCommand}"
                                         ToolTip="添加输入参数"/>
                             </StackPanel>
@@ -182,7 +204,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <DataGrid ItemsSource="{Binding Outputs}"
+                        <DataGrid Margin="18,0,2,0" ItemsSource="{Binding Outputs}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   CanUserAddRows="False"
@@ -193,17 +215,17 @@
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*" MinWidth="100">
+                                <DataGridTemplateColumn Header="参数名称" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox MaxLength="{x:Static models:SubroutineIoRules.MaximumNameLength}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
                                                      BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="类型" Width="60">
+                                <DataGridTemplateColumn Header="类型" Width="68">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
@@ -217,7 +239,7 @@
                                 <DataGridTemplateColumn Header="订阅关系" Width="*" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <controls:ParamBinding
+                                            <controls:ParamBinding BindingSourceSelected="OnIoBindingChanged"
                                                 AvailableDataSources="{Binding DataContext.SubroutineInternalSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -227,17 +249,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="操作" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="✕" Style="{StaticResource TabHeaderButton}"
-                                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}" ToolTip="删除此项"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="累计输出" Width="70">
+
+                                <DataGridTemplateColumn Header="累积输出" Width="95">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <controls:ToggleSwitch
@@ -247,24 +261,34 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="" Width="42">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource VmIoDeleteButton}"
+                                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" ToolTip="删除此项"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
 
                         <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
-                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="18,4,2,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableTypes}"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedOutputTypeName}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                          Height="32" Width="68" VerticalAlignment="Center">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Content="+" Height="26" Margin="4,0,0,0"
-                                        Style="{StaticResource AddButton}"
+                                <Button Margin="7,0,0,0"
+                                        Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddOutputCommand}"
                                         ToolTip="添加输出项"/>
                             </StackPanel>
@@ -273,7 +297,11 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- Tab 2: 显示设置 -->
+            <TabItem Header="运行参数" Padding="8,4">
+                <ContentControl x:Name="RunParameterContent" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+            </TabItem>
+
+            <!-- Tab 3: 显示设置 -->
             <TabItem Header="显示设置" Padding="8,4">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -301,19 +329,19 @@
                                   Background="Transparent"
                                   RowHeight="32"
                                   HeadersVisibility="Column"
-                                  Margin="0,4,0,0">
+                                  Margin="18,4,2,0">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*">
+                                <DataGridTemplateColumn Header="参数名称" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox MaxLength="32" Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
                                                      BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="类型" Width="60">
+                                <DataGridTemplateColumn Header="类型" Width="68">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding DisplayType, Converter={StaticResource TypeDisplayConverter}}"
@@ -330,9 +358,11 @@
                                             <controls:ParamBinding
                                                 AvailableDataSources="{Binding DataContext.SubroutineInternalSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
+                                                AllowedDataTypes="{Binding AllowedParamTypes}"
+                                                  BindingSourceSelected="OnDisplayBindingChanged"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Height="26"/>
+                                                Height="32"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -354,23 +384,24 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="操作" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="✕" Style="{StaticResource TabHeaderButton}"
-                                                    Command="{Binding DataContext.RemoveDisplayItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}" ToolTip="删除此显示项"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="累积显示" Width="70">
+
+                                <DataGridTemplateColumn Header="累积显示" Width="95">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <controls:ToggleSwitch
                                                 IsChecked="{Binding IsAccumulated, Mode=TwoWay}"
                                                 SwitchWidth="36" SwitchHeight="18"
                                                 HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="" Width="42">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource VmIoDeleteButton}"
+                                                    Command="{Binding DataContext.RemoveDisplayItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" ToolTip="删除此显示项"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -384,16 +415,25 @@
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedDisplayType}"
                                           Height="26" MinWidth="120" VerticalAlignment="Center">
+                                    <ComboBox.ItemContainerStyle>
+                                        <Style TargetType="ComboBoxItem">
+                                            <Setter Property="IsEnabled" Value="{Binding IsAvailable}"/>
+                                        </Style>
+                                    </ComboBox.ItemContainerStyle>
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayName}"/>
+                                            <TextBlock Text="{Binding AvailabilityText}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Content="+" Height="26" Margin="4,0,0,0"
-                                        Style="{StaticResource AddButton}"
+                                <Button Margin="4,0,0,0"
+                                        Style="{StaticResource VmIoAddButton}"
                                         Command="{Binding AddDisplayItemCommand}"
                                         ToolTip="添加显示项"/>
+                                <Button Content="导入内部显示对象（待完善）" IsEnabled="False"
+                                        Margin="12,0,0,0" Padding="8,2" Height="26"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        ToolTip="暂不支持批量导入内部模块的显示对象，可先手动添加显示项。"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -430,6 +470,7 @@
                                     <TextBlock Grid.Column="0" Text="循环起始值:" VerticalAlignment="Center" FontSize="13"/>
                                     <controls:ParamBinding Grid.Column="1"
                                         AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        DataType="{Binding DataContext.LoopIndexType, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         BindingSource="{Binding LoopConfig.StartValueBinding, Mode=TwoWay}"
                                         BindingDisplayText="{Binding LoopConfig.StartValueBindingDisplayText, Mode=OneWay}"
                                         Height="26"/>
@@ -444,6 +485,7 @@
                                     <TextBlock Grid.Column="0" Text="循环结束值:" VerticalAlignment="Center" FontSize="13"/>
                                     <controls:ParamBinding Grid.Column="1"
                                         AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        DataType="{Binding DataContext.LoopIndexType, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         BindingSource="{Binding LoopConfig.EndValueBinding, Mode=TwoWay}"
                                         BindingDisplayText="{Binding LoopConfig.EndValueBindingDisplayText, Mode=OneWay}"
                                         Height="26"/>
@@ -456,7 +498,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="循环间隔(ms):" VerticalAlignment="Center" FontSize="13"/>
-                                    <TextBox Grid.Column="1" Text="{Binding LoopConfig.LoopInterval}"
+                                    <TextBox Grid.Column="1" Text="{Binding LoopConfig.LoopInterval, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                              Height="26" VerticalContentAlignment="Center"
                                              Width="120" HorizontalAlignment="Left"/>
                                 </Grid>
@@ -501,7 +543,9 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="源比较值:" VerticalAlignment="Center" FontSize="13"/>
                                         <controls:ParamBinding Grid.Column="1"
-                                            AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            AvailableDataSources="{Binding DataContext.LoopComparisonSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            DataType="{Binding DataContext.LoopComparisonType, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Tag="SourceCompareBinding" BindingSourceSelected="OnLoopBindingChanged"
                                             BindingSource="{Binding LoopConfig.SourceCompareBinding, Mode=TwoWay}"
                                             BindingDisplayText="{Binding LoopConfig.SourceCompareBindingDisplayText, Mode=OneWay}"
                                             Height="26"/>
@@ -519,7 +563,9 @@
                                                   SelectedItem="{Binding LoopConfig.ComparisonOperator}"
                                                   Width="50" Height="26" Margin="0,0,4,0"/>
                                         <controls:ParamBinding Grid.Column="2"
-                                            AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            AvailableDataSources="{Binding DataContext.LoopComparisonSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            DataType="{Binding DataContext.LoopComparisonType, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Tag="TargetCompareBinding" BindingSourceSelected="OnLoopBindingChanged"
                                             BindingSource="{Binding LoopConfig.TargetCompareBinding, Mode=TwoWay}"
                                             BindingDisplayText="{Binding LoopConfig.TargetCompareBindingDisplayText, Mode=OneWay}"
                                             Height="26"/>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -41,7 +41,10 @@ namespace SunEyeVision.Plugin.SDK.Models
             set
             {
                 if (SetProperty(ref _displayType, value))
+                {
                     OnPropertyChanged(nameof(ParamType));
+                    OnPropertyChanged(nameof(AllowedParamTypes));
+                }
             }
         }
 
@@ -70,12 +73,14 @@ namespace SunEyeVision.Plugin.SDK.Models
         /// <summary>
         /// 显示项可绑定的数据源类型。绑定控件 ParamBindingBase.FilterDataSourcesByType 依据此类型
         /// 过滤数据源列表（标量 T 与数组 T[] 经 SdkTypeVocabulary 归并到同一词汇）。
-        /// 圆弧/箭头/坐标系当前渲染不支持，不过滤（返回 null = 显示全部，保持遗留行为）。
+        /// 箭头/坐标系当前渲染不支持，不过滤（返回 null = 显示全部，保持遗留行为）。
         /// </summary>
         [JsonIgnore]
         public Type? ParamType => DisplayType switch
         {
             SubroutineDisplayType.Circle => typeof(Circle2d[]),
+            SubroutineDisplayType.Arc => typeof(Arc2d[]),
+            SubroutineDisplayType.AnnularSector => typeof(Annulus2d[]),
             SubroutineDisplayType.Point => typeof(Geometry.Point2d[]),
             SubroutineDisplayType.Cross => typeof(Geometry.Point2d[]),
             SubroutineDisplayType.Line => typeof(Line2d[]),
@@ -86,6 +91,14 @@ namespace SunEyeVision.Plugin.SDK.Models
             SubroutineDisplayType.Text => typeof(double[]),
             _ => null,
         };
+
+        private static readonly IReadOnlyList<Type> TextParamTypes = Array.AsReadOnly(new[]
+        { typeof(double[]), typeof(string[]), typeof(bool[]) });
+
+        /// <summary>文本可来自数值、字符串或布尔；主类型仍负责数值几何字段的树形投影。</summary>
+        [JsonIgnore]
+        public IReadOnlyList<Type>? AllowedParamTypes => DisplayType == SubroutineDisplayType.Text
+            ? TextParamTypes : ParamType is {} type ? new[] { type } : null;
 
         public string BindingSource
         {
@@ -117,13 +130,15 @@ namespace SunEyeVision.Plugin.SDK.Models
 
     public enum SubroutineDisplayType
     {
-        Point, Line, Rectangle, Circle, Arc, Polygon, Contour, Arrow, Cross, CoordinateSystem, Text, Image
+        Point, Line, Rectangle, Circle, Arc, Polygon, Contour, Arrow, Cross, CoordinateSystem, Text, Image, AnnularSector
     }
 
     public class DisplayTypeOption
     {
         public string DisplayName { get; }
         public SubroutineDisplayType Value { get; }
+        public bool IsAvailable => Value.IsSupported();
+        public string AvailabilityText => IsAvailable ? DisplayName : DisplayName + "（待完善）";
         public DisplayTypeOption(string displayName, SubroutineDisplayType value)
         {
             DisplayName = displayName;
@@ -139,6 +154,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [SubroutineDisplayType.Line] = "\u76f4\u7ebf",
             [SubroutineDisplayType.Rectangle] = "\u77e9\u5f62",
             [SubroutineDisplayType.Circle] = "\u5706",
+            [SubroutineDisplayType.AnnularSector] = "环形扇区",
             [SubroutineDisplayType.Arc] = "\u5706\u5f27",
             [SubroutineDisplayType.Polygon] = "\u591a\u8fb9\u5f62",
             [SubroutineDisplayType.Contour] = "\u8f6e\u5ed3",
@@ -151,6 +167,9 @@ namespace SunEyeVision.Plugin.SDK.Models
 
         public static string GetChineseName(this SubroutineDisplayType type)
             => ChineseNames.TryGetValue(type, out var name) ? name : type.ToString();
+
+        public static bool IsSupported(this SubroutineDisplayType type)
+            => Enum.IsDefined(type) && type is not SubroutineDisplayType.Arrow and not SubroutineDisplayType.CoordinateSystem;
 
         public static List<DisplayTypeOption> GetAllOptions()
             => ChineseNames.Select(kvp => new DisplayTypeOption(kvp.Value, kvp.Key)).ToList();

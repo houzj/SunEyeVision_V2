@@ -1,0 +1,13 @@
+{
+  "main": "6e43baed151cc23ddd23ff241493c4e927d5df59",
+  "workflow": "5552fae8c43a725a1542f9546e0524dbeaa7a54a",
+  "mergeBase": "a6f58334ac9eb4bd67cdfd74896798681d0f1ed5",
+  "userUncommitted": {
+    "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+    "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+    "rule": "保留未提交，合并前后核对，不夹入功能提交"
+  },
+  "workflowWorktree": "C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2",
+  "integrationBranch": "codex/baseline-sync-20261027",
+  "scope": "先统一基线，不恢复旧Blob SDK模型或格式兼容；双方冻结新增功能，主线唯一集成写者；不推送"
+}

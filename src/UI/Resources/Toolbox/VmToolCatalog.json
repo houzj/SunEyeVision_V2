@@ -1,0 +1,933 @@
+[
+  {
+    "Name": "采集",
+    "Items": [
+      {
+        "Id": "ImageSourceModule",
+        "Name": "图像源",
+        "Icon": "ImageSourceModuleImageEnable.png",
+        "ToolId": "ImageLoad"
+      },
+      {
+        "Id": "ImageAcquisitionModule",
+        "Name": "多图采集",
+        "Icon": "ImageAcquisitionModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "SaveImage",
+        "Name": "输出图像",
+        "Icon": "SaveImageImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "ImageBufferModule",
+        "Name": "缓存图像",
+        "Icon": "ImageBufferModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "LightModule",
+        "Name": "光源",
+        "Icon": "LightModuleImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "定位",
+    "Items": [
+      {
+        "Id": "IMVSContourMatchModu",
+        "Name": "轮廓匹配",
+        "Icon": "IMVSContourMatchModuImageEnable.png",
+        "ToolId": "ShapeMatch"
+      },
+      {
+        "Id": "IMVSHPFeatureMatchModu",
+        "Name": "高精度匹配",
+        "Icon": "IMVSHPFeatureMatchModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSFastFeatureMatchModu",
+        "Name": "快速匹配",
+        "Icon": "IMVSFastFeatureMatchModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSGrayMatchModuVA",
+        "Name": "灰度匹配",
+        "Icon": "IMVSGrayMatchModuVAImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMarkFindModu",
+        "Name": "图形定位",
+        "Icon": "IMVSMarkFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSFixtureModu",
+        "Name": "位置修正",
+        "Icon": "IMVSFixtureModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSBlobFindModu",
+        "Name": "Blob分析",
+        "Icon": "IMVSBlobFindModuImageEnable.png",
+        "ToolId": "BlobAnalysis"
+      },
+      {
+        "Id": "IMVSBlobFindLabelsModu",
+        "Name": "Blob标签分析",
+        "Icon": "IMVSBlobFindLabelsModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCircleFindModu",
+        "Name": "圆查找",
+        "Icon": "IMVSCircleFindModuImageEnable.png",
+        "ToolId": "CircleDetect"
+      },
+      {
+        "Id": "IMVSEllipseFindModu",
+        "Name": "椭圆查找",
+        "Icon": "IMVSEllipseFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMatrixCircleFindModu",
+        "Name": "阵列圆查找",
+        "Icon": "IMVSMatrixCircleFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSLineFindModu",
+        "Name": "直线查找",
+        "Icon": "IMVSLineFindModuImageEnable.png",
+        "ToolId": "LineDetect"
+      },
+      {
+        "Id": "IMVSLineFindGroupModu",
+        "Name": "直线查找组合",
+        "Icon": "IMVSLineFindGroupModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMultiLineFindModu",
+        "Name": "多直线查找",
+        "Icon": "IMVSMultiLineFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCaliperCornerModu",
+        "Name": "边缘交点",
+        "Icon": "IMVSCaliperCornerModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSQuadrangleFindModu",
+        "Name": "四边形查找",
+        "Icon": "IMVSQuadrangleFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSPairLineModu",
+        "Name": "平行线查找",
+        "Icon": "IMVSPairLineModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSParallelCalculateModu",
+        "Name": "平行线计算",
+        "Icon": "IMVSParallelCalculateModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSRectFindModu",
+        "Name": "矩形检测",
+        "Icon": "IMVSRectFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMedianLineFindModu",
+        "Name": "中线查找",
+        "Icon": "IMVSMedianLineFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSVerticalLineFindModu",
+        "Name": "垂线查找",
+        "Icon": "IMVSVerticalLineFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSAngleBisectorFindModu",
+        "Name": "角平分线查找",
+        "Icon": "IMVSAngleBisectorFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCaliperModu",
+        "Name": "卡尺工具",
+        "Icon": "IMVSCaliperModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCaliperEdgeModu",
+        "Name": "边缘查找",
+        "Icon": "IMVSCaliperEdgeModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSPeakFindModu",
+        "Name": "顶点检测",
+        "Icon": "IMVSPeakFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSGluePathConductModu",
+        "Name": "路径提取",
+        "Icon": "IMVSGluePathConductModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSTargetTrackModu",
+        "Name": "目标跟踪",
+        "Icon": "IMVSTargetTrackModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "测量",
+    "Items": [
+      {
+        "Id": "IMVSL2CMeasureModu",
+        "Name": "线圆测量",
+        "Icon": "IMVSL2CMeasureModuImageEnable.png",
+        "ToolId": "LineCircleMeasure"
+      },
+      {
+        "Id": "IMVSC2CMeasureModu",
+        "Name": "圆圆测量",
+        "Icon": "IMVSC2CMeasureModuImageEnable.png",
+        "ToolId": "CircleCircleMeasure"
+      },
+      {
+        "Id": "IMVSP2CMeasureModu",
+        "Name": "点圆测量",
+        "Icon": "IMVSP2CMeasureModuImageEnable.png",
+        "ToolId": "PointCircleMeasure"
+      },
+      {
+        "Id": "IMVSP2LMeasureModu",
+        "Name": "点线测量",
+        "Icon": "IMVSP2LMeasureModuImageEnable.png",
+        "ToolId": "PointLineMeasure"
+      },
+      {
+        "Id": "IMVSL2LMeasureModu",
+        "Name": "线线测量",
+        "Icon": "IMVSL2LMeasureModuImageEnable.png",
+        "ToolId": "LineLineMeasure"
+      },
+      {
+        "Id": "IMVSP2PMeasureModu",
+        "Name": "点点测量",
+        "Icon": "IMVSP2PMeasureModuImageEnable.png",
+        "ToolId": "PointPointMeasure"
+      },
+      {
+        "Id": "IMVSIntensityMeasureModu",
+        "Name": "亮度测量",
+        "Icon": "IMVSIntensityMeasureModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgeWidthFindModu",
+        "Name": "间距检测",
+        "Icon": "IMVSEdgeWidthFindModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSPixelCountModu",
+        "Name": "像素统计",
+        "Icon": "IMVSPixelCountModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSPixelCountModuVA",
+        "Name": "像素统计",
+        "Icon": "IMVSPixelCountModuVAImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSHistToolModu",
+        "Name": "直方图工具",
+        "Icon": "IMVSHistToolModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "识别",
+    "Items": [
+      {
+        "Id": "IMVSBcrModu",
+        "Name": "条码识别",
+        "Icon": "IMVSBcrModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVS2dBcrModu",
+        "Name": "二维码识别",
+        "Icon": "IMVS2dBcrModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSOcrModu",
+        "Name": "字符识别",
+        "Icon": "IMVSOcrModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMachineLearningClassifierModu",
+        "Name": "ML分类",
+        "Icon": "IMVSMachineLearningClassifierModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "缺陷检测",
+    "Items": [
+      {
+        "Id": "IMVSSurfaceDefectFilterModu",
+        "Name": "表面缺陷滤波",
+        "Icon": "IMVSSurfaceDefectFilterModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMarkInspModuVA",
+        "Name": "字符缺陷检测",
+        "Icon": "IMVSMarkInspModuVAImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSInspectModu",
+        "Name": "异常检测",
+        "Icon": "IMVSInspectModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgeFlawInspModu",
+        "Name": "边缘模型缺陷检测",
+        "Icon": "IMVSEdgeFlawInspModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgePairFlawInspModu",
+        "Name": "边缘对模型缺陷检测",
+        "Icon": "IMVSEdgePairFlawInspModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSLineEdgeInspModu",
+        "Name": "直线边缘缺陷检测",
+        "Icon": "IMVSLineEdgeInspModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSLineEdgePairInspModu",
+        "Name": "直线对缺陷检测",
+        "Icon": "IMVSLineEdgePairInspModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCircleEdgePairInspModu",
+        "Name": "圆弧对缺陷检测",
+        "Icon": "IMVSCircleEdgePairInspModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCircleEdgeInspModu",
+        "Name": "圆弧边缘缺陷检测",
+        "Icon": "IMVSCircleEdgeInspModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgeInspGroupModu",
+        "Name": "边缘组合缺陷检测",
+        "Icon": "IMVSEdgeInspGroupModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgePairInspGroupModu",
+        "Name": "边缘对组合缺陷检测",
+        "Icon": "IMVSEdgePairInspGroupModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgePosTrendAnalyModu",
+        "Name": "边缘位置趋势分析",
+        "Icon": "IMVSEdgePosTrendAnalyModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEdgePairPosTrendAnalyModu",
+        "Name": "边缘对位置趋势分析",
+        "Icon": "IMVSEdgePairPosTrendAnalyModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "标定",
+    "Items": [
+      {
+        "Id": "IMVSNPointCalibModu",
+        "Name": "N点标定",
+        "Icon": "IMVSNPointCalibModuImageEnable.png",
+        "ToolId": "NPointCalibration"
+      },
+      {
+        "Id": "IMVSNImageCalibModu",
+        "Name": "N图像标定",
+        "Icon": "IMVSNImageCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCalibBoardCalibModu",
+        "Name": "标定板标定",
+        "Icon": "IMVSCalibBoardCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCameraMapModu",
+        "Name": "相机映射",
+        "Icon": "IMVSCameraMapModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMapCalibModu",
+        "Name": "映射标定",
+        "Icon": "IMVSMapCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageCalibModu",
+        "Name": "畸变标定",
+        "Icon": "IMVSImageCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "TranslationCalibModu",
+        "Name": "平移旋转标定",
+        "Icon": "TranslationCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "RotateCalibModu",
+        "Name": "旋转标定",
+        "Icon": "RotateCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "CoordinateModule",
+        "Name": "坐标系",
+        "Icon": "CoordinateModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "ReadCalibFileModu",
+        "Name": "标定加载",
+        "Icon": "ReadCalibFileModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "运算",
+    "Items": [
+      {
+        "Id": "IMVSSinglePointAlignModu",
+        "Name": "单点对位",
+        "Icon": "IMVSSinglePointAlignModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "SinglePointGrabModu",
+        "Name": "单点抓取",
+        "Icon": "SinglePointGrabModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "SinglePointMapAlignModu",
+        "Name": "单点映射对位",
+        "Icon": "SinglePointMapAlignModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "SinglePointRectifyModu",
+        "Name": "单点纠偏",
+        "Icon": "SinglePointRectifyModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSCalibTransformModu",
+        "Name": "标定转换",
+        "Icon": "IMVSCalibTransformModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMultiPointAlignModu",
+        "Name": "点集对位",
+        "Icon": "IMVSMultiPointAlignModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSRotateCalculateModu",
+        "Name": "旋转计算",
+        "Icon": "IMVSRotateCalculateModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSLineAlignModu",
+        "Name": "线对位",
+        "Icon": "IMVSLineAlignModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSScaleTransformModu",
+        "Name": "单位转换",
+        "Icon": "IMVSScaleTransformModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "CalculatorModule",
+        "Name": "变量计算",
+        "Icon": "CalculatorModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "CoordinateTransform",
+        "Name": "坐标转换",
+        "Icon": "CoordinateTransformImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "图像处理",
+    "Items": [
+      {
+        "Id": "IMVSBinaryModu",
+        "Name": "图像二值化",
+        "Icon": "IMVSBinaryModuImageEnable.png",
+        "ToolId": "ImageThreshold"
+      },
+      {
+        "Id": "IMVSImageFilterModu",
+        "Name": "图像滤波",
+        "Icon": "IMVSImageFilterModuImageEnable.png",
+        "ToolId": "ImageFilter"
+      },
+      {
+        "Id": "IMVSImageMorphModu",
+        "Name": "形态学处理",
+        "Icon": "IMVSImageMorphModuImageEnable.png",
+        "ToolId": "Morphology"
+      },
+      {
+        "Id": "IMVSImageEnhanceModu",
+        "Name": "图像增强",
+        "Icon": "IMVSImageEnhanceModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSShadeCorrectModu",
+        "Name": "阴影校正",
+        "Icon": "IMVSShadeCorrectModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageCombineProcessModu",
+        "Name": "图像组合",
+        "Icon": "IMVSImageCombineProcessModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageNormlizeModu",
+        "Name": "图像归一化",
+        "Icon": "IMVSImageNormlizeModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageMathModu",
+        "Name": "图像运算",
+        "Icon": "IMVSImageMathModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageFixtureModu",
+        "Name": "图像修正",
+        "Icon": "IMVSImageFixtureModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSAffineTransformModu",
+        "Name": "仿射变换",
+        "Icon": "IMVSAffineTransformModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSInverseAffineTransformModu",
+        "Name": "逆仿射变换",
+        "Icon": "IMVSInverseAffineTransformModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageResizeModu",
+        "Name": "图像缩放",
+        "Icon": "IMVSImageResizeModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSGeometricTransformModu",
+        "Name": "几何变换",
+        "Icon": "IMVSGeometricTransformModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSPolarUnwarpModu",
+        "Name": "圆环展开",
+        "Icon": "IMVSPolarUnwarpModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSRegionCopyModu",
+        "Name": "拷贝填充",
+        "Icon": "IMVSRegionCopyModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageCorrectCalibModu",
+        "Name": "畸变校正",
+        "Icon": "IMVSImageCorrectCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageCorrectManualModu",
+        "Name": "图像矫正",
+        "Icon": "IMVSImageCorrectManualModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImgStitchCalibModu",
+        "Name": "图像拼接",
+        "Icon": "IMVSImgStitchCalibModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSImageSharpnessModu",
+        "Name": "清晰度评估",
+        "Icon": "IMVSImageSharpnessModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSFrameMeanModu",
+        "Name": "帧平均",
+        "Icon": "IMVSFrameMeanModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMultiImageFusionModu",
+        "Name": "多图融合",
+        "Icon": "IMVSMultiImageFusionModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "颜色处理",
+    "Items": [
+      {
+        "Id": "IMVSColorExtractModu",
+        "Name": "颜色抽取",
+        "Icon": "IMVSColorExtractModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSColorMeasureModu",
+        "Name": "颜色测量",
+        "Icon": "IMVSColorMeasureModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSColorTransformModu",
+        "Name": "颜色转换",
+        "Icon": "IMVSColorTransformModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSColorRecognitionModu",
+        "Name": "颜色识别",
+        "Icon": "IMVSColorRecognitionModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSColorSegmentModu",
+        "Name": "颜色分割",
+        "Icon": "IMVSColorSegmentModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSColorImageGenerationModu",
+        "Name": "彩图生成",
+        "Icon": "IMVSColorImageGenerationModuImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "拆分组合",
+    "Items": [
+      {
+        "Id": "IMVSDivideImageModu",
+        "Name": "划片拆分",
+        "Icon": "IMVSDivideImageModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVS2dArrayCorrectModu",
+        "Name": "二维阵列",
+        "Icon": "IMVS2dArrayCorrectModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSMultiLabelFilterModu",
+        "Name": "多标签筛选",
+        "Icon": "IMVSMultiLabelFilterModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSBoxMergeModu",
+        "Name": "Box融合",
+        "Icon": "IMVSBoxMergeModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSBoxOverlapCalculationModu",
+        "Name": "Box重叠率计算",
+        "Icon": "IMVSBoxOverlapCalculationModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSBoxFilterModule",
+        "Name": "Box过滤",
+        "Icon": "IMVSBoxFilterModuleImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "图形生成",
+    "Items": [
+      {
+        "Id": "IMVSCircleFitModu",
+        "Name": "圆拟合",
+        "Icon": "IMVSCircleFitModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSEllipseFitModu",
+        "Name": "椭圆拟合",
+        "Icon": "IMVSEllipseFitModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSLineFitModu",
+        "Name": "直线拟合",
+        "Icon": "IMVSLineFitModuImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "GeometryCreate",
+        "Name": "几何创建",
+        "Icon": "GeometryCreateImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "逻辑工具",
+    "Items": [
+      {
+        "Id": "IfBranchModule",
+        "Name": "条件分支",
+        "Icon": "IfBranchModuleImageEnable.png",
+        "ToolId": "Condition"
+      },
+      {
+        "Id": "IfModule",
+        "Name": "条件检测",
+        "Icon": "IfModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "BranchModule_STD",
+        "Name": "分支模块",
+        "Icon": "BranchModule_STDImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "BranchStringCpmL",
+        "Name": "分支字符",
+        "Icon": "BranchStringCpmLImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "SaveTextModule",
+        "Name": "文本保存",
+        "Icon": "SaveTextModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "AndModule",
+        "Name": "逻辑",
+        "Icon": "AndModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "FormatModule",
+        "Name": "格式化",
+        "Icon": "FormatModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "StringCompareModule",
+        "Name": "字符比较",
+        "Icon": "StringCompareModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "ShellModule",
+        "Name": "脚本",
+        "Icon": "ShellModuleImageEnable.png",
+        "ToolId": "Script"
+      },
+      {
+        "Id": "PyShellModule",
+        "Name": "Python脚本",
+        "Icon": "PyShellModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "IMVSGroup",
+        "Name": "Group",
+        "Icon": "IMVSGroupImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "PointSetMODU_STD",
+        "Name": "点集",
+        "Icon": "PointSetMODU_STDImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "TimeStatisticModule",
+        "Name": "耗时统计",
+        "Icon": "TimeStatisticModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "DataSetModule",
+        "Name": "数据集合",
+        "Icon": "DataSetModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "TriggerModule",
+        "Name": "触发模块",
+        "Icon": "TriggerModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "DataRecordModule",
+        "Name": "数据记录",
+        "Icon": "DataRecordModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "GraphicsSetModule",
+        "Name": "图形收集",
+        "Icon": "GraphicsSetModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "DataFilterModule",
+        "Name": "数据筛选",
+        "Icon": "DataFilterModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "DataClassificationModule",
+        "Name": "数据分类",
+        "Icon": "DataClassificationModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "DataSortModule",
+        "Name": "数据排序",
+        "Icon": "DataSortModuleImageEnable.png",
+        "ToolId": null
+      }
+    ]
+  },
+  {
+    "Name": "通信",
+    "Items": [
+      {
+        "Id": "ReadDatasModule",
+        "Name": "接收数据",
+        "Icon": "ReadDatasModuleImageEnable.png",
+        "ToolId": "ReceiveData"
+      },
+      {
+        "Id": "SendDatasModule",
+        "Name": "发送数据",
+        "Icon": "SendDatasModuleImageEnable.png",
+        "ToolId": "SendData"
+      },
+      {
+        "Id": "CameraIOModule",
+        "Name": "相机IO通信",
+        "Icon": "CameraIOModuleImageEnable.png",
+        "ToolId": null
+      },
+      {
+        "Id": "DataAnalysisModule",
+        "Name": "协议解析",
+        "Icon": "DataAnalysisModuleImageEnable.png",
+        "ToolId": "ProtocolParse"
+      },
+      {
+        "Id": "DataAssembleModule",
+        "Name": "协议组装",
+        "Icon": "DataAssembleModuleImageEnable.png",
+        "ToolId": "ProtocolAssemble"
+      }
+    ]
+  },
+  {
+    "Name": "自定义组工具",
+    "Items": []
+  },
+  {
+    "Name": "自定义工具",
+    "Items": []
+  }
+]

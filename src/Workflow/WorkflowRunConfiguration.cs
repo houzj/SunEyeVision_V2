@@ -32,6 +32,12 @@ public sealed class WorkflowRunConfiguration
         Visit(rootWorkflowId);
         return new(sources);
     }
+    public RootWorkspaceSettings GetRootSettings(string id)
+    {
+        var flow=_workflows.GetValueOrDefault(id)??throw new InvalidOperationException("运行快照没有该根流程。");
+        if(flow.IsSubroutine)throw new InvalidOperationException("不能将Group当作根流程读取运行策略。");
+        return flow.WorkspaceSettings;
+    }
     internal Workflow? Find(string id) => _workflows.GetValueOrDefault(id);
     internal IEnumerable<Workflow> Definitions => _workflows.Values;
     public IReadOnlyList<Workflow> CopyWorkflows()

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -72,12 +72,14 @@ public sealed partial class SolutionManagerUiTests
         Sta(() =>
         {
             var source = new ImageInputSource("missing");
-            source.LoadFromConfig(new ImageSourceConfig { NodeId = "missing", FilePaths = new() { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, CurrentIndex = 0 });
+            source.LoadFromConfig(new ImageSourceConfig { NodeId = "missing", FilePaths = new() { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, CurrentIndex = 0 }, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
             ImageSourceConfig? saved = null;
             source.ConfigChanged = value => saved = value;
             var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images, CurrentImageIndex = source.CurrentIndex };
-            Assert.Empty(source.Images); Assert.Equal(-1, source.CurrentIndex);
-            Assert.False(control.ClearAllCommand.CanExecute(null));
+            Assert.Equal(2, source.Images.Count); Assert.Equal(0, source.CurrentIndex);
+            Assert.All(source.Images, image => Assert.False(File.Exists(image.FilePath)));
+            Assert.Equal(new[] { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, source.ToConfig().FilePaths);
+            Assert.True(control.ClearAllCommand.CanExecute(null));
             control.ClearInputReferences();
             Assert.Empty(source.Images); Assert.Equal(-1, source.CurrentIndex);
             Assert.NotNull(saved); Assert.Empty(saved!.FilePaths); Assert.Empty(saved.ForRunPaths);

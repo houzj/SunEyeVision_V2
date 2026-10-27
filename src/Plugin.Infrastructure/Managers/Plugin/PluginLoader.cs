@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -135,7 +135,7 @@ public static class PluginLoader
             // 使用 PluginManager 加载插件（传入 VisionLogger 以便输出日志）
             var pluginManager = new PluginManager(logger);
             pluginManager.LoadPlugins(pluginDirectory);
-            pluginManager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(tool => tool.Id));
+            pluginManager.AssertCompleteReleaseToolSet(ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
 
             // 验证加载结果
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -143,7 +143,7 @@ public static class PluginLoader
                 .Where(a => a.GetName().Name?.StartsWith("SunEyeVision.Tool.") == true)
                 .ToList();
 
-            logger.Log(LogLevel.Success, $"插件加载完成，共注册 {ToolRegistry.GetAllToolMetadata().Count()} 个工具", "PluginLoader");
+            logger.Log(LogLevel.Success, $"插件加载完成，共注册 {ToolRegistry.DirectoryCatalog!.ToolIds.Count} 个工具", "PluginLoader");
 
             foreach (var assembly in toolAssemblies)
             {

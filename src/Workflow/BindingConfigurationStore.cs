@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -79,7 +79,7 @@ public sealed class BindingConfigurationStore
 
     internal BindingConfigurationPublication Publish(BindingConfigurationDraft draft,
         Action<BindingConfigurationSnapshot>? accept, bool forcePublication = false,
-        Action<Solution>? validate = null)
+        Action<Solution>? validate = null, bool recordHistory = true)
     {
         ArgumentNullException.ThrowIfNull(draft);
         lock (_gate)
@@ -94,13 +94,31 @@ public sealed class BindingConfigurationStore
                 Array.AsReadOnly(prepared.Changes.ToArray()), Array.AsReadOnly(prepared.Invalidated));
             // Allocate the history slot before invoking the host's raw acceptance adapter.
             // After acceptance there are only non-callback state assignments/stack operations.
-            _undo.EnsureCapacity(checked(_undo.Count + 1));
+            if(recordHistory)_undo.EnsureCapacity(checked(_undo.Count + 1));
             Accept(next, accept);
-            _undo.Push(_published);
+            if(recordHistory)_undo.Push(_published);
             _redo.Clear();
             _validator = prepared.Validator;
             _published = next;
             return publication;
+        }
+    }
+
+    // A session journal replays the exact accepted configuration, not whichever item happens
+    // to be on this store's standalone history. Structure is restored by its preceding operation.
+    internal BindingConfigurationSnapshot ReplayAccepted(BindingConfigurationSnapshot target,
+        Action<BindingConfigurationSnapshot> accept)
+    {
+        lock(_gate)
+        {
+            if(_accepting)throw new InvalidOperationException("配置接受过程中不能重入恢复。");
+            if(target.SolutionId!=_published.SolutionId)throw new InvalidOperationException("配置回执属于另一方案。");
+            var configuration=target.CopyConfiguration();
+            var graph=SolutionExecutionDependencyGraph.Compile(configuration,checkReadiness:false);
+            var validator=new OutputBindingChangeService();validator.Reset(configuration);
+            var next=new BindingConfigurationSnapshot(checked(_published.Version+1),configuration,graph);
+            Accept(next,accept);_validator=validator;_published=next;
+            return next;
         }
     }
 
@@ -131,6 +149,8 @@ public sealed class BindingConfigurationStore
                                 : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
                             node.ParamSettings = CopySettings(saved.ParamSettings);
                         }
+                foreach(var flow in projected.Workflows.Where(w=>!w.IsSubroutine))
+                    if(old.Workflows.FirstOrDefault(w=>w.Id==flow.Id&&!w.IsSubroutine) is {} oldRoot)flow.RootConfiguration=oldRoot.RootConfiguration;
                 projected.GlobalVariables.Clear(); projected.GlobalVariables.AddRange(old.GlobalVariables);
                 var historyValidator = new OutputBindingChangeService(); historyValidator.Reset(projected); historyValidator.ReconcileAll();
                 return new(historical.Version, projected, SolutionExecutionDependencyGraph.Compile(projected, checkReadiness: false));
@@ -264,7 +284,7 @@ public sealed class BindingConfigurationStore
     internal static string ConfigurationSignature(Solution configuration) => JsonSerializer.Serialize(new
     {
         configuration.Id, configuration.Name, configuration.Description, configuration.SchemaVersion, configuration.Version,
-        Workflows = configuration.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine,
+        Workflows = configuration.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine, w.RootConfiguration,
             Nodes = w.Nodes.Select(n => new { n.Id, n.GlobalIndex, n.LocalIndex, n.PositionX, n.PositionY, n.Width, n.Height, Signature = NodeSignature(n) }),
             Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) }),
         Variables = configuration.GlobalVariables.Select(v => new { Signature = VariableSignature(v), v.Group, v.Index, v.Description })
@@ -314,7 +334,7 @@ public sealed class BindingConfigurationStore
             SchemaVersion = source.SchemaVersion, Version = source.Version };
         foreach (var workflow in source.Workflows)
         {
-            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine };
+            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration };
             foreach (var node in workflow.Nodes)
             {
                 if (node.RuntimeConfiguration is { } runtime && runtime.ToolId != node.ToolType)
@@ -333,7 +353,7 @@ public sealed class BindingConfigurationStore
             }
             foreach (var connection in workflow.Connections)
                 flow.Connections.Add(new WorkflowConnection { Id = connection.Id, SourceNodeId = connection.SourceNodeId,
-                    TargetNodeId = connection.TargetNodeId, SourcePort = connection.SourcePort, TargetPort = connection.TargetPort });
+                    TargetNodeId = connection.TargetNodeId, SourcePort = connection.SourcePort, TargetPort = connection.TargetPort, ManualPathPoints = connection.ManualPathPoints?.ToArray() });
             copy.Workflows.Add(flow);
         }
         foreach (var variable in source.GlobalVariables)

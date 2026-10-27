@@ -14,8 +14,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     {
         private readonly List<DisplayItemBase> _items = new();
 
-        // 按 Style 引用分组（同 Style 的几何数据合并到同一个 GraphicsDisplayItem）
-        private readonly Dictionary<GraphicsStyle, GraphicsDisplayItem> _graphicsAccum = new();
+        // 图形按样式引用与几何类型分组；同一样式可用于不同的渲染通道。
+        private readonly Dictionary<(GraphicsStyle Style, GraphicsType Type), GraphicsDisplayItem> _graphicsAccum = new();
         private readonly Dictionary<TextStyle, TextDisplayItem> _textAccum = new();
 
         private bool _isFinalized;
@@ -145,6 +145,13 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             AppendGeometry(item, arc, isPass);
         }
 
+        /// <summary>双半径环形扇区，保留内外边界及弧度起止角；整环没有径向接缝。</summary>
+        public void AddAnnulus(GraphicsStyle style, Annulus2d annulus, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Annulus);
+            AppendGeometry(item, annulus, isPass);
+        }
+
         // ===== 文本按需收集 =====
 
         /// <summary>添加文本数组（每个元素独立定位）</summary>
@@ -215,9 +222,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             _isFinalized = false;
 
             // 合并图形：按 Style + Type 匹配并入，否则新建条目
-            foreach (var (style, srcItem) in other._graphicsAccum)
+            foreach (var (key, srcItem) in other._graphicsAccum)
             {
-                if (_graphicsAccum.TryGetValue(style, out var destItem))
+                if (_graphicsAccum.TryGetValue(key, out var destItem))
                 {
                     // 相同 Style 已存在：追加几何数据（保持原条目类型）
                     for (int i = 0; i < srcItem.GeometryList.Count; i++)
@@ -228,7 +235,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 }
                 else
                 {
-                    _graphicsAccum[style] = srcItem;
+                    _graphicsAccum[key] = srcItem;
                     _items.Add(srcItem);
                 }
             }
@@ -279,7 +286,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         private GraphicsDisplayItem GetOrCreateGraphicsItem(GraphicsStyle style, GraphicsType type)
         {
-            if (!_graphicsAccum.TryGetValue(style, out var item))
+            var key = (style, type);
+            if (!_graphicsAccum.TryGetValue(key, out var item))
             {
                 item = new GraphicsDisplayItem
                 {
@@ -287,7 +295,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                     PresentationKey = style.PresentationKey,
                     Type = type
                 };
-                _graphicsAccum[style] = item;
+                _graphicsAccum[key] = item;
                 _items.Add(item);
             }
             return item;

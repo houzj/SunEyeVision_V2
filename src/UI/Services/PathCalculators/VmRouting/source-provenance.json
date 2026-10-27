@@ -1,0 +1,42 @@
+[
+  {
+    "destination": "APoint.cs",
+    "sha256": "9FD43E63ECFE4F5C25A5754944DBB70E2C5D3CA3AEA33206B505375057E26130",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\APoint.cs"
+  },
+  {
+    "destination": "AStar.cs",
+    "sha256": "24A1DBC3636439F6142D16A3A344879A6C240A63EB747189C4B8FCD18E1A5EDB",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\AStar.cs"
+  },
+  {
+    "destination": "ConnectorOrientation.cs",
+    "sha256": "AD81157FD5203E61760147C50522A1A0C035B70CA549D41FBDDFB494ABD13DA5",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\ConnectorOrientation.cs"
+  },
+  {
+    "destination": "Geometry.cs",
+    "sha256": "77B6B23E93895D1197D3BB54EA792F729F7D3BE307300FB91188EF72C00BBB3A",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\Geometry.cs"
+  },
+  {
+    "destination": "PathFinder.cs",
+    "sha256": "1772550D80B282707E4F2E689C27D1ED4B142B34F818DF753579F534EAEE6563",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\PathFinder.cs"
+  },
+  {
+    "destination": "POINT.cs",
+    "sha256": "A76810FA3BA1FA203DFEA89BEA2EFF0D4A0792FFE4C2D8187AE473E503EF6878",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\POINT.cs"
+  },
+  {
+    "destination": "VmOrthogonalRouter.cs",
+    "sha256": "4E403FC5E2FAA5B99A241774FF60306D38E33F7EB388D0EEA4570DE777D6BB3D",
+    "source": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor.Core\\VmRouting\\VmOrthogonalRouter.cs"
+  },
+  {
+    "destination": "../RecoveredConnectionDrag.cs",
+    "source": "D:/MyWork/REA逆向测试/src/VisionEditor/RecoveredConnectionDrag.cs",
+    "sha256": "63996CF3BDD4E2C58A82647D6C02EA569C73203ED8AC784589801EE1EB5A2AA6"
+  }
+]

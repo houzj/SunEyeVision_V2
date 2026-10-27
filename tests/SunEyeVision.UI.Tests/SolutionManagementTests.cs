@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -41,6 +41,8 @@ public sealed class SolutionManagementTests
         using var fixture = new Fixture();
         var manager = fixture.Manager();
         var metadata = Create(manager);
+        using var initialFile = JsonDocument.Parse(System.IO.File.ReadAllText(metadata.FilePath));
+        Assert.Equal("流程1", initialFile.RootElement.GetProperty("Workflows")[0].GetProperty("Name").GetString());
         fixture.Locations.Remember(fixture.Paths);
         Assert.Equal(fixture.Paths.ConfigFile, manager.ConfigurationPath);
         Assert.StartsWith(fixture.Paths.SolutionsDirectory, metadata.FilePath);
@@ -165,7 +167,8 @@ public sealed class SolutionManagementTests
         var target = fixture.File("other-directory"); Directory.CreateDirectory(target);
         var copied = manager.CopySolution(metadata.FilePath, "跨目录副本", targetDirectory: target)!;
         using var result = JsonDocument.Parse(System.IO.File.ReadAllText(copied.FilePath));
-        Assert.Equal(Path.Combine(manager.SolutionsDirectory, "images", "a.png"), result.RootElement.GetProperty("VendorData").GetProperty("FilePaths")[0].GetString());
+        // 未声明的扩展载荷原样保存，不能猜测其中字符串是资源路径。
+        Assert.Equal("images/a.png", result.RootElement.GetProperty("VendorData").GetProperty("FilePaths")[0].GetString());
     }
 
     [Fact]
@@ -321,6 +324,11 @@ public sealed class SolutionManagementTests
         Assert.Equal("保留扩展字段", document.RootElement.GetProperty("ExtraPortableField").GetString());
         var receivingRoot = fixture.Locations.Prepare(fixture.File("receiver"));
         var receiver = new SolutionManager(receivingRoot);
+        // 复制保留未知载荷，正式加载仍遵守严格模型准入。
+        Assert.Null(receiver.LoadSolutionOnly(copy.FilePath));
+        var declared = JsonNode.Parse(System.IO.File.ReadAllText(copy.FilePath))!.AsObject();
+        declared.Remove("ExtraPortableField");
+        AtomicJsonFile.Write(copy.FilePath, declared.ToJsonString());
         var loaded = receiver.LoadSolutionOnly(copy.FilePath)!;
         receiver.RegisterKnownSolution(new SolutionRepository().LoadMetadata(copy.FilePath)!);
         receiver.SetCurrentSolution(loaded);

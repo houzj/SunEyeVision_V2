@@ -19,19 +19,34 @@ public interface IDocumentEditParticipant
 /// <summary>Frozen configuration prepared before any participant is accepted.</summary>
 public sealed class DocumentEditProposal
 {
-    internal NodeConfigurationEditDraft? Node { get; }
+    internal IReadOnlyList<NodeConfigurationEditDraft> Nodes { get; }
     internal GlobalVariableConfigurationEditDraft? Variables { get; }
+    internal IReadOnlyList<RootWorkflowConfigurationEditDraft> RootConfigurations {get;}
     public object? Token { get; }
-    public bool Matches(NodeConfigurationEditDraft draft) => Node is not null && NodeConfigurationEditHost.SamePendingEdits(Node, draft);
+    public bool Matches(NodeConfigurationEditDraft draft) => Matches(new[] { draft });
+    public bool Matches(IReadOnlyList<NodeConfigurationEditDraft> drafts) => drafts.Count == Nodes.Count && drafts.Select(d => d.Identity).Distinct().Count() == drafts.Count &&
+        drafts.All(draft => Nodes.Any(frozen => frozen.Identity == draft.Identity && NodeConfigurationEditHost.SamePendingEdits(frozen, draft)));
+    public bool Matches(RootWorkflowConfigurationEditDraft draft)=>RootConfigurations.Count==1&&NodeConfigurationEditHost.SamePendingEdits(RootConfigurations[0],draft);
     public bool Matches(GlobalVariableConfigurationEditDraft draft) => Variables is not null && NodeConfigurationEditHost.SamePendingEdits(Variables, draft);
     public GlobalVariableConfigurationEditDraft PreserveNewerVariableEdits(NodeConfigurationEditHost host, GlobalVariableConfigurationEditDraft draft)
         => host.RebaseAcceptedDraft(draft, Variables ?? throw new InvalidOperationException("准备结果不是变量范围。"));
-    private DocumentEditProposal(NodeConfigurationEditDraft? node, GlobalVariableConfigurationEditDraft? variables, object? token)
-    { Node = node; Variables = variables; Token = token; }
+    private DocumentEditProposal(IReadOnlyList<NodeConfigurationEditDraft> nodes, GlobalVariableConfigurationEditDraft? variables, object? token, IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots = null)
+    { Nodes = nodes; Variables = variables; Token = token; RootConfigurations=roots??Array.Empty<RootWorkflowConfigurationEditDraft>(); }
     public static DocumentEditProposal ForNode(NodeConfigurationEditHost host, NodeConfigurationEditDraft node, object? token = null)
-        => new(host.Freeze(node), null, token);
+        => ForNodes(host, new[] { node }, token);
+    /// <summary>One editor may own a Group and several related internal module candidates.
+    /// Freeze every candidate before validation or publication; never accept them one by one.</summary>
+    public static DocumentEditProposal ForNodes(NodeConfigurationEditHost host, IReadOnlyList<NodeConfigurationEditDraft> nodes, object? token = null)
+    {
+        ArgumentNullException.ThrowIfNull(host); ArgumentNullException.ThrowIfNull(nodes);
+        if (nodes.Count == 0 || nodes.Any(n => n is null) || nodes.Select(n => n.Identity).Distinct().Count() != nodes.Count)
+            throw new ArgumentException("组合编辑必须包含互不重复的正式节点身份。", nameof(nodes));
+        return new(Array.AsReadOnly(nodes.Select(host.Freeze).ToArray()), null, token);
+    }
+    public static DocumentEditProposal ForRootConfiguration(NodeConfigurationEditHost host,RootWorkflowConfigurationEditDraft root,IReadOnlyList<NodeConfigurationEditDraft> nodes,object? token=null)
+        =>new(Array.AsReadOnly(nodes.Select(host.Freeze).ToArray()),null,token,new[]{host.Freeze(root)});
     public static DocumentEditProposal ForVariables(NodeConfigurationEditHost host, GlobalVariableConfigurationEditDraft variables, object? token = null)
-        => new(null, host.Freeze(variables), token);
+        => new(Array.Empty<NodeConfigurationEditDraft>(), host.Freeze(variables), token);
 }
 
 /// <summary>Single owner of registered editing scopes for one SolutionSession. No WPF dependency.
@@ -43,12 +58,14 @@ public sealed class DocumentEditSession
     private bool _busy;
     private bool _closed;
     public Guid SessionId { get; } = Guid.NewGuid();
+    private DocumentHistoryCoordinator? _history;
+    public DocumentHistoryCoordinator History => _history ??= new(SessionId);
     public NodeConfigurationEditHost Host => _host.Value;
     public int RegisteredScopeCount => _participants.Count;
     public bool HasPendingChanges => _participants.Values.Any(p => p.HasPendingChanges);
     public IReadOnlyList<string> RegisteredScopeKeys => _participants.Values.Select(p => p.ScopeKey).ToArray();
     public string? LastRefreshError { get; private set; }
-    internal DocumentEditSession(Solution document) => _host = new(() => new NodeConfigurationEditHost(document));
+    internal DocumentEditSession(Solution document) => _host = new(() => new NodeConfigurationEditHost(document, History));
 
     public void Register(IDocumentEditParticipant participant)
     {
@@ -84,12 +101,13 @@ public sealed class DocumentEditSession
             foreach (var entry in prepared)
                 if (!_participants.TryGetValue(entry.Participant.ScopeId, out var current) || !ReferenceEquals(current, entry.Participant))
                     throw new InvalidOperationException("准备期间编辑范围已退出，草稿未接受。");
-            var nodes = prepared.Select(x => x.Proposal.Node).OfType<NodeConfigurationEditDraft>().ToArray();
+            var nodes = prepared.SelectMany(x => x.Proposal.Nodes).ToArray();
             var variables = prepared.Select(x => x.Proposal.Variables).OfType<GlobalVariableConfigurationEditDraft>().ToArray();
             if (variables.Length > 1) throw new InvalidOperationException("同一方案只能有一个变量编辑范围。");
-            Host.ValidateBatch(nodes, variables.SingleOrDefault());
+            var roots=prepared.SelectMany(x=>x.Proposal.RootConfigurations).ToArray();
+            Host.ValidateBatch(nodes, variables.SingleOrDefault(), roots);
             if (!accept) return null;
-            var publication = Host.CommitBatch(nodes, variables.SingleOrDefault());
+            var publication = Host.CommitBatch(nodes, variables.SingleOrDefault(), roots);
             LastRefreshError = null;
             // Acceptance is final. A failed view notification never replays or rolls back writes.
             foreach (var entry in prepared)
@@ -115,6 +133,7 @@ public sealed class DocumentEditSession
         _participants.Clear();
         foreach (var participant in participants)
             try { participant.Cancel(); } catch (Exception ex) { LastRefreshError ??= ex.Message; }
+        _history?.Dispose();
     }
     private void EnsureAvailable()
     {

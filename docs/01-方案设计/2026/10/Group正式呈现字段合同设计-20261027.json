@@ -1,0 +1,127 @@
+﻿{
+  "status": "设计字段合同，未实现；全工具坐标/逐态映射审核后整体冻结",
+  "existingContracts": [
+    "src/Plugin.Contracts/TypeRef.cs",
+    "src/Plugin.Contracts/Values.cs",
+    "src/Plugin.Contracts/PresentationDeclarations.cs",
+    "src/Plugin.Contracts/SpatialDeclarations.cs",
+    "src/Plugin.Contracts/ToolContracts.cs"
+  ],
+  "envelope": {
+    "element-id": "Text stable producer identity within run; no invented cross-run identity",
+    "status": "Int32 explicit source/constant; zero NG, nonzero OK where original uses Status",
+    "tips": "Text optional",
+    "visible": "Boolean explicit declaration/style consumption, not output demand gate",
+    "payload": "kind-specific RecordValue; no object-typed dictionary/union",
+    "frame": "logical CoordinateFrame in type; actual source frame/RunIdentity on admitted result, not persistent geometry"
+  },
+  "payloads": {
+    "image": {
+      "image": "Resource<Image>",
+      "width": "Int32",
+      "height": "Int32",
+      "pixel-format": "Text"
+    },
+    "circle": {
+      "center": "PointGeometry(frame)",
+      "major-radius": "Float32(pixel)",
+      "minor-radius": "Float32(pixel)"
+    },
+    "point": {
+      "center": "PointGeometry(frame)"
+    },
+    "micropoint": {
+      "center": "PointGeometry(frame)"
+    },
+    "rect": {
+      "center": "PointGeometry(frame)",
+      "width": "Float32(pixel)",
+      "height": "Float32(pixel)",
+      "angle": "Float64(radian)",
+      "skew-x": "Float64(radian)",
+      "skew-y": "Float64(radian)"
+    },
+    "line": {
+      "start": "PointGeometry(frame)",
+      "end": "PointGeometry(frame)",
+      "through-line": "Boolean"
+    },
+    "outlinepoint": {
+      "points": "Sequence<Record<presentation.scored-point>>: point=PointGeometry(frame), score=Float32, index=Int32"
+    },
+    "text": {
+      "anchor": "PointGeometry(frame)",
+      "content": "Text",
+      "font-size": "Float64(screen-unit)",
+      "angle": "Float64(radian)",
+      "width": "Float64(screen-unit)",
+      "height": "Float64(screen-unit)",
+      "offset-x": "Float64(screen-unit)",
+      "offset-y": "Float64(screen-unit)"
+    },
+    "LineAngle": {
+      "line1-start": "PointGeometry(frame)",
+      "line1-end": "PointGeometry(frame)",
+      "intersection": "PointGeometry(frame)",
+      "line2-start": "PointGeometry(frame)",
+      "line2-end": "PointGeometry(frame)",
+      "angle": "Float64(radian)"
+    },
+    "coordinate": {
+      "origin": "PointGeometry(frame)",
+      "x-vector-x": "Float32",
+      "x-vector-y": "Float32",
+      "y-vector-x": "Float32",
+      "y-vector-y": "Float32"
+    },
+    "pixelinfoimage": {
+      "image": "Resource<Image>",
+      "width": "Int32",
+      "height": "Int32",
+      "pixel-format": "Text",
+      "need-convert-color": "Boolean",
+      "pixel-info-label": "Text",
+      "lookup": "Sequence<Record<presentation.pixel-lookup>>: key=Text, value=Text",
+      "key-encoding": "Text closed by semantic validator: Gray8 | VmCategoryColor",
+      "channel-order": "Text closed by semantic validator: Gray | BGR"
+    },
+    "polygon": {
+      "vertices": "Sequence<PointGeometry(frame)>",
+      "fill-color": "PresentationDeclarations.Rgba"
+    },
+    "annularsector": {
+      "center": "PointGeometry(frame)",
+      "outer-radius": "Float32(pixel)",
+      "inner-radius": "Float32(pixel)",
+      "start-angle": "Float64(radian)",
+      "sweep-angle": "Float64(radian)"
+    },
+    "path": {
+      "points": "Sequence<Record<presentation.path-point>>: element-id=Text, point=PointGeometry(frame), status=Int32, tips=Text, opacity=Float64",
+      "num": "Int32(metadata; renderer does not infer segmentation)"
+    },
+    "ellipse": {
+      "center": "PointGeometry(frame)",
+      "major-radius": "Float32(pixel)",
+      "minor-radius": "Float32(pixel)",
+      "angle": "Float64(radian)"
+    }
+  },
+  "outputPolicy": {
+    "default": "Public",
+    "internal": "InternalDisplay",
+    "owner": "tool source ObjectKey or imported Group OwnerObjectId; stable scoped identity",
+    "schema": "policy and owner identity included in ToolSchema fingerprint; nested record type remains ordinary TypeRef, output policy applied at root",
+    "admission": "ordinary binding compiler rejects internal; display compiler creates host-authorized plan, no user-asserted bool bypass",
+    "demand": "WorkflowBindingContext compiled ordinary and authorized display demands frozen before producers; output request path validate plus caller eligibility, not only TypeRef path existence",
+    "budget": "actual allocated hidden mapped record leaves charged, including mapped state/features; no count by rows or runtime elements"
+  },
+  "pixelColorEvidence": {
+    "path": "D:\\MyWork\\REA逆向测试\\docs\\architecture-recovery\\image-chain.resources\\Apps.BaseData.Byte2ImageSource.decompiled.cs",
+    "sha256": "5DC37569DE5839AEF86821314724AFD6D17FEDC85863C7337E3EC52D08CC0253",
+    "method": "GetClassImageGrayVal/ColorTable/GetCategoryColor/static constructor/ColorFromHSV",
+    "observed": "static exact ColorTable match, first enumerated match, no match -1; table keys1..32 plus0black and255green; unmapped mono fallback gray",
+    "emptyWrongNamespaceArtifact": "D:\\MyWork\\REA逆向测试\\docs\\architecture-recovery\\image-chain.resources\\VM.Controls.Byte2ImageSource.decompiled.cs",
+    "limitations": "existing saved decompilation not new managed assembly identity/authentication; current runtime table may be mutable; no original dynamic sample"
+  }
+}

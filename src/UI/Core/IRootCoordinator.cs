@@ -1,4 +1,4 @@
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -18,6 +18,10 @@ namespace SunEyeVision.UI.Core
         /// 触发当前选中工作流运行（顶栏/图像区"运行"入口共用）
         /// </summary>
         ICommand RunWorkflowCommand { get; }
+        ICommand UndoCommand { get; }
+        ICommand RedoCommand { get; }
+        ICommand NavigateEditHistoryCommand { get; }
+        System.Collections.Generic.IReadOnlyList<EditHistoryLocation> EditHistoryLocations { get; }
 
         /// <summary>
         /// 状态栏/顶栏共享的状态文字
@@ -168,3 +172,5 @@ namespace SunEyeVision.UI.Core
         System.Collections.IList Tabs { get; }
     }
 }
+
+namespace SunEyeVision.UI.Core { public sealed record EditHistoryLocation(System.Guid SessionId, System.Guid? EntryId, string Description, bool IsCurrent); }

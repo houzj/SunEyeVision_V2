@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -84,7 +84,29 @@ internal static class SolutionCompatibilityAdapter
             var workflow = workflows[w]!;
             var path = "$.Workflows[" + w + "]";
             // WorkflowJsonConverter writes exactly these structural fields; extension data is not an approved schema.
-            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "Nodes", "Connections" });
+            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections" });
+            if(workflow is JsonObject flowObject && flowObject.ContainsKey("WorkspaceSettings"))
+            {
+                var settingsPath=path+".WorkspaceSettings";
+                if(workflow["IsSubroutine"]?.GetValue<bool>()==true)throw new JsonException("Group不能声明根工作区设置。",settingsPath,null,null);
+                if(workflow["WorkspaceSettings"] is not JsonObject workspace)throw new JsonException("根工作区设置必须是对象。",settingsPath,null,null);
+                RejectUnknownMembers(workspace,settingsPath,SerializableFields(typeof(RootWorkspaceSettings)));
+                try
+                {
+                    var value=JsonSerializer.Deserialize<RootWorkspaceSettings>(workspace.ToJsonString(),WorkflowSerializationOptions.Default)??throw new JsonException("根工作区设置缺失。");
+                    value.Validate();
+                }
+                catch(Exception error){throw new JsonException("根工作区设置无效："+error.Message,settingsPath,null,null);}
+            }
+            if(workflow is JsonObject rootObject&&rootObject.ContainsKey("RootConfiguration"))
+            {
+                var configurationPath=path+".RootConfiguration";
+                if(workflow["IsSubroutine"]?.GetValue<bool>()==true||workflow["RootConfiguration"] is not JsonObject rootConfiguration)throw new JsonException("仅根流程可声明根配置对象。",configurationPath,null,null);
+                RejectUnknownMembers(rootConfiguration,configurationPath,SerializableFields(typeof(RootWorkflowConfiguration)));
+                if(rootConfiguration["RunParameters"] is JsonArray proxies)for(int i=0;i<proxies.Count;i++)RejectUnknownMembers(proxies[i]??throw new JsonException("参数代理不能为null。"),configurationPath+".RunParameters["+i+"]",SerializableFields(typeof(RootParameterProxy)));
+                try{(JsonSerializer.Deserialize<RootWorkflowConfiguration>(rootConfiguration.ToJsonString(),WorkflowSerializationOptions.Default)??throw new JsonException("根配置缺失。")).Validate();}
+                catch(Exception error){throw new JsonException("根配置无效："+error.Message,configurationPath,null,null);}
+            }
             var ids = new HashSet<string>(StringComparer.Ordinal);
             if (workflow["Nodes"] is JsonArray nodes)
             for (int n = 0; n < nodes.Count; n++)

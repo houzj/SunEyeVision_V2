@@ -53,6 +53,14 @@ internal static class S2DocumentEditingCases
         });
         ExecutionResult Run(Workflow current)=>WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(current.Id,input)));
         var execution=Run(flow);RuntimeToolResults Source()=>execution.NodeResults[first.Id].Result as RuntimeToolResults??throw new Exception("没有规范Runtime源结果");
+        Case("Runtime图像端口拒绝伪造GUID且正常Port读取保留原资源",()=>
+        {
+            bool rejected=false;
+            try{OutputVariableResolver.Resolve(Source(),BlobSchema.Field(5),first.Id,Guid.NewGuid());}
+            catch(InvalidOperationException){rejected=true;}
+            Require(rejected,"Runtime图像路径绕过了字段身份校验");
+            Require(OutputVariableResolver.Resolve(Source(),BlobSchema.Field(5),first.Id) is IVisionImage,"正式图像Port读取失效");
+        });
         Case("实际Runtime→现行SDK二值化→Runtime且复用源Region，保留原始帧及实际Domain，无UI回调",()=>
         {
             Require(execution.Success,string.Join(";",execution.Errors));

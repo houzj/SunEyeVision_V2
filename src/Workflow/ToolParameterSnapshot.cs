@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Workflow
@@ -18,6 +19,20 @@ namespace SunEyeVision.Workflow
                 throw new ArgumentNullException(nameof(source));
 
             return ToolExecutionPreparation.CopyParameters(source, WorkflowSerializationOptions.Compact);
+        }
+        /// <summary>按持久化常量的真实CLR类型深复制设置，避免历史共享可变数组/列表。</summary>
+        public static ParamSettingContainer? CopySettings(ParamSettingContainer? source)
+        {
+            if(source==null)return null;
+            var result=new ParamSettingContainer{NodeId=source.NodeId,ToolName=source.ToolName};
+            foreach(var setting in source.Settings)
+            {
+                var copy=setting.Clone();var value=setting.ConstantValue;
+                copy.ConstantValue=value==null?null:value is JsonElement element?element.Clone():
+                    JsonSerializer.Deserialize(JsonSerializer.Serialize(value,value.GetType(),WorkflowSerializationOptions.Compact),value.GetType(),WorkflowSerializationOptions.Compact);
+                result.SetSetting(copy);
+            }
+            return result;
         }
     }
 }

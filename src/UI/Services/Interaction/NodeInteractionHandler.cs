@@ -96,7 +96,7 @@ namespace SunEyeVision.UI.Services.Interaction
         /// </summary>
         public void SetPortsVisibility(Border border, bool isVisible)
         {
-            var ellipses = WorkflowVisualHelper.FindAllVisualChildren<Ellipse>(border);
+            var ellipses = WorkflowVisualHelper.FindAllVisualChildren<VmExecutionPort>(border);
             foreach (var ellipse in ellipses)
             {
                 var ellipseName = ellipse.Name ?? "";

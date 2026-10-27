@@ -17,6 +17,21 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class SubroutineDisplayItemTypeContractTests
 {
+    [Fact]
+    public void Loop_descriptor_reads_current_reference_after_clear_and_replacement()
+    {
+        var p=new SubroutineParameters();p.LoopConfig.EnableLoop=true;p.LoopConfig.EnableBreak=true;
+        var oldId=Guid.NewGuid();var newId=Guid.NewGuid();
+        p.LoopConfig.SourceCompareReference=new ImageSourceReference("old","value","旧节点","字段"){SourceWorkflowId="old-flow",SourceFieldId=oldId};
+        var field=BindingInputCatalog.Describe(p).Single(i=>i.Key=="Loop:SourceCompareBinding");
+        Assert.Equal(oldId,field.ReadFieldId!());
+        field.Write("");Assert.Null(field.ReadFieldId!());
+        p.LoopConfig.SourceCompareReference=new ImageSourceReference("new","value","新节点","字段"){SourceWorkflowId="new-flow",SourceFieldId=newId};
+        Assert.Equal(newId,field.ReadFieldId!());Assert.Equal("new-flow",field.ReadWorkflowId!());
+        field.Write("changed.value");Assert.Equal(newId,field.ReadFieldId!());Assert.Equal("changed",p.LoopConfig.SourceCompareReference!.SourceNodeId);
+        Assert.Throws<ArgumentException>(()=>field.Write("invalid"));Assert.Equal(newId,field.ReadFieldId!());
+    }
+
     private static AvailableDataSource MakeDs(string name, Type propertyType)
         => new()
         {
@@ -40,6 +55,28 @@ public class SubroutineDisplayItemTypeContractTests
             MakeDs("Text", typeof(string[])),
         };
 
+    [Theory]
+    [InlineData(typeof(string), true)]
+    [InlineData(typeof(string[]), true)]
+    [InlineData(typeof(bool), true)]
+    [InlineData(typeof(bool[]), true)]
+    [InlineData(typeof(double), true)]
+    [InlineData(typeof(double[]), true)]
+    [InlineData(typeof(IVisionImage), false)]
+    [InlineData(typeof(Circle2d[]), false)]
+    public void Formal_Group_text_binding_contract_accepts_declared_text_boolean_numeric_values_and_rejects_geometry_image(Type type, bool accepted)
+    {
+        var p = new SubroutineParameters { SubroutineId="child" };
+        var display = new SubroutineDisplayItem { DisplayName="文本", DisplayType=SubroutineDisplayType.Text, TextStyle=new() };
+        p.DisplayConfigs.Add(display);
+        var input = BindingInputCatalog.Describe(p).Single(i => i.Key=="Display:"+display.FieldId);
+        var contract = new[] { new SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable
+        { Name="Value", DeclaredType=type, VariableType=SdkTypeVocabulary.ToTypeVocabulary(type)!, IsCollection=type.IsArray } };
+        var result = BindingContractValidator.Validate(contract,type.IsArray?"Value[]":"Value",input.AllowedTypes);
+        Assert.Equal(accepted,result.State is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional);
+        Assert.True(input.InternalProjection); Assert.Equal("child",input.ReadWorkflowId!());
+    }
+
     #region 契约：ParamType 类型映射
 
     [Fact]
@@ -59,8 +96,8 @@ public class SubroutineDisplayItemTypeContractTests
     [Fact]
     public void ParamType_UnsupportedDisplayType_IsNull()
     {
-        // 圆弧/箭头/坐标系渲染不支持，不过滤（null = 显示全部，保持遗留行为）
-        Assert.Null(new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arc }.ParamType);
+        // 箭头/坐标系渲染不支持，不过滤（null = 显示全部，保持遗留行为）
+        Assert.Equal(typeof(Arc2d[]),new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arc }.ParamType);
         Assert.Null(new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arrow }.ParamType);
         Assert.Null(new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.CoordinateSystem }.ParamType);
     }
@@ -98,14 +135,11 @@ public class SubroutineDisplayItemTypeContractTests
     }
 
     [Fact]
-    public void TextDisplayItem_Filter_NumericSourcesAndDrillableGeometry()
+    public void TextDisplayItem_Filter_TextBooleanNumericSourcesAndDrillableGeometry()
     {
-        // 文本显示项目标为数字（Double）。候选 = 纯数值源 + **可下钻到数值字段**的几何数组：
-        //   - 规则 2/3：同词目与 Integer↔Double 互通（Value）
-        //   - 规则 3.6：几何数组有声明字段 → 放行（选区数组后下钻 半径/中心X；Polygon 顶点数组无标量字段，不放行）
-        //   - 其余（Image / String）精确匹配不互通 → 过滤
         var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Text };
-        var filtered = ParamBindingBase.FilterDataSourcesByType(MakeAllSources(), item.ParamType!);
+        var sources = MakeAllSources(); sources.Add(MakeDs("Flag", typeof(bool[])));
+        var filtered = ParamBindingBase.FilterDataSourcesByTypes(sources, item.AllowedParamTypes!);
 
         var names = filtered.Select(d => d.PropertyName).ToList();
 
@@ -116,7 +150,9 @@ public class SubroutineDisplayItemTypeContractTests
         Assert.Contains("Rect", names);       // 可下钻 中心X / 宽 / 高 / 角度
         Assert.DoesNotContain("Polygon", names); // 顶点数组无标量字段，放行会导致展开后无可绑叶
         Assert.DoesNotContain("Image", names);
-        Assert.DoesNotContain("Text", names);
+        Assert.Contains("Text", names);
+        Assert.Contains("Flag", names);
+        Assert.Equal(names.Count, names.Distinct().Count());
     }
 
     [Fact]
@@ -131,10 +167,19 @@ public class SubroutineDisplayItemTypeContractTests
     [Fact]
     public void UnsupportedDisplayType_Filter_ShowsAllSources()
     {
-        // 圆弧（ParamType=null）不过滤，列表包含全部数据源（遗留行为）
-        var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arc };
+        // 箭头尚无已声明源类型，暂不过滤；圆弧另验。
+        var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Arrow };
         var filtered = ParamBindingBase.FilterDataSourcesByType(MakeAllSources(), item.ParamType!);
         Assert.Equal(MakeAllSources().Count, filtered.Count);
+    }
+
+    [Fact]
+    public void ArcDisplayItem_filters_out_unrelated_sources()
+    {
+        var sources=MakeAllSources();sources.Add(new AvailableDataSource{SourceNodeId="arc",PropertyName="Arc",PropertyType=typeof(Arc2d[]),VariableType="Arc"});
+        var item=new SubroutineDisplayItem{DisplayType=SubroutineDisplayType.Arc};
+        var filtered=ParamBindingBase.FilterDataSourcesByType(sources,item.ParamType!);
+        Assert.Equal("Arc",Assert.Single(filtered).PropertyName);
     }
 
     #endregion

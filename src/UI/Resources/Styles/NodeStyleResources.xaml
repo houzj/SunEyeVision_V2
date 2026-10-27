@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- ======================================== -->
@@ -7,10 +8,10 @@
     <!-- ======================================== -->
     
     <!-- 节点尺寸 -->
-    <sys:Double x:Key="NodeWidth">140</sys:Double>
-    <sys:Double x:Key="NodeHeight">36</sys:Double>
-    <sys:Double x:Key="HitAreaWidth">160</sys:Double>
-    <sys:Double x:Key="HitAreaHeight">56</sys:Double>
+    <sys:Double x:Key="NodeWidth">110</sys:Double>
+    <sys:Double x:Key="NodeHeight">30</sys:Double>
+    <sys:Double x:Key="HitAreaWidth">130</sys:Double>
+    <sys:Double x:Key="HitAreaHeight">50</sys:Double>
     
     <!-- 端口尺寸 -->
     <sys:Double x:Key="PortSize">10</sys:Double>
@@ -24,16 +25,16 @@
     <sys:Double x:Key="PortMargin">10</sys:Double>
     
     <!-- 圆角半径 - double类型（用于Rectangle.RadiusX/Y） -->
-    <sys:Double x:Key="NodeCornerRadiusDouble">6</sys:Double>
+    <sys:Double x:Key="NodeCornerRadiusDouble">4</sys:Double>
     
     <!-- 圆角半径 - CornerRadius类型（用于Border.CornerRadius） -->
-    <CornerRadius x:Key="NodeCornerRadius">6</CornerRadius>
+    <CornerRadius x:Key="NodeCornerRadius">4</CornerRadius>
     
     <!-- 内容边距（左 0：让状态色块贴节点左边缘，与参考项目一致） -->
-    <Thickness x:Key="NodeContentMargin">0,0,12,0</Thickness>
+    <Thickness x:Key="NodeContentMargin">0,0,0,0</Thickness>
     
     <!-- 字体大小 -->
-    <sys:Double x:Key="NodeFontSize">13</sys:Double>
+    <sys:Double x:Key="NodeFontSize">12</sys:Double>
     <sys:Double x:Key="NodeIconFontSize">18</sys:Double>
     
     <!-- ======================================== -->
@@ -90,22 +91,12 @@
     <!-- 端口样式 -->
     <!-- ======================================== -->
     
-    <Style x:Key="PortEllipseStyle" TargetType="Ellipse">
-        <Setter Property="Fill" Value="{DynamicResource PortNormalBrush}"/>
-        <Setter Property="Stroke" Value="{DynamicResource PortStrokeBrush}"/>
-        <Setter Property="StrokeThickness" Value="2"/>
-        <Setter Property="Width" Value="{DynamicResource PortHitAreaWidth}"/>
-        <Setter Property="Height" Value="{DynamicResource PortHitAreaHeight}"/>
-        <Setter Property="Cursor" Value="Cross"/>
-        <Setter Property="Panel.ZIndex" Value="10"/>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Fill" Value="{DynamicResource PortHoverBrush}"/>
-                <Setter Property="Width" Value="{DynamicResource PortHoverHitAreaWidth}"/>
-                <Setter Property="Height" Value="{DynamicResource PortHoverHitAreaHeight}"/>
-                <Setter Property="StrokeThickness" Value="3"/>
-            </Trigger>
-        </Style.Triggers>
+    <Style x:Key="PortEllipseStyle" TargetType="rendering:VmExecutionPort">
+        <Setter Property="Fill" Value="#FFA719"/><Setter Property="Stroke" Value="#444444"/>
+        <Setter Property="StrokeThickness" Value="1"/><Setter Property="Cursor" Value="Cross"/>
+        <Setter Property="Panel.ZIndex" Value="10"/><Setter Property="Stretch" Value="None"/>
+        <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="StrokeThickness" Value="2"/></Trigger>
+        <Trigger Property="IsHighlighted" Value="True"><Setter Property="StrokeThickness" Value="2"/></Trigger></Style.Triggers>
     </Style>
     
     <!-- ======================================== -->

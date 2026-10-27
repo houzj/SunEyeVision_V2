@@ -63,14 +63,15 @@ namespace SunEyeVision.UI.Services.Interaction
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)
             {
-                _viewModel.AddConnectionToWorkflow(newConnection);
+                if (!_viewModel.AddConnectionToWorkflow(newConnection)) return null;
             }
             else
             {
+                if (SunEyeVision.Workflow.ExecutionConnectionPolicy.Rejection(currentTab.WorkflowConnections, newConnection) != null) return null;
                 currentTab.WorkflowConnections.Add(newConnection);
             }
 
-            return newConnection;
+            return currentTab.WorkflowConnections.FirstOrDefault(c => c.SourceNodeId == sourceNode.Id && c.TargetNodeId == targetNode.Id);
         }
 
         /// <summary>
@@ -111,16 +112,17 @@ namespace SunEyeVision.UI.Services.Interaction
             // 通过 MainWindowViewModel 添加连接（记录日志）
             if (_viewModel != null)
             {
-                _viewModel.AddConnectionToWorkflow(newConnection);
+                if (!_viewModel.AddConnectionToWorkflow(newConnection)) return null;
             }
             else
             {
+                if (SunEyeVision.Workflow.ExecutionConnectionPolicy.Rejection(currentTab.WorkflowConnections, newConnection) != null) return null;
                 currentTab.WorkflowConnections.Add(newConnection);
             }
 
             _viewModel!.StatusText = $"成功连接: {sourceNode.Name} -> {targetNode.Name}";
 
-            return newConnection;
+            return currentTab.WorkflowConnections.FirstOrDefault(c => c.SourceNodeId == sourceNode.Id && c.TargetNodeId == targetNode.Id);
         }
 
         /// <summary>

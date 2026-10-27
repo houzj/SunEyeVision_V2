@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -64,7 +64,6 @@ public class DesignTimeInitializationContractTests
         var repositoryRoot = FindRepositoryRoot();
         var tools = new[]
         {
-            (Project: "SunEyeVision.BlobAnalysis", Type: "BlobAnalysis"),
             (Project: "SunEyeVision.Tool.PointPointMeasure", Type: "PointPointMeasure"),
             (Project: "SunEyeVision.Tool.PointLineMeasure", Type: "PointLineMeasure"),
             (Project: "SunEyeVision.Tool.PointCircleMeasure", Type: "PointCircleMeasure"),
@@ -100,6 +99,27 @@ public class DesignTimeInitializationContractTests
             Assert.Equal(!judgmentOnly, xaml.Contains("<presentation:GraphicsDisplayEditorControl"));
             Assert.Equal(!judgmentOnly, xaml.Contains("<presentation:TextDisplayEditorControl"));
         }
+    }
+
+    [Fact]
+    public void Blob_uses_declared_runtime_layout_and_optional_readonly_Wpf_companion()
+    {
+        var root=Path.Combine(FindRepositoryRoot(),"tools","SunEyeVision.BlobAnalysis");
+        var declaration=File.ReadAllText(Path.Combine(root,"Runtime","BlobPresentation.cs"));
+        Assert.Contains("FieldLayout Layout",declaration);
+        Assert.Contains("presentation.graphics.",declaration);
+        Assert.Contains("presentation.texts.",declaration);
+        Assert.Contains("presentation.judgments.",declaration);
+        Assert.Contains("结果显示",declaration);
+        var factory=File.ReadAllText(Path.Combine(root,"Wpf","BlobEditorFactory.cs"));
+        Assert.Contains("IToolEditorFactory",factory);
+        Assert.Contains("CreateDataAnalysisControl() => new BlobDataAnalysisControl()",factory);
+        Assert.DoesNotContain("CreateDebugWindow",factory);
+        var resultView=File.ReadAllText(Path.Combine(root,"Wpf","Views","BlobDataAnalysisControl.xaml"));
+        Assert.Contains("d:DesignHeight=",resultView);
+        Assert.Contains("d:DesignWidth=",resultView);
+        Assert.DoesNotContain("d:SampleData",resultView);
+        // Static assembly/markup contract only; this is not a VS designer or whole-window visual acceptance.
     }
 
     [Fact]

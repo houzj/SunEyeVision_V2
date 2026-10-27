@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -220,7 +220,7 @@ public class SolutionManager
         // Name 和 Description 由 SolutionMetadata 统一管理，不再同步到 Solution
 
         // 添加默认工作流
-        var defaultWorkflow = solution.AddWorkflow("工作流1");
+        var defaultWorkflow = solution.AddWorkflow("流程1");
 
         // 构建文件路径
         var filePath = string.IsNullOrEmpty(metadata.FilePath)
@@ -541,7 +541,7 @@ public class SolutionManager
     {
         var previousRecentId = _settings.CurrentSolutionId;
         var document = Solution.Create(); document.Name = "未命名方案";
-        document.Workflows.Add(new Workflow(Guid.NewGuid().ToString(), "工作流1"));
+        document.Workflows.Add(new Workflow(Guid.NewGuid().ToString(), "流程1"));
         try { SetCurrentSolution(document, registerInCatalog: false); CaptureSavedState(); }
         finally { _settings.CurrentSolutionId = previousRecentId; }
         return document;

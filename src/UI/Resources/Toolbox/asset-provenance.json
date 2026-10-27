@@ -1,0 +1,292 @@
+[
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CollectionImageEnable.png",
+    "file": "CollectionImageEnable.png",
+    "sha256": "06886DEE84724F2165DD2659F1BC12EA89038FD8EA5D59F6F840F294938F330F"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CollectionImageHover.png",
+    "file": "CollectionImageHover.png",
+    "sha256": "E5AC437984EC79E25901D2ABDF7D6F267B4CBC6CFFEDEC5A2443130A47AD2F85"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\LocationImageEnable.png",
+    "file": "LocationImageEnable.png",
+    "sha256": "7EB9A0097C373B816557C7707990C962E0B69553BEF951A3407B9EB5DA41AC8D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\LocationImageHover.png",
+    "file": "LocationImageHover.png",
+    "sha256": "89F91D63795E0797270B4D44DE75352D161EB5D8494B6A7B042429931E6B9B43"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\MeasurementImageEnable.png",
+    "file": "MeasurementImageEnable.png",
+    "sha256": "F046A03F47B0A6B3782F32B3043D04226B311B41E3488A6D977A1FB7F5FB1C17"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\MeasurementImageHover.png",
+    "file": "MeasurementImageHover.png",
+    "sha256": "3C8A0B2FE244BB3D058A2DE1686156045F0690A47D829BD6836CDB8B5B8C378D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\RecognitionImageEnable.png",
+    "file": "RecognitionImageEnable.png",
+    "sha256": "BBDFE025F31DC9FC1111C52B6ED26E1F6BE8194059A6C1FF73181E29DC58325D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\RecognitionImageHover.png",
+    "file": "RecognitionImageHover.png",
+    "sha256": "44FD908D4C7A9D63F88DF02846798C696A9F36EB8150A4560E10152C092C9F79"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\DefectDetectionImageEnable.png",
+    "file": "DefectDetectionImageEnable.png",
+    "sha256": "829FB40A8E28DD72C249A3EB83A71E0978D5CEC6F9D875B41378839BA7E7349E"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\DefectDetectionImageHover.png",
+    "file": "DefectDetectionImageHover.png",
+    "sha256": "7E6315C7BE9CAB9FD4997C7C00211365AF3F8F992AFE045D6EF2A8885DDDDD11"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CalibrationImageEnable.png",
+    "file": "CalibrationImageEnable.png",
+    "sha256": "05B3B977825D116C95E979AAA456FA418F48D60FDED48F33BCE7597230D78D29"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CalibrationImageHover.png",
+    "file": "CalibrationImageHover.png",
+    "sha256": "F9E9DB091161EB72D830F4D7A0EE8AF2949930D03ADC964FE52F77F0AC8D0AF5"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CalculationImageEnable.png",
+    "file": "CalculationImageEnable.png",
+    "sha256": "C200C04E520B25F77B08F335326C459E699C02E3F27CB34BCC8558F3C11053DE"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CalculationImageHover.png",
+    "file": "CalculationImageHover.png",
+    "sha256": "E2518D5E0ADB9A1AF556755AFCDBF8B26A79A1A88B91C673488F2E590601E619"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ImageProcessingImageEnable.png",
+    "file": "ImageProcessingImageEnable.png",
+    "sha256": "3EBC95083E437734A41A1AA83C1A3A29EE0E1ACCFD86EE50F89EB85F13AA1608"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ImageProcessingImageHover.png",
+    "file": "ImageProcessingImageHover.png",
+    "sha256": "3D9D5174F9835DD762C16ABA40EEBBBA713E03652441EAEA784C688C3CDF7A86"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ColorProcessingImageEnable.png",
+    "file": "ColorProcessingImageEnable.png",
+    "sha256": "FCEB77CCF348799D6B9E8143CAE78EBEA4ABD2C50D6A70E56488A6C1CAE359DB"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ColorProcessingImageHover.png",
+    "file": "ColorProcessingImageHover.png",
+    "sha256": "FECF4D5EC583EB7165B7B15BF510979AA9F12BF64E3F534702B0721FE2CDCFAA"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\SplitCombinationImageEnable.png",
+    "file": "SplitCombinationImageEnable.png",
+    "sha256": "B19A3A1575744F1899A7FEB265C5A8AF1769F734FB8B1F99F450EA75007D2524"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\SplitCombinationImageHover.png",
+    "file": "SplitCombinationImageHover.png",
+    "sha256": "3F9BB3D9AB6AE2144754DF180D3118628FDE219FCBEF24945EC45BF9443E712B"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ImageGenerationImageEnable.png",
+    "file": "ImageGenerationImageEnable.png",
+    "sha256": "50CA78A6E9A5DD4CDF67D9A75F44B0E39088AB67912CB6725C2FD574A15BAEEB"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ImageGenerationImageHover.png",
+    "file": "ImageGenerationImageHover.png",
+    "sha256": "9B29957DA9BBF5588C86C60F3E5B55B99F701805B7593BAF9C006CBF40EDD61D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\LogicImageEnable.png",
+    "file": "LogicImageEnable.png",
+    "sha256": "6C60F3AE08025F6A9BBF4073EE8E8E7398F5BE78A9B3E11497BE3A177838FA9D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\LogicImageHover.png",
+    "file": "LogicImageHover.png",
+    "sha256": "319C0A76018EAFF5B5A6621A0B10322791E5899141D437CB2EC949EAE3ECA1E7"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CommunicationImageEnable.png",
+    "file": "CommunicationImageEnable.png",
+    "sha256": "200D752E1EED905756EA49D7017F8BC8CD4A575E25AC4C7AB757DBB84412C4A5"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\CommunicationImageHover.png",
+    "file": "CommunicationImageHover.png",
+    "sha256": "34A1B1E3C6F7FD3601AC19C40FB46DFA79DA853B6E18BA0648B4DBC4B4C03431"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\GroupToolsImageEnable.png",
+    "file": "GroupToolsImageEnable.png",
+    "sha256": "0BC40DA43664AFEA2B944560D7019371EE293E5793D4F5F2C1DAF0E30441CF62"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\GroupToolsImageHover.png",
+    "file": "GroupToolsImageHover.png",
+    "sha256": "03E5066D0193055FE7F524593D24DF1CDDF16F33D660ABFE01F0C952B9B0B7CD"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\UserToolsImageEnable.png",
+    "file": "UserToolsImageEnable.png",
+    "sha256": "5BE75731058EC426F2B49D4C3380A0109DFFFA0034DF0CF692E8E1A866FEBF65"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\UserToolsImageHover.png",
+    "file": "UserToolsImageHover.png",
+    "sha256": "759FB8A344E7DB5B7E07D269933542EF5CF36A4563138CFC848AA70192486D8C"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ImageSourceModuleImageEnable.png",
+    "file": "tool-image.png",
+    "sha256": "536F1A81DF9FCF6EEB5F4338E2F328805A0C7EEA04507401511384ABB79C6B5E"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSContourMatchModuImageEnable.png",
+    "file": "tool-match.png",
+    "sha256": "DAB1344F095E7240296EE60AF2BBEF3D4C08A5ADA3870F89057DFC0BCD5F0296"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSBlobFindModuImageEnable.png",
+    "file": "tool-blob.png",
+    "sha256": "DD188CB803AC03E2AABB134A34776978D1C53549E9D5A354D723C6C730CEE866"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSLineFindModuImageEnable.png",
+    "file": "tool-line.png",
+    "sha256": "F7FAE400E91369D5FFA7E4BCE11A7425F2C00D8E45B95B9BA51FFD16F0DE5126"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSCircleFindModuImageEnable.png",
+    "file": "tool-circle.png",
+    "sha256": "02A6161A845C47F90A7C1D36B8CA09FBBD5C2FA6705E2D57D155BE554A234122"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSP2PMeasureModuImageEnable.png",
+    "file": "tool-point-point.png",
+    "sha256": "8B8F1F19195148814370BF0457C28FAF57C30F639A657180417C8C0766BCF430"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSP2LMeasureModuImageEnable.png",
+    "file": "tool-point-line.png",
+    "sha256": "2468EC43200FFAA2D88444E47A7FE2A63249A71742AD485F36D5921F46240CFB"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSP2CMeasureModuImageEnable.png",
+    "file": "tool-point-circle.png",
+    "sha256": "DC157855CE521878F7AFCEFDC8F578088E0F28B27AAB6DDCAEB66F78CA0A32D7"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSL2LMeasureModuImageEnable.png",
+    "file": "tool-line-line.png",
+    "sha256": "5DEAB6D7EC3D2EE4B0F8EDBDD578CDFE72A22C66B0777E2F74042A92AB1D76B7"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSL2CMeasureModuImageEnable.png",
+    "file": "tool-line-circle.png",
+    "sha256": "CA356652533E7A91A7915BFA6BA2E7A810E18E56CBA9325A544B70D3ADFC409D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSC2CMeasureModuImageEnable.png",
+    "file": "tool-circle-circle.png",
+    "sha256": "4DCCEFCF473EC26F843416A08D9731229F7EA67F79601A0814181036FF3EFD45"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSNPointCalibModuImageEnable.png",
+    "file": "tool-axes.png",
+    "sha256": "2D55773174D8FFBE470044E1F3A08A4FE4CC26861F9CAC5A37FC934E69DCFD68"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSImageFilterModuImageEnable.png",
+    "file": "tool-sliders.png",
+    "sha256": "03065ACCC26A6F91B52A39F6507EAB2D2FF4E264527DB048EA130EE026048010"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSBinaryModuImageEnable.png",
+    "file": "tool-binarize.png",
+    "sha256": "2ACD1252C8CDC4D8CF640F33EB5ABD24A69E439A0635F5CFA93DA29AEFD3A291"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSBinaryModuImageEnable.png",
+    "file": "tool-threshold.png",
+    "sha256": "2ACD1252C8CDC4D8CF640F33EB5ABD24A69E439A0635F5CFA93DA29AEFD3A291"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSImageMorphModuImageEnable.png",
+    "file": "tool-morphology.png",
+    "sha256": "DD7779E641C2FEF6B85FB1A181BB1FFE2BED9EA650BD5C77588D3B15206FBA28"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IfBranchModuleImageEnable.png",
+    "file": "tool-branch.png",
+    "sha256": "9053B6D5AD1B5497BB46F76E47BCF54E48F6B92997C09AFABE37F875E05F1511"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\IMVSGroupImageEnable.png",
+    "file": "tool-subroutine.png",
+    "sha256": "E34FD83FA05360306994D32055A65CE6EF3EC7A702DC29E34C91F4128F773EE3"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ShellModuleImageEnable.png",
+    "file": "tool-code.png",
+    "sha256": "D8EDE92ED1F98A1518CE30E881ED71335424E45BAE9DFDE40E866C0A621D84CF"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\ReadDatasModuleImageEnable.png",
+    "file": "tool-receive.png",
+    "sha256": "70DA9506D52050960AA06F7E08D2CA74D59DFFD9A170D083E0C99A0F83248FF0"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\SendDatasModuleImageEnable.png",
+    "file": "tool-send.png",
+    "sha256": "C4641E359017E4B78B1090DE858D20DBEB8A26876DADCD809E891990A2DFA79E"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\DataAnalysisModuleImageEnable.png",
+    "file": "tool-parse.png",
+    "sha256": "E20DE6E634A1079F29D1F84FCB917B663DCFAD4B21D5C98EA17E6253000D7D3D"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\DataAssembleModuleImageEnable.png",
+    "file": "tool-assemble.png",
+    "sha256": "0AA8E9F19DE77C65ADB2FF4D77435FB19E8AC3B02E144E9B7E74BF854382EC6C"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\catalog\\UserToolsImageEnable.png",
+    "file": "tool-generic.png",
+    "sha256": "5BE75731058EC426F2B49D4C3380A0109DFFFA0034DF0CF692E8E1A866FEBF65"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\wpf\\toolbox-category-open.png",
+    "file": "toolbox-category-open.png",
+    "sha256": "D915EF91C8A4695D0D938C2E4141D0BA11234D4EE760F65EBE48AFD828B04FAE"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\wpf\\toolbox-category-closed.png",
+    "file": "toolbox-category-closed.png",
+    "sha256": "34FECB568FF37C55252C74D52C9686DD4A50BCB9615848E0747880A71FB983DD"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\wpf\\toolbox-expand-normal.png",
+    "file": "toolbox-expand-normal.png",
+    "sha256": "8BB45ED08B9B66FBE9CB8BB2BC5C0E54B962752FE5AFF4E4FAD51505AE597DF5"
+  },
+  {
+    "source": "D:\\MyWork\\REA逆向测试\\analysis\\ui-assets\\wpf\\toolbox-expand-hover.png",
+    "file": "toolbox-expand-hover.png",
+    "sha256": "491F2925D2D9B42260F02C10D2A858433609DAF6AC488BA0BE75A521D89FFB93"
+  }
+]

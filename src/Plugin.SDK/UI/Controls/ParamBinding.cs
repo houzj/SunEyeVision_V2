@@ -23,6 +23,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// 3. 支持按数据类型过滤
     /// 4. 独立的绑定选择功能
     /// </remarks>
+    public sealed class ParamBindingSourceEventArgs(RoutedEvent routedEvent,AvailableDataSource source) : RoutedEventArgs(routedEvent)
+    {public AvailableDataSource DataSource{get;}=source;}
+
     public class ParamBinding : ParamBindingBase
     {
         #region 依赖属性
@@ -180,7 +183,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public string BindingDisplayText
         {
             get => (string)GetValue(BindingDisplayTextProperty);
-            set => SetValue(BindingDisplayTextProperty, value);
+            set => SetCurrentValue(BindingDisplayTextProperty, value);
         }
 
         /// <summary>
@@ -897,7 +900,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 _isProgrammaticDisplayUpdate = false;
             }
 
-            RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+            RaiseEvent(new ParamBindingSourceEventArgs(BindingSourceSelectedEvent,ds));
             IsBound = true;
         }
 

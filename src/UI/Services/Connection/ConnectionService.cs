@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -184,7 +184,7 @@ namespace SunEyeVision.UI.Services.Connection
             };
 
             // 计算路径
-            connection.PathData = _pathService.CalculatePath(connection.SourcePosition, connection.TargetPosition);
+            _pathService.UpdateConnectionPath(connection);
 
             // 添加到集合
             Connections.Add(connection);

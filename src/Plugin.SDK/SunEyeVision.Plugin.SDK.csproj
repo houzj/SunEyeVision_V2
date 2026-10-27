@@ -53,4 +53,5 @@
        由 AssemblyInfo.cs 的 [assembly: ThemeInfo(...)] 声明其位置。
        （原先此处的 <ThemeInfo Include="Themes\Generic.xaml" /> 是无效项：既不生成特性、也不起任何作用，
          实测根因即"SDK 缺 ThemeInfo 特性 ⇒ WPF 不查 generic.xaml ⇒ 设计器里控件空白"，故删除。） -->
+  <ItemGroup><EmbeddedResource Include="Metadata\ToolGroups.xml" LogicalName="SunEyeVision.Plugin.SDK.Metadata.ToolGroups.xml" /></ItemGroup>
 </Project>

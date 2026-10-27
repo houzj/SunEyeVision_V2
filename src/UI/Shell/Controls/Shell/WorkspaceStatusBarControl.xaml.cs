@@ -1,0 +1,33 @@
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+namespace SunEyeVision.UI.Shell.Controls.Shell;
+/// <summary>流程工作区状态与缩放入口；实际视口变换由宿主执行。</summary>
+public enum WorkspaceConfigurationState { Waiting, Ready, Incomplete }
+public partial class WorkspaceStatusBarControl : UserControl
+{
+ public static readonly DependencyProperty MaximumScaleProperty=DependencyProperty.Register(nameof(MaximumScale),typeof(double),typeof(WorkspaceStatusBarControl),new PropertyMetadata(2d),value=>value is double maximum&&double.IsFinite(maximum)&&maximum>=.1&&maximum<=4);
+ public double MaximumScale {get=>(double)GetValue(MaximumScaleProperty);set=>SetValue(MaximumScaleProperty,value);}
+ public static readonly DependencyProperty ScaleProperty=DependencyProperty.Register(nameof(Scale),typeof(double),typeof(WorkspaceStatusBarControl),new PropertyMetadata(1d));
+ public static readonly DependencyProperty StatusTextProperty=DependencyProperty.Register(nameof(StatusText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("等待添加模块"));
+ public static readonly DependencyProperty ExecutionTextProperty=DependencyProperty.Register(nameof(ExecutionText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("尚未运行"));
+ public static readonly DependencyProperty ExecutionDetailsCommandProperty=DependencyProperty.Register(nameof(ExecutionDetailsCommand),typeof(ICommand),typeof(WorkspaceStatusBarControl),new PropertyMetadata(null));
+ public static readonly DependencyProperty ModuleTimeTextProperty=DependencyProperty.Register(nameof(ModuleTimeText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("—"));
+ public static readonly DependencyProperty AlgorithmTimeTextProperty=DependencyProperty.Register(nameof(AlgorithmTimeText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("—"));
+ public static readonly DependencyProperty ConfigurationStateProperty=DependencyProperty.Register(nameof(ConfigurationState),typeof(WorkspaceConfigurationState),typeof(WorkspaceStatusBarControl),new PropertyMetadata(WorkspaceConfigurationState.Waiting));
+ public string ModuleTimeText {get=>(string)GetValue(ModuleTimeTextProperty);set=>SetValue(ModuleTimeTextProperty,value);}
+ public string AlgorithmTimeText {get=>(string)GetValue(AlgorithmTimeTextProperty);set=>SetValue(AlgorithmTimeTextProperty,value);}
+ public WorkspaceConfigurationState ConfigurationState {get=>(WorkspaceConfigurationState)GetValue(ConfigurationStateProperty);set=>SetValue(ConfigurationStateProperty,value);}
+ public string ExecutionText {get=>(string)GetValue(ExecutionTextProperty);set=>SetValue(ExecutionTextProperty,value);}
+ public ICommand? ExecutionDetailsCommand {get=>(ICommand?)GetValue(ExecutionDetailsCommandProperty);set=>SetValue(ExecutionDetailsCommandProperty,value);}
+ public double Scale {get=>(double)GetValue(ScaleProperty);set=>SetValue(ScaleProperty,value);}
+ public string StatusText {get=>(string)GetValue(StatusTextProperty);set=>SetValue(StatusTextProperty,value);}
+ public event Action<double>? ScaleRequested;
+ public WorkspaceStatusBarControl()=>InitializeComponent();
+ private void ZoomSlider_ValueChanged(object sender,RoutedPropertyChangedEventArgs<double> e)
+ {
+  if(double.IsFinite(e.NewValue)&&Math.Abs(e.NewValue-Scale)>0.00001)ScaleRequested?.Invoke(Math.Clamp(Math.Round(e.NewValue,1),0.1,MaximumScale));
+ }
+ private void ResetZoomButton_Click(object sender,RoutedEventArgs e)=>ScaleRequested?.Invoke(1);
+}

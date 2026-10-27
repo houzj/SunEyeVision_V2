@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.Subroutine.ViewModels
 {
+    public sealed record SubroutineIoSelection(IReadOnlyList<AvailableDataSource> Sources,bool IncludeModuleName);
     public class SubroutineParameterDialogViewModel : ObservableObject
     {
         private readonly string _subroutineId;
@@ -24,7 +25,6 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private string _selectedOutputTypeName = "Double";
         private SubroutineDisplayType _selectedDisplayType = SubroutineDisplayType.Circle;
         private bool _isDisposed;
-        private bool _suppressNotifications;
         public string DialogTitle => $"{_subroutineName} - 子程序参数设置";
 
         /// <summary>直接暴露源参数的集合（共享引用，实时同步到 node.Parameters）</summary>
@@ -32,6 +32,11 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         public ObservableCollection<SubroutineOutputConfig> Outputs => _parameters.Outputs;
         public ObservableCollection<SubroutineDisplayItem> DisplayItems => _parameters.DisplayConfigs;
         public SubroutineLoopConfig LoopConfig => _parameters.LoopConfig;
+        public Type LoopIndexType=>typeof(long);
+        public Type LoopComparisonType=>LoopConfig.DataType switch{"int"=>typeof(long),"float"=>typeof(double),"string"=>typeof(string),_=>throw new InvalidOperationException("循环比较类型无效。")};
+        public ObservableCollection<AvailableDataSource> LoopComparisonSources{get;}=new();
+        private void LoopChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
+        {if(e.PropertyName==nameof(SubroutineLoopConfig.DataType))OnPropertyChanged(nameof(LoopComparisonType));}
 
         public ObservableCollection<AvailableDataSource> AvailableSources { get; } = new();
 
@@ -56,15 +61,17 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             set => SetProperty(ref _selectedDisplayType, value);
         }
 
-        public List<TypeOption> AvailableTypes { get; } = SdkTypeVocabulary.GetAllTypeOptions();
+        public const string SourceImportType="SourceImport";
+        public Func<bool,SubroutineIoSelection?>? PickSources{get;set;}
+        public List<TypeOption> AvailableTypes { get; } = SdkTypeVocabulary.GetAllTypeOptions().Concat(new[]{new TypeOption("批量选择",SourceImportType)}).ToList();
 
         public List<DisplayTypeOption> AvailableDisplayTypes { get; } = SubroutineDisplayTypeExtensions.GetAllOptions();
 
         /// <summary>循环设置：可用数据类型</summary>
-        public List<string> AvailableLoopDataTypes { get; } = new() { "int", "double", "float", "string" };
+        public List<string> AvailableLoopDataTypes { get; } = new() { "int", "float", "string" };
 
         /// <summary>循环设置：比较运算符</summary>
-        public List<string> ComparisonOperators { get; } = new() { ">", ">=", "<", "<=", "==", "!=" };
+        public List<string> ComparisonOperators { get; } = new() { ">", "<", "==", "!=", ">=", "<=" };
 
         public ICommand AddInputCommand { get; }
         public ICommand AddOutputCommand { get; }
@@ -87,33 +94,24 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             _dataSourceQueryService = dataSourceQueryService;
             _subroutineInternalSources = subroutineInternalSources;
             _parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
+            LoopConfig.PropertyChanged+=LoopChanged;
             _onOutputsChanged = onOutputsChanged;
 
-            AddInputCommand = new RelayCommand(AddInput);
-            AddOutputCommand = new RelayCommand(AddOutput);
-            AddDisplayItemCommand = new RelayCommand(AddDisplayItem);
+            AddInputCommand = new RelayCommand(AddInput,()=>!_isDisposed&&Inputs.Count<SubroutineIoRules.MaximumItems);
+            AddOutputCommand = new RelayCommand(AddOutput,()=>!_isDisposed&&Outputs.Count<SubroutineIoRules.MaximumItems);
+            AddDisplayItemCommand = new RelayCommand(AddDisplayItem, () => SelectedDisplayType.IsSupported());
             RemoveItemCommand = new RelayCommand<object>(ExecuteRemoveItem);
             RemoveDisplayItemCommand = new RelayCommand<SubroutineDisplayItem>(ExecuteRemoveDisplayItem);
 
             // ★ 订阅 Outputs 变更 → 通知主窗口增量更新模块结果树
             _parameters.Outputs.CollectionChanged += OnOutputsCollectionChanged;
 
-            // ★ 子程序至少需要一个输入和一个输出（幂等补齐，补齐不应触发增量通知）
-            _suppressNotifications = true;
-            try
-            {
-                EnsureMinimumInputsOutputs();
-            }
-            finally
-            {
-                _suppressNotifications = false;
-            }
-
-            // ★ 补齐后统一订阅全部输出项的 PropertyChanged（名称/类型/分组修改时增量刷新）
+            // Opening a Group observes its configured IO; it must not create rows.
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged += OnOutputPropertyChanged;
 
             LoadAvailableSources();
+            foreach(var source in AvailableSources.Concat(SubroutineInternalSources).Distinct())LoopComparisonSources.Add(source);
         }
 
         /// <summary>
@@ -122,35 +120,11 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         public void Dispose()
         {
             if (_isDisposed) return;
-            _isDisposed = true;
+            _isDisposed = true;PickSources=null;
             _parameters.Outputs.CollectionChanged -= OnOutputsCollectionChanged;
+            LoopConfig.PropertyChanged-=LoopChanged;
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged -= OnOutputPropertyChanged;
-        }
-
-        /// <summary>
-        /// 子程序至少保留一个输入/输出：集合为空时自动补齐默认项（幂等，重复打开不重复添加）。
-        /// </summary>
-        private void EnsureMinimumInputsOutputs()
-        {
-            if (Inputs.Count == 0)
-            {
-                Inputs.Add(new SubroutineInputConfig
-                {
-                    Name = "in_1",
-                    BindingKey = "in_1",
-                    TypeName = "Image"
-                });
-            }
-
-            if (Outputs.Count == 0)
-            {
-                Outputs.Add(new SubroutineOutputConfig
-                {
-                    Name = "out_1",
-                    TypeName = "Double"
-                });
-            }
         }
 
         private void LoadAvailableSources()
@@ -179,7 +153,9 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddInput()
         {
-            var initialName = $"in_{Inputs.Count + 1}";
+            if(!AddInputCommand.CanExecute(null))return;
+            if(SelectedInputTypeName==SourceImportType){PickAndImport(true);return;}
+            var initialName = SubroutineIoRules.UniqueName("in",Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name)));
             Inputs.Add(new SubroutineInputConfig
             {
                 Name = initialName,
@@ -190,18 +166,64 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddOutput()
         {
+            if(!AddOutputCommand.CanExecute(null))return;
+            if(SelectedOutputTypeName==SourceImportType){PickAndImport(false);return;}
             Outputs.Add(new SubroutineOutputConfig
             {
-                Name = $"out_{Outputs.Count + 1}",
+                Name = SubroutineIoRules.UniqueName("out",Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name))),
                 TypeName = SelectedOutputTypeName
             });
         }
 
+        private void PickAndImport(bool inputs)
+        {
+            var picked=PickSources?.Invoke(inputs);if(picked is null||_isDisposed)return;
+            try{ImportSources(inputs,picked.Sources,picked.IncludeModuleName);}
+            catch(InvalidOperationException ex){MessageBox.Show(ex.Message,"批量选择",MessageBoxButton.OK,MessageBoxImage.Warning);}
+        }
+        internal static AvailableDataSource CopySource(AvailableDataSource source)=>new()
+        {
+            SourceWorkflowId=source.SourceWorkflowId,SourceNodeId=source.SourceNodeId,SourceFieldId=source.SourceFieldId,
+            SourceNodeName=source.SourceNodeName,SourceNodeType=source.SourceNodeType,PropertyName=source.PropertyName,
+            BindingSuffix=source.BindingSuffix,DisplayName=source.DisplayName,PropertyType=source.PropertyType,
+            VariableType=source.VariableType,Description=source.Description,Unit=source.Unit,GroupName=source.GroupName
+        };
+        public void ImportSources(bool inputs,IEnumerable<AvailableDataSource> selection,bool includeModuleName)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed,this);
+            static (string?,string,Guid?,string) Key(AvailableDataSource s)=>(s.SourceWorkflowId,s.SourceNodeId,s.SourceFieldId,s.GetBindingPath());
+            var available=inputs?AvailableSources:SubroutineInternalSources;var selected=selection.DistinctBy(Key).ToArray();
+            if((inputs?Inputs.Count:Outputs.Count)+selected.Length>SubroutineIoRules.MaximumItems)throw new InvalidOperationException("批选超过IO数量上限，未添加任何项。");
+            var names=Inputs.Select(i=>i.Name).Concat(Outputs.Select(o=>o.Name)).ToHashSet(StringComparer.Ordinal);
+            var rows=new List<(string Name,string Type,AvailableDataSource Source)>();
+            foreach(var source in selected)
+            {
+                if(!source.IsValid||!available.Any(a=>Key(a)==Key(source)))throw new InvalidOperationException("批选来源不属于当前输入或输出作用域。");
+                var type=SdkTypeVocabulary.ToTypeVocabulary(source.PropertyType)??throw new InvalidOperationException("批选来源类型不受支持："+source.DisplayName);
+                var label=string.IsNullOrWhiteSpace(source.DisplayName)?source.PropertyName:source.DisplayName;
+                var suggestion=SubroutineIoRules.SuggestName((includeModuleName?source.SourceNodeName+"_":"")+label,inputs?"in":"out");
+                var name=SubroutineIoRules.UniqueName(suggestion,names);names.Add(name);rows.Add((name,type,CopySource(source)));
+            }
+            var added=new List<object>();
+            try
+            {
+                foreach(var row in rows)
+                    if(inputs){var item=new SubroutineInputConfig{Name=row.Name,BindingKey=row.Name,TypeName=row.Type,Source=row.Source,BindingSource=row.Source.GetBindingPath(),BindingDisplayText=row.Source.DropdownDisplayText};added.Add(item);Inputs.Add(item);}
+                    else{var item=new SubroutineOutputConfig{Name=row.Name,TypeName=row.Type,Source=row.Source,BindingSource=row.Source.GetBindingPath(),BindingDisplayText=row.Source.DropdownDisplayText};added.Add(item);Outputs.Add(item);}
+            }
+            catch{foreach(var item in added)if(item is SubroutineInputConfig input)Inputs.Remove(input);else Outputs.Remove((SubroutineOutputConfig)item);throw;}
+        }
+
         private void AddDisplayItem()
         {
+            if (!SelectedDisplayType.IsSupported()) return;
+            var prefix=SelectedDisplayType.GetChineseName();
+            var names=DisplayItems.Select(d=>d.DisplayName).ToHashSet(StringComparer.Ordinal);
+            var name=prefix;
+            for(var suffix=0;names.Contains(name);suffix++)name=prefix+suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
             var item = new SubroutineDisplayItem
             {
-                DisplayName = SelectedDisplayType.GetChineseName(),
+                DisplayName = name,
                 DisplayType = SelectedDisplayType
             };
 
@@ -232,24 +254,10 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             if (item == null) return;
             if (item is SubroutineInputConfig input)
             {
-                // 子程序至少保留一个输入
-                if (Inputs.Count <= 1)
-                {
-                    MessageBox.Show("子程序至少需要保留一个输入参数。",
-                        "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
                 Inputs.Remove(input);
             }
             else if (item is SubroutineOutputConfig output)
             {
-                // 子程序至少保留一个输出
-                if (Outputs.Count <= 1)
-                {
-                    MessageBox.Show("子程序至少需要保留一个输出参数。",
-                        "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
                 Outputs.Remove(output);
             }
         }
@@ -266,7 +274,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private void OnOutputsCollectionChanged(object? sender,
             System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (_isDisposed || _suppressNotifications) return;
+            if (_isDisposed) return;
 
             // 新加项 → 订阅 PropertyChanged，并通知 Added
             if (e.NewItems != null)

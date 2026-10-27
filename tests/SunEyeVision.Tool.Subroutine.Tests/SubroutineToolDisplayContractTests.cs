@@ -63,6 +63,31 @@ public class SubroutineToolDisplayContractTests
         };
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void Annular_sector_preserves_both_radii_and_angles_for_scalar_array_and_roi(bool array, bool roi)
+    {
+        var shape = new Annulus2d(new Point(70, 80), 12, 28, 5.5, 8.2);
+        object value = roi ? (array ? new[] { new RoiShape { Geometry = shape }, new RoiShape { Geometry = shape } } : (object)new RoiShape { Geometry = shape })
+            : array ? new[] { shape, shape } : (object)shape;
+        var source = new GenericToolResults(); source.AddResultItem("Sectors", value);
+        var parameters = MakeParams(p => p.DisplayConfigs.Add(new() { DisplayName = "环形扇区", DisplayType = SubroutineDisplayType.AnnularSector, BindingSource = "internalNode.Sectors[]" }), source);
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage);
+            var item = Assert.IsType<GraphicsDisplayItem>(Assert.Single(result.Display.Items));
+            Assert.Equal(GraphicsType.Annulus, item.Type);
+            Assert.Equal(array ? 2 : 1, item.Geometries.Length);
+            foreach (var geometry in item.Geometries) Assert.Equal(shape, Assert.IsType<Annulus2d>(geometry));
+            Assert.Same(parameters.DisplayConfigs[0].GraphicsStyle, item.Style);
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
     [Fact]
     public void CircleOutput_IsRenderedAsTrueCircle_NotContour()
     {
@@ -186,4 +211,196 @@ public class SubroutineToolDisplayContractTests
             .Where(i => i.Type == GraphicsType.Contour);
         Assert.Single(rrContours.SelectMany(i => i.Geometries).OfType<ContourGeometry>());
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Arc_output_preserves_true_geometry_and_major_arc_flag(bool array)
+    {
+        var arc=new Arc2d(new Point(13,17),9,0.2,1.1,true);
+        var source=new GenericToolResults();source.AddResultItem("Arcs",array?new[]{arc,arc}:(object)arc);
+        var parameters=MakeParams(p=>p.DisplayConfigs.Add(new(){DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc,BindingSource="internalNode.Arcs[]"}),source);
+        var result=Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess,result.ErrorMessage);
+            var item=Assert.IsType<GraphicsDisplayItem>(Assert.Single(result.Display.Items));
+            Assert.Equal(GraphicsType.Arc,item.Type);
+            Assert.Equal(array?2:1,item.Geometries.Length);
+            foreach(var geometry in item.Geometries)Assert.Equal(arc,Assert.IsType<Arc2d>(geometry));
+        }
+        finally{result.Resources?.Dispose();}
+    }
+
+    [Fact]
+    public void Arc_ROI_is_rendered_as_arc_without_polygon_approximation()
+    {
+        var arc=new Arc2d(new Point(13,17),9,0.2,1.1,true);
+        var source=new GenericToolResults();source.AddResultItem("Shapes",new[]{new RoiShape{Geometry=arc}});
+        var parameters=MakeParams(p=>p.DisplayConfigs.Add(new(){DisplayName="圆弧",DisplayType=SubroutineDisplayType.Arc,BindingSource="internalNode.Shapes[]"}),source);
+        var result=Run(parameters);
+        try{Assert.True(result.IsSuccess,result.ErrorMessage);var item=Assert.IsType<GraphicsDisplayItem>(Assert.Single(result.Display.Items));Assert.Equal(GraphicsType.Arc,item.Type);Assert.Equal(arc,Assert.IsType<Arc2d>(Assert.Single(item.Geometries)));}
+        finally{result.Resources?.Dispose();}
+    }
+
+    public static IEnumerable<object[]> TextArrayCases()
+    {
+        yield return new object[] { new string?[] { "首行", null, "", "  ", "末行" }, new[] { "首行", "", "", "  ", "末行" } };
+        yield return new object[] { new[] { 1, -2, 3 }, new[] { "1", "-2", "3" } };
+        yield return new object[] { new[] { true, false }, new[] { "True", "False" } };
+        yield return new object[] { Array.Empty<string>(), Array.Empty<string>() };
+    }
+    [Theory]
+    [MemberData(nameof(TextArrayCases))]
+    public void Text_arrays_create_one_display_entry_per_content_element(object value, string[] expected)
+    {
+        var source = new GenericToolResults(); source.AddResultItem("Content", value);
+        var style = new TextStyle { PositionX = 12, PositionY = 34 };
+        var parameters = MakeParams(p => p.DisplayConfigs.Add(new()
+        { DisplayName = "文本", DisplayType = SubroutineDisplayType.Text,
+          BindingSource = "internalNode.Content[]", TextStyle = style }), source);
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage);
+            var items = result.Display.Items.OfType<TextDisplayItem>().ToArray();
+            var texts = items.SelectMany(item => item.Texts).ToArray();
+            Assert.Equal(expected, texts.Select(text => text.Content));
+            Assert.All(items, item => Assert.Same(style, item.Style));
+            Assert.All(texts, text => { Assert.Equal(12, text.X); Assert.Equal(34, text.Y); });
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+    [Theory]
+    [InlineData("en-US", "1.5")]
+    [InlineData("fr-FR", "1,5")]
+    public void Numeric_text_elements_use_current_culture_without_array_type_names(string culture, string expected)
+    {
+        var previous = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            var source = new GenericToolResults(); source.AddResultItem("Content", new[] { 1.5 });
+            var parameters = MakeParams(p => p.DisplayConfigs.Add(new()
+            { DisplayName = "文本", DisplayType = SubroutineDisplayType.Text,
+              BindingSource = "internalNode.Content[]", TextStyle = new TextStyle() }), source);
+            var result = Run(parameters);
+            try
+            {
+                Assert.True(result.IsSuccess, result.ErrorMessage);
+                Assert.Equal(expected, Assert.Single(Assert.IsType<TextDisplayItem>(Assert.Single(result.Display.Items)).Texts).Content);
+            }
+            finally { result.Resources?.Dispose(); }
+        }
+        finally { System.Globalization.CultureInfo.CurrentCulture = previous; }
+    }
+    [Fact]
+    public void Scalar_string_remains_a_single_text_instead_of_characters()
+    {
+        var source = new GenericToolResults(); source.AddResultItem("Content", "完整文本");
+        var parameters = MakeParams(p => p.DisplayConfigs.Add(new()
+        { DisplayName = "文本", DisplayType = SubroutineDisplayType.Text,
+          BindingSource = "internalNode.Content", TextStyle = new TextStyle() }), source);
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage);
+            Assert.Equal("完整文本", Assert.Single(Assert.IsType<TextDisplayItem>(Assert.Single(result.Display.Items)).Texts).Content);
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
+    [Fact]
+    public void Loop_text_arrays_accumulate_elements_while_ordinary_display_keeps_last_round()
+    {
+        var count = 0;
+        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        parent.AddResultItem("Start", 0); parent.AddResultItem("End", 3);
+        var accumulatedStyle = new TextStyle { PositionX = 10 };
+        var lastStyle = new TextStyle { PositionX = 20 };
+        var parameters = new SubroutineParameters
+        {
+            SubroutineId = "child", SubroutineName = "循环文本",
+            NodeResults = new Dictionary<string, ToolResults> { ["parent"] = parent },
+            LoopConfig = new() { EnableLoop = true, EnableBreak = false,
+                StartValueBinding = "parent.Start", EndValueBinding = "parent.End" },
+            ExecuteSubWorkflowAsync = (_, _, _) =>
+            {
+                count++;
+                var values = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+                values.AddResultItem("Content", new[] { count + "a", count + "b" });
+                return Task.FromResult(new ExecutionResult { Success = true,
+                    NodeResults = new Dictionary<string, NodeExecutionResult> { ["internalNode"] = new() { Result = values } } });
+            }
+        };
+        parameters.Inputs.Add(new() { Name = "input" }); parameters.Outputs.Add(new() { Name = "output" });
+        parameters.DisplayConfigs.Add(new() { DisplayName = "累积", DisplayType = SubroutineDisplayType.Text,
+            BindingSource = "internalNode.Content[]", TextStyle = accumulatedStyle, IsAccumulated = true });
+        parameters.DisplayConfigs.Add(new() { DisplayName = "最后", DisplayType = SubroutineDisplayType.Text,
+            BindingSource = "internalNode.Content[]", TextStyle = lastStyle });
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage); Assert.Equal(3, count);
+            var items = result.Display.Items.OfType<TextDisplayItem>().ToArray();
+            Assert.Equal(new[] { "1a", "1b", "2a", "2b", "3a", "3b" },
+                items.Where(item => ReferenceEquals(item.Style, accumulatedStyle)).SelectMany(item => item.Texts).Select(text => text.Content));
+            Assert.Equal(new[] { "3a", "3b" },
+                items.Where(item => ReferenceEquals(item.Style, lastStyle)).SelectMany(item => item.Texts).Select(text => text.Content));
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void Accumulated_geometry_keeps_configured_style_without_per_iteration_replacement(int rounds)
+    {
+        var count = 0;
+        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        parent.AddResultItem("Start", 0); parent.AddResultItem("End", rounds);
+        var style = new GraphicsStyle { Name = "自定义", OkColor = System.Windows.Media.Color.FromArgb(143, 203, 21, 95),
+            NgColor = System.Windows.Media.Colors.Purple, LineWidth = 4, Opacity = 0.65, CrossSize = 13 };
+        var accumulated = new SubroutineDisplayItem { DisplayName = "累积圆", DisplayType = SubroutineDisplayType.Circle,
+            BindingSource = "internalNode.Circles[]", GraphicsStyle = style, IsAccumulated = true };
+        var notifications = new List<string?>(); accumulated.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
+        var parameters = new SubroutineParameters
+        {
+            SubroutineId = "child", SubroutineName = "累积样式",
+            NodeResults = new Dictionary<string, ToolResults> { ["parent"] = parent },
+            LoopConfig = new() { EnableLoop = true, EnableBreak = false,
+                StartValueBinding = "parent.Start", EndValueBinding = "parent.End" },
+            ExecuteSubWorkflowAsync = (_, _, _) =>
+            {
+                count++;
+                var values = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+                values.AddResultItem("Circles", new[] { new Circle2d(count, 10, 5), new Circle2d(count, 20, 7) });
+                values.AddResultItem("Lines", new[] { new Line2d(new Point(count, 30), new Vector(1, 0)) });
+                return Task.FromResult(new ExecutionResult { Success = true,
+                    NodeResults = new Dictionary<string, NodeExecutionResult> { ["internalNode"] = new() { Result = values } } });
+            }
+        };
+        parameters.Inputs.Add(new() { Name = "input" }); parameters.Outputs.Add(new() { Name = "output" });
+        parameters.DisplayConfigs.Add(accumulated);
+        parameters.DisplayConfigs.Add(new() { DisplayName = "累积线", DisplayType = SubroutineDisplayType.Line,
+            BindingSource = "internalNode.Lines[]", GraphicsStyle = style, IsAccumulated = true });
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage); Assert.Equal(rounds, count);
+            var items = result.Display.Items.OfType<GraphicsDisplayItem>().ToArray(); Assert.Equal(2, items.Length);
+            var item = Assert.Single(items, geometry => geometry.Type == GraphicsType.Circle);
+            var lines = Assert.Single(items, geometry => geometry.Type == GraphicsType.Line);
+            Assert.Same(style, lines.Style); Assert.Equal(rounds, lines.Geometries.Length);
+            Assert.All(lines.Geometries, geometry => Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.LineSegment>(geometry));
+            Assert.Same(style, item.Style); Assert.Equal(rounds * 2, item.Geometries.Length);
+            Assert.Equal(Enumerable.Range(1, rounds).SelectMany(i => new[] { (double)i, i }),
+                item.Geometries.Cast<Circle2d>().Select(circle => circle.Center.X));
+            Assert.Equal(System.Windows.Media.Color.FromArgb(143, 203, 21, 95), item.Style.OkColor);
+            Assert.Equal(System.Windows.Media.Colors.Purple, item.Style.NgColor);
+            Assert.Equal(4, item.Style.LineWidth); Assert.Equal(0.65, item.Style.Opacity); Assert.Equal(13, item.Style.CrossSize);
+            Assert.Same(style, accumulated.GraphicsStyle); Assert.Empty(notifications);
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using SunEyeVision.Workflow;
 using Xunit;
@@ -49,8 +49,10 @@ public class SolutionExecutionDependencyGraphTests
             dependency.TargetScopedNodeId == "target-workflow/target");
     }
 
-    [Fact]
-    public void Compile_RejectsAmbiguousLegacyConsumer_WhenNodeIdsRepeatAcrossWorkflows()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Compile_DoesNotGuessAmbiguousConsumer_AndPreservesExplicitScopedConsumer(bool checkReadiness)
     {
         var solution = new Solution();
         var sourceWorkflow = CreateWorkflow("source-workflow", "来源", "source");
@@ -65,9 +67,19 @@ public class SolutionExecutionDependencyGraphTests
             ConsumerBindings = { new ConsumerBinding { NodeId = "target", ParameterName = "Value" } }
         });
 
-        var exception = Assert.Throws<InvalidOperationException>(() => SolutionExecutionDependencyGraph.Compile(solution));
-
-        Assert.Contains("多个工作流中重复", exception.Message);
+        // ConsumerBindings is reverse-index metadata, not the executable input expression.
+        // A missing scope must never fan out to both same-ID nodes or poison unrelated graphs.
+        var graph = SolutionExecutionDependencyGraph.Compile(solution,checkReadiness);
+        Assert.Empty(graph.Dependencies);
+        Assert.Empty(graph.GetPredecessors("target-a/target"));
+        Assert.Empty(graph.GetPredecessors("target-b/target"));
+        solution.GlobalVariables[0].ConsumerBindings.Add(new ConsumerBinding { WorkflowId=firstTarget.Id,NodeId="target",ParameterName="Value" });
+        graph=SolutionExecutionDependencyGraph.Compile(solution,checkReadiness);
+        var edge=Assert.Single(graph.Dependencies);
+        Assert.Equal("source-workflow/source",edge.SourceScopedNodeId);
+        Assert.Equal("target-a/target",edge.TargetScopedNodeId);
+        Assert.Empty(graph.GetPredecessors("target-b/target"));
+        Assert.Equal(new[]{"source-workflow/source"},graph.GetPredecessors("target-a/target"));
     }
 
     private static SunEyeVision.Workflow.Workflow CreateWorkflow(string id, string name, string nodeId)

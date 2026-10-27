@@ -53,6 +53,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private readonly ToolDebugControlBase? _toolControl;
         private readonly bool _hasExecutionCommands;
         public ToolDebugControlBase? EditorControl => _toolControl;
+        /// <summary>参数提交内容，包括不承担单工具执行的自定义Group控件。</summary>
+        public UserControl ParameterControl => _control;
         
         // 状态
         private bool _isContinuousRunning;
@@ -63,7 +65,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// 用 WindowChrome 而非 AllowsTransparency，保证 Owner 层叠正常（调试窗口不被主窗口遮挡——
         /// AllowsTransparency=True 的分层窗口无法保证 Owner 子窗口始终在 Owner 之上，是 WPF 已知限制）。
         /// </summary>
-        public static System.Windows.Shell.WindowChrome DebugWindowChrome { get; } = new System.Windows.Shell.WindowChrome
+        // WindowChrome拥有Dispatcher；每个窗口取独立实例，不能静态共享跨STA对象。
+        public static System.Windows.Shell.WindowChrome DebugWindowChrome => new System.Windows.Shell.WindowChrome
         {
             CaptionHeight = 32,
             ResizeBorderThickness = new Thickness(6),

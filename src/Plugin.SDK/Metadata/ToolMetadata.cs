@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -43,10 +43,11 @@ namespace SunEyeVision.Plugin.SDK.Metadata
 
         /// <summary>Read ordering from the same tool attribute as the rest of metadata.</summary>
         [JsonIgnore]
-        public int Order => RuntimeCatalog?.Order??(ToolType == null ? 1000 : ((ToolAttribute?)Attribute.GetCustomAttribute(ToolType, typeof(ToolAttribute)))?.Order ?? 1000);
-
+        public int? DeclaredOrder { get; init; }
         [JsonIgnore]
-        public SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor? RuntimeCatalog {get;init;}
+        public int Order => RuntimeCatalog?.Order ?? DeclaredOrder ?? (ToolType == null ? 1000 : ((ToolAttribute?)Attribute.GetCustomAttribute(ToolType, typeof(ToolAttribute)))?.Order ?? 1000);
+        [JsonIgnore]
+        public SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor? RuntimeCatalog { get; init; }
 
         /// <summary>
         /// 工具分类
@@ -149,6 +150,7 @@ namespace SunEyeVision.Plugin.SDK.Metadata
                 Description = Description,
                 Icon = Icon,
                 Category = Category,
+                DeclaredOrder = DeclaredOrder,
                 ToolType = ToolType,
                 RuntimeCatalog=RuntimeCatalog,
                 DebugWindowType = DebugWindowType,

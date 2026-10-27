@@ -10,75 +10,63 @@ namespace SunEyeVision.UI.Shared
     /// </summary>
     public class NodeStyleConfig
     {
-        private static readonly ResourceDictionary _resources;
+        // 路径计算会在后台读取尺寸；共享纯值，不能跨线程持有WPF资源字典。
+        private sealed record Metrics(double Width,double Height,double PortSize,double PortMargin,double Radius,Thickness Margin);
+        private static readonly Lazy<Metrics> _metrics = new(LoadMetrics);
+        private readonly double? _height;
+        public NodeStyleConfig() : this(null) { }
+        public NodeStyleConfig(double? height) { _height = height; }
 
-        static NodeStyleConfig()
+        private static Metrics LoadMetrics()
         {
-            try
+            static Metrics Read()
             {
-                _resources = new ResourceDictionary
+                var resources = new ResourceDictionary
                 {
-                    Source = new Uri("/SunEyeVision.UI;component/Resources/Styles/NodeStyleResources.xaml",
-                                    UriKind.Relative)
+                    Source = new Uri("/SunEyeVision.UI;component/Resources/Styles/NodeStyleResources.xaml",UriKind.Relative)
                 };
+                return new((double)resources["NodeWidth"],(double)resources["NodeHeight"],
+                    (double)resources["PortSize"],(double)resources["PortMargin"],
+                    (double)resources["NodeCornerRadiusDouble"],(Thickness)resources["NodeContentMargin"]);
             }
-            catch (Exception ex)
-            {
-                // 降级到硬编码默认值
-                _resources = new ResourceDictionary();
-                _resources["NodeWidth"] = 140.0;
-                _resources["NodeHeight"] = 36.0;
-                _resources["PortSize"] = 10.0;
-                _resources["PortMargin"] = 10.0;
-                _resources["NodeCornerRadius"] = 6.0;
-                _resources["NodeContentMargin"] = new Thickness(0, 0, 12, 0);
-}
-        }
-
-        private T GetResource<T>(string key) where T : class
-        {
-            return _resources[key] as T;
-        }
-
-        private double GetDouble(string key)
-        {
-            return (double)_resources[key];
-        }
-
-        private Thickness GetThickness(string key)
-        {
-            return (Thickness)_resources[key];
+            if(System.Threading.Thread.CurrentThread.GetApartmentState()==System.Threading.ApartmentState.STA)return Read();
+            Metrics? result=null;Exception? failure=null;
+            var thread=new System.Threading.Thread(()=>{try{result=Read();}catch(Exception error){failure=error;}}){IsBackground=true};
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);thread.Start();
+            if(!thread.Join(TimeSpan.FromSeconds(10)))throw new InvalidOperationException("节点尺寸资源加载超时。");
+            if(failure!=null)throw new InvalidOperationException("节点尺寸资源加载失败。",failure);
+            return result!;
         }
 
         /// <summary>
         /// 节点宽度（从资源读取）
         /// </summary>
-        public double NodeWidth => GetDouble("NodeWidth");
+        public double NodeWidth => _metrics.Value.Width;
 
         /// <summary>
         /// 节点高度（从资源读取）
         /// </summary>
-        public double NodeHeight => GetDouble("NodeHeight");
+        public double NodeHeight => _height ?? _metrics.Value.Height;
 
         /// <summary>
         /// 端口大小（直径）（从资源读取）
         /// </summary>
-        public double PortSize => GetDouble("PortSize");
+        public double PortSize => _metrics.Value.PortSize;
 
         /// <summary>
         /// 端口外边距（端口距离节点的距离）（从资源读取）
         /// </summary>
-        public double PortMargin => GetDouble("PortMargin");
+        public double PortMargin => _metrics.Value.PortMargin;
 
         /// <summary>
         /// 节点圆角半径（从资源读取）
         /// </summary>
-        public double CornerRadius => GetDouble("NodeCornerRadiusDouble");
+        public double CornerRadius => _metrics.Value.Radius;
 
         /// <summary>
         /// 节点内容边距（从资源读取）
         /// </summary>
-        public double ContentMargin => GetThickness("NodeContentMargin").Left;
+        public double ContentMargin => _metrics.Value.Margin.Left;
 
         /// <summary>
         /// 芯片厚度
@@ -164,6 +152,7 @@ namespace SunEyeVision.UI.Shared
         /// 标准节点样式（当前默认，从资源读取）
         /// </summary>
         public static readonly NodeStyleConfig Standard = new NodeStyleConfig();
+        public static readonly NodeStyleConfig Group = new NodeStyleConfig(40);
 
         /// <summary>
         /// 紧凑节点样式（小尺寸）

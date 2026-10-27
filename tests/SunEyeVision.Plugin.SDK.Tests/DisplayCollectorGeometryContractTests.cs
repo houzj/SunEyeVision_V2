@@ -70,4 +70,80 @@ public class DisplayCollectorGeometryContractTests
 
         Assert.Equal(2, collector.Items.OfType<GraphicsDisplayItem>().Count());
     }
+    [Fact]
+    public void Shared_style_keeps_geometry_types_separate_across_accumulation_and_freeze()
+    {
+        var style = MakeStyle(); var first = new DisplayCollector();
+        first.AddCircle(style, new Circle2d(1, 2, 3), true);
+        first.AddLine(style, new Point(1, 2), new Point(3, 4), false);
+        Assert.Equal(2, first.Items.Count); // Freezes the first round before another round is merged.
+        var second = new DisplayCollector();
+        second.AddCircle(style, new Circle2d(5, 6, 7), false);
+        second.AddLine(style, new Point(5, 6), new Point(7, 8), true);
+        first.Merge(second);
+        var items = first.Items.OfType<GraphicsDisplayItem>().ToArray(); Assert.Equal(2, items.Length);
+        var circles = Assert.Single(items, item => item.Type == GraphicsType.Circle);
+        var lines = Assert.Single(items, item => item.Type == GraphicsType.Line);
+        Assert.Same(style, circles.Style); Assert.Same(style, lines.Style);
+        Assert.Equal(2, circles.Geometries.Length); Assert.All(circles.Geometries, value => Assert.IsType<Circle2d>(value));
+        Assert.Equal(2, lines.Geometries.Length); Assert.All(lines.Geometries, value => Assert.IsType<SdkLineSegment>(value));
+        Assert.Equal(new[] { true, false }, circles.IsPassArray); Assert.Equal(new[] { false, true }, lines.IsPassArray);
+        first.Clear(); first.AddLine(style, new Point(), new Point(1, 1));
+        Assert.Equal(GraphicsType.Line, Assert.IsType<GraphicsDisplayItem>(Assert.Single(first.Items)).Type);
+    }
+
+    [Fact]
+    public void Shared_style_circle_and_line_both_render_and_follow_live_style_color()
+    {
+        Exception? failure = null;
+        var thread = new System.Threading.Thread(() =>
+        {
+            try
+            {
+                var style = new GraphicsStyle { OkColor = Colors.Lime, LineWidth = 3 };
+                var collector = new DisplayCollector(); collector.AddCircle(style, new Circle2d(35, 45, 14));
+                collector.AddLine(style, new Point(90, 25), new Point(130, 65));
+                var layer = new SunEyeVision.Plugin.SDK.UI.Controls.ResultRenderLayer();
+                var surface = new System.Windows.Controls.Grid { Width = 160, Height = 100, Background = Brushes.Black };
+                surface.Children.Add(layer); layer.SetDisplayCollector(collector);
+                surface.Measure(new Size(160, 100)); surface.Arrange(new Rect(0, 0, 160, 100)); surface.UpdateLayout();
+                void Verify(string name, bool magenta)
+                {
+                    var frame = new System.Windows.Threading.DispatcherFrame();
+                    System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle,
+                        new Action(() => frame.Continue = false));
+                    System.Windows.Threading.Dispatcher.PushFrame(frame); surface.UpdateLayout();
+                    var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(160, 100, 96, 96, PixelFormats.Pbgra32);
+                    bitmap.Render(surface); var pixels = new byte[160 * 100 * 4]; bitmap.CopyPixels(pixels, 160 * 4, 0);
+                    int Count(int left, int top, int right, int bottom)
+                    {
+                        var count = 0;
+                        for (var y = top; y < bottom; y++) for (var x = left; x < right; x++)
+                        {
+                            var index = (y * 160 + x) * 4;
+                            if (magenta ? pixels[index] > 180 && pixels[index + 2] > 180 && pixels[index + 1] < 40
+                                : pixels[index + 1] > 180 && pixels[index] < 40 && pixels[index + 2] < 40) count++;
+                        }
+                        return count;
+                    }
+                    Assert.True(Count(15, 25, 55, 65) > 20, "Circle must be visible in the configured color.");
+                    Assert.True(Count(85, 20, 136, 71) > 20, "Line must be visible in the configured color.");
+                    if (Environment.GetEnvironmentVariable("S2_CASE_ROOT") is {} path)
+                    {
+                        var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                        encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+                        using var file = System.IO.File.Create(System.IO.Path.Combine(path, name)); encoder.Save(file);
+                    }
+                }
+                Verify("group-shared-style-green.png", false);
+                style.OkColor = Colors.Magenta; Verify("group-shared-style-magenta.png", true);
+                layer.SetDisplayCollector(null);
+            }
+            catch (Exception error) { failure = error; }
+        });
+        thread.SetApartmentState(System.Threading.ApartmentState.STA); thread.Start();
+        Assert.True(thread.Join(TimeSpan.FromSeconds(30)));
+        if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+    }
+
 }

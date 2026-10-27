@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -67,6 +67,13 @@ internal static class S2DocumentEditingCases
         Require(solutions.SaveCurrentDocument(path).FileWritten,"初始化测试文件位置失败");
         ComboBox? oldInputCombo=null;
         string? sourceNodeId=null;
+            var source=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");
+            sourceNodeId=source.Id;
+            var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();
+            png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(8,8,96,96,PixelFormats.Gray8,null,Enumerable.Repeat((byte)200,64).ToArray(),8)));
+            using(var output=File.Create(imageFile))png.Save(output);
+            source.Parameters.GetType().GetProperty("FilePath")!.SetValue(source.Parameters,imageFile);vm.AddNodeToWorkflow(source);
+
         var first=Open();
         Case("默认UI工厂创建Runtime节点，真实MainWindow打开中立窗口与58个XML字段",()=>
         {
@@ -103,12 +110,6 @@ internal static class S2DocumentEditingCases
         });
         Case("VM图像输入源下拉从正式声明选择，未确认引用只写私有节点",()=>
         {
-            var source=vm.WorkflowTabViewModel.SelectedTab!.CreateNode("ImageLoad");
-            sourceNodeId=source.Id;
-            var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();
-            png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(8,8,96,96,PixelFormats.Gray8,null,Enumerable.Repeat((byte)200,64).ToArray(),8)));
-            using(var output=File.Create(imageFile))png.Save(output);
-            source.Parameters.GetType().GetProperty("FilePath")!.SetValue(source.Parameters,imageFile);vm.AddNodeToWorkflow(source);
             source.IsSelected=true;vm.SelectedNode=source;
             (vm.ActiveInputSource??throw new Exception("正式输入源面板未建立")).AddImage(new SunEyeVision.UI.Shell.Controls.Panels.ImageInfo{Name="Runtime调试输入",FilePath=imageFile,SourceReference=imageFile,IsForRun=true});
             source.IsSelected=false;node.IsSelected=true;vm.SelectedNode=node;Pump();

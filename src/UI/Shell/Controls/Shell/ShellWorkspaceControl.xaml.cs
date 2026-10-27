@@ -29,8 +29,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     public partial class ShellWorkspaceControl : UserControl
     {
         private MainWindowViewModel _viewModel = null!;
-        private bool _isTabItemClick;  // 标记是否是通过点击TabItem触发的切换
+        private ScrollViewer? _tabHeaderScrollViewer;
         private WorkflowCanvasControl? _currentWorkflowCanvas;  // 当前显示的WorkflowCanvasControl
+        private (string Parent,string Workflow,string Node)? _openSubroutineDebugIdentity;
         private Window? _openSubroutineDebugWindow;  // 子程序调试窗口单例跟踪
         private ScrollViewer? _canvasScrollViewer;  // 当前工作流的画布 ScrollViewer（用于视口框 1:1 同步与跳转）
 
@@ -58,6 +59,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellWorkspaceControl()
         {
             InitializeComponent();
+            WorkspaceStatusBar.ScaleRequested += WorkspaceScaleRequested;
+            InitializeRootWorkspacePresentation();
+            Loaded += (_, _) => { if (_viewModel != null) { RefreshMiniMap(); QueueRestoreWorkspaceView(); } };
+            Unloaded += (_, _) => { UnbindTabHeaderScroll(); _viewModel?.CloseExecutionSnapshotDetails(); CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
             // 小地图重绘节流定时器：单次触发，Tick 时重绘一次后停止
             _miniMapThrottleTimer = new System.Windows.Threading.DispatcherTimer
@@ -77,6 +82,16 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public void Initialize(MainWindowViewModel viewModel)
         {
             _viewModel = viewModel;
+            SetBinding(WorkflowEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditWorkflowCanvas)) { Source = viewModel });
+            SetBinding(RootWorkspaceEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditRootWorkspace)) { Source = viewModel });
+            SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
+            WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;WorkflowSearch.NavigateId=SearchNavigateId;
+            WorkflowSearch.SetBinding(WorkflowSearchControl.ScopeIdentityProperty,new System.Windows.Data.Binding("SelectedTab.CurrentWorkflowId"){Source=viewModel.WorkflowTabViewModel});
+            WorkflowSearch.SetBinding(WorkflowSearchControl.DefinitionIdentityProperty,new System.Windows.Data.Binding("SelectedTab.WorkflowNodes"){Source=viewModel.WorkflowTabViewModel});
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionTextProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.WorkflowExecutionText)){Source=viewModel.StatusBar});
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionDetailsCommandProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.ShowExecutionSnapshotCommand)){Source=viewModel.StatusBar});
+            WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.StatusTextProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.StatusText)){Source=viewModel});
+            RefreshRootWorkspacePresentation();
         }
 
         /// <summary>
@@ -176,7 +191,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     UpdateCanvasSizingGridSize();
-                    CenterOnWorkflowNodes();
+                    QueueRestoreWorkspaceView();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
@@ -226,7 +241,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (scrollViewer != null)
             {
                 // 监听ScrollViewer的SizeChanged事件
+                UnbindTabHeaderScroll();
+                _tabHeaderScrollViewer=scrollViewer;
                 scrollViewer.SizeChanged += ScrollViewer_SizeChanged;
+                scrollViewer.ScrollChanged += TabHeaderScrollChanged;
                 // 初始检查 - 需要传入TabControl的视觉树根元素来查找两个按钮
                 UpdateAddButtonPosition(WorkflowTabControl);
             }
@@ -262,8 +280,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var fixedButton = FindChildByName<Border>(tabControl, "FixedAddButtonBorder");
             if (scrollableButton == null || fixedButton == null)
                 return;
+            if(_rootOverviewActive){scrollableButton.Visibility=Visibility.Collapsed;fixedButton.Visibility=Visibility.Collapsed;return;}
             // ScrollableWidth > 0 表示有滚动条,即TabItems超出了可视区域
-            bool isOverflow = scrollViewer.ScrollableWidth > 0;
+            var headers=FindChildByName<TabPanel>(tabControl,"HeaderPanel");
+            if(headers==null||scrollViewer.ViewportWidth<=0)return;
+            // 只测标题，不把滚动新增按钮反过来计入溢出判定；固定按钮宽度归还后再比较。
+            double available=scrollViewer.ViewportWidth+(fixedButton.Visibility==Visibility.Visible?fixedButton.ActualWidth:0);
+            bool isOverflow = headers.ActualWidth+40>available;
             if (isOverflow)
             {
                 // 超出时:显示右侧固定按钮,隐藏滚动区域内的按钮
@@ -306,9 +329,12 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (removed is WorkflowTabViewModel oldTab)
                 {
+                    CaptureWorkspaceView(oldTab);
                     oldTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
                 }
             }
+
+            ++_viewRestoreGeneration; _restoringContainerView=true;
 
             // 用户切换 Tab 时通过唯一写入口 SetSelectedTab 更新，避免双向绑定回写重入
             if (e.AddedItems.Count > 0
@@ -327,15 +353,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             // 优化：合并Dispatcher调用，减少UI重绘次数
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                // 只有通过下拉器切换时才滚动到中间，点击TabItem时不滚动
-                if (!_isTabItemClick)
-                {
-                    ScrollToSelectedTabItem();
-                }
+                // 鼠标、键盘和列表共用可见范围与30px边缘余量，避免强制居中。
+                ScrollToSelectedTabItem();
                 // 更新添加按钮位置
                 UpdateAddButtonPosition(WorkflowTabControl);
-                // 重置标志
-                _isTabItemClick = false;
                 // 应用缩放
                 var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
                 if (workflow != null)
@@ -346,25 +367,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 UpdateZoomDisplay();
                 // 刷新小地图
                 RefreshMiniMap();
+                QueueRestoreWorkspaceView();
             }), System.Windows.Threading.DispatcherPriority.Render);
-        }
-
-        /// <summary>
-        /// TabControl 预览鼠标左键按下事件 - 检测是否点击了TabItem
-        /// </summary>
-        private void WorkflowTabControl_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // 检查点击的是否是TabItem
-            var source = e.OriginalSource as DependencyObject;
-            if (source != null)
-            {
-                var tabItem = FindVisualParent<TabItem>(source);
-                if (tabItem != null)
-                {
-                    // 标记为TabItem点击
-                    _isTabItemClick = true;
-                }
-            }
         }
 
         /// <summary>
@@ -372,9 +376,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void AddWorkflow_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.WorkflowTabViewModel.AddWorkflow();
+            if (_viewModel?.CanEditRootWorkspace != true) return;
+            if(!_viewModel.AddRootWorkspace())return;
             _viewModel.StatusText = "已添加新工作流";
-            // 自动滚动到新添加的TabItem，使其居中显示
+            // 自动显示新增Tab，保留边缘余量
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 ScrollToSelectedTabItem();
@@ -392,32 +397,27 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// 滚动到选中的TabItem，使其显示在可见范围的中间
+        /// 显示选中的TabItem，沿恢复件保留边缘余量
         /// </summary>
         private void ScrollToSelectedTabItem()
         {
-            var selectedTabItem = FindTabItem(_viewModel.WorkflowTabViewModel.SelectedTab);
-            if (selectedTabItem != null)
-            {
-                // 找到ScrollViewer
-                var scrollViewer = FindVisualParent<ScrollViewer>(selectedTabItem);
-                if (scrollViewer != null)
-                {
-                    // 获取TabPanel（内容容器）
-                    var tabPanel = FindVisualChild<TabPanel>(scrollViewer);
-                    if (tabPanel == null)
-                        return;
-                    // 计算TabItem相对于TabPanel的位置（内容区域的绝对位置）
-                    var transform = selectedTabItem.TransformToVisual(tabPanel);
-                    var position = transform.Transform(new Point(0, 0));
-                    // 计算使TabItem居中的滚动位置
-                    var targetOffset = position.X + (selectedTabItem.ActualWidth / 2) - (scrollViewer.ViewportWidth / 2);
-                    // 确保滚动位置在有效范围内
-                    targetOffset = Math.Max(0, Math.Min(targetOffset, scrollViewer.ScrollableWidth));
-                    // 滚动到目标位置，使TabItem居中显示
-                    scrollViewer.ScrollToHorizontalOffset(targetOffset);
-                }
-            }
+            var selected=FindTabItem(_viewModel.WorkflowTabViewModel.SelectedTab);
+            var viewer=_tabHeaderScrollViewer;
+            if(selected==null||viewer==null||viewer.ViewportWidth<=0)return;
+            var left=selected.TransformToAncestor(viewer).Transform(new Point()).X;
+            viewer.ScrollToHorizontalOffset(WorkflowTabViewport.SelectedOffset(viewer.HorizontalOffset,left,
+                selected.ActualWidth,viewer.ViewportWidth,viewer.ScrollableWidth,WorkflowTabControl.Items.IndexOf(selected.DataContext)==0));
+        }
+        private void UnbindTabHeaderScroll()
+        {
+            if(_tabHeaderScrollViewer==null)return;
+            _tabHeaderScrollViewer.SizeChanged-=ScrollViewer_SizeChanged;
+            _tabHeaderScrollViewer.ScrollChanged-=TabHeaderScrollChanged;
+            _tabHeaderScrollViewer=null;
+        }
+        private void TabHeaderScrollChanged(object sender,ScrollChangedEventArgs e)
+        {
+            if(e.ExtentWidthChange!=0||e.ViewportWidthChange!=0)UpdateAddButtonPosition(WorkflowTabControl);
         }
 
         /// <summary>
@@ -530,6 +530,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 // 设置选中的工作流（唯一写入口，避免双向绑定回写重入）
                 _viewModel.SetSelectedTab(workflow);
                 // 触发 RunWorkflowCommand 的 Execute 方法
+                if (!_viewModel.RunWorkflowCommand.CanExecute(null)) return;
                 _viewModel.RunWorkflowCommand.Execute(null);
                 _viewModel.StatusText = $"单次运行: {workflow.Name}";
             }
@@ -556,6 +557,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void TabItem_Rename_Click(object sender, RoutedEventArgs e)
         {
+            if (_viewModel?.CanEditWorkflowCanvas != true) return;
             var workflow = GetWorkflowFromContextMenu(sender);
             if (workflow == null) return;
             workflow.BeginRename();
@@ -581,7 +583,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (e.Key == Key.Enter)
                 {
-                    workflow.ConfirmRename();
+                    if (_viewModel?.CanEditWorkflowCanvas == true) workflow.ConfirmRename();
+                    else workflow.CancelRename();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Escape)
@@ -601,7 +604,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (workflow.IsEditingName)
                 {
-                    workflow.ConfirmRename();
+                    if (_viewModel?.CanEditWorkflowCanvas == true) workflow.ConfirmRename();
+                    else workflow.CancelRename();
                 }
             }
         }
@@ -649,62 +653,55 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 统一的子程序调试窗口打开逻辑（消除两个入口点的重复代码）
         /// </summary>
         private void OpenSubroutineDebugWindowCore(
+            string parentWorkflowId,
             string subroutineId,
             string nodeId,
-            string nodeDispName,
-            SubroutineParameters parameters)
+            string nodeDispName)
         {
-            // 单例管理：如果同一子程序的调试窗口已打开，激活并返回
-            if (_openSubroutineDebugWindow?.IsLoaded == true)
+            var identity=(parentWorkflowId,subroutineId,nodeId);
+            if (_openSubroutineDebugWindow is not null)
             {
-                _openSubroutineDebugWindow.Activate();
-                _openSubroutineDebugWindow.Focus();
-                return;
+                if (_openSubroutineDebugIdentity == identity)
+                { _openSubroutineDebugWindow.Activate(); _openSubroutineDebugWindow.Focus(); return; }
+                var previous=_openSubroutineDebugWindow;
+                previous.Close();
+                if (ReferenceEquals(_openSubroutineDebugWindow,previous)) { previous.Activate();return; }
             }
-            // 1. 找到父工作流 ID
-            var parentWorkflowId = FindParentWorkflowId(subroutineId);
-            // 2. 父工作流作用域查询服务 → 输入绑定
-            var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
-            // 3. 子工作流内部数据源 → 输出/显示绑定
-            var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
-            var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
-            // 4. 创建增量刷新回调：Outputs 变更时按变更类型局部更新模块结果树 + 主界面图像源下拉
-            Action<SubroutineOutputChange>? onOutputsChanged = (change) =>
+            if (_viewModel?.CanEditWorkflowCanvas != true) return;
+            ISubroutineParameterEditor? editor=null;
+            DataSourceQueryService? draftQuery=null;
+            var context=_viewModel.CreateGroupEditorContext(parentWorkflowId,nodeId,subroutineId,
+                draft=>editor?.BindParameters(draft,draftQuery),out var queryService);
+            draftQuery=queryService;
+            SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow? debugWindow=null;
+            IDisposable? registration=null;
+            try
             {
-                if (parameters == null || change == null) return;
-                _viewModel?.ApplySubroutineOutputChange(change, nodeDispName, nodeId);
-            };
-            // 5. 绑定路径校验：输入绑定的源节点必须在父工作流中存在（Fail-Fast）
-            if (queryService != null && parameters.Inputs.Count > 0)
-            {
-                var sources = queryService.GetAvailableDataSources(nodeId);
-                var registeredNodeIds = new HashSet<string>(sources
-                    .Where(s => !string.IsNullOrEmpty(s.SourceNodeId))
-                    .Select(s => s.SourceNodeId!));
-                foreach (var input in parameters.Inputs)
+                var internalQuery=_viewModel.CreateDataSourceQueryService(subroutineId);
+                var internalSources=internalQuery.GetWorkflowNodeDataSources();
+                debugWindow=SubroutineDebugServiceProvider.GetService().CreateDebugWindow(
+                    Window.GetWindow(this)!,subroutineId,nodeDispName,nodeId,queryService,
+                    (SubroutineParameters)context.DraftNode.Parameters,internalSources,onOutputsChanged:null);
+                editor=debugWindow.ParameterControl as ISubroutineParameterEditor
+                    ??throw new InvalidOperationException("Group编辑器没有候选参数接缝。");
+                _viewModel.AttachGroupEditor(debugWindow,context);
+                debugWindow.Title=nodeDispName;
+                var created=debugWindow;
+                created.Closed+=(_,_)=>
                 {
-                    if (string.IsNullOrEmpty(input.BindingSource)) continue;
-                    var parts = input.BindingSource.Split('.');
-                    if (parts.Length < 1) continue;
-                    if (!registeredNodeIds.Contains(parts[0]))
-                    {
-                        var msg = $"子程序输入 '{input.Name}' 绑定的源节点 '{parts[0]}' 在父工作流中不存在。\n" +
-                                  $"请检查是否删除了上游节点或绑定的节点 ID 已变更。\n" +
-                                  $"(子程序: {nodeDispName})";
-                        ThemeMessageDialog.Show(msg, "绑定路径错误",
-                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
-                        return; // 不打开调试窗口
-                    }
-                }
+                    if(ReferenceEquals(_openSubroutineDebugWindow,created))
+                    { _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null; }
+                };
+                _openSubroutineDebugWindow=created;_openSubroutineDebugIdentity=identity;
+                registration=_viewModel.TrackParameterWindow(created);
+                created.Show();
             }
-            var debugWindow = SubroutineDebugServiceProvider.GetService().CreateDebugWindow(
-                Window.GetWindow(this)!, subroutineId, nodeDispName,
-                nodeId, queryService, parameters, internalSources, onOutputsChanged);
-            debugWindow.Title = nodeDispName;
-            // 单例跟踪：关闭时清理引用
-            debugWindow.Closed += (s, e) => _openSubroutineDebugWindow = null;
-            _openSubroutineDebugWindow = debugWindow;
-            debugWindow.Show();
+            catch
+            {
+                context.Discard();registration?.Dispose();debugWindow?.Close();
+                _openSubroutineDebugWindow=null;_openSubroutineDebugIdentity=null;
+                throw;
+            }
         }
 
         /// <summary>
@@ -714,17 +711,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             try
             {
-                var parentNodeId = _viewModel?.FindParentSubroutineNodeId(tab.CurrentWorkflowId)
-                    ?? tab.CurrentWorkflowId;
-                var parameters = FindParentSubroutineParameters(tab.CurrentWorkflowId);
-                if (parameters == null)
-                {
-                    _viewModel?.LogWarning("未找到子程序参数", "Subroutine");
-                    return;
-                }
-                OpenSubroutineDebugWindowCore(
-                    tab.CurrentWorkflowId, parentNodeId,
-                    tab.EffectiveDisplayName, parameters);
+                var parentId=tab.NavigationAncestorIds.FirstOrDefault();
+                var ownerId=tab.CurrentOwnerNodeId;
+                var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
+                var node=parent?.Nodes.SingleOrDefault(n=>n.Id==ownerId&&n.SubroutineId==tab.CurrentWorkflowId);
+                if(node?.Parameters is not SubroutineParameters)
+                    throw new InvalidOperationException("当前Group导航拥有者已经失效。");
+                OpenSubroutineDebugWindowCore(parentId!,tab.CurrentWorkflowId,node.Id,node.DispName);
             }
             catch (Exception ex)
             {
@@ -744,15 +737,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             try
             {
-                var subroutineId = node.SubroutineId ?? node.Id;
-                if (node.Parameters is not SubroutineParameters parameters)
-                {
-                    _viewModel?.LogWarning($"节点 '{node.Name}' 不是子程序或参数为空", "Subroutine");
-                    return;
-                }
-                OpenSubroutineDebugWindowCore(
-                    subroutineId, node.Id,
-                    node.DispName, parameters);
+                var parentId=_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
+                var parent=parentId==null?null:_viewModel?.WorkflowEngine.GetWorkflowById(parentId);
+                if(parent==null||!parent.Nodes.Contains(node))throw new InvalidOperationException("Group节点不属于当前父流程。");
+                if(string.IsNullOrEmpty(node.SubroutineId)||_viewModel?.WorkflowEngine.GetWorkflowById(node.SubroutineId)==null)
+                    throw new InvalidOperationException("Group独占定义缺失。");
+                if(node.Parameters is not SubroutineParameters)throw new InvalidOperationException("Group参数未加载。");
+                OpenSubroutineDebugWindowCore(parentId!,node.SubroutineId,node.Id,node.DispName);
             }
             catch (Exception ex)
             {
@@ -765,41 +756,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
         }
 
-        /// <summary>
-        /// 在工作流引擎中查找父节点对应的 SubroutineParameters
-        /// </summary>
-        private SubroutineParameters? FindParentSubroutineParameters(string subroutineWorkflowId)
-        {
-            if (_viewModel?.WorkflowEngine == null) return null;
-            foreach (var workflow in _viewModel.WorkflowEngine.GetAllWorkflows())
-            {
-                foreach (var node in workflow.Nodes)
-                {
-                    if (node.SubroutineId == subroutineWorkflowId)
-                        return node.Parameters as SubroutineParameters;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 在所有工作流中查找引用指定子程序工作流的父工作流 ID
-        /// </summary>
-        private string? FindParentWorkflowId(string subroutineWorkflowId)
-        {
-            if (_viewModel?.WorkflowEngine == null) return null;
-            foreach (var workflow in _viewModel.WorkflowEngine.GetAllWorkflows())
-            {
-                foreach (var node in workflow.Nodes)
-                {
-                    if (node.SubroutineId == subroutineWorkflowId)
-                        return workflow.Id;
-                }
-            }
-            return null;
-        }
-
         #endregion
+
+        private void WorkspaceScaleRequested(double scale)
+        {
+            if(_synchronizingWorkspaceScale)return;
+            if (_rootOverviewActive) { if(double.IsFinite(scale)) RootOverview.Viewport=RootOverview.Viewport with {Scale=Math.Clamp(scale,.1,WorkspaceStatusBar.MaximumScale)};return; }
+            var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if(tab==null||!double.IsFinite(scale))return;
+            var viewer=GetCurrentScrollViewer();
+            ApplyZoom(tab.CurrentScale,Math.Clamp(Math.Round(scale,1),MinScale,MaxScale),viewer==null?null:new Point(viewer.ViewportWidth/2,viewer.ViewportHeight/2),viewer);
+        }
 
         #region 缩放功能
 
@@ -884,7 +851,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                             {
                                 if (textBlock.Name == "ZoomIndicatorText")
                                 {
-                                    int percentage = (int)(_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale * 100);
+                                    int percentage = (int)((_rootOverviewActive?RootOverview.Viewport.Scale:_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale) * 100);
                                     textBlock.Text = $"{percentage}%";
                                     return;
                                 }
@@ -908,13 +875,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 {
                     if (_viewModel.WorkflowTabViewModel.SelectedTab != null)
                     {
-                        percentage = (int)(_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale * 100);
+                        percentage = (int)((_rootOverviewActive?RootOverview.Viewport.Scale:_viewModel.WorkflowTabViewModel.SelectedTab.CurrentScale) * 100);
                     }
                 }
                 catch (Exception)
                 {
                 }
-                // 通过事件通知工具栏更新缩放百分比显示（跨区域解耦）
+                // 切换/缩放立即同步底栏，不等待运行信息定时刷新；同步门禁阻止反写当前视口。
+                SynchronizeWorkspaceScale(percentage / 100.0);
                 ZoomScaleChanged?.Invoke(percentage);
             }), System.Windows.Threading.DispatcherPriority.Render);
         }
@@ -924,35 +892,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (_viewModel.WorkflowTabViewModel.SelectedTab == null)
-                return;
-            var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
-            // 直接使用滚轮进行缩放（不要求Ctrl键）
-            e.Handled = true;
-            // sender 就是 ScrollViewer
-            if (sender is not ScrollViewer scrollViewer)
-                return;
-            // 获取鼠标位置
-            var mousePositionInScrollViewer = e.GetPosition(scrollViewer);
-            if (e.Delta > 0)
+            var tab = _viewModel.WorkflowTabViewModel.SelectedTab;
+            if (tab == null || sender is not ScrollViewer viewer) return;
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
             {
-                // 向上滚动，放大（每次 +10%，线性步进）
-                if (workflow.CurrentScale < MaxScale)
-                {
-                    var oldScale = workflow.CurrentScale;
-                    var newScale = Math.Min(Math.Round(oldScale + 0.1, 1), MaxScale);
-                    ApplyZoom(oldScale, newScale, mousePositionInScrollViewer, scrollViewer); // 鼠标位置作为缩放中心
-                }
+                if (e.Delta < 0) viewer.LineRight(); else if (e.Delta > 0) viewer.LineLeft();
+                e.Handled = true;
             }
-            else
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
-                // 向下滚动，缩小（每次 -10%，线性步进）
-                if (workflow.CurrentScale > MinScale)
-                {
-                    var oldScale = workflow.CurrentScale;
-                    var newScale = Math.Max(Math.Round(oldScale - 0.1, 1), MinScale);
-                    ApplyZoom(oldScale, newScale, mousePositionInScrollViewer, scrollViewer); // 鼠标位置作为缩放中心
-                }
+                var next = Math.Clamp(Math.Round(tab.CurrentScale + (e.Delta > 0 ? .1 : e.Delta < 0 ? -.1 : 0), 1), MinScale, MaxScale);
+                ApplyZoom(tab.CurrentScale, next, e.GetPosition(viewer), viewer);
             }
         }
 
@@ -995,10 +945,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         #region 小地图
 
         // 小地图画布尺寸（与 XAML MiniMapCanvas 保持一致，正方形与画布等比）
-        private const double MiniMapWidth = 220;
-        private const double MiniMapHeight = 220;
+        private const double MiniMapWidth = 187;
+        private const double MiniMapHeight = 150;
 
-        private const double CanvasSize = 6000;
+        private const double CanvasSize = 5000;
 
         // 节点缩略图配色（按 ToolType 分类，与主画布节点配色一致）
         private static readonly Color MiniMapAlgorithmColor = Color.FromRgb(0x00, 0x66, 0xCC);   // 算法-蓝
@@ -1014,25 +964,38 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 遍历节点/连线数据画简化缩略图，节点增删/移动时自动重绘
         /// 触发通道：节点 Position 变化 + 40ms 节流合并，避免 LayoutUpdated 每帧风暴饿死连接线定时器
         /// </summary>
+        private WorkflowTabViewModel? _miniMapObservedTab;
+        private System.Collections.Specialized.INotifyCollectionChanged? _miniMapObservedNodes, _miniMapObservedEdges;
+        private void UnbindMiniMapContent()
+        {
+            if (_miniMapObservedTab != null)
+            { _miniMapObservedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged; _miniMapObservedTab.WorkflowContentChanging -= WorkspaceContentChanging; }
+            if (_miniMapObservedNodes != null) _miniMapObservedNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
+            if (_miniMapObservedEdges != null) _miniMapObservedEdges.CollectionChanged -= MiniMapContent_CollectionChanged;
+            foreach (var node in _miniMapSubscribedNodes.Values) node.PropertyChanged -= MiniMapNode_PropertyChanged;
+            _miniMapSubscribedNodes.Clear();
+            _miniMapObservedTab=null; _miniMapObservedNodes=null; _miniMapObservedEdges=null;
+        }
+
         private void RefreshMiniMap()
         {
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null || MiniMapCanvas == null)
-                return;
-
-            // 订阅画布内容变更：SetNodes/SetConnections 整体替换集合引用时
-            // （子程序导航/返回路径），重挂接小地图并重绘，不依赖 Tab 切换事件。
-            selectedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
-            selectedTab.WorkflowContentChanged += MiniMap_WorkflowContentChanged;
-
-            // 挂接节点/连线集合变化监听（增删时重绘并增量订阅节点位置）
-            selectedTab.WorkflowNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
-            selectedTab.WorkflowNodes.CollectionChanged += MiniMapContent_CollectionChanged;
-            if (selectedTab.WorkflowConnections != null)
             {
-                selectedTab.WorkflowConnections.CollectionChanged -= MiniMapContent_CollectionChanged;
-                selectedTab.WorkflowConnections.CollectionChanged += MiniMapContent_CollectionChanged;
+                UnbindMiniMapContent();_miniMapThrottleTimer.Stop();MiniMapCanvas?.Children.Clear();
+                MiniMapHost.Visibility=Visibility.Collapsed;
+                _currentWorkflowCanvas?.SetCurrentValue(DataContextProperty,null);_currentWorkflowCanvas=null;_canvasScrollViewer=null;
+                _restoringContainerView=false;WorkflowSearch.CloseSearch();return;
             }
+            MiniMapHost.Visibility=Visibility.Visible;
+            UnbindMiniMapContent();
+            _miniMapObservedTab=selectedTab;
+            _miniMapObservedNodes=selectedTab.WorkflowNodes;
+            _miniMapObservedEdges=selectedTab.WorkflowConnections;
+            _miniMapObservedTab.WorkflowContentChanged += MiniMap_WorkflowContentChanged;
+            _miniMapObservedTab.WorkflowContentChanging += WorkspaceContentChanging;
+            _miniMapObservedNodes.CollectionChanged += MiniMapContent_CollectionChanged;
+            _miniMapObservedEdges.CollectionChanged += MiniMapContent_CollectionChanged;
 
             // 订阅当前全部节点的位置变化（节点移动时触发节流重绘）
             SubscribeMiniMapNodes(selectedTab.WorkflowNodes);
@@ -1048,6 +1011,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void MiniMap_WorkflowContentChanged(object? sender, EventArgs e)
         {
             RefreshMiniMap();
+            QueueRestoreWorkspaceView();
         }
 
         /// <summary>
@@ -1061,8 +1025,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 if (node == null || string.IsNullOrEmpty(node.Id))
                     continue;
                 currentIds.Add(node.Id);
-                if (!_miniMapSubscribedNodes.ContainsKey(node.Id))
+                if (!_miniMapSubscribedNodes.TryGetValue(node.Id,out var previous) || !ReferenceEquals(previous,node))
                 {
+                    if (previous != null) previous.PropertyChanged -= MiniMapNode_PropertyChanged;
                     node.PropertyChanged += MiniMapNode_PropertyChanged;
                     _miniMapSubscribedNodes[node.Id] = node;
                 }
@@ -1109,7 +1074,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
         /// <summary>
         /// 画布容器尺寸跟随缩放：容器 = 画布缩放后尺寸（滚动范围 = 画布大小，对齐 VM）。
-        /// 缩放由画布内部 RenderTransform 实现，故画布控件保持固定 6000×6000 左上对齐，
+        /// 缩放由画布内部 RenderTransform 实现，故画布控件保持固定 5000×5000 左上对齐，
         /// 仅容器 Grid 尺寸放大以匹配放大后的画布视觉区域；画布外露出 ScrollViewer 深灰工作区。
         /// </summary>
         private void UpdateCanvasSizingGridSize()
@@ -1175,7 +1140,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// 按节点/连线数据绘制小地图：固定按 10000×10000 画布全景等比例显示（不拉伸、居中）
+        /// 采样透明网格与节点/连线内容，按原件187×150映射5000×5000逻辑页；独立底色不进入采样
         /// 节点按真实坐标与真实宽高比严格 1:1 摆放（不做任何"为了看得清"的尺寸钳制）；
         /// 连线细线显示流程走向；半透明视口框标出主画布当前可视区域（与真实视口严格 1:1）。
         /// </summary>
@@ -1186,95 +1151,19 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 return;
 
             MiniMapCanvas.Children.Clear();
-
-            // 小地图绘制需 WorkflowNode 特有成员（NodeRect/着色），运行时元素均为 WorkflowNode，安全转型
-            IEnumerable<WorkflowNode> nodes = selectedTab.WorkflowNodes.OfType<WorkflowNode>().ToList();
-            if (!nodes.Any())
-                return;
-
-            // 恒定画布全景比例尺：等比例（保持正方形不拉伸），画布在小地图内居中
-            double scale = Math.Min(MiniMapWidth / CanvasSize, MiniMapHeight / CanvasSize);
-            double originX = (MiniMapWidth - CanvasSize * scale) / 2;
-            double originY = (MiniMapHeight - CanvasSize * scale) / 2;
-
-            // 画布边界：透明填充 + 黑色边框（只框不填，透出底下工作区）
-            var canvasRect = new System.Windows.Shapes.Rectangle
+            if(_currentWorkflowCanvas==null)return;
+            var preview=new System.Windows.Shapes.Rectangle
             {
-                Width = CanvasSize * scale,
-                Height = CanvasSize * scale,
-                Fill = Brushes.Transparent,
-                Stroke = new SolidColorBrush(Colors.Black),
-                StrokeThickness = 1
-            };
-            Canvas.SetLeft(canvasRect, originX);
-            Canvas.SetTop(canvasRect, originY);
-            MiniMapCanvas.Children.Add(canvasRect);
-
-            // 节点 ID → 中心点 映射（用于连线绘制；过滤 NaN/∞ 异常坐标，防止污染布局）
-            var centerMap = new Dictionary<string, Point>();
-            foreach (var node in nodes)
-            {
-                double px = node.Position.X;
-                double py = node.Position.Y;
-                if (!double.IsFinite(px) || !double.IsFinite(py))
-                    continue;
-                centerMap[node.Id] = new Point(
-                    originX + px * scale,
-                    originY + py * scale);
-            }
-
-            // 先画连线（在节点下层；细线 0.75px 浅灰，全局视图下看清走向又不抢节点）
-            if (selectedTab.WorkflowConnections != null)
-            {
-                foreach (var conn in selectedTab.WorkflowConnections)
+                Width=MiniMapWidth,Height=MiniMapHeight,Stroke=Brushes.Black,IsHitTestVisible=false,
+                Fill=new VisualBrush(_currentWorkflowCanvas)
                 {
-                    if (!centerMap.TryGetValue(conn.SourceNodeId, out var sp) ||
-                        !centerMap.TryGetValue(conn.TargetNodeId, out var tp))
-                        continue;
-                    var line = new System.Windows.Shapes.Line
-                    {
-                        X1 = sp.X, Y1 = sp.Y,
-                        X2 = tp.X, Y2 = tp.Y,
-                        Stroke = new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99)),
-                        StrokeThickness = 0.75
-                    };
-                    MiniMapCanvas.Children.Add(line);
+                    Stretch=Stretch.Fill,ViewboxUnits=BrushMappingMode.Absolute,
+                    Viewbox=new Rect(0,0,CanvasSize*selectedTab.CurrentScale,CanvasSize*selectedTab.CurrentScale),AlignmentX=AlignmentX.Left,AlignmentY=AlignmentY.Top
                 }
-            }
-
-            // 再画节点（覆盖在连线上层）：真实宽高比严格 1:1，位置按真实坐标映射。
-            // 宽度不钳制（160×0.022≈3.5px 可渲染）；高度不足 1px 时取 1px 作为物理渲染底线
-            // （WPF 画不出亚像素，1px 是像素最小单位，非失真放大，中心位置不偏移）。
-            foreach (var node in nodes)
-            {
-                var r = node.NodeRect;
-                double x = originX + r.Left * scale;
-                double y = originY + r.Top * scale;
-                if (!double.IsFinite(x) || !double.IsFinite(y))
-                    continue;
-                double w = r.Width * scale;
-                double h = Math.Max(1, r.Height * scale);
-                var color = GetMiniMapNodeColor(node);
-
-                var rect = new System.Windows.Shapes.Rectangle
-                {
-                    Width = w,
-                    Height = h,
-                    RadiusX = 1,
-                    RadiusY = 1,
-                    Fill = new SolidColorBrush(color),
-                    Stroke = new SolidColorBrush(Colors.White),
-                    StrokeThickness = 0.5
-                };
-                Canvas.SetLeft(rect, x);
-                Canvas.SetTop(rect, y);
-                MiniMapCanvas.Children.Add(rect);
-            }
-
-            // 最后画视口框（最上层）：与主画布可视区域严格 1:1
-            DrawMiniMapViewport(scale, originX, originY);
+            };
+            MiniMapCanvas.Children.Add(preview);
+            DrawMiniMapViewport(1,0,0);
         }
-
         /// <summary>
         /// 在主画布可视区域对应的画布坐标矩形映射到小地图上，绘制半透明视口框。
         /// 与节点/连线共用同一比例尺（scale/origin），故与真实视口严格 1:1。
@@ -1285,39 +1174,19 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (scrollViewer == null || selectedTab == null)
                 return;
-            double currentScale = selectedTab.CurrentScale;
-            if (currentScale <= 0 || !double.IsFinite(currentScale))
-                return;
-
-            // 主画布可视区域在"画布原始坐标"（未缩放）中的矩形。
-            // ScrollViewer 滚动偏移与视口尺寸的单位是缩放后像素，除以缩放比例还原到画布原始坐标。
-            double viewLeft = scrollViewer.HorizontalOffset / currentScale;
-            double viewTop = scrollViewer.VerticalOffset / currentScale;
-            double viewWidth = scrollViewer.ViewportWidth / currentScale;
-            double viewHeight = scrollViewer.ViewportHeight / currentScale;
-
-            double mmLeft = originX + viewLeft * scale;
-            double mmTop = originY + viewTop * scale;
-            double mmWidth = viewWidth * scale;
-            double mmHeight = viewHeight * scale;
-
-            // 视口框必须裁剪在画布边界内显示（不超出小地图画布可视范围）
-            var canvasMmRect = new Rect(originX, originY, CanvasSize * scale, CanvasSize * scale);
-            var viewMmRect = new Rect(mmLeft, mmTop, mmWidth, mmHeight);
-            viewMmRect.Intersect(canvasMmRect);
-
-            // 求交后若为空矩形（Rect.Empty 的 Width/Height = -∞），说明视口完全在
-            // 小地图画布边界之外（如布局未就绪/滚动到边界外），此时无可绘制内容，跳过
-            if (viewMmRect.IsEmpty)
-                return;
-
+            if(scrollViewer.ExtentWidth<=0||scrollViewer.ExtentHeight<=0)return;
+            var viewMmRect=new Rect(
+                scrollViewer.HorizontalOffset/scrollViewer.ExtentWidth*MiniMapWidth,
+                scrollViewer.VerticalOffset/scrollViewer.ExtentHeight*MiniMapHeight,
+                Math.Min(scrollViewer.ActualWidth/scrollViewer.ExtentWidth*MiniMapWidth,MiniMapWidth),
+                Math.Min(scrollViewer.ActualHeight/scrollViewer.ExtentHeight*MiniMapHeight,MiniMapHeight));
             var viewRect = new System.Windows.Shapes.Rectangle
             {
                 Width = viewMmRect.Width,
                 Height = viewMmRect.Height,
-                Fill = new SolidColorBrush(Color.FromArgb(0x28, 0x00, 0x66, 0xCC)),
-                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0x66, 0xCC)),
-                StrokeThickness = 1
+                Fill = Brushes.Transparent,
+                Stroke = new SolidColorBrush(Color.FromRgb(250, 98, 18)),
+                StrokeThickness = 2
             };
             Canvas.SetLeft(viewRect, viewMmRect.X);
             Canvas.SetTop(viewRect, viewMmRect.Y);
@@ -1329,6 +1198,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void CanvasScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab);
             UpdateCanvasSizingGridSize();   // 视口尺寸变化时同步画布容器尺寸
             if (_isDraggingMiniMapView)
                 return;  // 拖动跳转期间由跳转逻辑统一重绘，避免拉扯
@@ -1338,73 +1208,58 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 小地图鼠标按下：若点在视口框内则开始拖动；否则把主画布中心跳到点击处。
         /// </summary>
-        private void MiniMapBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void MiniMap_PreviewMouseWheel(object sender,MouseWheelEventArgs e)
         {
-            if (!TryGetMiniMapProjection(out var scale, out var originX, out var originY))
-                return;
-
-            var click = e.GetPosition(MiniMapCanvas);
-            var scrollViewer = _canvasScrollViewer;
-            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
-            if (scrollViewer == null || selectedTab == null || selectedTab.CurrentScale <= 0)
-                return;
-
-            // 当前视口框在小地图上的矩形
-            double viewLeft = scrollViewer.HorizontalOffset / selectedTab.CurrentScale;
-            double viewTop = scrollViewer.VerticalOffset / selectedTab.CurrentScale;
-            double viewWidth = scrollViewer.ViewportWidth / selectedTab.CurrentScale;
-            double viewHeight = scrollViewer.ViewportHeight / selectedTab.CurrentScale;
-            var viewMmRect = new Rect(
-                originX + viewLeft * scale,
-                originY + viewTop * scale,
-                viewWidth * scale,
-                viewHeight * scale);
-
-            // 点击点在视口框内 → 进入拖动模式，记录偏移以便视口框跟手
-            if (viewMmRect.Contains(click))
+            var viewer=_canvasScrollViewer;
+            var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if(viewer==null||tab==null)return;
+            if((Keyboard.Modifiers&ModifierKeys.Shift)!=0)
+            {if(e.Delta<0)viewer.LineRight();else if(e.Delta>0)viewer.LineLeft();e.Handled=true;}
+            if((Keyboard.Modifiers&ModifierKeys.Control)!=0)
             {
-                _isDraggingMiniMapView = true;
-                _miniMapDragOffset = new Point(click.X - viewMmRect.X, click.Y - viewMmRect.Y);
-                MiniMapCanvas.CaptureMouse();
-                e.Handled = true;
-                return;
+                var point=e.GetPosition(MiniMapCanvas);
+                var center=new Point(point.X/MiniMapWidth*CanvasSize*tab.CurrentScale-viewer.HorizontalOffset,
+                    point.Y/MiniMapHeight*CanvasSize*tab.CurrentScale-viewer.VerticalOffset);
+                ApplyZoom(tab.CurrentScale,Math.Clamp(tab.CurrentScale+(e.Delta>0?.1:e.Delta<0?-.1:0),MinScale,MaxScale),center,viewer);
             }
-
-            // 点击点在视口框外 → 主画布中心跳到点击处对应的画布坐标
-            CenterMainCanvasOnMiniMapPoint(click, scale, originX, originY);
         }
-
+        private Point _miniMapPointerStart,_miniMapRegionStart;
+        private void NavigateVmMiniMap(Point topLeft)
+        {
+            var viewer=_canvasScrollViewer;
+            if(viewer==null||viewer.ExtentWidth<=0||viewer.ExtentHeight<=0)return;
+            viewer.ScrollToHorizontalOffset(topLeft.X/MiniMapWidth*viewer.ExtentWidth);
+            viewer.ScrollToVerticalOffset(topLeft.Y/MiniMapHeight*viewer.ExtentHeight);
+            viewer.UpdateLayout();DrawMiniMap();
+        }
+        private void MiniMapBorder_MouseLeftButtonDown(object sender,MouseButtonEventArgs e)
+        {
+            if(e.OriginalSource is System.Windows.Controls.Primitives.ButtonBase)return;
+            var viewer=_canvasScrollViewer;
+            if(viewer==null||viewer.ExtentWidth<=0||viewer.ExtentHeight<=0)return;
+            var point=e.GetPosition(MiniMapCanvas);
+            var region=new Rect(viewer.HorizontalOffset/viewer.ExtentWidth*MiniMapWidth,
+                viewer.VerticalOffset/viewer.ExtentHeight*MiniMapHeight,
+                Math.Min(viewer.ActualWidth/viewer.ExtentWidth*MiniMapWidth,MiniMapWidth),
+                Math.Min(viewer.ActualHeight/viewer.ExtentHeight*MiniMapHeight,MiniMapHeight));
+            _isDraggingMiniMapView=true;
+            var requested=region.Contains(point)?region.Location:new Point(point.X-region.Width/2,point.Y-region.Height/2);
+            if(!region.Contains(point))NavigateVmMiniMap(requested);
+            _miniMapPointerStart=point;_miniMapRegionStart=requested;
+            e.Handled=true;
+        }
         /// <summary>
         /// 小地图鼠标移动（拖动视口框）：主画布滚动跟随，保持视口框 1:1。
         /// </summary>
-        private void MiniMapBorder_MouseMove(object sender, MouseEventArgs e)
+        private void MiniMapBorder_MouseMove(object sender,MouseEventArgs e)
         {
-            if (!_isDraggingMiniMapView)
-                return;
-            if (!TryGetMiniMapProjection(out var scale, out var originX, out var originY))
-                return;
-
-            var click = e.GetPosition(MiniMapCanvas);
-            // 视口框左上角应落在 click - dragOffset，据此推算主画布滚动偏移
-            var viewRectLeft = click.X - _miniMapDragOffset.X;
-            var viewRectTop = click.Y - _miniMapDragOffset.Y;
-            var canvasMmLeft = originX;
-            var canvasMmTop = originY;
-            // 转成画布原始坐标
-            double canvasViewLeft = (viewRectLeft - originX) / scale;
-            double canvasViewTop = (viewRectTop - originY) / scale;
-            double canvasViewWidth = _canvasScrollViewer?.ViewportWidth / (_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0) ?? 0;
-            double canvasViewHeight = _canvasScrollViewer?.ViewportHeight / (_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0) ?? 0;
-
-            // 视口框不能拖出画布边界（避免跳转越界）
-            var maxCanvas = CanvasSize - canvasViewWidth;
-            canvasViewLeft = Math.Max(0, Math.Min(canvasViewLeft, maxCanvas));
-            canvasViewTop = Math.Max(0, Math.Min(canvasViewTop, CanvasSize - canvasViewHeight));
-
-            ScrollToCanvasPosition(canvasViewLeft, canvasViewTop);
-            e.Handled = true;
+            if(!_isDraggingMiniMapView||e.LeftButton!=MouseButtonState.Pressed)return;
+            var point=e.GetPosition(MiniMapCanvas);
+            if(point==_miniMapPointerStart)return;
+            if(!MiniMapCanvas.IsMouseCaptured)MiniMapCanvas.CaptureMouse();
+            NavigateVmMiniMap(_miniMapRegionStart+(point-_miniMapPointerStart));
+            e.Handled=true;
         }
-
         /// <summary>
         /// 小地图鼠标释放 / 失去鼠标捕获 - 结束拖动
         /// </summary>
@@ -1565,14 +1420,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 owner);
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                if (_viewModel.WorkflowTabViewModel.DeleteWorkflow(workflow))
+                if (_viewModel.DeleteRootWorkspace(workflow))
                 {
                     _viewModel.StatusText = $"已删除工作流: {workflow.Name}";
                 }
                 else
                 {
                     ThemeMessageDialog.Show(
-                        "至少需要保留一个工作流",
+                        "当前流程不可删除，请确认运行、参数编辑和引用状态。",
                         "提示",
                         System.Windows.MessageBoxButton.OK,
                         ThemeMessageDialog.MessageIcon.Warning,

@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
 
@@ -249,8 +249,7 @@
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxToggleBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBorder}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxBadgeBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxBadge}}"/>
 
-    <!-- ============ 画布棋盘格背景（整体 DrawingBrush，随主题整体替换） ============ -->
-    <!-- 内部用 StaticResource 引用同字典笔刷（Color 层在主题切换时整体替换，StaticResource 也能取到新值） -->
+    <!-- SDK 图像/插件透明背景资源合同，独立保留；工作流采用下方专用网格。 -->
     <DrawingBrush x:Key="{x:Static base:ThemeKeys.CheckerboardBackgroundBrush}"
                   TileMode="Tile" Viewport="0,0,32,32" ViewportUnits="Absolute">
         <DrawingBrush.Drawing>
@@ -269,6 +268,20 @@
                             <RectangleGeometry Rect="16,16,16,16"/>
                         </GeometryGroup>
                     </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+    <!-- ZoomArea底色与DiagramPage透明网格分层；小地图只采样网格和节点，不采样底色。 -->
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.WorkflowCanvasSurfaceBrush}" Color="#46474A"/>
+    <DrawingBrush x:Key="{x:Static base:ThemeKeys.WorkflowCanvasGridBrush}"
+                  TileMode="Tile" Viewport="0,0,6,6" ViewportUnits="Absolute">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing>
+                    <GeometryDrawing.Geometry><GeometryGroup><LineGeometry StartPoint="0,10" EndPoint="20,10"/><LineGeometry StartPoint="10,0" EndPoint="10,20"/></GeometryGroup></GeometryDrawing.Geometry>
+                    <GeometryDrawing.Pen><Pen Thickness="5" Brush="#404042"/></GeometryDrawing.Pen>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingBrush.Drawing>

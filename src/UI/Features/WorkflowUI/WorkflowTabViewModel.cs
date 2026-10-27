@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentHistoryCoordinator = SunEyeVision.Workflow.DocumentHistoryCoordinator;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -26,14 +27,38 @@ namespace SunEyeVision.UI.Features.WorkflowUI
     /// <summary>
     /// 工作流标签页ViewModel
     /// </summary>
-    public class WorkflowTabViewModel : ObservableObject
+    public partial class WorkflowTabViewModel : ObservableObject
     {
         private string _id;
         private string _name;
+        private SunEyeVision.Workflow.Workflow? _rootDefinition;
+        public SunEyeVision.Workflow.RootWorkspaceSettings RootSettings => _rootDefinition?.WorkspaceSettings ?? new();
+        internal void BindRootDefinition(SunEyeVision.Workflow.Workflow definition, Func<string,SunEyeVision.Workflow.Workflow?>? resolve = null)
+        {
+            _readinessResolver=resolve??_readinessResolver;
+            if(ReferenceEquals(_rootDefinition,definition)){RefreshRootReadiness();return;}
+            UnbindRootReadiness();
+            if(_rootDefinition!=null)_rootDefinition.PropertyChanged-=RootDefinitionChanged;
+            _rootDefinition=definition;_rootDefinition.PropertyChanged+=RootDefinitionChanged;
+            OnPropertyChanged(nameof(RootSettings));
+            BindRootReadiness();
+            OnPropertyChanged(nameof(IsRootConfigurationReady));OnPropertyChanged(nameof(RootConfigurationSummary));
+        }
+        private void RootDefinitionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
+        {if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.WorkspaceSettings))OnPropertyChanged(nameof(RootSettings));if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.RootConfiguration))RefreshRootReadiness();}
         private bool _isRunning;
         private RunMode _runMode;
         private WorkflowState _state;
         private ObservableCollection<WorkflowNodeBase> _workflowNodes;
+        private ObservableCollection<WorkflowNodeBase> _rootWorkflowNodes;
+        /// <summary>根流程的正式节点集合；下钻时不随可见容器切换。</summary>
+        public ObservableCollection<WorkflowNodeBase> RootWorkflowNodes => _rootWorkflowNodes;
+        internal void BindRootWorkflowNodes(ObservableCollection<WorkflowNodeBase> nodes)
+        {
+            if (ReferenceEquals(_rootWorkflowNodes, nodes)) return;
+            _rootWorkflowNodes = nodes;
+            OnPropertyChanged(nameof(RootWorkflowNodes));
+        }
         private ObservableCollection<WorkflowConnection> _workflowConnections;
         private ScaleTransform _scaleTransform;
         private double _currentScale;
@@ -45,7 +70,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// 导航栈，仅保存 workflowId 字符串
         /// SSOT 原则：引擎中的 Workflow 是唯一数据源
         /// </summary>
-        private readonly Stack<string> _navigationStack = new();
+        private sealed record NavigationFrame(string Id,string Name,string? Icon,string? OwnerNodeId);
+        private readonly Stack<NavigationFrame> _navigationStack = new();
+        private string? _currentOwnerNodeId;
+        public string? CurrentOwnerNodeId=>_currentOwnerNodeId;
 
         /// <summary>
         /// 当前显示的工作流ID（下钻时指向子程序工作流，返回后指回主工作流）
@@ -78,7 +106,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public bool IsInSubroutine => _navigationStack.Count > 0;
 
         /// <summary>Nearest parent first; callers receive a snapshot of navigation context.</summary>
-        public IReadOnlyList<string> NavigationAncestorIds => _navigationStack.ToArray();
+        public IReadOnlyList<string> NavigationAncestorIds => _navigationStack.Select(f=>f.Id).ToArray();
 
         /// <summary>
         /// 当前有效显示名称（主工作流显示 Name，子程序显示子程序名）
@@ -149,6 +177,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             State = WorkflowState.Stopped;
             RunMode = RunMode.Single;
             _workflowNodes = new ObservableCollection<WorkflowNodeBase>();
+            _rootWorkflowNodes = _workflowNodes;
             _workflowConnections = new ObservableCollection<WorkflowConnection>();
             CurrentScale = 1.0;
             ScaleTransform = new ScaleTransform(1.0, 1.0);
@@ -194,6 +223,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI
                     OnPropertyChanged(nameof(EffectiveDisplayName));
                 }
             }
+        }
+
+        internal void SynchronizeRootName(string name)
+        {
+            _name=name;OnPropertyChanged(nameof(Name));
+            if(!IsInSubroutine){_currentWorkflowName=name;OnPropertyChanged(nameof(EffectiveDisplayName));}
         }
 
         #region 行内重命名
@@ -320,20 +355,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public ObservableCollection<WorkflowNodeBase> WorkflowNodes
         {
             get => _workflowNodes;
-            set
-            {
-                if (_workflowNodes != null)
-                {
-                    _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
-                }
-                SetProperty(ref _workflowNodes, value);
-                if (_workflowNodes != null)
-                {
-                    _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
-                }
-            }
+            set => SetNodes(value);
         }
 
+        /// <summary>
+        /// 设置连接集合（直接绑定外部集合，实现自动同步）
+        /// </summary>
         private void OnWorkflowNodesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // 处理删除节点，释放索引到空洞池
@@ -379,65 +406,77 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             }
         }
 
-        /// <summary>
-        /// 设置连接集合（直接绑定外部集合，实现自动同步）
-        /// </summary>
-        public void SetConnections(ObservableCollection<WorkflowConnection> connections)
-        {
-            if (connections == null)
-            {
-                throw new ArgumentNullException(nameof(connections));
-            }
+        public void SetConnections(ObservableCollection<WorkflowConnection> connections) => SetContent(_workflowNodes, connections);
 
-            _workflowConnections.CollectionChanged -= (s, e) => { };
-            _workflowConnections = connections;
-            _workflowConnections.CollectionChanged += (s, e) => { };
-
-            OnPropertyChanged(nameof(WorkflowConnections));
-            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
-            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// 连接线集合
-        /// </summary>
         public ObservableCollection<WorkflowConnection> WorkflowConnections
         {
             get => _workflowConnections;
-            set
-            {
-                if (_workflowConnections != null)
-                {
-                    _workflowConnections.CollectionChanged -= (s, e) => { };
-                }
-                SetProperty(ref _workflowConnections, value);
-                if (_workflowConnections != null)
-                {
-                    _workflowConnections.CollectionChanged += (s, e) => { };
-                }
-            }
+            set => SetConnections(value);
         }
 
-        /// <summary>
-        /// 设置节点集合 — 直接绑定引擎中的同一对象实例（单一数据源）
-        /// 与 SetConnections 对齐：UI 与引擎共享同一集合，节点增删自动双向同步。
-        /// </summary>
-        public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes)
+        public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes) => SetContent(nodes, _workflowConnections);
+
+        private sealed class ContainerState
         {
-            if (nodes == null)
-                throw new ArgumentNullException(nameof(nodes));
+            public CommandManager History {get;}
+            public ContainerView? View {get;set;}
+            public ContainerState(CommandManager history)=>History=history;
+        }
+        private readonly System.Runtime.CompilerServices.ConditionalWeakTable<ObservableCollection<WorkflowNodeBase>,
+            System.Runtime.CompilerServices.ConditionalWeakTable<ObservableCollection<WorkflowConnection>,ContainerState>> _containerStates=new();
+        private ContainerState GetContainerState(ObservableCollection<WorkflowNodeBase> nodes,ObservableCollection<WorkflowConnection> edges,CommandManager? history=null)=>
+            _containerStates.GetValue(nodes,_=>new()).GetValue(edges,_=>new ContainerState(history??new CommandManager(nodes,edges)));
 
-            // 直接赋值引擎工作流的节点集合，消除 UI/引擎两套集合的同步问题。
-            if (!ReferenceEquals(_workflowNodes, nodes))
-            {
-                _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
-                _workflowNodes = nodes;
-                _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
-            }
+        /// <summary>成对绑定一个实际容器；同一容器返回时恢复其编辑历史，不发布半份图。</summary>
+        private DocumentHistoryCoordinator? _rootDocumentHistory;
+        private Action? _rootHistorySynchronize;
+        private Func<string>? _rootHistorySignature;
+        public void BindRootDocumentHistory(DocumentHistoryCoordinator history, Action synchronize, Func<string> signature)
+        {
+            _rootDocumentHistory = history; _rootHistorySynchronize = synchronize; _rootHistorySignature = signature;
+            BindCurrentRootHistory();
+        }
+        private void BindCurrentRootHistory()
+        {
+            if (CurrentWorkflowId == RootWorkflowId && _rootDocumentHistory != null)
+                CommandManager.BindDocumentHistory(_rootDocumentHistory, RootWorkflowId, _rootHistorySynchronize!, _rootHistorySignature!);
+        }
 
-            OnPropertyChanged(nameof(WorkflowNodes));
-            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
-            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
+        public void SetContent(ObservableCollection<WorkflowNodeBase> nodes, ObservableCollection<WorkflowConnection> connections)
+        {
+            ArgumentNullException.ThrowIfNull(nodes); ArgumentNullException.ThrowIfNull(connections);
+            if (CurrentWorkflowId == RootWorkflowId) BindRootWorkflowNodes(nodes);
+            if (ReferenceEquals(_workflowNodes,nodes) && ReferenceEquals(_workflowConnections,connections)) return;
+            WorkflowContentChanging?.Invoke(this,EventArgs.Empty);
+            SaveContainerView();
+            _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
+            _workflowNodes=nodes; _workflowConnections=connections;
+            _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
+            CommandManager=GetContainerState(nodes,connections).History;
+            BindCurrentRootHistory();
+            RestoreContainerView();
+            OnPropertyChanged(nameof(WorkflowNodes)); OnPropertyChanged(nameof(WorkflowConnections));
+            OnPropertyChanged(nameof(CommandManager));
+            WorkflowContentChanged?.Invoke(this,EventArgs.Empty);
+        }
+
+        public event EventHandler? WorkflowContentChanging;
+        private sealed record ContainerView(double Scale,Point Origin,bool HasViewport);
+        public Point ViewportCanvasOrigin {get;private set;}
+        public bool HasSavedViewport {get;private set;}
+        public void CaptureViewport(double horizontalOffset,double verticalOffset)
+        {
+            if (!double.IsFinite(horizontalOffset)||!double.IsFinite(verticalOffset)||!double.IsFinite(CurrentScale)||CurrentScale<=0) return;
+            ViewportCanvasOrigin=new Point(Math.Max(0,horizontalOffset)/CurrentScale,Math.Max(0,verticalOffset)/CurrentScale);
+            HasSavedViewport=true;SaveContainerView();
+        }
+        private void SaveContainerView()=>GetContainerState(_workflowNodes,_workflowConnections,CommandManager).View=new(CurrentScale,ViewportCanvasOrigin,HasSavedViewport);
+        private void RestoreContainerView()
+        {
+            var view=GetContainerState(_workflowNodes,_workflowConnections).View??new ContainerView(1,new Point(),false);
+            CurrentScale=view.Scale;ViewportCanvasOrigin=view.Origin;HasSavedViewport=view.HasViewport;
+            ScaleTransform.ScaleX=view.Scale;ScaleTransform.ScaleY=view.Scale;
+            OnPropertyChanged(nameof(ViewportCanvasOrigin));OnPropertyChanged(nameof(HasSavedViewport));
         }
 
         /// <summary>
@@ -546,27 +585,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         }
 
         /// <summary>
-        /// 释放节点的局部序号到空洞池（节点重命名时使用）
-        /// </summary>
-        public void ReleaseNodeLocalIndex(WorkflowNodeBase node)
-        {
-            if (node == null || node.LocalIndex < 0)
-                return;
-
-            // ★ 用 CurrentWorkflowId 而非 Id：与创建节点(CreateNode)的归属工作流保持一致，
-            //   确保子程序内节点重命名释放的序号进入正确的子程序上下文，不污染主工作流空洞池。
-            _sequenceManager.ReleaseLocalIndex(CurrentWorkflowId, node.ToolType ?? string.Empty, node.LocalIndex);
-
-            VisionLogger.Instance.Log(
-                LogLevel.Info,
-                $"节点重命名，释放局部序号: {node.LocalIndex}, 节点ID: {node.Id}",
-                "WorkflowTabViewModel"
-            );
-
-            node.LocalIndex = -1;
-        }
-
-        /// <summary>
         /// 重置节点序号
         /// </summary>
         public void ResetNodeSequences()
@@ -595,12 +613,16 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// <param name="subroutineWorkflowId">子程序工作流ID</param>
         /// <param name="displayName">Tab显示名称</param>
         /// <param name="subroutineIcon">子程序节点的工具图标（Tab 栏设置按钮显示用）</param>
-        public void NavigateToSubroutine(string subroutineWorkflowId, string displayName, string? subroutineIcon = null)
+        public void NavigateToSubroutine(string subroutineWorkflowId, string displayName, string? subroutineIcon, string ownerNodeId)
         {
+            if(string.IsNullOrWhiteSpace(ownerNodeId))throw new ArgumentException("Group导航需要明确拥有者节点。",nameof(ownerNodeId));
             // 保存当前工作流ID到栈
-            _navigationStack.Push(_currentWorkflowId);
+            if (string.IsNullOrWhiteSpace(subroutineWorkflowId) || subroutineWorkflowId == _currentWorkflowId || _navigationStack.Any(f=>f.Id==subroutineWorkflowId))
+                throw new InvalidOperationException("不能导航到当前容器或其祖先。");
+            _navigationStack.Push(new(_currentWorkflowId,IsInSubroutine ? _currentWorkflowName : Name,SubroutineIcon,_currentOwnerNodeId));
 
             // 切换到子程序工作流
+            _currentOwnerNodeId=ownerNodeId;
             _currentWorkflowId = subroutineWorkflowId;
             _currentWorkflowName = displayName;
             SubroutineIcon = subroutineIcon;
@@ -613,6 +635,26 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
+            OnPropertyChanged(nameof(NavigationAncestorIds));
+            OnPropertyChanged(nameof(CurrentOwnerNodeId));
+        }
+
+        /// <summary>复核整条导航链的实际拥有关系，不能仅凭子定义仍存在就复用旧页面。</summary>
+        internal bool IsNavigationCurrent(Func<string, SunEyeVision.Workflow.Workflow?> resolve)
+        {
+            var frames = _navigationStack.Reverse().Append(new NavigationFrame(
+                CurrentWorkflowId, _currentWorkflowName, SubroutineIcon, _currentOwnerNodeId)).ToArray();
+            if (frames.Length == 0 || frames[0].Id != RootWorkflowId) return false;
+            var seen = new HashSet<string>(StringComparer.Ordinal) { RootWorkflowId };
+            for (var index = 1; index < frames.Length; index++)
+            {
+                var parent = resolve(frames[index - 1].Id);
+                var child = resolve(frames[index].Id);
+                var owners = parent?.Nodes.Where(n => n.Id == frames[index].OwnerNodeId).ToArray();
+                if (child == null || !child.IsSubroutine || !seen.Add(child.Id) || owners?.Length != 1 ||
+                    owners[0].ToolType != "Subroutine" || owners[0].SubroutineId != child.Id) return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -624,13 +666,16 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (_navigationStack.Count == 0) return false;
 
             // 弹出上一级工作流ID
-            _currentWorkflowId = _navigationStack.Pop();
-
-            // _currentWorkflowName 由外部在调用 SetCurrentWorkflowName 时设置
-            SubroutineIcon = null;
+            var frame = _navigationStack.Pop();
+            _currentWorkflowId = frame.Id;
+            _currentWorkflowName = frame.Name;
+            SubroutineIcon = frame.Icon;
+            _currentOwnerNodeId=frame.OwnerNodeId;
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
+            OnPropertyChanged(nameof(NavigationAncestorIds));
+            OnPropertyChanged(nameof(CurrentOwnerNodeId));
 
             return true;
         }
@@ -641,6 +686,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public void ResetNavigation()
         {
             _navigationStack.Clear();
+            _currentOwnerNodeId=null;
             _currentWorkflowId = _id;
             _currentWorkflowName = _name;
             SubroutineIcon = null;
@@ -648,6 +694,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
+            OnPropertyChanged(nameof(NavigationAncestorIds));
+            OnPropertyChanged(nameof(CurrentOwnerNodeId));
         }
 
         /// <summary>
@@ -659,7 +707,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             var frames = _navigationStack.ToArray();
             for (int i = frames.Length - 1; i >= 0; i--)
             {
-                path.Add(frames[i]); // 现在只是 workflowId，暂时用 ID 代替，调用方可决定是否显示
+                path.Add(frames[i].Id == _id ? Name : frames[i].Name);
             }
             path.Add(_currentWorkflowName);
             return path.ToArray();

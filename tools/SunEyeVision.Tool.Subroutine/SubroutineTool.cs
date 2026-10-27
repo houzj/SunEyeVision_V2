@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -80,12 +81,9 @@ namespace SunEyeVision.Tool.Subroutine
                 if (parameters.ExecuteSubWorkflowAsync == null)
                     throw new InvalidOperationException("子工作流执行委托未注入，请确保通过 WorkflowExecutionEngine 执行包含子程序节点的工作流");
 
-                // 子程序至少需要一个输入和一个输出（rule-015 无静默）
-                if (parameters.Inputs.Count == 0)
-                    throw new InvalidOperationException($"子程序 \"{parameters.SubroutineName}\" 至少需要一个输入参数");
-                if (parameters.Outputs.Count == 0)
-                    throw new InvalidOperationException($"子程序 \"{parameters.SubroutineName}\" 至少需要一个输出参数");
-
+                var validation=parameters.Validate();
+                if(!validation.IsValid)throw new InvalidOperationException(string.Join("；",validation.Errors));
+                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();
                 var inputImage = parameters.ResolvedInputImage;
 
                 parameters.LogInfo($"开始执行子程序: {parameters.SubroutineName}, 工作流ID: {parameters.SubroutineId}, 输入图像: {(inputImage != null ? $"{inputImage.Width}x{inputImage.Height}" : "null")}");
@@ -172,6 +170,8 @@ namespace SunEyeVision.Tool.Subroutine
                     parameters.LogSuccess($"子程序执行完成: {result.ExecutedNodeCount} 个节点, 耗时 {result.SubWorkflowExecutionTimeMs}ms");
                 }
             }
+            catch(OperationCanceledException) when(parameters.Context?.CancellationToken.IsCancellationRequested==true)
+            {result.Resources?.Dispose();throw;}
             catch (Exception ex)
             {
                 sw.Stop();
@@ -220,6 +220,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = output.Name,
+                    SourceWorkflowId=output.Source?.SourceWorkflowId,SourceFieldId=output.Source?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -301,6 +302,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = bindingKey,
+                    SourceWorkflowId=input.Source?.SourceWorkflowId,SourceFieldId=input.Source?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -368,11 +370,15 @@ namespace SunEyeVision.Tool.Subroutine
             // 非累积显示项不在此处理（由 Run() 基于最后轮节点结果统一构建）。
             var accumulatedDisplay = new DisplayCollector();
 
+            try
+            {
             for (int i = start; i < end; i++)
             {
+                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();
                 parameters.CurrentIteration = i;
                 using var iterResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);
                 result.Merge(iterResult);
+                parameters.Context?.CancellationToken.ThrowIfCancellationRequested();
 
                 if (!iterResult.Success)
                     break;
@@ -381,7 +387,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var iterToolResults = ExtractToolResults(iterResult);
                 // Earlier iteration images remain borrowed in the accumulated output. Keep only
                 // their declared source owners; ordinary numeric accumulation needs no native retain.
-                var accumulatedImageSources=parameters.Outputs.Where(output=>output.IsAccumulated&&output.ParamType is { } type&&typeof(IVisionImage).IsAssignableFrom(type))
+                var accumulatedImageSources=parameters.Outputs.Where(output=>output.IsAccumulated&&output.ParamType is { } type&&typeof(IVisionImage).IsAssignableFrom(type.IsArray?type.GetElementType()!:type))
                     .Select(output=>output.Source?.GetBindingPath()??output.BindingSource)
                     .Where(path=>path.Contains('.')).Select(path=>path[..path.IndexOf('.')]).ToHashSet(StringComparer.Ordinal);
                 retainChildren(iterToolResults.Where(pair=>accumulatedImageSources.Contains(pair.Key)).Select(pair=>pair.Value));
@@ -396,7 +402,7 @@ namespace SunEyeVision.Tool.Subroutine
                 }
 
                 // 累积显示：仅处理勾选"累积显示"的项，逐轮追加到 accumulatedDisplay（按轮次渐变色）
-                BuildAccumulatedDisplay(parameters, iterToolResults, resolver, accumulatedDisplay, i - start, end - start);
+                BuildAccumulatedDisplay(parameters, iterToolResults, resolver, accumulatedDisplay);
 
                 // 累积输出：按 IsAccumulated 逐轮拍平拼接或覆盖最后值
                 AccumulateIteration(parameters, iterResolved, accumulatedLists, accumulatedOutputs);
@@ -413,24 +419,25 @@ namespace SunEyeVision.Tool.Subroutine
                 }
 
                 // ===== 循环间隔 =====
-                if (config.LoopInterval > 0)
-                    Task.Delay(config.LoopInterval).GetAwaiter().GetResult();
+                if (config.LoopInterval > 0&&i<end-1)
+                    Task.Delay(config.LoopInterval,parameters.Context?.CancellationToken??CancellationToken.None).GetAwaiter().GetResult();
             }
+
+            }
+            catch{result.Dispose();throw;}
 
             return (result, accumulatedOutputs, accumulatedDisplay);
         }
 
         /// <summary>
         /// 构建累积显示图形：仅处理勾选 IsAccumulated 的显示项，每轮把该轮图形追加到累积 collector。
-        /// 按轮次对显示项样式做 HSL 色相渐变（第 0 轮 → 第 N 轮），使多轮叠加的图形能按轨迹区分（对齐 Halcon 多色叠加）。
+        /// 累积改变结果保留范围，不改变配置中的颜色、透明度和线宽。
         /// </summary>
         private static void BuildAccumulatedDisplay(
             SubroutineParameters parameters,
             Dictionary<string, ToolResults> iterToolResults,
             ParameterResolver resolver,
-            DisplayCollector accumulatedDisplay,
-            int iterationIndex,
-            int totalRounds)
+            DisplayCollector accumulatedDisplay)
         {
             if (parameters.DisplayConfigs.Count == 0 || iterToolResults.Count == 0)
                 return;
@@ -458,6 +465,8 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = displayItem.DisplayName,
+                    SourceWorkflowId = displayItem.BoundDataSource?.SourceWorkflowId,
+                    SourceFieldId = displayItem.BoundDataSource?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -471,111 +480,9 @@ namespace SunEyeVision.Tool.Subroutine
                         $"显示项 '{displayItem.DisplayName}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
                 }
 
-                // 按轮次渐变色：为当前轮创建带色相偏移的样式副本（不污染原共享样式）
-                var iterationStyle = CreateIterationStyle(displayItem.GraphicsStyle, iterationIndex, totalRounds);
                 var iterResult = new SubroutineResults();
-                AppendDisplayItemWithStyle(iterResult, parameters, displayItem, resolveResult.Value, iterationStyle);
+                AppendDisplayItem(iterResult, parameters, displayItem, resolveResult.Value);
                 accumulatedDisplay.Merge(iterResult.Display);
-            }
-        }
-
-        /// <summary>
-        /// 按轮次生成带 HSL 色相渐变的样式副本（复用原样式线宽/透明度等，仅调整 OK 颜色色相）。
-        /// 单轮循环（totalRounds<=1）不渐变，保持原样式颜色。
-        /// </summary>
-        private static GraphicsStyle CreateIterationStyle(GraphicsStyle baseStyle, int iterationIndex, int totalRounds)
-        {
-            if (baseStyle == null || totalRounds <= 1)
-                return baseStyle;
-
-            var clone = new GraphicsStyle
-            {
-                Name = baseStyle.Name,
-                IsVisible = baseStyle.IsVisible,
-                NgColor = baseStyle.NgColor,
-                Opacity = baseStyle.Opacity,
-                LineWidth = baseStyle.LineWidth,
-                CrossSize = baseStyle.CrossSize,
-            };
-
-            // 以色相为起点，按轮次在 360° 内均布：0→2π*(i/max)
-            ToHsv(baseStyle.OkColor, out var baseHue, out var saturation, out var value);
-            var hueOffset = totalRounds > 1 ? (double)iterationIndex / totalRounds : 0.0;
-            var finalHue = (baseHue + hueOffset) % 1.0;
-
-            clone.OkColor = ColorFromHsv(finalHue * 360.0, saturation, value, baseStyle.OkColor.A);
-
-            return clone;
-        }
-
-        /// <summary>RGB → HSV（轮次渐变用，避免依赖 WPF ColorExtensions）</summary>
-        private static void ToHsv(Color c, out double hue, out double saturation, out double value)
-        {
-            double r = c.R / 255.0, g = c.G / 255.0, b = c.B / 255.0;
-            double max = Math.Max(r, Math.Max(g, b));
-            double min = Math.Min(r, Math.Min(g, b));
-            double delta = max - min;
-
-            value = max;
-
-            if (Math.Abs(delta) < 1e-9)
-            {
-                hue = 0;
-                saturation = 0;
-                return;
-            }
-
-            saturation = delta / max;
-
-            if (Math.Abs(max - r) < 1e-9)
-                hue = (g - b) / delta + (g < b ? 6 : 0);
-            else if (Math.Abs(max - g) < 1e-9)
-                hue = (b - r) / delta + 2;
-            else
-                hue = (r - g) / delta + 4;
-            hue /= 6.0;
-        }
-
-        /// <summary>由 HSV 构造 Color（用于轮次渐变色）</summary>
-        private static Color ColorFromHsv(double hue, double saturation, double value, byte alpha)
-        {
-            hue = ((hue % 360.0) + 360.0) % 360.0;
-            double c = value * saturation;
-            double x = c * (1 - Math.Abs((hue / 60.0) % 2.0 - 1.0));
-            double m = value - c;
-
-            double r, g, b;
-            if (hue < 60) { r = c; g = x; b = 0; }
-            else if (hue < 120) { r = x; g = c; b = 0; }
-            else if (hue < 180) { r = 0; g = c; b = x; }
-            else if (hue < 240) { r = 0; g = x; b = c; }
-            else if (hue < 300) { r = x; g = 0; b = c; }
-            else { r = c; g = 0; b = x; }
-
-            return Color.FromArgb(alpha,
-                (byte)((r + m) * 255), (byte)((g + m) * 255), (byte)((b + m) * 255));
-        }
-
-        /// <summary>
-        /// 按指定样式追加显示项（累积渐变色用）。复用 AppendDisplayItem 的分发逻辑，
-        /// 但将 displayItem 的样式临时替换为迭代样式，避免修改共享样式实例。
-        /// </summary>
-        private static void AppendDisplayItemWithStyle(
-            SubroutineResults result,
-            SubroutineParameters parameters,
-            SubroutineDisplayItem displayItem,
-            object value,
-            GraphicsStyle iterationStyle)
-        {
-            var originalStyle = displayItem.GraphicsStyle;
-            try
-            {
-                displayItem.GraphicsStyle = iterationStyle;
-                AppendDisplayItem(result, parameters, displayItem, value);
-            }
-            finally
-            {
-                displayItem.GraphicsStyle = originalStyle;
             }
         }
 
@@ -713,82 +620,41 @@ namespace SunEyeVision.Tool.Subroutine
         {
             if (!config.EnableBreak) return false;
 
-            // 源比较值：从绑定源解析（当前迭代结果）
-            string? sourceStr = null;
-            if (!string.IsNullOrEmpty(config.SourceCompareBinding) && iterResult.NodeResults != null)
+            var internalResults=ExtractToolResults(iterResult);
+            var type=config.DataType switch{"int"=>typeof(long),"float"=>typeof(double),"string"=>typeof(string),_=>throw new InvalidOperationException("循环比较类型无效。")};
+            object Resolve(string path,string name,ImageSourceReference? reference)
             {
-                var dotIndex = config.SourceCompareBinding.IndexOf('.');
-                if (dotIndex >= 0)
+                var dot=path.IndexOf('.');if(dot<=0||dot==path.Length-1)throw new InvalidOperationException(name+"未配置有效绑定源。");
+                var node=path[..dot];var sources=new Dictionary<string,ToolResults>(StringComparer.Ordinal);
+                if(reference?.SourceWorkflowId is {} workflow)
                 {
-                    var binding = new ParamSetting
-                    {
-                        ParameterName = "源比较值",
-                        BindingType = BindingType.Binding,
-                        SourceNodeId = config.SourceCompareBinding[..dotIndex],
-                        SourceProperty = config.SourceCompareBinding[(dotIndex + 1)..],
-                        TargetType = typeof(double)
-                    };
-                    var iterToolResults = iterResult.NodeResults
-                        .Where(kvp => kvp.Value?.Result != null)
-                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
-                    var resolveResult = resolver.Resolve(binding, iterToolResults);
-                    if (resolveResult.IsSuccess && resolveResult.Value != null)
-                    {
-                        sourceStr = resolveResult.Value.ToString();
-                    }
+                    var selected=workflow==parameters.SubroutineId?internalResults:nodeResults;
+                    if(selected is not null&&selected.TryGetValue(node,out var value))sources.Add(node,value);
                 }
-            }
-            if (string.IsNullOrEmpty(sourceStr))
-            {
-                parameters.LogWarning("中断条件: 源比较值未配置有效绑定源，不触发中断");
-                return false;
-            }
-
-            // 目的比较值：从绑定源解析（父工作流）
-            string? targetStr = null;
-            if (!string.IsNullOrEmpty(config.TargetCompareBinding) && nodeResults != null)
-            {
-                var dotIndex = config.TargetCompareBinding.IndexOf('.');
-                if (dotIndex >= 0)
+                else
                 {
-                    var binding = new ParamSetting
-                    {
-                        ParameterName = "目的比较值",
-                        BindingType = BindingType.Binding,
-                        SourceNodeId = config.TargetCompareBinding[..dotIndex],
-                        SourceProperty = config.TargetCompareBinding[(dotIndex + 1)..],
-                        TargetType = typeof(double)
-                    };
-                    var resolveResult = resolver.Resolve(binding, nodeResults);
-                    if (resolveResult.IsSuccess && resolveResult.Value != null)
-                    {
-                        targetStr = resolveResult.Value.ToString();
-                    }
+                    if(nodeResults?.TryGetValue(node,out var parentValue)==true)sources.Add(node,parentValue);
+                    if(internalResults.TryGetValue(node,out var innerValue)&&!sources.TryAdd(node,innerValue))throw new InvalidOperationException("循环比较来源节点身份重复，需要明确流程作用域。");
                 }
+                try
+                {
+                    var resolved=resolver.Resolve(new ParamSetting{ParameterName=name,BindingType=BindingType.Binding,SourceNodeId=node,SourceProperty=path[(dot+1)..],SourceWorkflowId=reference?.SourceWorkflowId,SourceFieldId=reference?.SourceFieldId,TargetType=type},sources);
+                    if(!resolved.IsSuccess||resolved.Value is null)throw new InvalidOperationException(resolved.ErrorMessage??"值为空。");
+                    return resolved.Value;
+                }
+                catch(Exception ex){throw new InvalidOperationException(name+"解析失败："+ex.Message,ex);}
             }
-            if (string.IsNullOrEmpty(targetStr))
+            var source=Resolve(config.SourceCompareBinding,"源比较值",config.SourceCompareReference);var target=Resolve(config.TargetCompareBinding,"目的比较值",config.TargetCompareReference);
+            int comparison;
+            if(config.DataType=="string")comparison=StringComparer.Ordinal.Compare((string)source,(string)target);
+            else if(config.DataType=="int")comparison=Convert.ToInt64(source,CultureInfo.InvariantCulture).CompareTo(Convert.ToInt64(target,CultureInfo.InvariantCulture));
+            else
             {
-                parameters.LogWarning("中断条件: 目的比较值未配置有效绑定源，不触发中断");
-                return false;
+                var left=Convert.ToDouble(source,CultureInfo.InvariantCulture);var right=Convert.ToDouble(target,CultureInfo.InvariantCulture);
+                if(!double.IsFinite(left)||!double.IsFinite(right))throw new InvalidOperationException("循环比较值必须为有限数值。");
+                comparison=left.CompareTo(right);
             }
-
-            // 类型转换后比较
-            if (!double.TryParse(sourceStr, out var sourceVal) || !double.TryParse(targetStr, out var targetVal))
-                return false;
-
-            bool conditionMet = config.ComparisonOperator switch
-            {
-                ">" => sourceVal > targetVal,
-                ">=" => sourceVal >= targetVal,
-                "<" => sourceVal < targetVal,
-                "<=" => sourceVal <= targetVal,
-                "==" => Math.Abs(sourceVal - targetVal) < 1e-9,
-                "!=" => Math.Abs(sourceVal - targetVal) >= 1e-9,
-                _ => false
-            };
-
-            parameters.LogInfo($"  中断判断: {sourceStr} {config.ComparisonOperator} {targetStr} = {conditionMet}");
-            return conditionMet;
+            return config.ComparisonOperator switch{">"=>comparison>0,"<"=>comparison<0,"=="=>comparison==0,"!="=>comparison!=0,">="=>comparison>=0,"<="=>comparison<=0,_=>throw new InvalidOperationException("循环比较运算符无效。")};
         }
 
         /// <summary>
@@ -832,6 +698,8 @@ namespace SunEyeVision.Tool.Subroutine
                 var binding = new ParamSetting
                 {
                     ParameterName = displayItem.DisplayName,
+                    SourceWorkflowId = displayItem.BoundDataSource?.SourceWorkflowId,
+                    SourceFieldId = displayItem.BoundDataSource?.SourceFieldId,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -863,21 +731,46 @@ namespace SunEyeVision.Tool.Subroutine
             var style = displayItem.GraphicsStyle;
             var textStyle = displayItem.TextStyle;
 
-            // 文本显示：数字/字符串等标量统一按文本渲染（依赖样式定位）
+            // 文本 Content 按元素生成；字符串本身是标量，不枚举为字符。
             if (displayItem.DisplayType == SubroutineDisplayType.Text)
             {
                 if (textStyle == null)
                     throw new InvalidOperationException($"显示项 '{displayItem.DisplayName}' 为文本类型但未配置 TextStyle");
-                result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
-                    value.ToString() ?? string.Empty, isPass);
+                if (value is Array values)
+                {
+                    foreach (var item in values)
+                        result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
+                            item?.ToString() ?? string.Empty, isPass);
+                }
+                else
+                {
+                    result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
+                        value.ToString() ?? string.Empty, isPass);
+                }
                 return;
             }
 
             // 真实类型分发：优先匹配解析出的运行时类型
             switch (value)
             {
+                case Annulus2d annulus:
+                    result.Display.AddAnnulus(style, annulus, isPass);
+                    break;
+
+                case Annulus2d[] annuli:
+                    foreach (var annulus in annuli) result.Display.AddAnnulus(style, annulus, isPass);
+                    break;
+
+                case Arc2d arc:
+                    result.Display.AddArc(style, arc, isPass);
+                    break;
+
                 case Circle2d circle:
                     result.Display.AddCircle(style, circle, isPass);
+                    break;
+
+                case Arc2d[] arcs:
+                    foreach(var arc in arcs)result.Display.AddArc(style, arc, isPass);
                     break;
 
                 case Circle2d[] circles:
@@ -988,6 +881,14 @@ namespace SunEyeVision.Tool.Subroutine
             var style = displayItem.GraphicsStyle;
             switch (sp.Geometry)
             {
+                case Annulus2d annulus:
+                    result.Display.AddAnnulus(style, annulus, isPass);
+                    break;
+
+                case Arc2d arc:
+                    result.Display.AddArc(style, arc, isPass);
+                    break;
+
                 case Circle2d circle:
                     result.Display.AddCircle(style, circle, isPass);
                     break;
@@ -1055,14 +956,15 @@ namespace SunEyeVision.Tool.Subroutine
                 queryService, subroutineInternalSources,
                 parameters, onOutputsChanged);
 
-            // 子程序为多 Tab 参数面板（输入/输出/显示/循环），列较多，需比默认 400x550 更宽。
+            // Group五页参数面板按原件中文窗口尺寸组装。
             // 子程序控件不继承 ToolDebugControlBase，DefaultDebugWindow 不会自动读取首选尺寸，此处显式指定。
-            return new DefaultDebugWindow(control)
+            try
             {
-                Owner = owner,
-                Width = 520,
-                Height = 600
-            };
+                var window=new DefaultDebugWindow(control){Owner=owner,Width=1100,Height=680};
+                window.Closed+=(_,_)=>control.Dispose();
+                return window;
+            }
+            catch {control.Dispose();throw;}
         }
     }
 }

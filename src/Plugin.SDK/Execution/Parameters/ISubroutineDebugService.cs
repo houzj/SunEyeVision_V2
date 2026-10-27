@@ -5,6 +5,21 @@ using SunEyeVision.Plugin.SDK.UI.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
+    /// <summary>自定义Group参数控件接收宿主的独立候选；发布后重新绑定，不能写正式节点。</summary>
+    public interface ISubroutineParameterEditor : IDisposable
+    {
+        void BindParameters(SubroutineParameters parameters,IDataSourceQueryService? queryService);
+        bool TryPrepare(out string error);
+        bool HasPendingEdits { get; }
+        void Deactivate();
+        void SetRunParameterEditor(System.Windows.Controls.UserControl editor);
+    }
+
+    public interface ISubroutineRunParameterEditor
+    {
+        void BindParameters(SubroutineParameters parameters);
+    }
+
     public interface ISubroutineDebugService
     {
         DefaultDebugWindow CreateDebugWindow(

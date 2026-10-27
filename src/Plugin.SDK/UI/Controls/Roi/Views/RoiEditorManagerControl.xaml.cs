@@ -128,6 +128,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
         /// <summary>
         /// Set main ImageControl and subscribe events once for centralized routing
         /// </summary>
+        /// <summary>Expose one declared Group ROI parameter without editing its sibling collection.</summary>
+        public void SetSingleCollection(RoiCollection collection)
+        {
+            ArgumentNullException.ThrowIfNull(collection);
+            var mask=collection.Mode==RoiParameterMode.MaskRoi;
+            InspectionRoisSource=mask?new ObservableCollection<Roi>():collection.Rois;
+            MaskRoisSource=mask?collection.Rois:new ObservableCollection<Roi>();
+            ((FrameworkElement)inspectionsEditor.Parent).Visibility=mask?Visibility.Collapsed:Visibility.Visible;
+            ((FrameworkElement)masksEditor.Parent).Visibility=mask?Visibility.Visible:Visibility.Collapsed;
+        }
+
         public void SetMainImageControl(ImageControl? imageControl)
         {
             if (_mainImageControl == imageControl)

@@ -1,0 +1,17 @@
+<ToolGroups SchemaVersion="1">
+  <Group Name="采集" Order="1" Icon="CollectionImageEnable.png" HoverIcon="CollectionImageHover.png" IconKey="camera" />
+  <Group Name="定位" Order="2" Icon="LocationImageEnable.png" HoverIcon="LocationImageHover.png" IconKey="locate" />
+  <Group Name="测量" Order="3" Icon="MeasurementImageEnable.png" HoverIcon="MeasurementImageHover.png" IconKey="ruler" />
+  <Group Name="识别" Order="4" Icon="RecognitionImageEnable.png" HoverIcon="RecognitionImageHover.png" IconKey="generic" />
+  <Group Name="缺陷检测" Order="5" Icon="DefectDetectionImageEnable.png" HoverIcon="DefectDetectionImageHover.png" IconKey="region" />
+  <Group Name="标定" Order="7" Icon="CalibrationImageEnable.png" HoverIcon="CalibrationImageHover.png" IconKey="axes" />
+  <Group Name="运算" Order="8" Icon="CalculationImageEnable.png" HoverIcon="CalculationImageHover.png" IconKey="generic" />
+  <Group Name="图像处理" Order="9" Icon="ImageProcessingImageEnable.png" HoverIcon="ImageProcessingImageHover.png" IconKey="sliders" />
+  <Group Name="颜色处理" Order="10" Icon="ColorProcessingImageEnable.png" HoverIcon="ColorProcessingImageHover.png" IconKey="generic" />
+  <Group Name="拆分组合" Order="11" Icon="SplitCombinationImageEnable.png" HoverIcon="SplitCombinationImageHover.png" IconKey="generic" />
+  <Group Name="图形生成" Order="12" Icon="ImageGenerationImageEnable.png" HoverIcon="ImageGenerationImageHover.png" IconKey="generic" />
+  <Group Name="逻辑工具" Order="13" Icon="LogicImageEnable.png" HoverIcon="LogicImageHover.png" IconKey="branch" />
+  <Group Name="通信" Order="14" Icon="CommunicationImageEnable.png" HoverIcon="CommunicationImageHover.png" IconKey="exchange" />
+  <Group Name="自定义组工具" Order="20" Icon="GroupToolsImageEnable.png" HoverIcon="GroupToolsImageHover.png" IconKey="subroutine" />
+  <Group Name="自定义工具" Order="20" Icon="UserToolsImageEnable.png" HoverIcon="UserToolsImageHover.png" IconKey="generic" />
+</ToolGroups>

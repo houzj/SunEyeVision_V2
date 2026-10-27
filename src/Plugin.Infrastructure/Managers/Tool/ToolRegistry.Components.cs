@@ -60,6 +60,18 @@ public static partial class ToolRegistry
         return (IToolDefinition)Activator.CreateInstance(component.EntryType)!;
     }
 
+    internal static IReadOnlyList<SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool> GetRuntimeDirectoryTools()
+    {
+        lock (_lock) return _runtimeComponents.Select(item =>
+        {
+            var metadata = _metadataCache[item.Key];
+            var entry = item.Value.EntryType;
+            return new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool(item.Key, metadata.DisplayName,
+                metadata.Category, metadata.Order, metadata.Icon, metadata.Description, entry.FullName!, entry.Assembly.Location,
+                true, SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryToolKind.Runtime);
+        }).ToArray();
+    }
+
     public static bool HasRuntime(string toolId)
     {lock(_lock)return _runtimeComponents.ContainsKey(toolId);}
 

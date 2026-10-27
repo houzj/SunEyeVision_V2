@@ -48,9 +48,10 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </summary>
         public string Description { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 工具语义矢量图标键（由SDK ToolIcon控件统一呈现）
-        /// </summary>
+        /// <summary>目录可见性声明，与组件加载成功或失败无关。</summary>
+        public bool IsVisible { get; set; } = true;
+
+        /// <summary>工具语义图标键；宿主为工具箱映射VM图像，其他消费者仍可用SDK矢量呈现。</summary>
         public string Icon { get; set; } = "generic";
 
         /// <summary>分类内显式顺序；未声明的扩展工具排在已编排工具之后。</summary>

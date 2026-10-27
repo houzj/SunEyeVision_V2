@@ -44,7 +44,8 @@ namespace SunEyeVision.Workflow
         /// 子程序关联ID（当 ToolType == "Subroutine" 时有效）
         /// 指向 WorkflowEngine 中一个独立的 Workflow
         /// </summary>
-        public string? SubroutineId { get; set; }
+        private string? _subroutineId;
+        public string? SubroutineId { get => _subroutineId; set => SetProperty(ref _subroutineId, value); }
 
         /// <summary>
         /// 节点ID - 使用Guid确保全局唯一性和稳定性
@@ -110,12 +111,14 @@ namespace SunEyeVision.Workflow
         /// 用于标识节点使用的工具类型。
         /// NodeType 从此类型动态推断。
         /// </remarks>
-        public string ToolType { get; set; }
+        private string _toolType = string.Empty;
+        public string ToolType { get => _toolType; set => SetProperty(ref _toolType, value); }
 
         /// <summary>
         /// 是否启用
         /// </summary>
-        public bool IsEnabled { get; set; } = true;
+        private bool _isEnabled = true;
+        public bool IsEnabled { get => _isEnabled; set => SetProperty(ref _isEnabled, value); }
 
         private double _positionX = 0;
         /// <summary>
@@ -162,7 +165,8 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 节点参数
         /// </summary>
-        public ToolParameters Parameters { get; set; }
+        private ToolParameters _parameters = null!;
+        public ToolParameters Parameters { get => _parameters; set => SetProperty(ref _parameters, value); }
 
         /// <summary>Neutral Runtime settings. A Runtime node persists this payload
         /// instead of SDK Parameters; the host owns bindings in ParamSettings.</summary>
@@ -508,27 +512,6 @@ namespace SunEyeVision.Workflow
         {
             RenameBuffer = DispName;
             IsEditingName = true;
-        }
-
-        /// <summary>
-        /// 确认重命名
-        /// </summary>
-        public bool ConfirmRename()
-        {
-            var trimmed = RenameBuffer?.Trim();
-            if (string.IsNullOrEmpty(trimmed))
-            {
-                // 名称为空时不关闭编辑框，让用户继续输入
-                return false;
-            }
-
-            if (DispName != trimmed)
-            {
-                DispName = trimmed;
-                Name = $"{GlobalIndex} {trimmed}";
-            }
-            IsEditingName = false;
-            return true;
         }
 
         /// <summary>

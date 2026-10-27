@@ -484,6 +484,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         RenderRectangles(dc, item, style, brush, pen); break;
                     case GraphicsType.Circle:
                         RenderCircles(dc, item, style, brush, pen); break;
+                    case GraphicsType.Annulus:
+                        RenderAnnuli(dc, item, style, brush, pen); break;
                     case GraphicsType.Arc:
                         RenderArcs(dc, item, pen); break;
                     case GraphicsType.Polygon:
@@ -652,6 +654,62 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         circle.Center, circle.Radius, circle.Radius);
                 }
             }
+        }
+
+        private void RenderAnnuli(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen defaultPen)
+        {
+            for (var i = 0; i < item.Geometries.Length; i++)
+            {
+                if (item.Geometries[i] is not Annulus2d annulus) continue;
+                var geometry = CreateAnnulusGeometry(annulus);
+                var pass = item.RenderMode == DisplayRenderMode.Unified || item.IsPassArray.Length <= i || item.IsPassArray[i];
+                var color = style.GetEffectiveColorArgb(pass);
+                var pen = pass ? defaultPen : GetPen(color, GetScaledLineWidth(style.LineWidth), style.LineDashStyle);
+                var fill = item.IsFilled ? (pass ? brush : GetBrush(color)) : null;
+                dc.DrawGeometry(fill, pen, geometry);
+            }
+        }
+
+        // VM AnnularSectorShape uses degrees and a clockwise positive sweep. Annulus2d's
+        // existing SDK contract uses radians; no degree values are stored in that contract.
+        private static Geometry CreateAnnulusGeometry(Annulus2d value)
+        {
+            var span = value.EndAngle - value.StartAngle;
+            if (!double.IsFinite(value.Center.X) || !double.IsFinite(value.Center.Y) ||
+                !double.IsFinite(value.InnerRadius) || !double.IsFinite(value.OuterRadius) ||
+                !double.IsFinite(value.StartAngle) || !double.IsFinite(span) ||
+                value.InnerRadius < 0 || value.OuterRadius <= value.InnerRadius || span <= 0)
+                return Geometry.Empty;
+            var full = span >= 2 * Math.PI - 1e-10;
+            var geometry = new StreamGeometry { FillRule = FillRule.EvenOdd };
+            Point At(double radius, double angle) => new(value.Center.X + radius * Math.Cos(angle), value.Center.Y + radius * Math.Sin(angle));
+            using (var context = geometry.Open())
+            {
+                if (full)
+                {
+                    // Two independent closed circles avoid both the 360-degree ArcTo
+                    // degeneracy and a stroked radial seam through the ring.
+                    void Circle(double radius)
+                    {
+                        context.BeginFigure(At(radius, value.StartAngle), true, true);
+                        context.ArcTo(At(radius, value.StartAngle + Math.PI), new Size(radius, radius), 0, false, SweepDirection.Clockwise, true, true);
+                        context.ArcTo(At(radius, value.StartAngle), new Size(radius, radius), 0, false, SweepDirection.Clockwise, true, true);
+                    }
+                    Circle(value.OuterRadius);
+                    if (value.InnerRadius > 0) Circle(value.InnerRadius);
+                }
+                else
+                {
+                    context.BeginFigure(At(value.OuterRadius, value.StartAngle), true, true);
+                    context.ArcTo(At(value.OuterRadius, value.EndAngle), new Size(value.OuterRadius, value.OuterRadius), 0, span > Math.PI, SweepDirection.Clockwise, true, true);
+                    context.LineTo(At(value.InnerRadius, value.EndAngle), true, true);
+                    if (value.InnerRadius > 0)
+                        context.ArcTo(At(value.InnerRadius, value.StartAngle), new Size(value.InnerRadius, value.InnerRadius), 0, span > Math.PI, SweepDirection.Counterclockwise, true, true);
+                    else context.LineTo(value.Center, true, true);
+                }
+            }
+            geometry.Freeze();
+            return geometry;
         }
 
         private void RenderArcs(DrawingContext dc, GraphicsDisplayItem item, Pen defaultPen)

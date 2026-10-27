@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -52,10 +52,8 @@ internal static class S2DocumentEditingCases
         var resultManager=(SunEyeVision.UI.Services.Workflow.NodeResultManager)typeof(MainWindowViewModel).GetField("_nodeResultManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
         resultManager.SetResultRenderLayer(image.ResultRenderLayerControl);
         var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(image);panel.Children.Add(resultHost);
-        var shell=new Window{Content=panel,Width=1640,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
+        var shell=new Window{DataContext=vm,Content=panel,Width=1640,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var drop=new WorkflowDragDropHandler(canvasControl){TabViewModel=vm.WorkflowTabViewModel};
-        typeof(WorkflowDragDropHandler).GetField("_cachedViewModel",BindingFlags.NonPublic|BindingFlags.Static)!.SetValue(null,vm);
-        typeof(WorkflowDragDropHandler).GetField("_viewModelCacheTime",BindingFlags.NonPublic|BindingFlags.Static)!.SetValue(null,DateTime.Now);
         SunEyeVision.UI.Shared.WorkflowNode Drop(string tool)
         {
             var count=tab.WorkflowNodes.Count;var data=new DataObject("ToolItem",vm.Toolbox.AllTools.Single(t=>t.ToolId==tool));
@@ -95,6 +93,17 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("自动来源状态："+System.Text.Json.JsonSerializer.Serialize(new[]{a,b}));
             Require(a?.AutomaticConnectionId=="input-blob"&&b?.AutomaticConnectionId=="blob-next"&&a.ReferenceExpression is not null&&b.ReferenceExpression is not null,"默认图像订阅或所有权缺失");
             Require(SunEyeVision.Plugin.Runtime.BindingReferenceSerializer.Deserialize(b.ReferenceExpression).PortId==BlobSchema.Field(5),"未按Runtime图像声明选源");
+        });
+        Case("连线及Runtime自动来源共享一次正式历史提交，撤销重做不留下外部配置变化",()=>
+        {
+            var host=solutions.Session!.Editing.Host;
+            host.BeginEdit(flow.Id,downstream.Id);
+            tab.CommandManager.Undo();
+            Require(!flow.Connections.Any(edge=>edge.Id=="blob-next")&&downstream.ParamSettings.GetSetting(BlobTool.ImageInput) is null,"撤销连线遗留自动来源");
+            host.BeginEdit(flow.Id,downstream.Id);
+            tab.CommandManager.Redo();
+            Require(flow.Connections.Any(edge=>edge.Id=="blob-next")&&downstream.ParamSettings.GetSetting(BlobTool.ImageInput)?.AutomaticConnectionId=="blob-next","重做没有恢复同一自动来源");
+            host.BeginEdit(flow.Id,downstream.Id);
         });
         Case("真实主窗口工作流运行ImageLoad→Runtime Blob→下游，发布同帧图像及区域",()=>
         {

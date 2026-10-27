@@ -39,16 +39,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         public event EventHandler? WorkflowStatusChanged;
 
         /// <summary>
-        /// 工作流添加事件（用于通知 MainWindowViewModel 注册引擎 + 同步 solution.Workflows）
-        /// </summary>
-        public event System.EventHandler<WorkflowTabViewModel>? WorkflowAdded;
-
-        /// <summary>
-        /// 工作流删除事件（Phase 3: 用于通知 MainWindowViewModel 清理引擎和 Solution 中的对应工作流）
-        /// </summary>
-        public event System.EventHandler<WorkflowTabViewModel>? WorkflowDeleted;
-
-        /// <summary>
         /// 连续执行由宿主提供。标签页只负责状态和交互，不能自行模拟执行。
         /// </summary>
         public Func<WorkflowTabViewModel, bool>? StartContinuousExecution { get; set; }
@@ -116,7 +106,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
             var defaultWorkflow = new WorkflowTabViewModel
             {
-                Name = "工作流1"
+                Name = "流程1"
             };
             // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
             defaultWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
@@ -149,7 +139,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             // 创建新的默认工作流（新对象，彻底清空节点和连接）
             var defaultWorkflow = new WorkflowTabViewModel
             {
-                Name = "工作流1"
+                Name = "流程1"
             };
             // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
             defaultWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
@@ -158,111 +148,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             SetSelectedTab(defaultWorkflow, suppressEvent: true);
         }
 
-        /// <summary>
-        /// 添加新工作流
-        /// </summary>
-        /// <remarks>
-        /// 触发 WorkflowAdded 事件，通知 MainWindowViewModel 同步注册引擎和 solution.Workflows。
-        /// 这样无论从哪个入口（Ctrl+N / UI 按钮）添加工作流，都能保证数据层一致。
-        /// </remarks>
-        public void AddWorkflow()
-        {
-            int nextNumber = GetNextWorkflowNumber();
-            var newWorkflow = new WorkflowTabViewModel
-            {
-                Name = $"工作流{nextNumber}"
-            };
-            // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
-            newWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
-            Tabs.Add(newWorkflow);
-            SelectedTab = newWorkflow;
-
-            // 触发工作流添加事件（统一处理引擎注册和 Solution 同步）
-            WorkflowAdded?.Invoke(this, newWorkflow);
-        }
-
-        /// <summary>
-        /// 删除工作流。
-        /// </summary>
-        public bool DeleteWorkflow(WorkflowTabViewModel workflow)
-        {
-            if (workflow == null)
-                return false;
-
-            if (Tabs.Count <= 1)
-            {
-                return false; // 至少保留一个工作流
-            }
-
-            if (workflow.IsRunning)
-            {
-                return false; // 运行中不能删除。
-            }
-
-            var index = Tabs.IndexOf(workflow);
-            Tabs.Remove(workflow);
-
-            // 选择其他标签页。
-            if (SelectedTab == workflow)
-            {
-                if (Tabs.Count > 0)
-                {
-                    var newIndex = Math.Min(index, Tabs.Count - 1);
-                    SelectedTab = Tabs[newIndex];
-                }
-                else
-                {
-                    SelectedTab = null;
-                }
-            }
-
-            // Phase 3: 触发工作流删除事件（通知 MainWindowViewModel 清理引擎和 Solution）
-            WorkflowDeleted?.Invoke(this, workflow);
-
-            return true;
-        }
-
-        /// <summary>
-        /// 获取下一个可用的工作流编号。
-        /// </summary>
-        private int GetNextWorkflowNumber()
-        {
-            // 直接从 Tabs 中提取已使用编号，无需维护独立跟踪集合
-            var usedNumbers = new System.Collections.Generic.HashSet<int>();
-            foreach (var tab in Tabs)
-            {
-                var match = System.Text.RegularExpressions.Regex.Match(tab.Name, @"工作流(\d+)");
-                if (match.Success && int.TryParse(match.Groups[1].Value, out int number))
-                    usedNumbers.Add(number);
-            }
-
-            // 找最小未使用编号（自然实现空洞填充）
-            for (int i = 1; ; i++)
-                if (!usedNumbers.Contains(i))
-                    return i;
-        }
-
         #endregion
 
         #region 工作流运行控制。
-
-        /// <summary>
-        /// 单次运行工作流。
-        /// </summary>
-        public void RunSingle(WorkflowTabViewModel workflow)
-        {
-            if (workflow == null || workflow.IsRunning)
-                return;
-
-            workflow.IsRunning = true;
-            
-            // 模拟单次运行
-            Task.Delay(500).ContinueWith(_ =>
-            {
-                workflow.IsRunning = false;
-                WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
 
         /// <summary>
         /// 开始连续运行工作流
@@ -317,35 +205,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             {
                 StartContinuous(workflow);
             }
-        }
-
-        /// <summary>
-        /// 单次运行所有工作流
-        /// </summary>
-        public async Task RunAllWorkflowsAsync()
-        {
-            var runningWorkflows = new List<WorkflowTabViewModel>();
-            
-            foreach (var workflow in Tabs)
-            {
-                if (!workflow.IsRunning)
-                {
-                    workflow.IsRunning = true;
-                    runningWorkflows.Add(workflow);
-                }
-            }
-
-            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
-
-            // 模拟执行所有工作流
-            await Task.Delay(500);
-
-            foreach (var workflow in runningWorkflows)
-            {
-                workflow.IsRunning = false;
-            }
-
-            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

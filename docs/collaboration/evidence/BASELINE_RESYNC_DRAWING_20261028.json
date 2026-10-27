@@ -1,0 +1,43 @@
+{
+  "mainBefore": "7b8bed86782106beb90995598aeffa61112a6b67",
+  "excludedFiles": [
+    {
+      "sha256": "32c4d69b9615a0f9fc9c54c3e6e48298d4adea00fbd7661bdbbd52cc2070ceab",
+      "path": "scripts/verification/O06WindowPresentationCases.cs"
+    },
+    {
+      "sha256": "6076fc57c4400697152150aabd6841d5301b43cabdbace91b58c7eed54ab1025",
+      "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs"
+    },
+    {
+      "sha256": "701a3ef366afb3b9b59dd2c97226885e7512955a8ddbe7b3f558e59d438559b0",
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs"
+    },
+    {
+      "sha256": "92a252873e9d86785152da7f15ee02fefdc929410be945b197d946b4c450f48c",
+      "path": "src/Plugin.Wpf/Design/NativeRoiDesignData.cs"
+    },
+    {
+      "sha256": "90bc80b852d15331dee6b1ee055483dd52d5394479f45a870805a812d30e7515",
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs"
+    },
+    {
+      "sha256": "c5cef590708e6170a2a0b0e03f9aff7225254140c9da9879d5763c22a0738643",
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs"
+    },
+    {
+      "sha256": "0640fe4b4a84a92544d548df4e0bc76bef5420955fd6e6447323352a3c6c4101",
+      "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs"
+    },
+    {
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml"
+    },
+    {
+      "sha256": "d8f8c9d0d668da71b577381ce0d12939c2927e54bca417ead984f7d7808bef8d",
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs"
+    }
+  ],
+  "workflowBefore": "078b262dc14c9c187f218b9f29b870853bd8201d",
+  "aheadBehind": "2/0"
+}

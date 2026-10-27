@@ -1,3 +1,11 @@
+## 2026-10-28 绘制候选开发期间再次统一工作流基线
+
+- 用户要求先同步再独立开发。主线已封存产品7b8bed86，工作流078b262d且干净、无独有提交，差异2/0，聊天idle；包含本记录的交接提交为共同基线，直接快进。
+- 纳入f9f60b8e原高级参数及7b8bed86同链独立ROI设计场景，验证沿用各批正式检查点。本次不重建、不覆盖Release、不推送。
+- 原绘制/显式Create-Replace及请求租约仍为未交付候选，仅早期协议10组及最新库编译通过；释放帧重入问题、最终全量与实际组合回归尚未闭合，不纳入共同基线。用户Blob页索引2不动不提交；排除文件SHA见evidence/BASELINE_RESYNC_DRAWING_20261028.json。
+- 主线继续控件库，工作流继续工作流/工具箱/数据流，各用独立分支/worktree；共享合同先协调，正式Release独占构建。Blob业务仍冻结，完整目标未完成。不自动发送跨聊天消息或启动任务。
+- 交接：HANDOFF_BASELINE_RESYNC_DRAWING_20261028.md。
+
 ## 2026-10-28 同链独立ROI设计/运行场景本批封存
 
 - 基线f9f60b8e；主线唯一产品写者，三路只读核证/评审及补位绘制/集合提案/原菜单。新增仅三个文件：真实NativeRoiScene、Design/NativeRoiScene.xaml、NativeRoiDesignData.cs，无新项目、Blob/Runtime/HALCON业务依赖。
@@ -838,3 +846,4 @@
 2026-10-26 删除补证：原VmModuleBaseDecorator.DeleteItemCommandExecute在删除节点前连接全部前驱/后继，沿两侧端口且isAutoLink:false；当前批删命令缺该机制，下一步迁入并验证连续链/分支/已有边/撤销。单独删线另走NextModules.Remove→UnSubModule并清PathPoints，不能混同。Group057构建0错误/058共120通过及059主窗启动记录、未验范围已集中回原主方案；未与主仓同步。
 
 最终删除补线源码063全量Release为0错误/759警告/33.50秒，064为126通过/0失败/0跳过/2秒；UI Release与测试SHA同为BF9D9F003713E2C0554815EC64B12A21033BB3B95E98234AB90C78FB977FB793。063仅去除旧命令无用状态，所有最终验证对应当前未提交源码。
+

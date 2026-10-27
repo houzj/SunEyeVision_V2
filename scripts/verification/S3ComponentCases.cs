@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -174,7 +174,7 @@ internal static class S2DocumentEditingCases
         var provider=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");
         using var view=ToolRegistry.CreateSettingsView("BlobAnalysis",configuration.CaptureSettings());
         Require(view.View.GetType().Assembly.GetName().Name==(expectEditor?"SunEyeVision.Tool.BlobAnalysis.Wpf":"SunEyeVision.Plugin.Wpf"),"设置编辑器有无Wpf回退错误");
-        var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>(view.View).ToArray();
+        var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(view.View).Single().Fields.ToArray();
         Require(fields.Length==54,"设置编辑器未消费完整XML字段");
         var id=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName=="阈值").FieldId;
         var editor=fields.Single(f=>f.FieldId==id);var changed=0;view.Changed+=()=>changed++;

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,6 +14,8 @@ internal sealed class NativeNumericCommit : IDisposable
     private readonly FieldLayout? _layout;
     private readonly Numbers.NumericControl _leaf;
     private readonly Numbers.SliderArrangeBase? _owner;
+    private readonly DependencyProperty? _valueProperty;
+    private readonly bool _paired;
     private readonly TextBox _text;
     private bool _syncing,_disposed,_suspended;
     private string? _pendingRaw;
@@ -27,9 +29,10 @@ internal sealed class NativeNumericCommit : IDisposable
             throw new ArgumentException("当前原数值控件不能保证此整数的精确步进。");
     }
 
-    public NativeNumericCommit(DeclaredFieldState state,FieldLayout? layout,Numbers.NumericControl leaf,Numbers.SliderArrangeBase? owner)
+    public NativeNumericCommit(DeclaredFieldState state,FieldLayout? layout,Numbers.NumericControl leaf,Numbers.SliderArrangeBase? owner,DependencyProperty? valueProperty,bool paired=false)
     {
-        _state=state;_layout=layout;_leaf=leaf;_owner=owner;
+        _state=state;_layout=layout;_leaf=leaf;_owner=owner;_valueProperty=valueProperty;_paired=paired;
+        if(owner is not null&&valueProperty is null)throw new ArgumentException("原数值组合必须明确端点。");
         _text=(TextBox)leaf.FindName("ValueText");
         _text.TextChanged+=OnTextChanged;
         ProjectAccepted();
@@ -79,7 +82,8 @@ internal sealed class NativeNumericCommit : IDisposable
         var frozen=ValueRules.Freeze(_state.Port,value)!;
         var numeric=Convert.ToDouble(frozen,CultureInfo.InvariantCulture);
         if((_layout?.Minimum is {} minimum&&numeric<minimum)||(_layout?.Maximum is {} maximum&&numeric>maximum)
-            ||numeric<_leaf.Minimum||numeric>_leaf.Maximum
+            ||(!_paired&&(numeric<_leaf.Minimum||numeric>_leaf.Maximum))
+            ||(_paired&&_owner is not null&&(numeric<_owner.Minimum||numeric>_owner.Maximum))
             ||_leaf.IsNeedCheckExtremumByXML&&(numeric<_leaf.MinValue||numeric>_leaf.MaxValue))
             throw new ArgumentException("数值超出允许范围。");
         return new(frozen);
@@ -95,8 +99,23 @@ internal sealed class NativeNumericCommit : IDisposable
         if(_disposed||_state.IsDisposed)return false;
         if(!ReadRaw(out var value,out var error)){_state.SetEditError(error);return false;}
         proposal=new(value);
+        return ValidatePreparedBindings(proposal);
+    }
+    public bool TryReadProposal(out ConstantSetting proposal)
+    {
+        proposal=null!;
+        if(_disposed||_state.IsDisposed)return false;
+        if(!ReadRaw(out var value,out var error)){_state.SetEditError(error);return false;}
+        proposal=new(value);return true;
+    }
+    public void IgnoreChanges(Action action)
+    {var previous=_syncing;_syncing=true;try{action();}finally{_syncing=previous;}}
+    public bool ValidatePreparedBindings(ConstantSetting proposal)
+    {
+        if(_disposed||_state.IsDisposed)return false;
         // An unloaded capture consumes its saved edit, without touching the detached visual.
         if(_suspended)return true;
+        if(_paired)IgnoreChanges(()=>_text.SetCurrentValue(TextBox.TextProperty,Format(proposal.Value!)));
         // Preserve both original bindings, their validators, trigger and floating format.
         var inner=_text.GetBindingExpression(TextBox.TextProperty);
         inner?.UpdateSource();
@@ -106,7 +125,7 @@ internal sealed class NativeNumericCommit : IDisposable
         outer?.UpdateSource();
         if(_disposed||_state.IsDisposed)return false;
         if(outer?.HasValidationError==true){_state.SetEditError("无法提交原数值绑定。");return false;}
-        proposal=new(value);return true;
+        return true;
     }
     public void ProjectAccepted()
     {
@@ -119,7 +138,7 @@ internal sealed class NativeNumericCommit : IDisposable
         _syncing=true;
         try
         {
-            if(_owner is not null)_owner.SetCurrentValue(Numbers.SliderArrangeBase.StartValueProperty,Convert.ToDouble(constant.Value,CultureInfo.InvariantCulture));
+            if(_owner is not null)_owner.SetCurrentValue(_valueProperty!,Convert.ToDouble(constant.Value,CultureInfo.InvariantCulture));
             else _leaf.SetCurrentValue(Numbers.NumericControl.TextProperty,Format(constant.Value!));
             var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
             if(outer is not null){Validation.ClearInvalid(outer);outer.UpdateTarget();}
@@ -136,6 +155,12 @@ internal sealed class NativeNumericCommit : IDisposable
         if(_state.IsReferenceMode||_state.Accepted is not ConstantSetting initial)return;
         try{if(IsDirty){if(!ReadRaw(out _,out var error))_state.SetEditError(error);}else ValidateStored(initial);}
         catch(Exception error)when(error is ArgumentException or FormatException or OverflowException){_state.SetEditError(error.Message);}
+    }
+    public void RestoreRejected(string? raw)
+    {
+        var suspended=_suspended;ProjectAccepted();
+        if(raw is null)return;
+        RestorePending(raw);if(!suspended)Resume();
     }
     public void Suspend(){if(_suspended)return;_pendingRaw=PendingRaw;_suspended=true;}
     public void RestorePending(string? raw)

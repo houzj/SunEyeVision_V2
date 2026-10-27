@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Reflection;
 using System.IO;
 using SunEyeVision.Core.Services.Serialization;
@@ -149,22 +149,25 @@ internal static class S2DocumentEditingCases
                 var provider=(IToolSettingsFields)new BlobTool();var schema=provider.SettingsSchema;
                 using var settingsView=ToolRegistry.CreateSettingsView(BlobTool.Id,new BlobSettings(),new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(ReferenceOptions:ReferenceFieldOptions.Empty));
                 var view=Logical(settingsView.View).OfType<DeclaredFieldsView>().Single();
-                DeclaredFieldEditor Field(string path)=>view.Fields.Single(f=>f.FieldId==schema.Presentation!.Fields.Single(a=>a.DisplayName==BlobParameterDefinition.Instance.Label(path)).FieldId);
+                DeclaredFieldAccess Field(string path)=>view.Fields.Single(f=>f.FieldId==schema.Presentation!.Fields.Single(a=>a.DisplayName==BlobParameterDefinition.Instance.Label(path)).FieldId);
                 var mode=Field("SegmentationMode");var lower=Field("Threshold");var upper=Field("UpperThreshold");var type=Field("Type");
-                Require(lower.Visibility==Visibility.Visible&&upper.Visibility==Visibility.Collapsed,"Single字段显示错误");
-                mode.TrySetConstant("DoubleThreshold");Require(lower.Visibility==Visibility.Visible&&upper.Visibility==Visibility.Visible&&type.Visibility==Visibility.Visible,"Double隐藏有效字段");
-                mode.TrySetConstant("None");Require(lower.Visibility==Visibility.Collapsed&&upper.Visibility==Visibility.Collapsed&&type.Visibility==Visibility.Collapsed,"None仍显示阈值");
+                Require(lower.View.Visibility==Visibility.Visible&&upper.View.Visibility==Visibility.Collapsed,"Single字段显示错误");
+                mode.TrySetConstant("DoubleThreshold");Require(lower.View.Visibility==Visibility.Visible&&upper.View.Visibility==Visibility.Visible&&type.View.Visibility==Visibility.Visible,"Double隐藏有效字段");
+                mode.TrySetConstant("None");Require(lower.View.Visibility==Visibility.Collapsed&&upper.View.Visibility==Visibility.Collapsed&&type.View.Visibility==Visibility.Collapsed,"None仍显示阈值");
                 mode.TrySetConstant("DoubleThreshold");
-                Logical(upper).OfType<ToggleButton>().Single(button=>Equals(button.ToolTip,"切换为订阅")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                var native=Logical(upper.View).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase>().Single();
+                var combo=(System.Windows.Controls.ComboBox)native.FindName("CBox");combo.ApplyTemplate();
+                var toggle=Visuals(combo).OfType<ToggleButton>().Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeLeft");
+                toggle.IsChecked=true;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 Require(upper.HasInvalidText&&!settingsView.TryCapture(out _,out _,out _),"活动Upper没有来源仍可提交");
-                mode.TrySetConstant("SingleThreshold");Require(upper.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
+                mode.TrySetConstant("SingleThreshold");Require(upper.View.Visibility==Visibility.Collapsed&&upper.HasInvalidText&&settingsView.TryCapture(out _,out _,out _),"隐藏Upper仍阻断或丢失待选草稿");
                 mode.TrySetConstant("DoubleThreshold");Require(!settingsView.TryCapture(out _,out _,out _),"恢复Double未恢复待选错误");
-                Logical(upper).OfType<ToggleButton>().Single(button=>Equals(button.ToolTip,"切换为数值编辑")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                toggle.IsChecked=false;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 Require(settingsView.TryCapture(out _,out _,out _)&&schema.Inputs.Single(p=>p.Id==mode.FieldId).EditModes==FieldEditModes.Constant,"模式常量或恢复值错误");
                 var controlling=new Port("controller",DataType.Text,EditModes:FieldEditModes.Constant|FieldEditModes.Reference,Choices:new TextChoiceConstraint(new[]{"a","b"}));
                 var dependent=new Port("dependent",DataType.Integer);var source=new ReferenceSetting(new OutputReference("node","out",DataType.Text));
                 var referenced=new DeclaredFieldsView(new[]{(controlling,new FieldPresentation("controller","mode","g",0,FieldEditorKind.Choice,new[]{"a","b"}),(ParameterSetting)source),(dependent,new FieldPresentation("dependent","value","g",1,FieldEditorKind.Scalar){Layout=new("p","s",new("controller","a",true))},(ParameterSetting)new ConstantSetting(1L))},_=>{});
-                Require(referenced.Fields[1].Visibility==Visibility.Visible,"未解析引用条件应显式可见");
+                Require(referenced.Fields[1].View.Visibility==Visibility.Visible,"未解析引用条件应显式可见");
                 referenced.Fields[1].TrySetConstant("invalid");Require(!referenced.TryValidate(out _)&&referenced.HasInvalidActiveFields,"未解析引用条件错误未参与校验");
                 var hiddenByContainer=new DeclaredFieldsView(new[]{(new Port("advanced",DataType.Integer),new FieldPresentation("advanced","advanced","g",0,FieldEditorKind.Scalar){Layout=new("other-tab","advanced",Advanced:true)},(ParameterSetting)new ConstantSetting(1L)),(new Port("normal",DataType.Integer),new FieldPresentation("normal","normal","g",1,FieldEditorKind.Scalar){Layout=new("selected-tab","normal")},(ParameterSetting)new ConstantSetting(2L))},_=>{});
                 hiddenByContainer.Fields[0].TrySetConstant("invalid");Require(!hiddenByContainer.TryValidate(out _)&&hiddenByContainer.HasInvalidActiveFields,"其他Tab/收起Advanced中的活动错误被忽略");
@@ -213,6 +216,12 @@ internal static class S2DocumentEditingCases
     private static ToolResults Run(string id,IVisionImage image,Action<ToolParameters>? configure=null){var p=ToolRegistry.CreateParameters(id);p.ResolvedInputImage=image;configure?.Invoke(p);return (ToolResults)ToolRegistry.CreateToolInstance(id)!.GetType().GetMethod("Run")!.Invoke(ToolRegistry.CreateToolInstance(id),new object[]{p})!;}
     private static FrozenImageResource Gray(byte[] bytes,RegionRun[]? domain=null)=>new(new(bytes.Length,1,bytes.Length,PixelLayout.Gray8),new(Guid.NewGuid(),"gray"),BlobSchema.ImageFrame,bytes,domain??new[]{new RegionRun(0,0,bytes.Length-1)});
     private static void Case(string name,Action action){action();passed++;Console.WriteLine("通过："+name);}
+    private static IEnumerable<DependencyObject> Visuals(DependencyObject root)
+    {
+        yield return root;
+        for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);i++)
+            foreach(var child in Visuals(System.Windows.Media.VisualTreeHelper.GetChild(root,i)))yield return child;
+    }
     private static IEnumerable<DependencyObject> Logical(DependencyObject root){yield return root;foreach(var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())foreach(var item in Logical(child))yield return item;}
     private static void Require(bool ok,string message){if(!ok)throw new Exception(message);}
     private static void Throws(Action action,string message){try{action();}catch(Exception e){var actual=e is TargetInvocationException?e.InnerException!:e;if(actual.Message.Contains(message))return;throw;}throw new Exception("未拒绝："+message);}

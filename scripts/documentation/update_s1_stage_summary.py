@@ -296,6 +296,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['sdkGroupOwnerCandidate'].items()])
                if plan.get('sdkGroupOwnerCandidate') else '')
+            + ('<h5>原between实际组合与本批验证</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativeBetweenCandidate'].items()])
+               if plan.get('nativeBetweenCandidate') else '')
             + ('<p><b>失败记录保留：</b>' + escape('；'.join(plan['implementationFailures'])) + '</p>' if plan.get('implementationFailures') else '')
             + '<h5>完整控件与组合清单</h5><p>' + escape(plan['inventoryRule']) + '</p>'
             + table(['编号 / 组合','Blob消费位置','VM控件 / 模板 / 组合链','已有成果及处理','证据 / 缺口','验收标准'], plan['compositions'])

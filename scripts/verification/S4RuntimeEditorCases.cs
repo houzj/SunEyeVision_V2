@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -59,7 +59,7 @@ internal static class S2DocumentEditingCases
         TextBox Threshold(DefaultDebugWindow window)
         {
             var control=Control(window);Logical(control).OfType<TabControl>().Single().SelectedIndex=1;window.UpdateLayout();Pump();
-            return (TextBox)Logical(control).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==threshold).InputElement!;
+            return (TextBox)Logical(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==threshold).InputElement!;
         }
         int Formal()=>(int)((BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold;
         WorkflowContext Context()=>(WorkflowContext)typeof(MainWindowViewModel).GetProperty("CurrentWorkflowContext",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
@@ -72,7 +72,7 @@ internal static class S2DocumentEditingCases
         {
             Require(node.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)&&first.EditorControl is null
                 &&Control(first).GetType()==typeof(RuntimeNodeConfigurationControl),"窗口借用SDK Blob参数或未保留Runtime配置");
-            Require(Logical(Control(first)).OfType<DeclaredFieldEditor>().Count()==58,"XML输入及设置字段未进入真实窗口");
+            Require(Logical(Control(first)).OfType<DeclaredFieldsView>().Single().Fields.Select(field=>field.FieldId).Distinct().Count()==54&&Logical(Control(first)).OfType<DeclaredInputFieldsView>().Single().Fields.Count==4,"XML输入及设置字段未进入真实窗口");
             Require(solutions.Session!.Editing.RegisteredScopeCount==1,"实际窗口未登记文档事务");
             // Inspect rendered input controls on their actual page, independently of the
             // user's saved designer SelectedPageIndex.

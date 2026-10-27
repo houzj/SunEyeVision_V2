@@ -24,7 +24,7 @@ public sealed partial class DeclaredToolConfigurationControl
         {
             var collection=CurrentRegionCollection(group.Role);
             var title=group.Role=="mask"?"屏蔽区域":"检测区域";
-            _fields.Fields.Single(field=>field.FieldId==group.ModeFieldId).UseRegionSourceSelector();
+            _fields.UseRegionSourceSelector(group.ModeFieldId);
             BuildInheritancePanels(group,title);
             var rows=new StackPanel{Margin=new Thickness(0,4,0,8)};
             _fields.AddAfterField(group.ModeFieldId,rows,new(group.ModeFieldId,nameof(RegionFieldMode.InheritedGeometry)));

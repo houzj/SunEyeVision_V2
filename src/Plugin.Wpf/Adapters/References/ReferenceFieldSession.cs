@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
@@ -17,6 +17,8 @@ internal sealed record ReferenceTreeNode(string Name,IReadOnlyList<ReferenceTree
 internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
 {
     private readonly DeclaredFieldState _state;
+    private readonly Func<ParameterSetting,bool> _accept;
+    private readonly Func<bool>? _commitGroup;
     private readonly ReferenceFieldOptions _options;
     private readonly Func<OutputReference,string>? _format;
     private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
@@ -29,22 +31,23 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public IReadOnlyList<ReferenceTreeNode> IndexNodes {get;private set;}=Array.Empty<ReferenceTreeNode>();
     public ReferenceTreeNode? SelectedSourceNode {get=>_sourceNode;set=>_sourceNode=value;}
     public ReferenceTreeNode? SelectedIndexNode {get=>_indexNode;set=>_indexNode=value;}
+    public bool HasPendingText=>_pendingText is not null;
     public bool ReadOnlyA=>!_options.EditableIndex;
     public bool IsTextPopupVisible=>true;
     public bool SubscribeInPopWindowEnableA=>_options.Expand is not null;
     public bool IsSelectedSubscribeParam=>false;
     public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;Notify(nameof(IsDropDownOpen));}}
     public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;Notify(nameof(IsTextDropDownOpen));}}
-    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);TryCommitPending();}}
+    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(_pendingText is not null)TryCommitPending();}}
     public ICommand DropDownCommand {get;}
     public ICommand ClickCommand {get;}
     public ICommand IndexClickCommand {get;}
     public ICommand FocusedCommand {get;}
     public ICommand PopSubscribeWindowCommand {get;}
 
-    public ReferenceFieldSession(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format)
+    public ReferenceFieldSession(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format,Func<ParameterSetting,bool>? accept=null,Func<bool>? commitGroup=null)
     {
-        _state=state;_options=options;_format=format;
+        _state=state;_options=options;_format=format;_accept=accept??state.TrySet;_commitGroup=commitGroup;
         DropDownCommand=new SessionCommand(_=>Refresh());
         ClickCommand=new SessionCommand(value=>SelectSource(Unwrap(value)));
         IndexClickCommand=new SessionCommand(value=>SelectIndex(Unwrap(value)));
@@ -124,7 +127,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private void SelectSource(ReferenceTreeNode? node)
     {
         if(_disposed||_state.IsDisposed||node is null)return;
-        if(node.Clear){_pendingText=null;_state.ClearReference();OnStateChanged();RequestClose();return;}
+        if(node.Clear){_pendingText=null;ClearReference();OnStateChanged();RequestClose();return;}
         if(node.Candidate is not {} candidate)return;
         var selection=!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting old&&candidate.Output.Type.Shape==ValueShape.Sequence
             ?old.Reference.Selection:BindingSelection.All;
@@ -143,47 +146,62 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private bool Submit(OutputReference reference)
     {
         if(_disposed||_state.IsDisposed)return false;
-        _pendingText=null;
-        if(_state.TrySet(new ReferenceSetting(reference)))
+        if(_accept(new ReferenceSetting(reference)))
         {_pendingText=null;RequestClose();OnStateChanged();return true;}
-        _pendingText=null;RestoreSelection();Notify(nameof(CurValueA));return false;
+        RestoreSelection();Notify(nameof(CurValueA));return false;
     }
 
     public void ObserveText(string text)
     {
         if(_disposed||text==CurValueA)return;
-        if(text.Length==0){_pendingText=null;_state.ClearReference();OnStateChanged();RequestClose();return;}
+        if(text.Length==0){_pendingText=null;ClearReference();OnStateChanged();RequestClose();return;}
         _pendingText=text;
+    }
+    private void ClearReference()
+    {
+        if(_state.Port.Required)_state.ClearReference();
+        else _accept(new UnsetSetting());
+    }
+    public bool TryPreparePending(out ParameterSetting proposal)
+    {
+        proposal=null!;
+        if(_disposed||_state.IsDisposed||_state.SourceError.Length!=0)return false;
+        try
+        {
+            if(_state.ReferenceCleared||_state.MissingReference)throw new ArgumentException("请先选择来源，再编辑索引。");
+            proposal=_state.Accepted;
+            if(_pendingText is null||ReadOnlyA)return true;
+            if(proposal is not ReferenceSetting accepted)throw new ArgumentException("请先选择来源，再编辑索引。");
+            var source=accepted.Reference;var prefix=Label(source)+" [";
+            if(source.Type.Shape!=ValueShape.Sequence||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
+                ||!_pendingText.EndsWith("]",StringComparison.Ordinal))throw new ArgumentException("只能编辑当前来源括号中的索引。");
+            var content=_pendingText[prefix.Length..^1];
+            BindingSelection selection=content.Length==0?BindingSelection.All
+                :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
+            if(selection is BindingSelection.AtConstant index&&source.Type.Count.Maximum is int maximum&&index.Index>=maximum)
+                throw new ArgumentException("序号超出来源声明的最大数量。");
+            proposal=new ReferenceSetting(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
+            return !_disposed&&!_state.IsDisposed;
+        }
+        catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
+        {_state.SetEditError(error.Message);return false;}
     }
     public bool TryCommitPending()
     {
         if(_disposed||_state.IsDisposed)return false;
+        if(_commitGroup is not null)return _commitGroup();
         if(_committing||_pendingText is null)return !_state.HasInvalidInput;
         if(ReadOnlyA){_pendingText=null;Notify(nameof(CurValueA));return !_state.HasInvalidInput;}
         _committing=true;
         try
         {
-            OutputReference proposal;
-            try
-            {
-                if(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted)throw new ArgumentException("请先选择来源，再编辑索引。");
-                var source=accepted.Reference;var prefix=Label(source)+" [";
-                if(source.Type.Shape!=ValueShape.Sequence||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
-                    ||!_pendingText.EndsWith("]",StringComparison.Ordinal))throw new ArgumentException("只能编辑当前来源括号中的索引。");
-                var content=_pendingText[prefix.Length..^1];
-                BindingSelection selection=content.Length==0?BindingSelection.All
-                    :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
-                if(selection is BindingSelection.AtConstant index&&source.Type.Count.Maximum is int maximum&&index.Index>=maximum)
-                    throw new ArgumentException("序号超出来源声明的最大数量。");
-                proposal=new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage);
-            }
-            catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
-            {_state.SetEditError(error.Message);return false;}
-            // Observer failures are outside parsing validation, just as in the shared state.
-            return Submit(proposal);
+            if(!TryPreparePending(out var proposal))return false;
+            if(proposal is ReferenceSetting reference)return Submit(reference.Reference);
+            return _accept(proposal);
         }
         finally{_committing=false;}
     }
+    public void ProjectAccepted(){_pendingText=null;OnStateChanged();}
 
     private void FocusChanged(object? value)
     {

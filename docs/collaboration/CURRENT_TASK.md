@@ -1,5 +1,17 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 C06原between实际组合已通过自动验证（最新）
+
+- 编译基线49cc2685/main；主线唯一产品写者、三路只读核C06/C07/C08。原框架参考仅归档，未实施框架重构；用户BlobParameterEditor.xaml手工页索引2保持未提交。
+- 原NativeRangePresenter一份between/T1/T2/双轨/左右订阅已替换RangeField；FieldAccess保54设置+4输入身份、14对共享原视图。两端数字/引用先准备、完整候选上下文验证原两级绑定及RangeRule、一次writer；拒绝恢复原DP并保两端原文/索引，原始逆序与来源错误阻断，必填清空不复活。
+- 原四个PART_Track用稳定派生Track保Thumb/Repeat/样式/命令；Clip先归一化，左右滑轨延迟回调核IsLoaded与当前端点，拒过期夹紧。原来源SHA保留，必要数学/模板及事件适配明确登记，不称原件逐字节未改。
+- 构造失败清监听/视图/状态，释放FieldAccess统一拒写/提交、空输入及不再挂监听；独立单值与显示/来源既有回归仍过。
+- 最终UI004零错误6276警告50.13秒，全量Release001零错误6546警告57.78秒。WindowPresentation041=22、FieldEditing060=31、RuntimeEditor041=10、DesignTime017=27、FullChain100=7、Components185=9、RuntimeKernel039=17、Algorithm024=9、DocumentEditing048=30；正式EXE exit0/22工具。
+- O06_BLOB_NATIVE_BETWEEN_CHECKPOINT_20261027.json核14源码增量、760发布项、224加载SHA记录及九轨源码同源；共享23原源/资源SHA再次匹配。accepted/extreme两张实际WPF PNG已查看，不代VM实机或VS人工；所有自有构建/检查句柄均结束。
+- 保留WindowPresentation040的20过2失败：测试未取得实际焦点、跨页未装入视觉树定位错误；修为持焦提交及逻辑树定位，同产品041全过。Algorithm023两处旧访问句柄当DependencyObject导致测试编译失败；改真实View/CBox原按钮，024九组过。早期UI001/002/003候选虽绿，未套最终成绩。
+- 原方案701唯一锚点/幂等，Catalog已登记C06及本方必要适配。准备中文本地检查点，不推送；真实VS/VM同态与用户本批未验，第一阶段未完成，第二阶段未准入。
+- 下一C07完整原扩展窗口：复用原BaseWindow/CheckBox/语言与实际Owner，单Session带代次请求转发，source/index由已开窗光标动态切换，不另造索引Expand按钮。后接C08原expand/ROIListStyle名称域、Box五字段与同Guid/同帧图像事件；SDK旧ROI不算Runtime本地几何已实现，完整显示/窗口/命名仍需逐项落实。
+
 ## 2026-10-27 C06整组消费与参数根连接基础已验证（最新）
 
 - 编译基线a4526449/main；主线唯一产品写者，三路只读核C06、C07、C08必要依赖。之前SunEye本地框架分析与VM原厂逆向证据已分开归档，本轮没有实施框架重构。

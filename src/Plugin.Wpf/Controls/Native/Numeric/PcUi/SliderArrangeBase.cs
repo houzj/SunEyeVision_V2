@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
+﻿using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 using System;
 using System.ComponentModel;
@@ -934,7 +934,10 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 		}
 		double num = EndValue / 2.0 + StartValue / 2.0;
 		double num2 = Maximum - Minimum;
-		double num3 = Math.Abs((double)(SilderWidth - 2 * d) * (num - Minimum) / num2 + (double)d);
+		// Normalize before multiplying so a finite business domain up to double.MaxValue stays drawable.
+        double ratio = num2 == 0 ? 0 : double.IsFinite(num2) ? (num - Minimum) / num2
+            : (num / 2 - Minimum / 2) / (Maximum / 2 - Minimum / 2);
+        double num3 = Math.Abs((double)(SilderWidth - 2 * d) * Math.Clamp(ratio, 0, 1) + (double)d);
 		if (!IsThrough)
 		{
 			if (!isBeside)
@@ -1048,9 +1051,11 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	protected void SL_Bat1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 	{
-		Dispatcher.BeginInvoke((Action)(() =>
-		{
-			if (SliderType == SliderArrangeType.bothWay)
+        var proposed = e.NewValue;
+        Dispatcher.BeginInvoke((Action)(() =>
+        {
+            if (!IsLoaded || StartValue != proposed) return;
+            if (SliderType == SliderArrangeType.bothWay)
 			{
 				if (e.NewValue > EndValue)
 				{
@@ -1082,9 +1087,11 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	protected void SL_Bat2_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 	{
-		Dispatcher.BeginInvoke((Action)(() =>
-		{
-			if (SliderType == SliderArrangeType.bothWay)
+        var proposed = e.NewValue;
+        Dispatcher.BeginInvoke((Action)(() =>
+        {
+            if (!IsLoaded || EndValue != proposed) return;
+            if (SliderType == SliderArrangeType.bothWay)
 			{
 				if (e.NewValue < StartValue)
 				{

@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-27第一阶段继续：C06公共整组writer、SDK候选换根及ROI/来源按当前根连接基础通过。UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。 原between/大域Track、C07扩展、C08原ROI栈及Runtime本地几何、完整显示/窗口/命名与真实VS/VM同态验收仍缺，第二阶段未准入。",
+  "current": "2026-10-27第一阶段继续：原between已替换RangeField，保54字段/14对及一份原双端视图，C05共享依赖回归通过。最终UI004零错误6276警告50.13秒；全量Release001零错误6546警告57.78秒。WindowPresentation041=22、FieldEditing060=31、RuntimeEditor041=10、DesignTime017=27、FullChain100=7、Components185=9、RuntimeKernel039=17、Algorithm024=9、DocumentEditing048=30；正式EXE exit0/22工具。 C07扩展、C08原ROI栈/图像事件、完整显示/窗口/命名和真实VS/VM同态/用户验收仍缺，第二阶段未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -325,7 +325,7 @@
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
   "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "下一集中批优先完成一份原between及逻辑字段访问，保两端原绑定、订阅、一次整组接纳及有限大域映射；随后原扩展窗和原ROI参数栈独立闭包，不能把SDK适配器回归当Runtime Blob本地ROI完成。",
+  "next": "优先C07原扩展订阅窗口：单Session请求转发、动态source/index模式及Owner释放；随后C08原参数栈与图像事件同Guid/同帧独立样例；其余第一阶段要求逐项落实后才继续Blob业务重组。",
   "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -6980,13 +6980,28 @@
         "C08.Runtime实际入口",
         "当前RuntimeNodeConfigurationControl仅输入/设置视图；Blob Runtime检测/屏蔽仍资源输入，没有本地几何字段。SDK ROI换根修复不能算Runtime本地ROI完成。",
         "复用Contracts实际ImageFrameAddress/GeometryEditRequest/Scope与revision；库内独立样例先验证同Guid原栈和图像事件，再在第二阶段接正式Blob持久化，禁止借SDK模型冒充。"
+      ],
+      [
+        "C06原between本批生产消费",
+        "14对实际PairWith共享原T1/T2/双滑轨、两端订阅及一次组writer；原单值/两级绑定与程序提案回归仍过。原Clip/Track稳定性适配明确记录。",
+        "九轨同源/EXE待封存，真实VS/VM同态与用户仍未验。"
+      ],
+      [
+        "C07原扩展窗口依赖核收",
+        "只有来源Popup有Expand按钮，打开后索引模式由光标FocusedCommand动态切换；不能造索引Expand。原BaseWindow已迁，窗口/CheckBox字典仍pending，需局部正式样式、实际Owner与单Session请求。",
+        "只读证据，尚未激活完整专窗；下一批实施，不把当前一次性Candidates/Submit当完成。"
+      ],
+      [
+        "C08原展开链核收",
+        "expand与ROIListStyle同模板名称域；BoxROIStack.IsShow无展开消费者，LeftRight只做左右布局；同Group+Guid投影与真实ImageSize连接参数栈。",
+        "资源按钮样式/缺失局部键与间距需随原件激活闭合；不是SDK旧ROI或Runtime Blob本地ROI已完成。"
       ]
     ],
     "candidateCheckpoint": {
-      "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json",
-      "sourceBaseline": "a4526449",
-      "checks": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
-      "status": "C06整组消费及参数根基础通过；原between、扩展订阅及Runtime本地ROI尚未完成，第二阶段不准入。"
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_BETWEEN_CHECKPOINT_20261027.json",
+      "sourceBaseline": "49cc2685",
+      "checks": "最终UI004零错误6276警告50.13秒；全量Release001零错误6546警告57.78秒。WindowPresentation041=22、FieldEditing060=31、RuntimeEditor041=10、DesignTime017=27、FullChain100=7、Components185=9、RuntimeKernel039=17、Algorithm024=9、DocumentEditing048=30；正式EXE exit0/22工具。",
+      "status": "C06原between及共享数值依赖自动验证通过，真实人工未验；扩展订阅/原ROI栈及其余第一阶段要求继续。"
     },
     "candidateCheckpointHistory": [
       {
@@ -7037,6 +7052,12 @@
         "checks": "最终UI002零错误6619警告123.89秒，全量002零错误6613警告101.19秒。RuntimeKernel036=17；FieldEditing053=31；RuntimeEditor037=10；DesignTime013=27；FullChain096=7；WindowPresentation033=13；Components181=9；实际EXE22工具准入。8源码增量、760发布项和178加载记录SHA核对。",
         "identity": "单主仓正式Release，8项源码增量、760发布项及178加载记录同源；用户页索引保留但不纳入本批提交。",
         "status": "整组接纳基础已验证；C05/C06原生产组合及SDK非视觉接纳未完成，C07扩展和真实人工仍未完成；不进入第二阶段。"
+      },
+      {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_GROUP_OWNER_CHECKPOINT_20261027.json",
+        "sourceBaseline": "a4526449",
+        "checks": "UI002零错误1086警告96.08秒；全量Release001零错误6637警告71.07秒。DocumentEditing047=30、FieldEditing059=31、RuntimeEditor040=10、DesignTime016=27、FullChain099=7、WindowPresentation039=17、Components184=9、RuntimeKernel038=17；真实EXE探针exit0/22工具。",
+        "status": "C06整组消费及参数根基础通过；原between、扩展订阅及Runtime本地ROI尚未完成，第二阶段不准入。"
       }
     ],
     "implementationFailures": [
@@ -7295,6 +7316,29 @@
         "新增三个用例使用实际ImageThreshold公共编辑窗及SDK非视觉ROI适配器；不是Blob Runtime本地ROI接入或VM原几何栈验收。",
         "当前SDK IConfigurationFieldProvider生产工具无直接实现；反射分支有实际工具验证，provider附加来源/继承组合仅源码复核，仍需随对应真实原件消费验证。",
         "设计时自动创建不等于VS实际设计器，人工未验。"
+      ]
+    },
+    "nativeBetweenCandidate": {
+      "status": "AUTOMATED_CHECKS_PASSED_REAL_MANUAL_PENDING",
+      "baseline": "49cc2685",
+      "implementation": [
+        "FieldsView先建立唯一状态并校验PairWith完整拓扑；FieldAccess保每个正式FieldId，范围两端共享一份真实NativeRangePresenter。",
+        "删RangeField/UsePairedSlider/SuppressStandaloneSlider；原VM.PcUI between实际T1/T2、双滑轨、独立左右订阅槽与同一原Popup/树模板。",
+        "两端纯数字/引用提案先完整准备，建立完整候选上下文后保原两级绑定/RangeRule校验，一次组writer；拒绝恢复原DP并保原文，源错误与必填清空不绕行。",
+        "原数学必要适配：Clip先归一化，原四个PART_Track用StableSliderTrack保原Thumb/Repeat与四向布局/Point/Distance有限映射；旧滑轨异步回调核当前端点，不能重放旧值。",
+        "构造失败清监听/视图/状态；初始逆序明确阻断保存；释放句柄拒绝写入和提交，不创建第二份accepted模型。"
+      ],
+      "verification": "最终UI004零错误6276警告50.13秒；全量Release001零错误6546警告57.78秒。WindowPresentation041=22、FieldEditing060=31、RuntimeEditor041=10、DesignTime017=27、FullChain100=7、Components185=9、RuntimeKernel039=17、Algorithm024=9、DocumentEditing048=30；正式EXE exit0/22工具。",
+      "remaining": [
+        "真实VM同状态与VS设计器/用户本批未验；自动独立创建与截图不能代签。",
+        "C07扩展窗、C08原ROI栈/图像事件、完整显示/窗口/命名尚未完成；第一阶段继续，第二阶段未准入。"
+      ],
+      "sourceAdaptationBoundary": "原件来源SHA保持；本方布局映射/裁剪及过期事件修正明确记录，不称原件未修改或全部VM固有行为已动态验证。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_BETWEEN_CHECKPOINT_20261027.json",
+      "failures": [
+        "UI001/002/003为早期候选绿构建，随后静态复核修拒绝缓冲/来源错误/退场访问，最终以UI004及全量Release001为准，不套早期成绩。",
+        "WindowPresentation040：20过2失败；来源恢复用例缺实际焦点、跨页14对用视觉树找未装入视图。修为持焦后Enter及逻辑树定位，产品未变，041=22过。",
+        "Algorithm023检查编译失败CS1503，两处旧Logical(upper)；改访问句柄真实View并通过原CBox模板按钮实际切换，024九组过。失败原日志保留。"
       ]
     }
   },

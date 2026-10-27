@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using System.Globalization;
@@ -40,7 +40,6 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     private bool _disposed;
     private long _renderGeneration;
     private string _editError => _state.EditError;
-    private bool _pairedSlider;
     private bool _regionSourceSelector;
     private readonly bool _allowUnboundReference;
     public void UseRegionSourceSelector(){_regionSourceSelector=true;HideLabel();Render();}
@@ -52,7 +51,6 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         _error.Margin=new Thickness(width,2,0,0);
     }
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;Render();return true;}
-    public void UsePairedSlider(){_pairedSlider=true;_numeric?.SuppressStandaloneSlider();}
     public bool TrySetConstant(object value)
     {
         if(_numeric is not null)return _numeric.TrySetConstant(value);
@@ -67,6 +65,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         return true;
     }
     public void HideLabel() { _label.Visibility=Visibility.Collapsed;_row.ColumnDefinitions[0].Width=new GridLength(0); }
+    internal bool IsDisposed=>_disposed||_state.IsDisposed;
     public string FieldId => _port.Id;
     public ParameterSetting Setting => _setting;
     private FrameworkElement? _inputElement;
@@ -135,7 +134,6 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         if(composedNumeric&&(_setting is not UnsetSetting||_referenceMode))
         {
             _numeric=new NativeNumberPresenter(_state,_presentation,_referenceOptions,_formatReference);
-            if(_pairedSlider)_numeric.SuppressStandaloneSlider();
             InputElement=_numeric;_body.Children.Add(_numeric);return;
         }
         if(_referenceMode||_setting is ReferenceSetting||_allowUnboundReference&&_port.EditModes==FieldEditModes.Reference)
@@ -268,6 +266,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
 
     public bool TryCommitPending()
     {
+        if(IsDisposed)return false;
         if(_numeric is not null&&!_numeric.TryCommitPending())return false;
         if(_referencePresenter is not null&&!_referencePresenter.TryCommitPending())return false;
         return _children.All(child=>child.TryCommitPending());

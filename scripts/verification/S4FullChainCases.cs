@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -77,7 +77,7 @@ internal static class S2DocumentEditingCases
         TextBox Field(DefaultDebugWindow w,string property)
         {
             var id=((IToolSettingsFields)new BlobTool()).SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName==BlobParameterDefinition.Instance.Label(property)).FieldId;
-            Logical(Control(w)).OfType<TabControl>().Single().SelectedIndex=1;Pump();return (TextBox)Logical(Control(w)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==id).InputElement!;
+            Logical(Control(w)).OfType<TabControl>().Single().SelectedIndex=1;Pump();return (TextBox)Logical(Control(w)).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==id).InputElement!;
         }
         Case("工具箱实际Drop默认创建Runtime，节点与文档共用定义，未创建SDK Blob参数",()=>
         {

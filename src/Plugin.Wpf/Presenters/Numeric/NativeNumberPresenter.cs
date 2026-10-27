@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -91,7 +91,6 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
         AttachInput();
         ProjectState();
     }
-    public void SuppressStandaloneSlider(){_showSlider=false;ApplySliderVisibility();}
     private void ApplySliderVisibility()
     {
         if(_arrange is null)return;
@@ -122,7 +121,7 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
         if(_commit is null||!ReferenceEquals(_commit.Text,_leaf!.FindName("ValueText")))
         {
             var raw=_commit?.PendingRaw;
-            _commit?.Dispose();_commit=new(_state,_layout,_leaf!,_arrange);
+            _commit?.Dispose();_commit=new(_state,_layout,_leaf!,_arrange,_arrange is null?null:Numbers.SliderArrangeBase.StartValueProperty);
             _commit.RestorePending(raw);_commit.ValidateInitial();
         }
     }

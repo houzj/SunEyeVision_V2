@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.References;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
@@ -146,37 +146,7 @@ internal static class S2DocumentEditingCases
  static void LightText(DependencyObject root,Brush background){foreach(var text in Find<TextBlock>(root).Where(t=>t.IsVisible&&t.Opacity>=1&&!string.IsNullOrWhiteSpace(t.Text)))Contrast(text.Foreground,background,text.Text);foreach(var tab in Find<TabItem>(root))Contrast(tab.Foreground,background,"页签"+tab.Header);}
  static IEnumerable<T> Visuals<T>(DependencyObject root) where T:DependencyObject{if(root is T item)yield return item;for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)foreach(var result in Visuals<T>(VisualTreeHelper.GetChild(root,i)))yield return result;}
  static List<string> VisualContrast(DependencyObject root,Brush background){var failures=new List<string>();foreach(var text in Visuals<TextBlock>(root).Where(t=>t.IsVisible&&t.IsEnabled&&t.Opacity>=1&&!string.IsNullOrWhiteSpace(t.Text))){try{Contrast(text.Foreground,background,text.Text);}catch(Exception error){failures.Add(error.Message+"；Foreground="+text.Foreground+"；IsEnabled="+text.IsEnabled);}}return failures;}
- static void AreaRangeVisible(DeclaredFieldsView fields,IReadOnlyList<ConfigurationFieldAccessor> descriptors)
- {
-  var low=fields.Fields.Single(f=>f.FieldId==descriptors.Single(d=>d.StoragePath=="FilterAreaMin").Port.Id);var high=fields.Fields.Single(f=>f.FieldId==descriptors.Single(d=>d.StoragePath=="FilterAreaMax").Port.Id);
-  var label=(TextBlock)typeof(DeclaredFieldEditor).GetField("_label",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(low)!;Require(label.Text=="面积范围","配对范围标签不是面积范围："+label.Text);
-  var areaSwitch=fields.Fields.Single(f=>f.FieldId==descriptors.Single(d=>d.StoragePath=="IsAreaFilterEnabled").Port.Id).InputElement!;
-  var rangeInput=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low).Single();
-  var switchLeft=areaSwitch.TransformToAncestor(fields).Transform(new Point()).X;
-  var inputLeft=rangeInput.TransformToAncestor(fields).Transform(new Point()).X;
-  Require(Math.Abs(switchLeft-inputLeft)<=2,"原VM开关未与参数输入列左对齐：switch="+switchLeft+",input="+inputLeft);
-  var measurements=new List<string>();var widthFailures=new List<string>();
-  TextBox Verify(string stage)
-  {
-   var text=(TextBox)high.InputElement!;Require(text.IsVisible&&double.TryParse(text.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out var stored)&&stored==9999999,"未检验真实可见9999999样本；实际="+text.Text+"；可见="+text.IsVisible);text.ApplyTemplate();text.UpdateLayout();
-   var view=Visuals<FrameworkElement>(text).Single(v=>v.GetType().Name=="TextBoxView");var presenter=Visuals<ScrollContentPresenter>(text).Single();var available=Math.Min(view.ActualWidth,presenter.ActualWidth);var measured=new FormattedText(text.Text,CultureInfo.InvariantCulture,FlowDirection.LeftToRight,new Typeface(text.FontFamily,text.FontStyle,text.FontWeight,text.FontStretch),text.FontSize,text.Foreground,VisualTreeHelper.GetDpi(text).PixelsPerDip);var width=measured.WidthIncludingTrailingWhitespace;var first=text.GetRectFromCharacterIndex(0,false);var last=text.GetRectFromCharacterIndex(text.Text.Length-1,true);var actualTextWidth=last.X-first.X;
-   var measurement=$"阶段={stage};范围样本文本={text.Text};标签={label.Text};TextBoxActual={text.ActualWidth:R};HostActual={Visuals<ScrollViewer>(text).Single().ActualWidth:R};TextBoxPadding={text.Padding};TextBoxView={view.ActualWidth:R};ScrollContentPresenter={presenter.ActualWidth:R};文字宽={width:R};实际字符宽={actualTextWidth:R};首字符Rect={first};尾字符TrailingRect={last};TextFormattingMode={TextOptions.GetTextFormattingMode(text)};HorizontalOffset={text.HorizontalOffset:R};TextBoxVerticalScroll={text.VerticalScrollBarVisibility};HostVerticalScroll={Visuals<ScrollViewer>(text).Single().VerticalScrollBarVisibility};ComputedVertical={Visuals<ScrollViewer>(text).Single().ComputedVerticalScrollBarVisibility}";Console.WriteLine(measurement);measurements.Add(measurement);File.WriteAllLines(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"scrollbar-minwidth-visible-width.txt"),measurements);
-   if(text.HorizontalOffset!=0||width>available+.1)widthFailures.Add(measurement);return text;
-  }
-  var initial=Verify("Loaded");initial.Focus();Pump();Keyboard.ClearFocus();Pump();Verify("聚焦失焦");
-  var mode=Visuals<ToggleButton>(high).Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");
-  mode.IsChecked=true;Click(mode);Pump();mode.IsChecked=false;Click(mode);Pump();
-  var numeric=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(high).Single();Require(numeric.SliderVisibility==Visibility.Collapsed,"配对切回常量未保留原数值控件或单滑条抑制");Verify("切订阅再切常量");Require(widthFailures.Count==0,"9999999可视宽度不足："+string.Join("；",widthFailures));
- }
  static void Show(UIElement view){host.Children.Clear();host.Children.Add(view);owner.UpdateLayout();Pump();}
- static void VerifyPageScroll(DeclaredFieldsView fields,TabControl tabs,IReadOnlyList<ConfigurationFieldAccessor> descriptors,Window shell)
- {
-  tabs.SelectedIndex=2;shell.UpdateLayout();Pump();var scroll=(ScrollViewer)((TabItem)tabs.Items[2]).Content;var id=descriptors.Single(d=>d.StoragePath.StartsWith("ResultPresentation.Texts")&&d.StoragePath.EndsWith(".PositionY")).Port.Id;var bottom=fields.Fields.Single(f=>f.FieldId==id);var before=bottom.TransformToAncestor(scroll).TransformBounds(new Rect(0,0,bottom.ActualWidth,bottom.ActualHeight));
-  Require(scroll.ScrollableHeight>0,"结果显示页没有可滚动内容");scroll.ScrollToVerticalOffset(scroll.ScrollableHeight);shell.UpdateLayout();Pump();var after=bottom.TransformToAncestor(scroll).TransformBounds(new Rect(0,0,bottom.ActualWidth,bottom.ActualHeight));Require(scroll.VerticalOffset>0&&Math.Abs(scroll.VerticalOffset-scroll.ScrollableHeight)<=1&&after.Top>=0&&after.Bottom<=scroll.ActualHeight+1&&after.Top<before.Top,"ScrollToVerticalOffset未使文本显示位置Y实际呈现到底部");
-  Require(Math.Abs(((ScrollBar)scroll.Template.FindName("PART_VerticalScrollBar",scroll)).ActualWidth-12)<.1,"页滚动条实际宽度不是12px");var measurement=$"结果页ActualScrollbarWidth={((ScrollBar)scroll.Template.FindName("PART_VerticalScrollBar",scroll)).ActualWidth:R};结果页ScrollableHeight={scroll.ScrollableHeight:R};VerticalOffset={scroll.VerticalOffset:R};Viewport={scroll.ViewportWidth:R}x{scroll.ViewportHeight:R};BottomFieldBefore={before};BottomFieldAfter={after};ScrollViewer={scroll.ActualWidth:R}x{scroll.ActualHeight:R}";Console.WriteLine(measurement);File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"scrollbar-minwidth-scroll.txt"),measurement);
-  var image=new RenderTargetBitmap((int)shell.ActualWidth,(int)shell.ActualHeight,96,96,PixelFormats.Pbgra32);image.Render(shell);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(image));using(var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"scrollbar-minwidth-text-bottom.png")))encoder.Save(stream);
-  scroll.ScrollToVerticalOffset(0);shell.UpdateLayout();Pump();Require(scroll.VerticalOffset==0,"结果页不能滚回顶部");
- }
  static IEnumerable<T> Find<T>(DependencyObject root) where T:DependencyObject
  {if(root is T item)yield return item;foreach(var child in LogicalTreeHelper.GetChildren(root))if(child is DependencyObject d)foreach(var found in Find<T>(d))yield return found;}
  static Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
@@ -211,6 +181,104 @@ internal static class S2DocumentEditingCases
   var args=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(target)!,Environment.TickCount,key){RoutedEvent=preview?Keyboard.PreviewKeyDownEvent:Keyboard.KeyDownEvent};
   target.RaiseEvent(args);Pump();return args;
  }
+ static void VerifyBetween()
+ {
+  DeclaredFieldsView Create(Action<IReadOnlyDictionary<string,ParameterSetting>> writer,ReferenceFieldOptions? refs=null,double maximum=1000,double initialLow=10,double initialHigh=20)=>new(new[]{
+   (new Port("low",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("low","面积下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:maximum,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(initialLow)),
+   (new Port("high",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),new FieldPresentation("high","面积上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:maximum,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(initialHigh))},writer,refs);
+  Test("原between一份真实双端、联合输入跨旧上限、Enter一次提交及失焦",()=>
+  {
+   var writes=0;IReadOnlyDictionary<string,ParameterSetting>? accepted=null;
+   using var fields=Create(values=>{writes++;accepted=values;});Show(fields);
+   var low=fields.Fields[0];var high=fields.Fields[1];
+   Require(ReferenceEquals(low.View,high.View)&&!ReferenceEquals(low.InputElement,high.InputElement),"双端未共享一份真实组合或端点混用");
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(low.View).Single();
+   Require(native.SliderType==Native.Numeric.HikPcUI.ListView.SliderArrangeType.between&&native.IsVisibleOfChild==Visibility.Visible,"没有使用原between");
+   var a=(TextBox)low.InputElement!;var b=(TextBox)high.InputElement!;a.Focus();a.Text="30";b.Text="40";
+   Require(writes==0,"键入提前写入宿主");SendKey(a,Key.Enter,true);
+   Require(writes==1&&accepted!.Count==2&&Equals(((ConstantSetting)accepted["low"]).Value,30d)&&Equals(((ConstantSetting)high.Setting).Value,40d)&&!a.IsKeyboardFocused,"未单次完整接纳或Enter未失焦");
+   Require(native.StartValue==30&&native.EndValue==40,"原DP未双向同步");CaptureInline(fields,"native-between-accepted.png");
+  });
+  Test("原between非法另一端与宿主拒绝不半写，保留原文可修正",()=>
+  {
+   var writes=0;var reject=true;
+   using var fields=Create(_=>{if(reject)throw new InvalidOperationException("宿主拒绝范围");writes++;});Show(fields);
+   var a=(TextBox)fields.Fields[0].InputElement!;var b=(TextBox)fields.Fields[1].InputElement!;
+   a.Focus();a.Text="30";b.Text="bad";SendKey(a,Key.Enter,true);
+   Require(writes==0&&a.IsKeyboardFocused&&a.Text=="30"&&b.Text=="bad","非法另一端仍提交或清原文/焦点");
+   b.Text="40";SendKey(a,Key.Enter,true);
+   Require(writes==0&&a.Text=="30"&&b.Text=="40"&&Equals(((ConstantSetting)fields.Fields[0].Setting).Value,10d),"宿主拒绝丢原文或部分写入");
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+   Require(native.StartValue==10&&native.EndValue==20,"拒绝未恢复原DP");
+   reject=false;SendKey(a,Key.Enter,true);Require(writes==1&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,40d),"拒绝后原文无法再次提交");
+  });
+  Test("原between右订阅槽与另一端联合校验，清空不复活且旧访问失效",()=>
+  {
+   var writes=0;var refreshFails=false;
+   var candidate=new DeclaredReferenceCandidate("数值来源","source",null,new Port("values",TypeRef.SequenceOf(DataType.Number)),Array.Empty<string>());
+   using var fields=Create(_=>writes++,new ReferenceFieldOptions(_=>{if(refreshFails)throw new InvalidOperationException("来源刷新失败");return new[]{candidate};},EditableIndex:true));
+   Show(fields);var a=(TextBox)fields.Fields[0].InputElement!;
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+   var toggle=Visuals<ToggleButton>(native).Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeRight");
+   toggle.IsChecked=true;Click(toggle);Pump();Require(native.IsSubscribeRight&&!native.IsSubscribeLeft,"右端错误使用左订阅槽");
+   var session=native.SubscribeDataRight!;var type=session.GetType();
+   void Refresh()=>type.GetMethod("Refresh")!.Invoke(session,null);
+   void Select()
+   {
+    Refresh();var roots=(System.Collections.IEnumerable)type.GetProperty("SourceNodes")!.GetValue(session)!;
+    var node=roots.Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).First();
+    ((ICommand)type.GetProperty("ClickCommand")!.GetValue(session)!).Execute(node);Pump();
+   }
+   a.Text="bad";Select();Require(writes==0&&fields.Fields[1].Setting is ConstantSetting,"选源绕过另一端非法数字");
+   a.Text="11";Select();Require(writes==1&&fields.Fields[1].Setting is ReferenceSetting,"修正后未联合选择来源");
+   refreshFails=true;Refresh();Select();Require(writes==1,"保留树显式选源绕过来源错误");a.Focus();Pump();a.Text="12";SendKey(a,Key.Enter,true);Require(writes==1,"来源刷新失败仍调用组writer");
+   refreshFails=false;Refresh();SendKey(a,Key.Enter,true);Require(writes==2,"来源恢复后不能提交；writes="+writes+"；focus="+a.IsKeyboardFocused+"；low="+a.Text+"；errors="+string.Join("/",fields.Fields.Select(f=>f.Error)));
+   a.Text="bad";Require(!(bool)type.GetMethod("TryCommitPending")!.Invoke(session,null)!,"干净引用提交绕过另一端错误");
+   type.GetMethod("ObserveText")!.Invoke(session,new object[]{""});a.Text="13";SendKey(a,Key.Enter,true);
+   Require(writes==2&&fields.Fields[1].HasInvalidText,"必填清空复活旧来源");
+   toggle.IsChecked=false;Click(toggle);Pump();
+   Require(writes==3&&!native.IsSubscribeRight&&Equals(((ConstantSetting)fields.Fields[1].Setting).Value,20d),"解绑未通过组接纳恢复真实常量备份");
+   var access=fields.Fields[0];fields.Dispose();Require(!access.TrySetConstant(14d)&&!access.TryCommitPending()&&access.InputElement is null,"释放后的范围访问仍有效");
+  });
+  Test("范围初始逆序拒绝保存、拓扑缺失拒绝且合法独立边界可创建",()=>
+  {
+   var writes=0;using var invalid=Create(_=>writes++,initialLow:20,initialHigh:10);Show(invalid);
+   Require(!invalid.TryValidate(out _)&&writes==0&&Equals(((ConstantSetting)invalid.Fields[0].Setting).Value,20d),"初始逆序被保存或交换值");
+   ((TextBox)invalid.Fields[0].InputElement!).Text="5";Require(invalid.TryValidate(out _)&&writes==1,"逆序修正后无法恢复");
+   var rejected=false;
+   try{using var missing=new DeclaredFieldsView(new[]{(new Port("a",DataType.Number),new FieldPresentation("a","a","g",0,FieldEditorKind.Scalar){Layout=new("p","s",PairWith:"missing")},(ParameterSetting)new ConstantSetting(1d))},_=>{});}
+   catch(ArgumentException){rejected=true;}Require(rejected,"缺失配对被静默忽略");
+   using var independent=new DeclaredFieldsView(new[]{
+    (new Port("a",DataType.Number),new FieldPresentation("a","a","g",0,FieldEditorKind.Scalar){Layout=new("p","s",PairWith:"b",Minimum:0,Maximum:10)},(ParameterSetting)new ConstantSetting(5d)),
+    (new Port("b",DataType.Number,Storage:NumericStorage.Float64),new FieldPresentation("b","b","g",1,FieldEditorKind.Scalar){Layout=new("p","s",Minimum:20,Maximum:100)},(ParameterSetting)new ConstantSetting(60d))},_=>writes++);
+   Show(independent);Pump();var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(independent.Fields[0].View).Single();
+   Require(independent.TryValidate(out _)&&writes==1&&native.EndValue==60,"独立端点边界被错拒或旧异步夹紧覆盖当前值");
+  });
+  Test("稳定Track四向极大域和原Thumb真实拖动保持有限映射",()=>
+  {
+   foreach(var orientation in new[]{Orientation.Horizontal,Orientation.Vertical})foreach(var reverse in new[]{false,true})
+   {
+    var track=new SunEyeVision.Plugin.Wpf.Presenters.Numeric.StableSliderTrack{Minimum=0,Maximum=double.MaxValue,Value=double.MaxValue/4,Orientation=orientation,IsDirectionReversed=reverse,
+     Thumb=new Thumb{Width=12,Height=12},DecreaseRepeatButton=new RepeatButton(),IncreaseRepeatButton=new RepeatButton()};
+    track.Measure(new Size(240,240));track.Arrange(new Rect(0,0,240,240));
+    var flip=reverse^(orientation==Orientation.Vertical);var start=orientation==Orientation.Horizontal?new Point(6,10):new Point(10,6);var end=orientation==Orientation.Horizontal?new Point(234,10):new Point(10,234);
+    Require(track.ValueFromPoint(start)==(flip?double.MaxValue:0)&&track.ValueFromPoint(end)==(flip?0:double.MaxValue),"四向端点映射不正确");
+    Require(double.IsFinite(track.ValueFromDistance(10000,10000)),"超界拖动返回无穷");
+   }
+   var writes=0;using var fields=Create(_=>writes++,maximum:double.MaxValue);Show(fields);
+   var native=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(fields.Fields[0].View).Single();
+   Require(fields.Fields[1].TrySetConstant(double.MaxValue),"极大上限未接纳");writes=0;
+   var combo=(ComboBox)native.FindName("CBox");combo.IsDropDownOpen=true;Pump();
+   var popup=(Popup)combo.Template.FindName("PART_Popup",combo);var slider=Visuals<Slider>(popup.Child).Single(item=>item.Name=="SL_Bat1");slider.ApplyTemplate();
+   var track2=(Track)slider.Template.FindName("PART_Track",slider);
+   Require(track2 is SunEyeVision.Plugin.Wpf.Presenters.Numeric.StableSliderTrack&&track2.ActualWidth>0,"真实原模板未使用稳定Track");
+   track2.Thumb.RaiseEvent(new DragDeltaEventArgs(100,0){RoutedEvent=Thumb.DragDeltaEvent});Pump();
+   track2.Thumb.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.PreviewMouseLeftButtonUpEvent});Pump();
+   Require(writes==1&&native.StartValue>20&&double.IsFinite(native.StartValue)&&Equals(((ConstantSetting)fields.Fields[0].Setting).Value,native.StartValue),"原Thumb实际拖动未提交有限值");
+   Require(double.IsFinite(native.StartRectClip.Bounds.Width)&&double.IsFinite(native.EndRectClip.Bounds.X),"原双轨裁剪仍溢出");
+   CaptureInline(fields,"native-between-extreme.png");
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -218,6 +286,7 @@ internal static class S2DocumentEditingCases
   owner=new Window{Width=530,Height=700,Title="O06独立真实窗口验证",Content=host=new StackPanel()};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
   try
   {
+   VerifyBetween();
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);
@@ -402,8 +471,14 @@ internal static class S2DocumentEditingCases
     var edits=(DocumentEditSession)Activator.CreateInstance(typeof(DocumentEditSession),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{solution},null)!;
     using var root=new RuntimeNodeConfigurationControl(node);
     using var context=new ProductionEditorContext(edits.Host,flow.Id,node,()=>true,root.BindDraft,documentEdits:edits);root.BindDraft(context.DraftNode);ToolEditorCommit.AttachDraftContext(root,context);Show(root);
-    var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3&&fields.Fields.Count==54&&Find<DeclaredFieldEditor>(root).Count()==58,"新Runtime三页或54设置/4输入不完整");
+    var fields=Find<DeclaredFieldsView>(root).Single();var tabs=Find<TabControl>(fields).Single();Require(tabs.Items.Count==3&&fields.Fields.Count==54&&fields.Fields.Select(field=>field.FieldId).Distinct().Count()==54&&Find<DeclaredInputFieldsView>(root).Single().Fields.Count==4,"新Runtime三页或54设置/4输入不完整");
     var metadata=((IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis")).SettingsSchema.Presentation!.Fields;
+    var pairs=metadata.Where(item=>item.Layout?.PairWith is not null).ToArray();Require(pairs.Length==14,"Blob配对清单变化未复核");
+    foreach(var pair in pairs)
+    {
+     var left=fields.Fields.Single(item=>item.FieldId==pair.FieldId);var right=fields.Fields.Single(item=>item.FieldId==pair.Layout!.PairWith);
+     Require(ReferenceEquals(left.View,right.View)&&Find<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(left.View).Single().SliderType==Native.Numeric.HikPcUI.ListView.SliderArrangeType.between,"Blob实际配对未使用一份原between："+pair.FieldId);
+    }
     FieldPresentation Metadata(string property)=>metadata.Single(f=>f.DisplayName==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobParameterDefinition.Instance.Label(property));
     var count=Metadata("BlobCountLimit").Layout!;Require(count.Minimum==1&&count.Maximum==20000&&count.Increment==1,"数量XML范围或步进错误");
     foreach(var name in new[]{"FilterCircularityMin","FilterCircularityMax","FilterRectangularityMin","FilterRectangularityMax"})Require(Metadata(name).Layout!.Increment==.01,"浮点步进丢失");

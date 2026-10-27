@@ -4,12 +4,19 @@ using System.Windows.Controls;
 using System.Windows.Input;
 namespace SunEyeVision.UI.Shell.Controls.Shell;
 /// <summary>流程工作区状态与缩放入口；实际视口变换由宿主执行。</summary>
+public enum WorkspaceConfigurationState { Waiting, Ready, Incomplete }
 public partial class WorkspaceStatusBarControl : UserControl
 {
  public static readonly DependencyProperty ScaleProperty=DependencyProperty.Register(nameof(Scale),typeof(double),typeof(WorkspaceStatusBarControl),new PropertyMetadata(1d));
  public static readonly DependencyProperty StatusTextProperty=DependencyProperty.Register(nameof(StatusText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("等待添加模块"));
  public static readonly DependencyProperty ExecutionTextProperty=DependencyProperty.Register(nameof(ExecutionText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("尚未运行"));
  public static readonly DependencyProperty ExecutionDetailsCommandProperty=DependencyProperty.Register(nameof(ExecutionDetailsCommand),typeof(ICommand),typeof(WorkspaceStatusBarControl),new PropertyMetadata(null));
+ public static readonly DependencyProperty ModuleTimeTextProperty=DependencyProperty.Register(nameof(ModuleTimeText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("—"));
+ public static readonly DependencyProperty AlgorithmTimeTextProperty=DependencyProperty.Register(nameof(AlgorithmTimeText),typeof(string),typeof(WorkspaceStatusBarControl),new PropertyMetadata("—"));
+ public static readonly DependencyProperty ConfigurationStateProperty=DependencyProperty.Register(nameof(ConfigurationState),typeof(WorkspaceConfigurationState),typeof(WorkspaceStatusBarControl),new PropertyMetadata(WorkspaceConfigurationState.Waiting));
+ public string ModuleTimeText {get=>(string)GetValue(ModuleTimeTextProperty);set=>SetValue(ModuleTimeTextProperty,value);}
+ public string AlgorithmTimeText {get=>(string)GetValue(AlgorithmTimeTextProperty);set=>SetValue(AlgorithmTimeTextProperty,value);}
+ public WorkspaceConfigurationState ConfigurationState {get=>(WorkspaceConfigurationState)GetValue(ConfigurationStateProperty);set=>SetValue(ConfigurationStateProperty,value);}
  public string ExecutionText {get=>(string)GetValue(ExecutionTextProperty);set=>SetValue(ExecutionTextProperty,value);}
  public ICommand? ExecutionDetailsCommand {get=>(ICommand?)GetValue(ExecutionDetailsCommandProperty);set=>SetValue(ExecutionDetailsCommandProperty,value);}
  public double Scale {get=>(double)GetValue(ScaleProperty);set=>SetValue(ScaleProperty,value);}

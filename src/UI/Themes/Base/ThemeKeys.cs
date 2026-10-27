@@ -144,11 +144,8 @@
         /// <summary>画布节点边框</summary>
         public const string CanvasNodeBorder = "ThemeCanvasNodeBorder";
         public const string CanvasNodeBorderBrush = "ThemeCanvasNodeBorderBrush";
-        /// <summary>
-        /// 画布棋盘格背景（整体 DrawingBrush，内部用 StaticResource 引用同字典笔刷，
-        /// 随主题整体替换；DynamicResource 只保留在使用处的元素属性层，避免 Drawing 冻结导致内部引用失效）
-        /// </summary>
-        public const string CheckerboardBackgroundBrush = "ThemeCheckerboardBackgroundBrush";
+        /// <summary>工作流画布原件6像素线网；与图像透明棋盘资源分离。</summary>
+        public const string WorkflowCanvasGridBrush = "ThemeWorkflowCanvasGridBrush";
 
         // ============ 图像区 / 缩略图（批次2） ============
         /// <summary>图像显示区背景</summary>

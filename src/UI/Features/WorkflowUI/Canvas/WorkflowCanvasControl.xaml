@@ -1,4 +1,4 @@
-<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -68,9 +68,9 @@
                 GotFocus="WorkflowCanvas_GotFocus"
                 LostFocus="WorkflowCanvas_LostFocus">
 
-        <!-- 棋盘格背景：整体 DrawingBrush（随主题整体替换），DynamicResource 只留在元素属性层，避免 Drawing 冻结导致内部引用失效 -->
+        <!-- 原VM DiagramPage的6像素线网背景，随主题整体替换。 -->
         <Canvas.Background>
-            <DynamicResource ResourceKey="{x:Static base:ThemeKeys.CheckerboardBackgroundBrush}"/>
+            <DynamicResource ResourceKey="{x:Static base:ThemeKeys.WorkflowCanvasGridBrush}"/>
         </Canvas.Background>
 
         <!-- 连接线 - 使用智能直角折线 -->

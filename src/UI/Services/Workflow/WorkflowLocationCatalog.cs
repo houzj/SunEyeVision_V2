@@ -16,16 +16,8 @@ internal static class WorkflowLocationCatalog
             path.Add(flow.Id);
             foreach (var owner in flow.Nodes)
             {
-                if(owner.ToolType!="Subroutine")
-                {
-                    // 本批仅补根节点目录；Group内部目录沿用已有容器导航，保持冻结。
-                    if(hops.Count!=0)continue;
-                    var nodeName=string.IsNullOrWhiteSpace(owner.DispName)?owner.Name:owner.DispName;
-                    var full=string.Join(".",new[]{root.Name}.Concat(hops.Select(h=>string.IsNullOrWhiteSpace(h.Owner.DispName)?h.Owner.Name:h.Owner.DispName)).Append(nodeName));
-                    var node=new WorkflowSearchEntry(root,flow,owner,hops.ToArray(),nodeName,full);
-                    children.Add(new(root,flow,hops.ToArray(),node.Caption,Array.Empty<WorkflowLocationEntry>(),node));
-                    continue;
-                }
+                // 原VM DecorateChildren仅包含IVmModuleSet（流程/Group），普通工具通过搜索定位。
+                if(owner.ToolType!="Subroutine")continue;
                 if (owner.SubroutineId is not {} id ||
                     !byId.TryGetValue(id, out var child) || !child.IsSubroutine || path.Contains(id)) continue;
                 hops.Add(new(flow, owner, child));

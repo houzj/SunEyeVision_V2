@@ -16,10 +16,6 @@ public partial class ShellWorkspaceControl
         get => (bool)GetValue(RootWorkspaceEditingAllowedProperty);
         set => SetValue(RootWorkspaceEditingAllowedProperty, value);
     }
-    public static readonly DependencyProperty RootUndoAllowedProperty = DependencyProperty.Register(nameof(RootUndoAllowed),typeof(bool),typeof(ShellWorkspaceControl),new PropertyMetadata(false));
-    public bool RootUndoAllowed {get=>(bool)GetValue(RootUndoAllowedProperty);set=>SetValue(RootUndoAllowedProperty,value);}
-    public static readonly DependencyProperty RootRedoAllowedProperty = DependencyProperty.Register(nameof(RootRedoAllowed),typeof(bool),typeof(ShellWorkspaceControl),new PropertyMetadata(false));
-    public bool RootRedoAllowed {get=>(bool)GetValue(RootRedoAllowedProperty);set=>SetValue(RootRedoAllowedProperty,value);}
     public static readonly DependencyProperty SingleExecutionBusyProperty = DependencyProperty.Register(
         nameof(SingleExecutionBusy), typeof(bool), typeof(ShellWorkspaceControl), new PropertyMetadata(false));
     public bool SingleExecutionBusy

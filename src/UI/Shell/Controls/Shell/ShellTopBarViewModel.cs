@@ -98,6 +98,10 @@ namespace SunEyeVision.UI.Shell.Controls
 
         /// <summary>保存当前解决方案命令</summary>
         public ICommand SaveCurrentSolutionCommand => _coordinator.SaveCurrentSolutionCommand;
+        public ICommand NavigateEditHistoryCommand => _coordinator.NavigateEditHistoryCommand;
+        public System.Collections.Generic.IReadOnlyList<EditHistoryLocation> EditHistoryLocations => _coordinator.EditHistoryLocations;
+        public ICommand UndoCommand => _coordinator.UndoCommand;
+        public ICommand RedoCommand => _coordinator.RedoCommand;
 
         /// <summary>显示路径拐点命令</summary>
         public ICommand TogglePathPointsCommand => _coordinator.TogglePathPointsCommand;

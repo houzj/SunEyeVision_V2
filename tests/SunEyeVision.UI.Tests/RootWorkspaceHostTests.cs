@@ -25,20 +25,34 @@ public sealed class RootWorkspaceHostTests
    {
     SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher));
     if(Application.Current==null)_=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
-    foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
+    foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
     ServiceInitializer.InitializeServices();var viewModel=new MainWindowViewModel();
     ToolRegistry.RegisterTool(typeof(RootConfigurationTests.Probe));
     SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();
     var shell=new SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl{DataContext=viewModel.WorkflowTabViewModel};shell.Initialize(viewModel);
-    owner=new Window{Content=shell,Width=1100,Height=800,Left=-10000,ShowActivated=false};
+    var topBar=new SunEyeVision.UI.Shell.Controls.Shell.ShellTopBarControl{DataContext=viewModel.TopBar};
+    var workspace=new DockPanel();DockPanel.SetDock(topBar,Dock.Top);workspace.Children.Add(topBar);workspace.Children.Add(shell);
+    owner=new Window{Content=workspace,Width=1100,Height=800,Left=-10000,ShowActivated=false};
     owner.Show();Pump();
+    Assert.Equal(new Rect(0,0,6,6),Assert.IsType<DrawingBrush>(Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WorkflowCanvasGridBrush)).Viewport);
+    SaveConfiguration(owner,"Canvas-Dark");
+    var canvasLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
+    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();SaveConfiguration(owner,"Canvas-Light");
+    Application.Current.Resources.MergedDictionaries.Remove(canvasLight);Pump();
     var manager=ServiceInitializer.SolutionManager;var document=manager.CurrentSolution!;
     var source=Assert.Single(document.Workflows.Where(w=>!w.IsSubroutine));var sourceTab=Assert.Single(viewModel.WorkflowTabViewModel.Tabs);
     source.WorkspaceSettings=new(){RunIntervalMs=41};
     var first=new SunEyeVision.UI.Shared.WorkflowNode("first","7 自定义入口","自定义入口","RootConfigurationProbe"){GlobalIndex=7,LocalIndex=3,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(100,100)};
     var second=new SunEyeVision.UI.Shared.WorkflowNode("second","8 终点","终点","RootConfigurationProbe"){GlobalIndex=8,LocalIndex=5,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(200,220)};
     source.Nodes.Add(first);source.Nodes.Add(second);source.Connections.Add(new(){Id="edge",SourceNodeId=first.Id,TargetNodeId=second.Id,ManualPathPoints=new[]{new Point(100,150),new Point(200,150)}});
+    var undoEdit=(Button)topBar.FindName("UndoEditButton");var redoEdit=(Button)topBar.FindName("RedoEditButton");
+    Assert.Same(viewModel.UndoCommand,undoEdit.Command);Assert.Same(viewModel.RedoCommand,redoEdit.Command);
+    sourceTab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.MoveNodeCommand(first,new Point(100,100),new Point(160,170)));Pump();
+    Assert.True(undoEdit.Command.CanExecute(null));undoEdit.Command.Execute(null);Assert.Equal(new Point(100,100),first.Position);
+    Assert.True(redoEdit.Command.CanExecute(null));redoEdit.Command.Execute(null);Assert.Equal(new Point(160,170),first.Position);
+    undoEdit.Command.Execute(null);Pump();
     viewModel.OpenRootConfiguration(sourceTab,owner);Pump();
+    Assert.False(undoEdit.Command.CanExecute(null));Assert.False(redoEdit.Command.CanExecute(null));
     var configuration=Application.Current.Windows.OfType<RootWorkflowConfigurationWindow>().Single();
     viewModel.OpenRootConfiguration(sourceTab,owner);Assert.Same(configuration,Application.Current.Windows.OfType<RootWorkflowConfigurationWindow>().Single());
     var candidate=configuration.Context.Candidates().Single(c=>c.Node.Id==first.Id&&c.FieldId=="Value");
@@ -64,6 +78,62 @@ public sealed class RootWorkspaceHostTests
     var light=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
     Application.Current.Resources.MergedDictionaries.Add(light);Pump();SaveConfiguration(configuration,"Light");Application.Current.Resources.MergedDictionaries.Remove(light);
     configuration.Close();Pump();Assert.Equal(11,((RootConfigurationTests.Parameters)first.Parameters).Value);
+    // Main toolbar must traverse one chronology across root management, canvas and accepted parameters.
+    var sharedHistory=manager.Session!.History;
+    var initialPosition=sharedHistory.Position;
+    sourceTab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.MoveNodeCommand(first,new Point(100,100),new Point(180,190)));
+    var getCanvasViewer=shell.GetType().GetMethod("GetCurrentScrollViewer",BindingFlags.Instance|BindingFlags.NonPublic)!;
+    var footer=(SunEyeVision.UI.Shell.Controls.Shell.WorkspaceStatusBarControl)shell.FindName("WorkspaceStatusBar");
+    ((Slider)footer.FindName("ZoomSlider")).Value=1.3;Pump();Pump();Assert.Equal(1.3,sourceTab.CurrentScale,6);
+    var sourceViewer=(ScrollViewer)getCanvasViewer.Invoke(shell,null)!;
+    sourceViewer.ScrollToHorizontalOffset(260);sourceViewer.ScrollToVerticalOffset(390);Pump();Pump();
+    Assert.True(viewModel.AddRootWorkspace(),viewModel.StatusText);
+    var otherTab=viewModel.WorkflowTabViewModel.SelectedTab!;
+    var other=document.Workflows.Single(w=>w.Id==otherTab.RootWorkflowId);
+    Pump();Pump();((Slider)footer.FindName("ZoomSlider")).Value=.7;Pump();Pump();Assert.Equal(.7,otherTab.CurrentScale,6);
+    var otherViewer=(ScrollViewer)getCanvasViewer.Invoke(shell,null)!;
+    otherViewer.ScrollToHorizontalOffset(70);otherViewer.ScrollToVerticalOffset(140);Pump();Pump();
+    var navigationPosition=sharedHistory.Position;
+    viewModel.SetSelectedTab(sourceTab);Pump();Pump();
+    Assert.Equal(1.3,footer.Scale,6);sourceViewer=(ScrollViewer)getCanvasViewer.Invoke(shell,null)!;
+    Assert.InRange(sourceViewer.HorizontalOffset,259,261);Assert.InRange(sourceViewer.VerticalOffset,389,391);
+    viewModel.SetSelectedTab(otherTab);Pump();Pump();
+    Assert.Equal(.7,footer.Scale,6);otherViewer=(ScrollViewer)getCanvasViewer.Invoke(shell,null)!;
+    Assert.InRange(otherViewer.HorizontalOffset,69,71);Assert.InRange(otherViewer.VerticalOffset,139,141);
+    Assert.Equal(navigationPosition,sharedHistory.Position);
+    var third=new SunEyeVision.UI.Shared.WorkflowNode("third","9 测试","测试","RootConfigurationProbe"){GlobalIndex=9,LocalIndex=1,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(220,230)};
+    viewModel.AddNodeToWorkflow(third);
+    Assert.Contains(third,other.Nodes);
+    otherTab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.MoveNodeCommand(third,new Point(220,230),new Point(310,330)));
+    Assert.Equal(initialPosition+4,sharedHistory.Position);
+    viewModel.SetSelectedTab(sourceTab);Pump();
+    undoEdit.Command.Execute(null);Assert.Equal(new Point(220,230),third.Position);Assert.Same(otherTab,viewModel.WorkflowTabViewModel.SelectedTab);
+    undoEdit.Command.Execute(null);Assert.Empty(other.Nodes);
+    undoEdit.Command.Execute(null);Assert.DoesNotContain(other,document.Workflows);
+    undoEdit.Command.Execute(null);Assert.Equal(new Point(100,100),first.Position);
+    Assert.Equal(initialPosition,sharedHistory.Position);
+    for(var replay=0;replay<4;replay++){Assert.True(redoEdit.Command.CanExecute(null));redoEdit.Command.Execute(null);}
+    Assert.Contains(third,other.Nodes);Assert.Equal(new Point(310,330),third.Position);
+    for(var replay=0;replay<4;replay++){Assert.True(undoEdit.Command.CanExecute(null));undoEdit.Command.Execute(null);}
+    // A new edit drops redo entries from every root, and history locations carry session identity.
+    sourceTab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.MoveNodeCommand(first,new Point(100,100),new Point(110,120)));
+    Assert.False(redoEdit.Command.CanExecute(null));
+    var currentLocation=viewModel.EditHistoryLocations.Single(l=>l.IsCurrent);
+    Assert.Equal(sharedHistory.SessionId,currentLocation.SessionId);
+    var historyButton=(Button)topBar.FindName("EditHistoryButton");
+    historyButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+    Assert.Equal(viewModel.EditHistoryLocations.Count,historyButton.ContextMenu.Items.Count);
+    Assert.All(historyButton.ContextMenu.Items.OfType<MenuItem>(),item=>Assert.Same(viewModel.NavigateEditHistoryCommand,item.Command));
+    historyButton.ContextMenu.IsOpen=false;
+    var closeWait=System.Diagnostics.Stopwatch.StartNew();while(historyButton.ContextMenu!=null&&closeWait.Elapsed<TimeSpan.FromSeconds(1)){Pump();Thread.Sleep(1);}
+    Assert.Null(historyButton.ContextMenu);
+    Assert.False(viewModel.NavigateEditHistoryCommand.CanExecute(currentLocation with{SessionId=Guid.NewGuid()}));
+    viewModel.NavigateEditHistoryCommand.Execute(viewModel.EditHistoryLocations[^2]);Assert.Equal(new Point(100,100),first.Position);
+    // This undo is the accepted reference configuration, not an unrelated canvas stack.
+    undoEdit.Command.Execute(null);Assert.Single(source.RootConfiguration.RunParameters);
+    redoEdit.Command.Execute(null);Assert.Equal(2,source.RootConfiguration.RunParameters.Length);
+    Assert.Same(first,source.Nodes[0]);Assert.Equal(11,((RootConfigurationTests.Parameters)first.Parameters).Value);
+    viewModel.SetSelectedTab(sourceTab);Pump();
     var overviewFrame=viewModel.CaptureRootOverview();
     Assert.False(viewModel.CommitOverviewPosition(new(source.Id,100,110,"stale-document",overviewFrame.Revision),false));
     Assert.True(viewModel.CommitOverviewPosition(new(source.Id,102,108,overviewFrame.Identity,overviewFrame.Revision),false));
@@ -97,7 +167,7 @@ public sealed class RootWorkspaceHostTests
     var copyId=copied.Id;Assert.True(viewModel.CanUndoRootWorkspace);viewModel.UndoRootWorkspace();Assert.Single(document.Workflows);viewModel.RedoRootWorkspace();Assert.Same(copied,document.Workflows.Single(w=>w.Id==copyId));
     Assert.True(viewModel.DeleteRootWorkspace(copyTab),viewModel.StatusText);Assert.Single(document.Workflows);
     Assert.True(viewModel.DeleteRootWorkspace(sourceTab),viewModel.StatusText);Assert.Empty(document.Workflows);Assert.Null(viewModel.WorkflowTabViewModel.SelectedTab);Pump();
-    Assert.Equal(Visibility.Visible,((FrameworkElement)shell.FindName("RootEmptyPanel")).Visibility);Assert.Empty(((System.Windows.Controls.Canvas)shell.FindName("MiniMapCanvas")).Children);Assert.True(shell.RootWorkspaceEditingAllowed);Assert.True(shell.RootUndoAllowed);
+    Assert.Equal(Visibility.Visible,((FrameworkElement)shell.FindName("RootEmptyPanel")).Visibility);Assert.Empty(((System.Windows.Controls.Canvas)shell.FindName("MiniMapCanvas")).Children);Assert.True(shell.RootWorkspaceEditingAllowed);Assert.True(undoEdit.Command.CanExecute(null));
     viewModel.UndoRootWorkspace();Assert.Single(document.Workflows);viewModel.UndoRootWorkspace();Assert.Equal(2,document.Workflows.Count);
     Pump();Assert.Equal(Visibility.Collapsed,((FrameworkElement)shell.FindName("RootEmptyPanel")).Visibility);
     var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"root-host");Directory.CreateDirectory(directory);var path=Path.Combine(directory,"根流程验收.json");

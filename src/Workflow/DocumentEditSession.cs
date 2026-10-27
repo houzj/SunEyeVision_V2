@@ -58,12 +58,14 @@ public sealed class DocumentEditSession
     private bool _busy;
     private bool _closed;
     public Guid SessionId { get; } = Guid.NewGuid();
+    private DocumentHistoryCoordinator? _history;
+    public DocumentHistoryCoordinator History => _history ??= new(SessionId);
     public NodeConfigurationEditHost Host => _host.Value;
     public int RegisteredScopeCount => _participants.Count;
     public bool HasPendingChanges => _participants.Values.Any(p => p.HasPendingChanges);
     public IReadOnlyList<string> RegisteredScopeKeys => _participants.Values.Select(p => p.ScopeKey).ToArray();
     public string? LastRefreshError { get; private set; }
-    internal DocumentEditSession(Solution document) => _host = new(() => new NodeConfigurationEditHost(document));
+    internal DocumentEditSession(Solution document) => _host = new(() => new NodeConfigurationEditHost(document, History));
 
     public void Register(IDocumentEditParticipant participant)
     {
@@ -131,6 +133,7 @@ public sealed class DocumentEditSession
         _participants.Clear();
         foreach (var participant in participants)
             try { participant.Cancel(); } catch (Exception ex) { LastRefreshError ??= ex.Message; }
+        _history?.Dispose();
     }
     private void EnsureAvailable()
     {

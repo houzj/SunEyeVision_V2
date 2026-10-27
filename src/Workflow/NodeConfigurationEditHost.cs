@@ -73,8 +73,10 @@ public sealed partial class NodeConfigurationEditHost
     private Exception? _lastRefreshError;
     public Exception? LastRefreshError { get { lock (_gate) return _lastRefreshError; } }
 
-    public NodeConfigurationEditHost(Solution design)
+    public NodeConfigurationEditHost(Solution design) : this(design, null) { }
+    internal NodeConfigurationEditHost(Solution design, DocumentHistoryCoordinator? history)
     {
+        _documentHistory=history;
         _design = design ?? throw new ArgumentNullException(nameof(design));
         _variableCollection = design.GlobalVariables;
         _nodeInstances = Nodes(design);
@@ -91,8 +93,8 @@ public sealed partial class NodeConfigurationEditHost
     /// <summary>Configuration/dependency history, never the authority for live runtime values.
     /// Save and run capture live values independently with GlobalVariable.CaptureValues.</summary>
     public BindingConfigurationSnapshot Capture() => _store.Capture();
-    public bool CanUndo => _store.CanUndo;
-    public bool CanRedo => _store.CanRedo;
+    public bool CanUndo => _documentHistory?.CanUndo ?? _store.CanUndo;
+    public bool CanRedo => _documentHistory?.CanRedo ?? _store.CanRedo;
     public bool OwnsNode(string workflowId, WorkflowNodeBase node)
     { lock (_gate) return _design.Workflows.Any(w => w.Id == workflowId && w.Nodes.Any(n => ReferenceEquals(n, node))); }
 
@@ -273,6 +275,11 @@ public sealed partial class NodeConfigurationEditHost
 
     public BindingConfigurationPublication CommitBatch(IReadOnlyList<NodeConfigurationEditDraft> editors,
         GlobalVariableConfigurationEditDraft? variables, IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots = null)
+        => CommitWithDocumentHistory(editors,variables,roots);
+
+    private BindingConfigurationPublication CommitBatchCore(IReadOnlyList<NodeConfigurationEditDraft> editors,
+        GlobalVariableConfigurationEditDraft? variables, IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots,
+        bool recordHistory)
     {
         try
         {
@@ -295,7 +302,7 @@ public sealed partial class NodeConfigurationEditHost
                         : _store.Publish(prepared.Draft,
                             snapshot => AcceptProjection(snapshot, variables, projection),
                             forcePublication: variables?.HasValueEdits == true,
-                            validate: c => ValidateCandidate(c, prepared.Participants, variables != null));
+                            validate: c => ValidateCandidate(c, prepared.Participants, variables != null),recordHistory:recordHistory);
                     foreach (var editor in editors) editor.Consumed = true;
                     if (variables != null) variables.Consumed = true;
                     foreach(var root in roots??Array.Empty<RootWorkflowConfigurationEditDraft>())root.Consumed=true;
@@ -310,8 +317,8 @@ public sealed partial class NodeConfigurationEditHost
         finally { FlushStructureNotifications(); }
     }
 
-    public BindingConfigurationSnapshot Undo() => RestoreHistory(undo: true);
-    public BindingConfigurationSnapshot Redo() => RestoreHistory(undo: false);
+    public BindingConfigurationSnapshot Undo() => RestoreDocumentHistory(undo:true);
+    public BindingConfigurationSnapshot Redo() => RestoreDocumentHistory(undo:false);
     private BindingConfigurationSnapshot RestoreHistory(bool undo)
     {
         try
@@ -678,10 +685,10 @@ public sealed partial class NodeConfigurationEditHost
         variable.Id, variable.Name, variable.Type, variable.Group, variable.Index, variable.Description, variable.AdditionalData
     }, WorkflowSerializationOptions.Compact);
     private static string StructureSignature(Solution model) => JsonSerializer.Serialize(new {
-        model.Id, Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine, w.WorkspaceSettings,
+        model.Id, Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine, w.WorkspaceSettings, w.AdditionalData,
             Nodes = w.Nodes.Select(n => new { n.Id, n.Name, n.DispName, n.ToolType, n.SubroutineId, n.IsEnabled,
                 n.PositionX, n.PositionY, n.Width, n.Height, n.GlobalIndex, n.LocalIndex, n.ImageSourceConfig }),
-            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) })
+            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort, c.ManualPathPoints }) })
     }, WorkflowSerializationOptions.Compact);
 
     private static string ShapeSignature(Solution model) => JsonSerializer.Serialize(new
@@ -689,7 +696,7 @@ public sealed partial class NodeConfigurationEditHost
         model.Id,
         Workflows = model.Workflows.Select(w => new { w.Id, w.IsSubroutine, w.RootConfiguration,
             Nodes = w.Nodes.Select(n => new { n.Id, Signature = NodeEditSignature(n) }),
-            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) }),
+            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort, c.ManualPathPoints }) }),
         Variables = model.GlobalVariables.Select(VariableConfigurationSignature)
     }, WorkflowSerializationOptions.Compact);
 
@@ -715,7 +722,7 @@ public sealed partial class NodeConfigurationEditHost
         Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine,
             Nodes = w.Nodes.Select(n => new { n.Id, n.Name, n.DispName, n.ToolType, n.SubroutineId, n.IsEnabled,
                 n.GlobalIndex, n.LocalIndex, n.PositionX, n.PositionY, n.Width, n.Height, n.SelectedDisplaySource, n.ImageSourceConfig }),
-            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) })
+            Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort, c.ManualPathPoints }) })
     }, WorkflowSerializationOptions.Compact);
     private static bool SameEditableValue(object? a, object? b) => JsonSerializer.Serialize(new { Type = a?.GetType().FullName, Value = a }, WorkflowSerializationOptions.Compact)
         == JsonSerializer.Serialize(new { Type = b?.GetType().FullName, Value = b }, WorkflowSerializationOptions.Compact);

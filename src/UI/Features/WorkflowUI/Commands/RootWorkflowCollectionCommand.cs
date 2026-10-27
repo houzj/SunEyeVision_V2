@@ -5,6 +5,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands;
 
 public interface IRootWorkspaceHistoryCommand
 {
+ string RootId{get;}
  string Description{get;}
  bool IsCurrent{get;}
  void Execute();
@@ -20,6 +21,7 @@ public sealed class RootWorkflowCollectionCommand : IRootWorkspaceHistoryCommand
  private readonly GraphBindingUndoSnapshot _before;private GraphBindingUndoSnapshot? _after;
  private string _expected;
  public string Description {get;}
+ public string RootId=>_root.Id;
  public bool IsCurrent {get{try{return Stamp(_solution)==_expected;}catch{return false;}}}
  public RootWorkflowCollectionCommand(Solution solution,WorkflowEngine engine,Flow root,IReadOnlyList<Flow> owned,
   bool attachOnExecute,int index,string description,Action<bool> refresh)
@@ -65,23 +67,35 @@ public sealed class RootWorkflowCollectionCommand : IRootWorkspaceHistoryCommand
   }
   else foreach(var flow in _definitions.AsEnumerable().Reverse()){_solution.Workflows.Remove(flow);_engine.DeleteWorkflow(flow.Id);}
  }
- internal static string Stamp(Solution solution)=>JsonSerializer.Serialize(new
- {
-  solution.Workflows,
-  Variables=solution.GlobalVariables.Select(v=>new{v.Id,v.ProducerBinding,v.ConsumerBindings,v.RebindingReason,v.BindingValidationPending})
- },WorkflowSerializationOptions.Compact);
+ internal static string Stamp(Solution solution)=>NodeConfigurationEditHost.DocumentHistorySignature(solution);
 }
 
-/// <summary>根流程管理历史独立于各容器画布历史，退出方案时丢弃。</summary>
+/// <summary>根命令适配同一方案会话历史；不再保存独立的撤销栈。</summary>
 public sealed class RootWorkflowCollectionHistory
 {
- private readonly Stack<IRootWorkspaceHistoryCommand> _undo=new(),_redo=new();
- public event EventHandler? Changed;
- public bool CanUndo=>_undo.TryPeek(out var command)&&command.IsCurrent;
- public bool CanRedo=>_redo.TryPeek(out var command)&&command.IsCurrent;
- public void Execute(IRootWorkspaceHistoryCommand command){command.Execute();_undo.Push(command);_redo.Clear();Changed?.Invoke(this,EventArgs.Empty);}
- public void Undo(){if(!CanUndo)return;var command=_undo.Peek();command.Undo();_undo.Pop();_redo.Push(command);Changed?.Invoke(this,EventArgs.Empty);}
- public void Redo(){if(!CanRedo)return;var command=_redo.Peek();command.Execute();_redo.Pop();_undo.Push(command);Changed?.Invoke(this,EventArgs.Empty);}
+ private readonly DocumentHistoryCoordinator _history;private readonly Action? _synchronize;
+ public RootWorkflowCollectionHistory():this(new DocumentHistoryCoordinator(Guid.NewGuid()),null){}
+ public RootWorkflowCollectionHistory(DocumentHistoryCoordinator history,Action? synchronize){_history=history;_synchronize=synchronize;}
+ public event EventHandler? Changed{add=>_history.Changed+=value;remove=>_history.Changed-=value;}
+ public bool CanUndo=>_history.CanUndo;
+ public bool CanRedo=>_history.CanRedo;
+ public void Execute(IRootWorkspaceHistoryCommand command)=>_history.Execute(new Operation(command,_synchronize));
+ public void Undo()=>_history.Undo();
+ public void Redo()=>_history.Redo();
+ private sealed class Operation(IRootWorkspaceHistoryCommand command,Action? synchronize):IDocumentHistoryOperation,IDocumentHistoryReplayGuard
+ {
+  public string Description=>command.Description;
+  public IReadOnlyList<DocumentHistoryScope> Scopes=>new[]{new DocumentHistoryScope(command.RootId,command.RootId)};
+  public bool CanReplay(DocumentHistoryDirection direction)=>command.IsCurrent;
+  public PreparedDocumentHistoryChange Prepare(DocumentHistoryDirection direction)
+  {
+   if(!command.IsCurrent)throw new InvalidOperationException("流程历史之后存在Group或外部修改。");
+   var applied=false;
+   return new(()=>{if(direction==DocumentHistoryDirection.Forward)command.Execute();else command.Undo();applied=true;synchronize?.Invoke();},
+    ()=>{if(!applied)return;if(direction==DocumentHistoryDirection.Forward)command.Undo();else command.Execute();synchronize?.Invoke();});
+  }
+  public void Dispose(){}
+ }
 }
 
 /// <summary>根名称修改与集合操作属于同一历史；只同步显示元数据，不改变内部画布。</summary>
@@ -89,6 +103,7 @@ public sealed class RootWorkflowNameCommand : IRootWorkspaceHistoryCommand
 {
  private readonly Solution _solution;private readonly Flow _root;private readonly string _before,_after;private readonly Action _refresh;private string _expected;
  public string Description=>"重命名流程";
+ public string RootId=>_root.Id;
  public bool IsCurrent{get{try{return RootWorkflowCollectionCommand.Stamp(_solution)==_expected;}catch{return false;}}}
  public RootWorkflowNameCommand(Solution solution,Flow root,string name,Action refresh)
  {

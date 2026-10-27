@@ -22,7 +22,7 @@ public partial class MainWindowViewModel
    var document=DocumentManager.CurrentSolution??throw new InvalidOperationException("当前没有方案。");
    if(!ReferenceEquals(_rootHistoryDocument,document))
    {
-    _rootHistoryDocument=document;_rootHistory=new();
+    _rootHistoryDocument=document;_rootHistory=new(DocumentManager.Session!.History,()=>DocumentManager.Session!.Editing.Host.AcceptDocumentGraphHistory());
     _rootHistory.Changed+=(_,_)=>{UpdateCurrentSolutionInfo();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));};
    }
    return _rootHistory!;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
@@ -22,20 +22,25 @@ public sealed class SolutionTransitionTests
         var method = type.GetMethod("PrepareSolutionTransitionAsync")!;
         var state = method.GetCustomAttribute<System.Runtime.CompilerServices.AsyncStateMachineAttribute>()!.StateMachineType;
         var body = state.GetMethod("MoveNext", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.GetMethodBody()!.GetILAsByteArray()!;
-        bool Calls(string property)
+        bool Calls(string methodName)
         {
-            var token = type.GetProperty(property)!.GetMethod!.MetadataToken;
+            var token = type.GetMethod(methodName, BindingFlags.Instance|BindingFlags.NonPublic)!.MetadataToken;
             for (var i = 0; i + 4 < body.Length; i++)
                 if ((body[i] == 0x28 || body[i] == 0x6f) && BitConverter.ToInt32(body, i + 1) == token) return true;
             return false;
         }
-        Assert.True(Calls("SaveCurrentSolutionCommand"));
-        Assert.False(Calls("SaveWorkflowCommand"));
+        Assert.True(Calls("SaveCurrentDocumentWithPrompt"));
+        Assert.False(Calls("ExecuteSaveWorkflow"));
     }
 
     private static WorkflowExecutionManager Manager() => new(Substitute.For<IInputProvider>(), new WorkflowEngine(Substitute.For<ILogger>()), new RuntimeInputSnapshotService());
-    private static object? Invoke(WorkflowExecutionManager manager, string method, params object[] values) =>
-        typeof(WorkflowExecutionManager).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(manager, values);
+    private static object? Invoke(WorkflowExecutionManager manager, string method, params object[] values)
+    {
+        var target=typeof(WorkflowExecutionManager).GetMethod(method,BindingFlags.NonPublic|BindingFlags.Instance)!;
+        var arguments=new List<object?>(values);
+        foreach(var parameter in target.GetParameters().Skip(values.Length))arguments.Add(parameter.HasDefaultValue?parameter.DefaultValue:throw new InvalidOperationException("测试缺少必要参数"));
+        return target.Invoke(manager,arguments.ToArray());
+    }
     [Fact]
     public void Transition_blocks_all_execution_acquisition_until_disposed()
     {

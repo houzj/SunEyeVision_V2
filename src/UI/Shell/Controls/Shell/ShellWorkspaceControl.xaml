@@ -46,8 +46,7 @@
                     <!-- 左侧:TabItems区域 -->
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="32"/>
-                    <ColumnDefinition Width="32"/><ColumnDefinition Width="32"/>
-                    <!-- 根管理历史常驻，删除最后一个Tab后仍可撤销。 -->
+
                   </Grid.ColumnDefinitions>
 
                   <!-- 左侧:ScrollViewer包裹TabPanel和可滚动添加按钮 -->
@@ -74,8 +73,6 @@
 
                   <Button x:Name="WorkflowViewButton" Grid.Column="0" HorizontalAlignment="Left" Width="36" Style="{StaticResource WorkflowImageButton}" Click="ToggleRootOverviewClick" ToolTip="全部流程"><Image Width="30" Height="30"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="{StaticResource ic_单个normalDrawingImage}"/><Style.Triggers><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="False"/><Condition Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_单个hoverDrawingImage}"/></MultiDataTrigger><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="False"/><Condition Binding="{Binding IsPressed,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_单个clickDrawingImage}"/></MultiDataTrigger><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="False"/><Condition Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_单个disableDrawingImage}"/></MultiDataTrigger><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_全局normalDrawingImage}"/></MultiDataTrigger><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="True"/><Condition Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_全局hoverDrawingImage}"/></MultiDataTrigger><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="True"/><Condition Binding="{Binding IsPressed,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_全局clickDrawingImage}"/></MultiDataTrigger><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Value="True"/><Condition Binding="{Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}" Value="False"/></MultiDataTrigger.Conditions><Setter Property="Source" Value="{StaticResource ic_全局disableDrawingImage}"/></MultiDataTrigger></Style.Triggers></Style></Image.Style></Image></Button>
                   <shell:WorkflowLocationControl x:Name="WorkflowLocations" Grid.Column="2" Loaded="WorkflowLocationsLoaded"/>
-                  <Button x:Name="RootUndoButton" Grid.Column="3" Content="↶" FontSize="20" Style="{StaticResource WorkflowImageButton}" ToolTip="撤销流程管理操作（新增/复制/删除/重命名）" IsEnabled="{Binding RootUndoAllowed,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Click="RootUndoClick"/>
-                  <Button x:Name="RootRedoButton" Grid.Column="4" Content="↷" FontSize="20" Style="{StaticResource WorkflowImageButton}" ToolTip="重做流程管理操作" IsEnabled="{Binding RootRedoAllowed,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}" Click="RootRedoClick"/>
 
                   <!-- 右侧:固定的添加工作流按钮 - 当TabItems多时显示 -->
                   <Border Grid.Column="1"
@@ -97,8 +94,6 @@
              <Setter TargetName="TabPanelScrollViewer" Property="Visibility" Value="Collapsed"/>
              <Setter TargetName="FixedAddButtonBorder" Property="Visibility" Value="Collapsed"/>
              <Setter TargetName="WorkflowLocations" Property="Visibility" Value="Collapsed"/>
-             <Setter TargetName="RootUndoButton" Property="Visibility" Value="Collapsed"/>
-             <Setter TargetName="RootRedoButton" Property="Visibility" Value="Collapsed"/>
              <Setter TargetName="PART_SelectedContentHost" Property="Visibility" Value="Collapsed"/>
              <Setter TargetName="WorkflowViewButton" Property="ToolTip" Value="子流程"/>
             </DataTrigger></ControlTemplate.Triggers>
@@ -121,8 +116,6 @@
                         <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
                         <Separator/>
                         <MenuItem Header="复制流程" Tag="RootEdit" Click="RootCopyClick"/>
-                        <MenuItem Header="撤销流程管理操作" Tag="RootUndo" Click="RootUndoClick" ToolTip="新增/复制/删除的方案级历史；后续画布或参数修改须先撤销，避免覆盖其他流程。"/>
-                        <MenuItem Header="重做流程管理操作" Tag="RootRedo" Click="RootRedoClick"/>
                         <MenuItem Header="设置运行间隔" Tag="RootEdit" Click="RootRunSettingsClick"/>
                         <MenuItem Header="NG时停止流程" Tag="RootEdit" IsCheckable="True" IsChecked="{Binding RootSettings.StopOnNg,Mode=OneWay}" Click="RootStopOnNgClick"/>
                         <MenuItem Header="流程等待超时（待完善）" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="需完成原件等待超时语义与根执行协作取消、资源释放完整链；不提供仅保存无执行的设置。"/>
@@ -321,7 +314,7 @@
                   <canvas:CanvasTemplateSelector.WorkflowCanvasTemplate>
                     <DataTemplate>
                       <ScrollViewer x:Name="CanvasScrollViewer"
-                                                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"
                                                       PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"
                                                       ScrollChanged="CanvasScrollViewer_ScrollChanged"
                                                       Background="{DynamicResource {x:Static base:ThemeKeys.WorkspaceBackgroundBrush}}">

@@ -6,6 +6,7 @@ public sealed class RootOverviewPositionCommand:IRootWorkspaceHistoryCommand
 {
  private readonly Solution _document;private readonly Flow _root;private readonly RootWorkspaceSettings _before,_after;private readonly Action _refresh;private string _expected;
  public string Description=>"移动总览流程";
+ public string RootId=>_root.Id;
  public bool IsCurrent=>_document.Workflows.Contains(_root)&&!_root.IsSubroutine&&RootWorkflowCollectionCommand.Stamp(_document)==_expected;
  public RootOverviewPositionCommand(Solution document,Flow root,RootWorkspaceSettings after,Action refresh)
  {_document=document;_root=root;_before=root.WorkspaceSettings;after.Validate();_after=after;_refresh=refresh;_expected=RootWorkflowCollectionCommand.Stamp(document);}

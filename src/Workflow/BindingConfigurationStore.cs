@@ -79,7 +79,7 @@ public sealed class BindingConfigurationStore
 
     internal BindingConfigurationPublication Publish(BindingConfigurationDraft draft,
         Action<BindingConfigurationSnapshot>? accept, bool forcePublication = false,
-        Action<Solution>? validate = null)
+        Action<Solution>? validate = null, bool recordHistory = true)
     {
         ArgumentNullException.ThrowIfNull(draft);
         lock (_gate)
@@ -94,13 +94,31 @@ public sealed class BindingConfigurationStore
                 Array.AsReadOnly(prepared.Changes.ToArray()), Array.AsReadOnly(prepared.Invalidated));
             // Allocate the history slot before invoking the host's raw acceptance adapter.
             // After acceptance there are only non-callback state assignments/stack operations.
-            _undo.EnsureCapacity(checked(_undo.Count + 1));
+            if(recordHistory)_undo.EnsureCapacity(checked(_undo.Count + 1));
             Accept(next, accept);
-            _undo.Push(_published);
+            if(recordHistory)_undo.Push(_published);
             _redo.Clear();
             _validator = prepared.Validator;
             _published = next;
             return publication;
+        }
+    }
+
+    // A session journal replays the exact accepted configuration, not whichever item happens
+    // to be on this store's standalone history. Structure is restored by its preceding operation.
+    internal BindingConfigurationSnapshot ReplayAccepted(BindingConfigurationSnapshot target,
+        Action<BindingConfigurationSnapshot> accept)
+    {
+        lock(_gate)
+        {
+            if(_accepting)throw new InvalidOperationException("配置接受过程中不能重入恢复。");
+            if(target.SolutionId!=_published.SolutionId)throw new InvalidOperationException("配置回执属于另一方案。");
+            var configuration=target.CopyConfiguration();
+            var graph=SolutionExecutionDependencyGraph.Compile(configuration,checkReadiness:false);
+            var validator=new OutputBindingChangeService();validator.Reset(configuration);
+            var next=new BindingConfigurationSnapshot(checked(_published.Version+1),configuration,graph);
+            Accept(next,accept);_validator=validator;_published=next;
+            return next;
         }
     }
 

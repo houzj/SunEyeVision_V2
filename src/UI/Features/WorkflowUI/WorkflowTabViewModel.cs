@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentHistoryCoordinator = SunEyeVision.Workflow.DocumentHistoryCoordinator;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -427,6 +428,20 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             _containerStates.GetValue(nodes,_=>new()).GetValue(edges,_=>new ContainerState(history??new CommandManager(nodes,edges)));
 
         /// <summary>成对绑定一个实际容器；同一容器返回时恢复其编辑历史，不发布半份图。</summary>
+        private DocumentHistoryCoordinator? _rootDocumentHistory;
+        private Action? _rootHistorySynchronize;
+        private Func<string>? _rootHistorySignature;
+        public void BindRootDocumentHistory(DocumentHistoryCoordinator history, Action synchronize, Func<string> signature)
+        {
+            _rootDocumentHistory = history; _rootHistorySynchronize = synchronize; _rootHistorySignature = signature;
+            BindCurrentRootHistory();
+        }
+        private void BindCurrentRootHistory()
+        {
+            if (CurrentWorkflowId == RootWorkflowId && _rootDocumentHistory != null)
+                CommandManager.BindDocumentHistory(_rootDocumentHistory, RootWorkflowId, _rootHistorySynchronize!, _rootHistorySignature!);
+        }
+
         public void SetContent(ObservableCollection<WorkflowNodeBase> nodes, ObservableCollection<WorkflowConnection> connections)
         {
             ArgumentNullException.ThrowIfNull(nodes); ArgumentNullException.ThrowIfNull(connections);
@@ -438,6 +453,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             _workflowNodes=nodes; _workflowConnections=connections;
             _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
             CommandManager=GetContainerState(nodes,connections).History;
+            BindCurrentRootHistory();
             RestoreContainerView();
             OnPropertyChanged(nameof(WorkflowNodes)); OnPropertyChanged(nameof(WorkflowConnections));
             OnPropertyChanged(nameof(CommandManager));

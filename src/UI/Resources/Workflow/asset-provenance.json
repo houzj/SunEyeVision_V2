@@ -215,5 +215,25 @@
     "file": "ic_单个_disable.png",
     "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_单个_disable.png",
     "sha256": "CFB927894B9B0DB7BE7059562C2A4D7026A9414697C0E49D0A31357838915EAF"
+  },
+  {
+    "file": "toolbar_ic_topbar_undo_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_undo_normal.png",
+    "sha256": "80DFC328894846F7321EE9DDA086DC5CD2E0460683F3E8BD33943C8DF0DA06C7"
+  },
+  {
+    "file": "toolbar_ic_topbar_undo_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_undo_disable.png",
+    "sha256": "CC929DB55853659607D30B9A04F58B3B47CEDAA526F7A748890B71A61E4AB813"
+  },
+  {
+    "file": "toolbar_ic_topbar_redo_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_redo_normal.png",
+    "sha256": "0728EC4E041F2FD8B62EEF7E36A59F5B54720B636E60B375138E0F2FFEDD987C"
+  },
+  {
+    "file": "toolbar_ic_topbar_redo_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/toolbar_ic_topbar_redo_disable.png",
+    "sha256": "8062CEB22C7888DC1FE8C9A1730FD7C6511D50593122447817CA22633B2921F1"
   }
 ]

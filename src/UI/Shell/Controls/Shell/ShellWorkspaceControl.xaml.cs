@@ -84,8 +84,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _viewModel = viewModel;
             SetBinding(WorkflowEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditWorkflowCanvas)) { Source = viewModel });
             SetBinding(RootWorkspaceEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditRootWorkspace)) { Source = viewModel });
-            SetBinding(RootUndoAllowedProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanUndoRootWorkspace)){Source=viewModel});
-            SetBinding(RootRedoAllowedProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanRedoRootWorkspace)){Source=viewModel});
             SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
             WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;WorkflowSearch.NavigateId=SearchNavigateId;
             WorkflowSearch.SetBinding(WorkflowSearchControl.ScopeIdentityProperty,new System.Windows.Data.Binding("SelectedTab.CurrentWorkflowId"){Source=viewModel.WorkflowTabViewModel});
@@ -883,7 +881,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 catch (Exception)
                 {
                 }
-                // 通过事件通知工具栏更新缩放百分比显示（跨区域解耦）
+                // 切换/缩放立即同步底栏，不等待运行信息定时刷新；同步门禁阻止反写当前视口。
+                SynchronizeWorkspaceScale(percentage / 100.0);
                 ZoomScaleChanged?.Invoke(percentage);
             }), System.Windows.Threading.DispatcherPriority.Render);
         }

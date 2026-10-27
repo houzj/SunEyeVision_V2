@@ -42,6 +42,18 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 窗口状态变化 - 切换最大化/还原图标（VS 风格）。
         /// </summary>
+        private void EditHistoryClick(object sender, RoutedEventArgs args)
+        {
+            if (DataContext is not ShellTopBarViewModel vm || sender is not Button button) return;
+            var menu = new ContextMenu { PlacementTarget = button, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+            foreach (var location in vm.EditHistoryLocations)
+                menu.Items.Add(new MenuItem { Header = location.Description, IsCheckable = true, IsChecked = location.IsCurrent,
+                    Command = vm.NavigateEditHistoryCommand, CommandParameter = location });
+            if (menu.Items.Count == 0) menu.Items.Add(new MenuItem { Header = "暂无编辑历史", IsEnabled = false });
+            menu.Closed += (_, _) => button.ContextMenu = null;
+            button.ContextMenu = menu; menu.IsOpen = true;
+        }
+
         private void OnWindowStateChanged(object? sender, EventArgs e)
         {
             if (sender is Window window)

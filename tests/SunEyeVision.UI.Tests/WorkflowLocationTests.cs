@@ -27,12 +27,12 @@ public sealed class WorkflowLocationTests
         return new[] { root, child, nested, new Flow("other", "流程二"), new Flow("orphan", "孤立") { IsSubroutine = true } };
     }
     [Fact]
-    public void Tree_contains_reachable_nodes_and_containers_and_rejects_replaced_or_reowned_paths()
+    public void Tree_contains_only_workflow_containers_and_rejects_replaced_or_reowned_paths()
     {
         var flows = Definitions(); var roots = WorkflowLocationCatalog.Build(flows);
         Assert.Equal(2, roots.Count); Assert.Empty(roots[1].Children);
-        var leaf=Assert.Single(roots[0].Children.Where(item=>item.Node!=null));Assert.Same(flows[0].Nodes[0],leaf.Node!.Node);Assert.True(WorkflowLocationCatalog.IsCurrent(leaf,flows));
-        var child = Assert.Single(roots[0].Children.Where(item=>item.Node==null)); var nested = Assert.Single(child.Children);
+        Assert.DoesNotContain(roots[0].Children,item=>item.Node!=null);
+        var child = Assert.Single(roots[0].Children); var nested = Assert.Single(child.Children);
         Assert.Equal("组一", child.Name); Assert.Equal("组二", nested.Name); Assert.Empty(nested.Children);
         Assert.Equal(2, nested.Hops.Count); Assert.True(WorkflowLocationCatalog.IsCurrent(nested, flows));
         flows[1].Nodes[1].SubroutineId = "orphan"; Assert.False(WorkflowLocationCatalog.IsCurrent(nested, flows));
@@ -63,7 +63,7 @@ public sealed class WorkflowLocationTests
             Assert.True(popup.IsOpen); Assert.Equal(2, tree.Items.Count);
             var rootRow = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromIndex(0);
             Assert.True(rootRow.IsExpanded); rootRow.UpdateLayout();
-            var childRow = (TreeViewItem)rootRow.ItemContainerGenerator.ContainerFromIndex(1);
+            var childRow = (TreeViewItem)rootRow.ItemContainerGenerator.ContainerFromIndex(0);
             Assert.True(childRow.IsExpanded); childRow.UpdateLayout();
             Assert.Equal(((SolidColorBrush)owner.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.TextPrimaryBrush)).Color,
                 ((SolidColorBrush)childRow.Foreground).Color);

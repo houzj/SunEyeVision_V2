@@ -13,6 +13,7 @@ public sealed class SolutionSession
     public Solution Document { get; }
     private DocumentEditSession? _editing;
     public DocumentEditSession Editing => _editing ??= new DocumentEditSession(Document);
+    public DocumentHistoryCoordinator History => Editing.History;
     public string? FilePath => Document.FilePath;
     public bool IsUntitled => string.IsNullOrEmpty(FilePath);
     private string? _savedContent;

@@ -1041,6 +1041,7 @@ SplitterPosition = position;
                 _logger?.LogInfo($"OnSelectedTabChanged: Current workflow set to {selectedName} (ID: {selectedId})");
             }
 
+            BindDocumentHistory();
             // 更新 SmartPathConverter 的节点集合
             if (WorkflowTabViewModel?.SelectedTab != null)
             {
@@ -1112,6 +1113,7 @@ SplitterPosition = position;
             }
 
             tab.SetContent(workflow.Nodes, workflow.Connections);
+            BindDocumentHistory();
 
             _logger?.LogInfo(
                 $"工作流定义绑定完成: workflow={workflow.Name}({workflow.Id}), " +
@@ -1233,7 +1235,9 @@ SplitterPosition = position;
         /// </summary>
         private bool CanExecuteUndo()
         {
-            return CanEditWorkflowCanvas && (CurrentCommandManager?.CanUndo ?? false);
+            return WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true
+                ? CanEditWorkflowCanvas && (CurrentCommandManager?.CanUndo ?? false)
+                : CanEditRootWorkspace && DocumentManager.Session?.History.CanUndo == true;
         }
 
         /// <summary>
@@ -1241,7 +1245,9 @@ SplitterPosition = position;
         /// </summary>
         private bool CanExecuteRedo()
         {
-            return CanEditWorkflowCanvas && (CurrentCommandManager?.CanRedo ?? false);
+            return WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true
+                ? CanEditWorkflowCanvas && (CurrentCommandManager?.CanRedo ?? false)
+                : CanEditRootWorkspace && DocumentManager.Session?.History.CanRedo == true;
         }
 
         private void ExecutePause()
@@ -1249,49 +1255,30 @@ SplitterPosition = position;
             // TODO: 实现暂停
         }
 
-        private void ExecuteUndo()
+        private void ExecuteUndo() => ReplayDocumentEdit(undo: true);
+        private void ExecuteRedo() => ReplayDocumentEdit(undo: false);
+        private void ReplayDocumentEdit(bool undo)
         {
-            if (!CanEditWorkflowCanvas) return;
-            if (CurrentCommandManager == null)
-            {
-                AddLog("❌ 没有选中的工作流，无法撤销");
-                return;
-            }
-
+            if (!(undo ? CanExecuteUndo() : CanExecuteRedo())) return;
             try
             {
-                CurrentCommandManager.Undo();
+                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
+                { if (undo) CurrentCommandManager?.Undo(); else CurrentCommandManager?.Redo(); }
+                else
+                {
+                    var history = DocumentManager.Session!.History;
+                    if (undo) history.Undo(); else history.Redo();
+                    var rootId = history.LastAppliedEntry?.Scopes.FirstOrDefault()?.RootId;
+                    var target = WorkflowTabViewModel.Tabs.FirstOrDefault(t => t.RootWorkflowId == rootId);
+                    if (target != null) SetSelectedTab(target);
+                }
                 SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
                 SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
-                AddLog($"↩️ 撤销: {CurrentCommandManager.LastCommandDescription}");
+                RefreshRootTabReadiness(); UpdateUndoRedoCommands();
             }
             catch (Exception ex)
             {
-                ThemeMessageDialog.Show($"撤销失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            }
-        }
-
-        private void ExecuteRedo()
-        {
-            if (!CanEditWorkflowCanvas) return;
-            if (CurrentCommandManager == null)
-            {
-                AddLog("❌ 没有选中的工作流，无法重做");
-                return;
-            }
-
-            try
-            {
-                CurrentCommandManager.Redo();
-                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-                SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
-                AddLog($"↪️ 重做: {CurrentCommandManager.LastCommandDescription}");
-            }
-            catch (Exception ex)
-            {
-                ThemeMessageDialog.Show($"重做失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                ThemeMessageDialog.Show($"编辑历史回放失败: {ex.Message}", "错误", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -1534,6 +1521,7 @@ SplitterPosition = position;
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
             _rootHistoryDocument=null;_rootHistory=null;
+            BindDocumentHistory();
             CloseExecutionSnapshotDetails();
             ReleaseProductionEditors();
             _logger?.LogInfo($"[StartupTrace] MainWindowViewModel.OnCurrentSolutionChanged begin | solutionId={e.SolutionId}", "MainWindowViewModel");

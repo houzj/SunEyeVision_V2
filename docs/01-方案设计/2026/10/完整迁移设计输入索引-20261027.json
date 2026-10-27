@@ -6340,7 +6340,7 @@
   },
   "currentCanvasNavigationHistoryMigration": {
     "baseline": "3864379f",
-    "status": "D1整体设计中；原小改为未提交验证草稿，不当完整迁移",
+    "status": "D3生产链及383自动回归280通过，固定提交后复建启动待人工验收",
     "scope": [
       "C01-C12画布与流程切换",
       "H01-H08统一历史与会话边界"
@@ -6405,6 +6405,29 @@
       "插件公共合同",
       "主界面整体迁移后续另做",
       "main不同步"
-    ]
+    ],
+    "productionChains": [
+      "主工具栏/快捷键→MainWindow→SolutionSession.History→现有画布/根命令→正式Host图投影→状态/导航",
+      "正式参数候选→原校验发布回滚→CommitId前后配置回执→同一Session历史→原投影，不回放运行值",
+      "Tab/下拉/搜索/ID→原容器导航→generation视口恢复→底栏/小地图；导航不入历史"
+    ],
+    "scopeBoundary": [
+      "Group冻结，外部修改栅栏",
+      "主界面整体迁移后置",
+      "不与main同步",
+      "VS/物理/DPI/用户验收未通过"
+    ],
+    "currentValidation": {
+      "full383": "0错误/968警告/54.06秒",
+      "historyAndDocument": 117,
+      "transactionAndConfiguration": 7,
+      "canvasNavigation": 153,
+      "actualHost": 1,
+      "actualMode": 1,
+      "actualTools": 1,
+      "distinctTotal": 280,
+      "manual": "尚未启动本批；VS设计时/物理/DPI/用户验收待记录",
+      "knownFailures": "379/380引用编译；381探针同名需隔离；382新增构造/自连接夹具；383旧反射夹具及显示DP/关闭动画断言已修，历史日志保留"
+    }
   }
 }

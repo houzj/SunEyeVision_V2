@@ -1,0 +1,122 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+ xmlns:PControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls"
+ xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab"
+ xmlns:PCommon="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom"
+ xmlns:convert="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI"
+ xmlns:localization="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
+ <ResourceDictionary.MergedDictionaries>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml"/>
+  <x:StaticExtension Member="localization:LocalizationResourceDictionary.Instance"/>
+ </ResourceDictionary.MergedDictionaries>
+ <convert:FgConverter x:Key="FgConverter"/>
+ <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
+  <Style x:Key="PopWindowButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="Height" Value="25" />
+    <Setter Property="Width" Value="25" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" Background="{DynamicResource ComboBoxBorderS}">
+            <Image Name="icon" Height="24" Width="24" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_normal.png" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_disable.png" />
+            </Trigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_click.png" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_click.png" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <DataTemplate x:Key="ButtonSelecter_sub">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="32" />
+      </Grid.ColumnDefinitions>
+      <Border Grid.ColumnSpan="2" CornerRadius="2">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="#00FFFFFF" />
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding IsSelectedSubscribeParam}">
+                <Setter Property="BorderThickness" Value="3" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Col_Theme_Mouse}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Border>
+      <PControl:PopupButton Name="et" Grid.Column="0" HorizontalOffsetVal="0" Style="{x:Null}" IsPopupOpen="{Binding IsTextDropDownOpen, Mode=TwoWay}">
+        <PControl:PopupButton.ButtonStyle>
+          <Style TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                  <localParamTab:DeleteTextBox Background="#00FFFFFF" FontSize="14" Foreground="{Binding ReadOnlyA, Converter={StaticResource FgConverter}}" IsReadOnly="{Binding ReadOnlyA}" Text="{Binding CurValueA, Mode=TwoWay}">
+                    <i:Interaction.Triggers>
+                      <i:EventTrigger EventName="OnTBFoucsChanged">
+                        <PCommon:ParamsEventCommand Command="{Binding FocusedCommand}" />
+                      </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                  </localParamTab:DeleteTextBox>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+        </PControl:PopupButton.ButtonStyle>
+        <PControl:PopupButton.SubContent>
+          <DataTemplate>
+            <Border Margin="0,4,0,0" BorderBrush="{DynamicResource TextBox.Static.Border}" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6" Background="{DynamicResource ComboBoxBorderS}" Visibility="{Binding IsTextPopupVisible, Converter={StaticResource bool2VisibilityConverter}}">
+              <localParamTab:SubTreeView Width="180" Height="180" ItemSource="{Binding IndexNodes}" SelectedItem="{Binding SelectedIndexNode, Mode=TwoWay}">
+                <i:Interaction.Triggers>
+                  <i:EventTrigger EventName="OnTreeNodeDoubleClick">
+                    <PCommon:ParamsEventCommand Command="{Binding IndexClickCommand}" />
+                  </i:EventTrigger>
+                </i:Interaction.Triggers>
+              </localParamTab:SubTreeView>
+            </Border>
+          </DataTemplate>
+        </PControl:PopupButton.SubContent>
+      </PControl:PopupButton>
+      <PControl:PopupButton Name="rt" Grid.Column="1" HorizontalOffsetVal="-150" Style="{StaticResource LinkPopButton}" IsPopupOpen="{Binding IsDropDownOpen, Mode=TwoWay}">
+        <PControl:PopupButton.SubContent>
+          <DataTemplate>
+            <Grid Background="#00FFFFFF" Margin="0,4,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="27" />
+              </Grid.ColumnDefinitions>
+              <Border BorderBrush="{DynamicResource TextBox.Static.Border}" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6" Background="{DynamicResource ComboBoxBorderS}">
+                <localParamTab:SubTreeView Width="180" Height="180" ItemSource="{Binding SourceNodes}" SelectedItem="{Binding SelectedSourceNode, Mode=TwoWay}">
+                  <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="OnTreeNodeDoubleClick">
+                      <PCommon:ParamsEventCommand Command="{Binding ClickCommand}" />
+                    </i:EventTrigger>
+                  </i:Interaction.Triggers>
+                </localParamTab:SubTreeView>
+              </Border>
+              <Button Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" ToolTip="{DynamicResource Lang_OpenSubscriptionWindow}" Style="{StaticResource PopWindowButtonStyle}" Command="{Binding PopSubscribeWindowCommand}" Visibility="{Binding SubscribeInPopWindowEnableA, Converter={StaticResource bool2VisibilityConverter}}" />
+            </Grid>
+          </DataTemplate>
+        </PControl:PopupButton.SubContent>
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="DropDownOpened">
+            <i:InvokeCommandAction Command="{Binding DropDownCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </PControl:PopupButton>
+      <Border BorderThickness="1" CornerRadius="4" BorderBrush="{DynamicResource TextBox.Static.Border}" Grid.Column="0" Grid.ColumnSpan="2" />
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

@@ -13,6 +13,8 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using AppsPopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.UI.Shell.Windows;
@@ -76,7 +78,7 @@ internal static class S2DocumentEditingCases
             // user's saved designer SelectedPageIndex.
             Logical(Control(first)).OfType<TabControl>().Single().SelectedIndex=0;
             first.UpdateLayout();Pump();
-            var sourceButtons=Visual(Control(first)).OfType<Button>().Where(b=>Equals(b.ToolTip,"选择订阅来源")).ToArray();
+            var sourceButtons=Visual(Control(first)).OfType<AppsPopup>().Where(b=>b.Name=="rt").ToArray();
             Require(sourceButtons.Length==3&&sourceButtons.All(b=>Visual(b).OfType<Image>().Any(i=>i.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&i.ActualWidth>0)),
                 "来源按钮没有实际显示迁入图标");
             var image=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.ImageInput);
@@ -85,6 +87,19 @@ internal static class S2DocumentEditingCases
             Require(Visual(image).OfType<Image>().Any(icon=>icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&icon.ActualWidth>0),
                 "VM输入源右下角原三角图标未实际渲染");
             Capture(first,"runtime-editor-basic.png");
+        });
+        Case("捕获回调同步重绑拒绝旧结果，不把旧配置写入新节点",()=>
+        {
+            var control=Control(first);var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(control)!;
+            var replacement=context.DraftNode.Clone();
+            var configuration=replacement.RuntimeConfiguration;var bindings=replacement.ParamSettings;
+            var field=typeof(RuntimeNodeConfigurationControl).GetField("_view",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            var inner=(IToolSettingsView)field.GetValue(control)!;
+            field.SetValue(control,new CaptureRebindView(inner,()=>control.BindDraft(replacement)));
+            Require(!control.TryCapture(out var error)&&error.Contains("重新绑定"),"旧捕获没有拒绝同步重绑");
+            Require(ReferenceEquals(replacement.RuntimeConfiguration,configuration)&&ReferenceEquals(replacement.ParamSettings,bindings),
+                "旧捕获污染新节点配置或绑定");
+            control.BindDraft(context.DraftNode);Pump();
         });
         Case("VM图像输入源下拉从正式声明选择，未确认引用只写私有节点",()=>
         {
@@ -208,6 +223,19 @@ internal static class S2DocumentEditingCases
         if(!sdkPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis"),"SDK入口缺席时仍加载了旧Blob");
         if(!wpfPresent)Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf"),"Wpf缺席时仍加载了专属视图");
         Console.WriteLine($"S4 Runtime窗口：{_passed}组通过；SDK入口={(sdkPresent?"存在":"缺席")}，Wpf={(wpfPresent?"存在":"缺席")}；真实打开/编辑/保存/确定取消/调试命令与连续停止；未验证本地ROI、全部VM外观或人工验收。");return 0;
+    }
+    private sealed class CaptureRebindView(IToolSettingsView inner,Action rebind):IToolSettingsView
+    {
+        private bool _called;
+        public FrameworkElement View=>inner.View;
+        public bool HasInvalidInput=>inner.HasInvalidInput;
+        public event Action? Changed {add=>inner.Changed+=value;remove=>inner.Changed-=value;}
+        public bool TryCapture(out object settings,out IReadOnlyDictionary<string,ReferenceSetting> references,out string error)
+        {
+            var result=inner.TryCapture(out settings,out references,out error);
+            if(!_called){_called=true;rebind();}return result;
+        }
+        public void Dispose()=>inner.Dispose();
     }
     private static IEnumerable<DependencyObject> Logical(DependencyObject root)
     {yield return root;foreach(var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())foreach(var found in Logical(child))yield return found;}

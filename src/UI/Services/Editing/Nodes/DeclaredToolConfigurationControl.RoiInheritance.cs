@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +66,7 @@ public sealed partial class DeclaredToolConfigurationControl
                 {
                     if(setting is not ReferenceSetting reference)throw new ArgumentException("整区域必须选择声明来源。");
                     var roi=Ensure();roi.Binding=ToSetting(roi.Name,reference.Reference);RefreshRegionScene();
-                },_=>SelectReference(port,reference=>
+                },CreateReferenceOptions(reference=>
                 {
                     var target=new RoiBindingInputs.Slot(port.Id,item??new Roi(),null,null).Target(reference);
                     var element=target.Type.Element!;
@@ -91,7 +92,7 @@ public sealed partial class DeclaredToolConfigurationControl
                     else if(setting is ReferenceSetting reference)value=ToSetting(key,reference.Reference);
                     else throw new ArgumentException("请设置必需的区域参数。");
                     var roi=Ensure();roi.ParameterBindings??=new();roi.ParameterBindings[key]=value;RefreshRegionScene();
-                },_=>SelectReference(port,_=>new Port(port.Id,TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64)))),
+                },CreateReferenceOptions(_=>new Port(port.Id,TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64)))),
                 new ConstantSetting(key is "Width" or "Height" or "Radius"?1d:0d),FormatReference);
                 content.Children.Add(editor);_inheritedRegionEditors.Add((editor,()=>Active(mode)&&item?.IsEnabled!=false));
             }

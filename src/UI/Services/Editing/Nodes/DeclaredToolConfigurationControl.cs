@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
         if(parameters is IConfigurationFieldProvider provider)
         {
             _accessors=provider.GetConfigurationFields();
-            _fields=new(_accessors.Select(field=>(field.Port,field.Presentation,ReadDraft(field))),WriteDraft,SelectReference,
+            _fields=new(_accessors.Select(field=>(field.Port,field.Presentation,ReadDraft(field))),WriteDraft,CreateReferenceOptions(),
                 id=>new ConstantSetting(_accessors.Single(field=>field.Port.Id==id).Read()),FormatReference);
             SetEditorContent(_fields);BuildRegionEditors(provider);BuildSourceEditors(provider);return;
         }
@@ -142,9 +143,9 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
             ReferenceExpression=BindingReferenceSerializer.Serialize(reference),SourceNodeId=reference.NodeId,
             SourceWorkflowId=reference.ScopeId,SourceFieldId=source?.FieldId,SourceProperty=source?.Name??reference.PortId};
     }
-    private ReferenceSetting? SelectReference(Port target)
-        =>SelectReference(target,null);
-    private ReferenceSetting? SelectReference(Port target,Func<OutputReference,Port>? roiTarget)
+    private ReferenceFieldOptions CreateReferenceOptions(Func<OutputReference,Port>? roiTarget=null)
+        =>new(_=>ReadReferenceCandidates(),(target,proposal)=>ValidateReferenceProposal(target,proposal,roiTarget));
+    private IReadOnlyList<DeclaredReferenceCandidate> ReadReferenceCandidates()
     {
         var candidates=new List<DeclaredReferenceCandidate>();
         if(DataProvider is DataSourceQueryService query&&CurrentNode is WorkflowNodeBase node)
@@ -172,8 +173,12 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
                 candidates.Add(new(nextLabel,nodeId,scope,root,next));AddMembers(field.Type,next,nextLabel,nodeId,root,scope);
             }
         }
-        var picker=new ReferenceSelectionControl(candidates,reference=>
-        {
+        return candidates.AsReadOnly();
+    }
+    private string? ValidateReferenceProposal(Port target,ConfigurationSetting proposal,Func<OutputReference,Port>? roiTarget)
+    {
+        if(proposal is not ReferenceSetting selected)return null;
+        var reference=selected.Reference;var candidates=ReadReferenceCandidates();
             if(roiTarget is not null)
             {
                 if(!RegionScopeCurrent()||CurrentNode is not WorkflowNodeBase consumer)return "当前节点编辑范围已失效。";
@@ -198,22 +203,16 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
             }
             if(CurrentNode is not WorkflowNodeBase current||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext context)
                 return "当前节点编辑范围尚未就绪。";
-            var field=_accessors.Single(field=>field.Port.Id==target.Id);var prior=current.ParamSettings.GetSetting(field.StoragePath)?.Clone();
+            var field=_accessors.Single(field=>field.Port.Id==target.Id);var prior=current.ParamSettings;
+            current.ParamSettings=prior.Clone();
             try
             {
                 current.ParamSettings.SetSetting(ToSetting(field,reference));
                 return context.TryValidateEditor(out var error)?null:error;
             }
-            finally{if(prior is null)current.ParamSettings.RemoveSetting(field.StoragePath);else current.ParamSettings.SetSetting(prior);}
-        });
-        var panel=new DockPanel();var buttons=new StackPanel {Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(12)};
-        DockPanel.SetDock(buttons,Dock.Bottom);panel.Children.Add(buttons);panel.Children.Add(picker);
-        var window=new Window {Title="选择绑定来源",Width=650,Height=520,Content=panel,WindowStartupLocation=WindowStartupLocation.CenterOwner,Owner=Window.GetWindow(this)};
-        ReferenceSetting? selected=null;
-        var accept=new Button {Content="确定",IsDefault=true,MinWidth=80,Margin=new Thickness(4)};var cancel=new Button {Content="取消",IsCancel=true,MinWidth=80,Margin=new Thickness(4)};
-        accept.Click+=(_,_)=>{if(picker.TryGetReference(out var reference)){selected=new(reference!);window.DialogResult=true;}};
-        buttons.Children.Add(accept);buttons.Children.Add(cancel);window.ShowDialog();return selected;
+            finally{current.ParamSettings=prior;}
     }
+
 }
 
 public static class ToolConfigurationEditors

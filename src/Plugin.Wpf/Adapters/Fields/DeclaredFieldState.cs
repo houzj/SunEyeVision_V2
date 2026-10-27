@@ -6,10 +6,12 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
 internal sealed class DeclaredFieldState : IDisposable
 {
     private Action<ParameterSetting>? _write;
+    private Func<ParameterSetting,string?>? _validate;
     private ParameterSetting _accepted;
     private ConstantSetting? _constantBackup;
     private readonly bool _allowUnboundReference;
     private bool _writing;
+    private bool _referenceCleared;
     public Port Port { get; }
     public ParameterSetting Accepted => CopySetting(_accepted);
     public ConstantSetting? ConstantBackup => _constantBackup is null ? null : (ConstantSetting)CopySetting(_constantBackup);
@@ -17,19 +19,20 @@ internal sealed class DeclaredFieldState : IDisposable
     public string EditError { get; private set; } = "";
     public string SourceError { get; private set; } = "";
     public bool IsDisposed { get; private set; }
-    public bool MissingReference => IsReferenceMode && _accepted is not ReferenceSetting
-        && !(_allowUnboundReference && _accepted is UnsetSetting);
+    public bool ReferenceCleared => _referenceCleared;
+    public bool MissingReference => IsReferenceMode && (_referenceCleared || _accepted is not ReferenceSetting)
+        && !((_allowUnboundReference || !Port.Required) && _accepted is UnsetSetting);
     public bool HasInvalidInput => MissingReference || (_accepted is UnsetSetting && Port.Required && !_allowUnboundReference)
         || EditError.Length != 0 || SourceError.Length != 0;
-    public string Error => MissingReference ? "请选择订阅来源，或切回数值模式。"
-        : _accepted is UnsetSetting && Port.Required && !_allowUnboundReference ? "必填项尚未设置。"
-        : EditError.Length != 0 ? EditError : SourceError;
+    public string Error => EditError.Length!=0?EditError:SourceError.Length!=0?SourceError
+        : MissingReference ? "请选择订阅来源，或切回数值模式。"
+        : _accepted is UnsetSetting && Port.Required && !_allowUnboundReference ? "必填项尚未设置。" : "";
     public event Action? Changed;
 
     public DeclaredFieldState(Port port, ParameterSetting initial, Action<ParameterSetting> write,
-        ConstantSetting? constantBackup = null, bool allowUnboundReference = false)
+        ConstantSetting? constantBackup = null, bool allowUnboundReference = false,Func<ParameterSetting,string?>? validate=null)
     {
-        Port = port; _write = write;
+        Port = port; _write = write;_validate=validate;
         _accepted = PrepareInitial(initial);
         _constantBackup = initial is ConstantSetting ? (ConstantSetting)CopySetting(_accepted)
             : constantBackup is null ? null : (ConstantSetting)PrepareInitial(constantBackup);
@@ -56,14 +59,21 @@ internal sealed class DeclaredFieldState : IDisposable
             else if (proposal is ReferenceSetting && (Port.EditModes & FieldEditModes.Reference) == 0)
                 throw new ArgumentException("此字段不允许订阅。");
             var same = SameSetting(_accepted, proposal);
-            if (!same) _write!(CopySetting(proposal));
+            if (!same || _referenceCleared)
+            {
+                var error=_validate?.Invoke(CopySetting(proposal));
+                if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
+                if(IsDisposed)return false;
+                _write!(CopySetting(proposal));
+            }
             // The real host callback can synchronously rebind and dispose this old session.
             if (IsDisposed) return false;
-            var referenceMode = proposal is ReferenceSetting;
-            changed = !same || IsReferenceMode != referenceMode || EditError.Length != 0;
+            var referenceMode = proposal is ReferenceSetting || proposal is UnsetSetting && IsReferenceMode;
+            changed = !same || _referenceCleared || IsReferenceMode != referenceMode || EditError.Length != 0;
             _accepted = proposal;
             if (proposal is ConstantSetting nextConstant) _constantBackup = nextConstant;
             IsReferenceMode = referenceMode;
+            _referenceCleared = false;
             EditError = "";
             accepted = true;
         }
@@ -93,6 +103,16 @@ internal sealed class DeclaredFieldState : IDisposable
         if (ConstantBackup is { } value) return TrySet(value);
         SetEditError("没有已保存的常量值，请提供明确的参数默认值。");
         return false;
+    }
+
+    public void ClearReference()
+    {
+        if(IsDisposed)return;
+        if(!Port.Required){TrySet(new UnsetSetting());return;}
+        if(_referenceCleared)return;
+        _referenceCleared=true;IsReferenceMode=true;
+        EditError="请选择订阅来源，或切回数值模式。";
+        Changed?.Invoke();
     }
 
     public void SetEditError(string error)
@@ -130,9 +150,10 @@ internal sealed class DeclaredFieldState : IDisposable
     private static ParameterSetting CopySetting(ParameterSetting value) => value is ConstantSetting { Value: double[] array }
         ? new ConstantSetting(array.ToArray()) : value;
 
-    private static bool SameReference(OutputReference a, OutputReference b) => a.NodeId == b.NodeId
+    internal static bool SameReference(OutputReference a, OutputReference b) => SameSource(a,b) && SameSelection(a.Selection,b.Selection);
+    internal static bool SameSource(OutputReference a,OutputReference b) => a.NodeId == b.NodeId
         && a.ScopeId == b.ScopeId && a.PortId == b.PortId && a.Type == b.Type && a.Storage == b.Storage
-        && a.MemberFieldPath.SequenceEqual(b.MemberFieldPath) && SameSelection(a.Selection, b.Selection);
+        && a.MemberFieldPath.SequenceEqual(b.MemberFieldPath);
 
     private static bool SameSelection(BindingSelection a, BindingSelection b) => (a, b) switch
     {
@@ -162,6 +183,6 @@ internal sealed class DeclaredFieldState : IDisposable
     public void Dispose()
     {
         if (IsDisposed) return;
-        IsDisposed = true; Changed = null; _write = null;
+        IsDisposed = true; Changed = null; _write = null;_validate=null;
     }
 }

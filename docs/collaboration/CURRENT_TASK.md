@@ -1,5 +1,26 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 原订阅生产组合本批已验证（最新）
+
+- 基线223d80d3/main，Codex主线唯一写者；三路只读逐控件核收后已补位C05单值、C06范围及C07扩展订阅。第一阶段继续，未做整库改名，未进入Blob重组。
+- 原ButtonSelecter_sub两Popup、SubTreeView、DeleteTextBox已接正式字段及输入；ReferenceFieldOptions候选/私有预检取代旧ReferenceSelectionControl模态路径，旧类删除，不保留后备。普通数值原版只读，输入Combination可编辑括号；所有正式身份及索引直接使用契约，集合成员投影保留Sequence。
+- 已修必填清空旧身份/索引复活、Enter合法提交失焦/非法留焦、Delete及树选择强制关闭实际两Popup、刷新坏成员路径先整体校验、观察者异常不误吞。Runtime提案/捕获/校验/提交固定node/view/context/generation，同步重绑不污染新节点。
+- 最终UI005零错误6619警告227.32秒；全量004零错误6628警告113.97秒。正式FieldEditing051二十八组、RuntimeEditor035十组、DesignTime011二十七组、FullChain094七组、WindowPresentation031十三组、Components179九组通过；实际Release EXE22工具准入。
+- 同源证据O06_BLOB_REFERENCE_COMPOSITION_CHECKPOINT_20261027.json核18源码增量、760发布项及174加载记录SHA。所有构建和检查均已结束，无待续活动句柄。
+- 失败全部保留：UI001名称冲突；FieldEditing047测试编译、048/049常量预检误需查询服务、050集合路径漏验；FullChain092测试类型遮蔽、093未切输入页，094修后通过。检查点首次Catalog SHA过期已按本轮增量同步，不改原来源SHA。
+- 下一步：原单值数值C05、原between C06及真实扩展订阅。扩展原件ParamSubscribeWindow为双树/默认方式/Owner右侧跟随专窗，当前本方尚未消费者；继续登记未完成，不能以隐藏按钮算实现。数值/范围生产旧路径仍待退出，第一阶段未通过。
+- 真实VS/用户及VM同态验收仍缺，不代签。用户BlobParameterEditor.xaml页索引修改保留，不纳入本轮提交；原方案/Catalog已同步，准备固定有意义中文本地检查点，不推送。完整目标active。
+
+
+## 2026-10-27 原订阅完整组合候选（正在验证）
+
+- 基线223d80d3，主线唯一写者，三路只读核查。原ButtonSelecter_sub两Popup/SubTreeView/DeleteTextBox接入正式字段和输入消费；旧ReferenceSelectionControl模态入口删除，无兼容分支；未批量改产品目录命名，未继续Blob业务重组。
+- ReferenceFieldOptions承接候选/宿主提案验证；普通数值订阅按原版只读，输入Combination可编辑既选来源括号，动态索引只列真实标量Int64；引用身份不从文字恢复，集合记录成员投影保留Sequence。
+- 已修同步校验/捕获重绑时旧快照恢复到新节点的问题，捕获、校验与提交固定节点/视图/会话并检查代次；清空必填来源后禁止旧身份/索引复活；Refresh解析catch不包观察者通知；合法Enter失焦关弹层，非法留焦。
+- UI001失败：ParameterSetting命名空间歧义，改现有ConfigurationSetting别名；UI002零错误3525警告110.99秒。全量001正在运行，新增真实两Popup/Enter/必填清空与同步重绑用例待跑；旧通过成绩不覆盖本批。
+- 扩展订阅真实宿主尚缺，Expand空则隐藏按钮，不能称C07全部完成；C05/C06及其他第一阶段要求仍待落实。用户页索引修改保留不提交。当前目标active。
+
+
 ## 2026-10-27 唯一字段状态与捕获基础已落实（最新）
 
 - 基线3f2f893d/main，主线单写者，三路只读逐控件核证。第一阶段继续；本批没有继续Blob业务重组，没有批量重命名，也没有宣称C05/C06/C07完成。

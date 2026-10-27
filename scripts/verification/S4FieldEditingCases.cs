@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows.Media.Imaging;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -8,6 +9,7 @@ using NativeText=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.
 using AppsPopup=SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton;
 using System.IO;
 using System.Reflection;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -57,6 +59,7 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：下拉选项直接消费正式声明");
             VerifyNativeInputs();
             VerifyFieldState();
+            VerifyReferenceComposition();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
@@ -105,10 +108,10 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：真实颜色控件原子写RGBA；通用记录UInt8非法原文拦截及修正恢复");
 
             ParameterSetting bound=new ConstantSetting(7L);
-            var reference=new OutputReference("producer","port",TypeRef.SequenceOf(DataType.Integer),selection:new BindingSelection.AtConstant(0));
+            var reference=new OutputReference("producer","port",TypeRef.ScalarOf(ScalarKind.Int64));
             var binding=new DeclaredFieldEditor(new("optional",DataType.Integer,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"可选数值",bound,
-                next=>bound=next,_=>new ReferenceSetting(reference));
-            Show(binding);Click(binding,"切换为订阅");Click(binding,"选择订阅来源");Require(bound is ReferenceSetting source&&source.Reference==reference,"绑定意图未交给宿主");
+                next=>bound=next,new ReferenceFieldOptions(_=>new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("port",DataType.Integer),Array.Empty<string>())}));
+            Show(binding);Click(binding,"切换为订阅");SelectReferenceLeaf(binding,c=>c.NodeId=="producer");Require(bound is ReferenceSetting source&&source.Reference.NodeId==reference.NodeId,"绑定意图未交给宿主");
             Click(binding,"切换为数值编辑");Require(bound is ConstantSetting restored&&Equals(restored.Value,7L),"常量备份没有恢复");
             Click(binding,"清除可选项");Require(bound is UnsetSetting,"清除可选项误变为空值或空集合");
             Console.WriteLine("通过：宿主选择绑定、恢复常量及明确Unset；控件不自行执行或发布");
@@ -176,17 +179,116 @@ internal static class S2DocumentEditingCases
             ((TextBox)fields.Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="201";
             int Threshold()=>((SunEyeVision.Tool.BlobAnalysis.Runtime.BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold;
             Require(Threshold()==128,"公共控件提前写入正式配置");
-            Require(control.TryValidateEditor(out _)&&context.TryCommitEditor(out var error),"Runtime草稿不能确认");Require(Threshold()==201,"确认没有发布");
+            Require(control.TryValidateEditor(out var validationError),"Runtime草稿不能校验："+validationError);
+            Require(context.TryCommitEditor(out var error),"Runtime草稿不能确认："+error);Require(Threshold()==201,"确认没有发布");
             Pump();((TextBox)Descendants(control).OfType<DeclaredFieldsView>().Single().Fields.Single(f=>f.FieldId==thresholdId).InputElement!).Text="215";
             context.Discard();Require(Threshold()==201,"取消改变已确认值");edits.Close();
             Console.WriteLine("通过：真实Runtime字段控件只写私有草稿，确认发布当前范围，取消保留已确认值");
-            Console.WriteLine("S4字段编辑：23组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
+            Console.WriteLine("S4字段编辑：28组通过；本轨道不代完整默认配置、ROI、保存重开或人工验收。");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
         finally{owner?.Close();Application.Current?.Shutdown();}
     }
     private sealed record TreeNode(string Name,IReadOnlyList<TreeNode> EnumEntrysA)
     {public bool IsChecked {get;set;}}
+    private static void VerifyReferenceComposition()
+    {
+        var sequence=TypeRef.SequenceOf(DataType.Integer);
+        var source=new DeclaredReferenceCandidate("来源","producer",null,new Port("values",sequence),Array.Empty<string>());
+        var alternate=new DeclaredReferenceCandidate("来源","other",null,new Port("values",sequence),Array.Empty<string>());
+        ParameterSetting accepted=new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(2)));
+        var writes=0;
+        using var field=new DeclaredFieldEditor(new("reference-enter",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",accepted,
+            value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new[]{source,alternate},EditableIndex:true));
+        Show(field);
+        var buttons=NativeDescendants(field).OfType<AppsPopup>().ToArray();
+        Require(buttons.Length==2,"订阅未使用原两Popup组合");
+        var sourceButton=buttons.Single(item=>item.Name=="rt");
+        sourceButton.Focus();sourceButton.IsDropDownOpen=true;Pump();sourceButton.IsDropDownOpen=false;Pump();
+        var text=NativeDescendants(field).OfType<NativeText>().Single();
+        KeyEventArgs Enter()
+        {
+            var args=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(owner)!,Environment.TickCount,Key.Return)
+                {RoutedEvent=Keyboard.PreviewKeyDownEvent};
+            text.RaiseEvent(args);Pump();return args;
+        }
+        text.Focus();Pump();text.Text="来源 [abc]";var invalidEnter=Enter();
+        Require(invalidEnter.Handled&&text.IsKeyboardFocused&&field.HasInvalidText&&writes==0,"非法Enter未保留焦点或污染正式索引");
+        foreach(var button in buttons)
+        {
+            text.Focus();Pump();Require(text.IsKeyboardFocused,"合法Enter缺少实际焦点前置");
+            button.ApplyTemplate();button.IsDropDownOpen=true;Pump();
+            Require(button.Template.FindName("PART_Popup",button) is Popup {IsOpen:true},"原Popup未实际打开");
+            var index=writes+3;text.Text="来源 ["+index+"]";var before=writes;var enter=Enter();
+            Require(enter.Handled&&!text.IsKeyboardFocused&&writes==before+1&&!field.HasInvalidText
+                &&accepted is ReferenceSetting {Reference.Selection:BindingSelection.AtConstant selected}&&selected.Index==index,
+                "合法Enter未单次提交、失焦或恢复错误");
+            Require(buttons.All(popup=>!popup.IsDropDownOpen&&popup.Template.FindName("PART_Popup",popup) is not Popup {IsOpen:true}),
+                "合法Enter没有关闭实际原Popup");
+        }
+        Console.WriteLine("通过：完整原订阅两Popup、非法Enter留焦、合法Enter单次提交失焦并关闭真实弹层");
+
+        var session=((ContentControl)NativeDescendants(field).OfType<ContentControl>().First(item=>item.Content?.GetType().Name=="ReferenceFieldSession")).Content;
+        var sessionType=session.GetType();
+        object Property(string name)=>sessionType.GetProperty(name)!.GetValue(session)!;
+        void Command(string name,object? argument)=>((ICommand)Property(name)).Execute(argument);
+        var clear=((System.Collections.IEnumerable)Property("SourceNodes")).Cast<object>().Single(node=>(bool)node.GetType().GetProperty("Clear")!.GetValue(node)!);
+        sourceButton.Focus();sourceButton.IsDropDownOpen=true;Pump();
+        var beforeClear=writes;Command("ClickCommand",clear);Pump();
+        Require(field.HasInvalidText&&text.Text==""&&writes==beforeClear,"必填清空未保持未完成状态");
+        Require(buttons.All(button=>!button.IsDropDownOpen&&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),
+            "清除来源没有关闭实际Popup");
+        text.Text="来源 [1]";Require(!field.TryCommitPending()&&writes==beforeClear,"清空后文本复活旧来源身份");
+        SelectReferenceLeaf(field,candidate=>candidate.NodeId=="other");
+        Require(accepted is ReferenceSetting {Reference.NodeId:"other"} cleared&&Equals(cleared.Reference.Selection,BindingSelection.All)
+            &&writes==beforeClear+1&&!field.HasInvalidText,"清空后换集合复活旧索引或混淆同名身份");
+        Console.WriteLine("通过：必填清空阻断旧身份文本，重新选择同名不同来源不继承旧索引");
+
+        var indexButton=buttons.Single(button=>button.Name=="et");
+        text.Focus();indexButton.IsDropDownOpen=true;Pump();
+        Require(text.IsKeyboardFocused&&indexButton.Template.FindName("PART_Popup",indexButton) is Popup {IsOpen:true},
+            "Delete缺少索引Popup打开及实际文本焦点前置");
+        var beforeDelete=writes;
+        text.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(owner)!,Environment.TickCount,Key.Delete)
+            {RoutedEvent=Keyboard.KeyUpEvent});Pump();
+        Require(text.Text==""&&field.HasInvalidText&&writes==beforeDelete
+            &&buttons.All(button=>!button.IsDropDownOpen&&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),
+            "Delete没有清空并关闭实际索引Popup，或污染已接纳引用");
+        Console.WriteLine("通过：实际索引弹层打开且文本持焦时Delete清空并关闭两层，未接受必填清除");
+
+        var record=TypeRef.RecordOf("record",new[]{new Port("area",DataType.Number)});
+        var projection=new DeclaredReferenceCandidate("面积","blob",null,new Port("blobs",TypeRef.SequenceOf(record)),new[]{"area"});
+        Require(projection.SelectedType.Shape==ValueShape.Sequence&&projection.SelectedType.Element==DataType.Number,
+            "记录成员投影丢失集合形状");
+        Console.WriteLine("通过：集合记录成员投影保留正式集合类型");
+
+        var refreshFails=false;var badProjection=false;var refreshWrites=0;
+        using var refreshField=new DeclaredFieldEditor(new("refresh",DataType.Integer,EditModes:FieldEditModes.Reference),"刷新",
+            new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(2))),_=>refreshWrites++,new ReferenceFieldOptions(_=>
+            {
+                if(refreshFails)throw new InvalidOperationException("目录读取失败");
+                return badProjection?new[]{source,source with{MemberPath=new[]{"不存在成员"}}}:new[]{source};
+            }));
+        Show(refreshField);
+        var refreshSession=NativeDescendants(refreshField).OfType<ContentControl>().Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
+        var refreshType=refreshSession.GetType();
+        var refresh=(ICommand)refreshType.GetProperty("DropDownCommand")!.GetValue(refreshSession)!;
+        refresh.Execute(null);var treeSnapshot=refreshType.GetProperty("SourceNodes")!.GetValue(refreshSession);
+        refreshFails=true;refresh.Execute(null);
+        Require(refreshField.Error.Contains("目录读取失败")&&refreshWrites==0
+            &&ReferenceEquals(treeSnapshot,refreshType.GetProperty("SourceNodes")!.GetValue(refreshSession)),"刷新失败半替换树或污染已接纳值");
+        refreshFails=false;refresh.Execute(null);Require(!refreshField.HasInvalidText&&refreshWrites==0,"刷新恢复未清来源错误或擅自写入");
+        treeSnapshot=refreshType.GetProperty("SourceNodes")!.GetValue(refreshSession);badProjection=true;refresh.Execute(null);
+        Require(refreshField.HasInvalidText&&ReferenceEquals(treeSnapshot,refreshType.GetProperty("SourceNodes")!.GetValue(refreshSession)),"投影失败半替换来源树");
+        badProjection=false;refresh.Execute(null);
+        PropertyChangedEventHandler observer=(_,args)=>{if(args.PropertyName=="SourceNodes")throw new InvalidOperationException("刷新观察者失败");};
+        ((INotifyPropertyChanged)refreshSession).PropertyChanged+=observer;
+        try{refresh.Execute(null);throw new Exception("刷新观察者异常被吞掉");}
+        catch(InvalidOperationException error)when(error.Message=="刷新观察者失败"){}
+        finally{((INotifyPropertyChanged)refreshSession).PropertyChanged-=observer;}
+        Require(!refreshField.HasInvalidText&&refreshWrites==0,"刷新观察者异常被误标为来源错误");
+        Console.WriteLine("通过：原订阅树刷新及投影失败不半替换，恢复不写入，观察者异常不误判为读源失败");
+    }
     private static void VerifyFieldState()
     {
         var writes=0;var changes=0;
@@ -211,11 +313,11 @@ internal static class S2DocumentEditingCases
         var referenceWrites=0;
         OutputReference Source()=>new("producer","values",TypeRef.SequenceOf(DataType.Integer),selection:new BindingSelection.AtConstant(2));
         using var reference=new DeclaredFieldEditor(new("state-reference",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"来源",
-            new ConstantSetting(7L),_=>referenceWrites++,_=>new ReferenceSetting(Source()));
-        Show(reference);Click(reference,"切换为订阅");Click(reference,"选择订阅来源");Click(reference,"选择订阅来源");
-        Require(referenceWrites==1&&reference.Setting is ReferenceSetting,"相同新建索引引用没有语义去重");
+            new ReferenceSetting(Source()),_=>referenceWrites++,new ReferenceFieldOptions(_=>new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>())}));
+        Show(reference);SelectReferenceLeaf(reference,c=>c.NodeId=="producer");SelectReferenceLeaf(reference,c=>c.NodeId=="producer");
+        Require(referenceWrites==0&&reference.Setting is ReferenceSetting,"相同新建索引引用没有语义去重");
         using var noBackup=new DeclaredFieldEditor(new("no-backup",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"无备份",
-            new ReferenceSetting(Source()),_=>throw new Exception("不得猜默认写入"),_=>null);
+            new ReferenceSetting(Source()),_=>throw new Exception("不得猜默认写入"),ReferenceFieldOptions.Empty);
         Show(noBackup);Click(noBackup,"切换为数值编辑");
         Require(noBackup.Setting is ReferenceSetting&&noBackup.HasInvalidText&&noBackup.Error.Contains("常量"),"缺少备份时制造了默认常量");
         Console.WriteLine("通过：索引引用按完整身份去重，无常量备份时明确拒绝恢复");
@@ -397,6 +499,28 @@ internal static class S2DocumentEditingCases
         using(var context=drawing.RenderOpen())context.DrawRectangle(new VisualBrush(element){ViewboxUnits=BrushMappingMode.Absolute,Viewbox=bounds,ViewportUnits=BrushMappingMode.Absolute,Viewport=bounds},null,bounds);
         bitmap.Render(drawing);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));encoder.Save(stream);
+    }
+    private static void SelectReferenceLeaf(DeclaredFieldEditor field,Func<DeclaredReferenceCandidate,bool> predicate)
+    {
+        var popup=NativeDescendants(field).OfType<AppsPopup>().Single(item=>item.Name=="rt");
+        popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+        var root=(Popup)popup.Template.FindName("PART_Popup",popup);
+        var tree=NativeDescendants(root.Child).OfType<NativeTree>().Single();
+        var actual=(TreeView)tree.FindName("treeView");
+        TreeViewItem? Find(ItemsControl parent)
+        {
+            for(var index=0;index<parent.Items.Count;index++)
+            {
+                if(parent.ItemContainerGenerator.ContainerFromIndex(index) is not TreeViewItem item)continue;
+                if(item.DataContext?.GetType().GetProperty("Candidate")?.GetValue(item.DataContext) is DeclaredReferenceCandidate candidate&&predicate(candidate))return item;
+                item.IsExpanded=true;item.UpdateLayout();Pump();var nested=Find(item);if(nested is not null)return nested;
+            }
+            return null;
+        }
+        var selected=Find(actual)??throw new Exception("原来源树缺少目标候选");
+        selected.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});Pump();
+        Require(NativeDescendants(field).OfType<AppsPopup>().All(button=>!button.IsDropDownOpen
+            &&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),"来源接纳后原Popup实际未关闭");
     }
     private static void Click(DependencyObject control,string tooltip)
     {

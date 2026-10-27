@@ -1,3 +1,5 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Presenters.References;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,7 +20,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     private readonly Port _port;
     private readonly DeclaredFieldState _state;
     private readonly bool _ownsState;
-    private readonly Func<Port, ReferenceSetting?>? _selectReference;
+    private readonly ReferenceFieldOptions? _referenceOptions;
+    private NativeReferencePresenter? _referencePresenter;
     private readonly Func<OutputReference,string>? _formatReference;
     private readonly IReadOnlyDictionary<string,string>? _choiceLabels;
     private readonly StackPanel _body = new();
@@ -47,7 +50,6 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         _row.ColumnDefinitions[0].Width=new GridLength(width);
         _error.Margin=new Thickness(width,2,0,0);
     }
-    internal DeclaredFieldEditor CreateStagedCopy(string label)=>new(_port,label,_setting,_=>{},_selectReference,_constant,_formatReference,_choiceLabels,_presentation);
     internal bool TryApplySetting(ParameterSetting setting){if(!Set(setting))return false;Render();return true;}
     public void UsePairedSlider(){_pairedSlider=true;_numeric?.UsePairedRange();}
     public bool TrySetConstant(object value)
@@ -75,18 +77,18 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
     public event Action? Changed;
 
     public DeclaredFieldEditor(Port port, string label, ParameterSetting initial, Action<ParameterSetting> write,
-        Func<Port, ReferenceSetting?>? selectReference = null, ConstantSetting? constantBackup = null,
+        ReferenceFieldOptions? references = null, ConstantSetting? constantBackup = null,
         Func<OutputReference,string>? formatReference = null,IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false)
-        : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference),label,
-            selectReference,formatReference,choiceLabels,presentation,allowUnboundReference)
+        : this(new DeclaredFieldState(port,initial,write,constantBackup,allowUnboundReference,proposal=>references?.ValidateProposal?.Invoke(port,proposal)),label,
+            references,formatReference,choiceLabels,presentation,allowUnboundReference)
     { _ownsState=true; }
 
     internal DeclaredFieldEditor(DeclaredFieldState state,string label,
-        Func<Port,ReferenceSetting?>? selectReference=null,Func<OutputReference,string>? formatReference=null,
+        ReferenceFieldOptions? references=null,Func<OutputReference,string>? formatReference=null,
         IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false)
     {
         var port=state.Port;
-        _state=state;_port=state.Port;_selectReference=selectReference;
+        _state=state;_port=state.Port;_referenceOptions=references;
         _formatReference=formatReference;_choiceLabels=choiceLabels;_presentation=presentation;
         _allowUnboundReference=allowUnboundReference;
         _state.Changed+=OnStateChanged;
@@ -115,7 +117,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         DetachOwnedEditors();
         _body.Children.Clear();_actions.Children.Clear();InputElement=null;_numeric=null;
         if(_imageSources is not null){RenderImageSource();return;}
-        var canReference=_selectReference is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
+        var canReference=_referenceOptions is not null&&(_port.EditModes&FieldEditModes.Reference)!=0&&(_presentation?.Layout?.AllowReference!=false||_setting is ReferenceSetting);
         if(canReference&&(_port.EditModes&FieldEditModes.Constant)!=0)
         {
             var mode=new ToggleButton {Content=_referenceMode?"✎":"⇄",IsChecked=_referenceMode,Width=26,Height=26,Margin=new Thickness(5,0,0,0),ToolTip=_referenceMode?"切换为数值编辑":"切换为订阅"};
@@ -129,10 +131,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         }
         if(_referenceMode||_setting is ReferenceSetting||_allowUnboundReference&&_port.EditModes==FieldEditModes.Reference)
         {
-            var dock=new DockPanel();var pick=new Button{Content=EditorIcons.Link(),Width=29,Height=30,Padding=new Thickness(0),ToolTip="选择订阅来源"};DockPanel.SetDock(pick,Dock.Right);dock.Children.Add(pick);
-            var label=new TextBox {IsReadOnly=true,Height=30,VerticalContentAlignment=VerticalAlignment.Center,Text=_setting is ReferenceSetting reference?(_formatReference?.Invoke(reference.Reference)??reference.Reference.NodeId+" · "+reference.Reference.PortId):""};dock.Children.Add(label);
-            pick.Click+=(_,_)=>{var selected=_selectReference?.Invoke(_port);if(selected is not null&&Set(selected))Render();};
-            _body.Children.Add(dock);return;
+            _referencePresenter=new NativeReferencePresenter(_state,_referenceOptions??ReferenceFieldOptions.Empty,_formatReference);
+            InputElement=_referencePresenter;_body.Children.Add(_referencePresenter);return;
         }
         if(_setting is UnsetSetting)
         {
@@ -291,8 +291,11 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable
         finally{_updatingInput=false;}
     }
 
+    public bool TryCommitPending()=>_referencePresenter?.TryCommitPending()??true;
+
     private void DetachOwnedEditors()
     {
+        _referencePresenter?.Dispose();_referencePresenter=null;
         DetachImageSource();
         if(InputElement is ComboBox combo)combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);
         if(InputElement is NativeColorPresenter color)

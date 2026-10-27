@@ -146,7 +146,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
+          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
         }
       ],
       "themeKeys": [
@@ -203,11 +203,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
-          "sha256": "c4dee97c3606c58a3e0bce3a6eb3c98b930906670f778226d2d2ad15711360ac"
+          "sha256": "5c9a6c2ddb8a4e2d711b0e44861ed220014d9eebf7b6042a94882b1dbd83c6f4"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "a8d70e5fec19d29f87314465a8e2f8a941e7fc341e7d244ac9f5a9fd9e4019cf"
+          "sha256": "4eb0ef2f38a892b9f14e47d4364a64465bc3692baf8eb5a1ccd1db1ba493b0f9"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Input/VisionUi/SourceAssets/combo_ic_triangle_click.png",
@@ -285,7 +285,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
+          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -361,7 +361,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "a8d70e5fec19d29f87314465a8e2f8a941e7fc341e7d244ac9f5a9fd9e4019cf"
+          "sha256": "4eb0ef2f38a892b9f14e47d4364a64465bc3692baf8eb5a1ccd1db1ba493b0f9"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.XmlUI/resources/swith_on.png",
@@ -385,7 +385,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
+          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
         }
       ],
       "consumers": [
@@ -431,7 +431,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
-          "sha256": "a8d70e5fec19d29f87314465a8e2f8a941e7fc341e7d244ac9f5a9fd9e4019cf"
+          "sha256": "4eb0ef2f38a892b9f14e47d4364a64465bc3692baf8eb5a1ccd1db1ba493b0f9"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
@@ -459,7 +459,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "2f13c1c017aa403837d05124b67d24f393912979cf0dddb276e3bd4b884562de"
+          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
         }
       ],
       "consumers": [
@@ -672,6 +672,84 @@
         "build": "UI002与全量001已0错误；运行发现未激活图片相对URI缺上下文，已修绝对packURI，UI003→全量002进行中。",
         "runtime": "本批正式17组字段/16组独立设计等待修后同源回归，不套旧成绩。",
         "visual": "尚无本批真实VS/用户反馈；独立原件验证不代表完整订阅或Blob外观通过。"
+      }
+    },
+    {
+      "id": "C07.original-reference-composition",
+      "assembly": "Apps.XmlUI",
+      "assemblyMvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+      "assemblySha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd",
+      "sourceFiles": [
+        {
+          "originalType": "ButtonSelecter_sub DataTemplate",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+          "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
+          "originalLines": "255-336",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/References/ReferenceField.xaml",
+          "localSha256": "727e0d2708912da997cdd0b0e2cfdc1849e038bc5085a01e510bb7f97c1b5090"
+        }
+      ],
+      "dependencies": [
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+          "sha256": "13bcc7f65d1b7d21c97e4b6fa109369b319ed2f323879a2c5b973267798744c9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+          "sha256": "e5534009808869687cdef47ab5b99d916655efeab42ee0de3ee5f9646cf740ef"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+          "sha256": "c47f9be87460059f810f968ac7c94aaf8951643daab2291c8cbd35c7d0d1db36"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+          "sha256": "a84366e58ce3389347ec27c72f66e10e4edb460d98fbd4551c367e98410ac6cf"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+          "sha256": "f2e0236b4558cbc05cc5b579e5a694070643cf233cd3ba9b0a1bc591feb01e31"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
+          "sha256": "0f163459a3dd2e1d1d296dc8ff5fdc7a377cae982fe044497b016265d92ea9d7"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.Commom/ParamsEventCommand.cs",
+          "sha256": "98d950e46782fbd44bd1875a0e45f4e051ac4c31c8dab22d07b898bb2b96b245"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_normal.png",
+          "sha256": "4c152e1dd6a8eb63419138195212a7d28fe9a0bfc6cdb4e9cb4e657a1da316af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_disable.png",
+          "sha256": "9398f8799b6df50dfe0867739dda20cf0a898e9b5b17af7218d6bbb86e9150b7"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ic_dialog_expandArrows_click.png",
+          "sha256": "457e4c6f957d60230d8062be36901168600f94ad47d335853e5c63360d58d04c"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C07.apps-pcui-popup-foundation",
+        "C07.original-reference-tree-text-foundation"
+      ],
+      "consumers": [
+        "DeclaredFieldEditor reference mode",
+        "DeclaredInputFieldsView non-image inputs",
+        "RuntimeNodeConfigurationControl",
+        "DeclaredToolConfigurationControl reference/ROI inputs"
+      ],
+      "retired": [
+        "src/Plugin.Wpf/Fields/ReferenceSelectionControl.cs 模态选择路径"
+      ],
+      "adaptation": "原布局/双Popup/树/文本/模板；仅显式绑定正式候选树、身份/索引状态与生命周期。普通数值原版readonly，输入Combination可编辑括号。不存在真实Expand能力时隐藏扩展按钮，不声称扩展完成。",
+      "status": "PRODUCTION_COMPOSITION_AUTOMATED_CHECKS_PASSED_EXTENSION_AND_MANUAL_PENDING",
+      "validation": {
+        "build": "blob-reference-ui-005：0错误6619警告227.32秒；全量004：0错误6628警告113.97秒。",
+        "runtime": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；实际Release EXE22工具准入。",
+        "visual": "完整订阅组合独立设计PNG已检查，可见原文本/链图标；真实VS/VM同态用户验收仍缺，不代签。扩展订阅未接，完整C07未完成。"
       }
     }
   ]

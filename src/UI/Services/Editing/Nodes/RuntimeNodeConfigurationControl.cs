@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,15 +86,16 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             .ToDictionary(s=>s.ParameterName,s=>new ReferenceSetting(BindingReferenceSerializer.Deserialize(s.ReferenceExpression!)),StringComparer.Ordinal);
         var schema=configuration.Schema;
         if(schema.Presentation is null)throw new ArgumentException("Runtime input presentation metadata is required.");
+        var referenceOptions=new ReferenceFieldOptions(_=>ReadReferenceCandidates(generation),(target,proposal)=>ValidateProposal(target,proposal,generation));
         var panel=new DeclaredInputFieldsView(schema,port=>
         {
             var saved=node.ParamSettings.GetSetting(port.Id);
             return saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
-        },(port,setting)=>WriteInput(port,setting,generation),target=>SelectReference(target,generation),FormatReference,
+        },(port,setting)=>WriteInput(port,setting,generation),referenceOptions with {EditableIndex=true},FormatReference,
             _=>ReadReferenceCandidates(generation));
         _inputs.AddRange(panel.Fields);
         _view=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
-            new(references,target=>SelectReference(target,generation),FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel));
+            new(references,referenceOptions,FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel));
         _view.Changed+=Changed;Content=_view.View;
     }
     private void Changed(){if(!_syncing&&!_capturing)TryCapture(out _);}
@@ -101,43 +103,67 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
     {
         if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
         {error="当前编辑会话尚未就绪或已经失效。";return false;}
+        var node=_node;var generation=_generation;
+        bool IsCurrent()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
+            &&context.IsValid&&ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context);
         if(!TryCapture(out error))return false;
-        try{context.Host.Validate(context.PreparedDraft);return true;}
+        if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
+        try
+        {
+            context.Host.Validate(context.PreparedDraft);
+            if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
+            return true;
+        }
         catch(InvalidOperationException exception){error=exception.Message;return false;}
     }
     public bool TryCommitEditor(out string error)
     {
+        var context=ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext;
+        var generation=_generation;var node=_node;
         if(!TryValidateEditor(out error))return false;
-        return ((ProductionEditorContext)ToolEditorCommit.GetDraftContext(this)!).TryCommitEditor(out error);
+        if(_disposed||generation!=_generation||!ReferenceEquals(node,_node)||context is not {IsValid:true}
+            ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context))
+        {error="参数页已重新绑定，请使用当前参数页。";return false;}
+        return context.TryCommitEditor(out error);
     }
     public bool TryCapture(out string error)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(_capturing){error="参数捕获正在进行。";return false;}
+        var node=_node;var view=_view;var generation=_generation;
+        bool IsCurrent()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)&&ReferenceEquals(_view,view);
         _capturing=true;
         try
         {
+        foreach(var input in _inputs.ToArray())
+        {
+            if(!input.TryCommitPending()){error=input.Error;return false;}
+            if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
+        }
         if(_inputs.FirstOrDefault(f=>f.HasInvalidText) is { } invalid){error=invalid.Error;return false;}
-        if(_view is null){error="配置尚未初始化。";return false;}
-        if(!_view.TryCapture(out var settings,out var references,out error))return false;
+        if(view is null){error="配置尚未初始化。";return false;}
+        if(!view.TryCapture(out var settings,out var references,out error))return false;
+        if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
         _syncing=true;
         try
         {
-            var next=_node.RuntimeConfiguration!.WithSettings(settings);
-            var bindings=_node.ParamSettings.Clone();
+            var next=node.RuntimeConfiguration!.WithSettings(settings);
+            if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
+            var bindings=node.ParamSettings.Clone();
             foreach(var port in next.SettingsSchema!.Inputs)
-                if(references.TryGetValue(port.Id,out var reference))bindings.SetSetting(ToSetting(port.Id,reference.Reference));
+                if(references.TryGetValue(port.Id,out var reference))bindings.SetSetting(ToSetting(node,port.Id,reference.Reference));
                 else bindings.RemoveSetting(port.Id);
-            _node.RuntimeConfiguration=next;_node.ParamSettings=bindings;error="";return true;
+            if(!IsCurrent()){error="参数页已重新绑定，请使用当前参数页。";return false;}
+            node.RuntimeConfiguration=next;node.ParamSettings=bindings;error="";return true;
         }
         catch(Exception exception)when(exception is ArgumentException or InvalidOperationException){error=exception.Message;return false;}
         finally{_syncing=false;}
         }
         finally{_capturing=false;}
     }
-    private ParamSetting ToSetting(string id,OutputReference reference)
+    private static ParamSetting ToSetting(WorkflowNodeBase node,string id,OutputReference reference)
     {
-        var expression=BindingReferenceSerializer.Serialize(reference);var prior=_node.ParamSettings.GetSetting(id);
+        var expression=BindingReferenceSerializer.Serialize(reference);var prior=node.ParamSettings.GetSetting(id);
         return new(){ParameterName=id,BindingType=BindingType.Binding,ReferenceExpression=expression,SourceNodeId=reference.NodeId,
             SourceWorkflowId=reference.ScopeId,SourceProperty=reference.PortId,
             Conversion=prior?.ReferenceExpression==expression?prior.Conversion:BindingConversion.Automatic};
@@ -147,22 +173,12 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         if(_disposed||generation!=_generation)throw new InvalidOperationException("来源编辑已失效，请使用当前参数页。");
         if(ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
             throw new InvalidOperationException("当前编辑范围尚未就绪或已经失效。");
-        if(setting is ReferenceSetting reference)
-        {
-            var prior=_node.ParamSettings.GetSetting(port.Id)?.Clone();
-            try
-            {
-                _node.ParamSettings.SetSetting(ToSetting(port.Id,reference.Reference));
-                context.Host.Validate(context.PreparedDraft);
-            }
-            catch
-            {
-                if(prior is null)_node.ParamSettings.RemoveSetting(port.Id);else _node.ParamSettings.SetSetting(prior);
-                throw;
-            }
-        }
-        else if(setting is UnsetSetting)_node.ParamSettings.RemoveSetting(port.Id);
+        var node=_node;
+        var bindings=node.ParamSettings.Clone();
+        if(setting is ReferenceSetting reference)bindings.SetSetting(ToSetting(node,port.Id,reference.Reference));
+        else if(setting is UnsetSetting)bindings.RemoveSetting(port.Id);
         else throw new ArgumentException("运行输入必须选择已声明来源。");
+        node.ParamSettings=bindings;
     }
     private string FormatReference(OutputReference reference)
     {
@@ -195,25 +211,24 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         }
         return candidates.AsReadOnly();
     }
-    private ReferenceSetting? SelectReference(Port target,long generation)
+    private string? ValidateProposal(Port target,ConfigurationSetting proposal,long generation)
     {
-        if(_disposed||generation!=_generation||_query is null||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)return null;
-        var candidates=ReadReferenceCandidates(generation);
-        var picker=new ReferenceSelectionControl(candidates,reference=>
+        if(_disposed||generation!=_generation
+            ||ToolEditorCommit.GetDraftContext(this) is not ProductionEditorContext {IsValid:true} context)
+            return "来源编辑已失效，请使用当前参数页。";
+        if(proposal is not ReferenceSetting reference)return null;
+        var node=_node;var priorBindings=node.ParamSettings;var priorConfiguration=node.RuntimeConfiguration;
+        try
         {
-            if(_disposed||generation!=_generation||!context.IsValid)return "来源编辑已失效，请重新打开选择窗口。";
-            var prior=_node.ParamSettings.GetSetting(target.Id)?.Clone();
-            try{_node.ParamSettings.SetSetting(ToSetting(target.Id,reference));context.Host.Validate(context.PreparedDraft);return null;}
-            catch(Exception error)when(error is ArgumentException or InvalidOperationException){return error.Message;}
-            finally{if(prior is null)_node.ParamSettings.RemoveSetting(target.Id);else _node.ParamSettings.SetSetting(prior);}
-        });
-        var body=new DockPanel();var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(12)};
-        DockPanel.SetDock(buttons,Dock.Bottom);body.Children.Add(buttons);body.Children.Add(picker);
-        var window=new Window{Title="选择绑定来源",Width=650,Height=520,Content=body,Owner=Window.GetWindow(this),WindowStartupLocation=WindowStartupLocation.CenterOwner};
-        ReferenceSetting? result=null;var accept=new Button{Content="确定",IsDefault=true,MinWidth=80,Margin=new Thickness(4)};
-        accept.Click+=(_,_)=>{if(picker.TryGetReference(out var reference)){result=new(reference!);window.DialogResult=true;}};
-        buttons.Children.Add(accept);buttons.Children.Add(new Button{Content="取消",IsCancel=true,MinWidth=80,Margin=new Thickness(4)});
-        window.ShowDialog();return !_disposed&&generation==_generation&&context.IsValid?result:null;
+            var proposed=priorBindings.Clone();proposed.SetSetting(ToSetting(node,target.Id,reference.Reference));
+            node.ParamSettings=proposed;
+            context.Host.Validate(context.PreparedDraft);
+            return _disposed||generation!=_generation||!context.IsValid||!ReferenceEquals(_node,node)
+                ||!ReferenceEquals(ToolEditorCommit.GetDraftContext(this),context)
+                ?"来源编辑已失效，请使用当前参数页。":null;
+        }
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException){return error.Message;}
+        finally{node.ParamSettings=priorBindings;node.RuntimeConfiguration=priorConfiguration;}
     }
     public void Dispose()
     {if(_disposed)return;_disposed=true;_generation++;_captureDebug=null;if(_view is not null){_view.Changed-=Changed;Content=null;_view.Dispose();}foreach(var input in _inputs)input.Dispose();_inputs.Clear();}

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -40,9 +41,13 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   if(condition is not null)_conditions.Add((content,condition));UpdateVisibility();
  }
  public bool TryValidate(out string error)
- {error=_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error??"";return error.Length==0;}
+ {
+  foreach(var field in _fields.Where(field=>IsFieldActive(field.FieldId)))
+   if(!field.TryCommitPending()){error=field.Error;return false;}
+  error=_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error??"";return error.Length==0;
+ }
  public DeclaredFieldsView(IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> fields,
-  Action<string,ParameterSetting> writeDraft,Func<Port,ReferenceSetting?>? selectReference=null,
+  Action<string,ParameterSetting> writeDraft,ReferenceFieldOptions? references=null,
   Func<string,ConstantSetting?>? constantBackup=null,Func<OutputReference,string>? formatReference=null)
  {
   Resources.MergedDictionaries.Add(EditorResources.Create());Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
@@ -50,9 +55,9 @@ public sealed class DeclaredFieldsView : UserControl,IDisposable
   foreach(var field in all)
   {
    if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
-   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(field.Port.Id,value),constantBackup?.Invoke(field.Port.Id));
+   var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(field.Port.Id,value),constantBackup?.Invoke(field.Port.Id),validate:proposal=>references?.ValidateProposal?.Invoke(field.Port,proposal));
    _fieldStates.Add(state);
-   var editor=new DeclaredFieldEditor(state,field.Presentation.DisplayName,selectReference,formatReference,field.Presentation.ChoiceLabels,field.Presentation);
+   var editor=new DeclaredFieldEditor(state,field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation);
    _fields.Add(editor);editors.Add(field.Port.Id,editor);editor.Changed+=UpdateVisibility;
   }
   var tabs=_tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};

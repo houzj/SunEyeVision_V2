@@ -1,0 +1,220 @@
+using System.ComponentModel;
+using System.Globalization;
+using System.Windows.Input;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+
+namespace SunEyeVision.Plugin.Wpf.Adapters.References;
+
+internal sealed record ReferenceTreeNode(string Name,IReadOnlyList<ReferenceTreeNode> EnumEntrysA,
+    DeclaredReferenceCandidate? Candidate=null,bool Clear=false)
+{
+    public bool IsChecked {get;set;}
+}
+
+/// <summary>Private display, browsing and index-edit buffer over one borrowed accepted field state.</summary>
+internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
+{
+    private readonly DeclaredFieldState _state;
+    private readonly ReferenceFieldOptions _options;
+    private readonly Func<OutputReference,string>? _format;
+    private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
+    private string? _pendingText;
+    private bool _disposed,_committing,_sourceOpen,_indexOpen;
+    private ReferenceTreeNode? _sourceNode,_indexNode;
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public event Action? CloseRequested;
+    public IReadOnlyList<ReferenceTreeNode> SourceNodes {get;private set;}=Array.Empty<ReferenceTreeNode>();
+    public IReadOnlyList<ReferenceTreeNode> IndexNodes {get;private set;}=Array.Empty<ReferenceTreeNode>();
+    public ReferenceTreeNode? SelectedSourceNode {get=>_sourceNode;set=>_sourceNode=value;}
+    public ReferenceTreeNode? SelectedIndexNode {get=>_indexNode;set=>_indexNode=value;}
+    public bool ReadOnlyA=>!_options.EditableIndex;
+    public bool IsTextPopupVisible=>true;
+    public bool SubscribeInPopWindowEnableA=>_options.Expand is not null;
+    public bool IsSelectedSubscribeParam=>false;
+    public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;Notify(nameof(IsDropDownOpen));}}
+    public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;Notify(nameof(IsTextDropDownOpen));}}
+    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);TryCommitPending();}}
+    public ICommand DropDownCommand {get;}
+    public ICommand ClickCommand {get;}
+    public ICommand IndexClickCommand {get;}
+    public ICommand FocusedCommand {get;}
+    public ICommand PopSubscribeWindowCommand {get;}
+
+    public ReferenceFieldSession(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format)
+    {
+        _state=state;_options=options;_format=format;
+        DropDownCommand=new SessionCommand(_=>Refresh());
+        ClickCommand=new SessionCommand(value=>SelectSource(Unwrap(value)));
+        IndexClickCommand=new SessionCommand(value=>SelectIndex(Unwrap(value)));
+        FocusedCommand=new SessionCommand(FocusChanged);
+        PopSubscribeWindowCommand=new SessionCommand(_=>Expand());
+        _state.Changed+=OnStateChanged;
+    }
+
+    private static ReferenceTreeNode? Unwrap(object? value)=>(value is ObjectEventArgs args?args.Param:value) as ReferenceTreeNode;
+    private string Label(OutputReference source)
+    {
+        var candidate=_candidates.FirstOrDefault(item=>DeclaredFieldState.SameSource(item.Reference(BindingSelection.All),source));
+        var all=new OutputReference(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,BindingSelection.All,source.ScopeId,source.Storage);
+        return candidate?.Label??_format?.Invoke(all)??source.NodeId+" · "+source.PortId;
+    }
+    private string AcceptedText()
+    {
+        if(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted)return "";
+        var source=accepted.Reference;var label=Label(source);
+        return source.Type.Shape!=ValueShape.Sequence?label:label+" ["+(source.Selection switch
+        {
+            BindingSelection.AtConstant index=>index.Index.ToString(CultureInfo.InvariantCulture),
+            BindingSelection.AtField index=>_format?.Invoke(index.Reference)??index.Reference.NodeId+" · "+index.Reference.PortId,
+            _=>""
+        })+"]";
+    }
+
+    public void Refresh()
+    {
+        if(_disposed||_state.IsDisposed)return;
+        IsTextDropDownOpen=false;
+        DeclaredReferenceCandidate[] snapshot;
+        IReadOnlyList<ReferenceTreeNode> sources,indices;
+        try
+        {
+            snapshot=_options.Candidates(_state.Port).Select(candidate=>
+            {
+                var frozen=candidate with{MemberPath=Array.AsReadOnly(candidate.MemberPath.ToArray())};
+                _=frozen.SelectedType;
+                return frozen;
+            }).ToArray();
+            if(_disposed||_state.IsDisposed)return;
+            sources=Build(snapshot);
+            indices=Build(snapshot.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence
+                &&candidate.SelectedType==TypeRef.ScalarOf(ScalarKind.Int64)));
+        }
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException)
+        {_state.SetSourceError(error.Message);return;}
+        if(_disposed||_state.IsDisposed)return;
+        _candidates=Array.AsReadOnly(snapshot);SourceNodes=sources;IndexNodes=indices;
+        RestoreSelection();_state.SetSourceError("");
+        Notify(nameof(SourceNodes));Notify(nameof(IndexNodes));Notify(nameof(CurValueA));
+    }
+
+    private static IReadOnlyList<ReferenceTreeNode> Build(IEnumerable<DeclaredReferenceCandidate> candidates)
+    {
+        var roots=new List<ReferenceTreeNode>{new("清除来源",Array.Empty<ReferenceTreeNode>(),Clear:true)};
+        foreach(var group in candidates.GroupBy(candidate=>(candidate.ScopeId,candidate.NodeId)))
+            roots.Add(new(group.Key.NodeId,Array.AsReadOnly(group.Select(candidate=>new ReferenceTreeNode(
+                candidate.Label,Array.Empty<ReferenceTreeNode>(),candidate)).ToArray())));
+        return roots.AsReadOnly();
+    }
+    private void RestoreSelection()
+    {
+        _sourceNode=null;_indexNode=null;
+        if(!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting accepted)
+        {
+            _sourceNode=SourceNodes.SelectMany(node=>node.EnumEntrysA).FirstOrDefault(node=>node.Candidate is {} candidate
+                &&DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),accepted.Reference));
+            if(accepted.Reference.Selection is BindingSelection.AtField index)
+                _indexNode=IndexNodes.SelectMany(node=>node.EnumEntrysA).FirstOrDefault(node=>node.Candidate is {} candidate
+                    &&DeclaredFieldState.SameSource(candidate.Reference(BindingSelection.All),index.Reference));
+        }
+        Notify(nameof(SelectedSourceNode));Notify(nameof(SelectedIndexNode));
+    }
+
+    private void SelectSource(ReferenceTreeNode? node)
+    {
+        if(_disposed||_state.IsDisposed||node is null)return;
+        if(node.Clear){_pendingText=null;_state.ClearReference();OnStateChanged();RequestClose();return;}
+        if(node.Candidate is not {} candidate)return;
+        var selection=!_state.ReferenceCleared&&_state.Accepted is ReferenceSetting old&&candidate.Output.Type.Shape==ValueShape.Sequence
+            ?old.Reference.Selection:BindingSelection.All;
+        Submit(candidate.Reference(selection));
+    }
+    private void SelectIndex(ReferenceTreeNode? node)
+    {
+        if(_disposed||_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted
+            ||accepted.Reference.Type.Shape!=ValueShape.Sequence||node is null)return;
+        var selection=node.Clear?BindingSelection.All:node.Candidate is {} candidate
+            ?new BindingSelection.AtField(candidate.Reference(BindingSelection.All)):null;
+        if(selection is null)return;
+        var source=accepted.Reference;
+        Submit(new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage));
+    }
+    private bool Submit(OutputReference reference)
+    {
+        if(_disposed||_state.IsDisposed)return false;
+        _pendingText=null;
+        if(_state.TrySet(new ReferenceSetting(reference)))
+        {_pendingText=null;RequestClose();OnStateChanged();return true;}
+        _pendingText=null;RestoreSelection();Notify(nameof(CurValueA));return false;
+    }
+
+    public void ObserveText(string text)
+    {
+        if(_disposed||text==CurValueA)return;
+        if(text.Length==0){_pendingText=null;_state.ClearReference();OnStateChanged();RequestClose();return;}
+        _pendingText=text;
+    }
+    public bool TryCommitPending()
+    {
+        if(_disposed||_state.IsDisposed)return false;
+        if(_committing||_pendingText is null)return !_state.HasInvalidInput;
+        if(ReadOnlyA){_pendingText=null;Notify(nameof(CurValueA));return !_state.HasInvalidInput;}
+        _committing=true;
+        try
+        {
+            OutputReference proposal;
+            try
+            {
+                if(_state.ReferenceCleared||_state.Accepted is not ReferenceSetting accepted)throw new ArgumentException("请先选择来源，再编辑索引。");
+                var source=accepted.Reference;var prefix=Label(source)+" [";
+                if(source.Type.Shape!=ValueShape.Sequence||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
+                    ||!_pendingText.EndsWith("]",StringComparison.Ordinal))throw new ArgumentException("只能编辑当前来源括号中的索引。");
+                var content=_pendingText[prefix.Length..^1];
+                BindingSelection selection=content.Length==0?BindingSelection.All
+                    :new BindingSelection.AtConstant(int.Parse(content,NumberStyles.None,CultureInfo.InvariantCulture));
+                if(selection is BindingSelection.AtConstant index&&source.Type.Count.Maximum is int maximum&&index.Index>=maximum)
+                    throw new ArgumentException("序号超出来源声明的最大数量。");
+                proposal=new(source.NodeId,source.PortId,source.Type,source.MemberFieldPath,selection,source.ScopeId,source.Storage);
+            }
+            catch(Exception error)when(error is ArgumentException or FormatException or OverflowException)
+            {_state.SetEditError(error.Message);return false;}
+            // Observer failures are outside parsing validation, just as in the shared state.
+            return Submit(proposal);
+        }
+        finally{_committing=false;}
+    }
+
+    private void FocusChanged(object? value)
+    {
+        if(_disposed||value is not TextBoxFocusEventArgs {Text:{} text} args)return;
+        if(!args.IsFocus){IsTextDropDownOpen=false;return;}
+        if(ReadOnlyA||args.SelectionStart<1||args.SelectionStart>text.Length)return;
+        var before=text[..args.SelectionStart];var after=text[args.SelectionStart..];
+        var inside=before.LastIndexOf('[')>before.LastIndexOf(']')&&after.IndexOf(']')>=0
+            &&(after.IndexOf('[')<0||after.IndexOf(']')<after.IndexOf('['));
+        if(inside){Refresh();IsDropDownOpen=false;}IsTextDropDownOpen=inside;
+    }
+    private void Expand()
+    {
+        if(_disposed||_options.Expand is not {} expand)return;
+        Refresh();
+        if(_disposed||_state.IsDisposed)return;
+        RequestClose();expand(new(_state.Port,false,_candidates,Submit));
+    }
+    private void OnStateChanged()
+    {
+        if(_disposed)return;
+        RestoreSelection();Notify(nameof(CurValueA));
+    }
+    public void Close(){IsDropDownOpen=false;IsTextDropDownOpen=false;}
+    private void RequestClose(){Close();if(!_disposed&&!_state.IsDisposed)CloseRequested?.Invoke();}
+    private void Notify(string name){if(!_disposed)PropertyChanged?.Invoke(this,new(name));}
+    public void Dispose(){if(_disposed)return;Close();_disposed=true;_state.Changed-=OnStateChanged;PropertyChanged=null;CloseRequested=null;}
+    private sealed class SessionCommand(Action<object?> action) : ICommand
+    {
+        public bool CanExecute(object? parameter)=>true;
+        public void Execute(object? parameter)=>action(parameter);
+        public event EventHandler? CanExecuteChanged {add{}remove{}}
+    }
+}

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -106,13 +107,26 @@ internal static class S2DocumentEditingCases
         {
             var window=Open(blob);Field(window,"BlobCountLimit").Text="1";Pump();Require(window.TryConfirm(out var error),error);
             window=Open(downstream);var editor=Control(window);var inputField=Logical(editor).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.InspectionInput);
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>
+            Logical(editor).OfType<TabControl>().Single().SelectedIndex=0;window.UpdateLayout();Pump();
+            var popup=Visual(inputField).OfType<SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton>().Single(item=>item.Name=="rt");
+            popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+            var nativePopup=(System.Windows.Controls.Primitives.Popup)popup.Template.FindName("PART_Popup",popup);
+            var tree=Visual(nativePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>().Single();
+            var actual=(TreeView)tree.FindName("treeView");
+            TreeViewItem? FindSource(ItemsControl parent)
             {
-                var pickerWindow=app.Windows.OfType<Window>().Single(w=>w.Title=="选择绑定来源");var picker=Logical(pickerWindow).OfType<ReferenceSelectionControl>().Single();
-                picker.SelectedCandidate=Logical(picker).OfType<ListBox>().Single().Items.OfType<DeclaredReferenceCandidate>().Single(c=>c.NodeId==blob.Id&&c.Output.Id==BlobSchema.RegionPort&&c.MemberPath.Count==0);
-                Logical(pickerWindow).OfType<Button>().Single(b=>Equals(b.Content,"确定")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            }));
-            Logical(inputField).OfType<Button>().Single(b=>Equals(b.ToolTip,"选择订阅来源")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();Require(window.TryConfirm(out error),error);
+                for(var index=0;index<parent.Items.Count;index++)
+                {
+                    if(parent.ItemContainerGenerator.ContainerFromIndex(index) is not TreeViewItem item)continue;
+                    if(item.DataContext?.GetType().GetProperty("Candidate")?.GetValue(item.DataContext) is DeclaredReferenceCandidate candidate
+                        &&candidate.NodeId==blob.Id&&candidate.Output.Id==BlobSchema.RegionPort&&candidate.MemberPath.Count==0)return item;
+                    item.IsExpanded=true;item.UpdateLayout();Pump();var found=FindSource(item);if(found is not null)return found;
+                }
+                return null;
+            }
+            var source=FindSource(actual)??throw new Exception("原来源树未包含正式Region输出");
+            source.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,Environment.TickCount,System.Windows.Input.MouseButton.Left){RoutedEvent=System.Windows.Controls.Control.MouseDoubleClickEvent});Pump();
+            Require(window.TryConfirm(out error),error);
             Select(blob);Execute();Require(Count(blob.Id)==1&&Count(downstream.Id)==1,"最终ROI未限制下游集合");
         });
         Case("窗口实际执行只显示私有阈值结果，不替换生产结果或设置",()=>
@@ -164,4 +178,12 @@ internal static class S2DocumentEditingCases
     private static void Await(Task task){Until(()=>task.IsCompleted);task.GetAwaiter().GetResult();}
     private static void Case(string name,Action action){action();_passed++;Console.WriteLine("通过："+name);}
     private static void Require(bool condition,string message){if(!condition)throw new Exception(message);}
+    private static IEnumerable<DependencyObject> Visual(DependencyObject root)
+    {
+        yield return root;
+        if(root is not System.Windows.Media.Visual)yield break;
+        for(var index=0;index<System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);index++)
+            foreach(var child in Visual(System.Windows.Media.VisualTreeHelper.GetChild(root,index)))yield return child;
+    }
+
 }

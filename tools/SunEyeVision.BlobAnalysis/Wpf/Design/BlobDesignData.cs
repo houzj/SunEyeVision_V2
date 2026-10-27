@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using System.ComponentModel;
 using SunEyeVision.Plugin.Contracts;
@@ -23,8 +24,8 @@ public static class BlobDesignData
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
     {
         var draft=new DesignDraft();var schema=draft.Tool.Describe((BlobSettings)draft.CaptureSettings());
-        var inputs=new DeclaredInputFieldsView(schema,_=>new UnsetSetting(),(_,_)=>{},_=>null);
-        return(draft,new(SelectReference:_=>null,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
+        var inputs=new DeclaredInputFieldsView(schema,_=>new UnsetSetting(),(_,_)=>{},ReferenceFieldOptions.Empty);
+        return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
     }
     // Existing presentation row type, never a second settings/output model or a native execution result.
     public static IReadOnlyList<BlobAnalysisRow> ResultRows {get;}=Array.AsReadOnly(new[] {

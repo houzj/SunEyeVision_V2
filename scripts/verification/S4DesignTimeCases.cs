@@ -9,6 +9,7 @@ using System.Windows.Markup;
 using System.Xml.Linq;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Tool.BlobAnalysis.Views;
@@ -47,6 +48,13 @@ internal static class S2DocumentEditingCases
             Render(nativeInputs,"native-input-family-independent.png",400,230);
             Check(Application.Current is null&&nativeInputs.Children.Count==4,
                 "原Apps弹层文本树及枚举可无Application独立装配资源");
+            using var subscription=new DeclaredFieldEditor(new Port("reference",DataType.Integer,EditModes:FieldEditModes.Reference),
+                "来源",new ReferenceSetting(new OutputReference("producer","value",DataType.Integer)),_=>throw new Exception("设计渲染不得写入"),
+                ReferenceFieldOptions.Empty);
+            Render(subscription,"native-reference-composition-independent.png",400,65);
+            Check(Application.Current is null&&Descendants<SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls.PopupButton>(subscription).Count()==2
+                &&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(subscription).Any(text=>text.IsReadOnly),
+                "完整原订阅两Popup及只读文本无Application/宿主独立渲染，不写草稿");
             using var first=new BlobParameterEditor();using var second=new BlobParameterEditor();
             var presenter=(DeclaredSettingsView)first.Content;
             var fields=(DeclaredFieldsView)presenter.Content;

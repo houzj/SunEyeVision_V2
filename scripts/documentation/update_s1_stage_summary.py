@@ -280,6 +280,10 @@ def render_blob_control_plan(plan):
                + '<p>' + escape('；'.join(plan['productNamingPlan']['migrationRules'])) + '</p>' if plan.get('productNamingPlan') else '')
             + ('<h5>下一集中批：完整数值与订阅</h5>'
                + table(['工作','同批实施合同'], plan['nextIntegratedNumericReferenceBatch']) if plan.get('nextIntegratedNumericReferenceBatch') else '')
+            + ('<h5>原订阅组合最新候选</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['referenceCompositionCandidate'].items()])
+               if plan.get('referenceCompositionCandidate') else '')
             + ('<p><b>失败记录保留：</b>' + escape('；'.join(plan['implementationFailures'])) + '</p>' if plan.get('implementationFailures') else '')
             + '<h5>完整控件与组合清单</h5><p>' + escape(plan['inventoryRule']) + '</p>'
             + table(['编号 / 组合','Blob消费位置','VM控件 / 模板 / 组合链','已有成果及处理','证据 / 缺口','验收标准'], plan['compositions'])

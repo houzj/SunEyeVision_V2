@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Reflection;
 using System.IO;
 using SunEyeVision.Core.Services.Serialization;
@@ -146,7 +147,7 @@ internal static class S2DocumentEditingCases
             Case("有限不等条件、三模式字段显示与模式常量约束",()=>{
                 if(Application.Current is null)new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
                 var provider=(IToolSettingsFields)new BlobTool();var schema=provider.SettingsSchema;
-                using var settingsView=ToolRegistry.CreateSettingsView(BlobTool.Id,new BlobSettings(),new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(SelectReference:_=>null));
+                using var settingsView=ToolRegistry.CreateSettingsView(BlobTool.Id,new BlobSettings(),new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(ReferenceOptions:ReferenceFieldOptions.Empty));
                 var view=Logical(settingsView.View).OfType<DeclaredFieldsView>().Single();
                 DeclaredFieldEditor Field(string path)=>view.Fields.Single(f=>f.FieldId==schema.Presentation!.Fields.Single(a=>a.DisplayName==BlobParameterDefinition.Instance.Label(path)).FieldId);
                 var mode=Field("SegmentationMode");var lower=Field("Threshold");var upper=Field("UpperThreshold");var type=Field("Type");

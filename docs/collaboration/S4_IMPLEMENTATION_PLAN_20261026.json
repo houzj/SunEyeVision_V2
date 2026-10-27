@@ -6959,15 +6959,20 @@
         "唯一字段状态已落码验证",
         "DeclaredFieldState承接原已接纳值/常量备份/模式/编辑与来源错误，视图只投影；数组隔离、引用索引语义比较、同值无通知、观察者异常与宿主拒绝分离及同步释放检查通过。",
         "FieldEditing046新增五组及关联六轨通过。原文提交适配/原单值between/完整订阅仍待实现；不以基础状态完成宣布控件迁移完成。"
+      ],
+      [
+        "C07完整订阅生产候选",
+        "已接原两Popup/树/文本与正式候选身份、私有预检及重绑保护，旧模态入口退出。",
+        "本批六轨及正式EXE准入已通过；扩展订阅未落、C07未完成；真实VS/VM同态用户验收待进行。产品目录未批量改名。"
       ]
     ],
     "candidateCheckpoint": {
-      "evidence": "docs/collaboration/evidence/O06_BLOB_FIELD_STATE_CHECKPOINT_20261027.json",
-      "sourceBaseline": "3f2f893d",
-      "buildId": "development-5de23e2242df49958fa934010da001fd",
-      "checks": "FieldEditing046=23；DesignTime010=26；WindowPresentation030=13；RuntimeEditor034=9；FullChain091=7；Components178=9；实际Release EXE22工具准入。",
-      "identity": "最终UI002：0错误/6619警告156.17秒；全量002：0错误/6629警告114.24秒。7项源码增量、760发布项及174加载记录SHA核对；blob-field-state前缀。",
-      "status": "唯一字段状态及视图/宿主捕获重入基础已落码验证；原数值/范围/完整订阅组合未替换，C05/C06/C07未完成；新产物真实VS/用户及VM同态验收仍待进行。"
+      "evidence": "docs/collaboration/evidence/O06_BLOB_REFERENCE_COMPOSITION_CHECKPOINT_20261027.json",
+      "sourceBaseline": "223d80d3",
+      "buildId": "development-fae8dea1a4bf4bf7aea1d4066023529c",
+      "checks": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；真实EXE22工具准入。UI005零错误6619警告227.32秒，全量004零错误6628警告113.97秒。18源码增量、760发布项和174加载记录SHA核对。",
+      "identity": "同主仓正式Release，无产品/算法/仓库副本；源码/产物SHA见证据。用户手工XAML页索引参与当前构建但不纳入本轮提交。",
+      "status": "原订阅双树组合正式消费已验证；扩展订阅及C05/C06仍待实现，C07和第一阶段未完成；真实VS/用户、VM同态尚待验。"
     },
     "candidateCheckpointHistory": [
       {
@@ -6994,6 +6999,14 @@
         "identity": "23项源码增量、760发布项、174加载记录SHA核对。UI001 0错误/6619警告189.64秒；全量001 0错误/6492警告91.47秒，blob-native-design-review前缀。",
         "status": "独立色板资源、枚举文字、原三页标题及树原件实际绘制通过自动检查；树透明PNG已证为取图视口错误，原件未改。完整订阅组合/数值范围/ROI等及真实VS/用户仍未验收，第一阶段未完成。",
         "supplementaryEvidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_TREE_CAPTURE_20261027.json"
+      },
+      {
+        "evidence": "docs/collaboration/evidence/O06_BLOB_FIELD_STATE_CHECKPOINT_20261027.json",
+        "sourceBaseline": "3f2f893d",
+        "buildId": "development-5de23e2242df49958fa934010da001fd",
+        "checks": "FieldEditing046=23；DesignTime010=26；WindowPresentation030=13；RuntimeEditor034=9；FullChain091=7；Components178=9；实际Release EXE22工具准入。",
+        "identity": "最终UI002：0错误/6619警告156.17秒；全量002：0错误/6629警告114.24秒。7项源码增量、760发布项及174加载记录SHA核对；blob-field-state前缀。",
+        "status": "唯一字段状态及视图/宿主捕获重入基础已落码验证；原数值/范围/完整订阅组合未替换，C05/C06/C07未完成；新产物真实VS/用户及VM同态验收仍待进行。"
       }
     ],
     "implementationFailures": [
@@ -7005,7 +7018,9 @@
       "用户VS色板标题/背景及页签文字反馈未通过；设计器闪烁为连续构建导致，已冻结人工检查窗口。",
       "FieldEditing042树透明截图保留：VisualBrush本地范围未消除；实际布局存在，根因待证，不记树视觉通过。",
       "FieldEditing044验证宿主同名变量CS0136两错误保留；仅改测试变量名后045通过，正式产物未重建。",
-      "状态首版UI001及全量001虽0错误，静态复核发现初始错误缺少首次文字投影；补构造末尾UpdateErrorDisplay后UI002/全量002及FieldEditing046通过。001不作最终候选身份。"
+      "状态首版UI001及全量001虽0错误，静态复核发现初始错误缺少首次文字投影；补构造末尾UpdateErrorDisplay后UI002/全量002及FieldEditing046通过。001不作最终候选身份。",
+      "C07候选：UI001类型别名编译失败；FieldEditing047测试模式编译失败，048/049尾部草稿因查询服务门禁误拒绝，050集合来源错误路径未预检，均保留证据并修后重新验证。",
+      "FullChain092检查宿主Control方法名遮蔽Control类型，093未切输入页即找原Popup，均为测试修正；094修后整链7组通过，无产品重建。检查点首次审计发现旧Catalog依赖SHA，按已审查源码增量同步后通过。"
     ],
     "manualReviewFreeze": {
       "status": "本批集中修改、构建与回归已结束；用户实际检查期间不重建或替换程序集",
@@ -7116,6 +7131,35 @@
         "来源立即校验",
         "抽取现SelectReference私有快照安装/Validate/finally恢复，替换模态选择器；候选只读，校验通过才接纳引用或常量，不在校验器中调用TryCapture。"
       ]
-    ]
+    ],
+    "referenceCompositionCandidate": {
+      "status": "PRODUCTION_COMPOSITION_AUTOMATED_CHECKS_PASSED_EXTENSION_AND_MANUAL_PENDING",
+      "baseline": "223d80d3",
+      "implementation": [
+        "原ButtonSelecter_sub两Popup与SubTreeView/DeleteTextBox接入正式字段；移除ReferenceSelectionControl模态选择旧路径。",
+        "ReferenceFieldOptions提供正式候选/私有提案验证；唯一DeclaredFieldState接纳，不用文字重建引用身份；集合成员投影保留Sequence。",
+        "普通数值订阅原版只读；输入Combination可编辑当前来源括号索引，动态索引树仅真实标量Int64来源，无虚构常量索引树。",
+        "清空必填来源保留未完成错误，不复活旧身份/索引；合法Enter提交失焦，非法留焦；刷新读取catch与观察者通知分离。",
+        "Runtime宿主提案/捕获/校验/提交固定node、context和generation；同步重绑拒绝旧结果，finally只恢复原节点。",
+        "会话CloseRequested由Presenter具名订阅；接纳/树清除/文本Delete/展开转交均强制关闭两实际Popup，Dispose解绑，无模型通知递归。",
+        "Refresh先逐个校验所有候选的SelectedType并冻结成员路径，完整快照成功才替换两棵树；不因索引树过滤短路漏验集合来源。"
+      ],
+      "verification": "FieldEditing051=28；RuntimeEditor035=10；DesignTime011=27；FullChain094=7；WindowPresentation031=13；Components179=9；真实EXE22工具准入。UI005零错误6619警告227.32秒，全量004零错误6628警告113.97秒。18源码增量、760发布项和174加载记录SHA核对。",
+      "remaining": [
+        "扩展订阅尚无真实宿主Expand能力；按钮按能力隐藏，不冒充完整C07。",
+        "C05/C06原单值/between正式替换及组合尚未完成。",
+        "真实VS/VM同态与用户验收待进行；未进入第二阶段。"
+      ],
+      "extensionEvidence": {
+        "originalWindow": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlUI/Apps.XmlUI/ParamSubscribeWindow.xaml",
+        "behavior": "原参数订阅专窗240×480，双原树，SelectedSubscribeParam目标，默认方式开关；跟随Owner右侧同顶同高、双向移动防重入。",
+        "implementationBoundary": "公共库保原窗口视觉和事件，宿主会话拥有非模态控制器；复用Owner窗口并切换字段，不新增确定取消模态选择框。",
+        "remainingApi": [
+          "当前请求缺当前引用及清除语义、主来源/索引上下文切换、真实活动目标通知；当前IsSelectedSubscribeParam=false，Expand无宿主消费者。",
+          "重绑/关闭/Dispose清除目标并关闭专窗；回调沿正式私有验证链，不直接发布正式节点。"
+        ]
+      },
+      "evidence": "docs/collaboration/evidence/O06_BLOB_REFERENCE_COMPOSITION_CHECKPOINT_20261027.json"
+    }
   }
 }

@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;

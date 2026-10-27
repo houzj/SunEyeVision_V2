@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 
@@ -5,7 +6,7 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
 public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,ReferenceSetting>? References=null,
-    Func<Port,ReferenceSetting?>? SelectReference=null,
+    ReferenceFieldOptions? ReferenceOptions=null,
     Func<OutputReference,string>? FormatReference=null,
     string? InputSection=null,FrameworkElement? InputContent=null);
 

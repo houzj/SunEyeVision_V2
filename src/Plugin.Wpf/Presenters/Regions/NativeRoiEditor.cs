@@ -19,6 +19,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {internal string Baseline="";internal string? Raw;}
     private readonly List<Input> _inputs=new();
     private NativeRoiSession? _session;
+    private NativeRoiSession? _projectedSession;
+    private NativeRoiProjection? _projectedItem;
+    private RoiEditStamp? _projectedStamp;
     private IDisposable? _registration;
     private bool _disposed,_projecting,_committing;
     private long _generation;
@@ -39,13 +42,19 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeRoiEditor));
         _resume?.Abort();_resume=null;_savedRaw=null;_suspended=false;_registration?.Dispose();_registration=null;
         if(_session is not null)_session.Changed-=Project;
-        _session=session;
+        _session=session;_projectedSession=null;_projectedItem=null;_projectedStamp=null;
         if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;}
         Project();
     }
-    private void Project()
+    private void Project()=>Project(false);
+    private void Project(bool force)
     {
-        if(_disposed)return;_generation++;_resume?.Abort();_resume=null;_savedRaw=null;_suspended=!IsLoaded;_projecting=true;
+        if(_disposed)return;
+        // Same-root rejection/no-op notifications must not erase the active raw transaction.
+        // Explicit Bind resets this lease; a changed version/selection still projects immediately.
+        if(!force&&_committing&&_session?.IsCurrent==true&&ReferenceEquals(_projectedSession,_session)
+            &&_projectedStamp==_session.Stamp&&ReferenceEquals(_projectedItem,_session.CurROIData))return;
+        _generation++;_resume?.Abort();_resume=null;_savedRaw=null;_suspended=!IsLoaded;_projecting=true;
         try
         {
             Error="";foreach(var input in _inputs)input.Raw=null;
@@ -55,6 +64,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
             NativeView.DataContext=session is null?null:new Context(this,session,_generation,session.CurROIData);
             NativeView.ApplyTemplate();NativeView.UpdateLayout();AttachInputs();
             foreach(var input in _inputs)input.Baseline=DisplayBaseline(input);
+            _projectedSession=session;_projectedItem=session?.CurROIData;_projectedStamp=session?.IsCurrent==true?session.Stamp:null;
         }
         finally{_projecting=false;}
     }
@@ -127,8 +137,11 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         AttachInputs();if(_inputs.Count==0)return true;
         var fields=item.Fields;
         if(_inputs.Count!=fields.Count){Error="原区域参数栈缺少真实数值字段。";return false;}
-        var accepting=false;var generation=_generation;var changed=new Dictionary<int,double>();
-        var raw=_savedRaw??_inputs.Select(input=>input.Raw).ToArray();
+        var inputs=_inputs.ToArray();var accepting=false;var generation=_generation;var uiGeneration=_uiGeneration;
+        bool Current()=>!_disposed&&generation==_generation&&uiGeneration==_uiGeneration&&ReferenceEquals(session,_session)
+            &&session.IsCurrent&&ReferenceEquals(item,session.CurROIData);
+        var changed=new Dictionary<int,double>();var raw=(_savedRaw??inputs.Select(input=>input.Raw).ToArray()).ToArray();
+        if(raw.Length!=inputs.Length){Error="区域原文与当前参数栈不匹配。";return false;}
         _committing=true;
         try
         {
@@ -137,56 +150,65 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
             {
                 if(raw[i] is not {} value)continue;
                 if(!double.TryParse(value,NumberStyles.Float,CultureInfo.InvariantCulture,out var number)||!double.IsFinite(number)
-                    ||number<_inputs[i].View.Minimum||number>_inputs[i].View.Maximum)
+                    ||number<inputs[i].View.Minimum||number>inputs[i].View.Maximum)
                     throw new ArgumentException("请输入原Box范围内的有限数值。");
                 changed.Add(i,number);
             }
             // Native arrows/sliders update StartValue before their final command, rather than typing text.
             for(var i=0;i<fields.Count;i++)
-                if(raw[i] is null&&DisplayBaseline(_inputs[i])!=_inputs[i].Baseline)
-                    changed[i]=_inputs[i].View.StartValue;
-            if(changed.Count==0){item.Cancel();return true;}
-            item.Cancel();
+                if(raw[i] is null&&DisplayBaseline(inputs[i])!=inputs[i].Baseline)
+                    changed[i]=inputs[i].View.StartValue;
+            if(changed.Count==0){item.Cancel();return Current();}
+            item.Cancel();if(!Current())return false;
             foreach(var (i,value) in changed)
             {
-                var input=_inputs[i];input.Text.Text=raw[i]??value.ToString("F2",CultureInfo.InvariantCulture);
+                var input=inputs[i];input.Text.Text=raw[i]??value.ToString("F2",CultureInfo.InvariantCulture);
+                if(!Current())return false;
                 var inner=input.Text.GetBindingExpression(TextBox.TextProperty)??throw new ArgumentException("原Box内层文字绑定缺失。");
-                inner.UpdateSource();
+                inner.UpdateSource();if(!Current())return false;
                 var middle=input.Leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)??throw new ArgumentException("原Box数值绑定缺失。");
-                middle.UpdateSource();
-                input.View.SetCurrentValue(Numbers.SliderArrangeBase.StartValueProperty,value);
+                middle.UpdateSource();if(!Current())return false;
+                input.View.SetCurrentValue(Numbers.SliderArrangeBase.StartValueProperty,value);if(!Current())return false;
                 var outer=BindingOperations.GetBindingExpressionBase(input.View,Numbers.SliderArrangeBase.StartValueProperty);
                 if(outer is null||outer.Status!=BindingStatus.Active)
                     throw new ArgumentException("原Box外层几何绑定缺失或失效。");
                 if(fields[i].MultiBinding&&outer is MultiBindingExpression multi)multi.UpdateSource();
                 else if(!fields[i].MultiBinding&&outer is BindingExpression single)single.UpdateSource();
                 else throw new ArgumentException("原Box外层几何绑定类型不符。");
+                if(!Current())return false;
                 if(Validation.GetHasError(input.Text)||Validation.GetHasError(input.Leaf)||Validation.GetHasError(input.View))
                     throw new ArgumentException("原Box数值绑定校验未通过。");
             }
-            if(_disposed||generation!=_generation||!ReferenceEquals(session,_session)||!session.IsCurrent||!ReferenceEquals(item,session.CurROIData))return false;
+            if(!Current())return false;
             // Keep unedited high precision components from the authoritative record.
-            item.Cancel();item.StageFields(changed);
+            item.Cancel();if(!Current())return false;item.StageFields(changed);if(!Current())return false;
             accepting=true;
-            if(!session.TryCommit(item)){Error=session.Error;RestoreRaw(raw,item);return false;}
-            if(!_disposed&&generation==_generation)Project();
+            if(!session.TryCommit(item)){if(Current()){Error=session.Error;RestoreRaw(raw,item);}return false;}
+            if(!_disposed&&generation==_generation)Project(true);
             return true;
         }
         catch(Exception error)when(!accepting&&(error is ArgumentException or FormatException or OverflowException))
-        {item.Cancel();Error=error.Message;RestoreRaw(raw,item);return false;}
+        {item.Cancel();if(Current()){Error=error.Message;RestoreRaw(raw,item);}return false;}
         finally{try{if(!accepting)item.Cancel();}finally{_committing=false;}}
     }
     private void RestoreRaw(string?[] raw,NativeRoiProjection item)
     {
-        if(_disposed||_session?.IsCurrent!=true||!ReferenceEquals(_session.CurROIData,item))return;_projecting=true;
+        var session=_session;var generation=_generation;var uiGeneration=_uiGeneration;var inputs=_inputs.ToArray();
+        bool Current()=>!_disposed&&generation==_generation&&uiGeneration==_uiGeneration&&ReferenceEquals(session,_session)
+            &&session?.IsCurrent==true&&ReferenceEquals(session.CurROIData,item);
+        if(!Current()||raw.Length!=inputs.Length)return;_projecting=true;
         try
         {
-            foreach(var input in _inputs)
+            foreach(var input in inputs)
             {
                 var binding=BindingOperations.GetBindingExpressionBase(input.View,Numbers.SliderArrangeBase.StartValueProperty);
                 if(binding is BindingExpression single)single.UpdateTarget();else if(binding is MultiBindingExpression multi)multi.UpdateTarget();
+                if(!Current())return;
             }
-            for(var i=0;i<Math.Min(raw.Length,_inputs.Count);i++)if(raw[i] is {} value){_inputs[i].Raw=value;_inputs[i].Text.Text=value;}
+            for(var i=0;i<inputs.Length;i++)if(raw[i] is {} value)
+            {
+                inputs[i].Raw=value;inputs[i].Text.Text=value;if(!Current())return;
+            }
         }
         finally{_projecting=false;}
     }
@@ -201,7 +223,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {
         if(_disposed)return;_disposed=true;_generation++;_resume?.Abort();_resume=null;_savedRaw=null;
         _registration?.Dispose();_registration=null;if(_session is not null)_session.Changed-=Project;
-        _session=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
+        _session=null;_projectedSession=null;_projectedItem=null;_projectedStamp=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
         _inputs.Clear();NativeView.DataContext=null;Child=null;
     }
@@ -225,6 +247,8 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool SectorEnable_ModuleEnableA=>_session.SectorEnable_ModuleEnableA;
         public bool BoxA {get=>_session.BoxA;set=>_session.BoxA=value;}
         public bool SectorA {get=>_session.SectorA;set=>_session.SectorA=value;}
+        public bool SectorRingEnable_ModuleEnableA=>_session.SectorRingEnable_ModuleEnableA;
+        public bool SectorRingA {get=>_session.SectorRingA;set=>_session.SectorRingA=value;}
         public bool Is3DROI=>false;
         public string ROISelectionA=>_session.ROISelectionA;
         public string DisplayNameA=>_session.DisplayNameA;

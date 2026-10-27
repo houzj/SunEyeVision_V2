@@ -1,8 +1,8 @@
 <Control x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelectControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" xmlns:localParserTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI" xmlns:BaseData="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:paramtabcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun">
-<!-- Original Box and Sector branches. Remaining native shape branches are tracked C08 requirements. -->
+<!-- Original Box, SectorRing and Sector branches. Remaining native shape branches are tracked C08 requirements. -->
 <FrameworkElement.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Regions/RoiResources.xaml"/></ResourceDictionary.MergedDictionaries><local:ROIDefaultValueToVisibilityConvert x:Key="ROIDefaultValueToVisibilityConvert"/><BaseData:NumCompareConverter x:Key="NumCompareConverter"/><sys:Int32 x:Key="CompareNum">0</sys:Int32><DataTemplate x:Key="BoxTemplate">
         <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Box}" ToolTip="{DynamicResource Box}" Background="#00FFFFFF" Style="{StaticResource BoxRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding BoxA, Mode=TwoWay}" />
-      </DataTemplate><DataTemplate x:Key="SectorTemplate">
+      </DataTemplate><DataTemplate x:Key="SectorRingTemplate"><ToggleButton CommandParameter="{x:Static localParserTab:RoiType.SectorRing}" ToolTip="{DynamicResource SectorRing}" Background="#00FFFFFF" Style="{StaticResource RingRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorRingA, Mode=TwoWay}"/></DataTemplate><DataTemplate x:Key="SectorTemplate">
         <ToggleButton CommandParameter="{x:Static localParserTab:RoiType.Sector}" ToolTip="{DynamicResource Sector}" Background="#00FFFFFF" Style="{StaticResource SectorRoiBtnStyle}" Command="{Binding ValueChangedCommand}" IsChecked="{Binding SectorA, Mode=TwoWay}" />
       </DataTemplate></ResourceDictionary></FrameworkElement.Resources>
   <Control.Template>
@@ -24,6 +24,7 @@
 
 
               <ContentPresenter ContentTemplate="{StaticResource BoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Box}}" />
+<ContentPresenter ContentTemplate="{StaticResource SectorRingTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.SectorRing}}" />
 <ContentPresenter ContentTemplate="{StaticResource SectorTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Sector}}" />
 
 

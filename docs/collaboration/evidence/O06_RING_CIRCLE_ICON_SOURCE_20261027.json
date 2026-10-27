@@ -1,0 +1,49 @@
+{
+  "reaEvidence": "ev_01022ce30e0a0e5526f41da3d5dfc98568e4b19ac5ea64f1bd7b4c4a74d37cfe",
+  "finding": "安装件内对应两套图标PNG逐字节相同；命名/原类型/模板分开，不据文件名声称像素不同。当前仅激活SectorRing分支，未用CircleMes单半径控件冒充圆环。",
+  "dll": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.Style.dll",
+  "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+  "resourceSha256": "334960b6bdb8c3b56182a94e06b8e8a900eba925e9d9a327be868fc07f8cb689",
+  "entries": [
+    {
+      "localSha256": "b99bb9d2f54add8d59a606dd6c1c47fabc470ad1cddef2f13569462ce47f54b6",
+      "sha256": "b99bb9d2f54add8d59a606dd6c1c47fabc470ad1cddef2f13569462ce47f54b6",
+      "name": "resources/roi_circle_click.png",
+      "type": "ResourceTypeCode.Stream",
+      "localPath": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Composition\\Apps.Style\\resources\\roi_circle_click.png",
+      "length": 1424
+    },
+    {
+      "localSha256": "b99bb9d2f54add8d59a606dd6c1c47fabc470ad1cddef2f13569462ce47f54b6",
+      "sha256": "b99bb9d2f54add8d59a606dd6c1c47fabc470ad1cddef2f13569462ce47f54b6",
+      "name": "resources/geometry_circle_clickon.png",
+      "type": "ResourceTypeCode.Stream",
+      "localPath": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Composition\\Apps.Style\\resources\\geometry_circle_clickon.png",
+      "length": 1424
+    },
+    {
+      "localSha256": "788fc45f1d0187eb4ddfab08e660d389e19558c04e5207b6728a3b7ed6a34e0b",
+      "sha256": "788fc45f1d0187eb4ddfab08e660d389e19558c04e5207b6728a3b7ed6a34e0b",
+      "name": "resources/roi_circle_normal.png",
+      "type": "ResourceTypeCode.Stream",
+      "localPath": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Composition\\Apps.Style\\resources\\roi_circle_normal.png",
+      "length": 1425
+    },
+    {
+      "localSha256": "788fc45f1d0187eb4ddfab08e660d389e19558c04e5207b6728a3b7ed6a34e0b",
+      "sha256": "788fc45f1d0187eb4ddfab08e660d389e19558c04e5207b6728a3b7ed6a34e0b",
+      "name": "resources/geometry_circle_clickoff.png",
+      "type": "ResourceTypeCode.Stream",
+      "localPath": "src\\Plugin.Wpf\\Themes\\Assets\\Native\\Composition\\Apps.Style\\resources\\geometry_circle_clickoff.png",
+      "length": 1425
+    }
+  ],
+  "remaining": "未来若产品要求视觉区别，应明确登记为本方差异；当前保持原资源，不擅改成近似图标。",
+  "dllSha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63",
+  "resourceName": "Apps.Style.g.resources",
+  "scope": "安装件原始资源静态读取；不加载或执行厂商程序集",
+  "mapping": {
+    "SectorRing": "RingRoiBtnStyle -> ROI_circle_normal/click.png -> four fields and complete annulus",
+    "CircleMes": "CircleMesRoiBtnStyle -> Geometry_circle_clickoff/on.png -> separate single-radius branch"
+  }
+}

@@ -39,8 +39,10 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     public bool SectorEnable_ModuleEnableA=>IsHaveData&&_selected is NativeSectorRoiProjection;
     public bool BoxA {get=>BoxEnable_ModuleEnableA;set{}}
     public bool SectorA {get=>SectorEnable_ModuleEnableA;set{}}
+    public bool SectorRingEnable_ModuleEnableA=>IsHaveData&&_selected is NativeRingRoiProjection;
+    public bool SectorRingA {get=>SectorRingEnable_ModuleEnableA;set{}}
     public bool Is3DROI=>false;
-    public string ROISelectionA=>"Box Sector";
+    public string ROISelectionA=>"Box SectorRing Sector";
     public string DisplayNameA=>"ROI形状";
     public string DescriptionA=>DisplayNameA;
     public string Error {get;private set;}="";
@@ -76,8 +78,10 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
             if(string.IsNullOrWhiteSpace(row.Group)||row.Id==Guid.Empty||!keys.Add((row.Group,row.Id)))
                 throw new ArgumentException("ROI组与稳定ID必须非空且唯一。");
             RoiGeometryEditing.Validate(row.Geometry);
-            if(row.Geometry.Get<string>("kind") is not ("rectangle" or "sector"))
-                throw new NotSupportedException("当前原组合仅接纳矩形及扇形，其他形状需其原参数栈。");
+            if(row.Geometry.Get<string>("kind") is not ("rectangle" or "sector" or "annulus"))
+                throw new NotSupportedException("当前原组合接纳矩形、完整圆环及扇形，其他形状需其原参数栈。");
+            if(row.Geometry.Get<string>("kind")=="annulus"&&Math.Abs(Math.Abs(row.Geometry.Get<double>("end-radians")-row.Geometry.Get<double>("start-radians"))-2*Math.PI)>1e-9)
+                throw new NotSupportedException("原SectorRing四项参数只接纳完整圆环，部分扇环须其原参数栈。");
         }
         return new(stamp,Array.AsReadOnly(rows));
     }
@@ -200,7 +204,7 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     {
         var callbacks=new List<Action>();
         var handlers=PropertyChanged?.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray()??[];
-        foreach(var name in new[]{nameof(CurROIData),nameof(IsHaveData),nameof(BoxEnable_ModuleEnableA),nameof(SectorEnable_ModuleEnableA),nameof(BoxA),nameof(SectorA),nameof(Error)})
+        foreach(var name in new[]{nameof(CurROIData),nameof(IsHaveData),nameof(BoxEnable_ModuleEnableA),nameof(SectorEnable_ModuleEnableA),nameof(BoxA),nameof(SectorA),nameof(SectorRingEnable_ModuleEnableA),nameof(SectorRingA),nameof(Error)})
             foreach(var handler in handlers)callbacks.Add(()=>handler(this,new(name)));
         foreach(var handler in Changed?.GetInvocationList().Cast<Action>().ToArray()??[])callbacks.Add(handler);
         NativeRoiCallbacks.Run(callbacks);

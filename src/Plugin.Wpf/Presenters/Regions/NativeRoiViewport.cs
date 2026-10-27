@@ -26,6 +26,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/roiitemspagestyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/subroiitemspagestyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
+            "Themes/Native/Display/VMBaseControls/base/imageview/roi/circleroi/circleroistyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml"})
             NativeView.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/"+resource,UriKind.Relative)});
         Child=NativeView;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
@@ -87,6 +88,12 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
                 roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
                 roi.ApplyTemplate();roi.RefreshGeometryLayout();
             }
+            foreach(var roi in Descendants<CircleROI>(NativeView))
+            {
+                roi.SetResourceReference(FrameworkElement.StyleProperty,typeof(CircleROI));
+                roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
+                roi.ApplyTemplate();roi.RefreshGeometryLayout();
+            }
             foreach(var list in Descendants<ListView>(NativeView).Where(list=>ReferenceEquals(list.ItemsSource,_session.Items)))
                 list.SelectedItem=_session.CurROIData;
         }
@@ -97,7 +104,8 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     private void CancelInteraction()
     {
         NativeRoiCallbacks.Run(Descendants<RectROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)
-            .Concat(Descendants<SectorROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)));
+            .Concat(Descendants<SectorROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction))
+            .Concat(Descendants<CircleROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)));
     }
     private void OnPreviewMouse(object sender,MouseButtonEventArgs args)
     {if(_session?.PrepareEditor()!=true)args.Handled=true;}
@@ -105,7 +113,8 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     {
         if(_disposed)return;
         if(!Descendants<RectROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
-           !Descendants<SectorROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
+           !Descendants<SectorROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource))&&
+           !Descendants<CircleROI>(NativeView).Any(roi=>ReferenceEquals(roi.InteractionHandle,args.OriginalSource)))return;
         NativeRoiCallbacks.Run([CancelInteraction,()=>_session?.CancelPending()]);
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)

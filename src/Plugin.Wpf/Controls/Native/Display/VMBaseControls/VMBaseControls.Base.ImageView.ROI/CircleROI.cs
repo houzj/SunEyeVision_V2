@@ -28,6 +28,8 @@ public class CircleROI : ROIControlBase
 	public static readonly DependencyProperty CircleCenterPointProperty;
 
 	private Grid move;
+    private FrameworkElement? _interactionHandle;
+    internal FrameworkElement? InteractionHandle=>_interactionHandle;
 
 	private Rectangle SizeRect;
 
@@ -49,7 +51,7 @@ public class CircleROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerWidthProperty, value);
+			SetCurrentValue(ContainerWidthProperty, value);
 		}
 	}
 
@@ -61,7 +63,7 @@ public class CircleROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(ContainerHeightProperty, value);
+			SetCurrentValue(ContainerHeightProperty, value);
 		}
 	}
 
@@ -73,7 +75,7 @@ public class CircleROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(CircleRadiusProperty, value);
+			SetCurrentValue(CircleRadiusProperty, value);
 		}
 	}
 
@@ -85,7 +87,7 @@ public class CircleROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(MinRadiusProperty, value);
+			SetCurrentValue(MinRadiusProperty, value);
 		}
 	}
 
@@ -97,7 +99,7 @@ public class CircleROI : ROIControlBase
 		}
 		set
 		{
-			SetValue(CircleCenterPointProperty, value);
+			SetCurrentValue(CircleCenterPointProperty, value);
 		}
 	}
 
@@ -202,7 +204,10 @@ public class CircleROI : ROIControlBase
 
 	public override void OnApplyTemplate()
 	{
-		base.OnApplyTemplate();
+        CancelInteraction();
+        foreach(var element in new FrameworkElement?[]{move,SizeRect,InnerRect})
+            if(element is not null)element.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
+        base.OnApplyTemplate();
 		move = Template.FindName("move", this) as Grid;
 		move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
 		SizeRect = Template.FindName("SizeRect", this) as Rectangle;
@@ -214,12 +219,14 @@ public class CircleROI : ROIControlBase
 
 	private void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
+        CancelInteraction();
+        FrameworkElement frameworkElement = sender as FrameworkElement;
+        _interactionHandle=frameworkElement;
 		clickPoint = e.GetPosition(parent);
 		curRadius = CircleRadius;
 		curMinRadius = MinRadius;
 		this.GetParent<ListViewItem>().RaiseEvent(e);
-		frameworkElement.CaptureMouse();
+        if(!frameworkElement.CaptureMouse()||!ReferenceEquals(Mouse.Captured,frameworkElement)||!ReferenceEquals(_interactionHandle,frameworkElement)){CancelInteraction();return;}
 		this.GetParent<ImageViewBox>().IsDragROI = true;
 		frameworkElement.MouseMove += Move_MouseMove;
 		frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
@@ -295,15 +302,27 @@ public class CircleROI : ROIControlBase
 		FrameworkElement frameworkElement = sender as FrameworkElement;
 		frameworkElement.MouseMove -= Move_MouseMove;
 		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-		frameworkElement.ReleaseMouseCapture();
-		if (_isMove)
-		{
-			NotifyROIParamChanged();
-			_isMove = false;
-		}
-		AfterMouseUp();
+        _interactionHandle=null;
+        frameworkElement.ReleaseMouseCapture();
+        try{if(_isMove)NotifyROIParamChanged();}
+        finally{_isMove=false;AfterMouseUp();}
 	}
 
+    internal void RefreshGeometryLayout()
+    {
+        ChangeContainerSize();ChangeContainerPosition();
+        OnPropertyChanged("InnerCircleSize");OnPropertyChanged("MinRadiusSize");OnPropertyChanged("RadiusSize");
+    }
+    internal void CancelInteraction()
+    {
+        var handle=_interactionHandle;_interactionHandle=null;
+        if(handle is not null)
+        {
+            handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;
+            if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();
+        }
+        _isMove=false;AfterMouseUp();
+    }
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);

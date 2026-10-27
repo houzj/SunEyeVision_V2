@@ -7378,6 +7378,16 @@
       "failures": "Window059—064暴露非泛型只读行集合不被原ROIItemsPage识别、模板前引用/错放、捕获失败残留、360径向线及重复接纳；部分测试夹具观察者在Dispose再次抛错、library-only产物清单SHA被正确拒绝。后续065—069定位到F2/0.00误写；其中一次诊断用错RecordValue.CopyValues仅测试宿主编译失败。最终070才36组通过。全部日志保留。",
       "remaining": "SectorRing/Polygon原栈与完整图形交互、绘制/继承/位姿、多选/复制删除撤销、独立无Application同真实链Design场景、正式ParamListView行宿主及页签、生产原子stamp集成、VM同态/真实指针/用户VS验收、职责命名治理未完成。自动设计检查不代VS；捕获环境失败收尾不代真实物理拖动。",
       "next": "先SectorRing四字段及原CircleROI完整双圆环，再Polygon/Point租约与拓扑代次；同时按优先队列核原Radio与ParamListView/设计场景闭包。缺原证据定向补，禁止本方近似皮肤或旧SDK视觉后备。"
+    },
+    "nativeRingSceneCandidate": {
+      "status": "同步前局部检查点；第一阶段继续，完整C08和人工准入未完成。用户要求先统一工作流分支基线，控件新功能暂停到同步完成。",
+      "implementation": "原SectorRingROIStack四项MultiBinding与原RingRoiBtnStyle、原NormalizedCircleROI双Ellipse图形同一个NativeRingRoiProjection/Session；Y按H、两半径按W。仅完整annulus准入，正式start/end精确保留；内径0允许，零厚度拒绝。没有用Sector360或CircleMes单半径替代。",
+      "lifecycle": "原Circle几何/布局保Binding、模板重套退旧手柄、捕获失败/丢失取消；提交与拒绝恢复冻结原输入/raw并逐绑定回调核双代次/会话/对象。同Stamp拒绝通知不清raw，显式成功强制投影，以免no-op留下错误或旧原文。",
+      "verification": "UI004零错误6308警告95.47秒；全量Release001零错误6667警告114.01秒。最终Window075=42、FieldEditing065=31，正式EXE exit0/22工具；本批只封两轨，其他关联回归将在合并基线后运行，不套前批六轨。检查点核10源码增量、760发布项、66加载SHA。",
+      "iconBoundary": "用户强调圆形/圆环不可混用。原SectorRing映射RingRoiBtnStyle/ROI_circle_*；CircleMes另映射CircleMesRoiBtnStyle/Geometry_circle_*。安装Apps.Style.dll的g.resources直接静态读取证明两组对应PNG内容相同，本方未混用入口，也不伪称像素不同。见O06_RING_CIRCLE_ICON_SOURCE_20261027.json，REA ev_01022ce30e0a0e5526f41da3d5dfc98568e4b19ac5ea64f1bd7b4c4a74d37cfe。",
+      "failures": "Window071测试两处EllipseGeometry同名歧义，明确WPF类型后编译；072/073=41过1失败，零厚度正确拒绝但通知Project清原文/error，已修为提交期同根延迟，成功force投影。UI001/002/003早期候选不套最终004。全部日志保留。",
+      "limits": "半径联合用例证明正式投影两项暂存后一次Session接纳，不称两个文本框同时键入；CLR结束通知不代真实指针；实际圆环PNG已查看，不代VS/VM同态/用户验收。原列表宿主、Polygon、绘制/来源/复制删除撤销与同链Design未完。",
+      "evidence": "docs/collaboration/evidence/O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json；Catalog C08=41源记录/5本方依赖，全部112原源SHA复核。"
     }
   },
   "vmFrameworkArchitectureReference": {

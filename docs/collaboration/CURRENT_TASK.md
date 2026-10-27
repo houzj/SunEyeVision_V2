@@ -1,5 +1,15 @@
 # 当前任务：落实O06 Blob新架构与所需VM控件，交付真实Release
 
+## 2026-10-27 当前优先：统一主线与工作流开发基线
+
+- 用户明确要求先同步工作流分支，统一基线后再各自独立开发；停止继续控件新功能。主线当前81d0c738，待固定原SectorRing检查点；workflow-toolbox-dataflow当前17dd1858，双方共同祖先a6f58334，独有提交42/74。工作流聊天已授权协调并通知收尾冻结，主线负责实际合并/验证，不推送。
+- Ring本批激活原四项栈/图标/NormalizedCircleROI；独立四字段投影、完整annulus准入、原内外半径/0内径/角端点保真；原Circle绑定/捕获/模板生命周期修复。原文拒绝/重绑双路径已修，no-op成功明确force投影。不是完整C08。
+- 最终UI004和全量Release001零错误；Window075=42、FieldEditing065=31，正式EXE exit0/22工具。两轨检查点O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json核10源码增量/760发布项/66加载SHA；包含用户BlobParameterEditor.xaml索引2增量但不提交该用户文件。其他回归待合并基线后统一做，不套前批六轨。
+- 用户提醒圆形和圆环图标不能混。入口分别RingRoiBtnStyle/ROI_circle_*、CircleMesRoiBtnStyle/Geometry_circle_*；直接安装DLL静态资源流读取确认两套对应PNG原厂本来相同，图标类型映射已加实际窗口断言，不声称像素不同。证据O06_RING_CIRCLE_ICON_SOURCE_20261027.json。
+- 合并不能整文件选一边：保主线独立Runtime/Wpf发现、注册、发布、Blob无SDK入口；并入工作流目录/延迟加载和排序。ProductionEditorContext需合Runtime验证与多草稿原子提交，WorkflowNodeFactory需兼顾Runtime创建与成功后取号。Group参数反射链与中立Settings字段、循环引用闭包getter、Runtime输出图像入口需联调。
+- 三路暂改为只读合并审查，主线仍唯一产品写者；工作流独立worktree先固定并冻结，待主线合并0错与真实回归后同基线快进，再分别恢复。所有原失败记录/当前有效源码/用户未提交改动保留。
+
+
 ## 2026-10-27 C08公共ROI与原Sector集中批封存（第一阶段仍未完成）
 
 - 本轮承接上一轮已验证的数值文字修复，属于明确进展。基线b12656d8/main；主线唯一产品写者，三路逐控件只读核证及自动补位。用户BlobParameterEditor.xaml索引2未改未提交；Blob业务重组仍冻结。

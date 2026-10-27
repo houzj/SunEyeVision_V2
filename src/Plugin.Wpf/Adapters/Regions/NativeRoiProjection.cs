@@ -32,7 +32,7 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     protected NativeRoiProjection(NativeRoiSession scope,RoiEditItem item)
     {_scope=scope;Accepted=item;ImageWidth=scope.ImageWidth;ImageHeight=scope.ImageHeight;DataChangedCommand=new CommitCommand(this);}
     internal static NativeRoiProjection Create(NativeRoiSession scope,RoiEditItem item)=>item.Geometry.Get<string>("kind") switch
-    {"rectangle"=>new NativeBoxRoiProjection(scope,item),"sector"=>new NativeSectorRoiProjection(scope,item),_=>throw new NotSupportedException()};
+    {"rectangle"=>new NativeBoxRoiProjection(scope,item),"sector"=>new NativeSectorRoiProjection(scope,item),"annulus"=>new NativeRingRoiProjection(scope,item),_=>throw new NotSupportedException()};
     protected abstract double AcceptedValue(string key);
     protected double Value(string key)=>_pending.TryGetValue(key,out var value)?value:AcceptedValue(key);
     protected void Stage(string key,double value)
@@ -162,6 +162,36 @@ public sealed class NativeSectorRoiProjection : NativeRoiProjection,INormalizedS
             var start=Changed("begin")?begin*Math.PI/180:Accepted.Geometry.Get<double>("start-radians");
             values["start-radians"]=start;values["end-radians"]=start+sweep*Math.PI/180;
         }
+        return RoiGeometryEditing.Checked(values);
+    }
+}
+
+/// <summary>Original SectorRing: a complete annulus, never a six-field Sector substitute.</summary>
+public sealed class NativeRingRoiProjection : NativeRoiProjection,INormalizedCircleROI
+{
+    internal NativeRingRoiProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item){}
+    internal override IReadOnlyList<NativeRoiField> Fields {get;}=new NativeRoiField[]{new("x",true),new("y",true),new("outer-radius",true),new("inner-radius",true)};
+    protected override IEnumerable<string> PropertyNames=>new[]{nameof(Radius),nameof(MinRadius)};
+    // The preserved formal full-circle endpoints also participate in host snapshot identity.
+    protected override IEnumerable<string> GeometryKeys=>new[]{"outer-radius","inner-radius","start-radians","end-radians"};
+    protected override double AcceptedValue(string key)=>key switch
+    {"x"=>RoiGeometryEditing.Center(Accepted.Geometry).X,"y"=>RoiGeometryEditing.Center(Accepted.Geometry).Y,_=>Accepted.Geometry.Get<double>(key)};
+    public double Radius {get=>Value("outer-radius")/ImageWidth;set{Stage("outer-radius",value*ImageWidth);if(MinRadius>value)Stage("inner-radius",value*ImageWidth);}}
+    public double MinRadius {get=>Value("inner-radius")/ImageWidth;set{Stage("inner-radius",value*ImageWidth);if(Radius<value)Stage("outer-radius",value*ImageWidth);}}
+    internal override void StageFields(IReadOnlyDictionary<int,double> fields)
+    {
+        var complete=fields.ToDictionary(pair=>pair.Key,pair=>pair.Value);
+        if(fields.TryGetValue(2,out var outer)&&!fields.ContainsKey(3)&&outer<Value("inner-radius"))complete[3]=outer;
+        if(fields.TryGetValue(3,out var inner)&&!fields.ContainsKey(2)&&inner>Value("outer-radius"))complete[2]=inner;
+        base.StageFields(complete);
+    }
+    internal override RecordValue Prepare()
+    {
+        var outer=Value("outer-radius");var inner=Value("inner-radius");
+        if(!double.IsFinite(outer)||!double.IsFinite(inner)||outer is <0 or >10000||inner is <0 or >10000)
+            throw new ArgumentException("圆环半径超出原参数范围。");
+        var values=PrepareCenter();values["outer-radius"]=outer;values["inner-radius"]=inner;
+        // The four-field editor does not reinterpret, round or replace the accepted full-circle angles.
         return RoiGeometryEditing.Checked(values);
     }
 }

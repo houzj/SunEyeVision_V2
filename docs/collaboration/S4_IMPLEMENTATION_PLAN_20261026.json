@@ -7399,6 +7399,22 @@
       "失败保留": "UI首次变量重名与旧订阅控件接口；全量测试构造参数；旧静态拖放缓存、开编辑窗后增节点、未初始化方案管理器、未枚举Theory及旧分裂历史假设夹具均保留日志并按现合同调整；实际连线基线问题在最终构建前修复。",
       "边界": "用户Blob设计页索引2改动SHA不变且未提交。Group新增及Runtime曝光继续冻结；控件库阶段仍未全部准入，Blob业务重组仍冻结。VS、VM同态、物理交互、多DPI、人工外观未记通过；根配置浅字仍待工作流后续处理。",
       "证据": "docs/collaboration/evidence/BASELINE_SYNC_RESULT_20261027.json；docs/collaboration/HANDOFF_BASELINE_SYNC_20261027.md。"
+    },
+    "nativePolygonPrerequisitesCandidate": {
+      "baseline": "9f8506f0",
+      "state": "原Point/Popup/有序点投影基础依赖已实施；Polygon完整组合仍未激活，第一阶段未完成。",
+      "source": "Catalog C08新增原SliderArrangePoint XAML/代码、PopupWithTopmost及Apps.BaseData点列表converter真实来源；CRLF原文件SHA与LF清单SHA分别记录。",
+      "implementation": [
+        "原ToBtn/T1两级数值绑定、轴投影与暂存租约；删除按Hash直接改点。",
+        "Popup确切target/Owner/scroll订阅释放；不以Auto尺寸移动原窗。",
+        "有序槽Replace，尺寸/源/拓扑版本，重入通知合并同步；旧槽与释放后回调拒写。"
+      ],
+      "verification": "最终UI003=0错750警告44.65秒，全量001=0错6620警告81.15秒；PolygonPrimitives001=10、Window078=42、Field068=31、Design023=28、RuntimeEditor049=10、FullChain109=8均通过。正式EXE目录探针exit0/22工具15分类。782发布文件及75加载记录SHA通过；当前源码为9f8506f0+记录的工作区增量，不能称干净基线构建。",
+      "remaining": [
+        "原PolygonROIStack、Session/有序几何投影、Point槽raw与模板租约、原NormalizedPolygonROI捕获链尚未接入。",
+        "真实VS/VM同态/物理交互/用户验收未通过；不得据基础依赖通过进入Blob重组。"
+      ],
+      "evidence": "docs/collaboration/evidence/O06_POLYGON_PREREQUISITES_CHECKPOINT_20261027.json；整体设计 O06_POLYGON_COMPOSITION_DESIGN_20261027.json"
     }
   },
   "vmFrameworkArchitectureReference": {

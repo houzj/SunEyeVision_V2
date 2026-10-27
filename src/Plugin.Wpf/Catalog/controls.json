@@ -1839,6 +1839,35 @@
           "originalSha256": "b99bb9d2f54add8d59a606dd6c1c47fabc470ad1cddef2f13569462ce47f54b6",
           "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/Resources/ROI_circle_click.png",
           "localSha256": "b99bb9d2f54add8d59a606dd6c1c47fabc470ad1cddef2f13569462ce47f54b6"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.SliderArrangePoint",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml",
+          "originalSha256": "07559f91b61d308375bbf3ca404227c783d45dd77d85fa03034da4c600aaa794",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml",
+          "localSha256": "d94346f08f10ae574985948604d1d9eb1e4851aa306b92bedb93c7cce2087635"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.SliderArrangePoint",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml.cs",
+          "originalSha256": "9bf26a80723344a306fa6a7070bdbb0ec10b5d51673c870ea48ff1737cd26d84",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml.cs",
+          "localSha256": "43da0594833cae42198ee9c4a11eafc17079ce5f605ff532bc23024e81aa10f6"
+        },
+        {
+          "originalType": "Apps.XmlUI.ParamTabControl.PopupWithTopmost",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PopupWithTopmost.cs",
+          "originalSha256": "5b4fe4d54e2186dc1b0f5cca23e9d19bf970b7bcaa977c497ca9b89fb6a37762",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/PopupWithTopmost.cs",
+          "localSha256": "7c1ea1ab0d422c6ca1ffb471e3227b9d421a1cfae75a21985b459af5e13c43c8"
+        },
+        {
+          "originalType": "Apps.BaseData.PointListRightFixdMultiplicationConverter",
+          "originalPath": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\PointListRightFixdMultiplicationConverter.cs",
+          "originalSha256": "19b1411787887e582bdea3ba7d3dec939b896f4b84925b2609d8886d292e447f",
+          "localPath": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs",
+          "localSha256": "23dd430e83375b1d7438ec36905253011b3ef7e5741386b05b1b7463b67b3c4f",
+          "evidenceNote": "Recovered source CRLF SHA; LF-normalized 84dda1ea17e4fd452dd256be6235258bb5b8fe85f5a29c0e858b91d4663a5caf matches original migration manifest. Actual bytes and normalized identity distinguished."
         }
       ],
       "dependencies": [
@@ -1883,6 +1912,15 @@
         "sourceEvidence": "O06_ROI_CLOSURE_QUEUE_20261027.json",
         "iconSource": "O06_RING_CIRCLE_ICON_SOURCE_20261027.json",
         "checkpoint": "O06_BLOB_NATIVE_RING_CHECKPOINT_20261027.json"
+      },
+      "polygonPrerequisites": {
+        "status": "IMPLEMENTED_PENDING_FORMAL_PRODUCT_TESTS_NOT_POLYGON_COMPLETE",
+        "adaptation": "Original ToBtn/T1 point entry; exact axis staging lease replaces hash-based source mutation; original binding format and base leaf registration retained. Named popup target/owner and scroll subscription lifecycle; native positioning never coerces Auto dimensions. Point-list converter uses ordered slot Replace, dimension/input versions and coalesced reentrant projection. Original converter recovered source is recorded with actual CRLF and separately identified LF manifest SHA.",
+        "remaining": [
+          "Polygon original parameter stack/editor/viewport not activated",
+          "Actual VS/VM same-state and physical pointer unverified",
+          "Raw unload/retemplate integration requires editor slot lease before Point binding disposal"
+        ]
       }
     }
   ]

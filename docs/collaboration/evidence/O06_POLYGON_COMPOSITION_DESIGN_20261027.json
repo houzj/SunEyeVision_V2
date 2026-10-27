@@ -1,0 +1,38 @@
+{
+  "baseline": "9f8506f0",
+  "scope": "C08原PolygonROIStack→SliderArrangePoint→同一规范顶点投影→原NormalizedPolygonROI→宿主一次接纳；Blob业务冻结。",
+  "source": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PolygonROIStack.xaml",
+      "sha256": "e5f2425a2e6f68abe97752692bd3daae7ce8b246e9b435db2adbefbe2f697e17"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml.cs",
+      "sha256": "9bf26a80723344a306fa6a7070bdbb0ec10b5d51673c870ea48ff1737cd26d84"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\PopupWithTopmost.cs",
+      "sha256": "5b4fe4d54e2186dc1b0f5cca23e9d19bf970b7bcaa977c497ca9b89fb6a37762"
+    }
+  ],
+  "design": [
+    "原Stack两项每顶点、范围±30000步长1、ToBtn/T1/PointSource MultiBinding保留；不套Float固定字段数量门禁。",
+    "Group+Guid、Scope/Revision/Frame沿现行Session；VertexLease=projection实例/拓扑代次/index/axis。数据行编号和点Hash不得作身份。",
+    "正式RecordValue有序vertices唯一权威；ObservableCollection<Point>仅归一化暂存投影。普通坐标Replace不变拓扑；换集合/重排/增删使旧租约失效。",
+    "参数原文按租约保存，不依赖所有顶点已视觉实现；一次完整校验后一次接纳，非法/换根/旧事件零发布。",
+    "Point StartValue仅向当前租约sink暂存；不直接回写OriPoints，不在sink重复发完成事件。PointSource只投影并校验原外层绑定。",
+    "Popup保存真实target/owner/scroll订阅，关闭/卸载/换根/owner关闭解除；保原滚动差>3关层，设置Z序不改变Auto尺寸。",
+    "原Polygon双向点列表converter按引用换源，有限正尺寸，整形事件重建完整快照；转换重入finally和旧源事件门禁。",
+    "原Polygon拖动用捕获部件+集合+拓扑代次+槽租约，正常结束一次提交，失捕取消，旧模板三part退订。",
+    "保原图标/模板/点手柄；不替代Circle/Ring图标。C01宿主及真实VS设计场景仍有后续门禁。"
+  ],
+  "acceptance": [
+    "重复坐标仅改租约序号，非方形宽高分别换算",
+    "多顶点一次提交，一个非法整组拒绝",
+    "拓扑/重绑/换帧/旧事件失效",
+    "开关Popup/滚动/回收/换模板/卸载不留订阅",
+    "旧Box/Ring/Sector数值、原窗口与资源回归",
+    "规定UI和全量Release、同源正式EXE与定向轨道；VM物理及VS实际由真实验收记录"
+  ],
+  "state": "整体设计确定，集中实施中；不计Polygon或C08完成"
+}

@@ -1,0 +1,97 @@
+{
+  "baseline": "9f8506f0e37137590b80fd38d02ecfb64ee0ec36",
+  "productSourceCommit": "9f8506f0e37137590b80fd38d02ecfb64ee0ec36",
+  "sourceIdentity": "baseline plus listed working-tree product delta, not clean baseline build",
+  "productDelta": [
+    {
+      "path": "src/Plugin.Wpf/Catalog/controls.json",
+      "sha256": "67ad5b1d1eeff0c799e50d8d74e0d86c1b75387b75e6a4fb355cba00db68efa3",
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs",
+      "sha256": "23dd430e83375b1d7438ec36905253011b3ef7e5741386b05b1b7463b67b3c4f",
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/PopupWithTopmost.cs",
+      "sha256": "7c1ea1ab0d422c6ca1ffb471e3227b9d421a1cfae75a21985b459af5e13c43c8",
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml",
+      "sha256": "d94346f08f10ae574985948604d1d9eb1e4851aa306b92bedb93c7cce2087635",
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml.cs",
+      "sha256": "43da0594833cae42198ee9c4a11eafc17079ce5f605ff532bc23024e81aa10f6",
+      "userOwnedNotCommitted": false
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+      "userOwnedNotCommitted": true
+    }
+  ],
+  "builds": {
+    "ui": "Release/_validation/polygon-dependencies-ui-20261027-003.log",
+    "full": "Release/_validation/polygon-dependencies-full-20261027-001.log",
+    "errors": 0
+  },
+  "tracks": {
+    "PolygonPrimitives": {
+      "attempt": "attempt-001",
+      "receipt": "Release\\_validation\\S4-20261025\\PolygonPrimitives\\attempt-001\\receipt.json",
+      "receiptSha256": "c865652c3b7d149556b02fb5df75390f71a65e469e7a0384f470e569e21f1068",
+      "caseSourceSha256": "E83FB866FA16E3C32D1C50DD3FEE47553EDD933CA00BE0037CF718FB3C999990",
+      "exit": 0
+    },
+    "WindowPresentation": {
+      "attempt": "attempt-078",
+      "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-078\\receipt.json",
+      "receiptSha256": "87b5f39beabce7c943ac45bb59ad3d49b486ce007586c2cdee03260427eef6db",
+      "caseSourceSha256": "DFE76E769DBFF377AF78BC20D0A06DE053279B051E2EE175FA88238BDDE78407",
+      "exit": 0
+    },
+    "FieldEditing": {
+      "attempt": "attempt-068",
+      "receipt": "Release\\_validation\\S4-20261025\\FieldEditing\\attempt-068\\receipt.json",
+      "receiptSha256": "d9f5422b38e145a9137bd7e17b4dedbd993dca9cc3c56dec63118c424db7b26b",
+      "caseSourceSha256": "7D87D2A406902DCDEE33024C8E5CD39BDFD1D3AFB9B2CBECDFF9A6C92D443757",
+      "exit": 0
+    },
+    "DesignTime": {
+      "attempt": "attempt-023",
+      "receipt": "Release\\_validation\\S4-20261025\\DesignTime\\attempt-023\\receipt.json",
+      "receiptSha256": "282f5fc1213ce8c94a2743ed503e574d26d36ea7cfc876f85fef6bddb864ce1d",
+      "caseSourceSha256": "83891346C506288F28417F2D60EFFC842F180454B4D44C243E02FB39C47E4776",
+      "exit": 0
+    },
+    "RuntimeEditor": {
+      "attempt": "attempt-049",
+      "receipt": "Release\\_validation\\S4-20261025\\RuntimeEditor\\attempt-049\\receipt.json",
+      "receiptSha256": "642125d8cb04a28b7fea2fe452dc2c04fd94a2ba76884f1df274f1ebfbf1f6fe",
+      "caseSourceSha256": "1A382B3C771831CD3341FADF4294A1B029AAB7B73DA57A94CC955900003316FB",
+      "exit": 0
+    },
+    "FullChain": {
+      "attempt": "attempt-109",
+      "receipt": "Release\\_validation\\S4-20261025\\FullChain\\attempt-109\\receipt.json",
+      "receiptSha256": "bed6a1f72ef654391672ef423e57a75e893161abc24cd979ccf41dd3487725c5",
+      "caseSourceSha256": "98FCD240A66EEA6621844ECD001499C7E96F7781B06C0AAE41C5F6936091F37F",
+      "exit": 0
+    }
+  },
+  "verifiedPayloadFiles": 782,
+  "verifiedLoadedRecords": 75,
+  "payloadSha256": "5a7c84b92263aae9b1d17cc3f71cf6bca6dc86eac15833896590a0a09671f0df",
+  "scope": "Polygon prerequisites only; full Polygon/C08 and stage1 remain incomplete; no actual VS/VM/user acceptance",
+  "remaining": [
+    "Original Polygon parameter-stack/session/projection/editor/viewport chain",
+    "Slot-based raw text suspend/retemplate lease",
+    "Native polygon capture/topology/template cleanup",
+    "C01 original host and independent actual VS scene",
+    "VM same-state, physical pointer, user visual acceptance"
+  ]
+}

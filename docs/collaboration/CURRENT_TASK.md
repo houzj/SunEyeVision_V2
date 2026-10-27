@@ -1,4 +1,18 @@
-# 当前任务：统一开发基线已验证，接续独立开发
+## 2026-10-27 C08 Polygon原数值/点列表依赖检查点
+
+- 基线9f8506f0，主线唯一产品写者，三路只读核证并核收。原Point ToBtn/T1绑定、轴投影及暂存租约，Popup确切Owner/target/scroll退订，有序顶点converter输入版本与重入同步泵已实施；删除Hash直接回写。原来源与必要适配分别登记Catalog；converter原文件位于被忽略artifacts取证目录，CRLF实SHA和LF清单SHA明确区分。
+- 最终UI003零错750警告44.65秒，全量001零错6620警告81.15秒。PolygonPrimitives001=10、Window078=42、Field068=31、Design023=28、RuntimeEditor049=10、FullChain109=8同源正式产物通过；正式EXE目录探针exit0/22工具15分类。782发布文件及75加载记录SHA核对，证据O06_POLYGON_PREREQUISITES_CHECKPOINT_20261027.json。
+- 不计完整Polygon或C08。下一批接原PolygonROIStack、规范有序vertices投影、动态Point槽raw/卸载与模板租约、原图像Polygon捕获/拓扑取消及Session一次接纳；不能仅沿固定Float字段数扩展。原文卸载前冻结与隐藏顶点精度仍未验证。
+- 用户Blob页索引2 SHA未变未提交；Blob业务继续冻结。真实VS、VM同态、物理指针和用户本批未验。所有自有构建/验证句柄终止，已通知工作流释放正式Release窗口。准备有意义中文本地检查点，不推送；完整目标仍active。
+
+## 2026-10-27 再次核对共同开发基线
+
+- 用户再次要求先同步工作流再独立开发。实际核对main与codex/workflow-toolbox-dataflow均为9f8506f0，双向独有提交数0/0；工作流工作区干净，无需重复合并或制造同步提交。
+- 主线未提交Polygon依赖候选仍是开发中内容，不纳入共同基线、不称已完成验证；本轮此前启动的UI构建已正常结束（0错误），不据此代替全量与交互验收。用户Blob页索引2保持原样。
+- 双方继续使用独立工作区；主线唯一产品写者。主仓正式Release构建窗口已结束，后续仍须协调独占，不同时部署覆盖。原基线验收仅属于8a98b488产品源码，不套用于当前未提交候选。不推送。
+# 当前任务：共同基线后的C08原Polygon完整组合实施
+
+2026-10-27 当前批：共同基线9f8506f0，主线唯一产品写者，三路分别只读核Point弹层、Polygon图像、原参数栈。整体设计见evidence/O06_POLYGON_COMPOSITION_DESIGN_20261027.json；按完整租约/原文/规范顶点/图像捕获/资源退出链集中实施，不把先导依赖通过算Polygon完成。用户Blob页索引2仍保留，Blob业务冻结。
 
 2026-10-27：主线6e43baed与工作流5552fae8已合并为产品8a98b488。最终UI/全量Release均0错，13轨道及18部署检查通过，正式起始页和主壳响应且正常关闭。共同基线含随后同步交接文档提交，产品产物sourceCommit仍为8a98b488；不混称文档提交已构建。保留用户BlobParameterEditor.xaml页索引2，SHA未变、未提交。工作流快进同一交接提交后各自在独立工作区接续，Group新增/Runtime曝光与Blob业务重组仍冻结；完整S4和人工外观未完成。不推送。交接：HANDOFF_BASELINE_SYNC_20261027.md，证据：evidence/BASELINE_SYNC_RESULT_20261027.json。
 

@@ -316,6 +316,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['nativeRingSceneCandidate'].items()])
                if plan.get('nativeRingSceneCandidate') else '')
+            + ('<h5>C08原Polygon基础依赖候选（完整组合未完成）</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativePolygonPrerequisitesCandidate'].items()])
+               if plan.get('nativePolygonPrerequisitesCandidate') else '')
             + ('<h5 id="o06-baseline-sync-20261027">控件库与工作流统一开发基线</h5>'
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['baselineSynchronization'].items()])

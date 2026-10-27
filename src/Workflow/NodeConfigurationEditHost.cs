@@ -54,7 +54,7 @@ public sealed class GlobalVariableConfigurationEditDraft
 
 /// <summary>One document's existing configuration publication gateway. Node and variable
 /// candidates are composed and validated together before one Store publication.</summary>
-public sealed class NodeConfigurationEditHost
+public sealed partial class NodeConfigurationEditHost
 {
     private readonly Guid _owner = Guid.NewGuid();
     private readonly object _gate = new();
@@ -251,7 +251,7 @@ public sealed class NodeConfigurationEditHost
     public BindingConfigurationPublication Commit(NodeConfigurationEditDraft editor)
     { ArgumentNullException.ThrowIfNull(editor); return CommitBatch(new[] { editor }, null); }
 
-    public void ValidateBatch(IReadOnlyList<NodeConfigurationEditDraft> editors, GlobalVariableConfigurationEditDraft? variables)
+    public void ValidateBatch(IReadOnlyList<NodeConfigurationEditDraft> editors, GlobalVariableConfigurationEditDraft? variables, IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots = null)
     {
         try
         {
@@ -259,7 +259,7 @@ public sealed class NodeConfigurationEditHost
             ArgumentNullException.ThrowIfNull(editors);
             lock (_gate)
             {
-                var prepared = Compose(editors, variables);
+                var prepared = Compose(editors, variables, roots);
                 _store.Validate(prepared.Draft, c => ValidateCandidate(c, prepared.Participants, variables != null));
                 lock (GlobalVariable.ValueGate)
                 {
@@ -272,7 +272,7 @@ public sealed class NodeConfigurationEditHost
     }
 
     public BindingConfigurationPublication CommitBatch(IReadOnlyList<NodeConfigurationEditDraft> editors,
-        GlobalVariableConfigurationEditDraft? variables)
+        GlobalVariableConfigurationEditDraft? variables, IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots = null)
     {
         try
         {
@@ -282,7 +282,7 @@ public sealed class NodeConfigurationEditHost
             List<(GlobalVariable Variable, bool ValueChanged)> notifications;
             lock (_gate)
             {
-                var prepared = Compose(editors, variables);
+                var prepared = Compose(editors, variables, roots);
                 var projection = new Projection();
                 try
                 {
@@ -298,6 +298,7 @@ public sealed class NodeConfigurationEditHost
                             validate: c => ValidateCandidate(c, prepared.Participants, variables != null));
                     foreach (var editor in editors) editor.Consumed = true;
                     if (variables != null) variables.Consumed = true;
+                    foreach(var root in roots??Array.Empty<RootWorkflowConfigurationEditDraft>())root.Consumed=true;
                     notifications = projection.Notifications;
                 }
                 catch { projection.Restore(this); throw; }
@@ -340,7 +341,7 @@ public sealed class NodeConfigurationEditHost
     }
 
     private sealed record PreparedBatch(BindingConfigurationDraft Draft, HashSet<ScopedNodeIdentity> Participants);
-    private PreparedBatch Compose(IReadOnlyList<NodeConfigurationEditDraft> editors, GlobalVariableConfigurationEditDraft? variables)
+    private PreparedBatch Compose(IReadOnlyList<NodeConfigurationEditDraft> editors, GlobalVariableConfigurationEditDraft? variables, IReadOnlyList<RootWorkflowConfigurationEditDraft>? roots)
     {
         EnsureBaseline();
         var draft = _store.BeginEdit();
@@ -415,6 +416,7 @@ public sealed class NodeConfigurationEditHost
             }
         }
         foreach (var editor in byId.Values) SetParameters(Find(draft.Configuration, editor.Identity), editor.Node);
+        ComposeRoots(draft.Configuration,roots);
         return new(draft, participants);
     }
 
@@ -506,6 +508,7 @@ public sealed class NodeConfigurationEditHost
     {
         internal bool HoldsValueGate;
         internal bool Applied;
+        internal readonly List<(Workflow Root,RootWorkflowConfiguration Before,RootWorkflowConfiguration After)> Roots=new();
         internal List<GlobalVariable>? PreviousOrder;
         internal readonly List<(WorkflowNodeBase Node, SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters Parameters,
             SunEyeVision.Plugin.SDK.Execution.Parameters.ParamSettingContainer Settings)> Nodes = new();
@@ -516,6 +519,7 @@ public sealed class NodeConfigurationEditHost
         internal void Restore(NodeConfigurationEditHost host)
         {
             if (!Applied) return;
+            foreach(var root in Roots)root.Root.ApplyRootConfigurationRaw(root.Before);
             foreach (var node in Nodes) { node.Node.Parameters = node.Parameters; node.Node.ParamSettings = node.Settings; }
             foreach (var variable in Variables)
             {
@@ -535,6 +539,8 @@ public sealed class NodeConfigurationEditHost
         var nextNodes = Nodes(candidate);
         if (!_nodeInstances.Keys.ToHashSet().SetEquals(nextNodes.Keys))
             throw new InvalidOperationException("配置编辑不能增删节点。");
+        foreach(var next in candidate.Workflows.Where(w=>!w.IsSubroutine))
+        {var root=_design.Workflows.Single(w=>w.Id==next.Id&&!w.IsSubroutine);if(RootSignature(root.RootConfiguration)!=RootSignature(next.RootConfiguration))projection.Roots.Add((root,root.RootConfiguration,next.RootConfiguration));}
         var plans = candidate.GlobalVariables.Select(v => (Next: v,
             Target: _variableInstances.TryGetValue(v.Id, out var existing) ? existing : v,
             State: v.CaptureConfiguration())).ToArray();
@@ -569,6 +575,7 @@ public sealed class NodeConfigurationEditHost
         // Everything below is raw model/list assignment. It invokes no virtual method,
         // property setter, logger, serializer, WPF object or subscription callback.
         projection.Applied = true;
+        foreach(var root in projection.Roots){root.Root.ApplyRootConfigurationRaw(root.After);RawMutationCompleted();}
         foreach (var pair in nextNodes)
             if (projection.Nodes.Any(p => ReferenceEquals(p.Node, _nodeInstances[pair.Key])))
             {
@@ -599,6 +606,7 @@ public sealed class NodeConfigurationEditHost
 
     private void ReleaseProjection(Projection projection)
     {
+        if(projection.Applied)foreach(var root in projection.Roots)_rootNotifications.Add(root.Root);
         _projecting = false;
         if (projection.HoldsValueGate) { projection.HoldsValueGate = false; Monitor.Exit(GlobalVariable.ValueGate); }
     }
@@ -662,12 +670,15 @@ public sealed class NodeConfigurationEditHost
         List<(GlobalVariable Variable, bool ValueChanged)> notifications;
         lock (_gate) { notifications = _structureNotifications.ToList(); _structureNotifications.Clear(); }
         if (notifications.Count != 0) Emit(notifications);
+        Workflow[] roots;lock(_gate){roots=_rootNotifications.ToArray();_rootNotifications.Clear();}
+        var errors=new List<Exception>();foreach(var root in roots)try{root.EmitRootConfigurationChanged();}catch(Exception error){errors.Add(error);}
+        if(errors.Count!=0)lock(_gate)_lastRefreshError=new AggregateException("根配置已发布，但部分视图通知失败。",errors);
     }
     private static string VariableMetadataSignature(GlobalVariable variable) => JsonSerializer.Serialize(new {
         variable.Id, variable.Name, variable.Type, variable.Group, variable.Index, variable.Description, variable.AdditionalData
     }, WorkflowSerializationOptions.Compact);
     private static string StructureSignature(Solution model) => JsonSerializer.Serialize(new {
-        model.Id, Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine,
+        model.Id, Workflows = model.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine, w.WorkspaceSettings,
             Nodes = w.Nodes.Select(n => new { n.Id, n.Name, n.DispName, n.ToolType, n.SubroutineId, n.IsEnabled,
                 n.PositionX, n.PositionY, n.Width, n.Height, n.GlobalIndex, n.LocalIndex, n.ImageSourceConfig }),
             Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) })
@@ -676,7 +687,7 @@ public sealed class NodeConfigurationEditHost
     private static string ShapeSignature(Solution model) => JsonSerializer.Serialize(new
     {
         model.Id,
-        Workflows = model.Workflows.Select(w => new { w.Id, w.IsSubroutine,
+        Workflows = model.Workflows.Select(w => new { w.Id, w.IsSubroutine, w.RootConfiguration,
             Nodes = w.Nodes.Select(n => new { n.Id, Signature = NodeEditSignature(n) }),
             Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) }),
         Variables = model.GlobalVariables.Select(VariableConfigurationSignature)

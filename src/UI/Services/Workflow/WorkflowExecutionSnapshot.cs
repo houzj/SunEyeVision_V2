@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -22,6 +22,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         WorkflowName = workflowName;
     }
 
+    public long CompletedRunCount {get;private set;}
     public string WorkflowId { get; }
     public string WorkflowName { get; private set; }
     public ExecutionStatus Status { get => _status; private set => SetProperty(ref _status, value); }
@@ -39,6 +40,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         _ => "尚未运行"
     };
 
+    public string FlowElapsedText=>StartedAt.HasValue?Elapsed.TotalMilliseconds.ToString("N2"):"—";
     public string StatusBarText => Status switch
     {
         ExecutionStatus.Success => $"{Elapsed.TotalMilliseconds:F2} ms",
@@ -115,17 +117,18 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
                 nodeId,
                 nodeName,
                 status,
-                result.Duration ?? TimeSpan.Zero,
-                result.Result?.ExecutionTimeMs ?? 0));
+                result.Duration,
+                result.Result?.ExecutionTimeMs));
         }
         else
         {
-            node.Update(nodeName, status, result.Duration ?? TimeSpan.Zero, result.Result?.ExecutionTimeMs ?? 0);
+            node.Update(nodeName, status, result.Duration, result.Result?.ExecutionTimeMs);
         }
     }
 
     internal void Complete(ExecutionResult result, Func<string, string> nodeNameResolver)
     {
+        CompletedRunCount++;OnPropertyChanged(nameof(CompletedRunCount));
         Status = result.Status;
         EndedAt = DateTime.Now;
         Elapsed = result.ExecutionTime;
@@ -144,6 +147,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         {
             Elapsed = DateTime.Now - StartedAt.Value;
             OnPropertyChanged(nameof(StatusBarText));
+        OnPropertyChanged(nameof(FlowElapsedText));
         }
     }
 
@@ -152,6 +156,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         OnPropertyChanged(nameof(WorkflowName));
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(StatusBarText));
+        OnPropertyChanged(nameof(FlowElapsedText));
     }
 
     private static bool IsInternalNode(string nodeId) =>
@@ -166,14 +171,16 @@ public sealed class WorkflowNodeExecutionSnapshot : ViewModelBase
     private double _algorithmElapsedMs;
 
     public WorkflowNodeExecutionSnapshot(string nodeId, string nodeName, string status,
-        TimeSpan moduleElapsed = default, double algorithmElapsedMs = 0)
+        TimeSpan? moduleElapsed = null, double? algorithmElapsedMs = null)
     {
         NodeId = nodeId;
         _nodeName = nodeName;
         _status = status;
-        ModuleElapsed = moduleElapsed;
-        AlgorithmElapsedMs = algorithmElapsedMs;
+        ModuleElapsed = moduleElapsed??TimeSpan.Zero;HasModuleTiming=moduleElapsed.HasValue;
+        AlgorithmElapsedMs = algorithmElapsedMs??0;HasAlgorithmTiming=algorithmElapsedMs.HasValue;
     }
+    public bool HasModuleTiming {get;private set;}
+    public bool HasAlgorithmTiming {get;private set;}
     public string NodeId { get; }
     public string NodeName { get => _nodeName; private set => SetProperty(ref _nodeName, value); }
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
@@ -185,15 +192,16 @@ public sealed class WorkflowNodeExecutionSnapshot : ViewModelBase
         NodeName = nodeName;
         Status = status;
         if (moduleElapsed.HasValue)
-            ModuleElapsed = moduleElapsed.Value;
+            { ModuleElapsed = moduleElapsed.Value; HasModuleTiming=true; OnPropertyChanged(nameof(HasModuleTiming)); }
         if (algorithmElapsedMs.HasValue)
-            AlgorithmElapsedMs = algorithmElapsedMs.Value;
+            { AlgorithmElapsedMs = algorithmElapsedMs.Value; HasAlgorithmTiming=true; OnPropertyChanged(nameof(HasAlgorithmTiming)); }
     }
 
     internal void UpdateName(string nodeName) => NodeName = nodeName;
 
     internal void ResetForRun()
     {
+        HasModuleTiming=HasAlgorithmTiming=false;OnPropertyChanged(nameof(HasModuleTiming));OnPropertyChanged(nameof(HasAlgorithmTiming));
         Status = "等待中";
         ModuleElapsed = TimeSpan.Zero;
         AlgorithmElapsedMs = 0;

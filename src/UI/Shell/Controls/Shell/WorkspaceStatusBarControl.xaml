@@ -32,12 +32,10 @@
     <Button x:Name="ResetZoomButton" Width="48" Margin="4,0,0,0" Padding="0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Click="ResetZoomButton_Click" ToolTip="恢复100%缩放" AutomationProperties.Name="恢复流程画布原始比例"><TextBlock Text="{Binding Scale,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl},StringFormat={}{0:P0}}"/></Button>
    </StackPanel>
    <Grid DockPanel.Dock="Left" Width="20" Height="20" Margin="5,0,3,0" VerticalAlignment="Center" ToolTip="根流程配置状态">
-    <TextBlock FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center">
-     <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="⚙"/><Setter Property="Foreground" Value="{DynamicResource ThemeTextSecondaryBrush}"/><Style.Triggers>
-      <DataTrigger Binding="{Binding ConfigurationState,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}" Value="{x:Static local:WorkspaceConfigurationState.Ready}"><Setter Property="Text" Value="✓"/></DataTrigger>
-      <DataTrigger Binding="{Binding ConfigurationState,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}" Value="{x:Static local:WorkspaceConfigurationState.Incomplete}"><Setter Property="Text" Value="!"/><Setter Property="Foreground" Value="#E58732"/></DataTrigger>
-     </Style.Triggers></Style></TextBlock.Style>
-    </TextBlock>
+    <Image Width="16" Height="16" Stretch="Uniform"><Image.Style><Style TargetType="Image"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/bottombar_config.png"/><Style.Triggers>
+     <DataTrigger Binding="{Binding ConfigurationState,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}" Value="{x:Static local:WorkspaceConfigurationState.Ready}"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/bottombar_run.png"/></DataTrigger>
+     <DataTrigger Binding="{Binding ConfigurationState,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}" Value="{x:Static local:WorkspaceConfigurationState.Incomplete}"><Setter Property="Source" Value="/SunEyeVision.UI;component/Resources/Workflow/bottombar_abnormal.png"/></DataTrigger>
+    </Style.Triggers></Style></Image.Style></Image>
    </Grid>
    <TextBlock x:Name="StatusTextBlock" Margin="5,0,8,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding StatusText,RelativeSource={RelativeSource AncestorType=local:WorkspaceStatusBarControl}}"/>
   </DockPanel>

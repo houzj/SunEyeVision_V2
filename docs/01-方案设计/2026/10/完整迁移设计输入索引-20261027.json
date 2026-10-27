@@ -6313,5 +6313,27 @@
       "VS设计时/多DPI/物理及用户人工验收"
     ],
     "manualAcceptance": "未执行，不预填通过"
+  },
+  "currentParallelIntegration": {
+    "baseline": "adc727ba",
+    "integratedB": [
+      "9c55b76d",
+      "a147ab9d"
+    ],
+    "integratedC": "b774f8bd",
+    "integratedD": [
+      "6a043d33",
+      "01ff5695"
+    ],
+    "validationDirectory": "Release/_validation/Toolbox-IsolatedPreview-20261026/RootWorkspace-367",
+    "uniqueTestsPassed": 98,
+    "manualAcceptance": "未执行",
+    "goalStatus": "active",
+    "remaining": [
+      "R12分类/多关联完整性",
+      "总览模式顶栏/弹层退出/视口联动",
+      "真实基础依赖页保持准确占位",
+      "VS/多DPI/物理OLE/用户验收"
+    ]
   }
 }

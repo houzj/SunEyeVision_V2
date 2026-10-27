@@ -9,10 +9,12 @@ public sealed record RootWorkflowOverviewEntry(string RootId, string Name, bool 
 public enum RootOverviewRunKind { Single, ToggleContinuous }
 public sealed class RootOverviewRequestEventArgs : EventArgs
 {
+ public string DocumentIdentity {get;}
+ public long Revision {get;}
  public string RootId { get; }
  public RootOverviewRunKind RunKind { get; }
- public RootOverviewRequestEventArgs(string rootId, RootOverviewRunKind runKind = RootOverviewRunKind.Single)
- { RootId = rootId; RunKind = runKind; }
+ public RootOverviewRequestEventArgs(string rootId, RootOverviewRunKind runKind = RootOverviewRunKind.Single,string documentIdentity="",long revision=0)
+ { RootId = rootId; RunKind = runKind; DocumentIdentity=documentIdentity;Revision=revision; }
 }
 public sealed class RootOverviewPositionEventArgs : EventArgs
 {

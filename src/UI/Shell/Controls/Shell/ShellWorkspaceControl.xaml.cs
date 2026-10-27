@@ -60,6 +60,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             InitializeComponent();
             WorkspaceStatusBar.ScaleRequested += WorkspaceScaleRequested;
+            InitializeRootWorkspacePresentation();
             Loaded += (_, _) => { if (_viewModel != null) { RefreshMiniMap(); QueueRestoreWorkspaceView(); } };
             Unloaded += (_, _) => { UnbindTabHeaderScroll(); _viewModel?.CloseExecutionSnapshotDetails(); CaptureWorkspaceView(_viewModel?.WorkflowTabViewModel?.SelectedTab); ++_viewRestoreGeneration; _restoringContainerView=false; _miniMapThrottleTimer.Stop(); UnbindMiniMapContent(); };
 
@@ -760,6 +761,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
         private void WorkspaceScaleRequested(double scale)
         {
+            if (_rootOverviewActive) { RootOverview.Viewport=RootOverview.Viewport with {Scale=Math.Clamp(scale,.1,2)};return; }
             var tab=_viewModel?.WorkflowTabViewModel?.SelectedTab;
             if(tab==null||!double.IsFinite(scale))return;
             var viewer=GetCurrentScrollViewer();

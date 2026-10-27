@@ -38,6 +38,14 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
     public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
 
     private string _name = "新建工作流";
+    private RootWorkflowConfiguration _rootConfiguration=new();
+    public RootWorkflowConfiguration RootConfiguration
+    {
+        get=>_rootConfiguration;
+        set{ArgumentNullException.ThrowIfNull(value);value.Validate();if(IsSubroutine&&value.RunParameters.Length!=0)throw new InvalidOperationException("Group不承接根参数代理。");SetProperty(ref _rootConfiguration,value);}
+    }
+    internal void ApplyRootConfigurationRaw(RootWorkflowConfiguration value)=>_rootConfiguration=value;
+    internal void EmitRootConfigurationChanged()=>OnPropertyChanged(nameof(RootConfiguration));
     private RootWorkspaceSettings _workspaceSettings = new();
     /// <summary>仅根流程使用；Group执行与配置不消费该设置。</summary>
     public RootWorkspaceSettings WorkspaceSettings
@@ -114,7 +122,7 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
             Id = Guid.NewGuid().ToString(),
             AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
             Name = $"{Name} (副本)",
-            WorkspaceSettings = WorkspaceSettings
+            WorkspaceSettings = WorkspaceSettings, RootConfiguration=RootConfiguration
         };
 
         // 克隆节点

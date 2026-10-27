@@ -38,8 +38,13 @@ public sealed class RootWorkflowOverviewTests
     control.SetEntries(new[]{entry},"document",7);
     control.Measure(new Size(800,600));control.Arrange(new Rect(0,0,800,600));control.UpdateLayout();
     var surface=(Canvas)control.FindName("Surface");var card=Assert.IsType<Grid>(Assert.Single(surface.Children.Cast<UIElement>()));
+    var payloadType=typeof(RootWorkflowOverviewControl).GetNestedType("DragPayload",System.Reflection.BindingFlags.NonPublic)!;
+    var payload=Activator.CreateInstance(payloadType,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic,null,new object[]{control,new object(),"document",7L,"root",new Point(),false},null);
+    typeof(RootWorkflowOverviewControl).GetField("_payload",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(control,payload);
+    control.SetEntries(new[]{entry with{RunCount=1}},"document",7);Assert.Same(card,Assert.Single(surface.Children.Cast<UIElement>()));
+    control.CancelGesture();var refreshed=Assert.IsType<Grid>(Assert.Single(surface.Children.Cast<UIElement>()));Assert.NotSame(card,refreshed);card=refreshed;
     Assert.Equal(140,card.Width);Assert.Equal(120,card.Height);Assert.Equal(0,Canvas.GetLeft(card));
-    Assert.Contains(Descendants<TextBlock>(card),t=>t.Text=="-- 次\n--ms");
+    Assert.Contains(Descendants<TextBlock>(card),t=>t.Text=="1 次\n--ms");
     Assert.Throws<ArgumentException>(()=>control.SetEntries(new[]{entry,entry},"bad",8));
     Assert.Same(card,Assert.Single(surface.Children.Cast<UIElement>()));
     Assert.Throws<ArgumentException>(()=>control.SetEntries(new[]{entry with{X=1,Y=null}},"bad",8));

@@ -44,7 +44,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             OnPropertyChanged(nameof(IsRootConfigurationReady));OnPropertyChanged(nameof(RootConfigurationSummary));
         }
         private void RootDefinitionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
-        {if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.WorkspaceSettings))OnPropertyChanged(nameof(RootSettings));}
+        {if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.WorkspaceSettings))OnPropertyChanged(nameof(RootSettings));if(e.PropertyName==nameof(SunEyeVision.Workflow.Workflow.RootConfiguration))RefreshRootReadiness();}
         private bool _isRunning;
         private RunMode _runMode;
         private WorkflowState _state;

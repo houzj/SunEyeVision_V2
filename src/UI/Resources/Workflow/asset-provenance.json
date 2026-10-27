@@ -170,5 +170,50 @@
     "file": "ic_local-variable_disable.png",
     "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_local-variable_disable.png",
     "sha256": "DDA8D1B2D8A4909679D1865B7CD0FE9471F099043DE24FF71AE8226ACC443FF2"
+  },
+  {
+    "file": "bottombar_config.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/bottombar_config.png",
+    "sha256": "22F055F81430A04E687C270FA8A4DD15F516AEACC39CC9599B0F04AB78312AED"
+  },
+  {
+    "file": "bottombar_run.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/bottombar_run.png",
+    "sha256": "64DD85B1B30BAC4858537705265858D623F61782CFF06B76E6250FB6B1E1902D"
+  },
+  {
+    "file": "bottombar_abnormal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/bottombar_abnormal.png",
+    "sha256": "6C2414C4F5CA186539C5E5D6EA73F9AEDB3369F2F858E67BC79A9C7FC7B14B19"
+  },
+  {
+    "file": "ic_展开_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_展开_normal.png",
+    "sha256": "7D7A99560EB53A0AD7856EA16638652B3DA1E63319ECEDFB91D6C956590009F8"
+  },
+  {
+    "file": "ic_展开_click.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_展开_click.png",
+    "sha256": "57EE2E94C5B65838BB42C458DF7AC9327F3E3D3BD52AFFEA95DC0B2065D89044"
+  },
+  {
+    "file": "ic_全局_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_全局_normal.png",
+    "sha256": "BDAF3231B6B7FF2814800D8506AECF528FD1E9E9F0D193E20B9F4713BB388E33"
+  },
+  {
+    "file": "ic_全局_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_全局_disable.png",
+    "sha256": "4AA836DDE13EC5DFB09A094716EABE04191F760B6FC4F03C887199DE8E819BC9"
+  },
+  {
+    "file": "ic_单个_normal.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_单个_normal.png",
+    "sha256": "8649A72D069624159F1B722B04D2DD62FA2D245E50F655CE952CFD97A3870A63"
+  },
+  {
+    "file": "ic_单个_disable.png",
+    "source": "D:/MyWork/REA逆向测试/analysis/ui-assets/wpf/ic_单个_disable.png",
+    "sha256": "CFB927894B9B0DB7BE7059562C2A4D7026A9414697C0E49D0A31357838915EAF"
   }
 ]

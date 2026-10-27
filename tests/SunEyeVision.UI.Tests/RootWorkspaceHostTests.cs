@@ -23,10 +23,11 @@ public sealed class RootWorkspaceHostTests
    Window? owner=null;
    try
    {
+    SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher));
     if(Application.Current==null)_=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
     foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
     ServiceInitializer.InitializeServices();var viewModel=new MainWindowViewModel();
-    ToolRegistry.RegisterTool(typeof(RootWorkspaceSettingsTests.RootPolicyProbe));
+    ToolRegistry.RegisterTool(typeof(RootConfigurationTests.Probe));
     SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();
     var shell=new SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl{DataContext=viewModel.WorkflowTabViewModel};shell.Initialize(viewModel);
     owner=new Window{Content=shell,Width=1100,Height=800,Left=-10000,ShowActivated=false};
@@ -34,11 +35,48 @@ public sealed class RootWorkspaceHostTests
     var manager=ServiceInitializer.SolutionManager;var document=manager.CurrentSolution!;
     var source=Assert.Single(document.Workflows.Where(w=>!w.IsSubroutine));var sourceTab=Assert.Single(viewModel.WorkflowTabViewModel.Tabs);
     source.WorkspaceSettings=new(){RunIntervalMs=41};
-    var first=new SunEyeVision.UI.Shared.WorkflowNode("first","7 自定义入口","自定义入口","RootPolicyProbe"){GlobalIndex=7,LocalIndex=3,Parameters=new RootWorkspaceSettingsTests.ProbeParameters(),Position=new Point(100,100)};
-    var second=new SunEyeVision.UI.Shared.WorkflowNode("second","8 终点","终点","RootPolicyProbe"){GlobalIndex=8,LocalIndex=5,Parameters=new RootWorkspaceSettingsTests.ProbeParameters(),Position=new Point(200,220)};
+    var first=new SunEyeVision.UI.Shared.WorkflowNode("first","7 自定义入口","自定义入口","RootConfigurationProbe"){GlobalIndex=7,LocalIndex=3,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(100,100)};
+    var second=new SunEyeVision.UI.Shared.WorkflowNode("second","8 终点","终点","RootConfigurationProbe"){GlobalIndex=8,LocalIndex=5,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(200,220)};
     source.Nodes.Add(first);source.Nodes.Add(second);source.Connections.Add(new(){Id="edge",SourceNodeId=first.Id,TargetNodeId=second.Id,ManualPathPoints=new[]{new Point(100,150),new Point(200,150)}});
+    viewModel.OpenRootConfiguration(sourceTab,owner);Pump();
+    var configuration=Application.Current.Windows.OfType<RootWorkflowConfigurationWindow>().Single();
+    viewModel.OpenRootConfiguration(sourceTab,owner);Assert.Same(configuration,Application.Current.Windows.OfType<RootWorkflowConfigurationWindow>().Single());
+    var candidate=configuration.Context.Candidates().Single(c=>c.Node.Id==first.Id&&c.FieldId=="Value");
+    var proxy=configuration.Context.Add(candidate);configuration.Context.Write(proxy,new SunEyeVision.Plugin.Contracts.ConstantSetting(11L));
+    Assert.Equal(3,((RootConfigurationTests.Parameters)first.Parameters).Value);Assert.Empty(source.RootConfiguration.RunParameters);
+    Assert.True(configuration.Context.TryApply(out var applyError),applyError);Assert.Equal(11,((RootConfigurationTests.Parameters)first.Parameters).Value);Assert.Single(source.RootConfiguration.RunParameters);
+    configuration.Context.Undo();Assert.Equal(3,((RootConfigurationTests.Parameters)first.Parameters).Value);Assert.Empty(source.RootConfiguration.RunParameters);
+    configuration.Context.Redo();Assert.Equal(11,((RootConfigurationTests.Parameters)first.Parameters).Value);Assert.Single(source.RootConfiguration.RunParameters);
+    ((Button)configuration.FindName("RunOnce")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    var executionWait=System.Diagnostics.Stopwatch.StartNew();
+    while(viewModel.CaptureRootOverview().Entries.Single(e=>e.RootId==source.Id).RunCount is null&&executionWait.Elapsed<TimeSpan.FromSeconds(15)){Pump();Thread.Sleep(1);}
+    Pump();Assert.Equal(1,viewModel.CaptureRootOverview().Entries.Single(e=>e.RootId==source.Id).RunCount);
+    configuration.RefreshPublishedResults();Assert.Equal(2,((DataGrid)configuration.FindName("Results")).Items.Count);
+    viewModel.StatusBar.ShowExecutionSnapshotCommand.Execute(null);Pump();
+    var timing=Application.Current.Windows.OfType<WorkflowExecutionSnapshotWindow>().Single();SaveConfiguration(timing,"Timing-Dark");
+    var timingLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};Application.Current.Resources.MergedDictionaries.Add(timingLight);Pump();SaveConfiguration(timing,"Timing-Light");Application.Current.Resources.MergedDictionaries.Remove(timingLight);timing.Close();
+    var consumerProxy=configuration.Context.Add(configuration.Context.Candidates().Single(c=>c.Node.Id==second.Id&&c.FieldId=="Value"));
+    var declaredOutput=configuration.Context.Query.FormalOutputContractReader!(first.Id).Single(o=>o.Name=="Echo");var sourcePort=SunEyeVision.Plugin.SDK.Execution.Parameters.BindingClrAdapter.DescribeOutput(declaredOutput);
+    configuration.Context.Write(consumerProxy,new SunEyeVision.Plugin.Contracts.ReferenceSetting(new SunEyeVision.Plugin.Contracts.OutputReference(first.Id,sourcePort.Id,sourcePort.Type,scopeId:source.Id,storage:sourcePort.Storage)));
+    Assert.True(configuration.Context.TryApply(out var referenceError),referenceError);Assert.Equal(2,source.RootConfiguration.RunParameters.Length);
+    configuration.Context.Write(source.RootConfiguration.RunParameters[0],new SunEyeVision.Plugin.Contracts.ConstantSetting(17L));
+    SaveConfiguration(configuration,"Dark");
+    var light=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
+    Application.Current.Resources.MergedDictionaries.Add(light);Pump();SaveConfiguration(configuration,"Light");Application.Current.Resources.MergedDictionaries.Remove(light);
+    configuration.Close();Pump();Assert.Equal(11,((RootConfigurationTests.Parameters)first.Parameters).Value);
+    var overviewFrame=viewModel.CaptureRootOverview();
+    Assert.False(viewModel.CommitOverviewPosition(new(source.Id,100,110,"stale-document",overviewFrame.Revision),false));
+    Assert.True(viewModel.CommitOverviewPosition(new(source.Id,102,108,overviewFrame.Identity,overviewFrame.Revision),false));
+    Assert.Equal(100,source.WorkspaceSettings.OverviewX);Assert.Equal(110,source.WorkspaceSettings.OverviewY);
+    viewModel.UndoRootWorkspace();Assert.Null(source.WorkspaceSettings.OverviewX);viewModel.RedoRootWorkspace();Assert.Equal(100,source.WorkspaceSettings.OverviewX);viewModel.UndoRootWorkspace();
+    overviewFrame=viewModel.CaptureRootOverview();Assert.True(viewModel.CommitOverviewPosition(new(source.Id,300,450,overviewFrame.Identity,overviewFrame.Revision),true));
+    var overviewCopy=document.Workflows.Single(w=>w.Id!=source.Id);Assert.Equal(300,overviewCopy.WorkspaceSettings.OverviewX);Assert.Equal(450,overviewCopy.WorkspaceSettings.OverviewY);
+    viewModel.UndoRootWorkspace();Assert.Single(document.Workflows);Assert.Same(sourceTab,viewModel.WorkflowTabViewModel.SelectedTab);
+    shell.SetOverviewVisible(true);Pump();SaveConfiguration(owner,"Overview-Dark");
+    var overviewLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};Application.Current.Resources.MergedDictionaries.Add(overviewLight);Pump();SaveConfiguration(owner,"Overview-Light");Application.Current.Resources.MergedDictionaries.Remove(overviewLight);shell.SetOverviewVisible(false);
     Assert.True(viewModel.CopyRootWorkspace(sourceTab),viewModel.StatusText);
     var copied=document.Workflows.Single(w=>!w.IsSubroutine&&w.Id!=source.Id);var copyTab=viewModel.WorkflowTabViewModel.SelectedTab!;
+    Assert.Equal(copied.Nodes[0].Id,copied.RootConfiguration.RunParameters[0].NodeId);Assert.NotEqual(proxy.Id,copied.RootConfiguration.RunParameters[0].Id);
     Assert.Equal(2,copied.Nodes.Count);Assert.Equal("自定义入口",copied.Nodes[0].DispName);Assert.Equal(3,copied.Nodes[0].LocalIndex);Assert.Equal(41,copied.WorkspaceSettings.RunIntervalMs);
     Assert.NotEqual(first.Id,copied.Nodes[0].Id);Assert.Equal(copied.Nodes[0].Id,Assert.Single(copied.Connections).SourceNodeId);Assert.NotSame(first.Parameters,copied.Nodes[0].Parameters);
     var tabs=(TabControl)shell.FindName("WorkflowTabControl");Pump();
@@ -65,9 +103,10 @@ public sealed class RootWorkspaceHostTests
     var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"root-host");Directory.CreateDirectory(directory);var path=Path.Combine(directory,"根流程验收.json");
     var saved=manager.SaveCurrentDocument(path);Assert.True(saved.FileWritten,saved.Error);var reopened=new SolutionRepository().Load(path);
     Assert.Equal(2,reopened.Workflows.Count);var loadedCopy=reopened.Workflows.Single(w=>w.Id==copyId);Assert.Equal(41,loadedCopy.WorkspaceSettings.RunIntervalMs);Assert.Equal(copied.Nodes.Select(n=>n.Id),loadedCopy.Nodes.Select(n=>n.Id));
+    Assert.Equal(11,((RootConfigurationTests.Parameters)loadedCopy.Nodes[0].Parameters).Value);Assert.Equal(2,loadedCopy.RootConfiguration.RunParameters.Length);
     var engine=new WorkflowEngine(VisionLogger.Instance);foreach(var flow in reopened.Workflows)engine.RegisterWorkflow(flow);
     var runner=new WorkflowExecutionEngine(engine,new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager(VisionLogger.Instance),VisionLogger.Instance);
-    using var run=runner.ExecuteWorkflowAsync(copyId,null).GetAwaiter().GetResult();Assert.True(run.Success,string.Join(";",run.Errors));Assert.Equal(2,run.NodeResults.Count);
+    var runTask=runner.ExecuteWorkflowAsync(copyId,null);var runWait=System.Diagnostics.Stopwatch.StartNew();while(!runTask.IsCompleted&&runWait.Elapsed<TimeSpan.FromSeconds(15)){Pump();Thread.Sleep(1);}Assert.True(runTask.IsCompleted,"正式引擎任务未完成");using var run=runTask.GetAwaiter().GetResult();Assert.True(run.Success,string.Join(";",run.Errors));Assert.Equal(2,run.NodeResults.Count);Assert.All(run.NodeResults.Values,result=>Assert.Equal(11,Assert.IsType<RootConfigurationTests.Results>(result.Result).Echo));
     for(int i=0;i<8;i++)Assert.True(viewModel.AddRootWorkspace());
     owner.Width=540;Pump();owner.UpdateLayout();Pump();
     var viewer=(ScrollViewer)tabs.Template.FindName("TabPanelScrollViewer",tabs);
@@ -89,6 +128,12 @@ public sealed class RootWorkspaceHostTests
    finally{owner?.Close();}
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+ }
+ private static void SaveConfiguration(Window window,string theme)
+ {
+  Pump();window.UpdateLayout();var image=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32);image.Render(window);
+  var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(image));
+  using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"root-configuration-"+theme+".png"));encoder.Save(stream);
  }
  private static void SaveHeader(TabControl tabs,string theme)
  {

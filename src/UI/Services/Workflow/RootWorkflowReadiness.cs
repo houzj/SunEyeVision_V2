@@ -30,6 +30,11 @@ internal static class RootWorkflowReadiness
    }
    catch(Exception error){errors.Add(label+"：参数校验失败，"+error.Message);}
   }
+  foreach(var proxy in root.RootConfiguration.RunParameters)
+  {
+   try{var node=root.Nodes.SingleOrDefault(n=>n.Id==proxy.NodeId)??throw new InvalidOperationException("来源节点已移除。");_=SunEyeVision.UI.Services.Editing.RootParameterCatalog.Resolve(node,proxy);}
+   catch(Exception error){errors.Add(proxy.DisplayName+"：根参数代理失效，"+error.Message);}
+  }
   // 与恢复件一致：空图可以没有配置错误，是否可运行仍由正式运行入口判断。
   return errors.Distinct(StringComparer.Ordinal).ToArray();
  }

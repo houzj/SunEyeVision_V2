@@ -126,6 +126,8 @@ public sealed class BindingConfigurationStore
                     foreach (var node in flow.Nodes)
                         if (retained.Contains(new(flow.Id, node.Id)) && oldNodes.TryGetValue(new(flow.Id, node.Id), out var saved))
                         { node.Parameters = ToolParameterSnapshot.Create(saved.Parameters); node.ParamSettings = CopySettings(saved.ParamSettings); }
+                foreach(var flow in projected.Workflows.Where(w=>!w.IsSubroutine))
+                    if(old.Workflows.FirstOrDefault(w=>w.Id==flow.Id&&!w.IsSubroutine) is {} oldRoot)flow.RootConfiguration=oldRoot.RootConfiguration;
                 projected.GlobalVariables.Clear(); projected.GlobalVariables.AddRange(old.GlobalVariables);
                 var historyValidator = new OutputBindingChangeService(); historyValidator.Reset(projected); historyValidator.ReconcileAll();
                 return new(historical.Version, projected, SolutionExecutionDependencyGraph.Compile(projected, checkReadiness: false));
@@ -258,7 +260,7 @@ public sealed class BindingConfigurationStore
     internal static string ConfigurationSignature(Solution configuration) => JsonSerializer.Serialize(new
     {
         configuration.Id, configuration.Name, configuration.Description, configuration.SchemaVersion, configuration.Version,
-        Workflows = configuration.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine,
+        Workflows = configuration.Workflows.Select(w => new { w.Id, w.Name, w.IsSubroutine, w.RootConfiguration,
             Nodes = w.Nodes.Select(n => new { n.Id, n.GlobalIndex, n.LocalIndex, n.PositionX, n.PositionY, n.Width, n.Height, Signature = NodeSignature(n) }),
             Connections = w.Connections.Select(c => new { c.Id, c.SourceNodeId, c.SourcePort, c.TargetNodeId, c.TargetPort }) }),
         Variables = configuration.GlobalVariables.Select(v => new { Signature = VariableSignature(v), v.Group, v.Index, v.Description })
@@ -308,7 +310,7 @@ public sealed class BindingConfigurationStore
             SchemaVersion = source.SchemaVersion, Version = source.Version };
         foreach (var workflow in source.Workflows)
         {
-            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings };
+            var flow = new Workflow(workflow.Id, workflow.Name) { IsSubroutine = workflow.IsSubroutine, WorkspaceSettings=workflow.WorkspaceSettings, RootConfiguration=workflow.RootConfiguration };
             foreach (var node in workflow.Nodes)
                 flow.Nodes.Add(new WorkflowNodeBase(node.Id, node.Name, node.DispName, node.ToolType)
                 {

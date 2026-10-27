@@ -19,6 +19,8 @@ public partial class RootWorkflowOverviewControl : UserControl
  double _scale=1;
  object? _gestureToken;
  DragPayload? _payload;
+ RootWorkflowOverviewEntry[]? _deferredEntries;
+ public event Action<string>? DragFailed;
  Border? _ghost;
  FrameworkElement? _armedCard;
  Point _offset;
@@ -69,6 +71,9 @@ public partial class RootWorkflowOverviewControl : UserControl
    if(entry.RunCount<0||entry.ElapsedMilliseconds is double ms&&(!double.IsFinite(ms)||ms<0))throw new ArgumentException("运行统计必须来自有效完成结果",nameof(entries));
   }
   bool changedDocument=!StringComparer.Ordinal.Equals(_documentIdentity,documentIdentity);
+  if(!changedDocument&&revision==_revision&&_payload is {} active&&array.Any(entry=>entry.RootId==active.RootId&&entry.CanMove))
+  { _deferredEntries=array;return; } // 保留OLE源及镜像，统计刷新延后至手势退出。
+  _deferredEntries=null;
   // Same-revision presentation refresh (e.g. completed-run statistics) may occur during OLE drag.
   // Invalidate only when its source entry or source generation changed; never silently move a new document.
   if(changedDocument||revision!=_revision||_payload is not null&&!array.Any(e=>e.RootId==_payload.RootId&&e.CanMove))CancelGesture();
@@ -84,8 +89,10 @@ public partial class RootWorkflowOverviewControl : UserControl
  }
  public void CancelGesture()
  {
+  var deferred=_deferredEntries;_deferredEntries=null;
   _gestureToken=null;_payload=null;_armedCard=null;_panStart=null;ClearGhost();
   if(IsMouseCaptured)ReleaseMouseCapture();
+  if(deferred!=null)SetEntries(deferred,_documentIdentity,_revision);
  }
  Grid CreateCard(RootWorkflowOverviewEntry entry)
  {
@@ -112,7 +119,7 @@ public partial class RootWorkflowOverviewControl : UserControl
  static SolidColorBrush Brush(string color)=>new((Color)ColorConverter.ConvertFromString(color));
  void Request(EventHandler<RootOverviewRequestEventArgs>? handler,string rootId,RootOverviewRunKind kind=RootOverviewRunKind.Single)
  {
-  if(!_entries.ContainsKey(rootId))return;CancelGesture();handler?.Invoke(this,new(rootId,kind));
+  if(!_entries.ContainsKey(rootId))return;CancelGesture();handler?.Invoke(this,new(rootId,kind,_documentIdentity,_revision));
  }
  Button VectorButton(string stem,string tip,bool enabled,Action action)
   => ImageButton(tip,enabled,action,state=>(ImageSource)FindResource(stem+state+"DrawingImage"),36);
@@ -147,6 +154,7 @@ public partial class RootWorkflowOverviewControl : UserControl
    QueryContinueDragEventHandler query=(_,args)=>{if(!Valid(payload))args.Action=DragAction.Cancel;};
    title.QueryContinueDrag+=query;
    try{DragDrop.DoDragDrop(title,data,payload.Copy?DragDropEffects.Copy:DragDropEffects.Move);}
+   catch(Exception error){DragFailed?.Invoke("总览拖动已取消："+error.Message);}
    finally{title.QueryContinueDrag-=query;CancelGesture();}
    e.Handled=true;
   };

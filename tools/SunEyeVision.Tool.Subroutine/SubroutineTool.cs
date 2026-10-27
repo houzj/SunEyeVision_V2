@@ -6,7 +6,6 @@ using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -403,7 +402,7 @@ namespace SunEyeVision.Tool.Subroutine
                 }
 
                 // 累积显示：仅处理勾选"累积显示"的项，逐轮追加到 accumulatedDisplay（按轮次渐变色）
-                BuildAccumulatedDisplay(parameters, iterToolResults, resolver, accumulatedDisplay, i - start, end - start);
+                BuildAccumulatedDisplay(parameters, iterToolResults, resolver, accumulatedDisplay);
 
                 // 累积输出：按 IsAccumulated 逐轮拍平拼接或覆盖最后值
                 AccumulateIteration(parameters, iterResolved, accumulatedLists, accumulatedOutputs);
@@ -432,15 +431,13 @@ namespace SunEyeVision.Tool.Subroutine
 
         /// <summary>
         /// 构建累积显示图形：仅处理勾选 IsAccumulated 的显示项，每轮把该轮图形追加到累积 collector。
-        /// 按轮次对显示项样式做 HSL 色相渐变（第 0 轮 → 第 N 轮），使多轮叠加的图形能按轨迹区分（对齐 Halcon 多色叠加）。
+        /// 累积改变结果保留范围，不改变配置中的颜色、透明度和线宽。
         /// </summary>
         private static void BuildAccumulatedDisplay(
             SubroutineParameters parameters,
             Dictionary<string, ToolResults> iterToolResults,
             ParameterResolver resolver,
-            DisplayCollector accumulatedDisplay,
-            int iterationIndex,
-            int totalRounds)
+            DisplayCollector accumulatedDisplay)
         {
             if (parameters.DisplayConfigs.Count == 0 || iterToolResults.Count == 0)
                 return;
@@ -483,111 +480,9 @@ namespace SunEyeVision.Tool.Subroutine
                         $"显示项 '{displayItem.DisplayName}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
                 }
 
-                // 按轮次渐变色：为当前轮创建带色相偏移的样式副本（不污染原共享样式）
-                var iterationStyle = CreateIterationStyle(displayItem.GraphicsStyle, iterationIndex, totalRounds);
                 var iterResult = new SubroutineResults();
-                AppendDisplayItemWithStyle(iterResult, parameters, displayItem, resolveResult.Value, iterationStyle);
+                AppendDisplayItem(iterResult, parameters, displayItem, resolveResult.Value);
                 accumulatedDisplay.Merge(iterResult.Display);
-            }
-        }
-
-        /// <summary>
-        /// 按轮次生成带 HSL 色相渐变的样式副本（复用原样式线宽/透明度等，仅调整 OK 颜色色相）。
-        /// 单轮循环（totalRounds<=1）不渐变，保持原样式颜色。
-        /// </summary>
-        private static GraphicsStyle CreateIterationStyle(GraphicsStyle baseStyle, int iterationIndex, int totalRounds)
-        {
-            if (baseStyle == null || totalRounds <= 1)
-                return baseStyle;
-
-            var clone = new GraphicsStyle
-            {
-                Name = baseStyle.Name,
-                IsVisible = baseStyle.IsVisible,
-                NgColor = baseStyle.NgColor,
-                Opacity = baseStyle.Opacity,
-                LineWidth = baseStyle.LineWidth,
-                CrossSize = baseStyle.CrossSize,
-            };
-
-            // 以色相为起点，按轮次在 360° 内均布：0→2π*(i/max)
-            ToHsv(baseStyle.OkColor, out var baseHue, out var saturation, out var value);
-            var hueOffset = totalRounds > 1 ? (double)iterationIndex / totalRounds : 0.0;
-            var finalHue = (baseHue + hueOffset) % 1.0;
-
-            clone.OkColor = ColorFromHsv(finalHue * 360.0, saturation, value, baseStyle.OkColor.A);
-
-            return clone;
-        }
-
-        /// <summary>RGB → HSV（轮次渐变用，避免依赖 WPF ColorExtensions）</summary>
-        private static void ToHsv(Color c, out double hue, out double saturation, out double value)
-        {
-            double r = c.R / 255.0, g = c.G / 255.0, b = c.B / 255.0;
-            double max = Math.Max(r, Math.Max(g, b));
-            double min = Math.Min(r, Math.Min(g, b));
-            double delta = max - min;
-
-            value = max;
-
-            if (Math.Abs(delta) < 1e-9)
-            {
-                hue = 0;
-                saturation = 0;
-                return;
-            }
-
-            saturation = delta / max;
-
-            if (Math.Abs(max - r) < 1e-9)
-                hue = (g - b) / delta + (g < b ? 6 : 0);
-            else if (Math.Abs(max - g) < 1e-9)
-                hue = (b - r) / delta + 2;
-            else
-                hue = (r - g) / delta + 4;
-            hue /= 6.0;
-        }
-
-        /// <summary>由 HSV 构造 Color（用于轮次渐变色）</summary>
-        private static Color ColorFromHsv(double hue, double saturation, double value, byte alpha)
-        {
-            hue = ((hue % 360.0) + 360.0) % 360.0;
-            double c = value * saturation;
-            double x = c * (1 - Math.Abs((hue / 60.0) % 2.0 - 1.0));
-            double m = value - c;
-
-            double r, g, b;
-            if (hue < 60) { r = c; g = x; b = 0; }
-            else if (hue < 120) { r = x; g = c; b = 0; }
-            else if (hue < 180) { r = 0; g = c; b = x; }
-            else if (hue < 240) { r = 0; g = x; b = c; }
-            else if (hue < 300) { r = x; g = 0; b = c; }
-            else { r = c; g = 0; b = x; }
-
-            return Color.FromArgb(alpha,
-                (byte)((r + m) * 255), (byte)((g + m) * 255), (byte)((b + m) * 255));
-        }
-
-        /// <summary>
-        /// 按指定样式追加显示项（累积渐变色用）。复用 AppendDisplayItem 的分发逻辑，
-        /// 但将 displayItem 的样式临时替换为迭代样式，避免修改共享样式实例。
-        /// </summary>
-        private static void AppendDisplayItemWithStyle(
-            SubroutineResults result,
-            SubroutineParameters parameters,
-            SubroutineDisplayItem displayItem,
-            object value,
-            GraphicsStyle iterationStyle)
-        {
-            var originalStyle = displayItem.GraphicsStyle;
-            try
-            {
-                displayItem.GraphicsStyle = iterationStyle;
-                AppendDisplayItem(result, parameters, displayItem, value);
-            }
-            finally
-            {
-                displayItem.GraphicsStyle = originalStyle;
             }
         }
 

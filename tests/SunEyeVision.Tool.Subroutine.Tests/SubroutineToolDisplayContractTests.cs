@@ -325,4 +325,57 @@ public class SubroutineToolDisplayContractTests
         finally { result.Resources?.Dispose(); }
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void Accumulated_geometry_keeps_configured_style_without_per_iteration_replacement(int rounds)
+    {
+        var count = 0;
+        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        parent.AddResultItem("Start", 0); parent.AddResultItem("End", rounds);
+        var style = new GraphicsStyle { Name = "自定义", OkColor = System.Windows.Media.Color.FromArgb(143, 203, 21, 95),
+            NgColor = System.Windows.Media.Colors.Purple, LineWidth = 4, Opacity = 0.65, CrossSize = 13 };
+        var accumulated = new SubroutineDisplayItem { DisplayName = "累积圆", DisplayType = SubroutineDisplayType.Circle,
+            BindingSource = "internalNode.Circles[]", GraphicsStyle = style, IsAccumulated = true };
+        var notifications = new List<string?>(); accumulated.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
+        var parameters = new SubroutineParameters
+        {
+            SubroutineId = "child", SubroutineName = "累积样式",
+            NodeResults = new Dictionary<string, ToolResults> { ["parent"] = parent },
+            LoopConfig = new() { EnableLoop = true, EnableBreak = false,
+                StartValueBinding = "parent.Start", EndValueBinding = "parent.End" },
+            ExecuteSubWorkflowAsync = (_, _, _) =>
+            {
+                count++;
+                var values = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+                values.AddResultItem("Circles", new[] { new Circle2d(count, 10, 5), new Circle2d(count, 20, 7) });
+                values.AddResultItem("Lines", new[] { new Line2d(new Point(count, 30), new Vector(1, 0)) });
+                return Task.FromResult(new ExecutionResult { Success = true,
+                    NodeResults = new Dictionary<string, NodeExecutionResult> { ["internalNode"] = new() { Result = values } } });
+            }
+        };
+        parameters.Inputs.Add(new() { Name = "input" }); parameters.Outputs.Add(new() { Name = "output" });
+        parameters.DisplayConfigs.Add(accumulated);
+        parameters.DisplayConfigs.Add(new() { DisplayName = "累积线", DisplayType = SubroutineDisplayType.Line,
+            BindingSource = "internalNode.Lines[]", GraphicsStyle = style, IsAccumulated = true });
+        var result = Run(parameters);
+        try
+        {
+            Assert.True(result.IsSuccess, result.ErrorMessage); Assert.Equal(rounds, count);
+            var items = result.Display.Items.OfType<GraphicsDisplayItem>().ToArray(); Assert.Equal(2, items.Length);
+            var item = Assert.Single(items, geometry => geometry.Type == GraphicsType.Circle);
+            var lines = Assert.Single(items, geometry => geometry.Type == GraphicsType.Line);
+            Assert.Same(style, lines.Style); Assert.Equal(rounds, lines.Geometries.Length);
+            Assert.All(lines.Geometries, geometry => Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.LineSegment>(geometry));
+            Assert.Same(style, item.Style); Assert.Equal(rounds * 2, item.Geometries.Length);
+            Assert.Equal(Enumerable.Range(1, rounds).SelectMany(i => new[] { (double)i, i }),
+                item.Geometries.Cast<Circle2d>().Select(circle => circle.Center.X));
+            Assert.Equal(System.Windows.Media.Color.FromArgb(143, 203, 21, 95), item.Style.OkColor);
+            Assert.Equal(System.Windows.Media.Colors.Purple, item.Style.NgColor);
+            Assert.Equal(4, item.Style.LineWidth); Assert.Equal(0.65, item.Style.Opacity); Assert.Equal(13, item.Style.CrossSize);
+            Assert.Same(style, accumulated.GraphicsStyle); Assert.Empty(notifications);
+        }
+        finally { result.Resources?.Dispose(); }
+    }
+
 }

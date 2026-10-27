@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.UI.Shared;
@@ -10,7 +10,10 @@ public partial class WorkflowCanvasControl
     {
         var menu = new ContextMenu();
         var paste = new MenuItem { Header = "粘贴", InputGestureText = "Ctrl+V" }; menu.Items.Add(paste);
-        menu.Opened += (_, _) => paste.IsEnabled = CanEditVmCanvas && _viewModel?.CanPasteCanvasSelection == true;
+        menu.Opened += (_, _) => {
+            paste.IsEnabled = CanEditVmCanvas && _viewModel?.CanPasteCanvasSelection == true;
+            PopulateVmToolContextMenu(menu,_vmPastePoint);
+        };
         paste.Click += (_, _) =>
         {
             if (CanEditVmCanvas && _viewModel?.PasteCanvasSelection(_vmPastePoint) == true)

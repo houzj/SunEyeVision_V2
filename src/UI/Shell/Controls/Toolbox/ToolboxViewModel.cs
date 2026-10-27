@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -58,6 +58,14 @@ public sealed class ToolboxViewModel : ViewModelBase
             Categories.Add(c);
         }
         foreach(var c in Categories)c.ToolCount=BuildCategory(c.Name,false).Count();
+    }
+    /// <summary>工具箱与画布右键共用分类加载及可用态，不另维护工具清单。</summary>
+    public System.Collections.Generic.IReadOnlyList<ToolItem> GetCategoryTools(string name)
+    {
+        var category=Categories.FirstOrDefault(c=>c.Name==name);
+        if(category==null)return Array.Empty<ToolItem>();
+        LoadCategory(category);
+        return category.Tools?.ToArray()??Array.Empty<ToolItem>();
     }
     private void LoadCategory(ToolCategory category)
     {

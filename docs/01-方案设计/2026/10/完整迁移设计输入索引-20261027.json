@@ -6494,6 +6494,26 @@
         "path": "tests/SunEyeVision.UI.Tests/ThemeStartupContractTests.cs",
         "sha256": "77D316986C0CFE074C6CBB3BD81AA113E1BB07002281BF29DC913230FF6AEFE6"
       }
-    ]
+    ],
+    "rightClickAddTools": {
+      "status": "386实际Host通过，固定提交后387验证启动待验",
+      "scope": "空白画布右键，Group冻结",
+      "chains": [
+        "原件DiagramPage infos分组/MenuItem_Click，ItemsPage ptPos",
+        "恢复ToolNavigation.AppendCatalogMenu/AddModuleAt",
+        "ToolboxViewModel.GetCategoryTools同目录加载态",
+        "Session/Tab/集合门禁→CreateNode→AddNodeToWorkflow→既有事务→Session.History"
+      ],
+      "evidence": [
+        {
+          "path": "D:/MyWork/REA逆向测试/src/VisionEditor/ToolNavigation.cs",
+          "sha256": "2414E9904C3B14D110D05B5B9FA19F2641D79268B961AE73C8AFF41CB5842ED2"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.Base/DiagramPage.xaml",
+          "sha256": "906E1E21324EE23D6E2F15853FA54AFE5C268539FFF49A252020DE0E94C8D4C4"
+        }
+      ]
+    }
   }
 }

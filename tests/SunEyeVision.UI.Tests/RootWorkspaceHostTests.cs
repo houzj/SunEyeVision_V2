@@ -45,6 +45,38 @@ public sealed class RootWorkspaceHostTests
     var first=new SunEyeVision.UI.Shared.WorkflowNode("first","7 自定义入口","自定义入口","RootConfigurationProbe"){GlobalIndex=7,LocalIndex=3,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(100,100)};
     var second=new SunEyeVision.UI.Shared.WorkflowNode("second","8 终点","终点","RootConfigurationProbe"){GlobalIndex=8,LocalIndex=5,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(200,220)};
     source.Nodes.Add(first);source.Nodes.Add(second);source.Connections.Add(new(){Id="edge",SourceNodeId=first.Id,TargetNodeId=second.Id,ManualPathPoints=new[]{new Point(100,150),new Point(200,150)}});
+    // Actual canvas context menu shares the toolbox catalog; unavailable and failed loads stay disabled.
+    var menuCase=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"context-menu");
+    Directory.CreateDirectory(Path.Combine(menuCase,"plugins","probe"));
+    File.WriteAllText(Path.Combine(menuCase,"ToolGroups.xml"),"<ToolGroups SchemaVersion='1'><Group Name='通信' Order='14' Icon='CommunicationImageEnable.png' HoverIcon='CommunicationImageHover.png'/><Tool Id='RootConfigurationProbe' Category='通信' Directory='probe'/><Tool Id='FailedContextTool' Category='通信' Directory='probe'/></ToolGroups>");
+    File.WriteAllText(Path.Combine(menuCase,"plugins","probe","ToolItemInfo.xml"),"<ToolItems SchemaVersion='1' Assembly='missing.dll'><Tool Id='RootConfigurationProbe' DisplayName='右键探针' Category='通信' Order='10' Icon='generic' EntryType='Probe'/><Tool Id='FailedContextTool' DisplayName='加载失败探针' Category='通信' Order='11' Icon='generic' EntryType='Missing'/></ToolItems>");
+    ToolRegistry.ConfigureDirectory(new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog(Path.Combine(menuCase,"plugins"),Path.Combine(menuCase,"ToolGroups.xml")),id=>{if(id!="RootConfigurationProbe")throw new InvalidOperationException("故障注入：组件加载失败");});
+    var canvas=shell.GetCurrentWorkflowCanvas()!;
+    canvas.GetType().GetField("_viewModel",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(canvas,viewModel);
+    canvas.GetType().GetField("_vmPastePoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(canvas,new Point(347,283));
+    var surface=(System.Windows.Controls.Canvas)canvas.FindName("WorkflowCanvas");var toolMenu=surface.ContextMenu;
+    toolMenu.PlacementTarget=surface;toolMenu.IsOpen=true;Pump();
+    var category=Assert.Single(toolMenu.Items.OfType<MenuItem>().Where(item=>item.Header as string=="通信"));
+    category.IsSubmenuOpen=true;Pump();
+    SaveMenuVisual(toolMenu,"context-root");
+    var categoryPopup=(System.Windows.Controls.Primitives.Popup)category.Template.FindName("PART_Popup",category);
+    Assert.NotNull(categoryPopup);SaveMenuVisual((FrameworkElement)categoryPopup.Child,"context-tools");
+    var leaves=category.Items.OfType<MenuItem>().ToArray();
+    Assert.Contains(leaves,item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {ToolId:"vm:communication.send"}||item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {IsAvailable:false});
+    var loadedLeaf=leaves.Single(item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {ToolId:"RootConfigurationProbe"});
+    Assert.True(loadedLeaf.IsEnabled);Assert.NotNull(loadedLeaf.Icon);
+    Assert.False(leaves.Single(item=>item.Tag is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem {ToolId:"FailedContextTool"}).IsEnabled);
+    var beforeContextHistory=manager.Session!.History.Position;
+    loadedLeaf.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));Pump();
+    var addedByContext=source.Nodes.Single(node=>node.Id!=first.Id&&node.Id!=second.Id);
+    Assert.Equal(new Point(345,285),addedByContext.Position);Assert.Equal(beforeContextHistory+1,manager.Session.History.Position);
+    viewModel.UndoCommand.Execute(null);Assert.DoesNotContain(addedByContext,source.Nodes);
+    viewModel.RedoCommand.Execute(null);Assert.Same(addedByContext,source.Nodes.Single(node=>node.Id==addedByContext.Id));
+    viewModel.UndoCommand.Execute(null);
+    toolMenu.IsOpen=false;Pump();
+    Assert.True(viewModel.AddRootWorkspace());var staleTarget=viewModel.WorkflowTabViewModel.SelectedTab!;
+    loadedLeaf.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));Assert.Empty(staleTarget.WorkflowNodes);Assert.Equal(2,source.Nodes.Count);
+    viewModel.UndoRootWorkspace();Assert.Same(sourceTab,viewModel.WorkflowTabViewModel.SelectedTab);Pump();
     var undoEdit=(Button)topBar.FindName("UndoEditButton");var redoEdit=(Button)topBar.FindName("RedoEditButton");
     Assert.Same(viewModel.UndoCommand,undoEdit.Command);Assert.Same(viewModel.RedoCommand,redoEdit.Command);
     sourceTab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.MoveNodeCommand(first,new Point(100,100),new Point(160,170)));Pump();
@@ -198,6 +230,11 @@ public sealed class RootWorkspaceHostTests
    finally{owner?.Close();}
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+ }
+ private static void SaveMenuVisual(FrameworkElement visual,string name)
+ {
+  visual.UpdateLayout();var bitmap=new RenderTargetBitmap((int)Math.Ceiling(visual.ActualWidth),(int)Math.Ceiling(visual.ActualHeight),96,96,PixelFormats.Pbgra32);bitmap.Render(visual);
+  var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using var output=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png"));encoder.Save(output);
  }
  private static void SaveConfiguration(Window window,string theme)
  {

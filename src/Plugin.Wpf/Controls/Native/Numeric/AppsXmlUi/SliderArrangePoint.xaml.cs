@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -61,6 +61,8 @@ public partial class SliderArrangePoint : SliderArrangeBase
     {private Action? _release=release;public void Dispose(){var release=_release;_release=null;release?.Invoke();}}
     internal NumericControl EnsurePointInput()
     {
+        // The original InitUI temporarily changes three star columns; run once, not per LayoutUpdated attachment.
+        EnsureCompositionLayout();
         ToBtn.ApplyTemplate();
         var leaf=ToBtn.Template.FindName("T1",ToBtn) as NumericControl??throw new InvalidOperationException("原Point模板缺少T1。");
         T1_Loaded(leaf,new RoutedEventArgs());return leaf;

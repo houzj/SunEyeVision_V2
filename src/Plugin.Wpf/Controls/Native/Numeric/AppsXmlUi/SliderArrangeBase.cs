@@ -891,8 +891,16 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 	}
 
     // Use the same original virtual initialization when a designer materializes the template off-window.
+    private bool _compositionLayoutInitialized;
+    internal void EnsureCompositionLayout()
+    {
+        if(_compositionLayoutInitialized)return;
+        _compositionLayoutInitialized=true;
+        InitUI();
+    }
     internal (NumericControl Left,NumericControl Right) EnsureTemplateInputs()
     {
+        EnsureCompositionLayout();
         var box=(ComboBox)FindName("CBox");box.ApplyTemplate();
         var left=box.Template.FindName("T1",box) as NumericControl??throw new InvalidOperationException("原参数栈缺少T1。");
         var right=box.Template.FindName("T2",box) as NumericControl??throw new InvalidOperationException("原参数栈缺少T2。");

@@ -1,0 +1,12 @@
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Design.NativeRoiScenePreview"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:regions="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Regions"
+ xmlns:design="clr-namespace:SunEyeVision.Plugin.Wpf.Design"
+ mc:Ignorable="d" d:DesignWidth="1020" d:DesignHeight="560">
+ <!-- SampleIndex: 0 rectangle, 1 annulus, 2 polygon, 3 sector. Same runtime scene. -->
+ <regions:NativeRoiScene design:NativeRoiDesignData.SampleIndex="0"
+   design:NativeRoiDesignData.ExpandedParameters="True"/>
+</UserControl>

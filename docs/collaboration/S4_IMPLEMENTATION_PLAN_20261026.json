@@ -7502,6 +7502,40 @@
         "identity": "12项产品源增量、782发布文件、86加载记录、141原来源SHA核对",
         "manual": "实际PNG已查看；VM同态/VS真实设计器/物理指针及用户未验，不代签"
       }
+    },
+    "nativeStandaloneRoiSceneCandidate": {
+      "status": "本批同链独立ROI设计/运行场景正式自动回归通过；非完整C08/C17或第一阶段",
+      "baseline": "f9f60b8e，主线唯一写者；用户Blob页索引2不变",
+      "implementation": [
+        "Presenters/Regions/NativeRoiScene真实参数宿主/Editor/Viewport同Session，Session借用、逐步代次检查、失败完全退出及异常聚合",
+        "Design/NativeRoiScene.xaml真实子视图，SampleIndex=0矩形/1圆环/2多边形/3扇形，ExpandedParameters操作原expand",
+        "纯Contracts设计图像640×320 stride648，padding233，显式实际域，owner与既有reader独立生命周期，不复制Blob默认或Runtime算法",
+        "设计时尚无Loaded仍同真实绑定/选择链，原Point先InitUI恢复T1列宽；原参数/像素实际显示断言",
+        "完整Float与Point数值栈首次组装调用原InitUI一次，无Loaded也有实际列宽和正确数值；首帧模板尺寸就绪后原图像Init/投影刷新，有代次/帧身份与卸载取消门禁。"
+      ],
+      "failuresPreserved": [
+        "Design028/029错误断言每顶点控件数；原控件每轴一份共2N，T1须从原名称域查",
+        "Design030多边形切扇形被尚无Loaded门禁拒绝；设计模式就绪修正",
+        "Design031虽43组过但实际截图坐标空白；原Gr0初始0Star依赖Loaded，EnsurePointInput显式原InitUI，Design032=52组及实际PNG确认数字可见",
+        "本方Scene清空Session通知抛错会跳退绑，改聚合并增加真实异常用例；设计owner安装/重入/EffectiveDomain释放门禁均核修",
+        "Window108全窗口超时，自有进程已由验证器终止；Point.InitUI被每次LayoutUpdated重复调用，使列宽反复变化。已改首次EnsurePointInput一次原初始化，必须重建重跑，不能套前52/4定向成绩。",
+        "Design033探针局部变量combo与外层重名编译失败，非产品失败；改作用域变量后034=69组过",
+        "Design034实际首帧无图，虽ImageDataSource有值但Source为空；设计视口在尺寸就绪后调用原Init并刷新投影，035=69组过且四张实际截图均查看。",
+        "Point与Float共用EnsureCompositionLayout一次原InitUI；Window109修正后全64组过；UI006及全量Release002为最终本批产物。"
+      ],
+      "remaining": [
+        "用户实际VS切SampleIndex及展开/收起、VM同状态外观和物理指针验收",
+        "原绘制两完成入口须在AddROI前提交一次宿主Create/Replace",
+        "继承/位姿、多对象复制删除粘贴及宿主历史；不保留原哈希/直接集合写入后通知双轨"
+      ],
+      "nextControlDesign": "Draw lease per Page instance, not static state; take once before completion, explicit expected stamp/group/kind, host allocates stable Guid. Delete/Paste original menu keeps visual but intercept before IList mutation. Existing evidence did not confirm native Undo menu; use host history, do not invent vendor source.",
+      "evidence": "docs/collaboration/evidence/O06_STANDALONE_ROI_SCENE_CHECKPOINT_20261028.json",
+      "validation": {
+        "builds": "UI006零错6512警告84.60秒；全量Release002零错6565警告67.38秒",
+        "checks": "Window110=64、Field073=31、Design036=69、RuntimeEditor054=10、FullChain114=8、Components196=9，共191组；正式EXE008 exit0/22可用工具15分类",
+        "identity": "8项产品源增量（含保留未提交用户页索引）、782发布项、86加载记录、141原来源SHA核对",
+        "manual": "四形状最终PNG实际查看；VS/VM/物理指针/用户仍未验"
+      }
     }
   },
   "vmFrameworkArchitectureReference": {

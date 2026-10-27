@@ -1,3 +1,13 @@
+## 2026-10-28 同链独立ROI设计/运行场景本批封存
+
+- 基线f9f60b8e；主线唯一产品写者，三路只读核证/评审及补位绘制/集合提案/原菜单。新增仅三个文件：真实NativeRoiScene、Design/NativeRoiScene.xaml、NativeRoiDesignData.cs，无新项目、Blob/Runtime/HALCON业务依赖。
+- 原ParamListView/Editor/Viewport借同Session，逐步重入门禁、失败完全退出/通知异常聚合、独立设计owner安装和释放；640×320/stride648显式域、既有像素/域reader独立有效且disposed即时拒绝。四索引同帧/稳定ID，原expand驱动完整参数栈。
+- 修复设计器无Loaded数值列宽：Float/Point共用一次原InitUI，禁止每LayoutUpdated重做；原首帧模板尺寸就绪后Init/投影刷新具代次/帧身份/卸载门禁。最终四形状真实PNG已逐张查看，数字及首帧图像/选中图形完整。
+- 最终UI006零错6512警告84.60秒；全量Release002零错6565警告67.38秒。Window110=64、Field073=31、Design036=69、RuntimeEditor054=10、FullChain114=8、Components196=9共191组，正式EXE008 exit0/22可用工具15分类。8源增量（含未提交用户XAML）/782发布项/86加载记录/141原来源SHA核对。
+- 原失败保留：Design028/029误计Point结构；030无Loaded选择拒绝；031虽功能过但数字列宽0；033探针局部变量重名；034虽69过但首帧Source空。Window108每次布局InitUI循环超时，自有进程已终止。最终036/110无此问题，不套旧成绩。Catalog最终只更新非编译验收元数据。
+- 用户Blob页索引2及SHA不改、不提交；Blob业务冻结。不签真实VS/VM同态/物理指针/用户本批，不计完整C08/C17和第一阶段。下一批原绘制/显式Create-Replace及取消租约，再继承位姿和原菜单多对象/宿主历史。所有自有句柄终止，不推送，目标active。
+- 交接HANDOFF_STANDALONE_ROI_SCENE_20261028.md；证据evidence/O06_STANDALONE_ROI_SCENE_CHECKPOINT_20261028.json。
+
 ## 2026-10-28 C10原高级参数本批正式自动回归封存
 
 - 基线078b262d；主线唯一写者，三路只读已核收。原Expand模板/样式/箭头控制同级参数行，隐藏原文/订阅/滑条租约、配对附件/业务条件与展开状态独立、显隐重入和异常继续清理。实际Margin失联和宿主TextBlock隐式样式污染已修，原宿主列宽动态传播验证。

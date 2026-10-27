@@ -559,6 +559,55 @@ internal static class S2DocumentEditingCases
   var box=(ComboBox)field.FindName("CBox");box.ApplyTemplate();
   return (TextBox)((Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)box.Template.FindName("T1",box)).FindName("ValueText");
  }
+ static void VerifyNativeRoiScene()
+ {
+  Test("独立ROI场景借用会话、卸载重载及最终释放不销毁宿主",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=new TrackedRoiImage(resources.CreateGray8(640,320,new byte[204800]));
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(100,70),new(380,240))));
+   using var session=model.Open();session.Select("detect",model.Rows[0].Id);
+   using var scene=new NativeRoiScene{Session=session};Show(scene);Pump();
+   Require(image.Active==1&&scene.Viewport.NativeView.ImageDataSource is not null,"场景未借用唯一真实图像帧");
+   Show(new TextBlock());Pump();Require(image.Active==0&&session.IsCurrent,"卸载泄漏帧或销毁外部会话");
+   Show(scene);Pump();Require(image.Active==1&&ReferenceEquals(scene.Session,session),"重载未恢复同一会话/唯一帧");
+   CaptureInline(scene,"native-roi-scene-runtime.png");scene.Dispose();Require(image.Active==0&&session.IsCurrent,"场景释放越权销毁宿主或漏帧");
+   using var editor=new NativeRoiEditor();editor.Bind(session);Require(editor.NativeView.IsEnabled,"场景未退编辑器注册");Show(new TextBlock());
+  });
+  Test("独立ROI场景图像取得期间重绑不回装旧代",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+   var a=new TrackedRoiImage(resources.CreateGray8(640,320,new byte[204800]));var b=new TrackedRoiImage(resources.CreateGray8(640,320,new byte[204800]));
+   RoiHost Model(IReadOnlyImage image)=>new(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(120,100))));
+   using var first=Model(a).Open();using var second=Model(b).Open();using var scene=new NativeRoiScene();Show(scene);
+   a.OnAcquire=()=>scene.Session=second;scene.Session=first;Pump();
+   Require(ReferenceEquals(scene.Session,second)&&a.Active==0&&b.Active==1,"旧图像回调覆盖新会话或漏帧");
+   scene.Dispose();Require(a.Active==0&&b.Active==0&&first.IsCurrent&&second.IsCurrent,"重绑清理销毁外部会话");Show(new TextBlock());
+  });
+  Test("独立ROI场景取得图像失败后完全脱离并可再次绑定",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=new TrackedRoiImage(resources.CreateGray8(640,320,new byte[204800]));
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(120,100))));
+   using var session=model.Open();using var scene=new NativeRoiScene();Show(scene);image.OnAcquire=()=>throw new InvalidOperationException("预期图像失败");
+   var rejected=false;try{scene.Session=session;}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&scene.Session is null&&image.Active==0&&session.IsCurrent,"失败后未完全脱离或越权释放");
+   scene.Session=session;Pump();Require(image.Active==1,"失败清理遗留重复编辑注册");scene.Dispose();Show(new TextBlock());
+  });
+ }
+ static void VerifyNativeSceneCleanupFailure()
+ {
+  Test("独立ROI场景失败且清空通知抛错仍完整退绑",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=new TrackedRoiImage(resources.CreateGray8(640,320,new byte[204800]));
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(120,100))));
+   using var session=model.Open();using var scene=new NativeRoiScene();Show(scene);
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(NativeRoiScene.SessionProperty,typeof(NativeRoiScene));
+   EventHandler observer=(_,_)=>{if(scene.Session is null)throw new InvalidOperationException("预期清空通知失败");};
+   descriptor.AddValueChanged(scene,observer);image.OnAcquire=()=>throw new InvalidOperationException("预期取得帧失败");
+   Exception? failure=null;try{scene.Session=session;}catch(Exception error){failure=error;}finally{descriptor.RemoveValueChanged(scene,observer);}
+   Require(failure is AggregateException aggregate&&aggregate.Flatten().InnerExceptions.Count>=2&&scene.Session is null&&image.Active==0,"清空通知异常覆盖原错误或中断退绑");
+   using var editor=new NativeRoiEditor();editor.Bind(session);Require(session.IsCurrent,"失败清理销毁借用会话");Show(new TextBlock());
+  });
+ }
  static void VerifyNativeSector()
  {
   Test("原Sector六项/非方帧换算、跨180扫角、实际原图形和单次提交",()=>
@@ -1062,6 +1111,8 @@ internal static class S2DocumentEditingCases
    VerifyBetween();
    VerifyExpandedReference();
    VerifyNativeBox();
+   VerifyNativeRoiScene();
+   VerifyNativeSceneCleanupFailure();
    VerifyNativeSector();
    VerifyNativeRing();
    VerifyNativePolygon();

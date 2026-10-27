@@ -46,6 +46,58 @@ internal static class S2DocumentEditingCases
                 Check(advanced.NativeView.IsChecked==true&&((ContentPresenter)advanced.NativeView.Template.FindName("cp",advanced.NativeView)).Content.Equals(advanced.FindResource("收起")),
                     "独立高级模板沿同一状态链切换原收起文字");
             }
+            var preview=new SunEyeVision.Plugin.Wpf.Design.NativeRoiScenePreview();
+            Render(preview,"native-roi-design-entry.png",1020,560);
+            var previewScene=(SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiScene)preview.Content;
+            Check(previewScene.Session?.Items.Count==4&&SunEyeVision.Plugin.Wpf.Design.NativeRoiDesignData.GetSampleIndex(previewScene)==0,"真实设计XAML子视图独立建立同链预览");
+            previewScene.Dispose();
+            using(var scene=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiScene())
+            {
+                SunEyeVision.Plugin.Wpf.Design.NativeRoiDesignData.SetSampleIndex(scene,0);
+                var session=scene.Session!;var frame=session.Frame;var identities=session.Items.Select(item=>item.Id).ToArray();
+                var expected=new[]{5,4,0,6};
+                for(var index=0;index<4;index++)
+                {
+                    SunEyeVision.Plugin.Wpf.Design.NativeRoiDesignData.SetSampleIndex(scene,index);
+                    Render(scene,$"native-roi-scene-{index}.png",1020,560);
+                    var expand=(System.Windows.Controls.Primitives.ToggleButton)scene.Editor.NativeView.Template.FindName("expand",scene.Editor.NativeView);
+                    Check(ReferenceEquals(scene.Session,session)&&session.Frame==frame&&session.Items.Select(item=>item.Id).SequenceEqual(identities)
+                        &&expand.IsChecked==true&&scene.Viewport.NativeView.ImageDataSource is not null&&scene.Viewport.NativeView.Source is not null,
+                        $"独立原ROI场景{index}同会话/同帧/稳定对象及原展开按钮和真实图像");
+                    var numbers=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(scene.Editor).Count();
+                    foreach(var number in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(scene.Editor))
+                    {
+                        var roiCombo=(ComboBox)number.FindName("CBox");
+                        var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)roiCombo.Template.FindName("T1",roiCombo);
+                        var text=(TextBox)leaf.FindName("ValueText");
+                        Check(leaf.ActualWidth>0&&text.ActualWidth>0&&double.TryParse(text.Text,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var shown)&&Math.Abs(shown-number.StartValue)<.011,$"形状{index}真实数字列宽/文字及绑定值独立可见");
+                    }
+                    var points=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(scene.Editor).ToArray();
+                    Check(index==2?points.Length==8&&points.Count(point=>point.IsX)==4&&points.Count(point=>!point.IsX)==4&&points.All(point=>((System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn")).Template.FindName("T1",(System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn")) is SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl):numbers==expected[index],$"独立原ROI形状{index}完整参数数量浮点={numbers}/顶点={points.Length}");
+                }
+                SunEyeVision.Plugin.Wpf.Design.NativeRoiDesignData.SetSampleIndex(scene,2);
+                Render(scene,"native-roi-scene-polygon-visible.png",1020,560);
+                foreach(var point in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(scene.Editor))
+                {
+                    var toggle=(System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn");
+                    var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)toggle.Template.FindName("T1",toggle);
+                    var text=(TextBox)leaf.FindName("ValueText");
+                    Check(leaf.ActualWidth>0&&text.ActualWidth>0&&double.TryParse(text.Text,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var shown)&&Math.Abs(shown-(point.IsX?point.PointSource.X:point.PointSource.Y))<.011,"原Point真实坐标和列宽可在无Loaded设计中显示");
+                }
+                SunEyeVision.Plugin.Wpf.Design.NativeRoiDesignData.SetExpandedParameters(scene,false);
+                Render(scene,"native-roi-scene-collapsed.png",1020,560);
+                Check(((System.Windows.Controls.Primitives.ToggleButton)scene.Editor.NativeView.Template.FindName("expand",scene.Editor.NativeView)).IsChecked==false,"独立设计属性操作原展开按钮收起");
+                using var pixels=session.Image.AcquirePixels();using var runs=pixels.AcquireDomainReader();
+                Check(pixels.GetRow(0).Length==648&&pixels.GetRow(0)[640]==233&&runs.RunCount==320,"独立示例图像保留padding与显式实际域");
+                scene.Dispose();
+                Check(pixels.GetRow(0)[640]==233&&runs.ReadRuns(319,1).Length==1,"设计owner释放后已借用像素及域reader独立有效");
+                var rejected=false;try{session.Image.AcquirePixels();}catch(ObjectDisposedException){rejected=true;}
+                Check(rejected,"设计owner释放后拒绝新像素租约");
+                using var retainedDomain=pixels.EffectiveDomain.AcquireReader();pixels.Dispose();
+                Check(retainedDomain.ReadRuns(0,1).Length==1,"像素lease释放后已取得域reader独立有效");
+                rejected=false;try{_=pixels.EffectiveDomain;}catch(ObjectDisposedException){rejected=true;}
+                Check(rejected,"已释放像素lease的EffectiveDomain属性立即拒绝");
+            }
             var expanded=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamSubscribeWindow();
             try
             {
@@ -198,6 +250,8 @@ internal static class S2DocumentEditingCases
     private static void Render(FrameworkElement view,string file,int width,int height)
     {
         view.Measure(new Size(width,height));view.Arrange(new Rect(0,0,width,height));view.UpdateLayout();
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
+        view.UpdateLayout();
         var bitmap=new RenderTargetBitmap(width,height,96,96,PixelFormats.Pbgra32);bitmap.Render(view);
         var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var output=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,file));encoder.Save(output);

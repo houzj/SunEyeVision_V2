@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -35,7 +35,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public bool HasInvalidText=>Error.Length!=0;
     public NativeRoiEditor()
     {
-        _polygon=new(NativeView,()=>!_disposed&&!_projecting&&!_suspended&&IsLoaded);
+        _polygon=new(NativeView,()=>!_disposed&&!_projecting&&!_suspended&&(IsLoaded||System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)));
         Language=XmlLanguage.GetLanguage("en-US");Child=NativeView;
         NativeView.LayoutUpdated+=OnLayout;PreviewKeyDown+=OnKey;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
     }
@@ -56,7 +56,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         // Explicit Bind resets this lease; a changed version/selection still projects immediately.
         if(!force&&_committing&&_session?.IsCurrent==true&&ReferenceEquals(_projectedSession,_session)
             &&_projectedStamp==_session.Stamp&&ReferenceEquals(_projectedItem,_session.CurROIData))return;
-        _generation++;_resume?.Abort();_resume=null;_savedRaw=null;_suspended=!IsLoaded;_projecting=true;
+        _generation++;_resume?.Abort();_resume=null;_savedRaw=null;_suspended=!(IsLoaded||System.ComponentModel.DesignerProperties.GetIsInDesignMode(this));_projecting=true;
         try
         {
             Error="";foreach(var input in _inputs)input.Raw=null;

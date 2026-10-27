@@ -332,6 +332,10 @@ def render_blob_control_plan(plan):
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['nativeAdvancedCandidate'].items()])
                if plan.get('nativeAdvancedCandidate') else '')
+            + ('<h5 id="o06-native-standalone-roi-scene">C08/C17同链独立ROI设计与运行场景</h5>'
+               + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
+                        for key, value in plan['nativeStandaloneRoiSceneCandidate'].items()])
+               if plan.get('nativeStandaloneRoiSceneCandidate') else '')
             + ('<h5 id="o06-baseline-sync-20261027">控件库与工作流统一开发基线</h5>'
                + table(['项目','实际状态与证据'], [(key, value if isinstance(value, str) else json.dumps(value, ensure_ascii=False))
                         for key, value in plan['baselineSynchronization'].items()])

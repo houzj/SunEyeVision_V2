@@ -64,20 +64,17 @@
     "reviewedClosure": "ParamListView + ParamUserControl + globalresources原行组/滚动模板；每页一宿主，整体替换DeclaredFieldsView自建StackPanel/组头/ScrollViewer，避免双边距/双滚动。行仅借用唯一FieldAccess/State和既有控件，不复制值/default。"
   },
   "designScene": {
-    "implementation": [
-      "当前Plugin.Wpf无ROI Design入口；两个空构造都不Bind，单d:DataContext无效",
-      "真实NativeRoiScene XAML仅组合现Editor/Viewport并同Session Bind；设计attached fixture经DesignerProperties注入正式合同样本",
-      "SelectedSampleIndex切稳定形状选择、ExpandParameters驱动原expand；不加运行时页签，不重建Session/Frame",
-      "Design图像仅Contracts接口的不可变样本像素/Domain；不引用Runtime/算法/Blob，不复制业务模型/默认值",
-      "root/pixel/domain reader各自持样本状态，父释放后已取reader存活，释放reader全读接口拒绝；域/帧/布局/行padding按正式合同验证",
-      "真实VS无主程序打开、切选择/展开可见真实图像和原参数仍必须用户验收，自动无Application资源检查不可代签"
-    ]
+    "status": "同链独立设计/运行入口本批正式自动回归通过，真实VS和VM/用户待验",
+    "entry": "src/Plugin.Wpf/Design/NativeRoiScene.xaml",
+    "controls": "真实NativeRoiScene/Editor/Viewport/ParamListView，四索引同Session/固定帧/稳定Guid，原expand",
+    "evidence": "docs/collaboration/evidence/O06_STANDALONE_ROI_SCENE_CHECKPOINT_20261028.json",
+    "remaining": "不是完整C08/C17；绘制/继承/位姿、多对象事务/历史仍待实施"
   },
   "nextPriority": [
-    "C15 original advanced toggle and same-level rows; no nested Expander",
-    "Same-chain NativeRoiScene and independent VS design sample",
-    "Original drawing/inheritance/pose typed request and host atomic operations",
-    "Multi-object create/delete/paste with host history and actual pointer acceptance"
+    "原绘制：两完成入口在AddROI前截住，去静态状态、每实例请求租约，显式Create/Replace一次宿主接纳",
+    "原创建/继承/位置来源与同帧位姿联动",
+    "原菜单复制/删除/粘贴在集合变更前路由；宿主历史、非法拒绝与生命周期",
+    "真实VS/VM同态/物理指针与用户验收，不代签"
   ],
   "multiObjectActions": {
     "originalEntry": "ContainerItem.xaml Ctrl+C/Delete -> mROIView/ImageViewItemsPageStyle commands; ImageViewBox.xaml Ctrl+V and Lang_Paste context menu; selection via ListViewItem/ROIControlFrame.IsSelected and RoiSelectedCommand",

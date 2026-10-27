@@ -1966,7 +1966,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangeBase.cs",
           "originalSha256": "c0ce5f2e2d27151db5d68e1884a69c80156f10168da2b4d628cfd55d834b2662",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangeBase.cs",
-          "localSha256": "659aadd155a97d30dead66216263e77109a0a466a0e37685368d7af04718065e"
+          "localSha256": "a1cf7c7b5095d4d818f2b0431e04bf8bf224ce5bc07b4db1fc3bef39e799df8e"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.SliderArrangeFloat",
@@ -2165,7 +2165,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\SliderArrangePoint.xaml.cs",
           "originalSha256": "9bf26a80723344a306fa6a7070bdbb0ec10b5d51673c870ea48ff1737cd26d84",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/AppsXmlUi/SliderArrangePoint.xaml.cs",
-          "localSha256": "23541b7f7ebb13d51dd19ccab8cc3204dc833e3f7ed39981f1583e6fd244798b"
+          "localSha256": "f45dd6303f1b6b403e261bfab816644f7b625f1872917684bf0aace3d499a4a9"
         },
         {
           "originalType": "Apps.XmlUI.ParamTabControl.PopupWithTopmost",
@@ -2285,11 +2285,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
-          "sha256": "c2395ea53de7a53312921fc65c0c6ac52203e46cc1726fc97441233fab7ccc64"
+          "sha256": "c8b5184e503377755c84b6a0e55851736512f262b1805bccb1ea8aaaa16d76c8"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "d428b761b505ce2ca9600f695ad839e3ba448e068bba566cac4070d376f2ccfb"
+          "sha256": "e2c5d9f4ccc4d9600c4e26e8624cbfbcd8ec4da34745270c96c5d4c380232f53"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
@@ -2298,11 +2298,24 @@
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativePolygonRoiInputs.cs",
           "sha256": "d53cb5b2dab057bd9589e80cfc92aa981d4853cbf0daf6aecac9f89b1fb90ffc"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiScene.cs",
+          "sha256": "73750b177a48bfe094a059a73ec00032b017d2adc47b836e03cd444139e6f2ea"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiScene.xaml",
+          "sha256": "3a45d4891752e92754ba229b2022a4d2c226fee1e1d4a64d89b6d82e20abd381"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiDesignData.cs",
+          "sha256": "668546fb8229ca138b03b87cf1255c1629a2b023f221a896814f81f9f4347e49"
         }
       ],
       "consumers": [
         "NativeRoiSession + NativeRoiEditor + NativeRoiViewport",
-        "O06WindowPresentationCases.VerifyNativeBox / VerifyNativeSector actual formal Release scene"
+        "O06WindowPresentationCases.VerifyNativeBox / VerifyNativeSector actual formal Release scene",
+        "NativeRoiScene + Design/NativeRoiScene.xaml via same real Editor/Viewport/Session and original parameter host"
       ],
       "status": "BOX_RING_SECTOR_FOCUSED_AUTOMATION_PASSED_FULL_C08_INCOMPLETE",
       "adaptation": "Common fixed-frame session and transient projections; atomic host-owned ScopeId/Revision/Frame acceptance contract; read-only row collection installed before observer notifications. Original bound geometry/layout properties use SetCurrentValue, exact capture-failure cleanup and template detachment. Original Sector full-circle migration render fix uses two EllipseGeometry EvenOdd, preserving six-field Sector identity; this local fix does not prove a vendor runtime bug. Internal numeric TextBox leaves isolate page implicit MinHeight; dirty baseline uses actual original binding StringFormat. InvariantCulture parsing. Local resource closure and URI/namespace adaptations. LeftRightControl ParamListView ancestor remains temporarily ItemsControl until full C01 host. Session/projections/presenters are local lifecycle adapters, not vendor source. Original Circle geometry/layout setters preserve bindings; exact capture/template lifecycle cleanup. Reentrant binding update and reject recovery freeze real inputs and verify current lease; same-root rejection defers notification projection, explicit success forces final projection. Full annulus only, original endpoints preserved; no CircleMes single-radius substitute.",
@@ -2365,6 +2378,19 @@
           "Original drawing/inheritance/pose and host-owned add/delete/paste/history",
           "Actual physical pointer, VM same-state and user visual acceptance"
         ]
+      },
+      "standaloneSceneCandidate": {
+        "status": "FOCUSED_FORMAL_AUTOMATION_PASSED_STAGE1_INCOMPLETE",
+        "scope": "same runtime scene, borrowed Session; explicit preview-only fixed image and four stable ROI records, no Blob/Runtime/HALCON dependency",
+        "design": "SampleIndex 0 rectangle / 1 annulus / 2 polygon / 3 sector; ExpandedParameters drives original expand button",
+        "fixes": "original base EnsureCompositionLayout calls original InitUI exactly once for Float/Point independent consumers; no per-layout init. Designer readiness shares edit chain; one generation-checked post-size original image Init refresh for initial frame. Scene/owner callbacks aggregate cleanup and preserve new-root bindings.",
+        "remaining": [
+          "real VS and VM same-state/manual evidence",
+          "drawing/inheritance/pose",
+          "copy/delete/paste and host history"
+        ],
+        "evidence": "docs/collaboration/evidence/O06_STANDALONE_ROI_SCENE_CHECKPOINT_20261028.json",
+        "validation": "UI006/全量Release002零错误；Window110=64、Field073=31、Design036=69、RuntimeEditor054=10、FullChain114=8、Components196=9；正式EXE008 exit0，22可用工具15分类。四形状实际PNG查看，不代VS/VM/人工。"
       }
     }
   ]

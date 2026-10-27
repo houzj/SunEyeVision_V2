@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,6 +18,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     private NativeRoiImageFrame? _frame;
     private Action? _changed;
     private long _generation;
+    private System.Windows.Threading.DispatcherOperation? _designRefresh;
     private bool _disposed,_projecting;
     public ImageViewBox NativeView {get;}=new();
     public NativeRoiViewport()
@@ -31,6 +32,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml"})
             NativeView.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/"+resource,UriKind.Relative)});
         Child=NativeView;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
+        NativeView.SizeChanged+=OnDesignSize;
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
         NativeView.AddHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled),true);
@@ -50,7 +52,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             _changed=()=>{if(!_disposed&&generation==_generation&&ReferenceEquals(_session,session))OnChanged();};
             session.Changed+=_changed;
         }
-        if(IsLoaded)AttachFrame();
+        if(IsLoaded||System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))AttachFrame();
     }
     private void OnLoaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,this))AttachFrame();}
     private void AttachFrame()
@@ -65,9 +67,25 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         {
             _frame=frame;NativeView.ImageDataSource=frame;
             if(generation!=_generation||!ReferenceEquals(_frame,frame))return;
-            NativeView.ROIList=(IList)session.Items;OnChanged();
+            NativeView.ROIList=(IList)session.Items;OnChanged();QueueDesignRefresh();
         }
         catch{if(ReferenceEquals(_frame,frame))ReleaseFrame();else frame.Dispose();throw;}
+    }
+    private void OnDesignSize(object sender,SizeChangedEventArgs args)=>QueueDesignRefresh();
+    private void QueueDesignRefresh()
+    {
+        if(_disposed||_frame is null||!System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))return;
+        _designRefresh?.Abort();var generation=_generation;var frame=_frame;
+        _designRefresh=Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,new Action(()=>
+        {
+            if(_disposed||generation!=_generation||!ReferenceEquals(_frame,frame)||_session?.IsCurrent!=true)return;
+            _designRefresh=null;
+            if(NativeView.ActualWidth<=0||NativeView.ActualHeight<=0)return;
+            NativeView.ApplyTemplate();NativeView.UpdateLayout();
+            if(_disposed||generation!=_generation||!ReferenceEquals(_frame,frame))return;
+            if(NativeView.Source is null)NativeView.Init();
+            if(!_disposed&&generation==_generation&&ReferenceEquals(_frame,frame))OnChanged();
+        }));
     }
     private void OnChanged()
     {
@@ -134,6 +152,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     {if(!ReferenceEquals(args.OriginalSource,this))return;NativeRoiCallbacks.Run([()=>_session?.CancelPending(),ReleaseFrame]);}
     private void ReleaseFrame()
     {
+        _designRefresh?.Abort();_designRefresh=null;
         var frame=_frame;_frame=null;
         NativeRoiCallbacks.Run([CancelInteraction,()=>NativeView.ROIList=null,()=>NativeView.ImageDataSource=null,()=>frame?.Dispose()]);
     }
@@ -143,6 +162,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         Loaded-=OnLoaded;Unloaded-=OnUnloaded;PreviewMouseDown-=OnPreviewMouse;PreviewKeyDown-=OnKey;
         NativeView.RemoveHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture));
         NativeView.RemoveHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled));
+        NativeView.SizeChanged-=OnDesignSize;
         var previous=_session;_session=null;
         if(previous is not null&&_changed is not null)previous.Changed-=_changed;_changed=null;
         NativeRoiCallbacks.Run([()=>previous?.CancelPending(),ReleaseFrame,()=>NativeView.RoiSelectedCommand=null,()=>Child=null]);

@@ -31,8 +31,16 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     public ICommand DataChangedCommand {get;set;}
     protected NativeRoiProjection(NativeRoiSession scope,RoiEditItem item)
     {_scope=scope;Accepted=item;ImageWidth=scope.ImageWidth;ImageHeight=scope.ImageHeight;DataChangedCommand=new CommitCommand(this);}
-    internal static NativeRoiProjection Create(NativeRoiSession scope,RoiEditItem item)=>item.Geometry.Get<string>("kind") switch
-    {"rectangle"=>new NativeBoxRoiProjection(scope,item),"sector"=>new NativeSectorRoiProjection(scope,item),"annulus"=>new NativeRingRoiProjection(scope,item),"polygon"=>new NativePolygonRoiProjection(scope,item),_=>throw new NotSupportedException()};
+    internal static Type ProjectionType(RoiEditItem item)=>item.Geometry.Get<string>("kind") switch
+    {"rectangle"=>typeof(NativeBoxRoiProjection),"sector"=>typeof(NativeSectorRoiProjection),"annulus" when !item.Enabled=>typeof(NativeInheritedAnnulusProjection),"annulus"=>typeof(NativeRingRoiProjection),"polygon"=>typeof(NativePolygonRoiProjection),_=>throw new NotSupportedException()};
+    internal static NativeRoiProjection Create(NativeRoiSession scope,RoiEditItem item)=>ProjectionType(item) switch
+    {
+        var type when type==typeof(NativeBoxRoiProjection)=>new NativeBoxRoiProjection(scope,item),
+        var type when type==typeof(NativeSectorRoiProjection)=>new NativeSectorRoiProjection(scope,item),
+        var type when type==typeof(NativeInheritedAnnulusProjection)=>new NativeInheritedAnnulusProjection(scope,item),
+        var type when type==typeof(NativeRingRoiProjection)=>new NativeRingRoiProjection(scope,item),
+        _=>new NativePolygonRoiProjection(scope,item)
+    };
     protected bool CanStage=>_scope is {} scope&&scope.CanEdit(this);
     protected abstract double AcceptedValue(string key);
     protected double Value(string key)=>_pending.TryGetValue(key,out var value)?value:AcceptedValue(key);

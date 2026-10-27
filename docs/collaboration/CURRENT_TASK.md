@@ -1,3 +1,12 @@
+## 2026-10-28 C09继承完整及部分圆环原显示链集中批封存
+
+- 基线81960d02；主线唯一产品写者、三路只读核证。禁编辑annulus保唯一RecordValue/kind/Group/Guid，原IAnnularSector像素中心半径与显示度数/扫角接原ShapeItemsPage/AnnularSectorShape，负扫角只反转显示遍历，完整容差给原360闭合。可编辑Ring仍限整圆；切换按实际投影类型更换、先Detach旧输入/手柄/命令。
+- 两原显示链共存：ROI页用泛型只读对象引用快照（非混合live集合、非数组）；Shape页按stamp及实际宽高/ratio/thickness整体换ObservableCollection，滤Visible，原粗细绑定有效。重绑/隐藏/换根/Unload/Dispose及排队刷新保持代次/帧/所有权。独立真实XAML无Application能显示同帧矩形及部分环，运行时保本地选中和切回圆环。
+- 最终UI004零错6507警告100.52秒；全量Release002零错6541警告107.02秒。Window147=116、Design045=77、Field080=31、RuntimeEditor060=10、FullChain120=8、Components202=9、ThemeStartup005=1、Resources014=22共274组；正式EXE013 exit0/22可用工具15分类。6源增量含用户XAML、791发布项、107加载记录、160唯一原来源SHA核对。Window147组合与Design045真实XAML PNG已查看；真实VS/VM同态、物理指针及用户本批未签。
+- 失败保留：Design042捕获Rows.Reset至Session.Changed之间，原ROI模板误读混合live集合；改引用快照后043过。Window145全回归110过5败，原InnerROIList不识别非泛型数组；改泛型只读集合且补同场景共存，预验146/044、最终147/045全过。三旧集合断言改逐对象身份序列，全部原帧/Buffer/租约条件保留。早期UI001—003/全量001不作最终成绩，最终构建后产品源未变，Catalog仅非编译元数据。
+- 原O06统一712唯一锚点/幂等；权威evidence/O06_INHERITED_ANNULUS_CHECKPOINT_20261028.json及SOURCE_AUDIT；交接HANDOFF_INHERITED_ANNULUS_20261028.md。原程序集MVID/SHA、14个本链原来源文件/递归显示依赖已登记Catalog。用户Blob页索引2/SHA原样不提交，不推送。所有自有构建/验证/探针终止。
+- 完整C09和阶段一仍未完成，Blob业务冻结，目标active。下一完整四继承方式及图像模式（Ex2两槽→MaskImage EnumerationG/InputMask，非OutputMask输出），FieldsView需按字段ID配置图像selector并叠加父级显隐；再位姿及菜单/历史/文本列表底栏。托管环形输入原样float传入native，最终单位未知；FIXTURE消费者有六FixMode，Blob实参/公式仍未知，REA提供器未配置，未伪造native等价。可以继续原控件组合，不因未证公式缩减或阻塞整目标。
+
 ## 2026-10-28 C09整组字段与同根ROI来源独立原型集中批封存
 
 - 共同基线f0585b13；主线唯一产品写者，三路只读核证后已补位完整四继承方式/部分环消费及位姿公式证据。字段全部Freeze→同值也纯组校验→一次writer→全state安装→通知；当前代次/重入/Dispose拒绝，原Range保同时候选绑定上下文及整个提交租约。Settings同代次接纳，不新增工具/业务工程。

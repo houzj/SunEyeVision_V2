@@ -36,6 +36,13 @@ internal static class S2DocumentEditingCases
                 Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.source",new ReferenceSetting(sample.Reference("detect"))}})
                     &&sample.Session.Stamp.Revision==sample.Revision&&sample.Session.Items.Single(x=>x.Group=="detect").Enabled==false,
                     "独立原继承样例沿同一组接纳链切换显示修订");
+                Check(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"mask.mode",new ConstantSetting(1L)},{"mask.source",new ReferenceSetting(sample.PartialAnnulusReference)}}),"独立来源组合接受同帧部分圆环");
+                Render(entry,"native-inherited-annulus-xaml-entry.png",1020,800);
+                Check(Application.Current is null&&Descendants<SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(entry).Count()==1,
+                    "原部分圆环显示链在独立真实XAML入口实际绘制");
+                Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(entry).Count()==1
+                    &&!Descendants<SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedCircleROI>(entry).Any(),
+                    "独立设计同时保留原矩形显示且只读部分环没有圆环编辑手柄");
             }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioPreview())
             {

@@ -37,12 +37,13 @@
       "退出绘制不仅隐藏还拒编辑；退出来源分支失效C07请求与Popup；模式/来源更改revision取消旧候选",
       "当前RegionSourceModeSelector手工Radio缓存不能当最终原件；本批不接Blob字段或SDK"
     ],
-    "concreteGap": "原四形状绘制及原多边形提示窗、本批整组字段/独立继承原型已自动验证；完整继承方式/图像模式/位姿、多对象菜单历史和真实VS/VM/物理指针/用户验收仍未完，不计完整C08/C09或阶段一。",
+    "concreteGap": "本批只读完整/部分annulus原显示、当前ROI编辑器同根共存及释放已自动验证；四继承方式/图像/位姿、多对象菜单历史、文本列表底栏与真实VS/VM/用户验收仍未完。",
     "drawingCheckpoint": "O06_NATIVE_ROI_DRAWING_CHECKPOINT_20261028.json",
     "modalStatus": "原HikMessageBox与原模板资源已接，确切Owner/同租约恢复、取消/修订/重绑/Owner关闭及观察者异常均有当前正式回归；继承/来源/位姿仍未完成。",
     "integerRadio": "原两槽/五槽及同一long状态、独立XAML入口已自动验证，见O06_NATIVE_INTEGER_RADIO_CHECKPOINT_20261028.json；未完成继承/位姿组合。",
-    "nextContract": "基础TrySetFields/同值纯组验证/一次writer/全部安装后Refresh已实现并经当前检查点。下一补完整四继承方式、图像模式、位姿及正确部分环只读消费；持久引用清理不能从展示清空推断。",
-    "fieldGroupCheckpoint": "O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json"
+    "nextContract": "基础整组接纳和只读annulus原Shape链已自动验证；下一完整四继承方式及图像模式组装、位姿来源。原输入native角度单位/位姿FixMode仍需定向核；持久引用删除不能由显示清空推断。",
+    "fieldGroupCheckpoint": "O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json",
+    "inheritedAnnulusCheckpoint": "O06_INHERITED_ANNULUS_CHECKPOINT_20261028.json"
   },
   "c01Host": {
     "source": "原Apps.XmlUI ParamListView/ParamUserControl/globalresources/LeftRightControl；原SHA由只读核收给出，激活前再次独立复核",

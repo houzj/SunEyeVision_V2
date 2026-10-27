@@ -101,17 +101,17 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
         {
             if(string.IsNullOrWhiteSpace(row.Group)||row.Id==Guid.Empty||!keys.Add((row.Group,row.Id)))
                 throw new ArgumentException("ROI组与稳定ID必须非空且唯一。");
-            ValidateNativeGeometry(row.Geometry);
+            ValidateNativeGeometry(row.Geometry,row.Enabled);
         }
         return new(stamp,Array.AsReadOnly(rows));
     }
-    private static void ValidateNativeGeometry(RecordValue geometry)
+    private static void ValidateNativeGeometry(RecordValue geometry,bool editable=true)
     {
         RoiGeometryEditing.Validate(geometry);
         var kind=geometry.Get<string>("kind");
         if(kind is not ("rectangle" or "sector" or "annulus" or "polygon"))
             throw new NotSupportedException("当前原组合接纳矩形、完整圆环、扇形及多边形。");
-        if(kind=="annulus"&&Math.Abs(Math.Abs(geometry.Get<double>("end-radians")-geometry.Get<double>("start-radians"))-2*Math.PI)>1e-9)
+        if(editable&&kind=="annulus"&&Math.Abs(Math.Abs(geometry.Get<double>("end-radians")-geometry.Get<double>("start-radians"))-2*Math.PI)>1e-9)
             throw new NotSupportedException("原SectorRing四项参数只接纳完整圆环。");
     }
     public void Refresh()
@@ -142,7 +142,7 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
             foreach(var row in snapshot.Items)
             {
                 var key=(row.Group,row.Id);
-                var item=_items.TryGetValue(key,out var previous)&&previous.Kind==row.Geometry.Get<string>("kind")
+                var item=_items.TryGetValue(key,out var previous)&&previous.GetType()==NativeRoiProjection.ProjectionType(row)
                     ?previous:NativeRoiProjection.Create(this,row);
                 next.Add(key,item);
             }

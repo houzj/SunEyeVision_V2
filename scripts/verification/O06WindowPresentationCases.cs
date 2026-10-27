@@ -492,7 +492,7 @@ internal static class S2DocumentEditingCases
    using var newSession=CreateRoiSession(newImage,()=>Array.Empty<RoiEditItem>(),(_,_)=>false,()=>true);
    using var viewport=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiViewport();Show(viewport);
    oldImage.OnAcquire=()=>viewport.Bind(newSession);viewport.Bind(oldSession);Pump();
-   Require(oldImage.Active==0&&newImage.Active==1&&ReferenceEquals(viewport.NativeView.ROIList,newSession.Items),"旧Acquire覆盖或泄漏新帧");
+   Require(oldImage.Active==0&&newImage.Active==1&&viewport.NativeView.ROIList.Cast<object>().SequenceEqual(newSession.Items),"旧Acquire覆盖或泄漏新帧/稳定投影对象");
    viewport.Dispose();Require(newImage.Active==0,"最终新帧租约未释放");Show(new TextBlock{Text="重绑完成"});
   });
   Test("原Box卸载拒绝旧UI命令且同对象重载保留键入原文",()=>
@@ -801,7 +801,7 @@ internal static class S2DocumentEditingCases
    var a=new RoiHost(ia);var b=new RoiHost(ib);var c=new RoiHost(ic);using var sa=a.Open();using var sb=b.Open();using var sc=c.Open();
    using var scene=new NativeRoiScene{Session=sa};Show(scene);Pump();Begin(scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,new(30,40));
    sa.DrawCancelled+=_=>scene.Viewport.Bind(sb);scene.Viewport.Bind(sc);Pump();
-   Require(ReferenceEquals(scene.Viewport.NativeView.ROIList,sb.Items)&&scene.Viewport.NativeView.ImageDataSource is Native.Dependencies.VMControls.RenderInterface.IImageData current&&current.Buffer.Length==204800&&ia.Active==0&&ib.Active==1&&ic.Active==0,"外层旧Bind清掉或释放重入的新图像/列表");
+   Require(scene.Viewport.NativeView.ROIList.Cast<object>().SequenceEqual(sb.Items)&&scene.Viewport.NativeView.ImageDataSource is Native.Dependencies.VMControls.RenderInterface.IImageData current&&current.Buffer.Length==204800&&ia.Active==0&&ib.Active==1&&ic.Active==0,"外层旧Bind清掉或释放重入的新图像/稳定投影对象");
    Require(sb.BeginDraw("rectangle") is not null&&sc.BeginDraw("rectangle") is null,"旧Bind复活或新会话未接收请求");sb.CancelDraw();
   });
   Test("原绘制视口同会话取消重绑后新请求不被外层CancelPending清除",()=>
@@ -810,7 +810,7 @@ internal static class S2DocumentEditingCases
    using var scene=new NativeRoiScene{Session=session};Show(scene);Pump();Begin(scene,Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,new(30,40));
    Action<RoiDrawRequest>? rebind=null;rebind=_=>{session.DrawCancelled-=rebind;scene.Viewport.Bind(session);Require(session.BeginDraw("rectangle") is not null,"同会话重绑后请求失败");};
    session.DrawCancelled+=rebind;scene.Viewport.Bind(null);Pump();
-   Require(session.ActiveDraw is not null&&ReferenceEquals(scene.Viewport.NativeView.ROIList,session.Items),"旧外层取消破坏新请求");session.CancelDraw();
+   Require(session.ActiveDraw is not null&&scene.Viewport.NativeView.ROIList.Cast<object>().SequenceEqual(session.Items),"旧外层取消破坏新请求或投影对象");session.CancelDraw();
   });
  }
  static void VerifyNativeRoiScene()
@@ -1664,6 +1664,100 @@ internal static class S2DocumentEditingCases
    Require((bool)type.GetMethod("TryCommitPending")!.Invoke(session,null)!&&writes==1&&access.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:1}},"保留的索引不能显式提交修复");Show(new TextBlock{Text="完成"});
   });
  }
+ static void VerifyInheritedAnnulus()
+ {
+  RecordValue Shape(double start,double sweep)
+  {
+   var values=RoiGeometryEditing.Values(RingShape(80,30));values["start-radians"]=start*Math.PI/180;values["end-radians"]=(start+sweep)*Math.PI/180;
+   return RoiGeometryEditing.Checked(values);
+  }
+  Test("原继承环形像素中心半径及正负扫角整圆投影不改变正式几何",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);
+   foreach(var sweep in new[]{210d,-210d,360d,-360d})
+   {
+    var shape=Shape(170,sweep);var model=new RoiHost(image,new RoiEditItem("mask",Guid.NewGuid(),"继承",shape,Enabled:false));using var session=model.Open();
+    var item=(NativeInheritedAnnulusProjection)session.Items.Single();var display=(Native.Dependencies.VMControls.RenderInterface.IAnnularSector)item;
+    var center=RoiGeometryEditing.Center(shape);Require(display.CenterPoint==new Point(center.X,center.Y)&&display.InnerRadius==30&&display.OuterRadius==80,"像素字段被归一化或丢内外径");
+    Require(Math.Abs(display.StartAngle-(sweep<0?170+sweep:170))<1e-9&&Math.Abs(display.AngleRange-Math.Abs(sweep))<1e-9,"度数扫角转换错误");
+    Require(item.Kind=="annulus"&&!session.Select(item.Group,item.Id)&&!session.TryCommit(item)&&!item.DataChangedCommand.CanExecute(null)&&model.Writes==0&&ReferenceEquals(model.Rows[0].Geometry,shape),"只读图形冒充sector或写回几何");
+   }
+  });
+  Test("原继承环形同身份切换更换投影并使旧本地输入永久失效",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);
+   var local=new RoiEditItem("mask",Guid.NewGuid(),"本地",Shape(0,360));var model=new RoiHost(image,local);using var session=model.Open();session.Select(local.Group,local.Id);
+   var old=(NativeRingRoiProjection)session.Items.Single();old.Radius=.2;Require(old.HasPending,"未建立旧手势");
+   model.Rows[0]=local with{Geometry=Shape(170,210),Enabled=false};var rejected=false;try{session.Refresh();}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&ReferenceEquals(session.Items.Single(),old),"同版本类型变化被静默接受");
+   model.Revision++;session.Refresh();var inherited=session.Items.Single();old.Radius=.3;
+   Require(inherited is NativeInheritedAnnulusProjection&&inherited.Id==old.Id&&!ReferenceEquals(old,inherited)&&session.CurROIData is null&&!old.HasPending&&!session.TryCommit(old)&&model.Writes==0,"旧投影/选中/候选仍有效");
+   model.Rows[0]=local;model.Revision++;session.Refresh();var fresh=session.Items.Single();
+   Require(fresh is NativeRingRoiProjection&&!ReferenceEquals(fresh,old)&&session.Select(local.Group,local.Id)&&!session.TryCommit(inherited),"切回复活旧实例或不能本地编辑");
+  });
+  Test("原继承环形原Shape页面实际绘制大弧隐藏替换及旧集合退订",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);
+   var row=new RoiEditItem("mask",Guid.NewGuid(),"继承",Shape(170,210),Enabled:false);var model=new RoiHost(image,row);using var session=model.Open();using var viewport=new NativeRoiViewport{Width=500,Height=400};viewport.Bind(session);Show(viewport);Pump();
+   var source=session.Items.Single();Require(viewport.NativeView.ROIList.Count==0&&viewport.NativeView.ShapeList.Count==1&&ReferenceEquals(viewport.NativeView.ShapeList[0],source)&&!viewport.NativeView.ShapeHitTestVisible,"只读环形未走独立原shape页面");
+   var visual=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Single();
+   Require(visual.IsVisible&&!visual.IsHitTestVisible&&!visual.RenderedGeometry.Bounds.IsEmpty&&visual.RenderedGeometry.Bounds.Width>20&&visual.RenderedGeometry.Bounds.Height>20&&
+    !Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.CircleROI>(viewport).Any(),"未实际绘制原部分环或残留编辑圆环");
+   var geometry=(PathGeometry)visual.RenderedGeometry;Require(geometry.Figures.SelectMany(x=>x.Segments).OfType<ArcSegment>().Count(x=>x.IsLargeArc)==2,"大于180扫角被当小弧");
+   CaptureInline(viewport,"native-inherited-annulus-active.png");var old=(System.Collections.ObjectModel.ObservableCollection<object>)viewport.NativeView.ShapeList;
+   var before=session.Stamp;viewport.NativeView.Init();viewport.Width=460;Pump();
+   Require(session.Stamp==before&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Count()==1&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Single().RenderedGeometry.Bounds.Width>20,"同修订重新Init或布局后原图形丢失");
+   viewport.NativeView.ImageScale=1.5;Pump();var zoomed=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Single();
+   Require(Math.Abs(zoomed.StrokeThickness*viewport.NativeView.ThicknessScale-1)<1e-8,"原样式缩放粗细没有同步");viewport.NativeView.ImageScale=1;Pump();
+   model.Rows[0]=row with{Visible=false};model.Revision++;session.Refresh();Pump();Require(viewport.NativeView.ShapeList.Count==0&&!Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Any(),"隐藏仍残影");
+   old.Add(source);Pump();Require(!Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Any(),"旧集合仍订阅原页面");
+   model.Rows[0]=row with{Geometry=Shape(-40,-80)};model.Revision++;session.Refresh();Pump();Require(Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Count()==1,"替换来源残影或未重绘");
+   Show(new TextBlock{Text="卸载"});Require(viewport.NativeView.ShapeList is null&&viewport.NativeView.ROIList is null,"卸载未释放两条图形链");
+  });
+  Test("原继承环形图形集合回调重绑不会旧清理覆盖新根",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);
+   var first=new RoiHost(image,new RoiEditItem("mask",Guid.NewGuid(),"一",Shape(170,210),Enabled:false));var next=new RoiHost(image,new RoiEditItem("mask",Guid.NewGuid(),"二",Shape(20,80),Enabled:false));
+   using var a=first.Open();using var b=next.Open();using var viewport=new NativeRoiViewport{Width=500,Height=400};Show(viewport);
+   var changed=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.ImageViewBox.ShapeListProperty,typeof(Native.Display.VMBaseControls.ImageViewBox));var switched=false;
+   EventHandler callback=(_,_)=>{if(!switched&&viewport.NativeView.ShapeList?.Count==1){switched=true;viewport.Bind(b);}};changed.AddValueChanged(viewport.NativeView,callback);
+   try{viewport.Bind(a);Pump();Require(switched&&ReferenceEquals(viewport.NativeView.ShapeList?[0],b.Items.Single())&&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(viewport).Count()==1,"重入后新根未投影或被旧清理覆盖");}
+   finally{changed.RemoveValueChanged(viewport.NativeView,callback);Show(new TextBlock{Text="完成"});}
+  });
+  Test("原继承环形更换投影观察异常后仍安装完整新状态并拒绝旧命令",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);var row=new RoiEditItem("mask",Guid.NewGuid(),"本地",Shape(0,360));
+   var model=new RoiHost(image,row);using var session=model.Open();session.Select(row.Group,row.Id);var old=(NativeRingRoiProjection)session.Items.Single();old.Radius=.2;
+   System.Collections.Specialized.NotifyCollectionChangedEventHandler observer=(_,_)=>throw new InvalidOperationException("继承集合观察异常");
+   var rows=(System.Collections.Specialized.INotifyCollectionChanged)session.Items;rows.CollectionChanged+=observer;model.Rows[0]=row with{Geometry=Shape(170,210),Enabled=false};model.Revision++;
+   var thrown=false;try{session.Refresh();}catch(Exception error){thrown=error.ToString().Contains("继承集合观察异常");}finally{rows.CollectionChanged-=observer;}
+   Require(thrown&&session.Items.Single() is NativeInheritedAnnulusProjection&&session.Stamp.Revision==1&&session.CurROIData is null&&!old.HasPending&&!old.DataChangedCommand.CanExecute(null)&&model.Writes==0,"观察异常误回滚或旧命令仍有效");
+  });
+  Test("原继承环形排队布局刷新后释放不重新挂回图形或图像租约",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=new TrackedRoiImage(resources.CreateGray8(640,320,new byte[204800]));
+   var model=new RoiHost(image,new RoiEditItem("mask",Guid.NewGuid(),"继承",Shape(170,210),Enabled:false));using var session=model.Open();using var viewport=new NativeRoiViewport{Width=500,Height=400};viewport.Bind(session);Show(viewport);
+   Require(image.Active==1&&viewport.NativeView.ShapeList.Count==1,"未持有实际图像/来源");viewport.NativeView.NeedRefreshShapes=true;viewport.Dispose();Pump();
+   Require(image.Active==0&&viewport.NativeView.ImageDataSource is null&&viewport.NativeView.ShapeList is null&&viewport.NativeView.ROIList is null&&session.IsCurrent&&model.Writes==0,"旧排队刷新复活资源或越权销毁宿主");Show(new TextBlock{Text="完成"});
+  });
+  Test("原继承环形完整编辑器共存本地矩形并可切回原圆环",()=>
+  {
+   var width=owner.Width;var height=owner.Height;owner.Width=1100;owner.Height=950;
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample{Width=1020,Height=800};
+   try
+   {
+    Show(sample);var selected=sample.Session.CurROIData!.Id;
+    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"mask.mode",new ConstantSetting(1L)},{"mask.source",new ReferenceSetting(sample.PartialAnnulusReference)}}),"来源组合未接纳");Pump();
+    Require(sample.Session.CurROIData?.Id==selected&&Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(sample.Scene.Viewport).Count()==1
+     &&Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(sample.Scene.Viewport).Count()==1
+     &&!Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedCircleROI>(sample.Scene.Viewport).Any(),"原编辑器与两显示链共存失败");
+    CaptureInline(sample,"native-inherited-annulus-composition.png");
+    Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"mask.mode",new ConstantSetting(0L)}}),"不能切回本地");Pump();
+    Require(!Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape>(sample.Scene.Viewport).Any()&&Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedCircleROI>(sample.Scene.Viewport).Count()==1,"切回残留只读图形或原编辑圆环未恢复");
+   }
+   finally{Show(new TextBlock{Text="完成"});owner.Width=width;owner.Height=height;}
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -1683,6 +1777,7 @@ internal static class S2DocumentEditingCases
      Require(text.ActualHeight>=text.FontSize*1.2,"内部文字高度不足："+text.ActualHeight);
     }
    });
+   VerifyInheritedAnnulus();
    VerifyFieldGroups();
    VerifyNativeIntegerRadio();
    VerifyNativeAdvanced();

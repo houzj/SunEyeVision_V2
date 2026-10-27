@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-28第一阶段继续：共同基线f0585b13，本批整组字段与同根ROI来源独立原型自动回归264组及正式EXE通过，见fieldGroupInheritanceCandidate及检查点；完整C09和第一阶段未完成，第二阶段未准入。",
+  "current": "2026-10-28第一阶段继续：基线81960d02，本批只读完整/部分annulus原显示链、混合集合时序及独立设计首帧修正；最终八轨道274组和正式EXE通过。完整C09与阶段一未完成，Blob重组未准入。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -7583,7 +7583,7 @@
       "原子入口": "FieldsView TrySetFields与同值纯组验证已实施并经本批回归；保持原Range完整候选上下文。当前只是基础入口及严格策略独立原型，完整C09仍未完成。",
       "修订顺序": "host writer仅完整校验并安装不可变字段/本地几何/Revision根，不在writer中Session.Refresh。全部字段accepted安装后Changed观察者Refresh，旧绘制取消和新stamp安装；观察异常是接纳后错误，不回滚。",
       "静态边界": "原静态证据保持O06_INHERITANCE_COMPOSITION_STATIC_20261028.json；基础接纳及独立原型见fieldGroupInheritanceCandidate。原SetValueNull不证明最终删除持久引用，四方式/位姿及全部UI仍未实施完成。",
-      "部分环显示补证": "原Blob Display.xml Annular/annularsector -> Apps.Data.ShapeDefine.AnnularSector:IAnnularSector -> ShapeItemsPage/AnnularSectorShape，既有原源码已活动；显示端StartAngle/AngleRange为度/扫角。输入经native到输出的单位仍未知；非整圆Session接入尚未做，不改kind为sector。原安装件与本地源码SHA见O06_INHERITANCE_COMPOSITION_STATIC_20261028.json followup20261028。"
+      "部分环显示补证": "原只读annularsector显示链已接入同根Session/Viewport与真实设计入口，见nativeInheritedAnnulusCandidate。输入native单位及完整参数继承/位姿仍未知或未完成，不把显示端为度推成输入单位。"
     },
     "fieldGroupInheritanceCandidate": {
       "范围": "第一阶段C09整组接纳与同根来源/ROI独立原型；基线f0585b13。不是完整C09或Blob重组交付。",
@@ -7597,6 +7597,18 @@
       "失败保留": "Window139测试误按Button.CommandParameter找原Radio，改走原Checked；140捕获清除拒绝仍关Popup的实际问题，修复后141定向14过，142全部109过。Field078旧反射调用未传现可选参数，补参数不减断言，079全部31过。UI001—003非最终成绩。",
       "证据与人工边界": "O06_FIELD_GROUP_INHERITANCE_CHECKPOINT_20261028.json及SOURCE_AUDIT；146唯一原来源SHA复核。Window142继承态和Design041真实XAML入口PNG已查看；只自动WPF事件，不代物理鼠标、真实VS/VM同态及用户验收。",
       "下一步": "继续完整C09四继承方式/图像模式/位姿来源和正确部分环显示；核原持久化未知与类型/角度/物理帧合同。阶段一未退出，Blob业务冻结，完整目标active。"
+    },
+    "nativeInheritedAnnulusCandidate": {
+      "范围": "第一阶段C09只读继承环形的原显示消费；基线81960d02。可编辑本地圆环仍限完整圆环，完整C09及Blob业务未交付。",
+      "原链与身份": "原Blob Display.xml Annular/annularsector → IAnnularSector → ShapeItemsPage → AnnularSectorShape及原样式。VMBaseControls MVID 47136107-aecc-42c7-bdbd-a8641253cae6；RenderInterface MVID 5da38b5c-8398-43e1-aa59-53f2b55093f6。Catalog新增专属来源/依赖闭包，160唯一原来源逐字节核对。未新造近似图形。",
+      "几何": "禁编辑annulus（完整或部分）保宿主唯一RecordValue/kind/Group/Guid；显式IAnnularSector像素中心/内外半径，弧度只在显示边界转度。负扫角只反转显示遍历保持覆盖，完整容差给原接口精确360，不改正式起止角，不冒充可编辑Sector/Ring。原ROIBaseColor作为当前预览轮廓，不据此宣称VM继承同态外观已验收。",
+      "组合与生命周期": "Session工厂和复用统一按实际投影类型，切换先Detach旧输入/手柄/命令。原ROI页只接过滤的泛型只读对象引用快照，保持同对象而不借混合live集合；原Shape页按修订/实际宽高/ratio/thickness整体替换ObservableCollection并滤Visible。两条链和排队刷新同代次/同帧清理，重绑不覆盖新根。",
+      "独立入口": "NativeRoiInheritanceScene同一真实FieldsView/NativeRoiScene组装，示例新增同帧部分环来源；本地矩形与继承部分环共存、切回原圆环、无Application设计首帧均已自动验证。不是工具默认值副本或新产品。",
+      "最终构建": "UI004零错误6507警告100.52秒；全量Release002零错误6541警告107.02秒。最终产品源码未变，Catalog仅非编译来源与验收元数据更新。",
+      "最终回归": "Window147=116、Design045=77、Field080=31、RuntimeEditor060=10、FullChain120=8、Components202=9、ThemeStartup005=1、Resources014=22，共274组。正式EXE013 exit0/22可用工具15分类。6源增量含用户XAML、791发布项、107加载记录同源。",
+      "失败与修正": "Design042原ROITempConverter未知类型：Rows.Reset期间原ROI页借混合live集合，早于Session.Changed读到只读图形。改引用快照后Design043过；Window145全回归110过5败发现原ROIItemsPage.InnerROIList拒非泛型数组，改泛型只读集合，补矩形与部分环共存。预验146/044及最终147/045全过。三旧集合相等断言更新为逐对象身份序列并保全部原frame/lease条件，不保混合live集合的错误行为。早期UI001—003/全量001不作最终成绩。",
+      "证据与人工边界": "O06_INHERITED_ANNULUS_CHECKPOINT_20261028.json及SOURCE_AUDIT；Window147组合/Design045真实XAML PNG已查看，实际VS/VM同态、物理键鼠与用户本批未签。",
+      "剩余": "完整四继承方式、图像分支、位姿、多对象菜单/历史、文本列表底栏和真实验收继续。输入角度托管层原样传递，native最终单位仍未知；FIXTURE存在六FixMode，实际消费者公式/Blob选择仍未证，不伪造原生等价。阶段一未退出，第二阶段未准入。"
     }
   },
   "vmFrameworkArchitectureReference": {

@@ -46,6 +46,9 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
             new KeyValuePair<string,ParameterSetting>(Source(group),new UnsetSetting())})),Array.AsReadOnly(items));
         _sources=items.SelectMany(row=>new[]{new SourceValue(Guid.NewGuid(),row.Group+"-source",row.Group,row.Geometry,_image.Frame),
             new SourceValue(Guid.NewGuid(),row.Group+"-foreign",row.Group,row.Geometry,new(Guid.NewGuid(),"different-physical-frame"))}).ToArray();
+        var partial=RoiGeometryEditing.Values(items.Single(row=>row.Group=="mask").Geometry);
+        partial["start-radians"]=170*Math.PI/180;partial["end-radians"]=380*Math.PI/180;
+        _sources=_sources.Append(new SourceValue(Guid.NewGuid(),"mask-partial","mask",RoiGeometryEditing.Checked(partial),_image.Frame)).ToArray();
         Session=new(_image,Read,AcceptGeometry,()=>!_disposed,"detect",canDraw:group=>!_disposed&&Local(group));
         var declarations=groups.SelectMany((group,i)=>new[]{
             (new Port(Mode(group),DataType.Integer,EditModes:FieldEditModes.Constant),
@@ -76,6 +79,7 @@ public sealed class NativeRoiInheritanceSample : Grid,IDisposable
         var value=_sources.Single(x=>x.Group==group&&x.Node.EndsWith(foreignFrame?"-foreign":"-source",StringComparison.Ordinal));
         return new(value.Node,"geometry",RoiDeclarations.Shape);
     }
+    public OutputReference PartialAnnulusReference=>new("mask-partial","geometry",RoiDeclarations.Shape);
     private SourceValue Resolve(string group,ReferenceSetting reference)
     {
         var value=_sources.SingleOrDefault(x=>x.Group==group&&x.Node==reference.Reference.NodeId);

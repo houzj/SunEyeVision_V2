@@ -95,7 +95,7 @@
     "annularDisplay": {
       "chain": "Blob Display.xml Annular Type=annularsector -> ObjectBase.GetShape -> Apps.Data.ShapeDefine.AnnularSector : IAnnularSector -> SetShapeProperty -> ShapeItemsPage -> AnnularSectorShape",
       "mapping": "CenterX/Y OuterRadius InnerRadius StartAngle AngleRange；AngleRange来自DetectAnnulusAngleExtend。显示接口为度/扫角，360有闭合分支；不是本地Sector编辑器。",
-      "boundary": "静态定点ILSpy原DLL证据，不把DLL SHA冒作源码SHA；输入订阅经native到输出的角度转换仍未证。无物理帧元数据，宿主同帧验证必需；当前非整圆annulus Session仍未接入。",
+      "boundary": "显示端为度/扫角，当前禁编辑annulus已接原Shape页；本地可编辑Ring仍full2π。输入订阅经native到输出单位未知，未VM实机验收。",
       "originalArtifacts": [
         {
           "path": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuDisplay.xml",
@@ -127,7 +127,21 @@
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/AnnularSectorShape.cs",
           "sha256": "a83fd9c7354faa02a2653f61ea09b5779fa5475f42044510c5e93a2fc34551cc"
         }
-      ]
-    }
+      ],
+      "implementationCheckpoint": "O06_INHERITED_ANNULUS_CHECKPOINT_20261028.json"
+    },
+    "imageMode": "Group.xml2621–2707/Blob AlgorithmTab92–93：ROIAreaType Ex2两槽0图形1图像；MaskImage为EnumerationG，IMAGE来源写InputMask。隐藏RoiSelect/ExternRoiSelect/Assist0及子分支，恢复原条件，不清本地或引用。OutputMaskImageGroup是独立输出。下一FieldsView需按字段ID配置原图像selector；尺寸/帧/格式/掩膜语义由宿主Runtime核，不在库解算法。",
+    "managedInputAngles": "BlobFindRoiManager.SetAnnulus4BlobFind → InputItem.SetInputValue(List<Annulus>) → SetInputFloat(roiAnnulusStartAngle/AngleExtend) → CModuleParamBase/IMVS_SetInputFloat，托管原样float传递，没有单位转换；native最终单位仍未知，不能从显示度数补结论。",
+    "fixtureConsumer": "Blob ProcessAlg库存0x18001fec0导入MVDPositionFixCpp；PositionFixCpp.h定义BasicParam/SetBasePoint/SetRunningPoint/SetFixMode/SetInitialShape/Run/GetCorrectedShape，六FixMode NONE/HORI/VERT/HV/HVA/HVAS。Blob实际FixMode/公式/角度缩放顺序仍未证。定向REA函数provider_unavailable（Ghidra/Java/IDA未配置），没有伪造新函数体，也未运行原DLL；不妨碍继续原控件组装。",
+    "fixtureHeaderEvidence": [
+      {
+        "path": "D:/Program Files/VisionMaster4.4.0/MVDAlgorithmSDK/Includes/Algorithms/PositionFixCpp.h",
+        "sha256": "bb6477e7c715cbeb8d152e96e4489a6e9951962afddcfdc1fc1796eeaf014c34"
+      },
+      {
+        "path": "D:/Program Files/VisionMaster4.4.0/MVDAlgorithmSDK/Includes/Common/VisionDesigner/MVD_AlgoParamDefine.h",
+        "sha256": "fddaed5191c9a78df2738c267ff353fd73b3d615dafabc7f8ef573e306cf1eb1"
+      }
+    ]
   }
 }

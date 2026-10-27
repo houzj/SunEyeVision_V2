@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
 using SunEyeVision.Plugin.Wpf.Regions;
 using System.Windows;
@@ -25,7 +26,10 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     private NativeRoiDrawing? _drawing;
     private long _generation;
     private System.Windows.Threading.DispatcherOperation? _designRefresh;
-    private bool _disposed,_projecting;
+    private bool _disposed,_projecting,_projectAgain;
+    private RoiEditStamp? _shapeStamp;
+    private (int Width,int Height,double Ratio,double Thickness)? _shapeContext;
+    private System.Windows.Threading.DispatcherOperation? _shapeRefresh;
     public ImageViewBox NativeView {get;}=new();
     public NativeRoiViewport()
     {
@@ -35,11 +39,15 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/rectroi/rectroistyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/circleroi/circleroistyle.xaml",
             "Themes/Native/Display/VMBaseControls/base/imageview/roi/polygonroi/polygonroistyle.xaml",
-            "Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml"})
+            "Themes/Native/Display/VMBaseControls/base/imageview/roi/sectorroi/sectorroistyle.xaml",
+            "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+            "Themes/Native/Display/VMBaseControls/base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml"})
             NativeView.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/"+resource,UriKind.Relative)});
         Child=NativeView;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
         NativeView.SizeChanged+=OnDesignSize;
+        NativeView.PropertyChanged+=OnNativeProjectionChanged;
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
+        NativeView.ShapeHitTestVisible=false;
         NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=()=>CancelDrawing(true);
         NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelDrawing(true);};
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
@@ -139,11 +147,23 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         {
             _frame=frame;NativeView.ImageDataSource=frame;
             if(generation!=_generation||!ReferenceEquals(_frame,frame))return;
-            NativeView.ROIList=(IList)session.Items;OnChanged();QueueDesignRefresh();
+            OnChanged();QueueDesignRefresh();
         }
         catch{if(ReferenceEquals(_frame,frame))ReleaseFrame();else frame.Dispose();throw;}
     }
-    private void OnDesignSize(object sender,SizeChangedEventArgs args)=>QueueDesignRefresh();
+    private void OnDesignSize(object sender,SizeChangedEventArgs args){QueueDesignRefresh();QueueShapeRefresh();}
+    private void OnNativeProjectionChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
+    {if(args.PropertyName is "ControlToImageRadio" or "NeedRefreshShapes")QueueShapeRefresh();}
+    private void QueueShapeRefresh()
+    {
+        if(_disposed||_frame is null||_session?.IsCurrent!=true||!_session.Items.Any(item=>item is NativeInheritedAnnulusProjection))return;
+        _shapeRefresh?.Abort();var generation=_generation;var frame=_frame;
+        _shapeRefresh=Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,new Action(()=>
+        {
+            _shapeRefresh=null;
+            if(!_disposed&&generation==_generation&&ReferenceEquals(_frame,frame)&&_session?.IsCurrent==true)OnChanged();
+        }));
+    }
     private void QueueDesignRefresh()
     {
         if(_disposed||_frame is null||!System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))return;
@@ -161,12 +181,37 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     }
     private void OnChanged()
     {
-        if(_projecting||_disposed)return;
+        if(_disposed)return;
+        if(_projecting){_projectAgain=true;return;}
         if(_session?.IsCurrent!=true){ReleaseFrame();return;}
         _projecting=true;
         try
         {
+            var session=_session;var generation=_generation;var frame=_frame;var snapshotStamp=session.Stamp;
+            bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_session,session)&&ReferenceEquals(_frame,frame)&&session.IsCurrent&&session.Stamp==snapshotStamp;
+            if(frame is null||!Current())return;
+            // Never lend the live mixed collection to the original ROI template converter:
+            // editor layout can run between Rows.Reset and Session.Changed during a type switch.
+            // Original ROIItemsPage.InnerROIList requires a generic collection, not an array.
+            IList rows=Array.AsReadOnly(session.Items.Where(item=>item is not NativeInheritedAnnulusProjection).ToArray());
+            var sameRows=NativeView.ROIList is IList existing&&existing.Cast<object>().SequenceEqual(rows.Cast<object>());
+            if(!sameRows)
+                NativeView.ROIList=rows;
+            if(!Current())return;
             NativeView.UpdateLayout();
+            if(!Current())return;
+            var page=Descendants<ShapeItemsPage>(NativeView).SingleOrDefault();
+            var context=(Width:page?.ImageSourceWidth??0,Height:page?.ImageSourceHeight??0,Ratio:page?.ControlToImageRadio??0,Thickness:page?.ThicknessScale??0);
+            if(context.Width>0&&context.Height>0&&double.IsFinite(context.Ratio)&&context.Ratio>0&&double.IsFinite(context.Thickness)&&context.Thickness>0&&
+                (_shapeStamp!=snapshotStamp||_shapeContext!=context||NativeView.ShapeList is null))
+            {
+                // The original page handles Add/Reset only. Replace once; never mutate an active shape collection.
+                NativeView.ShapeList=new ObservableCollection<object>(session.Items.OfType<NativeInheritedAnnulusProjection>().Where(item=>item.Visible));
+                if(!Current())return;
+                _shapeStamp=snapshotStamp;_shapeContext=context;
+            }
+            NativeView.UpdateLayout();
+            if(!Current())return;
             foreach(var roi in Descendants<RectROI>(NativeView))
             {
                 // Select the original base template explicitly for normalized derived native controls.
@@ -192,10 +237,10 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
                 roi.SetBinding(UIElement.IsHitTestVisibleProperty,new Binding(nameof(NativeRoiProjection.Enabled)));
                 roi.ApplyTemplate();roi.RefreshGeometryLayout();
             }
-            foreach(var list in Descendants<ListView>(NativeView).Where(list=>ReferenceEquals(list.ItemsSource,_session.Items)))
-                list.SelectedItem=_session.CurROIData;
+            foreach(var list in Descendants<ListView>(NativeView).Where(list=>ReferenceEquals(list.ItemsSource,NativeView.ROIList)))
+                list.SelectedItem=session.CurROIData;
         }
-        finally{_projecting=false;}
+        finally{_projecting=false;if(_projectAgain){_projectAgain=false;OnChanged();}}
     }
     private void OnKey(object sender,KeyEventArgs args)
     {if(args.Key==Key.Escape){CancelInteraction();_session?.CancelPending();args.Handled=true;}}
@@ -229,10 +274,11 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     private void ReleaseFrame()
     {
         _designRefresh?.Abort();_designRefresh=null;
+        _shapeRefresh?.Abort();_shapeRefresh=null;
         var generation=_generation;var frame=_frame;_frame=null;
         bool OwnsCleanup()=>generation==_generation&&_frame is null;
         NativeRoiCallbacks.Run([()=>CancelDrawing(true),()=>{if(OwnsCleanup())CancelInteraction();},
-            ()=>{if(OwnsCleanup())NativeView.ROIList=null;},()=>{if(OwnsCleanup())NativeView.ImageDataSource=null;},()=>frame?.Dispose()]);
+            ()=>{if(OwnsCleanup())NativeView.ROIList=null;},()=>{if(OwnsCleanup()){_shapeStamp=null;_shapeContext=null;NativeView.ShapeList=null;}},()=>{if(OwnsCleanup())NativeView.ImageDataSource=null;},()=>frame?.Dispose()]);
     }
     public void Dispose()
     {
@@ -241,6 +287,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         NativeView.RemoveHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture));
         NativeView.RemoveHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled));
         NativeView.SizeChanged-=OnDesignSize;
+        NativeView.PropertyChanged-=OnNativeProjectionChanged;
         var previous=_session;_session=null;
         if(previous is not null)
         {

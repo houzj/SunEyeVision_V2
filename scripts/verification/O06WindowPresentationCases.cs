@@ -313,6 +313,42 @@ internal static class S2DocumentEditingCases
    public void Dispose(){if(closed)return;closed=true;try{lease.Dispose();}finally{probe.Active--;probe.Released++;}}
   }
  }
+ static void VerifyPropertyPublication()
+ {
+  var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer)});
+  var projection=new ResultProjectionDescriptor(ResultProjectionKind.PropertyList,ResultCardinality.One);
+  var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"tree-fixture",Guid.NewGuid());
+  ResultPublication Create(ResultOwnerProbe release)=>new(schema,new(Guid.NewGuid(),run,1,schema.Fingerprint),ResultViewState.Success,
+   new InputValues(schema.Outputs,new Dictionary<string,object?>{{"value",18L}}),release,()=>true);
+  Test("原属性树publication路径通知重入退休不发旧选择",()=>
+  {
+   var release=new ResultOwnerProbe();using var pub=Create(release);
+   using var view=new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList(schema,projection);
+   var inner=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView)view.View;
+   Show(inner);view.Present(pub);Pump();
+   var root=inner.ItemsSource!.Cast<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList.Row>().Single();var row=root.Children.Single();
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView.SelectedItemPathProperty,inner.GetType())!;
+   var retired=false;EventHandler change=(_,_)=>{if(!retired&&inner.SelectedItemPath is not null){retired=true;view.Clear();}};
+   var events=new List<ResultSelection>();view.SelectionHighlightChanged+=(_,value)=>events.Add(value);descriptor.AddValueChanged(inner,change);
+   try{var command=inner.SelectedCommand!;Require(command.CanExecute(row),"真实声明行不能选路径");command.Execute(row);}
+   finally{descriptor.RemoveValueChanged(inner,change);}
+   Require(retired&&!inner.ItemsSource!.Cast<object>().Any()&&events.Count==1&&events[0].ElementIdentity is null&&events[0].Publication==pub.Stamp,"退休后仍发旧路径选择或未清根");
+   pub.Dispose();Require(release.Releases==1,"属性树退休未归还最后借阅");
+  });
+  Test("原属性树publication观察异常仍逐项清理与归还借阅",()=>
+  {
+   var release=new ResultOwnerProbe();using var pub=Create(release);
+   using var view=new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList(schema,projection);
+   var inner=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView)view.View;
+   Show(inner);view.Present(pub);Pump();
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView.SelectedCommandProperty,inner.GetType())!;
+   EventHandler fail=(_,_)=>{if(inner.SelectedCommand is null)throw new InvalidOperationException("预期DP观察异常");};
+   descriptor.AddValueChanged(inner,fail);pub.Dispose();Require(release.Releases==0,"owner退休提前释放树借阅");
+   try{PublicationThrows<AggregateException>(view.Clear);}finally{descriptor.RemoveValueChanged(inner,fail);}
+   Require(inner.SelectedCommand is null&&inner.CopyPathCommand is null&&inner.SelectedItem is null&&inner.SelectedItemPath is null&&inner.ErrorInfo is null
+    &&!inner.ItemsSource!.Cast<object>().Any()&&release.Releases==1,"首观察异常截断剩余清理或泄漏SDK owner");
+  });
+ }
  static void VerifyResultOrigins()
  {
   Test("结果来源实际图像Domain坐标正负向",()=>
@@ -2504,6 +2540,7 @@ internal static class S2DocumentEditingCases
    VerifyNativeTextPixels();
    VerifyNativeParameterHost();
    VerifyResultPublication();
+   VerifyPropertyPublication();
    VerifyResultOrigins();
    VerifyNativeResultTable();
    VerifyBetween();

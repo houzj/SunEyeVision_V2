@@ -3378,7 +3378,9 @@ SplitterPosition = position;
             if(!Current())return System.Threading.Tasks.Task.CompletedTask;
             SelectedNodeDataAnalysisControl=null;
             if(!Current())return System.Threading.Tasks.Task.CompletedTask;
-            HasDataAnalysisControl=false;DataAnalysisControlTitle="数据分析";
+            HasDataAnalysisControl=false;
+            if(!Current())return System.Threading.Tasks.Task.CompletedTask;
+            DataAnalysisControlTitle="数据分析";
             if(selectedNode is null||!Current())return System.Threading.Tasks.Task.CompletedTask;
             var view=ToolRegistry.CreateResultView(selectedNode.ToolType);
             if(!Current()){view?.Dispose();return System.Threading.Tasks.Task.CompletedTask;}
@@ -3395,9 +3397,10 @@ SplitterPosition = position;
             SelectedNodeDataAnalysisControl=view.View;
             if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
             HasDataAnalysisControl=true;
+            if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
             if(_resultPublication is {} publication&&publication.IsCurrent()&&Current())
                 PresentResultPublication(publication,_resultPublicationSnapshot,selectedNode.Name,_resultPublicationBindings);
-            else view.Clear();
+            else if(Current()&&ReferenceEquals(_activeResultView,view))view.Clear();
             return System.Threading.Tasks.Task.CompletedTask;
         }
 
@@ -3411,6 +3414,8 @@ SplitterPosition = position;
             if(!ReferenceEquals(sender,_activeResultView)||publication is null||selection.Publication!=publication.Stamp
                 ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
             _nodeResultManager.ClearHighlight();
+            if(!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView)
+                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
             if(selection.Targets.Count>0&&_unavailableViewportHighlight!=publication.Stamp.PublicationId)
             {
                 _unavailableViewportHighlight=publication.Stamp.PublicationId;

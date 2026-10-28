@@ -350,10 +350,12 @@ public sealed class RootWorkspaceHostTests
    // A different live window must not authorize this draft's document commit.
    var unrelated=new Window{Width=100,Height=100,Left=-10000,ShowActivated=false};
    var committed=history.Position;
+   Assert.True(Picker().TrySetConstant("local"));Pump(); // A valid private edit exists before its window loses ownership.
+   Assert.Equal(committed,history.Position);
    try
    {
     unrelated.Show();field.SetValue(main,unrelated);
-    Assert.True(Picker().TrySetConstant("local"));Pump();
+    Assert.False(Picker().TrySetConstant("camera"));Pump(); // Wrong windows cannot edit the private candidate either.
     Assert.False(page.TryCommitEditor(out _));Assert.Equal(committed,history.Position);
     Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera,ImageSourceTestRuntime.Read(node).SourceKind);
    }

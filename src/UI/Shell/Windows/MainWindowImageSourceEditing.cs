@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Workflow;
 
@@ -19,7 +19,7 @@ public partial class MainWindowViewModel
             ReferenceEquals(ActiveInputSource,source)&&CanEditRootWorkspace&&!source.IsReadOnly&&
             ImageSourcePolicy.Read(node)?.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local&&
             index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
-        if(source.EditVersion!=editVersion||!Current())return false;
+        if(source.EditVersion!=editVersion||!Current()||!source.CanSelectImage(index))return false;
         source.SelectImage(index);
         // Acceptance notifications may switch documents, roots, sources or execution state.
         return Current();
@@ -33,7 +33,7 @@ public partial class MainWindowViewModel
         bool Current()=>session is not null&&root is not null&&node is not null&&
             ReferenceEquals(DocumentManager.Session,session)&&session.Document.Workflows.Contains(root)&&root.Nodes.Contains(node)&&
             ReferenceEquals(node.InputSource,source)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&
-            ReferenceEquals(ActiveInputSource,source)&&source.EditVersion==editVersion&&source.CurrentIndex==index&&
+            ReferenceEquals(ActiveInputSource,source)&&source.EditVersion==editVersion&&source.CurrentIndex==index&&source.CanSelectImage(index)&&
             ImageSourcePolicy.Read(node) is {SourceKind:SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local} policy&&
             policy.CurrentIndex==index&&index>=0&&index<source.Count&&ReferenceEquals(source.Images[index],image);
         return Current()?ExecuteRunWorkflow(advanceLocalImage:false,expectedTab:tab,isCurrent:Current):System.Threading.Tasks.Task.CompletedTask;

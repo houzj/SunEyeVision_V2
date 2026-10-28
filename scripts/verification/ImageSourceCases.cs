@@ -19,11 +19,13 @@ internal static class S2DocumentEditingCases
             ["ImageSourceDebugInvocationTests"]=null,
             ["ResultPresentationModelTests"]=null,
             ["ResultPresentationPresenterTests"]=null,
+            ["NativeResultCompositionTests"]=null,
             ["ImageSourceConfigurationHistoryTests"]=null,
             ["LocalImageConfigurationSnapshotTests"]=null,
             ["ImageSourceSavePersistenceTests"]=null,
             ["ImageSourceResolverTests"]=null,
             ["SolutionManagerUiTests"]=new[]{
+                "Unchecked_activation_in_selection_mode_preserves_start_history_and_execution",
                 "Selection_and_removal_preserve_current_image_identity_and_one_way_display",
                 "Restoring_images_preserves_missing_references_selection_and_run_flags_without_rewriting_configuration",
                 "Unresolved_relative_image_keeps_reference_and_can_be_resolved_without_current_directory_fallback",

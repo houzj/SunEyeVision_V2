@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.Thumbnail;
@@ -48,7 +48,13 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         get => _currentIndex;
         set { if (value != _currentIndex) SelectImage(value); }
     }
-    public void SelectImage(int index)=>Commit(_entries.ToArray(),index,_runMode,_autoSwitch,_runReferences,selectStart:true);
+    public bool CanSelectImage(int index)=>index>=0&&index<Count&&
+        (_runMode!=ImageRunMode.运行选择||_runReferences.Contains(Reference(_entries[index]),StringComparer.Ordinal));
+    public void SelectImage(int index)
+    {
+        if(index>=0&&!CanSelectImage(index))throw new InvalidOperationException("运行选择模式只能选择已勾选的图像。");
+        Commit(_entries.ToArray(),index,_runMode,_autoSwitch,_runReferences,selectStart:true);
+    }
     public ImageRunMode RunMode
     {
         get => _runMode;

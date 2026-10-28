@@ -7,6 +7,9 @@
 - D02已合44a67d83为ca605a4b：六类死链、Main构造/统计/清空和无身份图像回填整体退出，真实执行/声明快照/源资产缓存保留。独立审计确认16个结果管理器及168个Main保留方法体未改；不把旧池Prewarm(1)退出混称解码器预热优化。
 - root宿主结果Model/Presenter现分部分成功、超时、取消，成功空输出保状态，资源缺值的失败不显示“资源待接入”；仅同一publication才复用reader/行，身份相同的新发布会更换诊断。已补真实快照状态/成功空/同run不同发布及partial scalar测试；源码与四C#语法检查无错、diff通过，未语义编译或执行。一次检查自动审批超时未启动，原命令允许的一次重试已成功。共享C14合同/原件树/物理帧适配仍未交付，目标不完成。
 - 主线授权本线仅新增Results/PropertyList及Results/ResultShell对应Controls/Themes/Assets/Design子目录；native已从988a34f5独立分支迁原三列树/结果shell，不动StandardTable/C14/context/中立图像适配/C17。纯视觉DP/命令只回传实际投影对象，UI负责正式owner/publication校验，未造旧IToolResultView实现。
+- 根参数整链057e8365已合cbf98caf：正式Runtime目录、强设置/引用/Unset/移除恢复接原根事务与实际视图；原根资源Fact保取消、接纳、历史、保存重开及sourceInputs真实图像/区域执行，未改Blob业务。原视觉6项真实WPF组合f8a7d2e5已合eeb1a1e4，纳正式ImageSources轨，未运行。
+- source_audit确认选择模式下未勾选Activate会写坏start再执行失败：现Session拒绝并恢复展示，ImageInputSource统一选择守卫，主窗正式选择/执行双核同规则，未自动勾选；补真实session无历史/无执行及合法项仍执行回归。相机仍消费OutputFormat，已移除该共有字段错误local可见限制。12个当前C#纯语法过，未语义构建。
+- SDK图像退出完整依赖已核：Root主图委托→旧Declared区域/RoiViewportEditScope、Loaded注入ResultRenderLayer→结果/高亮、顶栏缩放全屏、两阶段索引Dispatcher及来源持久选择必须随Shell集中替换。新Runtime编辑器不依赖SDK主图，正确查询/Reader/租约基础可复用；不保隐藏ImageControl或静默丢覆盖层。已请求主线集中集成源候选restore及UI/full构建，不等C14全部完成才暴露语义错。
 - native只读整链核出ImageResultHost实际DataContext为ImageResult子VM，而Roots属于Main；已去错误隐式Binding，Initialize显式借同一root Presenter.Roots，Shutdown先摘ItemsSource再清结果，不复制集合。此为源码审计修正，尚未运行WPF绑定验收。
 - 主界面结果树整批候选已提交f68bfd8c，工作树曾干净；新增正式ImageSources轨实际纳ResultPresentationModelTests/PresenterTests，不让状态/分页/Reader清理用例只存在测试项目。原非法候选7项+调试拒绝7项仍独立核14，不与结果Theory混计；仅源码/语法验证，未运行正式轨。
 - 部署探针f4f4c320已合9615bdbe：按BlobAnalysis/角色唯一匹配，全部破坏注入锁同一组件，新增源角色不触发全局Single误判；纯函数夹具过，未正式执行。editor独立worktree继续根参数Runtime整链消费者，复用既有SettingsSchema/BindingTargets/事务/编译/资源租约，不改Blob/共享合同、不skip原根资源回归。主线最新wait确认idle且共享C14仍尚待整批接通，不推断正式构建窗口已授权本线。

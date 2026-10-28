@@ -26,7 +26,7 @@ public static class ImageSourceFields
         new Port(InitialSequence,Integer,Storage:NumericStorage.Int64,EditModes:FieldEditModes.Constant)
     },Array.Empty<Port>(),new ToolPresentation(new[] {
         Choice(SourceKind,"图像来源","图像来源",0,new[]{"local","camera"},new[]{"本地图像","相机"}),
-        Choice(OutputFormat,"输出格式","基本参数",10,new[]{"original","mono8","rgb24"},new[]{"保持原图","MONO8","RGB24"},"local"),
+        Choice(OutputFormat,"输出格式","基本参数",10,new[]{"original","mono8","rgb24"},new[]{"保持原图","MONO8","RGB24"}),
         new FieldPresentation(InitialSequence,"SN初始值","基本参数",20,FieldEditorKind.Scalar) {
             Layout=new("基本参数","基本参数",Minimum:0,DecimalPlaces:0,AllowReference:false)},
         new FieldPresentation(AutoSwitch,"自动切换","触发",30,FieldEditorKind.Scalar) {

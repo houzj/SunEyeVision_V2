@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -65,6 +65,30 @@ public sealed partial class SolutionManagerUiTests
         public Task Request(ImageSourceStripRequestKind kind,string? itemId=null,IEnumerable<string>? paths=null)
             =>Session.RequestAsync(new(kind,Session.Version,itemId,paths:paths),CancellationToken.None);
         public void Dispose(){_window.Close();Control.Session=null;Session.Dispose();}
+    }
+
+    [Fact]
+    public void Unchecked_activation_in_selection_mode_preserves_start_history_and_execution()
+    {
+        Sta(()=>
+        {
+            var source=new ImageInputSource("node");
+            var selected=new ImageInfo{FilePath="selected.png"};var uncheckedImage=new ImageInfo{FilePath="unchecked.png"};
+            source.AddImages(new[]{selected,uncheckedImage},selectFirstAdded:true);
+            source.SetRunSelection(new[]{selected.Id});source.RunMode=ImageRunMode.运行选择;
+            var version=source.EditVersion;var writes=0;var executions=0;
+            source.ConfigurationWriter=_=>writes++;
+            using var fixture=new NativeSourceFixture(source,activate:(_,_,_)=>{executions++;return Task.CompletedTask;});
+            PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.Activate,uncheckedImage.Id));
+            PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.SelectStart,uncheckedImage.Id));
+            Assert.Throws<InvalidOperationException>(()=>source.SelectImage(1));
+            Assert.Equal(0,writes);Assert.Equal(0,executions);Assert.Equal(version,source.EditVersion);
+            Assert.Equal(0,source.CapturePolicy().CurrentIndex);Assert.Same(selected,source.CurrentImage);
+            Assert.False(uncheckedImage.IsForRun);Assert.Equal(0,((ListBox)fixture.Control.FindName("lst")).SelectedIndex);
+            Assert.Contains("已勾选",fixture.Session.Status);
+            PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.Activate,selected.Id));
+            Assert.Equal(1,executions);
+        });
     }
 
     [Fact]

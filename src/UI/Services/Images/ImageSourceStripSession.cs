@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -183,6 +183,13 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         var rows = _source.Images.ToArray();
         int index = request.ItemId is null ? -1 : Array.FindIndex(rows, row => row.Id == request.ItemId);
         if (request.ItemId is not null && index < 0) throw new InvalidOperationException("图像条目已不属于当前来源。");
+        if(request.Kind is ImageSourceStripRequestKind.Activate or ImageSourceStripRequestKind.SelectStart
+            &&!_source.CanSelectImage(index))
+        {
+            SetStatus("运行选择模式只能选择已勾选的图像。");
+            if(OwnerIsCurrent())Refresh();
+            return;
+        }
         switch (request.Kind)
         {
             case ImageSourceStripRequestKind.Activate:

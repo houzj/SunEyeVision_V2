@@ -2,7 +2,6 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 /// <summary>Recovered result workspace composition. All publications, commands and image ownership remain with its host.</summary>
 public partial class ResultWorkspaceShell : UserControl
@@ -15,10 +14,9 @@ public partial class ResultWorkspaceShell : UserControl
     public object? SelectedInputItem { get => (object?)GetValue(SelectedInputItemProperty); set => SetValue(SelectedInputItemProperty, value); }
     public static readonly DependencyProperty SelectedOutputItemProperty = DependencyProperty.Register(nameof(SelectedOutputItem), typeof(object), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public object? SelectedOutputItem { get => (object?)GetValue(SelectedOutputItemProperty); set => SetValue(SelectedOutputItemProperty, value); }
-    public static readonly DependencyProperty InputImageProperty = DependencyProperty.Register(nameof(InputImage), typeof(IImageData), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-    public IImageData? InputImage { get => (IImageData?)GetValue(InputImageProperty); set => SetValue(InputImageProperty, value); }
-    public static readonly DependencyProperty OutputImageProperty = DependencyProperty.Register(nameof(OutputImage), typeof(IImageData), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-    public IImageData? OutputImage { get => (IImageData?)GetValue(OutputImageProperty); set => SetValue(OutputImageProperty, value); }
+    /// <summary>Borrow the actual original views through NativeResultViewport.Attach; the shell owns no image.</summary>
+    public FrameworkElement InputViewport=>imageViewIn;
+    public FrameworkElement OutputViewport=>imageView;
     public static readonly DependencyProperty IsDoubleImageProperty = DependencyProperty.Register(nameof(IsDoubleImage), typeof(bool), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LayoutChanged));
     public bool IsDoubleImage { get => (bool)GetValue(IsDoubleImageProperty); set => SetValue(IsDoubleImageProperty, value); }
     public static readonly DependencyProperty SourceStripContentProperty = DependencyProperty.Register(nameof(SourceStripContent), typeof(object), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));

@@ -1,3 +1,9 @@
+## 2026-10-28 原底栏整批核验与D07原Shell唯一视口合同固定
+
+- 正式产品67ce328d：规定UI001零错6569警告121.43秒/full001零错6606警告77.23秒；EXE探针PID45604 exit0。完整Global004不再超时，284项277过7败，完整失败JSON交原写者继续；ImageSources180/0、C15 Window225=5/0、Design060=96/0、RuntimeEditor10/0、FullChain8/0。795发布条目/95加载记录SHA核，证据evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json。实际查看设计自动渲染，非真实VS/VM/人工代签。
+- 本线唯一写Shell两公共文件：删除InputImage/OutputImage四个DP成员和两ImageDataSource Binding，暴露只读FrameworkElement InputViewport/OutputViewport，原实际ImageViewBox/模板/命令保持。已合工作流01ce8d5a为2aaacfee的独立设计与测试消费者；Main完整typed pane/ROI/旧SDK退出仍由工作流独立线整批实施，当前不做破坏性半批UI构建。
+- C15后续小增量：SyncCommands聚合订阅+清理双异常，设计Sample.Dispose全项聚合；新增Window双故障回归尚未新验。原候选/正式5过成绩属67固定源，不套后续增量。C08另确证四类原ROI旧Up/Cancel在Release/Notify重入新手势后无条件清新旗，需下一集中令牌修复；C09已闭原15字段/显示清空语义，不因nativeABI阻挡UI，但真实FIXTURE Port由调用者提供。
+- 98377/38897已真实终态，当前无live。用户BlobParameterEditor.xaml原SHA保持，不改不暂存；Blob业务冻结、完整两阶段目标active。下一固定公共API交工作流消费，收齐7失败修复/完整D07消费者与本线ROI增量，再同源规定构建和实际回归；不套旧正式成绩。
 ## 2026-10-28 完整Global回归缺省类型误清绑定修复候选
 
 正式GlobalBinding attempt002暴露动态端口存在但DeclaredType=object且无ValueDeclaration时被误判不兼容。本批保留显式生产引用并标记Unresolved，只有端口删除或已知类型冲突才解除；新增同一服务Reset/ReconcileAll保身份及正式语义声明优先回归。尚未编译运行，交主线同源验证；SDK终态定向22/0只计该组，不计完整Global通过。Group冻结，D07消费者仍整批实施中。

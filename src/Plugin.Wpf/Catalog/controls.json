@@ -5705,7 +5705,7 @@
       "localFiles": [
         {
           "path": "src/Plugin.Wpf/Presenters/Commands/NativeToolCommandPresenter.cs",
-          "sha256": "c13f3dbfb8186e4bd3528d362e0fd9ae08835920ab205ad6fd81b9a048bce18c"
+          "sha256": "dac77beb1e81ad4a1602628161abef7bc503f1bcbcc826a647a78605c4eecb35"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
@@ -5725,7 +5725,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeToolEditorSample.cs",
-          "sha256": "a51b57abfd5e7d8ae63d6fa9f15edde20af5097ff554fe3fa73f2bb33f67568e"
+          "sha256": "b367c5e5f69da51036078a2a37bcc525ba62bec1098dfac5be0d9675cde72ce5"
         }
       ],
       "dependencies": [
@@ -5753,7 +5753,9 @@
         "status": "CANDIDATE_FORMAL_AND_MANUAL_PENDING",
         "evidence": "docs/collaboration/evidence/O06_NATIVE_TOOL_EDITOR_CANDIDATE_20261028.json",
         "candidateWindowPassed": 5,
-        "formalAccepted": false
+        "formalAccepted": false,
+        "formalIntegrationEvidence": "docs/collaboration/evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json",
+        "pendingIncrement": "后续订阅双异常/设计清理增量和新增第6窗口用例待新编验，不套67ce328d成绩"
       }
     }
   ],

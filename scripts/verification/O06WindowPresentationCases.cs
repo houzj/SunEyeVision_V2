@@ -233,6 +233,12 @@ internal static class S2DocumentEditingCases
   public event EventHandler Changed{add=>_changed+=value;remove{_changed-=value;if(ThrowRemove)throw new InvalidOperationException("fixture-detach");}}
   public void Notify()=>_changed?.Invoke(this,EventArgs.Empty);
  }
+ sealed class BrokenEditorCommand:ICommand
+ {
+  public bool CanExecute(object? parameter)=>true;
+  public void Execute(object? parameter)=>throw new Exception("不得执行故障命令");
+  public event EventHandler CanExecuteChanged{add=>throw new InvalidOperationException("fixture-add-failed");remove=>throw new InvalidOperationException("fixture-remove-failed");}
+ }
  static void VerifyNativeToolEditor()
  {
   Test("原固定底栏三页同链与四命令状态矩阵",()=>
@@ -294,6 +300,15 @@ internal static class S2DocumentEditingCases
    var faulty=new MutableEditorCommands{ThrowConfirm=true};PublicationThrows<InvalidOperationException>(()=>frame.BindCommands(faulty));
    Require(faulty.Subscribers==0&&Visuals<ItemsControl>(frame).Single(control=>control.Name=="BottomCommands").ItemsSource is null,"初始化异常未清订阅/视图");
    frame.BindCommands(rejected);owner.UpdateLayout();Pump();Require(Visuals<Button>(frame).Any(button=>Equals(button.Content,"执行")&&button.IsEnabled),"失败后不能接新宿主");
+  });
+  Test("原固定底栏订阅与归还双异常均保留且样例仍清树",()=>
+  {
+   using var frame=new Native.Composition.Parameters.NativeToolEditorFrame();var source=new MutableEditorCommands{OnceOverride=new BrokenEditorCommand()};
+   AggregateException? observed=null;try{frame.BindCommands(source);}catch(AggregateException error){observed=error;}
+   Require(observed is not null&&observed.Flatten().InnerExceptions.Any(error=>error.Message=="fixture-add-failed")
+    &&observed.Flatten().InnerExceptions.Any(error=>error.Message=="fixture-remove-failed")&&source.Subscribers==0,"双异常被覆盖或source未退订");
+   var sample=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorSample();var faulty=new MutableEditorCommands();sample.Frame.BindCommands(faulty);faulty.ThrowRemove=true;
+   PublicationThrows<AggregateException>(sample.Dispose);Require(sample.Child is null&&sample.Frame.EditorContent is null&&faulty.Subscribers==0,"样例Dispose异常跳过真实子树归还");sample.Dispose();
   });
  }
  static void VerifyResultPublication()

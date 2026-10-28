@@ -7721,10 +7721,11 @@
       "C14独立原列表实施收紧": "原CurResultDataGridStyle+ModuleViewDataGridStyle+dgCellCenterAlignmentStyle+复用RecScrollBarStyle，完整原10列与500增量；先prepare所有复制scalar/不可变Geometry/ValidWhen/唯一row-id，不缓存reader/资源。Prepared/Rows/Cells为只读副本，500批底层全装后单Reset避免观察异常半批。每次Install重建持generation/publication的原CurResultScrollCommand（原行为直接Execute不调用CanExecute），Scroll内部外调后再核身份。Select要求当前行实例+publication，更新清选择，几何带context身份。正式IToolResultView/context及PropertyList与UI同批统一，不能样例假冒生产接入。",
       "C17固定底栏与命令生命周期实施收紧": "只抽原Orange_ButtonStyle7-42/BottomButtonStyle79-82、四模板159-167/171-224及ParamsTabUserControl底栏93-142，固定Auto行外于三页滚动。原连续/单次continuous时隐藏、running禁用、RunEnable=false隐藏；Stop仅continuous控制显隐，Stopping/Closing保continuous至真实结束。库仅状态投影/租约命令，无循环Task/CTS；Actions部分构造立即登记各inner订阅，失败/Dispose聚合逐项摘，先失效租约，通知与CanExecute每外调核State版本/生命周期。宿主每run令牌链接编辑scope；Stop仅停止run且context存活，Confirm成功发布才关，X/关闭最终丢弃。Esc原行为未证，不冒称VM。",
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。",
-      "C15原固定底栏与C01三页组合实际候选": "原Orange/BottomButtonStyle和连续/停止/执行/确定四模板已提取，Height24/WidthAuto/Min66、原Margin/Padding、32高固定底栏；NativeToolEditorFrame借现真实三页字段，不套第二tabs/外层Scroll。宿主ICommand及状态借用、旧回调/命令拒绝、替换命令订阅、异常聚合、内容归还与独立XAML已实施，候选Window5/0。规定UI/full及设计、实际工具宿主和人工尚未验；C17仍图像承载，不重编号。"
+      "C15原固定底栏与C01三页组合实际候选": "原Orange/BottomButtonStyle和连续/停止/执行/确定四模板已提取，Height24/WidthAuto/Min66、原Margin/Padding、32高固定底栏；NativeToolEditorFrame借现真实三页字段，不套第二tabs/外层Scroll。宿主ICommand及状态借用、旧回调/命令拒绝、替换命令订阅、异常聚合、内容归还与独立XAML已实施，候选Window5/0。规定UI/full及设计、实际工具宿主和人工尚未验；C17仍图像承载，不重编号。",
+      "C15原固定底栏与C01三页组合正式核验": "67ce328d两规定构建0错误、原固定底栏5/0、独立真实设计总96/0（含原三页/32底栏入口），RuntimeEditor10/0、FullChain8/0；控件库实际模板及借用命令已验证，正式工具窗口消费/停止取消与关闭仍须宿主对接，异常诊断小增量及人工未验。全局绑定284中7项失败独立保留，不算阶段一完成。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计继续：树表共用SDK输出声明及同次运行快照/唯一publication。最新正式52beb99b UI/full零错误，publication10/0、真实原表分页1/0、实际来源2/0；可选字段省略导致整表异常已真实复现并修复。SDK取消终态定向22/0不代表完整变量绑定轨通过；完整GlobalBinding仍有加载超时和缺失生产者断言失败。9065e86a的ImageSources176/0单列历史。生产D07、跨scope绑定与实际历史入口仍继续实施。",
+      "summary": "按VM设计，树表共用SDK声明与同次运行快照/唯一publication。最新67ce328d UI/full零错误、EXE探针0；完整GlobalBinding不再总超时，284项277过7败，继续修复。ImageSources180/0（含新的文档/流程/节点身份及释放用例）、原底栏5/0、Design96/0、RuntimeEditor10/0、FullChain8/0。生产D07、实际历史入口及Blob专属迁移仍未完成。",
       "ownership": [
         [
           "结果树 / PropertyList",
@@ -7802,7 +7803,7 @@
       "delivery": [
         [
           "当前集中批",
-          "正式52beb99b UI/full均0错误、EXE probe66928 exit0；Window220 publication10/0（含optional/空父record）、221原表1/0、222来源2/0；GlobalBinding003仅ToolSideEffectReceiptTests定向22/0，fullTrack=false。完整GlobalBinding002失败/超时仍未核收；原9065图像源176/0保独立基线。"
+          "正式67ce328d UI零错6569警告121.43秒/full零错6606警告77.23秒、EXE45604 exit0；完整Global004=277过7败/284，已消除总超时，保7失败。ImageSources180/0、C15窗口5/0、Design96/0、RuntimeEditor10/0、FullChain8/0；795发布文件及本批加载记录SHA核。"
         ],
         [
           "接口与接入",
@@ -7842,7 +7843,7 @@
           "独立背景epoch/publication/layer revision；异Frame/异Coordinates拒绝，模板替换和预算故障隔离",
           "Apply/Save核ROI IsCurrent和HasPendingGesture，关闭/全屏/切页/旧取消不清新租约"
         ],
-        "currentState": "最新52beb99b两规定构建零错误，定向publication10/0+表1/0+来源2/0+SDK终态22/0；完整GlobalBinding失败/超时未核收，生产D07/历史实际入口/Blob专属迁移和人工未完成。"
+        "currentState": "正式67ce328d两构建0错误，ImageSources180/0、底栏5/0、设计96/0、RuntimeEditor10/0、FullChain8/0；完整Global284=277过7败，非完整链核收。D07生产与历史/Blob/人工未完成。"
       },
       "candidateEvidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
       "apiImplementation": {
@@ -7985,15 +7986,23 @@
           "formalProductionAccepted": false
         },
         "latestValidation": {
-          "productCommit": "52beb99b4a580c00e9f97eb860a0adf55f522d0e",
-          "evidence": "docs/collaboration/evidence/O06_RESULT_OPTIONAL_FIELDS_INTEGRATION_20261028.json",
+          "productCommit": "67ce328de6e730c0a7d2ee0c034b72810fb2c4ca",
+          "evidence": "docs/collaboration/evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json",
           "uiErrors": 0,
           "fullErrors": 0,
-          "publication": 10,
-          "table": 1,
-          "origins": 2,
-          "sdkReceiptDirected": 22,
-          "fullGlobalBindingAccepted": false
+          "GlobalBinding": {
+            "passed": 277,
+            "failed": 7,
+            "count": 284,
+            "fullTrack": true,
+            "completed": true
+          },
+          "ImageSources": 180,
+          "footer": 5,
+          "design": 96,
+          "runtimeEditor": 10,
+          "fullChain": 8,
+          "fullChainAccepted": false
         }
       }
     },
@@ -8012,7 +8021,18 @@
         "宿主真实工具窗口消费/Capture/Commit/连续取消与退出；Blob第二阶段接入",
         "实际VS/VM同态/高DPI及用户外观验收",
         "第一阶段其余原清单及D07生产消费者仍未完成"
-      ]
+      ],
+      "formalIntegration": {
+        "productCommit": "67ce328de6e730c0a7d2ee0c034b72810fb2c4ca",
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json",
+        "uiErrors": 0,
+        "fullErrors": 0,
+        "windowPassed": 5,
+        "designPassed": 96,
+        "runtimeEditorPassed": 10,
+        "fullChainPassed": 8,
+        "manualAccepted": false
+      }
     }
   },
   "vmFrameworkArchitectureReference": {

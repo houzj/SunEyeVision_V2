@@ -94,7 +94,7 @@ internal sealed class NativeToolCommandPresenter : IDisposable
             ArgumentNullException.ThrowIfNull(commands[index]);
         }
         if(commands.SequenceEqual(_hostCommands,ReferenceEqualityComparer.Instance))return true;
-        var next=new List<CommandObservation>();var installed=false;
+        var next=new List<CommandObservation>();var installed=false;Exception? primary=null;
         try
         {
             foreach(var command in commands.Distinct(ReferenceEqualityComparer.Instance).Cast<ICommand>())
@@ -106,9 +106,14 @@ internal sealed class NativeToolCommandPresenter : IDisposable
             SunEyeVision.Plugin.Wpf.Adapters.Fields.ParameterCleanup.Run(previous.Select(observer=>(Action)observer.Dispose));
             return Current(request);
         }
+        catch(Exception failure){primary=failure;throw;}
         finally
         {
-            if(!installed)SunEyeVision.Plugin.Wpf.Adapters.Fields.ParameterCleanup.Run(next.Select(observer=>(Action)observer.Dispose));
+            if(!installed)
+            {
+                try{SunEyeVision.Plugin.Wpf.Adapters.Fields.ParameterCleanup.Run(next.Select(observer=>(Action)observer.Dispose));}
+                catch(Exception cleanup){if(primary is not null)throw new AggregateException(primary,cleanup);throw;}
+            }
         }
     }
     private static bool Allowed(int kind,NativeToolCommandState state)=>kind switch

@@ -31,7 +31,11 @@ public sealed class NativeToolEditorSample:Decorator,IDisposable
         Frame.EditorContent=Fields;Frame.BindCommands(Commands);Frame.Loaded+=OnLoaded;Child=Frame;
     }
     private void OnLoaded(object sender,RoutedEventArgs args){if(!_disposed)Frame.BindCommands(Commands);}
-    public void Dispose(){if(_disposed)return;_disposed=true;Frame.Loaded-=OnLoaded;Frame.Dispose();Fields.Dispose();Child=null;}
+    public void Dispose()
+    {
+        if(_disposed)return;_disposed=true;Frame.Loaded-=OnLoaded;
+        SunEyeVision.Plugin.Wpf.Adapters.Fields.ParameterCleanup.Run(new Action[]{Frame.Dispose,Fields.Dispose,()=>Child=null});
+    }
 
     public sealed class SampleCommands:INativeToolCommands
     {

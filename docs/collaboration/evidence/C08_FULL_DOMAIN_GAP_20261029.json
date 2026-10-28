@@ -1,0 +1,112 @@
+{
+  "status": "候选源码的三态快照基础验证；非完整C08/阶段一/人工验收",
+  "sourceCommit": "8fdb16d333156909b183a132ccb4367b703e68eb",
+  "nativeSources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
+      "sha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+      "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ROISelecter.cs",
+      "sha256": "b96735a3a474f02b9f6d3767e340bed4dc6e0ffd4c8c123547540b08665bc3c8"
+    }
+  ],
+  "nativeFullScreenTemplate": "<ns0:DataTemplate xmlns:ns0=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:ns1=\"http://schemas.microsoft.com/winfx/2006/xaml\" ns1:Key=\"FullScreenDataTemplate\">\n        <ns0:ToggleButton CommandParameter=\"{x:Static localParserTab:RoiType.FullScreen}\" ToolTip=\"{DynamicResource 全屏}\" Background=\"#00FFFFFF\" Style=\"{StaticResource fullscreenRoiBtnStyle}\" Command=\"{Binding ValueChangedCommand}\" IsChecked=\"{Binding FullScreenA, Mode=TwoWay}\" />\n      </ns0:DataTemplate>\n      ",
+  "nativeStyleKey": "fullscreenRoiBtnStyle",
+  "nativeImageSources": [
+    "/Apps.Style;component/Resources/ROI_选中但未绘制_bg.png",
+    "/Apps.Style;component/Resources/ROI_full-screen_normal.png"
+  ],
+  "localSourceHashes": {
+    "src/Plugin.Wpf/Regions/RoiEditContracts.cs": "6d0c9087799d998a8610a74e36b07fdfc5e4e79d43bfd1def5f5a7926a221b08",
+    "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b",
+    "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+    "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml": "52191dd6cbdeed3fbed02c71a378610cb1d5fd9314fb26f0c2ceb08291ec84c6",
+    "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.XmlParser/RoiType.cs": "53593f0f629adbf1a4b81b8db0cdcd7614b624f936c9d2c33bc59cd3ebb76aff"
+  },
+  "confirmedGaps": [
+    "当前RoiEditSnapshot只有Stamp/Items，不能在捕获中明确区分None/FullDomain/Explicit；空列表不能冒称三态。",
+    "RoiEditProposal当前只有Create/Replace/Delete/Undo/Redo，无组覆盖状态变更；Affected仅项身份，不能虚构Guid.Empty几何对象代表组状态。",
+    "当前RoiSelectControl裁剪分支只有Box/SectorRing/Sector/Polygon；原FullScreenDataTemplate及FullScreenEnableA/FullScreenA绑定、原样式原图标尚未接入。",
+    "原RoiType已含FullScreen，不应增加近似枚举或用100%矩形代替全域语义。"
+  ],
+  "nextImplementationDesign": [
+    "只在现Plugin.Wpf非视觉ROI编辑协议/样例根扩展显式组覆盖状态及原FullScreen命令；没有真实平台依赖不增工程或新基础合同项目。",
+    "完整快照/接纳/历史比较包括组状态与项；组变更单列受影响组，不伪造ROI身份，保持现稳定对象ID和同Frame。",
+    "按最终用户基准排列FullDomain/Box/SectorRing/Polygon/Sector，检测/屏蔽同结构；保原模板/原资源。",
+    "空列表与全域明确区分；FullDomain后续Runtime转换必须基于同图像有效Domain，不把假矩形当业务区域。",
+    "补取消/非法拒绝/重入/换帧/关闭，以及复制删除/撤销重做和独立设计运行样例；未经VM同态/真实VS/人工不完成阶段。"
+  ],
+  "remainingEvidence": [
+    "原全域模板/按钮、明确组提案、创建/删除最后对象后的角色策略及完整组历史仍需实现与验证。",
+    "真实VM逐态、VS设计器与用户人工验收均未执行。"
+  ],
+  "nativeStateAudit": {
+    "evidenceKind": "现有REA反编译托管源码静态核证；本次未运行VM，不冒称运行时验证",
+    "clearRoi": {
+      "firstLine": 1261,
+      "lastLine": 1264,
+      "source": "\tprotected void ClearRoi()\n\t{\n\t\tNormalizeROIList.Clear();\n\t}"
+    },
+    "fullScreenCommand": {
+      "firstLine": 2105,
+      "lastLine": 2110,
+      "source": "\tprivate void SelectFullScreen()\n\t{\n\t\tClearRoi();\n\t\tStopDrawROI();\n\t\tSetValue();\n\t}"
+    },
+    "emptySerialization": {
+      "firstLine": 2649,
+      "lastLine": 2666,
+      "source": "\t\tif (roiInputs.Count < 1)\n\t\t{\n\t\t\tif (SelectType == \"Avoid\")\n\t\t\t{\n\t\t\t\tbinaryWriter.Write((byte)0);\n\t\t\t\tbinaryWriter.Write((byte)0);\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tbinaryWriter.Write((byte)1);\n\t\t\t\tbinaryWriter.Write((byte)0);\n\t\t\t}\n\t\t}\n\t\treturn memoryStream.ToArray();\n\t}\n\n\tvoid IROISelecter.DoRoiSelect(IROI roi)\n\t{"
+    },
+    "selectionFlags": {
+      "firstLine": 1697,
+      "lastLine": 1729,
+      "source": "\tprivate void NormalizeSelectRoiIcon()\n\t{\n\t\tClearSelected();\n\t\tif (NormalizeROIList.Count < 1)\n\t\t{\n\t\t\tFullScreen_ModuleEnableA = true;\n\t\t\treturn;\n\t\t}\n\t\tIROI iROI = NormalizeROIList.Last();\n\t\tif (iROI != null)\n\t\t{\n\t\t\tSelectRoiIcon(iROI);\n\t\t}\n\t}\n\n\tprivate void SelectRoiIcon()\n\t{\n\t\tClearSelected();\n\t\tif (ROIList.Count < 1)\n\t\t{\n\t\t\tFullScreen_ModuleEnableA = true;\n\t\t\treturn;\n\t\t}\n\t\tIROI iROI = ROIList.OfType<IROISelectable>().LastOrDefault((IROISelectable p) => p.IsSelected) as IROI;\n\t\tif (iROI == null && UseType != ROIUseType.Mul)\n\t\t{\n\t\t\tiROI = ROIList.LastOrDefault();\n\t\t}\n\t\tif (iROI != null)\n\t\t{\n\t\t\tSelectRoiIcon(iROI);\n\t\t}\n\t}"
+    },
+    "radioSelection": {
+      "firstLine": 1904,
+      "lastLine": 1910,
+      "source": "\t\tswitch (roiType)\n\t\t{\n\t\tcase RoiType.FullScreen:\n\t\t\tSelectNone();\n\t\t\tFullScreenA = true;\n\t\t\tbreak;\n\t\tcase RoiType.CircleCaliper:"
+    },
+    "findings": [
+      "FullScreen命令ClearRoi清NormalizeROIList，StopDrawROI后SetValue。",
+      "NormalizeReversParse空集合按SelectType写出不同编码：Avoid写00 00，其他写01 00；同一个空集合不是同一业务覆盖语义。",
+      "FullScreenA是按钮选中，FullScreen_ModuleEnableA独立驱动图标；不能当作相同开关。",
+      "本方显式None/FullDomain/Explicit是编辑合同设计，不宣称VM原参数模型有这个三态类型。"
+    ]
+  },
+  "implementationCandidate": {
+    "changes": [
+      "RoiEditSnapshot必需显式Groups；没有旧构造重载或空集合推断回退。",
+      "Capture冻结并校验组名/枚举/唯一性及显式项所属组；None/FullDomain不得夹带几何。",
+      "同版本刷新/回执与取消回调比较含组覆盖；几何提案不得偷改覆盖；历史根保存组状态。",
+      "现几何宿主仅声明Explicit能力，不冒称已支持全域。"
+    ],
+    "validation": "docs\\collaboration\\evidence\\C08_GROUP_SNAPSHOT_CANDIDATE_20261029.json",
+    "sourceHashes": {
+      "scripts/verification/O06WindowPresentationCases.cs": "39e6196d16dd32a79d5eb5e05ad52d74b1579deffc791c56dcbfb590bbadacec",
+      "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs": "63c75708be5e782157cf61a9578640678e74a6b4dda4955e3f69b6dcdd9d228e",
+      "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs": "f0c0b66ea393c26d3d669fecf5365abbef15e67f4e297a28de18a29c51f5696f",
+      "src/Plugin.Wpf/Design/NativeRoiDesignData.cs": "d6ec1627978ac80678a18e15cb54ada4fec41cef8a4d5a0418da7cf3773dbf91",
+      "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs": "34ca93116c5f12a1fc3deb7642e4aeeb29b13b2a06d8f9a2b0d54f823e056760",
+      "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs": "479fb4b3985117829260caa6d668b96fdeef29d096a6dbdb1ad7df18eb4b2f26",
+      "src/Plugin.Wpf/Regions/RoiEditContracts.cs": "ba687da21847238ba4855698f360ff7dd6c04c27f594fbec6e1447f85656b0ec",
+      "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs": "3da1e51e8fede0ff8807691324c9b7af0f7ab9c3739b15c597d73a3aff1e4520",
+      "tests/SunEyeVision.UI.Tests/ResultViewportFullscreenScopeTests.cs": "3834f018066ca03c2ab7a0f2ea06d07da09f5e7092b6c3a6a1c8f36b7d1f131f"
+    }
+  },
+  "commandsCandidate": {
+    "evidence": "docs/collaboration/evidence/C08_COVERAGE_COMMANDS_CANDIDATE_20261029.json",
+    "status": "候选源码的原全域模板、组命令、历史及身份闭环自动化通过；不是完整C08或阶段一完成",
+    "remaining": [
+      "同一提交正式Release身份仍需在本地检查点后集中重绑，不借候选成绩。",
+      "当前几何宿主只声明Explicit能力；Blob业务冻结，未把独立样例接纳冒称Blob正式参数、持久化和算法Domain转换完成。",
+      "C01—C17剩余Assist三态/位姿/Cross、原SDK残留/历史与其他通知、原249总体及关联场景继续。",
+      "原件逐态对照、全部真实指针/VS设计器与用户人工验收未完成，不放行第二阶段。"
+    ]
+  }
+}

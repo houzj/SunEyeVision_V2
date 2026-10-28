@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "原21项失败已全部在当前新宿主定向通过，本批50/0；UI/full零错，实际宿主9/0、窗口10/0、无UI泵HALCON工作流10/0、生命周期24/0、准入8项。原249整体未重跑，SDK/历史/完整控件与VS/VM/人工门禁未完成，不能关闭I2或第一阶段。",
+  "current": "8fdb16d3同提交正式核收：UI/full零错，原21定向全过（本轨50/0）、真实整链9/0、窗口10/0、无UI泵HALCON10/0、生命周期24/0、准入8项。原249总体、控件完整组合/SDK/历史/VS/VM/人工未完，第一阶段未退出。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -8318,6 +8318,30 @@
       "实现": "原导出按钮弹窗前冻结，raw沿已有短读pixel lease保真实Gray8/Bgr24/Bgra32/Domain外像素；prepared交付后不持reader。render暂保原ShapeItemsPage并核frame/layer代次，失效/重入不清新图。",
       "证据": "docs/collaboration/evidence/O06_NATIVE_EXPORT_SNAPSHOT_CANDIDATE_20261028.json",
       "未完": "原Apps.Data OpenCV导出helper已取证但尚未迁移；WPF线宽/坐标/文字/JPEG不同不称原件等价。两个独立图层交叉proof隐藏失效需明确generation/通知，完整C17/Cross及VS/人工仍待。"
+    },
+    "fullDomainGapEvidence": "docs/collaboration/evidence/C08_FULL_DOMAIN_GAP_20261029.json",
+    "fullDomainSnapshotCandidate": {
+      "status": "候选源码的三态快照基础验证；非完整C08/阶段一/人工验收",
+      "evidence": "docs\\collaboration\\evidence\\C08_GROUP_SNAPSHOT_CANDIDATE_20261029.json",
+      "validation": "UI002/full001零错；Window248覆盖快照5/0、Design069=101/0、FullChain142=9/0、Recovery015=50/0、真实EXE准入009八过；三态状态基础不等于原全域完整交互。",
+      "remaining": [
+        "明确SetCoverage组提案及原FullScreen模板/按钮尚未接入；本批只完成快照基础。",
+        "Create从非Explicit组切入及删除最后对象后按检测/屏蔽角色确定覆盖，需要完整原子状态机和历史用例；不能用当前几何提案偷改覆盖。",
+        "同源原ROI组手势/历史全套关联与实际宿主全域能力仍须继续验证；原249未整体重跑。",
+        "VM同态、真实VS设计器及用户人工验收未执行；不放行Blob第二阶段。"
+      ]
+    },
+    "fullDomainCommandsCandidate": {
+      "status": "候选源码的原全域模板、组命令、历史及身份闭环自动化通过；不是完整C08或阶段一完成",
+      "evidence": "docs/collaboration/evidence/C08_COVERAGE_COMMANDS_CANDIDATE_20261029.json",
+      "implementation": "快照与空集合策略由宿主显式声明，无旧构造兼容和空列表推断。；明确SetCoverage提案清目标组；Create原子进入Explicit，末项删除恢复该组EmptyCoverage；历史同时恢复组状态、稳定ID与选择。；接纳只允许对应提案的组变化，禁止改其他组或空集合策略；错误接纳退役编辑租约并继续宿主发布。；原FullScreen模板/样式及正常/选中位图，顺序FullScreen/Box/SectorRing/Polygon/Sector；未导入普通圆形替代圆环。；图像原选择命令同步活动组，取消回调切组使旧选择停止；直接绘制与取消以轻量属性通知同步原按钮并完整退订，不重建参数事务。；非法数值阻止覆盖切换且保留原文、按钮复位；重复点击无多余写入；继承组拒绝本地覆盖；关闭旧命令不能写。",
+      "validation": "最终UI003/full003零错；ROI57/0、Design101/0、Editor10/0、FullChain9/0、Recovery50/0、真实EXE准入八过。当前身份为8fdb基线加候选SHA，不套提交产物成绩。",
+      "remaining": [
+        "同一提交正式Release身份仍需在本地检查点后集中重绑，不借候选成绩。",
+        "当前几何宿主只声明Explicit能力；Blob业务冻结，未把独立样例接纳冒称Blob正式参数、持久化和算法Domain转换完成。",
+        "C01—C17剩余Assist三态/位姿/Cross、原SDK残留/历史与其他通知、原249总体及关联场景继续。",
+        "原件逐态对照、全部真实指针/VS设计器与用户人工验收未完成，不放行第二阶段。"
+      ]
     }
   },
   "vmFrameworkArchitectureReference": {
@@ -8479,7 +8503,7 @@
         "全部完成后才删除剩余旧工程/旧路径。公共框架设计与职责整理在I0/I1完成，不推迟到此。"
       ]
     ],
-    "nextAction": "固定本批完整源码检查点及版本证据；回到Blob必需控件剩余全域ROI/Assist三态持久化/位姿联动/Cross等原组合，穿插清理剩余SDK/历史/通知边界；不等全VM库，不进入Blob业务。",
+    "nextAction": "继续Blob必需C08全域ROI原件及None/FullDomain/Explicit组状态；按已归档原模板/样式和具体协议缺口实施完整批，随后Assist三态/位姿/Cross；保持Blob业务冻结。",
     "sourceAudit": {
       "evidence": "docs/collaboration/evidence/PRODUCT_ISOLATION_INVENTORY_20261028.json",
       "reproduce": "scripts/documentation/audit_product_isolation.py",
@@ -8555,7 +8579,7 @@
       "sourceCommit": "70d8032aa81cfc5652a95b92601e6c5f8039c9c2"
     },
     "resultChainCutover": {
-      "status": "原21项失败已全部在当前新宿主定向通过，本批50/0；UI/full零错，实际宿主9/0、窗口10/0、无UI泵HALCON工作流10/0、生命周期24/0、准入8项。原249整体未重跑，SDK/历史/完整控件与VS/VM/人工门禁未完成，不能关闭I2或第一阶段。",
+      "status": "8fdb16d3同提交正式核收：UI/full零错，原21定向全过（本轨50/0）、真实整链9/0、窗口10/0、无UI泵HALCON10/0、生命周期24/0、准入8项。原249总体、控件完整组合/SDK/历史/VS/VM/人工未完，第一阶段未退出。",
       "evidence": "docs/collaboration/evidence/I2_RESULT_CHAIN_INVENTORY_20261029.json",
       "sourceCommit": "70d8032aa81cfc5652a95b92601e6c5f8039c9c2",
       "compiledScope": {
@@ -8891,7 +8915,7 @@
           "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         }
       ],
-      "nextBatch": "固定本批完整源码检查点及版本证据；回到Blob必需控件剩余全域ROI/Assist三态持久化/位姿联动/Cross等原组合，穿插清理剩余SDK/历史/通知边界；不等全VM库，不进入Blob业务。",
+      "nextBatch": "继续Blob必需C08全域ROI原件及None/FullDomain/Explicit组状态；按已归档原模板/样式和具体协议缺口实施完整批，随后Assist三态/位姿/Cross；保持Blob业务冻结。",
       "implementationEvidence": "docs/collaboration/evidence/I2_RESULT_CHAIN_IMPLEMENTATION_20261029.json",
       "implementationResults": [
         [
@@ -8933,12 +8957,19 @@
         [
           "结果工作区与全部原21失败承接",
           "I2_RESULT_WORKSPACE_RECOVERY_20261029.json：50/0；修导航回声/上下文同快照/上游恢复与缓存校准；真实来源条明确选择发纯预览，删Main旧集合/索引；保游标/持久化/晚通知/严格B坐标。原249未全量重跑。"
+        ],
+        [
+          "8fdb同提交核收",
+          "docs/collaboration/evidence/I2_WORKSPACE_COMMITTED_RELEASE_20261029.json：569发布文件及61条实际加载记录路径/SHA核对，所有专项本提交重跑，不借前候选成绩。"
         ]
       ],
       "committedReleaseEvidence": "docs/collaboration/evidence/I2_COMMITTED_RELEASE_20261029.json",
       "notificationQueueEvidence": "docs/collaboration/evidence/I2_NOTIFICATION_QUEUE_20261029.json",
       "uiRecoveryEvidence": "docs/collaboration/evidence/I2_UI_FAILURE_RECOVERY_20261029.json",
-      "resultWorkspaceRecoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
+      "resultWorkspaceRecoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json",
+      "sourceCheckpoint": "8fdb16d333156909b183a132ccb4367b703e68eb",
+      "committedReleasePending": false,
+      "workspaceCommittedReleaseEvidence": "docs/collaboration/evidence/I2_WORKSPACE_COMMITTED_RELEASE_20261029.json"
     }
   }
 }

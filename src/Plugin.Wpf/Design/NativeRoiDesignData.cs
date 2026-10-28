@@ -56,7 +56,8 @@ public static class NativeRoiDesignData
         private readonly NativeRoiSamples.Image _image=new();
         private readonly Guid _scope=Guid.NewGuid();
         private readonly List<RoiEditItem> _rows;
-        private sealed record HistoryState(IReadOnlyList<RoiEditItem> Rows,RoiEditTarget? Selection);
+        private IReadOnlyList<RoiGroupState> _groups=Array.AsReadOnly(new[]{new RoiGroupState("detect",RoiCoverage.Explicit,RoiCoverage.FullDomain),new RoiGroupState("mask",RoiCoverage.Explicit,RoiCoverage.None)});
+        private sealed record HistoryState(IReadOnlyList<RoiEditItem> Rows,IReadOnlyList<RoiGroupState> Groups,RoiEditTarget? Selection);
         private readonly Stack<HistoryState> _undo=new(),_redo=new();
         private long _revision,_generation;
         private bool _disposed;
@@ -66,7 +67,7 @@ public static class NativeRoiDesignData
         {
             _scene=scene;
             _rows=NativeRoiSamples.CreateItems().ToList();
-            Session=new(_image,Read,Accept,()=>!_disposed,()=>new(_undo.Count>0,_redo.Count>0),"detect");
+            Session=new(_image,Read,Accept,()=>!_disposed,()=>new(_undo.Count>0,_redo.Count>0),"detect",canSetCoverage:group=>group is "detect" or "mask");
         }
         internal void Attach()
         {
@@ -75,8 +76,8 @@ public static class NativeRoiDesignData
             if(_disposed||!ReferenceEquals(_scene.Session,Session)||!ReferenceEquals(_scene.GetValue(OwnerProperty),this))return;
             _scene.Loaded+=Loaded;_scene.Unloaded+=Unloaded;_scene.Disposing+=Dispose;
         }
-        private RoiEditSnapshot Read()=>new(new(_scope,_revision,_image.Frame),Array.AsReadOnly(_rows.ToArray()));
-        private HistoryState CaptureHistory()=>new(Array.AsReadOnly(_rows.ToArray()),Session.CurROIData is {} selected?new(selected.Group,selected.Id):null);
+        private RoiEditSnapshot Read()=>new(new(_scope,_revision,_image.Frame),Array.AsReadOnly(_rows.ToArray()),_groups);
+        private HistoryState CaptureHistory()=>new(Array.AsReadOnly(_rows.ToArray()),_groups,Session.CurROIData is {} selected?new(selected.Group,selected.Id):null);
         private RoiEditAcceptance Accept(RoiEditStamp expected,RoiEditProposal change)
         {
             var snapshot=Read();if(_disposed||expected!=snapshot.Stamp)return RoiEditAcceptance.Reject(snapshot,"旧预览范围");
@@ -84,6 +85,7 @@ public static class NativeRoiDesignData
             switch(change)
             {
                 case RoiEditProposal.Create create:
+                    _groups=Array.AsReadOnly(_groups.Select(group=>group.Group==create.Group?group with{Coverage=RoiCoverage.Explicit}:group).ToArray());
                     var id=Guid.NewGuid();_rows.Add(new(create.Group,id,"新区域",create.Geometry));
                     affected=new[]{new RoiEditTarget(create.Group,id)};selection=new RoiEditSelection.Select(affected[0]);break;
                 case RoiEditProposal.Replace replace:
@@ -94,11 +96,17 @@ public static class NativeRoiDesignData
                     if(delete.Targets.Any(target=>!_rows.Any(row=>row.Group==target.Group&&row.Id==target.Id&&row.Enabled&&row.Visible)))
                         return RoiEditAcceptance.Reject(snapshot,"删除对象不存在或不可编辑");
                     _rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));affected=delete.Targets;
+                    _groups=Array.AsReadOnly(_groups.Select(group=>delete.Targets.Any(target=>target.Group==group.Group)&&!_rows.Any(row=>row.Group==group.Group)?group with{Coverage=group.EmptyCoverage}:group).ToArray());
                     selection=before.Selection is {} old&&delete.Targets.Contains(old)?new RoiEditSelection.Clear():new RoiEditSelection.Keep();break;
+                case RoiEditProposal.SetCoverage coverage:
+                    affected=Array.AsReadOnly(_rows.Where(row=>row.Group==coverage.Group).Select(row=>new RoiEditTarget(row.Group,row.Id)).ToArray());
+                    _rows.RemoveAll(row=>row.Group==coverage.Group);
+                    _groups=Array.AsReadOnly(_groups.Select(group=>group.Group==coverage.Group?group with{Coverage=coverage.Coverage}:group).ToArray());
+                    selection=before.Selection?.Group==coverage.Group?new RoiEditSelection.Clear():new RoiEditSelection.Keep();break;
                 case RoiEditProposal.Undo or RoiEditProposal.Redo:
                     var source=change is RoiEditProposal.Undo?_undo:_redo;var destination=change is RoiEditProposal.Undo?_redo:_undo;
                     if(source.Count==0)return RoiEditAcceptance.Reject(snapshot,"没有可恢复历史");
-                    var restore=source.Pop();destination.Push(before);_rows.Clear();_rows.AddRange(restore.Rows);_revision++;
+                    var restore=source.Pop();destination.Push(before);_rows.Clear();_rows.AddRange(restore.Rows);_groups=restore.Groups;_revision++;
                     var restored=Read();return new(true,restored,RoiEditAcceptance.ChangedTargets(snapshot,restored),restore.Selection is {} target?new RoiEditSelection.Select(target):new RoiEditSelection.Clear());
                 default:throw new NotSupportedException("未知区域提案");
             }

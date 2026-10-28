@@ -5,12 +5,27 @@ namespace SunEyeVision.Plugin.Wpf.Regions;
 
 public sealed record RoiEditItem(string Group,Guid Id,string Name,RecordValue Geometry,bool Enabled=true,bool Visible=true);
 public sealed record RoiEditTarget(string Group,Guid Id);
+/// <summary>Coverage belongs to the group, never to a synthetic rectangle or an empty item ID.</summary>
+public enum RoiCoverage { None, FullDomain, Explicit }
+/// <summary>The owner declares the empty-collection meaning; it is not inferred from a group name.</summary>
+public sealed record RoiGroupState(string Group,RoiCoverage Coverage,RoiCoverage EmptyCoverage);
 /// <summary>Closed requests: collection and history operations never carry fictitious geometry.</summary>
 public abstract record RoiEditProposal
 {
     private RoiEditProposal(){}
     public sealed record Create(string Group,RecordValue Geometry):RoiEditProposal;
     public sealed record Replace(RoiEditTarget Target,RecordValue Geometry):RoiEditProposal;
+    public sealed record SetCoverage:RoiEditProposal
+    {
+        public string Group {get;}
+        public RoiCoverage Coverage {get;}
+        public SetCoverage(string group,RoiCoverage coverage)
+        {
+            if(string.IsNullOrWhiteSpace(group))throw new ArgumentException("覆盖组不能为空。",nameof(group));
+            if(coverage is not (RoiCoverage.None or RoiCoverage.FullDomain))throw new ArgumentOutOfRangeException(nameof(coverage),"Explicit必须随真实几何创建进入。");
+            Group=group;Coverage=coverage;
+        }
+    }
     public sealed record Delete:RoiEditProposal
     {
         public IReadOnlyList<RoiEditTarget> Targets {get;}

@@ -1124,10 +1124,184 @@ internal static class S2DocumentEditingCases
    finally{window.Close();}
   });
  }
+ static void VerifyRoiGroupSnapshots()
+ {
+  Test("ROI覆盖快照：空集合三态分别保留，不生成全图矩形",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+   var image=resources.CreateGray8(32,24,new byte[768]);
+   foreach(var coverage in new[]{RoiCoverage.None,RoiCoverage.FullDomain,RoiCoverage.Explicit})
+   {
+    var model=new RoiHost(image);model.Groups[0]=new("detect",coverage,RoiCoverage.Explicit);
+    using var session=model.Open();
+    Require(session.Items.Count==0&&session.Groups.Single(group=>group.Group=="detect").Coverage==coverage&&model.Writes==0,"空集合被推断为其他覆盖状态或生成伪几何");
+   }
+  });
+  Test("ROI覆盖快照：捕获隔离宿主可变集合，同版变更明确拒绝",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]));
+   using var session=model.Open();model.Groups[0]=new("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit);
+   Require(session.Groups[0].Coverage==RoiCoverage.Explicit,"宿主集合可回写已安装快照");
+   var rejected=false;try{session.Refresh();}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&session.Groups[0].Coverage==RoiCoverage.Explicit&&model.Writes==0,"同版覆盖变更未拒绝或污染原快照");
+  });
+  Test("ROI覆盖快照：新版本切换取消旧绘制，检测与屏蔽独立",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]));
+   using var session=model.Open();var cancelled=0;session.DrawRequested+=_=>{};session.DrawCancelled+=_=>cancelled++;
+   var request=session.BeginDraw("rectangle")!;Require(request is not null,"未建立原绘制请求");
+   model.Groups[0]=new("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit);model.Groups[1]=new("mask",RoiCoverage.None,RoiCoverage.Explicit);model.Revision++;session.Refresh();
+   Require(cancelled==1&&session.ActiveDraw is null&&session.Items.Count==0&&session.Groups[0].Coverage==RoiCoverage.FullDomain&&session.Groups[1].Coverage==RoiCoverage.None,"覆盖切换未原子安装或遗留旧绘制");
+   Require(!session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)))&&model.Attempts==0,"旧绘制越过覆盖版本进入宿主");
+  });
+  Test("ROI覆盖快照：未知重复组和非显式夹带几何拒绝",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(32,24,new byte[768]);
+   var row=new RoiEditItem("detect",Guid.NewGuid(),"矩形",RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)));
+   var cases=new[]{
+    (Array.Empty<RoiEditItem>(),new[]{new RoiGroupState("detect",(RoiCoverage)99,RoiCoverage.Explicit)}),
+    (Array.Empty<RoiEditItem>(),new[]{new RoiGroupState("detect",RoiCoverage.None,RoiCoverage.Explicit),new RoiGroupState("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit)}),
+    (new[]{row},new[]{new RoiGroupState("mask",RoiCoverage.Explicit,RoiCoverage.Explicit)}),
+    (new[]{row},new[]{new RoiGroupState("detect",RoiCoverage.FullDomain,RoiCoverage.Explicit)}),
+    (new[]{row},new[]{new RoiGroupState("detect",RoiCoverage.None,RoiCoverage.Explicit)})};
+   foreach(var (items,groups) in cases)
+   {
+    var snapshot=new RoiEditSnapshot(new(Guid.NewGuid(),0,image.Frame),items,groups);var rejected=false;
+    try{using var session=new NativeRoiSession(image,()=>snapshot,(_,_)=>throw new Exception("禁止写宿主"),()=>true,()=>new(false,false),"detect");}
+    catch(ArgumentException){rejected=true;}
+    Require(rejected,"不完整或矛盾覆盖快照被接纳");
+   }
+  });
+  Test("ROI覆盖快照：普通几何回执不得夹带另一组覆盖变更",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]));
+   using var session=model.Open();session.DrawRequested+=_=>{};var request=session.BeginDraw("rectangle")!;
+   model.AfterAccept=result=>result with{Snapshot=result.Snapshot with{Groups=new[]{new RoiGroupState("detect",RoiCoverage.Explicit,RoiCoverage.Explicit),new RoiGroupState("mask",RoiCoverage.FullDomain,RoiCoverage.Explicit)}}};
+   var rejected=false;try{session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)));}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&!session.IsCurrent&&model.Attempts==1,"宿主越权覆盖回执未使租约失效");
+  });
+ }
+ static void VerifyRoiCoverageCommands()
+ {
+  RoiCoverage Coverage(NativeRoiSession session,string group)=>session.Groups.Single(state=>state.Group==group).Coverage;
+  ToggleButton Full(NativeRoiEditor editor)=>Visuals<ToggleButton>(editor.NativeView).Single(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen);
+  void RequireFullBitmap(ToggleButton button)
+  {
+   button.ApplyTemplate();var icon=(Image)button.Template.FindName("icon",button);
+   Require(icon.Source is BitmapSource bitmap&&bitmap.PixelWidth>0&&bitmap.PixelHeight>0,"原全域图标资源未真实加载");
+  }
+  void NativeClick(ToggleButton button){typeof(ToggleButton).GetMethod("OnClick",BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(button,null);Pump();}
+  Test("ROI覆盖交互：原五模板顺序与真实全域按钮、重复点击及历史",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);Pump();
+   var session=sample.Session;var original=session.Items.Single(row=>row.Group=="detect").Id;var mask=session.Items.Single(row=>row.Group=="mask").Id;
+   var types=Visuals<ToggleButton>(sample.Scene.Editor.NativeView).Where(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType).Select(button=>button.CommandParameter!.ToString()).ToArray();
+   Require(types.SequenceEqual(new[]{"FullScreen","Box","SectorRing","Polygon","Sector"}),"原形状模板顺序错误或圆形与圆环混用");
+   RequireFullBitmap(Full(sample.Scene.Editor));
+   NativeClick(Full(sample.Scene.Editor));
+   RequireFullBitmap(Full(sample.Scene.Editor));
+   Require(Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect")&&session.Items.Single().Id==mask&&session.CurROIData is null&&Full(sample.Scene.Editor).IsChecked==true,"原全域按钮未原子清目标组或波及屏蔽区");
+   var revision=sample.Revision;NativeClick(Full(sample.Scene.Editor));Require(sample.Revision==revision&&Full(sample.Scene.Editor).IsChecked==true,"重复全域点击额外写入或错误取消选中");
+   var box=Visuals<ToggleButton>(sample.Scene.Editor.NativeView).Single(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);
+   NativeClick(box);Require(session.ActiveDraw?.Kind=="rectangle"&&box.IsChecked==true&&Full(sample.Scene.Editor).IsChecked==false&&sample.Revision==revision,"原绘制开始未退全域选中或提前写根");
+   session.CancelDraw();Pump();Require(session.ActiveDraw is null&&Full(sample.Scene.Editor).IsChecked==true&&sample.Revision==revision,"取消原绘制后全域按钮未恢复或改变业务覆盖");
+   var ring=Visuals<ToggleButton>(sample.Scene.Editor.NativeView).Single(button=>button.CommandParameter is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing);
+   Require(session.BeginDraw("annulus") is not null&&ring.IsChecked==true&&Full(sample.Scene.Editor).IsChecked==false,"直接绘制请求未同步原按钮选中态");
+   session.CancelDraw();Require(ring.IsChecked==false&&Full(sample.Scene.Editor).IsChecked==true,"直接取消后按钮状态未恢复");
+   CaptureInline(sample.Scene.Editor,"c08-original-fullscreen.png");
+   Require(session.TryUndo()&&Coverage(session,"detect")==RoiCoverage.Explicit&&session.CurROIData?.Id==original&&session.Items.Single(row=>row.Group=="mask").Id==mask,"撤销全域未恢复同一稳定对象与选择");
+   Require(session.TryRedo()&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect"),"重做未恢复组状态");
+   var command=Full(sample.Scene.Editor).Command!;var parameter=Full(sample.Scene.Editor).CommandParameter;revision=sample.Revision;sample.Dispose();command.Execute(parameter);Require(sample.Revision==revision,"关闭后旧原按钮命令仍写入");
+  });
+  Test("ROI覆盖交互：屏蔽原清空语义独立于显式全域，不改检测组",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;
+   var detect=session.Items.Single(row=>row.Group=="detect").Id;session.SetDrawingGroup("mask");Pump();NativeClick(Full(sample.Scene.Editor));
+   Require(Coverage(session,"mask")==RoiCoverage.None&&session.Items.Single().Id==detect&&Coverage(session,"detect")==RoiCoverage.Explicit,"屏蔽清空错误变成全图屏蔽或改动检测区");
+   Require(session.TrySetCoverage(RoiCoverage.FullDomain)&&Coverage(session,"mask")==RoiCoverage.FullDomain&&session.Items.Single().Id==detect,"明确的屏蔽全域被混同为无屏蔽");
+   NativeClick(Full(sample.Scene.Editor));Require(Coverage(session,"mask")==RoiCoverage.None,"原空集合按钮未沿宿主策略复位");
+  });
+  Test("ROI覆盖交互：图像原选择命令切换活动组，按钮只清选中屏蔽组",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;
+   var detect=session.Items.Single(row=>row.Group=="detect").Id;var mask=session.Items.Single(row=>row.Group=="mask");var view=sample.Scene.Viewport.NativeView;
+   view.RoiSelectedCommand.Execute(new Native.Dependencies.VMControls.RenderInterface.RoiWithTagEventArgs(mask,view.ROIList!));Pump();
+   Require(session.CurROIData?.Id==mask.Id&&session.DrawingGroup=="mask"&&session.SectorRingA&&!session.BoxA,"图像选择与活动组/原按钮身份未一致");
+   NativeClick(Full(sample.Scene.Editor));Require(Coverage(session,"mask")==RoiCoverage.None&&session.Items.Single().Id==detect&&Coverage(session,"detect")==RoiCoverage.Explicit,"选中屏蔽后原按钮清错检测组");
+  });
+  Test("ROI覆盖交互：选择取消回调切组后不覆盖新活动组",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var shape=RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10));
+   var a=new RoiEditItem("detect",Guid.NewGuid(),"A",shape);var b=new RoiEditItem("detect",Guid.NewGuid(),"B",shape);var model=new RoiHost(resources.CreateGray8(32,24,new byte[768]),a,b);
+   using var session=model.Open();Require(session.Select(a.Group,a.Id),"预备选择失败");session.DrawRequested+=_=>{};session.BeginDraw("rectangle");session.DrawCancelled+=_=>session.SetDrawingGroup("mask");
+   Require(!session.Select(b.Group,b.Id)&&session.DrawingGroup=="mask"&&session.CurROIData?.Id==a.Id&&model.Attempts==0,"旧选择覆盖取消回调的新组或进入宿主");
+  });
+  Test("ROI覆盖交互：全域后创建原几何原子进入Explicit，历史恢复同ID",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;
+   Require(session.TrySetCoverage(RoiCoverage.FullDomain),"全域失败");var request=session.BeginDraw("rectangle")!;
+   Require(request is not null&&session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(15,20),new(90,110))),"全域后无法创建原几何");
+   var id=session.CurROIData!.Id;Require(Coverage(session,"detect")==RoiCoverage.Explicit,"创建没有切为显式覆盖");
+   Require(session.TryUndo()&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect"),"撤销创建未恢复全域");
+   Require(session.TryRedo()&&Coverage(session,"detect")==RoiCoverage.Explicit&&session.CurROIData?.Id==id,"重做创建分配了另一身份");
+  });
+  Test("ROI覆盖交互：删除末项按显式组策略处理并可整体撤销",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;var ids=session.Items.Select(row=>row.Id).ToArray();
+   Require(session.TryDelete(session.Items.Where(row=>row.Group=="detect").ToArray())&&Coverage(session,"detect")==RoiCoverage.FullDomain,"删除末检测项未恢复全域");
+   Require(session.TryDelete(session.Items.Where(row=>row.Group=="mask").ToArray())&&Coverage(session,"mask")==RoiCoverage.None&&session.Items.Count==0,"删除末屏蔽项错误成为全域");
+   Require(session.TryUndo()&&session.TryUndo()&&session.Items.Select(row=>row.Id).SequenceEqual(ids)&&session.Groups.All(state=>state.Coverage==RoiCoverage.Explicit),"组策略和原几何未被同次历史恢复");
+  });
+  Test("ROI覆盖交互：非法参数原文拒绝全域且原按钮复位",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);Pump();
+   ((ToggleButton)sample.Scene.Editor.NativeView.Template.FindName("expand",sample.Scene.Editor.NativeView)).IsChecked=true;Pump();
+   var numeric=Visuals<Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(sample.Scene.Editor.NativeView).First();var text=RoiText(numeric);text.Focus();text.Text="bad";Pump();var revision=sample.Revision;
+   NativeClick(Full(sample.Scene.Editor));
+   Require(sample.Revision==revision&&Coverage(sample.Session,"detect")==RoiCoverage.Explicit&&text.Text=="bad"&&sample.Scene.Editor.HasInvalidText&&Full(sample.Scene.Editor).IsChecked==false,"非法原文被清掉、组被改动或失败按钮仍选中");
+  });
+  Test("ROI覆盖交互：继承组禁止清空，返回本地恢复原全域状态",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;Require(session.TrySetCoverage(RoiCoverage.FullDomain),"预备全域失败");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{["detect.mode"]=new ConstantSetting(1L),["detect.source"]=new ReferenceSetting(sample.Reference("detect"))}),"无法进入整体继承");
+   var revision=sample.Revision;Require(!session.FullScreenEnableA&&!session.TrySetCoverage(RoiCoverage.None)&&sample.Revision==revision&&session.Items.Any(row=>row.Group=="detect"&&!row.Enabled),"继承组能被本地覆盖命令清空");
+   Require(sample.Fields.Fields.Single(field=>field.FieldId=="detect.mode").TrySetConstant(0L)&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect"),"返回本地丢失私有全域状态");
+  });
+  Test("ROI覆盖交互：宿主拒绝不改覆盖和几何，旧绘制不复活",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768])){CoverageEnabled=true,Reject=true};model.Groups[0]=new("detect",RoiCoverage.Explicit,RoiCoverage.FullDomain);
+   using var session=model.Open();session.DrawRequested+=_=>{};var request=session.BeginDraw("rectangle")!;
+   Require(!session.TrySetCoverage(RoiCoverage.FullDomain)&&model.Attempts==1&&model.Writes==0&&session.IsCurrent&&Coverage(session,"detect")==RoiCoverage.Explicit&&session.ActiveDraw is null,"拒绝被当作接纳或遗留绘制");
+   Require(!session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(1,1),new(10,10)))&&model.Attempts==1,"覆盖拒绝后旧请求可重放");
+  });
+  Test("ROI覆盖交互：取消回调切组或关闭阻断旧覆盖提案",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(32,24,new byte[768]);
+   foreach(var close in new[]{false,true})
+   {
+    var model=new RoiHost(image){CoverageEnabled=true};using var session=model.Open();session.DrawRequested+=_=>{};session.BeginDraw("rectangle");
+    session.DrawCancelled+=_=>{if(close)session.Dispose();else session.SetDrawingGroup("mask");};
+    Require(!session.TrySetCoverage(RoiCoverage.FullDomain)&&model.Attempts==0&&model.Writes==0,"取消回调后旧组命令仍写宿主");
+   }
+  });
+  Test("ROI覆盖交互：错误回执退役租约且完成宿主发布清理",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(32,24,new byte[768])){CoverageEnabled=true};using var session=model.Open();var published=0;
+   model.AfterAccept=result=>result with{Snapshot=result.Snapshot with{Groups=result.Snapshot.Groups.Select(state=>state.Group=="mask"?state with{Coverage=RoiCoverage.FullDomain}:state).ToArray()},Publish=()=>published++};
+   var rejected=false;try{session.TrySetCoverage(RoiCoverage.FullDomain);}catch(InvalidOperationException){rejected=true;}
+   Require(rejected&&!session.IsCurrent&&model.Writes==1&&published==1,"错误组回执未退役或跳过已接纳发布");
+  });
+  Test("ROI覆盖交互：观察者失败不回滚已接纳覆盖并允许历史恢复",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);var session=sample.Session;Action fail=()=>throw new InvalidOperationException("预期覆盖观察失败");session.Changed+=fail;
+   var reported=false;try{session.TrySetCoverage(RoiCoverage.FullDomain);}catch(Exception){reported=true;}finally{session.Changed-=fail;}
+   Require(reported&&Coverage(session,"detect")==RoiCoverage.FullDomain&&session.Items.All(row=>row.Group!="detect")&&session.TryUndo()&&Coverage(session,"detect")==RoiCoverage.Explicit,"观察失败破坏原子接纳或历史");
+  });
+ }
  static SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiSession CreateRoiSession(IReadOnlyImage image,Func<IReadOnlyList<RoiEditItem>> read,Func<ImageFrameAddress,RoiEditProposal.Replace,bool> accept,Func<bool> current)
  {
   var scope=Guid.NewGuid();long revision=0;
-  SunEyeVision.Plugin.Wpf.Adapters.Regions.RoiEditSnapshot Snapshot()=>new(new(scope,revision,image.Frame),read());
+  SunEyeVision.Plugin.Wpf.Adapters.Regions.RoiEditSnapshot Snapshot()=>new(new(scope,revision,image.Frame),read(),Array.AsReadOnly(new[]{"detect","mask"}.Select(group=>new RoiGroupState(group,RoiCoverage.Explicit,RoiCoverage.Explicit)).ToArray()));
   return new(image,Snapshot,(expected,change)=>
   {
    if(expected.ScopeId!=scope||expected.Revision!=revision||expected.Frame!=image.Frame)return RoiEditAcceptance.Reject(Snapshot(),"过期候选");
@@ -1299,30 +1473,40 @@ internal static class S2DocumentEditingCases
  sealed class RoiHost(IReadOnlyImage image,params RoiEditItem[] rows)
  {
   internal readonly List<RoiEditItem> Rows=rows.ToList();internal long Revision;internal int Writes,Reads,Attempts;
-  internal bool Alive=true,Reject;internal Action? OnRead,BeforeAccept;
+  internal bool Alive=true,Reject,CoverageEnabled;internal Action? OnRead,BeforeAccept;
   internal Guid ScopeId=Guid.NewGuid();internal Func<RoiEditAcceptance,RoiEditAcceptance>? AfterAccept;
+  internal readonly List<RoiGroupState> Groups=new[]{"detect","mask"}.Concat(rows.Select(row=>row.Group)).Distinct().Select(group=>new RoiGroupState(group,RoiCoverage.Explicit,RoiCoverage.Explicit)).ToList();
+  void UpdateGroups(Func<RoiGroupState,RoiGroupState> update){for(var i=0;i<Groups.Count;i++)Groups[i]=update(Groups[i]);}
   internal RoiEditStamp Stamp=>new(ScopeId,Revision,image.Frame);
-  internal RoiEditSnapshot Read(){Reads++;OnRead?.Invoke();return new(Stamp,Rows.ToArray());}
+  internal RoiEditSnapshot Read(){Reads++;OnRead?.Invoke();return new(Stamp,Rows.ToArray(),Groups.ToArray());}
   internal RoiEditAcceptance Accept(RoiEditStamp expected,RoiEditProposal change)
   {
    Attempts++;var before=BeforeAccept;BeforeAccept=null;before?.Invoke();
-   if(expected!=Stamp||Reject)return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray()),"宿主拒绝或旧根");
+   if(expected!=Stamp||Reject)return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray(),Groups.ToArray()),"宿主拒绝或旧根");
    RoiEditTarget target;
    switch(change)
    {
     case RoiEditProposal.Create create:
+     UpdateGroups(group=>group.Group==create.Group?group with{Coverage=RoiCoverage.Explicit}:group);
      target=new(create.Group,Guid.NewGuid());Rows.Add(new(create.Group,target.Id,"新区域",create.Geometry));break;
     case RoiEditProposal.Replace replace:
      var index=Rows.FindIndex(row=>row.Group==replace.Target.Group&&row.Id==replace.Target.Id);Require(index>=0,"提交身份丢失");
      target=replace.Target;Rows[index]=Rows[index] with{Geometry=replace.Geometry};break;
     case RoiEditProposal.Delete delete:
-     Rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));Revision++;Writes++;
-     return new(true,new(Stamp,Rows.ToArray()),delete.Targets,new RoiEditSelection.Clear());
-    default:return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray()),"该检查宿主不提供历史");
+     Rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));
+     UpdateGroups(group=>delete.Targets.Any(target=>target.Group==group.Group)&&!Rows.Any(row=>row.Group==group.Group)?group with{Coverage=group.EmptyCoverage}:group);
+     Revision++;Writes++;
+     return new(true,new(Stamp,Rows.ToArray(),Groups.ToArray()),delete.Targets,new RoiEditSelection.Clear());
+    case RoiEditProposal.SetCoverage coverage:
+     var affected=Rows.Where(row=>row.Group==coverage.Group).Select(row=>new RoiEditTarget(row.Group,row.Id)).ToArray();
+     Rows.RemoveAll(row=>row.Group==coverage.Group);UpdateGroups(group=>group.Group==coverage.Group?group with{Coverage=coverage.Coverage}:group);
+     Revision++;Writes++;var accepted=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray(),Groups.ToArray()),affected,new RoiEditSelection.Clear());
+     return AfterAccept?.Invoke(accepted)??accepted;
+    default:return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray(),Groups.ToArray()),"该检查宿主不提供历史");
    }
-   Revision++;Writes++;var result=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray()),new[]{target},change is RoiEditProposal.Create?new RoiEditSelection.Select(target):new RoiEditSelection.Keep());return AfterAccept?.Invoke(result)??result;
+   Revision++;Writes++;var result=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray(),Groups.ToArray()),new[]{target},change is RoiEditProposal.Create?new RoiEditSelection.Select(target):new RoiEditSelection.Keep());return AfterAccept?.Invoke(result)??result;
   }
-  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive,()=>new(false,false),"detect");
+  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive,()=>new(false,false),"detect",canSetCoverage:group=>CoverageEnabled);
  }
  static TextBox RoiText(Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat field)
  {
@@ -3268,6 +3452,8 @@ internal static class S2DocumentEditingCases
    VerifyNativeResultTable();
    VerifyBetween();
    VerifyExpandedReference();
+   VerifyRoiGroupSnapshots();
+   VerifyRoiCoverageCommands();
    VerifyNativeBox();
    VerifyNativeRoiCreationContract();
    VerifyRoiMenusHistory();

@@ -1,3 +1,33 @@
+## 2026-10-29 C08原全域模板与覆盖组命令候选闭环，拟保存完整本地检查点
+
+- 上轮三态快照是实际进展；本轮新增明确SetCoverage提案及宿主EmptyCoverage策略。清组/创建进入Explicit/删除末项按策略恢复/撤销重做同一根接纳，拒绝夹带其他组或变更策略，不伪造项ID；原FullScreenDataTemplate/fullscreenRoiBtnStyle/三个原位图接入，FullScreen/Box/SectorRing/Polygon/Sector顺序。库不猜检测/屏蔽组名，样例明确检测空=FullDomain、屏蔽空=None，显式屏蔽FullDomain与原空集合按钮不同。
+- 实修图像原选择命令到活动组身份：选择屏蔽对象后按钮仅清屏蔽；取消回调切组后旧选择停止。直接绘制/取消用轻量ActiveDraw属性通知同步原按钮，原数值事务不被重投影；编辑器完整退订。原非法输入阻止切组并保原文，重复点击不多写，继承拒绝本地覆盖，错回执退役仍完成发布，观察失败保接纳历史，关闭旧命令不写。
+- 初轮Window249=14/1，失败是新增用例未先展开原参数区，保原First异常与原断言；修实际展开后250/251=55/0。最终新增活动组/轻量状态后252=57/0；仅补原图正常/选中Bitmap实际解码断言后253=57/0，产品未再改。UI001/full001与002/full002均零错，最终UI003=0错6470警告44.46秒/full003=0错6463警告40.37秒；Design071=101/0、Editor087=10/0、FullChain144=9/0、Recovery017=50/0、真实EXE准入attempt011八过，按原身份恢复后569发布文件及五轨52条加载记录逐SHA核。
+- 权威C08_COVERAGE_COMMANDS_CANDIDATE_20261029.json为8fdb基线加候选源码SHA，不冒称8fdb原产物；原三态快照/全部中间失败证据保留。Catalog当前依赖及本地原模板资源SHA更新，原图三个SHA与REA资源一致，原O06同步新组命令候选。用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，未改Blob业务。
+- 80792/63869/17505构建、52359失败、76200/15911/61920及12528回归/准入全部终态，无live。主仓唯一写，不启子智能体；下一先中文完整检查点（排除用户Blob），再绑定同一提交正式Release集中核收。不推送，目标active；当前几何宿主仅Explicit，不能把库内样例当作Blob完整集成。
+- C08原件逐态/真实指针/VS/用户验收、Assist三态/位姿/Cross等C01—C17剩余、SDK残留/历史和其他通知、原249总体及原两阶段范围都保留；第一阶段未过，Blob第二阶段继续冻结。
+
+## 2026-10-29 C08显式覆盖组快照基础候选已验证，原全域交互仍未完成
+
+- 上轮仅解释隔离方案，属无代码进展；本轮实际修改ROI编辑合同/会话/设计根/历史及当前几何消费者，Snapshot必需Groups显式None/FullDomain/Explicit，无旧构造重载、空集合推断或假全图矩形。Capture冻结并校验组/项，同版覆盖篡改退役租约，取消及接纳校验含覆盖；普通几何提案不得夹带覆盖变更。现几何宿主仅声明Explicit，组清单变化递增版本。Blob业务未改。
+- 原REA ROISelecter.cs定向核ClearRoi/SelectFullScreen/NormalizeReversParse：按钮清NormalizeROIList并停止绘制；空集合Avoid写00 00，其他写01 00；FullScreenA与FullScreen_ModuleEnableA不同。源码SHA/精确行摘录归C08_FULL_DOMAIN_GAP_20261029.json，仅托管静态证据，不推称VM运行时或本方三态就是VM类型。
+- UI001零错6470警告82.53秒；复核补同版覆盖校验及宿主组变更版本后最终UI002零错6042警告36.11秒/full001零错6435警告41.87秒。正式Window248新覆盖快照5/0、Design069=101/0、FullChain142=9/0、Recovery015=50/0，真实EXE准入attempt009八过、按原身份恢复后569发布文件及四轨37条加载记录逐SHA核。证据C08_GROUP_SNAPSHOT_CANDIDATE_20261029.json；发布标签仍8fdb基线加未提交候选，用候选源码SHA定身份，不套8fdb旧成绩。目录15处当前依赖SHA更新，原O06同步。
+- 51457/92070构建、55505回归及94192准入均真实终态，无live。主仓唯一写、不启子智能体；用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不暂存、不推送。目标active，阶段一未过，Blob业务仍冻结。
+- 下一完整接SetCoverage组提案/原FullScreen模板与图标/正确顺序、Create从非Explicit原子切换和删除末项按检测/屏蔽角色定覆盖、组状态撤销重做及同帧/取消/重入/换帧/关闭；本批没有这些命令，不能称全域交互已成。之后Assist三态/位姿/Cross等C01—C17剩余与SDK/历史/其他通知/原249总体、VM同态/真实VS/人工门禁继续，不能以这5项或101设计链代签。
+
+## 2026-10-29 8fdb16d3同提交正式核收完成，下一C08原全域组状态
+
+- 上轮完整代码/中文检查点为实际进展；本轮源码未改，用户Blob参数页SHA保持，串行UI023=0错6470警告71.40秒/full012=0错6371警告36.28秒，正式manifest源码8fdb16d333156909b183a132ccb4367b703e68eb。
+- 本提交重新跑Recovery014=50/0（原21逐项过）、FullChain005=9/0、Editor006=10/0、无UI泵Workflow007=10/0、ResultChain009=24/0、实际EXE准入attempt008八过并恢复原文件；569发布文件及61条加载记录路径/SHA核到I2_WORKSPACE_COMMITTED_RELEASE_20261029.json，不借49d候选成绩。测试声明仍隔离验证目录，不入产品。
+- C08下一批只读核到原FullScreenDataTemplate/FullScreenEnableA/FullScreenA及fullscreenRoiBtnStyle，原选择器SHAd8a7...81eb、样式SHAfb817...f9e均与归档一致。当前Snapshot仅Stamp/Items、Proposal无组状态、选择器缺原FullScreen分支；缺口和原模板/图标路径归C08_FULL_DOMAIN_GAP_20261029.json。尚未实施三态，不把空列表当全域或假矩形代替业务全域；原状态处理函数/集合策略继续定向核。
+- 73536/12132构建及19962核收全终态，无live。主仓唯一写、不启子智能体；用户XAML不暂存、不推送；目标active、Blob业务仍冻结。下一完整实施Blob所需C08全域/None/Explicit及历史/帧/取消生命周期，随后Assist三态/位姿/Cross；原249总体、SDK/历史/其他通知/真实VS/VM/人工门禁不删。
+
+## 2026-10-29 本地完整检查点8fdb16d3已保存，下一绑定同提交正式身份
+
+- 已将上述结果通知/工作区/来源选择和完整失败承接批保存为中文提交8fdb16d333156909b183a132ccb4367b703e68eb，未推送。用户Blob参数页未暂存且原SHA保持。
+- 本批50/0及关联回归的权威证据仍明确为提交前49d基线加完整候选源码SHA；当前正式载荷源码标签仍49d，不能冒称已验8fdb提交标签产物。所有构建/测试终态，无live。
+- 下一先按8fdb提交重绑串行UI/full正式产物并核同源定向回归，再回Blob必需控件剩余原组合；原249未整体重跑、SDK/历史/其他通知、VM/VS/人工等门禁保留，目标active、Blob业务冻结。
+
 ## 2026-10-29 原21失败全部新宿主定向通过，结果工作区/真实来源预览候选收口
 
 - 上轮14/21实际进展继续；本轮结果工作区同组直接迁当前Snapshot，无SDK ToolExecutor/ToolResults生产链；纯Contracts零算法测试声明单独编到验证目录，不进入产品。007=29/10、008=32/7、010=37/2、011=39/1、012=40/1全保；009声明项目误继承根发布规则导致2个测试文件误输出正式目录，核绝对范围仅移除此2文件，模板禁Directory.Build继承，最终无测试文件并逐发布SHA核证。

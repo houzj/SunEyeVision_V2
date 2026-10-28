@@ -394,6 +394,14 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-native-export-snapshot">C17图像导出快照与原算法边界</h5>'
                + table(['项目','实施、验证与剩余'], list(plan['nativeExportSnapshotCandidate'].items()))
                if plan.get('nativeExportSnapshotCandidate') else '')
+            + ('<h5 id="o06-roi-group-coverage-snapshot">C08覆盖组：三态快照基础</h5>'
+               + table(['项目','候选实施与验证边界'], [(key, '；'.join(value) if isinstance(value, list) else value)
+                       for key, value in plan['fullDomainSnapshotCandidate'].items()])
+               if plan.get('fullDomainSnapshotCandidate') else '')
+            + ('<h5 id="o06-roi-group-coverage-commands">C08原全域模板与覆盖组编辑历史</h5>'
+               + table(['项目','原件、同源验证及剩余'], [(key, '；'.join(value) if isinstance(value, list) else value)
+                       for key, value in plan['fullDomainCommandsCandidate'].items()])
+               if plan.get('fullDomainCommandsCandidate') else '')
             + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
                + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
                if plan.get('nextNativeCompositionsDesign') else '')

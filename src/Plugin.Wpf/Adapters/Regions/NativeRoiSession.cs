@@ -9,7 +9,7 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.Regions;
 
 /// <summary>Host-owned private edit root, monotonic revision and exact frozen physical frame.</summary>
 public sealed record RoiEditStamp(Guid ScopeId,long Revision,ImageFrameAddress Frame);
-public sealed record RoiEditSnapshot(RoiEditStamp Stamp,IReadOnlyList<RoiEditItem> Items);
+public sealed record RoiEditSnapshot(RoiEditStamp Stamp,IReadOnlyList<RoiEditItem> Items,IReadOnlyList<RoiGroupState> Groups);
 /// <summary>The host atomically compares the expected stamp and returns the installed snapshot.
 /// It must return acceptance before publishing fallible observer notifications.</summary>
 public sealed record RoiEditAcceptance(bool Accepted,RoiEditSnapshot Snapshot,
@@ -28,6 +28,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     private readonly Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> _accept;
     private readonly Func<bool> _isCurrent;
     private readonly Func<string,bool>? _canDraw;
+    private readonly Func<string,bool>? _canSetCoverage;
     private readonly Func<RoiHistoryAvailability> _history;
     private Dictionary<(string,Guid),NativeRoiProjection> _items=new();
     private readonly ProjectionRows<NativeRoiProjection> _rows=new();
@@ -35,6 +36,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     private Func<bool>? _editorCommit;
     private NativeRoiProjection? _selected;
     private RoiEditStamp? _stamp;
+    private IReadOnlyList<RoiGroupState> _groups=Array.Empty<RoiGroupState>();
     private RoiDrawRequest? _drawRequest;
     private long _drawGeneration,_groupGeneration;
     private bool _requesting;
@@ -47,6 +49,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     public int ImageHeight {get;}
     public IReadOnlyImage Image {get;}
     public IReadOnlyList<NativeRoiProjection> Items=>_rows;
+    public IReadOnlyList<RoiGroupState> Groups=>_groups;
     public NativeRoiProjection? CurROIData=>_selected;
     public bool IsHaveData=>_selected is not null&&Owns(_selected);
     public bool IsCurrent
@@ -57,14 +60,18 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             _checkingCurrent=true;try{return _isCurrent()&&!_disposed&&!_invalid;}finally{_checkingCurrent=false;}
         }
     }
-    public bool BoxEnable_ModuleEnableA=>IsHaveData&&_selected is NativeBoxRoiProjection;
-    public bool SectorEnable_ModuleEnableA=>IsHaveData&&_selected is NativeSectorRoiProjection;
-    public bool BoxA {get=>BoxEnable_ModuleEnableA;set{}}
-    public bool SectorA {get=>SectorEnable_ModuleEnableA;set{}}
-    public bool SectorRingEnable_ModuleEnableA=>IsHaveData&&_selected is NativeRingRoiProjection;
-    public bool SectorRingA {get=>SectorRingEnable_ModuleEnableA;set{}}
-    public bool PolygonEnable_ModuleEnableA=>IsHaveData&&_selected is NativePolygonRoiProjection;
-    public bool PolygonA {get=>PolygonEnable_ModuleEnableA;set{}}
+    private bool SelectedInDrawingGroup=>IsHaveData&&_selected!.Group==DrawingGroup;
+    public bool BoxEnable_ModuleEnableA=>SelectedInDrawingGroup&&_selected is NativeBoxRoiProjection;
+    public bool SectorEnable_ModuleEnableA=>SelectedInDrawingGroup&&_selected is NativeSectorRoiProjection;
+    public bool BoxA {get=>ActiveDraw is {} draw?draw.Kind=="rectangle":BoxEnable_ModuleEnableA;set{}}
+    public bool SectorA {get=>ActiveDraw is {} draw?draw.Kind=="sector":SectorEnable_ModuleEnableA;set{}}
+    public bool SectorRingEnable_ModuleEnableA=>SelectedInDrawingGroup&&_selected is NativeRingRoiProjection;
+    public bool SectorRingA {get=>ActiveDraw is {} draw?draw.Kind=="annulus":SectorRingEnable_ModuleEnableA;set{}}
+    public bool PolygonEnable_ModuleEnableA=>SelectedInDrawingGroup&&_selected is NativePolygonRoiProjection;
+    public bool PolygonA {get=>ActiveDraw is {} draw?draw.Kind=="polygon":PolygonEnable_ModuleEnableA;set{}}
+    public bool FullScreenEnableA=>CanSetGroupCoverage(DrawingGroup)&&_groups.Single(group=>group.Group==DrawingGroup).EmptyCoverage!=RoiCoverage.Explicit;
+    public bool FullScreen_ModuleEnableA=>IsCurrent&&_groups.Any(group=>group.Group==DrawingGroup&&group.EmptyCoverage!=RoiCoverage.Explicit&&group.Coverage==group.EmptyCoverage);
+    public bool FullScreenA {get=>FullScreen_ModuleEnableA&&ActiveDraw is null;set{}}
     public bool IsAvoid {get;}
     public bool Is3DROI=>false;
     public string ROISelectionA=>"Box SectorRing Sector Polygon";
@@ -79,16 +86,22 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     public event Action<RoiDrawRequest>? DrawCancelled;
     public NativeRoiSession(IReadOnlyImage image,Func<RoiEditSnapshot> read,
         Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> accept,Func<bool> isCurrent,Func<RoiHistoryAvailability> history,string drawingGroup,bool isAvoid=false,
-        Func<string,bool>? canDraw=null)
+        Func<string,bool>? canDraw=null,Func<string,bool>? canSetCoverage=null)
     {
         ResourceContractRules.ValidateImage(image);
         if(string.IsNullOrWhiteSpace(drawingGroup))throw new ArgumentException("绘制组必须由宿主明确提供。",nameof(drawingGroup));
-        DrawingGroup=drawingGroup;_canDraw=canDraw;
+        DrawingGroup=drawingGroup;_canDraw=canDraw;_canSetCoverage=canSetCoverage;
         IsAvoid=isAvoid;Image=image;Frame=image.Frame;Coordinates=image.EffectiveDomain.Frame;ImageWidth=image.Width;ImageHeight=image.Height;
         _read=read;_accept=accept;_isCurrent=isCurrent;_history=history;
         ROIValueChangedCommand=new EditCommand(_=>{if(_selected is {} selected)TryCommit(selected);});
         ValueChangedCommand=new EditCommand(value=>
         {
+            if(value is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen)
+            {
+                var group=_groups.SingleOrDefault(state=>state.Group==DrawingGroup);
+                if(group is not null&&group.EmptyCoverage!=RoiCoverage.Explicit)TrySetCoverage(group.EmptyCoverage);
+                return;
+            }
             var kind=value switch
             {
                 Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box=>"rectangle",
@@ -112,14 +125,27 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             NativeRoiCallbacks.Run([CancelPending,Notify]);
             throw new InvalidOperationException(Error);
         }
+        ArgumentNullException.ThrowIfNull(snapshot.Groups);
+        var groups=snapshot.Groups.ToArray();var names=new HashSet<string>(StringComparer.Ordinal);
+        foreach(var group in groups)
+            if(group is null||string.IsNullOrWhiteSpace(group.Group)||!Enum.IsDefined(group.Coverage)||!Enum.IsDefined(group.EmptyCoverage)||!names.Add(group.Group))
+                throw new ArgumentException("ROI覆盖组必须具有唯一名称和明确的有效状态。");
+        if(_stamp==stamp&&!SameGroups(_groups,groups))
+        {
+            _invalid=true;Error="宿主修改ROI覆盖状态时必须递增编辑版本。";
+            NativeRoiCallbacks.Run([CancelPending,Notify]);
+            throw new InvalidOperationException(Error);
+        }
         var rows=snapshot.Items.ToArray();var keys=new HashSet<(string,Guid)>();
         foreach(var row in rows)
         {
             if(string.IsNullOrWhiteSpace(row.Group)||row.Id==Guid.Empty||!keys.Add((row.Group,row.Id)))
                 throw new ArgumentException("ROI组与稳定ID必须非空且唯一。");
+            if(!groups.Any(group=>group.Group==row.Group&&group.Coverage==RoiCoverage.Explicit))
+                throw new ArgumentException("显式ROI只能归属已声明为Explicit的组；None/FullDomain不得夹带几何对象。");
             ValidateNativeGeometry(row.Geometry,row.Enabled);
         }
-        return new(stamp,Array.AsReadOnly(rows));
+        return new(stamp,Array.AsReadOnly(rows),Array.AsReadOnly(groups));
     }
     private static void ValidateNativeGeometry(RecordValue geometry,bool editable=true)
     {
@@ -150,7 +176,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         {
             var changedVersion=_stamp!=snapshot.Stamp;
             var cancellation=changedVersion?InvalidateDraw():Array.Empty<Action>();
-            if(!changedVersion&&(_items.Count!=snapshot.Items.Count||snapshot.Items.Any(row=>
+            if(!changedVersion&&(!SameGroups(_groups,snapshot.Groups)||_items.Count!=snapshot.Items.Count||snapshot.Items.Any(row=>
                 !_items.TryGetValue((row.Group,row.Id),out var old)||!old.Matches(row))))
                 throw new InvalidOperationException("宿主修改区域内容时必须递增编辑版本。");
             if(!changedVersion)return; // A display refresh must not cancel a live gesture or typed raw input.
@@ -164,7 +190,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             }
             var notifications=new List<Action>(cancellation);
             foreach(var old in _items.Values.Where(old=>!next.Values.Contains(old)))old.Detach();
-            _items=next;_stamp=snapshot.Stamp;
+            _items=next;_stamp=snapshot.Stamp;_groups=snapshot.Groups;
             foreach(var row in snapshot.Items)
             {
                 var item=next[(row.Group,row.Id)];item.Install(row,changedVersion);
@@ -206,10 +232,12 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         {
             if(!PrepareEditor()||!IsCurrent)return false;
             if(id is {} target&&(!_items.TryGetValue((group,target),out next)||!Owns(next)))return false;
-            var stamp=Stamp;CancelPending();
-            if(!IsCurrent||Stamp!=stamp)return false;
+            var stamp=Stamp;var groupGeneration=_groupGeneration;CancelPending();
+            if(!IsCurrent||Stamp!=stamp||groupGeneration!=_groupGeneration)return false;
             if(id is {} after&&(!_items.TryGetValue((group,after),out next)||!Owns(next)))return false;
-            _selected=next;Error="";Notify();return true;
+            _selected=next;
+            if(next is not null&&DrawingGroup!=next.Group){DrawingGroup=next.Group;++_groupGeneration;}
+            Error="";Notify();return true;
         }
         finally{_selecting=false;}
     }
@@ -225,17 +253,19 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         if(string.IsNullOrWhiteSpace(group))throw new ArgumentException("绘制组必须非空。",nameof(group));
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(group==DrawingGroup)return;
-        DrawingGroup=group;++_groupGeneration;CancelDraw();
+        DrawingGroup=group;++_groupGeneration;NativeRoiCallbacks.Run([CancelDraw,Notify]);
     }
     private Action[] InvalidateDraw()
     {
         var request=_drawRequest;_drawRequest=null;++_drawGeneration;
-        return request is null?[]:(DrawCancelled?.GetInvocationList().Cast<Action<RoiDrawRequest>>()??[]).Select(handler=>(Action)(()=>handler(request))).ToArray();
+        return request is null?[]:(DrawCancelled?.GetInvocationList().Cast<Action<RoiDrawRequest>>()??[]).Select(handler=>(Action)(()=>handler(request))).Append(NotifyDrawState).ToArray();
     }
+    private void NotifyDrawState()=>NativeRoiCallbacks.Run((PropertyChanged?.GetInvocationList().Cast<PropertyChangedEventHandler>()??[])
+        .Select(handler=>(Action)(()=>handler(this,new(nameof(ActiveDraw))))));
     public void CancelDraw()=>NativeRoiCallbacks.Run(InvalidateDraw());
     private bool CanDrawGroup(string group)
     {
-        if(_queryingDraw||!IsCurrent)return false;
+        if(_queryingDraw||!IsCurrent||!_groups.Any(state=>state.Group==group))return false;
         var stamp=_stamp;var groups=_groupGeneration;var draws=_drawGeneration;
         _queryingDraw=true;
         try
@@ -264,7 +294,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             handlers=DrawRequested?.GetInvocationList().Cast<Action<RoiDrawRequest>>().ToArray()??[];
             if(handlers.Length!=1){Error="绘制需要一份明确的视口接收器。";Notify();return null;}
             var request=new RoiDrawRequest(stamp,group,kind);_drawRequest=request;Error="";
-            try{handlers[0](request);}
+            try{handlers[0](request);NotifyDrawState();}
             catch(Exception error)
             {
                 NativeRoiCallbacks.Run(new Action[]{()=>System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw(),()=>{if(ReferenceEquals(_drawRequest,request))CancelDraw();}});
@@ -334,7 +364,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         var snapshot=Capture(result.Snapshot);
         if(snapshot.Stamp.ScopeId!=current.Stamp.ScopeId||snapshot.Stamp.Frame!=current.Stamp.Frame||snapshot.Stamp.Revision<current.Stamp.Revision)
             throw new InvalidOperationException("回执不得改变范围、物理帧或倒退本次读取的版本。");
-        if(snapshot.Stamp.Revision==current.Stamp.Revision&&!SameItems(snapshot.Items,current.Items))
+        if(snapshot.Stamp.Revision==current.Stamp.Revision&&(!SameItems(snapshot.Items,current.Items)||!SameGroups(snapshot.Groups,current.Groups)))
             throw new InvalidOperationException("同版回执不得改变区域内容。");
         if(result.Affected is null||result.Affected.Any(target=>target is null||string.IsNullOrWhiteSpace(target.Group)||target.Id==Guid.Empty)
             ||result.Affected.Distinct().Count()!=result.Affected.Count||result.Selection is null)
@@ -345,6 +375,20 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             return snapshot;
         }
         if(snapshot.Stamp.Revision<=current.Stamp.Revision)throw new InvalidOperationException("宿主接纳必须递增版本。");
+        if(snapshot.Groups.Count!=current.Groups.Count||current.Groups.Any(group=>!snapshot.Groups.Any(next=>next.Group==group.Group&&next.EmptyCoverage==group.EmptyCoverage)))
+            throw new InvalidOperationException("区域接纳不得更改组定义或宿主空集合策略。");
+        if(proposal is not (RoiEditProposal.Undo or RoiEditProposal.Redo))
+        {
+            var expected=current.Groups.Select(group=>proposal switch
+            {
+                RoiEditProposal.SetCoverage coverage when group.Group==coverage.Group=>group with{Coverage=coverage.Coverage},
+                RoiEditProposal.Create create when group.Group==create.Group=>group with{Coverage=RoiCoverage.Explicit},
+                RoiEditProposal.Delete delete when delete.Targets.Any(target=>target.Group==group.Group)
+                    &&!snapshot.Items.Any(row=>row.Group==group.Group)=>group with{Coverage=group.EmptyCoverage},
+                _=>group
+            }).ToArray();
+            if(!SameGroups(snapshot.Groups,expected))throw new InvalidOperationException("区域提案只能改变明确目标组的覆盖，且不得改变宿主空集合策略。");
+        }
         bool Has(RoiEditTarget target)=>snapshot.Items.Any(row=>row.Group==target.Group&&row.Id==target.Id&&row.Enabled&&row.Visible);
         var selected=result.Selection switch
         {
@@ -354,7 +398,14 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             _=>throw new InvalidOperationException("未知选择指令。")
         };
         if(selected is not null&&!Has(selected))throw new InvalidOperationException("选择回执必须指向新快照中可编辑可见对象；删除选择须明确清除。");
-        if(proposal is RoiEditProposal.Delete delete)
+        if(proposal is RoiEditProposal.SetCoverage coverage)
+        {
+            if(!current.Groups.Any(group=>group.Group==coverage.Group)||snapshot.Items.Any(row=>row.Group==coverage.Group)
+                ||!SameItems(current.Items.Where(row=>row.Group!=coverage.Group).ToArray(),snapshot.Items)
+                ||!result.Affected.ToHashSet().SetEquals(current.Items.Where(row=>row.Group==coverage.Group).Select(row=>new RoiEditTarget(row.Group,row.Id))))
+                throw new InvalidOperationException("覆盖切换必须只清空目标组并精确回传被移除的对象，不得改动其他组。");
+        }
+        else if(proposal is RoiEditProposal.Delete delete)
         {
             if(!result.Affected.ToHashSet().SetEquals(delete.Targets)||delete.Targets.Any(target=>snapshot.Items.Any(row=>row.Group==target.Group&&row.Id==target.Id)))
                 throw new InvalidOperationException("删除回执必须精确列出全部已移除对象。");
@@ -380,6 +431,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             throw new InvalidOperationException("历史回执必须精确列出本次改变的区域身份。");
         return snapshot;
     }
+    internal static bool SameGroups(IReadOnlyList<RoiGroupState> left,IReadOnlyList<RoiGroupState> right)=>left.Count==right.Count&&left.All(group=>right.Contains(group));
     internal static bool SameItems(IReadOnlyList<RoiEditItem> left,IReadOnlyList<RoiEditItem> right)=>left.Count==right.Count&&left.Zip(right).All(pair=>
         pair.First.Group==pair.Second.Group&&pair.First.Id==pair.Second.Id&&pair.First.Name==pair.Second.Name&&pair.First.Enabled==pair.Second.Enabled
         &&pair.First.Visible==pair.Second.Visible&&SameGeometry(pair.First.Geometry,pair.Second.Geometry));
@@ -432,7 +484,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     {
         var callbacks=new List<Action>();
         var handlers=PropertyChanged?.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray()??[];
-        foreach(var name in new[]{nameof(CurROIData),nameof(IsHaveData),nameof(BoxEnable_ModuleEnableA),nameof(SectorEnable_ModuleEnableA),nameof(BoxA),nameof(SectorA),nameof(SectorRingEnable_ModuleEnableA),nameof(SectorRingA),nameof(PolygonEnable_ModuleEnableA),nameof(PolygonA),nameof(Error)})
+        foreach(var name in new[]{nameof(Groups),nameof(FullScreenEnableA),nameof(FullScreen_ModuleEnableA),nameof(FullScreenA),nameof(CurROIData),nameof(IsHaveData),nameof(BoxEnable_ModuleEnableA),nameof(SectorEnable_ModuleEnableA),nameof(BoxA),nameof(SectorA),nameof(SectorRingEnable_ModuleEnableA),nameof(SectorRingA),nameof(PolygonEnable_ModuleEnableA),nameof(PolygonA),nameof(Error)})
             foreach(var handler in handlers)callbacks.Add(()=>handler(this,new(name)));
         foreach(var handler in Changed?.GetInvocationList().Cast<Action>().ToArray()??[])callbacks.Add(handler);
         NativeRoiCallbacks.Run(callbacks);

@@ -95,7 +95,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "sha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943"
+          "sha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc"
         }
       ],
       "composition": [
@@ -603,7 +603,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
+          "sha256": "d2fa6ef533bc82c92349a62446e2adaf84452e3322b42f3c04fd390f962dc77d"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -1101,7 +1101,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
+          "sha256": "d2fa6ef533bc82c92349a62446e2adaf84452e3322b42f3c04fd390f962dc77d"
         },
         {
           "path": "src/Plugin.Contracts/BindingPlans.cs",
@@ -1925,7 +1925,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTabControl\\RoiSelectControl.xaml",
           "originalSha256": "d8a7b7d07ab9d06d781f5a4a1b10020d137007d0e5e973f701ca6239a83381eb",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTabControl/RoiSelectControl.xaml",
-          "localSha256": "52191dd6cbdeed3fbed02c71a378610cb1d5fd9314fb26f0c2ceb08291ec84c6",
+          "localSha256": "bdcea259ff756f0440e0db1a8eac7b1f4ef99703e523d58b506c52478fbf1bd7",
           "coverage": "Original Box and Sector branches only"
         },
         {
@@ -1993,7 +1993,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
           "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943",
+          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
           "coverage": "selected original fragments only"
         },
         {
@@ -2001,7 +2001,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
           "originalSha256": "96b98f06fbaf9bc2cf1f481b2a24323ecfc11831c05698e9fa5b18ec294e0f63",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943",
+          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
           "coverage": "selected original fragments only"
         },
         {
@@ -2009,7 +2009,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\paramtabcontrol\\listview\\roiselectdatatemplate.xaml",
           "originalSha256": "16748f53467c58c978581b25c0233c4359e6c70770c63b551c1d0e0fff4e8f03",
           "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
-          "localSha256": "42cc0d5ad10ecf99f3f89b78ce42209cf2c618daf81954fd0ef8c2036d1b2943",
+          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
           "coverage": "selected original fragments only"
         },
         {
@@ -2411,12 +2411,20 @@
           "localPath": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/roi/roicontrolbasestyle.xaml",
           "localSha256": "50ea233cc238b9af5df1cecee857ca57b677a0fecd0ed048a36d0a69e9e02f88",
           "coverage": "shared original recursive substitute dependency; local namespace/resource adaptation"
+        },
+        {
+          "originalType": "fullscreenRoiBtnStyle",
+          "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+          "originalSha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e",
+          "localPath": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
+          "localSha256": "282ae56f8c7d747ea373142837e2a03999b8f6a47858ff5506678a4dbfdd74dc",
+          "coverage": "原全域样式及三个原位图；仅资源URI归属适配，原FullScreenDataTemplate回接RoiSelectControl，显隐为原BooleanToVisibilityConverter。"
         }
       ],
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          "sha256": "8014b7d071ef34c9e6873085c726f0c1cc9a9e427ee85ea9291e5b60af9cad25"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
@@ -2424,7 +2432,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
-          "sha256": "90bc80b852d15331dee6b1ee055483dd52d5394479f45a870805a812d30e7515"
+          "sha256": "b37f284bd26c36a9a97b11b29b0eb7a45ea8619b18cbbbed9b28e482a5537e1a"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
@@ -2448,7 +2456,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiDesignData.cs",
-          "sha256": "9434ea628e406ea099535f11b3d7e726c670158043ee8d4614665db4db2194c3"
+          "sha256": "5705f048594125b9b3dec3b721f4338ea88b1243ebf0a25979cc415c6da628b1"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs",
@@ -2456,7 +2464,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs",
-          "sha256": "6d0c9087799d998a8610a74e36b07fdfc5e4e79d43bfd1def5f5a7926a221b08"
+          "sha256": "bd63cc4885957413921a60ba6beb6089c6f1b3e984d61e374504f6f144e5d3fd"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiMenuCommands.cs",
@@ -2465,12 +2473,12 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs",
-          "sha256": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+          "sha256": "aa1479db42a7b103ee3f6a8051cfa6549a1a115773b90355b0040df3dacfbf51",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs",
-          "sha256": "fd0284211b162e3ed50ddb35b6323c039f45e23391ee172597cd0a48091d501f",
+          "sha256": "34ca93116c5f12a1fc3deb7642e4aeeb29b13b2a06d8f9a2b0d54f823e056760",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
@@ -2675,6 +2683,36 @@
           "完整第一阶段与人工验收"
         ],
         "formalEvidence": "docs/collaboration/evidence/O06_ROI_GESTURE_INTEGRATION_20261028.json"
+      },
+      "groupCoverageSnapshotCandidate": {
+        "status": "三态快照基础自动化通过；无组切换命令/原全域按钮，C08未完成",
+        "evidence": "docs/collaboration/evidence/C08_GROUP_SNAPSHOT_CANDIDATE_20261029.json",
+        "nativeStateEvidence": "docs/collaboration/evidence/C08_FULL_DOMAIN_GAP_20261029.json",
+        "ownership": "Groups由宿主明确提供并随编辑版本捕获；无旧构造兼容、空集合推断或假全图矩形。"
+      },
+      "groupCoverageCommandsCandidate": {
+        "status": "候选源码同源正式自动化通过，非完整C08/阶段一/人工验收",
+        "evidence": "docs/collaboration/evidence/C08_COVERAGE_COMMANDS_CANDIDATE_20261029.json",
+        "nativeStateEvidence": "docs/collaboration/evidence/C08_FULL_DOMAIN_GAP_20261029.json",
+        "nativeAssets": [
+          {
+            "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_full-screen_normal.png",
+            "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/roi_full-screen_normal.png",
+            "sha256": "b8e6a71af30bfa0a7a2206ff0b87523bac2cb3c52087bd5ab12f9892bbc8008b"
+          },
+          {
+            "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_full-screen_click.png",
+            "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/roi_full-screen_click.png",
+            "sha256": "998b66c54a8d6459ccd60f67b99b339512b1550e9f02151a66ceabedcc11652d"
+          },
+          {
+            "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\roi_选中但未绘制_bg.png",
+            "localPath": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/roi_选中但未绘制_bg.png",
+            "sha256": "16de014afc7a3d13534285d05ed6295f9bbfab34f27f67047bd70e601e33671b"
+          }
+        ],
+        "ownership": "宿主显式声明EmptyCoverage，原FullScreen命令清当前组。检测空为FullDomain、屏蔽空为None；明确FullDomain API不与空集合按钮混同。创建/末项删除/组切换及历史同一根接纳，受影响对象不含伪ID。图像选择同步活动组，重入后旧选择停止；绘制状态通知只刷新按钮，不丢参数原文。",
+        "validation": "Window最终57/0（含新增12覆盖交互及前轮5快照）；Design101/0、Editor10/0、FullChain9/0、Recovery50/0、真实EXE准入八过；真实VS/VM逐态/人工未验。"
       }
     },
     {
@@ -3045,7 +3083,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          "sha256": "8014b7d071ef34c9e6873085c726f0c1cc9a9e427ee85ea9291e5b60af9cad25"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiSamples.cs",
@@ -3053,7 +3091,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
+          "sha256": "d2fa6ef533bc82c92349a62446e2adaf84452e3322b42f3c04fd390f962dc77d"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -3082,12 +3120,12 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs",
-          "sha256": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+          "sha256": "aa1479db42a7b103ee3f6a8051cfa6549a1a115773b90355b0040df3dacfbf51",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs",
-          "sha256": "fd0284211b162e3ed50ddb35b6323c039f45e23391ee172597cd0a48091d501f",
+          "sha256": "34ca93116c5f12a1fc3deb7642e4aeeb29b13b2a06d8f9a2b0d54f823e056760",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
@@ -3316,7 +3354,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b"
+          "sha256": "8014b7d071ef34c9e6873085c726f0c1cc9a9e427ee85ea9291e5b60af9cad25"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
@@ -3332,11 +3370,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
-          "sha256": "90bc80b852d15331dee6b1ee055483dd52d5394479f45a870805a812d30e7515"
+          "sha256": "b37f284bd26c36a9a97b11b29b0eb7a45ea8619b18cbbbed9b28e482a5537e1a"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
+          "sha256": "d2fa6ef533bc82c92349a62446e2adaf84452e3322b42f3c04fd390f962dc77d"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -3369,12 +3407,12 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs",
-          "sha256": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+          "sha256": "aa1479db42a7b103ee3f6a8051cfa6549a1a115773b90355b0040df3dacfbf51",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs",
-          "sha256": "fd0284211b162e3ed50ddb35b6323c039f45e23391ee172597cd0a48091d501f",
+          "sha256": "34ca93116c5f12a1fc3deb7642e4aeeb29b13b2a06d8f9a2b0d54f823e056760",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {

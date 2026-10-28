@@ -19,13 +19,12 @@ namespace SunEyeVision.Workflow;
 /// 类型词汇由 SdkTypeVocabulary 唯一权威定义（SSOT），
 /// 本类不定义任何类型常量，所有类型名通过 SdkTypeVocabulary 解析。
 ///
-/// 序列化格式：{ "Type": "Double", "Value": [3.14] }
+/// 序列化格式：{ "Type": "Double", "Value": 3.14 } 或同类型族的一维数组。
 /// 支持的类型（7 个核心概念）：整型(Integer)/双精度(Double)/字符串(String)/布尔(Boolean)/
 /// 图像(Image)/图形定义(RoI)/变换矩阵(Transform)。
 /// 区域(Region)为算法内部 iconic 数据，禁止序列化，由 RegionConverter 桥接为 RoI 后外发（方案 D8）。
-/// 所有基础类型强制以 T[] 形态存储（填 3.14 → 落盘为 [3.14]，对齐 tuple 语义，方案步骤7）。
-/// 历史标量形态 JSON 重开时由 ParseAdaptive 抛异常，需重新保存升级为 T[]。
-/// 历史存量类型名（Xxx[]、Float、Rectangle）可加载，Byte 及几何类型已删除并 fail-fast（rule-015）。
+/// 纯值以实际 JSON 值形状区分标量和一维数组；禁止保存重开时隐式包成单元素数组。
+/// 数值载体仍按词汇表规范为 long/double，不为旧 tuple 包装保留第二条读写链。
 /// </summary>
 public class GlobalVariableValueConverter : JsonConverter<object?>
 {
@@ -81,24 +80,23 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
         if (clrType == null)
             throw new NotSupportedException($"不支持的全局变量类型: '{typeName}'。请在 SdkTypeVocabulary 中添加映射。");
 
-        // 基础类型：强制 T[]（方案步骤7）。ParseAdaptive 仅接受数组形态，
-        // 历史标量 JSON 会抛异常（数据需重新保存升级），新写入由 SerializeValue 统一包成数组。
-        if (clrType == typeof(long) || clrType == typeof(long[]))
-            return ParseAdaptive(valueElement, e => e.GetInt64());
+        // The type family and the actual JSON shape jointly describe the persisted value.
+        if (clrType == typeof(long) || clrType == typeof(long[]) || clrType == typeof(int[]))
+            return ParsePureValue(valueElement, e => e.GetInt64());
         if (clrType == typeof(string) || clrType == typeof(string[]))
-            return ParseAdaptive(valueElement, e => e.GetString()!);
+            return ParsePureValue(valueElement, e => e.GetString()!);
         if (clrType == typeof(bool) || clrType == typeof(bool[]))
-            return ParseAdaptive(valueElement, e => e.GetBoolean());
+            return ParsePureValue(valueElement, e => e.GetBoolean());
         if (clrType == typeof(double) || clrType == typeof(double[]))
-            return ParseAdaptive(valueElement, e => e.GetDouble());
+            return ParsePureValue(valueElement, e => e.GetDouble());
         if (clrType == typeof(SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload))
-            return ParseAdaptive(valueElement, e => new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(
+            return ParsePureValue(valueElement, e => new SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload(
                 Convert.FromBase64String(e.GetString() ?? throw new FormatException("字节序列必须为Base64字符串。"))));
-        // 变换矩阵：保持对象形态（非数组），与基础类型的 T[] 强制互不干扰（已知限制：类型对称未统一）。
+        // Structured/resource storage keeps its existing explicit declaration paths.
         if (clrType == typeof(AffineMatrix))
             return ParseAffineMatrix(valueElement);
         if (clrType == typeof(AffineMatrix[]))
-            return ParseAdaptive(valueElement, ParseAffineMatrix);
+            return ParseArray(valueElement, ParseAffineMatrix);
         if (clrType == typeof(IVisionImage))
             return ParseImage(valueElement);
 
@@ -110,18 +108,17 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
     }
 
     /// <summary>
-    /// 值形态解析：数组 → T[]。
-    /// 强制 T[] 契约（方案步骤7 + rule-015 报错优先）：标量 JSON 不再被静默提升为单值，
-    /// 历史以标量形态存储的全局变量（重开旧方案）会直接抛异常，需重新保存升级为 T[] 形态。
-    /// 新写入的值由 <see cref="SerializeValue"/> 统一以数组形态落盘（如 3.14 → [3.14]）。
+    /// 纯值的标量与数组形状分别保留，选择器负责验证实际元素种类。
     /// </summary>
-    private static object? ParseAdaptive<T>(JsonElement element, Func<JsonElement, T> selector)
+    private static object ParsePureValue<T>(JsonElement element, Func<JsonElement, T> selector)
+        =>element.ValueKind==JsonValueKind.Array?element.EnumerateArray().Select(selector).ToArray():selector(element)!;
+
+    private static T[] ParseArray<T>(JsonElement element, Func<JsonElement, T> selector)
     {
         if (element.ValueKind == JsonValueKind.Array)
             return element.EnumerateArray().Select(selector).ToArray();
 
-        throw new NotSupportedException(
-            $"全局变量值必须是数组形态 (T[])，但收到标量值。请重新保存该变量以升级为 T[] 存储（对齐 tuple 语义）。");
+        throw new JsonException("此声明要求数组值。");
     }
 
     /// <summary>
@@ -147,23 +144,21 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
         return value switch
         {
-            // 强制 T[]（方案步骤7）：标量统一包成长度 1 的数组（填 3.14 → 落盘为 [3.14]），
-            // 与词汇表 tuple 语义一致；历史标量 JSON 重开由 ParseAdaptive 抛异常（需重新保存）。
-            // 整型：int/long 统一序列化为 "Integer"（int 提升为 long，避免像素/面积溢出）
-            int intValue    => (typeName, new[] { (long)intValue }),
-            long longValue  => (typeName, new[] { longValue }),
+            // Canonicalize numeric carriers without changing scalar/sequence shape.
+            int intValue    => (typeName, (long)intValue),
+            long longValue  => (typeName, longValue),
             int[] intArr    => (typeName, intArr.Select(Convert.ToInt64).ToArray()),
             long[] longArr  => (typeName, longArr),
             // 双精度：float/double 统一序列化为 "Double"
-            float fltValue  => (typeName, new[] { (double)fltValue }),
-            double dblValue => (typeName, new[] { dblValue }),
+            float fltValue  => (typeName, (double)fltValue),
+            double dblValue => (typeName, dblValue),
             float[] fltArr  => (typeName, fltArr.Select(Convert.ToDouble).ToArray()),
             double[] dblArr => (typeName, dblArr),
-            string strValue => (typeName, new[] { strValue }),
+            string strValue => (typeName, strValue),
             string[] strArr => (typeName, strArr),
-            bool boolValue  => (typeName, new[] { boolValue }),
+            bool boolValue  => (typeName, boolValue),
             bool[] boolArr  => (typeName, boolArr),
-            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload payload => (typeName, new[] { payload.ToBase64() }),
+            SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload payload => (typeName, payload.ToBase64()),
             SunEyeVision.Plugin.SDK.Models.Communication.BinaryPayload[] payloads => (typeName, payloads.Select(p => p.ToBase64()).ToArray()),
             RoiShape sp  => (typeName, new[] { sp }),
             RoiShape[] sp => (typeName, sp),

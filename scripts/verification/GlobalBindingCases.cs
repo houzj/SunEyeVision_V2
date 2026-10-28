@@ -39,6 +39,9 @@ internal static class S2DocumentEditingCases
             ["SolutionExecutionDependencyGraphTests"]=null,
             ["ToolSideEffectReceiptTests"]=null,
             ["SendDataProductionEditorTests"]=null,
+            ["GlobalVariableValueShapeTests"]=null,
+            ["SdkTypeVocabularyContractTests"]=null,
+            ["CommunicationBinaryPayloadTests"]=null,
         };
         var results=new List<object>();var failures=0;var theoryCount=0;var uiTheoryCount=0;
         var requestedGroup=Environment.GetEnvironmentVariable("S4_GLOBAL_BINDING_GROUP");

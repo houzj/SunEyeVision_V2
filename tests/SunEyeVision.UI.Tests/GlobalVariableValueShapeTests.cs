@@ -135,7 +135,8 @@ public sealed class GlobalVariableValueShapeTests
     }
     private sealed class Files : IDisposable
     {
-        private readonly string _root = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SunEye-global-value-shape"));
+        private readonly string _root = System.IO.Path.GetFullPath(System.IO.Path.Combine(
+            Environment.GetEnvironmentVariable("S2_CASE_ROOT")??AppContext.BaseDirectory,"global-value-shape"));
         private readonly string _directory;
         internal Files() { _directory = System.IO.Path.Combine(_root, Guid.NewGuid().ToString("N")); Directory.CreateDirectory(_directory); }
         internal string Recovery => System.IO.Path.Combine(_directory, "recovery");

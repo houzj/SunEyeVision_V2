@@ -9,14 +9,9 @@ public sealed class ImageSourceConfigurationHistoryTests
 {
     private static (Solution Model, WorkflowNodeBase Node, NodeConfigurationEditHost Host) Create()
     {
-        SunEyeVision.Core.Services.Serialization.ParameterTypeRegistry.RegisterParameterType(
-            typeof(BindingAdaptationB2Tests.SourceParameters),"ImageSourceHistoryProbe");
         var root = new SunEyeVision.Workflow.Workflow("root", "流程1");
-        var node = new WorkflowNodeBase("source", "图像源1", "图像源1", "Probe")
-        {
-            Parameters = new BindingAdaptationB2Tests.SourceParameters(),
-            ImageSourceConfig = new() { NodeId = "source", FilePaths = new() { "assets/missing.bmp" }, CurrentIndex = 0 }
-        };
+        var node = ImageSourceTestRuntime.Node();
+        ImageSourceTestRuntime.Edit(node, config=>{config.FilePaths.Add("assets/missing.bmp");config.CurrentIndex=0;});
         root.Nodes.Add(node);
         var model = new Solution { Workflows = new() { root } };
         return (model, node, new NodeConfigurationEditHost(model));
@@ -26,31 +21,28 @@ public sealed class ImageSourceConfigurationHistoryTests
     public void Source_configuration_is_copied_accepted_and_replayed_with_the_same_formal_node()
     {
         var (model, node, host) = Create();
-        var original = node.ImageSourceConfig;
+        var original = node.RuntimeConfiguration;
         var edit = host.BeginEdit("root", "source");
-        edit.Node.ImageSourceConfig!.FilePaths.Add("assets/b.bmp");
-        edit.Node.ImageSourceConfig.CurrentIndex = 1;
-        edit.Node.ImageSourceConfig.ForRunPaths.Add("assets/b.bmp");
-        edit.Node.ImageSourceConfig.RunMode = 1;
+        ImageSourceTestRuntime.Edit(edit.Node, config=>{config.FilePaths.Add("assets/b.bmp");config.CurrentIndex = 1;config.ForRunPaths.Add("assets/b.bmp");config.RunMode = 1;});
         host.Commit(edit);
         Assert.Same(node, model.Workflows[0].Nodes[0]);
-        Assert.NotSame(edit.Node.ImageSourceConfig, node.ImageSourceConfig);
-        Assert.Single(original!.FilePaths);
-        Assert.Equal(1, node.ImageSourceConfig!.CurrentIndex);
-        var accepted = host.Capture().CopyConfiguration().Workflows[0].Nodes[0].ImageSourceConfig!;
+        Assert.NotSame(edit.Node.RuntimeConfiguration, node.RuntimeConfiguration);
+        Assert.Single(original!.ReadFieldValues().Get<SunEyeVision.Plugin.Contracts.SequenceValue>("local.paths"));
+        Assert.Equal(1, ImageSourceTestRuntime.Read(node)!.CurrentIndex);
+        var accepted = ImageSourceTestRuntime.Read(host.Capture().CopyConfiguration().Workflows[0].Nodes[0]);
         Assert.Equal(new[] { "assets/missing.bmp", "assets/b.bmp" }, accepted.FilePaths);
         // Mutating a consumed candidate cannot mutate the accepted publication or design.
-        edit.Node.ImageSourceConfig.FilePaths.Clear();
-        Assert.Equal(2, node.ImageSourceConfig.FilePaths.Count);
+        var consumed=ImageSourceTestRuntime.Read(edit.Node);consumed.FilePaths.Clear();
+        Assert.Equal(2, ImageSourceTestRuntime.Read(node).FilePaths.Count);
         host.Undo();
-        Assert.Single(node.ImageSourceConfig!.FilePaths);
-        Assert.Equal(0, node.ImageSourceConfig.CurrentIndex);
+        Assert.Single(ImageSourceTestRuntime.Read(node)!.FilePaths);
+        Assert.Equal(0, ImageSourceTestRuntime.Read(node).CurrentIndex);
         host.Redo();
-        Assert.Equal(2, node.ImageSourceConfig!.FilePaths.Count);
-        Assert.Equal(new[] { "assets/b.bmp" }, node.ImageSourceConfig.ForRunPaths);
+        Assert.Equal(2, ImageSourceTestRuntime.Read(node)!.FilePaths.Count);
+        Assert.Equal(new[] { "assets/b.bmp" }, ImageSourceTestRuntime.Read(node).ForRunPaths);
         var json = JsonSerializer.Serialize(model, WorkflowSerializationOptions.Default);
         var reopened = JsonSerializer.Deserialize<Solution>(json, WorkflowSerializationOptions.Default)!;
-        Assert.Equal(1, reopened.Workflows[0].Nodes[0].ImageSourceConfig!.CurrentIndex);
+        Assert.Equal(1, ImageSourceTestRuntime.Read(reopened.Workflows[0].Nodes[0]).CurrentIndex);
     }
 
     [Fact]
@@ -61,19 +53,18 @@ public sealed class ImageSourceConfigurationHistoryTests
             null,new object[]{model},null)!;
         var host=session.Editing.Host;
         var edit=host.BeginEdit("root",node.Id);
-        edit.Node.ImageSourceConfig!.AutoSwitchEnabled=false;
-        edit.Node.ImageSourceConfig.FilePaths.Add("assets/b.bmp");
+        ImageSourceTestRuntime.Edit(edit.Node, config=>{config.AutoSwitchEnabled=false;config.FilePaths.Add("assets/b.bmp");});
         host.Commit(edit);
         Assert.Single(session.History.Entries);
         Assert.NotNull(host.LastHistoryReceipt);
         session.History.Undo();
         Assert.Same(node,model.Workflows[0].Nodes.Single());
-        Assert.Single(node.ImageSourceConfig!.FilePaths);
-        Assert.True(node.ImageSourceConfig.AutoSwitchEnabled);
+        Assert.Single(ImageSourceTestRuntime.Read(node)!.FilePaths);
+        Assert.True(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
         session.History.Redo();
         Assert.Same(node,model.Workflows[0].Nodes.Single());
-        Assert.Equal(2,node.ImageSourceConfig!.FilePaths.Count);
-        Assert.False(node.ImageSourceConfig.AutoSwitchEnabled);
+        Assert.Equal(2,ImageSourceTestRuntime.Read(node)!.FilePaths.Count);
+        Assert.False(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
     }
 
     [Fact]
@@ -81,8 +72,7 @@ public sealed class ImageSourceConfigurationHistoryTests
     {
         var (model,node,host)=Create();
         var edit=host.BeginEdit("root",node.Id);
-        edit.Node.ImageSourceConfig!.AutoSwitchEnabled=false;
-        edit.Node.ImageSourceConfig.FilePaths.Add("assets/b.bmp");
+        ImageSourceTestRuntime.Edit(edit.Node, config=>{config.AutoSwitchEnabled=false;config.FilePaths.Add("assets/b.bmp");});
         host.Commit(edit);
         var added=new WorkflowNodeBase("other","其他节点","其他节点","Probe")
         {Parameters=new BindingAdaptationB2Tests.SourceParameters()};
@@ -90,12 +80,12 @@ public sealed class ImageSourceConfigurationHistoryTests
         host.SynchronizeStructure();
         host.Undo();
         Assert.Same(added,model.Workflows[0].Nodes.Single(item=>item.Id=="other"));
-        Assert.Single(node.ImageSourceConfig!.FilePaths);
-        Assert.True(node.ImageSourceConfig.AutoSwitchEnabled);
+        Assert.Single(ImageSourceTestRuntime.Read(node)!.FilePaths);
+        Assert.True(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
         host.Redo();
         Assert.Same(added,model.Workflows[0].Nodes.Single(item=>item.Id=="other"));
-        Assert.Equal(2,node.ImageSourceConfig!.FilePaths.Count);
-        Assert.False(node.ImageSourceConfig.AutoSwitchEnabled);
+        Assert.Equal(2,ImageSourceTestRuntime.Read(node)!.FilePaths.Count);
+        Assert.False(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
     }
 
     [Fact]
@@ -104,79 +94,71 @@ public sealed class ImageSourceConfigurationHistoryTests
         var (_, node, host) = Create();
         var old = host.BeginEdit("root", "source");
         var sourceEdit = host.BeginEdit("root", "source");
-        sourceEdit.Node.ImageSourceConfig!.AutoSwitchEnabled = false;
+        ImageSourceTestRuntime.Edit(sourceEdit.Node, config=>{config.AutoSwitchEnabled = false;});
         host.Commit(sourceEdit);
-        ((BindingAdaptationB2Tests.SourceParameters)old.Node.Parameters).Name = "pending";
+        old.Node.RuntimeConfiguration=old.Node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{{"sequence.initial",99L}});
         Assert.Throws<InvalidOperationException>(() => host.Commit(old));
-        Assert.Equal("pending", ((BindingAdaptationB2Tests.SourceParameters)old.Node.Parameters).Name);
-        Assert.False(node.ImageSourceConfig!.AutoSwitchEnabled);
+        Assert.Equal(99L,old.Node.RuntimeConfiguration!.ReadFieldValues().Get<long>("sequence.initial"));
+        Assert.False(ImageSourceTestRuntime.Read(node)!.AutoSwitchEnabled);
     }
 
     [Fact]
     public void Failed_acceptance_restores_the_original_source_reference_and_keeps_the_candidate()
     {
         var (_, node, host) = Create();
-        var before = node.ImageSourceConfig;
+        var before = node.RuntimeConfiguration;
         var publication = host.Capture();
         var edit = host.BeginEdit("root", "source");
-        edit.Node.ImageSourceConfig!.AutoSwitchEnabled = false;
+        ImageSourceTestRuntime.Edit(edit.Node, config=>{config.AutoSwitchEnabled = false;});
         var injection = typeof(NodeConfigurationEditHost).GetField("_acceptanceFailureAfterRawMutation", BindingFlags.Instance | BindingFlags.NonPublic)!;
         injection.SetValue(host, 1);
         Assert.Throws<InvalidOperationException>(() => host.Commit(edit));
-        Assert.Same(before, node.ImageSourceConfig);
+        Assert.Same(before, node.RuntimeConfiguration);
         Assert.Same(publication, host.Capture());
         Assert.False(host.CanUndo);
-        Assert.False(edit.Node.ImageSourceConfig.AutoSwitchEnabled);
+        Assert.False(ImageSourceTestRuntime.Read(edit.Node).AutoSwitchEnabled);
         injection.SetValue(host, -1);
         host.Commit(edit);
-        Assert.False(node.ImageSourceConfig!.AutoSwitchEnabled);
+        Assert.False(ImageSourceTestRuntime.Read(node)!.AutoSwitchEnabled);
     }
 
     [Fact]
     public void Actual_image_source_can_edit_an_empty_list_without_fabricating_an_execution_path()
     {
         var (_, node, host) = Create();
-        SunEyeVision.Core.Services.Serialization.ParameterTypeRegistry.RegisterParameterType(typeof(SunEyeVision.Tool.ImageLoad.ImageLoadParameters), "ImageLoad");
-        node.Parameters = new SunEyeVision.Tool.ImageLoad.ImageLoadParameters();
-        // Recreate the host after installing the actual tool contract.
-        var root = new SunEyeVision.Workflow.Workflow("actual", "流程1");
-        root.Nodes.Add(node);
+        var root = new SunEyeVision.Workflow.Workflow("actual", "流程1");root.Nodes.Add(node);
         host = new NodeConfigurationEditHost(new Solution { Workflows = new() { root } });
-        Assert.False(node.Parameters.Validate().IsValid);
-        var edit = host.BeginEdit("actual", node.Id);
-        edit.Node.ImageSourceConfig!.FilePaths.Clear();
-        edit.Node.ImageSourceConfig.CurrentIndex = -1;
+        var edit = host.BeginEdit("actual",node.Id);
+        ImageSourceTestRuntime.Edit(edit.Node,config=>{config.FilePaths.Clear();config.ForRunPaths.Clear();config.CurrentIndex=-1;});
         host.Commit(edit);
-        Assert.Empty(node.ImageSourceConfig!.FilePaths);
-        Assert.Empty(((SunEyeVision.Tool.ImageLoad.ImageLoadParameters)node.Parameters).FilePath);
-        Assert.False(node.Parameters.Validate().IsValid); // Still not executable.
-        host.Undo();
-        Assert.Single(node.ImageSourceConfig!.FilePaths);
-        host.Redo();
-        Assert.Empty(node.ImageSourceConfig!.FilePaths);
-        // A same-value explicit source selection/configuration does not fabricate a
-        // tool path or reclassify unchanged invocation defaults as parameter edits.
-        var same=host.BeginEdit("actual",node.Id);
-        host.Commit(same);
-        Assert.False(node.Parameters.Validate().IsValid);
+        Assert.Empty(ImageSourceTestRuntime.Read(node).FilePaths);
+        Assert.Empty(node.RuntimeConfiguration!.Validate()); // Structurally editable; readiness is separate.
+        Assert.NotEmpty(SunEyeVision.UI.Services.Workflow.RootWorkflowReadiness.EvaluateImageSource(node.Id,ImageSourceTestRuntime.Read(node)));
+        host.Undo();Assert.Single(ImageSourceTestRuntime.Read(node).FilePaths);
+        host.Redo();Assert.Empty(ImageSourceTestRuntime.Read(node).FilePaths);
+        host.Commit(host.BeginEdit("actual",node.Id));
+        Assert.Empty(ImageSourceTestRuntime.Read(node).FilePaths);
     }
 
     [Fact]
     public void Source_edit_does_not_waive_validation_of_changed_actual_tool_parameters()
     {
-        var (_, node, _) = Create();
-        SunEyeVision.Core.Services.Serialization.ParameterTypeRegistry.RegisterParameterType(typeof(SunEyeVision.Tool.ImageLoad.ImageLoadParameters), "ImageLoad");
-        node.Parameters = new SunEyeVision.Tool.ImageLoad.ImageLoadParameters { FilePath = "before.bmp" };
-        var root = new SunEyeVision.Workflow.Workflow("actual", "流程1");
-        root.Nodes.Add(node);
-        var host = new NodeConfigurationEditHost(new Solution { Workflows = new() { root } });
-        var edit = host.BeginEdit("actual", node.Id);
-        edit.Node.ImageSourceConfig!.AutoSwitchEnabled = false;
-        ((SunEyeVision.Tool.ImageLoad.ImageLoadParameters)edit.Node.Parameters).FilePath = string.Empty;
-        Assert.Throws<InvalidOperationException>(() => host.Commit(edit));
-        Assert.True(node.ImageSourceConfig!.AutoSwitchEnabled);
-        Assert.Equal("before.bmp", ((SunEyeVision.Tool.ImageLoad.ImageLoadParameters)node.Parameters).FilePath);
+        var (_,node,host)=Create();var before=node.RuntimeConfiguration;
+        var edit=host.BeginEdit("root",node.Id);
+        Assert.Throws<ArgumentException>(()=>edit.Node.RuntimeConfiguration=edit.Node.RuntimeConfiguration!.WithFieldValues(
+            new Dictionary<string,object?>{{"local.auto-switch",false},{"camera.timeout-ms",0L}}));
+        Assert.Same(before,node.RuntimeConfiguration);Assert.True(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
         Assert.False(host.CanUndo);
+    }
+
+    [Fact]
+    public void Copied_node_has_independent_runtime_source_settings_and_list_edits()
+    {
+        var (_,node,_)=Create();var copy=node.Clone();
+        Assert.NotSame(node.RuntimeConfiguration,copy.RuntimeConfiguration);
+        ImageSourceTestRuntime.Edit(copy,config=>{config.FilePaths.Add("copy.png");config.AutoSwitchEnabled=false;});
+        Assert.Single(ImageSourceTestRuntime.Read(node).FilePaths);Assert.True(ImageSourceTestRuntime.Read(node).AutoSwitchEnabled);
+        Assert.Equal(2,ImageSourceTestRuntime.Read(copy).FilePaths.Count);Assert.False(ImageSourceTestRuntime.Read(copy).AutoSwitchEnabled);
     }
 
     [Theory]
@@ -190,20 +172,22 @@ public sealed class ImageSourceConfigurationHistoryTests
     public void Invalid_source_candidates_do_not_publish(string failure)
     {
         var (_, node, host) = Create();
-        var before = node.ImageSourceConfig;
+        var before = node.RuntimeConfiguration;
         var edit = host.BeginEdit("root", "source");
-        switch (failure)
+        Assert.ThrowsAny<Exception>(()=>ImageSourceTestRuntime.Edit(edit.Node, config=>
         {
-            case "identity": edit.Node.ImageSourceConfig!.NodeId = "other"; break;
-            case "selection": edit.Node.ImageSourceConfig!.CurrentIndex = 9; break;
-            case "mode": edit.Node.ImageSourceConfig!.RunMode = 7; break;
-            case "timeout": edit.Node.ImageSourceConfig!.CameraTimeoutMs = 0; break;
-            case "sequence": edit.Node.ImageSourceConfig!.SNInitialValue = -1; break;
-            case "format": edit.Node.ImageSourceConfig!.OutputFormat = (SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat)999; break;
-            default: edit.Node.ImageSourceConfig!.SourceKind = (SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind)999; break;
-        }
-        Assert.Throws<InvalidOperationException>(() => host.Commit(edit));
-        Assert.Same(before, node.ImageSourceConfig);
+            switch(failure)
+            {
+                case "identity":config.NodeId="other";break;
+                case "selection":config.CurrentIndex=9;break;
+                case "mode":config.RunMode=7;break;
+                case "timeout":config.CameraTimeoutMs=0;break;
+                case "sequence":config.SNInitialValue=-1;break;
+                case "format":config.OutputFormat=(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat)999;break;
+                default:config.SourceKind=(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind)999;break;
+            }
+        }));
+        Assert.Same(before,node.RuntimeConfiguration);
         Assert.False(host.CanUndo);
     }
 }

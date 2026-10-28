@@ -15,6 +15,9 @@ using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Shell.Controls.Panels;
+using SunEyeVision.UI.Services.Images;
+using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
+using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.Workflow;
 using Xunit;
 
@@ -22,33 +25,13 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed partial class SolutionManagerUiTests
 {
-    public sealed class PreviewPolicyParameters : SunEyeVision.Plugin.SDK.Execution.Parameters.ToolParameters
-    {
-        public SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind SourceKind { get; set; }
-        public SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat OutputFormat { get; set; }
-        public long SequenceNumber { get; set; } = 1;
-        public string FilePath { get; set; } = "";
-        public bool Fail { get; set; }
-    }
+    private static void PreviewCall(ImageSourceStrip control, string method, params object[] args) =>
+        typeof(ImageSourceStrip).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(control, args);
 
-    public sealed class PreviewPolicyResults : SunEyeVision.Plugin.SDK.Execution.Results.ToolResults { }
+    private static Task SourceImport(ImageSourceStripSession session,string method,params object[] arguments)
+        =>(Task)typeof(ImageSourceStripSession).GetMethod(method,BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(session,arguments)!;
 
-    [SunEyeVision.Plugin.SDK.Core.Tool("PreviewPolicyImageLoad", "图像推进测试工具")]
-    public sealed class PreviewPolicyTool : SunEyeVision.Plugin.SDK.Core.IToolPlugin<PreviewPolicyParameters, PreviewPolicyResults>
-    {
-        public static Action<PreviewPolicyParameters>? OnRun { get; set; }
-        public PreviewPolicyResults Run(PreviewPolicyParameters parameters)
-        {
-            OnRun?.Invoke(parameters);
-            if (parameters.Fail) throw new InvalidOperationException("expected test failure");
-            return new PreviewPolicyResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
-        }
-    }
-
-    private static void PreviewCall(ImagePreviewControl control, string method, params object[] args) =>
-        typeof(ImagePreviewControl).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(control, args);
-
-    private static void PumpPreviewTask(ImagePreviewControl control, Task task)
+    private static void PumpPreviewTask(ImageSourceStrip control, Task task)
     {
         var frame = new System.Windows.Threading.DispatcherFrame();
         var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
@@ -61,29 +44,49 @@ public sealed partial class SolutionManagerUiTests
         task.GetAwaiter().GetResult();
     }
 
-    [Fact]
-    public void Selection_and_removal_preserve_two_way_binding_and_current_image_identity()
+    private sealed class NativeSourceFixture : IDisposable
     {
-        Sta(() =>
+        public ImageInputSource Source {get;}
+        public ImageSourceStripSession Session {get;}
+        public ImageSourceStrip Control {get;}
+        private readonly Window _window;
+        public NativeSourceFixture(ImageInputSource source,Func<bool>? current=null,Func<ImageInfo,int,long,Task>? activate=null)
         {
-            var files = new[] { Path.GetTempFileName(), Path.GetTempFileName(), Path.GetTempFileName() };
+            Source=source;Session=new(source,current??(()=>true),async(image,index,version)=>
+            {
+                Assert.Equal(version,source.EditVersion);source.SelectImage(index);
+                if(activate is not null)await activate(image,index,version);
+            });
+            Control=new ImageSourceStrip{Session=Session};
+            _window=new Window{Content=Control,Width=600,Height=180,Left=-10000,ShowActivated=false};
+            _window.Show();_window.UpdateLayout();
+            Control.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+        }
+        public Task Request(ImageSourceStripRequestKind kind,string? itemId=null,IEnumerable<string>? paths=null)
+            =>Session.RequestAsync(new(kind,Session.Version,itemId,paths:paths),CancellationToken.None);
+        public void Dispose(){_window.Close();Control.Session=null;Session.Dispose();}
+    }
+
+    [Fact]
+    public void Selection_and_removal_preserve_current_image_identity_and_one_way_display()
+    {
+        Sta(()=>
+        {
+            var files=new[]{Path.GetTempFileName(),Path.GetTempFileName(),Path.GetTempFileName()};
             try
             {
-                var source = new ImageInputSource("node");
-                foreach (var file in files) source.AddImage(new ImageInfo { FilePath = file });
-                var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
-                System.Windows.Data.BindingOperations.SetBinding(control, ImagePreviewControl.CurrentImageIndexProperty,
-                    new System.Windows.Data.Binding(nameof(source.CurrentIndex)) { Source = source, Mode = System.Windows.Data.BindingMode.TwoWay });
-                control.CurrentImageIndex = 2;
-                var binding = System.Windows.Data.BindingOperations.GetBindingExpression(control, ImagePreviewControl.CurrentImageIndexProperty);
-                Assert.NotNull(binding); binding!.UpdateSource(); Assert.Equal(2, source.CurrentIndex);
-                PreviewCall(control, "ExecuteDeleteSingleImage", source.Images[0]);
-                Assert.Equal(1, source.CurrentIndex); Assert.Equal(1, control.CurrentImageIndex);
-                Assert.Equal(files[2], source.CurrentImage!.FilePath);
-                Assert.NotNull(System.Windows.Data.BindingOperations.GetBindingExpression(control, ImagePreviewControl.CurrentImageIndexProperty));
-                Assert.All(files, file => Assert.True(File.Exists(file)));
+                var source=new ImageInputSource("node");foreach(var file in files)source.AddImage(new ImageInfo{FilePath=file});
+                using var fixture=new NativeSourceFixture(source);
+                source.SelectImage(2);
+                var list=(ListBox)fixture.Control.FindName("lst");
+                Assert.Equal(2,list.SelectedIndex);var selected=source.CurrentImage;
+                PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.Remove,source.Images[0].Id));
+                Assert.Equal(1,source.CurrentIndex);Assert.Equal(1,list.SelectedIndex);Assert.Same(selected,source.CurrentImage);
+                Assert.Equal(files[2],source.CurrentImage!.FilePath);Assert.All(files,file=>Assert.True(File.Exists(file)));
+                // Programmatic list selection is presentation only and cannot write formal source selection.
+                list.SelectedIndex=0;Assert.Equal(1,source.CurrentIndex);
             }
-            finally { foreach (var file in files) File.Delete(file); }
+            finally{foreach(var file in files)File.Delete(file);}
         });
     }
 
@@ -97,15 +100,15 @@ public sealed partial class SolutionManagerUiTests
             {
                 var a = Path.Combine(root, "a.png"); var b = Path.Combine(root, "b.png");
                 File.WriteAllBytes(a, new byte[] { 1 }); File.WriteAllBytes(b, new byte[] { 2 });
-                var config = new ImageSourceConfig { FilePaths = new() { Path.Combine(root, "missing.png"), a, Path.Combine(root, "lost.png"), b }, CurrentIndex = 3, ForRunPaths = new() { b } };
+                var config = new ImageSourcePolicy { FilePaths = new() { Path.Combine(root, "missing.png"), a, Path.Combine(root, "lost.png"), b }, CurrentIndex = 3, ForRunPaths = new() { b } };
                 var source = new ImageInputSource("node");
                 var resolver = new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(root);
-                source.LoadFromConfig(config, resolver);
+                source.LoadFromPolicy(config, resolver);
                 Assert.Equal(4, source.Count); Assert.Equal(3, source.CurrentIndex);
                 Assert.Equal(b, source.CurrentImage!.FilePath); Assert.True(source.CurrentImage.IsForRun);
-                Assert.Equal(config.FilePaths, source.ToConfig().FilePaths);
-                Assert.Equal(config.ForRunPaths, source.ToConfig().ForRunPaths);
-                config.CurrentIndex = 0; source.LoadFromConfig(config, resolver); Assert.Equal(0, source.CurrentIndex);
+                Assert.Equal(config.FilePaths, source.CapturePolicy().FilePaths);
+                Assert.Equal(config.ForRunPaths, source.CapturePolicy().ForRunPaths);
+                config.CurrentIndex = 0; source.LoadFromPolicy(config, resolver); Assert.Equal(0, source.CurrentIndex);
                 Assert.Equal(config.FilePaths[0], source.CurrentImage!.SourceReference);
                 Assert.False(File.Exists(source.CurrentImage.FilePath));
                 source.ClearImages(); Assert.True(File.Exists(a)); Assert.True(File.Exists(b));
@@ -125,17 +128,17 @@ public sealed partial class SolutionManagerUiTests
             var file = Path.Combine(root, "sample.png"); File.WriteAllBytes(file, new byte[] { 1 });
             try
             {
-                var config = new ImageSourceConfig { FilePaths = new() { "sample.png" }, ForRunPaths = new() { "sample.png" }, CurrentIndex = 0 };
+                var config = new ImageSourcePolicy { FilePaths = new() { "sample.png" }, ForRunPaths = new() { "sample.png" }, CurrentIndex = 0 };
                 var source = new ImageInputSource("relative");
-                source.LoadFromConfig(config, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
+                source.LoadFromPolicy(config, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
                 var unresolved = Assert.Single(source.Images);
                 Assert.Equal("sample.png", unresolved.SourceReference); Assert.Empty(unresolved.FilePath);
                 Assert.False(string.IsNullOrWhiteSpace(unresolved.ResourceError)); Assert.True(unresolved.IsForRun);
-                Assert.Equal(config.FilePaths, source.ToConfig().FilePaths);
-                source.LoadFromConfig(config, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(root));
+                Assert.Equal(config.FilePaths, source.CapturePolicy().FilePaths);
+                source.LoadFromPolicy(config, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(root));
                 var resolved = Assert.Single(source.Images);
                 Assert.Equal(file, resolved.FilePath); Assert.Null(resolved.ResourceError); Assert.True(resolved.IsForRun);
-                Assert.Equal("sample.png", Assert.Single(source.ToConfig().FilePaths));
+                Assert.Equal("sample.png", Assert.Single(source.CapturePolicy().FilePaths));
                 source.ClearImages(); Assert.True(File.Exists(file));
             }
             finally { Directory.Delete(root, true); }
@@ -145,35 +148,28 @@ public sealed partial class SolutionManagerUiTests
     [Fact]
     public void Right_click_and_programmatic_selection_do_not_execute_left_and_keys_execute_once()
     {
-        Sta(() =>
+        Sta(()=>
         {
-            var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
-            try
-            {
-                var a = Path.Combine(root, "a.png"); var b = Path.Combine(root, "b.png");
-                File.WriteAllBytes(a, new byte[] { 1 }); File.WriteAllBytes(b, new byte[] { 2 });
-                var source = new ImageInputSource("node");
-                source.AddImages(new[] { new ImageInfo { FilePath = a }, new ImageInfo { FilePath = b, IsForRun = true } });
-                var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
-                var list = (ListBox)control.FindName("ThumbnailListBox"); list.ItemsSource = source.Images;
-                typeof(ImagePreviewControl).GetField("_thumbnailListBox", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(control, list);
-                var requests = 0; control.WorkflowExecutionRequested += (_, _) => requests++;
-                list.SelectedItem = source.Images[1]; Assert.Equal(0, requests);
-                var border = new Border { Tag = source.Images[0] };
-                PreviewCall(control, "OnThumbnailClick", border, new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right));
-                Assert.Equal(0, requests);
-                PreviewCall(control, "OnThumbnailClick", border, new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left));
-                Assert.Equal(1, requests); Assert.Equal(0, control.CurrentImageIndex);
-                using var hwnd = new HwndSource(new HwndSourceParameters("preview-key-test") { Width = 1, Height = 1, WindowStyle = unchecked((int)0x80000000) });
-                var key = new KeyEventArgs(Keyboard.PrimaryDevice, hwnd, 0, Key.Right) { RoutedEvent = Keyboard.PreviewKeyDownEvent };
-                PreviewCall(control, "OnThumbnailPreviewKeyDown", list, key);
-                Assert.True(key.Handled); Assert.Equal(2, requests); Assert.Equal(1, control.CurrentImageIndex);
-                control.ImageRunMode = ImageRunMode.运行选择;
-                PreviewCall(control, "OnThumbnailClick", border, new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left));
-                Assert.Equal(2, requests);
-                control.CurrentImageIndex = 0; Assert.Equal(2, requests);
-            }
-            finally { Directory.Delete(root, true); }
+            var source=new ImageInputSource("node");source.AddImages(new[]{new ImageInfo{FilePath="a.png"},new ImageInfo{FilePath="b.png",IsForRun=true}});
+            var executions=0;
+            using var fixture=new NativeSourceFixture(source,activate:(_,_,_)=>{executions++;return Task.CompletedTask;});
+            var list=(ListBox)fixture.Control.FindName("lst");list.SelectedIndex=1;Assert.Equal(0,executions);
+            var row=new Border{DataContext=fixture.Session.Items[0]};
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Right));
+            Assert.Equal(0,executions);
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left));
+            Assert.Equal(1,executions);Assert.Equal(0,source.CurrentIndex);
+            using var hwnd=new HwndSource(new HwndSourceParameters("source-key-test"){Width=1,Height=1,WindowStyle=unchecked((int)0x80000000)});
+            var key=new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Right){RoutedEvent=Keyboard.PreviewKeyDownEvent};
+            PreviewCall(fixture.Control,"ListKeyDown",list,key);Assert.True(key.Handled);Assert.Equal(2,executions);Assert.Equal(1,source.CurrentIndex);
+            source.RunMode=ImageRunMode.运行选择;
+            row.DataContext=fixture.Session.Items[0];
+            // Original plain click activates even in selected-run mode; Ctrl is the run-selection gesture.
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left));
+            Assert.Equal(3,executions);
+            source.CurrentIndex=1;Assert.Equal(3,executions);
+            PreviewCall(fixture.Control,"FirstImage_Click",fixture.Control,new RoutedEventArgs());
+            Assert.Equal(3,executions); // First eligible establishes a start; it does not execute.
         });
     }
 
@@ -186,9 +182,9 @@ public sealed partial class SolutionManagerUiTests
             try
             {
                 var source = new ImageInputSource("node"); source.AddImage(new ImageInfo { FilePath = file });
-                var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images, CurrentImageIndex = 0 };
-                PumpPreviewTask(control, control.ImportFilePathsAsync(new[] { file, file + ".missing" }));
-                Assert.Single(source.Images); Assert.Equal(0, control.CurrentImageIndex);
+                using var fixture=new NativeSourceFixture(source);
+                PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportFiles,paths:new[]{file,file+".missing"}));
+                Assert.Single(source.Images);Assert.Equal(0,source.CurrentIndex);
             }
             finally { File.Delete(file); }
         });
@@ -201,17 +197,16 @@ public sealed partial class SolutionManagerUiTests
         {
             var source = new ImageInputSource("source");
             source.AddImages(new[] { new ImageInfo { FilePath = "existing.png" } }, selectFirstAdded: true);
-            var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
+            using var fixture=new NativeSourceFixture(source);
             var files = new TaskCompletionSource<string[]>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writes = 0; source.ConfigurationWriter = _ => writes++;
-            var method = typeof(ImagePreviewControl).GetMethod("ImportAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
-            var task = (Task)method.Invoke(control, new object[] { (Func<System.Threading.CancellationToken, Task<string[]>>)(_ => files.Task) })!;
-            control.CancelImportCommand.Execute(null);
+            var task=SourceImport(fixture.Session,"ImportAsync",(Func<CancellationToken,Task<string[]>>)(_=>files.Task));
+            fixture.Request(ImageSourceStripRequestKind.CancelImport).GetAwaiter().GetResult();
             files.SetResult(new[] { "late.png" });
-            PumpPreviewTask(control, task);
+            PumpPreviewTask(fixture.Control,task);
             Assert.Equal(0, writes); Assert.Single(source.Images);
             Assert.Equal("existing.png", source.CurrentImage!.FilePath);
-            Assert.False(control.IsImporting);
+            Assert.False(fixture.Session.IsImporting);
         });
     }
 
@@ -227,11 +222,11 @@ public sealed partial class SolutionManagerUiTests
                 var paths = Enumerable.Range(0, 600).Select(index => Path.Combine(directory, index.ToString("D4") + ".png")).ToArray();
                 foreach (var path in paths) File.WriteAllBytes(path, new byte[] { 1 });
                 var source = new ImageInputSource("import");
-                var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
-                source.CollectionChanged += (_, _) => control.CancelImportCommand.Execute(null);
-                PumpPreviewTask(control, control.ImportDirectoryAsync(directory));
-                Assert.Equal(600, source.Count); Assert.Equal(600, source.ToConfig().FilePaths.Count);
-                Assert.False(control.IsImporting); Assert.Contains("取消", control.ImportStatus);
+                using var fixture=new NativeSourceFixture(source);
+                source.CollectionChanged+=(_,_)=>fixture.Request(ImageSourceStripRequestKind.CancelImport).GetAwaiter().GetResult();
+                PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportDirectory,paths:new[]{directory}));
+                Assert.Equal(600, source.Count); Assert.Equal(600, source.CapturePolicy().FilePaths.Count);
+                Assert.False(fixture.Session.IsImporting);Assert.Contains("取消",fixture.Session.Status);
                 Assert.All(paths, path => Assert.True(File.Exists(path)));
             }
             finally { Directory.Delete(directory, true); }
@@ -251,15 +246,17 @@ public sealed partial class SolutionManagerUiTests
                 foreach (var path in paths) File.WriteAllBytes(path, new byte[] { 1 });
                 var old = new ImageInputSource("old"); var next = new ImageInputSource("next");
                 next.AddImages(paths.Take(2).Select(path => new ImageInfo { FilePath = path })); next.CurrentIndex = 1;
-                var control = new ImagePreviewControl { ActiveInputSource = old, ImageCollection = old.Images };
+                ImageInputSource current=old;
+                using var fixture=new NativeSourceFixture(old,()=>ReferenceEquals(current,old));
+                using var nextSession=new ImageSourceStripSession(next,()=>ReferenceEquals(current,next));
                 old.CollectionChanged += (_, _) =>
                 {
-                    control.ActiveInputSource = next; control.ImageCollection = next.Images; control.CurrentImageIndex = 1;
+                    current=next;fixture.Control.Session=nextSession;
                 };
-                PumpPreviewTask(control, control.ImportFilePathsAsync(paths));
+                PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportFiles,paths:paths));
                 Assert.Equal(600, old.Count); Assert.Equal(2, next.Count);
-                Assert.Equal(1, control.CurrentImageIndex); Assert.Equal(1, next.CurrentIndex);
-                Assert.False(control.IsImporting);
+                Assert.Equal(1,nextSession.DisplayIndex);Assert.Equal(1,next.CurrentIndex);
+                Assert.False(fixture.Session.IsImporting);
             }
             finally { Directory.Delete(directory, true); }
         });
@@ -270,47 +267,19 @@ public sealed partial class SolutionManagerUiTests
     {
         Sta(() =>
         {
-            using var fixture = new PreviewSolutionFixture();
-            var serviceField = typeof(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer)
-                .GetField("_solutionManager", BindingFlags.NonPublic | BindingFlags.Static)!;
-            var previous = serviceField.GetValue(null);
-            if (previous == null) serviceField.SetValue(null, fixture.Manager);
-            SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.RegisterTool(typeof(PreviewPolicyTool));
-            try
-            {
-            var engine = new WorkflowEngine(Substitute.For<ILogger>());
-            var root = engine.CreateWorkflow(Guid.NewGuid().ToString(), "手动自动推进测试");
-            root.AddNode(new WorkflowNodeBase("disabled", "source", "source", "PreviewPolicyImageLoad")
-            { Parameters = new PreviewPolicyParameters() });
-            var tab = new WorkflowTabViewModel { Id = root.Id, Name = root.Name }; tab.SetNodes(root.Nodes); tab.SetConnections(root.Connections);
-            var source = new ImageInputSource("disabled");
-            source.AddImages(new[] { new ImageInfo { FilePath = fixture.CreateImage("one.png") },
-                new ImageInfo { FilePath = fixture.CreateImage("two.png") } });
-            source.CurrentIndex = 0;
-            root.Nodes[0].InputSource = source;
-            root.Nodes[0].ImageSourceConfig = source.ToConfig();
-            var snapshots = new RuntimeInputSnapshotService();
-            var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
-            var manager = new WorkflowExecutionManager(input, engine, snapshots) { AllowUnhostedRunForTests = true };
-            var completed = 0; string? error = null;
-            manager.WorkflowExecutionCompleted += (_, _) => completed++;
-            manager.WorkflowExecutionError += (_, e) => error = e.ErrorMessage;
-            manager.RunSingleAsync(tab, advanceLocalImage: false).GetAwaiter().GetResult();
-            Assert.Null(error); Assert.Equal(1, completed); Assert.Equal(0, source.CurrentIndex);
-            manager.RunSingleAsync(tab).GetAwaiter().GetResult();
-            Assert.Null(error); Assert.Equal(2, completed); Assert.Equal(1, source.CurrentIndex);
-            ((PreviewPolicyParameters)root.Nodes[0].Parameters).Fail = true;
-            manager.RunSingleAsync(tab).GetAwaiter().GetResult();
-            Assert.NotNull(error); Assert.Equal(1, source.CurrentIndex);
-            using var cancel = new System.Threading.CancellationTokenSource(); cancel.Cancel();
-            manager.RunSingleAsync(tab, cancel.Token).GetAwaiter().GetResult();
-            Assert.Equal(1, source.CurrentIndex);
-            }
-            finally
-            {
-                SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.UnregisterTool("PreviewPolicyImageLoad");
-                if (ReferenceEquals(serviceField.GetValue(null), fixture.Manager)) serviceField.SetValue(null, previous);
-            }
+            using var fixture=new LocalImageExecutionFixture();var source=fixture.AddSource("source",2);
+            var completed=0;fixture.Manager.WorkflowExecutionCompleted+=(_,_)=>completed++;
+            fixture.Manager.RunSingleAsync(fixture.Tab,advanceLocalImage:false).GetAwaiter().GetResult();
+            Assert.Empty(fixture.Errors);Assert.Equal(1,completed);Assert.Equal(0,source.CurrentIndex);
+            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            Assert.Empty(fixture.Errors);Assert.Equal(2,completed);Assert.Equal(1,source.CurrentIndex);
+            // Existing file with invalid bytes passes path readiness and fails in the actual Runtime decoder.
+            File.WriteAllBytes(source.CurrentImage!.FilePath,new byte[]{1});
+            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            Assert.NotEmpty(fixture.Errors);Assert.Equal(1,source.CurrentIndex);
+            using var cancel=new CancellationTokenSource();cancel.Cancel();
+            fixture.Manager.RunSingleAsync(fixture.Tab,cancel.Token).GetAwaiter().GetResult();
+            Assert.Equal(1,source.CurrentIndex);
         });
     }
     // This execution test needs a temporary manager, not the retired manager window/card fixture.
@@ -321,13 +290,15 @@ public sealed partial class SolutionManagerUiTests
         public string CreateImage(string name)
         {
             var path = Path.Combine(_root, name);
-            File.WriteAllBytes(path, new byte[] { 1 }); // Policy tool records paths; it does not decode pixels.
+            var encoder=new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(System.Windows.Media.Imaging.BitmapSource.Create(
+                2,1,96,96,System.Windows.Media.PixelFormats.Gray8,null,new byte[]{20,90},2)));
+            using(var file=File.Create(path))encoder.Save(file);
             return path;
         }
         public PreviewSolutionFixture()
         {
             Directory.CreateDirectory(_root);
-            SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();
             Manager = new SolutionManager(new ApplicationDataLocationService(Path.Combine(_root, "locator.json"))
                 .Prepare(Path.Combine(_root, "data")));
         }

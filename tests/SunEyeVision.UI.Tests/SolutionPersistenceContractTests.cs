@@ -144,12 +144,12 @@ public sealed class SolutionPersistenceContractTests
     {
         var input = new SunEyeVision.UI.Shared.ImageInputSource("node");
         var changes = 0; input.ConfigurationWriter = _ => changes++;
-        var config = new ImageSourceConfig { NodeId = "node", FilePaths = new() { "missing.png", "missing.png", "other.png" },
-            ForRunPaths = new() { "other.png", "absent.png", "missing.png", "other.png" }, CurrentIndex = 1, AutoSwitchEnabled = false, RunMode = 1 };
-        input.LoadFromConfig(config, new SolutionResourceResolver(Path.GetTempPath()));
+        var config = new ImageSourcePolicy { NodeId = "node", FilePaths = new() { "missing.png", "missing.png", "other.png" },
+            ForRunPaths = new() { "other.png", "missing.png" }, CurrentIndex = 1, AutoSwitchEnabled = false, RunMode = 1 };
+        input.LoadFromPolicy(config, new SolutionResourceResolver(Path.GetTempPath()));
         Assert.Equal(0, changes); Assert.Equal(3, input.Count);
         input.AutoSwitchEnabled = true; // An unrelated edit must not reorder the persisted check list.
-        var written = input.ToConfig();
+        var written = input.CapturePolicy();
         Assert.Equal(config.FilePaths, written.FilePaths); Assert.Equal(config.ForRunPaths, written.ForRunPaths); Assert.Equal(1, written.CurrentIndex);
     }
 

@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Shell.Controls.Panels;
+using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Themes.Base;
 using SunEyeVision.Workflow;
@@ -72,18 +73,18 @@ public sealed partial class SolutionManagerUiTests
         Sta(() =>
         {
             var source = new ImageInputSource("missing");
-            source.LoadFromConfig(new ImageSourceConfig { NodeId = "missing", FilePaths = new() { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, CurrentIndex = 0 }, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
-            ImageSourceConfig? saved = null;
+            source.LoadFromPolicy(new ImageSourcePolicy { NodeId = "missing", FilePaths = new() { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, CurrentIndex = 0 }, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
+            ImageSourcePolicy? saved = null;
             source.ConfigurationWriter = value => saved = value.Configuration;
-            var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images, CurrentImageIndex = source.CurrentIndex };
+            using var fixture=new NativeSourceFixture(source);
             Assert.Equal(2, source.Images.Count); Assert.Equal(0, source.CurrentIndex);
             Assert.All(source.Images, image => Assert.False(File.Exists(image.FilePath)));
-            Assert.Equal(new[] { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, source.ToConfig().FilePaths);
-            Assert.True(control.ClearAllCommand.CanExecute(null));
-            control.ClearInputReferences();
+            Assert.Equal(new[] { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, source.CapturePolicy().FilePaths);
+            Assert.Equal(2,fixture.Session.Items.Count);
+            PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.Clear));
             Assert.Empty(source.Images); Assert.Equal(-1, source.CurrentIndex);
             Assert.NotNull(saved); Assert.Empty(saved!.FilePaths); Assert.Empty(saved.ForRunPaths);
-            Assert.Equal(-1, saved.CurrentIndex); Assert.False(control.ClearAllCommand.CanExecute(null));
+            Assert.Equal(-1, saved.CurrentIndex);Assert.Empty(fixture.Session.Items);
         });
     }
 
@@ -94,10 +95,10 @@ public sealed partial class SolutionManagerUiTests
         {
             var source = new ImageInputSource("source");
             source.AddImage(new ImageInfo { FilePath = @"Z:\missing.png", Name = "missing.png" });
-            var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
-            control.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));
-            Assert.Single(source.Images); Assert.Single(source.ToConfig().FilePaths);
-            Assert.True(control.ClearAllCommand.CanExecute(null));
+            using var fixture=new NativeSourceFixture(source);
+            fixture.Control.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));
+            Assert.Single(source.Images); Assert.Single(source.CapturePolicy().FilePaths);
+            Assert.Single(fixture.Session.Items);
         });
     }
 

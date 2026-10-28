@@ -12,7 +12,9 @@ public sealed class LocalImageConfigurationSnapshotTests
     public void Plan_uses_formal_references_and_captured_base_without_any_preview_projection()
     {
         var directory = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "snapshot-no-file-access"));
-        var config = new ImageSourceConfig { NodeId = "source", FilePaths = new() { "a.bmp", "b.bmp", "a.bmp" }, CurrentIndex = 2 };
+        var node=ImageSourceTestRuntime.Node();
+        ImageSourceTestRuntime.Edit(node,config=>{config.FilePaths=new(){"a.bmp","b.bmp","a.bmp"};config.CurrentIndex=2;});
+        var config=ImageSourceTestRuntime.Read(node);
         var resolver = new SolutionResourceResolver(directory);
         var plan = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, resolver);
         Assert.Equal(3, plan.Entries.Count);
@@ -28,8 +30,10 @@ public sealed class LocalImageConfigurationSnapshotTests
     [Fact]
     public void Selected_run_filter_preserves_original_positions_and_repeated_reference_occurrences()
     {
-        var config = new ImageSourceConfig { NodeId = "source", FilePaths = new() { "a.bmp", "b.bmp", "a.bmp" },
-            ForRunPaths = new() { "a.bmp" }, RunMode = 1, CurrentIndex = 2, AutoSwitchEnabled = false, StopAtLastImage = true };
+        var node=ImageSourceTestRuntime.Node();
+        ImageSourceTestRuntime.Edit(node,config=>{config.FilePaths=new(){"a.bmp","b.bmp","a.bmp"};config.ForRunPaths=new(){"a.bmp"};
+            config.RunMode=1;config.CurrentIndex=2;config.AutoSwitchEnabled=false;config.StopAtLastImage=true;});
+        var config=ImageSourceTestRuntime.Read(node);
         var resolver = new SolutionResourceResolver(System.IO.Path.GetTempPath());
         var plan = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, resolver);
         Assert.Equal(new[] { 0, 2 }, plan.Entries.Select(entry => entry.OriginalIndex));
@@ -45,7 +49,7 @@ public sealed class LocalImageConfigurationSnapshotTests
     [Fact]
     public void Viewless_empty_source_remains_editable_but_not_ready_for_execution()
     {
-        var config = new ImageSourceConfig { NodeId = "source" };
+        var config = ImageSourceTestRuntime.Read(ImageSourceTestRuntime.Node());
         var plan = WorkflowExecutionManager.CaptureLocalImagePlan("source", config, new SolutionResourceResolver(null));
         Assert.Empty(plan.Entries); Assert.Null(plan.SelectedEntryId);
         Assert.NotEmpty(RootWorkflowReadiness.EvaluateImageSource("source", config));

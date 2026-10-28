@@ -85,13 +85,26 @@ public sealed class NodeConfigurationEditHostTests
     [InlineData("enabled")]
     public void Explicit_canvas_structure_is_synchronized_but_changed_node_rejects_its_old_parameter_draft(string change)
     {
+        if(change=="image-input")
+        {
+            var runtimeModel=Model();var source=ImageSourceTestRuntime.Node();runtimeModel.Workflows[0].Nodes[0]=source;
+            var runtimeHost=new NodeConfigurationEditHost(runtimeModel);var before=runtimeHost.Capture();
+            var old=runtimeHost.BeginEdit("f",source.Id);
+            ImageSourceTestRuntime.Edit(old.Node,config=>config.SNInitialValue=19);
+            ImageSourceTestRuntime.Edit(source,config=>config.AutoSwitchEnabled=false);
+            runtimeHost.SynchronizeStructure();Assert.True(runtimeHost.Capture().Version>before.Version);
+            Assert.Throws<InvalidOperationException>(()=>runtimeHost.Validate(old));
+            Assert.Throws<InvalidOperationException>(()=>runtimeHost.Commit(old));
+            Assert.False(ImageSourceTestRuntime.Read(source).AutoSwitchEnabled);
+            Assert.Equal(1,ImageSourceTestRuntime.Read(source).SNInitialValue);
+            Assert.Equal(19,ImageSourceTestRuntime.Read(old.Node).SNInitialValue);return;
+        }
         var model = Model(); var host = new NodeConfigurationEditHost(model);
         var before = host.Capture(); var draft = host.BeginEdit("f", "source");
         ((BindingAdaptationB2Tests.SourceParameters)draft.Node.Parameters).Name = "candidate";
         var preview = new SunEyeVision.Plugin.SDK.Execution.Parameters.ImageSourceReference("source", "OutputImage", "source", "图像");
         model.Workflows[0].Nodes[0].SelectedDisplaySource = preview;
         if (change == "topology") model.Workflows[0].Connections.Add(new("edge", "source", "parse"));
-        if (change == "image-input") model.Workflows[0].Nodes[0].ImageSourceConfig = new() { NodeId = "source" };
         if (change == "enabled") model.Workflows[0].Nodes[0].IsEnabled = false;
         host.SynchronizeStructure();
         Assert.True(host.Capture().Version > before.Version);
@@ -108,7 +121,6 @@ public sealed class NodeConfigurationEditHostTests
             Assert.Equal("value", ((BindingAdaptationB2Tests.SourceParameters)model.Workflows[0].Nodes[0].Parameters).Name);
             Assert.Equal("candidate", ((BindingAdaptationB2Tests.SourceParameters)draft.Node.Parameters).Name);
             if (change == "enabled") Assert.False(model.Workflows[0].Nodes[0].IsEnabled);
-            else Assert.Equal("source", model.Workflows[0].Nodes[0].ImageSourceConfig!.NodeId);
         }
         Assert.Same(preview, model.Workflows[0].Nodes[0].SelectedDisplaySource);
     }

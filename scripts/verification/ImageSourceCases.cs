@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
@@ -18,13 +18,25 @@ internal static class S2DocumentEditingCases
             ["ImageSourceSavePersistenceTests"]=null,
             ["ImageSourceResolverTests"]=null,
             ["SolutionManagerUiTests"]=new[]{
+                "Selection_and_removal_preserve_current_image_identity_and_one_way_display",
+                "Restoring_images_preserves_missing_references_selection_and_run_flags_without_rewriting_configuration",
+                "Unresolved_relative_image_keeps_reference_and_can_be_resolved_without_current_directory_fallback",
                 "Right_click_and_programmatic_selection_do_not_execute_left_and_keys_execute_once",
+                "Adding_missing_or_duplicate_images_does_not_change_current_selection",
+                "Import_cancel_before_acceptance_does_not_publish_or_change_selection",
+                "Import_cancel_after_atomic_acceptance_keeps_the_complete_committed_batch",
+                "Import_source_switch_during_commit_cannot_change_new_source_selection",
+                "Manual_execution_does_not_advance_but_default_successful_execution_does",
+                "Missing_images_can_be_cleared_and_empty_configuration_is_persisted",
+                "Unloading_preview_does_not_clear_source_or_persisted_paths",
+                "Replacing_and_removing_missing_reference_does_not_delete_real_file",
+                "Clearing_releases_cached_image_and_cancels_pending_thumbnail",
                 "Mode_edits_preserve_display_and_execution_cursor_but_explicit_choice_resets_it",
                 "Continuous_sources_stop_at_last_valid_selected_entry_without_advancing_other_sources",
                 "Same_start_reset_during_a_round_restarts_only_that_source_on_the_next_round",
                 "Repeated_single_runs_keep_execution_cursor_without_a_preview_and_explicit_choice_resets_only_its_source",
                 "Stale_preview_list_cannot_replace_a_published_source_or_receive_its_cursor",
-                "Cancellation_while_tool_is_in_flight_never_advances_a_source",
+                "Cancellation_while_frozen_input_is_in_flight_never_advances_a_source",
                 "Solution_execution_captures_each_workflow_source_and_does_not_auto_advance",
                 "Frozen_execution_ignores_other_preview_and_does_not_overwrite_a_new_user_selection",
                 "Success_advances_each_source_and_missing_or_empty_selection_is_rejected_before_dispatch"}

@@ -1,0 +1,540 @@
+﻿{
+  "status": "DESIGN_INPUT_STATIC_NOT_RUNTIME_ACCEPTANCE",
+  "baseline": "85e56834",
+  "target": "VM 4.4 本地反编译原件及恢复工程；不将恢复适配等同原件",
+  "sourceRecords": [
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff",
+      "lines": 343,
+      "anchors": [
+        {
+          "line": 268,
+          "text": "<Grid Name=\"localImageGrid\" Row=\"1\" MaxHeight=\"110\" DataContext=\"{x:Null}\">"
+        },
+        {
+          "line": 269,
+          "text": "<local:LocalImageListView x:Name=\"localImageList\" Visibility=\"{Binding IsShowLocalImageList, Converter={StaticResource bool2VisibilityConverter}}\" Root=\"{Binding ImageAlgorithmTabRoot, ElementName=us}\" />"
+        }
+      ],
+      "mergedDictionaries": [
+        "/Apps.Style;component/TabControlStyle/TabControlStyle.xaml",
+        "/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml",
+        "/VMControls.WPF;component/Styles/ModuleViewStyle.xaml",
+        "/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml",
+        "/Apps.Style;component/RadioButtonStyle/RadioButtonStyle.xaml",
+        "/Apps.Style;component/ComboBoxStyle/ComboBoxStyle.xaml"
+      ]
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88",
+      "lines": 2581,
+      "anchors": [
+        {
+          "line": 152,
+          "text": "public static readonly DependencyProperty ModuleSourceProperty = DependencyProperty.Register(\"ModuleSource\", typeof(IVmModule), typeof(ModuleResultView), new PropertyMetadata(null, ModuleSourceChanged));"
+        },
+        {
+          "line": 177,
+          "text": "private LocalImageListView localView = null;"
+        },
+        {
+          "line": 416,
+          "text": "public static void ModuleSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)"
+        },
+        {
+          "line": 436,
+          "text": "ic.ResultViewAddition?.ModuleSourceChangedOut(newValue);"
+        },
+        {
+          "line": 461,
+          "text": "localImageGrid.DataContext = m_CurrentInfo;"
+        },
+        {
+          "line": 1218,
+          "text": "localView = Template.FindName(\"localView\", this) as LocalImageListView;"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml",
+      "sha256": "d22c8a3f7fce0d94e966a22fce9865c91de629471d4f1ad0f93baa2cf6b19883",
+      "lines": 99,
+      "anchors": [
+        {
+          "line": 2,
+          "text": "<Control x:Class=\"VMControls.WPF.LocalImageListView\" xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:mc=\"http://schemas.openxmlformats.org/ma"
+        },
+        {
+          "line": 84,
+          "text": "<local:ImageListPanel x:Name=\"list\" Margin=\"5,-40,5,5\" CurSelectedModule=\"{Binding DataContext.DecorateSource, ElementName=UserControl}\" TargetValue=\"{Binding CurValueA, Mode=TwoWay}\" IsSelectMode=\"{Binding IsSelectMode,"
+        }
+      ],
+      "mergedDictionaries": [
+        "/Apps.XmlUI;component/ParamTabControl/ParamTabUI/FrequentlyStyle.xaml",
+        "/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml",
+        "/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml"
+      ]
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml.cs",
+      "sha256": "d887a0c8d363e9c6257977650ab3807b0a58547d91f424c93a369e9566451006",
+      "lines": 315,
+      "anchors": [
+        {
+          "line": 16,
+          "text": "/// LocalImageListView.xaml 的交互逻辑"
+        },
+        {
+          "line": 19,
+          "text": "/// LocalImageListView"
+        },
+        {
+          "line": 21,
+          "text": "public partial class LocalImageListView : Control, INotifyPropertyChanged, IComponentConnector, IStyleConnector"
+        },
+        {
+          "line": 63,
+          "text": "private ImageListPanel list;"
+        },
+        {
+          "line": 69,
+          "text": "public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register(\"IsExpanded\", typeof(bool), typeof(LocalImageListView), new PropertyMetadata(true));"
+        },
+        {
+          "line": 71,
+          "text": "public static readonly DependencyProperty IsSelectModeProperty = DependencyProperty.Register(\"IsSelectMode\", typeof(bool), typeof(LocalImageListView), new PropertyMetadata(false));"
+        },
+        {
+          "line": 73,
+          "text": "public static readonly DependencyProperty RootProperty = DependencyProperty.Register(\"Root\", typeof(AlgorithmTabRoot), typeof(LocalImageListView), new PropertyMetadata(null, OnRootChanged));"
+        },
+        {
+          "line": 199,
+          "text": "public LocalImageListView()"
+        },
+        {
+          "line": 207,
+          "text": "list = Template.FindName(\"list\", this) as ImageListPanel;"
+        },
+        {
+          "line": 224,
+          "text": "private static void OnRootChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)"
+        },
+        {
+          "line": 226,
+          "text": "LocalImageListView localImageListView = d as LocalImageListView;"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml",
+      "sha256": "a5ac5a8101e7cccb036a2430e6c1766ec3b4caec18010580db178ec88937c7cf",
+      "lines": 374,
+      "anchors": [
+        {
+          "line": 2,
+          "text": "<local:ImageListPanelBase x:Class=\"VMControls.WPF.ImageListPanel\" xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" xmlns:mc=\"http://schemas.openxmlf"
+        },
+        {
+          "line": 374,
+          "text": "</local:ImageListPanelBase>"
+        }
+      ],
+      "mergedDictionaries": [
+        "/Apps.Style;component/CheckBoxStyle/CheckBoxStyle.xaml",
+        "/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml"
+      ]
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml.cs",
+      "sha256": "cdc637f57c447e0214a4f2f34ccedab9ade8021c5c49fb0810afd0c132cf58a2",
+      "lines": 32,
+      "anchors": [
+        {
+          "line": 9,
+          "text": "/// ImageListPanel.xaml 的交互逻辑"
+        },
+        {
+          "line": 12,
+          "text": "/// ImageListPanel"
+        },
+        {
+          "line": 14,
+          "text": "public partial class ImageListPanel : ImageListPanelBase, IComponentConnector, IStyleConnector"
+        },
+        {
+          "line": 16,
+          "text": "public ImageListPanel()"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\MainViewControl.xaml",
+      "sha256": "6043bcab8597ed0a738e5bb604c25fa647350a15c646239ad0a9b5267285576f",
+      "lines": 64,
+      "anchors": [
+        {
+          "line": 59,
+          "text": "<GridSplitter Name=\"workareaSplitter\" Grid.Column=\"1\" Background=\"{DynamicResource MainviewBaground}\" Width=\"5\" BorderThickness=\"1,0\" BorderBrush=\"#FF000000\" Opacity=\"0.5\" HorizontalAlignment=\"Stretch\" DragStarted=\"GridS"
+        }
+      ],
+      "mergedDictionaries": [
+        "/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml"
+      ]
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\MainViewControl.xaml.cs",
+      "sha256": "d16a63ac2e08b2b63b179c44a54e56dd00a54226b9cf3430d3815f9c2388b227",
+      "lines": 491,
+      "anchors": [
+        {
+          "line": 427,
+          "text": "if (AppDataFactory.Instance().IsRightLayout && columnDefinition1 != null)"
+        },
+        {
+          "line": 435,
+          "text": "private void GridSplitter_DragStarted(object sender, DragStartedEventArgs e)"
+        },
+        {
+          "line": 439,
+          "text": "if (AppDataFactory.Instance().IsRightLayout)"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VisionMasterMain\\VisionMasterMain.AppMainWindow\\TitleBar.xaml",
+      "sha256": "f047a087f97b3217145d37d85c3b4f68c0d1dac21c7ed803d2879b3708c5e67d",
+      "lines": 363,
+      "anchors": [],
+      "mergedDictionaries": [
+        "/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml",
+        "/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml",
+        "/Apps.Style;component/MenuStyle/MenuStyle.xaml",
+        "/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml",
+        "/VisionMasterMain;component/AppMainWindow/SoftwareSet/Styles/SolControlStyle.xaml"
+      ]
+    },
+    {
+      "kind": "原件",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VisionMaster.Exe.Audit\\menuitems.xml",
+      "sha256": "d9e9a1da6aeca60d97129cb71e07e9f074ed049c09f5a88f168608a01f6e7959",
+      "lines": 422,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "恢复实现",
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\MainWindow.xaml",
+      "sha256": "3789565bf6bc28b21c4c59a51ba30a0f121328f068cfe4995daea900d5b25c59",
+      "lines": 83,
+      "anchors": [],
+      "mergedDictionaries": [
+        "Styles/VmScrollbars.xaml",
+        "Styles/ToolboxStyles.xaml",
+        "Styles/WorkflowStyles.xaml",
+        "Styles/ShellFileMenu.xaml"
+      ]
+    },
+    {
+      "kind": "恢复实现",
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\MainWindow.xaml.cs",
+      "sha256": "034c0dae3e04a9b592031d87e1c1349c23b14091b04564c295267a97fcaa1b4a",
+      "lines": 180,
+      "anchors": [
+        {
+          "line": 134,
+          "text": "// ImageListPanelBase.GetModuleSel/DoRefreshLocalImage reads CurImagePath.Value,"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "恢复实现",
+      "path": "D:\\MyWork\\REA逆向测试\\src\\VisionEditor\\MainWindow.ShellStatus.cs",
+      "sha256": "9710a724e3f1c760293fe160533f07d6624a258b33e9c79d9e36b3bf1522cb24",
+      "lines": 63,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindow.xaml",
+      "sha256": "0d6bed10d22fa06f72656af0cef7ed7600e73e690bd9c7327a20a2a8306bd3bb",
+      "lines": 207,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindow.xaml.cs",
+      "sha256": "f72e33cd3cf964cccc4ba1606b3218794b1c33f2c7e82ac0378c937ec7d8be4c",
+      "lines": 609,
+      "anchors": [
+        {
+          "line": 308,
+          "text": "ImageResultHost.Shutdown();"
+        },
+        {
+          "line": 313,
+          "text": "Application.Current?.Shutdown();"
+        },
+        {
+          "line": 367,
+          "text": "nodeResultManager?.SetResultRenderLayer(resultRenderLayer);"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml",
+      "sha256": "2cc13157a2977897f5db1692e67bb0d74a6dca2291db117a2dd8894d15fe31e6",
+      "lines": 240,
+      "anchors": [
+        {
+          "line": 100,
+          "text": "<sdk:ImageControl x:Name=\"ImageDisplayContent\""
+        },
+        {
+          "line": 118,
+          "text": "<DataGrid x:Name=\"ModuleResultDataGrid\""
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml.cs",
+      "sha256": "722e9ae45b04d1791f61f61506902555210e1d9bd88adf3cfa70ff62adac0efe",
+      "lines": 205,
+      "anchors": [
+        {
+          "line": 60,
+          "text": "public void Shutdown()"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Shell\\ImageResultViewModel.cs",
+      "sha256": "ebcfe615760a3bd85ff8e08d47d4907ee91ddb43163e07fa5a1af2d19fee432a",
+      "lines": 161,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml",
+      "sha256": "ed5512e250de7223f552fef5f7fed0c9bece95e581f3e3d65424a812f45de9a8",
+      "lines": 581,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.xaml.cs",
+      "sha256": "f2e11a2ba103a061b71bee954e8c628a240a048484389dbea07c8731d89a7248",
+      "lines": 1198,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Panels\\ImagePreviewControl.FileImport.cs",
+      "sha256": "33d99e59a6226850fa2cf76896380aca7a977ba054ce90638b4b152f765e26cb",
+      "lines": 91,
+      "anchors": [
+        {
+          "line": 12,
+          "text": "private long _fileImportGeneration;"
+        },
+        {
+          "line": 30,
+          "text": "_fileImportGeneration++;"
+        },
+        {
+          "line": 36,
+          "text": "internal Task ImportFilePathsAsync(string[] paths) => ImportAsync(token => ImageFileImport.ExistingFilesAsync(paths, token));"
+        },
+        {
+          "line": 37,
+          "text": "internal Task ImportDirectoryAsync(string directory) => ImportAsync(token => ImageFileImport.DirectoryFilesAsync(directory, token));"
+        },
+        {
+          "line": 39,
+          "text": "private async Task ImportAsync(Func<CancellationToken, Task<string[]>> enumerate)"
+        },
+        {
+          "line": 46,
+          "text": "var generation = _fileImportGeneration;"
+        },
+        {
+          "line": 54,
+          "text": "await Dispatcher.InvokeAsync(() => { if (generation == _fileImportGeneration) ImportStatus = \"没有找到可导入的图像文件\"; });"
+        },
+        {
+          "line": 64,
+          "text": "if (cancellation.IsCancellationRequested || generation != _fileImportGeneration"
+        },
+        {
+          "line": 72,
+          "text": "if (cancellation.IsCancellationRequested || generation != _fileImportGeneration"
+        },
+        {
+          "line": 85,
+          "text": "if (generation != _fileImportGeneration) return;"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shared\\ImageInputSource.cs",
+      "sha256": "f81b219d241958f8f4653804d633601b322d8f007e4296b68a4da4ebb017204e",
+      "lines": 430,
+      "anchors": [
+        {
+          "line": 141,
+          "text": "public event EventHandler? ConfigurationEdited;"
+        },
+        {
+          "line": 152,
+          "text": "ConfigurationEdited?.Invoke(this, EventArgs.Empty);"
+        },
+        {
+          "line": 156,
+          "text": "public bool TryPresentRuntimeCursor(long expectedEditVersion, string entryId, string reference, string address)"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\LocalImageSequenceService.cs",
+      "sha256": "c57321de6bef958495f1326a5112482758b7c99731a3b498c49b44bd455295d9",
+      "lines": 113,
+      "anchors": [
+        {
+          "line": 32,
+          "text": "public long Begin(string workflowId, IEnumerable<LocalImageSourcePlan> plans)"
+        },
+        {
+          "line": 72,
+          "text": "public LocalImageCompletion Complete(string workflowId, long generation,"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Workflow\\WorkflowExecutionManager.LocalImages.cs",
+      "sha256": "e54ae19e563e8335c4f676f7662328e5d3962604f044c7d88ca83452d79dfd83",
+      "lines": 153,
+      "anchors": [
+        {
+          "line": 147,
+          "text": "presentation.Source.TryPresentRuntimeCursor(presentation.EditVersion,"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+      "sha256": "315acb47cc14517272555116c966f9e65beb3db0aa442b26b14f45dc2dd86707",
+      "lines": 652,
+      "anchors": [
+        {
+          "line": 68,
+          "text": "public void SetResultRenderLayer(Plugin.SDK.UI.Controls.ResultRenderLayer layer)"
+        },
+        {
+          "line": 80,
+          "text": "if (result.ExecutionIdentity?.IsCurrent == false) return;"
+        },
+        {
+          "line": 94,
+          "text": "if (result.ExecutionIdentity is { } identity)"
+        },
+        {
+          "line": 112,
+          "text": "using var resultLease = result?.Resources?.Retain();"
+        },
+        {
+          "line": 113,
+          "text": "if (result?.ExecutionIdentity?.IsCurrent == false) return;"
+        },
+        {
+          "line": 148,
+          "text": "using var lease = result.Resources?.Retain();"
+        },
+        {
+          "line": 149,
+          "text": "if (result.ExecutionIdentity?.IsCurrent == false) return;"
+        }
+      ],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowProductionEditing.cs",
+      "sha256": "b47d19f885b20ce60bb5e7e69e06a4327d2a3258bd3b7744e42137b77291f6ff",
+      "lines": 151,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowDocumentHistory.cs",
+      "sha256": "07d853fe37786cd84bedeb8a397f684745bc28e6b18cd4596dd4138400c062eb",
+      "lines": 54,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Common\\ImageViewBox.Host.cs",
+      "sha256": "5f037833e9b4bf5bd6c70da20cbfaef225926c9b4eee28a9475f201f40501636",
+      "lines": 49,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Presenters\\Results\\DeclaredResultTable.cs",
+      "sha256": "01bafd9c711a67c7d166323239c1d012892184c8ab83e0653d8ce074f32cfe58",
+      "lines": 117,
+      "anchors": [],
+      "mergedDictionaries": []
+    },
+    {
+      "kind": "当前实现",
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Adapters\\Regions\\NativeRoiImageFrame.cs",
+      "sha256": "0e9b4833158fa4b982f15f84678ae4eb42399481cf1fc889d034fdc88de504aa",
+      "lines": 32,
+      "anchors": [],
+      "mergedDictionaries": []
+    }
+  ],
+  "limitations": [
+    "SHA为本次读取文件身份，不等于原程序集MVID；原程序集来源沿Catalog核收",
+    "静态已定位入口不代表分支行为及资源递归闭包全部完成",
+    "未执行构建、原机运行、VS设计器或用户验收"
+  ]
+}

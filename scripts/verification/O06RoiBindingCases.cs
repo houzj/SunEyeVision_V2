@@ -60,15 +60,15 @@ internal static class S2DocumentEditingCases
         public Chain()
         {
             Flow=Engine.CreateWorkflow("roi-"+Guid.NewGuid().ToString("N"),"真实ROI链");
-            Load=Node("load","ImageLoad");Set(Load.Parameters,"FilePath",ImagePath);Set(Load.Parameters,"SourceKind","Local");
-            Threshold=Node("threshold","ImageThreshold");Set(Threshold.Parameters,"Threshold",3);Source(Threshold,"load","OutputImage");
+            Load=Node("load","ImageLoad");
+            Threshold=Node("threshold","ImageThreshold");Set(Threshold.Parameters,"Threshold",3);Source(Threshold,"load","output.image");
             Blob=Node("blob","BlobAnalysis");Set(Blob.Parameters,"Threshold",128);Set(Blob.Parameters,"IsAreaFilterEnabled",false);Set(Blob.Parameters,"IsBlobCountFilterEnabled",false);
-            Set(Blob.Parameters,"InspectionMode","InheritedGeometry");Source(Blob,"load","OutputImage");
+            Set(Blob.Parameters,"InspectionMode","InheritedGeometry");Source(Blob,"load","output.image");
             Flow.Nodes.Add(Load);Flow.Nodes.Add(Threshold);Flow.Nodes.Add(Blob);
         }
         public RoiParameters Producer=>(RoiParameters)Threshold.Parameters;
         public RoiParameters Consumer=>(RoiParameters)Blob.Parameters;
-        public ExecutionResult Run()=>new WorkflowExecutionEngine(Engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(Flow.Id)).GetAwaiter().GetResult();
+        public ExecutionResult Run()=>new WorkflowExecutionEngine(Engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(Flow.Id,sourceInputs:SourceInputs(Flow))).GetAwaiter().GetResult();
         public void Rectangles()
         {
             Producer.InspectionRois.Rois.Clear();
@@ -117,14 +117,14 @@ internal static class S2DocumentEditingCases
     private static void WrongFrame()
     {
         var c=new Chain();c.Rectangles();c.Consumer.InspectionRois.Rois.Add(Roi.CreateSubscribed("继承","threshold","InspectionGeometries"));
-        var second=Node("load-other","ImageLoad");Set(second.Parameters,"FilePath",ImagePath);Set(second.Parameters,"SourceKind","Local");c.Flow.Nodes.Insert(0,second);Source(c.Blob,"load-other","OutputImage");
+        var second=Node("load-other","ImageLoad");c.Flow.Nodes.Insert(0,second);Source(c.Blob,"load-other","output.image");
         using var run=c.Run();Rejected(run,"BLOB_ROI_FRAME_MISMATCH");Require(run.NodeResults["threshold"].Success,"来源工具先失败，不能算错帧拒绝");
     }
     private static void MismatchedDisplaySource()
     {
         var c=new Chain();c.Rectangles();
-        var second=Node("load-other","ImageLoad");Set(second.Parameters,"FilePath",ImagePath);Set(second.Parameters,"SourceKind","Local");c.Flow.Nodes.Insert(0,second);
-        Source(c.Threshold,"load-other","OutputImage");
+        var second=Node("load-other","ImageLoad");c.Flow.Nodes.Insert(0,second);
+        Source(c.Threshold,"load-other","output.image");
         var binding=Bind(c,"InspectionGeometries");binding.SourceNodeId="load";
         var roi=Roi.CreateSubscribed("错误显示来源","load","InspectionGeometries");roi.Binding=binding;c.Consumer.InspectionRois.Rois.Add(roi);
         using var run=c.Run();Rejected(run,"BLOB_ROI_FRAME_MISMATCH");
@@ -189,7 +189,7 @@ internal static class S2DocumentEditingCases
         Require(repository.Save(solution,path),repository.LastError??"保存失败");var loaded=repository.LoadCandidate(path).Candidate??throw new Exception(repository.LastError??"重开失败");
         var flow=loaded.Workflows.Single();var restored=(RoiParameters)flow.Nodes.Single(n=>n.Id=="blob").Parameters;var saved=restored.InspectionRois.Rois.Single();
         Require(saved.Id==roi.Id&&saved.ParameterBindings!["CenterX"].ReferenceExpression==roi.ParameterBindings!["CenterX"].ReferenceExpression&&!saved.HasRuntimeBinding("CenterX"),"重开丢索引/绑定或错误持久化缓存");
-        var engine=new WorkflowEngine(new CheckLogger());engine.RegisterWorkflow(flow);using var run=new WorkflowExecutionEngine(engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id){ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded)}).GetAwaiter().GetResult();Success(run);Require(Count(run)==1,"重开后未真实执行typed索引");
+        var engine=new WorkflowEngine(new CheckLogger());engine.RegisterWorkflow(flow);using var run=new WorkflowExecutionEngine(engine,Plugins,new CheckLogger()).ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,sourceInputs:SourceInputs(flow,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded))){ResourcePaths=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(loaded)}).GetAwaiter().GetResult();Success(run);Require(Count(run)==1,"重开后未真实执行typed索引");
     }
     private static void CircleDeclaration()
     {
@@ -214,7 +214,23 @@ internal static class S2DocumentEditingCases
     }
     private static ParamSetting Constant(string name,double value)=>ParamSetting.CreateConstant(name,value);
     private static int Count(ExecutionResult run)=>Convert.ToInt32(run.NodeResults["blob"].Result!.GetType().GetProperty("FilteredBlobCount")!.GetValue(run.NodeResults["blob"].Result));
-    private static WorkflowNodeBase Node(string id,string tool)=>new(id,id,id,tool){Parameters=ToolRegistry.CreateParameters(tool)};
+    private static WorkflowNodeBase Node(string id,string tool)
+    {
+        var node=new WorkflowNodeBase(id,id,id,tool);
+        if(tool!="ImageLoad"){node.Parameters=ToolRegistry.CreateParameters(tool);return node;}
+        node.RuntimeConfiguration=RuntimeToolConfiguration.Create(tool);
+        var policy=ImageSourcePolicy.Read(node)!;policy.FilePaths=new(){ImagePath};policy.CurrentIndex=0;policy.SNInitialValue=1;policy.ApplyTo(node);
+        return node;
+    }
+    private static IReadOnlyDictionary<string,ImageSourceRunInput> SourceInputs(Workflow flow,SunEyeVision.Workflow.Persistence.SolutionResourceResolver? resolver=null)
+    {
+        resolver??=new(Root);
+        return flow.Nodes.Where(node=>node.ToolType=="ImageLoad").ToDictionary(node=>node.Id,node=>
+        {
+            var policy=ImageSourcePolicy.Read(node)??throw new Exception("图像源不是正式Runtime配置。");
+            return new ImageSourceRunInput(resolver.ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]),policy.SNInitialValue);
+        },StringComparer.Ordinal);
+    }
     private static void Source(WorkflowNodeBase node,string producer,string output)=>node.Parameters.GetType().GetProperty("ImageSourceRef")!.SetValue(node.Parameters,new ImageSourceReference(producer,output,producer,output));
     private static void Set(object target,string name,object value){var p=target.GetType().GetProperty(name)!;p.SetValue(target,p.PropertyType.IsEnum?Enum.Parse(p.PropertyType,(string)value):value);}
     private static void Success(ExecutionResult result)=>Require(result.Success,string.Join(";",result.Errors));

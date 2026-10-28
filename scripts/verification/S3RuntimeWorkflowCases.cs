@@ -13,6 +13,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using SunEyeVision.Workflow;
+using SunEyeVision.Workflow.Persistence;
 
 internal static class S2DocumentEditingCases
 {
@@ -38,7 +39,7 @@ internal static class S2DocumentEditingCases
             using var image=HalImage.CreateFromBytes(pixels,8,8,1);
             ExecutionResult Run(Workflow current,CancellationToken token=default,IReadOnlyDictionary<string,object?>? overrides=null)
                 =>WithoutUiPump(()=>executor.ExecuteWorkflowAsync(new WorkflowRunRequest(current.Id,image,
-                    nodeParameterOverrides:overrides is null?null:new Dictionary<string,IReadOnlyDictionary<string,object?>>{{first.Id,overrides}}),token));
+                    nodeParameterOverrides:overrides is null?null:new Dictionary<string,IReadOnlyDictionary<string,object?>>{{first.Id,overrides}},sourceInputs:SourceInputs(current)),token));
             Case("实际调度器运行两个中立Blob，语义引用生成依赖与隐藏灰图输出需求，ROI/图像保持同一物理帧",()=>
             {
                 using var run=Run(flow);Require(run.Success,string.Join(";",run.Errors));
@@ -130,27 +131,25 @@ internal static class S2DocumentEditingCases
                 Bind(second,BlobTool.InspectionInput,first.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),flow.Id);
                 using var recovery=Run(flow);Require(recovery.Success&&((BlobOutput)Result(recovery,second.Id).Output!).TotalArea==16,"失败后不能恢复");
             });
-            Case("SDK图像生产者可供Runtime消费，但另一物理帧的ROI明确拒绝",()=>
+            Case("正式图像源Runtime可供Runtime消费，但另一物理帧的ROI明确拒绝",()=>
             {
                 var mixed=engine.CreateWorkflow("runtime-mixed","混合来源帧");
                 var file=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source.png");
                 var bitmap=BitmapSource.Create(8,8,96,96,PixelFormats.Gray8,null,pixels,8);
                 var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));using(var target=File.Create(file))png.Save(target);
-                var parameters=SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.CreateParameters("ImageLoad");
-                parameters.GetType().GetProperty("FilePath")!.SetValue(parameters,file);
-                var source=new WorkflowNodeBase("file","file","文件","ImageLoad"){Parameters=parameters};
+                var source=new WorkflowNodeBase("file","file","文件","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
+                var sourcePolicy=ImageSourcePolicy.Read(source)!;sourcePolicy.FilePaths=new(){file};sourcePolicy.CurrentIndex=0;sourcePolicy.SNInitialValue=1;sourcePolicy.ApplyTo(source);
                 var original=new WorkflowNodeBase("original","original","工作流图像",BlobTool.Id){RuntimeConfiguration=initial};
                 var consumer=new WorkflowNodeBase("consumer","consumer","混合ROI",BlobTool.Id){RuntimeConfiguration=initial};
-                var port=new OutputBindingChangeService().ReadContract(source)!.Single(p=>p.Name=="OutputImage");
-                var imagePort=BindingClrAdapter.DescribeOutput(port);
+                var imagePort=source.RuntimeConfiguration!.Schema.Outputs.Single(port=>port.Id=="output.image");
                 Bind(consumer,BlobTool.ImageInput,source.Id,imagePort.Id,imagePort.Type,mixed.Id);
                 Bind(consumer,BlobTool.InspectionInput,original.Id,BlobSchema.RegionPort,TypeRef.ResourceOf(ResourceKind.Region),mixed.Id);
                 mixed.Nodes.Add(source);mixed.Nodes.Add(original);mixed.Nodes.Add(consumer);
                 using(var mismatch=Run(mixed))Require(!mismatch.Success&&mismatch.NodeResults[source.Id].Success&&mismatch.NodeResults[original.Id].Success&&!mismatch.NodeResults[consumer.Id].Success
                     &&mismatch.NodeResults[consumer.Id].ErrorMessages.Any(message=>message.Contains("source frame",StringComparison.OrdinalIgnoreCase)),
-                    "另一物理帧的ROI被忽略/重标记，或真实SDK生产者未运行");
+                    "另一物理帧的ROI被忽略/重标记，或真实图像源Runtime生产者未运行");
                 consumer.ParamSettings.RemoveSetting(BlobTool.InspectionInput);
-                using var valid=Run(mixed);Require(valid.Success&&((BlobOutput)Result(valid,consumer.Id).Output!).TotalArea==16,"SDK冻结图像不能进入Runtime输入");
+                using var valid=Run(mixed);Require(valid.Success&&((BlobOutput)Result(valid,consumer.Id).Output!).TotalArea==16,"图像源Runtime冻结图像不能进入Runtime输入");
             });
             Case("保存重开保留Runtime设置及两个稳定输入引用，不写SDK参数",()=>
             {
@@ -203,6 +202,13 @@ internal static class S2DocumentEditingCases
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }
+    private static IReadOnlyDictionary<string,ImageSourceRunInput> SourceInputs(Workflow flow)
+        =>flow.Nodes.Where(node=>node.ToolType=="ImageLoad").ToDictionary(node=>node.Id,node=>
+        {
+            var policy=ImageSourcePolicy.Read(node)??throw new Exception("图像源没有正式Runtime配置。");
+            var address=new SolutionResourceResolver(Environment.GetEnvironmentVariable("S2_CASE_ROOT")).ResolveAddress("local.paths",policy.FilePaths[policy.CurrentIndex]);
+            return new ImageSourceRunInput(address,policy.SNInitialValue);
+        },StringComparer.Ordinal);
     private static RuntimeToolResults Result(ExecutionResult run,string id)=>run.NodeResults[id].Result as RuntimeToolResults??throw new Exception("没有中立宿主结果："+id);
     private static string Setting(string property)
     {

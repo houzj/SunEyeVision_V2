@@ -1,0 +1,58 @@
+{
+  "baseline": "7b8bb461，产品源仍ee086776；主线后续修正另行同步",
+  "status": "只读消费者审计；未删除或实施",
+  "sources": [
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Performance\\WorkflowExecutionOrchestrator.cs",
+      "sha256": "72197bd22d284d4b4352ca6cf0562e4458ced14637ebbc0931c89373bd2ea40e"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Performance\\PreExecutionCache.cs",
+      "sha256": "9003c1bc64e32c4c7ff19b9188b29ec3a0e5d2256f4d3c61812f44c258fe7ac8"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Performance\\CachedExecutionResult.cs",
+      "sha256": "a696d48ce6952fa00fe3f205a36b71b3eac85c1e7c383e7f64b75464881041f7"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Performance\\WorkflowEnginePool.cs",
+      "sha256": "62c6cd61b61baf96802ace7fc8b0cc40e7f5920cd22e7e1737a6e45c9a6b113d"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Performance\\ImageConverterPool.cs",
+      "sha256": "d23dc9e8cc609a9f5bbb1f00d5e62b7812d8b55816d25a171732514640002707"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Performance\\BatchUIUpdater.cs",
+      "sha256": "d7cf4bd0d460cd4ad767c436295ae0c78cba6190c1f7eb8ef11d6fdc17a1f5bc"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+      "sha256": "315acb47cc14517272555116c966f9e65beb3db0aa442b26b14f45dc2dd86707"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "sha256": "c2184623bfb5180ba181d650152b8b67ba07441f4a6337da7c994baf7ce3c0da"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml",
+      "sha256": "1e4eebadd3de88d4fb85588b35639a2d928a581278b223be47cadb193b1456ec"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Controls\\Shell\\ImageResultControl.xaml.cs",
+      "sha256": "b2fbf3c873083d2d99b020e0f96015cc8a88d53994e324bb86bb05e02494b92d"
+    }
+  ],
+  "queries": [
+    "ExecuteAndDisplayAsync / .PreExecute( / ExecutionOrchestrator in src tools tests scripts *.cs/*.xaml",
+    "UpdateNodeImageFromCache / ConvertMatToBitmapSource definitions and consumers",
+    "new PreExecutionCache / WorkflowEnginePool / ImageConverterPool / BatchUIUpdater in product source"
+  ],
+  "findings": [
+    "旧预执行API没有外部执行调用，Main只构造/统计/清空，不是现行生产执行链。",
+    "旧Bitmap缓存回填构造GenericToolResults成功并写WorkflowContext，未携准入Run/Schema/Frame；下一结果批移除，不迁兼容桥。",
+    "旧缓存键为nodeId_imageSourceId，转换池按尺寸格式重用可写Bitmap对象，不满足独立冻结结果所有权；无实际入口无需重写补救。",
+    "Main构造旧Orchestrator会经WorkflowEnginePool.Prewarm(1)预建引擎，非解码器预热；旧链退出时一起删除这项启动工作。",
+    "图像源条产品宿主只有ImageResultControl的XAML及codebehind，后续替换完整原组合并退出旧控件/导入partial。"
+  ]
+}

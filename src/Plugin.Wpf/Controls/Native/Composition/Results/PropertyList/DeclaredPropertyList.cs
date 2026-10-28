@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
@@ -129,12 +130,12 @@ public sealed class DeclaredPropertyList : IToolResultView
 
     private void LoadPage(Entry entry, long generation)
     {
-        if (!Current(generation)) return;
+        if (!Current(generation) || entry.Loading) return;
+        entry.Loading = true;
+        try
+        {
         var page = entry.Node.GetChildrenPage(entry.Children.Count, PageSize);
         if (!Current(generation)) return;
-        DetachMore(entry);
-        if (!Current(generation)) return;
-        var offset = entry.Children.Count;
         var prepared = new List<Entry>();
         foreach (var node in page)
         {
@@ -143,32 +144,35 @@ public sealed class DeclaredPropertyList : IToolResultView
             if(child is null||!Current(generation))return;
             prepared.Add(child);
         }
-        foreach (var child in prepared)
-        {
-            if (!Current(generation)) return;
-            entry.Children.Add(child); entry.Row.MutableChildren.Add(child.Row);
-        }
-        if (!Current(generation))return;
         var childCount=entry.Node.ChildCount;
-        if(!Current(generation)||childCount is not int count||entry.Children.Count>=count)return;
-        offset = entry.Children.Count;
-        var last = Math.Min((long)count - 1, (long)offset + PageSize - 1);
-        var more = new Row(entry.Node.Key + ":page:" + offset.ToString(CultureInfo.InvariantCulture),
-            $"加载下一页 [{offset.ToString(CultureInfo.InvariantCulture)}…{last.ToString(CultureInfo.InvariantCulture)}]", "按需读取", entry.Row.Level + 1, true);
-        PropertyChangedEventHandler handler = (_, args) =>
+        if(!Current(generation))return;
+        var offset = entry.Children.Count + prepared.Count;
+        Row? more = null;
+        PropertyChangedEventHandler? handler = null;
+        if (childCount is int count && offset < count)
         {
-            if (args.PropertyName == nameof(Row.IsExpanded) && more.IsExpanded && ReferenceEquals(entry.More, more) && Current(generation)) LoadPage(entry, generation);
+        var last = Math.Min((long)count - 1, (long)offset + PageSize - 1);
+        more = new Row(entry.Node.Key + ":page:" + offset.ToString(CultureInfo.InvariantCulture),
+            $"加载下一页 [{offset.ToString(CultureInfo.InvariantCulture)}…{last.ToString(CultureInfo.InvariantCulture)}]", "按需读取", entry.Row.Level + 1, true);
+        var pageRow = more;
+        handler = (_, args) =>
+        {
+            if (args.PropertyName == nameof(Row.IsExpanded) && pageRow.IsExpanded && ReferenceEquals(entry.More, pageRow) && Current(generation)) LoadPage(entry, generation);
         };
-        entry.More = more; entry.MoreHandler = handler; more.PropertyChanged += handler;
-        entry.Row.MutableChildren.Add(more);
-    }
-    private static void DetachMore(Entry entry)
-    {
-        var more = entry.More; var handler = entry.MoreHandler;
-        entry.More = null; entry.MoreHandler = null;
-        if (more is null) return;
-        if (handler is not null) more.PropertyChanged -= handler;
-        entry.Row.MutableChildren.Remove(more);
+        }
+        // Complete the page and its continuation before any collection observer runs.
+        // A throwing observer must not strand a partial page with no way to continue.
+        if (entry.More is {} previous && entry.MoreHandler is {} previousHandler)
+            previous.PropertyChanged -= previousHandler;
+        entry.Children.AddRange(prepared);
+        entry.More = more; entry.MoreHandler = handler;
+        if (more is not null && handler is not null) more.PropertyChanged += handler;
+        var rows = entry.Children.Select(child => child.Row).ToList();
+        if (more is not null) rows.Add(more);
+        entry.Row.MutableChildren.Install(rows);
+        entry.Row.MutableChildren.Publish(() => Owns(entry.Row, generation));
+        }
+        finally { entry.Loading = false; }
     }
 
     public void Clear()
@@ -256,6 +260,7 @@ public sealed class DeclaredPropertyList : IToolResultView
         internal ResultPresentationNode Node { get; } = node;
         internal Row Row { get; } = row;
         internal List<Entry> Children { get; } = new();
+        internal bool Loading;
         internal Row? More; internal PropertyChangedEventHandler? MoreHandler;
     }
     /// <summary>Visual row identity is the declared model key; no mutable business object or resource escapes.</summary>
@@ -271,12 +276,28 @@ public sealed class DeclaredPropertyList : IToolResultView
         public int Level { get; }
         public bool IsGroup { get; internal set; }
         public bool IsExpanded { get => _expanded; set { if (_expanded == value) return; _expanded = value; PropertyChanged?.Invoke(this, new(nameof(IsExpanded))); } }
-        internal ObservableCollection<Row> MutableChildren { get; } = new();
+        internal PublishedRows MutableChildren { get; } = new();
         public ReadOnlyObservableCollection<Row> Children { get; }
         public bool CanBindVariable => false;
         public string? BindingDisplayName => null;
         public string BindingUnavailableReason => "只读结果分析视图不提供变量编辑服务。";
         public event PropertyChangedEventHandler? PropertyChanged;
+    }
+    internal sealed class PublishedRows : ObservableCollection<Row>
+    {
+        internal void Install(IReadOnlyList<Row> rows)
+        { Items.Clear(); foreach (var row in rows) Items.Add(row); }
+
+        internal void Publish(Func<bool> current)
+        {
+            var errors = new List<Exception>();
+            void Notify(Action notify)
+            { try { if (current()) notify(); } catch (Exception error) { errors.Add(error); } }
+            Notify(() => OnPropertyChanged(new(nameof(Count))));
+            Notify(() => OnPropertyChanged(new("Item[]")));
+            Notify(() => OnCollectionChanged(new(NotifyCollectionChangedAction.Reset)));
+            if (errors.Count != 0) throw new AggregateException("Property result page installed; collection observers failed.", errors);
+        }
     }
     private sealed class GuardedCommand(Action<object?> execute, Predicate<object?> canExecute) : ICommand
     {

@@ -348,6 +348,28 @@ internal static class S2DocumentEditingCases
    Require(inner.SelectedCommand is null&&inner.CopyPathCommand is null&&inner.SelectedItem is null&&inner.SelectedItemPath is null&&inner.ErrorInfo is null
     &&!inner.ItemsSource!.Cast<object>().Any()&&release.Releases==1,"首观察异常截断剩余清理或泄漏SDK owner");
   });
+  Test("原属性树publication分页观察异常不丢完整页或后续入口",()=>
+  {
+   var pagedSchema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("values",TypeRef.SequenceOf(DataType.Integer))});
+   using var pub=new ResultPublication(pagedSchema,new(Guid.NewGuid(),run,1,pagedSchema.Fingerprint),ResultViewState.Success,
+    new InputValues(pagedSchema.Outputs,new Dictionary<string,object?>{{"values",Enumerable.Range(0,300).Select(i=>(long)i).ToArray()}}),null,()=>true);
+   using var view=new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList(pagedSchema,projection);
+   var inner=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.PropertyListView)view.View;
+   Show(inner);view.Present(pub);Pump();
+   var root=inner.ItemsSource!.Cast<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList.Row>().Single();
+   var sequence=root.Children.Single();var notices=0;
+   System.Collections.Specialized.NotifyCollectionChangedEventHandler fail=(_,_)=>{notices++;throw new InvalidOperationException("预期分页观察异常");};
+   var children=(System.Collections.Specialized.INotifyCollectionChanged)sequence.Children;children.CollectionChanged+=fail;
+   try{PublicationThrows<AggregateException>(()=>sequence.IsExpanded=true);}finally{children.CollectionChanged-=fail;}
+   Require(notices==1&&sequence.Children.Count==129,"异常通知留下半页或缺More");
+   var oldMore=sequence.Children.Last();oldMore.IsExpanded=true;
+   Require(sequence.Children.Count==257&&sequence.Children[127].DisplayValue=="127"&&sequence.Children[255].DisplayValue=="255","第二页偏移不正确或丢失");
+   var nextMore=sequence.Children.Last();nextMore.IsExpanded=true;
+   Require(sequence.Children.Count==300&&sequence.Children.Last().DisplayValue=="299","最后一页不能继续");
+   oldMore.IsExpanded=false;oldMore.IsExpanded=true;Require(sequence.Children.Count==300,"旧More仍改变已完成页");
+   view.Clear();view.Present(pub);var replacement=inner.ItemsSource!.Cast<SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList.DeclaredPropertyList.Row>().Single().Children.Single();
+   oldMore.IsExpanded=false;oldMore.IsExpanded=true;Require(replacement.Children.Count==0,"退休More驱动新根");
+  });
  }
  static void VerifyResultOrigins()
  {

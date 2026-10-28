@@ -7723,37 +7723,37 @@
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM的结果树与结果表设计推进完整链路；两者统一消费SDK正式输出声明与同一次DeclaredOutputSnapshot，使用我们的Contracts/Reader/Lease实现。结果树和ResultShell由工作流线负责，C14结果表与共享合同/图像适配由本线负责，主仓统一集成验收。当前仍未完成生产整链。",
+      "summary": "按VM设计实施结果树与结果表：统一读取SDK正式输出声明和同一次运行快照，主仓已接通正式执行、调试、历史及声明入口；共享发布与借阅、状态及原表滚动已验证。结果绑定D06及同帧视口D07仍未完成，不能称完整图形链路已交付。",
       "ownership": [
         [
           "结果树 / PropertyList",
           "工作流、工具箱与数据流优化",
           "原三列树、层级/展开/128项分页、字段导航/复制/绑定、主界面Presenter与状态/主题/卸载；独立分支写Results/PropertyList专用Controls/Themes/Assets/Design子目录。",
-          "已迁原视觉候选并接真实Roots/Children，正在替换宿主旧表状树；尚未主仓集成构建及完整运行验收。"
+          "原树与同一publication消费者已合主仓；声明/状态/分页模型及退休重入用例通过。新发现分页观察异常半页问题已修源码、待集中回归；原树恢复选择问题由工作流线修复。"
         ],
         [
           "标准结果表 / StandardTable（C14）",
           "本聊天：控件库与Blob主线",
           "原DataGrid完整模板/滚条/主题，10列示例、500行增量、稳定行身份、有效性、选择与复制投影；统一保留在现Plugin.Wpf，当前由主线唯一写。",
-          "原完整模板/500增量已落；当前已接共享publication、只读行及显式GeometrySource/多帧目标。公共库层0错，新API后的UI/full及真实整链回归待集中，不套旧原表成绩。"
+          "原表已接统一publication、冻结声明、真实GeometrySource与多帧目标；新原滚动用例500→1000→1205通过，同run不同publication实际行替换与旧事件拒绝通过。"
         ],
         [
           "结果区外壳 / ResultShell",
           "工作流、工具箱与数据流优化",
           "原双视口header/工具栏/结果面板底部shell，主界面图像与节点切换、局部主题；仅Results/ResultShell专用目录。",
-          "原视觉候选已提交独立分支；完整ResultWorkspaceShell生产组合仍在途。与C17工具参数窗底栏区分。"
+          "原双视口Shell已合主仓，完整生产viewport消费者尚未迁完；残留Apps.Style资源URI由原实现线修复，不把原视觉存在当全交互完成。"
         ],
         [
           "共享展示合同 / 图像帧与选择事件",
           "本聊天统一接口；工作流线改UI消费者",
           "本线唯一写IToolResultView替换合同、Plugin.Wpf共享适配/场景及Catalog/项目；工作流线同步ToolResultViews、MainWindow、源工具Wpf及其真实测试，先冻结整链签名再各自实施。",
-          "精确API及现有Blob机械消费已落，UI/专属PropertyList适配候选已交；物理来源按已有Region/实际Image Domain取证，多帧选择携stamp。中立视口/完整Shell与原SDK退出仍未完。"
+          "公共API及UI消费者已合主仓，单SDK Reader由publication持有，树表各Borrow。真实物理来源正负向通过；主视口同帧桥未接时明确禁止高亮，不伪造来源。"
         ],
         [
           "集成、正式Release及验收",
           "本聊天统筹，两线交实际证据",
           "主仓唯一Release集中构建；合并来源/程序集/发布清单SHA，设计/交互/资源/关联工具及VM同态逐项核。真实VS和用户验收不代签。",
-          "独立分支或原模板文件存在不算正式交付。Blob显示业务仍按第二阶段准入接入。"
+          "固定产品检查点d8cca20e。对应产品源码UI003/全量004零错误；定向13例通过，关联ImageSources/WorkflowHost存在真实失败待修。用户XAML不改、不代签VS/人工。"
         ]
       ],
       "decisions": [
@@ -7763,7 +7763,7 @@
         ],
         [
           "统一结果入口",
-          "公共IResultPublication/ResultPublicationStamp/IResultValueLease与Present/Clear已落Plugin.Wpf（3cf10837及后续惰性声明修复）。同一次SDK快照只AcquireReader一次，多视图Borrow；Declaration不造run/revision。InputValues只核Declarations身份，不CopyValues或预读资源，保留数组与图像惰性。选节点/调试/正式执行/历史的UI唯一入口已由工作流线提交候选，主仓集中整合验收中，不把层编译当整链完成。"
+          "公共IResultPublication/ResultPublicationStamp/IResultValueLease和Present/Clear已实际实施；正式执行、调试、历史和选节点声明统一宿主入口。同SDK快照只AcquireReader一次，树表分别Borrow；同run不同snapshot取得新publication。只核冻结Declarations，不预读payload或复制已有数组。资源owner只在最后借阅释放，退休立即拒绝新借阅及旧事件。"
         ],
         [
           "同一次发布的唯一事实来源",
@@ -7801,11 +7801,15 @@
       "delivery": [
         [
           "当前集中批",
-          "主线先落实统一context与原C14模板/增量会话，工作流线同步原树/ResultShell及UI消费者；三路只读分别核共享API、SDK快照/树表消费者、物理帧/高亮生命周期。最终同批集成与语义构建，不能只交接口或示例。当前C13未通过项保留独立修复，不冒称已过。"
+          "共享API、原树/原表及UI入口已集中合入；补修真实回归暴露的图像源/原树选择/共享颜色跨Dispatcher问题后集中构建验收。C13完整样式新定向2例通过，不抹除旧失败；真实鼠标首捕获环境error5仍独立保留。"
         ],
         [
           "接口与接入",
           "本线冻结共享展示上下文和选择合同；工作流线同步所有UI/源工具消费者，本线同步公共组件/注册/适用测试。独立真视图与正式消费分别验，不把示例PASS当生产已接。"
+        ],
+        [
+          "剩余完整链路D06 / D07",
+          "D06由工作流线实施声明叶/组合端点到正式变量接纳、持久化、同次冻结配置版本、生产运行准入和资源owner出口；D07先冻结公共viewport所有权/Frame/epoch再成片接原Shell和UI，迁出旧SDK主图消费者。两者不能以局部按钮或安全拒绝代替完整验收。"
         ],
         [
           "集中核收",
@@ -7832,17 +7836,50 @@
           "选中几何须证明实际物理来源帧，否则不绘制",
           "设计器与运行时复用真实模板及组合"
         ],
-        "currentState": "实际原表候选已过本批定向与构建；整链未完成，详细边界见candidateEvidence，不套工作流候选或人工验收。"
+        "currentState": "共享发布/来源/原表定向已通过；UI003/全量004零错误；设计91、组件9、RuntimeEditor10、FullChain8、资源、主题1及RootResource真实Fact1通过。ImageSources与WorkflowHost失败保留待修；完整生产图形链、D06/D07、真实VS及用户验收未完成。"
       },
       "candidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json",
       "apiImplementation": {
-        "checkpoint": "3cf10837",
+        "checkpoint": "d8cca20e",
         "file": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
         "contract": "IResultPublication/ResultPublicationStamp/IResultValueLease；IToolResultView仅Present/Clear，无旧Update入口；ResultSelection清理携stamp、多ResultHighlightTarget携真实帧",
         "lifetime": "一次SDK reader owner转移，多Borrow引用计数；退休即拒新借阅和旧选择，末借阅锁外释放reader。元数据冻结；InputValues仅只读Declarations核对，直接借原已冻结值，不重复读payload/复制数组。",
         "physicalOrigin": "ResultColumnDescriptor.GeometrySource显式关联同记录Region或顶层单项Image；校reader/元数据/真实Domain，不以默认逻辑坐标或选图补Frame。纯Geometry无来源不高亮。",
-        "stage": "已落公共库及Blob必要机械同步，工作流独立同步UI/PropertyList，尚未完整UI/full构建验收。"
-      }
+        "stage": "主仓已接实际UI消费者并通过规定UI/full构建及共享发布/借阅/物理来源/原表定向回归；尚有相关轨失败和D06/D07缺口。"
+      },
+      "implementationEvidence": {
+        "baseline": "d8cca20e",
+        "uiBuild": "artifacts/result-publication-ui-build-20261028-003.log",
+        "releaseBuild": "artifacts/result-publication-release-build-20261028-004.log",
+        "passed": {
+          "publication": 8,
+          "origins": 2,
+          "table": 1,
+          "style": 2,
+          "designTime": 91,
+          "components": 9,
+          "runtimeEditor": 10,
+          "fullChain": 8,
+          "themeStartup": 1,
+          "rootResourceFact": 1
+        },
+        "failed": [
+          "artifacts/result-publication-imagesources-20261028-001.log",
+          "artifacts/result-publication-workflowhost-20261028-001.log",
+          "artifacts/result-publication-toolbox-20261028-001.log"
+        ],
+        "toolboxBoundary": "正式EXE启动exit0，但保存检查点后HEAD变化导致严格commit门禁不符，不计本候选通过，下一构建后先探针再提交。",
+        "pendingFixes": [
+          "DeclaredPropertyList先完整安装分页及More再聚合通知",
+          "颜色资源按Dispatcher弱实例，保动态主题",
+          "工作流线原树恢复/资源URI/源交互/fixture真实失败"
+        ],
+        "manual": "真实VS/VM同态、桌面首次真实捕获及用户人工尚未代签"
+      },
+      "designReferences": [
+        "docs/collaboration/HANDOFF_D06_BINDING_DESIGN_20261028.md",
+        "docs/collaboration/HANDOFF_D07_VIEWPORT_DESIGN_20261028.md"
+      ]
     }
   },
   "vmFrameworkArchitectureReference": {

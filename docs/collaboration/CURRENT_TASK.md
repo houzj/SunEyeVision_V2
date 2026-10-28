@@ -1,3 +1,10 @@
+## 2026-10-28 同源结果发布已接入；真实关联失败集中修复
+
+- 固定产品基线d8cca20e，用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。UI003=0错6579警告147.40秒，全量004=0错6606警告84.64秒；publication8/origins2/table1/style2均过，真实表500→1000→1205。Design91、Components9（真HALCON+owner）、RuntimeEditor10、FullChain8、Resources、Theme1及RootResource真实Fact1过。
+- ImageSources001真实失败（源fixture/原树恢复/Apps.Style URI/跨STA画刷等），WorkflowHost001缺ImageLoad运行组件；已交原写者集中处理，失败日志保留。Toolbox正式EXE exit0但HEAD保存检查点后与程序集commit不符，严格门禁失败，不计通过；下一集中构建后先probe再commit。
+- 新审计发现PropertyList分页首集合通知异常会丢半页/More；root已改完整storage+More先安装后通知和旧代次门禁，补300项异常后128/256/300分页用例，尚未新验。共享颜色字典已改Dispatcher弱实例，保动态资源不冻画刷，待相关轨验。工作流线修PropertyListView/源交互/原Shell URI，不交叉写。本线主仓唯一产品写者；当前无live构建/测试。
+- 原方案同步同一次SDK snapshot→一Reader/publication→树表各Borrow；声明不取reader，历史不提前查询latest，同run不同snapshot区分发布。D06正式变量绑定、D07同帧viewport/原Shell生产消费者与SDK主图退出仍未完；无proof高亮明确拒绝，不能称图形闭环。Blob业务仍冻结，阶段一goal active。
+
 ## 2026-10-28 固定结果消费者9f197fbe集中集成
 
 - Root共享惰性/测试检查点72d1e9db，工作流固定9f197fbe（含ba45ea96/a920cd9f）已合工作区，仅CURRENT_TASK冲突，双方记录保留。下一按projection.Kind补缺Wpf fallback，然后使用本地cache源restore、规定UI/full构建及新轨；当前尚未本批构建回归，不套旧成绩。无live句柄，用户参数页保持。

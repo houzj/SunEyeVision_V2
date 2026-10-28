@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
@@ -9,24 +11,21 @@ namespace SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
 public class ColorThemesResourceDictionary : DynamicResourceDictionary
 {
     private const string ResourceRoot = "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/";
-    private static readonly object Sync = new();
-    private static ColorThemesResourceDictionary? instance;
+    private static readonly ConditionalWeakTable<Dispatcher, ColorThemesResourceDictionary> Instances = new();
 
     public static ColorThemesResourceDictionary Instance => GetInstance();
 
     public static ColorThemesResourceDictionary GetInstance(FrameworkElement? framework = null)
     {
-        lock (Sync)
+        var dispatcher = framework?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        dispatcher.VerifyAccess();
+        var instance = Instances.GetValue(dispatcher, _ => new ColorThemesResourceDictionary());
+        if (framework != null)
         {
-            instance ??= new ColorThemesResourceDictionary();
-            if (framework != null)
-            {
-                framework.Dispatcher.VerifyAccess();
-                if (!framework.Resources.MergedDictionaries.Contains(instance))
-                    framework.Resources.MergedDictionaries.Add(instance);
-            }
-            return instance;
+            if (!framework.Resources.MergedDictionaries.Contains(instance))
+                framework.Resources.MergedDictionaries.Add(instance);
         }
+        return instance;
     }
 
     public ColorThemesResourceDictionary() => LoadTheme("colorstyle1");
@@ -47,10 +46,7 @@ public class ColorThemesResourceDictionary : DynamicResourceDictionary
 
     public static void SetColorResource(string colorStyle)
     {
-        lock (Sync)
-        {
-            try { GetInstance().LoadTheme(colorStyle); }
-            catch (Exception ex) { Trace.TraceError("加载迁入颜色资源失败：{0}", ex); }
-        }
+        try { GetInstance().LoadTheme(colorStyle); }
+        catch (Exception ex) { Trace.TraceError("加载迁入颜色资源失败：{0}", ex); }
     }
 }

@@ -40,11 +40,11 @@ public partial class MainWindowViewModel
     private void PresentResultPublication(IResultPublication publication,DeclaredOutputSnapshot? snapshot,
         string? nodeName,IReadOnlyDictionary<string,ResultBindingInfo>? bindings)
     {
-        if(!publication.IsCurrent()){publication.Dispose();return;}
-        _resultPublication=publication;_resultPublicationSnapshot=snapshot;_resultPublicationBindings=bindings;_declaredResultActive=true;
         bool Current()=>ReferenceEquals(_resultPublication,publication)&&publication.IsCurrent();
         try
         {
+            if(!publication.IsCurrent()){publication.Dispose();return;}
+            _resultPublication=publication;_resultPublicationSnapshot=snapshot;_resultPublicationBindings=bindings;_declaredResultActive=true;
             DeclaredResultPresenter.Present(publication,bindings);
             if(!Current())return;
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
@@ -60,6 +60,20 @@ public partial class MainWindowViewModel
     }
     private void PresentSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName,Func<bool>? sourceIsCurrent=null)
     {
+        var session=DocumentManager.Session;
+        var node=SelectedNode;
+        var workflowId=WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
+        bool ExecutionOwnerMatches()=>session is not null&&(snapshot.Identity.DocumentSessionId==session.Document.ExecutionOwner.Id
+            ||_productionEditors?.Any(editor=>editor.DebugOwner.Id==snapshot.Identity.DocumentSessionId&&editor.IsValid
+                &&editor.Identity.WorkflowId==workflowId&&editor.Identity.NodeId==snapshot.Identity.NodeId)==true);
+        bool SourceMatches()=>session is not null&&ReferenceEquals(DocumentManager.Session,session)
+            &&ReferenceEquals(SelectedNode,node)&&node?.Id==snapshot.Identity.NodeId
+            &&ExecutionOwnerMatches()
+            &&!string.IsNullOrEmpty(workflowId)&&snapshot.SourceWorkflowId==workflowId
+            &&WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId==workflowId
+            &&session.Document.Workflows.Count(flow=>flow.Id==workflowId
+                &&flow.Nodes.Count(candidate=>ReferenceEquals(candidate,node))==1)==1;
+        if(!SourceMatches())return;
         if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)
         {
             PresentResultPublication(_resultPublication,snapshot,nodeName,_resultPublicationBindings);
@@ -67,17 +81,26 @@ public partial class MainWindowViewModel
         }
         var epoch=RetireResultPublication();
         var viewOwner=CaptureResultViewOwner(epoch);
-        bool Owner()=>viewOwner()&&(sourceIsCurrent?.Invoke()!=false)&&viewOwner();
+        bool Owner()=>viewOwner()&&SourceMatches()&&(sourceIsCurrent?.Invoke()!=false)&&viewOwner()&&SourceMatches();
         if(!Owner())return;
         var publication=ToolResultViews.FromSnapshot(snapshot,Owner);
-        PresentResultPublication(publication,snapshot,nodeName,DeclaredBindings(publication.Schema,snapshot.Identity.NodeId));
+        var handedToPresenter=false;
+        try
+        {
+            var bindings=DeclaredBindings(publication.Schema,snapshot.Identity.NodeId,snapshot.SourceWorkflowId);
+            if(!Owner())return;
+            // From this point the presenter owns every acceptance/rejection/exception path.
+            handedToPresenter=true;
+            PresentResultPublication(publication,snapshot,nodeName,bindings);
+        }
+        finally{if(!handedToPresenter)publication.Dispose();}
     }
     private void RefreshCurrentResultBindings()
     {
         var publication=_resultPublication;var epoch=_resultPublicationEpoch;
         if(publication is null||!publication.IsCurrent())return;
         var nodeId=publication.Stamp.Invocation?.NodeId??SelectedNode?.Id;
-        var bindings=DeclaredBindings(publication.Schema,nodeId);
+        var bindings=DeclaredBindings(publication.Schema,nodeId,_resultPublicationSnapshot?.SourceWorkflowId);
         if(epoch!=_resultPublicationEpoch||!ReferenceEquals(_resultPublication,publication)||!publication.IsCurrent())return;
         _resultPublicationBindings=bindings;
         DeclaredResultPresenter.Present(publication,bindings);

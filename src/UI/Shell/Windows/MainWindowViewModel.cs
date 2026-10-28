@@ -4564,12 +4564,15 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 DeclaredBindings(schema,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
             return true;
         }
-        private IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(SunEyeVision.Plugin.Contracts.ToolSchema schema,string? nodeId)
+        private IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(SunEyeVision.Plugin.Contracts.ToolSchema schema,string? nodeId,string? workflowId=null)
         {
-            var root=DocumentManager.Session?.Document.Workflows.SingleOrDefault(flow=>!flow.IsSubroutine&&flow.Nodes.Any(node=>node.Id==nodeId));
+            var session=DocumentManager.Session;
+            workflowId??=WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId;
+            var roots=session?.Document.Workflows.Where(flow=>flow.Id==workflowId).ToArray();
+            var root=roots is {Length:1}&&roots[0].Nodes.Count(node=>node.Id==nodeId)==1?roots[0]:null;
             return root is null||nodeId is null?new Dictionary<string,ResultBindingInfo>():schema.Outputs.ToDictionary(
                 port=>port.Id,port=>new ResultBindingInfo(new SunEyeVision.Plugin.Contracts.OutputReference(nodeId,port.Id,port.Type,scopeId:root.Id,storage:port.Storage),port.Id,
-                    DocumentManager.Session!.Document.GlobalVariables.Where(variable=>variable.ProducerBinding is not null)
+                    session!.Document.GlobalVariables.Where(variable=>variable.ProducerBinding is not null)
                         .GroupBy(variable=>variable.ProducerBinding!.ReferenceExpression,StringComparer.Ordinal)
                         .ToDictionary(group=>group.Key,group=>string.Join("、",group.Select(variable=>variable.Name)),StringComparer.Ordinal)),StringComparer.Ordinal);
         }

@@ -43,7 +43,12 @@ public sealed class ResultVariableBindingProductionTests
             var source=new SunEyeVision.UI.Shared.WorkflowNode("source","图像源","图像源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
             var root=new SunEyeVision.Workflow.Workflow("root","正式根流程");root.Nodes.Add(source);
             var variable=new GlobalVariable("宽度",0L,"Integer"){Id="width"};
-            var document=new Solution{Workflows=new(){root}};document.GlobalVariables.Add(variable);
+            // Node IDs are local to a workflow. Another root with the same local node ID
+            // must neither throw during binding lookup nor acquire this root's producer.
+            var other=new SunEyeVision.Workflow.Workflow("other-root","另一正式根流程");
+            other.Nodes.Add(new SunEyeVision.UI.Shared.WorkflowNode("source","另一个图像源","另一个图像源","ImageLoad")
+                {RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")});
+            var document=new Solution{Workflows=new(){root,other}};document.GlobalVariables.Add(variable);
             var manager=ServiceInitializer.SolutionManager;manager.SetCurrentSolution(document,false);
             Stage("构造真实MainWindowViewModel");main=new MainWindowViewModel();
             Stage("选择真实图像源节点");main.SelectedNode=source;

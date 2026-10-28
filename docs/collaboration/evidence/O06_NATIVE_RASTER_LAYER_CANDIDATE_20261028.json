@@ -1,0 +1,92 @@
+{
+  "scope": "D07精确栅格/Domain公共依赖候选，尚非完整图像场景或主图生产接入",
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml",
+      "sha256": "1a376cf7ed4516a4e3e15402fa2a99eac6820d9905081339ee763e0e5920e68c",
+      "location": "34-47 原ImageLayers及统一transform"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
+      "sha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
+      "location": "2215-2239 原Add/Remove/CheckImageLayer"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88",
+      "location": "2278-2407 原AddCheckImage/UpdateCheckImages/Remove"
+    }
+  ],
+  "localFiles": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Display/NativeResultRaster.cs",
+      "sha256": "d92383c3823073886b81b46ce26f7a9d5137e7466d88653547c522b49ca535fb"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+      "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "sha256": "035d8fc7d23b432568d805101a0c4109edeb9fc9450c9476989770cbf44c8826"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeResultRasterScene.xaml",
+      "sha256": "6c65941390e33eb40889bda85167a02222a904adcdf64e578bbbbb0ef8b4db42"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
+      "sha256": "292c84a59e0568465233e962bb7ca56921b09fc56baa4f753911608ffe86c6f7"
+    }
+  ],
+  "evidence": [
+    "原ImageLayers与sImage同一Grid/Viewbox，500为设计宽，不把mask再次乘ratio",
+    "已迁普通BuiltImageSourceA/Resize逐通道保BGRA，BuiltBgraImageSource重写alpha故不采用",
+    "Domain只改私有display alpha，原RGB/格式像素读取及physical Frame保留；不改canonical资源",
+    "完整RLE含孔洞/单像素，批大小<=4096，跨批有序/不重叠，超预算整批拒绝，不Bounds/截断"
+  ],
+  "implementation": "原view独占owner、实际RegionLayer及FrameReceipt，候选准备/独立pixel lease/短读pin/重入与最后释放；原Template更换以实际父Panel摘装",
+  "validation": {
+    "library001": "0错5354警告30.96秒，只是早期候选库层编译，不套最后源码",
+    "windowCases": "9组实际Window源码已加入O06WindowPresentationCases.cs，filter原结果视口，尚未运行",
+    "design": "新NativeResultRasterScene同真实viewport/managed design数据，尚未VS",
+    "uiFull": "下一合D06整批集中验证"
+  },
+  "remaining": [
+    "Geometry/text/selection/ROI同一owner子层未完整实现",
+    "原Shell及主图SDK视觉消费者尚未整批退出",
+    "完整D07签名未冻结，UI不得挂第二TextViewport/隐藏SDK后备",
+    "C09三方式/原FIXTURE取值、单位顺序尚缺关键证据，C17原切片已核未实施"
+  ],
+  "currentValidation": {
+    "productCommit": "5780c062",
+    "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
+    "windowCases": 10,
+    "failures": 0,
+    "uiErrors": 0,
+    "fullErrors": 0,
+    "remaining": "旧validation保早期候选事实；完整D07与真实VS/人工未完成",
+    "currentLocalFiles": [
+      {
+        "path": "src/Plugin.Wpf/Adapters/Display/NativeResultRaster.cs",
+        "sha256": "d92383c3823073886b81b46ce26f7a9d5137e7466d88653547c522b49ca535fb"
+      },
+      {
+        "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+        "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
+      },
+      {
+        "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+        "sha256": "466c23231799f60fe1c66bcdd2a47733533f7937fbc17c9f1115d57e8bdad93d"
+      },
+      {
+        "path": "src/Plugin.Wpf/Design/NativeResultRasterScene.xaml",
+        "sha256": "6c65941390e33eb40889bda85167a02222a904adcdf64e578bbbbb0ef8b4db42"
+      },
+      {
+        "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
+        "sha256": "292c84a59e0568465233e962bb7ca56921b09fc56baa4f753911608ffe86c6f7"
+      }
+    ]
+  }
+}

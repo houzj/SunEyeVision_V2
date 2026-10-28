@@ -34,7 +34,8 @@ public sealed class ResultWorkspaceProductionTests
     private static readonly CoordinateFrame Coordinates = new("workspace-probe:pixel", CoordinateDomain.Image, CoordinateUnit.Pixel);
     private static readonly ToolSchema ProbeSchema = new(Array.Empty<Port>(), new[] {
         new Port("image", TypeRef.ResourceOf(ResourceKind.Image)), new Port("region", TypeRef.ResourceOf(ResourceKind.Region)),
-        new Port("point", TypeRef.GeometryOf(GeometryKind.Point, Coordinates)), new Port("count", TypeRef.ScalarOf(ScalarKind.Int64)) });
+        new Port("point", TypeRef.GeometryOf(GeometryKind.Point, Coordinates)), new Port("count", TypeRef.ScalarOf(ScalarKind.Int64)),
+        new Port("items", TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Int64))) });
     public sealed class Parameters : ToolParameters, IOutputContractProvider
     {
         internal Action? OnReadContract;
@@ -59,7 +60,7 @@ public sealed class ResultWorkspaceProductionTests
     private static IReadOnlyList<OutputVariable> Contract(ToolSchema schema) => schema.Outputs.Select(port => new OutputVariable {
         PortId = port.Id, Name = port.Id, DisplayName = port.Id, ValueDeclaration = port.Type,
         DeclaredType = port.Type == TypeRef.ResourceOf(ResourceKind.Image) ? typeof(IReadOnlyImage)
-            : port.Type == TypeRef.ResourceOf(ResourceKind.Region) ? typeof(IReadOnlyRegion) : port.Type.Shape == ValueShape.Geometry ? typeof(GeometryValue) : typeof(long),
+            : port.Type == TypeRef.ResourceOf(ResourceKind.Region) ? typeof(IReadOnlyRegion) : port.Type.Shape == ValueShape.Geometry ? typeof(GeometryValue) : port.Type.Shape==ValueShape.Sequence?typeof(long[]):typeof(long),
         VariableType = port.Type == TypeRef.ResourceOf(ResourceKind.Image) ? "Image" : port.Type.Shape == ValueShape.Scalar ? "Integer" : "", Kind = OutputVariableKind.Data
     }).ToArray();
     internal sealed class Fixture : IDisposable
@@ -124,7 +125,7 @@ public sealed class ResultWorkspaceProductionTests
                     var region = resources.CreateRegion(Coordinates, frame, new[] { new RegionRun(0, 0, 0) });
                     var values = schema.Outputs.ToDictionary(port => port.Id, port => port.Type == TypeRef.ResourceOf(ResourceKind.Image) ? (object?)image
                         : port.Type == TypeRef.ResourceOf(ResourceKind.Region) ? region : port.Type.Shape == ValueShape.Geometry ? new PointGeometry(Coordinates, new(1, 1))
-                        : port.Type.Scalar == ScalarKind.Int64 ? port.Id == "output.width" ? (long)image.Width : port.Id == "output.height" ? (long)image.Height : 1L : (object?)"probe", StringComparer.Ordinal);
+                        : port.Type.Shape==ValueShape.Sequence ? new long[]{1,2,3} : port.Type.Scalar == ScalarKind.Int64 ? port.Id == "output.width" ? (long)image.Width : port.Id == "output.height" ? (long)image.Height : 1L : (object?)"probe", StringComparer.Ordinal);
                     return new Results(resources, image, values);
                 }
                 catch { resources.Dispose(); throw; }
@@ -434,6 +435,44 @@ public sealed class ResultWorkspaceProductionTests
         Assert.Null(f.Shell.CurrentResultContent);
         Assert.Null(presenter.InputPane.CurrentFrame); Assert.Null(presenter.OutputPane.CurrentFrame);
         Assert.Throws<ObjectDisposedException>(() => f.View.Initialize(f.Main));
+    });
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Real_tree_paging_failure_retires_physical_images_or_preserves_a_synchronous_new_run(bool replace)
+        => ImageThresholdProductionEditorTests.Sta(() =>
+    {
+        using var f = new Fixture(); var before = f.Main.CurrentResultPublication!;
+        var items=f.Main.FlatResultRows.Single(row=>row.DisplayName=="items");
+        var fired=false;Results? next=null;
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler changed=(_,_)=>
+        {
+            if(fired)return;fired=true;
+            if(replace)next=f.Publish(f.Selected,151);
+            throw new FormatException("workspace-paging-failure");
+        };
+        f.Main.FlatResultRows.CollectionChanged+=changed;
+        try
+        {
+            Assert.ThrowsAny<Exception>(()=>items.IsExpanded=true);
+            Assert.True(fired);Assert.False(before.IsCurrent());
+            if(replace)
+            {
+                Assert.NotNull(next);Assert.True(f.Main.CurrentResultPublication!.IsCurrent());
+                Assert.Equal(next!.Image.Frame,f.Presenter.OutputPane.CurrentFrame!.Frame);
+                Assert.NotNull(((ImageViewBox)f.Shell.InputViewport).ImageDataSource);
+                Assert.NotNull(((ImageViewBox)f.Shell.OutputViewport).ImageDataSource);
+                Assert.Equal(new byte[]{151},f.Presenter.OutputPane.Viewport.ReadPixel(0,0));
+            }
+            else
+            {
+                Assert.Null(f.Main.CurrentResultPublication);
+                Assert.Null(((ImageViewBox)f.Shell.InputViewport).ImageDataSource);
+                Assert.Null(((ImageViewBox)f.Shell.OutputViewport).ImageDataSource);
+                Assert.Null(f.Presenter.InputPane.CurrentFrame);Assert.Null(f.Presenter.OutputPane.CurrentFrame);
+            }
+        }
+        finally{f.Main.FlatResultRows.CollectionChanged-=changed;}
+        f.Dispose();Assert.All(f.Runs,run=>Assert.Equal(1,run.Releases));
     });
     private static void DeliverSelection(MainWindowViewModel main, ResultSelection selection)
     {

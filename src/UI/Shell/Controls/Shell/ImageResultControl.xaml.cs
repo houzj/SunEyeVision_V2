@@ -203,20 +203,22 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
         {
             var main=_viewModel;
-            if(main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            if(_shutdown||main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
             try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
             catch(Exception error)
             {
-                _viewModel.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
+                if(!_shutdown&&ReferenceEquals(_viewModel,main))main.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
                 return;
             }
-            if(!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
             var acceptedVersion=source.EditVersion;
             var workflowName = workflow.Name ?? "未知工作流";
-            _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
-            _viewModel.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
+            main.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
+            main.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
             // 触发工作流执行（DisplayImage 由工作流结果驱动更新）
-            _viewModel.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
+            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+            main.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
+            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
             await main.RunPreviewImageAsync(workflow,source,image,index,acceptedVersion);
         }
 

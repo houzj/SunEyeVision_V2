@@ -1,3 +1,9 @@
+## 2026-10-28 D07完整消费者闭包收齐交唯一正式编验
+
+用户批准后已应用Main/原Shell/源条/树表/双图及SDK主图退出；根配置旧缓存消费者已迁正式snapshot+原ImageViewBox/Pane/显式端口。补主发布同epoch退休物理双pane和suppression、根窗口换节点/排队异常出口、终态关闭及选择回调守卫。工作区16场景+根3场景和Pane/Preview/Fullscreen类已注册，完整19文件+20依赖=39路径SHA清单固定，下一统一交主线正式构建/运行；语法XML和复审不代语义编译/通过。
+
+主线Global009已完整368/0（亲读fullTrack报告），7828加载形状修复已同步a96，正式PortId断言同主线d01；O06_ASSIST_GLOBAL_FORMAL证据已归档。旧失败保留，不套新D07或VS/人工。Group/循环/Blob及公共显示合同不扩，缺合同显示明确禁用。原A01–E07仍未完成。
+
 ## 2026-10-28 D07正式验证入口贯通待主线编验
 
 完整应用后补Unload聚合、Shutdown终态/解绑，原13测试保留加真实重载不可复活共14项；ImageSourceCases已注册Workspace/Pane/Preview/Fullscreen四组，脚本及S4FullChain实际消费者同批同步。源条/主Shell及树表公用production调用已接，源/表结果owner无双轨；缺合同显示入口继续禁用。根配置旧OutputCache预览尚未迁属后续明确待办，Group不扩。完整源/审核制品/原主方案同步，尚未语义编译/正式运行，下一提交完整批交主线唯一Release，原187不套新批。

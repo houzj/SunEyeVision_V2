@@ -1,0 +1,77 @@
+{
+  "productCommit": "7828d01d2db84263c008fa9a841a8cd092009ea2",
+  "scope": "7828d01d完整纯值保存重开、Assist独立真实控件与现有树表关联核收；不包含尚未集成D07生产包或历史入口。",
+  "uiBuild": {
+    "log": "artifacts/assist-global-ui-20261028-002.log",
+    "errors": 0,
+    "warnings": 6551,
+    "seconds": 174.76
+  },
+  "fullBuild": {
+    "log": "artifacts/assist-global-full-20261028-002.log",
+    "errors": 0,
+    "warnings": 6588,
+    "seconds": 80.17
+  },
+  "exeProbe": {
+    "pid": 80092,
+    "exit": 0,
+    "log": "artifacts/assist-global-probe-20261028-002.log"
+  },
+  "receipts": {
+    "GlobalBinding": {
+      "attempt": 9,
+      "receipt": "Release/_validation/S4-20261025/GlobalBinding/attempt-009/receipt.json",
+      "exit": 0
+    },
+    "WindowPresentation": {
+      "attempt": 245,
+      "receipt": "Release/_validation/S4-20261025/WindowPresentation/attempt-245/receipt.json",
+      "exit": 0
+    },
+    "DesignTime": {
+      "attempt": 64,
+      "receipt": "Release/_validation/S4-20261025/DesignTime/attempt-064/receipt.json",
+      "exit": 0
+    },
+    "RuntimeEditor": {
+      "attempt": 77,
+      "receipt": "Release/_validation/S4-20261025/RuntimeEditor/attempt-077/receipt.json",
+      "exit": 0
+    },
+    "FullChain": {
+      "attempt": 136,
+      "receipt": "Release/_validation/S4-20261025/FullChain/attempt-136/receipt.json",
+      "exit": 0
+    },
+    "ImageSources": {
+      "attempt": 12,
+      "receipt": "Release/_validation/S4-20261025/ImageSources/attempt-012/receipt.json",
+      "exit": 0
+    }
+  },
+  "passed": {
+    "GlobalBinding": 368,
+    "Assist": 8,
+    "DesignTime": 101,
+    "RuntimeEditor": 10,
+    "FullChain": 8,
+    "ImageSources": 187
+  },
+  "verifiedPayloadEntries": 795,
+  "verifiedLoadedRecords": 95,
+  "fixtureBoundary": "新夹具PortId须为SDK field:<guid>，非UI BindingKey Field_<guid>。测试单编BuildProjectReferences=false，0错误31警告8.49秒，不重编或替换正式产品。",
+  "failedHistory": [
+    "GlobalBinding/attempt-006:349过12败",
+    "GlobalBinding/attempt-007:367过1败",
+    "GlobalBinding/attempt-008:旧测试helper未重编仍367过1败"
+  ],
+  "notAccepted": [
+    "D07完整生产消费者仍待工作流固定根窗口及退休清图闭包后集成",
+    "指定RunIdentity的真实历史入口未实现",
+    "C09 SettingsView完整Unset持久化与实际位姿联动未完成",
+    "VS/VM同态及用户人工未代签",
+    "完整控件阶段与Blob阶段未完成"
+  ],
+  "userBlobXamlSha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed"
+}

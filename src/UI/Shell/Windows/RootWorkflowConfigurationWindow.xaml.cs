@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf;
+using SunEyeVision.Plugin.Wpf;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using System.Globalization;
 using System.Windows;
@@ -31,7 +31,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
   _refresh.Tick+=RefreshTick;Loaded+=(_,_)=>{Rebuild();ImageNodes.ItemsSource=_context.Root.Nodes;ImageNodes.SelectedIndex=_context.Root.Nodes.Count>0?0:-1;RefreshPublishedResults();_refresh.Start();};
   Closed+=(_,_)=>RunImageCleanup(new Action[]{()=>{_refresh.Stop();_refresh.Tick-=RefreshTick;},()=>{_context.Changed-=Rebuild;_context.PrepareView=null;_context.HasPendingView=null;},DisposeImagePreview,_context.Dispose,()=>Results.ItemsSource=null,()=>ImageNodes.ItemsSource=null,()=>{foreach(var field in _fields)field.Dispose();_fields.Clear();Parameters.Children.Clear();}});
  }
- private void RefreshTick(object? sender,EventArgs e){if(!_context.IsValid){Close();return;}try{RefreshState();RefreshPublishedResults();}catch(Exception error){Error.Text="已发布结果暂不可读取："+error.Message;ClearImagePreview();}}
+ private void RefreshTick(object? sender,EventArgs e){if(!_context.IsValid){Close();return;}RefreshResultView(()=>{RefreshState();RefreshPublishedResultsCore();});}
  private void RefreshState()
  {
   bool running=_running();bool editable=_context.CanEdit;ConfigurationTabs.IsEnabled=editable;ApplyButton.IsEnabled=AcceptButton.IsEnabled=editable;
@@ -102,7 +102,20 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  private void DragTitle(object sender,MouseButtonEventArgs e){if(e.ChangedButton==MouseButton.Left)DragMove();}
  private void Safe(Action action){try{action();Error.Text="";}catch(Exception error){Error.Text=error.Message;}RefreshState();}
  private void ImageNodeChanged(object sender,SelectionChangedEventArgs e){if(IsLoaded)RefreshPublishedResults();}
- internal void RefreshPublishedResults()
+ internal void RefreshPublishedResults()=>RefreshResultView(RefreshPublishedResultsCore);
+ private void RefreshResultView(Action refresh)
+ {
+  var epoch=_imageEpoch;
+  try{refresh();}
+  catch(Exception failure)
+  {
+   if(_closedImages)return;
+   var errors=new List<Exception>{failure};
+   if(epoch==_imageEpoch)try{ClearImagePreview();}catch(Exception cleanup){errors.Add(cleanup);}
+   Error.Text="已发布结果暂不可读取："+string.Join("；",errors.Select(error=>error.Message));
+  }
+ }
+ private void RefreshPublishedResultsCore()
  {
   var rows=new List<ResultRow>();
   foreach(var node in _context.Root.Nodes)

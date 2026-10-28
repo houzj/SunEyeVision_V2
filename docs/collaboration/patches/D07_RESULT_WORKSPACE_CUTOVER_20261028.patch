@@ -265,7 +265,33 @@
          }
  
          /// <summary>
-@@ -197,7 +221,7 @@
+@@ -179,25 +203,27 @@
+         private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
+         {
+             var main=_viewModel;
+-            if(main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
++            if(_shutdown||main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
+             try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
+             catch(Exception error)
+             {
+-                _viewModel.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
++                if(!_shutdown&&ReferenceEquals(_viewModel,main))main.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
+                 return;
+             }
+-            if(!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
++            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+             var acceptedVersion=source.EditVersion;
+             var workflowName = workflow.Name ?? "未知工作流";
+-            _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
+-            _viewModel.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
++            main.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
++            main.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
+             // 触发工作流执行（DisplayImage 由工作流结果驱动更新）
+-            _viewModel.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
++            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
++            main.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
++            if(_shutdown||!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
+             await main.RunPreviewImageAsync(workflow,source,image,index,acceptedVersion);
          }
  
  
@@ -274,7 +300,7 @@
  
          /// <summary>
          /// DataGrid 结果行展开/折叠点击事件
-@@ -209,33 +233,6 @@
+@@ -209,33 +235,6 @@
              CommandManager.InvalidateRequerySuggested();
          }
  
@@ -1487,7 +1513,15 @@
          #endregion
 --- a/src/UI/Shell/Windows/MainWindowResultPublication.cs
 +++ b/src/UI/Shell/Windows/MainWindowResultPublication.cs
-@@ -53,6 +53,7 @@
+@@ -34,6 +34,7 @@
+         if(epoch==_resultPublicationEpoch)Cleanup(()=>_activeResultView?.Clear());
+         if(epoch==_resultPublicationEpoch)Cleanup(()=>ModuleResultTree.Clear());
+         if(epoch==_resultPublicationEpoch)Cleanup(()=>_nodeResultManager?.ClearHighlight());
++        if(epoch==_resultPublicationEpoch)Cleanup(ClearNativeImagePresentation);
+         if(failures.Count>0)throw new AggregateException("结果视图清理失败，所有可执行清理均已尝试。",failures);
+         return epoch;
+     }
+@@ -53,6 +54,7 @@
              if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
              if(!EnsureCurrent())return;
              _activeResultView?.Present(publication);

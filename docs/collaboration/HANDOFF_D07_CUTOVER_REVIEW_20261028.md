@@ -1,5 +1,12 @@
 # D07 集中切换实施记录（用户已批准应用，正式编验待完成）
 
+## 最终整批消费者闭包待统一编验
+
+原19文件加完整20依赖，39唯一路径及规范化/原字节SHA见 evidence/D07_AUTHORIZED_INTEGRATION_SOURCE_20261028.json。根配置旧缓存读取已移除，原ImageViewBox+ResultImagePane指定snapshot、显式端口、真实doc/scope/node/owner与当前性、同快照复用、换源/失败/关闭归还；标量读取与排队异常统一退出，不让旧异常清新代。主发布退休增加同epoch ClearNativeImagePresentation，物理双视口与lease退出，suppression防从旧Context重建。
+
+Workspace原13例保留，加终态1例和真实分页异常/同步新run2场景共16；Root3例，共19场景，Pane/Preview/Fullscreen依赖另列并纳入正式runner。语法/XML/只读复审通过，未语义编译或正式运行。SourceStatus接纳回调补最终关闭与换宿主守卫。Group、公共显示合同、主仓产物未改；缺合同显示仍禁用。主线Global009已368/0，但不代此新UI批通过。以下早期候选/依赖数量均历史。
+
+
 ## 当前实际实施
 
 用户2026-10-28明确答复“授权整批应用并验证”，批准阻塞已解除。核基线及依赖后应用完整19文件和2个缺失测试/说明；既有依赖逐源码核同。补ImageResultControl卸载聚合清理与最终Shutdown门禁、解绑借内容，新增真实卸载重载后不可复活回归，生产测试现14项（原13不删）。正式ImageSourceCases已显式纳入Workspace、Pane、文件预览和全屏四组，不让测试停在编译未运行。

@@ -1,0 +1,216 @@
+{
+  "sourceBaseline": "68ee773aeb2efc2036001028a53e0288e4a33b36",
+  "authorization": "用户2026-10-28明确授权整批应用并验证",
+  "scope": "完整Main结果接线、原件双视口和根配置图像消费者；不得只取最后一提交而漏基线依赖",
+  "comparison": "sha256为UTF8无BOM且换行LF规范化源码；fileSha256为当前工作树原始字节",
+  "files": [
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+      "sha256": "80ab3b18f5ec9568e74ce3349fe567219e4b34ee3388aac3f267b9d0c904ea01",
+      "fileSha256": "80ab3b18f5ec9568e74ce3349fe567219e4b34ee3388aac3f267b9d0c904ea01"
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "sha256": "ff62a8324d4c966c8c4c366630095c11ff2321c0bc6925af7cb87ccc4c875393",
+      "fileSha256": "ff62a8324d4c966c8c4c366630095c11ff2321c0bc6925af7cb87ccc4c875393"
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs",
+      "sha256": "562705d2099159f57d9c7e9ed489de8dcc559a0affc77c9a9051d32a7a1b98ac",
+      "fileSha256": "562705d2099159f57d9c7e9ed489de8dcc559a0affc77c9a9051d32a7a1b98ac"
+    },
+    {
+      "path": "src/UI/Services/Workflow/INodeResultSink.cs",
+      "sha256": "8b81638d69125862abc5e9aff3a19e84c1e22665bf8bd89ef046f3ca9753a5c0",
+      "fileSha256": "8b81638d69125862abc5e9aff3a19e84c1e22665bf8bd89ef046f3ca9753a5c0"
+    },
+    {
+      "path": "src/UI/Core/IRootCoordinator.cs",
+      "sha256": "7a2be51aa0bf48ef0c78850e379eccc4a07dc13c8b1351025d7b9a92e7d25041",
+      "fileSha256": "7a2be51aa0bf48ef0c78850e379eccc4a07dc13c8b1351025d7b9a92e7d25041"
+    },
+    {
+      "path": "src/UI/Services/Workflow/NodeResultManager.cs",
+      "sha256": "b8d68cd0fa210aa5be5d03a7ed09a2fa8c0c0580cbdceee5a7d25f6891ccbc41",
+      "fileSha256": "b8d68cd0fa210aa5be5d03a7ed09a2fa8c0c0580cbdceee5a7d25f6891ccbc41"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml.cs",
+      "sha256": "92c20c8276e78ec32b5df76168bdd0c55307a5e9f047a84e77a1c2e1d763f44c",
+      "fileSha256": "92c20c8276e78ec32b5df76168bdd0c55307a5e9f047a84e77a1c2e1d763f44c"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindow.xaml",
+      "sha256": "2517e470fdc6f01beb3455a161f7a1775ae2b88df73152e730ca2aba490ac926",
+      "fileSha256": "2517e470fdc6f01beb3455a161f7a1775ae2b88df73152e730ca2aba490ac926"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "cdf327b91eb591ddf77e5f66b4c254a1f0eff18e0f84156d1b70e2b72d6f5578",
+      "fileSha256": "cdf327b91eb591ddf77e5f66b4c254a1f0eff18e0f84156d1b70e2b72d6f5578"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowResultPublication.cs",
+      "sha256": "40a6a2513d150745350908a67ebbca900cbbfa831667100d82e76ab863568143",
+      "fileSha256": "40a6a2513d150745350908a67ebbca900cbbfa831667100d82e76ab863568143"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowGroupEditing.cs",
+      "sha256": "29f3440fc82fec810c603e07b25241c85b975d21d3aa95bf44d4ef656d406fed",
+      "fileSha256": "29f3440fc82fec810c603e07b25241c85b975d21d3aa95bf44d4ef656d406fed"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/NodeOpenContext.cs",
+      "sha256": "a0844ec871de51e9297c74139de7e514cb2b12e58a9a7832a1df3f4941baaf7c",
+      "fileSha256": "a0844ec871de51e9297c74139de7e514cb2b12e58a9a7832a1df3f4941baaf7c"
+    },
+    {
+      "path": "src/UI/Services/Editing/GroupRegionParameterControl.cs",
+      "sha256": "7510fc9bb6a46489ed832f2c2b388d386bf60f0bf1ed7de2fbcd464c6912a1c6",
+      "fileSha256": "7510fc9bb6a46489ed832f2c2b388d386bf60f0bf1ed7de2fbcd464c6912a1c6"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ResultVariableBindingProductionTests.cs",
+      "sha256": "0a7d8de62e7941c6ae7b7af098f41994ea8f73f0e0be7f5596ad393ec0f8f9a3",
+      "fileSha256": "0a7d8de62e7941c6ae7b7af098f41994ea8f73f0e0be7f5596ad393ec0f8f9a3"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspaceImagePlan.cs",
+      "sha256": "fe0b998264a1d9c43537e5843ac7d7d6539cfb79b3bba97242648edf4494e98e",
+      "fileSha256": "fe0b998264a1d9c43537e5843ac7d7d6539cfb79b3bba97242648edf4494e98e"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "sha256": "1526663aed3be816459024862e95f0967716b97e6fc3ed1f32eb84992f7ea1e7",
+      "fileSha256": "1526663aed3be816459024862e95f0967716b97e6fc3ed1f32eb84992f7ea1e7"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.NativeResults.cs",
+      "sha256": "2f77ec6d955aa2cbea6de0bf1797313f2a8436cdb5ec9f2adef2944941e88148",
+      "fileSha256": "2f77ec6d955aa2cbea6de0bf1797313f2a8436cdb5ec9f2adef2944941e88148"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/NodeEditorRoutingTests.cs",
+      "sha256": "f2902c85a586f15bed4ba3023fbc79abf717701143b9c0a240f2a6f615a8e3de",
+      "fileSha256": "f2902c85a586f15bed4ba3023fbc79abf717701143b9c0a240f2a6f615a8e3de"
+    },
+    {
+      "path": "scripts/verification/S4FullChainCases.cs",
+      "sha256": "b2457b8485c854542e7af9f98656f82d68d3740a4812f2364adbe6ef6e138274",
+      "fileSha256": "b2457b8485c854542e7af9f98656f82d68d3740a4812f2364adbe6ef6e138274"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultImagePane.cs",
+      "sha256": "cdc1a4f714fc39ce4319346f0357726b82b618f04fe93254e508b58917eee194",
+      "fileSha256": "ba72d5efd1f587270637e9209846f8155fffe8c130a3140f2efddf61ee930e83"
+    },
+    {
+      "path": "src/UI/Services/Images/LocalResultImagePreview.cs",
+      "sha256": "f901a57d269a9b81ee1f690fc92e8927f2b3287eb3d7de16bfa4083b6cfb0e7c",
+      "fileSha256": "2e21629aa6e0be134e398b685cc314c57109fb4923888a8e48bca34cf610c1a7"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultViewportFullscreenScope.cs",
+      "sha256": "30f00867494003fa7db553569ac1bd5afb732eca14c32cd433d0efc5b3c55144",
+      "fileSha256": "1f542147cd1b78d253be5e827a43efcbef639da4b8e52e25eb8db5c486499c31"
+    },
+    {
+      "path": "src/UI/Services/Editing/Regions/RoiViewportEditScope.cs",
+      "sha256": "9672b8ba6ce0b9b4bb6bca3f4cb6719bbdfedf81dea555585b8ce43b9b7bc0c3",
+      "fileSha256": "4dfa49f641997f76733306c201fa0e45f04b905dca31ba3acdc02ac36bf0af90"
+    },
+    {
+      "path": "src/UI/Services/Editing/Regions/RoiParameterEditingAdapter.cs",
+      "sha256": "c2c9b944d52d194dc701cc01b8de3a78ac1f9c5c077251f08bd67266ed032fe6",
+      "fileSha256": "676dfe53595be9df968bd24f374d0560a62a05c951a6b826a2133c6eab413eab"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.Regions.cs",
+      "sha256": "4717f21174a864ce1c6145f192bd93df5511ca0b2210a224b9f2199ea217291b",
+      "fileSha256": "7f9393e3c56295d170ce5d135a4edf7061af7a23e97fbd2aa2d2913a7ec9a631"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/DeclaredToolConfigurationControl.cs",
+      "sha256": "befba3eb13a4362fe54372cc274382f4049e324c414dd85bebd72b74dd7787af",
+      "fileSha256": "3f77d87bc38f52ee7017a3e19a3d1b5b27abf6e56c7136e8ce9fd53159d497ef"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ResultImagePaneTests.cs",
+      "sha256": "e940103cbfc8d2c32250c9bb0fecac20a80d8ed2e3cac6f06cff2e82dcc69c4a",
+      "fileSha256": "197a2ab7c6405098214aa6b2428e84114beeb6342f5780e5f592c99cbfc823bb"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/LocalResultImagePreviewTests.cs",
+      "sha256": "7d5aa423c9cbd01ff04eb7e884804a8b8ae72f153b42583ec0fd23c48421f0d7",
+      "fileSha256": "39c76de5fc27be20a1152abbdfb87780e7ce934c00174b63b2b212ad902b7019"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ResultViewportFullscreenScopeTests.cs",
+      "sha256": "ea5757c47587b2bad2155d420aeec75f79dbd97f6671f3257dbb21ed77f52d66",
+      "fileSha256": "eadf9e0de5d731e57e942595cc2a8f0f99e410bc1644f7230c5e85bb83e77ebf"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/NativeRoiHostScopeTests.cs",
+      "sha256": "af786f3157ad3dc46bd817248a1d6eb4e2530fbb115e560e0ed670ddb06b6587",
+      "fileSha256": "041e9538fd82af5137bf804c814279459bfb983d0a2c488cf0fdd5529263879a"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
+      "sha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
+      "fileSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4"
+    },
+    {
+      "path": "docs/collaboration/HANDOFF_D07_RESULT_WORKSPACE_PRODUCTION_TESTS_20261028.md",
+      "sha256": "1bcfef375f03ca27e5231ee5da07c969aa35491f06d84a5634dcc3e49d81d4cc",
+      "fileSha256": "1bcfef375f03ca27e5231ee5da07c969aa35491f06d84a5634dcc3e49d81d4cc"
+    },
+    {
+      "path": "src/UI/Services/Editing/RootWorkflowConfigurationContext.cs",
+      "sha256": "c39bf24482a09f592ea8b6011491cc6297fb4a11e6f70fcfaf7959062f8ed3a4",
+      "fileSha256": "340b7a34974b19b97cb3e87d981b98faf97596e7b685b0865245f54aef927246"
+    },
+    {
+      "path": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.Images.cs",
+      "sha256": "8087205f87e2f4f9b3fe3d172b0c557dbb8fa7d87e208df0d153854aa1ed8fed",
+      "fileSha256": "8087205f87e2f4f9b3fe3d172b0c557dbb8fa7d87e208df0d153854aa1ed8fed"
+    },
+    {
+      "path": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml",
+      "sha256": "a141af04fff5295a5453ff49df6923f1ce5cbc11cf9dea556a1989532558df83",
+      "fileSha256": "5acd93728d1edcc7797f61c2deac6db469f10d925c795500cc896ac2e79c4327"
+    },
+    {
+      "path": "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs",
+      "sha256": "113d86ad261754aadd5734f0db639a1b87a13c940b0701d258dd3c3a8f545286",
+      "fileSha256": "113d86ad261754aadd5734f0db639a1b87a13c940b0701d258dd3c3a8f545286"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/RootResultImagePreviewTests.cs",
+      "sha256": "2f2301cc6261e2ee00f595954d8f89be80f554dd31794076a782e987b4c322f7",
+      "fileSha256": "2f2301cc6261e2ee00f595954d8f89be80f554dd31794076a782e987b4c322f7"
+    },
+    {
+      "path": "docs/collaboration/HANDOFF_D07_ROOT_RESULT_PREVIEW_20261028.md",
+      "sha256": "67de36db4335e73492f81619c799c751920ae6795b154ee31ba659fe3d791f09",
+      "fileSha256": "67de36db4335e73492f81619c799c751920ae6795b154ee31ba659fe3d791f09"
+    },
+    {
+      "path": "scripts/verification/ImageSourceCases.cs",
+      "sha256": "adc82980db27a92c97c6caa32665d2c088a9e6f3e81968a659df029557503219",
+      "fileSha256": "adc82980db27a92c97c6caa32665d2c088a9e6f3e81968a659df029557503219"
+    }
+  ],
+  "requiredTests": {
+    "ResultWorkspaceProductionTests": 16,
+    "RootResultImagePreviewTests": 3
+  },
+  "compiled": false,
+  "formalRuntimeValidated": false,
+  "excluded": [
+    "Plugin.Wpf公共源及资源",
+    "用户BlobParameterEditor.xaml",
+    "Group新增及循环语义",
+    "公共显示合同扩展",
+    "主仓正式产物覆盖"
+  ]
+}

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -20,7 +20,7 @@ public partial class RootWorkflowConfigurationWindow
  private bool _updatingPorts,_refreshingImage,_refreshImageAgain,_closedImages;
  internal ResultImagePane? ImagePreviewPane=>_imagePane;
  private void ImagePortChanged(object sender,SelectionChangedEventArgs args)
- {if(IsLoaded&&!_updatingPorts)RefreshImagePreview();}
+ {if(IsLoaded&&!_updatingPorts)RefreshResultView(RefreshImagePreview);}
  private void RefreshImagePreview()
  {
   if(_closedImages)return;
@@ -79,7 +79,7 @@ public partial class RootWorkflowConfigurationWindow
   finally
   {
    _refreshingImage=false;
-   if(_refreshImageAgain&&!_closedImages)Dispatcher.BeginInvoke(new Action(()=>{if(!_closedImages)RefreshImagePreview();}));
+   if(_refreshImageAgain&&!_closedImages)Dispatcher.BeginInvoke(new Action(()=>{if(!_closedImages)RefreshResultView(RefreshImagePreview);}));
   }
  }
  private void UpdateNoImage()=>NoImage.Visibility=_imagePane?.CurrentFrame is null?Visibility.Visible:Visibility.Collapsed;

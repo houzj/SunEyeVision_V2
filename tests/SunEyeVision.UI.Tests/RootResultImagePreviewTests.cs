@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.UI.Shell.Windows;
@@ -52,4 +52,25 @@ public sealed class RootResultImagePreviewTests
   }
   finally{window.Close();foreign.Retire();}
  });
+ [Fact]
+ public void Actual_node_selection_contract_failure_clears_old_physical_image_and_reports_the_error()
+  =>ImageThresholdProductionEditorTests.Sta(()=>
+ {
+  using var f=new ResultWorkspaceProductionTests.Fixture();
+  var window=f.Main.OpenRootConfiguration(f.Main.WorkflowTabViewModel.SelectedTab!,f.Host)!;
+  var reader=window.Context.Query.FormalOutputContractReader;
+  try
+  {
+   var nodes=(ComboBox)window.FindName("ImageNodes");var ports=(ComboBox)window.FindName("ImagePorts");
+   nodes.SelectedItem=f.Source;window.RefreshPublishedResults();ports.SelectedIndex=0;window.RefreshPublishedResults();
+   Assert.NotNull(window.ImagePreviewPane!.CurrentFrame);
+   window.Context.Query.FormalOutputContractReader=_=>throw new FormatException("root-contract-read-failed");
+   nodes.SelectedItem=f.Selected;
+   Assert.Null(window.ImagePreviewPane.CurrentFrame);
+   Assert.Null(((SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)window.FindName("Preview")).ImageDataSource);
+   Assert.Contains("root-contract-read-failed",((TextBlock)window.FindName("Error")).Text);
+  }
+  finally{window.Context.Query.FormalOutputContractReader=reader;window.Close();}
+ });
+
 }

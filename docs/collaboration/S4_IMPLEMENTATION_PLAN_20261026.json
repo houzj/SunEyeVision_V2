@@ -7723,13 +7723,13 @@
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计的结果树/结果表统一数据链已落主仓并通过本批集中自动回归：SDK正式输出声明与同一次运行快照只创建一份publication，树表各自借阅；正式执行、调试、历史及选节点声明共用入口。D06正式变量绑定和D07同帧图形视口仍未完成，完整阶段及人工验收不据此关闭。",
+      "summary": "按VM设计推进：结果树和结果表统一读取SDK输出声明及同一次运行快照，共用唯一publication。上一批同源数据链已核收；D06完整变量绑定源码已合主仓，正在集中验收。D07已补精确栅格必要依赖候选，完整图形/文本/选择/ROI同owner及生产主图接入仍未完成。",
       "ownership": [
         [
           "结果树 / PropertyList",
           "工作流、工具箱与数据流优化",
           "原三列树、层级/展开/128项分页、字段导航/复制/绑定、主界面Presenter与状态/主题/卸载；独立分支写Results/PropertyList专用Controls/Themes/Assets/Design子目录。",
-          "原树已接主仓同一publication；层级/128分页、真实行身份、原选择/复制及清理接入。分页通知异常仍可继续、重挂视觉恢复/null清选/恢复通知重入均过；ImageSources173过0败。正式变量绑定D06仍待完整批。"
+          "原树已接主仓同一publication；层级/128分页、真实行身份、原选择/复制及清理接入。分页通知异常仍可继续、重挂视觉恢复/null清选/恢复通知重入均过；ImageSources173过0败。D06完整批24615965已合为e258a862，生产/历史/通信关联验收待终态。"
         ],
         [
           "标准结果表 / StandardTable（C14）",
@@ -7747,7 +7747,7 @@
           "共享展示合同 / 图像帧与选择事件",
           "本聊天统一接口；工作流线改UI消费者",
           "本线唯一写IToolResultView替换合同、Plugin.Wpf共享适配/场景及Catalog/项目；工作流线同步ToolResultViews、MainWindow、源工具Wpf及其真实测试，先冻结整链签名再各自实施。",
-          "公共publication/lease/stamp及UI唯一入口已合主仓并过规定构建；唯一SDK reader归publication，树表独立借阅；真实物理来源正负向已过。没有同帧视口proof时明确禁止高亮；D07仍待。"
+          "公共publication/lease/stamp及UI唯一入口已合主仓并过规定构建；唯一SDK reader归publication，树表独立借阅；真实物理来源正负向已过。没有同帧视口proof时明确禁止高亮；D07仍待。 D07必要依赖70a6036f复用原ImageLayers，精确RLE/Domain透明度/原像素及模板生命周期已入候选，新增真实Window用例待验。"
         ],
         [
           "集成、正式Release及验收",
@@ -7809,7 +7809,7 @@
         ],
         [
           "剩余完整链路D06 / D07",
-          "D06由工作流线实施声明叶/组合端点到正式变量接纳、持久化、同次冻结配置版本、生产运行准入和资源owner出口；D07先冻结公共viewport所有权/Frame/epoch再成片接原Shell和UI，迁出旧SDK主图消费者。两者不能以局部按钮或安全拒绝代替完整验收。"
+          "D06完整批已集成，包含正式绑定身份、同版配置与全局定义、源完成后的纯值批、通信/取消/历史消费者，须新GlobalBinding及ImageSources验收；资源/几何/组合全局存储和数组通信仍明确缺项。D07精确栅格必要依赖已入候选，继续统一geometry/text/selection/ROI所有权及原Shell生产消费者，退出旧SDK主图。"
         ],
         [
           "集中核收",
@@ -7836,7 +7836,7 @@
           "选中几何须证明实际物理来源帧，否则不绘制",
           "设计器与运行时复用真实模板及组合"
         ],
-        "currentState": "统一数据链本批自动核收通过；完整结果图形/变量绑定/人工及第一阶段总清单仍未完成。当前证据为同源正式产物，不把HTML或原样式导入当验收。"
+        "currentState": "上一批publication数据链已核收；新D06完整批及D07栅格候选集中验证中，不套旧173/91等成绩。完整图形、控件库阶段一与人工验收仍未完成。"
       },
       "candidateEvidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
       "apiImplementation": {
@@ -7845,7 +7845,7 @@
         "contract": "IResultPublication/ResultPublicationStamp/IResultValueLease；IToolResultView仅Present/Clear，无旧Update入口；ResultSelection清理携stamp、多ResultHighlightTarget携真实帧",
         "lifetime": "一次SDK reader owner转移，多Borrow引用计数；退休即拒新借阅和旧选择，末借阅锁外释放reader。元数据冻结；InputValues仅只读Declarations核对，直接借原已冻结值，不重复读payload/复制数组。",
         "physicalOrigin": "ResultColumnDescriptor.GeometrySource显式关联同记录Region或顶层单项Image；校reader/元数据/真实Domain，不以默认逻辑坐标或选图补Frame。纯Geometry无来源不高亮。",
-        "stage": "主仓正式产品与实际UI消费者已过规定UI/full及12轨同源回归；唯一数据链完成本批核收。D06/D07、真实VS/VM同态和用户验收仍未完成。"
+        "stage": "主仓正式产品与实际UI消费者已过规定UI/full及12轨同源回归；唯一数据链完成本批核收。D06/D07、真实VS/VM同态和用户验收仍未完成。 当前e258a862已集成D06完整源码，70a6036f为D07栅格候选；新增集中成绩另列，旧b6证据保留。"
       },
       "implementationEvidence": {
         "report": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
@@ -7882,7 +7882,7 @@
           "artifacts/result-publication-toolbox-20261028-001.log"
         ],
         "remaining": [
-          "D06正式变量绑定完整批在工作流线实施",
+          "D06完整批已集成：规定构建、GlobalBinding、ImageSources及真实生产链新验收待完成",
           "D07中立同帧视口、Domain/精确Region绘制及SDK主图消费者退出未完成",
           "C09/C17及阶段一其他未完项仍按原全清单保留",
           "真实VS、VM同态及用户人工验收未代签",
@@ -7893,7 +7893,17 @@
         "docs/collaboration/HANDOFF_D06_BINDING_DESIGN_20261028.md",
         "docs/collaboration/HANDOFF_D07_VIEWPORT_DESIGN_20261028.md"
       ],
-      "previousCandidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json"
+      "previousCandidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json",
+      "currentIntegration": {
+        "baseline": "e258a862",
+        "bindingCandidate": "24615965",
+        "rasterCandidate": "70a6036f",
+        "status": "集中构建与正式产物验证中；不计作已核收",
+        "references": [
+          "docs/collaboration/HANDOFF_D06_ATOMIC_IMPLEMENTATION_20261028.md",
+          "docs/collaboration/evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json"
+        ]
+      }
     }
   },
   "vmFrameworkArchitectureReference": {

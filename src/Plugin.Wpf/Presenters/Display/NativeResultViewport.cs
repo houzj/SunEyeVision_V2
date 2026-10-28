@@ -151,7 +151,13 @@ public sealed class NativeResultViewport : IDisposable
             if (!Current(receipt)) return;
             if (_view.Source is null) _view.Init();
             if (!Current(receipt)) return;
-            foreach (var layer in _layers.ToArray()) { if (!Current(receipt)) return; layer.Install(); }
+            var failures = new List<Exception>();
+            foreach (var layer in _layers.ToArray())
+            {
+                if (!Current(receipt)) break;
+                try { layer.Install(); } catch (Exception failure) { failures.Add(failure); }
+            }
+            if (failures.Count != 0) throw new AggregateException("结果图层重装失败。", failures);
         }));
         _refresh = operation;
     }

@@ -367,6 +367,21 @@ internal static class S2DocumentEditingCases
    var previousParent=overlay.Parent;var template=native.Template;native.Template=null;native.ApplyTemplate();native.Template=template;native.ApplyTemplate();owner.UpdateLayout();Pump();
    Require(overlay.Parent is Panel&&!ReferenceEquals(previousParent,overlay.Parent)&&overlay.Source is not null,"换原模板丢栅格或仍挂旧父");
   });
+  Test("原结果视口异步故障层隔离与健康层重装",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=RasterImage(resources,PixelLayout.Gray8,out var domain,out _);
+   using var viewport=new NativeResultViewport();viewport.View.Height=240;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();
+   using var bad=viewport.CreateRegionLayer(3457);using var good=viewport.CreateRegionLayer(3458);var armed=false;var sentinel=new InvalidOperationException("raster-reinstall-sentinel");
+   Require(bad.Present(viewport.CurrentFrame!,1,domain,Colors.Red,()=>{if(armed)throw sentinel;return true;})&&good.Present(viewport.CurrentFrame!,1,domain,Colors.Lime,()=>true),"初始双层未接纳");Pump();
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var badImage=Visuals<Image>(native).Single(x=>Panel.GetZIndex(x)==3457);var goodImage=Visuals<Image>(native).Single(x=>Panel.GetZIndex(x)==3458);var previous=goodImage.Parent;var seen=false;
+   System.Windows.Threading.DispatcherUnhandledExceptionEventHandler handler=(_,args)=>{if(args.Exception is AggregateException aggregate&&aggregate.Flatten().InnerExceptions.All(e=>ReferenceEquals(e,sentinel))){seen=true;args.Handled=true;}};
+   owner.Dispatcher.UnhandledException+=handler;
+   try{armed=true;var template=native.Template;native.Template=null;native.ApplyTemplate();native.Template=template;native.ApplyTemplate();owner.UpdateLayout();Pump();}
+   finally{owner.Dispatcher.UnhandledException-=handler;armed=false;}
+   Require(seen&&badImage.Source is null&&badImage.Parent is null,"异步故障未报告或保留旧mask");
+   Require(goodImage.Source is not null&&goodImage.Parent is Panel&&!ReferenceEquals(previous,goodImage.Parent)&&viewport.CurrentFrame!.Frame==image.Frame,"故障阻断健康层重装或删除背景");
+   Require(bad.Present(viewport.CurrentFrame!,1,domain,Colors.Blue,()=>true),"故障退休后同revision不可重新接纳");Pump();
+  });
   Test("原结果视口原实例独占与绑定拒绝",()=>
   {
    var native=new Native.Display.VMBaseControls.ImageViewBox();BindingOperations.SetBinding(native,Native.Display.VMBaseControls.ImageViewBox.ImageDataSourceProperty,new Binding("Tag"){Source=new ContentControl()});

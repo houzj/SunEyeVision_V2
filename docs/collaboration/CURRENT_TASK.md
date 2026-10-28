@@ -1,4 +1,10 @@
-﻿## 2026-10-28 结果发布消费者整批候选（待正式验证）
+﻿## 2026-10-28 D06完整绑定设计已取证；主线进入正式构建
+
+- 独立文档5060c0d4已核原件子IO/组合All，不缩成根字符串；推荐复用OutputReference/serializer/ParameterBindingService唯一身份，完整UI/Workflow/通信/历史/运行资源链列于HANDOFF_D06_BINDING_DESIGN_20261028.md，原主方案已同步。全局consumer真实admission及资源存储基础须实施前确定，尚未开产品批；单[n]证据不足不冒称原件支持。
+- 主线合9f197fbe为共同候选0185b2e7，首轮UI失败缺System.ComponentModel using；主线集中修该处和UpdateDataAnalysisControl通知setter门禁，全量尚未运行。Host重入fixture一行修正46cce5cc已交主线，非产品变更。当前本线无live构建，不写私有Release；新成绩待主线实际回传。
+- D07只读设计接续核现NativeTextViewport/NativeRoiImageFrame、原Shell/ImageViewBox及SDK消费者整片替换；主线共享层唯一写、Group暂停、A01–E07目标保持完整。
+
+## 2026-10-28 结果发布消费者整批候选（待正式验证）
 
 树、工具表、正式完成事件、调试回调、选节点声明及历史结果统一到宿主拥有的同一IResultPublication；树表各借自己的lease，不重复查询latest，历史按完整RunIdentity从选定run取唯一snapshot且仅发布处Acquire。换选择先退休publication，再清树表；独立选择intent及逐次epoch门禁防清理、属性通知同步重入覆盖新选择。表首次或重复呈现失败均退休两面并释放借用，重绑保留字段绑定元数据。异步正式事件在UI线程按实际方案节点实例定位所属工作流；调试核session/editor/tab/context/node，旧回调不串流程。
 

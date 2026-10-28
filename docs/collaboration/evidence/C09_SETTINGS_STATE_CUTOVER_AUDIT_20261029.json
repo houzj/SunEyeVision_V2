@@ -1,0 +1,123 @@
+{
+  "baseline": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
+  "status": "READ_ONLY_SOURCE_AUDIT_DESIGN_NOT_IMPLEMENTED",
+  "scope": "C09完整三态与持久化切换设计，不代表正式集成完成；Blob业务仍冻结",
+  "sourceFiles": [
+    {
+      "path": "src/Plugin.Contracts/ToolSettingsFields.cs",
+      "sha256": "07adb3f46fb380b5eeb4732cb58400fc30ea769a28a065cafb695e29f94c68d6"
+    },
+    {
+      "path": "src/Plugin.Contracts/Editing.cs",
+      "sha256": "b18ec19b42952a24482181403596c186d8bf59f9c0db94993998b766caae6fda"
+    },
+    {
+      "path": "src/Plugin.Contracts/RuntimeEntry.cs",
+      "sha256": "f2fe919e7b22c7ecc2308bb78cce4967b403227eb1d2a5c80e7b6334a215e943"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "b06fa74b9f2f32e41603bcd32e9b66f1e7b3526c1309834ba2f256f988b5a910"
+    },
+    {
+      "path": "src/Plugin.Runtime/ToolSettingsEditSession.cs",
+      "sha256": "2e63f5f8048e35b37a565d3767317c80ef34b53b274a82d7e67b83a2a46dc399"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "f5d860e6fbc20c799b45a589a626c3a6107cc37a7b80df3cb797cc30fab55d29"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "2a095f688914f1a93188ec852673365341d05859afa29d8c80bdfdeb504d95e7"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "13d773cf865f022c41129a3f7275cde33586132dc92fbfc2a954e001815d66cc"
+    },
+    {
+      "path": "src/Workflow/RuntimeInputBindings.cs",
+      "sha256": "9b48d3fcd25f8ff1e3c629e75a8edc16eb722deaa654fbadef22359cb56299c6"
+    },
+    {
+      "path": "src/Workflow/WorkflowFragmentCopy.cs",
+      "sha256": "97a5c1aec83298322e8ab3ad9c1026cf812a0cd1d22e32657cbeb41d7e4b7c75"
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "sha256": "a162af5980708180689eaa1fe101431a1267219a082be97a7387698f9a8610ac"
+    },
+    {
+      "path": "src/Workflow/RuntimeDebugInvocation.cs",
+      "sha256": "ca8cf73f174b3fc31b9c9fdf1eda87eb6ababba40ec696f17d84b9e8e41ea5cd"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "c9840c6238fe36df8f4c0ab6af81f64e68fb73fef03f5a766855d07f9020cb82"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "sha256": "688bc2a5b67f1f7e75678ba50b9fa330ca4065ba84b4ac5032beebfd59229164"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+      "sha256": "95b875504676ffb2666fe3346338f860549b4216c2dd3b611bb521ef7bff27e8"
+    },
+    {
+      "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "sha256": "419ed4a22df507b7f7261f7c2c6134153804dbf7012125dfb3cfe29055d977a0"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+      "sha256": "7de3f52dd95d6cbb697faa3db64f271ee3f9082b7cd50e5994f41cadee1ac47f"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceTool.cs",
+      "sha256": "cb47576dc953b7501bd888087228bad0b888b3f490094c1e2c3f05cf6815bf93"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "sha256": "ded912dfd62a158b2e4c4773e5e775af0e700b0ada755a50c9b922f6802f4bca"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobSettings.cs",
+      "sha256": "2a64c0a580b7893dd8d80f0098c695bd708586e74e055116bb34cb87fd19da41"
+    },
+    {
+      "path": "tools\\SunEyeVision.BlobAnalysis\\Runtime\\Parameters\\BlobParameterDefinition.cs",
+      "sha256": "0baf275303aacbedb9b640831a9a3d73c61744e73388a05d4aebe567e2ed414c"
+    },
+    {
+      "path": "tools\\SunEyeVision.BlobAnalysis\\Runtime\\Parameters\\BlobParameterDefinition.Settings.cs",
+      "sha256": "246e83d50e4ead61dc5586740de4fd3e9fda2242ae4ce94cdc6a75cff862ebf9"
+    }
+  ],
+  "facts": [
+    "Draft与Fields只读写强类型常量；DeclaredSettingsView._references独立存引用且拒绝Unset。",
+    "RuntimeToolConfiguration仅持久化typed Settings；设置引用另在node.ParamSettings，当前为双权威。",
+    "ReferenceSetting未承载BindingConversion，不能迁移时丢Float64ToInt64Checked。",
+    "ImageSource全部11个设置字段而可视Presentation仅6个；不能从可视字段构造权威配置。",
+    "当前两个正式工具及两个验证声明实现者的Describe/Capabilities均不读取settings。",
+    "Blob54设置与ImageSource11设置当前全部Required；不允许以隐藏或关闭使能推断可缺键。",
+    "Blob Boolean判定数值端点存在于typed/JSON却未在字段Schema声明；物化前必须明确规范值并严格校验，不能静默丢值。"
+  ],
+  "cutoverDecision": [
+    "唯一配置为稳定字段ID到ConstantSetting/ReferenceSetting的完整冻结字典，缺键是Unset；显式Unset仅为删除提案，不作为持久值。",
+    "草稿、视图、配置保存、复制、绑定图、正式执行、调试和历史一次切换；退出设置字段的独立references/ParamSettings权威，不留桥接。",
+    "配置期Schema/Capabilities改无设置的声明入口；删除旧依赖typed settings的签名，当前两个工具与直接验证实现者同批迁移，不创建默认占位来获取声明。",
+    "新建节点仅初始化一次默认配置；恢复/编辑/执行不补默认洞。引用解析后完整InputValues校验并一次物化typed，再执行交叉Validate。",
+    "配置期验证字段、来源、转换、作用域和循环；未解析引用不要求运行值。常量可判定的业务关系提前校验。",
+    "FragmentCopy递归重映射配置内引用及动态索引；保存/另存对local.paths/local.selected常量资源重定位；不遗漏隐藏字段。"
+  ],
+  "acceptance": [
+    "optional缺键与Constant(null)/空串/空集合/0保持不同，非法required缺键拒绝。",
+    "必需Reference可保存、未运行不求值；来源失效不回退常量。",
+    "Conversion往返、动态索引、跨作用域复制、11个隐藏/可视字段完整往返。",
+    "编辑拒绝/取消/重入不发布，撤销重放accepted状态；正式与私有调试同一解析语义和本次输出租约。"
+  ],
+  "remaining": [
+    "本审计没有实现上述合同切换。",
+    "现正式Blob未声明15角色Assist配置；独立组合通过不等于正式Blob集成。",
+    "位姿正反公式、原点显示完整viewport生命周期、VS/VM/用户验收仍未完成。"
+  ]
+}

@@ -1802,6 +1802,7 @@ public class BaseWindow : Window, INotifyPropertyChanged
 
 	public override void OnApplyTemplate()
 	{
+		DetachTemplateEvents();
 		base.OnApplyTemplate();
 		ColorThemesResourceDictionary.GetInstance(this);
 		ControlTemplate template = Template;
@@ -1810,6 +1811,9 @@ public class BaseWindow : Window, INotifyPropertyChanged
 		_maxBtn = (System.Windows.Controls.Button)template.FindName("MaxWinButton", this);
 		_header = (HeaderedContentControl)template.FindName("Header", this);
 		_titlebar = (ContentControl)template.FindName("titlebar", this);
+		_borderClip = template.FindName("Border", this) as Border;
+		if (_closeBtn == null || _minBtn == null || _maxBtn == null || _header == null || _titlebar == null || _borderClip == null)
+			throw new InvalidOperationException("原工具窗口模板缺少必要的窗口按钮、标题或边框部件。");
 		_isShowIntaskbar = ShowInTaskbar;
 		StateChanged += BaseWindow_StateChanged;
 		HeaderDoubleClick = Header_DoubleClick;
@@ -1835,15 +1839,44 @@ public class BaseWindow : Window, INotifyPropertyChanged
 		_closeBtn.Click += closeBtn_Click;
 		_minBtn.Click += _minBtn_Click;
 		_maxBtn.Click += _maxBtn_Click;
-		Loaded += (object s, RoutedEventArgs e) =>
-		{
-			double actualHeight = _header.ActualHeight;
-			double val = _closeBtn.ActualWidth + _minBtn.ActualWidth + _maxBtn.ActualWidth + 30.0;
-			MinHeight = Math.Max(actualHeight, MinHeight);
-			MinWidth = Math.Max(val, MinWidth);
-			OnLoaded();
-		};
+		Loaded += TemplateLoaded;
 	}
+
+    private void TemplateLoaded(object sender, RoutedEventArgs e)
+    {
+        double actualHeight = _header.ActualHeight;
+        double width = _closeBtn.ActualWidth + _minBtn.ActualWidth + _maxBtn.ActualWidth + 30;
+        MinHeight = Math.Max(actualHeight, MinHeight); MinWidth = Math.Max(width, MinWidth);
+        OnLoaded();
+    }
+    private void DetachTemplateEvents()
+    {
+        StateChanged -= BaseWindow_StateChanged; SizeChanged -= BaseWindow_SizeChanged;
+        PreviewMouseMove -= ResetCursor; Loaded -= TemplateLoaded;
+        if (_closeBtn != null) _closeBtn.Click -= closeBtn_Click;
+        if (_minBtn != null) _minBtn.Click -= _minBtn_Click;
+        if (_maxBtn != null) _maxBtn.Click -= _maxBtn_Click;
+        if (_header != null)
+        {
+            if (HeaderDoubleClick != null) _header.RemoveHandler(System.Windows.Controls.Control.MouseDoubleClickEvent, HeaderDoubleClick);
+            if (DragMouseEvent != null)
+            {
+                _header.RemoveHandler(UIElement.MouseLeftButtonDownEvent, DragMouseEvent);
+                _header.RemoveHandler(UIElement.MouseLeftButtonUpEvent, DragMouseEvent);
+            }
+        }
+        if (_titlebar != null && DragMouseEvent != null)
+        {
+            _titlebar.RemoveHandler(UIElement.MouseLeftButtonDownEvent, DragMouseEvent);
+            _titlebar.RemoveHandler(UIElement.MouseLeftButtonUpEvent, DragMouseEvent);
+        }
+        if (_borderClip != null)
+        {
+            _borderClip.MouseMove -= _borderClip_MouseMove;
+            _borderClip.PreviewMouseDown -= _borderClip_PreviewMouseDown;
+            if (RestCursorEvent != null) _borderClip.RemoveHandler(UIElement.MouseUpEvent, RestCursorEvent);
+        }
+    }
 
 	protected virtual void Header_DoubleClick(object sender, MouseButtonEventArgs e)
 	{
@@ -2027,23 +2060,7 @@ public class BaseWindow : Window, INotifyPropertyChanged
         catch(Exception error){LastCloseError=error;Trace.TraceError(error.ToString());}
         finally
         {
-		if (_header != null)
-		{
-			_header.RemoveHandler(UIElement.MouseLeftButtonDownEvent, DragMouseEvent);
-			_header.RemoveHandler(UIElement.MouseLeftButtonUpEvent, DragMouseEvent);
-			_header.RemoveHandler(System.Windows.Controls.Control.MouseDoubleClickEvent, HeaderDoubleClick);
-		}
-		if (_titlebar != null)
-		{
-			_titlebar.RemoveHandler(UIElement.MouseLeftButtonDownEvent, DragMouseEvent);
-			_titlebar.RemoveHandler(UIElement.MouseLeftButtonUpEvent, DragMouseEvent);
-		}
-		if (_borderClip != null)
-		{
-			_borderClip.MouseMove -= _borderClip_MouseMove;
-			_borderClip.PreviewMouseDown -= _borderClip_PreviewMouseDown;
-			_borderClip.RemoveHandler(UIElement.MouseUpEvent, RestCursorEvent);
-		}
+        DetachTemplateEvents();
         // Window owns its HWND source and modal owner restoration. Retire only our hook here;
         // disposing WPF's source or rewriting Owner during WM_DESTROY interrupts modal teardown.
         var source=_hs;_hs=null;

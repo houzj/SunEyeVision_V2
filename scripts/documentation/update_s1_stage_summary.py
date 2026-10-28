@@ -402,6 +402,15 @@ def render_blob_control_plan(plan):
                + table(['项目','原件、同源验证及剩余'], [(key, '；'.join(value) if isinstance(value, list) else value)
                        for key, value in plan['fullDomainCommandsCandidate'].items()])
                if plan.get('fullDomainCommandsCandidate') else '')
+            + ('<h5 id="o06-cross-binding-lifecycle">C17原十字与色板：绑定及指针生命周期候选</h5>'
+               + table(['项目','同源验证与未完成边界'], list(plan['crossBindingLifecycleCandidate'].items()))
+               if plan.get('crossBindingLifecycleCandidate') else '')
+            + ('<h5 id="o06-assist-state-cutover-audit">C09三态权威整体切换及位姿显示补证</h5>'
+               + table(['项目','整体设计与证据边界'], list(plan['assistStateCutoverAudit'].items()))
+               if plan.get('assistStateCutoverAudit') else '')
+              + ('<h5 id="o06-crosshair-settings-composition">C17十字辅助线完整配置组合候选</h5>'
+                 + table(['项目','原组合、正式验证及剩余'], list(plan['crosshairSettingsCompositionCandidate'].items()))
+                 if plan.get('crosshairSettingsCompositionCandidate') else '')
             + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
                + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
                if plan.get('nextNativeCompositionsDesign') else '')

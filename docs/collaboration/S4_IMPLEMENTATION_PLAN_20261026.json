@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "8fdb16d3同提交正式核收：UI/full零错，原21定向全过（本轨50/0）、真实整链9/0、窗口10/0、无UI泵HALCON10/0、生命周期24/0、准入8项。原249总体、控件完整组合/SDK/历史/VS/VM/人工未完，第一阶段未退出。",
+  "current": "C17十字配置组合候选：Window18/0、独立设计108过，共享原控件/ROI/导出及整链同源核收，正式EXE八项准入；VM/VS/人工及第一阶段完整门禁未过。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -325,7 +325,7 @@
   ],
   "sourceBaseline": "c1b05c91 + 当前源码配对准入、PolygonPoint、ROI诊断及XAML命名空间增量；最终检查点以Git HEAD为准",
   "productIdentity": "正式Release Core/清单为df06496c加O06_RUNTIME_ENTRY_CHECKPOINT_20261027.json所列源码增量；768项发布SHA与182条实际加载记录匹配。不同检查点按真实身份保留，后续提交需重建。",
-  "next": "共同基线确认后两分支各自在独立工作区开发；控件线继续原C08及第一阶段剩余门禁，满足后再继续Blob；工作流线保持Group冻结并处理既有工作流范围。用户Blob设计页索引改动保留。",
+  "next": "保存本完整批中文本地检查点并重绑正式产物身份；继续C09三态唯一权威整体切换及位姿/C01—C17剩余。Blob业务保持阶段一冻结，不提前第二阶段。",
   "estimate": "先以Blob所需组合和准入门推进；关键证据/编译缺口核定后再给实施估算，不用未验证数量承诺完成。",
   "evidence": {
     "scope": "本轮native原资源候选与旧006独评按身份分列",
@@ -8337,11 +8337,44 @@
       "implementation": "快照与空集合策略由宿主显式声明，无旧构造兼容和空列表推断。；明确SetCoverage提案清目标组；Create原子进入Explicit，末项删除恢复该组EmptyCoverage；历史同时恢复组状态、稳定ID与选择。；接纳只允许对应提案的组变化，禁止改其他组或空集合策略；错误接纳退役编辑租约并继续宿主发布。；原FullScreen模板/样式及正常/选中位图，顺序FullScreen/Box/SectorRing/Polygon/Sector；未导入普通圆形替代圆环。；图像原选择命令同步活动组，取消回调切组使旧选择停止；直接绘制与取消以轻量属性通知同步原按钮并完整退订，不重建参数事务。；非法数值阻止覆盖切换且保留原文、按钮复位；重复点击无多余写入；继承组拒绝本地覆盖；关闭旧命令不能写。",
       "validation": "最终UI003/full003零错；ROI57/0、Design101/0、Editor10/0、FullChain9/0、Recovery50/0、真实EXE准入八过。当前身份为8fdb基线加候选SHA，不套提交产物成绩。",
       "remaining": [
-        "同一提交正式Release身份仍需在本地检查点后集中重绑，不借候选成绩。",
         "当前几何宿主只声明Explicit能力；Blob业务冻结，未把独立样例接纳冒称Blob正式参数、持久化和算法Domain转换完成。",
         "C01—C17剩余Assist三态/位姿/Cross、原SDK残留/历史与其他通知、原249总体及关联场景继续。",
         "原件逐态对照、全部真实指针/VS设计器与用户人工验收未完成，不放行第二阶段。"
-      ]
+      ],
+      "committedReleaseEvidence": "docs/collaboration/evidence/C08_COVERAGE_COMMITTED_RELEASE_20261029.json",
+      "sourceCommit": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
+      "committedReleaseValidation": "fb2d5806代码＋保留用户XAML（SHA独立记录）：UI001/full001零错；ROI57/0、Design101/0、Editor10/0、无UI泵真实HALCON Workflow10/0、FullChain9/0、Recovery50/0、真实EXE准入八过。569发布文件及六轨加载身份已核。"
+    },
+    "crossBindingLifecycleCandidate": {
+      "状态": "候选基础修复，C17未完成；Blob业务冻结。",
+      "实施": "原十字/色板保TwoWay绑定；捕获后启动位移，代际清理防重入；锁定/失捕/隐藏/禁用/卸载/数据/尺寸/比例/模板替换退役旧手势。",
+      "正式验证": "UI004零错6459警告39.74秒；full004零错3778警告27.48秒；Cross16/0、颜色3/0、图形9/0、ROI57/0、原完整样式2/0、色板2/0、Design101/0、Editor10/0、FullChain9/0、真实EXE准入8过。",
+      "身份": "fb2d5806基线加候选增量，manifest SHA da4f4509ba0f0ebe10ddda680f417f9127c388324fa457875e73a5f23bf1530c；569发布文件及60条实际加载记录逐SHA核验。用户未提交XAML独立SHA保持。",
+      "失败保留": "Window255–259原失败保留；沙箱捕获失败与捕获同步事件/坐标跳变分别记录，未删除断言。",
+      "证据": "docs\\collaboration\\evidence\\C17_CROSS_BINDING_LIFECYCLE_CANDIDATE_20261029.json",
+      "下一": "激活中立命名CrosshairSettingsWindow与两条CrosshairSettings，复用原最小资源闭包，接受管ShapeLayer/换帧/导出/关闭；不旁路写ShapeList。",
+      "边界": "非物理鼠标、非VS/VM逐态或用户验收，不放行第二阶段。"
+    },
+    "assistStateCutoverAudit": {
+      "状态": "四路只读核查已固定；整体合同尚未实施。",
+      "唯一权威": "字段ID→ConstantSetting/ReferenceSetting，缺键为Unset；Draft/View/保存/历史/复制/引用图/执行/调试同批切换，不留独立References/设置ParamSettings权威。",
+      "配置与执行": "配置期读取无设置Schema/Capabilities，不拿默认typed占位；全部引用解析后一次完整物化typed并Validate。",
+      "必须承接": "Conversion、动态索引、11个全部设置而非6个可视字段、local.paths/local.selected另存重定位、拒绝/取消/重入/历史。当前正式设置全部Required，不能由隐藏推缺键。",
+      "证据": "docs/collaboration/evidence/C09_SETTINGS_STATE_CUTOVER_AUDIT_20261029.json",
+      "位姿补证": "安装件确有FixtureInit/RunPoint结果point图元定义；不是可编辑ROI点。SetDisplayObjectPropertyOperation.Operate为空，最终viewport/公式仍未证。",
+      "原件证据": "docs/collaboration/evidence/C08_FIXTURE_POINT_DISPLAY_SOURCE_AUDIT_20261029.json"
+    },
+    "crosshairSettingsCompositionCandidate": {
+      "状态": "完整组合候选，未完成VM/VS/用户验收；阶段一未通过。",
+      "原件与命名": "原VMControls.WPF CrossConfig/CrossData按原布局和模型语义落中立CrosshairSettings/View/Window；不增加厂商命名或旧兼容入口。",
+      "真实消费": "受管CrosshairLayer和独立Design样例走同一真实View/原数值与色板/原窗口；未接Blob业务。",
+      "交互与身份": "初始化/锁定/居中/实时编辑/关闭重开、三层Enter身份、来源错误、失捕/换帧/卸载、重入与冻结导出均有定向验证。",
+      "设计与视觉纠偏": "实看105过渲染仍短横，补原EnsureTemplateInputs和实际值断言至108过；六标签显式使用原ParamsTabForeground，保原标题ModuleForeground。",
+      "正式验证": "UI013与full011零错误；Window18/0、Design108过、关联数值/色板/ROI/导出/Editor/FullChain及真实EXE准入见同源权威证据。",
+      "失败保留": "Window267/269/270/281、Design074占位缺陷和最初编译错误均留存，不删除失败或借旧成绩。",
+      "来源与闭包": "Catalog/C17.crosshair-settings-composition记录五个来源程序集MVID/SHA、原源码资源SHA、本地闭包及三pending删除。",
+      "权威证据": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
+      "剩余": "C17实际VM逐态/物理鼠标/VS真实设计器与用户验收未完成，当前不是完整C17或阶段一通过。；原导出OpenCV渲染公式尚未迁移；当前辅助线导出是独立冻结的正式WPF场景，不冒称VM原导出算法同态。；C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。；位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。；Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
     }
   },
   "vmFrameworkArchitectureReference": {

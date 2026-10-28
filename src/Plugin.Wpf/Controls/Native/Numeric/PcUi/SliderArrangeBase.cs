@@ -903,7 +903,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 	{
 		if (this is SliderArrange)
 		{
-			StartValue = Math.Round(StartValue);
+			SetCurrentValue(StartValueProperty, Math.Round(StartValue));
 		}
 		StartValueE = StartValue;
 		StartValueF = StartValue;
@@ -922,7 +922,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 	{
 		if (this is SliderArrange)
 		{
-			EndValue = Math.Round(EndValue);
+			SetCurrentValue(EndValueProperty, Math.Round(EndValue));
 		}
 		EndValueF = EndValue;
 		EndValueE = EndValue;

@@ -1,5 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,6 +28,25 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            using(var data=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairDesignData())
+            {
+                var view=new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsView{DataContext=data};
+                Render(view,"native-crosshair-direct-config.png",380,380);
+                Check(Application.Current is null&&data.CrossDatas.Count==2&&Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(view).Count()==6,"辅助线配置视图本身无宿主独立创建完整原控件");
+                Check(CrosshairNumbers(view).SequenceEqual(data.CrossDatas.SelectMany(model=>new[]{Math.Round(model.CenterX),Math.Round(model.CenterY),model.StrokeThickness})),"配置视图未Loaded也显示真实数值而非短横占位");
+            }
+            using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairPreview())
+            {
+                Render(entry,"native-crosshair-xaml-entry.png",1040,430);
+                var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample>(entry).Single();
+                Check(Application.Current is null&&sample.Crosshairs.CrossDatas.Count==2,"辅助线真实XAML无Application创建同一两模型");
+                Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(entry).Count()==6
+                    &&Descendants<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView>(entry).Count()==2,"辅助线设计时完整原六数值与两色板");
+                Check(CrosshairNumbers(entry).SequenceEqual(sample.Crosshairs.CrossDatas.SelectMany(model=>new[]{Math.Round(model.CenterX),Math.Round(model.CenterY),model.StrokeThickness})),"辅助线设计原数值模板已初始化并显示两模型");
+                sample.Crosshairs.CrossDatas[0].CenterPoint=new Point(100,90);Render(entry,"native-crosshair-design-edited.png",1040,430);
+                Check(sample.Crosshairs.CrossDatas[0].CenterX==100&&sample.Crosshairs.CrossDatas[0].CenterY==90,"辅助线设计时消费真实模型与布局");
+                Check(CrosshairNumbers(entry).Take(2).SequenceEqual(new[]{100d,90d}),"设计模型编辑回显真实数值叶");
+            }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeAssistPreview())
             {
                 Render(entry,"native-assist-xaml-entry.png",600,650);
@@ -341,6 +361,16 @@ internal static class S2DocumentEditingCases
             attribute.Value=qualified;
         }
         return document.ToString();
+    }
+    private static IEnumerable<double> CrosshairNumbers(DependencyObject root)
+    {
+        foreach(var field in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange>(root))
+        {
+            var box=(ComboBox)field.FindName("CBox");
+            var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+            var text=(TextBox)leaf.FindName("ValueText");
+            yield return double.Parse(text.Text,CultureInfo.InvariantCulture);
+        }
     }
     private static int replacementInputCount(DeclaredFieldsView fields)
         =>InputFields(fields).Count();

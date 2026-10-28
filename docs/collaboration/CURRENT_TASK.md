@@ -1,3 +1,32 @@
+## 2026-10-29 C17十字配置完整组合候选核收完成，待中文检查点与同提交重绑
+
+- 上轮仅解释隔离，无代码进展；本轮主线唯一写，三路只读核查推动C17实际实施。基线fb2d5806；产品、测试均已冻结并核收，全部构建/检查真实终态。未推送，Blob业务和用户XAML不改。
+- 中立CrosshairSettings双模型/真实View/原BaseWindow非模态窗、最小资源闭包、受管CrosshairLayer/原Cross渲染/冻结导出及独立Design样例已接；三旧pending删除。首次初始化/锁定/居中/实时修改/关闭保留/重开、同尺寸换帧与来源失效/模板/卸载退役有覆盖。
+- 原整数Math.Round保持，内部SetCurrentValue保绑定；原Float不取整。Enter核三层BindingExpression及模板/实际叶身份；关闭清理只退役预先捕获旧控件；ShapeLayer.Clear不重复重建重入接纳的新帧或同帧其他层场景。命令查询记录来源和清理异常但不抛消息泵。
+- Window267/269/270/281失败和最初编译错误均保留：样式/命名域、原整数语义及绑定、旧Clear丢新捕获、宿主浅色污染分别修。Design074虽105过，实看仍短横占位；补真实View原EnsureTemplateInputs和实际值断言后108过。六标签显式用原ParamsTabForeground，标题ModuleForeground保留；已查看最新Window282与Design076真实渲染，不代VS/VM/人工。
+- 最终UI013=0错6329警告37.78秒/full011=0错6339警告33.01秒。Window282=18/0、Design076=108过；同源Cross16/ROI57/between3/导出11/图形10/颜色3/原完整2/色板3/浮点1、Editor091十过、FullChain148九过；正式EXE准入014八过并还原。各轨实际attempt/加载身份以权威JSON为准，不套旧成绩。
+- 权威C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json核569发布文件及13轨78条实际加载路径/SHA；源码70条和原来源10条逐SHA核，产品标签仍fb2d5806加本批未提交候选，用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed单列，非纯净提交树。Catalog新增完整组合entry并保留旧绑定候选证据；原计划/O06同步，728锚点幂等。
+- 88532/11838/6071/27763/87370/79592/66867构建、59977失败/85471通过、76044设计/20844关联、93917标签失败/81010设计、76060最终窗口设计/29087关联准入及27734归档全终态。下一保存完整中文本地检查点，排除用户XAML，再按该提交重绑正式Release身份与核收。
+- C17实际物理指针/VS/VM逐态/用户验收仍未证，当前WPF冻结导出不冒称原OpenCV导出算法同态。C09三态唯一权威整体切换、位姿/FixtureInit显示证据、原C01—C17/SDK可视残留/历史通知/原249总体及两阶段完整范围不删；第一阶段未通过，Blob第二阶段继续冻结。
+
+## 2026-10-29 C17原十字/色板绑定与捕获候选核收，三路只读证据已接纳
+
+- 上轮仅解释隔离方案，无代码进展；本轮主线唯一写，恢复用户目标的四路：另外三路仅C09权威/位姿来源/C17原窗闭包只读核查，不构建、不改主仓。已完成报告并落盘C09_SETTINGS_STATE_CUTOVER_AUDIT_20261029.json及C08_FIXTURE_POINT_DISPLAY_SOURCE_AUDIT_20261029.json；不把报告当实施。
+- 原CrossControl/VM.PcUI色板内部赋值改SetCurrentValue并显式回写，保BindingExpression；颜色核DataContext/DataItem防旧回调写新源。十字手势捕获后才启动位移，捕获同步异常清理、失捕/锁定/隐藏/禁用/卸载/数据/尺寸/比例/模板退役；旧模板尚未Apply不能重启。旧清理回调新开手势保留，不引入ROI草稿回滚。
+- Window255—259原失败全保：沙箱捕获失败与桌面揭露的同步事件坐标跳变分开记录；修捕获后订阅，并以同一MouseEventArgs坐标锚定测试，原断言保留。最终Window264 Cross16/0，261颜色3/0、262图形9/0、263 ROI57/0、265原样式2/0、266色板2/0；Design073=101/0、Editor089=10/0、FullChain146=9/0、真实EXE准入attempt013八过并还原。
+- 最终UI004=0错6459警告39.74秒/full004=0错3778警告27.48秒；权威C17_CROSS_BINDING_LIFECYCLE_CANDIDATE_20261029.json核569发布文件与九轨60条实际加载记录。manifest DA4F4509BA0F0EBE10DDDA680F417F9127C388324FA457875E73A5F23BF1530C仍标fb2d5806基线，加未提交候选源码SHA和用户未提交XAML，不套旧提交成绩。用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存、不推送。
+- 三路审计修正：正式Draft/引用仍双权威，C09需保存/复制/绑定/历史/执行/调试整体切换，两个正式工具Schema/Capabilities无设置依赖；ImageSource11设置不能仅迁6可视项，Reference转换不可丢，当前正式设置全部Required。安装件确有FixtureInit/RunPoint结果point显示定义，不是可编辑ROI；SetDisplayObjectPropertyOperation.Operate为空，位姿公式/最终viewport生命周期仍未证。
+- 7460/37726/42615/20145/35860/84498/93682构建及54533/76289/5824/66703失败、94609/99576/98851核收全终态，无live；产品/测试源码冻结后只补Catalog当前SHA、原方案/O06及证据，727锚点幂等。没有新提交，待完整功能批再保存有意义中文检查点。
+- 下一集中完成C17中立命名CrosshairSettingsWindow/两个CrosshairSettings及原最小资源闭包，接同一受管ShapeLayer/导出/同尺寸换帧/关闭；随后按C09审计整体切换正式三态权威，不做局部Unset补丁。CrossConfig尚未激活，本批只完成基础绑定/捕获；真实指针/VS/VM同态/用户验收、原C01—C17/SDK残留/历史通知/原249总体及两阶段完整范围保留。目标active、阶段一未过、Blob业务冻结。
+
+## 2026-10-29 fb2d5806覆盖组完整检查点及同版本正式核收完成
+
+- 上轮完整组命令候选是实际进展；本轮已保存21路径中文本地检查点fb2d5806cf92d74294eaedc95b78cdb828a0d7dd（原三态快照、组命令、原模板/资源与身份修复、证据及原O06），未推送。用户BlobParameterEditor.xaml未暂存且SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持。
+- 提交后串行UI001=0错6470警告39.45秒/full001=0错1020警告24.95秒，正式manifest源码标签fb2d5806。核12个变更源码原始SHA与提交规范化内容一致；构建仍保留用户未提交XAML，SHA单列，因此不冒称纯净提交树产物。
+- 同版本Window254=57/0、Design072=101/0、Editor088=10/0、无UI消息泵真实HALCON Workflow039=10/0、FullChain145=9/0、Recovery018=50/0、真实EXE准入attempt012八过，原身份恢复后569发布文件及六轨65条加载记录逐SHA核。权威C08_COVERAGE_COMMITTED_RELEASE_20261029.json，候选和原失败均保留；不借提交前旧成绩，不等于VM逐态/真实VS/人工或C08全门禁通过。
+- 93060构建及56458最终集中核收真实终态，无live；提交后仅补核收证据、原方案/原O06/本记录，产品/测试源码未再改。主仓唯一写，不启子智能体，不推送。当前几何宿主仍仅Explicit能力；Blob业务冻结，目标active，阶段一未完成。
+- 下一继续现有原组合剩余：先Assist Constant/Reference/Unset完整编辑和持久化，再位姿/ROI与图像同帧联动、CrossConfig及相关真实指针/生命周期。C08已具库内组命令闭环，VM同态/真实VS/人工仍未验；SDK残留/历史与其他通知、原249总体和原C01—C17/两阶段完整范围不删，不能提前推进Blob重组。
+
 ## 2026-10-29 C08原全域模板与覆盖组命令候选闭环，拟保存完整本地检查点
 
 - 上轮三态快照是实际进展；本轮新增明确SetCoverage提案及宿主EmptyCoverage策略。清组/创建进入Explicit/删除末项按策略恢复/撤销重做同一根接纳，拒绝夹带其他组或变更策略，不伪造项ID；原FullScreenDataTemplate/fullscreenRoiBtnStyle/三个原位图接入，FullScreen/Box/SectorRing/Polygon/Sector顺序。库不猜检测/屏蔽组名，样例明确检测空=FullDomain、屏蔽空=None，显式屏蔽FullDomain与原空集合按钮不同。

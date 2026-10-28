@@ -52,7 +52,8 @@ public sealed partial class NativeResultViewport : IDisposable
         try
         {
             view.NativePrepareExport = _prepareExport;
-            foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml" })
+            foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+                "Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml" })
             {
                 var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/" + path, UriKind.Relative) };
                 _resources.Add(resource); view.Resources.MergedDictionaries.Add(resource);
@@ -85,7 +86,16 @@ public sealed partial class NativeResultViewport : IDisposable
     {
         var frame = _frame; var proof = _imageCurrent;
         if (frame is null || receipt != CurrentFrame || !Owns(receipt.Epoch, frame)) return false;
-        var valid = proof?.Invoke() == true;
+        bool valid;
+        try { valid = proof?.Invoke() == true; }
+        catch (Exception failure)
+        {
+            // This proof owns the image, so failure invalidates this frame and all
+            // its borrowers. Never retire a newer frame installed by the callback.
+            if (Owns(receipt.Epoch, frame) && ReferenceEquals(proof, _imageCurrent) && receipt == CurrentFrame)
+                try { Retire(); } catch (Exception cleanup) { throw new AggregateException(failure, cleanup); }
+            throw;
+        }
         return valid && Owns(receipt.Epoch, frame) && ReferenceEquals(proof, _imageCurrent) && receipt == CurrentFrame;
     }
 
@@ -114,6 +124,9 @@ public sealed partial class NativeResultViewport : IDisposable
                 if (Owns(epoch, candidate)) RetireRoi();
                 if (Owns(epoch, candidate)) RetireShapes(() => Owns(epoch, candidate));
                 if (Owns(epoch, candidate)) _view.ImageDataSource = candidate;
+                if (Owns(epoch, candidate))
+                    foreach (var cross in _shapeLayers.OfType<CrosshairLayer>().ToArray())
+                    { if (!Owns(epoch, candidate)) break; cross.AttachFrame(new(_ownerId, epoch, candidate.Frame, candidate.Coordinates)); }
             }
         }
         catch (Exception error)
@@ -170,6 +183,14 @@ public sealed partial class NativeResultViewport : IDisposable
                 try { layer.Install(); } catch (Exception failure) { failures.Add(failure); }
             }
             if (Current(receipt)) try { InstallShapes(true); } catch (Exception failure) { failures.Add(failure); }
+            if (Current(receipt))
+                try
+                {
+                    _view.UpdateLayout();
+                    foreach (var cross in _shapeLayers.OfType<CrosshairLayer>().ToArray())
+                    { if (!Current(receipt)) break; cross.RefreshInteractions(); }
+                }
+                catch (Exception failure) { failures.Add(failure); }
             if (Current(receipt)) try { _roiAttachment?.RefreshProjection(); } catch (Exception failure) { failures.Add(failure); }
             if (failures.Count != 0) throw new AggregateException("结果图层重装失败。", failures);
         }));

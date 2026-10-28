@@ -75,7 +75,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71"
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
@@ -271,7 +271,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71"
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -332,7 +332,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
           "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "localSha256": "6995ce727e47fe612defa44f097ab48bdd49a00eaeaa602ec56d99eaeeeb5640"
+          "localSha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -599,7 +599,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
-          "sha256": "6875fc996fc8a30bb2080e4877bd76b921a522d26ed12f30052c6fcbc456fa59"
+          "sha256": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
@@ -1222,7 +1222,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-          "localSha256": "2c7831d064ac85d13fd32fd951c01b406ffc968bc75e3b78a3ccf580e93a2773"
+          "localSha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -1372,7 +1372,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71"
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
@@ -1520,7 +1520,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-          "localSha256": "2c7831d064ac85d13fd32fd951c01b406ffc968bc75e3b78a3ccf580e93a2773"
+          "localSha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -1679,7 +1679,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71",
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1809,7 +1809,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
-          "sha256": "cde519250590bfbc2fe09b4eedb02139974c520516a0fe9ee8c9a0870f0e7af9"
+          "sha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
@@ -2073,7 +2073,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
+          "localSha256": "785cacb483281c229eef50494f8c6247e83e22a97f781a3fedccde51cdd9dd0e"
         },
         {
           "originalType": "VMBaseControls original ROI style",
@@ -2428,7 +2428,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
-          "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
+          "sha256": "02fb424b1a9e901ddd5cf847d94398692a2c52e3f1f5283b9418c58c156d209f"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs",
@@ -2729,7 +2729,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.Controls\\VM.Controls\\BaseWindow.cs",
           "originalSha256": "03be64f4c22440f32a3a80b974aa7e95a776a82252797c6a0106346a591e3b93",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
-          "localSha256": "cde519250590bfbc2fe09b4eedb02139974c520516a0fe9ee8c9a0870f0e7af9",
+          "localSha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088",
           "coverage": "original warning window/template/asset closure; namespace/resource URI and explicit lifecycle adaptations recorded below"
         },
         {
@@ -3035,7 +3035,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71"
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
@@ -3071,7 +3071,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "5c8ec8ec187304ad7857e1be5fafa11a64704dc67e7c2cd3fef9908b74c6a072"
+          "sha256": "472335be2d0ca0fbc62542bfac48c7dbeeb408eef1347dc5cda88f43edfc4549"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
@@ -3099,7 +3099,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
-          "sha256": "6875fc996fc8a30bb2080e4877bd76b921a522d26ed12f30052c6fcbc456fa59"
+          "sha256": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
@@ -3358,7 +3358,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
-          "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
+          "sha256": "02fb424b1a9e901ddd5cf847d94398692a2c52e3f1f5283b9418c58c156d209f"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
@@ -3386,7 +3386,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
-          "sha256": "6875fc996fc8a30bb2080e4877bd76b921a522d26ed12f30052c6fcbc456fa59"
+          "sha256": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
@@ -3662,7 +3662,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-          "localSha256": "2c7831d064ac85d13fd32fd951c01b406ffc968bc75e3b78a3ccf580e93a2773"
+          "localSha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -3796,7 +3796,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
           "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "localSha256": "6995ce727e47fe612defa44f097ab48bdd49a00eaeaa602ec56d99eaeeeb5640"
+          "localSha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -3976,7 +3976,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
+          "localSha256": "785cacb483281c229eef50494f8c6247e83e22a97f781a3fedccde51cdd9dd0e"
         },
         {
           "originalType": "VMBaseControls.ImageViewBox",
@@ -4068,7 +4068,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
-          "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
+          "sha256": "02fb424b1a9e901ddd5cf847d94398692a2c52e3f1f5283b9418c58c156d209f"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Text/NativeTextSession.cs",
@@ -4164,7 +4164,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "sha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
+          "sha256": "785cacb483281c229eef50494f8c6247e83e22a97f781a3fedccde51cdd9dd0e"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ShapeAndRoiMarginCvt.cs",
@@ -4196,7 +4196,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "sha256": "6995ce727e47fe612defa44f097ab48bdd49a00eaeaa602ec56d99eaeeeb5640"
+          "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
@@ -4236,7 +4236,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-          "sha256": "2c7831d064ac85d13fd32fd951c01b406ffc968bc75e3b78a3ccf580e93a2773"
+          "sha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
@@ -4276,15 +4276,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "5c8ec8ec187304ad7857e1be5fafa11a64704dc67e7c2cd3fef9908b74c6a072"
+          "sha256": "472335be2d0ca0fbc62542bfac48c7dbeeb408eef1347dc5cda88f43edfc4549"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
-          "sha256": "6875fc996fc8a30bb2080e4877bd76b921a522d26ed12f30052c6fcbc456fa59"
+          "sha256": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71"
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
         },
         {
           "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs",
@@ -4554,7 +4554,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
           "originalSha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c",
           "localPath": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "localSha256": "6995ce727e47fe612defa44f097ab48bdd49a00eaeaa602ec56d99eaeeeb5640"
+          "localSha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
         },
         {
           "originalType": "HikPcUI.ListView.ColorPickerFirstItem",
@@ -4645,7 +4645,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
           "originalSha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2",
           "localPath": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-          "localSha256": "2c7831d064ac85d13fd32fd951c01b406ffc968bc75e3b78a3ccf580e93a2773"
+          "localSha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
         },
         {
           "originalType": "HikPcUI.ListView.SliderArrangeDictionary",
@@ -4816,7 +4816,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
-          "sha256": "6995ce727e47fe612defa44f097ab48bdd49a00eaeaa602ec56d99eaeeeb5640"
+          "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
@@ -4856,7 +4856,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
-          "sha256": "2c7831d064ac85d13fd32fd951c01b406ffc968bc75e3b78a3ccf580e93a2773"
+          "sha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
@@ -4896,15 +4896,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "5c8ec8ec187304ad7857e1be5fafa11a64704dc67e7c2cd3fef9908b74c6a072"
+          "sha256": "472335be2d0ca0fbc62542bfac48c7dbeeb408eef1347dc5cda88f43edfc4549"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
-          "sha256": "6875fc996fc8a30bb2080e4877bd76b921a522d26ed12f30052c6fcbc456fa59"
+          "sha256": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
-          "sha256": "dd253fb4972c9fb2484d7cae340e06907365a506f3d6c6ead002575aa9476c71"
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
         },
         {
           "path": "src/Plugin.Wpf/Fields/NativeDisplayOptions.cs",
@@ -5093,7 +5093,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs",
-          "sha256": "2e1424458808edc0982bfd296063501678c0f9cce8936c493313af6095dc654d"
+          "sha256": "54d124ffc806f99b462dd0798ec7a97ab878b62e80e0be7ce4d15e9a0d47b00e"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/IToolResultView.cs",
@@ -5625,11 +5625,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/ResultShell/ResultWorkspaceShell.xaml",
-          "sha256": "cb34c88f2e5a8bad6e969b570064458fee1208e84fe0e994a0fbc3b82ca35c11"
+          "sha256": "c79d164c1e5b623d02247551b4592ddba5acd819f2347f0dca326065a5190429"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/ResultShell/ResultWorkspaceShell.xaml.cs",
-          "sha256": "d884c55dfda5ab7258b4631d44ea85f80a78f8beeb042210bf165b5b6156359d"
+          "sha256": "dd6b9b56babd49e18f2f94c7f4a8f7d42d1dd95a023bea31767509b86897f418"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Results/ResultShell/Dark.xaml",
@@ -5649,7 +5649,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/Results/ResultShell/ResultWorkspaceDesignView.xaml.cs",
-          "sha256": "878f1be49f4cefe4a08fd50721fab63357cefe4979ff8560fe3e22d6585fe152"
+          "sha256": "e958610e47ccfe1ce818702fe182f55cc6e684c03ba069c2d792e51560403af0"
         }
       ],
       "rasterDependency": {
@@ -6057,15 +6057,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
-          "sha256": "77df19f700d49c5ae67af1efb1fef6ac6cc25a60a58f865aaf177c8bc5d5dab5"
+          "sha256": "9571fbcb093c435b5822e84c8b954fbb2d59ad0ee410cbec0a88e805e3c4f600"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
-          "sha256": "a794f8214c31eaf57b49234b12be25ea13ad30d4b126db917ef0cefe9d5532b5"
+          "sha256": "bda8ea54883b4f4e9743fcb9af707ed3e27d61c6a9e763ec43ce25f9a84c40b0"
         },
         {
           "path": "scripts/verification/O06WindowPresentationCases.cs",
-          "sha256": "821832c7f88828dfa8f8a0021901a8f80ba04f4fe29327a839fe2a5ff0536a45"
+          "sha256": "2abb24c7d4a1a90c99e7b26cd1251eda749799b99601f5779c8eb3eb6bca7f96"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
@@ -6090,11 +6090,494 @@
         "C08 FullDomain和C09完整Unset/真实位姿仍待",
         "两个独立layer proof可交叉使先验层失效而不通知；来源generation/失效通知合同尚需完善，有限轮询不作原子证明。"
       ]
+    },
+    {
+      "id": "C17.cross-binding-lifecycle",
+      "scope": "原十字与色板绑定和瞬态指针适配，非完整Cross配置窗",
+      "sourceAssemblies": [
+        {
+          "assembly": "VMBaseControls",
+          "assemblyMvid": "47136107-aecc-42c7-bdbd-a8641253cae6",
+          "assemblySha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555"
+        },
+        {
+          "assembly": "VM.PcUI",
+          "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+          "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42"
+        }
+      ],
+      "originalSources": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.Shape\\CrossControl.xaml.cs",
+          "sha256": "a09059167052071a3bcdced56258a3f1bd547d08812b18193a7537d01af90e51"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\ColorPickerControlView.xaml.cs",
+          "sha256": "dc354abeaa2fca7045b4a22bad5ac07a346811527f95db780e61985ecb9ed44c"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+          "sha256": "b1caab9c11f703253cf1e9ccaa1fc4cfee5bfd254d84036f66d9ee26f06583a0"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
+          "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+        },
+        {
+          "path": "scripts/verification/O06WindowPresentationCases.cs",
+          "sha256": "2abb24c7d4a1a90c99e7b26cd1251eda749799b99601f5779c8eb3eb6bca7f96"
+        }
+      ],
+      "dependencies": [
+        "原CrossControl模板及ImageViewItemsPage坐标宿主",
+        "原VM.PcUI ColorPickerControlView与现有完整原色板链"
+      ],
+      "consumers": [
+        "ShapeItemsPage → CrossShape → CrossControl",
+        "DeclaredFieldsView原图形/文本颜色叶",
+        "WindowPresentation c17-cross真实WPF用例"
+      ],
+      "validation": {
+        "status": "CANDIDATE_BINDING_AND_GESTURE_REPAIR_NOT_COMPLETE_C17",
+        "evidence": "docs\\collaboration\\evidence\\C17_CROSS_BINDING_LIFECYCLE_CANDIDATE_20261029.json",
+        "candidateWindowPassed": 16,
+        "manualAccepted": false
+      },
+      "remaining": [
+        "CrossConfig及两个CrossData尚未激活，辅助十字受管ShapeLayer/导出冻结/同尺寸换帧owner取消未接通；不能以本批基础修复计C17完整。",
+        "C09三态正式合同整体切换未实现；审计见C09_SETTINGS_STATE_CUTOVER_AUDIT_20261029.json。",
+        "位姿公式及原点显示最终viewport生命周期未证，见C08_FIXTURE_POINT_DISPLAY_SOURCE_AUDIT_20261029.json。",
+        "真实指针、VS实际设计器、VM逐态外观、用户验收及原C01—C17/SDK残留/原249总体仍未完成；阶段一未通过，Blob业务继续冻结。"
+      ],
+      "historicalScopeNote": "保留原基础修复阶段证据；完整配置组合当前进展见C17.crosshair-settings-composition，不把旧候选描述当现状。"
+    },
+    {
+      "id": "C17.crosshair-settings-composition",
+      "scope": "原十字配置双模型、完整原窗与最小资源闭包、受管层和独立设计/运行消费；非Blob集成",
+      "sourceAssemblies": [
+        {
+          "assembly": "Apps.Style",
+          "assemblyMvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "assemblySha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63",
+          "evidence": "Catalog/C15.original-tool-editor-footer"
+        },
+        {
+          "assembly": "VM.PcUI",
+          "assemblyMvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+          "assemblySha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
+          "evidence": "Catalog/C17.cross-binding-lifecycle"
+        },
+        {
+          "assembly": "VM.Controls",
+          "assemblyMvid": "2d174a48-36d4-4962-85a0-0f67865e316f",
+          "assemblySha256": "d36462c981f1db26a377c84a7e0c7de26f0f14eef92e41a4ed0acc24e4adb222",
+          "evidence": "Catalog/C08.original-polygon-limit-warning"
+        },
+        {
+          "assembly": "VMBaseControls",
+          "assemblyMvid": "47136107-aecc-42c7-bdbd-a8641253cae6",
+          "assemblySha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555",
+          "evidence": "Catalog/C17.cross-binding-lifecycle"
+        },
+        {
+          "assembly": "VMControls.WPF",
+          "assemblyMvid": "d144317f-3992-4275-9b0f-13fb6163e07d",
+          "assemblySha256": "99ffa401c8784472913ad43813d68a8a5577890c00e149506e3e5664fa61c97d",
+          "evidence": "Catalog/results.original-workspace-shell"
+        }
+      ],
+      "originalSources": [
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossData.cs",
+          "sha256": "3cca36302c25dfa4bb09add085989093c59566f37d7d9946e11bbe3b817fbfb1"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossConfig.xaml",
+          "sha256": "e0f3d32d94d7bb66745ba06def03f6cea39f37c255ab3ec4a085f71ab201ea1d"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs",
+          "sha256": "5be350a0fd91b5301f0af41b9c91432947d0a8733d3e6a9e0d8e5fd6b251b2f2"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs",
+          "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.PcUI/HikPcUI.ListView/SliderArrangeBase.cs",
+          "sha256": "cdce54e608eee5421a2863c700b28ddbe89242514ef44690b7b1ec83544c8ff2"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+          "sha256": "a09059167052071a3bcdced56258a3f1bd547d08812b18193a7537d01af90e51"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/VM.Controls/styles/basewindowstyle.xaml",
+          "sha256": "46989e854d2dc8f66c9e05b06aad8f48995a0d8f963566371efaab0dd71a1e27"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/itemscontrolstyle/itemscontrolstyle.xaml",
+          "sha256": "fb05637d2c3bc8b556d8c0c095d852dda97fb18d9414fbc2fafe987932913027"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/buttonstyle/togglebuttonstyle.xaml",
+          "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+        },
+        {
+          "path": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.Style/scrollbarstyle/recscrollbarstyle.xaml",
+          "sha256": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "path": "scripts/verification/O06WindowPresentationCases.cs",
+          "sha256": "2abb24c7d4a1a90c99e7b26cd1251eda749799b99601f5779c8eb3eb6bca7f96"
+        },
+        {
+          "path": "scripts/verification/S4DesignTimeCases.cs",
+          "sha256": "be98445766cadb872ab88ecb86595247706405fd2c5a223710e8dd9400b952be"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettings.cs",
+          "sha256": "d58f7d90d24271357e4be5b745e543ced55144bc1a219fdcfe29ae324fe8c520"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsView.xaml",
+          "sha256": "a7c474b8f9293aea1d9e005604b55126c874a9e8eb41b2050a3a10314f34c7e6"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsView.xaml.cs",
+          "sha256": "efd7e6a3b44f2302938c26685d4c7c1c97356e42ca7e560d0382d0394a01dea5"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml",
+          "sha256": "a2255c53079d888295f54e9af7581e4941cd85ef49c7f6faf96e3f8f78139140"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml.cs",
+          "sha256": "e5e73f3e4ed952d0f1bed53a3760d6017eded67cf90b377a9f77ad2d7cad9707"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView/ShapeItemsPage.cs",
+          "sha256": "88c119b2782c35bc5cf08a6494d85bcba7813bd27f4e1005824fdcb1458d1961"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml",
+          "sha256": "ac8377055aa8ac1bbdab2b69471c346c7adb40f743b0e98da6a1d12736773f80"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossControl.xaml.cs",
+          "sha256": "b1caab9c11f703253cf1e9ccaa1fc4cfee5bfd254d84036f66d9ee26f06583a0"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/CrossShape.cs",
+          "sha256": "df6710b6de5c44f267ddab0237cbaa963f89a03a411c1765900428b947064566"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
+          "sha256": "e51cf94600878fc06bccc61fbe66ad07ca2d67a32cc02a00d73ca03d0b8da088"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml",
+          "sha256": "4be2b797be2745d2aa3aab923e65b0e654414a5fa2aedc0c58a18d52e7de0c36"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/AdvancedColorPickerDialog.xaml.cs",
+          "sha256": "ca4032964e739b70c354a0c20149c354308871dfa06b06a2bb05fdb6b2a68f18"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml",
+          "sha256": "bc4de28e013bb1608715ef8aff2d6f485a2088e78fa5a26ca33255b08da300d9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerControlView.xaml.cs",
+          "sha256": "20ecb77f06e3479bb4dcf750e64cce13987e07bfe078edf0623ea2aa10fa8c0b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml",
+          "sha256": "e21fd7e9579b8ae65506b601147ac9b83b31db4a6e3e736b0dd291d569431008"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerFirstItem.xaml.cs",
+          "sha256": "5043873a25062edf6b0e72dba7a74add367804257274cfafef9c450ff230e131"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml",
+          "sha256": "f5dcb9a6b09183d0e616fb03170cf6d8ceabc25c869efc3e551a0730abf6d350"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ListView/ColorPickerSecondItem.xaml.cs",
+          "sha256": "5dee5b3d01d0faeff3ffd185f64cd83721576faf2613da95e4086b7755e53b2b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml",
+          "sha256": "483798f31b271a11779da6992aaec57325ae32842cafe1a7c0c21602a34dcffe"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/NumericControl.xaml.cs",
+          "sha256": "f5ed18766d6a21d0b99d5ae64e41b0817d6373d8e8eae43edf10aaa8027689e8"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/RangeRule.cs",
+          "sha256": "8b0296aea4d0110b72a8f62d2923bbbd9efb0e734fc9d10612cdc4434eac90cf"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml",
+          "sha256": "96dc7d22c19f7aae5b81930c3014c54cecfc20197c8076e34db20f6d6f588e8c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrange.xaml.cs",
+          "sha256": "4526c6696c9d45c144bd5c04f623c5ac52fc29971201143e66afc05db1fe2e0f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeBase.cs",
+          "sha256": "1b3f2b26eb5e26cde9683d4e2fc91bf83185b3944fd8e1f61aeab1fe0001f732"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeDictionary.xaml.cs",
+          "sha256": "9242aab5609ec29f7ad882746e7d84bb198ae27aa718f77baeecaf1ebb76612b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml",
+          "sha256": "b06d34eef6b5f98a418c6e40b557120e0348c074e3a294c3f94c25a8e3fb4f6a"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeFloat.xaml.cs",
+          "sha256": "b63b9c4ac5ca0f8c6a0576c9f4978f399012a121aad36c4b727b45e8ce555313"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SliderArrangeType.cs",
+          "sha256": "541f83f36fcf7e70b1c7d2dad3de0f92a8219644b9ccbca0a4161765b6cac3e3"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Numeric/PcUi/SymbolType.cs",
+          "sha256": "2754ebfb250b0c5da6f4193aaf48a3799fcc43435478fa9075bcff3520acbbe3"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeCrosshairDesignData.cs",
+          "sha256": "4359c244d49b1967ab3bf77a68a8583f6df56e7b6273dbd6d6bbaf6adb58a4bb"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeCrosshairSample.cs",
+          "sha256": "1c349e2660fa41794dcaba7303463a7ae092b670cbec9ffd8ea4fe25af10c336"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeCrosshairScene.xaml",
+          "sha256": "8bdc05ec8b3a13457791e01f31d2d8d38d51becfb53b1c0535ecfb91ba36ef23"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Cross.cs",
+          "sha256": "2d508fa926ee44a995714facd67a83aa37fea7afdf7076616834c45f53b8dcec"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+          "sha256": "9571fbcb093c435b5822e84c8b954fbb2d59ad0ee410cbec0a88e805e3c4f600"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
+          "sha256": "bda8ea54883b4f4e9743fcb9af707ed3e27d61c6a9e763ec43ce25f9a84c40b0"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+          "sha256": "cf814431d2c0a178aa3ac49d45df149438f6f1b70ce2f3765a8b4dae75452fab"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_click.png",
+          "sha256": "97f9df0027635758f8f5f0412b832642ec99b738b16ca5f333869633b3ccf9af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_disable.png",
+          "sha256": "7c556e8f306d709b3d2d9a2f418602ca7af7c41bf45da112355e5915bf70b904"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_edit切换_normal.png",
+          "sha256": "f725452dd0a7dde8682e3712c01b509d52bf4a3453d19cc6d551f54ebeca25bf"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_click.png",
+          "sha256": "085ab4ff4f5df7a56620c7ecce6afbff615f9b5c5b80d2ce3a7978ebf0c21984"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_disable.png",
+          "sha256": "9bc05f426d4486102b3236c107cfa281f2ab18cc3ff33d4a721544f50b76d803"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/ic_btn_link切换_normal.png",
+          "sha256": "bae78aeade08a9c376bd5bbb4e8271d3d12bcca7028301ce0d124030d4984ddd"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_off.png",
+          "sha256": "9babaa9b8073f7fd3f87bdc6d86457e93d3d4cfdaadea774e232c2d98a1d531f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_off_dark.png",
+          "sha256": "50cedf155ed40fe7ae44cf69242477f5f3ec25aa343a429156e6b4705fb8c0c3"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_on.png",
+          "sha256": "00abd78eb5efb43de434f54be0b0ac652a02882f224beaba175241bef39d1bd9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Composition/Apps.Style/resources/swith_on_dark.png",
+          "sha256": "344bb5e462e60d1b3ddf84ec83f4e4d8a07de41b02f7c5df64b07504a2128403"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_click.png",
+          "sha256": "a212f228cdc4884ddafcb3e080afc39e430e628c2059a4e6a5428a1e15db5dbd"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowbg_hover.png",
+          "sha256": "c519d84f60507e99a4c2bde44fca676134e020865d1caba73469405fe282465d"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowclose.png",
+          "sha256": "216ecc027b94d9d136d836a9126f0cb18f74e4ab4f7288dbd7193cb7ef7a0a40"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_maximize.png",
+          "sha256": "cdf32474ed06bb4e1781d7bb85c001827d470db5a76ab94cbbbea30daab68150"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_minimize.png",
+          "sha256": "303c4dc69ea1459e3bd19719a6f91f9634dccc7e74bc9312238076eeba7def3c"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Display/VMControls/resources/windowshift_ic_normal.png",
+          "sha256": "1d7bb61823dd336c0da0f470f61e058cca8618e6f0bc05d3071a9192e4d7e0c4"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_click.png",
+          "sha256": "86169298f16ca824208e030e67bacb24cedeb9c150f8f450aaf6cffaf7e6f993"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/combo_ic_top_normal.png",
+          "sha256": "c4c2008512fae8debcdfbc0c48b069e934b8ae699b63727712d023bf55a6a319"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/VM.PcUI/滑块_normal.png",
+          "sha256": "54528c314447bc7fba57ee0606333242720f6a40b033789bc83985ccf3818de2"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Composition/Display/CrosshairSettingsResources.xaml",
+          "sha256": "76f75691c698ab5076815f95735885bbb7febeea873d14bc048ce5f2426981dd"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle.xaml",
+          "sha256": "0f8429e93b85f9d4b28e45c0ecdd5a1c4f61e2130e071be9f2ab2f1c3b6b928f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",
+          "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml",
+          "sha256": "abfb8f8fbbddc50fb0d0ad25aa317c57b31268c14dcd6780040caa1dd7ac0515"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapecontainerstyle.xaml",
+          "sha256": "071dcf6085610d260d0d1b0eaa08b94b4fadebafcfde7940163f54a9fdcc103b"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
+          "sha256": "644e0853747fbe516a0c7b51205e9099c2d4a4aec0e2981946c9c92b280ffc17"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",
+          "sha256": "4a57d83aae40161672b2ac0d33e08b5a80d384519cebeebf87f737df08dedee9"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+          "sha256": "b262acac5d898b26ee0d84441cbca986d2c6996e8c9be17d26b4ce515d7fd509"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+          "sha256": "8dbabdc771fc81174d02c40e37843ef4ccce97133f41988ff976a5bd556b8b7e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Numeric/PcUi/SliderArrangeDictionary.xaml",
+          "sha256": "3437bc43530c35dbe8c5ffcc8b5074362b067c8148083c7459beacbccb065ead"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/Numeric/Shared/CommomDictionary.xaml",
+          "sha256": "60454e2f6b841e667c15ebfc4df5902959c9a60141e6f77cab77f5f75b4dad61"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml",
+          "sha256": "c3ec1dc4f20dc7932d79d7f410d899e282037213827e69c56a99a66987a790af"
+        },
+        {
+          "path": "src/Plugin.Wpf/Themes/VmFieldStyles.xaml",
+          "sha256": "1e58120aaec6a4379419338caf8e376ec355d20d3c6aa7f20bc7583eba7d48a7"
+        }
+      ],
+      "removedFiles": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.pending",
+          "baselineGitContentSha256": "2f83c751cecf16c8cc692d476e700aa451fbc4293fb0a6696ffcf343b9afd9d8"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs.pending",
+          "baselineGitContentSha256": "565177b04e33384d247e197cb1ddacb016af567517732a5f64bef6455211dfe2"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossData.cs.pending",
+          "baselineGitContentSha256": "96f3c4a45b33ba2ba7007bbc63570cb154619dd95cb86b225d5776a65877ffc4"
+        }
+      ],
+      "dependencyCatalogRefs": [
+        "C06.original-between-composition",
+        "C12.vm-pcui-color-picker",
+        "C07.original-expanded-reference-window",
+        "C17.image-export-snapshot"
+      ],
+      "dependencies": [
+        "CrosshairSettingsResources抽取原ListViewStyle1/SwitchButton，复用原SourceScrollBars八节点、原色资源与本地化。",
+        "原BaseWindow/外框与窗口图标；原VM.PcUI SliderArrange/NumericControl及原ColorPicker/默认/更多完整链。",
+        "ShapeItemsPage→CrossShape→CrossControl及原shapecontainer/crossshapestyle；独立场景与冻结导出复用同一受管层。"
+      ],
+      "consumers": [
+        "NativeResultViewport.CrosshairLayer.OpenSettings",
+        "CrosshairSettingsWindow/实际CrosshairSettingsView",
+        "NativeCrosshairDesignData、NativeCrosshairSample及NativeCrosshairScene.xaml",
+        "正式WindowPresentation/DesignTime验证；尚无Blob业务消费者"
+      ],
+      "semantics": [
+        "CrosshairSettings双模型、原CrossConfig布局与原BaseWindow非模态窗，以中立文件名归现有公共库；关闭不回滚、重开保留。",
+        "受管CrosshairLayer消费当前同帧坐标，经原ShapeItemsPage/CrossShape/CrossControl渲染；同尺寸换帧/卸载/关闭退役旧手势。",
+        "图像/图层proof错误保原异常，命令可用性查询记录错误并禁用；旧清理不覆盖回调接纳的新帧或其他图层场景。",
+        "Enter核三层BindingExpression、DataContext、模板与实际数值叶身份；合法提交原整数Math.Round取整后失焦，非法保原文。共享内部取整用SetCurrentValue保绑定，Float不取整。",
+        "真实View测量调用既有EnsureTemplateInputs，使无Loaded设计视图显示实际数值；六标签显式消费原ParamsTabForeground，原标题ModuleForeground保留。",
+        "导出复制ICross标量到独立冻结快照；完整场景预算超额明确拒绝，不截断辅助线。"
+      ],
+      "ownership": "库层拥有窗口/双模型/手势代次；Viewport拥有帧与图层，来源失效先退役旧借用；导出仅持有独立标量和冻结BitmapSource。",
+      "validation": {
+        "status": "CANDIDATE_COMPLETE_CROSSHAIR_COMPOSITION_MANUAL_GATES_PENDING",
+        "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
+        "windowPassed": 18,
+        "designPassed": 108,
+        "manualAccepted": false
+      },
+      "remaining": [
+        "C17实际VM逐态/物理鼠标/VS真实设计器与用户验收未完成，当前不是完整C17或阶段一通过。",
+        "原导出OpenCV渲染公式尚未迁移；当前辅助线导出是独立冻结的正式WPF场景，不冒称VM原导出算法同态。",
+        "C09 Constant/Reference/Unset权威、持久化/复制/历史/绑定/执行整体切换未实施；不做局部Unset后备。",
+        "位姿公式及FixtureInit/RunPoint显示生命周期未证；原C01—C17/SDK可视残留/历史通知/原249整体及原两阶段完整范围不删。",
+        "Blob业务冻结；本批配置窗消费者是库内受管层与设计/运行样例，不冒称Blob已接入。"
+      ]
     }
   ],
   "currentIntegration": {
-    "productCommit": "5780c062",
-    "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
-    "status": "规定构建与原栅格10组过；GlobalBinding20及ImageSources2失败，不套旧链成绩；依赖hash为当前源，历史validation保原基线"
-  }
+    "baselineCommit": "fb2d5806cf92d74294eaedc95b78cdb828a0d7dd",
+    "evidence": "docs/collaboration/evidence/C17_CROSSHAIR_SETTINGS_CANDIDATE_20261029.json",
+    "status": "C17完整配置组合候选，正式Release源码/发布/实际加载SHA核；VM/VS/人工及阶段一完整门禁仍未过。"
+  },
+  "integrationHistory": [
+    {
+      "productCommit": "5780c062",
+      "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
+      "status": "规定构建与原栅格10组过；GlobalBinding20及ImageSources2失败，不套旧链成绩；依赖hash为当前源，历史validation保原基线"
+    }
+  ]
 }

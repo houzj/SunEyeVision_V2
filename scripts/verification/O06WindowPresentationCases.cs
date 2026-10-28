@@ -3417,6 +3417,233 @@ internal static class S2DocumentEditingCases
    Require(field.TryCommitPending()&&writes==1,"已接纳原文重复写入");
   });
  }
+ sealed class CrosshairCommitReentry : IValueConverter
+ {
+  public Action? BeforeBack;
+  public object Convert(object value,Type targetType,object parameter,CultureInfo culture)=>value;
+  public object ConvertBack(object value,Type targetType,object parameter,CultureInfo culture)
+  {var action=BeforeBack;BeforeBack=null;action?.Invoke();return Binding.DoNothing;}
+ }
+ static void VerifyCrosshairWindows()
+ {
+  Test("c17-window 无尺寸首开与首次有效图像初始化原两条线",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);
+   var one=layer.CrossDatas[0];var two=layer.CrossDatas[1];var window=layer.OpenSettings(owner);Pump();
+   Require(window.Owner==owner&&window.IsVisible&&one.IsVisible&&!two.IsVisible&&one.NeedsInitialization&&two.NeedsInitialization,"无图首开状态或非模态owner不符");
+   Require(Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).Count()==6&&Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).Count()==2,"原窗口未完整组装两条线");
+   var label=Visuals<TextBlock>(window).First(text=>text.Text=="坐标X");Require(((SolidColorBrush)label.Foreground).Color==((SolidColorBrush)label.FindResource("ParamsTabForeground")).Color,"宿主样式污染原标签前景");
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(101,81,new byte[101*81]);Require(viewport.BindImage(image,()=>true),"图像拒绝");Pump();
+   Require(!window.IsVisible&&(one.CenterPoint-new Point(40.4,32.4)).Length<1e-9&&(two.CenterPoint-new Point(60.6,48.6)).Length<1e-9&&one.Stroke=="#FFF76900"&&two.Stroke=="#FFFFFF00"&&!one.NeedsInitialization,"有效尺寸未一次初始化或旧窗未关闭");
+   one.CenterCommand.Execute(null);Require(one.CenterPoint==new Point(50,40),"原整数居中变成浮点除法");
+  });
+  Test("c17-window 首开前换图按最新尺寸初始化且之后不重置",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(40,30,new byte[1200]);var b=resources.CreateGray8(100,80,new byte[8000]);var c=resources.CreateGray8(120,90,new byte[10800]);
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);Require(viewport.BindImage(a,()=>true)&&layer.CrossDatas.All(x=>x.NeedsInitialization),"隐藏时过早初始化");
+   Require(viewport.BindImage(b,()=>true),"换图失败");Pump();var window=layer.OpenSettings(owner);Pump();var model=layer.CrossDatas[0];Require(model.CenterPoint==new Point(40,32),"首次打开未按最新图初始化");
+   model.CenterPoint=new(17,19);model.IsLocked=true;model.CenterCommand.Execute(null);Require(model.CenterPoint==new Point(50,40),"锁定错误禁止居中");model.CenterPoint=new(17,19);
+   Require(viewport.BindImage(c,()=>true),"再换图失败");Pump();Require(!window.IsVisible&&model.CenterPoint==new Point(17,19),"换图重置坐标");model.CenterCommand.Execute(null);Require(model.CenterPoint==new Point(60,45),"尺寸未更新居中所需尺寸");
+  });
+  Test("c17-window 数值Enter失焦原色板双向绑定与关闭重开保留",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();
+   var controls=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).ToArray();var box=(ComboBox)controls[0].FindName("CBox");var leaf=(Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");text.Focus();text.Text="123.25";SendKey(text,Key.Enter,true);Pump();
+   Require(layer.CrossDatas[0].CenterX==123&&!text.IsKeyboardFocusWithin&&controls[0].GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)?.Status==BindingStatus.Active,"Enter未按原整数控件取整/回写/失焦或丢绑定");text.Focus();text.Text="bad";SendKey(text,Key.Enter,true);Require(layer.CrossDatas[0].CenterX==123&&text.Text=="bad"&&text.IsKeyboardFocusWithin,"非法原文未保留拒绝");text.Text="124.5";SendKey(text,Key.Enter,true);Pump();
+   var picker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(window).First();var binding=picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty);
+   Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#7B123456",picker);Require(layer.CrossDatas[0].Stroke=="#7B123456"&&ReferenceEquals(binding,picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty)),"string/Brush回写或绑定失效");
+   layer.CrossDatas[0].Stroke="#FF0000FF";Pump();Require(picker.CurrentColor.Color==Colors.Blue,"模型改色不回显");
+   var capture=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32);capture.Render(window);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(capture));using(var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-crosshair-settings-window.png")))encoder.Save(file);
+   window.Close();Pump();Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);
+   Require(layer.CrossDatas[0].CenterX==124&&layer.CrossDatas[0].Stroke=="#FF0000FF","旧关闭色板写入模型或关闭回滚/未保原中点取整");var reopened=layer.OpenSettings(owner);Pump();Require(!ReferenceEquals(window,reopened)&&layer.CrossDatas[0].CenterX==124,"重开复用旧窗或重置");
+   var current=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(reopened).First();var original=current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty);layer.CrossDatas[0].CenterX=125.5;Pump();
+   Require(current.StartValue==126&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty))&&original?.Status==BindingStatus.Active,"模型推小数后取整替换原绑定");
+   var currentBox=(ComboBox)current.FindName("CBox");var currentLeaf=(Native.Numeric.HikPcUI.ListView.NumericControl)currentBox.Template.FindName("T1",currentBox);var currentText=(TextBox)currentLeaf.FindName("ValueText");currentText.Focus();currentText.Text="127.5";SendKey(currentText,Key.Enter,true);Pump();Require(layer.CrossDatas[0].CenterX==128&&!currentText.IsKeyboardFocusWithin&&ReferenceEquals(original,current.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.StartValueProperty)),"模型小数刷新后不能再次提交");reopened.Close();
+  });
+  Test("c17-window 实际原十字拖动保持控件身份且同尺寸换帧退役",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var model=sample.Crosshairs.CrossDatas[0];
+   var cross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));var handle=(Grid)cross.Template.FindName("move",cross);
+   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(handle.IsMouseCaptured,"受管原十字未捕获");
+   var parent=Visuals<Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage>(viewport.View).Single(x=>x.GetType().Name=="ShapeItemsPage");var args=new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent};var previous=model.CenterPoint;
+   cross.GetType().GetField("clickPoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(cross,args.GetPosition(parent)-new Vector(5,7));handle.RaiseEvent(args);Pump();
+   Require(handle.IsMouseCaptured&&ReferenceEquals(cross,Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model)))&&model.CenterPoint!=previous,"位移重建控件或没有回写");
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[640*320]);Require(viewport.BindImage(image,()=>true),"同尺寸换帧失败");Require(!handle.IsMouseCaptured,"换帧未立即取消捕获");var accepted=model.CenterPoint;
+   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});handle.RaiseEvent(args);Require(!handle.IsMouseCaptured&&model.CenterPoint==accepted,"旧帧句柄重启写新图");
+  });
+  Test("c17-window 重开关闭回调重入仅保留接管新窗",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var first=layer.OpenSettings(owner);Pump();SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsWindow? nested=null;
+   first.Closed+=(_,_)=>nested=layer.OpenSettings(owner);var outer=layer.OpenSettings(owner);Pump();Require(nested is not null&&ReferenceEquals(outer,nested)&&ReferenceEquals(layer.CurrentWindow,nested)&&!first.IsVisible,"重入窗口被覆盖或泄漏");outer.Close();
+  });
+  Test("c17-window 首次启用观察者重入仅保留新窗",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);Require(viewport.BindImage(image,()=>true),"图像拒绝");var once=true;SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display.CrosshairSettingsWindow? nested=null;
+   layer.CrossDatas[0].PropertyChanged+=(_,args)=>{if(once&&args.PropertyName=="IsVisible"){once=false;nested=layer.OpenSettings(owner);}};
+   var outer=layer.OpenSettings(owner);Pump();Require(nested is not null&&ReferenceEquals(outer,nested)&&ReferenceEquals(layer.CurrentWindow,nested),"启用回调重入窗口被覆盖");outer.Close();
+  });
+  Test("c17-window 原窗口模板重装退订旧按钮只关闭一次",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var window=sample.Crosshairs.OpenSettings(owner);Pump();var old=(Button)window.Template.FindName("CloseWinButton",window);
+   var resources=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMControls/styles/basewindowstyle.xaml",UriKind.Relative)};window.Template=(ControlTemplate)resources["MetroWindowTemplate"];window.ApplyTemplate();Pump();
+   old.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Require(window.IsVisible,"旧模板按钮仍关闭新窗");var calls=0;window.Closed+=(_,_)=>calls++;var current=(Button)window.Template.FindName("CloseWinButton",window);current.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Require(!window.IsVisible&&calls==1,"新模板关闭重复或失效");
+  });
+  Test("c17-window 来源proof抛错退役本层并保留错误",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);var fail=false;
+   Require(viewport.BindImage(image,()=>fail?throw new InvalidOperationException("来源核对失败"):true),"图像拒绝");var window=layer.OpenSettings(owner);var model=layer.CrossDatas[0];var point=model.CenterPoint;fail=true;var threw=false;
+   try{model.CenterX=99;}catch(Exception error){threw=error.ToString().Contains("来源核对失败");}finally{fail=false;}
+   Require(threw&&!window.IsVisible&&model.CenterPoint==point&&layer.CurrentWindow is null,"来源异常未退役或修改模型");
+  });
+  Test("c17-window 命令可用性查询记录来源异常且不冒泡桌面",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);var fail=false;
+   Require(viewport.BindImage(image,()=>fail?throw new InvalidOperationException("命令来源异常"):true),"图像拒绝");var window=layer.OpenSettings(owner);fail=true;var enabled=layer.CrossDatas[0].CenterCommand.CanExecute(null);fail=false;
+   Require(!enabled&&layer.LastSourceError is not null&&!window.IsVisible&&viewport.CurrentFrame is null,"命令查询未记录/退役来源或仍可用");
+  });
+  Test("c17-window 独立图层清理及观察失败不清其他图形",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var viewport=sample.Viewport;using var geometry=viewport.CreateGeometryLayer();var receipt=viewport.CurrentFrame!;
+   Require(geometry.Present(receipt,0,new[]{new NativeGeometryOverlay(receipt.Frame,new PointGeometry(receipt.Coordinates,new(10,10)),Colors.Lime)},()=>true),"几何未接纳");
+   var window=sample.Crosshairs.OpenSettings(owner);window.Closed+=(_,_)=>throw new InvalidOperationException("关闭观察失败");var failed=false;
+   try{sample.Crosshairs.Dispose();}catch(Exception error){failed=error.ToString().Contains("关闭观察失败");}Pump();
+   Require(failed&&sample.Crosshairs.LastWindowError is not null&&!window.IsVisible&&viewport.CurrentFrame==receipt&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ShapeList!.Count==1,"异常清理未记录或清其他层");var model=sample.Crosshairs.CrossDatas[0];var point=model.CenterPoint;model.CenterX=500;model.CenterCommand.Execute(null);Require(model.CenterPoint==point,"退役模型/命令仍写入");
+  });
+  Test("c17-window 导出含可见辅助线且冻结不借模型并拒绝降额截断",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var model=sample.Crosshairs.CrossDatas[0];model.Stroke="#FFFF0000";
+   var method=typeof(NativeResultViewport).GetMethod("PrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!;var rendered=(BitmapSource)method.Invoke(viewport,new object[]{true})!;var before=new byte[rendered.PixelHeight*rendered.PixelWidth*4];rendered.CopyPixels(before,rendered.PixelWidth*4,0);model.CenterX+=15;var after=new byte[before.Length];rendered.CopyPixels(after,rendered.PixelWidth*4,0);
+   Require(rendered.IsFrozen&&before.SequenceEqual(after)&&Enumerable.Range(0,before.Length/4).Any(i=>before[i*4+2]>200&&before[i*4+1]<40),"辅助线未导出或导出仍借可变模型");
+   var max=Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable.ShapeRenderingMaxNumber;var rejected=false;
+   try{Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable.ShapeRenderingMaxNumber=1;try{method.Invoke(viewport,new object[]{true});}catch(TargetInvocationException error){rejected=error.InnerException?.Message.Contains("shape-budget")==true;}}
+   finally{Native.Dependencies.VMControls.RenderInterface.GlobalRenderVariable.ShapeRenderingMaxNumber=max;}
+   Require(rejected,"辅助线总预算降额静默截断");
+  });
+  Test("c17-window 来源proof同步退役十字层不退役有效图像",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);var armed=true;
+   bool Proof(){if(armed&&viewport.CurrentFrame?.Frame==image.Frame&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ImageDataSource is not null){armed=false;layer.Dispose();}return true;}
+   Require(viewport.BindImage(image,Proof),"十字层退役错误地退役图像");Pump();Require(!armed&&viewport.CurrentFrame?.Frame==image.Frame,"未触发真实重入或丢图像");var point=layer.CrossDatas[0].CenterPoint;layer.CrossDatas[0].CenterX=90;Require(layer.CrossDatas[0].CenterPoint==point,"退役模型仍写");
+  });
+  Test("c17-window 拖动来源proof同步释放捕获不解引用旧手柄",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(100,80,new byte[8000]);Grid? handle=null;var armed=false;
+   bool Proof(){if(armed){armed=false;handle!.ReleaseMouseCapture();}return true;}
+   Require(viewport.BindImage(image,Proof),"图像拒绝");var window=layer.OpenSettings(owner);window.Close();Pump();var model=layer.CrossDatas[0];
+   var cross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));handle=(Grid)cross.Template.FindName("move",cross);handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(handle.IsMouseCaptured,"未捕获");var accepted=model.CenterPoint;armed=true;
+   handle.RaiseEvent(new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent});Require(!armed&&!handle.IsMouseCaptured&&model.CenterPoint==accepted,"proof失捕仍写或未触发");
+  });
+  Test("c17-window 清理关闭重入换帧不退役新控件捕获",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(100,80,new byte[8000]);var b=resources.CreateGray8(100,80,new byte[8000]);var valid=true;
+   Require(viewport.BindImage(a,()=>valid),"图像A拒绝");var window=layer.OpenSettings(owner);Pump();Grid? newHandle=null;Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl? newCross=null;var model=layer.CrossDatas[0];
+   window.Closed+=(_,_)=>{Require(viewport.BindImage(b,()=>true),"回调图像B拒绝");Pump();newCross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));newHandle=(Grid)newCross.Template.FindName("move",newCross);newHandle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(newHandle.IsMouseCaptured,"新帧未捕获");};
+   valid=false;model.CenterX=99;Require(viewport.CurrentFrame?.Frame==b.Frame&&newHandle?.IsMouseCaptured==true,"旧清理退役新帧捕获");
+   var page=Visuals<Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage>(viewport.View).Single(x=>x.GetType().Name=="ShapeItemsPage");var move=new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent};var before=model.CenterPoint;newCross!.GetType().GetField("clickPoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(newCross,move.GetPosition(page)-new Vector(2,3));newHandle!.RaiseEvent(move);Require(model.CenterPoint!=before&&newHandle.IsMouseCaptured,"新控件交互已被旧清理撤销");newHandle.ReleaseMouseCapture();
+  });
+  Test("c17-window 失效清理异常可查询且不清回调新帧",()=>
+  {
+   using var viewport=new NativeResultViewport();var layer=viewport.CreateCrosshairLayer();Show(viewport.View);using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(100,80,new byte[8000]);var b=resources.CreateGray8(100,80,new byte[8000]);var valid=true;
+   Require(viewport.BindImage(a,()=>valid),"图像A拒绝");var window=layer.OpenSettings(owner);window.Closed+=(_,_)=>{Require(viewport.BindImage(b,()=>true),"回调图像B拒绝");throw new InvalidOperationException("失效关闭观察标记");};valid=false;
+   Require(!layer.CrossDatas[0].CenterCommand.CanExecute(null)&&layer.LastSourceError?.ToString().Contains("失效关闭观察标记")==true&&viewport.CurrentFrame?.Frame==b.Frame,"查询吞清理异常或退役新帧");
+  });
+  Test("c17-window 同帧清理回调重装其他层不取消其新捕获",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);Pump();var viewport=sample.Viewport;var retiring=viewport.CreateCrosshairLayer();var window=retiring.OpenSettings(owner);Pump();using var geometry=viewport.CreateGeometryLayer();var receipt=viewport.CurrentFrame!;var model=sample.Crosshairs.CrossDatas[0];Grid? handle=null;
+   window.Closed+=(_,_)=>{Require(geometry.Present(receipt,0,new[]{new NativeGeometryOverlay(receipt.Frame,new PointGeometry(receipt.Coordinates,new(10,10)),Colors.Lime)},()=>true),"同帧新层拒绝");Pump();var cross=Visuals<Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl>(viewport.View).Single(x=>ReferenceEquals(x.DataContext,model));handle=(Grid)cross.Template.FindName("move",cross);handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});Require(handle.IsMouseCaptured,"其他层未捕获");};
+   retiring.Clear();Require(viewport.CurrentFrame==receipt&&handle?.IsMouseCaptured==true,"旧Clear重复重建同帧新组合");handle!.ReleaseMouseCapture();retiring.Dispose();
+  });
+  Test("c17-window Enter中间绑定被接管立即停止旧提交",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample();Show(sample);var layer=sample.Crosshairs;var window=layer.OpenSettings(owner);Pump();var field=Visuals<Native.Numeric.HikPcUI.ListView.SliderArrange>(window).First();var box=(ComboBox)field.FindName("CBox");var leaf=(Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);var text=(TextBox)leaf.FindName("ValueText");var converter=new CrosshairCommitReentry();
+   BindingOperations.SetBinding(text,TextBox.TextProperty,new Binding("Text"){Source=leaf,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit,Converter=converter});var before=layer.CrossDatas[0].CenterX;var fired=false;
+   converter.BeforeBack=()=>{fired=true;BindingOperations.SetBinding(leaf,Native.Numeric.HikPcUI.ListView.NumericControl.TextProperty,new Binding("StartValue"){Source=field,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});};text.Focus();text.Text="199";SendKey(text,Key.Enter,true);
+   Require(fired&&layer.CrossDatas[0].CenterX==before,"中间绑定替换后旧Enter仍写模型");window.Close();
+  });
+  Test("c17-window 原整数双端取整保绑定浮点不取整",()=>
+  {
+   var source=new Border{Tag=125.5};var integer=new Native.Numeric.HikPcUI.ListView.SliderArrange{Minimum=0,Maximum=1000};BindingOperations.SetBinding(integer,Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty,new Binding("Tag"){Source=source,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});var binding=integer.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty);Show(integer);Pump();Require(integer.EndValue==126&&binding?.Status==BindingStatus.Active,"原整数末端取整或绑定不符");source.Tag=128.5;Pump();Require(integer.EndValue==128&&ReferenceEquals(binding,integer.GetBindingExpression(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty)),"原整数末端模型刷新断绑定");integer.SetCurrentValue(Native.Numeric.HikPcUI.ListView.SliderArrangeBase.EndValueProperty,129.5);binding!.UpdateSource();Require((double)source.Tag==130,"末端取整后不能回写");
+   var floating=new Native.Numeric.HikPcUI.ListView.SliderArrangeFloat{Minimum=0,Maximum=1000,DecimalDigits=2,StartValue=125.5,EndValue=127.5};Show(floating);Pump();Require(floating.StartValue==125.5&&floating.EndValue==127.5,"浮点控件误取整");
+  });
+ }
+ static void VerifyCrossBindingLifetime()
+ {
+  (Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl Cross,Grid Handle,Border Model) Open()
+  {
+   var model=new Border{Tag=new Point(20,30)};
+   var cross=new Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl{Width=300,Height=200,ImageSourceWidth=300,ImageSourceHeight=200,DataContext=model};
+   BindingOperations.SetBinding(cross,Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl.CenterPointProperty,new Binding("Tag"){Source=model,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});
+   var page=new Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage{Width=350,Height=250};cross.Tag=page;page.Items.Add(cross);Show(page);cross.ApplyTemplate();Pump();
+   var handle=(Grid)cross.Template.FindName("move",cross);
+   Require((Point)model.Tag==new Point(20,30)&&cross.CenterPoint==new Point(20,30),$"十字初值异常：model={model.Tag},cross={cross.CenterPoint}");
+   Require(cross.IsLoaded&&cross.IsVisible&&cross.IsHitTestVisible&&ReferenceEquals(handle.TemplatedParent,cross),$"十字夹具未真实挂载：loaded={cross.IsLoaded},visible={cross.IsVisible},hit={cross.IsHitTestVisible},part={ReferenceEquals(handle.TemplatedParent,cross)},parent={VisualTreeHelper.GetParent(cross)?.GetType().FullName}");
+   return(cross,handle,model);
+  }
+  void Down(Grid handle)=>handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+  void Move(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl cross,Grid handle)
+  {
+   // Route the real handler with a deterministic previous pointer position. This is
+   // a WPF binding/capture test, not a claim of physical mouse verification.
+   var page=(Native.Display.VMBaseControls.Base.ImageView.ImageViewItemsPage)cross.Tag;
+   var args=new MouseEventArgs(Mouse.PrimaryDevice,Environment.TickCount){RoutedEvent=UIElement.MouseMoveEvent};
+   typeof(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl).GetField("clickPoint",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(cross,args.GetPosition(page)-new Vector(7,9));
+   handle.RaiseEvent(args);
+  }
+  Test("c17-cross 拖动保双向绑定且后续模型编辑更新图形",()=>
+  {
+   var (cross,handle,model)=Open();var binding=cross.GetBindingExpression(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl.CenterPointProperty);Down(handle);
+   Require(handle.IsMouseCaptured,$"原十字手柄未捕获：ratio={cross.ControlToImageRadio},size={cross.ImageSourceWidth}/{cross.ImageSourceHeight},locked={cross.IsLocked},enabled={cross.IsEnabled},handleEnabled={handle.IsEnabled},version={cross.GetType().GetField("gestureVersion",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(cross)},parent={cross.GetType().GetField("parent",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(cross)},captured={Mouse.Captured},replacing={cross.GetType().GetField("replacingTemplate",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(cross)}");Move(cross,handle);
+   Require(model.Tag is Point p&&p==new Point(27,39)&&ReferenceEquals(binding,cross.GetBindingExpression(Native.Display.VMBaseControls.Base.ImageView.Shape.CrossControl.CenterPointProperty))&&binding!.Status==BindingStatus.Active,$"拖动未回写或破坏绑定：model={model.Tag},cross={cross.CenterPoint},status={binding?.Status}");
+   handle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonUpEvent});Require(!handle.IsMouseCaptured,"结束拖动未释放");
+   model.Tag=new Point(70,80);Pump();Require(cross.CenterPoint==new Point(70,80)&&cross.Line1Point1X==70&&cross.Line2Point1Y==80,"模型编辑未更新原图形");Show(new TextBlock());Require(!handle.IsMouseCaptured,"卸载未释放");
+  });
+  foreach(var reason in new[]{"锁定","隐藏","禁用","换数据","换尺寸","换比例","卸载","换模板","仅换模板"}) Test("c17-cross "+reason+"退役旧手势不再写入",()=>
+  {
+   var (cross,handle,model)=Open();Down(handle);Require(handle.IsMouseCaptured,"未取得捕获");
+   switch(reason){case "锁定":cross.IsLocked=true;break;case "隐藏":cross.Visibility=Visibility.Hidden;break;case "禁用":cross.IsEnabled=false;break;case "换数据":cross.DataContext=new object();break;case "换尺寸":cross.ImageSourceWidth=400;break;case "换比例":cross.ControlToImageRadio=2;break;case "卸载":Show(new TextBlock());break;case "换模板":cross.Template=new ControlTemplate(typeof(Control)){VisualTree=new FrameworkElementFactory(typeof(Grid),"move")};cross.ApplyTemplate();break;case "仅换模板":cross.Template=new ControlTemplate(typeof(Control));break;}
+   Require(!handle.IsMouseCaptured,"旧捕获未释放");if(reason=="仅换模板")Down(handle);Require(!handle.IsMouseCaptured,"待应用新模板时旧手柄重启");Move(cross,handle);Require((Point)model.Tag==new Point(20,30),$"退役句柄仍回写：model={model.Tag},cross={cross.CenterPoint}");Show(new TextBlock());
+  });
+  Test("c17-cross 捕获失败不留下写入且原手柄恢复可用",()=>
+  {
+   var (cross,handle,model)=Open();handle.IsEnabled=false;Down(handle);Require(!handle.IsMouseCaptured,"禁用手柄取得捕获");handle.IsEnabled=true;Move(cross,handle);Require((Point)model.Tag==new Point(20,30),"失败捕获仍写入");Down(handle);Require(handle.IsMouseCaptured,"失败后无法重新捕获");Move(cross,handle);Require((Point)model.Tag==new Point(27,39),"恢复手势未回写");Show(new TextBlock());
+  });
+  Test("c17-cross 捕获观察者抛错仍释放且卸载旧句柄不能重启",()=>
+  {
+   var (cross,handle,model)=Open();MouseEventHandler broken=(_,_)=>throw new InvalidOperationException("捕获观察失败");handle.GotMouseCapture+=broken;var threw=false;
+   try{Down(handle);}catch(InvalidOperationException failure){threw=failure.Message.Contains("捕获观察失败");}finally{handle.GotMouseCapture-=broken;}
+   Require(threw&&!handle.IsMouseCaptured,"捕获异常未传播或遗留捕获");Move(cross,handle);Require((Point)model.Tag==new Point(20,30),"异常后旧手势仍写");
+   Show(new TextBlock());Down(handle);Move(cross,handle);Require(!handle.IsMouseCaptured&&(Point)model.Tag==new Point(20,30),"卸载旧手柄重启");
+  });
+  Test("c17-cross 外部失捕后旧Move不写且可重新开始",()=>
+  {
+   var (cross,handle,model)=Open();Down(handle);Require(handle.IsMouseCaptured,"未捕获");handle.ReleaseMouseCapture();Move(cross,handle);Require((Point)model.Tag==new Point(20,30),"失捕后仍写入");Down(handle);Require(handle.IsMouseCaptured,"失捕后无法重新启动");Show(new TextBlock());
+  });
+  Test("c17-cross 旧捕获清理回调启动的新手势保留",()=>
+  {
+   var (cross,handle,model)=Open();Down(handle);Require(handle.IsMouseCaptured,"未捕获");var once=true;
+   MouseEventHandler restart=(_,_)=>{if(once){once=false;Down(handle);}};handle.LostMouseCapture+=restart;
+   try{handle.ReleaseMouseCapture();Require(!once&&handle.IsMouseCaptured,"旧清理释放了重入的新捕获");Move(cross,handle);Require((Point)model.Tag==new Point(27,39),"重入的新手势不可用");}
+   finally{handle.LostMouseCapture-=restart;Show(new TextBlock());}
+  });
+  Test("c17-cross 颜色原命令保绑定并显式回写",()=>
+  {
+   var model=new Border{Background=Brushes.Black};var picker=new Native.Input.HikPcUI.ListView.ColorPickerControlView();
+   BindingOperations.SetBinding(picker,Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,new Binding("Background"){Source=model,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});Show(picker);
+   var binding=picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty);
+   Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FF123456",picker);
+   Require(((SolidColorBrush)model.Background).Color==Color.FromRgb(0x12,0x34,0x56)&&ReferenceEquals(binding,picker.GetBindingExpression(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty))&&binding!.Status==BindingStatus.Active,"颜色未回写或丢绑定");
+   model.Background=Brushes.Blue;Pump();Require(picker.CurrentColor.Color==Colors.Blue,"外部颜色未回显");
+  });
+  Test("c17-cross 颜色接纳中切DataContext不把旧颜色回写新源",()=>
+  {
+   var first=new Border{Background=Brushes.Black};var second=new Border{Background=Brushes.Blue};var picker=new Native.Input.HikPcUI.ListView.ColorPickerControlView{DataContext=first};
+   BindingOperations.SetBinding(picker,Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,new Binding("Background"){Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.Explicit});Show(picker);
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty,typeof(Native.Input.HikPcUI.ListView.ColorPickerControlView));var once=true;
+   EventHandler change=(_,_)=>{if(once){once=false;picker.DataContext=second;}};descriptor.AddValueChanged(picker,change);
+   try{Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);}finally{descriptor.RemoveValueChanged(picker,change);}
+   Pump();Require(((SolidColorBrush)second.Background).Color==Colors.Blue&&picker.CurrentColor.Color==Colors.Blue,"旧颜色污染新源");
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -3440,6 +3667,8 @@ internal static class S2DocumentEditingCases
    VerifyFieldGroups();
    VerifyNativeIntegerRadio();
    VerifyNativeAssist();
+   VerifyCrossBindingLifetime();
+   VerifyCrosshairWindows();
    VerifyNativeAdvanced();
    VerifyNativeTextExpressions();
    VerifyNativeTextPixels();

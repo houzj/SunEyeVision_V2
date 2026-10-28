@@ -28,9 +28,42 @@ public partial class PropertyListView : UserControl
     public ICommand? UnbindVariableCommand { get => (ICommand?)GetValue(UnbindVariableCommandProperty); set => SetValue(UnbindVariableCommandProperty, value); }
     public ICommand? CopyPathCommand { get => (ICommand?)GetValue(CopyPathCommandProperty); set => SetValue(CopyPathCommandProperty, value); }
     public event RoutedPropertyChangedEventHandler<object>? SelectedItemChanged;
+    // Original row Grid MouseLeftButtonDown triggers its actual row command even on repeat clicks.
+    // Do not depend on TreeViewItem.Focus(): the recovered template deliberately disables focus.
+    public static readonly DependencyProperty SelectOnRowClickProperty = DependencyProperty.RegisterAttached(
+        "SelectOnRowClick", typeof(bool), typeof(PropertyListView), new PropertyMetadata(false, RowClickAttachmentChanged));
+    public static bool GetSelectOnRowClick(DependencyObject target)=>(bool)target.GetValue(SelectOnRowClickProperty);
+    public static void SetSelectOnRowClick(DependencyObject target,bool value)=>target.SetValue(SelectOnRowClickProperty,value);
+    private static void RowClickAttachmentChanged(DependencyObject sender,DependencyPropertyChangedEventArgs args)
+    {
+        if(sender is not FrameworkElement element)return;
+        if(args.OldValue is true)element.MouseLeftButtonDown-=RowMouseLeftButtonDown;
+        if(args.NewValue is true)element.MouseLeftButtonDown+=RowMouseLeftButtonDown;
+    }
+    private static void RowMouseLeftButtonDown(object sender,MouseButtonEventArgs args)
+    {
+        if(args.Handled||sender is not FrameworkElement element||element.DataContext is not {} row)return;
+        DependencyObject? parent=element;
+        while(parent is not null&&parent is not PropertyListView)
+            parent=System.Windows.Media.VisualTreeHelper.GetParent(parent);
+        if(parent is not PropertyListView view||!view.IsLoaded)return;
+        DependencyObject? item=element;
+        while(item is not null&&item is not TreeViewItem)item=System.Windows.Media.VisualTreeHelper.GetParent(item);
+        if(item is not TreeViewItem container||!ReferenceEquals(container.DataContext,row))return;
+        view._userSelecting=false;
+        var previous=view.SelectedItem;
+        view.SetCurrentValue(SelectedItemProperty,row);
+        view.SelectedItemChanged?.Invoke(view,new RoutedPropertyChangedEventArgs<object>(previous!,row));
+        // A path-selection observer can replace the publication/visual rows synchronously.
+        if(!view.IsLoaded||!ReferenceEquals(view.SelectedItem,row)||
+            !element.IsDescendantOf(view)||!ReferenceEquals(container.DataContext,row))return;
+        var command=view.SelectedCommand;
+        if(command?.CanExecute(row)==true&&view.IsLoaded&&ReferenceEquals(view.SelectedItem,row)
+            &&ReferenceEquals(view.SelectedCommand,command)&&element.IsDescendantOf(view)
+            &&ReferenceEquals(container.DataContext,row))command.Execute(row);
+    }
     private bool _restoringSelection;
     private bool _userSelecting;
-    private void SelectionMouseDown(object sender, MouseButtonEventArgs e) { if (e.ChangedButton == MouseButton.Left) BeginUserSelection(); }
     private void SelectionKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key is Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown or Key.Left or Key.Right) BeginUserSelection();

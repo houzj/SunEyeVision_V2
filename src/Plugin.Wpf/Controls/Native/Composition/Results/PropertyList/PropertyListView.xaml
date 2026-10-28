@@ -57,7 +57,7 @@
 
                       </ResourceDictionary>
         </FrameworkElement.Resources>
-        <TreeView Name="resultTreeView" Style="{StaticResource Results.PropertyList.ResultTreeViewStyle}" ItemContainerStyle="{StaticResource Results.PropertyList.ResultTreeViewItemStyle}" ItemsSource="{Binding ItemsSource, ElementName=View}" DataContext="{Binding ElementName=View}" SelectedItemChanged="TreeSelectionChanged" PreviewMouseDown="SelectionMouseDown" PreviewKeyDown="SelectionKeyDown" MaxWidth="{Binding ActualWidth, ElementName=resgrid}">
+        <TreeView Name="resultTreeView" Style="{StaticResource Results.PropertyList.ResultTreeViewStyle}" ItemContainerStyle="{StaticResource Results.PropertyList.ResultTreeViewItemStyle}" ItemsSource="{Binding ItemsSource, ElementName=View}" DataContext="{Binding ElementName=View}" SelectedItemChanged="TreeSelectionChanged" PreviewKeyDown="SelectionKeyDown" MaxWidth="{Binding ActualWidth, ElementName=resgrid}">
           <TreeView.ItemTemplate>
             <HierarchicalDataTemplate ItemsSource="{Binding Children}" ItemContainerStyle="{StaticResource Results.PropertyList.ResultTreeViewItemStyle}" />
           </TreeView.ItemTemplate>

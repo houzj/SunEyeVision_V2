@@ -28,3 +28,9 @@
 静态发现：原模板保留 Focusable=False，而 WPF 默认 TreeViewItem 的实际鼠标选择依赖焦点链；真实 routed 用户选择测试可能揭示原模板接入后无法点击选择的问题。已通知 root。测试不绕过该输入链，也不在本测试分支修改产品；请主线按实际运行结果集中修复与重验。
 
 下一步：root 合并并将本类纳正式验证轨，集中正式构建后运行 6 case；失败应核产品真实模板/资源/行为，不删除用例或用私有事件调用替代。VS 设计器与人工外观验收继续独立记录，自动 WPF 测试不能替代。
+
+## root原件事件链复核修正
+
+原件 `D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/styles/moduleviewstyle.xaml:332` 保留Focusable=False，432–436每行内容Grid以MouseLeftButtonDown触发ParamsEventCommand并传实际row；ModuleDisplayDecorator.cs:1709–1718只取该行FullName更新路径，不执行工具或几何高亮。此前模板迁移漏行事件，不能用Focusable=True替代。root已在专用PropertyList目录补同一Grid普通冒泡左键适配，重复同一行每次执行一次路径命令；程序恢复不执行、右键和子按钮已处理的事件不转发。发送命令前后核实际视觉row与当前选择，通知/CanExecute重入替换后不发旧事件。测试改从真实RowContent公开路由输入，保重复/右键/handled与恢复断言，不反射私有处理器。键盘选择为现有辅助能力，非本次原件证据结论。
+
+三个C#纯语法、两XAML XML及diff检查通过；仍未语义编译或WPF运行，原有潜在风险已由具体漏迁机制定位并形成源码修正，不代表测试已通过。

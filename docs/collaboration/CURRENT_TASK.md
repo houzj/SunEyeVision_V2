@@ -7,6 +7,7 @@
 - D02已合44a67d83为ca605a4b：六类死链、Main构造/统计/清空和无身份图像回填整体退出，真实执行/声明快照/源资产缓存保留。独立审计确认16个结果管理器及168个Main保留方法体未改；不把旧池Prewarm(1)退出混称解码器预热优化。
 - root宿主结果Model/Presenter现分部分成功、超时、取消，成功空输出保状态，资源缺值的失败不显示“资源待接入”；仅同一publication才复用reader/行，身份相同的新发布会更换诊断。已补真实快照状态/成功空/同run不同发布及partial scalar测试；源码与四C#语法检查无错、diff通过，未语义编译或执行。一次检查自动审批超时未启动，原命令允许的一次重试已成功。共享C14合同/原件树/物理帧适配仍未交付，目标不完成。
 - 主线授权本线仅新增Results/PropertyList及Results/ResultShell对应Controls/Themes/Assets/Design子目录；native已从988a34f5独立分支迁原三列树/结果shell，不动StandardTable/C14/context/中立图像适配/C17。纯视觉DP/命令只回传实际投影对象，UI负责正式owner/publication校验，未造旧IToolResultView实现。
+- 原树Focusable=False并非错误：native沿原moduleviewstyle.xaml:432–436核到漏迁行Grid左键→实际row命令。root专用目录补原普通冒泡事件，重复同一行亦更新路径，右键/子按钮handled/程序恢复不执行，不靠TreeViewItem焦点改变；外调前后核当前视觉row。真实组合回归按RowContent路由输入补重复/右键/handled，三C#语法及两XML过，未运行。
 - 根参数整链057e8365已合cbf98caf：正式Runtime目录、强设置/引用/Unset/移除恢复接原根事务与实际视图；原根资源Fact保取消、接纳、历史、保存重开及sourceInputs真实图像/区域执行，未改Blob业务。原视觉6项真实WPF组合f8a7d2e5已合eeb1a1e4，纳正式ImageSources轨，未运行。
 - source_audit确认选择模式下未勾选Activate会写坏start再执行失败：现Session拒绝并恢复展示，ImageInputSource统一选择守卫，主窗正式选择/执行双核同规则，未自动勾选；补真实session无历史/无执行及合法项仍执行回归。相机仍消费OutputFormat，已移除该共有字段错误local可见限制。12个当前C#纯语法过，未语义构建。
 - SDK图像退出完整依赖已核：Root主图委托→旧Declared区域/RoiViewportEditScope、Loaded注入ResultRenderLayer→结果/高亮、顶栏缩放全屏、两阶段索引Dispatcher及来源持久选择必须随Shell集中替换。新Runtime编辑器不依赖SDK主图，正确查询/Reader/租约基础可复用；不保隐藏ImageControl或静默丢覆盖层。已请求主线集中集成源候选restore及UI/full构建，不等C14全部完成才暴露语义错。

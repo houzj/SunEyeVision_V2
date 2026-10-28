@@ -100,17 +100,25 @@ public sealed class NativeResultCompositionTests
         Assert.Empty(calls.Arguments);
         var target = rows[0].Children[1];
         var container = Container(parent, target);
-        // Real routed preview + item mouse input runs the production selection handlers; no private methods are invoked.
-        container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+        var rowContent=Assert.IsType<Grid>(container.Template.FindName("RowContent",container));
+        // Original row Grid input is independent of the deliberately unfocusable TreeViewItem.
+        rowContent.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
             { RoutedEvent = Mouse.PreviewMouseDownEvent });
-        container.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+        rowContent.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
             { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
         Drain();
         Assert.Same(target, view.SelectedItem);
         Assert.Same(target, Assert.Single(calls.Arguments));
+        rowContent.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left)
+            {RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+        Assert.Equal(2,calls.Arguments.Count);Assert.All(calls.Arguments,item=>Assert.Same(target,item));
+        rowContent.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Right)
+            {RoutedEvent=UIElement.MouseRightButtonDownEvent});
+        rowContent.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left)
+            {RoutedEvent=UIElement.MouseLeftButtonDownEvent,Handled=true});
         view.SelectedItem = rows[0].Children[0];
         Drain();
-        Assert.Single(calls.Arguments);
+        Assert.Equal(2,calls.Arguments.Count);
     });
 
     [Fact]

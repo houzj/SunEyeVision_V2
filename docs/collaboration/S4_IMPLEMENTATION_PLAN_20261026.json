@@ -7638,6 +7638,16 @@
       "最终验证": "UI005零错6396警告85.26秒；全量Release002零错6602警告65.86秒。Window162=129、Design048=85、Field083=31、RuntimeEditor065=10、FullChain123=8、Components205=9、ThemeStartup008=1、Resources017=22共295组。正式EXE016 exit0/22工具15分类；26源增量含用户XAML、796发布项、107加载记录、160唯一原来源SHA。权威O06_INLINE_REFERENCE_CHECKPOINT_20261028.json及SOURCE_AUDIT。",
       "失败保留": "窗口001宿主编译局部expected重名，002抓到InlineRules误把ParameterSetting而非Constant.Value传入数值Freeze，已修；扩展窗旧混合目录前置条件改为同一可见组真实不同来源，不放松一次写断言。004全128过1败及005/006/007定向失败证明Radio边界样式污染；空样式放Presenter或Radio.Style资源不够，放实际ContentPresenter.Resources后008过，最终009完整129过。早期产品构建成绩不套最终源码。",
       "剩余与门禁": "通用索引仍Int64语义，不称严格VM Int32全过滤；独立样例当前Float32标量/空索引通道，不冒称正式序列[]/固定/动态索引同run同帧解析完成。下一由宿主正式ParameterBindingService解析且Wpf仅依赖Contracts，不复制resolver、不默认首项。ROI菜单/history、位姿三方式及原文本/列表/底栏仍待完成；真实VS/VM同态/物理鼠标/用户本批未签。完整C09及阶段一未达标，Blob冻结，目标active。"
+    },
+    "componentSequenceCandidate": {
+      "范围及职责": "主仓继续Blob控件库及原两阶段目标，工作流对话唯一写者独立主界面及周边，不接管87f4。本批仅C07原订阅序列经正式绑定服务到C09五/六分量继承，Blob业务冻结。",
+      "正式链": "NativeRoiComponentBindings注入声明和单批解析，ReferenceBindingBatch只依赖Contracts并借用IBindingPlanCompiler/运行快照/宿主resolver及lease。真实验证宿主用ParameterBindingService、BindingScopeSnapshot、BindingRunSnapshot，不手写索引resolver、不默认首项。",
+      "声明与选择": "注入目录显式过滤Float32数值/序列成员和Int32单索引，保根Storage与成员Storage区别。矩形5槽、圆环6槽在同一快照解析后一次构造规范几何；固定索引原文编辑和独立索引树command均驱动同一Guid，未代物理鼠标。",
+      "未完成态与错误": "Unset/来源未发布/[]零或多项允许编辑，活动检测不投影且Capture拒绝，不回落本地或第0项。恰一项[]可用；动态负/越界结果暂不可用但保表达式；来源定义/帧/run/schema/epoch过期拒绝旧批，完整非法几何整批拒绝。",
+      "同根与生命周期": "Root唯一accepted fields/localItems及派生Detection/error/current receipt；Read仅读缓存，同值Capture不逐槽解析。显式来源刷新保ID并递增展示revision。成功receipt在prepare/安装/捕获再核；取消通知前置刷新门禁，finally释放，安装后观察异常外抛而不回滚或误报失败。",
+      "最终验证": "UI002 0错误/6288警告/161.30秒，全量Release001 0错误/6611警告/140.53秒。Window167=133、Design049=85、Field084=31、RuntimeEditor066=10、FullChain124=8、Components206=9、ThemeStartup009=1、Resources018=22共299组；真实EXE017 exit0/22工具15分类。4源增量含用户XAML、797发布项、107加载记录、160原来源SHA；O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json及SOURCE_AUDIT。",
+      "失败及证据边界": "保留UI001少命名空间；Window001检查宿主7编译错（RecordOf名称/Projection无Geometry），002误按RecordValue读中心，003硬编码未刷label；改用公开TryCapture/Center且仅改实际前缀后的索引。004新4组过，最终全133过，产品未因测试失配降级。Window167实际PNG已看，Design049同真实XAML过；设计默认固定标量夹具无第二序列resolver，不代真实VS/VM同态/物理鼠标/用户。",
+      "后续准入": "第一阶段和完整C09未完成，不能进入Blob重组。下一整批ROI原菜单Copy/Paste/Delete及宿主Undo/Redo（history不能复活旧DetectionCurrent/租约）；再Assist三方式与原点/文本/10列列表/窗口底栏。位姿native单位/公式未知仍不伪造。图像/结果宿主由工作流侧设计，公共库与共享合同先协调再集中实施。"
     }
   },
   "vmFrameworkArchitectureReference": {

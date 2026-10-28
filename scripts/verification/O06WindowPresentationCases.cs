@@ -1760,6 +1760,44 @@ internal static class S2DocumentEditingCases
    finally{Show(new TextBlock{Text="完成"});owner.Width=width;owner.Height=height;}
   });
  }
+ static RecordValue ComponentGeometry(SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample sample)
+ {
+  Require(sample.TryCapture(out var snapshot,out var error),"分量几何捕获失败："+error);
+  return snapshot!.Items.Single(row=>row.Group=="detect").Geometry;
+ }
+ sealed class ComponentBindingHost
+ {
+  internal readonly SunEyeVision.Plugin.Runtime.ParameterBindingService Service=new();
+  internal readonly Guid Document=Guid.NewGuid(),Run=Guid.NewGuid(),ExecutionScope=Guid.NewGuid();
+  internal readonly BindingNodeId Consumer=new("components","roi"),Numbers=new("components","numbers"),Index=new("components","index");
+  internal ImageFrameAddress Frame=null!;internal double[] Values={200d,150d,100d,80d,0d};internal long IndexValue=2;
+  internal bool Alive=true,Unavailable,OldIndexRun,BadSchema,ForeignIndexFrame;internal int Epoch,Calls,Resolutions,ExpireOnCurrent;internal Action? DuringResolve,AfterResolve;
+  internal bool Current(){if(ExpireOnCurrent>0&&--ExpireOnCurrent==0)Epoch++;return Alive;}
+  internal readonly TypeRef Member=TypeRef.RecordOf("component-numeric-record",new[]{new Port("v",DataType.Number,Storage:NumericStorage.Float32),new Port("other",DataType.Number,Storage:NumericStorage.Float32)});
+  internal Port ValuesPort=>new("values",TypeRef.SequenceOf(DataType.Number),Storage:NumericStorage.Float32);
+  internal Port RecordsPort=>new("records",TypeRef.SequenceOf(Member));
+  internal DeclaredReferenceCandidate Sequence=>new("来源数列",Numbers.NodeId,Numbers.ScopeId,ValuesPort,Array.Empty<string>());
+  internal DeclaredReferenceCandidate RecordMember=>new("记录成员",Numbers.NodeId,Numbers.ScopeId,RecordsPort,new[]{"v"});
+  internal DeclaredReferenceCandidate IndexCandidate=>new("索引来源",Index.NodeId,Index.ScopeId,new Port("value",DataType.Integer,Storage:NumericStorage.Int32),Array.Empty<string>());
+  internal ReferenceCandidates Candidates=>new(new[]{Sequence,RecordMember,new DeclaredReferenceCandidate("不应出现double","double",Consumer.ScopeId,new Port("value",DataType.Number),Array.Empty<string>())},
+   new[]{IndexCandidate,new DeclaredReferenceCandidate("不应出现long","long",Consumer.ScopeId,new Port("value",DataType.Integer),Array.Empty<string>())});
+  internal OutputReference Reference(BindingSelection selection,bool member=false)=>(member?RecordMember:Sequence).Reference(selection);
+  internal ReferenceBindingBatchResult Resolve(IReadOnlyList<(Port Target,ParameterSetting Setting)> fields)
+  {
+   Calls++;var epoch=Epoch;var numberSchema=new ToolSchema(Array.Empty<Port>(),new[]{ValuesPort,RecordsPort});var indexSchema=new ToolSchema(Array.Empty<Port>(),new[]{IndexCandidate.Output});
+   var sources=new[]{new BindingSource(Numbers,ExecutionScope,numberSchema,1),new BindingSource(Index,ExecutionScope,indexSchema,1)};
+   var scope=new SunEyeVision.Plugin.Runtime.BindingScopeSnapshot(Consumer,Document,7,sources,sources.Select(source=>source.Node),Array.Empty<KeyValuePair<BindingNodeId,IReadOnlyList<BindingNodeId>>>());
+   RunIdentity Identity(BindingNodeId node)=>new(Document,Run,ExecutionScope,node.NodeId,Guid.NewGuid());var expected=sources.ToDictionary(source=>source.Node,source=>Identity(source.Node));
+   var results=new List<BindingNodeResult>();
+   if(!Unavailable)results.Add(new(Numbers,expected[Numbers],BadSchema?2:1,numberSchema.Fingerprint,true,new InputValues(numberSchema.Outputs,new Dictionary<string,object?>{
+    ["values"]=Values,["records"]=new SequenceValue(RecordsPort.Type,Values.Select(value=>(object?)new RecordValue(Member,new Dictionary<string,object?>{{"v",value},{"other",value+1}})))})));
+   results.Add(new(Index,OldIndexRun?expected[Index] with{RunId=Guid.NewGuid()}:expected[Index],1,indexSchema.Fingerprint,true,new InputValues(indexSchema.Outputs,new Dictionary<string,object?>{{"value",IndexValue}})));
+   var snapshot=new SunEyeVision.Plugin.Runtime.BindingRunSnapshot(Consumer,Identity(Consumer),7,results,expected);
+   var frames=sources.ToDictionary(source=>source.Node,source=>source.Node==Index&&ForeignIndexFrame?new ImageFrameAddress(Guid.NewGuid(),"foreign-index-frame"):Frame);
+   var batch=new ReferenceBindingBatch(Service,scope,snapshot,(plan,run)=>{Require(ReferenceEquals(run,snapshot),"分量解析更换快照");Resolutions++;var result=Service.ResolveBinding(plan,run);var action=DuringResolve;DuringResolve=null;action?.Invoke();return result;},Frame,frames,()=>Alive&&Epoch==epoch);
+   var resolved=batch.Resolve(fields);var after=AfterResolve;AfterResolve=null;after?.Invoke();return resolved;
+  }
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -2213,6 +2251,66 @@ internal static class S2DocumentEditingCases
     {Show(fields);var field=fields.Fields.Single();Require(field.TrySetConstant((double)1e-20f)&&field.TrySetConstant((double)float.Epsilon),"不限固定小数位错误截断合法微小Float32");}
     var invalidLayout=false;try{using var bad=Create(Presentation(16),new UnsetSetting(),_=>{});}catch(ArgumentException){invalidLayout=true;}Require(invalidLayout,"空初值绕过非法精度声明");
     var unconfigured=false;try{using var bad=new DeclaredFieldEditor(port,"值",new ConstantSetting((double).1f),_=>{},presentation:Presentation(null));}catch(ArgumentException){unconfigured=true;}Require(unconfigured,"普通独立数值控件静默回退不限位数声明");
+   });
+   Test("分量序列五槽同快照固定动态索引及原文本双向捕获",()=>
+   {
+    var binding=new ComponentBindingHost();using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample(new(binding.Candidates,binding.Resolve,()=>binding.Alive));binding.Frame=sample.Frame;Show(sample);
+    var ids=new[]{"detect.rect.x","detect.rect.y","detect.rect.width","detect.rect.height","detect.rect.angle"};
+    var proposal=new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.inherit-way",new ConstantSetting(1L)}};
+    for(var i=0;i<ids.Length;i++)proposal[ids[i]]=new ReferenceSetting(binding.Reference(new BindingSelection.AtConstant(i),i==0));
+    Require(sample.Fields.TrySetFields(proposal)&&sample.Revision==1&&binding.Calls==1&&binding.Resolutions==5,"五槽未一次解析接纳");var item=sample.Session.Items.Single(row=>row.Group=="detect");var stable=item.Id;
+    Require(RoiGeometryEditing.Center(ComponentGeometry(sample)).X==200&&ComponentGeometry(sample).Get<double>("width")==100,"正式序列及记录成员解析未驱动原ROI");
+    var calls=binding.Calls;Require(sample.TryCapture(out var captured,out _)&&binding.Calls==calls&&captured!.Stamp==sample.Session.Stamp,"普通Read/捕获重复创建分量运行快照");
+    var width=sample.Fields.Fields.Single(field=>field.FieldId==ids[2]);var text=Visuals<Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox>(width.View).Single();text.Focus();Pump();var raw=text.Text;var bracket=raw.LastIndexOf('[');Require(bracket>=0&&raw.EndsWith("]",StringComparison.Ordinal),"实际来源文本无索引槽");text.Text=raw[..(bracket+1)]+"3]";SendKey(text,Key.Enter,true);Pump();
+    Require(sample.Revision==2&&binding.Calls==calls+1&&ComponentGeometry(sample).Get<double>("width")==80&&!text.IsKeyboardFocusWithin,"原文本固定索引未驱动同批几何或Enter未失焦");
+    var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(width.View).Single(view=>view.Name=="rt");var session=popup.DataContext;var type=session.GetType();((ICommand)type.GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);
+    object[] Leaves(string name)=>((System.Collections.IEnumerable)type.GetProperty(name)!.GetValue(session)!).Cast<object>().SelectMany(root=>((System.Collections.IEnumerable)root.GetType().GetProperty("EnumEntrysA")!.GetValue(root)!).Cast<object>()).ToArray();
+    Require(Leaves("SourceNodes").Length==2&&Leaves("IndexNodes").Length==1,"VM来源Float32/索引Int32过滤未落实");
+    ((ICommand)type.GetProperty("IndexClickCommand")!.GetValue(session)!).Execute(Leaves("IndexNodes").Single());Pump();
+    Require(sample.Revision==3&&sample.Session.Items.Single(row=>row.Group=="detect").Id==stable&&ComponentGeometry(sample).Get<double>("width")==100&&width.Setting is ReferenceSetting{Reference.Selection:BindingSelection.AtField},"动态索引未沿原入口驱动同一稳定对象");
+    CaptureInline(sample,"native-component-sequence-binding.png");
+   });
+   Test("分量序列空与多项不取首且未运行可编辑并显式刷新修订",()=>
+   {
+    var binding=new ComponentBindingHost{Unavailable=true};using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample(new(binding.Candidates,binding.Resolve,()=>binding.Alive));binding.Frame=sample.Frame;Show(sample);var local=sample.LocalItems.ToArray();
+    var ids=new[]{"detect.rect.x","detect.rect.y","detect.rect.width","detect.rect.height","detect.rect.angle"};var proposal=new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.inherit-way",new ConstantSetting(1L)}};
+    foreach(var id in ids)proposal[id]=new ReferenceSetting(binding.Reference(BindingSelection.All));
+    Require(sample.Fields.TrySetFields(proposal)&&!sample.TryCapture(out _,out _)&&!sample.Session.Items.Any(row=>row.Group=="detect")&&sample.LocalItems.SequenceEqual(local),"未运行来源无法配置或回落了本地ROI");
+    binding.Unavailable=false;binding.Values=Array.Empty<double>();var revision=sample.Revision;Require(!sample.RefreshComponentReferences()&&sample.Revision==revision+1&&!sample.TryCapture(out _,out _),"空[]取了默认项或未增展示修订");
+    binding.Values=new[]{20d,30d};Require(!sample.RefreshComponentReferences()&&!sample.Session.Items.Any(row=>row.Group=="detect"),"多项[]静默取首");
+    proposal.Clear();var values=new[]{200d,150d,100d,80d,0d};for(var i=1;i<ids.Length;i++)proposal[ids[i]]=new ConstantSetting(values[i]);binding.Values=new[]{200d};
+    Require(sample.Fields.TrySetFields(proposal)&&sample.TryCapture(out _,out _)&&RoiGeometryEditing.Center(ComponentGeometry(sample)).X==200,"恰一项[]未成功消费");
+    var stable=sample.Session.Items.Single(row=>row.Group=="detect").Id;revision=sample.Revision;binding.Values=new[]{210d};Require(sample.RefreshComponentReferences()&&sample.Revision==revision+1&&sample.Session.Stamp.Revision==sample.Revision&&sample.Session.Items.Single(row=>row.Group=="detect").Id==stable,"新结果更新未沿owner新修订或丢稳定ID");
+   });
+   Test("分量序列六槽身份错帧旧运行及解析重入均不安装旧值",()=>
+   {
+    var binding=new ComponentBindingHost{Values=new[]{200d,150d,40d,80d,2d,1d}};using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample(new(binding.Candidates,binding.Resolve,()=>binding.Alive));binding.Frame=sample.Frame;Show(sample);
+    var ids=new[]{"detect.annulus.x","detect.annulus.y","detect.annulus.inner","detect.annulus.outer","detect.annulus.start","detect.annulus.sweep"};var proposal=new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.inherit-way",new ConstantSetting(3L)}};
+    for(var i=0;i<ids.Length;i++)proposal[ids[i]]=new ReferenceSetting(binding.Reference(new BindingSelection.AtConstant(i)));
+    Require(sample.Fields.TrySetFields(proposal)&&binding.Calls==1&&binding.Resolutions==6&&sample.TryCapture(out _,out _),"六槽未同快照捕获");var item=sample.Session.Items.Single(row=>row.Group=="detect");Require(ComponentGeometry(sample).Get<double>("end-radians")==3,"圆环分量映射错误");
+    var dynamic=new Dictionary<string,ParameterSetting>{{ids[0],new ReferenceSetting(binding.Reference(new BindingSelection.AtField(binding.IndexCandidate.Reference(BindingSelection.All))))}};
+    foreach(var fault in new[]{"frame","run","schema","generation"})
+    {
+     binding.ForeignIndexFrame=fault=="frame";binding.OldIndexRun=fault=="run";binding.BadSchema=fault=="schema";if(fault=="generation")binding.DuringResolve=()=>binding.Epoch++;
+     var revision=sample.Revision;Require(!sample.Fields.TrySetFields(dynamic)&&sample.Revision==revision&&sample.Session.Items.Single(row=>row.Group=="detect").Id==item.Id,"错帧/旧运行/schema/重入仍安装旧组合："+fault);
+    }
+    binding.ForeignIndexFrame=false;binding.OldIndexRun=false;binding.BadSchema=false;binding.IndexValue=-1;
+    Require(sample.Fields.TrySetFields(dynamic)&&!sample.TryCapture(out _,out _)&&!sample.Session.Items.Any(row=>row.Group=="detect"),"负动态索引回落零或产生半投影");
+    binding.IndexValue=100;Require(!sample.RefreshComponentReferences()&&!sample.TryCapture(out _,out _),"越界动态索引取默认项");binding.IndexValue=0;Require(sample.RefreshComponentReferences()&&sample.TryCapture(out _,out _)&&sample.Session.Items.Single(row=>row.Group=="detect").Id==item.Id,"修复索引未恢复原表达式及ID");
+    var revision2=sample.Revision;Require(!sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{ids[2],new ConstantSetting(100d)}})&&sample.Revision==revision2,"非法完整圆环几何被接纳");
+   });
+   Test("分量序列成功回执后失效及刷新取消重入观察异常保持根事实",()=>
+   {
+    var binding=new ComponentBindingHost();using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample(new(binding.Candidates,binding.Resolve,binding.Current));binding.Frame=sample.Frame;Show(sample);
+    var ids=new[]{"detect.rect.x","detect.rect.y","detect.rect.width","detect.rect.height","detect.rect.angle"};var proposal=new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.inherit-way",new ConstantSetting(1L)}};for(var i=0;i<ids.Length;i++)proposal[ids[i]]=new ReferenceSetting(binding.Reference(new BindingSelection.AtConstant(i)));
+    binding.AfterResolve=()=>binding.ExpireOnCurrent=2;Require(!sample.Fields.TrySetFields(proposal)&&sample.Revision==0&&sample.Session.Items.Single(row=>row.Group=="detect").Enabled,"成功回执返回后writer仍安装过期来源");
+    Require(sample.Fields.TrySetFields(proposal)&&sample.TryCapture(out _,out _),"旧批拒绝后新批不能修复");binding.Epoch++;
+    Require(!sample.TryCapture(out _,out _)&&sample.Fields.Fields.Single(field=>field.FieldId==ids[0]).Setting is ReferenceSetting,"捕获漏查已过期批次或删除了表达式");Require(sample.RefreshComponentReferences()&&sample.TryCapture(out _,out _),"显式源刷新未安装当前回执");
+    var revision=sample.Revision;Action broken=()=>throw new ArgumentException("刷新安装后观察异常");sample.Session.Changed+=broken;var threw=false;
+    try{sample.RefreshComponentReferences();}catch(ArgumentException error){threw=error.Message.Contains("刷新安装后观察异常");}finally{sample.Session.Changed-=broken;}
+    Require(threw&&sample.Revision==revision+1&&sample.Session.Stamp.Revision==sample.Revision&&sample.TryCapture(out _,out _),"接纳后观察异常被吞掉或错误回滚");
+    using var local=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(local);var cancelled=0;local.Session.DrawCancelled+=_=>{cancelled++;Require(!local.RefreshComponentReferences(),"取消回调重入刷新");};
+    Require(local.Session.BeginDraw("rectangle") is not null&&local.RefreshComponentReferences()&&cancelled==1,"刷新取消阶段未设门禁或未解除门禁");Require(local.RefreshComponentReferences(),"刷新门禁未在finally解除");
    });
    Console.WriteLine($"O06独立窗口检查：{passed}组通过，{failed}组失败。仅自动交互，不代人工外观验收。");return failed==0?0:1;
   }

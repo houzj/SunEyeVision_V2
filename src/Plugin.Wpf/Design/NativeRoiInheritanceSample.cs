@@ -21,7 +21,8 @@ public partial class NativeRoiInheritancePreview : UserControl,IDisposable
 /// <summary>One preview-only owner for fields, local geometry and revision. No tool defaults or execution.</summary>
 public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
 {
-    private sealed record Root(long Revision,IReadOnlyDictionary<string,ParameterSetting> Fields,IReadOnlyList<RoiEditItem> LocalItems);
+    private sealed record Root(long Revision,IReadOnlyDictionary<string,ParameterSetting> Fields,IReadOnlyList<RoiEditItem> LocalItems,
+        RoiEditItem? Detection=null,string DetectionError="",Func<bool>? DetectionCurrent=null);
     private sealed record SourceValue(Guid Id,string Node,string Group,RecordValue Geometry,ImageFrameAddress Frame);
     private readonly NativeRoiSamples.Image _image=new();
     private readonly Guid _scope=Guid.NewGuid();
@@ -40,8 +41,17 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
     private static string Source(string group)=>group+".source";
     private bool Local(string group)=>_root.Fields[Mode(group)] is ConstantSetting{Value:0L};
     public bool GraphicMode=>_root.Fields["area.mode"] is ConstantSetting{Value:0L};
-    public NativeRoiInheritanceSample()
+    public NativeRoiInheritanceSample():this(null){}
+    public NativeRoiInheritanceSample(NativeRoiComponentBindings? bindings)
     {
+        if(bindings is not null)
+        {
+            ArgumentNullException.ThrowIfNull(bindings.Candidates);ArgumentNullException.ThrowIfNull(bindings.Resolve);ArgumentNullException.ThrowIfNull(bindings.IsCurrent);
+            _componentBindings=bindings with{Candidates=new(
+                bindings.Candidates.Sources.Where(source=>source.SelectedStorage==NumericStorage.Float32
+                    &&(source.SelectedType.Shape==ValueShape.Sequence?source.SelectedType.Element:source.SelectedType)==DataType.Number),
+                bindings.Candidates.Indices.Where(index=>index.SelectedStorage==NumericStorage.Int32))};
+        }
         var items=NativeRoiSamples.CreateItems().Where(x=>x.Geometry.Get<string>("kind") is "rectangle" or "annulus").ToArray();
         var groups=new[]{"detect","mask"};
         _root=new(0,Freeze(groups.SelectMany(group=>new[]{
@@ -72,7 +82,7 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
         options.Add("detect.inherit-way",InheritanceOptions());
         try
         {
-            Fields=new(declarations,AcceptFields,new ReferenceFieldOptions(Candidates),
+            Fields=new(declarations,AcceptFields,new ReferenceFieldOptions(Candidates,EditableIndex:true),
                 integerRadios:options,validateComposition:ValidateFields,isCurrent:()=>!_disposed,
                 imageSources:new Dictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>{["mask.image"]=()=>new[]{
                     new DeclaredReferenceCandidate("同帧屏蔽图像","mask-image",null,new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),Array.Empty<string>())}},
@@ -116,10 +126,14 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var current=_root;var fields=current.Fields.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal);
+        var prepared=_preparedComponents;_preparedComponents=null;
+        if(prepared is null||!ReferenceEquals(prepared.Root,current)||!ComponentsCurrent()||!PreparedCurrent(prepared)||!ReferenceEquals(current,_root)
+            ||changes.Count!=prepared.Changes.Count||changes.Any(change=>!prepared.Changes.TryGetValue(change.Key,out var value)||!SameSetting(change.Value,value)))
+            throw new ArgumentException("参数解析回执已失效，不能安装旧组合。");
         if(Session.CurROIData is {Enabled:true} selected&&current.LocalItems.Any(item=>item.Group==selected.Group&&item.Id==selected.Id))
             _lastLocalSelection=new(selected.Group,selected.Id);
         foreach(var change in changes)fields[change.Key]=change.Value;
-        _root=current with{Revision=current.Revision+1,Fields=Freeze(fields)};
+        _root=current with{Revision=current.Revision+1,Fields=Freeze(fields),Detection=prepared.Detection,DetectionError=prepared.Error,DetectionCurrent=prepared.IsCurrent};
         // No Session callbacks here: fields install accepted states before Changed refreshes the scene.
     }
     private void OnFieldsChanged()
@@ -142,7 +156,7 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
             else
             {
                 if(group=="detect")
-                {if(TryDetect(root.Fields,out var detected,out _))rows.Add(detected!);}
+                {if(root.Detection is {} detected)rows.Add(detected);}
                 else if(root.Fields[Source(group)] is ReferenceSetting reference)
                 {var source=Resolve(group,reference);rows.Add(new(group,source.Id,source.Node,source.Geometry,Enabled:false));}
             }

@@ -610,7 +610,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "82b92e9099553ca8cddb67b15daa75e18a72ba1907dc3321d643a47dc0fa5d03"
+          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -1088,7 +1088,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
-          "sha256": "ecd24396467270e462344891a21cc7a7a7b6f7f3447a3c17580ab02832f4612f"
+          "sha256": "91074ccd14e1a3c36dc8293aa37295a2502d7a9a25c1269c7c2b6cccd305b282"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
@@ -1101,6 +1101,18 @@
         {
           "path": "src/Plugin.Contracts/FieldPresentation.cs",
           "sha256": "eaa904fa23e993ce4a72ee9d9a55dcde0c5dd6e8697db28df3642b0b219484e5"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
+          "sha256": "99895d0ec5bb91cffd91b4a1a0f40979b482384bff29f86ffbba5ce9bbffc891"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
+          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
+        },
+        {
+          "path": "src/Plugin.Contracts/BindingPlans.cs",
+          "sha256": "3e5da4aab2a7e6264db5cade2f87a255e4f3b3cc6d4f105189fa142a7ce00c92"
         }
       ],
       "dependencyCatalogRefs": [
@@ -1153,6 +1165,14 @@
         "candidates": "单provider冻结Sources/Indices分通道；成员storage沿路径投影、根引用声明保留；现行UI三个消费者已迁新合同，无混合目录兼容入口",
         "validation": "Window162=129、Design048=85及字段/宿主/组件关联；证据O06_INLINE_REFERENCE_CHECKPOINT_20261028.json",
         "remaining": "样例只含Float32标量和空索引通道；通用索引仍Int64语义，不声称全面VM Int32筛选；正式序列All/固定/动态索引与5/6同快照解析未完成"
+      },
+      "sequenceBindingComposition20261028": {
+        "consumer": "NativeRoiInheritanceSample injected NativeRoiComponentBindings -> same original FieldsView/ReferencePresenter/Scene; Wpf only references Contracts",
+        "resolver": "ReferenceBindingBatch borrows actual IBindingPlanCompiler/IBindingRunSnapshot and host resolver; formal verification uses ParameterBindingService/BindingScopeSnapshot/BindingRunSnapshot, no local index interpreter",
+        "identity": "Float32 numbers/member paths and Int32 scalar indices explicitly filtered; all dependencies carry one host frame receipt; successful batch carries borrowed freshness proof checked at prepare/install/capture",
+        "state": "Root owns accepted fields and cached readonly detection/error/proof, Read never resolves; explicit source refresh advances revision. Missing/unavailable/All0-or-many allow draft but block capture; malformed and stale identities reject. Fixed fixture designer remains scalar-only, never a second sequence resolver.",
+        "validation": "Window167=133, Design049=85, eight tracks299; actual EXE017 exit0/22 tools. O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json; actual mouse/VS/VM/user not signed",
+        "remaining": "Full C09 menu/history/Assist and C13/C14/window complete compositions remain; actual Blob consumers frozen until full phase1 gate"
       }
     },
     {
@@ -2902,7 +2922,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "82b92e9099553ca8cddb67b15daa75e18a72ba1907dc3321d643a47dc0fa5d03"
+          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -2914,7 +2934,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
-          "sha256": "ecd24396467270e462344891a21cc7a7a7b6f7f3447a3c17580ab02832f4612f"
+          "sha256": "91074ccd14e1a3c36dc8293aa37295a2502d7a9a25c1269c7c2b6cccd305b282"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
+          "sha256": "99895d0ec5bb91cffd91b4a1a0f40979b482384bff29f86ffbba5ce9bbffc891"
+        },
+        {
+          "path": "src/Plugin.Contracts/BindingPlans.cs",
+          "sha256": "3e5da4aab2a7e6264db5cade2f87a255e4f3b3cc6d4f105189fa142a7ce00c92"
         }
       ],
       "dependencyCatalogRefs": [
@@ -2957,7 +2985,15 @@
       },
       "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。",
       "fourWayReferenceComposition20261028": "原四选/五槽、未选-1及5/6独立ButtonSelecter；允许缺源编辑，显式捕获只核活动族，完整后一次同根投影。Frame/非法半径拒绝、不回落本地、两派生稳定ID、本地选中恢复及观察异常聚合。Window153/Design047与八轨287组通过。尚缺原VmConstantIO内联常量、Float32/序列/动态索引完整组合，示例Float64是本方夹具；不计完整C09、实际VM同态或用户验收。",
-      "textThemeIsolation20261028": "自动ContentPresenter文字的隐式样式查找在模板边界止步；资源隔离置于原ContentPresenter自身，保原Radio灰色、模板布局和图标；Window162严格原色/非空文字检查。原词条与本方四项一致，原PNG矩/圆字形复核纠正缩图误读；仍未记完整视觉验收。"
+      "textThemeIsolation20261028": "自动ContentPresenter文字的隐式样式查找在模板边界止步；资源隔离置于原ContentPresenter自身，保原Radio灰色、模板布局和图标；Window162严格原色/非空文字检查。原词条与本方四项一致，原PNG矩/圆字形复核纠正缩图误读；仍未记完整视觉验收。",
+      "sequenceBindingComposition20261028": {
+        "consumer": "NativeRoiInheritanceSample injected NativeRoiComponentBindings -> same original FieldsView/ReferencePresenter/Scene; Wpf only references Contracts",
+        "resolver": "ReferenceBindingBatch borrows actual IBindingPlanCompiler/IBindingRunSnapshot and host resolver; formal verification uses ParameterBindingService/BindingScopeSnapshot/BindingRunSnapshot, no local index interpreter",
+        "identity": "Float32 numbers/member paths and Int32 scalar indices explicitly filtered; all dependencies carry one host frame receipt; successful batch carries borrowed freshness proof checked at prepare/install/capture",
+        "state": "Root owns accepted fields and cached readonly detection/error/proof, Read never resolves; explicit source refresh advances revision. Missing/unavailable/All0-or-many allow draft but block capture; malformed and stale identities reject. Fixed fixture designer remains scalar-only, never a second sequence resolver.",
+        "validation": "Window167=133, Design049=85, eight tracks299; actual EXE017 exit0/22 tools. O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json; actual mouse/VS/VM/user not signed",
+        "remaining": "Full C09 menu/history/Assist and C13/C14/window complete compositions remain; actual Blob consumers frozen until full phase1 gate"
+      }
     },
     {
       "id": "C09.original-inherited-annulus-display",
@@ -3136,7 +3172,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "82b92e9099553ca8cddb67b15daa75e18a72ba1907dc3321d643a47dc0fa5d03"
+          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -3152,7 +3188,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.Components.cs",
-          "sha256": "ecd24396467270e462344891a21cc7a7a7b6f7f3447a3c17580ab02832f4612f"
+          "sha256": "91074ccd14e1a3c36dc8293aa37295a2502d7a9a25c1269c7c2b6cccd305b282"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
+          "sha256": "99895d0ec5bb91cffd91b4a1a0f40979b482384bff29f86ffbba5ce9bbffc891"
+        },
+        {
+          "path": "src/Plugin.Contracts/BindingPlans.cs",
+          "sha256": "3e5da4aab2a7e6264db5cade2f87a255e4f3b3cc6d4f105189fa142a7ce00c92"
         }
       ],
       "dependencyCatalogRefs": [
@@ -3178,7 +3222,15 @@
         "Complete stage1 and real VS/VM/manual acceptance remain open"
       ],
       "imageModeComposition20261028": "字段ID选择原EnumerationG；父条件AND原字段条件/附件/高级/分组；隐藏前暂停引用UI写入并关闭弹层，显式owner离线捕获保留。独立同根图形/图像模式保物理帧、本地几何及来源，切换刷新修订。Window149/Design046及关联八轨282组；不是完整四继承方式、Blob InputMask实际执行或用户人工验收。",
-      "fourWayReferenceComposition20261028": "原四选/五槽、未选-1及5/6独立ButtonSelecter；允许缺源编辑，显式捕获只核活动族，完整后一次同根投影。Frame/非法半径拒绝、不回落本地、两派生稳定ID、本地选中恢复及观察异常聚合。Window153/Design047与八轨287组通过。尚缺原VmConstantIO内联常量、Float32/序列/动态索引完整组合，示例Float64是本方夹具；不计完整C09、实际VM同态或用户验收。"
+      "fourWayReferenceComposition20261028": "原四选/五槽、未选-1及5/6独立ButtonSelecter；允许缺源编辑，显式捕获只核活动族，完整后一次同根投影。Frame/非法半径拒绝、不回落本地、两派生稳定ID、本地选中恢复及观察异常聚合。Window153/Design047与八轨287组通过。尚缺原VmConstantIO内联常量、Float32/序列/动态索引完整组合，示例Float64是本方夹具；不计完整C09、实际VM同态或用户验收。",
+      "sequenceBindingComposition20261028": {
+        "consumer": "NativeRoiInheritanceSample injected NativeRoiComponentBindings -> same original FieldsView/ReferencePresenter/Scene; Wpf only references Contracts",
+        "resolver": "ReferenceBindingBatch borrows actual IBindingPlanCompiler/IBindingRunSnapshot and host resolver; formal verification uses ParameterBindingService/BindingScopeSnapshot/BindingRunSnapshot, no local index interpreter",
+        "identity": "Float32 numbers/member paths and Int32 scalar indices explicitly filtered; all dependencies carry one host frame receipt; successful batch carries borrowed freshness proof checked at prepare/install/capture",
+        "state": "Root owns accepted fields and cached readonly detection/error/proof, Read never resolves; explicit source refresh advances revision. Missing/unavailable/All0-or-many allow draft but block capture; malformed and stale identities reject. Fixed fixture designer remains scalar-only, never a second sequence resolver.",
+        "validation": "Window167=133, Design049=85, eight tracks299; actual EXE017 exit0/22 tools. O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json; actual mouse/VS/VM/user not signed",
+        "remaining": "Full C09 menu/history/Assist and C13/C14/window complete compositions remain; actual Blob consumers frozen until full phase1 gate"
+      }
     }
   ]
 }

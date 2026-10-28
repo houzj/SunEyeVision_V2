@@ -1,3 +1,33 @@
+## 2026-10-28 C07序列索引与C09同根分量继承集中批封存
+
+- 基线44e3ad5e；目标active，主仓本对话唯一产品写者、三路只读核收/补位。工作流对话唯一写者独立主界面及周边，不接管87f4。当前恢复后优先续完序列批，Blob业务继续冻结。
+- 新ReferenceBindingBatch借正式compiler/snapshot/resolver，Wpf仍仅Contracts。注入NativeRoiComponentBindings严格Float32来源/Int32单索引；正式验证用真实ParameterBindingService同snapshot解析5/6槽，根/成员存储分离，无近似resolver或取首fallback。[]零/多/未发布保草稿拒捕获，恰1成功；负/越界动态索引保表达式，修复后显式刷新。
+- Root唯一字段/本地集合及派生Detection/error/有效性receipt，Read不解析；显式来源刷新增revision保Guid。prepare/writer/Capture核同frame/run/schema/epoch/root，成功后至writer的late epoch也拒旧值。刷新门禁在CancelPending前，finally释放；观察异常保已接纳新stamp并外抛。默认设计固定标量夹具不含第二索引resolver。
+- 最终UI002 0错6288警告161.30秒；全量Release001 0错6611警告140.53秒。Window167=133、Design049=85、Field084=31、RuntimeEditor066=10、FullChain124=8、Components206=9、ThemeStartup009=1、Resources018=22共299组；正式EXE017 exit0/22工具15分类。4源增量含用户XAML、797发布项、107加载记录、160唯一原来源SHA核对。权威O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json、SOURCE_AUDIT及HANDOFF_COMPONENT_SEQUENCE_20261028.md。
+- 保留所有失败：UI001少using；Window001宿主7编译错，002错读center，003硬编码来源label；改公开TryCapture/Center并保真实文本前缀只改索引，004新4组过、最终167全133过。最终UI构建后仅验证/文档，产品源未变。Window167实际PNG已看；设计时/VM同态/物理鼠标/用户本批未签。用户页索引2/SHA原样不提交，不推送；自有进程已全部结束。
+- 下一整批ROI菜单/Delete/Copy/Paste及宿主Undo/Redo；history保存fields/localItems/选择，不能复活旧DetectionCurrent/租约，应当前来源重投影且新revision。再Assist整体FIXTURE/2POINT+6float/10float三方式、原点/文本/10列列表/窗口底栏。位姿native单位公式仍未证不猜。主界面图像/模块结果宿主由工作流侧整体设计，公共库本线写入、共享合同先协调，正式Release仍唯一窗口。阶段一和完整C09未达标，不能进入第二阶段。
+
+## 2026-10-28 恢复原两阶段目标与独立分工
+
+- 用户明确：工作流对话唯一写者独立推进主界面及周边；本对话恢复主仓控件库和Blob原两阶段目标。目标工具已恢复active，先控件库准入再Blob重组，所有原要求不缩减。
+- 主仓仍由本对话唯一产品写者，三路只读重新补位。本批先续序列All/固定/动态索引同快照及5/6分量ROI组合，修验证宿主编译错误后验证；用户Blob页索引保持原样。
+- 不接管或修改87f4，不从旧工作流分支覆盖正式产物；主仓统一构建窗口已通知工作流侧，共享API和集成继续协调。
+
+## 2026-10-28 协作纠正：工作流对话唯一写者
+
+- 用户最终明确：主界面及周边在原工作流对话、原codex/workflow-toolbox-dataflow分支独立开发，工作流对话为该工作区唯一写者。本总监对话只分析/协调/评审，不接管、不修改该工作区产品代码。
+- 之前误写的接管记录已仅撤回本对话增量，87f4恢复85e56834干净状态，主题检查点未改。已通知工作流对话按用户指定恢复独立开发。
+- 另申请的main-window-shell工作区未投入开发，已请求归档。主仓44e3ad5e及序列组合未提交候选、用户Blob页索引原样保留；Blob两阶段目标仍暂停。
+
+## 2026-10-28 用户转向独立功能：保留序列组合候选
+
+- 用户最新要求“我们先独立开发优化其他功能”，已停止继续修改控件，具体模块待用户指定；未创建新聊天/工作区、未替用户选择模块。
+- 已封存基线44e3ad5e仍为上一完整批295组；当前未提交为ReferenceBindingBatch.cs、NativeRoiInheritanceSample两个partial及O06WindowPresentationCases。借正式服务同snapshot解析5/6分量、严格Float32/Int32目录、root缓存及借用回执、显式刷新与重入门禁，三路只读已核关键修复，但不可称验证通过。
+- UI001缺Fields命名空间失败已修；UI002 0错误/6288警告/161.30秒。定向Window当前检查宿主编译失败7错：TypeRef.RecordOf缺name，测试误访问NativeRoiProjection.Geometry，应改读Session.Snapshot对应item后再验证。未运行新4组、未全量Release、未关联回归/EXE/VS/人工验收，不复用旧295组。
+- 自有UI构建93407及窗口验证22091均已终止；所有失败保留component-sequence-*-20261028日志。正式产物当前仅UI候选部署，不能当完整最终同源Release交付；恢复本批后应修测试、完整构建与回归。
+- 工作流侧已独立封存主题小补丁85e56834102842fdd77ffb876b1b8723fa808fcf，父ee0c7fc4、4文件、工作区干净，未编译/运行/VS/人工。尚未合入主线；不允许用旧工作流基线覆盖正式产物。集成与构建窗口另协调。
+- 用户BlobParameterEditor.xaml页索引2及SHA原样，不提交、不推送。阶段一和整个两阶段目标未完成，不代签、不进入Blob业务。
+
 ## 2026-10-28 C07同槽常量与双通道目录集中批封存
 
 - 共同基线ee0c7fc4；主线唯一产品写者，三路只读核收后补位序列索引/ROI菜单历史/位姿原组合。原ButtonSelecter同槽常量/引用/空，原文本Popup/专窗共accepted；合法Enter单写失焦，非法/拒绝保raw，接纳后观察异常不回滚，旧焦点不能抢新输入。Blob业务未改。

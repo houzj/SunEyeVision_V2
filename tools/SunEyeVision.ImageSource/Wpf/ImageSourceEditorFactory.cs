@@ -2,6 +2,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
 
 namespace SunEyeVision.Tool.ImageSource.Wpf;
 
@@ -12,5 +13,7 @@ public sealed class ImageSourceEditorFactory : IToolPresentationFactory
         => new Views.ImageSourceParameterEditor(draft, options);
 
     public IToolResultView CreateResultView(ToolSchema schema, ResultProjectionDescriptor projection)
-        => new DeclaredResultTable(schema, projection);
+        => projection.Kind == ResultProjectionKind.PropertyList
+            ? new DeclaredPropertyList(schema, projection)
+            : new DeclaredResultTable(schema, projection);
 }

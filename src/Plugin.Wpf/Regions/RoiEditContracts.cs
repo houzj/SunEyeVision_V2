@@ -4,9 +4,37 @@ using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 namespace SunEyeVision.Plugin.Wpf.Regions;
 
 public sealed record RoiEditItem(string Group,Guid Id,string Name,RecordValue Geometry,bool Enabled=true,bool Visible=true);
-public enum RoiEditOperation { Create,Replace }
 public sealed record RoiEditTarget(string Group,Guid Id);
-public sealed record RoiEditProposal(RoiEditOperation Operation,string Group,Guid? TargetId,RecordValue Geometry);
+/// <summary>Closed requests: collection and history operations never carry fictitious geometry.</summary>
+public abstract record RoiEditProposal
+{
+    private RoiEditProposal(){}
+    public sealed record Create(string Group,RecordValue Geometry):RoiEditProposal;
+    public sealed record Replace(RoiEditTarget Target,RecordValue Geometry):RoiEditProposal;
+    public sealed record Delete:RoiEditProposal
+    {
+        public IReadOnlyList<RoiEditTarget> Targets {get;}
+        public Delete(IEnumerable<RoiEditTarget> targets)
+        {
+            ArgumentNullException.ThrowIfNull(targets);
+            var copy=targets.ToArray();
+            if(copy.Length==0||copy.Any(target=>target is null||string.IsNullOrWhiteSpace(target.Group)||target.Id==Guid.Empty)
+                ||copy.Distinct().Count()!=copy.Length)throw new ArgumentException("删除目标必须非空、身份有效且不重复。",nameof(targets));
+            Targets=Array.AsReadOnly(copy);
+        }
+    }
+    public sealed record Undo:RoiEditProposal;
+    public sealed record Redo:RoiEditProposal;
+}
+/// <summary>Selection is independent of the affected objects; deleted objects cannot be selected.</summary>
+public abstract record RoiEditSelection
+{
+    private RoiEditSelection(){}
+    public sealed record Keep:RoiEditSelection;
+    public sealed record Clear:RoiEditSelection;
+    public sealed record Select(RoiEditTarget Target):RoiEditSelection;
+}
+public sealed record RoiHistoryAvailability(bool CanUndo,bool CanRedo);
 /// <summary>Single-use request fixed after pending parameter edits; a host alone assigns the final object identity.</summary>
 public sealed class RoiDrawRequest
 {

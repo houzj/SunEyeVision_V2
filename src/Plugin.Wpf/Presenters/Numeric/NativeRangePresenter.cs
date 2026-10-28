@@ -10,6 +10,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
+using SunEyeVision.Plugin.Wpf.Fields;
 using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
@@ -112,6 +113,18 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         }
     }
     private void OnStateChanged(){if(!_committing)Project(false);}
+    internal void ValidateReplay(IReadOnlyDictionary<string,AcceptedFieldValue> values)
+    {
+        if(values[_states[0].Port.Id].Setting is ConstantSetting low&&values[_states[1].Port.Id].Setting is ConstantSetting high
+            &&Convert.ToDouble(low.Value,CultureInfo.InvariantCulture)>Convert.ToDouble(high.Value,CultureInfo.InvariantCulture))
+            throw new ArgumentException("历史范围下限不能大于上限。");
+    }
+    internal void ReplayAccepted()
+    {
+        if(_disposed)return;
+        ++_generation;_pending?.Abort();_pending=null;_resume?.Abort();_resume=null;
+        _expansion.Close();foreach(var scope in _scopes)scope?.ClosePopups();Project(true);
+    }
     private void Project(bool accepted)
     {
         if(_disposed||_syncing)return;_syncing=true;

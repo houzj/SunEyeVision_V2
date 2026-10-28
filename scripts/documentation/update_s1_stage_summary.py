@@ -368,6 +368,12 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-component-sequence">C07序列索引到C09同根五／六分量继承</h5>'
                + table(['项目','本批结果与尚未完成边界'], list(plan['componentSequenceCandidate'].items()))
                if plan.get('componentSequenceCandidate') else '')
+            + ('<h5 id="o06-roi-menu-history-design">C09原菜单与同根宿主历史：完整批设计</h5>'
+               + table(['项目','确定的合同、实施链与验收门'], list(plan['roiMenuHistoryDesign'].items()))
+               if plan.get('roiMenuHistoryDesign') else '')
+            + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
+               + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
+               if plan.get('nextNativeCompositionsDesign') else '')
             + ('<h5 id="o06-text-list-footer-audit">文本、结果列表与底栏的原组合缺口</h5>'
                + table(['组合','当前缺口与后续边界'], list(plan['remainingControlAudit20261028'].items()))
                if plan.get('remainingControlAudit20261028') else '')

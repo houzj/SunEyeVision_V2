@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Fields;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
 
@@ -53,6 +54,58 @@ internal sealed class DeclaredFieldState : IDisposable
             var error=_validate?.Invoke(CopySetting(values[Port.Id]));
             if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
         });
+    }
+
+    internal AcceptedFieldValue CaptureAccepted()=>new(Accepted,IsReferenceMode,ConstantBackup);
+
+    /// <summary>Owner history replay, deliberately separate from a draft proposal or its writer.</summary>
+    internal static bool ReplayAccepted(IReadOnlyList<(DeclaredFieldState State,AcceptedFieldValue Value)> entries,
+        Action<IReadOnlyDictionary<string,ParameterSetting>> validate,Func<bool> current,Func<bool> installOwner,out Action publish)
+    {
+        publish=()=>{};
+        var states=entries.Select(entry=>entry.State).ToArray();
+        if(states.Distinct().Count()!=states.Length)throw new ArgumentException("回放字段重复。");
+        if(states.Any(state=>state.IsDisposed||state._writing)||!current())return false;
+        foreach(var state in states)state._writing=true;
+        try
+        {
+            var prepared=entries.Select(entry=>
+            {
+                var state=entry.State;var value=entry.Value;
+                var setting=value.Setting is UnsetSetting?new UnsetSetting():state.PrepareProposal(value.Setting);
+                var backup=value.ConstantBackup is null?null:(ConstantSetting)state.PrepareProposal(value.ConstantBackup);
+                if(setting is ReferenceSetting&&!value.ReferenceMode
+                    ||value.ReferenceMode&&(state.Port.EditModes&FieldEditModes.Reference)==0)
+                    throw new ArgumentException("回放的编辑模式与正式设置不符。");
+                return (State:state,Value:new AcceptedFieldValue(CopySetting(setting),value.ReferenceMode,backup));
+            }).ToArray();
+            validate(new System.Collections.ObjectModel.ReadOnlyDictionary<string,ParameterSetting>(prepared.ToDictionary(
+                entry=>entry.State.Port.Id,entry=>CopySetting(entry.Value.Setting),StringComparer.Ordinal)));
+            if(states.Any(state=>state.IsDisposed)||!current()||states.Any(state=>state.IsDisposed))return false;
+            // Contract: this callback only installs the already prepared owner root/cursor, without notifications.
+            // There are no external callbacks between it and the complete accepted-state assignment below.
+            if(!installOwner())return false;
+            foreach(var (state,value) in prepared)
+            {
+                state._accepted=value.Setting;state._constantBackup=value.ConstantBackup;state.IsReferenceMode=value.ReferenceMode;
+                state._referenceCleared=false;state.EditError="";state.SourceError="";state.AcceptanceVersion++;
+            }
+        }
+        finally{foreach(var state in states)state._writing=false;}
+        publish=()=>PublishReplay(states);
+        return true;
+    }
+    private static void PublishReplay(IReadOnlyList<DeclaredFieldState> states)
+    {
+        var failures=new List<Exception>();
+        foreach(var state in states)
+            foreach(Action listener in state.ExplicitlyAccepted?.GetInvocationList()??Array.Empty<Delegate>())
+            {if(state.IsDisposed)break;try{listener();}catch(Exception error){failures.Add(error);}}
+        foreach(var state in states)
+            foreach(Action listener in state.Changed?.GetInvocationList()??Array.Empty<Delegate>())
+            {if(state.IsDisposed)break;try{listener();}catch(Exception error){failures.Add(error);}}
+        if(failures.Count==1)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        if(failures.Count>1)throw new AggregateException("历史已接纳，字段观察者发生异常。",failures);
     }
 
     /// <summary>Prepare every endpoint before one host write; install every accepted value before notifying.</summary>

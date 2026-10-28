@@ -1,3 +1,41 @@
+## 2026-10-28 ROI原菜单与同根历史集中批封存
+
+- 编译基线9d711e86；原两阶段goal active。主仓本对话唯一产品写者，工作流对话独立主界面及周边；D1仍候选未合入、不代其验收，正式Release窗口统一。Blob业务未改。
+- 原菜单变更前拦截，封闭Create/Replace/Delete/Undo/Redo及显式Affected/Keep-Clear-Select；准备/取消后重读root、防同版改内容、所有外调后核caller；原Ctrl+C/Delete/Ctrl+V、宿主Ctrl+Z/Y。规范几何剪贴不持图像/原Clone/Hash。两个Design owner唯一历史保存Fields/LocalItems/选择和会话备份，不存旧DetectionCurrent；恢复当前来源重新解析/new revision，同Guid恢复新投影、旧实例永久拒绝。
+- Fields.TryReplayAccepted不走普通writer；完整声明/backup/模式校验后一次owner根+全部accepted安装，再延迟单次Publish，强制清Range双端/raw/弹窗/队列，通知异常不回滚。三类接纳共PublishAcceptance，失效/验证/安装/通知异常均发布清理。ContextMenu真实surface Closed按实例退订，Bind/ReleaseFrame先摘旧订阅、帧、队列再外调，嵌套Bind不清新会话；Dispose聚合释放。
+- 最终UI005 0错6286警告80.06秒；全量Release002 0错6609警告144.77秒。Window175=151、Design050=85、Field085=31、RuntimeEditor067=10、FullChain125=8、Components207=9、ThemeStartup010=1、Resources019=22共317组；EXE018/PID65328 exit0/22工具15分类。16源增量含用户XAML、798发布项、107加载记录、162唯一原来源SHA核对。权威evidence/O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json及SOURCE_AUDIT。
+- 所有早期构建/失败保留：170/171/172菜单断言失败，取当前宿主并有界Dispatcher等真实Closed，173定位过；174全149过，补定义重建/正式当前来源历史出口后175全151过。定义重建不代Blob磁盘保存；Window175实际PNG已看，Design050同真实XAML过，真实VS/VM同态/物理鼠标/用户本批未签。
+- 最终构建后产品源未改；后续只有测试矩阵、Catalog非编译证据和文档。自有构建14276/42780/11971、验证81481/22980/38549/5360、串行53606及最终Window95610均终止；EXE65328已确认退出。用户BlobParameterEditor.xaml页索引2/SHA 118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed原样，不提交、不推送。
+- 下一统一工作流D1完整检查点与共同基线（不接管87f4、不从旧分支覆盖Release）；公共C14结果上下文/来源证明和C17窗口命令消费者与其相交，须整批合同后双方同步。C13原StringConfig七行、C14原十列/500增量/资源、C17三页固定栏/host执行的三路核收已统一nextNativeCompositionsDesign，不重复取证。
+- 阶段一/完整C09未达标；Assist三方式/native单位公式、C13/C14/C17/中立产品命名及真实人工门保留，Blob冻结。中文完整批本地提交，交接HANDOFF_ROI_MENU_HISTORY_20261028.md。
+
+## 2026-10-28 ROI候选十组定向通过；全量Release001运行中
+
+- UI002已终止exit0：6218警告/0错误/81.52秒。Window168=6定向组，Window169=10定向组，均0失败；最后四组覆盖失效仍Publish释放字段门禁、权限/history查询递归、IsCurrent同步解绑/Dispose、临时引用模式及越界备份。169实际PNG已查看，不代真实VS/VM/物理鼠标/用户签署。
+- 全量Release001 live exec session=51368；日志artifacts/roi-menu-history-release-build-20261028-001.log。下一轮先poll此句柄及日志，禁止直接重启或活进程期间修改源码。原UI002 session88879、Window26276/71649均终止exit0，不再等待这些。
+- Catalog本地sourceFiles.localSha256/dependencies.sha256已刷新；所有依赖NativeRoiSession的条目新增5个中立适配文件及candidate记录，原来源SHA保留。O06原方案已补当前candidate与静态多边形证据，生成器待再运行。不得称全批/阶段一完成，不提交/推送候选。
+- **下一静态收口点**：RoiEditAcceptance新增Publish用于历史延迟通知，AcceptCommand已无论IsCurrent恰一次发布；CompleteDraw/TryCommit当前仍沿原路径，须统一所有接纳入口同样保证Publish（包括失效早退/验证或安装观察异常）。不能留公开回执能力只被部分入口消费。等全量001终止后集中修，并补Create/Replace发布回归；若产品源改，需最终UI003和全量Release002，不套001/002旧构建。然后清filter跑Window全143+、其余7关联轨及正式EXE，同源SHA审计/原方案/完整批提交。
+- `_queryingHistory`独立门禁已修；History公共getter仍要求CommandReady，内部ReadHistory可在_requesting保护下再次读取能力。Viewport统一MenuLease固定owner/frame/generation/stamp，外调Current后核身份；所有Delete/Paste传caller代次检查，ClearMenuState关闭实际打开原ContextMenu。常量accepted+临时引用模式允许回放并显缺源，backup另校范围/精度。字段回放持_submitting至单次Publish finally，全accepted赋值先于任何通知。
+- 当前无其他未确认活句柄；用户BlobParameterEditor.xaml页索引与SHA保持，不改不提交。工作流D1仍独立源码开发，我方已回复C14结果上下文提案方向一致：复用Run/Schema/Status、借用InputValues、不可变延迟投影、物理帧由host核，多图不强塞单帧；我方ROI封存后集中公共API，双方消费者同步，不留旧重载。正式Release窗口仍我方独占。
+
+## 2026-10-28 ROI菜单与整根历史候选已实施；第二轮UI构建运行中
+
+- 前一轮为实际设计进展（原方案新增roiMenuHistoryDesign、717唯一锚点幂等），本轮按其集中实施。主仓仍本对话唯一产品写者，工作流侧D1图像源Host/UI链独立开发；公共结果上下文/窗口宿主后续协调。目标active，阶段一未退出，Blob业务未改。
+- 新封闭Create/Replace/Delete/Undo/Redo提案；成功显式Affected集合+Keep/Clear/Select，拒绝同版内容/防倒退、畸形回执终止租约；Session.Commands准备/取消后核实例根、私有规范几何剪贴与像素粘贴、宿主历史能力查询。原ImageViewBox在变更前路由NativeRoiMenuCommands，接管后不回落Add/Remove/Clone；Viewport冻结owner/frame/stamp/generation、关闭旧菜单，保原Ctrl+C/Delete/Ctrl+V，新增宿主Ctrl+Z/Y；卸载/Dispose拒旧命令。
+- 两Design owner均显式switch及唯一history。Inheritance历史保存Fields accepted/常量备份/模式、LocalItems、逻辑选择，不存Root/DetectionCurrent；恢复强制当前TryDetect、预检mask Resolve/图像、新revision、更新游标。新增Fields.TryReplayAccepted绕普通writer，先完整冻结校验、无通知安装root+全部state，再单次Publish清raw/Range双端/弹窗并聚合通知异常，不回滚。
+- 评审修复已纳候选：AcceptCommand失效也必须Publish解锁；IsCurrent/canDraw/history查询防递归；合法Constant accepted+临时引用模式可往返回放；backup复用声明范围/精度校验；菜单回调固定owner/frame/generation并二次核身份，Delete/Paste传caller有效性。新6组ROI菜单历史回归已写但未运行，原helper和所有合同消费者已同步。
+- UI001已终止exit0：6587警告/0错误/234.57秒；其后修评审门禁，故不是最终源码成绩。UI002正在运行，唯一已确认live exec session=88879，日志artifacts/roi-menu-history-ui-build-20261028-002.log。下一轮必须先poll该session/核权威进程，不凭无输出重启；存活期间禁止修改产品/测试源码。未全量Release、未新增回归/EXE/设计器/人工，旧299组不得套用。
+- build002结束后先读错误；补评审边界回归（接纳后失效仍Publish、权限递归、IsCurrent回调Bind(null)/换owner/Dispose、reference backup模式、真实菜单重绑关闭）。再最终UI→全量Release→定向6组及完整相关8轨道/EXE同源验证。当前Catalog源/依赖SHA仍旧，需统一更新并登记新文件，保160原来源SHA。不要抢先封存/提交/推送；仅完整批后中文提交。
+- 新定向原件证据：Apps.Data.dll SHA 2AD51C179D4A5CF7E0C0373CD1526DE8A75D53A3EA6CBE3EF73C0C5268E1C55C、MVID cb38f3bc-780b-400d-89f5-0ba51ce23489，PolygonROIModel.PastROI RVA0x5cc4/334bytes用各轴Min/Max包围盒中心平移，Normalized继承不覆写；ContainerItem.xaml9/17确有Ctrl+C/Delete（此前未证已补证），原SHA A150C02F92E540FADB8422BBAD5E3E12C21574C1667E34875D967576B75888FE。静态证据不冒称VM运行。
+- 三路只读已自动补位C13/C14/C17并交整链建议：C13原StringConfig占位{…}七行组合；C14原10列禁止排序、500分批、结果身份/物理帧、reader及时释放；C17原三页固定栏/66x24按钮、host命令状态、不搬原300ms或旧SDK500ms循环。消息内容待下一完整批写原方案；当前不要额外改这些链。用户BlobParameterEditor.xaml索引2/SHA保持原样，不提交。
+
+## 2026-10-28 用户确认独立分工；ROI原菜单和宿主整根历史设计已统一
+
+- 用户明确工作流对话独立推进主界面及周边，本对话继续控件库→准入后Blob重组原两阶段；goal active，不新建目标、不缩减清单。主仓唯一产品写者，工作流87f4不接管。已通知工作流其D1图像源Host+UI基础链由其完整实现，我方本批不改NodeConfigurationEditHost/WorkflowNode等消费者，公共API另协调；正式Release仍独占。
+- 9d711e86是上一封存基线。集中只读核查已完成；原方案blobControlPrototypePlan.roiMenuHistoryDesign及O06新锚点o06-roi-menu-history-design统一完整批设计：封闭Create/Replace/Delete/Undo/Redo提案、Affected和显式选择分离、拒绝回执同版内容/防倒退、原菜单变更前中立hooks、实例+stamp+generation拒旧租约、规范几何私有剪贴、完整Fields+LocalItems+选择的owner唯一历史、accepted非写回放及当前来源重解析，不复活DetectionCurrent。
+- 仍未开始本批产品修改/构建/新验收，不能套299组历史成绩。原文生成717唯一锚点且幂等；新增设计文本核UTF-8无替换字/问号损坏。用户BlobParameterEditor.xaml索引2未动；仅方案/原生成器/原O06/CURRENT_TASK变更，不作零碎提交。
+- 下一步按已明确完整批实施Session/原ImageViewBox hooks/Viewport/字段回放/两个Design owner及全部测试消费者；严禁只扩enum让旧Create否则Replace误处理Delete。全源码就绪再统一构建回归，人工VS/VM同态/物理鼠标仍待签，阶段一和C09未退出，Blob业务冻结。
+
 ## 2026-10-28 C07序列索引与C09同根分量继承集中批封存
 
 - 基线44e3ad5e；目标active，主仓本对话唯一产品写者、三路只读核收/补位。工作流对话唯一写者独立主界面及周边，不接管87f4。当前恢复后优先续完序列批，Blob业务继续冻结。

@@ -56,6 +56,8 @@ public static class NativeRoiDesignData
         private readonly NativeRoiSamples.Image _image=new();
         private readonly Guid _scope=Guid.NewGuid();
         private readonly List<RoiEditItem> _rows;
+        private sealed record HistoryState(IReadOnlyList<RoiEditItem> Rows,RoiEditTarget? Selection);
+        private readonly Stack<HistoryState> _undo=new(),_redo=new();
         private long _revision,_generation;
         private bool _disposed;
         private DispatcherOperation? _pending;
@@ -64,7 +66,7 @@ public static class NativeRoiDesignData
         {
             _scene=scene;
             _rows=NativeRoiSamples.CreateItems().ToList();
-            Session=new(_image,Read,Accept,()=>!_disposed,"detect");
+            Session=new(_image,Read,Accept,()=>!_disposed,()=>new(_undo.Count>0,_redo.Count>0),"detect");
         }
         internal void Attach()
         {
@@ -74,27 +76,39 @@ public static class NativeRoiDesignData
             _scene.Loaded+=Loaded;_scene.Unloaded+=Unloaded;_scene.Disposing+=Dispose;
         }
         private RoiEditSnapshot Read()=>new(new(_scope,_revision,_image.Frame),Array.AsReadOnly(_rows.ToArray()));
+        private HistoryState CaptureHistory()=>new(Array.AsReadOnly(_rows.ToArray()),Session.CurROIData is {} selected?new(selected.Group,selected.Id):null);
         private RoiEditAcceptance Accept(RoiEditStamp expected,RoiEditProposal change)
         {
-            var snapshot=Read();if(_disposed||expected!=snapshot.Stamp)return new(false,snapshot,Error:"旧预览范围");
-            Guid id;
-            if(change.Operation==RoiEditOperation.Create)
+            var snapshot=Read();if(_disposed||expected!=snapshot.Stamp)return RoiEditAcceptance.Reject(snapshot,"旧预览范围");
+            var before=CaptureHistory();RoiEditSelection selection;IReadOnlyList<RoiEditTarget> affected;
+            switch(change)
             {
-                if(change.TargetId is not null)return new(false,snapshot,Error:"创建不得指定旧身份");
-                id=Guid.NewGuid();_rows.Add(new(change.Group,id,"新区域",change.Geometry));
+                case RoiEditProposal.Create create:
+                    var id=Guid.NewGuid();_rows.Add(new(create.Group,id,"新区域",create.Geometry));
+                    affected=new[]{new RoiEditTarget(create.Group,id)};selection=new RoiEditSelection.Select(affected[0]);break;
+                case RoiEditProposal.Replace replace:
+                    var index=_rows.FindIndex(row=>row.Group==replace.Target.Group&&row.Id==replace.Target.Id&&row.Enabled&&row.Visible);
+                    if(index<0)return RoiEditAcceptance.Reject(snapshot,"预览对象不存在");
+                    _rows[index]=_rows[index] with{Geometry=replace.Geometry};affected=new[]{replace.Target};selection=new RoiEditSelection.Keep();break;
+                case RoiEditProposal.Delete delete:
+                    if(delete.Targets.Any(target=>!_rows.Any(row=>row.Group==target.Group&&row.Id==target.Id&&row.Enabled&&row.Visible)))
+                        return RoiEditAcceptance.Reject(snapshot,"删除对象不存在或不可编辑");
+                    _rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));affected=delete.Targets;
+                    selection=before.Selection is {} old&&delete.Targets.Contains(old)?new RoiEditSelection.Clear():new RoiEditSelection.Keep();break;
+                case RoiEditProposal.Undo or RoiEditProposal.Redo:
+                    var source=change is RoiEditProposal.Undo?_undo:_redo;var destination=change is RoiEditProposal.Undo?_redo:_undo;
+                    if(source.Count==0)return RoiEditAcceptance.Reject(snapshot,"没有可恢复历史");
+                    var restore=source.Pop();destination.Push(before);_rows.Clear();_rows.AddRange(restore.Rows);_revision++;
+                    var restored=Read();return new(true,restored,RoiEditAcceptance.ChangedTargets(snapshot,restored),restore.Selection is {} target?new RoiEditSelection.Select(target):new RoiEditSelection.Clear());
+                default:throw new NotSupportedException("未知区域提案");
             }
-            else
-            {
-                var index=_rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.TargetId);
-                if(index<0)return new(false,snapshot,Error:"预览对象不存在");
-                id=_rows[index].Id;_rows[index]=_rows[index] with{Geometry=change.Geometry};
-            }
-            _revision++;return new(true,Read(),new(change.Group,id));
+            _undo.Push(before);_redo.Clear();_revision++;return new(true,Read(),affected,selection);
         }
         internal void Select()
         {
             if(_disposed||!ReferenceEquals(_scene.Session,Session))throw new InvalidOperationException("Preview session is detached.");
-            var row=_rows[GetSampleIndex(_scene)];
+            var row=_rows.ElementAtOrDefault(GetSampleIndex(_scene));
+            if(row is null){Session.Select("detect",null);return;}
             if(!Session.Select(row.Group,row.Id))throw new InvalidOperationException("Sample selection was rejected: "+_scene.Editor.Error);
             Session.SetDrawingGroup(row.Group);Queue();
         }

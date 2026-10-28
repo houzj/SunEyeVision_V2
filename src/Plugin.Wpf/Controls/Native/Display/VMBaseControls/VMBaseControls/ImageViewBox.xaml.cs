@@ -1081,7 +1081,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			//IL_0033: Expected Obj, but got Unknown
 			if (_PasteRoiCommand == null)
 			{
-				_PasteRoiCommand = (ICommand)new DelegateCommand((Action)PasteRoiRoi, (Func<bool>)(() => PasteList.Count > 0 && ROIHitTestVisible), false);
+				_PasteRoiCommand = (ICommand)new DelegateCommand((Action)PasteRoiRoi, (Func<bool>)(() => NativeRoiMenus is {} menus?menus.CanPaste():PasteList.Count > 0 && ROIHitTestVisible), false);
 			}
 			return _PasteRoiCommand;
 		}
@@ -2032,6 +2032,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 	}
 
     // Explicit borrowed composition capabilities. A routed native consumer never falls through to IList mutation.
+    internal SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiMenuCommands? NativeRoiMenus {get;set;}
     internal Func<ROIItemsPage,System.Windows.Point,bool>? NativeDrawStart {get;set;}
     internal Func<object,bool>? NativeDrawComplete {get;set;}
     internal Action? NativeDrawCancel {get;set;}
@@ -2290,6 +2291,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void AddROI(IROI roi, IList roiParentList = null)
 	{
+        if(NativeRoiMenus is not null)return;
 		if (SelectedSubROIList != null)
 		{
 			SelectedSubROIList.Add(roi);
@@ -2305,12 +2307,14 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void PasteROI(IROI roi, IList roiParentList)
 	{
+        if(NativeRoiMenus is not null)return;
 		roiParentList.Add(roi);
 		RoiPasteCommand?.Execute(new RoiWithTagEventArgs(roi, roiParentList));
 	}
 
 	private void RemoveROI(IROI roi, IList roiParentList = null)
 	{
+        if(NativeRoiMenus is {} menus){if(menus.CanDelete(roi))menus.Delete(roi);return;}
 		if (roiParentList == null)
 		{
 			if (SelectedSubROIList != null)
@@ -2352,8 +2356,11 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		}, new PointHitTestParameters(MouseRightButtonDownPoint));
 	}
 
+	private static IROI MenuRoi(object datas)=>datas is IList list&&list.Count>0?list[0] as IROI:datas as IROI;
+
 	private bool CanDeleteRoi(object datas)
 	{
+        if(NativeRoiMenus is {} menus)return MenuRoi(datas) is {} roi&&menus.CanDelete(roi);
 		if (RoiDelCommand != null && datas != null)
 		{
 			IROI roi = (datas as IList)[0] as IROI;
@@ -2380,6 +2387,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private bool CanCopyRoi(object datas)
 	{
+        if(NativeRoiMenus is {} menus)return MenuRoi(datas) is {} roi&&menus.CanCopy(roi);
 		if (RoiCopyCommand != null && datas != null)
 		{
 			IROI roi = (datas as IList)[0] as IROI;
@@ -2391,6 +2399,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void CopyRoi(object datas)
 	{
+        if(NativeRoiMenus is {} menus){if(MenuRoi(datas) is {} roi&&menus.CanCopy(roi))menus.Copy(roi);return;}
 		ClearPasteData();
 		int hashCode = (datas as IList)[0].GetHashCode();
 		int hashCode2 = (datas as IList)[1].GetHashCode();
@@ -2418,6 +2427,12 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	private void PasteRoiRoi()
 	{
+        if(NativeRoiMenus is {} menus)
+        {
+            var ratio=ControlToImageRadio;var point=Mouse.GetPosition(mROIView);
+            if(double.IsFinite(ratio)&&ratio>0&&menus.CanPaste())menus.Paste(new(point.X/ratio,point.Y/ratio));
+            return;
+        }
 		System.Windows.Point position = Mouse.GetPosition(mROIView);
 		int num = 1;
 		int num2 = 1;

@@ -12,18 +12,26 @@ public sealed record RoiEditStamp(Guid ScopeId,long Revision,ImageFrameAddress F
 public sealed record RoiEditSnapshot(RoiEditStamp Stamp,IReadOnlyList<RoiEditItem> Items);
 /// <summary>The host atomically compares the expected stamp and returns the installed snapshot.
 /// It must return acceptance before publishing fallible observer notifications.</summary>
-public sealed record RoiEditAcceptance(bool Accepted,RoiEditSnapshot Snapshot,RoiEditTarget? Affected=null,string? Error=null);
+public sealed record RoiEditAcceptance(bool Accepted,RoiEditSnapshot Snapshot,
+    IReadOnlyList<RoiEditTarget> Affected,RoiEditSelection Selection,string? Error=null,Action? Publish=null)
+{
+    public static RoiEditAcceptance Reject(RoiEditSnapshot snapshot,string error)=>new(false,snapshot,Array.Empty<RoiEditTarget>(),new RoiEditSelection.Keep(),error);
+    internal static IReadOnlyList<RoiEditTarget> ChangedTargets(RoiEditSnapshot before,RoiEditSnapshot after)=>Array.AsReadOnly(
+        before.Items.Concat(after.Items).Select(row=>new RoiEditTarget(row.Group,row.Id)).Distinct().Where(target=>!NativeRoiSession.SameItems(
+            before.Items.Where(row=>row.Group==target.Group&&row.Id==target.Id).ToArray(),after.Items.Where(row=>row.Group==target.Group&&row.Id==target.Id).ToArray())).ToArray());
+}
 
 /// <summary>One borrowed edit scope for all original ROI parameter stacks and image handles.</summary>
-public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
+public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposable
 {
     private readonly Func<RoiEditSnapshot> _read;
     private readonly Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> _accept;
     private readonly Func<bool> _isCurrent;
     private readonly Func<string,bool>? _canDraw;
+    private readonly Func<RoiHistoryAvailability> _history;
     private Dictionary<(string,Guid),NativeRoiProjection> _items=new();
     private readonly ProjectionRows<NativeRoiProjection> _rows=new();
-    private bool _disposed,_invalid,_committing,_selecting,_refreshing,_reading;
+    private bool _disposed,_invalid,_committing,_selecting,_refreshing,_reading,_checkingCurrent,_queryingDraw;
     private Func<bool>? _editorCommit;
     private NativeRoiProjection? _selected;
     private RoiEditStamp? _stamp;
@@ -40,7 +48,14 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     public IReadOnlyList<NativeRoiProjection> Items=>_rows;
     public NativeRoiProjection? CurROIData=>_selected;
     public bool IsHaveData=>_selected is not null&&Owns(_selected);
-    public bool IsCurrent=>!_disposed&&!_invalid&&_isCurrent();
+    public bool IsCurrent
+    {
+        get
+        {
+            if(_disposed||_invalid||_checkingCurrent)return false;
+            _checkingCurrent=true;try{return _isCurrent()&&!_disposed&&!_invalid;}finally{_checkingCurrent=false;}
+        }
+    }
     public bool BoxEnable_ModuleEnableA=>IsHaveData&&_selected is NativeBoxRoiProjection;
     public bool SectorEnable_ModuleEnableA=>IsHaveData&&_selected is NativeSectorRoiProjection;
     public bool BoxA {get=>BoxEnable_ModuleEnableA;set{}}
@@ -62,14 +77,14 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     public event Action<RoiDrawRequest>? DrawRequested;
     public event Action<RoiDrawRequest>? DrawCancelled;
     public NativeRoiSession(IReadOnlyImage image,Func<RoiEditSnapshot> read,
-        Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> accept,Func<bool> isCurrent,string drawingGroup,bool isAvoid=false,
+        Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> accept,Func<bool> isCurrent,Func<RoiHistoryAvailability> history,string drawingGroup,bool isAvoid=false,
         Func<string,bool>? canDraw=null)
     {
         ResourceContractRules.ValidateImage(image);
         if(string.IsNullOrWhiteSpace(drawingGroup))throw new ArgumentException("绘制组必须由宿主明确提供。",nameof(drawingGroup));
         DrawingGroup=drawingGroup;_canDraw=canDraw;
         IsAvoid=isAvoid;Image=image;Frame=image.Frame;ImageWidth=image.Width;ImageHeight=image.Height;
-        _read=read;_accept=accept;_isCurrent=isCurrent;
+        _read=read;_accept=accept;_isCurrent=isCurrent;_history=history;
         ROIValueChangedCommand=new EditCommand(_=>{if(_selected is {} selected)TryCommit(selected);});
         ValueChangedCommand=new EditCommand(value=>
         {
@@ -126,7 +141,7 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
         if(_reading)throw new InvalidOperationException("区域快照读取不可重入。");
         _reading=true;try{return _read();}finally{_reading=false;}
     }
-    private void Install(RoiEditSnapshot snapshot,RoiEditTarget? selected=null)
+    private void Install(RoiEditSnapshot snapshot,RoiEditSelection? selection=null)
     {
         if(!IsCurrent||_refreshing)return;
         _refreshing=true;
@@ -154,8 +169,13 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
                 var item=next[(row.Group,row.Id)];item.Install(row,changedVersion);
                 if(changedVersion)notifications.Add(item.Notify);
             }
-            if(_selected is not null&&!Owns(_selected))_selected=null;
-            if(selected is not null)_selected=next[(selected.Group,selected.Id)];
+            var target=selection switch
+            {
+                RoiEditSelection.Clear=>null,
+                RoiEditSelection.Select select=>select.Target,
+                _=>_selected is {} current?new RoiEditTarget(current.Group,current.Id):null
+            };
+            _selected=target is not null&&next.TryGetValue((target.Group,target.Id),out var selected)&&selected.Enabled&&selected.Visible?selected:null;
             var nextRows=snapshot.Items.Select(row=>next[(row.Group,row.Id)]).ToArray();
             if(!_rows.SequenceEqual(nextRows)){_rows.Install(nextRows);notifications.Insert(0,_rows.NotifyReset);}
             notifications.Add(Notify);
@@ -208,10 +228,15 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     public void CancelDraw()=>NativeRoiCallbacks.Run(InvalidateDraw());
     private bool CanDrawGroup(string group)
     {
-        if(!IsCurrent)return false;
+        if(_queryingDraw||!IsCurrent)return false;
         var stamp=_stamp;var groups=_groupGeneration;var draws=_drawGeneration;
-        var allowed=_canDraw?.Invoke(group)!=false;
-        return allowed&&IsCurrent&&stamp==_stamp&&groups==_groupGeneration&&draws==_drawGeneration&&DrawingGroup==group;
+        _queryingDraw=true;
+        try
+        {
+            var allowed=_canDraw?.Invoke(group)!=false;
+            return allowed&&IsCurrent&&stamp==_stamp&&groups==_groupGeneration&&draws==_drawGeneration&&DrawingGroup==group;
+        }
+        finally{_queryingDraw=false;}
     }
     public RoiDrawRequest? BeginDraw(string kind)
     {
@@ -261,14 +286,16 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
             var current=Capture(ReadCurrent());if(!Current())return false;
             if(current.Stamp!=request.Stamp){Error="绘制期间区域根已改变。";InstallAfterCommit(current);return false;}
             if(!CanDrawGroup(request.Group)||!Current())return false;
-            var proposal=new RoiEditProposal(RoiEditOperation.Create,request.Group,null,geometry);
+            var proposal=new RoiEditProposal.Create(request.Group,geometry);
             var result=_accept(current.Stamp,proposal);
-            if(!Current())return result.Accepted;
-            var installed=ValidateAcceptance(current,proposal,result);
-            Error=result.Accepted?"":result.Error??"宿主拒绝新区域。";
-            InstallAfterCommit(installed,result.Accepted?result.Affected:null);
-            if(!result.Accepted&&installed.Stamp==current.Stamp)Notify();
-            return result.Accepted;
+            return PublishAcceptance(result,()=>
+            {
+                if(!Current())return;
+                var installed=ValidateAcceptance(current,proposal,result);
+                Error=result.Accepted?"":result.Error??"宿主拒绝新区域。";
+                InstallAfterCommit(installed,result.Selection);
+                if(!result.Accepted&&installed.Stamp==current.Stamp)Notify();
+            });
         }
         finally{_committing=false;}
     }
@@ -286,25 +313,69 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
     }
     private RoiEditSnapshot ValidateAcceptance(RoiEditSnapshot current,RoiEditProposal proposal,RoiEditAcceptance result)
     {
+        try{return ValidateAcceptanceCore(current,proposal,result);}
+        catch
+        {
+            // The owner may already have installed a root. Retire this lease rather than inventing rollback.
+            _invalid=true;Error="宿主区域回执违反接纳合同，编辑租约已停止。";
+            NativeRoiCallbacks.Run([CancelPending,Notify]);throw;
+        }
+    }
+    private RoiEditSnapshot ValidateAcceptanceCore(RoiEditSnapshot current,RoiEditProposal proposal,RoiEditAcceptance result)
+    {
         ArgumentNullException.ThrowIfNull(result);
         var snapshot=Capture(result.Snapshot);
+        if(snapshot.Stamp.ScopeId!=current.Stamp.ScopeId||snapshot.Stamp.Frame!=current.Stamp.Frame||snapshot.Stamp.Revision<current.Stamp.Revision)
+            throw new InvalidOperationException("回执不得改变范围、物理帧或倒退本次读取的版本。");
+        if(snapshot.Stamp.Revision==current.Stamp.Revision&&!SameItems(snapshot.Items,current.Items))
+            throw new InvalidOperationException("同版回执不得改变区域内容。");
+        if(result.Affected is null||result.Affected.Any(target=>target is null||string.IsNullOrWhiteSpace(target.Group)||target.Id==Guid.Empty)
+            ||result.Affected.Distinct().Count()!=result.Affected.Count||result.Selection is null)
+            throw new InvalidOperationException("回执必须明确唯一有效的受影响对象和选择指令。");
         if(!result.Accepted)
         {
-            if(result.Affected is not null)throw new InvalidOperationException("拒绝回执不得分配区域身份。");
+            if(result.Affected.Count!=0||result.Selection is not RoiEditSelection.Keep)throw new InvalidOperationException("拒绝回执不得分配身份或改变选择。");
             return snapshot;
         }
-        var target=result.Affected;
-        if(snapshot.Stamp.Revision<=current.Stamp.Revision||target is null||target.Id==Guid.Empty||target.Group!=proposal.Group)
-            throw new InvalidOperationException("宿主接纳必须递增版本并回传正确组和稳定身份。");
-        if(proposal.Operation==RoiEditOperation.Replace&&target.Id!=proposal.TargetId)
-            throw new InvalidOperationException("替换不得更改对象身份。");
-        if(proposal.Operation==RoiEditOperation.Create&&(proposal.TargetId is not null||current.Items.Any(row=>row.Id==target.Id)))
-            throw new InvalidOperationException("创建必须由宿主分配全新稳定身份。");
-        var row=snapshot.Items.SingleOrDefault(row=>row.Group==target.Group&&row.Id==target.Id);
-        if(row is null||!row.Enabled||!row.Visible||!SameGeometry(row.Geometry,proposal.Geometry))
-            throw new InvalidOperationException("接纳回执未安装完整可编辑候选几何。");
+        if(snapshot.Stamp.Revision<=current.Stamp.Revision)throw new InvalidOperationException("宿主接纳必须递增版本。");
+        bool Has(RoiEditTarget target)=>snapshot.Items.Any(row=>row.Group==target.Group&&row.Id==target.Id&&row.Enabled&&row.Visible);
+        var selected=result.Selection switch
+        {
+            RoiEditSelection.Select select=>select.Target,
+            RoiEditSelection.Keep=>_selected is {} item?new RoiEditTarget(item.Group,item.Id):null,
+            RoiEditSelection.Clear=>null,
+            _=>throw new InvalidOperationException("未知选择指令。")
+        };
+        if(selected is not null&&!Has(selected))throw new InvalidOperationException("选择回执必须指向新快照中可编辑可见对象；删除选择须明确清除。");
+        if(proposal is RoiEditProposal.Delete delete)
+        {
+            if(!result.Affected.ToHashSet().SetEquals(delete.Targets)||delete.Targets.Any(target=>snapshot.Items.Any(row=>row.Group==target.Group&&row.Id==target.Id)))
+                throw new InvalidOperationException("删除回执必须精确列出全部已移除对象。");
+            var remaining=current.Items.Where(row=>!delete.Targets.Contains(new(row.Group,row.Id))).ToArray();
+            if(!SameItems(remaining,snapshot.Items))throw new InvalidOperationException("删除不得改动其他对象或顺序。");
+        }
+        else if(proposal is RoiEditProposal.Create or RoiEditProposal.Replace)
+        {
+            if(result.Affected.Count!=1)throw new InvalidOperationException("单对象提案必须回传一个受影响对象。");
+            var target=result.Affected[0];
+            var group=proposal is RoiEditProposal.Create create?create.Group:((RoiEditProposal.Replace)proposal).Target.Group;
+            var geometry=proposal is RoiEditProposal.Create created?created.Geometry:((RoiEditProposal.Replace)proposal).Geometry;
+            if(target.Group!=group)throw new InvalidOperationException("接纳对象所属组不符。");
+            if(proposal is RoiEditProposal.Replace replace&&target!=replace.Target)throw new InvalidOperationException("替换不得更改对象身份。");
+            if(proposal is RoiEditProposal.Create&&current.Items.Any(row=>row.Id==target.Id))throw new InvalidOperationException("创建必须分配全新身份。");
+            var row=snapshot.Items.SingleOrDefault(row=>row.Group==target.Group&&row.Id==target.Id);
+            if(row is null||!row.Enabled||!row.Visible||!SameGeometry(row.Geometry,geometry))throw new InvalidOperationException("接纳回执未安装完整可编辑候选几何。");
+            var before=current.Items.Where(row=>proposal is not RoiEditProposal.Replace replaced||row.Group!=replaced.Target.Group||row.Id!=replaced.Target.Id).ToArray();
+            var after=snapshot.Items.Where(row=>row.Group!=target.Group||row.Id!=target.Id).ToArray();
+            if(!SameItems(before,after))throw new InvalidOperationException("单对象编辑不得改动其他区域。");
+        }
+        else if(!result.Affected.ToHashSet().SetEquals(RoiEditAcceptance.ChangedTargets(current,snapshot)))
+            throw new InvalidOperationException("历史回执必须精确列出本次改变的区域身份。");
         return snapshot;
     }
+    internal static bool SameItems(IReadOnlyList<RoiEditItem> left,IReadOnlyList<RoiEditItem> right)=>left.Count==right.Count&&left.Zip(right).All(pair=>
+        pair.First.Group==pair.Second.Group&&pair.First.Id==pair.Second.Id&&pair.First.Name==pair.Second.Name&&pair.First.Enabled==pair.Second.Enabled
+        &&pair.First.Visible==pair.Second.Visible&&SameGeometry(pair.First.Geometry,pair.Second.Geometry));
     public bool TryCommit(NativeRoiProjection item)
     {
         if(_committing||!CanEdit(item))return false;
@@ -327,19 +398,29 @@ public sealed class NativeRoiSession : INotifyPropertyChanged,IDisposable
             if(item.MatchesGeometry(row.Geometry,candidate))
             {Error="";NativeRoiCallbacks.Run([item.Cancel,Notify]);return true;}
             // Deliberately outside a rejection catch: host/observer exceptions are not false acceptance.
-            var proposal=new RoiEditProposal(RoiEditOperation.Replace,item.Group,item.Id,candidate);
+            var proposal=new RoiEditProposal.Replace(new(item.Group,item.Id),candidate);
             var result=_accept(current.Stamp,proposal);
-            if(!IsCurrent)return result.Accepted;
-            var installed=ValidateAcceptance(current,proposal,result);
-            Error=result.Accepted?"":result.Error??"宿主拒绝区域几何候选。";
-            var unchanged=installed.Stamp==_stamp;
-            NativeRoiCallbacks.Run([()=>{if(!result.Accepted)item.Cancel();},()=>InstallAfterCommit(installed),()=>{if(unchanged)Notify();}]);
-            return result.Accepted;
+            return PublishAcceptance(result,()=>
+            {
+                if(!IsCurrent)return;
+                var installed=ValidateAcceptance(current,proposal,result);
+                Error=result.Accepted?"":result.Error??"宿主拒绝区域几何候选。";
+                var unchanged=installed.Stamp==_stamp;
+                NativeRoiCallbacks.Run([()=>{if(!result.Accepted)item.Cancel();},()=>InstallAfterCommit(installed,result.Selection),()=>{if(unchanged)Notify();}]);
+            });
         }
         finally{_committing=false;}
     }
-    private void InstallAfterCommit(RoiEditSnapshot snapshot,RoiEditTarget? selected=null)
-    {var committing=_committing;_committing=false;try{Install(snapshot,selected);}finally{_committing=committing;}}
+    private static bool PublishAcceptance(RoiEditAcceptance result,Action install)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        // Accepted owner state must always complete its publication/release, including stale display leases
+        // and exceptions from validation or observers. Publication is never interpreted as rejection.
+        NativeRoiCallbacks.Run([install,()=>result.Publish?.Invoke()]);
+        return result.Accepted;
+    }
+    private void InstallAfterCommit(RoiEditSnapshot snapshot,RoiEditSelection? selection=null)
+    {var committing=_committing;_committing=false;try{Install(snapshot,selection);}finally{_committing=committing;}}
     private void Notify()
     {
         var callbacks=new List<Action>();

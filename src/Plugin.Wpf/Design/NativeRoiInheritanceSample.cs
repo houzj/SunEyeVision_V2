@@ -66,7 +66,7 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
         _sources=_sources.Append(new SourceValue(Guid.NewGuid(),"mask-partial","mask",RoiGeometryEditing.Checked(partial),_image.Frame)).ToArray();
         _sources=_sources.Append(new SourceValue(Guid.NewGuid(),"detect-annulus-source","detect",RoiGeometryEditing.Checked(partial),_image.Frame)).ToArray();
         InitializeComponentSources(items);
-        Session=new(_image,Read,AcceptGeometry,()=>!_disposed,"detect",canDraw:group=>!_disposed&&GraphicMode&&Local(group));
+        Session=new(_image,Read,AcceptGeometry,()=>!_disposed,()=>new(_undo.Count>0,_redo.Count>0),"detect",canDraw:group=>!_disposed&&GraphicMode&&Local(group));
         var declarations=groups.SelectMany((group,i)=>new[]{
             (new Port(Mode(group),DataType.Integer,EditModes:FieldEditModes.Constant),
              new FieldPresentation(Mode(group),group=="detect"?"ROI创建":"屏蔽区创建","来源组合",i*2,FieldEditorKind.Scalar),_root.Fields[Mode(group)]),
@@ -120,11 +120,12 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
     }
     private string? ValidateFields(FieldGroupCandidate candidate)
     {
-        return ValidateInheritance(candidate);
+        return _restoring?"正在恢复宿主历史。":ValidateInheritance(candidate);
     }
     private void AcceptFields(IReadOnlyDictionary<string,ParameterSetting> changes)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
+        if(_restoring)throw new ArgumentException("历史恢复期间不能接纳另一字段提案。");
         var current=_root;var fields=current.Fields.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal);
         var prepared=_preparedComponents;_preparedComponents=null;
         if(prepared is null||!ReferenceEquals(prepared.Root,current)||!ComponentsCurrent()||!PreparedCurrent(prepared)||!ReferenceEquals(current,_root)
@@ -132,8 +133,10 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
             throw new ArgumentException("参数解析回执已失效，不能安装旧组合。");
         if(Session.CurROIData is {Enabled:true} selected&&current.LocalItems.Any(item=>item.Group==selected.Group&&item.Id==selected.Id))
             _lastLocalSelection=new(selected.Group,selected.Id);
+        var history=CaptureHistory();
         foreach(var change in changes)fields[change.Key]=change.Value;
         _root=current with{Revision=current.Revision+1,Fields=Freeze(fields),Detection=prepared.Detection,DetectionError=prepared.Error,DetectionCurrent=prepared.IsCurrent};
+        _undo.Push(history);_redo.Clear();
         // No Session callbacks here: fields install accepted states before Changed refreshes the scene.
     }
     private void OnFieldsChanged()
@@ -164,17 +167,34 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
     }
     private RoiEditAcceptance AcceptGeometry(RoiEditStamp expected,RoiEditProposal proposal)
     {
-        var current=Read();if(_disposed||current.Stamp!=expected||!GraphicMode||!Local(proposal.Group))return new(false,current,Error:"区域来源或修订已改变。");
-        var rows=_root.LocalItems.ToList();Guid id;
-        if(proposal.Operation==RoiEditOperation.Create){id=Guid.NewGuid();rows.Add(new(proposal.Group,id,"新区域",proposal.Geometry));}
-        else
+        var current=Read();if(_disposed||_restoring||current.Stamp!=expected)return RoiEditAcceptance.Reject(current,"区域范围或修订已改变。");
+        if(proposal is RoiEditProposal.Undo or RoiEditProposal.Redo)return RestoreHistory(current,proposal is RoiEditProposal.Redo);
+        var groups=proposal switch
         {
-            var index=rows.FindIndex(x=>x.Group==proposal.Group&&x.Id==proposal.TargetId);
-            if(index<0)return new(false,current,Error:"本地对象不存在。");
-            id=rows[index].Id;rows[index]=rows[index] with{Geometry=proposal.Geometry};
+            RoiEditProposal.Create create=>new[]{create.Group},RoiEditProposal.Replace replace=>new[]{replace.Target.Group},
+            RoiEditProposal.Delete delete=>delete.Targets.Select(target=>target.Group).Distinct().ToArray(),
+            _=>throw new NotSupportedException("未知区域提案。")
+        };
+        if(!GraphicMode||groups.Any(group=>group is not ("detect" or "mask")||!Local(group)))return RoiEditAcceptance.Reject(current,"继承或图像模式不可修改本地集合。");
+        var before=CaptureHistory();var rows=_root.LocalItems.ToList();IReadOnlyList<RoiEditTarget> affected;RoiEditSelection selection;
+        switch(proposal)
+        {
+            case RoiEditProposal.Create create:
+                var id=Guid.NewGuid();rows.Add(new(create.Group,id,"新区域",create.Geometry));affected=new[]{new RoiEditTarget(create.Group,id)};
+                selection=new RoiEditSelection.Select(affected[0]);break;
+            case RoiEditProposal.Replace replace:
+                var index=rows.FindIndex(row=>row.Group==replace.Target.Group&&row.Id==replace.Target.Id&&row.Enabled&&row.Visible);
+                if(index<0)return RoiEditAcceptance.Reject(current,"本地对象不存在。");
+                rows[index]=rows[index] with{Geometry=replace.Geometry};affected=new[]{replace.Target};selection=new RoiEditSelection.Keep();break;
+            case RoiEditProposal.Delete delete:
+                if(delete.Targets.Any(target=>!rows.Any(row=>row.Group==target.Group&&row.Id==target.Id&&row.Enabled&&row.Visible)))
+                    return RoiEditAcceptance.Reject(current,"删除对象不存在或不可编辑。");
+                rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));affected=delete.Targets;
+                selection=before.Selection is {} target&&delete.Targets.Contains(target)?new RoiEditSelection.Clear():new RoiEditSelection.Keep();break;
+            default:throw new NotSupportedException("未知区域提案。");
         }
-        _root=_root with{Revision=_root.Revision+1,LocalItems=Array.AsReadOnly(rows.ToArray())};
-        return new(true,Read(),new(proposal.Group,id));
+        _root=_root with{Revision=_root.Revision+1,LocalItems=Array.AsReadOnly(rows.ToArray())};_undo.Push(before);_redo.Clear();
+        return new(true,Read(),affected,selection);
     }
     public void Dispose()
     {

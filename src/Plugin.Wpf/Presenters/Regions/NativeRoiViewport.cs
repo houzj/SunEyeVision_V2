@@ -15,7 +15,7 @@ using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 /// <summary>The original ImageViewBox and normalized ROI handles over the same objects as the parameter stack.</summary>
-public sealed class NativeRoiViewport : Decorator,IDisposable
+public sealed partial class NativeRoiViewport : Decorator,IDisposable
 {
     private NativeRoiSession? _session;
     private NativeRoiImageFrame? _frame;
@@ -53,6 +53,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         NativeView.AddHandler(Mouse.LostMouseCaptureEvent,new MouseEventHandler(OnLostCapture),true);
         NativeView.AddHandler(PolygonROI.InteractionCancelledEvent,new RoutedEventHandler(OnPolygonCancelled),true);
         PreviewMouseDown+=OnPreviewMouse;PreviewKeyDown+=OnKey;
+        InitializeMenus();
     }
     public void Bind(NativeRoiSession? session)
     {
@@ -65,7 +66,8 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             if(_drawCancelled is not null)previous.DrawCancelled-=_drawCancelled;
         }
         _changed=null;_drawRequested=null;_drawCancelled=null;
-        NativeRoiCallbacks.Run([()=>CancelDrawing(true),()=>{if(generation==_generation)previous?.CancelPending();},()=>{if(generation==_generation)ReleaseFrame();}]);
+        NativeRoiCallbacks.Run([()=>{if(generation==_generation)ClearMenuState();},()=>{if(generation==_generation)CancelDrawing(true);},
+            ()=>{if(generation==_generation)previous?.CancelPending();},()=>{if(generation==_generation)ReleaseFrame();}]);
         if(_disposed||generation!=_generation)return;
         _session=session;
         if(session is not null)
@@ -243,7 +245,12 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
         finally{_projecting=false;if(_projectAgain){_projectAgain=false;OnChanged();}}
     }
     private void OnKey(object sender,KeyEventArgs args)
-    {if(args.Key==Key.Escape){CancelInteraction();_session?.CancelPending();args.Handled=true;}}
+    {
+        if(args.Key==Key.Escape){CancelInteraction();_session?.CancelPending();args.Handled=true;return;}
+        if(Keyboard.Modifiers==ModifierKeys.Control&&args.Key is Key.Z or Key.Y
+            &&Keyboard.FocusedElement is not System.Windows.Controls.Primitives.TextBoxBase&&TryCaptureMenu(out var lease))
+        {if(args.Key==Key.Z)lease.Owner.TryUndo(()=>Still(lease,false));else lease.Owner.TryRedo(()=>Still(lease,false));args.Handled=true;}
+    }
     private void CancelInteraction()
     {
         NativeRoiCallbacks.Run(Descendants<RectROI>(NativeView).Select(roi=>(Action)roi.CancelInteraction)
@@ -273,11 +280,12 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
     }
     private void ReleaseFrame()
     {
-        _designRefresh?.Abort();_designRefresh=null;
-        _shapeRefresh?.Abort();_shapeRefresh=null;
         var generation=_generation;var frame=_frame;_frame=null;
+        var designRefresh=_designRefresh;_designRefresh=null;
+        var shapeRefresh=_shapeRefresh;_shapeRefresh=null;
         bool OwnsCleanup()=>generation==_generation&&_frame is null;
-        NativeRoiCallbacks.Run([()=>CancelDrawing(true),()=>{if(OwnsCleanup())CancelInteraction();},
+        NativeRoiCallbacks.Run([()=>designRefresh?.Abort(),()=>shapeRefresh?.Abort(),()=>{if(OwnsCleanup())ClearMenuState();},
+            ()=>{if(OwnsCleanup())CancelDrawing(true);},()=>{if(OwnsCleanup())CancelInteraction();},
             ()=>{if(OwnsCleanup())NativeView.ROIList=null;},()=>{if(OwnsCleanup()){_shapeStamp=null;_shapeContext=null;NativeView.ShapeList=null;}},()=>{if(OwnsCleanup())NativeView.ImageDataSource=null;},()=>frame?.Dispose()]);
     }
     public void Dispose()
@@ -296,7 +304,7 @@ public sealed class NativeRoiViewport : Decorator,IDisposable
             if(_drawCancelled is not null)previous.DrawCancelled-=_drawCancelled;
         }
         _changed=null;_drawRequested=null;_drawCancelled=null;
-        NativeRoiCallbacks.Run([()=>previous?.CancelPending(),ReleaseFrame,()=>NativeView.RoiSelectedCommand=null,
+        NativeRoiCallbacks.Run([RetireMenus,()=>previous?.CancelPending(),ReleaseFrame,()=>NativeView.RoiSelectedCommand=null,
             ()=>{NativeView.NativeDrawStart=(_,_)=>false;NativeView.NativeDrawComplete=_=>false;NativeView.NativeDrawCancel=()=>{};NativeView.NativeDrawCaptureLost=_=>{};},()=>Child=null]);
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject

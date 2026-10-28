@@ -374,16 +374,16 @@ internal static class S2DocumentEditingCases
    finally{window.Close();}
   });
  }
- static SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiSession CreateRoiSession(IReadOnlyImage image,Func<IReadOnlyList<RoiEditItem>> read,Func<ImageFrameAddress,RoiEditProposal,bool> accept,Func<bool> current)
+ static SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiSession CreateRoiSession(IReadOnlyImage image,Func<IReadOnlyList<RoiEditItem>> read,Func<ImageFrameAddress,RoiEditProposal.Replace,bool> accept,Func<bool> current)
  {
   var scope=Guid.NewGuid();long revision=0;
   SunEyeVision.Plugin.Wpf.Adapters.Regions.RoiEditSnapshot Snapshot()=>new(new(scope,revision,image.Frame),read());
   return new(image,Snapshot,(expected,change)=>
   {
-   if(expected.ScopeId!=scope||expected.Revision!=revision||expected.Frame!=image.Frame)return new(false,Snapshot(),Error:"过期候选");
-   Require(change.Operation==RoiEditOperation.Replace&&change.TargetId is not null,"替换helper不得接纳Create");
-   if(!accept(expected.Frame,change))return new(false,Snapshot(),Error:"宿主拒绝");revision++;return new(true,Snapshot(),new(change.Group,change.TargetId!.Value));
-  },current,"detect");
+   if(expected.ScopeId!=scope||expected.Revision!=revision||expected.Frame!=image.Frame)return RoiEditAcceptance.Reject(Snapshot(),"过期候选");
+   if(change is not RoiEditProposal.Replace replace)throw new InvalidOperationException("替换helper不得接纳其他提案");
+   if(!accept(expected.Frame,replace))return RoiEditAcceptance.Reject(Snapshot(),"宿主拒绝");revision++;return new(true,Snapshot(),new[]{replace.Target},new RoiEditSelection.Keep());
+  },current,()=>new(false,false),"detect");
  }
  static void VerifyNativeBox()
  {
@@ -398,7 +398,7 @@ internal static class S2DocumentEditingCases
    using var session=CreateRoiSession(image,()=>rows,(frame,change)=>
    {
     Require(frame==image.Frame&&alive,"物理帧身份丢失");if(reject)return false;
-    var index=rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.TargetId);Require(index>=0,"目标ID丢失");
+    var index=rows.FindIndex(row=>row.Group==change.Target.Group&&row.Id==change.Target.Id);Require(index>=0,"目标ID丢失");
     rows[index]=rows[index] with{Geometry=change.Geometry};writes++;return true;
    },()=>alive);
    using var editor=new SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiEditor();editor.Bind(session);
@@ -551,20 +551,23 @@ internal static class S2DocumentEditingCases
   internal RoiEditAcceptance Accept(RoiEditStamp expected,RoiEditProposal change)
   {
    Attempts++;var before=BeforeAccept;BeforeAccept=null;before?.Invoke();
-   if(expected!=Stamp||Reject)return new(false,new(Stamp,Rows.ToArray()),Error:"宿主拒绝或旧根");
-   Guid id;
-   if(change.Operation==RoiEditOperation.Create)
+   if(expected!=Stamp||Reject)return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray()),"宿主拒绝或旧根");
+   RoiEditTarget target;
+   switch(change)
    {
-    Require(change.TargetId is null,"创建指定旧ID");id=Guid.NewGuid();Rows.Add(new(change.Group,id,"新区域",change.Geometry));
+    case RoiEditProposal.Create create:
+     target=new(create.Group,Guid.NewGuid());Rows.Add(new(create.Group,target.Id,"新区域",create.Geometry));break;
+    case RoiEditProposal.Replace replace:
+     var index=Rows.FindIndex(row=>row.Group==replace.Target.Group&&row.Id==replace.Target.Id);Require(index>=0,"提交身份丢失");
+     target=replace.Target;Rows[index]=Rows[index] with{Geometry=replace.Geometry};break;
+    case RoiEditProposal.Delete delete:
+     Rows.RemoveAll(row=>delete.Targets.Contains(new(row.Group,row.Id)));Revision++;Writes++;
+     return new(true,new(Stamp,Rows.ToArray()),delete.Targets,new RoiEditSelection.Clear());
+    default:return RoiEditAcceptance.Reject(new(Stamp,Rows.ToArray()),"该检查宿主不提供历史");
    }
-   else
-   {
-    var index=Rows.FindIndex(row=>row.Group==change.Group&&row.Id==change.TargetId);Require(index>=0,"提交身份丢失");
-    id=Rows[index].Id;Rows[index]=Rows[index] with{Geometry=change.Geometry};
-   }
-   Revision++;Writes++;var result=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray()),new(change.Group,id));return AfterAccept?.Invoke(result)??result;
+   Revision++;Writes++;var result=new RoiEditAcceptance(true,new(Stamp,Rows.ToArray()),new[]{target},change is RoiEditProposal.Create?new RoiEditSelection.Select(target):new RoiEditSelection.Keep());return AfterAccept?.Invoke(result)??result;
   }
-  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive,"detect");
+  internal NativeRoiSession Open()=>new(image,Read,Accept,()=>Alive,()=>new(false,false),"detect");
  }
  static TextBox RoiText(Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat field)
  {
@@ -632,7 +635,7 @@ internal static class S2DocumentEditingCases
   Test("原绘制Create回执复用旧ID或错组明确报错且不安装",()=>
   {
    using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(320,240,new byte[76800]),new RoiEditItem("detect",Guid.NewGuid(),"旧",Shape()));using var session=model.Open();session.DrawRequested+=_=>{};
-   model.AfterAccept=result=>result with{Affected=new("detect",model.Rows[0].Id)};var request=session.BeginDraw("rectangle")!;
+   model.AfterAccept=result=>result with{Affected=new[]{new RoiEditTarget("detect",model.Rows[0].Id)}};var request=session.BeginDraw("rectangle")!;
    var rejected=false;try{session.CompleteDraw(request,Shape());}catch(InvalidOperationException){rejected=true;}
    Require(rejected&&session.Items.Count==1&&model.Writes==1&&!session.CompleteDraw(request,Shape()),"旧身份回执被安装或二次写入");
   });
@@ -1579,7 +1582,7 @@ internal static class S2DocumentEditingCases
    {
     using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image);
     NativeRoiSession? session=null;var calls=0;var innerAccepted=false;
-    session=new(image,model.Read,model.Accept,()=>model.Alive,"detect",canDraw:_=>{calls++;innerAccepted|=session!.BeginDraw("rectangle") is not null;return allow;});
+    session=new(image,model.Read,model.Accept,()=>model.Alive,()=>new(false,false),"detect",canDraw:_=>{calls++;innerAccepted|=session!.BeginDraw("rectangle") is not null;return allow;});
     using(session){session.DrawRequested+=_=>{};var result=session.BeginDraw("rectangle");Require(!innerAccepted&&calls>0&&(result is not null)==allow,"准入递归或外层结果错误");session.CancelDraw();}
    }
   });
@@ -1798,6 +1801,252 @@ internal static class S2DocumentEditingCases
    var resolved=batch.Resolve(fields);var after=AfterResolve;AfterResolve=null;after?.Invoke();return resolved;
   }
  }
+ static void VerifyRoiMenusHistory()
+ {
+  Test("ROI菜单历史：四形状复制删除后像素粘贴与多目标删除",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,480,new byte[640*480]);
+   foreach(var shape in new[]{RoiGeometryEditing.Create("rectangle",new(20,30),new(120,150)),RingShape(),SectorShape(),PolygonShape()})
+   {
+    var id=Guid.NewGuid();var model=new RoiHost(image,new RoiEditItem("detect",id,"原对象",shape));using var session=model.Open();var original=session.Items.Single();session.Select("detect",id);
+    var command=original.DataChangedCommand;Require(session.TryCopy(original,out var copy)&&copy is not null&&model.Writes==0,"复制修改宿主");
+    Require(session.TryDelete(new[]{original})&&model.Rows.Count==0&&session.CurROIData is null,"删除未清当前选择");
+    Require(session.TryPaste(copy!,new(300,200))&&model.Rows.Count==1&&model.Rows[0].Id!=id&&model.Writes==2,"源删除后不能粘贴或身份复用");
+    var pasted=model.Rows[0].Geometry;
+    if(shape.Get<string>("kind")=="polygon")
+    {
+     var before=RoiGeometryEditing.Vertices(shape);var after=RoiGeometryEditing.Vertices(pasted);
+     Require(after.Length==before.Length&&after.Zip(before).All(pair=>pair.First.X-pair.Second.X==after[0].X-before[0].X&&pair.First.Y-pair.Second.Y==after[0].Y-before[0].Y),"多边形次序或刚性平移损坏");
+     Require(Math.Abs((after.Min(p=>p.X)+after.Max(p=>p.X))/2-300)<1e-8&&Math.Abs((after.Min(p=>p.Y)+after.Max(p=>p.Y))/2-200)<1e-8,"没有采用原包围盒中心");
+    }
+    else Require(RoiGeometryEditing.Center(pasted)==new Point2(300,200),"非像素锚点或重复归一化");
+    command.Execute(null);Require(!session.TryDelete(new[]{original})&&!session.TryCopy(original,out _)&&model.Writes==2,"旧实例可以写回");
+    var foreign=copy! with{Frame=new(Guid.NewGuid(),"foreign")};Require(!session.TryPaste(foreign,new(1,1))&&model.Writes==2,"跨帧剪贴可写");
+   }
+   var rows=new[]{new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()),new RoiEditItem("mask",Guid.NewGuid(),"B",PolygonShape())};var many=new RoiHost(image,rows);using var all=many.Open();
+   Require(all.TryDelete(all.Items.ToArray())&&many.Writes==1&&all.Items.Count==0,"多对象未一次接纳");
+  });
+  Test("ROI菜单历史：畸形删除回执中止租约且拒绝重复目标",()=>
+  {
+   var duplicate=new RoiEditTarget("detect",Guid.NewGuid());var invalid=false;try{_ =new RoiEditProposal.Delete(new[]{duplicate,duplicate});}catch(ArgumentException){invalid=true;}Require(invalid,"重复目标未拒绝");
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(320,240,new byte[76800]),new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));
+   using var session=model.Open();model.AfterAccept=result=>result with{Selection=new RoiEditSelection.Select(new("detect",Guid.NewGuid()))};
+   session.DrawRequested+=_=>{};var request=session.BeginDraw("rectangle")!;invalid=false;try{session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(0,0),new(10,10)));}catch(InvalidOperationException){invalid=true;}
+   Require(invalid&&!session.IsCurrent&&model.Writes==1,"畸形回执伪报回滚或允许继续编辑");
+  });
+  Test("ROI菜单历史：原Delete命令接纳且卸载保留命令不得直写集合",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(320,240,new byte[76800]),new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));using var session=model.Open();
+   using var viewport=new NativeRoiViewport{Width=400,Height=250};viewport.Bind(session);Show(viewport);Pump();
+   var original=session.Items.Single();var parameters=new object[]{original,viewport.NativeView.ROIList};var native=viewport.NativeView;
+   Require(native.CopyRoiCommand.CanExecute(parameters),"原Copy入口未接入");native.CopyRoiCommand.Execute(parameters);
+   Require(native.PasteRoiCommand.CanExecute(null),"原Paste仍依赖旧PasteList");native.PasteRoiCommand.Execute(null);Require(model.Writes==1&&session.Items.Count==2,"原Paste不经宿主");
+   Require(native.DeleteRoiCommand.CanExecute(parameters),"原Delete入口不可用");native.DeleteRoiCommand.Execute(parameters);Require(model.Writes==2&&session.Items.Count==1,"原Delete未恰一次接纳");
+   var retained=native.DeleteRoiCommand;Show(new TextBlock());Pump();retained.Execute(new object[]{session.Items[0],native.ROIList});Require(model.Writes==2,"卸载后原命令落回集合变更");
+  });
+  Test("ROI菜单历史：整根撤销重做还原字段几何且删除旧实例不复活",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);Pump();var session=sample.Session;
+   var local=session.Items.First(item=>item.Group=="detect");var id=local.Id;var oldCommand=local.DataChangedCommand;
+   Require(session.TryDelete(new[]{local})&&sample.LocalItems.All(row=>row.Id!=id),"未删除权威根");var revision=sample.Revision;
+   Require(session.TryUndo()&&sample.Revision==revision+1&&sample.LocalItems.Any(row=>row.Id==id),"Undo未新revision恢复定义");var restored=session.Items.Single(row=>row.Id==id);
+   Require(!ReferenceEquals(local,restored)&&session.CurROIData==restored&&!session.TryDelete(new[]{local}),"Undo复活旧投影或选择错误");oldCommand.Execute(null);Require(sample.Revision==revision+1,"旧命令写新对象");
+   Require(session.TryRedo()&&sample.Revision==revision+2&&sample.LocalItems.All(row=>row.Id!=id),"Redo未恢复同一删除");
+   Require(session.TryUndo(),"第二次Undo失败");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}})&&session.Items.Count==0,"模式提案失败");revision=sample.Revision;
+   Require(session.TryUndo()&&sample.Revision==revision+1&&sample.GraphicMode&&session.Items.Any(row=>row.Id==id),"字段与几何分叉或沿用旧revision");
+   Require(session.TryRedo()&&!sample.GraphicMode&&session.Items.Count==0,"Redo未同时恢复字段模式和投影");
+   Require(session.TryUndo()&&sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"detect.inherit-way",new ConstantSetting(-1L)}})&&!session.History.CanRedo,"分支编辑未清Redo");
+   CaptureInline(sample,"native-roi-menu-history.png");Show(new TextBlock());
+  });
+  Test("ROI菜单历史：accepted回放清双端raw且不调用普通writer",()=>
+  {
+   var writes=0;var ownerRevision=0;
+   using var fields=new DeclaredFieldsView(new[]{
+    (new Port("low",DataType.Number),new FieldPresentation("low","范围下限","范围",0,FieldEditorKind.Scalar){Layout=new("参数","范围",PairWith:"high",Minimum:0,Maximum:100,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(10d)),
+    (new Port("high",DataType.Number),new FieldPresentation("high","范围上限","范围",1,FieldEditorKind.Scalar){Layout=new("参数","范围",Minimum:0,Maximum:100,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(20d))},_=>writes++);
+   Show(fields);Pump();var accepted=fields.CaptureAccepted();var low=(TextBox)fields.Fields[0].InputElement!;var high=(TextBox)fields.Fields[1].InputElement!;low.Focus();low.Text="bad";high.Text="999";
+   var observed=0;foreach(var field in fields.Fields)field.Changed+=()=>{Require(ownerRevision==1&&fields.Fields.All(row=>row.Setting is ConstantSetting),"观察了半安装根");observed++;};
+   Require(fields.TryReplayAccepted(accepted,()=>{ownerRevision++;return true;},()=>true,out var publish)&&writes==0&&ownerRevision==1,"回放走普通writer或same-value省略根安装");publish();publish();Pump();
+   Require(low.Text=="10"&&high.Text=="20"&&!fields.HasInvalidActiveFields&&observed==2&&writes==0,"回放没有清除两个旧raw或通知重复");Show(new TextBlock());
+  });
+  Test("ROI菜单历史：观察异常保已接纳历史并仍可重做",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample();Show(sample);Pump();
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}}),"前置模式失败");
+   Action fail=()=>throw new InvalidOperationException("history observer");var field=sample.Fields.Fields.First();field.Changed+=fail;var revision=sample.Revision;var threw=false;
+   try{sample.Session.TryUndo();}catch(InvalidOperationException error){threw=error.Message=="history observer";}
+   field.Changed-=fail;Require(threw&&sample.Revision==revision+1&&sample.GraphicMode&&sample.Session.Items.Count>0&&sample.Session.History.CanRedo,"观察异常回滚已安装历史或漏Session安装");
+   Require(sample.Session.TryRedo()&&!sample.GraphicMode,"异常后Redo不可用");Show(new TextBlock());
+  });
+ }
+ static void VerifyRoiMenuBoundaryCases()
+ {
+  Test("ROI菜单历史：接纳后租约失效仍发布并释放字段门禁",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));
+   using var fields=new DeclaredFieldsView(new[]{(new Port("n",DataType.Number),new FieldPresentation("n","值","参数",0,FieldEditorKind.Scalar),(ParameterSetting)new ConstantSetting(2d))},_=>{});var state=fields.CaptureAccepted();var published=0;
+   using var session=new NativeRoiSession(image,model.Read,(stamp,proposal)=>
+   {
+    var result=model.Accept(stamp,proposal);Require(fields.TryReplayAccepted(state,()=>{model.Alive=false;return true;},()=>true,out var notify),"准备失败");
+    return result with{Publish=()=>{published++;notify();}};
+   },()=>model.Alive,()=>new(false,false),"detect");
+   Require(session.TryDelete(session.Items.ToArray())&&!session.IsCurrent&&published==1,"失效早退漏发布");
+   Require(fields.Fields[0].TrySetConstant(3d),"字段提交门禁未释放");
+  });
+  Test("ROI菜单历史：绘制权限和历史查询同步递归有界",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));NativeRoiSession? scope=null;RoiGeometryClipboard? copy=null;var drawCalls=0;var historyCalls=0;var nested=false;
+   using var session=scope=new(image,model.Read,model.Accept,()=>true,()=>{historyCalls++;nested|=scope!.History.CanUndo;return new(true,false);},"detect",canDraw:_=>{drawCalls++;nested|=scope!.CanPaste(copy);return true;});
+   Require(session.TryCopy(session.Items[0],out copy)&&session.CanPaste(copy)&&drawCalls==1&&!nested,"绘制查询递归或改写");
+   Require(session.History.CanUndo&&historyCalls==1&&!nested&&model.Writes==0,"历史查询递归或误运行事务");
+  });
+  Test("ROI菜单历史：当前性回调同步解绑或释放视口不写旧会话",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   foreach(var dispose in new[]{false,true})
+   {
+    var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));Action? callback=null;
+    using var session=new NativeRoiSession(image,model.Read,model.Accept,()=>{var action=callback;callback=null;action?.Invoke();return true;},()=>new(false,false),"detect");
+    using var viewport=new NativeRoiViewport{Width=400,Height=250};viewport.Bind(session);Show(viewport);Pump();var parameters=new object[]{session.Items[0],viewport.NativeView.ROIList};
+    callback=()=>{if(dispose)viewport.Dispose();else viewport.Bind(null);};
+    Require(!viewport.NativeView.DeleteRoiCommand.CanExecute(parameters)&&model.Writes==0,"当前性回调换owner仍可执行");viewport.NativeView.DeleteRoiCommand.Execute(parameters);Require(model.Writes==0,"直接Execute绕过门禁");Show(new TextBlock());
+   }
+  });
+  Test("ROI菜单历史：常量accepted与临时引用模式及备份可往返回放",()=>
+  {
+   var port=new Port("n",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
+   using var fields=new DeclaredFieldsView(new[]{(port,new FieldPresentation("n","值","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:10,DecimalPlaces:0)},(ParameterSetting)new ConstantSetting(2d))},_=>{},ReferenceFieldOptions.Empty);
+   var snapshot=fields.CaptureAccepted().ToDictionary(pair=>pair.Key,pair=>pair.Value with{ReferenceMode=true});
+   Require(fields.TryReplayAccepted(snapshot,()=>true,()=>true,out var publish),"自身可达的常量引用模式拒绝");publish();var restored=fields.CaptureAccepted()["n"];
+   Require(restored.ReferenceMode&&restored.Setting is ConstantSetting{Value:2d}&&restored.ConstantBackup is {Value:2d},"模式或备份丢失");
+   snapshot["n"]=restored with{ConstantBackup=new ConstantSetting(50d)};var called=false;var rejected=false;
+   try{fields.TryReplayAccepted(snapshot,()=>{called=true;return true;},()=>true,out _);}catch(ArgumentException){rejected=true;}
+   Require(rejected&&!called&&fields.CaptureAccepted()["n"].ConstantBackup is {Value:2d},"越界备份先安装后校验");
+  });
+ }
+ static void VerifyRoiReceiptPublication()
+ {
+  Test("ROI菜单历史：Create与Replace失效或畸形回执均完成发布",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   foreach(var create in new[]{true,false})foreach(var invalidate in new[]{true,false})
+   {
+    var model=create?new RoiHost(image):new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));var published=0;
+    using var session=model.Open();model.AfterAccept=result=>
+    {
+     if(invalidate)model.Alive=false;
+     return result with{Publish=()=>published++,Selection=invalidate?result.Selection:new RoiEditSelection.Select(new("detect",Guid.NewGuid()))};
+    };
+    var accepted=false;var threw=false;
+    try
+    {
+     if(create){session.DrawRequested+=_=>{};var request=session.BeginDraw("rectangle")!;accepted=session.CompleteDraw(request,RoiGeometryEditing.Create("rectangle",new(0,0),new(10,10)));}
+     else{var item=session.Items.Single();session.Select(item.Group,item.Id);item.CenterX+=.1;accepted=session.TryCommit(item);}
+    }
+    catch(InvalidOperationException){threw=true;}
+    Require(published==1&&model.Writes==1&&!session.IsCurrent&&(invalidate?accepted:threw),"部分提案入口漏发布、伪报回滚或仍允许旧租约");
+   }
+  });
+  Test("ROI菜单历史：Create与Replace安装观察异常后仍发布且不回滚",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   foreach(var create in new[]{true,false})
+   {
+    var model=create?new RoiHost(image):new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));var published=0;
+    using var session=model.Open();model.AfterAccept=result=>result with{Publish=()=>published++};
+    if(!create){var row=session.Items[0];session.Select(row.Group,row.Id);row.CenterX+=.1;}
+    RoiDrawRequest? request=null;if(create){session.DrawRequested+=_=>{};request=session.BeginDraw("rectangle");}
+    Action fail=()=>{if(model.Writes==1)throw new InvalidOperationException("receipt observer");};session.Changed+=fail;var threw=false;
+    try{if(create)session.CompleteDraw(request!,RoiGeometryEditing.Create("rectangle",new(0,0),new(10,10)));else session.TryCommit(session.Items[0]);}
+    catch(InvalidOperationException error){threw=error.Message=="receipt observer";}
+    finally{session.Changed-=fail;}
+    Require(threw&&published==1&&model.Writes==1&&session.Stamp.Revision==1&&session.IsCurrent,"通知异常漏发布或回滚了已安装快照");
+   }
+  });
+ }
+ static bool PumpUntil(Func<bool> completed,int milliseconds=1200)
+ {
+  if(completed())return true;var watch=System.Diagnostics.Stopwatch.StartNew();var frame=new DispatcherFrame();
+  var timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromMilliseconds(10)};
+  EventHandler tick=(_,_)=>{if(completed()||watch.ElapsedMilliseconds>=milliseconds)frame.Continue=false;};timer.Tick+=tick;
+  try{timer.Start();Dispatcher.PushFrame(frame);}finally{timer.Stop();timer.Tick-=tick;}
+  return completed();
+ }
+ static void VerifyRoiCancellationBoundaries()
+ {
+  Test("ROI菜单历史：取消绘制回调换根未刷新时不复制过期几何",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   foreach(var advance in new[]{true,false})
+   {
+    var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));using var session=model.Open();session.DrawRequested+=_=>{};
+    var original=session.Items[0];Require(session.TryCopy(original,out var old)&&old is not null,"前置复制失败");session.BeginDraw("rectangle");
+    session.DrawCancelled+=_=>{model.Rows[0]=model.Rows[0] with{Geometry=RoiGeometryEditing.Translate(model.Rows[0].Geometry,20,30)};if(advance)model.Revision++;};
+    Require(!session.TryCopy(original,out var latest)&&latest is null&&old.Geometry.Get<PointGeometry>("center").Point!=RoiGeometryEditing.Center(model.Rows[0].Geometry),"复制了取消回调之前的旧几何");
+    Require(advance?session.IsCurrent&&session.Stamp==model.Stamp:!session.IsCurrent,"新版本未安装或同版改内容未停止租约");
+   }
+  });
+  Test("ROI菜单历史：所有外部当前性回调后再核调用方租约",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   foreach(var paste in new[]{true,false})foreach(var trigger in Enumerable.Range(1,28))
+   {
+    var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));var armed=false;var entered=false;var caller=true;var calls=0;var invalidated=false;
+    using var session=new NativeRoiSession(image,model.Read,model.Accept,()=>{if(armed&&++calls==trigger&&!entered){caller=false;invalidated=true;}return true;},()=>new(false,false),"detect");
+    var item=session.Items[0];session.TryCopy(item,out var clip);model.BeforeAccept=()=>entered=true;armed=true;
+    if(paste)session.TryPaste(clip!,new(100,100),()=>caller);else session.TryDelete(new[]{item},()=>caller);
+    Require(!invalidated||model.Writes==0,"调用方租约在最后外部回调失效后仍写旧owner："+paste+"/"+trigger);
+   }
+  });
+  Test("ROI菜单历史：历史权限回调使调用方失效后不进入owner",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));
+   var caller=true;var checks=0;using var session=new NativeRoiSession(image,model.Read,model.Accept,()=>true,()=>{if(++checks==2)caller=false;return new(true,true);},"detect");
+   Require(!session.TryUndo(()=>caller)&&checks==2&&model.Attempts==0,"历史最后权限回调失效仍写旧owner");
+  });
+  Test("ROI菜单历史：重绑关闭实际原菜单且旧关闭不清新菜单",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var model=new RoiHost(resources.CreateGray8(320,240,new byte[76800]),new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));using var session=model.Open();
+   using var viewport=new NativeRoiViewport{Width=400,Height=250};viewport.Bind(session);Show(viewport);Pump();
+   var target=Visuals<FrameworkElement>(viewport.NativeView).First(view=>view.ContextMenu is not null);var menu=target.ContextMenu!;menu.PlacementTarget=target;menu.IsOpen=true;Pump();Require(menu.IsOpen,"原菜单未打开");
+   var firstClosed=false;RoutedEventHandler firstClose=(_,_)=>firstClosed=true;menu.Closed+=firstClose;
+   try{viewport.Bind(session);Require(PumpUntil(()=>firstClosed)&&!menu.IsOpen,"重绑仍保留旧原菜单或Closed未完成");}finally{menu.Closed-=firstClose;}
+   target=Visuals<FrameworkElement>(viewport.NativeView).First(view=>view.ContextMenu is not null);menu=target.ContextMenu!;
+   var newMenu=new ContextMenu();newMenu.Items.Add(new MenuItem{Header="新会话菜单"});target.ContextMenu=menu;menu.PlacementTarget=target;menu.IsOpen=true;Pump();Require(menu.IsOpen,"当前会话原菜单未打开");var reentered=false;
+   RoutedEventHandler next=(_,_)=>{if(reentered)return;reentered=true;viewport.Bind(session);target.ContextMenu=newMenu;newMenu.PlacementTarget=target;newMenu.IsOpen=true;};
+   menu.Closed+=next;
+   try{viewport.Bind(session);PumpUntil(()=>reentered);Require(reentered&&newMenu.IsOpen&&model.Writes==0,"旧关闭回调清了重绑后新菜单或修改owner：reentered="+reentered+",open="+newMenu.IsOpen+",writes="+model.Writes);}
+   finally{menu.Closed-=next;newMenu.IsOpen=false;target.ClearValue(FrameworkElement.ContextMenuProperty);Show(new TextBlock());}
+  });
+ }
+ static void VerifyRoiDefinitionReopen()
+ {
+  Test("ROI菜单历史：accepted定义重建新会话保身份且不复活临时输入剪贴和历史",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);var original=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"A",RingShape()));
+   var number=new Port("threshold",DataType.Number);var presentation=new FieldPresentation("threshold","阈值","参数",0,FieldEditorKind.Scalar);var values=new Dictionary<string,ParameterSetting>{{"threshold",new ConstantSetting(2d)}};
+   using var first=original.Open();using var fields=new DeclaredFieldsView(new[]{(number,presentation,values["threshold"])},changes=>{foreach(var change in changes)values[change.Key]=change.Value;original.Revision++;});
+   fields.Fields[0].Changed+=first.Refresh;Require(fields.Fields[0].TrySetConstant(9d),"字段根前置失败");var old=first.Items[0];first.Select(old.Group,old.Id);Require(first.TryCopy(old,out var clipboard)&&first.TryPaste(clipboard!,new(100,100)),"前置几何失败");
+   Show(fields);var raw=(TextBox)fields.Fields[0].InputElement!;raw.Focus();raw.Text="bad";var savedRows=original.Rows.ToArray();var savedFields=fields.CaptureAccepted().ToDictionary(pair=>pair.Key,pair=>pair.Value.Setting);var oldField=fields.Fields[0];var oldCommand=old.DataChangedCommand;
+   fields.Dispose();first.Dispose();original.Alive=false;var reopened=new RoiHost(image,savedRows);using var next=reopened.Open();var newWrites=0;
+   using var nextFields=new DeclaredFieldsView(new[]{(number,presentation,savedFields["threshold"])},_=>{newWrites++;reopened.Revision++;});Show(nextFields);
+   Require(nextFields.Fields[0].Setting is ConstantSetting{Value:9d}&&((TextBox)nextFields.Fields[0].InputElement!).Text=="9"&&!nextFields.HasInvalidActiveFields,"重建复活了raw/错误或丢了accepted定义");
+   Require(next.Items.Select(row=>row.Id).SequenceEqual(savedRows.Select(row=>row.Id))&&!ReferenceEquals(old,next.Items.First())&&!next.History.CanUndo&&!next.History.CanRedo&&!next.CanPaste(clipboard),"重建丢身份或复活旧投影/历史/剪贴");
+   oldCommand.Execute(null);Require(!oldField.TrySetConstant(20d)&&newWrites==0&&reopened.Writes==0,"旧会话写入重建后根");Show(new TextBlock());
+  });
+  Test("ROI菜单历史：恢复引用定义重新解析当前运行且来源缺失不复活旧receipt",()=>
+  {
+   var binding=new ComponentBindingHost();using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeRoiInheritanceSample(new(binding.Candidates,binding.Resolve,()=>binding.Alive));binding.Frame=sample.Frame;Show(sample);
+   var ids=new[]{"detect.rect.x","detect.rect.y","detect.rect.width","detect.rect.height","detect.rect.angle"};var proposal=new Dictionary<string,ParameterSetting>{{"detect.mode",new ConstantSetting(1L)},{"detect.inherit-way",new ConstantSetting(1L)}};
+   for(var i=0;i<ids.Length;i++)proposal[ids[i]]=new ReferenceSetting(binding.Reference(new BindingSelection.AtConstant(i)));
+   Require(sample.Fields.TrySetFields(proposal)&&RoiGeometryEditing.Center(ComponentGeometry(sample)).X==200,"前置来源失败");var identity=sample.Session.Items.Single(row=>row.Group=="detect").Id;
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}}),"前置模式失败");var calls=binding.Calls;binding.Values[0]=260;binding.Epoch++;
+   Require(sample.Session.TryUndo()&&binding.Calls==calls+1&&RoiGeometryEditing.Center(ComponentGeometry(sample)).X==260&&sample.Session.Items.Single(row=>row.Group=="detect").Id==identity,"Undo恢复了历史receipt或丢稳定派生身份");
+   Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{"area.mode",new ConstantSetting(1L)}}),"第二前置失败");binding.Unavailable=true;binding.Epoch++;
+   Require(sample.Session.TryUndo()&&sample.GraphicMode&&!sample.Session.Items.Any(row=>row.Group=="detect")&&!sample.TryCapture(out _,out _)&&sample.Fields.Fields.Single(field=>field.FieldId==ids[0]).Setting is ReferenceSetting,"未发布来源复活旧几何、删除表达式或冒称可捕获");Show(new TextBlock());
+  });
+ }
  static int Main()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
@@ -1826,6 +2075,11 @@ internal static class S2DocumentEditingCases
    VerifyExpandedReference();
    VerifyNativeBox();
    VerifyNativeRoiCreationContract();
+   VerifyRoiMenusHistory();
+   VerifyRoiMenuBoundaryCases();
+   VerifyRoiReceiptPublication();
+   VerifyRoiCancellationBoundaries();
+   VerifyRoiDefinitionReopen();
    VerifyNativeRoiDrawingViewport();
    VerifyNativeRoiScene();
    VerifyNativeSceneCleanupFailure();

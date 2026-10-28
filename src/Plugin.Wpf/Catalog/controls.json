@@ -83,7 +83,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "40a54a713a891c8582e4a16095ac2b9f55652773dcd80ef96af95a2bc0ce94a2"
+          "sha256": "d14cb5f866fc7c1927b781f7238fb945caf5a9345cf8d1916343428de152e381"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Regions/RoiResources.xaml",
@@ -288,7 +288,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "40a54a713a891c8582e4a16095ac2b9f55652773dcd80ef96af95a2bc0ce94a2"
+          "sha256": "d14cb5f866fc7c1927b781f7238fb945caf5a9345cf8d1916343428de152e381"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -304,7 +304,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
-          "sha256": "c93213d8207a0dd9fc020ad9d6a55326128e3a3fbb6b000398e76d02734098e8"
+          "sha256": "0e70915963260fc4235dfb38c235ba2386b88c54ae83fb97e14a9272e1555037"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
@@ -459,7 +459,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         }
       ],
       "themeKeys": [
@@ -602,7 +602,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -610,7 +610,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
+          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
         }
       ],
       "presenter": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.ImageSource.cs",
@@ -715,7 +715,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         }
       ],
       "consumers": [
@@ -793,7 +793,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         }
       ],
       "consumers": [
@@ -1060,7 +1060,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/FgConverter.cs",
@@ -1108,7 +1108,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
+          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
         },
         {
           "path": "src/Plugin.Contracts/BindingPlans.cs",
@@ -1359,7 +1359,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
@@ -1657,7 +1657,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
@@ -1701,7 +1701,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "40a54a713a891c8582e4a16095ac2b9f55652773dcd80ef96af95a2bc0ce94a2",
+          "sha256": "d14cb5f866fc7c1927b781f7238fb945caf5a9345cf8d1916343428de152e381",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         }
       ],
@@ -1816,7 +1816,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
-          "sha256": "c93213d8207a0dd9fc020ad9d6a55326128e3a3fbb6b000398e76d02734098e8"
+          "sha256": "0e70915963260fc4235dfb38c235ba2386b88c54ae83fb97e14a9272e1555037"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
@@ -1828,7 +1828,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "40a54a713a891c8582e4a16095ac2b9f55652773dcd80ef96af95a2bc0ce94a2"
+          "sha256": "d14cb5f866fc7c1927b781f7238fb945caf5a9345cf8d1916343428de152e381"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMControls/VM.Controls/BaseWindow.cs",
@@ -2076,7 +2076,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "7e3bd0926d72314e092fd1bfc792d3707b2ec6a7a8562871cd557ef8e58be512"
+          "localSha256": "929c38ba1d98670465a34e85515c973434114902c5002bd9a7711163e2cba062"
         },
         {
           "originalType": "VMBaseControls original ROI style",
@@ -2419,7 +2419,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "8b5425faf9e4af5fa4f4f28305704b7e707d8fc01413a1b60fac3cd10ab3b484"
+          "sha256": "634a40272153b978175af10faa6ef45edc2566c18ad1f76bacc0be86b3f19f1d"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
@@ -2431,7 +2431,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "99dbcff92036f3e1d7b73d01abe8078f578dd232def4e775e74d4b31eb19a73e"
+          "sha256": "e6b2f6a7b9b1d5fdf39fa18d199cd78ae590023ccccf2f6da0b6ff668f35ff31"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiProjection.cs",
@@ -2451,7 +2451,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiDesignData.cs",
-          "sha256": "ed38c4c40ae5096a78d90601feb85a51a98adeab820af02a5e5115dd756ab727"
+          "sha256": "9434ea628e406ea099535f11b3d7e726c670158043ee8d4614665db4db2194c3"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiDrawing.cs",
@@ -2459,7 +2459,32 @@
         },
         {
           "path": "src/Plugin.Wpf/Regions/RoiEditContracts.cs",
-          "sha256": "0640fe4b4a84a92544d548df4e0bc76bef5420955fd6e6447323352a3c6c4101"
+          "sha256": "6d0c9087799d998a8610a74e36b07fdfc5e4e79d43bfd1def5f5a7926a221b08"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiMenuCommands.cs",
+          "sha256": "d6cb36b0de15cae5791e52c66ac6db4c77c488dd07709fd2097f5d569f3fd054",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs",
+          "sha256": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs",
+          "sha256": "fd0284211b162e3ed50ddb35b6323c039f45e23391ee172597cd0a48091d501f",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+          "sha256": "13b48e53868d10b8b844db265242cf0c9199ebbb260c008d8203a0e619809a06",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs",
+          "sha256": "7e9bb2435212fcebd8c9e81d8d05abb27b66f8ce40ed7cb300dcf001c51ec682",
+          "kind": "中立菜单与宿主历史同根组合"
         }
       ],
       "consumers": [
@@ -2544,6 +2569,14 @@
         ],
         "evidence": "docs/collaboration/evidence/O06_STANDALONE_ROI_SCENE_CHECKPOINT_20261028.json",
         "validation": "UI006/全量Release002零错误；Window110=64、Field073=31、Design036=69、RuntimeEditor054=10、FullChain114=8、Components196=9；正式EXE008 exit0，22可用工具15分类。四形状实际PNG查看，不代VS/VM/人工。"
+      },
+      "roiMenuHistory20261028": {
+        "status": "FORMAL_AUTOMATION_PASSED_ROI_MENU_HISTORY_C09_INCOMPLETE",
+        "scope": "原菜单变更前宿主接纳/规范几何剪贴/完整Fields与LocalItems历史/单次accepted回放，非Blob实际业务验收",
+        "remaining": "完整C09/Assist、C13/C14/C17、中立产品命名及真实VS/VM同态/用户验收仍未完成；Blob正式消费和保存重开属第二阶段，不以库定义重建代签。",
+        "sourceEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_SOURCE_AUDIT_20261028.json",
+        "formalEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json",
+        "validation": "UI005/全量Release002零错误；Window175=151，Design050=85，Field085=31，RuntimeEditor067=10，FullChain125=8，Components207=9，ThemeStartup010=1，Resources019=22，共317组；EXE018 exit0/22工具15分类。"
       }
     },
     {
@@ -2733,7 +2766,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "99dbcff92036f3e1d7b73d01abe8078f578dd232def4e775e74d4b31eb19a73e"
+          "sha256": "e6b2f6a7b9b1d5fdf39fa18d199cd78ae590023ccccf2f6da0b6ff668f35ff31"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
@@ -2894,7 +2927,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "927e1d13235431c215e4d5eac02500851f962e8b8fe6ba9af284efcb2749e029"
+          "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88"
         },
         {
           "path": "src/Plugin.Wpf/Fields/FieldGroupCandidate.cs",
@@ -2902,7 +2935,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "889b0bd7cb436209574ef4939071b40881c735621e8ca251a05e0ae7f7cfc5b6"
+          "sha256": "72e9014bc8fb1cf685816a2ad074410a230653dd4678d42d4119df038682e5a9"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
@@ -2910,11 +2943,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-          "sha256": "40a54a713a891c8582e4a16095ac2b9f55652773dcd80ef96af95a2bc0ce94a2"
+          "sha256": "d14cb5f866fc7c1927b781f7238fb945caf5a9345cf8d1916343428de152e381"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "8b5425faf9e4af5fa4f4f28305704b7e707d8fc01413a1b60fac3cd10ab3b484"
+          "sha256": "634a40272153b978175af10faa6ef45edc2566c18ad1f76bacc0be86b3f19f1d"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiSamples.cs",
@@ -2922,7 +2955,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
+          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -2943,6 +2976,31 @@
         {
           "path": "src/Plugin.Contracts/BindingPlans.cs",
           "sha256": "3e5da4aab2a7e6264db5cade2f87a255e4f3b3cc6d4f105189fa142a7ce00c92"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiMenuCommands.cs",
+          "sha256": "d6cb36b0de15cae5791e52c66ac6db4c77c488dd07709fd2097f5d569f3fd054",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs",
+          "sha256": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs",
+          "sha256": "fd0284211b162e3ed50ddb35b6323c039f45e23391ee172597cd0a48091d501f",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+          "sha256": "13b48e53868d10b8b844db265242cf0c9199ebbb260c008d8203a0e619809a06",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs",
+          "sha256": "7e9bb2435212fcebd8c9e81d8d05abb27b66f8ce40ed7cb300dcf001c51ec682",
+          "kind": "中立菜单与宿主历史同根组合"
         }
       ],
       "dependencyCatalogRefs": [
@@ -2993,6 +3051,14 @@
         "state": "Root owns accepted fields and cached readonly detection/error/proof, Read never resolves; explicit source refresh advances revision. Missing/unavailable/All0-or-many allow draft but block capture; malformed and stale identities reject. Fixed fixture designer remains scalar-only, never a second sequence resolver.",
         "validation": "Window167=133, Design049=85, eight tracks299; actual EXE017 exit0/22 tools. O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json; actual mouse/VS/VM/user not signed",
         "remaining": "Full C09 menu/history/Assist and C13/C14/window complete compositions remain; actual Blob consumers frozen until full phase1 gate"
+      },
+      "roiMenuHistory20261028": {
+        "status": "FORMAL_AUTOMATION_PASSED_ROI_MENU_HISTORY_C09_INCOMPLETE",
+        "scope": "原菜单变更前宿主接纳/规范几何剪贴/完整Fields与LocalItems历史/单次accepted回放，非Blob实际业务验收",
+        "remaining": "完整C09/Assist、C13/C14/C17、中立产品命名及真实VS/VM同态/用户验收仍未完成；Blob正式消费和保存重开属第二阶段，不以库定义重建代签。",
+        "sourceEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_SOURCE_AUDIT_20261028.json",
+        "formalEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json",
+        "validation": "UI005/全量Release002零错误；Window175=151，Design050=85，Field085=31，RuntimeEditor067=10，FullChain125=8，Components207=9，ThemeStartup010=1，Resources019=22，共317组；EXE018 exit0/22工具15分类。"
       }
     },
     {
@@ -3152,7 +3218,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "8b5425faf9e4af5fa4f4f28305704b7e707d8fc01413a1b60fac3cd10ab3b484"
+          "sha256": "634a40272153b978175af10faa6ef45edc2566c18ad1f76bacc0be86b3f19f1d"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiImageFrame.cs",
@@ -3160,7 +3226,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.cs",
-          "sha256": "99dbcff92036f3e1d7b73d01abe8078f578dd232def4e775e74d4b31eb19a73e"
+          "sha256": "e6b2f6a7b9b1d5fdf39fa18d199cd78ae590023ccccf2f6da0b6ff668f35ff31"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiScene.cs",
@@ -3172,7 +3238,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
-          "sha256": "a00aefaba2559cecd1c6274615ff8df19feec477eebaa7f74107c575f229f114"
+          "sha256": "958125d0d5925bf5c40f4d0680546a8caac92661ad343757c1629e7e71f759fa"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
@@ -3197,6 +3263,31 @@
         {
           "path": "src/Plugin.Contracts/BindingPlans.cs",
           "sha256": "3e5da4aab2a7e6264db5cade2f87a255e4f3b3cc6d4f105189fa142a7ce00c92"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiMenuCommands.cs",
+          "sha256": "d6cb36b0de15cae5791e52c66ac6db4c77c488dd07709fd2097f5d569f3fd054",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.Commands.cs",
+          "sha256": "da067433c508e87cbd39a2e9773f95fb3e5bcdb97487df4bd3111e78519ef925",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.History.cs",
+          "sha256": "fd0284211b162e3ed50ddb35b6323c039f45e23391ee172597cd0a48091d501f",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
+          "sha256": "13b48e53868d10b8b844db265242cf0c9199ebbb260c008d8203a0e619809a06",
+          "kind": "中立菜单与宿主历史同根组合"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiViewport.Commands.cs",
+          "sha256": "7e9bb2435212fcebd8c9e81d8d05abb27b66f8ce40ed7cb300dcf001c51ec682",
+          "kind": "中立菜单与宿主历史同根组合"
         }
       ],
       "dependencyCatalogRefs": [
@@ -3230,6 +3321,14 @@
         "state": "Root owns accepted fields and cached readonly detection/error/proof, Read never resolves; explicit source refresh advances revision. Missing/unavailable/All0-or-many allow draft but block capture; malformed and stale identities reject. Fixed fixture designer remains scalar-only, never a second sequence resolver.",
         "validation": "Window167=133, Design049=85, eight tracks299; actual EXE017 exit0/22 tools. O06_COMPONENT_SEQUENCE_CHECKPOINT_20261028.json; actual mouse/VS/VM/user not signed",
         "remaining": "Full C09 menu/history/Assist and C13/C14/window complete compositions remain; actual Blob consumers frozen until full phase1 gate"
+      },
+      "roiMenuHistory20261028": {
+        "status": "FORMAL_AUTOMATION_PASSED_ROI_MENU_HISTORY_C09_INCOMPLETE",
+        "scope": "原菜单变更前宿主接纳/规范几何剪贴/完整Fields与LocalItems历史/单次accepted回放，非Blob实际业务验收",
+        "remaining": "完整C09/Assist、C13/C14/C17、中立产品命名及真实VS/VM同态/用户验收仍未完成；Blob正式消费和保存重开属第二阶段，不以库定义重建代签。",
+        "sourceEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_SOURCE_AUDIT_20261028.json",
+        "formalEvidence": "docs/collaboration/evidence/O06_ROI_MENU_HISTORY_CHECKPOINT_20261028.json",
+        "validation": "UI005/全量Release002零错误；Window175=151，Design050=85，Field085=31，RuntimeEditor067=10，FullChain125=8，Components207=9，ThemeStartup010=1，Resources019=22，共317组；EXE018 exit0/22工具15分类。"
       }
     }
   ]

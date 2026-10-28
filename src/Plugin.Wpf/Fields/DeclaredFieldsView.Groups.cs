@@ -28,6 +28,43 @@ public sealed partial class DeclaredFieldsView
     /// Paired numeric endpoints remain owned by their original range composition and binding validation.</summary>
     public bool TrySetFields(IReadOnlyDictionary<string,ParameterSetting> proposals)
         =>SubmitFields(proposals,true);
+    public IReadOnlyDictionary<string,AcceptedFieldValue> CaptureAccepted()
+    {
+        Dispatcher.VerifyAccess();ObjectDisposedException.ThrowIf(_disposed,this);
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string,AcceptedFieldValue>(
+            _fieldStates.ToDictionary(state=>state.Port.Id,state=>state.CaptureAccepted(),StringComparer.Ordinal));
+    }
+    /// <summary>Install an owner's complete prepared history state without invoking the ordinary draft writer.
+    /// The owner callback must only compare/install its root and history cursor; it must not publish notifications.</summary>
+    public bool TryReplayAccepted(IReadOnlyDictionary<string,AcceptedFieldValue> values,Func<bool> installOwner,Func<bool> isCurrent,out Action publish)
+    {
+        ArgumentNullException.ThrowIfNull(values);ArgumentNullException.ThrowIfNull(installOwner);ArgumentNullException.ThrowIfNull(isCurrent);
+        publish=()=>{};Dispatcher.VerifyAccess();if(_submitting||_disposed)return false;
+        _submitting=true;var installed=false;
+        try
+        {
+            if(values.Count!=_fieldStates.Count||_fieldStates.Any(state=>!values.ContainsKey(state.Port.Id)))
+                throw new ArgumentException("历史回放必须包含完整且唯一的字段集。");
+            bool Current()=>CurrentGroup()&&isCurrent()&&!_disposed;
+            foreach(var range in _ranges)range.ValidateReplay(values);
+            ValidatePrepared(values.Where(entry=>entry.Value.ConstantBackup is not null).ToDictionary(entry=>entry.Key,
+                entry=>(ParameterSetting)entry.Value.ConstantBackup!,StringComparer.Ordinal),false,false);
+            installed=DeclaredFieldState.ReplayAccepted(_fieldStates.Select(state=>(state,values[state.Port.Id])).ToArray(),
+                changes=>ValidatePrepared(changes,false,false),Current,installOwner,out var notify);
+            if(installed)
+            {
+                var published=false;
+                publish=()=>
+                {
+                    if(published)return;published=true;
+                    try{SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiCallbacks.Run(_ranges.ToArray().Select(range=>(Action)range.ReplayAccepted).Append(notify));}
+                    finally{_submitting=false;}
+                };
+            }
+            return installed;
+        }
+        finally{if(!installed)_submitting=false;}
+    }
     private bool ProposeSingle(string id,ParameterSetting proposal)
         =>SubmitFields(new Dictionary<string,ParameterSetting>{{id,proposal}},false);
     private bool SubmitFields(IReadOnlyDictionary<string,ParameterSetting> proposals,bool replacePending)
@@ -69,7 +106,8 @@ public sealed partial class DeclaredFieldsView
         public void Dispose(){var value=_owner;_owner=null;if(value is not null)value._submitting=false;}
     }
     private bool SubmitCore(IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)> proposals,bool validateReferences,bool replacePending,Action? installed=null)
-        =>DeclaredFieldState.TrySetGroup(proposals,_writeGroup,changes=>
+        =>DeclaredFieldState.TrySetGroup(proposals,_writeGroup,changes=>ValidatePrepared(changes,validateReferences,true),CurrentGroup,replacePending,installed);
+    private void ValidatePrepared(IReadOnlyDictionary<string,ParameterSetting> changes,bool validateReferences,bool validateComposition)
         {
             foreach(var change in changes)
             {
@@ -93,12 +131,12 @@ public sealed partial class DeclaredFieldsView
                     if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
                 }
             }
-            if(_validateComposition is {} validateGroup)
+            if(validateComposition&&_validateComposition is {} validateGroup)
             {
                 var current=_fieldStates.ToDictionary(x=>x.Port.Id,x=>x.Accepted,StringComparer.Ordinal);
                 var error=validateGroup(new FieldGroupCandidate(current,changes));
                 if(!CurrentGroup())return;
                 if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
             }
-        },CurrentGroup,replacePending,installed);
+        }
 }

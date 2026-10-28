@@ -67,7 +67,7 @@ internal sealed class ReferenceExpansionCoordinator : IDisposable
         if(window is not null){window.Closed-=OnClosed;window.DataContext=null;}
         if(request is not null){request.Invalidated-=OnInvalidated;request.Dispose();}
     }
-    private void Close()
+    internal void Close()
     {
         var window=_window;
         try{Release();}

@@ -253,19 +253,27 @@ public sealed class RootWorkspaceHostTests
   source.Images[1].IsForRun=true;Assert.Single(node.ImageSourceConfig!.ForRunPaths);
   history.Undo();Assert.Empty(node.ImageSourceConfig!.ForRunPaths);Assert.False(source.Images[1].IsForRun);
   history.Redo();Assert.True(source.Images[1].IsForRun);
-  var previousSource=main.ActiveInputSource;main.ActiveInputSource=source;
+  // This fixture uses a configuration probe, so prepare only the private display
+  // selection via its real setter; production source selection remains private.
+  void SetActiveSource(SunEyeVision.UI.Shared.ImageInputSource? value)
+  {
+   typeof(MainWindowViewModel).GetProperty(nameof(MainWindowViewModel.ActiveInputSource))!
+    .GetSetMethod(nonPublic:true)!.Invoke(main,new object?[]{value});
+   Assert.Same(value,main.ActiveInputSource);
+  }
+  var previousSource=main.ActiveInputSource;SetActiveSource(source);
   try
   {
    Assert.True(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));
    var position=history.Position;
    Assert.True(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));
    Assert.Equal(position,history.Position); // Explicit same-value selection resets execution, without another history entry.
-   EventHandler switchSource=(_,_)=>main.ActiveInputSource=previousSource;
+   EventHandler switchSource=(_,_)=>SetActiveSource(previousSource);
    source.ConfigurationEdited+=switchSource;
    try{Assert.False(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));}
    finally{source.ConfigurationEdited-=switchSource;}
   }
-  finally{main.ActiveInputSource=previousSource;}
+  finally{SetActiveSource(previousSource);}
   VerifySourceSettings(main,node,history);
   VerifySourceBaseAfterSave(main,node,root.Id,source);
   while(history.Position>opening)history.Undo();

@@ -309,10 +309,12 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
     private void CancelInteraction()=>CaptureInteractionCancellation()();
     private Action CaptureInteractionCancellation()
     {
+        var generation=ROIControlBase.GestureGeneration(NativeView);var wasDragging=NativeView.IsDragROI;
         var cancellations=Descendants<ROIControlBase>(NativeView)
             .Where(roi=>roi is RectROI or SectorROI or CircleROI or PolygonROI)
             .Select(roi=>roi.CaptureGestureCancellation()).ToArray();
-        return ()=>NativeRoiCallbacks.Run(cancellations.Select(cancel=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))cancel();})));
+        return ()=>NativeRoiCallbacks.Run(cancellations.Select(cancel=>(Action)(()=>{if(_owner.MayClearRoiCallbacks(this))cancel();}))
+            .Append(()=>{if(wasDragging&&generation==ROIControlBase.GestureGeneration(NativeView)&&_owner.MayClearRoiCallbacks(this))NativeView.IsDragROI=false;}));
     }
     private void OnPreviewMouse(object sender,MouseButtonEventArgs args)
     {if(!IsCurrent||_session?.PrepareEditor()!=true||!IsCurrent)args.Handled=true;}

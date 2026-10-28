@@ -2595,7 +2595,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
+            "sha256": "43753a7fe2b7d10d0e69bfaa32a3b207aa1fcb5e4940d7868c7509525d6bf237"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -2617,7 +2617,7 @@
         ]
       },
       "roiGestureCandidate": {
-        "status": "候选6组真实WPF捕获测试通过，规定UI/full与正式关联复验待执行；非人工验收。",
+        "status": "候选ROI完整窗口过滤40/0，六组真实捕获事务均过；下一重新规定UI/full，非人工验收。",
         "scope": "原矩形/圆环/扇环/多边形共享手势令牌、独立模板及局部代次、唯一事件wrapper、原投影stamp取消；原几何公式与模板保留。",
         "localFiles": [
           {
@@ -2654,7 +2654,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
+            "sha256": "43753a7fe2b7d10d0e69bfaa32a3b207aa1fcb5e4940d7868c7509525d6bf237"
           }
         ],
         "positiveCases": [
@@ -2665,7 +2665,10 @@
           "多边形首点通知重入停止旧循环",
           "扇环布局重入不写旧尾部"
         ],
-        "failurePreserved": "artifacts/roi-gesture-window-20261028-002.log",
+        "failurePreserved": [
+          "artifacts/roi-gesture-window-20261028-002.log",
+          "artifacts/roi-gesture-formal-window-20261028-001.log"
+        ],
         "remaining": [
           "真实指针Move/缩放/旋转全姿态与VM逐态外观",
           "普通CircleMes三参数栈及其完整场景",
@@ -3444,7 +3447,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
+            "sha256": "43753a7fe2b7d10d0e69bfaa32a3b207aa1fcb5e4940d7868c7509525d6bf237"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -4423,7 +4426,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
+            "sha256": "43753a7fe2b7d10d0e69bfaa32a3b207aa1fcb5e4940d7868c7509525d6bf237"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -5694,7 +5697,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
+            "sha256": "43753a7fe2b7d10d0e69bfaa32a3b207aa1fcb5e4940d7868c7509525d6bf237"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",

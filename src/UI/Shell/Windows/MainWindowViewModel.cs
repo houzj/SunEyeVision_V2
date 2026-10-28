@@ -45,7 +45,6 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.UI.Converters.Path;
-using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -152,9 +151,6 @@ namespace SunEyeVision.UI.Shell.Windows
             _pendingCameraPresentations = new();
         private System.Windows.Threading.DispatcherTimer? _cameraPresentationTimer;
         private DateTime _lastCameraPerfWarningUtc;
-
-        // 工作流执行协调器（图像切换优化）
-        private WorkflowExecutionOrchestrator? _executionOrchestrator;
 
         // 已打开的调试窗口（全局单例）
         private Window? _openDebugWindow;
@@ -761,28 +757,6 @@ SplitterPosition = position;
             // TODO: 实现日志清空功能
         }
 
-        /// <summary>
-        /// 获取工作流执行协调器
-        /// </summary>
-        public WorkflowExecutionOrchestrator? ExecutionOrchestrator => _executionOrchestrator;
-
-        /// <summary>
-        /// 获取缓存统计信息
-        /// </summary>
-        public (int Count, long MemoryBytes, double MemoryMB) GetCacheStatistics()
-        {
-            return _executionOrchestrator?.GetCacheStatistics() ?? (0, 0, 0);
-        }
-
-        /// <summary>
-        /// 清空执行缓存
-        /// </summary>
-        public void ClearExecutionCache()
-        {
-            _executionOrchestrator?.ClearCache();
-            AddLog("🗑️ 已清空执行缓存");
-        }
-
         public ICommand NewWorkflowCommand { get; }
         public ICommand OpenWorkflowCommand { get; }
         public ICommand SaveWorkflowCommand { get; }
@@ -886,11 +860,7 @@ SplitterPosition = position;
             // 初始化节点结果管理器
             _nodeResultManager = new Services.Workflow.NodeResultManager(
                 () => CurrentWorkflowContext,
-                this,
-                ResolveFirstImagePropertyName);
-
-            // 初始化工作流执行协调器（图像切换优化）
-            _executionOrchestrator = new WorkflowExecutionOrchestrator(_nodeResultManager, maxCacheSize: 50, maxMemoryMB: 100);
+                this);
 
             // 订阅执行管理器事件
             _executionManager.WorkflowExecutionStarted += OnWorkflowExecutionStarted;
@@ -1542,7 +1512,7 @@ SplitterPosition = position;
             foreach (var pending in pendingPresentations)
                 try { pending.Lease?.Dispose(); }
                 catch (Exception ex) { _logger?.LogError("相机结果租约清理失败", "MainWindowViewModel", ex); }
-            _workflowContextService.Clear(); _executionOrchestrator?.ClearCache(); _nodeResultManager.ClearResultDisplay();
+            _workflowContextService.Clear(); _nodeResultManager.ClearResultDisplay();
             UpdateCurrentSolutionInfo();
 
             // 加载解决方案到工作流标签页
@@ -3564,20 +3534,6 @@ SplitterPosition = position;
                 AddLog($"❌ 创建数据查询服务失败: {ex.Message}");
                 return null;
             }
-        }
-
-        /// <summary>
-        /// 解析节点第一个图像输出属性名（用于缓存回填时与显示源的 key 对齐）
-        /// </summary>
-        private string? ResolveFirstImagePropertyName(string nodeId)
-        {
-            var node = _workflowEngine.CurrentWorkflow?.Nodes
-                .FirstOrDefault(n => n.Id == nodeId) as SunEyeVision.UI.Shared.WorkflowNode;
-            if (node == null) return null;
-
-            var provider = GetDataProviderForNode(node);
-            return (provider as DataSourceQueryService)?.GetImageDisplaySources(nodeId)
-                .FirstOrDefault(ds => ds.SourceNodeId == nodeId)?.PropertyName;
         }
 
         /// <summary>

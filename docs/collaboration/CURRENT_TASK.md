@@ -1,3 +1,11 @@
+## 2026-10-28 C13整批实施设计及图像源集成准备
+
+- 本轮实际进展为设计与源审计，未修改产品/测试源码、未启动构建。原两阶段目标active，第一阶段未准入，Blob业务冻结。上一轮仅确认分工不算实施进展，本轮已统一原方案nextNativeCompositionsDesign及O06正文。
+- C13整批明确：原StringConfig取代裸TextBox每字写入；raw/Enter/LostFocus/Capture共唯一FieldState；独立TextExpressions通道而非C07订阅，来源树按本代对象身份与正式Candidate选择。原图形四行模板整体替换自制Pencil/Expander；文本七行完整展开，原TextShape实际绘制只有一个ShapeList owner。完整文件消费者/精确切片/错误关闭与验收矩阵已写入原方案；不能把设计或源已存在算迁移完成。
+- 新源审计evidence/O06_C13_DESIGN_SOURCE_AUDIT_20261028.json冻结12个当前文件SHA与原模板切片；原O06生成718唯一锚点且幂等。原生动态占位最终求值仍未证；实际VS/VM/用户本批未验。
+- 工作流收到完整候选ee0867767b1c8675aa8445430b24f6a4221dda9a（父d749f38e），37文件；本线ad951eb1与其各3个独有提交。已读HANDOFF_IMAGE_SOURCE_FOUNDATION_20261028.md，静态语法0错但尚无语义构建/回归，317组旧成绩不得套新候选。下一先封存本完整设计，再统一共同基线/解实际冲突、规定UI和全量Release及图像源生产链集中验证，然后C13产品整批实施；C14/C17共享消费者后续协调。工作流87f4仍其唯一写者，现只读C14设计，不覆盖正式Release。
+- 用户BlobParameterEditor.xaml索引2及SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持原样，不纳入提交。当前无本线自有活构建/验证句柄；此前句柄均终止，不重等。
+
 ## 2026-10-28 ROI原菜单与同根历史集中批封存
 
 - 编译基线9d711e86；原两阶段goal active。主仓本对话唯一产品写者，工作流对话独立主界面及周边；D1仍候选未合入、不代其验收，正式Release窗口统一。Blob业务未改。

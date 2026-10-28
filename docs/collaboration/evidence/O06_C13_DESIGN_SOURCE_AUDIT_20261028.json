@@ -1,0 +1,106 @@
+{
+  "kind": "C13完整批实施前现状与原件切片核对",
+  "date": "2026-10-28",
+  "baseline": "ad951eb1",
+  "status": "设计已统一原方案，产品未改，未编译或验收",
+  "files": [
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sha256": "3bf075b092925349e5f86a84766909f54ae2be85a12d9996316830a4c318b3aa",
+      "lines": 373
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "940972a4c4fda860cbc16a53bd698130d375a214387b40bdb5fcecd396dd3d3e",
+      "lines": 331
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DisplayObjectField.cs",
+      "sha256": "083f4fedd71e1b7ffdeaa61a4cc883aa6c89ea85738f34436f5c1d3876f7ca05",
+      "lines": 168
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "b4eea3439252b0cad62f0200fdd8ca27fc1136af22e42f1c92a27738bf696f88",
+      "lines": 304
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sha256": "804002a5e50b0c8f41a144cd8841da8139d25d40bb1a01de410514d7e1a83cab",
+      "lines": 29
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sha256": "32f491c965c72bea75c84e76760eadf4262b55a7c481829e8064fed21fb3041f",
+      "lines": 179
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
+      "sha256": "11666c08298f665dc920eb325b9cc0b799d730d11b3ad5f63786e4b80e869a3c",
+      "lines": 3995
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/DeleteTextBox.xaml.cs",
+      "sha256": "d743aee3cbb11458f82150b0db20dcbdeef83a4926112bc0a0c0c90e5e6db306",
+      "lines": 110
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI.ParamTab/SubTreeView.xaml.cs",
+      "sha256": "76b3216f56c985282109c1abb4e5d7eb6c5f06fa1f6ca5453d66247941d62f3b",
+      "lines": 92
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Input/Apps.PcUI/Apps.PcUI.Controls/HikTextBox.cs",
+      "sha256": "01c5ff533f78e8e834fcd484bfed5ea3fb4a9499a954d016e74b7e49829ce3c0",
+      "lines": 17
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/TextShape.cs",
+      "sha256": "ed739a9aba4e40d95aa2b70c1ba6074e6621f17ae12be0800807596d795e132b",
+      "lines": 182
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.Shape/DrawShapeHelper.cs",
+      "sha256": "ad32238e064389821333f4d81e2ef19a125fad8318a1bb7e25d6640029464bd4",
+      "lines": 183
+    }
+  ],
+  "sourceSlices": [
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
+      "start": 2502,
+      "end": 2556,
+      "purpose": "原图形四行样式完整组合"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Apps.XmlUI/styles/paramusercontroldatatemplate.xaml.pending",
+      "start": 2557,
+      "end": 2610,
+      "purpose": "原字符串输入与占位来源完整组合"
+    }
+  ],
+  "findings": [
+    "当前字符串裸TextBox每次TextChanged直接写入，TryCommitPending不消费字符串raw",
+    "DisplayObjectField仍使用自绘Pencil及额外Expander，须原模板整体替换",
+    "原SubTreeView空组也可能触发双击，Candidate和当前对象身份必须再次校验",
+    "原HikTextBox有Enter MoveFocus行为；适配合法提交先于移动，拒绝留焦点",
+    "现有DeclaredFieldState提供唯一accepted与AcceptanceVersion，不增加第二accepted或回放writer"
+  ],
+  "workflowCandidate": {
+    "commit": "ee0867767b1c8675aa8445430b24f6a4221dda9a",
+    "files": 37,
+    "relation": "双方各3个独有提交",
+    "semanticBuild": "尚未运行",
+    "next": "本设计封存后统一共同基线及集中验证"
+  },
+  "notProven": [
+    "原生动态占位最终求值规则",
+    "C13迁移实现与正式运行",
+    "VM同态及真实VS/用户人工验收"
+  ],
+  "userFile": {
+    "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+    "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+    "action": "保持原样，不提交"
+  }
+}

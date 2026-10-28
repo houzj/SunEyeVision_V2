@@ -44,7 +44,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _tabs.SelectedIndex=value;
   }
  }
- public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText);
+ public bool HasInvalidActiveFields=>_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
  public IReadOnlyList<DeclaredFieldAccess> Fields=>_fields.AsReadOnly();
  public event Action? PageChanged;
  public void AddToGroup(string group,UIElement content,int? index=null,FieldCondition? condition=null)
@@ -107,7 +107,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  {
   foreach(var field in _fields.Where(field=>IsFieldActive(field.FieldId)))
    if(!field.TryCommitPending()){error=field.Error;return false;}
-  error=_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error??"";return error.Length==0;
+  error=_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error??AssistCompletenessError()??"";return error.Length==0;
  }
  public DeclaredFieldsView(IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> fields,
   Action<IReadOnlyDictionary<string,ParameterSetting>> writeDraft,ReferenceFieldOptions? references=null,
@@ -118,7 +118,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parentConditions=null,IReadOnlySet<string>? inlineConstants=null,
   IReadOnlyDictionary<string,TextExpressionOptions>? textExpressions=null,
   IReadOnlyList<NativeGraphicDisplayOptions>? graphicDisplays=null,
-  IReadOnlyList<NativeTextDisplayOptions>? textDisplays=null)
+  IReadOnlyList<NativeTextDisplayOptions>? textDisplays=null,
+  IReadOnlyList<NativeAssistOptions>? assistCompositions=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
@@ -130,6 +131,16 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   _groupPresentations=all.ToDictionary(field=>field.Port.Id,field=>field.Presentation,StringComparer.Ordinal);
   var paired=new HashSet<string>(StringComparer.Ordinal);
   var radios=integerRadios?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
+  var assist=ConfigureAssists(declarations,assistCompositions,radios,parentConditions,inlineConstants,imageSources,
+      graphicDisplays,textDisplays,textExpressions);
+  parentConditions=assist.Parents;inlineConstants=assist.Inline;
+  foreach(var option in _assists)
+  {
+   var ids=new[]{option.EnabledFieldId,option.ModeFieldId}.Concat(AssistSources(option)).ToArray();
+   var own=ids.ToHashSet(StringComparer.Ordinal);var anchor=Array.FindIndex(all,field=>field.Port.Id==option.EnabledFieldId);
+   all=all.Take(anchor).Where(field=>!own.Contains(field.Port.Id)).Concat(ids.Select(id=>declarations[id]))
+       .Concat(all.Skip(anchor).Where(field=>!own.Contains(field.Port.Id))).ToArray();
+  }
   _integerRadios=radios;
   foreach(var option in radios)
   {
@@ -158,11 +169,14 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    if(a.Minimum>b.Maximum)throw new ArgumentException("配对范围没有可行值。");
   }
   if(radios.Keys.Any(paired.Contains))throw new ArgumentException("整数单选不能同时作为范围的任一端点。");
+  if(_assists.SelectMany(option=>new[]{option.EnabledFieldId,option.ModeFieldId}.Concat(AssistSources(option))).Any(paired.Contains))
+   throw new ArgumentException("Assist角色不能同时作为范围的任一端点。");
   _pairedFields.UnionWith(paired);
   var textDisplayOptions=textDisplays?.ToArray()??[];
   if(textDisplayOptions.Any(option=>option is null))throw new ArgumentException("文本显示组合不能为空。");
   var textCoordinates=textDisplayOptions.SelectMany(option=>new[]{option.PositionXFieldId,option.PositionYFieldId}).ToHashSet(StringComparer.Ordinal);
-  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired,inlineConstants,textCoordinates);
+  var assistNumbers=_assists.SelectMany(option=>AssistNumbers(option.Base).Concat(AssistNumbers(option.Run))).ToHashSet(StringComparer.Ordinal);
+  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired,inlineConstants,textCoordinates,assistNumbers);
   var textOptions=textExpressions?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
   foreach(var (id,option) in textOptions)
   {
@@ -366,6 +380,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _parentConditions.Clear();_rowGateAnchors.Clear();_advancedFields.Clear();_inlineConstants.Clear();
    _groupPresentations=new Dictionary<string,FieldPresentation>();
    _textExpressions=new Dictionary<string,TextExpressionOptions>();
+   _assists=[];
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });
   ParameterCleanup.Run(cleanup);

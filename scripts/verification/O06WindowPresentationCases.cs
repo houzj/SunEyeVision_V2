@@ -2112,6 +2112,167 @@ internal static class S2DocumentEditingCases
    Show(new TextBlock{Text="完成"});
   });
  }
+ static void VerifyNativeAssist()
+ {
+  DeclaredFieldAccess Field(SunEyeVision.Plugin.Wpf.Design.NativeAssistSample sample,string id)=>sample.Fields.Fields.Single(field=>field.FieldId==id);
+  ReferenceSetting Source(SunEyeVision.Plugin.Wpf.Design.NativeAssistSample sample,string id)
+  {
+   var port=sample.Ports.Single(port=>port.Id==id);
+   return new(new OutputReference("design-producer","out."+id,port.Type,scopeId:"design-scope",storage:port.Storage));
+  }
+  Dictionary<string,ParameterSetting> Filled(SunEyeVision.Plugin.Wpf.Design.NativeAssistSample sample)
+   =>sample.Ports.Skip(2).ToDictionary(port=>port.Id,port=>(ParameterSetting)Source(sample,port.Id),StringComparer.Ordinal);
+  void Same(IReadOnlyDictionary<string,AcceptedFieldValue> a,IReadOnlyDictionary<string,AcceptedFieldValue> b)
+   =>Require(a.Count==b.Count&&a.All(entry=>b.TryGetValue(entry.Key,out var value)&&Equals(entry.Value,value)),"完整accepted/常量backup发生部分写入");
+  Test("原Assist十五角色三方式复用原五槽及十三来源并保实际行序",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample{Width=510};Show(sample);
+   Require(sample.Fields.Fields.Count==15&&sample.Ports.Count==15,"Assist未提供完整十五角色");
+   Require(!sample.Ports.Skip(2).Any(port=>Field(sample,port.Id).View.IsVisible),"初始关闭仍显示来源");
+   var seen=new HashSet<string>();
+   for(var mode=0;mode<3;mode++)
+   {
+    if(mode==0)sample.PreviewMode=0;
+    else Visuals<RadioButton>(Field(sample,sample.Assist.ModeFieldId).View).ElementAt(mode).SetCurrentValue(ToggleButton.IsCheckedProperty,true);
+    owner.UpdateLayout();Pump();
+    var buttons=Visuals<RadioButton>(Field(sample,sample.Assist.ModeFieldId).View).ToArray();
+    Require(buttons.Length==5&&buttons.Count(button=>button.IsVisible)==3,"未使用原五槽三选模板");
+    var visible=sample.Ports.Skip(2).Where(port=>Field(sample,port.Id).View.IsVisible).ToArray();
+    Require(visible.Length==new[]{1,8,10}[mode],"方式活动来源数错误："+mode+"/"+visible.Length);
+    var previous=double.NegativeInfinity;
+    foreach(var port in visible)
+    {
+     var field=Field(sample,port.Id);seen.Add(port.Id);
+     Require(Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Any(popup=>popup.Name=="rt"),"未消费原订阅槽："+port.Id);
+     Require(!Visuals<Native.Numeric.HikPcUI.ListView.SliderArrangeBase>(field.View).Any(),"Assist错误生成滑条："+port.Id);
+     var y=field.View.TransformToAncestor(sample).Transform(new Point()).Y;
+     Require(y>previous,"原角色行序或布局重叠："+port.Id);previous=y;
+    }
+    Require(!sample.Fields.TryValidate(out var missing)&&!string.IsNullOrEmpty(missing),"空来源被捕获为完整修正");
+    CaptureInline(sample,"native-assist-mode-"+mode+".png");
+   }
+   Require(seen.Count==13&&sample.Ports.Count(port=>port.Storage==NumericStorage.Float32)==10,"十三订阅槽或十Float32声明缺失");Show(new TextBlock());
+  });
+  Test("原Assist关闭态同批启用与来源仅一次接纳且拒绝不半写",()=>
+  {
+   foreach(var reject in new[]{false,true})
+   {
+    using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);
+    var before=sample.Fields.CaptureAccepted();sample.RejectNext=reject;
+    var changes=new Dictionary<string,ParameterSetting>{{sample.Assist.EnabledFieldId,new ConstantSetting(true)},
+     {sample.Assist.ModeFieldId,new ConstantSetting(0L)},{sample.Assist.FixturePort.Id,Source(sample,sample.Assist.FixturePort.Id)}};
+    var accepted=sample.Fields.TrySetFields(changes);
+    Require(accepted!=reject&&sample.Writes==(reject?0:1),"同批启用使用旧false门禁或重复writer");
+    if(reject)Same(before,sample.Fields.CaptureAccepted());
+    else Require(Field(sample,sample.Assist.FixturePort.Id).Setting.Equals(changes[sample.Assist.FixturePort.Id])&&sample.Fields.TryValidate(out _),"启用后来源或完整性未同时安装");
+    Show(new TextBlock());
+   }
+  });
+  Test("原Assist关闭清十二来源保基准点且宿主拒绝保持十五状态",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);
+   var changes=Filled(sample);changes[sample.Assist.EnabledFieldId]=new ConstantSetting(true);changes[sample.Assist.ModeFieldId]=new ConstantSetting(1L);
+   Require(sample.Fields.TrySetFields(changes),"无法安装完整十三来源");var saved=sample.Fields.CaptureAccepted();var writes=sample.Writes;
+   sample.RejectNext=true;Require(!Field(sample,sample.Assist.EnabledFieldId).TrySetConstant(false),"拒绝关闭仍安装");
+   Same(saved,sample.Fields.CaptureAccepted());Require(sample.Writes==writes,"拒绝仍写宿主");
+   Require(Field(sample,sample.Assist.EnabledFieldId).TrySetConstant(false)&&sample.Writes==writes+1,"关闭不是一次组writer");
+   var cleared=sample.Ports.Skip(2).Where(port=>port.Id!=sample.Assist.BasePointFieldId).ToArray();
+   Require(sample.LastProposal!.Count==13&&cleared.All(port=>sample.LastProposal[port.Id] is UnsetSetting&&Field(sample,port.Id).Setting is UnsetSetting),"未准确清十二来源");
+   Require(Field(sample,sample.Assist.BasePointFieldId).Setting.Equals(saved[sample.Assist.BasePointFieldId].Setting)
+    &&Field(sample,sample.Assist.ModeFieldId).Setting.Equals(saved[sample.Assist.ModeFieldId].Setting),"关闭误清基准点或方式");
+   Require(sample.Fields.TryValidate(out _),"关闭仍要求隐藏来源完整");Show(new TextBlock());
+  });
+  Test("原Assist公开完整回放不触发关闭展开并保拒绝与发布幂等",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);
+   var changes=Filled(sample);changes[sample.Assist.EnabledFieldId]=new ConstantSetting(true);changes[sample.Assist.ModeFieldId]=new ConstantSetting(2L);
+   Require(sample.Fields.TrySetFields(changes),"安装失败");var saved=sample.Fields.CaptureAccepted();
+   Require(Field(sample,sample.Assist.EnabledFieldId).TrySetConstant(false),"关闭失败");var closed=sample.Fields.CaptureAccepted();var writes=sample.Writes;
+   Require(!sample.Fields.TryReplayAccepted(saved,()=>false,()=>true,out _),"owner拒绝仍回放");Same(closed,sample.Fields.CaptureAccepted());
+   Require(!sample.Fields.TryReplayAccepted(saved,()=>true,()=>false,out _),"过期仍回放");Same(closed,sample.Fields.CaptureAccepted());
+   Require(sample.Fields.TryReplayAccepted(saved,()=>true,()=>true,out var publish),"完整回放拒绝");publish();publish();
+   Same(saved,sample.Fields.CaptureAccepted());Require(sample.Writes==writes,"回放重复经过writer");Show(new TextBlock());
+  });
+  Test("原Assist Float32同槽原文Enter提交失焦且切方式保引用",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);sample.PreviewMode=2;Pump();
+   var field=Field(sample,sample.Assist.Run.XFieldId);
+   Require(field.TrySetConstant(0d),"无法选择Float32常量");owner.UpdateLayout();Pump();
+   foreach(var raw in new[]{"1.23456789","0","1.25e-3"})
+   {
+    var text=Visuals<TextBox>(field.View).SingleOrDefault(text=>text.IsVisible&&!text.IsReadOnly)??throw new Exception("原Float32同槽无文本输入");
+    text.Focus();Pump();text.Text=raw;var before=sample.Writes;SendKey(text,Key.Enter,true);
+    var expected=(double)(float)double.Parse(raw,System.Globalization.CultureInfo.InvariantCulture);
+    Require(field.Setting is ConstantSetting value&&Equals(value.Value,expected)&&sample.Writes==before+1&&!text.IsKeyboardFocused,"Float32未单次Enter提交失焦："+raw+"/"+field.Error);
+   }
+   var source=Source(sample,sample.Assist.BasePointFieldId);Require(sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.BasePointFieldId,source}}),"基准点来源拒绝");
+   sample.PreviewMode=0;Pump();sample.PreviewMode=1;Pump();Require(Field(sample,sample.Assist.BasePointFieldId).Setting.Equals(source),"切方式误清引用");Show(new TextBlock());
+  });
+  Test("原Assist原来源树保声明身份且切方式拒旧叶",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);sample.PreviewMode=0;Pump();
+   var field=Field(sample,sample.Assist.FixturePort.Id);
+   var popup=Visuals<Native.Input.Apps.PcUI.Controls.PopupButton>(field.View).Single(item=>item.Name=="rt");
+   popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
+   var content=(Popup)popup.Template.FindName("PART_Popup",popup);
+   var tree=Visuals<Native.Composition.Apps.XmlUI.ParamTab.SubTreeView>(content.Child).Single();var actual=(TreeView)tree.FindName("treeView");
+   TreeViewItem? Find(ItemsControl parent)
+   {
+    for(var i=0;i<parent.Items.Count;i++)
+    {
+     if(parent.ItemContainerGenerator.ContainerFromIndex(i) is not TreeViewItem row)continue;
+     if(row.DataContext?.GetType().GetProperty("Candidate")?.GetValue(row.DataContext) is DeclaredReferenceCandidate candidate
+       &&candidate.Output.Id=="out."+sample.Assist.FixturePort.Id)return row;
+     row.IsExpanded=true;row.UpdateLayout();Pump();var found=Find(row);if(found is not null)return found;
+    }
+    return null;
+   }
+   var leaf=Find(actual)??throw new Exception("原树无修正信息正式候选");
+   void Select()=>leaf.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});
+   Select();Pump();var expected=Source(sample,sample.Assist.FixturePort.Id);
+   bool Matches()=>field.Setting is ReferenceSetting selected&&selected.Reference.NodeId==expected.Reference.NodeId
+    &&selected.Reference.ScopeId==expected.Reference.ScopeId&&selected.Reference.PortId==expected.Reference.PortId
+    &&selected.Reference.Type==expected.Reference.Type&&selected.Reference.Storage==expected.Reference.Storage
+    &&selected.Reference.MemberFieldPath.SequenceEqual(expected.Reference.MemberFieldPath)&&Equals(selected.Reference.Selection,expected.Reference.Selection);
+   Require(Matches()&&!popup.IsDropDownOpen,"正式Scope/Node/Port/Type/Storage身份未完整保存");
+   popup.IsDropDownOpen=true;Pump();sample.PreviewMode=1;Pump();var writes=sample.Writes;
+   Require(!popup.IsDropDownOpen&&!content.IsOpen,"隐藏来源未关闭原弹层");Select();Pump();Require(sample.Writes==writes&&Matches(),"旧来源叶污染切换后的草稿");Show(new TextBlock());
+  });
+  Test("原Assist条件AND预检及外部范围消费角色严格拒绝",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();var option=sample.Assist;var writes=0;
+   (Port Port,FieldPresentation Presentation,ParameterSetting Value)[] Rows(bool referenceOnly=false)
+    =>sample.Ports.Select((port,i)=>(referenceOnly&&port.Id==option.Run.XFieldId?port with{EditModes=FieldEditModes.Reference}:port,
+     new FieldPresentation(port.Id,port.Id,"位置修正",i,FieldEditorKind.Scalar){Layout=new("基本参数","位置修正",DecimalPlaces:port.Type==DataType.Number?null:2)},
+     (ParameterSetting)(i==0?new ConstantSetting(false):i==1?new ConstantSetting(0L):new UnsetSetting()))).ToArray();
+   var parents=new Dictionary<string,IReadOnlyList<FieldCondition>>{{option.Base.AngleFieldId,new[]{new FieldCondition(option.ModeFieldId,1L)}}};
+   using(var valid=new DeclaredFieldsView(Rows(),_=>writes++,parentConditions:parents,assistCompositions:new[]{option}))
+   {
+    Show(valid);Require(valid.TrySetFields(new Dictionary<string,ParameterSetting>{{option.EnabledFieldId,new ConstantSetting(true)},{option.ModeFieldId,new ConstantSetting(1L)}}),"合法AND组合不能进入按点方式");Pump();
+    Require(valid.Fields.Single(field=>field.FieldId==option.Base.AngleFieldId).View.IsVisible,"Mode==1与Mode!=0被误判冲突或隐藏");
+   }
+   parents[option.Base.AngleFieldId]=new[]{new FieldCondition(option.ModeFieldId,1)};
+   PublicationThrows<ArgumentException>(()=>{using var rejected=new DeclaredFieldsView(Rows(),_=>writes++,parentConditions:parents,assistCompositions:new[]{option});});
+   parents[option.Base.AngleFieldId]=new[]{new FieldCondition(option.ModeFieldId,0L)};
+   PublicationThrows<ArgumentException>(()=>{using var rejected=new DeclaredFieldsView(Rows(),_=>writes++,parentConditions:parents,assistCompositions:new[]{option});});
+   var rows=Rows(true).ToList();rows.Add((new Port("external",DataType.Number,Required:false,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Reference),
+    new FieldPresentation("external","外部范围","位置修正",20,FieldEditorKind.Scalar){Layout=new("基本参数","位置修正",DecimalPlaces:null,PairWith:option.Run.XFieldId)},new UnsetSetting()));
+   var before=writes;PublicationThrows<ArgumentException>(()=>{using var rejected=new DeclaredFieldsView(rows,_=>writes++,assistCompositions:new[]{option});});Require(writes==before,"元数据拒绝仍写writer");Show(new TextBlock());
+  });
+  Test("原Assist关闭来源矛盾与非法模式不写入，角色重复前置拒绝",()=>
+  {
+   using var sample=new SunEyeVision.Plugin.Wpf.Design.NativeAssistSample();Show(sample);var saved=sample.Fields.CaptureAccepted();
+   var source=Source(sample,sample.Assist.Run.XFieldId);
+   PublicationThrows<ArgumentException>(()=>sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.Run.XFieldId,source}}));
+   PublicationThrows<ArgumentException>(()=>sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.EnabledFieldId,new ConstantSetting(false)},{sample.Assist.Run.XFieldId,source}}));
+   Same(saved,sample.Fields.CaptureAccepted());Require(sample.Writes==0,"关闭来源矛盾仍调用writer");
+   Require(!sample.Fields.TrySetFields(new Dictionary<string,ParameterSetting>{{sample.Assist.ModeFieldId,new ConstantSetting(3L)}}),"非法第四模式被接纳");Same(saved,sample.Fields.CaptureAccepted());
+   var rows=sample.Ports.Select((port,i)=>(port,new FieldPresentation(port.Id,port.Id,"位置修正",i,FieldEditorKind.Scalar)
+    {Layout=new("基本参数","位置修正",DecimalPlaces:port.Type==DataType.Number?null:2)},saved[port.Id].Setting)).ToArray();
+   PublicationThrows<ArgumentException>(()=>{using var bad=new DeclaredFieldsView(rows,_=>throw new Exception("非法组合不得写入"),assistCompositions:new[]{sample.Assist with{EnabledFieldId=sample.Assist.ModeFieldId}});});
+   Show(new TextBlock());
+  });
+ }
  static void VerifyNativeIntegerRadio()
  {
   NativeIntegerRadioOptions Options(bool five=false)=>new(new[]{new NativeIntegerRadioChoice(10,"绘制"),new NativeIntegerRadioChoice(30,"继承")},five);
@@ -2998,6 +3159,7 @@ internal static class S2DocumentEditingCases
    VerifyInheritedAnnulus();
    VerifyFieldGroups();
    VerifyNativeIntegerRadio();
+   VerifyNativeAssist();
    VerifyNativeAdvanced();
    VerifyNativeTextExpressions();
    VerifyNativeTextPixels();

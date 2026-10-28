@@ -2,7 +2,8 @@
 
 主仓唯一产品写者，三条只读线自动补位所得。当前C08四类手势修复不替代本清单；以下仍在阶段一，Blob业务不改。
 
-## P0 普通圆 CircleMes（不是 CircleROI 圆环）
+> 2026-10-28 范围更正：用户最终归档 `references/vm-blob-ui-target-20261027.html` 定义全域ROI→矩形→圆环→多边形→扇形，无CircleMes普通圆。屏蔽区采用相同五种结构与图标顺序。以下普通圆方案仅留历史证据，禁止继续作为Blob第一阶段前置。当前先收口Assist十五角色，再补全域/无屏蔽的明确组状态和C17。
+## 历史候选：普通圆 CircleMes（已由最终Blob目标排除，不作为前置）
 
 - 激活原CircleMesROIStack.xaml/.cs.pending，原三项均SliderArrangeFloat、TwoWay尺寸MultiBinding。X/Y分别乘ImageWidth/Height，半径乘ImageWidth。
 - 新NativeCircleRoiProjection复用唯一pending/stamp模型及INormalizedCircleMesROI；Fields为x/y/radius，PropertyNames仅Radius，GeometryKeys为radius；中心继承基类。Prepare按原动态范围X[-0.5W,1.5W]、Y[-0.5H,1.5H]、半径(0,1.5W]校验，仅更改编辑过字段，保其余精度。不调用硬编码±30000的PrepareCenter。
@@ -11,14 +12,14 @@
 - 原CircleMes/NormalizedCircleMes活动手柄改用本批同一gesture/template/layout proof，不再手抄旧Cancel；Attachment补样式/刷新/取消识别。绘制复用原单圆CircleROISubstitute，创建center/radius；DesignData索引上限3→4并补第5形状样例。
 - 验收原图标/三行、非方形帧精度、Enter单写失焦、真实中心/半径手柄与绘制、拒绝恢复、重入取消、菜单历史、真实设计样例；不能用CircleROI圆环用例替代。
 
-## P1 C09 Assist 三方式15角色组合
+## 当前批 C09 Assist 三方式15角色组合
 
 - 所有值仍由DeclaredFieldState唯一持有。建议NativeAssistOptions包含EnabledFieldId、ModeFieldId、FixturePort、BasePointFieldId、RunPointFieldId及Base/Run各五项(X/Y/Angle/ScaleX/ScaleY)。FixturePort.Id即角色身份，不重复定义，不在库内造VM FIXTURE/默认Affine2D。
 - 一次预检15个真实唯一ID、同页同节、Enabled必填常量Boolean、Mode必填整数0/1/2；两POINT真实同坐标Geometry引用、十数值Float32来源；只有声明Constant|Reference才接InlineConstants。不补默认/角单位/矩阵算法。角色不得与Pair/Dialog/radio/ImageSources/图文组合冲突。
 - 条件：Mode依Enabled；Fixture模式0；两个Point模式1；四X/Y模式2；六Angle/Scale模式非0。模式切换不统一清隐藏来源。
 - 原关闭触发只清十float+CorrectInfo+RunPoint共12来源，OriginPoint未列不得擅清；FixtureInitPoint是显示目标，不属15编辑角色，关闭撤对应显示层。DoInitOperaion是重新装载当前IO选择，不是重置默认值或解算矩阵。
 - SubmitCore在TrySetGroup前扩展完整关闭提案，再整体验证/接纳，不能writer清值而字段state不清。历史直接回放完整accepted字段，不再次触发关闭清空；重取正式引用/物理Frame证明。
-- 最小共享接点ToolSettingsViewOptions尾加AssistCompositions、DeclaredSettingsView传递、DeclaredFieldsView构造角色预检/原radio及条件组装、SubmitCore提案扩展；独立NativeAssistScene沿同链，不造隐藏Editor或第二图像。
+- 当前DeclaredFieldsView已形成独立十五角色候选与真实NativeAssistScene。正式SettingsView接入前必须补完整Reference/Unset权威映射贯通草稿、捕获、Host、保存重开；不能只在ToolSettingsViewOptions尾加选项，也不能靠私有_unset/null/default缓存兜底。直接FieldsView通过不等于正式持久化合同已完成。
 - FIXTURE声明真实调用者提供；nativeABI、角单位/顺序、带位姿ROI正反变换合同未证不得猜。UI/引用/清空/历史可以实施，这些缺口仍属于全链未完成，不因UI通过删去。
 
 ## P2 C17 原十字配置、受管图像层及导出生命周期

@@ -5820,6 +5820,170 @@
         "designPassed": 96,
         "formalComponentValidated": true
       }
+    },
+    {
+      "id": "C09.original-assist-composition",
+      "assembly": "Apps.XmlParser",
+      "assemblyMvid": "d0604401-ab61-48a4-938b-faad16d74e7c",
+      "assemblySha256": "78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1",
+      "assemblyIdentities": [
+        {
+          "assembly": "Apps.XmlUI",
+          "mvid": "a00f8b40-7a51-4c6d-8aeb-cad134724f1f",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlUI.dll",
+          "sha256": "639d0fb9dfca81e38df690e201b73874ce006d1361b689ddc6d5f41f7b0b04fd"
+        },
+        {
+          "assembly": "Apps.Style",
+          "mvid": "cea1d44f-00ec-4cd0-922d-f70ad89b818c",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.Style.dll",
+          "sha256": "8980a9964c8c530511ae79fe04cf19534dc14377cdc73ffe03f26921f7d0db63"
+        },
+        {
+          "assembly": "Apps.XmlParser",
+          "mvid": "d0604401-ab61-48a4-938b-faad16d74e7c",
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlParser.dll",
+          "sha256": "78ec7ae1e5adefff29197099c7109b153a3f75d092b7c3e9dc253d8c1b25a8d1"
+        },
+        {
+          "assembly": "VM.Core",
+          "mvid": "290025bc-e040-4cd5-94dd-cd49b9af9c99",
+          "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/VM.Core.dll",
+          "sha256": "936763f6c8a1bf9fcf59f22acebca8feb09b5f3d5701ae77c82bdc81e626190d"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/Group.xml",
+          "originalSha256": "9129b82a0f9906dde591347498a80e2e8c019c0fb959a721ecfd24fbbb5207dc",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetValueNullOperaion.cs",
+          "originalSha256": "c9d3fb14793256a5acd7150d43e45174ac942d20e782d1b5f4fc2f40a263faea",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/ButtonSelecter.cs",
+          "originalSha256": "a04c04dc557328269a06d67c194f6c3a64b68659acc1f76e4de778f5da858931",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/NameValueItem.cs",
+          "originalSha256": "90b4742e79243f46c46fd6b38187ee7f5be49d4c6677f994133215a3796fed46",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Trigger.cs",
+          "originalSha256": "8d0e50fb8d51ed11f9e0199ea7e03a22d7dbf6e364bb2212b0fce3c297b064e9",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetFilterSourceOperation.cs",
+          "originalSha256": "197ec3eb19974776db4dc9ab293cababed6319ef2a5a1c0da6a8a9bfd5eb0401",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/SetCombinationSourceOperation.cs",
+          "originalSha256": "7ce50140df9bc50b1e954a3c604b5fa294f91db1318a22253feebb9811be9444",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetSelectedFilterOperation.cs",
+          "originalSha256": "1cf28c8b2adcf10e2a6cebdd8afdfd2295aacb7e3faf750f61a7325fec8cf1cd",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        },
+        {
+          "originalAssembly": "Applications XML / Apps.XmlParser",
+          "originalType": "Assist0 group declarations; ButtonSelecter CurValueA / subscription operations",
+          "originalPath": "D:/MyWork/REA逆向测试/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/GetSelectedCombinationOperation.cs",
+          "originalSha256": "2e284885b38f2fab0d93fd74c64db482a25255de4dec14136cfbad9bd888d86c",
+          "coverage": "Static composition/unsubscription behavior evidence, not a claimed original atomic transaction"
+        }
+      ],
+      "localFiles": [
+        {
+          "path": "src/Plugin.Wpf/Presenters/Parameters/NativeAssistOptions.cs",
+          "sha256": "b67927bc6b4f96895369e609369373e7c404e50695009bb0fd0fbb5acd64112a"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Assist.cs",
+          "sha256": "eee52dca2af7983d8f27ecfd985d3ad43ba864cdd0ecfd7da0e69a9c9bfd889d"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+          "sha256": "ad9c6ab7e4aad579754570d3ebc8fc8263017c0c4262750c14dd01dbeb29118a"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
+          "sha256": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a"
+        },
+        {
+          "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
+          "sha256": "472335be2d0ca0fbc62542bfac48c7dbeeb408eef1347dc5cda88f43edfc4549"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeAssistSample.cs",
+          "sha256": "50b3eff2a4ccbcf221c1eaa4ff07feab67e9977819b88afa251376a93823193f"
+        },
+        {
+          "path": "src/Plugin.Wpf/Design/NativeAssistScene.xaml",
+          "sha256": "150c17a2b78ba73e3e25741c4af1805f6d263bb9fa4acec9a46e878fefa23f73"
+        }
+      ],
+      "dependencies": [
+        "C01.original-parameter-host",
+        "C04.apps-xmlui-boolean",
+        "C07.original-reference-composition",
+        "C09.original-integer-radio",
+        "DeclaredFieldState sole accepted/backup state and same group transaction",
+        "Native localization and original theme closure inherited from those entries"
+      ],
+      "templates": [
+        "RadioSelecter3 original five slots with three populated",
+        "original ButtonSelecter/ReferenceField for all thirteen source slots",
+        "original Boolean switch"
+      ],
+      "composition": [
+        "15 caller-declared stable roles; ten optional Float32 sources, two same-frame Point sources, opaque Fixture Port supplied by caller",
+        "modes info/point/coordinates show 1/8/10 sources in original order",
+        "close clears12 source settings and retainsBasePoint+Mode in one host transaction; rejection retains full state",
+        "all parent AND conditions checked against finite typed mode/bool domains; foreign PairWith cannot consume any role",
+        "complete accepted replay bypasses close expansion and publishes once"
+      ],
+      "adaptation": [
+        "No VM native pose encoding, transform units/math or default model invented",
+        "Constant text only when caller declares Constant|Reference, no slider substitution",
+        "SDK/Wpf SettingsView persistence Unset still pending; independent FieldsView not production integration"
+      ],
+      "consumers": [
+        "Design/NativeAssistScene.xaml → NativeAssistPreview → NativeAssistSample → actual DeclaredFieldsView",
+        "WindowPresentation Assist8 and standalone DesignTime Assist5 checks"
+      ],
+      "validation": {
+        "status": "INDEPENDENT_CANDIDATE_PASSED_FORMAL_INTEGRATION_PENDING",
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_ASSIST_CANDIDATE_20261028.json",
+        "candidateWindowPassed": 8,
+        "candidateDesignPassed": 101,
+        "formalComponentValidated": false,
+        "manualAccepted": false
+      }
     }
   ],
   "currentIntegration": {

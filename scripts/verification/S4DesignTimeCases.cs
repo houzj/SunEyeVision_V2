@@ -27,6 +27,20 @@ internal static class S2DocumentEditingCases
         {
             // Emulate the designer's WPF flag before creating any view. No Application or host bootstrap.
             DesignerProperties.IsInDesignModeProperty.OverrideMetadata(typeof(FrameworkElement),new FrameworkPropertyMetadata(true));
+            using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeAssistPreview())
+            {
+                Render(entry,"native-assist-xaml-entry.png",600,650);
+                var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeAssistSample>(entry).Single();
+                Check(Application.Current is null&&sample.Fields.Fields.Count==15,"Assist真实XAML无主程序或算法独立创建十五角色");
+                for(var mode=0;mode<3;mode++)
+                {
+                    sample.PreviewMode=mode;Render(entry,"native-assist-design-mode-"+mode+".png",600,650);
+                    var count=sample.Fields.Fields.Skip(2).Count(field=>field.View.Visibility==Visibility.Visible);
+                    Check(count==new[]{1,8,10}[mode],"Assist设计器切原方式显示完整来源："+mode);
+                }
+                sample.PreviewMode=-1;Render(entry,"native-assist-design-disabled.png",600,650);
+                Check(sample.Fields.Fields.Skip(2).All(field=>field.View.Visibility==Visibility.Collapsed),"Assist设计器关闭隐藏来源且不启动宿主");
+            }
             using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeToolEditorPreview())
             {
                 Render(entry,"native-tool-editor-xaml-entry.png",600,700);

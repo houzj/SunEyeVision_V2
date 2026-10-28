@@ -385,6 +385,9 @@ def render_blob_control_plan(plan):
                + '<p><a href="references/module-result-chain-20261028/module-result-chain-vm-comparison.html">模块结果完整链路与VM对照原文</a> · '
                + '<a href="references/module-result-chain-20261028/reference-manifest.json">16条源码身份及证据边界</a></p>'
                if plan.get('moduleResultsPlan') else '')
+            + ('<h5 id="o06-native-assist-composition">C09 Assist十五角色原组合</h5>'
+               + table(['项目','原件、实施与证据边界'], list(plan['nativeAssistCandidate'].items()))
+               if plan.get('nativeAssistCandidate') else '')
             + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
                + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
                if plan.get('nextNativeCompositionsDesign') else '')

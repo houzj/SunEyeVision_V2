@@ -1,3 +1,10 @@
+## 2026-10-28 C09 Assist独立原组合八组通过，合D06五文件准备集中核收
+
+- 前轮结果树表核收为实际进展；本轮主仓唯一写Assist十五角色、原三选/十三来源、Float32、清十二来源保基准点、一次宿主事务、完整accepted回放。原SetValueNull实际解订阅调用链核到VM.Core，不把显示null冒充证明、不重置算法默认或冒称VM原子。
+- 库003零错5312警告20.59秒；候选Window244八组过、无Application设计063=101项过，实际三模式PNG已查看对齐。保Window241=4/3、243=7/1原失败；Int64严格long不为兼容Int32放宽。来源Catalog/evidence/O06_NATIVE_ASSIST_CANDIDATE_20261028.json已登记；正式UI/full及新回归待本批核收。
+- 三只读线分别核原关闭、事务测试、D06五文件。已按4f8efb06仅提GlobalVariableValueConverter/ShapeTests/SDK词汇与Binary测试/GlobalBindingCases完整5文件，保DESIGN真实WPF保存重开原断言；不覆盖Main树表新修，不应用D07拒绝候选。
+- SettingsView Unset整链、原位姿/图像联动、全域组None/FullDomain/Explicit、C17和真实VS/人工仍未完成；阶段一及整个目标active，Blob业务冻结。用户BlobParameterEditor.xaml原SHA保持、不暂存，不推送。
+
 ## 2026-10-28 VM结果树表失效与故障整组退出正式核收
 
 - 按VM设计，SDK输出声明与指定同次运行快照经唯一publication驱动原结果树和原表。本批f33f7f6f树表数据链已核收：UI/full零错，正式EXE52660 exit0；ImageSources011=187/0、publication239=7/0、原表240=1/0（500→1000→1205）、真实HALCON宿主FullChain135=8/0。正常失效/分页故障统一退休，旧运行和旧清理不能覆盖新结果。实际历史入口、生产D07和VS/人工仍未完成，完整阶段未关闭。

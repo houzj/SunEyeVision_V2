@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "2026-10-28第一阶段继续：基线b56e43d4，本批四方式原Radio及矩形五/圆环六ButtonSelecter引用组合、未完成编辑/捕获分离；最终八轨287组及正式EXE通过。常量/索引/Float32来源组合、完整C09、实际VS/VM同态及阶段一仍未完成，Blob重组未准入。",
+  "current": "第一阶段继续：Assist十五角色原组合候选八组窗口/无Application设计101项通过，来源和清十二订阅证据已核；SettingsView完整Unset、真实位姿/图像联动与人工门禁仍未完成。D06全局变量纯值形状五文件已整合，下一集中正式UI/full及完整Global回归，不套原283/1或树表旧成绩。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -8289,6 +8289,16 @@
       ],
       "catalogAtBuildSha256": "8b0ef7070a3be6ccde12697f5b0ac6d30b934e761eac2144740ea12ea0293630",
       "metadataAfterValidation": "Catalog仅来源/验收元数据，不是本工程编译/发布输入；本轮核收后更新其结果，不重建已固定正式程序集。"
+    },
+    "nativeAssistCandidate": {
+      "完整角色与原件": "十五稳定ID；原RadioSelecter3五槽填三项、十三ButtonSelecter来源、十Float32，同一DeclaredFieldState及完整页面行序。新NativeAssistOptions显式注入Fixture Port，无Blob/工作流/UI宿主或SDK依赖。",
+      "三方式与交互": "按信息1、按点8、按坐标10个来源；实际原Radio切换、原树双击完整身份、切方式拒旧叶、Float32 Enter一次提交失焦。关闭清十二来源保基准点及方式；本方单次宿主事务，拒绝十五状态不半写，完整accepted回放不重新触发关闭清空。",
+      "严格元数据": "合法Mode==1与Mode!=0条件相与可用；Int64模式严格只接long，错误Int32与真矛盾前置拒绝；全部十五角色禁止被外部PairWith消费，关闭同时安装非空来源拒绝。",
+      "原关闭证据": "Group.xml282–356→SetValueNull→ButtonSelecter.CurValueA→Trigger→SetFilterSource/SetCombinationSource→VmIO.RelateIO→Root.UnSubscribe。正常已初始化有选择时真实解除订阅，不仅清显示、不复位算法默认；VM顺序操作不冒称原子。OriginPoint不在清单。",
+      "当前候选验证": "库003零错5312警告20.59秒；Window244八组过；Design063无Application/主程序/工作流/HALCON组装101项过。实际三方式PNG已查看对齐，不代真实VS/VM同态与人工。规定UI/full及正式新回归待本批核收。",
+      "失败保留": "Window241=4/3为测试访问包装控件/对象身份Equals/非数值精度元数据；Window243=7/1为合法例误用Int32，保持正式类型拒绝，修夹具为long且新增int拒绝。不放宽产品断言。",
+      "正式消费者缺口": "FieldsView独立组合已候选；SettingsView/Draft/Host/保存重开完整Reference/Unset权威映射仍未实施，不能只加尾参或用私有_unset/null/default兜底。真实位姿ABI/单位/公式、Frame与图像ROI双向联动/历史owner仍待；本批不接Blob业务。",
+      "证据": "docs/collaboration/evidence/O06_NATIVE_ASSIST_CANDIDATE_20261028.json；Catalog新增C09.original-assist-composition及原程序集/MVID/SHA/资源依赖/本地消费者。"
     }
   },
   "vmFrameworkArchitectureReference": {

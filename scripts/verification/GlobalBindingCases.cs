@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
@@ -9,8 +9,17 @@ internal static class S2DocumentEditingCases
     {
         var assembly=AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(Environment.GetEnvironmentVariable("S2_TEST_HELPERS")!,"SunEyeVision.UI.Tests.dll"));
         var sdkTests=AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(Environment.GetEnvironmentVariable("S2_TEST_HELPERS")!,"SunEyeVision.Plugin.SDK.Tests.dll"));
-        SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeServices();
-        SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeSolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"solutions"));
+        // Match application startup: services and all editor windows share the pumped
+        // UI dispatcher. The runner STA has no message loop and cannot own UILogWriter.
+        var ui=assembly.GetType("SunEyeVision.UI.Tests.ImageThresholdProductionEditorTests",true)!
+            .GetMethod("Sta",BindingFlags.Static|BindingFlags.NonPublic)!;
+        ui.Invoke(null,new object[]{(Action)(()=>
+        {
+            if(System.Windows.Application.Current is null)
+                _=new System.Windows.Application{ShutdownMode=System.Windows.ShutdownMode.OnExplicitShutdown};
+            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeServices();
+            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeSolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"solutions"));
+        })});
         var selected=new Dictionary<string,string[]?>
         {
             ["GlobalProducerBindingRulesTests"]=null,

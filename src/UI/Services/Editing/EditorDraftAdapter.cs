@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -44,15 +44,35 @@ public sealed class EditorDraftAdapter
     }
     internal static bool Supports(ToolParameters? parameters) => parameters?.GetType().FullName is
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" or "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" or
+        "SunEyeVision.Tool.SendData.SendDataParameters" or
         "SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters";
 
     public static EditorDraftAdapter ForProduction(ToolParameters parameters) => parameters.GetType().FullName switch
     {
         "SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters" => ForSubroutine((SubroutineParameters)parameters),
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" => ForProtocolParse(parameters),
+        "SunEyeVision.Tool.SendData.SendDataParameters" => ForSendData(parameters),
         "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" => ForImageThreshold(parameters),
         _ => throw new ArgumentException("此工具尚未接入生产草稿适配器。", nameof(parameters))
     };
+
+    private static EditorDraftAdapter ForSendData(ToolParameters parameters)
+    {
+        // Managed rows have their own declared input/output interfaces. Do not invent resource or union slots.
+        var adapter = new EditorDraftAdapter(parameters, new Dictionary<string, Type>());
+        adapter._validateConfiguration = () =>
+        {
+            if (parameters is not IBindingInputProvider || parameters is not IOutputContractProvider outputs)
+                throw new InvalidOperationException("发送数据缺少正式行声明。");
+            // Framework execution diagnostics use named ports; only managed communication fields carry FieldId.
+            var fields = outputs.GetOutputContract().Where(f => f.FieldId is not null).ToArray();
+            if (fields.Any(f => f.FieldId == Guid.Empty) || fields.Select(f => f.FieldId).Distinct().Count() != fields.Length)
+                throw new InvalidOperationException("发送数据输出身份缺失或重复。");
+            var validation = parameters.Validate();
+            if (!validation.IsValid) throw new InvalidOperationException(validation.Errors.FirstOrDefault() ?? "发送数据配置无效。");
+        };
+        return adapter;
+    }
 
     private static EditorDraftAdapter ForSubroutine(SubroutineParameters parameters)
     {

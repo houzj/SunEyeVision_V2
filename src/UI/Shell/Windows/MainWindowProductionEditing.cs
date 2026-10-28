@@ -57,6 +57,12 @@ public partial class MainWindowViewModel
             {
                 RefreshProductionPublication(session, publication, query);
             }, session.Editing);
+        if (node.Parameters.GetType().FullName == "SunEyeVision.Tool.SendData.SendDataParameters")
+        {
+            var sends = query.CommunicationSendService as SunEyeVision.UI.Services.Communication.WorkflowCommunicationSendService
+                ?? throw new InvalidOperationException("发送数据生产编辑缺少正式通信配置服务。");
+            query.CommunicationSendService = sends.CreateConfigurationView(context.GetCommunicationConfiguration);
+        }
         context.PrepareView = () => ToolEditorCommit.TryPrepare(control, out var error) ? null : error;
         context.HasPendingViewEdits = () => ToolEditorCommit.HasPendingEdits(control);
         query.ExecutionOwner = context.DebugOwner;

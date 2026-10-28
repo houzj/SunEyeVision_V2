@@ -142,10 +142,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 request.AttachResultMetadata(result);
                 if (request.CancellationToken.IsCancellationRequested || request.ExecutionIdentity?.IsCurrent == false)
                 {
-                    ReleaseRejectedResult(result);
-                    var cancelled = CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, "运行已取消或身份失效");
-                    request.AttachResultMetadata(cancelled);
-                    return cancelled;
+                    return RejectResult(tool.ResultType, result, request);
                 }
                 ImageFrameProvenance.RecordResult(result, inputFrame,
                     (tool as IImageFramePolicyProvider)?.ImageFramePolicy ?? ImageFramePolicy.Unknown,

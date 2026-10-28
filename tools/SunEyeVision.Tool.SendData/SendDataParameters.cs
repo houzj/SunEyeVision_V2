@@ -82,15 +82,19 @@ public sealed class SendDataRow : ObservableObject
     public IReadOnlyList<CommunicationSendTarget> TargetChoices { get => _choices; set { if (SetProperty(ref _choices, value)) OnPropertyChanged(nameof(AllowedDataTypes)); } }
 }
 
-public sealed class SendDataResults : CommunicationToolResults
+public sealed class SendDataResults : CommunicationToolResults, IToolSideEffectReceiptSource
 {
     public SendDataResults() { }
     public SendDataResults(IEnumerable<CommunicationOutputField> fields) : base(fields) { }
-    public long Submitted { get; set; }
-    public long Skipped { get; set; }
-    public long Failed { get; set; }
-    public List<BinaryPayload> Payloads { get; } = new();
-    public List<string> SentData { get; } = new();
+    private long _submitted, _skipped, _failed;
+    private readonly List<BinaryPayload> _payloads = new();
+    private readonly List<string> _sentData = new();
+    public long Submitted { get => SideEffectReceipt?.Submitted ?? _submitted; set => _submitted = value; }
+    public long Skipped { get => SideEffectReceipt?.Skipped ?? _skipped; set => _skipped = value; }
+    public long Failed { get => SideEffectReceipt?.Failed ?? _failed; set => _failed = value; }
+    public List<BinaryPayload> Payloads => SideEffectReceipt is { } receipt ? receipt.Payloads.Select(value => new BinaryPayload(value.ToArray())).ToList() : _payloads;
+    public List<string> SentData => SideEffectReceipt is { } receipt ? receipt.SentData.ToList() : _sentData;
+    public ToolSideEffectReceipt CaptureSideEffectReceipt() => new(Submitted, Skipped, Failed, SentData, Payloads);
     public static readonly CommunicationOutputField SentDataField = new(new("f3b044b5-1a5d-4440-8d1b-eac95f3ca39b"), "已发送数据", "String");
     public static readonly CommunicationOutputField SubmittedField = new(new("9fc8aac5-0353-4462-9524-f0fe4d5dc113"), "成功数量", "Integer");
     public static readonly CommunicationOutputField SkippedField = new(new("53c34d99-1f75-40ab-90c5-20c6ff47e67e"), "跳过数量", "Integer");
@@ -99,9 +103,11 @@ public sealed class SendDataResults : CommunicationToolResults
     public override IReadOnlyList<OutputVariable> GetOutputVariables()
     {
         var fields = base.GetOutputVariables().ToList();
-        fields.Add(SubmittedField.CreateContract(Submitted)); fields.Add(SkippedField.CreateContract(Skipped));
-        fields.Add(FailedField.CreateContract(Failed)); fields.Add(PayloadField.CreateContract(Payloads.Count > 0 ? Payloads.ToArray() : null));
-        fields.Add(SentDataField.CreateContract(SentData.Count > 0 ? SentData.ToArray() : null));
+        // 已发生的外部发送只属于收据。失败/取消结果保留声明，不重新开放绑定输出。
+        fields.Add(SubmittedField.CreateContract(IsSuccess ? Submitted : null)); fields.Add(SkippedField.CreateContract(IsSuccess ? Skipped : null));
+        fields.Add(FailedField.CreateContract(IsSuccess ? Failed : null)); fields.Add(PayloadField.CreateContract(IsSuccess && Payloads.Count > 0 ? Payloads.ToArray() : null));
+        fields.Add(SentDataField.CreateContract(IsSuccess && SentData.Count > 0 ? SentData.ToArray() : null));
+        if (!IsSuccess) foreach (var field in fields) field.RuntimeValue = null;
         return fields;
     }
 }

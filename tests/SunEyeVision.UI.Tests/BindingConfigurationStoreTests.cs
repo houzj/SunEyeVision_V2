@@ -147,6 +147,8 @@ public sealed class BindingConfigurationStoreTests
     public void Connection_owned_image_reference_is_removed_from_a_serialized_draft_and_restored_by_undo()
     {
         var model = Model(); Source(model).TypeName = "Image";
+        // 本用例使用 SDK 图像引用参数，不得携带原 ProtocolParse 插件身份。
+        model.Workflows[0].Nodes[1].ToolType = "MeasureGuideBindingFixture";
         model.Workflows[0].Nodes[1].Parameters = new MeasureGuideParameters { ImageSource = new AvailableDataSource
         { SourceNodeId = "source", PropertyName = "value", VariableType = "Image", AutomaticConnectionId = "edge" } };
         model.Workflows[0].Connections.Add(new() { Id = "edge", SourceNodeId = "source", TargetNodeId = "parse" });

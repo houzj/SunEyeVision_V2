@@ -18,6 +18,22 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     private readonly Action<WorkflowNodeBase> _bindDraft;
     private readonly Action<BindingConfigurationPublication>? _published;
     private NodeConfigurationEditDraft _draft;
+    private GlobalVariableConfigurationEditDraft? _variables;
+    /// <summary>The send editor owns one private source/variable configuration, never a live projection.</summary>
+    internal Solution GetCommunicationConfiguration()
+    {
+        EnsureCurrent();
+        _variables ??= _host.BeginVariableEdit();
+        ProjectSourceCandidate();
+        return _variables.Configuration;
+    }
+    private void ProjectSourceCandidate()
+    {
+        if (_variables is null) return;
+        var source = _variables.Configuration.Workflows.Single(w => w.Id == Identity.WorkflowId).Nodes.Single(n => n.Id == Identity.NodeId);
+        source.Parameters = _draft.Node.Parameters;
+        source.ParamSettings = _draft.Node.ParamSettings;
+    }
     private sealed class RelatedCandidate(WorkflowNodeBase formal, NodeConfigurationEditDraft draft, Action<ToolParameters> validate)
     {
         public WorkflowNodeBase Formal { get; } = formal;
@@ -60,12 +76,16 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
             else related.Validate(related.Draft.Node.Parameters);
         }
     }
-    private void RefreshCandidates(bool preserveNewerEdits = false)
+    private void RefreshCandidates(bool preserveNewerEdits = false, DocumentEditProposal? prepared = null)
     {
         _draft = preserveNewerEdits ? _host.RebaseAcceptedDraft(_draft) : _host.BeginEdit(Identity.WorkflowId, Identity.NodeId);
         foreach (var item in _related)
             item.Value.Draft = preserveNewerEdits ? _host.RebaseAcceptedDraft(item.Value.Draft)
                 : _host.BeginEdit(item.Key.WorkflowId, item.Key.NodeId);
+        if (_variables is not null)
+            _variables = preserveNewerEdits && prepared is not null
+                ? prepared.PreserveNewerVariableEdits(_host, _variables) : _host.BeginVariableEdit();
+        ProjectSourceCandidate();
     }
     private bool _active = true;
     private bool _committing;
@@ -76,7 +96,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     public CancellationToken DebugCancellation { get; }
 
     public Guid ScopeId { get; } = Guid.NewGuid();
-    public bool HasPendingChanges => _active && (AllDrafts().Any(_host.HasPendingChanges) || HasPendingViewEdits?.Invoke() == true);
+    public bool HasPendingChanges => _active && (AllDrafts().Any(_host.HasPendingChanges) || _variables is not null && _host.HasPendingChanges(_variables) || HasPendingViewEdits?.Invoke() == true);
     public string ScopeKey => $"node:{Identity.WorkflowId}/{Identity.NodeId}";
     internal Func<string?>? PrepareView { get; set; }
     internal Func<bool>? HasPendingViewEdits { get; set; }
@@ -134,15 +154,17 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         var viewError = PrepareView?.Invoke();
         if (!string.IsNullOrEmpty(viewError)) throw new InvalidOperationException(viewError);
         if (!TryPrepareEditor(out var error)) throw new InvalidOperationException(error);
-        return DocumentEditProposal.ForNodes(host, AllDrafts(), _draft);
+        ProjectSourceCandidate();
+        return _variables is null ? DocumentEditProposal.ForNodes(host, AllDrafts(), _draft)
+            : DocumentEditProposal.ForNodesAndVariables(host, AllDrafts(), _variables, _draft);
     }
     public void Acknowledge(DocumentEditProposal prepared, BindingConfigurationPublication publication)
     {
         EnsureCurrent();
         if (!ReferenceEquals(prepared.Token, _draft)) return;
-        if (!prepared.Matches(AllDrafts()) || HasPendingViewEdits?.Invoke() == true)
+        if (!prepared.Matches(AllDrafts()) || _variables is not null && !prepared.Matches(_variables) || HasPendingViewEdits?.Invoke() == true)
         {
-            RefreshCandidates(preserveNewerEdits: true);
+            RefreshCandidates(preserveNewerEdits: true, prepared);
             try { _published?.Invoke(publication); } catch (Exception ex) { LastRefreshError = ex.Message; }
             return;
         }
@@ -156,7 +178,8 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         {
             EnsureCurrent();
             ValidateCandidates(true);
-            _host.ValidateBatch(AllDrafts(), null);
+            ProjectSourceCandidate();
+            _host.ValidateBatch(AllDrafts(), _variables);
             error = ""; return true;
         }
         catch (Exception ex) { error = ex.Message; return false; }
@@ -208,7 +231,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         try
         {
             EnsureCurrent();
-            publication = _host.CommitBatch(AllDrafts(), null);
+            publication = _host.CommitBatch(AllDrafts(), _variables);
         }
         catch (Exception ex) { error = ex.Message; _committing = false; return false; }
         try { AcceptPublication(publication); }
@@ -225,6 +248,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         if (!_active) return;
         _active = false;
         _related.Clear();
+        _variables = null;
         _documentEdits?.Unregister(ScopeId);
         try { _debugCancellation.Cancel(); }
         catch (Exception ex) { LastRefreshError ??= ex.Message; }

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Core;
@@ -9,7 +9,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 
 namespace SunEyeVision.Tool.SendData.Views;
 
-public partial class SendDataEditor : ToolDebugControlBase
+public partial class SendDataEditor : ToolDebugControlBase, IToolEditorCommitParticipant
 {
     private SendDataParameters _parameters = new();
     private bool _refreshing;
@@ -105,6 +105,8 @@ public partial class SendDataEditor : ToolDebugControlBase
     }
     private void ConfigureVariables(IReadOnlyList<SendVariablePublication> mappings)
     {
+        if (ToolEditorCommit.GetDraftContext(this) is null)
+            throw new InvalidOperationException("发送数据尚未进入正式方案编辑范围。");
         var id = CurrentNode?.GetType().GetProperty("Id")?.GetValue(CurrentNode)?.ToString();
         if (id != null && Service != null) Service.ConfigureVariablePublications((DataProvider as DataSourceQueryService)?.WorkflowId ?? "", id, mappings);
     }
@@ -121,6 +123,33 @@ public partial class SendDataEditor : ToolDebugControlBase
             ConfigureVariables(_parameters.Rows.Where(r => r.TargetId != "").Select(r => new SendVariablePublication(r.TargetId,
                 new CommunicationOutputField(r.FieldId, r.Name, r.DataType).BindingKey, r.DataType)).ToArray());
     }
+    private bool PrepareConfiguration(out string error)
+    {
+        try
+        {
+            if (_parameters.DestinationKind is not ("Device" or "Event" or "Variable"))
+                throw new InvalidOperationException("发送目标类型未实现。");
+            if (_parameters.Rows.Count == 0 || _parameters.Rows.Any(r => r.FieldId == Guid.Empty) ||
+                _parameters.Rows.Select(r => r.FieldId).Distinct().Count() != _parameters.Rows.Count)
+                throw new InvalidOperationException("发送列表为空或字段身份重复。");
+            // Only the document-owned private service may edit producer declarations.
+            if (ToolEditorCommit.GetDraftContext(this) is null)
+                throw new InvalidOperationException("发送数据尚未进入正式方案编辑范围。");
+            if (Service is null) throw new InvalidOperationException("宿主未提供发送配置服务。");
+            var mappings = _parameters.DestinationKind == "Variable"
+                ? _parameters.Rows.Where(r => !string.IsNullOrWhiteSpace(r.TargetId)).Select(r => new SendVariablePublication(r.TargetId,
+                    new CommunicationOutputField(r.FieldId, r.Name, CommunicationSendTypes.WorkflowType(r.DataType)).BindingKey,
+                    CommunicationSendTypes.WorkflowType(r.DataType))).ToArray()
+                : Array.Empty<SendVariablePublication>();
+            ConfigureVariables(mappings);
+            error = ""; return true;
+        }
+        catch (Exception ex) { error = ex.Message; return false; }
+    }
+    public override bool ValidateParameters() => PrepareConfiguration(out _);
+    public bool TryValidateEditor(out string error) => PrepareConfiguration(out error);
+    public bool TryCommitEditor(out string error) => PrepareConfiguration(out error);
+
     protected override object ExecuteTool() => ExecuteWithLiveContext(new SendDataTool(), _parameters);
     protected override async Task<object> ExecuteToolAsync()
     {

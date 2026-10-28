@@ -130,8 +130,11 @@ public sealed class CommunicationAutomationTests
     public async Task Manual_run_lease_also_rejects_communication_operations()
     {
         var input = new BlockingInput();
-        var manager = new WorkflowExecutionManager(input, new WorkflowEngine(VisionLogger.Instance), new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
-        var running = manager.RunSingleAsync(new WorkflowTabViewModel());
+        var engine = new WorkflowEngine(VisionLogger.Instance);
+        var flow = engine.CreateWorkflow("manual-lease", "手动运行租约");
+        var manager = new WorkflowExecutionManager(input, engine, new RuntimeInputSnapshotService()) { AllowUnhostedRunForTests = true };
+        var running = manager.RunSingleAsync(new WorkflowTabViewModel
+            { Id = flow.Id, Name = flow.Name, WorkflowNodes = flow.Nodes, WorkflowConnections = flow.Connections });
         try
         {
             await input.Entered.Task.WaitAsync(TimeSpan.FromSeconds(3));

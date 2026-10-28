@@ -1,3 +1,9 @@
+## 2026-10-28 完整Global真实失败与消费者身份修复已固定
+
+ba095a01修动态声明误清绑定，910d0786统一有泵UI初始化及一次服务生命周期，b64af5b3修实际scope/doc执行owner/当前节点实例和准备失败reader释放；新回归只语法/diff通过，已交主线正式构建。主线52beb99b UI/full零错及SDK定向22/0不替代完整Global attempt002失败/超时。原主方案当前状态已整段同步，旧失败证据保留。
+
+D07独立pane/ROI候选已合be742a71、64a37e6a，尚无消费者整链及运行验证，不计完成；待Main/Shell接入后统一验收。Group冻结，正式Release唯一主线产出，VS/硬件/人工不代签。
+
 ## 2026-10-28 完整Global回归缺省类型误清绑定修复候选
 
 正式GlobalBinding attempt002暴露动态端口存在但DeclaredType=object且无ValueDeclaration时被误判不兼容。本批保留显式生产引用并标记Unresolved，只有端口删除或已知类型冲突才解除；新增同一服务Reset/ReconcileAll保身份及正式语义声明优先回归。尚未编译运行，交主线同源验证；SDK终态定向22/0只计该组，不计完整Global通过。Group冻结，D07消费者仍整批实施中。

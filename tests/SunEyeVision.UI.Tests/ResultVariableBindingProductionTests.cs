@@ -4,6 +4,8 @@ using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Diagnostics;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
@@ -22,6 +24,7 @@ public sealed class ResultVariableBindingProductionTests
     [Fact]
     public void Real_runtime_result_binding_unbinding_cancel_history_and_save_reopen_share_one_formal_endpoint()=>Sta(()=>
     {
+        Stage("创建同dispatcher Application与主题");
         if(Application.Current is null)_=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
             Application.Current.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
@@ -31,6 +34,7 @@ public sealed class ResultVariableBindingProductionTests
         try
         {
             AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
+            Stage("加载正式工具组件");
             Assert.True(PluginLoader.LoadPlugins(Path.Combine(host,"plugins")));
             var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"result-variable-binding-"+Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(directory);
@@ -39,16 +43,17 @@ public sealed class ResultVariableBindingProductionTests
             var variable=new GlobalVariable("宽度",0L,"Integer"){Id="width"};
             var document=new Solution{Workflows=new(){root}};document.GlobalVariables.Add(variable);
             var manager=ServiceInitializer.SolutionManager;manager.SetCurrentSolution(document,false);
-            main=new MainWindowViewModel();main.SelectedNode=source;
+            Stage("构造真实MainWindowViewModel");main=new MainWindowViewModel();
+            Stage("选择真实图像源节点");main.SelectedNode=source;
             view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);
             ((TabControl)view.FindName("ImageDisplayTabControl")).SelectedIndex=1;
-            owner=new Window{Content=view,Width=900,Height=700,Left=-10000,ShowActivated=false};owner.Show();Pump();
+            Stage("加载真实结果工作区窗口");owner=new Window{Content=view,Width=900,Height=700,Left=-10000,ShowActivated=false};owner.Show();Pump();
             var tree=Assert.IsType<PropertyListView>(view.FindName("ModuleResultTreeView"));
             var session=manager.Session!;var initial=session.History.Position;
             var publication=Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Presenters.Results.IResultPublication>(main.CurrentResultPublication);
             var row=Assert.Single(main.FlatResultRows.Where(item=>item.SourcePropertyName=="output.width"));
             Assert.True(row.IsBindable);Assert.True(tree.BindVariableCommand!.CanExecute(row));
-            var verifyBind=SelectVariableInNextDialog(variable);tree.BindVariableCommand.Execute(row);verifyBind();Pump();
+            Stage("首次绑定选择与正式接纳");var verifyBind=SelectVariableInNextDialog(variable);tree.BindVariableCommand.Execute(row);verifyBind();Pump();
             Assert.Equal(initial+1,session.History.Position);Assert.Same(publication,main.CurrentResultPublication);
             Assert.Equal("宽度",row.BindingDisplayName);AssertUnlinkVisible(tree,row);
             var expression=variable.ProducerBinding!.ReferenceExpression;
@@ -56,20 +61,20 @@ public sealed class ResultVariableBindingProductionTests
             Assert.Equal(root.Id,reference.ScopeId);Assert.Equal(source.Id,reference.NodeId);Assert.Equal("output.width",reference.PortId);
             Assert.Equal(source.RuntimeConfiguration.Schema.Outputs.Single(port=>port.Id=="output.width").Type,reference.Type);
             Assert.Empty(reference.MemberFieldPath);
-            main.UndoCommand.Execute(null);Pump();Assert.Null(variable.ProducerBinding);Assert.Null(row.BindingDisplayName);
+            Stage("绑定Undo/Redo同publication");main.UndoCommand.Execute(null);Pump();Assert.Null(variable.ProducerBinding);Assert.Null(row.BindingDisplayName);
             Assert.Same(publication,main.CurrentResultPublication);Assert.Equal(initial,session.History.Position);
             main.RedoCommand.Execute(null);Pump();Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);Assert.Equal("宽度",row.BindingDisplayName);
-            var file=Path.Combine(directory,"accepted.solution");var saved=manager.SaveCurrentDocument(file);Assert.True(saved.FileWritten,saved.Error);
+            Stage("保存与正式重开");var file=Path.Combine(directory,"accepted.solution");var saved=manager.SaveCurrentDocument(file);Assert.True(saved.FileWritten,saved.Error);
             var reopened=new SolutionRepository().Load(file)!;
             Assert.Equal(expression,Assert.Single(reopened.GlobalVariables).ProducerBinding!.ReferenceExpression);
             Assert.True(tree.UnbindVariableCommand!.CanExecute(row));
-            var verifyUnbind=SelectVariableInNextDialog(variable);tree.UnbindVariableCommand.Execute(row);verifyUnbind();Pump();
+            Stage("正式解绑与Undo");var verifyUnbind=SelectVariableInNextDialog(variable);tree.UnbindVariableCommand.Execute(row);verifyUnbind();Pump();
             Assert.Null(variable.ProducerBinding);Assert.Null(row.BindingDisplayName);Assert.Equal(initial+2,session.History.Position);
             main.UndoCommand.Execute(null);Pump();Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);Assert.Equal("宽度",row.BindingDisplayName);
             var before=session.History.Position;
-            var verifyCancel=SelectVariableInNextDialog(variable,cancel:true);tree.BindVariableCommand.Execute(row);verifyCancel();Pump();
+            Stage("取消选择");var verifyCancel=SelectVariableInNextDialog(variable,cancel:true);tree.BindVariableCommand.Execute(row);verifyCancel();Pump();
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
-            var verifyStale=SelectVariableInNextDialog(variable,beforeAccept:()=>main.CloseResultPresentation());tree.BindVariableCommand.Execute(row);verifyStale();Pump();
+            Stage("模态期间publication退出拒绝");var verifyStale=SelectVariableInNextDialog(variable,beforeAccept:()=>main.CloseResultPresentation());tree.BindVariableCommand.Execute(row);verifyStale();Pump();
             Assert.Equal(before,session.History.Position);Assert.Equal(expression,variable.ProducerBinding!.ReferenceExpression);
             Assert.False(main.IsCurrentResultRow(row));Assert.False(tree.BindVariableCommand.CanExecute(row));
             var bad=new ProducerBinding{ReferenceExpression=BindingReferenceSerializer.Serialize(new(source.Id,"missing",reference.Type,scopeId:root.Id))};
@@ -85,21 +90,43 @@ public sealed class ResultVariableBindingProductionTests
 
     private static Action SelectVariableInNextDialog(GlobalVariable variable,bool cancel=false,Action? beforeAccept=null)
     {
-        Exception? failure=null;var invoked=false;
-        Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>
+        Exception? failure=null;var invoked=false;var expected=Application.Current.Windows.Cast<Window>().ToHashSet();
+        var watch=Stopwatch.StartNew();var timer=new DispatcherTimer(DispatcherPriority.Background){Interval=TimeSpan.FromMilliseconds(25)};
+        timer.Tick+=(_,_)=>
         {
-            GlobalVariableSelectDialog? dialog=null;
+            var windows=Application.Current.Windows.Cast<Window>().Where(window=>!expected.Contains(window)&&window.IsVisible).ToArray();
             try
             {
-                invoked=true;dialog=Application.Current.Windows.OfType<GlobalVariableSelectDialog>().Single();
-                if(cancel){dialog.Close();return;}
-                var picker=Assert.IsType<GlobalVariableSelectViewModel>(dialog.DataContext);
-                Assert.Contains(variable,picker.FilteredVariables);picker.SelectedVariable=variable;
-                beforeAccept?.Invoke();Assert.True(picker.AcceptCommand.CanExecute(null));picker.AcceptCommand.Execute(null);
+                var unexpected=windows.FirstOrDefault(window=>window is not GlobalVariableSelectDialog);
+                if(unexpected is not null)
+                {
+                    failure=new InvalidOperationException("正式操作出现非预期对话框："+unexpected.GetType().Name+" / "+unexpected.Title+" / "+string.Join(" | ",Texts(unexpected)));
+                    unexpected.Close();return;
+                }
+                if(!invoked&&windows.OfType<GlobalVariableSelectDialog>().FirstOrDefault(dialog=>dialog.IsLoaded) is {} dialog)
+                {
+                    invoked=true;
+                    if(cancel){dialog.Close();return;}
+                    var picker=Assert.IsType<GlobalVariableSelectViewModel>(dialog.DataContext);
+                    Assert.Contains(variable,picker.FilteredVariables);picker.SelectedVariable=variable;
+                    beforeAccept?.Invoke();Assert.True(picker.AcceptCommand.CanExecute(null));picker.AcceptCommand.Execute(null);
+                }
+                if(watch.Elapsed>TimeSpan.FromSeconds(10))
+                {
+                    failure=new TimeoutException("模态阶段未完成："+_stage+"；窗口："+string.Join(",",windows.Select(window=>window.GetType().Name+":"+window.Title)));
+                    foreach(var window in windows)window.Close();timer.Stop();
+                }
             }
-            catch(Exception error){failure=error;dialog?.Close();}
-        }));
-        return ()=>{Assert.True(invoked,"正式变量选择窗口未进入模态消息循环");if(failure is not null)ExceptionDispatchInfo.Capture(failure).Throw();};
+            catch(Exception error){failure=error;foreach(var window in windows)window.Close();timer.Stop();}
+        };
+        timer.Start();
+        return ()=>{timer.Stop();if(failure is not null)ExceptionDispatchInfo.Capture(failure).Throw();Assert.True(invoked,"正式变量选择窗口未进入可加载状态");};
+    }
+    private static IEnumerable<string> Texts(DependencyObject parent)
+    {
+        if(parent is TextBlock text&&!string.IsNullOrWhiteSpace(text.Text))yield return text.Text;
+        for(var index=0;index<VisualTreeHelper.GetChildrenCount(parent);index++)
+            foreach(var value in Texts(VisualTreeHelper.GetChild(parent,index)))yield return value;
     }
     private static void AssertUnlinkVisible(PropertyListView view,FlatResultRow row)
     {
@@ -111,10 +138,14 @@ public sealed class ResultVariableBindingProductionTests
         Assert.Same(row,unlink.CommandParameter);Assert.Same(view.UnbindVariableCommand,unlink.Command);
     }
     private static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
+    private static volatile string _stage="尚未进入生产链";
+    private static void Stage(string stage)=>_stage=stage;
     private static void Sta(Action action)
     {
-        Exception? failure=null;var thread=new Thread(()=>{try{action();}catch(Exception error){failure=error;}}){IsBackground=true};
-        thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(60)),"真实结果绑定生产链超时");
-        if(failure is not null)ExceptionDispatchInfo.Capture(failure).Throw();
+        // Reuse the existing persistent real WPF dispatcher. An Application must not be
+        // abandoned on a per-test thread while later controls resolve its dynamic resources.
+        var operation=Task.Run(()=>ImageThresholdProductionEditorTests.Sta(action));
+        try{operation.WaitAsync(TimeSpan.FromSeconds(60)).GetAwaiter().GetResult();}
+        catch(TimeoutException error){throw new TimeoutException("真实结果绑定生产链超时；最后阶段："+_stage,error);}
     }
 }

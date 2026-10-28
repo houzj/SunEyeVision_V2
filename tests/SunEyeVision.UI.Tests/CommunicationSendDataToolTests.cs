@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -244,11 +244,19 @@ public sealed class CommunicationSendDataToolTests
         var service = new WorkflowCommunicationSendService(() => solution, runtime);
         service.ConfigureVariablePublications(sender.Id, new[] { new SendVariablePublication(variable.Id, p.VariableFields()[0].BindingKey, "String") });
         Assert.Equal(sender.Id, variable.ProducerBinding!.SourceReference.NodeId);
-        var reader = new CommunicationReceiveService { VariableCatalog = () => new[] { new ReceiveVariableSource(variable.Id, variable.Name, variable.Group, variable.Type, true, sender.Id, p.VariableFields()[0].BindingKey, flow.Id) } };
         ToolRegistry.RegisterTool(typeof(SendDataTool)); ToolRegistry.RegisterTool(typeof(ReceiveDataTool));
+        using var values=new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
+        var definitions=GlobalVariable.CaptureDefinitions(solution.GlobalVariables);
+        var reader=new WorkflowGlobalVariableReceiveService(new CommunicationReceiveService(),values,definitions);
+        Assert.True(GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var target,out var clr,out var reason),reason);
+        var validation=GlobalProducerBindingRules.Validate(solution,variable.ProducerBinding!,variable);
+        Assert.True(validation.State is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional,validation.Reason);
+        var operation=new WorkflowGlobalProducerOperation(variable.Id,variable.Name,variable.ProducerBinding!.SourceReference!,target,clr);
         var runner = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
-        var result = await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: reader, communicationOutputs: service));
+        using var result = await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: reader, communicationOutputs: service)
+            {Configuration=WorkflowRunConfiguration.Capture(solution.Workflows),ExecutionOwner=solution.ExecutionOwner,GlobalProducers=new[]{operation},ProducedGlobals=values});
         Assert.True(result.Success, string.Join(";", result.Errors)); Assert.Equal("DESIGN", variable.Value);
+        Assert.Equal("CURRENT",values.Capture()[variable.Name]);
         var output = result.NodeResults[receiver.Id].Result!.GetOutputVariables().Single(v => v.Name == receive.Variables[0].Definition().BindingKey);
         Assert.Equal("CURRENT", Assert.Single(Assert.IsType<string[]>(output.RuntimeValue)));
         variable.ProducerBinding = BindingAdaptationB2Tests.Producer(flow.Id,"other",p,p.VariableFields()[0].BindingKey);
@@ -281,11 +289,9 @@ public sealed class CommunicationSendDataToolTests
 
     private static void RenderEditor()
     {
-        Exception? failure = null; var thread = new Thread(() =>
+        ImageThresholdProductionEditorTests.Sta(() =>
         {
-            try
-            {
-                var editor = new SendDataEditor(); var p = Parameters("ABC", "2"); p.DestinationKind = "Variable";
+            var editor = new SendDataEditor(); var p = Parameters("ABC", "2"); p.DestinationKind = "Variable";
                 var id = p.Rows[0].FieldId; editor.SetParameters(p); Assert.Equal(2, p.Rows.Count); Assert.Equal(id, p.Rows[0].FieldId);
                 Assert.Equal(new Size(520, 600), editor.PreferredDebugWindowSize);
                 ResourceDictionary? previous = null;
@@ -304,9 +310,6 @@ public sealed class CommunicationSendDataToolTests
                     var bitmap = new RenderTargetBitmap(520, 514, 96, 96, System.Windows.Media.PixelFormats.Pbgra32); bitmap.Render(editor);
                     var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap)); using var file = File.Create(Path.Combine(directory, $"editor-{theme.ToLowerInvariant()}.png")); encoder.Save(file);
                 }
-            }
-            catch (Exception e) { failure = e; }
-        }); thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start(); Assert.True(thread.Join(TimeSpan.FromSeconds(25)));
-        if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        });
     }
 }

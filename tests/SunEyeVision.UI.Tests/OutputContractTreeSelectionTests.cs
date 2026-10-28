@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -149,7 +149,7 @@ public sealed class OutputContractTreeSelectionTests
         Assert.Equal(1, f.Parameters.ReadCount);
         var root = Assert.Single(f.Model.ResultTreeRoots);
         Assert.Equal("A", root.DisplayName);
-        Assert.Contains(f.Model.FlatResultRows, row => row.SourcePropertyName == "latest" && row.SourceNodeId == f.A.Id);
+        Assert.Contains(f.Model.FlatResultRows, row => row.BindingInfo?.Reference is {PortId:"name:latest"} reference && reference.NodeId==f.A.Id && reference.ScopeId==f.Flow.Id && reference.MemberFieldPath.Count==0);
     });
 
     [Fact]
@@ -254,8 +254,8 @@ public sealed class OutputContractTreeSelectionTests
         f.Parameters.BeforeRead = () => { f.Parameters.BeforeRead = null; f.Parameters.Name = "new"; f.Parameters.Raise(); };
         f.Parameters.Raise(); Drain();
         Assert.Equal(2, f.Parameters.ReadCount); Assert.Equal(1, published);
-        Assert.Contains(f.Model.FlatResultRows, row => row.SourcePropertyName == "new");
-        Assert.DoesNotContain(f.Model.FlatResultRows, row => row.SourcePropertyName == "old");
+        Assert.Contains(f.Model.FlatResultRows, row => row.BindingInfo?.Reference is {PortId:"name:new"} reference && reference.NodeId==f.A.Id && reference.ScopeId==f.Flow.Id && reference.MemberFieldPath.Count==0);
+        Assert.DoesNotContain(f.Model.FlatResultRows, row => row.BindingInfo?.Reference.PortId=="name:old");
     });
 
     private sealed class ProbeParameters : ToolParameters, INotifyOutputContractChanged, IOutputContractProvider

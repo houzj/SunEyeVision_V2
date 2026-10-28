@@ -6,7 +6,7 @@
 - 本轮移除未连接Presenter里固定橙色枚举所有Region的猜测绘制；明确提示正式图形/文字声明尚未接通，不把资源存在当可见性和样式声明。有同帧证明的选择高亮保留。原完整图形/文字迁移清单保留，场景总预算属于恢复该生产链前的必要合同，不因撤候选而记完成。
 - 复审修正独立selection代号和每侧pane代号，显式null清空不再受已退休publication阻挡但仍核代号，逐次清理/Present前后核同pub内新选择；异常退出后合并执行已收到的刷新意图。图像来源额外拒重复scope/node及退休上游admission。均只是未连接源码，尚需真实重入测试和正式编译。
 - 审核包现在19个拟议文件、13个完整依赖；测试现固定35259200八项候选，仅以完整源码附录保留，不直接cherry-pick进当前编译。原区域“存在即橙色”错误断言已撤，改无声明不绘制及真实同帧选择，并补三项实际DP重入/失效pub清空/异常后新run刷新，不把旧猜测固化成正确断言。
-- 当前patch SHA：`42a8a06a85ddfe0df268411ca2218744854da9870d3779bb24fd0856af08ac05`。17个拟议C#语法零错、两XAML XML可解析，不替代编译/设计器/运行。approvalReady=false，仍不应用被拒生产切换。
+- 当前patch SHA：`ef21267913a6c8c5a63da03a69a905fa524676f82aae879a5d8ca4c62535a176`。17个拟议C#语法零错、两XAML XML可解析，不替代编译/设计器/运行。approvalReady=false，仍不应用被拒生产切换。
 
 当前用户目标 A01–E07 保持完整。此记录区分正式回归、未连接源码候选和只读切换提案；不把源码同步、语法检查或设计制品记作生产交付。
 
@@ -53,3 +53,12 @@
 本轮候选测试已固定35259200，共8项，仅审查包依赖：实际原ShapeList依赖属性通知内B重入，核B两侧列表及shape实例未被旧A清写；失效publication仍可显式清选择；实际GetOutputContract受控故障前发布新run，最终必须显示新Frame。未将测试提前加入当前编译。内存叠加19拟议源码后，旧GetMainImageControl/GetImageDisplayControl/SetResultRenderLayer/SetImageDisplayControl/MainImageControl在src/UI、验收脚本及UI测试无剩余精确引用；此检索不替代语义编译及完整交互验收。
 
 本轮原39项验收矩阵已逐项按attempt008与O06真实范围核定，原需求单元格不变；历史5780/失败证据保留，内部ShowDeclaredRun不再写成已接真实历史UI。普通下拉选图仍是可实施链，受管图像叠层/背景交换则缺公共owner能力，区分记录。17拟议C#语法及两XML仍需本次重核，未交付。
+
+旧缩放状态整链核对：src/tools/tests/scripts精确引用仅见Main/ImageResult的5个命令自声明/自初始化及ImageScale旧SDK使用；实际TopBar.F11经FullscreenRequested→ImageResultHost.ToggleFullscreen，Shell按钮直接原Enlarge/Shrink/Init。提案删除无消费者的5旧命令及两VM的独立ImageScale，保公共原ImageViewBox自身倍率与流程画布Scale，不新增委托兼容桥或第二缩放源。只改review拟议源码，现生产文件未变；待语义构建/实际缩放全屏验证。
+
+旧来源回写整链修正：输入/输出DP在清图、取消预览和写导航索引前核当前plan的对象引用成员资格（输入另核IsUpstream），拒旧plan项及未知对象；恢复上次接纳的真实项时抑制自身DP回调，保新图像receipt/缩放不重绑。恢复观察者同步选择新的合法项则只执行新意图，代次/plan变化退出；不因稳定Key相同授权旧对象。换plan/Dispose释放所记项引用。仍为未连接候选，需真实旧项回写测试后正式验证。
+
+
+## 选择重入集中修订检查点
+
+旧来源对象按当前plan对象身份拒绝，恢复后显式null清空重放；刷新期间接纳真实选择但推迟呈现，退出刷新后读取最终DP；输入回调改变输出时以输出意图代号阻止旧默认覆盖；呈现异常独立记录，刷新调度置于finally。审核包已与实际候选同步，patch SHA256 ef21267913a6c8c5a63da03a69a905fa524676f82aae879a5d8ca4c62535a176。19拟议文件、13依赖哈希、C#语法及两XAML解析通过；不是语义编译或运行通过。仍需对应新增真实DP回归与正式整链验证，approvalReady=false，不直接应用。十项候选测试保留，尚未运行。

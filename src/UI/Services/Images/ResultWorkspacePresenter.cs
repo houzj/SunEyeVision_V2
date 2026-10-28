@@ -28,10 +28,11 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     private ResultWorkspaceImagePlan? _plan;
     private CancellationTokenSource? _previewCancellation;
     private ResultViewportFullscreenScope? _fullscreen;
-    private long _epoch,_layerRevision,_selectionGeneration;
+    private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
     private int _navigationIndex=int.MinValue;
-    private bool _disposed,_refreshing,_refreshAgain,_refreshQueued;
+    private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
     private string? _inputKey,_outputKey;
+    private ResultWorkspaceImageSource? _inputSource,_outputSource;
     private object? _selectionOwner;
     private IResultPublication? _displayDefinitionNotice;
     internal ResultImagePane InputPane=>_input.Image;
@@ -69,18 +70,51 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     }
     private void InputSelected(object? sender,EventArgs args)
     {
-        if(_disposed||_refreshing)return;
-        _inputKey=(_shell.SelectedInputItem as ResultWorkspaceImageSource)?.Key;
-        Present(_input,_shell.SelectedInputItem as ResultWorkspaceImageSource);ReportDisplayDefinitionGap();
+        if(_disposed||_restoringInput)return;
+        if(_refreshing&&_plan is null)return;
+        var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
+        if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
+        {RestoreChoice(true);return;}
+        _inputSource=source;_inputKey=source?.Key;
+        if(_refreshing)return;
+        Present(_input,source);ReportDisplayDefinitionGap();
     }
     private void OutputSelected(object? sender,EventArgs args)
     {
-        if(_disposed||_refreshing)return;
-        var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;_outputKey=source?.Key;
+        if(_disposed||_restoringOutput)return;
+        if(_refreshing&&_plan is null)return;
+        var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
+        if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
+        {RestoreChoice(false);return;}
+        _outputSource=source;_outputKey=source?.Key;++_outputChoiceRevision;
+        if(_refreshing)return;
         _previewCancellation?.Cancel();
         if(source is {NavigationIndex:>=0}&&_main.SelectedDisplayImageSourceIndex!=source.NavigationIndex)
         {_main.SelectedDisplayImageSourceIndex=source.NavigationIndex;return;}
         Present(_output,source);ReportDisplayDefinitionGap();
+    }
+    private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
+    {
+        if(_disposed||_plan is null||_plan.IsDisposed||input&&!source.IsUpstream)return false;
+        foreach(var candidate in _plan.Sources)if(ReferenceEquals(candidate,source))return true;
+        return false;
+    }
+    private void RestoreChoice(bool input)
+    {
+        var epoch=_epoch;var plan=_plan;
+        var accepted=input?_inputSource:_outputSource;
+        if(input)_restoringInput=true;else _restoringOutput=true;
+        try
+        {
+            _shell.SetCurrentValue(input?ResultWorkspaceShell.SelectedInputItemProperty:ResultWorkspaceShell.SelectedOutputItemProperty,accepted);
+        }
+        finally{if(input)_restoringInput=false;else _restoringOutput=false;}
+        if(_disposed||epoch!=_epoch||!ReferenceEquals(plan,_plan))return;
+        // A synchronous observer can select a genuinely new current item while the
+        // obsolete value is restored. Honour that intent, never replay the old item.
+        var current=input?_shell.SelectedInputItem:_shell.SelectedOutputItem;
+        if(!ReferenceEquals(current,accepted)&&(current is null||current is ResultWorkspaceImageSource source&&OwnsChoice(source,input)))
+        {if(input)InputSelected(null,EventArgs.Empty);else OutputSelected(null,EventArgs.Empty);}
     }
     private void Present(Pane pane,ResultWorkspaceImageSource? source)
     {
@@ -107,7 +141,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 _refreshAgain=false;var epoch=++_epoch;
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
-                var old=_plan;_plan=null;
+                var old=_plan;_plan=null;_inputSource=null;_outputSource=null;
                 Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
@@ -123,12 +157,14 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
                 var output=(_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
                 _navigationIndex=navigation;
-                _shell.SelectedInputItem=input;_shell.SelectedOutputItem=output;
-                _inputKey=input?.Key;_outputKey=output?.Key;
-                Present(_input,input);
-                if(_main.NativePreviewPath is {} path)_=PresentPreview(path,epoch);
-                else Present(_output,output);
-                ReportDisplayDefinitionGap();
+                _inputSource=input;_outputSource=output;
+                var outputChoiceRevision=_outputChoiceRevision;
+                _shell.SelectedInputItem=input;
+                // An input observer may already have accepted a newer output choice.
+                if(outputChoiceRevision==_outputChoiceRevision)_shell.SelectedOutputItem=output;
+                // Setters can synchronously replace a choice. Reconcile the actual
+                // values rather than replaying the pre-setter local candidates.
+                InputSelected(null,EventArgs.Empty);OutputSelected(null,EventArgs.Empty);
                 if(plan.Diagnostics.Count>0)_main.AddLog(string.Join("；",plan.Diagnostics));
             }while(_refreshAgain&&!_disposed);
         }
@@ -136,6 +172,23 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         finally
         {
             _refreshing=false;
+            try
+            {
+            if(!_disposed&&!_refreshAgain&&_plan is not null)
+            {
+                var epoch=_epoch;var plan=_plan;
+                InputSelected(null,EventArgs.Empty);
+                if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan))
+                {
+                    OutputSelected(null,EventArgs.Empty);
+                    if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan)
+                        &&_main.NativePreviewPath is {} path)_=PresentPreview(path,epoch);
+                }
+            }
+            }
+            catch(Exception error){_main.AddLog("结果工作区选择刷新失败："+error.Message);}
+            finally
+            {
             // An exception must not discard a newer notification received while the
             // previous plan was clearing/capturing. Retry only a genuinely queued intent.
             if(_refreshAgain&&!_disposed&&!_refreshQueued)
@@ -146,6 +199,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                     _refreshQueued=false;
                     if(!_disposed)Refresh();
                 }));
+            }
             }
         }
     }
@@ -224,7 +278,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
-        var plan=_plan;_plan=null;var fullscreen=_fullscreen;_fullscreen=null;
+        var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;var fullscreen=_fullscreen;_fullscreen=null;
         var cancellation=_previewCancellation;_previewCancellation=null;
         Run(new Action[]{
             ()=>_main.ResultWorkspaceChanged-=Refresh,

@@ -300,7 +300,7 @@
  using SunEyeVision.Plugin.SDK.Execution.Parameters;
  using SunEyeVision.Plugin.SDK.Execution.Results;
  using SunEyeVision.UI.Shared;
-@@ -20,7 +19,6 @@
+@@ -20,11 +19,9 @@
      {
          private readonly IRootCoordinator _coordinator;
  
@@ -308,7 +308,11 @@
          private int _selectedDisplayImageSourceIndex = -1;
          private bool _hasModuleResults;
          private bool _showImagePreview;
-@@ -43,15 +41,6 @@
+-        private double _imageScale = 1.0;
+         private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource;
+         private ObservableCollection<AvailableDataSource> _displayImageSources = new();
+         private ObservableCollection<FlatResultRow> _flatResultRows = new();
+@@ -43,15 +40,6 @@
          {
              _displayImageSources = displayImageSources;
              _flatResultRows = flatResultRows;
@@ -324,16 +328,28 @@
          }
  
          /// <summary>
-@@ -130,7 +119,7 @@
-             {
-                 if (SetProperty(ref _imageScale, value))
-                 {
--                    OnPropertyChanged(nameof(DisplayImage));
-+
-                 }
-             }
+@@ -120,20 +108,6 @@
+             set => SetProperty(ref _activeInputSource, value);
          }
-@@ -150,6 +139,9 @@
+ 
+-        /// <summary>
+-        /// 图像缩放比例
+-        /// </summary>
+-        public double ImageScale
+-        {
+-            get => _imageScale;
+-            set
+-            {
+-                if (SetProperty(ref _imageScale, value))
+-                {
+-                    OnPropertyChanged(nameof(DisplayImage));
+-                }
+-            }
+-        }
+ 
+         #region INodeResultSink 实现
+ 
+@@ -150,6 +124,9 @@
              _coordinator.RefreshDisplayImageFromCurrentSource();
          }
  
@@ -1005,7 +1021,7 @@
          private double _imageScale = 1.0;
  
          private bool _showImagePreview = false;
-@@ -483,12 +482,6 @@
+@@ -483,17 +482,6 @@
          public string CameraStatus => "相机(2台)";
  
          // 图像显示相关
@@ -1015,10 +1031,27 @@
 -            set => _imageResult.DisplayImage = value;
 -        }
 -
-         public double ImageScale
-         {
-             get => _imageResult.ImageScale;
-@@ -806,15 +799,6 @@
+-        public double ImageScale
+-        {
+-            get => _imageResult.ImageScale;
+-            set => _imageResult.ImageScale = value;
+-        }
+ 
+ 
+         /// <summary>
+@@ -789,11 +777,6 @@
+         public ICommand ToggleContinuousAllCommand { get; }
+ 
+         // 图像视图
+-        public ICommand ZoomInCommand { get; }
+-        public ICommand ZoomOutCommand { get; }
+-        public ICommand FitToWindowCommand { get; }
+-        public ICommand ResetViewCommand { get; }
+-        public ICommand ToggleFullScreenCommand { get; }
+ 
+         // 图像操作
+         public ICommand ClearImageCommand { get; }
+@@ -806,15 +789,6 @@
          public ICommand ShowGlobalVariableManagerCommand { get; }
          public ICommand ShowCameraManagerCommand { get; }
          public ICommand ShowCommunicationManagerCommand { get; }
@@ -1034,7 +1067,19 @@
  
          public MainWindowViewModel()
          {
-@@ -2614,8 +2598,7 @@
+@@ -942,11 +916,6 @@
+             ToggleContinuousAllCommand = new RelayCommand(ExecuteToggleContinuousAll, () => true);
+ 
+             // 图像视图
+-            ZoomInCommand = new RelayCommand(ExecuteZoomIn);
+-            ZoomOutCommand = new RelayCommand(ExecuteZoomOut);
+-            FitToWindowCommand = new RelayCommand(ExecuteFitToWindow);
+-            ResetViewCommand = new RelayCommand(ExecuteResetView);
+-            ToggleFullScreenCommand = new RelayCommand(ExecuteToggleFullScreen);
+ 
+             // 图像操作
+             ClearImageCommand = new RelayCommand(ExecuteClearImage);
+@@ -2614,8 +2583,7 @@
              try
              {
                  LogNodeStorageIdentity(node, "打开调试窗口");
@@ -1044,7 +1089,7 @@
                  // UI owns editor creation. Use the formal node so identity and style
                  // overrides are not lost in an incomplete execution-node conversion.
                  var decisionChain = new NodeOpenDecisionChain();
-@@ -2662,8 +2645,6 @@
+@@ -2662,8 +2630,6 @@
                      _openDebugWindow = null;
                      if (node.IsImageLoadNode && ReferenceEquals(SelectedNode, node))
                          _ = UpdateDataAnalysisControl(node);
@@ -1053,7 +1098,7 @@
                      if (SelectedNode?.IsSelected == true)
                      {
                          // 设计态：重新评估输出契约（脚本/子程序输出变更后刷新结果树）
-@@ -2834,7 +2815,7 @@
+@@ -2834,7 +2800,7 @@
                  // ★ Bug修复：当 selectedNode==null 时 UpdateDisplayImageFromCurrentSource
                  //   会因为 _selectedNode==null 而直接返回（第2616行），导致 DisplayImage
                  //   永远不会被清除。必须在 return 前直接清除，不能依赖延迟回调。
@@ -1062,7 +1107,7 @@
                  _nodeResultManager.ClearResultGraphics();
                  SetSelectedDisplayImageSourceIndexDeferred(-1);
                  return;
-@@ -2903,11 +2884,7 @@
+@@ -2903,11 +2869,7 @@
              // 节点已选中但无可显示图像源 → 清除残留图像和图形覆盖
              if (DisplayImageSources.Count == 0)
              {
@@ -1075,7 +1120,7 @@
                  _nodeResultManager.ClearResultGraphics();
              }
          }
-@@ -3203,33 +3180,20 @@
+@@ -3203,33 +3165,20 @@
          ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
          /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
          /// </summary>
@@ -1121,7 +1166,7 @@
          }
  
          /// <summary>
-@@ -3268,69 +3232,7 @@
+@@ -3268,69 +3217,7 @@
          /// 若选中源不可用（源节点未执行 / 该属性无图），按数据源列表顺延到第一个可用源显示，
          /// 并同步下拉选中项（下拉即真相）；全部不可用才清空（如实反映无可用图像）。
          /// </summary>
@@ -1192,7 +1237,7 @@
  
          /// <summary>
          /// 按当前选中的图像源刷新显示（实现 INodeResultSink，供 NodeResultManager 统一调用）
-@@ -3350,7 +3252,7 @@
+@@ -3350,7 +3237,7 @@
              CalculationResults.Clear();
              if(epoch!=_resultPublicationEpoch)return;
              ModuleResultTree.Clear();
@@ -1201,7 +1246,7 @@
          }
  
          /// <summary>
-@@ -3405,20 +3307,12 @@
+@@ -3405,20 +3292,12 @@
          /// <summary>
          /// 数据分析控件选中高亮联动 → 将高亮元素设置到图像渲染层
          /// </summary>
@@ -1224,7 +1269,7 @@
          }
  
          /// <summary>
-@@ -3720,32 +3614,13 @@
+@@ -3720,32 +3599,13 @@
                      // 缓存调试窗口（用于工作流执行完成后通知刷新）
                      _nodeDebugWindows[node.Id] = debugWindow;
  
@@ -1258,7 +1303,7 @@
  
                          // 4. 刷新当前选中节点的结果显示（如果有）
                          if (SelectedNode != null && SelectedNode.IsSelected)
-@@ -3853,7 +3728,7 @@
+@@ -3853,7 +3713,7 @@
                                  if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false})
                                  {
                                      editorContext?.DebugResults.RemoveNodeResult(node.Id);
@@ -1267,7 +1312,7 @@
                                  }
                                  return;
                              }
-@@ -3893,7 +3768,7 @@
+@@ -3893,7 +3753,7 @@
                          else
                          {
                              _nodeResultManager?.ClearResultDisplay();
@@ -1276,17 +1321,102 @@
                          }
                          // Recreate the analysis view from the formal context. Passing null to a
                          // legacy analysis control can leave the previous preview rows visible.
-@@ -4436,8 +4311,7 @@
-         {
-             try
-             {
+@@ -4377,124 +4237,38 @@
+             return null;
+         }
+ 
+-        #region 图像视图
+-
+-        /// <summary>
+-        /// 放大图像
+-        /// </summary>
+-        private void ExecuteZoomIn()
+-        {
+-            ImageScale = Math.Min(ImageScale * 1.2, 5.0);
+-            AddLog($"🔍 图像放大: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 缩小图像
+-        /// </summary>
+-        private void ExecuteZoomOut()
+-        {
+-            ImageScale = Math.Max(ImageScale / 1.2, 0.1);
+-            AddLog($"🔍 图像缩小: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 适应窗口
+-        /// </summary>
+-        private void ExecuteFitToWindow()
+-        {
+-            // TODO: 根据窗口大小计算缩放
+-            ImageScale = 1.0;
+-            AddLog($"🔍 适应窗口: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 重置视图
+-        /// </summary>
+-        private void ExecuteResetView()
+-        {
+-            ImageScale = 1.0;
+-            AddLog($"🔄 重置视图: {ImageScale:P0}");
+-        }
+-
+-        /// <summary>
+-        /// 切换全屏显示
+-        /// </summary>
+-        private void ExecuteToggleFullScreen()
+-        {
+-            // TODO: 实现图像全屏显示
+-            AddLog("🖥️ 切换全屏显示");
++
++
++        #region 图像操作
++
++        /// <summary>
++        /// 清除图像
++        /// </summary>
++        private void ExecuteClearImage()
++        {
++            try
++            {
++                ClearNativeImagePresentation();
++                AddLog("已清除图像");
++            }
++            catch (Exception ex)
++            {
++                AddLog($"清除图像失败: {ex.Message}");
++            }
+         }
+ 
+         #endregion
+ 
+-        #region 图像操作
+-
+-        /// <summary>
+-        /// 清除图像
+-        /// </summary>
+-        private void ExecuteClearImage()
+-        {
+-            try
+-            {
 -                _legacyImageDisplayCancellation?.Cancel();
 -                DisplayImage = null;
-+                ClearNativeImagePresentation();
-                 ImageScale = 1.0;
-                 AddLog("已清除图像");
-             }
-@@ -4454,47 +4328,11 @@
+-                ImageScale = 1.0;
+-                AddLog("已清除图像");
+-            }
+-            catch (Exception ex)
+-            {
+-                AddLog($"清除图像失败: {ex.Message}");
+-            }
+-        }
+-
+-        #endregion
+-
+         #region 图像预览
+ 
          /// <summary>
          /// 更新当前图像显示
          /// </summary>
@@ -1444,7 +1574,7 @@
 +}
 --- /dev/null
 +++ b/src/UI/Services/Images/ResultWorkspacePresenter.cs
-@@ -0,0 +1,241 @@
+@@ -0,0 +1,295 @@
 +using System.ComponentModel;
 +using System.Windows;
 +using System.Windows.Media;
@@ -1475,10 +1605,11 @@
 +    private ResultWorkspaceImagePlan? _plan;
 +    private CancellationTokenSource? _previewCancellation;
 +    private ResultViewportFullscreenScope? _fullscreen;
-+    private long _epoch,_layerRevision,_selectionGeneration;
++    private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
 +    private int _navigationIndex=int.MinValue;
-+    private bool _disposed,_refreshing,_refreshAgain,_refreshQueued;
++    private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
 +    private string? _inputKey,_outputKey;
++    private ResultWorkspaceImageSource? _inputSource,_outputSource;
 +    private object? _selectionOwner;
 +    private IResultPublication? _displayDefinitionNotice;
 +    internal ResultImagePane InputPane=>_input.Image;
@@ -1516,18 +1647,51 @@
 +    }
 +    private void InputSelected(object? sender,EventArgs args)
 +    {
-+        if(_disposed||_refreshing)return;
-+        _inputKey=(_shell.SelectedInputItem as ResultWorkspaceImageSource)?.Key;
-+        Present(_input,_shell.SelectedInputItem as ResultWorkspaceImageSource);ReportDisplayDefinitionGap();
++        if(_disposed||_restoringInput)return;
++        if(_refreshing&&_plan is null)return;
++        var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
++        if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
++        {RestoreChoice(true);return;}
++        _inputSource=source;_inputKey=source?.Key;
++        if(_refreshing)return;
++        Present(_input,source);ReportDisplayDefinitionGap();
 +    }
 +    private void OutputSelected(object? sender,EventArgs args)
 +    {
-+        if(_disposed||_refreshing)return;
-+        var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;_outputKey=source?.Key;
++        if(_disposed||_restoringOutput)return;
++        if(_refreshing&&_plan is null)return;
++        var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
++        if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
++        {RestoreChoice(false);return;}
++        _outputSource=source;_outputKey=source?.Key;++_outputChoiceRevision;
++        if(_refreshing)return;
 +        _previewCancellation?.Cancel();
 +        if(source is {NavigationIndex:>=0}&&_main.SelectedDisplayImageSourceIndex!=source.NavigationIndex)
 +        {_main.SelectedDisplayImageSourceIndex=source.NavigationIndex;return;}
 +        Present(_output,source);ReportDisplayDefinitionGap();
++    }
++    private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
++    {
++        if(_disposed||_plan is null||_plan.IsDisposed||input&&!source.IsUpstream)return false;
++        foreach(var candidate in _plan.Sources)if(ReferenceEquals(candidate,source))return true;
++        return false;
++    }
++    private void RestoreChoice(bool input)
++    {
++        var epoch=_epoch;var plan=_plan;
++        var accepted=input?_inputSource:_outputSource;
++        if(input)_restoringInput=true;else _restoringOutput=true;
++        try
++        {
++            _shell.SetCurrentValue(input?ResultWorkspaceShell.SelectedInputItemProperty:ResultWorkspaceShell.SelectedOutputItemProperty,accepted);
++        }
++        finally{if(input)_restoringInput=false;else _restoringOutput=false;}
++        if(_disposed||epoch!=_epoch||!ReferenceEquals(plan,_plan))return;
++        // A synchronous observer can select a genuinely new current item while the
++        // obsolete value is restored. Honour that intent, never replay the old item.
++        var current=input?_shell.SelectedInputItem:_shell.SelectedOutputItem;
++        if(!ReferenceEquals(current,accepted)&&(current is null||current is ResultWorkspaceImageSource source&&OwnsChoice(source,input)))
++        {if(input)InputSelected(null,EventArgs.Empty);else OutputSelected(null,EventArgs.Empty);}
 +    }
 +    private void Present(Pane pane,ResultWorkspaceImageSource? source)
 +    {
@@ -1554,7 +1718,7 @@
 +                _refreshAgain=false;var epoch=++_epoch;
 +                ++_input.Generation;++_output.Generation;++_selectionGeneration;
 +                _previewCancellation?.Cancel();
-+                var old=_plan;_plan=null;
++                var old=_plan;_plan=null;_inputSource=null;_outputSource=null;
 +                Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
 +                if(_disposed)return;
 +                if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
@@ -1570,12 +1734,14 @@
 +                var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
 +                var output=(_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
 +                _navigationIndex=navigation;
-+                _shell.SelectedInputItem=input;_shell.SelectedOutputItem=output;
-+                _inputKey=input?.Key;_outputKey=output?.Key;
-+                Present(_input,input);
-+                if(_main.NativePreviewPath is {} path)_=PresentPreview(path,epoch);
-+                else Present(_output,output);
-+                ReportDisplayDefinitionGap();
++                _inputSource=input;_outputSource=output;
++                var outputChoiceRevision=_outputChoiceRevision;
++                _shell.SelectedInputItem=input;
++                // An input observer may already have accepted a newer output choice.
++                if(outputChoiceRevision==_outputChoiceRevision)_shell.SelectedOutputItem=output;
++                // Setters can synchronously replace a choice. Reconcile the actual
++                // values rather than replaying the pre-setter local candidates.
++                InputSelected(null,EventArgs.Empty);OutputSelected(null,EventArgs.Empty);
 +                if(plan.Diagnostics.Count>0)_main.AddLog(string.Join("；",plan.Diagnostics));
 +            }while(_refreshAgain&&!_disposed);
 +        }
@@ -1583,6 +1749,23 @@
 +        finally
 +        {
 +            _refreshing=false;
++            try
++            {
++            if(!_disposed&&!_refreshAgain&&_plan is not null)
++            {
++                var epoch=_epoch;var plan=_plan;
++                InputSelected(null,EventArgs.Empty);
++                if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan))
++                {
++                    OutputSelected(null,EventArgs.Empty);
++                    if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan)
++                        &&_main.NativePreviewPath is {} path)_=PresentPreview(path,epoch);
++                }
++            }
++            }
++            catch(Exception error){_main.AddLog("结果工作区选择刷新失败："+error.Message);}
++            finally
++            {
 +            // An exception must not discard a newer notification received while the
 +            // previous plan was clearing/capturing. Retry only a genuinely queued intent.
 +            if(_refreshAgain&&!_disposed&&!_refreshQueued)
@@ -1593,6 +1776,7 @@
 +                    _refreshQueued=false;
 +                    if(!_disposed)Refresh();
 +                }));
++            }
 +            }
 +        }
 +    }
@@ -1671,7 +1855,7 @@
 +    public void Dispose()
 +    {
 +        if(_disposed)return;_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
-+        var plan=_plan;_plan=null;var fullscreen=_fullscreen;_fullscreen=null;
++        var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;var fullscreen=_fullscreen;_fullscreen=null;
 +        var cancellation=_previewCancellation;_previewCancellation=null;
 +        Run(new Action[]{
 +            ()=>_main.ResultWorkspaceChanged-=Refresh,

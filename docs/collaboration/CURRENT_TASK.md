@@ -1,3 +1,13 @@
+## 2026-10-28 选择重入候选检查点
+
+已集中修候选拒旧恢复、null清空、刷新接纳后呈现、跨侧较新意图保留及异常后刷新调度；同步19文件审核包与13依赖哈希，C#语法/XML解析通过，不是语义编译或运行验收。对应新增真实DP回归仍待补，approvalReady=false；生产消费者与主仓产物不变。Unset只读设计8de29d83已交主线，Group冻结。
+
+## 2026-10-28 授权与最新复审
+
+用户批准ProducerBinding持久身份及完成阶段全局赋值整批实施，不扩大为D07视觉替换批准。Global完整5文件批待主线新验，283/1历史失败保留。Unset只读设计已归并8de29d83并交技术总监，无公共合同实施。原始导航回传：首尾环绕、one-shot抑制AutoPlay额外advance、普通AutoPlay读前前移、失败消费游标已有原DLL实测；AutoStop和输入背景跨列表未验。证据为逆向项目analysis/full-audit/image-source-runtime/run-83cf38a274e54cc7b1400d6a268193c6/probe.json及provenance.json，原DLL SHA91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db。
+
+D07候选最新复审发现_refreshing选择旁路使DP与pane不一致，以及RestoreChoice漏null清空意图；待集中修复并重生成审核包。当前实际Presenter新修改尚未同步嵌入源码/hash，包不得直接应用；approvalReady=false。十项测试候选尚未编译运行。Group冻结，正式构建唯一主线，不私有构建、不推送。
+
 ## 2026-10-28 本线D07只读制品修订与实际历史接线核证
 
 - 基线4f8efb06；历史只读文档已合e8c541fc。原A01–E07目标active；不缩范围，Group/循环/Blob业务及未授权显示合同扩展冻结。

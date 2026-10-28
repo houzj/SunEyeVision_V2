@@ -1,4 +1,10 @@
-﻿## 2026-10-28 正式UI002错误已交增量修复；清单同步真实候选
+﻿## 2026-10-28 正式UI003已过；全量测试编译修正与D06/D07设计集中交接
+
+- 主线UI003=0错6579警告147.40秒；全量003终态1/26错误/6504警告91.54秒，均测试编译接缝。10bdab41集中修5文件缺引用/局部重名/ResultItem歧义，保全部断言，已交主线仅重试full，未重复改产品或本线构建。
+- D07完整设计99a5e390及D06实际准入补定已统一原主方案：复用已有Frame/lease/原视口；独立结果epoch/viewport epoch/图层revision，背景与结果pub可不同但物理Frame须完整匹配，12条SDK消费者整片迁；D06解析移到源scope资源释放前，真实expected/版本贯通、运行变量槽owner不裸资源。均未产品实施，不记完成。
+- 目标A01–E07全清单继续；真实VS/硬件/人工仍未验，Group冻结。下一取得主线固定产品检查点后依整体设计成片实施，不抢共享层。
+
+## 2026-10-28 正式UI002错误已交增量修复；清单同步真实候选
 
 - 主线UI002终态1/full未启动，实际3错误为FileImport Path命名冲突及WorkflowExecutionManager两处nodeParameterOverrides遗失。本线c1fd3b9b修System.IO.Path，并恢复通讯专属覆盖字典及runRequest传递，保留binding覆盖共同作用；源选择仍独立SourceInputs，未恢复旧源配置。两文件纯语法0错，工作树干净，未本线构建；主线集中合入/重建。
 - 主线独占修MissingUsing、Main通知setter门禁及DeclaredPropertyList新组件三项重入/聚合清理，不在87f4重复改。A08/D01/D04/D05/D06/D08/D09/E05逐项更新原方案候选/失败/未完，全部39项仍保留。

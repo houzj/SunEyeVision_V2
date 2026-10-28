@@ -1,4 +1,4 @@
-# D06 结果变量绑定整体设计交接（2026-10-28）
+﻿# D06 结果变量绑定整体设计交接（2026-10-28）
 
 ## 状态、基线及范围
 
@@ -78,3 +78,17 @@ root 工作流线负责 UI/Workflow/现通信消费者和测试；OutputReferenc
 - 资源：目标合同允许才验真实 Frame/Domain/reader；替换、后续 consumer、完成/取消/异常排空，释放一次、无裸资源悬空。基础不具备时明确拒绝和依赖，不记完成。
 - 通信：现有发送生产变量的创建/确认/执行和接收来源诊断同一规范引用，不保旧 ResultName/OutputKey 双寻址。
 - 构建/自动/真实 VS/人工分别记录，本单不提供任何已通过结论。
+
+## 生产准入与出口补定（root复核）
+
+可信expected来源为WorkflowBindingContext构造阶段owner.Begin后形成的_expected（约202–211）。现RunSolutionAsync约534等待引擎返回才ApplyProducedGlobalValues，但Engine在返回前已ReleaseExecutionResources/释放context，并在外层CompleteRoot（约1343）；不能在返回后从ExecutionResult.DeclaredOutputs候选反抄expected，也不能生产使用PublishedBindingSnapshot（明确preview且限同scope）。
+
+解析应接源workflow完成、ReleaseExecutionResources及CompleteRoot之前：request携同次冻结的producer工作项，BindingContext复用自己的声明与_expected，为实际global-producer:<variableId>操作在当前scope/root经owner.Begin/EnterRun正式准入，使用BindingRunSnapshot及ResolveBinding。操作结束排空run lease/回调；后续流程只消费已解析本批值，不跨root复用源解析计划。错误和取消同样形成变量本轮不可用，不回设计初值。
+
+实际配置版本出口已存在NodeConfigurationEditHost.Capture().Version；当前Manager.CapturePublishedConfiguration只是Action，MainWindow约857及WorkflowDocumentPreparationTests有实际消费者。实施批应将该入口整体改为返回同次BindingConfigurationSnapshot的冻结捕获，PublishedRunInputs、WorkflowRunRequest与BindingContext贯通实际Version和配置；不得再在全局新链填revision0。不能从UI当前节点或另次Capture拼版本与定义。现BindingContext硬编码0也应同批统一实际请求版本，所有正式/调试/测试入口明确传本次版本。
+
+producer唯一持久来源采用现严格serializer的引用表达式，显示名称只显示；旧ResultName/SourceFieldId寻址与重复WorkflowId/NodeId持久身份应退出消费，不留读取两种来源的fallback。端点行由真实声明根PortId和成员ID生成，不解析UI Key/FullName。需要同步全部consumer清单后成片替换，不先单改模型。
+
+若目标全局值合同已支持资源，在RunSolutionAsync的while外创建本批变量槽owner：源workflow尚活时AcquireReader，解析成功后value+lease原子安装；替换只退旧槽；后续consumer/取消/失败排空后finally统一释放。裸runtimeGlobals字典本身无资源权。目标尚不支持标准IReadOnlyImage/region/record的项接纳时显式拒绝并记录依赖，不能仅因为能持reader就把旧SDK图像变量当新合同已通。
+
+公共Contracts/Runtime签名无须为此扩展；新增限Workflow实际请求工作项、版本和受控运行值出口，执行层不访问WPF或UI回调。此补定仍为实施设计，未写产品/未验收。

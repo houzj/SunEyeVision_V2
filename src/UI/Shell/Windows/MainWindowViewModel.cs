@@ -364,15 +364,17 @@ namespace SunEyeVision.UI.Shell.Windows
                 var oldNode = _selectedNode;
                 bool changed = SetSelectedNodeIdentity(value);
 
-                if (changed)
+                if (changed && ReferenceEquals(_selectedNode,value))
                 {
                     LogInfo($"图像源|节点切换: {(value != null ? $"{value.Name}({value.Id})" : "null")} ← {(oldNode != null ? $"{oldNode.Name}({oldNode.Id})" : "null")}", "ImageSourceSelector");
 
                     // 更新数据分析控件（同步等待异步操作）
                     UpdateDataAnalysisControl((SunEyeVision.UI.Shared.WorkflowNode?)value).GetAwaiter().GetResult();
+                    if(!ReferenceEquals(_selectedNode,value))return;
 
                     // 先更新图像显示数据源（当前节点 + 父节点），RefreshResultDisplay 依赖正确的数据源
                     UpdateDisplayImageSources((SunEyeVision.UI.Shared.WorkflowNode?)value);
+                    if(!ReferenceEquals(_selectedNode,value))return;
 
                     // 刷新结果显示（如果节点有缓存结果）
                     var executionResult = value != null ? CurrentWorkflowContext?.GetNodeResult(value.Id) : null;
@@ -406,6 +408,7 @@ namespace SunEyeVision.UI.Shell.Windows
                         _nodeResultManager.ClearResultDisplay();
                     }
 
+                    if(!ReferenceEquals(_selectedNode,value))return;
                     // 节点选中状态变化时更新图像预览
                     UpdateImagePreviewVisibility((SunEyeVision.UI.Shared.WorkflowNode?)value);
                 }
@@ -2540,12 +2543,17 @@ SplitterPosition = position;
         }
 
         // Keep selection identity and its epoch together; the setter retains all presentation work.
+        private long _nodeSelectionIntent;
         internal bool SetSelectedNodeIdentity(WorkflowNodeBase? node)
         {
+            var intent=System.Threading.Interlocked.Increment(ref _nodeSelectionIntent);
             if (ReferenceEquals(_selectedNode, node)) return false;
-            _declaredResultPresenter?.Clear();_declaredResultActive=false;_declaredHistoricalResult=false;
             System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
-            return SetProperty(ref _selectedNode, node, propertyName: nameof(SelectedNode));
+            RetireResultPublication();
+            if(intent!=_nodeSelectionIntent)return false;
+            _declaredHistoricalResult=false;
+            var changed=SetProperty(ref _selectedNode,node,propertyName:nameof(SelectedNode));
+            return changed&&intent==_nodeSelectionIntent&&ReferenceEquals(_selectedNode,node);
         }
 
         /// <summary>Only the live editor of the selected document node may refresh its shared result tree.</summary>
@@ -3339,11 +3347,12 @@ SplitterPosition = position;
         /// </summary>
         public void ClearResultDisplay()
         {
-            _declaredResultPresenter?.Clear();_declaredResultActive=false;_declaredHistoricalResult=false;
+            var epoch=RetireResultPublication();_declaredHistoricalResult=false;
+            if(epoch!=_resultPublicationEpoch)return;
             CalculationResults.Clear();
+            if(epoch!=_resultPublicationEpoch)return;
             ModuleResultTree.Clear();
-            FlatResultRows.Clear();
-            HasModuleResults = false;
+            if(epoch==_resultPublicationEpoch)HasModuleResults=false;
         }
 
         /// <summary>
@@ -3361,133 +3370,53 @@ SplitterPosition = position;
 
         private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
         {
-            try
+            var owner=CaptureResultViewOwner(_resultPublicationEpoch);
+            bool Current()=>owner()&&ReferenceEquals(SelectedNode,selectedNode);
+            ReleaseActiveResultView();
+            if(!Current())return System.Threading.Tasks.Task.CompletedTask;
+            _nodeResultManager.ClearHighlight();
+            if(!Current())return System.Threading.Tasks.Task.CompletedTask;
+            SelectedNodeDataAnalysisControl=null;
+            if(!Current())return System.Threading.Tasks.Task.CompletedTask;
+            HasDataAnalysisControl=false;DataAnalysisControlTitle="数据分析";
+            if(selectedNode is null||!Current())return System.Threading.Tasks.Task.CompletedTask;
+            var view=ToolRegistry.CreateResultView(selectedNode.ToolType);
+            if(!Current()){view?.Dispose();return System.Threading.Tasks.Task.CompletedTask;}
+            if(view is null)
             {
-                ReleaseActiveResultView();
-                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）
-                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)
-                {
-                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;
-                }
-                _nodeResultManager.ClearHighlight();
-
-                // 清空当前控件
-                SelectedNodeDataAnalysisControl = null;
-                HasDataAnalysisControl = false;
-                DataAnalysisControlTitle = "数据分析";
-
-                if (selectedNode == null)
-                    return System.Threading.Tasks.Task.CompletedTask;
-
-                // 获取工具注册信息
-                var toolType = selectedNode.ToolType;
-                if (string.IsNullOrEmpty(toolType))
-                    return System.Threading.Tasks.Task.CompletedTask;
-
-                var declaredView=ToolRegistry.CreateResultView(toolType);
-                if(declaredView is not null)
-                {
-                    _activeResultView=declaredView;
-                    declaredView.SelectionHighlightChanged+=OnDeclaredSelectionHighlightChanged;
-                    DataAnalysisControlTitle=$"{selectedNode.Name} - 数据分析";
-                    SelectedNodeDataAnalysisControl=declaredView.View;
-                    HasDataAnalysisControl=true;
-                    ToolResultViews.Update(declaredView,CurrentWorkflowContext?.GetNodeResult(selectedNode.Id)?.Result);
-                    return System.Threading.Tasks.Task.CompletedTask;
-                }
-
-                // 创建工具实例
-                var tool = ToolRegistry.CreateToolInstance(toolType);
-                if (tool == null)
-                {
-                    AddLog($"❌ 无法创建工具实例: {toolType}");
-                    return System.Threading.Tasks.Task.CompletedTask;
-                }
-
-                // ★ 创建数据分析控件（独立于调试窗口）
-                var dataAnalysisControl = ToolRegistry.CreateEditorFactory(tool)?.CreateDataAnalysisControl();
-                if (dataAnalysisControl == null)
-                {
-                    // 工具未实现数据分析控件，隐藏Tab
-                    HasDataAnalysisControl = false;
-                    return System.Threading.Tasks.Task.CompletedTask;
-                }
-
-                // 设置控件属性
-                DataAnalysisControlTitle = $"{selectedNode.Name} - 数据分析";
-                SelectedNodeDataAnalysisControl = dataAnalysisControl;
-                HasDataAnalysisControl = true;
-
-                // ★ 订阅选中高亮联动事件（必须无条件订阅，否则数据执行后选中DataGrid不会渲染高亮）
-                if (dataAnalysisControl is IToolControlDataAnalysis daControlForEvent)
-                {
-                    daControlForEvent.SelectionHighlightChanged += OnSelectionHighlightChanged;
-                }
-
-                // ★ 加载缓存结果（节点已执行过时，立即填充数据分析控件）
-                var cachedResult = CurrentWorkflowContext?.GetNodeResult(selectedNode.Id);
-                if (cachedResult?.Result != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
-                {
-                    try
-                    {
-                        daControl.OnResultUpdated(cachedResult.Result);
-                    }
-                    catch (Exception loadEx)
-                    {
-                        AddLog($"⚠️ 加载缓存数据到分析控件失败: {loadEx.Message}");
-                    }
-                }
-
-                AddLog($"✅ 已加载数据分析控件: {selectedNode.Name}");
-
+                // Tools without the declared result companion have an honest unavailable entry.
+                // Do not silently keep an SDK visual consumer outside the shared publication.
+                DataAnalysisControlTitle=selectedNode.Name+" - 尚未提供声明式结果视图";
                 return System.Threading.Tasks.Task.CompletedTask;
             }
-            catch (Exception ex)
-            {
-                ReleaseActiveResultView();
-                AddLog($"❌ 更新数据分析控件失败: {ex.Message}");
-                SelectedNodeDataAnalysisControl = null;
-                HasDataAnalysisControl = false;
-                return System.Threading.Tasks.Task.CompletedTask;
-            }
+            _activeResultView=view;view.SelectionHighlightChanged+=OnDeclaredSelectionHighlightChanged;
+            DataAnalysisControlTitle=selectedNode.Name+" - 数据分析";
+            if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
+            SelectedNodeDataAnalysisControl=view.View;
+            if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
+            HasDataAnalysisControl=true;
+            if(_resultPublication is {} publication&&publication.IsCurrent()&&Current())
+                PresentResultPublication(publication,_resultPublicationSnapshot,selectedNode.Name,_resultPublicationBindings);
+            else view.Clear();
+            return System.Threading.Tasks.Task.CompletedTask;
         }
 
         /// <summary>
         /// 数据分析控件选中高亮联动 → 将高亮元素设置到图像渲染层
         /// </summary>
-        private void OnSelectionHighlightChanged(object? sender, System.Collections.Generic.IEnumerable<Plugin.SDK.Models.Visualization.DisplayItemBase>? highlightItems)
+        private Guid? _unavailableViewportHighlight;
+        private void OnDeclaredSelectionHighlightChanged(object? sender,ResultSelection selection)
         {
-            if (highlightItems == null)
-                _nodeResultManager.ClearHighlight();
-            else
-                _nodeResultManager.SetHighlightItems(highlightItems);
-        }
-
-        private void OnDeclaredSelectionHighlightChanged(object? sender,IReadOnlyList<SunEyeVision.Plugin.Contracts.GeometryValue>? geometries)
-        {
-            if(!ReferenceEquals(sender,_activeResultView))return;
-            if(geometries is null||geometries.Count==0){_nodeResultManager.ClearHighlight();return;}
-            var display=new Plugin.SDK.Models.Visualization.DisplayCollector();
-            var style=new Plugin.SDK.Models.Visualization.GraphicsStyle{OkColor=Colors.Yellow,LineWidth=3};
-            foreach(var geometry in geometries)
+            var publication=_resultPublication;
+            if(!ReferenceEquals(sender,_activeResultView)||publication is null||selection.Publication!=publication.Stamp
+                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
+            _nodeResultManager.ClearHighlight();
+            if(selection.Targets.Count>0&&_unavailableViewportHighlight!=publication.Stamp.PublicationId)
             {
-                if(geometry.Frame!=SunEyeVision.Plugin.Contracts.RoiDeclarations.ImageFrame)
-                    throw new InvalidOperationException("Result highlight is not in the current image coordinate frame.");
-                switch(geometry)
-                {
-                    case SunEyeVision.Plugin.Contracts.PolygonGeometry polygon:
-                        display.AddContour(style,polygon.Vertices.Select(point=>new Point(point.X,point.Y)).ToArray());break;
-                    case SunEyeVision.Plugin.Contracts.PointGeometry point:
-                        display.AddCross(style,new Point(point.Point.X,point.Point.Y));break;
-                    case SunEyeVision.Plugin.Contracts.LineGeometry line:
-                        display.AddLine(style,new Point(line.Start.X,line.Start.Y),new Point(line.End.X,line.End.Y));break;
-                    default:throw new NotSupportedException("Unsupported result highlight geometry: "+geometry.Kind);
-                }
+                _unavailableViewportHighlight=publication.Stamp.PublicationId;
+                AddLog("结果选择包含物理来源，但当前图像视口尚未提供同帧校验，已禁用跨图高亮。");
             }
-            _nodeResultManager.SetHighlightItems(display.Items);
         }
-
-
 
         /// <summary>
         /// 获取节点的数据提供者（按 WorkflowId 缓存，SSOT 委托读取，抛弃旧的 _nodeResults 本地缓存）
@@ -3878,6 +3807,11 @@ SplitterPosition = position;
             IDataSourceQueryService dataProvider, ProductionEditorContext? editorContext = null)
         {
             var resultContext = CurrentWorkflowContext;
+            var resultSession=DocumentManager.Session;var resultTab=WorkflowTabViewModel.SelectedTab;var closed=false;
+            bool OwnerCurrent()=>!closed&&debugWindow.IsLoaded&&ReferenceEquals(DocumentManager.Session,resultSession)
+                &&(editorContext?.IsValid??true);
+            bool DisplayCurrent()=>OwnerCurrent()&&ReferenceEquals(resultTab,WorkflowTabViewModel.SelectedTab)
+                &&ReferenceEquals(resultContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,node)&&!_declaredHistoricalResult;
             var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
             if (eventInfo == null)
             {
@@ -3897,87 +3831,48 @@ SplitterPosition = position;
             if (parameters != null && parameters.Length == 2)
             {
                 // 创建通用的处理方法
-                Action<object?, object?> handlerAction = (sender, result) =>
+                Action<object?, object?> handlerAction=(sender,result)=>
+                {
+                    var toolResult=result switch
                     {
-                        try
+                        ToolResults direct=>direct,
+                        Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args=>args.Results as ToolResults,
+                        _=>null
+                    };
+                    try
+                    {
+                        using var dispatchLease=toolResult?.Resources?.Retain();
+                        void Apply()
                         {
-                            // ★ 修复：从 EventArgs 中提取 ToolResults
-                            var toolResult = result switch
+                            if(!OwnerCurrent())return;
+                            if(toolResult is null)
                             {
-                                SunEyeVision.Plugin.SDK.Execution.Results.ToolResults tr => tr,
-                                SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args => args.Results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults,
-                                _ => null
-                            };
-
-                            if(toolResult is null&&result is SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false}
-                                &&editorContext is {IsValid:true}&&editorContext.DraftNode.RuntimeConfiguration is not null)
-                            {
-                                if(ReferenceEquals(resultContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,node))
+                                if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false})
                                 {
-                                    _activeResultView?.Update(null);
-                                    _nodeResultManager?.ClearResultDisplay();
-                                    DisplayImage=null;
+                                    editorContext?.DebugResults.RemoveNodeResult(node.Id);
+                                    if(DisplayCurrent()){ClearResultDisplay();DisplayImage=null;}
                                 }
-                                editorContext.DebugResults.RemoveNodeResult(node.Id);
                                 return;
                             }
-                            if (toolResult != null)
+                            if(toolResult.ExecutionIdentity is {} identity&&(!identity.IsCurrent||
+                                !ReferenceEquals(identity.Owner,editorContext?.DebugOwner??DocumentManager.CurrentSolution?.ExecutionOwner)))return;
+                            if(editorContext is not null)
                             {
-                                if (toolResult.ExecutionIdentity is { } identity && (!identity.IsCurrent ||
-                                    !ReferenceEquals(identity.Owner, editorContext?.DebugOwner ?? DocumentManager.CurrentSolution?.ExecutionOwner)))
-                                {
-                                    (toolResult as IDisposable)?.Dispose();
-                                    return;
-                                }
-                                if (editorContext is not null)
-                                {
-                                    // Draft results belong to this editor scope. Production consumers
-                                    // continue reading the last published production result.
-                                    if (!editorContext.TryAcceptDebugResult(toolResult)) return;
-                                    if (ReferenceEquals(resultContext, CurrentWorkflowContext) && ReferenceEquals(SelectedNode, node))
-                                        _nodeResultManager?.RefreshDebugPreview(editorContext.DraftNode, toolResult);
-                                }
-                                else
-                                {
-                                    _nodeResultManager?.UpdateNodeResult(node, toolResult,
-                                        refreshDisplay: ReferenceEquals(resultContext, CurrentWorkflowContext), targetContext: resultContext);
-                                    NotifyDebugWindowExternalResult(node.Id);
-                                }
-
-                                // ★ 更新数据分析控件（调试窗口执行后立即刷新）
-                                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    if (toolResult.ExecutionIdentity?.IsCurrent == false || !ReferenceEquals(resultContext, CurrentWorkflowContext) || !ReferenceEquals(SelectedNode, node)) return;
-                                    if(_activeResultView is {} declaredView)
-                                    {
-                                        try{ToolResultViews.Update(declaredView,toolResult);}
-                                        catch(Exception updateEx){declaredView.Update(null);AddLog($"⚠️ 声明结果视图更新失败: {updateEx.Message}");}
-                                    }
-                                    else if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
-                                    {
-                                        try
-                                        {
-                                            daCtrl.OnResultUpdated(toolResult);
-                                        }
-                                        catch (Exception onResultEx)
-                                        {
-                                            AddLog($"⚠️ 数据分析控件更新失败: {onResultEx.Message}");
-                                        }
-                                    }
-                                });
-
-                                AddLog($"✅ 调试窗口执行完成: {node.Name}");
+                                if(!editorContext.TryAcceptDebugResult(toolResult)||!OwnerCurrent())return;
+                                if(DisplayCurrent())_nodeResultManager.RefreshDebugPreview(editorContext.DraftNode,toolResult);
                             }
                             else
                             {
-                                AddLog($"⚠️ 调试窗口执行结果类型不匹配: {result?.GetType().Name ?? "null"}");
+                                _nodeResultManager.UpdateNodeResult(node,toolResult,refreshDisplay:DisplayCurrent(),targetContext:resultContext);
+                                if(OwnerCurrent())NotifyDebugWindowExternalResult(node.Id);
                             }
+                            // UpdateModuleResults is the sole tree/table publication entrance.
+                            if(OwnerCurrent())AddLog($"✅ 调试窗口执行完成: {node.Name}");
                         }
-                        catch (Exception ex)
-                        {
-                            AddLog($"⚠️ 处理执行结果失败: {ex.Message}");
-                        }
-                    };
+                        if(debugWindow.Dispatcher.CheckAccess())Apply();else debugWindow.Dispatcher.Invoke(Apply);
+                    }
+                    catch(Exception error){AddLog($"⚠️ 处理执行结果失败: {error.Message}");}
+                };
 
                 // 创建委托
                 var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
@@ -4007,7 +3902,7 @@ SplitterPosition = position;
                 // 窗口关闭时取消订阅（防止内存泄漏）
                 debugWindow.Closed += (s, e) =>
                 {
-                    eventInfo.RemoveEventHandler(debugWindow, handler);
+                    closed=true;eventInfo.RemoveEventHandler(debugWindow, handler);
                 };
             }
         }
@@ -4343,9 +4238,22 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
         /// </summary>
         private void OnNodeExecutionCompleted(object? sender, NodeExecutionResultEventArgs e)
         {
+            var dispatcher=Application.Current?.Dispatcher;
+            if(dispatcher is not null&&!dispatcher.CheckAccess())
+            {
+                using var dispatchLease=e.Result.Resources?.Retain();
+                dispatcher.Invoke(()=>OnNodeExecutionCompleted(sender,e));return;
+            }
             try
             {
                 if (e.Result.ExecutionIdentity?.IsCurrent == false) return;
+                var session=DocumentManager.Session;
+                var definition=session?.Document.Workflows.FirstOrDefault(flow=>flow.Nodes.Any(node=>ReferenceEquals(node,e.Node)));
+                bool EventCurrent()=>ReferenceEquals(DocumentManager.Session,session)&&definition is not null
+                    &&session!.Document.Workflows.Contains(definition)&&definition.Nodes.Any(node=>ReferenceEquals(node,e.Node))
+                    &&e.Result.ExecutionIdentity?.IsCurrent!=false;
+                if(!EventCurrent())return;
+                var targetContext=_workflowContextService.GetOrCreate(definition!.Id,definition.Name??string.Empty);
                 if (e.IsCameraDriven)
                 {
                     if (e.UiQueueDelayMs >= 200 &&
@@ -4356,7 +4264,7 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                     }
                     // 工作流结果逐轮入缓存；图像/结果树/调试窗口的展示按 UI 节奏合并。
                     // 不读取全部反射属性，避免在 UI 线程触发整幅图像的懒统计。
-                    _nodeResultManager.UpdateNodeResult(e.Node, e.Result, refreshDisplay: false);
+                    _nodeResultManager.UpdateNodeResult(e.Node,e.Result,refreshDisplay:false,targetContext:targetContext);
                     var presentationLease = e.Result.Resources?.Retain();
                     if (_pendingCameraPresentations.Remove(e.Node.Id, out var previous)) previous.Lease?.Dispose();
                     _pendingCameraPresentations[e.Node.Id] = (e.Node, e.Result, presentationLease);
@@ -4392,38 +4300,19 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 }
 
                 // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
-                _nodeResultManager.UpdateNodeResult(e.Node, e.Result);
+                _nodeResultManager.UpdateNodeResult(e.Node,e.Result,
+                    refreshDisplay:ReferenceEquals(targetContext,CurrentWorkflowContext)&&ReferenceEquals(SelectedNode,e.Node)&&!_declaredHistoricalResult,
+                    targetContext:targetContext);
 
+                if(!EventCurrent())return;
                 // ★ 节点执行后处理（DSQS 自动读取 SSOT，无需推送）
                 OnNodeExecutionPostProcess(e.Node, e.Result);
 
                 // ★ 通知所有打开调试窗口的控件：上游节点执行完成，可刷新运行时状态
-                NotifyAllDebugWindowsExternalResult();
+                if(EventCurrent())NotifyAllDebugWindowsExternalResult();
 
-                // ★ 更新数据分析控件（仅当完成节点是当前选中节点时）
-                if (e.Node.Id == SelectedNode?.Id)
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        if(_activeResultView is {} declaredView)
-                        {
-                            try{ToolResultViews.Update(declaredView,e.Result);}
-                            catch(Exception updateEx){declaredView.Update(null);AddLog($"⚠️ 声明结果视图更新失败: {updateEx.Message}");}
-                        }
-                        else if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
-                            && e.Result != null && e.Result.IsSuccess)
-                        {
-                            try
-                            {
-                                dataAnalysisControl.OnResultUpdated(e.Result);
-                            }
-                            catch (Exception updateEx)
-                            {
-                                AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
-                            }
-                        }
-                    });
-                }
+                // The selected node result has already reached the shared publication through NodeResultManager.
+                // Do not queue a second, independently looked-up table update.
 
                 // 如果节点是当前显示节点，刷新输出缓存绑定
                 if (_currentDisplayNodeId == e.Node.Id)
@@ -4673,231 +4562,69 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             catch(ArgumentException){return false;}
             var metadata=fields.ToDictionary(BindingClrAdapter.OutputPortId,output=>new DeclaredOutputField(output.Name,output.DisplayName,
                 output.VariableType,output.DeclaredType,output.FieldId,output.Group,output.DisplayInResultPanel),StringComparer.Ordinal);
-            ModuleResultTree.Clear();_declaredResultActive=true;
-            DeclaredResultPresenter.ShowSchema(schema,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
+            PresentDeclaration(schema,nodeName,metadata.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
                 DeclaredBindings(metadata,nodeId),metadata.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
-            if(FlatResultRows.FirstOrDefault() is { } root)root.DisplayName=nodeName??"结果";
             return true;
         }
         private static IReadOnlyDictionary<string,ResultBindingInfo> DeclaredBindings(IReadOnlyDictionary<string,DeclaredOutputField> fields,string? nodeId)
             =>fields.Where(field=>nodeId is not null&&SdkTypeVocabulary.ToSystemType(field.Value.VariableType) is not null)
                 .ToDictionary(field=>field.Key,field=>new ResultBindingInfo(nodeId!,field.Value.Name,field.Value.VariableType,field.Value.ClrType,field.Value.FieldId),StringComparer.Ordinal);
-        private void ShowDeclaredSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName)
-        {
-            ModuleResultTree.Clear();_declaredResultActive=true;
-            DeclaredResultPresenter.ShowRun(snapshot,snapshot.Fields.ToDictionary(field=>field.Key,field=>field.Value.DisplayName),
-                DeclaredBindings(snapshot.Fields,snapshot.Identity.NodeId));
-            if(FlatResultRows.FirstOrDefault() is { } root)root.DisplayName=nodeName??"结果";
-        }
+        private void ShowDeclaredSnapshot(DeclaredOutputSnapshot snapshot,string? nodeName)=>PresentSnapshot(snapshot,nodeName);
         internal void ShowDeclaredRun(ExecutionResult run,SunEyeVision.Plugin.Contracts.RunIdentity identity,string? nodeName=null)
         {
             try
             {
-                using var reader=run.AcquireDeclaredOutput(identity);
-                if(!reader.Snapshot.IsComplete)throw new InvalidOperationException("This run has no complete declared output projection.");
-                ShowDeclaredSnapshot(reader.Snapshot,nodeName);_declaredHistoricalResult=true;
+                var snapshot=run.DeclaredOutputs.Single(item=>item.Identity==identity);
+                if(!snapshot.IsComplete)throw new InvalidOperationException("This run has no complete declared output projection.");
+                _declaredHistoricalResult=true;ShowDeclaredSnapshot(snapshot,nodeName);
             }
             catch{ClearResultDisplay();throw;}
         }
         public void CloseResultPresentation()
         {
+            var epoch=RetireResultPublication();
+            if(epoch!=_resultPublicationEpoch)return;
             ReleaseActiveResultView();
-            _nodeResultManager.ClearHighlight();
-            SelectedNodeDataAnalysisControl=null;HasDataAnalysisControl=false;
-            _declaredResultPresenter?.Dispose();_declaredResultPresenter=null;
+            if(epoch!=_resultPublicationEpoch)return;
+            SelectedNodeDataAnalysisControl=null;
+            if(epoch!=_resultPublicationEpoch)return;
+            HasDataAnalysisControl=false;
+            if(epoch!=_resultPublicationEpoch)return;
+            var presenter=_declaredResultPresenter;_declaredResultPresenter=null;
+            presenter?.Dispose();
+            if(epoch!=_resultPublicationEpoch)return;
             _declaredResultActive=false;_declaredHistoricalResult=false;
         }
-        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null,
-            ToolParameters? parameters = null)
+        public void UpdateModuleResults(ToolResults? result,string? nodeName,string? toolId=null,string? nodeId=null,
+            ToolParameters? parameters=null)
         {
             if(_declaredHistoricalResult)return;
+            if(nodeId is not null&&SelectedNode?.Id!=nodeId)return;
+            var owner=CaptureResultViewOwner(_resultPublicationEpoch);
             if(result?.DeclaredOutput is {IsComplete:true} snapshot)
-            {ShowDeclaredSnapshot(snapshot,nodeName);return;}
-            if(result is ContractToolResults contractResult)
             {
-                var contract=contractResult.GetOutputVariables();
-                if(contract.Any(output=>output.ValueDeclaration is not null)&&TryShowDeclaredSchema(contract,nodeName,nodeId))return;
-            }
-            _declaredResultPresenter?.Clear();_declaredResultActive=false;
-            ModuleResultTree.Clear();
-            FlatResultRows.Clear();
-            HasModuleResults = false;
-
-            // 统一以「输出变量契约 SSOT」为数据来源：
-            //  - 运行期：直读 result.GetOutputVariables()（含 RuntimeValue），取代 ReflectGetValue + GetResultItems 兜底
-            //  - 设计期（未运行）：回退到 ToolRegistry 缓存的契约元数据展示属性结构（占位符 --）
-            var entries = new List<(string Name, string DisplayName, string? Group, Type? ClrType, object? RuntimeValue, bool IsGroupPlaceholder)>();
-
-            if (result != null)
-            {
-                foreach (var v in result.GetOutputVariables())
-                {
-                    if (v.Kind != OutputVariableKind.Data)
-                        continue;
-                    if (!v.DisplayInResultPanel)
-                        continue;
-                    entries.Add((
-                        v.Name,
-                        string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
-                        v.VariableType == "Image" ? "图像" : v.Group, // 图像输出统一归入「图像」分组
-                        SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType),
-                        v.RuntimeValue,
-                        v.IsGroupPlaceholder));
-                }
-            }
-            else if (!string.IsNullOrEmpty(toolId))
-            {
-                foreach (var m in ToolRegistry.GetAllPropertyMetadata(toolId))
-                {
-                    // 设计态 RoI 契约变量：从参数回退读取检测区/屏蔽区结构（值缺失但结构应可见）
-                    var designValue = ResolveRoiDesignValue(m.PropertyName, parameters);
-                    entries.Add((
-                        m.PropertyName,
-                        m.DisplayName,
-                        m.PropertyType != null && typeof(IVisionImage).IsAssignableFrom(m.PropertyType) ? "图像" : m.GroupName, // 图像归「图像」组
-                        m.PropertyType,
-                        designValue,
-                        m.IsGroupPlaceholder));
-                }
-            }
-            else
-            {
+                var identity=result.ExecutionIdentity;
+                var debugScope=identity is null?null:_productionEditors.FirstOrDefault(context=>ReferenceEquals(context.DebugOwner,identity.Owner));
+                if(owner())PresentSnapshot(snapshot,nodeName,()=>debugScope?.IsValid!=false
+                    &&(snapshot.Status is not (ExecutionStatus.Success or ExecutionStatus.PartialSuccess)||identity?.IsCurrent!=false));
                 return;
             }
-
-            if (entries.Count == 0)
+            IReadOnlyList<OutputVariable>? contract=result is ContractToolResults declared?declared.GetOutputVariables():
+                parameters is IOutputContractProvider provider?provider.GetOutputContract():null;
+            if(contract is null&&SelectedNode is SunEyeVision.UI.Shared.WorkflowNode selected)
+            {
+                if(selected.Parameters is IOutputContractProvider selectedProvider)contract=selectedProvider.GetOutputContract();
+                else if(GetDataProviderForNode(selected) is DataSourceQueryService query)
+                    contract=query.FormalOutputContractReader?.Invoke(selected.Id);
+            }
+            if(!owner())return;
+            if(contract is not null&&TryShowDeclaredSchema(contract,nodeName,nodeId))
+            {
+                if(result is not null&&result is not ContractToolResults)
+                    AddLog("该运行未发布完整声明快照，结果仅显示正式字段声明，不读取或转换未准入值。");
                 return;
-
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[诊断:UpdateModuleResults] nodeName='{nodeName}' | toolId='{toolId}' | 契约变量数={entries.Count}",
-                "MainWindowViewModel");
-
-            // 根节点 = 当前选中节点名称
-            var rootNode = new ModuleResultNode
-            {
-                DisplayName = nodeName ?? "结果",
-                IsGroup = true,
-                IsExpanded = true
-            };
-
-            // 按 Group 分组构建树（支持 / 分隔的层级分组）；图像显示摘要、RoI 字段聚合，均作为普通输出变量展示
-            // 排序规则：固定分组优先级（执行信息/基本信息/输入信息置顶，工具特有分组按名排序，未知分组排最后），保证各节点一致
-            var groups = entries
-                .GroupBy(e => e.Group ?? "其他")
-                .OrderBy(g => GroupOrderIndex(g.Key))
-                .ThenBy(g => g.Key);
-
-            var groupNodeCache = new Dictionary<string, ModuleResultNode>();
-
-            foreach (var group in groups)
-            {
-                if (string.IsNullOrEmpty(group.Key))
-                    continue;
-
-                var groupNames = group.Key.Split('/');
-                ModuleResultNode currentParent = rootNode;
-
-                for (int i = 0; i < groupNames.Length; i++)
-                {
-                    var cacheKey = string.Join("/", groupNames.Take(i + 1));
-
-                    if (!groupNodeCache.TryGetValue(cacheKey, out var groupNode))
-                    {
-                        groupNode = new ModuleResultNode
-                        {
-                            DisplayName = groupNames[i],
-                            IsGroup = true,
-                            IsExpanded = true
-                        };
-                        currentParent.Children.Add(groupNode);
-                        groupNodeCache[cacheKey] = groupNode;
-                    }
-
-                    currentParent = groupNode;
-                }
-
-                foreach (var e in group)
-                {
-                    // 执行耗时固定保留 3 位小数（ExecutionTimeMs 底层为 double，保留亚毫秒精度）。
-                    // 注意：RuntimeValue 可能被 Promote 提升为 Double[1]，先解包单元素数组再转换。
-                    var displayValue = e.Name switch
-                    {
-                        // 执行耗时固定保留 3 位小数（ExecutionTimeMs 底层为 double，保留亚毫秒精度）。
-                        // 注意：RuntimeValue 可能被 Promote 提升为 Double[1]，先解包单元素数组再转换。
-                        nameof(ToolResults.ExecutionTimeMs) =>
-                            $"{Convert.ToDouble(e.RuntimeValue is Array timeArr && timeArr.Length == 1 ? timeArr.GetValue(0) : e.RuntimeValue ?? 0L):F3}",
-                        // 节点状态（基类统一下沉）：显示 OK/NG，与工具内判定显示保持一致
-                        nameof(ToolResults.IsPass) =>
-                            Convert.ToBoolean(e.RuntimeValue is Array passArr && passArr.Length == 1 ? passArr.GetValue(0) : e.RuntimeValue)
-                                ? "OK" : "NG",
-                        _ => FormatTypedValue(e.RuntimeValue, e.ClrType)
-                    };
-
-                    var node = new ModuleResultNode
-                    {
-                        DisplayName = e.DisplayName,
-                        DisplayValue = displayValue,
-                        PropertyName = e.Name,
-                        SourceNodeId = nodeId,
-                        SourcePropertyName = e.Name,
-                        PropertyClrType = e.ClrType,
-                        IsGroup = false
-                    };
-                    var vocabulary = SdkTypeVocabulary.ToTypeVocabulary(e.ClrType);
-                    if (!string.IsNullOrWhiteSpace(nodeId) && !string.IsNullOrWhiteSpace(vocabulary))
-                    {
-                        node.BindingInfo = new ResultBindingInfo(nodeId, e.Name, vocabulary!, e.ClrType);
-                    }
-
-                    // 几何数组展开：按形状分组 + 字段聚合（方案：字段聚合防炸，不按 [i] 索引展开树）
-                    // 例：检测区 5 项 → 圆(3项)/旋转矩形(2项) 分组，每字段一行，多值用分号串联
-                    if (e.RuntimeValue is System.Collections.IEnumerable enumerable
-                        && !(e.RuntimeValue is string)
-                        && e.ClrType?.IsArray == true)
-                    {
-                        var elementType = e.ClrType.GetElementType();
-                        if (elementType != null && typeof(IMonitorable).IsAssignableFrom(elementType))
-                        {
-                            BuildMonitorableArrayNodes(node, enumerable);
-                        }
-                    }
-                    // 单值 IMonitorable 展开（如 IVisionImage → 宽度/高度/通道数）。
-                    // 数组与 IMonitorable 实例互斥（数组变量已被 Promote 提升，不会走到此分支）。
-                    else if (e.RuntimeValue is IMonitorable singleMonitorable)
-                    {
-                        BuildMonitorableFields(node, singleMonitorable);
-                    }
-
-                    // 分组占位单层折叠：声明了 IsGroupPlaceholder 的条目（如"引导几何"）不渲染为中间节点，
-                    // 直接把数组展开的子节点（圆/线 → 中心/端点）挂到其分组下。
-                    // 原因：该条目已是"几何数组"的语义占位，再作为节点显示会与下钻的几何元素重复。
-                    // ★ 声明式（P0.6-5）：由工具在 PropertyMap 上声明，Shell **不再认具体工具的中文分组名**
-                    //   （旧写法 e.Group == "输入/卡尺/引导线" 会因改名或新工具复用而静默失效、且不报错）。
-                    if (e.IsGroupPlaceholder && node.Children.Count > 0)
-                    {
-                        foreach (var child in node.Children)
-                            currentParent.Children.Add(child);
-                    }
-                    else
-                    {
-                        currentParent.Children.Add(node);
-                    }
-                }
             }
-
-            // 移除没有非可视化子节点的空组
-            var emptyGroups = rootNode.Children
-                .Where(c => c.IsGroup && c.Children.Count == 0)
-                .ToList();
-            foreach (var empty in emptyGroups)
-                rootNode.Children.Remove(empty);
-
-            if (rootNode.Children.Count > 0)
-            {
-                ModuleResultTree.Add(rootNode);
-                HasModuleResults = true;
-                BuildFlatRows();
-            }
+            ClearResultDisplay();
         }
 
         /// <summary>
@@ -5448,8 +5175,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 try
                 {
-                    if (node.IsSelected && result.ExecutionIdentity?.IsCurrent != false)
-                        _nodeResultManager.RefreshResultDisplay(node, result);
+                    if(ReferenceEquals(SelectedNode,node)&&!_declaredHistoricalResult&&result.ExecutionIdentity?.IsCurrent!=false
+                        &&DocumentManager.CurrentSolution?.Workflows.Any(flow=>flow.Id==WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId
+                            &&flow.Nodes.Any(item=>ReferenceEquals(item,node)))==true)
+                        _nodeResultManager.RefreshResultDisplay(node,result);
                 }
                 catch (Exception ex) { _logger?.LogError("相机结果呈现失败", "MainWindowViewModel", ex); }
                 finally

@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -72,6 +72,9 @@ namespace SunEyeVision.UI.Core
         /// 按当前选中的图像源刷新显示（可用性回退 + 下拉跟随）
         /// </summary>
         void RefreshDisplayImageFromCurrentSource();
+
+        /// <summary>Retires the shared tree/table publication and releases its leases.</summary>
+        void ClearResultDisplay();
 
         /// <summary>
         /// 保存当前解决方案命令

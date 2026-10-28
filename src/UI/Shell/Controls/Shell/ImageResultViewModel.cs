@@ -152,8 +152,7 @@ namespace SunEyeVision.UI.Shell.Controls
 
         public void ClearResultDisplay()
         {
-            FlatResultRows.Clear();
-            HasModuleResults = false;
+            _coordinator.ClearResultDisplay();
         }
 
         #endregion

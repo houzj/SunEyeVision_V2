@@ -51,6 +51,10 @@ public sealed class ResultVariableBindingProductionTests
             var document=new Solution{Workflows=new(){root,other}};document.GlobalVariables.Add(variable);
             var manager=ServiceInitializer.SolutionManager;manager.SetCurrentSolution(document,false);
             Stage("构造真实MainWindowViewModel");main=new MainWindowViewModel();
+            Assert.Equal(2,main.WorkflowTabViewModel.Tabs.Count);
+            Assert.Equal(root.Id,main.WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId);
+            Assert.Same(root.Nodes,main.WorkflowTabViewModel.SelectedTab.WorkflowNodes);
+            Assert.Same(source,main.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Single());
             Stage("选择真实图像源节点");main.SelectedNode=source;
             view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);
             ((TabControl)view.FindName("ImageDisplayTabControl")).SelectedIndex=1;

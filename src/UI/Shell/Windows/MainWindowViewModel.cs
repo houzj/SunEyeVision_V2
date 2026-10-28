@@ -962,7 +962,7 @@ SplitterPosition = position;
             ShowCommunicationManagerCommand = new RelayCommand(ExecuteShowCommunicationManager);
             // The default Tab is created silently before subscriptions; bind its editable definition now.
             if (solutionManager.CurrentSolution == null) SolutionApplication.CreateNew();
-            else OnSelectedTabChanged(this, EventArgs.Empty);
+            else LoadSolutionToWorkflowTabs(solutionManager.CurrentSolution);
             solutionManager.SolutionSaved += (_, document) =>
             {
                 foreach (var cached in _workflowDsqsCache.Values)

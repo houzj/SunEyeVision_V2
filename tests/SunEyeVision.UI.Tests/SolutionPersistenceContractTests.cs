@@ -45,13 +45,13 @@ public sealed class SolutionPersistenceContractTests
     }
 
     [Fact]
-    public void Legacy_scalar_migrates_only_in_candidate_and_reports_it()
+    public void Current_scalar_keeps_its_shape_without_migration_or_rewriting_the_file()
     {
-        const string source = "{\"Id\":\"s\",\"GlobalVariables\":[{\"Id\":\"v\",\"Name\":\"x\",\"Type\":\"Integer\",\"Value\":{\"Type\":\"Integer\",\"Value\":3}}]}";
+        const string source = "{\"SchemaVersion\":2,\"Id\":\"s\",\"GlobalVariables\":[{\"Id\":\"v\",\"Name\":\"x\",\"Type\":\"Integer\",\"Value\":{\"Type\":\"Integer\",\"Value\":3}}]}";
         var path = WriteSample(source); var loaded = new SolutionRepository().LoadCandidate(path);
         Assert.False(loaded.HasErrors, string.Join(";", loaded.Diagnostics.Select(d => d.Message)));
-        Assert.Equal(new long[] { 3 }, Assert.IsType<long[]>(loaded.Candidate!.GlobalVariables[0].Value));
-        Assert.Contains(loaded.Diagnostics, d => d.Code == "COMPAT_SCALAR"); Assert.Equal(source, File.ReadAllText(path));
+        Assert.Equal(3L, Assert.IsType<long>(loaded.Candidate!.GlobalVariables[0].Value));
+        Assert.DoesNotContain(loaded.Diagnostics, d => d.Code == "COMPAT_SCALAR"); Assert.Equal(source, File.ReadAllText(path));
     }
 
     [Theory]

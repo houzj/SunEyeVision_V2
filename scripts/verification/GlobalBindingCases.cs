@@ -40,6 +40,8 @@ internal static class S2DocumentEditingCases
             ["ToolSideEffectReceiptTests"]=null,
             ["SendDataProductionEditorTests"]=null,
             ["GlobalVariableValueShapeTests"]=null,
+            ["SolutionPersistenceContractTests"]=new[]{"Current_scalar_keeps_its_shape_without_migration_or_rewriting_the_file",
+                "Malformed_variable_does_not_silently_become_null","Valid_null_and_integer_tuple_survive"},
             ["SdkTypeVocabularyContractTests"]=null,
             ["CommunicationBinaryPayloadTests"]=null,
         };

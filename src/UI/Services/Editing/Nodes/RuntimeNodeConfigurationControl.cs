@@ -111,8 +111,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             return saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
         },(port,setting)=>WriteInput(port,setting,generation),referenceOptions with {EditableIndex=true},FormatReference,
             _=>ReadReferenceCandidates(generation));
+        var sourceContext=ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext;
         var sourceContent=node.ToolType=="ImageLoad"?new ImageSourceDraftContent(node.Id,
-            ()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node),
+            ()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
+                &&sourceContext is {IsValid:true}&&ReferenceEquals(ToolEditorCommit.GetDraftContext(this),sourceContext),
             SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(
                 SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution)):null;
         FrameworkElement inputContent=(FrameworkElement?)sourceContent??panel!;

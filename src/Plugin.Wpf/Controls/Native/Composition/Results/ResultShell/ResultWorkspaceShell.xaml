@@ -115,11 +115,11 @@
               </Grid>
             </ScrollViewer>
             <Grid Name="viewboxIn" Row="1" Margin="-1" Background="{DynamicResource Results.Shell.Col_DisplayImage_Control_BorderBrush}">
-              <display:ImageViewBox Name="imageViewIn" Margin="1" IsDisplayPixelAuto="True" ImageDataSource="{Binding InputImage, ElementName=View}">
+              <display:ImageViewBox x:Name="imageViewIn" Margin="1" IsDisplayPixelAuto="True" ImageDataSource="{Binding InputImage, ElementName=View}">
                     </display:ImageViewBox>
             </Grid>
             <Grid Name="viewbox" Row="1" Column="1" Margin="-1" Background="{DynamicResource Results.Shell.Col_DisplayImage_Control_BorderBrush}">
-              <display:ImageViewBox Name="imageView" Margin="1" IsDisplayPixelAuto="True" IsSaveRenderImageVisible="True" ImageDataSource="{Binding OutputImage, ElementName=View}">
+              <display:ImageViewBox x:Name="imageView" Margin="1" IsDisplayPixelAuto="True" IsSaveRenderImageVisible="True" ImageDataSource="{Binding OutputImage, ElementName=View}">
                     </display:ImageViewBox>
             </Grid>
             <Button Name="btnLeft" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Center" Width="26" Height="54" Panel.ZIndex="0" Command="{Binding PreviousImageCommand, ElementName=View}">

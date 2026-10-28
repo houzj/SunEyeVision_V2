@@ -28,7 +28,8 @@ public sealed class ResultFieldPath
     }
 }
 public sealed record ResultColumnDescriptor(string Key,string DisplayName,ResultFieldPath Value,
-    string Unit="",int? DecimalPlaces=null,ResultFieldPath? ValidWhen=null,ResultFieldPath? Geometry=null);
+    string Unit="",int? DecimalPlaces=null,ResultFieldPath? ValidWhen=null,ResultFieldPath? Geometry=null,
+    ResultFieldPath? GeometrySource=null);
 
 /// <summary>Bounded display declaration. Reads a published snapshot; never runs an algorithm or recomputes judgments.</summary>
 public sealed class ResultProjectionDescriptor
@@ -81,6 +82,18 @@ public sealed class ResultProjectionDescriptor
                     throw new ArgumentException("One-row standard table cells must be scalar; use a declared property/renderer view for complex values.");
                 if(column.ValidWhen is not null&&ResolveCell(column.ValidWhen)!=TypeRef.ScalarOf(ScalarKind.Boolean))throw new ArgumentException("Validity is a published Boolean field, not a callback or business calculation.");
                 if(column.Geometry is not null&&!ContainsGeometry(ResolveCell(column.Geometry)))throw new ArgumentException("Geometry source must contain declared geometry or a Region resource.");
+                if(column.GeometrySource is {} origin)
+                {
+                    if(column.Geometry is null)throw new ArgumentException("A physical origin requires an explicit geometry field.");
+                    var originType=origin.Resolve(schema);
+                    if(Rows is {} rows&&origin.PortId==rows.PortId&&origin.MemberFieldPath.Take(rows.MemberFieldPath.Count).SequenceEqual(rows.MemberFieldPath))
+                    {
+                        if(originType.Shape!=ValueShape.Sequence)throw new ArgumentException("A row geometry origin must traverse the declared row sequence.");
+                        originType=originType.Element!;
+                    }
+                    if(originType.Shape!=ValueShape.Resource||originType.Resource is not(ResourceKind.Region or ResourceKind.Image))
+                        throw new ArgumentException("Physical geometry origins must explicitly name one image or region resource.");
+                }
             }
         }
         catch(ArgumentException exception){issues.Add(new("result-projection",exception.Message));}

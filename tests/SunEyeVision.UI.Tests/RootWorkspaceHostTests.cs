@@ -36,6 +36,7 @@ public sealed class RootWorkspaceHostTests
     owner.Show();Pump();
     Assert.Equal(new Rect(0,0,6,6),Assert.IsType<DrawingBrush>(Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WorkflowCanvasGridBrush)).Viewport);
     VerifyWorkflowButtonThemes(shell,"Dark");VerifyMiniMap(shell,owner,"Dark");SaveConfiguration(owner,"Canvas-Dark");
+    VerifyImageSourceThemes();
     var canvasLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
     Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();VerifyWorkflowButtonThemes(shell,"Light");VerifyMiniMap(shell,owner,"Light");SaveConfiguration(owner,"Canvas-Light");
     Application.Current.Resources.MergedDictionaries.Remove(canvasLight);Pump();
@@ -369,6 +370,30 @@ public sealed class RootWorkspaceHostTests
   yield return root;
   for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)
    foreach(var child in SourceDescendants(VisualTreeHelper.GetChild(root,i)))yield return child;
+ }
+ private static void VerifyImageSourceThemes()
+ {
+  var manager=new SunEyeVision.UI.Services.ThemeManager(new SolutionSettings());manager.Initialize();
+  var strip=new SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip();
+  using var scope=new SunEyeVision.UI.Services.Images.ImageSourceThemeScope(strip,manager);
+  var window=new Window{Content=strip,Width=650,Height=180,Left=-10000,ShowActivated=false};
+  void Verify()
+  {
+   Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.PanelBackgroundBrush)).Color,
+    Assert.IsType<SolidColorBrush>(strip.Background).Color);
+   foreach(var pair in new[]{("ImageSources.Foreground",SunEyeVision.UI.Themes.Base.ThemeKeys.TextPrimaryBrush),
+    ("ImageSources.Hover",SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush),
+    ("ImageSources.MenuBackground",SunEyeVision.UI.Themes.Base.ThemeKeys.ContextMenuBackgroundBrush)})
+    Assert.Equal(((SolidColorBrush)Application.Current.FindResource(pair.Item2)).Color,Assert.IsType<SolidColorBrush>(strip.FindResource(pair.Item1)).Color);
+  }
+  try
+  {
+   window.Show();Pump();Verify();
+   manager.ApplyTheme(SunEyeVision.UI.Services.AppTheme.Light);Pump();Verify();SaveMenuVisual(strip,"image-source-Light");
+   window.Content=null;Pump();manager.ApplyTheme(SunEyeVision.UI.Services.AppTheme.Dark);
+   window.Content=strip;Pump();Verify();SaveMenuVisual(strip,"image-source-Dark-reloaded");
+  }
+  finally{window.Close();manager.ApplyTheme(SunEyeVision.UI.Services.AppTheme.Dark);Pump();}
  }
  private static void VerifyWorkflowButtonThemes(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,string theme)
  {

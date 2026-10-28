@@ -28,6 +28,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private MainWindowViewModel _viewModel = null!;
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
         private WorkflowTabViewModel? _sourceWorkflow;
+        private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
         private void ReleaseSourceSession()
         {ImagePreviewContent.Session=null;_sourceSession?.Dispose();_sourceSession=null;_sourceWorkflow=null;}
         private void RefreshSourceSession()
@@ -63,6 +64,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ImageResultControl()
         {
             InitializeComponent();
+            _sourceTheme=new(ImagePreviewContent);
             Loaded+=(_,_)=>RefreshSourceSession();
             Unloaded+=(_,_)=>ReleaseSourceSession();
         }
@@ -95,6 +97,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel?.CloseResultPresentation();
             ReleaseSourceSession();
+            _sourceTheme.Dispose();
         }
 
         /// <summary>

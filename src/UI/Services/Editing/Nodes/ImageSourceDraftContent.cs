@@ -20,6 +20,8 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     private readonly ImageInputSource _source;
     private readonly ImageSourceStrip _strip;
     private readonly ImageSourceStripSession _session;
+    private readonly ImageSourceThemeScope _themeScope;
+    private readonly ImageSourceThemeScope _cameraTheme;
     private IToolSettingsDraft? _draft;
     private Action<object>? _accept;
     private Action? _prepare;
@@ -52,6 +54,8 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         _source.ConfigurationEdited+=SourceEdited;
         _session=new(_source,()=>!_disposed&&_isCurrent(),dispatcher:Dispatcher,dialogOwner:()=>Window.GetWindow(this));
         _strip=new(){Session=_session};
+        _themeScope=new(_strip);
+        _cameraTheme=new(_cameraPicker);
         _cameraPanel.Children.Add(new TextBlock{Text="关联相机"});
         _cameraPanel.Children.Add(_cameraPicker);_cameraPanel.Children.Add(_cameraStatus);
         _cameraPicker.SelectionChanged+=CameraSelected;
@@ -146,6 +150,8 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         _statusTimer.Stop();_cameraPicker.SelectionChanged-=CameraSelected;
         _source.ConfigurationEdited-=SourceEdited;
         _source.ConfigurationWriter=null;_strip.Session=null;_session.Dispose();
+        _themeScope.Dispose();
+        _cameraTheme.Dispose();
         _draft=null;_prepare=null;_accept=null;Changed=null;Content=null;
     }
 }

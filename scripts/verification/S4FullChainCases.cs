@@ -41,6 +41,20 @@ internal static class S2DocumentEditingCases
         dialogs.Tick+=(_,_)=>{foreach(var dialog in app.Windows.OfType<Window>().Where(w=>w.GetType().Name.Contains("MessageDialog")).ToArray()){Console.Error.WriteLine("本进程产品提示："+string.Join(" | ",Logical(dialog).OfType<TextBlock>().Select(t=>t.Text)));dialog.Close();}};dialogs.Start();
         var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;var plugins=new PluginManager();plugins.LoadPlugins();
         plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));PluginLoader.MarkAsLoaded();
+        Case("画布图标与工具箱读取同一正式目录且不恢复旧VM工具目录",()=>
+        {
+            var converter=new SunEyeVision.UI.Converters.Node.ToolNodeIconConverter();
+            foreach(var id in new[]{"ImageLoad","BlobAnalysis"})
+            {
+                var declaration=ToolRegistry.DirectoryCatalog!.Find(id)!;
+                var toolbox=new SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem(declaration.DisplayName,declaration.Category,declaration.Icon,declaration.Description,id);
+                var uri=(string)converter.Convert(id,typeof(string),null!,System.Globalization.CultureInfo.InvariantCulture);
+                Require(uri==toolbox.IconSource,"画布与工具箱图标声明分叉："+id);
+                using var stream=Application.GetResourceStream(new Uri(uri))!.Stream;
+                Require(stream.Length>0,"正式图标资源缺失："+id);
+            }
+            Require(ReferenceEquals(converter.Convert("unapproved-tool",typeof(string),null!,System.Globalization.CultureInfo.InvariantCulture),DependencyProperty.UnsetValue),"未准入工具被旧目录补回");
+        });
         var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"document");Directory.CreateDirectory(folder);
         ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(folder);
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();var document=solutions.CreateUntitledSolution();

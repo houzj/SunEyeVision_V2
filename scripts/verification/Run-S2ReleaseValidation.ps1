@@ -1,9 +1,9 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','DesignTime','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','DesignTime','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','DesignTime','FieldEditing','FullChain','WindowPresentation','PolygonPrimitives','ResultChain') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','DesignTime','FieldEditing','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
@@ -15,8 +15,34 @@ $references=@(Get-ChildItem -LiteralPath $product -File -Filter 'SunEyeVision*.d
 $references+=Get-Item (Join-Path $product 'halcondotnetxl.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Json.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Encodings.Web.dll')
+if($Track -eq 'ImageSourceRecovery')
+{
+    $probeDir=Join-Path $dir 'runtime-probe'
+    New-Item -ItemType Directory -Path $probeDir -Force|Out-Null
+    $probeSource=Join-Path $root 'tests/_shared/ResultWorkspaceRuntimeProbe.cs'
+    $contractPath=Join-Path $product 'SunEyeVision.Plugin.Contracts.dll'
+    $probeProject='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirectoryBuildProps><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup><Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/><PropertyGroup><TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>SunEyeVision.ResultWorkspace.Runtime.Tests</AssemblyName><OutputPath>out/</OutputPath><AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath><NuGetAudit>false</NuGetAudit></PropertyGroup><ItemGroup><Compile Include="'+[Security.SecurityElement]::Escape($probeSource)+'"/><Reference Include="SunEyeVision.Plugin.Contracts"><HintPath>'+[Security.SecurityElement]::Escape($contractPath)+'</HintPath><Private>false</Private></Reference></ItemGroup><Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/></Project>'
+    [IO.File]::WriteAllText((Join-Path $probeDir 'Probe.csproj'),$probeProject)
+    [IO.File]::WriteAllText((Join-Path $probeDir 'NuGet.Config'),'<configuration><packageSources><clear/></packageSources></configuration>')
+    dotnet build (Join-Path $probeDir 'Probe.csproj') -c Release *> (Join-Path $logDir 'probe-build.log')
+    if($LASTEXITCODE -ne 0){Get-Content (Join-Path $logDir 'probe-build.log') -Tail 12;throw '中立测试声明编译失败'}
+    $env:S2_RUNTIME_PROBE=Join-Path $probeDir 'out/SunEyeVision.ResultWorkspace.Runtime.Tests.dll'
+    $references+=Get-Item $env:S2_RUNTIME_PROBE
+    foreach($name in @('xunit.assert.dll','xunit.core.dll','xunit.abstractions.dll','NSubstitute.dll','Castle.Core.dll')){$references+=Get-Item (Join-Path $root ('tests/bin/Release/'+$name))}
+}
+else{$env:S2_RUNTIME_PROBE=$null}
+
 $refs=($references | ForEach-Object {'<Reference Include="'+[Security.SecurityElement]::Escape($_.BaseName)+'"><HintPath>'+[Security.SecurityElement]::Escape($_.FullName)+'</HintPath><Private>false</Private></Reference>'}) -join "`n"
 $project='<Project><PropertyGroup><ImportDirectoryBuildProps>false</ImportDirectoryBuildProps><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup><Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/><PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><OutputType>Exe</OutputType><StartupObject>SafeEntry</StartupObject><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><OutputPath>out/</OutputPath><AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath><GenerateAssemblyInfo>false</GenerateAssemblyInfo><NuGetAudit>false</NuGetAudit></PropertyGroup><ItemGroup>'+$refs+'</ItemGroup><Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/></Project>'
+if($Track -eq 'ImageSourceRecovery')
+{
+    $testSources=@('tests/_shared/WpfTestDispatcher.cs','tests/SunEyeVision.UI.Tests/LocalResultImagePreviewTests.cs','tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs','tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs','tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs','tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs','tests/SunEyeVision.UI.Tests/LocalImageExecutionTests.cs','tests/SunEyeVision.UI.Tests/ImageSourceAcceptanceTests.cs')
+    $compile=($testSources|ForEach-Object {'<Compile Include="'+[Security.SecurityElement]::Escape((Join-Path $root $_))+'"/>'}) -join "`n"
+    $project=$project.Replace('<ItemGroup>','<PropertyGroup><AssemblyName>SunEyeVision.UI.Tests</AssemblyName></PropertyGroup><ItemGroup><Compile Remove="runtime-probe/**/*.cs"/>'+$compile)
+    $sourceEvidence=@(($testSources+@('tests/_shared/ResultWorkspaceRuntimeProbe.cs'))|ForEach-Object {[ordered]@{path=$_;sha256=(Get-FileHash -LiteralPath (Join-Path $root $_) -Algorithm SHA256).Hash}})
+    $sourceEvidence|ConvertTo-Json -Depth 4|Set-Content -LiteralPath (Join-Path $logDir 'test-sources.json') -Encoding utf8
+    [IO.File]::WriteAllText((Join-Path $dir 'HostIdentity.cs'),'[assembly:System.Reflection.AssemblyMetadata("HostDebugRoot",@"'+$product+'")]')
+}
 [IO.File]::WriteAllText((Join-Path $dir 'Check.csproj'),$project)
 [IO.File]::WriteAllText((Join-Path $dir 'NuGet.Config'),'<configuration><packageSources><clear/></packageSources></configuration>')
 $source=if($Track -eq 'Related'){'S2RelatedCases.cs'}else{'S2DocumentEditingCases.cs'}
@@ -42,6 +68,7 @@ if($Stage -eq 'S4' -and $Track -eq 'WindowPresentation'){$source='O06WindowPrese
 if($Stage -eq 'S4' -and $Track -eq 'RuntimeEditor'){$source='S4RuntimeEditorCases.cs'}
 if($Stage -eq 'S4' -and $Track -eq 'DesignTime'){$source='S4DesignTimeCases.cs'}
 if($Track -eq 'ResultChain'){$source='I2ResultChainCases.cs'}
+if($Track -eq 'ImageSourceRecovery'){$source='I2ImageSourceRecoveryCases.cs'}
 if($Track -eq 'PolygonPrimitives'){$source='O06PolygonPrimitiveCases.cs'}
 if($Track -in @('WorkflowBaseline','WorkflowHost','ThemeStartup','SdkBaseline','InfrastructureBaseline')){$source=$Track+'Cases.cs'}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot $source) -Destination (Join-Path $dir 'Cases.cs')
@@ -76,6 +103,8 @@ internal static class SafeEntry {
      var p=a.Location;return a.GetName().Name+"\t"+p+"\t"+Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(p)));
     });File.WriteAllLines(Path.Combine(log,"loaded-product.tsv"),rows);
    }catch(Exception e){Console.Error.WriteLine(e);}};
+   var probe=Environment.GetEnvironmentVariable("S2_RUNTIME_PROBE");
+   if(!string.IsNullOrEmpty(probe))AssemblyLoadContext.Default.LoadFromAssemblyPath(probe);
    return (int)typeof(SafeEntry).Assembly.GetType("S2DocumentEditingCases")!.GetMethod("Main",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,null)!;
   }catch(Exception e){Console.Error.WriteLine(e.InnerException??e);return 1;}
  }
@@ -92,7 +121,7 @@ $launch=New-Object System.Diagnostics.ProcessStartInfo
 $launch.FileName='dotnet';$launch.WorkingDirectory=$product
 $launch.UseShellExecute=$false;$launch.CreateNoWindow=$true
 $launch.RedirectStandardOutput=$true;$launch.RedirectStandardError=$true
-$launch.Arguments=(@('exec','--depsfile',(Join-Path $product 'SunEyeVision.UI.deps.json'),'--runtimeconfig',(Join-Path $product 'SunEyeVision.UI.runtimeconfig.json'),(Join-Path $dir 'out/Check.dll')) | ForEach-Object {'"'+$_+'"'}) -join ' '
+$launch.Arguments=(@('exec','--depsfile',(Join-Path $product 'SunEyeVision.UI.deps.json'),'--runtimeconfig',(Join-Path $product 'SunEyeVision.UI.runtimeconfig.json'),(Join-Path $dir $(if($Track -eq 'ImageSourceRecovery'){'out/SunEyeVision.UI.Tests.dll'}else{'out/Check.dll'}))) | ForEach-Object {'"'+$_+'"'}) -join ' '
 # Own the process handle through exit; Windows PowerShell Start-Process can otherwise return a null ExitCode.
 $process=New-Object System.Diagnostics.Process
 $process.StartInfo=$launch

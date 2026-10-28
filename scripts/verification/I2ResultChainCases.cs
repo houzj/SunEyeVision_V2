@@ -104,6 +104,180 @@ internal static class S2DocumentEditingCases
             using var f=new Fixture();using var pending=Dispatch(f.Snapshot);f.Snapshot.Dispose();
             pending.Dispose();pending.Dispose();Require(f.Output.Disposals==1&&f.Scope.Disposals==1,"Notification was released twice");
         });
+        Case("A blocked UI keeps one callback and only the latest unclaimed result for a node",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);
+            var delivered=new List<int>();var fixtures=new List<Fixture>();
+            try
+            {
+                for(int i=0;i<1000;i++)
+                {
+                    var f=new Fixture();fixtures.Add(f);int value=i;
+                    Enqueue(queue,"node",f.Snapshot,()=>delivered.Add(value));f.Snapshot.Dispose();
+                }
+                Require(callbacks.Count==1&&PendingCount(queue)==1,"UI queue grew with the number of runs");
+                Require(fixtures.Take(999).All(f=>f.Output.Disposals==1),"Replaced pending results still own resources");
+                callbacks.Dequeue()();
+                Require(delivered.SequenceEqual(new[]{999})&&fixtures.All(f=>f.Output.Disposals==1),"The latest result was not delivered/released exactly once");
+            }
+            finally{foreach(var f in fixtures)f.Dispose();}
+        });
+        Case("Cancellation removes a pending result before the blocked UI is pumped",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);using var f=new Fixture();
+            int delivered=0;Enqueue(queue,"node",f.Snapshot,()=>delivered++);f.Snapshot.Dispose();f.Cancellation.Cancel();
+            Require(PendingCount(queue)==0&&f.Output.Disposals==1,"Cancelled pending entry retained its result");
+            callbacks.Dequeue()();Require(delivered==0,"Cancelled result was delivered");
+        });
+        Case("Reentrant publication replaces an unclaimed node without changing the active reader",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);
+            using var a=new Fixture();using var oldB=new Fixture();using var newB=new Fixture();var delivered=new List<string>();
+            Enqueue(queue,"a",a.Snapshot,()=>
+            {
+                delivered.Add("a");Enqueue(queue,"b",newB.Snapshot,()=>delivered.Add("new-b"));newB.Snapshot.Dispose();
+                Require(a.Output.Disposals==0&&oldB.Output.Disposals==1,"Replacing pending B damaged active A or retained old B");
+            });
+            Enqueue(queue,"b",oldB.Snapshot,()=>delivered.Add("old-b"));a.Snapshot.Dispose();oldB.Snapshot.Dispose();
+            callbacks.Dequeue()();Require(callbacks.Count==1&&delivered.SequenceEqual(new[]{"a"}),"Reentrant replacement delivered obsolete B");
+            callbacks.Dequeue()();Require(delivered.SequenceEqual(new[]{"a","new-b"}),"Latest B was lost");
+        });
+        Case("Closing a queue releases unclaimed batch entries while a callback keeps its active lease",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);
+            using var a=new Fixture();using var b=new Fixture();int delivered=0;
+            Enqueue(queue,"a",a.Snapshot,()=>
+            {
+                delivered++;queue.Dispose();Require(a.Output.Disposals==0&&b.Output.Disposals==1,"Close freed the active reader or retained unclaimed B");
+            });
+            Enqueue(queue,"b",b.Snapshot,()=>delivered++);a.Snapshot.Dispose();b.Snapshot.Dispose();
+            callbacks.Dequeue()();Require(delivered==1&&a.Output.Disposals==1,"Closed batch continued delivery or leaked active ownership");
+            using var late=new Fixture();Enqueue(queue,"late",late.Snapshot,()=>delivered++);late.Snapshot.Dispose();
+            Require(callbacks.Count==0&&late.Output.Disposals==1,"Closed queue accepted a new result");
+        });
+        Case("A rejected UI post releases ownership and permits a later successful post",()=>
+        {
+            var callbacks=new Queue<Action>();bool reject=true;
+            using var queue=DispatchQueue(action=>{if(reject)throw new InvalidOperationException("post rejected");callbacks.Enqueue(action);});
+            using var old=new Fixture();Throws<AggregateException>(()=>Enqueue(queue,"old",old.Snapshot,()=>{}));old.Snapshot.Dispose();
+            Require(old.Output.Disposals==1&&PendingCount(queue)==0,"Rejected post leaked its pending lease");
+            reject=false;using var next=new Fixture();int delivered=0;Enqueue(queue,"next",next.Snapshot,()=>delivered++);next.Snapshot.Dispose();
+            callbacks.Dequeue()();Require(delivered==1&&next.Output.Disposals==1,"Queue did not recover from a failed post");
+        });
+        Case("A failing consumer does not skip the remaining node deliveries or their cleanups",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);using var a=new Fixture();using var b=new Fixture();
+            int delivered=0;Enqueue(queue,"a",a.Snapshot,()=>throw new InvalidOperationException("consumer failure"));
+            Enqueue(queue,"b",b.Snapshot,()=>delivered++);a.Snapshot.Dispose();b.Snapshot.Dispose();
+            Throws<AggregateException>(()=>callbacks.Dequeue()());
+            Require(delivered==1&&a.Output.Disposals==1&&b.Output.Disposals==1,"Consumer failure leaked or skipped another node");
+        });
+        Case("The real workflow manager coalesces a blocked synchronization context and drains on disposal",()=>
+        {
+            var original=SynchronizationContext.Current;var context=new BlockedContext();SynchronizationContext.SetSynchronizationContext(context);
+            var manager=new SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager(
+                new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(),
+                new SunEyeVision.Workflow.WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.PluginLogger.Logger),
+                new SunEyeVision.UI.Services.RuntimeInputSnapshotService());
+            var fixtures=new List<Fixture>();var owner=new ToolExecutionOwner();int delivered=0;
+            manager.NodeExecutionCompleted+=(_,_)=>delivered++;
+            try
+            {
+                var node=new SunEyeVision.UI.Shared.WorkflowNode();
+                var notify=manager.GetType().GetMethod("OnNodeExecutionCompleted",BindingFlags.Instance|BindingFlags.NonPublic)!;
+                for(int i=0;i<100;i++)
+                {
+                    var f=new Fixture(owner:owner);fixtures.Add(f);notify.Invoke(manager,new object[]{node,f.Snapshot,false});f.Snapshot.Dispose();
+                }
+                Require(context.Callbacks.Count==1&&fixtures.Take(99).All(f=>f.Output.Disposals==1),"Production manager still posted one callback per run");
+                manager.Dispose();Require(fixtures.All(f=>f.Output.Disposals==1),"Manager disposal retained an unclaimed notification");
+                context.Callbacks.Dequeue()();Require(delivered==0,"Disposed manager delivered a pending result");
+            }
+            finally{manager.Dispose();foreach(var f in fixtures)f.Dispose();SynchronizationContext.SetSynchronizationContext(original);}
+        });
+        Case("A cleanup error cannot prevent the queue from releasing another node",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);using var a=new Fixture();using var b=new Fixture();
+            a.Output.DisposeError=true;Enqueue(queue,"a",a.Snapshot,()=>{});Enqueue(queue,"b",b.Snapshot,()=>{});
+            a.Snapshot.Dispose();b.Snapshot.Dispose();Throws<AggregateException>(queue.Dispose);
+            Require(a.Output.Disposals==1&&a.Scope.Disposals==1&&b.Output.Disposals==1,"Failing release skipped another owner");
+            callbacks.Dequeue()();
+        });
+        Case("An obsolete admission cannot evict a newer queued result",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);var owner=new ToolExecutionOwner();
+            using var old=new Fixture(owner:owner);using var current=new Fixture(owner:owner);var delivered=new List<string>();
+            Enqueue(queue,"node",current.Snapshot,()=>delivered.Add("current"));Enqueue(queue,"node",old.Snapshot,()=>delivered.Add("old"));
+            old.Snapshot.Dispose();current.Snapshot.Dispose();callbacks.Dequeue()();
+            Require(delivered.SequenceEqual(new[]{"current"})&&old.Output.Disposals==1,"Old admission replaced the queued current result");
+        });
+        Case("Parallel producers retain one latest result per node and share one posted drain",()=>
+        {
+            var callbacks=new System.Collections.Concurrent.ConcurrentQueue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);
+            var fixtures=new System.Collections.Concurrent.ConcurrentBag<Fixture>();int delivered=0;
+            try
+            {
+                Parallel.For(0,4,node=>
+                {
+                    for(int iteration=0;iteration<250;iteration++)
+                    {
+                        var f=new Fixture();fixtures.Add(f);
+                        Enqueue(queue,"node-"+node,f.Snapshot,()=>Interlocked.Increment(ref delivered));f.Snapshot.Dispose();
+                    }
+                });
+                Require(callbacks.Count==1&&PendingCount(queue)==4,"Parallel producers posted extra drains or lost a node");
+                Require(fixtures.Count(f=>f.Output.Disposals==0)==4,"Parallel replacements retained more than the latest four results");
+                Require(callbacks.TryDequeue(out var drain),"Missing shared drain");drain!();
+                Require(delivered==4&&fixtures.All(f=>f.Output.Disposals==1),"Parallel node delivery lost or leaked a result");
+            }
+            finally{foreach(var f in fixtures)f.Dispose();}
+        });
+        Case("Concurrent close preserves a claimed result while releasing the unclaimed remainder",()=>
+        {
+            var callbacks=new Queue<Action>();using var queue=DispatchQueue(callbacks.Enqueue);using var a=new Fixture();using var b=new Fixture();
+            using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();int delivered=0;
+            Enqueue(queue,"a",a.Snapshot,()=>
+            {
+                using var reader=a.Snapshot.AcquireReader();entered.Set();
+                Require(release.Wait(TimeSpan.FromSeconds(5)),"Active callback was not released");
+                Require(reader.Values!.Get<long>("value")==42,"Concurrent close invalidated an active reader");
+                Interlocked.Increment(ref delivered);
+            });
+            Enqueue(queue,"b",b.Snapshot,()=>Interlocked.Increment(ref delivered));a.Snapshot.Dispose();b.Snapshot.Dispose();
+            var worker=Task.Run(callbacks.Dequeue());
+            try
+            {
+                Require(entered.Wait(TimeSpan.FromSeconds(5)),"Consumer never claimed its result");queue.Dispose();
+                Require(a.Output.Disposals==0&&b.Output.Disposals==1,"Concurrent close freed active A or leaked pending B");
+            }
+            finally{release.Set();Require(worker.Wait(TimeSpan.FromSeconds(5)),"Claimed consumer did not finish");}
+            Require(delivered==1&&a.Output.Disposals==1,"Concurrent close delivered old B or leaked A");
+        });
+        Case("Actual WPF dispatcher shutdown releases pending manager results without pumping them",()=>
+        {
+            Exception? failure=null;var thread=new Thread(()=>
+            {
+                try
+                {
+                    var app=new System.Windows.Application {ShutdownMode=System.Windows.ShutdownMode.OnExplicitShutdown};
+                    var manager=new SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager(
+                        new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(),
+                        new SunEyeVision.Workflow.WorkflowEngine(SunEyeVision.Plugin.SDK.Logging.PluginLogger.Logger),
+                        new SunEyeVision.UI.Services.RuntimeInputSnapshotService());
+                    using var f=new Fixture();int delivered=0;manager.NodeExecutionCompleted+=(_,_)=>delivered++;
+                    manager.GetType().GetMethod("OnNodeExecutionCompleted",BindingFlags.Instance|BindingFlags.NonPublic)!
+                        .Invoke(manager,new object[]{new SunEyeVision.UI.Shared.WorkflowNode(),f.Snapshot,false});
+                    f.Snapshot.Dispose();Require(f.Output.Disposals==0,"Actual dispatcher did not retain pending output");
+                    app.Dispatcher.InvokeShutdown();
+                    Require(f.Output.Disposals==1&&delivered==0,"Dispatcher shutdown retained or delivered an unclaimed result");
+                    manager.Dispose();
+                }
+                catch(Exception error){failure=error;}
+            });
+            thread.IsBackground=true;thread.SetApartmentState(ApartmentState.STA);thread.Start();
+            Require(thread.Join(TimeSpan.FromSeconds(10)),"Actual dispatcher shutdown did not finish");
+            if(failure is not null)throw failure;
+        });
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"i2-result-chain-report.json"),
             JsonSerializer.Serialize(new{count=Results.Count,failures=_failed,scope="Actual formal Runtime snapshots and UI notification leases; not full UI/Blob acceptance",results=Results}));
         Console.WriteLine($"I2冻结结果及通知生命周期：{Results.Count-_failed}通过，{_failed}失败。");
@@ -117,6 +291,19 @@ internal static class S2DocumentEditingCases
         return (IDisposable)Activator.CreateInstance(type,BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{snapshot},null)!;
     }
     private static IDisposable? Claim(IDisposable pending)=>(IDisposable?)pending.GetType().GetMethod("Claim",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(pending,null);
+    private static IDisposable DispatchQueue(Action<Action> post)
+    {
+        var type=typeof(SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager).Assembly.GetType("SunEyeVision.UI.Services.Workflow.ResultDispatchQueue",true)!;
+        return (IDisposable)Activator.CreateInstance(type,BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic,null,new object[]{post},null)!;
+    }
+    private static void Enqueue(IDisposable queue,string key,DeclaredOutputSnapshot result,Action action)
+    {
+        try{queue.GetType().GetMethod("Enqueue",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(queue,new object[]{key,result,action});}
+        catch(TargetInvocationException error) when(error.InnerException is not null)
+        {System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error.InnerException).Throw();throw;}
+    }
+    private static int PendingCount(IDisposable queue)
+        =>((System.Collections.IDictionary)queue.GetType().GetField("_pending",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(queue)!).Count;
     private static void Require(bool condition,string message){if(!condition)throw new Exception(message);}
     private static T Throws<T>(Action action) where T:Exception
     {try{action();}catch(T error){return error;}throw new Exception("Expected "+typeof(T).Name);}
@@ -125,9 +312,14 @@ internal static class S2DocumentEditingCases
         try{test();Results.Add(new{name,passed=true});Console.WriteLine("PASS "+name);}
         catch(Exception error){_failed++;Results.Add(new{name,passed=false,error=error.ToString()});Console.WriteLine("FAIL "+name+": "+error);}
     }
+    private sealed class BlockedContext:SynchronizationContext
+    {
+        internal readonly Queue<Action> Callbacks=new();
+        public override void Post(SendOrPostCallback callback,object? state)=>Callbacks.Enqueue(()=>callback(state));
+    }
     private sealed class Fixture:IDisposable
     {
-        internal readonly ToolExecutionOwner Owner=new();
+        internal readonly ToolExecutionOwner Owner;
         internal readonly CancellationTokenSource Cancellation=new();
         internal readonly ToolExecutionIdentity Identity;
         internal readonly ToolSchema Schema;
@@ -135,8 +327,9 @@ internal static class S2DocumentEditingCases
         internal readonly Scope Scope;
         internal readonly DeclaredOutputSnapshot Snapshot;
         internal readonly CountingImage? Image;
-        internal Fixture(bool image=false)
+        internal Fixture(bool image=false,ToolExecutionOwner? owner=null)
         {
+            Owner=owner??new();
             Identity=Owner.Begin("scope/node",Guid.NewGuid(),"5.0",Cancellation.Token);
             var values=new Dictionary<string,object?>{{"value",42L}};
             var ports=new List<Port>{new("value",DataType.Integer)};

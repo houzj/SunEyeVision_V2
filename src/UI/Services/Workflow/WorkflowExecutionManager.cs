@@ -86,6 +86,8 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly AsyncLocal<CancellationToken> _communicationCancellation = new();
         private readonly AsyncLocal<SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService?> _communicationInputs = new();
         private SynchronizationContext? _synchronizationContext;
+        private readonly ResultDispatchQueue _resultNotifications;
+        private readonly System.Windows.Threading.Dispatcher? _resultDispatcher;
 
         /// <summary>
         /// 当前运行时参数（从 MainWindowViewModel 设置）
@@ -148,7 +150,25 @@ namespace SunEyeVision.UI.Services.Workflow
             _cancellationTokens = new Dictionary<string, CancellationTokenSource>();
             _runningTasks = new Dictionary<string, Task>();
             _synchronizationContext = SynchronizationContext.Current;
+            _resultDispatcher=System.Windows.Application.Current?.Dispatcher;
+            _resultNotifications=new ResultDispatchQueue(action=>
+            {
+                if(_resultDispatcher is not null)
+                {
+                    if(_resultDispatcher.HasShutdownStarted||_resultDispatcher.HasShutdownFinished)
+                        throw new InvalidOperationException("界面调度器已关闭，不能继续投递结果。");
+                    var operation=_resultDispatcher.BeginInvoke(action);
+                    operation.Aborted+=ResultNotificationAborted;
+                    if(operation.Status==System.Windows.Threading.DispatcherOperationStatus.Aborted)_resultNotifications.Dispose();
+                }
+                else if(_synchronizationContext is not null)_synchronizationContext.Post(_=>action(),null);
+                else action();
+            });
+            if(_resultDispatcher is not null)_resultDispatcher.ShutdownStarted+=ResultDispatcherShutdown;
         }
+
+        private void ResultNotificationAborted(object? sender,EventArgs e)=>_resultNotifications.Dispose();
+        private void ResultDispatcherShutdown(object? sender,EventArgs e)=>_resultNotifications.Dispose();
 
         /// <summary>
         /// 设置运行时参数
@@ -1371,26 +1391,15 @@ namespace SunEyeVision.UI.Services.Workflow
         private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, DeclaredOutputSnapshot? result, bool isCameraDriven)
         {
             if (result is null || result.ExecutionIdentity?.IsCurrent == false) return;
-            var pending = new ResultDispatchLease(result);
             var queuedAt = Stopwatch.GetTimestamp();
             var token = _communicationOwner.Value ? _communicationCancellation.Value : CancellationToken.None;
             void Publish()
             {
-                using var lease=pending.Claim();
-                try
-                {
-                    if (lease is not null&&!token.IsCancellationRequested && result.ExecutionIdentity?.IsCurrent != false)
+                    if (!token.IsCancellationRequested && result.ExecutionIdentity?.IsCurrent != false)
                         NodeExecutionCompleted?.Invoke(this, new NodeExecutionResultEventArgs(node, result, isCameraDriven,
                             Stopwatch.GetElapsedTime(queuedAt).TotalMilliseconds));
-                }
-                finally { pending.Dispose(); }
             }
-            try
-            {
-                if (_synchronizationContext != null) _synchronizationContext.Post(_ => Publish(), null);
-                else Publish();
-            }
-            catch { pending.Dispose(); throw; }
+            _resultNotifications.Enqueue(result.ExecutionIdentity?.Domain??node.Id,result,Publish);
         }
 
         /// <summary>
@@ -1451,19 +1460,23 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public void Dispose()
         {
-            StopAllContinuousRun();
+            if(_resultDispatcher is not null)_resultDispatcher.ShutdownStarted-=ResultDispatcherShutdown;
+            var errors=new List<Exception>();
+            try{_resultNotifications.Dispose();}catch(Exception error){errors.Add(error);}
+            try{StopAllContinuousRun();}catch(Exception error){errors.Add(error);}
 
             lock (_lock)
             {
                 foreach (var cts in _cancellationTokens.Values)
                 {
-                    cts.Dispose();
+                    try{cts.Dispose();}catch(Exception error){errors.Add(error);}
                 }
                 _cancellationTokens.Clear();_transitionBlocked=true;
                 if(_activeWorkflowIds.Count==0&&_solutionRunCts is null&&!_communicationOperation)
-                    RemovePreparedLocked(_preparedRunInputs.Keys.ToArray());
+                    try{RemovePreparedLocked(_preparedRunInputs.Keys.ToArray());}catch(Exception error){errors.Add(error);}
                 _localImageCursors.Clear();
             }
+            if(errors.Count>0)throw new AggregateException("执行管理器关闭时发生错误，已尝试释放结果通知及其余运行资源。",errors);
         }
     }
 

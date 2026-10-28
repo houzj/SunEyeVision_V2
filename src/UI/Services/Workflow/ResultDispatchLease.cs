@@ -12,9 +12,13 @@ internal sealed class ResultDispatchLease : IDisposable
     private IDisposable? _pending;
     private CancellationTokenRegistration _cancellation;
     private bool _closed;
+    private readonly Action? _onClosed;
+    internal bool IsPending { get { lock(_gate)return !_closed; } }
 
-    internal ResultDispatchLease(DeclaredOutputSnapshot result)
+    internal ResultDispatchLease(DeclaredOutputSnapshot result):this(result,null) { }
+    internal ResultDispatchLease(DeclaredOutputSnapshot result, Action? onClosed)
     {
+        _onClosed=onClosed;
         _identity=result.ExecutionIdentity;
         _domain=_identity?.Domain;
         _pending=result.Retain();
@@ -42,6 +46,7 @@ internal sealed class ResultDispatchLease : IDisposable
     {
         if(_identity is not null)_identity.Owner.DomainRetired-=OnRetired;
         _cancellation.Unregister();
+        _onClosed?.Invoke();
     }
     public void Dispose()
     {

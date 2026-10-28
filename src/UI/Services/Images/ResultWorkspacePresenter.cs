@@ -86,11 +86,16 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
         {RestoreChoice(false);return;}
-        _outputSource=source;_outputKey=source?.Key;++_outputChoiceRevision;
+        _outputSource=source;_outputKey=source?.Key;var choiceRevision=++_outputChoiceRevision;
         if(_refreshing)return;
+        var epoch=_epoch;var plan=_plan;
         _previewCancellation?.Cancel();
-        if(source is {NavigationIndex:>=0}&&_main.SelectedDisplayImageSourceIndex!=source.NavigationIndex)
-        {_main.SelectedDisplayImageSourceIndex=source.NavigationIndex;return;}
+        if(source is {NavigationIndex:>=0})
+        {
+            _main.AcceptWorkspaceImageSourceIndex(source.NavigationIndex,persist:sender is not null);
+            if(_disposed||epoch!=_epoch||!ReferenceEquals(plan,_plan)||choiceRevision!=_outputChoiceRevision)return;
+        }
+        _navigationIndex=_main.SelectedDisplayImageSourceIndex;
         Present(_output,source);ReportDisplayDefinitionGap();
     }
     private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
@@ -114,7 +119,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         // obsolete value is restored. Honour that intent, never replay the old item.
         var current=input?_shell.SelectedInputItem:_shell.SelectedOutputItem;
         if(!ReferenceEquals(current,accepted)&&(current is null||current is ResultWorkspaceImageSource source&&OwnsChoice(source,input)))
-        {if(input)InputSelected(null,EventArgs.Empty);else OutputSelected(null,EventArgs.Empty);}
+        {if(input)InputSelected(null,EventArgs.Empty);else OutputSelected(_shell,EventArgs.Empty);}
     }
     private void Present(Pane pane,ResultWorkspaceImageSource? source)
     {
@@ -145,7 +150,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
-                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=null;}
+                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=null;_navigationIndex=int.MinValue;}
                 var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
                 if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
@@ -155,7 +160,8 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 var navigation=_main.SelectedDisplayImageSourceIndex;
                 var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
                 var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
-                var output=(_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
+                var output=(_navigationIndex==int.MinValue?plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??byNavigation
+                    :_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
                 _navigationIndex=navigation;
                 _inputSource=input;_outputSource=output;
                 var outputChoiceRevision=_outputChoiceRevision;

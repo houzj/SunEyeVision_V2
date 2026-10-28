@@ -100,7 +100,16 @@ public partial class MainWindowViewModel
             }
             return scopeCount==1&&ownsNode;
         }
-        if(!SourceMatches())return;
+        if(!SourceMatches())
+        {
+            var current=_resultPublication;
+            if(current is not null&&!current.IsCurrent()&&ReferenceEquals(_resultPublication,current))
+            {
+                var retired=RetireResultPublication();
+                if(retired==_resultPublicationEpoch&&_resultPublication is null)RefreshNativeResultImages();
+            }
+            return;
+        }
         if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)
         {
             PresentResultPublication(_resultPublication,snapshot,nodeName,_resultPublicationBindings);
@@ -108,7 +117,11 @@ public partial class MainWindowViewModel
         }
         var epoch=RetireResultPublication();
         var viewOwner=CaptureResultViewOwner(epoch);
-        bool Owner()=>viewOwner()&&SourceMatches()&&(sourceIsCurrent?.Invoke()!=false)&&viewOwner()&&SourceMatches();
+        var historical=_declaredHistoricalResult;
+        bool SameLiveResult()=>historical||snapshot.Identity.DocumentSessionId!=session!.Document.ExecutionOwner.Id
+            ||ReferenceEquals(CurrentWorkflowContext?.GetNodeResult(snapshot.Identity.NodeId)?.Result,snapshot);
+        bool Owner()=>viewOwner()&&SourceMatches()&&_declaredHistoricalResult==historical&&SameLiveResult()
+            &&(sourceIsCurrent?.Invoke()!=false)&&viewOwner()&&SourceMatches()&&SameLiveResult();
         if(!Owner())return;
         var publication=ToolResultViews.FromSnapshot(snapshot,Owner);
         var handedToPresenter=false;

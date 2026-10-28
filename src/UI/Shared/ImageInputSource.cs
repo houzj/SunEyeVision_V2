@@ -8,6 +8,12 @@ namespace SunEyeVision.UI.Shared;
 
 /// <summary>One transient edit request; selection intent is not persisted as configuration.</summary>
 public sealed record ImageSourceEditProposal(ImageSourcePolicy Configuration,bool SelectStart);
+public sealed class ImageSourceSelectionEventArgs(long version,ImageInfo image,int index):EventArgs
+{
+    public long Version {get;}=version;
+    public ImageInfo Image {get;}=image;
+    public int Index {get;}=index;
+}
 
 /// <summary>One source's display projection. Formal edits are accepted before any live view mutation.</summary>
 public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.ObservableObject, INotifyCollectionChanged
@@ -31,6 +37,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     public Action<ImageSourceEditProposal>? ConfigurationWriter { get; set; }
     public event EventHandler<int>? CurrentImageChanged;
     public event EventHandler? ConfigurationEdited;
+    public event EventHandler<ImageSourceSelectionEventArgs>? ExplicitSelectionAccepted;
     public event NotifyCollectionChangedEventHandler? CollectionChanged
     { add => _entries.CollectionChanged += value; remove => _entries.CollectionChanged -= value; }
     public ImageInputSource(string nodeId)
@@ -90,6 +97,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         var displayIndex=selectStart?index:RemapDisplay(rows,index);
         var version=EditVersion;
         _=checked(version+1);
+        ImageSourceSelectionEventArgs? acceptedSelection=null;
         _committing=true;
         try
         {
@@ -98,8 +106,16 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
             // An accepted publication may synchronously replace this projection. Do not revive it.
             if (version!=EditVersion) return;
             Install(rows,configuration,true,displayIndex);
+            if(selectStart&&EditVersion==version+1&&index>=0&&index<Count&&ReferenceEquals(CurrentImage,rows[index]))
+                acceptedSelection=new(EditVersion,rows[index],index);
         }
         finally { _committing=false; }
+        if(acceptedSelection is not null)
+            foreach(var callback in ExplicitSelectionAccepted?.GetInvocationList()??Array.Empty<Delegate>())
+            {
+                if(EditVersion!=acceptedSelection.Version||!ReferenceEquals(CurrentImage,acceptedSelection.Image))break;
+                Notify(()=>((EventHandler<ImageSourceSelectionEventArgs>)callback)(this,acceptedSelection));
+            }
     }
     private void Notify(Action action)
     { try { action(); } catch(Exception error) { LastNotificationError ??= error.Message; } }

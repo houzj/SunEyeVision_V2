@@ -1,3 +1,35 @@
+## 2026-10-29 原21失败全部新宿主定向通过，结果工作区/真实来源预览候选收口
+
+- 上轮14/21实际进展继续；本轮结果工作区同组直接迁当前Snapshot，无SDK ToolExecutor/ToolResults生产链；纯Contracts零算法测试声明单独编到验证目录，不进入产品。007=29/10、008=32/7、010=37/2、011=39/1、012=40/1全保；009声明项目误继承根发布规则导致2个测试文件误输出正式目录，核绝对范围仅移除此2文件，模板禁Directory.Build继承，最终无测试文件并逐发布SHA核证。
+- 产品修导航镜像避免选择回声/临时-1重建，默认当前节点输出，真实显式选择仍写可序列化源引用；Owner核上下文同一快照，外来旧通知不清有效新发布，实际旧发布失效后恢复有效上游。已有来源按正式设置/地址校准，同配置保游标/版本/对象。
+- 删除Main.ImageCollection/CurrentImageIndex/UpdateCurrentImageDisplay死路径，不补兼容。来源条明确接纳选择后按版本/图像对象/根归属发纯文件预览；模式/运行游标不发，重入新选择阻止旧通知，拒绝无通知。原测试改真实Session.SelectStart。原模板必需sImage不计附加Region层；ShapeList回调退出后严格核两侧B.X=1，A.X=2不可覆盖。旧SDK可变声明回调测试迁实际刷新观察者失败保护新run，不恢复旧接口。
+- 最终Recovery013=50/0，原21全部对应重跑过；UI022=0错6393警告37.29秒/full011=0错6342警告31.45秒。同产物FullChain004=9/0、Editor005=10/0、无UI泵Workflow006=10/0、ResultChain008=24/0、真实EXE准入attempt007八过并还原。权威I2_RESULT_WORKSPACE_RECOVERY_20261029.json核完整发布/五轨加载SHA及独立测试程序集/纯声明身份；原249整体未重跑，不沿旧228成绩。
+- 42349/39136/71267/66579/60461/34528/22735/69896/72030构建、33828/32346/2166/31762/31311失败及93009/25762验证均终态，无live。主仓唯一写、不启子智能体；用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不暂存、不推送。
+- 下一固定完整批中文检查点及版本，再回Blob必需C01—C17剩余全域/Assist三态/位姿/Cross原组合；剩余SDK/历史/其他通知/原249关联/VM同态/真实VS/人工门禁不删，Blob业务仍冻结，目标active，第一阶段未完成。
+
+## 2026-10-29 原21失败中的14项已迁直接源码宿主并定向通过
+
+- 上轮通知合并及画布隔离实修属实际进展；本轮不改Blob业务，新增ImageSourceRecovery正式验证轨，直接编译原LocalResultImagePreview/DesignComposition/SolutionManager相关源及共享WpfTestDispatcher；程序集仍UI.Tests友元身份但仅从本轨out加载，不使用共享旧UI.Tests程序集或产品副本。测试源码SHA/实际测试程序集位置和SHA均进报告。
+- 修13个原线程/旧插件目录测试入口：全进同一个真实Application Dispatcher，无目录LoadPlugins，LocalImageExecution夹具读当前快照Reader。Recovery001/002=16过1败均保；alpha原输入tRNS有效但IDAT实际00c0（两个红色索引），此前只看调色板误判产品，试验性展开后003仍22过1败，核完整索引后撤回产品改动。LocalResultImagePreview.cs与HEAD无差异。输入直接Indexed1=10，实查索引80，alpha=0原断言不变；六组1/2/4/8位/半透明/跨行/灰度/彩色均走原产品解码。
+- 最终Recovery006=23/0，确切承接原14失败；原21剩7个ResultWorkspace未迁，原249整体未重跑，不累加成整体通过。最终UI017=0错6429警告38.43秒/full007=0错6303警告32.76秒；同产物FullChain003=9/0。权威I2_UI_FAILURE_RECOVERY_20261029.json核发布全部文件及两轨加载SHA，保所有失败和PNG输入/调色板/CRC/解压索引。
+- 44976/48865/92648/78735构建、55553/96800/65305失败及73555/98060/75590验证均终态，无live。用户BlobParameterEditor.xaml原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不暂存不推送；主仓唯一写、不启子智能体，目标active。
+- 下一ResultWorkspace剩7失败与同组源直接改当前唯一快照，再修实际选择回声/preview/上下文/重入；私有调试及其他通知、SDK隔离、历史/C01—C17/真实VS/VM同态/人工门禁仍保留，Blob业务阶段一冻结。
+
+## 2026-10-29 I2正式节点通知合并及实际画布隔离残留修复候选
+
+- 上轮49d26126源码与同提交正式核收属实际进展。本轮主仓唯一写补ResultDispatchQueue：每域最新未认领结果、共享一次UI投递、取消/退役/替换释放，活动消费者保租约，投递/消费者/释放错误继续清理；管理器关闭及实际WPF Dispatcher关闭排空。算法/运行记录不合并，不新增结果模型/工程。
+- 正式ResultChain005先22/0；FullChain001真实失败揭露画布VmNodeIconConverter还读已移除目录。改中立ToolNodeIconConverter与工具箱同一准入Runtime目录/原图标，未知工具无旧目录后备；新增实际资源验证。替换XAML漏Image.Style闭合导致UI014=1错，修正后UI015=0错1003警告25.83秒/full005=0错6368警告33.95秒。原异常/编译日志全保。
+- 最终候选ResultChain007=24/0（四并行生产者/1000入队/跨线程关闭/实际管理器/Dispatcher）；FullChain002=9/0、Editor004=10/0、Workflow005=10/0、真实EXE准入attempt006八项过并还原原SHA。所有发布文件及四轨加载SHA核到I2_NOTIFICATION_QUEUE_20261029.json。当前产物为49d基线加脏候选，不套之前提交产物成绩；不称真实VS/VM视觉或人工验收。
+- 所有81634/41197/76507/97163/40039构建、61076失败及69024关联回归均终态，ResultChain007独立验证亦终态，无live。用户Blob参数页原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不暂存、不推送；Blob业务冻结，不启子智能体。
+- 下一原UI21失败新正式测试宿主/实修，私有调试及其他UI通知边界、SDK剩余隔离/历史/C01—C17。正式节点通知有界不等于所有事件队列已完成，整个两阶段目标active。
+
+## 2026-10-29 I2中文检查点49d26126及同提交正式核收
+
+- 上一解释隔离方案属无代码进展；本轮已保存96路径结果主链迁移为49d26126，本地未推送，用户Blob参数页排除且SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed不变。
+- 提交后串行UI012=0错6468警告85.30秒/full003=0错6458警告42.69秒；正式manifest源码身份49d26126，所有发布文件和五轨加载路径/SHA逐一核验，详I2_COMMITTED_RELEASE_20261029.json。候选旧证据保留，不套旧成绩。
+- 正式ResultChain004十二过、Workflow035十过、Debug020七过、Editor082十过、Design068一百零一过；Runtime图像源21/0、Blob9/0；真实EXE准入attempt005八过，组件缺席测试后原SHA还原。非VM逐态/真实VS/用户验收，不称阶段通过。
+- 构建89481/55442及回归16343/68266均终态，无live。主仓唯一写，不启子智能体；无推送，Blob业务冻结。下一继续新UI测试宿主与原21失败、通知排队有界/关闭、SDK剩余隔离及C01—C17原组合门禁；两阶段目标active。
+
 ## 2026-10-29 I2唯一冻结结果主链候选已成片实施并核验，完整阶段仍未关
 
 - 按前轮109文件整体设计集中迁移：RuntimeToolResults源删除；准入身份/一次捕获、冻结Snapshot/Reader、结果Owner、状态和纯Node/Run租约数据归现有Plugin.Runtime（聚合不含调度），不新增工程/基类/兼容转发。正式/私有调试/绑定/Context/树表/双图与Root窗口直接传同一快照，去隐式SDK图像副本、日志转换、ContractToolResults和全局值合成旧结果。Blob算法/参数页未改。

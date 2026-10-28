@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "I2结果主链候选已集中切换：唯一Runtime冻结快照、无隐式SDK图像副本、异步通知租约；规定UI/full零错，正式12/10/7/10/101组及Runtime21/9和准入8组通过。旧21失败与未验控制组合/SDK清理/历史/VS/人工继续；Blob业务冻结，目标active。",
+  "current": "原21项失败已全部在当前新宿主定向通过，本批50/0；UI/full零错，实际宿主9/0、窗口10/0、无UI泵HALCON工作流10/0、生命周期24/0、准入8项。原249整体未重跑，SDK/历史/完整控件与VS/VM/人工门禁未完成，不能关闭I2或第一阶段。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -8479,7 +8479,7 @@
         "全部完成后才删除剩余旧工程/旧路径。公共框架设计与职责整理在I0/I1完成，不推迟到此。"
       ]
     ],
-    "nextAction": "固定本批源码/正式身份后继续新UI测试宿主与原21失败、通知排队/关闭边界及剩余控件门禁；不把候选主链通过称完整I2或第一阶段通过。",
+    "nextAction": "固定本批完整源码检查点及版本证据；回到Blob必需控件剩余全域ROI/Assist三态持久化/位姿联动/Cross等原组合，穿插清理剩余SDK/历史/通知边界；不等全VM库，不进入Blob业务。",
     "sourceAudit": {
       "evidence": "docs/collaboration/evidence/PRODUCT_ISOLATION_INVENTORY_20261028.json",
       "reproduce": "scripts/documentation/audit_product_isolation.py",
@@ -8555,7 +8555,7 @@
       "sourceCommit": "70d8032aa81cfc5652a95b92601e6c5f8039c9c2"
     },
     "resultChainCutover": {
-      "status": "结果主链已集中切换并通过候选规定构建与正式轨；原21项UI失败和剩余SDK/视觉/历史/控件门禁未完成，不能据此关闭I2或第一阶段。",
+      "status": "原21项失败已全部在当前新宿主定向通过，本批50/0；UI/full零错，实际宿主9/0、窗口10/0、无UI泵HALCON工作流10/0、生命周期24/0、准入8项。原249整体未重跑，SDK/历史/完整控件与VS/VM/人工门禁未完成，不能关闭I2或第一阶段。",
       "evidence": "docs/collaboration/evidence/I2_RESULT_CHAIN_INVENTORY_20261029.json",
       "sourceCommit": "70d8032aa81cfc5652a95b92601e6c5f8039c9c2",
       "compiledScope": {
@@ -8687,7 +8687,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/LocalResultImagePreviewTests.cs",
           "sourceSha256": "56a576050e46469f6567832637fd6051e7ab8ba01e20542903f82764a4875c00",
           "disposition": "像素证据待核：检查实际PNG的tRNS与decoderpalettealpha，再修真实解码或生成文件；Expected alpha=0断言保留。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Actual_file_selection_uses_preview_without_ROI_authority_and_clear_image_does_not_retire_table()",
@@ -8696,7 +8697,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "产品选择/preview链：消除SetDisplayImageFromSource→RefreshNativeResultImages回声重建，保双侧独立选择及对象/帧身份；修真实文件异步预览和重入导航。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Foreign_workflow_or_document_results_never_supply_display_images()",
@@ -8705,7 +8707,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "产品准入/退役：拒绝外来scope/document，真实上下文切换清旧图，同时保证迟到外来消息不清当前有效新结果。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Loaded_real_workspace_uses_same_publication_in_two_independent_panes_and_switches_only_selected_side()",
@@ -8714,7 +8717,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "产品选择/preview链：消除SetDisplayImageFromSource→RefreshNativeResultImages回声重建，保双侧独立选择及对象/帧身份；修真实文件异步预览和重入导航。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Original_shape_DP_reentry_installs_B_in_both_panes_and_old_A_cannot_clear_or_write_output()",
@@ -8723,7 +8727,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "真实重入保留：DP回调送入B后退出回调并等待既定延迟安装，再严格核两侧B且旧A不可写/清；修正回调内部提前断言。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Refresh_input_DP_observer_selects_current_output_and_preserves_new_intent_and_frame()",
@@ -8732,7 +8737,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "产品选择/preview链：消除SetDisplayImageFromSource→RefreshNativeResultImages回声重建，保双侧独立选择及对象/帧身份；修真实文件异步预览和重入导航。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Restoring_obsolete_input_choice_does_not_discard_a_synchronous_output_choice()",
@@ -8741,7 +8747,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "产品选择/preview链：消除SetDisplayImageFromSource→RefreshNativeResultImages回声重建，保双侧独立选择及对象/帧身份；修真实文件异步预览和重入导航。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ResultWorkspaceProductionTests.Undeclared_region_resources_do_not_draw_and_same_frame_selection_rejects_old_publication()",
@@ -8750,7 +8757,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ResultWorkspaceProductionTests.cs",
           "sourceSha256": "81113da898bacb0a9bb5a60d3e6bbfd33a030f830360167d1f0d66cfe93cacd4",
           "disposition": "真实声明边界保留：检查没有额外区域raster层，不把必须存在的底图Image层当违规区域；保同帧/旧发布拒绝。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ImageSourceDesignCompositionTests.Actual_field_edit_changes_same_draft_and_refreshes_source_visibility_and_auto_switch()",
@@ -8759,7 +8767,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs",
           "sourceSha256": "b2cfaadad51bd6d7d84f008c1002f68b437de1d3573668cd5c375881cc5d4b0d",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ImageSourceDesignCompositionTests.Public_design_context_uses_actual_local_camera_composition_without_device_connection(False)",
@@ -8768,7 +8777,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs",
           "sourceSha256": "b2cfaadad51bd6d7d84f008c1002f68b437de1d3573668cd5c375881cc5d4b0d",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ImageSourceDesignCompositionTests.Public_design_context_uses_actual_local_camera_composition_without_device_connection(True)",
@@ -8777,7 +8787,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs",
           "sourceSha256": "b2cfaadad51bd6d7d84f008c1002f68b437de1d3573668cd5c375881cc5d4b0d",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "ImageSourceDesignCompositionTests.Public_rebind_rejects_old_source_callbacks_and_releases_each_attached_input_once()",
@@ -8786,7 +8797,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/ImageSourceDesignCompositionTests.cs",
           "sourceSha256": "b2cfaadad51bd6d7d84f008c1002f68b437de1d3573668cd5c375881cc5d4b0d",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Adding_missing_or_duplicate_images_does_not_change_current_selection()",
@@ -8795,7 +8807,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Import_cancel_after_atomic_acceptance_keeps_the_complete_committed_batch()",
@@ -8804,7 +8817,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Import_cancel_before_acceptance_does_not_publish_or_change_selection()",
@@ -8813,7 +8827,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Import_source_switch_during_commit_cannot_change_new_source_selection()",
@@ -8822,7 +8837,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Missing_images_can_be_cleared_and_empty_configuration_is_persisted()",
@@ -8831,7 +8847,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Right_click_and_programmatic_selection_do_not_execute_left_and_keys_execute_once()",
@@ -8840,7 +8857,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Selection_and_removal_preserve_current_image_identity_and_one_way_display()",
@@ -8849,7 +8867,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Unchecked_activation_in_selection_mode_preserves_start_history_and_execution()",
@@ -8858,7 +8877,8 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         },
         {
           "originalName": "SolutionManagerUiTests.Unloading_preview_does_not_clear_source_or_persisted_paths()",
@@ -8867,10 +8887,11 @@
           "currentSource": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
           "sourceSha256": "e7acbce34733eca9bda2c0478a8d4716ae08c3bf8ec79bc2a62b6d50685bd78f",
           "disposition": "测试宿主/线程：迁入同一真实Application所属Dispatcher，保全部编辑/选择/保存/取消断言；不另建线程访问既有WPF资源。",
-          "verification": "尚未在新结果链重跑，不能标通过"
+          "verification": "原失败已在本批直接源码新宿主定向通过，原错误保留；原249整体未重跑。",
+          "recoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
         }
       ],
-      "nextBatch": "按上述现有快照/身份/租约的职责归位与全部消费者成片实施；不在本轮先建空接口/新wrapper；Blob业务冻结和第一阶段门禁继续。",
+      "nextBatch": "固定本批完整源码检查点及版本证据；回到Blob必需控件剩余全域ROI/Assist三态持久化/位姿联动/Cross等原组合，穿插清理剩余SDK/历史/通知边界；不等全VM库，不进入Blob业务。",
       "implementationEvidence": "docs/collaboration/evidence/I2_RESULT_CHAIN_IMPLEMENTATION_20261029.json",
       "implementationResults": [
         [
@@ -8883,7 +8904,7 @@
         ],
         [
           "通知生命周期",
-          "主结果和私有调试移除同步Dispatcher等待，取消/退役释放待认领租约，认领中保读者。连续多轮排队有界性仍待专项。"
+          "正式工作流节点通知同域保最新未认领项，共享单次投递；取消/退役/关闭释放待认领项，活动消费者保租约；24项含四并行生产者、跨线程关闭及真实Dispatcher关闭。私有调试/其他进度队列边界另核。"
         ],
         [
           "规定构建",
@@ -8896,8 +8917,28 @@
         [
           "失败与未完",
           "窗口真实超时修复为漏接路由载荷，不延长等待；原UI249套21失败未重跑，旧SDK测试边界逐项保留，不删除失败凑绿。完整历史、剩余控件/位姿/ROI和人工门禁继续。"
+        ],
+        [
+          "已提交正式核收49d26126",
+          "I2_COMMITTED_RELEASE_20261029.json：569个发布文件及48条实际加载记录SHA/路径核对；本次规定构建与八类专项重跑通过，原21失败和全部未完门禁保留。"
+        ],
+        [
+          "画布隔离残留实修",
+          "FullChain001实际渲染揭露旧目录嵌入资源残留；中立ToolNodeIconConverter复用准入工具目录和现图标，与工具箱一致，FullChain002九项通过；原异常及XAML编译失败保留。"
+        ],
+        [
+          "原失败承接14/21",
+          "I2_UI_FAILURE_RECOVERY_20261029.json：直接原源码+正式程序集+同Application Dispatcher，23/0含六组索引边界；PNG原输入IDAT为11而非10，修测试编码不改alpha断言，撤回产品解码试验，剩余7项不计通过。"
+        ],
+        [
+          "结果工作区与全部原21失败承接",
+          "I2_RESULT_WORKSPACE_RECOVERY_20261029.json：50/0；修导航回声/上下文同快照/上游恢复与缓存校准；真实来源条明确选择发纯预览，删Main旧集合/索引；保游标/持久化/晚通知/严格B坐标。原249未全量重跑。"
         ]
-      ]
+      ],
+      "committedReleaseEvidence": "docs/collaboration/evidence/I2_COMMITTED_RELEASE_20261029.json",
+      "notificationQueueEvidence": "docs/collaboration/evidence/I2_NOTIFICATION_QUEUE_20261029.json",
+      "uiRecoveryEvidence": "docs/collaboration/evidence/I2_UI_FAILURE_RECOVERY_20261029.json",
+      "resultWorkspaceRecoveryEvidence": "docs/collaboration/evidence/I2_RESULT_WORKSPACE_RECOVERY_20261029.json"
     }
   }
 }

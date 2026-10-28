@@ -94,7 +94,6 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 图像预览
         private bool _autoSwitchEnabled = true;
-        private int _currentImageIndex = -1;
 
         // 参数选择状态（用于 TreeView 事件处理）
         private string? _selectedParameterName;
@@ -241,9 +240,17 @@ namespace SunEyeVision.UI.Shell.Windows
             private set
             {
                 if (ReferenceEquals(_imageResult.ActiveInputSource, value)) return;
-                if (_imageResult.ActiveInputSource is { } old) old.ConfigurationEdited -= OnImageInputConfigurationEdited;
+                if (_imageResult.ActiveInputSource is { } old)
+                {
+                    old.ConfigurationEdited -= OnImageInputConfigurationEdited;
+                    old.ExplicitSelectionAccepted-=OnExplicitImageSelectionAccepted;
+                }
                 _imageResult.ActiveInputSource = value;
-                if (value != null) value.ConfigurationEdited += OnImageInputConfigurationEdited;
+                if (value != null)
+                {
+                    value.ConfigurationEdited += OnImageInputConfigurationEdited;
+                    value.ExplicitSelectionAccepted+=OnExplicitImageSelectionAccepted;
+                }
                 OnPropertyChanged(nameof(ActiveInputSource));
             }
         }
@@ -315,8 +322,22 @@ namespace SunEyeVision.UI.Shell.Windows
         /// <summary>
         /// 图像显示源索引变化回调（实现 IRootCoordinator，由图像结果子 VM 触发）
         /// </summary>
+        private bool _acceptingWorkspaceNavigation;
+        internal void AcceptWorkspaceImageSourceIndex(int index,bool persist=false)
+        {
+            var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
+            var source=index>=0&&index<DisplayImageSources.Count?DisplayImageSources[index]:null;
+            var previous=_acceptingWorkspaceNavigation;_acceptingWorkspaceNavigation=true;
+            try{SelectedDisplayImageSourceIndex=index;}
+            finally{_acceptingWorkspaceNavigation=previous;}
+            if(persist&&node is not null&&source is not null&&ReferenceEquals(SelectedNode,node)
+                &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&index<DisplayImageSources.Count
+                &&ReferenceEquals(DisplayImageSources[index],source))
+                node.SelectedDisplaySource=ImageSourceReference.FromDataSource(source);
+        }
         public void OnSelectedImageSourceIndexChanged(int index)
         {
+            if(_acceptingWorkspaceNavigation)return;
             var sourceInfo = (index >= 0 && index < DisplayImageSources.Count)
                 ? DisplayImageSources[index].ToString()
                 : "无效索引/空集合";
@@ -626,10 +647,6 @@ SplitterPosition = position;
             set => SetProperty(ref _allWorkflowsRunButtonText, value);
         }
 
-        /// <summary>
-        /// 图像集合，使用优化集合
-        /// </summary>
-        public BatchObservableCollection<ImageInfo> ImageCollection { get; }
 
         /// <summary>
         /// 是否自动切换
@@ -638,21 +655,6 @@ SplitterPosition = position;
         {
             get => _autoSwitchEnabled;
             set => SetProperty(ref _autoSwitchEnabled, value);
-        }
-
-        /// <summary>
-        /// 当前显示图像索引
-        /// </summary>
-        public int CurrentImageIndex
-        {
-            get => _currentImageIndex;
-            set
-            {
-                if (SetProperty(ref _currentImageIndex, value))
-                {
-                    UpdateCurrentImageDisplay();
-                }
-            }
         }
 
         /// <summary>
@@ -802,7 +804,6 @@ SplitterPosition = position;
             CalculationResults = new ObservableCollection<ResultItem>();
 
             // 初始化图像集合（优化版）
-            ImageCollection = new BatchObservableCollection<ImageInfo>();
 
             // 初始化共享基础设施服务
             _runtimeParameterService = new SunEyeVision.UI.Services.RuntimeParameterService();
@@ -3163,9 +3164,8 @@ SplitterPosition = position;
         /// （Clear + Add × N）后再设置 SelectedIndex，避免 ComboBox 内部因竞态条件选中项丢失
         /// 
         /// 使用两阶段策略：
-        ///   阶段1: 先设 Property = -1（确保 WPF 绑定真正传播到 DP）
-        ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
-        /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
+        /// 原控件工作区自行维护稳定选择；这里只同步导航索引，
+        /// 不再用临时-1触发清图，也不把列表重建当成用户选择写入方案。
         /// </summary>
         private long _displaySourceSelectionGeneration;
         private void SetSelectedDisplayImageSourceIndexDeferred(int index)
@@ -3177,9 +3177,11 @@ SplitterPosition = position;
             {
                 if(generation!=_displaySourceSelectionGeneration||!ReferenceEquals(SelectedNode,node)
                     ||!ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab))return;
-                _selectedDisplayImageSourceIndex=-1;SelectedDisplayImageSourceIndex=-1;
-                SelectedDisplayImageSourceIndex=index;
-                if(index<0)RefreshNativeResultImages();
+                // Source-list reconciliation is a mirror update, not a fresh user
+                // navigation. The native workspace reconciles its own stable choices.
+                // In particular it must not erase an explicitly selected file preview.
+                AcceptWorkspaceImageSourceIndex(index);
+                ResultWorkspaceChanged?.Invoke();
             }));
         }
 
@@ -4278,19 +4280,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         #endregion
 
-        #region 图像预览
 
-        /// <summary>
-        /// 更新当前图像显示
-        /// </summary>
-        private void UpdateCurrentImageDisplay()
-        {
-            if(CurrentImageIndex<0||CurrentImageIndex>=ImageCollection.Count){ClearNativeImagePresentation();return;}
-            _nativePreviewPath=ImageCollection[CurrentImageIndex].FilePath;_nativeImagesSuppressed=false;
-            ResultWorkspaceChanged?.Invoke();
-        }
-
-        #endregion
 
         #region 结果更新
 
@@ -4926,7 +4916,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 if (ImageSourcePolicy.Read(sourceNode) is { } policy) source.LoadFromPolicy(policy);
                 sourceNode.InputSource = source;
             }
-            BindLocalImageSourceEditor(sourceNode,source);
+            if(!_acceptingImageSource&&DocumentManager.Session is {} sourceSession&&ImageSourcePolicy.Read(sourceNode) is {} acceptedPolicy)
+                RefreshAcceptedImageSourceView(sourceNode,source,acceptedPolicy,SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(sourceSession.Document));
+            else BindLocalImageSourceEditor(sourceNode,source);
             ImagePreviewSourceMessage = source.Count == 0 ? "请添加本地图像" : string.Empty;
             if (_currentDisplayNodeId != sourceNode.Id || !ReferenceEquals(ActiveInputSource, source))
             {

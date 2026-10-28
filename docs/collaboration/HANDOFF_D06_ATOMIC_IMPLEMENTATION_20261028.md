@@ -18,6 +18,6 @@
 
 - 原24615965已合主线e258a862；固定5780c062 UI002/full001均零错，EXE身份probe0。首次GlobalBinding237过20败/257，ImageSources174过2败；权威记录为主仓Release/_validation/S4-20261025/GlobalBinding/attempt-001及对应ImageSources，不覆盖失败日志。
 - 夹具集中修复：256b5de0（4类正式类型/字段身份/Host草稿冲突），8ad550f8（真实WPF dispatcher、typed端点断言及当前batch服务）。本次手动租约fixture改登记真实流程，不改生产准入。
-- SDK拒绝结果只用显式ToolSideEffectReceipt保已发送纯值事实，新Cancelled保同request失效身份；源资源和IDisposable必清，捕获/清理失败返回新Failed诊断。非发送业务状态、声明成功输出、Tag/显示/ROI不复制。SendData唯一提供者，取消列表只返回副本。8项sync/async×取消/退休/捕获失败/清理失败已挂GlobalBinding；只读审查未见阻断，尚未运行。
-- SendData正式事务整链由独立写者集中完成：同私有nodeDraft和变量草稿、typed Configure/Prepare、联合提案/历史/保存/关闭取消；SendDataProductionEditorTests三项真实窗口回归挂同轨。多变量提案冲突仍明确拒绝；不偷改正式对象后Synchronize兜底。
+- SDK拒绝结果只用显式ToolSideEffectReceipt保已发送纯值事实，新Cancelled保同request失效身份；源资源和IDisposable必清，捕获/清理失败返回新Failed诊断。非发送业务状态、声明成功输出、Tag/显示/ROI不复制。SendData唯一提供者，取消列表只返回副本。18项sync/async取消/退休/捕获与双清理失败/终态构造资源和输出/getter异常负测已挂GlobalBinding；不安全终态候选清理后回SDK受控无输出结果，不重复Activator。收据不重新开放任何RuntimeValue；只读审查和语法核查不计运行通过。
+- SendData正式事务整链由独立写者集中完成：同私有nodeDraft和变量草稿、typed Configure/Prepare、联合提案/历史/保存/关闭取消；SendDataProductionEditorTests四项真实窗口回归挂同轨。多变量提案冲突仍明确拒绝；不偷改正式对象后Synchronize兜底。
 - 下一主线收齐固定候选后统一UI/full、身份探针、GlobalBinding与ImageSources；本线不构建、不写任何私有Release/DLL。语法或源码提交不计正式通过，不提前启动交付；真实VS及人工仍待验。

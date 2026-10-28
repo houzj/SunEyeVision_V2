@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -94,12 +95,43 @@ public partial class ToolExecutor
         catch (Exception error) { failures.Add(error); }
         try { ReleaseRejectedResult(rejected); }
         catch (Exception error) { failures.Add(error); }
-        if (failures.Count > 0) throw new AggregateException("Rejected tool receipt capture or cleanup failed.", failures);
-        var terminal = CreateTerminalResult(resultType, ExecutionStatus.Cancelled, receipt is null
-            ? "运行已取消或身份失效。" : "运行已取消或身份失效；已发生的发送不能撤回。");
-        terminal.SideEffectReceipt = receipt;
-        request.AttachResultMetadata(terminal);
-        return terminal;
+        if (failures.Count > 0) return SdkTerminal("Rejected tool receipt capture or cleanup failed.");
+        if (receipt is null) return SdkTerminal("运行已取消或身份失效。");
+
+        ToolResults? candidate = null;
+        try
+        {
+            candidate = CreateTerminalResult(resultType, ExecutionStatus.Cancelled, "运行已取消或身份失效；已发生的发送不能撤回。");
+            // Constructors are plugin code too. Never deliver a newly created runtime resource/output.
+            if (candidate.Resources is null && candidate is not IDisposable && candidate.Tag is null
+                && !candidate.Display.HasItems && candidate.InspectionGeometries.Length == 0
+                && candidate.MaskGeometries.Length == 0 && candidate.DeclaredOutput is null
+                && !candidate.GetDisplayImages().Values.Any(image => image is not null)
+                && candidate.GetOutputVariables().All(output => output.RuntimeValue is null))
+            {
+                candidate.SideEffectReceipt = receipt;
+                request.AttachResultMetadata(candidate);
+                return candidate;
+            }
+        }
+        catch (Exception error) { failures.Add(error); }
+        if (candidate is not null)
+            try { ReleaseRejectedResult(candidate); } catch (Exception error) { failures.Add(error); }
+        return SdkTerminal("运行已取消或身份失效；已发生的发送收据已保留，工具终态构造未满足无输出/无资源约束。");
+
+        ToolResults SdkTerminal(string message)
+        {
+            // Do not re-enter a plugin constructor when capture, inspection or cleanup fails.
+            var terminal = new GenericToolResults
+            {
+                Status = failures.Count == 0 ? ExecutionStatus.Cancelled : ExecutionStatus.Failed,
+                IsPass = false, ErrorMessage = message,
+                ErrorStackTrace = failures.Count == 0 ? null : new AggregateException(message, failures).ToString(),
+                SideEffectReceipt = receipt
+            };
+            request.AttachResultMetadata(terminal);
+            return terminal;
+        }
     }
     private ToolResults RunSynchronousCore(IToolPlugin tool,ToolExecutionRequest request)
     {

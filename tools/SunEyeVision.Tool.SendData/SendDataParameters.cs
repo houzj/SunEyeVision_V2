@@ -103,9 +103,11 @@ public sealed class SendDataResults : CommunicationToolResults, IToolSideEffectR
     public override IReadOnlyList<OutputVariable> GetOutputVariables()
     {
         var fields = base.GetOutputVariables().ToList();
-        fields.Add(SubmittedField.CreateContract(Submitted)); fields.Add(SkippedField.CreateContract(Skipped));
-        fields.Add(FailedField.CreateContract(Failed)); fields.Add(PayloadField.CreateContract(Payloads.Count > 0 ? Payloads.ToArray() : null));
-        fields.Add(SentDataField.CreateContract(SentData.Count > 0 ? SentData.ToArray() : null));
+        // 已发生的外部发送只属于收据。失败/取消结果保留声明，不重新开放绑定输出。
+        fields.Add(SubmittedField.CreateContract(IsSuccess ? Submitted : null)); fields.Add(SkippedField.CreateContract(IsSuccess ? Skipped : null));
+        fields.Add(FailedField.CreateContract(IsSuccess ? Failed : null)); fields.Add(PayloadField.CreateContract(IsSuccess && Payloads.Count > 0 ? Payloads.ToArray() : null));
+        fields.Add(SentDataField.CreateContract(IsSuccess && SentData.Count > 0 ? SentData.ToArray() : null));
+        if (!IsSuccess) foreach (var field in fields) field.RuntimeValue = null;
         return fields;
     }
 }

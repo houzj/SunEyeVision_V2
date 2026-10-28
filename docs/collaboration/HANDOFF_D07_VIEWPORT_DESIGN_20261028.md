@@ -83,3 +83,16 @@ Group保持暂停：MainWindowGroupEditing/GroupRegionParameterControl目前也�
 RegionRun显示与Domain蒙版不同职责：前者是结果覆盖，需原绘制原语和唯一layer owner；后者决定背景有效像素。ShapeItemsPage.AddShape在GlobalRenderVariable.ShapeRenderingMaxNumber（默认10000）达到后直接返回，不能静默截断长区域或让区域挤掉后续高亮/文字。实施前统一预算全部投影，超过能力时明确诊断，不改全局上限或近似区域冒充完整显示；完整扫描行渲染/裁剪未验时仍列未完成。
 
 Arc的只读显示与编辑手势也须分开：原page有IAnnularSector路径，其GetAnnularGeometry允许等内外半径，负向/整圈与原360角特殊处理仍须核几何等价后复用，不能因没有ROI Arc手势便宣称只读弧线完全缺失。
+
+
+## 7. 公共视口实现前的真实能力核对（主线只读复核）
+
+本节是实施边界与待补能力，不是已落产品或已通过验收。
+
+- 原接口可复用真实图像 `Frame/Layout/AcquirePixels`、像素lease的 `EffectiveDomain/AcquireDomainReader`，以及Region reader的 `Frame/SourceFrame/RunCount/ReadRuns`。NativeRoiImageFrame已有逐行去padding和私有buffer；现实现尚未保存实际Domain坐标及runs，不能据此宣称非矩形有效域已显示。
+- 结果视口应借原Shell已经存在的ImageViewBox，不能另套第二个native view；每侧唯一owner组成背景、结果、文字、选择及参数ROI。背景frame epoch、各layer revision及宿主publication epoch分别管理；旧层Dispose/队列/取消只能清自己代次，换背景不退休仍在展示的结果表publication。
+- 原像素坐标只转换一次。原PolygonShape/PointShape/TextShape在绘制时乘ControlToImageRadio；公开几何输入仍保原像素坐标，viewport不得先乘比例再交原件。resize/zoom不反写正式模型坐标。
+- 图像元信息、pixel lease及Domain reader必须交叉核对完整物理Frame与实际Coordinates，禁止硬编码RoiDeclarations.ImageFrame或把当前选图Frame贴给未知结果。Domain之外的显示不能用ClipToBounds冒充；若以私有BGRA显示缓冲表达透明域外，须保原像素reader/源元信息供读值及身份核验，不能把显示缓冲当新算法输出。
+- RLE必须完整读取并有准入预算：RunCount、输入bytes、输出primitive数分别上限检查；每批最多4096，读取长度必须1..请求数且跨批排序/不重叠，逐批检查current/frame。超预算、提前空批、异常或换代均整批拒绝并释放lease，记录明确诊断，不取前N条、不用Bounds或抽样轮廓替代带孔区域。
+- 当前ShapeItemsPage闭包没有已核实的原Region/RLE视觉入口，现有IPoint/IPolygon/IRectangle不能自动证明精确区域渲染。必须补原始证据或验证精确投影路径；不得凭假定像素边界偏移实现。源RLE的孔洞、边缘单像素、空域/非矩形域必须真实像素渲染核对。
+- 必测范围补充：Gray8/Bgr24/Bgra32及padding；实际Domain交叉核；同尺寸异Frame/同Frame异Coordinates；双视口独立lease；换图/关闭/读取异常/重入；预算恰好与超1、跨批乱序/提前0；同坐标缩放只投影一次；旧queued render/clear/ROI取消不清新层。VS设计器与运行深浅主题、高DPI、真实VM同态仍单列人工验收。

@@ -1,4 +1,17 @@
-﻿## 2026-10-28 源轨171过1败后的恢复与窗口身份修复候选
+﻿## 2026-10-28 结果树表同源数据链本批核收通过
+
+- 正式产品固定b6f77679，UI006=0错6579警告111.26秒，full006=0错6579警告61.45秒。173图像源/原树、publication9、来源2、原表1、原样式2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1均过；宿主夹具只顺序修正a9cf86b0，单编helper0错21警告6.71秒后Host004=1过0败。src/tools提交差分为空，不冒称产品和测试同一commit。
+- RootResource真实Fact1及完整部署18项过；795正式发布条目/142加载记录SHA全核，临时移动3文件和清单原身份还原。权威证据evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json（12条同源receipt，含真实表500→1000→1205、300项树分页异常后继续、owner退休与末借阅释放）。所有原失败日志保留。
+- 当前50769/80363/19830/2197/98599全部终态，无live构建/测试。仅原方案/Catalog/交接归档，不需重编产品；用户Blob参数XAML仍SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed，不改、不暂存。
+- D06完整正式变量绑定仍在工作流独立线，D07同帧viewport/Domain/精确Region显示及SDK主图退出仍未实施完；无proof当前明确不绘高亮。C09/C17等原阶段一未完项、真实VS/VM同态与人工仍全保，不关闭整个目标，不进入Blob业务重组。下一先冻结D07公共接口/owner及全部消费者再集中实施，不造第二图像路径。
+
+## 2026-10-28 最后两项真实失败修复已合；下一集中核收
+
+- 主线已合工作流199688aa为38122b70，以及7b38cf17为55b7a8d8。原树真实Loaded/Expanded恢复、null清选和同步换目标门禁及实际窗口实例授权/Apply前复核已落；原断言保留并加重入/重挂用例。下一统一UI006/full006及正式EXE先probe后新回归，尚未验收这批源。
+- 上批d5e产物UI005=0错6552警告168.38秒，full005=0错6591警告74.84秒；Toolbox002正式EXE探针0，publication9/origins2/table1/style2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1、RootResource1、完整部署轨均通过。ImageSources002=171过1败（tree中央恢复），WorkflowHost002=1败（错误窗口授权）；均保日志，不能套到最新修复当已绿。
+- 当前所有26721/99337/40020/59265终态，无live。仅文档/Catalog补来源身份与hash，不改嵌入provenance；用户参数页SHA不变且排除。D06独立整批在途，D07真实Domain/layer/RLE缺口已入交接第7节；完整阶段及人工仍未完成。
+
+## 2026-10-28 源轨171过1败后的恢复与窗口身份修复候选
 
 - 树恢复窄补：SelectedItem=null实际清已实现容器选择；每次false→true之间复核恢复epoch、host目标、ItemsSource及container真实行。外部Tree.SelectedItemChanged同步换目标/源会退役旧恢复并排新目标，新增真实Loaded reentry→新目标、null→实际Tree.SelectedItem空且无用户命令回归。两C#纯语法0错，未运行。
 - 主线固定d5e75461：UI005=0错6552警告168.38秒/full005=0错6591警告74.84秒；serial99337全部终态，正式Toolbox probe0、publication9/0（300分页异常）、Design91过，ImageSources002=171过1败（树视觉恢复line85），WorkflowHost002参数窗口身份拒绝仍失败；origins2/table1/style2复验过。以上分范围，目标未完成。
@@ -12,6 +25,13 @@
 - 已按完整日志归因并集中修：7133cbe3保根关闭后拒读/独立像素及Domain reader存活并最终失效；非法input.*设置覆盖在准入精确抛异常，补合法下一轮证明槽位排空。670d47ef修原树容器重建不可覆盖host child；交互夹具真实RoutedEvent及ContextIdle排空DataBind，明确初始选择核重复导入身份/版本不变；旧冻结执行仍用旧图，但后接纳的正式选择2须保留，显示游标独立原断言另保；WorkflowHost真实加载正式组件后才MarkLoaded。3ec63d5c修原Shell六态旧Apps.Style URI为实际打包路径。
 - 四主要C#纯语法0错、XML/资源存在/diff检查通过，均非新运行成绩。主线另修按Dispatcher弱实例颜色字典及DeclaredPropertyList分页异常事务，双方不同文件，下一一次集成构建/重跑；当前本线工作树源码已提交，无live构建、不写私有Release。
 - D06新产品暂停于整体设计，D07闭包证据保留。Arc只读可候选复用原IAnnularSector等半径，负sweep规范同点集、整圈用原Circle避免0.01缺口；双向重复描边/线帽和透明度仍须实际核验，不把ROI缺手势当显示缺能力。Group冻结，A01–E07完整保留。
+
+## 2026-10-28 同源结果发布已接入；真实关联失败集中修复
+
+- 固定产品基线d8cca20e，用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。UI003=0错6579警告147.40秒，全量004=0错6606警告84.64秒；publication8/origins2/table1/style2均过，真实表500→1000→1205。Design91、Components9（真HALCON+owner）、RuntimeEditor10、FullChain8、Resources、Theme1及RootResource真实Fact1过。
+- ImageSources001真实失败（源fixture/原树恢复/Apps.Style URI/跨STA画刷等），WorkflowHost001缺ImageLoad运行组件；已交原写者集中处理，失败日志保留。Toolbox正式EXE exit0但HEAD保存检查点后与程序集commit不符，严格门禁失败，不计通过；下一集中构建后先probe再commit。
+- 新审计发现PropertyList分页首集合通知异常会丢半页/More；root已改完整storage+More先安装后通知和旧代次门禁，补300项异常后128/256/300分页用例，尚未新验。共享颜色字典已改Dispatcher弱实例，保动态资源不冻画刷，待相关轨验。工作流线修PropertyListView/源交互/原Shell URI，不交叉写。本线主仓唯一产品写者；当前无live构建/测试。
+- 原方案同步同一次SDK snapshot→一Reader/publication→树表各Borrow；声明不取reader，历史不提前查询latest，同run不同snapshot区分发布。D06正式变量绑定、D07同帧viewport/原Shell生产消费者与SDK主图退出仍未完；无proof高亮明确拒绝，不能称图形闭环。Blob业务仍冻结，阶段一goal active。
 
 ## 2026-10-28 固定结果消费者9f197fbe集中集成
 

@@ -1,4 +1,4 @@
-﻿# D07 / E 图像结果视口与工作区整体迁移设计交接（2026-10-28）
+# D07 / E 图像结果视口与工作区整体迁移设计交接（2026-10-28）
 
 - 审计基线：9f197fbe，独立分支快进到46cce5cc42a6b39af92a4f78e73368a599a4ae65（后者只校正宿主测试）。
 - 当前分支：codex/d07-viewport-design；执行者：source_editor。
@@ -96,3 +96,23 @@ Arc的只读显示与编辑手势也须分开：原page有IAnnularSector路径�
 - RLE必须完整读取并有准入预算：RunCount、输入bytes、输出primitive数分别上限检查；每批最多4096，读取长度必须1..请求数且跨批排序/不重叠，逐批检查current/frame。超预算、提前空批、异常或换代均整批拒绝并释放lease，记录明确诊断，不取前N条、不用Bounds或抽样轮廓替代带孔区域。
 - 当前ShapeItemsPage闭包没有已核实的原Region/RLE视觉入口，现有IPoint/IPolygon/IRectangle不能自动证明精确区域渲染。必须补原始证据或验证精确投影路径；不得凭假定像素边界偏移实现。源RLE的孔洞、边缘单像素、空域/非矩形域必须真实像素渲染核对。
 - 必测范围补充：Gray8/Bgr24/Bgra32及padding；实际Domain交叉核；同尺寸异Frame/同Frame异Coordinates；双视口独立lease；换图/关闭/读取异常/重入；预算恰好与超1、跨批乱序/提前0；同坐标缩放只投影一次；旧queued render/clear/ROI取消不清新层。VS设计器与运行深浅主题、高DPI、真实VM同态仍单列人工验收。
+
+
+## 8. D06收齐后的宿主生产链复核与集中迁移边界
+
+复核基线6e5cfc40（2026-10-28）。本节是实际消费者与适配设计补定，不是产品已迁、构建通过或人工验收。主线公共owner/ROI attachment仍在核查，宿主不预写半成签名。
+
+|当前实现与行为|集中替换/复用决策|退出和验收出口|
+|---|---|---|
+|ImageResultControl.xaml用SDK ImageControl、外层自绘Tab和独立源条；xaml.cs持原PropertyList命令、ImageSourceStripSession、RunWorkflowWithImage、EditResultVariable|替换视觉组装为已有ResultWorkspaceShell，复用同一PropertyList、正式绑定命令和源session。只移动组装，不另造近似Tab或第二缩略列表|原图像控件从视觉树和字段真实删除；源条导入/选图一次接纳、运行权限、变量modal返回复核不退化；双图/当前结果/帮助/源条同真实Shell|
+|ImageResultViewModel及INodeResultSink承载BitmapSource DisplayImage；MainWindowViewModel.TryResolveDisplaySource从CurrentWorkflowContext结果快照按PropertyName取GetDisplayImages再转换Bitmap|显示源声明与选中项留在宿主；值读取改用正式typed端口/成员与其真实结果snapshot/publication，图像仅IReadOnlyImage→唯一viewport。每侧独立当前source、publication borrow、epoch、receipt；不把Bitmap加Frame标签当资源身份|无GetDisplayImageFromSource/VisionImageToBitmapSourceConverter主图调用；成功空/失败/未执行/超时/取消与错误身份拒绝；同run多图/同尺寸异Frame和上下游异publication均验|
+|SelectedDisplaySource用于保存导航选择，也被ImageSourceResolver用于多分支源条追溯；ImageSourceReference另用于执行图像与位置修正|不能全局把ImageSourceReference改成视觉类型，也不能把第二侧选择写成执行输入。显示端点与现typed输出声明核对；源条追溯只消费明确scope/node来源，输入输出两侧导航各自管理，导航不重放运行或污染参数编辑|复制/保存重开不串节点；两侧切图不修改正式取图配置/全局producer；错误/无关分支显式InvalidSelection，不自动选择另一分支|
+|MainWindow.xaml.cs注入GetMainImageControl与SDK ResultRenderLayer；NodeResultManager分别SetDisplayCollector/SetRegionItems/Highlight，DebugPreview直接GetDisplayImages.First|整体退出视觉字段及注入。保缓存/生产结果更新与正式publication入口；结果/文字/选择/参数ROI各持唯一viewport子层，按完整Frame+Coordinates证明组合；没有proof只清自己的层并诊断|不保隐藏SDK控件、第二形状owner或First图像推断；旧clear/迟到selection/通知重入不清新层；不因换背景退役仍在展示的表格publication|
+|RoiViewportEditScope自己捕获SDK MainCanvas鼠标、绘制手柄并持WeakTable；DeclaredToolConfigurationControl.Regions接正式私有草稿；RoiParameterEditingAdapter已提供RecordValue读写/接纳|删除本地SDK绘制手势，只做NativeRoiSession与原attachment的非视觉适配。保持正式参数草稿/字段接纳，不复制原手柄。会话stamp取真实私有root单调revision与物理Frame，保借阅至编辑session退出，先取消/卸载attachment再释放源borrow|支持原矩形/完整环/扇区/多边形；点/线/圆/圆弧或非完整annulus手势缺口明确拒绝，保数值和数据。frame/pose失效、关闭/切页/旧scope、正在手势Apply拒绝、undo/redo/save重开完整验证|
+|NativeRoiSession.Capture会验证所有传入RoiEditItem，旧ROI集合可能同时含不支持手势的形状|不能把整个旧集合交原session后笼统失败，也不能删除未知项。原session的可编辑投影只含原件明确支持项；完整正式草稿仍保全部数据，stamp覆盖完整草稿；接纳仅修改对应稳定group/ID，其他项原样保留并显示缺口诊断|含circle+rectangle的混合草稿仍能原件编辑rectangle，circle数值不丢/不能误绘；无支持项不伪造默认ROI，不把部分annulus改名sector|
+|GroupRun/GroupRegion借GetMainImageControl；多种旧工具debug页仍override SetMainImageControl(ImageControl)，独立窗口自用SDK视觉也存在|Group本阶段不迁，主图绘制入口明确禁用及依赖说明。新声明配置页接公共编辑scope；其他旧工具不注入不存在的主SDK图，不以保主图兼容桥维持旧入口。独立旧工具视觉消费者单列，不宣称全产品SDK视觉已退出|主结果区无旧main image委托及SDK参数注入；Group配置/非视觉数据保留且不新增语义。实际受影响旧工具入口逐项检查禁用诊断，不给可点击无效果按钮|
+|ToggleFullscreen现在直接委托SDK ImageControl；原Shell FullscreenCommand参数是实际ImageViewBox|原视口同实例移动，不创建第二viewport或复制画面；宿主持原父容器/index与当前owner，Esc/关闭/异常finally归还，卸载不误释放同次全屏移动中的source|全屏前后Frame/receipt/像素lease/图层同一代；换方案或关主窗只清本scope；双侧全屏和恢复后原pan/zoom/像素状态同源|
+
+实施顺序仍为一个集成批：主线冻结公共最终API及Shell图像DP退役点→本线固定双pane身份/借阅、ROI草稿接缝和上述全部消费者→集中源码替换→同一正式Release验证。准备阶段不改共享SDK/UI合同、不挂第二viewport，不按单按钮/形状交付。
+
+必要联合负测：同pub多借阅和上下游不同pub、同Frame不同Coordinates、声明无值、源borrow退休与viewport最终lease、双侧source独立、旧queued选择/清理/ROI取消不覆新代、候选读取/Bind失败全部清理、混合支持/不支持ROI数据不丢、全屏实际同view移动、Group与旧工具禁用信息。真实VS和WPF主题/宽窄/DPI/原件同态人工证据仍单列；未获得即未完成。

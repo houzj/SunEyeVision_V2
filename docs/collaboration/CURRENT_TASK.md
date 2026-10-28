@@ -10,6 +10,12 @@
 
 当前只有候选源码和语法/diff核查，尚未本轮语义编译或运行。收齐事务批后由主线唯一正式Release一次UI/full、身份探针及GlobalBinding/ImageSources关联回归；不造私有Release或复制DLL。D07唯一视口仍由主线实施，未消费半成接口；真实VS、硬件、主题/WPF外观与人工验收继续分列。完整A01–E07保留，未关闭本批或整个目标，自动范围通过后才启动同一正式产物供人工验收。
 
+## 2026-10-28 D07生产消费者准备与完整清单同步
+
+- 固定源码6e5cfc40干净；27文件集中批已交主线，当前不新增产品修改。主线公共owner/ROI attachment仍在重入/真实控件验证，未给最终生产API；本线不拷半签名或写私有产物。
+- 已沿实际入口补D07原交接第8节：Shell/双侧typed源与borrow、旧Bitmap/渲染层/主窗注入退出、ROI草稿与原session/全屏同view、Group及旧工具主图禁用。混合ROI保完整数据，ImageSourceReference不误改执行/修正用途。完整39项矩阵同步已存在的正式证据及未完出口，不以设计宣称实施。
+- 精确报告纠正：最新图像源176项174过2败在ImageSources/attempt-004（pid65464/exit1），attempt-001是旧172项15败；GlobalBinding/attempt-001才是257项237过20败。两轨的失败均有固定源码修复，但尚未新跑，不覆盖历史记录。
+
 ## 2026-10-28 结果树表同源数据链本批核收通过
 
 - 正式产品固定b6f77679，UI006=0错6579警告111.26秒，full006=0错6579警告61.45秒。173图像源/原树、publication9、来源2、原表1、原样式2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1均过；宿主夹具只顺序修正a9cf86b0，单编helper0错21警告6.71秒后Host004=1过0败。src/tools提交差分为空，不冒称产品和测试同一commit。

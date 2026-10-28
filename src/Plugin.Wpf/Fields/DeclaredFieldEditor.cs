@@ -13,6 +13,8 @@ using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Input;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Plugin.Wpf.Adapters.Text;
+using SunEyeVision.Plugin.Wpf.Presenters.Text;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
@@ -40,17 +42,28 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private readonly StackPanel _actions = new() { Orientation=Orientation.Horizontal };
     private readonly TextBlock _label = new();
     private NativeNumberPresenter? _numeric;
+    private NativeTextPresenter? _textPresenter;
+    private TextExpressionOptions? _textExpressions;
+    public void UseTextExpressions(TextExpressionOptions options)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(options);
+        options.Validate(_port);
+        if(_imageSources is not null||_inlineConstantReference||_integerRadioOptions is not null
+            ||_presentation?.Layout?.PairWith is not null||_presentation?.Layout?.DialogPrimary==true)
+            throw new ArgumentException("文本表达式与现有字段组合冲突。");
+        var generation=_renderGeneration;var acceptance=_state.AcceptanceVersion;
+        if(_state.Accepted is ConstantSetting {Value:string text})
+        {
+            var error=options.ValidateText?.Invoke(text);
+            if(IsDisposed||generation!=_renderGeneration||acceptance!=_state.AcceptanceVersion)return;
+            if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
+        }
+        _textExpressions=options;Render();
+    }
     private readonly NativeIntegerRadioOptions? _integerRadioOptions;
     private NativeIntegerRadioPresenter? _integerRadio;
     private bool _updatingInput;
     private bool _inlineConstantReference;
-    internal void UseInlineConstantReference()
-    {
-        ObjectDisposedException.ThrowIf(_disposed,this);
-        if(_port.Type.Shape!=ValueShape.Scalar||_port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)
-            ||_port.EditModes!=(FieldEditModes.Constant|FieldEditModes.Reference))throw new ArgumentException("内联常量需要数值常量/引用字段。");
-        _inlineConstantReference=true;Render();
-    }
     private bool _disposed;
     private long _renderGeneration;
     private string _editError => _state.EditError;
@@ -68,6 +81,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     {
         if(_integerRadio is not null)return _integerRadio.TrySetConstant(value);
         if(_numeric is not null)return _numeric.TrySetConstant(value);
+        if(_textPresenter is not null)return _textPresenter.TrySetConstant(value);
         if(!Set(new ConstantSetting(value)))return false;
         _updatingInput=true;
         try
@@ -83,7 +97,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     public string FieldId => _port.Id;
     public ParameterSetting Setting => _setting;
     private FrameworkElement? _inputElement;
-    public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_inputElement;private set=>_inputElement=value;}
+    public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_textPresenter?.TextEditor??_inputElement;private set=>_inputElement=value;}
     private bool MissingReference=>_state.MissingReference;
     internal NativeParameterItemState NativeItemState=>_state.EditError.Length!=0?NativeParameterItemState.WriteError:_state.SourceError.Length!=0?NativeParameterItemState.ReadError:HasInvalidText?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
     public bool HasInvalidText => _state.HasInvalidInput || _children.Any(child => child.HasInvalidText);
@@ -101,7 +115,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     internal DeclaredFieldEditor(DeclaredFieldState state,string label,
         ReferenceFieldOptions? references=null,Func<OutputReference,string>? formatReference=null,
-        IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,NativeIntegerRadioOptions? integerRadioOptions=null,bool ownsState=false)
+        IReadOnlyDictionary<string,string>? choiceLabels=null,FieldPresentation? presentation=null,bool allowUnboundReference=false,NativeIntegerRadioOptions? integerRadioOptions=null,bool ownsState=false,
+        bool inlineConstantReference=false)
     {
         var port=state.Port;
         _state=state;_port=state.Port;_referenceOptions=references;_ownsState=ownsState;
@@ -110,6 +125,12 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         _allowUnboundReference=allowUnboundReference;
         try
         {
+        if(inlineConstantReference)
+        {
+            if(port.Type.Shape!=ValueShape.Scalar||port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)
+                ||port.EditModes!=(FieldEditModes.Constant|FieldEditModes.Reference))throw new ArgumentException("内联常量需要数值常量/引用字段。");
+            _inlineConstantReference=true;
+        }
         if(integerRadioOptions is not null)
         {
             integerRadioOptions.ValidatePort(port);
@@ -270,9 +291,9 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                 }
                 else
                 {
-                    var input=new TextBox{Height=30,FontSize=14,VerticalContentAlignment=VerticalAlignment.Center,Text=Convert.ToString(value,CultureInfo.InvariantCulture)??""};
-                    input.TextChanged+=(_,_)=>{if(CurrentRender()&&!_updatingInput&&input.IsEnabled)Set(new ConstantSetting(input.Text));};
-                    InputElement=input;_body.Children.Add(input);
+                    _textPresenter=new NativeTextPresenter(_state,_textExpressions,()=>!_disposed&&generation==_renderGeneration);
+                    _textPresenter.PrepareForVisibility(_presentationVisible);
+                    InputElement=_textPresenter;_body.Children.Add(_textPresenter);
                 }
             }
         }
@@ -323,6 +344,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     {
         if(IsDisposed)return false;
         if(_numeric is not null&&!_numeric.TryCommitPending())return false;
+        if(_textPresenter is not null&&!_textPresenter.TryCommitPending())return false;
         if(_referencePresenter is not null&&!_referencePresenter.TryCommitPending())return false;
         return _children.All(child=>child.TryCommitPending());
     }
@@ -333,6 +355,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         if(_disposed)return;
         _presentationVisible=visible;
         var cleanup=new List<Action>{()=>_numeric?.PrepareForVisibility(visible)};
+        cleanup.Add(()=>_textPresenter?.PrepareForVisibility(visible));
         cleanup.Add(()=>_referencePresenter?.PrepareForVisibility(visible));
         cleanup.Add(()=>_integerRadio?.PrepareForVisibility(visible));
         cleanup.AddRange(_children.ToArray().Select(child=>(Action)(()=>((IParameterVisibility)child).PrepareForVisibility(visible))));
@@ -342,12 +365,13 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     private void DetachOwnedEditors()
     {
-        var reference=_referencePresenter;var numeric=_numeric;var radio=_integerRadio;var input=InputElement;
+        var reference=_referencePresenter;var numeric=_numeric;var text=_textPresenter;var radio=_integerRadio;var input=InputElement;
         var children=_children.ToArray();_children.Clear();
-        _referencePresenter=null;_numeric=null;_integerRadio=null;
+        _referencePresenter=null;_numeric=null;_textPresenter=null;_integerRadio=null;
         var cleanup=new List<Action>{DetachImageSource};
         if(reference is not null)cleanup.Add(reference.Dispose);
         if(numeric is not null)cleanup.Add(numeric.Dispose);
+        if(text is not null)cleanup.Add(text.Dispose);
         if(radio is not null)cleanup.Add(radio.Dispose);
         if(input is ComboBox combo)cleanup.Add(()=>combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty,false));
         if(input is NativeColorPresenter color)cleanup.Add(()=>{color.SelectedColorChanged-=OnNativeColorChanged;color.Dispose();});

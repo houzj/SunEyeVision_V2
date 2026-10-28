@@ -15,7 +15,8 @@ public sealed partial class DeclaredFieldsView
         IReadOnlyDictionary<string,(Port Port,FieldPresentation Presentation,ParameterSetting Value)> declarations,
         IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? images,
         IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parents,
-        IReadOnlyDictionary<string,NativeIntegerRadioOptions> radios,IReadOnlySet<string> paired,IReadOnlySet<string>? inlineConstants)
+        IReadOnlyDictionary<string,NativeIntegerRadioOptions> radios,IReadOnlySet<string> paired,IReadOnlySet<string>? inlineConstants,
+        IReadOnlySet<string>? textCoordinates=null)
     {
         var providers=images?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
         foreach(var id in inlineConstants?.ToArray()??[])
@@ -29,8 +30,17 @@ public sealed partial class DeclaredFieldsView
             _inlineConstants.Add(id);
         }
         foreach(var field in declarations.Values)
-            if(!_inlineConstants.Contains(field.Port.Id)&&field.Presentation.Layout is {DecimalPlaces:null})
+            if(!_inlineConstants.Contains(field.Port.Id)&&textCoordinates?.Contains(field.Port.Id)!=true&&field.Presentation.Layout is {DecimalPlaces:null})
                 throw new ArgumentException("不限固定小数位仅适用于原订阅同槽数值文本。");
+        foreach(var id in textCoordinates??new HashSet<string>())
+        {
+            if(!declarations.TryGetValue(id,out var field))throw new ArgumentException("文本坐标引用未知字段。");
+            if(field.Port.EditModes==(FieldEditModes.Constant|FieldEditModes.Reference))
+            {
+                SunEyeVision.Plugin.Wpf.Adapters.Fields.InlineConstantRules.Validate(field.Port,field.Presentation,field.Value);
+                _inlineConstants.Add(id);
+            }
+        }
         foreach(var item in providers)
         {
             if(!declarations.TryGetValue(item.Key,out var field)||item.Value is null)throw new ArgumentException("图像选择配置引用了未知字段或空来源函数。");

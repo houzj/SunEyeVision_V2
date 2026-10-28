@@ -26,6 +26,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 	protected bool IsThrough = false;
 
 	protected bool LoadAlready = false;
+	private bool _nativeLayoutInitialized;
 
 	protected int d = 5;
 
@@ -770,6 +771,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 	// which can measure the real view without attaching it to a Window first.
 	internal (NumericControl Left, NumericControl Right) EnsureTemplateInputs()
 	{
+		if (!_nativeLayoutInitialized) InitUI();
 		var box = (ComboBox)FindName("CBox");
 		box.ApplyTemplate();
 		var left = box.Template.FindName("T1", box) as NumericControl
@@ -1012,6 +1014,7 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	public void InitUI()
 	{
+		_nativeLayoutInitialized = true;
 		if (!isBetween)
 		{
 			IsVisibleOfLable = Visibility.Collapsed;

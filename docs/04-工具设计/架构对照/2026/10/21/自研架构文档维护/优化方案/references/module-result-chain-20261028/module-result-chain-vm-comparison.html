@@ -1,0 +1,142 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一图看懂：我们的模块结果 vs VM</title><style>
+:root{--bg:#101725;--panel:#192538;--line:#344760;--text:#eef4fd;--muted:#afc1d8;--ours:#77bfff;--vm:#a9dfb6;--warn:#ffce88}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Microsoft YaHei",system-ui,sans-serif}main{max-width:1160px;margin:auto;padding:32px 24px}header{margin-bottom:28px}h1{font-size:34px;margin:8px 0}h2{font-size:25px;margin:0 0 22px}h3{font-size:19px;margin:0 0 15px}.sub{color:var(--muted);font-size:14px}.kicker{color:var(--ours);font-size:12px;letter-spacing:.15em}section{margin:22px 0;padding:26px;background:var(--panel);border:1px solid var(--line);border-radius:16px}.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}.label{display:inline-block;padding:5px 13px;border-radius:20px;font-size:13px;font-weight:bold;margin-bottom:15px}.ours .label{color:var(--ours);background:#77bfff18}.vm .label{color:var(--vm);background:#a9dfb618}.node{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px 12px;text-align:center}.node b{display:block;font-size:17px}.node small{display:block;color:var(--muted);font-size:12px;margin-top:4px}.ours .node{border-top:3px solid var(--ours)}.vm .node{border-top:3px solid var(--vm)}.down{text-align:center;font-size:23px;line-height:32px;color:var(--muted)}.branch{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative}.branch:before{content:"↙　↘";grid-column:1/-1;text-align:center;color:var(--muted);font-size:25px;line-height:25px}.branch .node{min-height:85px}.caption{text-align:center;color:var(--muted);font-size:13px;margin:12px 0 0}.tree{padding:15px 10px;background:var(--bg);border-radius:12px;min-height:250px}.tree ul{list-style:none;margin:0;padding-left:26px}.tree li{position:relative;padding:8px 0 0 15px;border-left:1px solid var(--line)}.tree li:before{content:"";position:absolute;left:0;top:22px;width:11px;border-top:1px solid var(--line)}.tree .root{font-weight:bold;margin:0 0 6px 10px;color:var(--text)}.tree span{display:inline-block;border:1px solid var(--line);padding:6px 11px;border-radius:6px;font-size:14px}.ours .tree .root{color:var(--ours)}.vm .tree .root{color:var(--vm)}.tag{font-size:11px;color:var(--muted);margin-left:5px}.ribbon{padding:12px 16px;background:#ffffff06;border-radius:8px;text-align:center;margin:18px 0 0;font-size:16px}.ribbon strong{color:var(--warn)}.compare{display:grid;grid-template-columns:110px 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}.compare>div{background:var(--panel);padding:14px;font-size:15px}.compare .th{font-size:13px;color:var(--muted)}.good{color:var(--vm)}.warn{color:var(--warn)}.journey{display:flex;gap:10px;align-items:center}.journey .node{flex:1;padding:18px 8px}.arrow{color:var(--muted);font-size:24px}.chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:16px}.chips span{font-size:13px;border:1px solid var(--line);border-radius:20px;padding:7px 12px}.chips .warn{border-color:#ffce8850}.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.mini .node{border-top:3px solid var(--line)}.mini b{font-size:18px}.num{color:var(--ours);font-size:32px;display:block;margin-bottom:8px}details{margin-top:25px;font-size:13px;color:var(--muted)}summary{cursor:pointer;padding:10px}.source{border-top:1px solid var(--line)}pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:12px;font-size:11px}code{overflow-wrap:anywhere;font-size:11px}input{display:none}a{color:var(--ours)}footer{text-align:center;font-size:12px;color:var(--muted);padding:20px}button{background:var(--bg);color:var(--muted);border:1px solid var(--line);padding:7px 12px;border-radius:6px;cursor:pointer}.scope{font-size:12px;color:var(--muted);margin-top:12px}@media(max-width:700px){main{padding:20px 12px}section{padding:18px 13px}.two{grid-template-columns:1fr}.compare{grid-template-columns:75px 1fr 1fr}.compare>div{padding:10px 7px;font-size:12px}.journey{flex-direction:column}.journey .node{width:100%}.journey .arrow{transform:rotate(90deg)}.mini{grid-template-columns:1fr}h1{font-size:28px}}@media print{body{background:white;color:#111}section{background:white;border-color:#ccc;break-inside:avoid}.node,.tree,.compare>div{background:#fafafa;color:#111}.sub,.caption,.node small,.th,footer{color:#555}details,button{display:none}.ours .label,.ours .tree .root{color:#1766a4}.vm .label,.vm .tree .root,.good{color:#287440}.warn,.ribbon strong{color:#915900}}
+</style></head><body><main><header><div class="kicker">30秒看主图 · 需要细节再展开</div><h1>模块结果，我们和 VM 差在哪？</h1><p class="sub">一句话：VM按模块ID向SDK取输出清单建树；我们原来用属性映射表，新路径用正式输出声明。</p></header>
+<section><h2>① 算完之后，结果去哪了？</h2><div class="two"><div class="ours"><div class="label">我们现在</div><div class="node"><b>工具算完</b><small>产出数值、图像、状态</small></div><div class="down">↓</div><div class="node"><b>打包这一轮结果</b><small>记录谁算的、哪一轮、成功还是失败</small></div><div class="down">↓</div><div class="node"><b>主界面接收</b></div><div class="branch"><div class="node"><b>结果树</b><small>按清单展开字段</small></div><div class="node"><b>结果表</b><small>按列展示测量值</small></div></div><div class="caption warn">树和表的接入方式还没完全统一</div></div><div class="vm"><div class="label">VM 原件</div><div class="node"><b>模块算完</b><small>更新模块的输出数据</small></div><div class="down">↓</div><div class="node"><b>通知界面刷新</b><small>按当前模块和执行次数处理</small></div><div class="down">↓</div><div class="node"><b>模块结果区</b></div><div class="branch"><div class="node"><b>结果树</b><small>沿模块输出目录显示</small></div><div class="node"><b>结果表</b><small>沿显示配置填表</small></div></div><div class="caption good">树、当前表、历史记录各有自己的职责</div></div></div><div class="ribbon">共同点：<strong>结果树 ≠ 结果表 ≠ 历史记录</strong></div></section>
+<section id="directory"><h2>② VM的输出目录从哪来？</h2><div class="ribbon">不是所有模块共用一棵树，而是<strong>按模块ID，向SDK取各自的输出清单。</strong></div><div class="node" style="margin:20px auto 0;max-width:420px"><b>SDK：查询某个模块的输出说明</b><small>GetModuOutputIOInfo(模块ID)</small></div><div class="two" style="margin-top:16px"><div class="vm"><div class="down">↙</div><div class="node"><b>图像源模块ID</b><small>取回这个模块的字段、类型、子项</small></div><div class="down">↓</div><div class="tree"><div class="root">▾ 图像源输出目录</div><ul><li><span>图像</span><ul><li><span>宽度：—</span></li><li><span>高度：—</span></li></ul></li></ul></div></div><div class="vm"><div class="down">↘</div><div class="node"><b>Blob模块ID</b><small>取回这个模块的字段、类型、子项</small></div><div class="down">↓</div><div class="tree"><div class="root">▾ Blob输出目录</div><ul><li><span>数量：—</span></li><li><span>区域结果 …</span></li></ul></div></div></div><p class="scope">目录名称为通俗示意，具体字段以模块实际返回为准。已确认托管层按模块ID查询；SDK内部是否维护一个总表，尚未核证。</p></section>
+<section id="matching"><h2>③ 目录和运行结果，怎么对上？</h2><div class="journey"><div class="node"><b>先取输出说明</b><small>字段名 · 类型 · 子项</small></div><div class="arrow">→</div><div class="node"><b>建立目录节点</b><small>先有“宽度：—”</small></div><div class="arrow">→</div><div class="node"><b>运行后按字段名填值</b><small>宽度：1280</small></div></div><div class="two" style="margin-top:20px"><div class="node"><b>目录节点</b><small>宽度字段 → “宽度”这一行</small></div><div class="node"><b>运行返回</b><small>同一个宽度字段 → 值1280</small></div></div><div class="ribbon">对应靠<strong>同一模块内的输出字段名</strong>，不是靠中文标签，也不是按行号硬塞。</div><p class="scope">源码依据：VmModule.AnalysisIOInfo按szParamName、szParamType及子项递归建节点；VmSolution结果处理读取strParamName查找叶IO并SetValueFromServer。执行次数另用于区分运行数据；这里只画字段与值的对应关系。</p></section>
+<section id="ourmapping"><h2>④ 我们原来怎么做？你记得的映射表没错</h2><div class="journey"><div class="node"><b>结果类属性</b><small>Width = 1280</small></div><div class="arrow">→</div><div class="node"><b>工具属性映射表</b><small>Width → 宽度<br>分组 → 图像</small></div><div class="arrow">→</div><div class="node"><b>结果树显示</b><small>图像 → 宽度：1280</small></div></div><div class="compare" style="margin-top:22px"><div class="th">方式</div><div class="th">目录/标签从哪来</div><div class="th">值靠什么对应</div><div>我们原来</div><div>GetPropertyMap()属性映射<br>中文名、分组、显示信息</div><div>结果类属性名</div><div>VM</div><div>SDK按模块ID返回输出说明<br>字段名、类型、子项</div><div>该模块的输出字段名</div><div>我们新路径</div><div>正式工具输出声明</div><div>正式输出字段ID</div></div><div class="ribbon">三者都要<strong>先说明有哪些输出，再把值对应进去</strong>。中文名负责显示。</div><p class="scope">当前新声明树与旧映射分组路径仍并存。新声明树展开Record/Sequence，默认每页128项；图像等资源节点尚未完整下钻。</p></section><section><h2>⑤ 现在最重要的四个差异</h2><div class="compare"><div class="th">看什么</div><div class="th">我们现在</div><div class="th">VM原件</div><div>怎么长树</div><div>新清单方式 + 旧分组方式并存</div><div>模块输出目录直接展开</div><div>怎么刷新</div><div>收到这一轮结果再更新</div><div>模块通知刷新当前数据</div><div>大批数据</div><div>新树每页128项<br>标准表仍一次装入</div><div>当前表每批追加500行<br>可继续加载</div><div>点行高亮</div><div class="warn">传了图形，但缺完整的“属于哪张图”信息</div><div>按表行和显示配置，重画关联图形</div></div><div class="ribbon">不能只把表格换成 VM 的颜色，<strong>数据与图片的对应关系也要接完整。</strong></div></section>
+<section><h2>⑥ 点一下结果，为什么还要管这么多？</h2><div class="journey"><div class="node"><b>选中结果</b><small>哪一轮？哪一个对象？</small></div><div class="arrow">→</div><div class="node"><b>核对图片</b><small>这个框属于眼前这张图吗？</small></div><div class="arrow">→</div><div class="node"><b>显示高亮</b><small>画对位置，换图后清掉旧内容</small></div></div><div class="chips"><span class="good">✓ 已有：这一轮的结果身份</span><span class="good">✓ 已有：新树读取与释放机制</span><span class="warn">待补：结果表完整状态</span><span class="warn">待补：图形与真实图片对应</span><span class="warn">待补：旧事件不能影响新画面</span></div><p class="scope">“已有”指已查源码能力，不等于全部迁移或泄漏测试通过。VM现有按行关联机制也不能直接替代本方的图片身份校验。</p></section>
+<section><h2>⑦ 应该怎么迁？一次接通这三件事</h2><div class="mini"><div class="node"><span class="num">01</span><b>统一结果入口</b><small>选节点、调试、正式运行<br>使用同一套结果身份和状态</small></div><div class="node"><span class="num">02</span><b>换完整界面组合</b><small>VM树、表、绑定入口<br>展开、滚动、选择与主题一起迁</small></div><div class="node"><span class="num">03</span><b>把图和清理接牢</b><small>点结果能正确高亮<br>切图、切节点、关闭不残留</small></div></div><div class="ribbon"><strong>复用我们正确的数据基础，迁 VM 的完整展示与交互。</strong></div><p class="scope">迁移建议；未在此旁支修改生产代码。历史记录缺少正式存储基础时单列占位，不拿当前结果或日志代替。</p></section>
+<details id="evidence"><summary>需要追根究底时，再看16份源码证据 ▸</summary><details class="source" id="V06"><summary>V06 · VmSolution.cs · 第4267行</summary><p><code>D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmSolution.cs</code></p><p>SHA256: <code>C141E2C53913B233B768782D6757FAE5997ECAF638B35DB2DDF98F5EF951A13E</code></p><pre>		{
+			int hashCode = result.pInfo[i].strParamName.GetHashCode();
+			if (dictionary2.ContainsKey(hashCode))
+			{
+				VmIO.SetValueFromServer(dictionary2[hashCode], ref result.pInfo[i], isCallBack);
+				dictionary2[hashCode].isNull = false;
+			}
+			list.Add(hashCode);
+		}
+		foreach (int key in dictionary2.Keys)
+		{</pre></details><details class="source" id="S10"><summary>S10 · ToolResults.cs · 第651行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/Plugin.SDK/Execution/Results/ToolResults.cs</code></p><p>SHA256: <code>3AB1B95DDDDEB19507CF26984555B18E188D841A8B9D3C191F09D6882D1E1368</code></p><pre>        /// &lt;/summary&gt;
+        public virtual IReadOnlyList&lt;OutputVariable&gt; GetOutputVariables()
+        {
+            var variables = new List&lt;OutputVariable&gt;();
+            foreach (var entry in GetPropertyMap())
+            {
+                var prop = GetType().GetProperty(entry.PropertyName, BindingFlags.Public | BindingFlags.Instance);
+                if (prop == null)
+                {
+                    throw new InvalidOperationException(
+                        $&quot;工具 &#39;{ToolName ?? GetType().Name}&#39; 的 GetPropertyMap 声明了输出属性 &#39;{entry.PropertyName}&#39;，但结果类型中不存在该属性（契约漏洞）。&quot;);</pre></details><h2>07 / 源码证据与文件身份</h2><p class="muted">每条附本次读取行号、SHA256和短代码上下文。VM材料属于反编译源码，不是实机观察。</p><input style="width:100%" placeholder="筛选编号、文件名或方法" oninput="const q=this.value.toLowerCase();document.querySelectorAll('.source').forEach(x=>x.hidden=!x.textContent.toLowerCase().includes(q))"><details class="source" id="S01"><summary>S01 · WorkflowBindingContext.cs · 第271行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/Workflow/WorkflowBindingContext.cs</code></p><p>SHA256: <code>90EB5C65EF1F890FDDB746654104BC1EFAB85D6D94ADE7579FA89044C526F955</code></p><pre>            item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
+        DeclaredOutputSnapshot.Publish(result,node.AdmittedIdentity!.ToInvocationIdentity(node.Id),result.IsSuccess?values:null,fields,_scope,declaration.Complete);
+    }
+    internal DeclaredOutputSnapshot WithoutResult(AlgorithmNode node,ExecutionStatus status,IEnumerable&lt;Diagnostic&gt; diagnostics)
+    {
+        var declaration=_declarations[node.Id];
+        var fields=declaration.Outputs.ToDictionary(item=&gt;item.Key,item=&gt;new DeclaredOutputField(item.Value.Name,item.Value.DisplayName,
+            item.Value.VariableType,item.Value.DeclaredType,item.Value.FieldId,item.Value.Group,item.Value.DisplayInResultPanel),StringComparer.Ordinal);
+        return DeclaredOutputSnapshot.WithoutValues(declaration.Source.Schema,declaration.Source.SchemaRevision,</pre></details><details class="source" id="S02"><summary>S02 · DeclaredOutputSnapshot.cs · 第44行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/Plugin.SDK/Execution/Results/DeclaredOutputSnapshot.cs</code></p><p>SHA256: <code>46B99E969044D8EB793E7A249B7B0A8718833D1D1C234E2B518B315D06A2512D</code></p><pre>    }
+    public static DeclaredOutputSnapshot Publish(ToolResults result,RunIdentity identity,IReadOnlyDictionary&lt;string,object?&gt;? values,
+        IReadOnlyDictionary&lt;string,DeclaredOutputField&gt;? fields=null,string? sourceWorkflowId=null,bool complete=true)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        var schema=result.BindingOutputSchema??throw new InvalidOperationException(&quot;The invocation has no frozen output declaration.&quot;);
+        if(result.ExecutionIdentity is null||result.ExecutionIdentity.ToInvocationIdentity(identity.NodeId)!=identity)
+            throw new InvalidOperationException(&quot;Output identity differs from the admitted invocation.&quot;);
+        if(result.DeclaredOutput is not null)throw new InvalidOperationException(&quot;The invocation output was already frozen.&quot;);</pre></details><details class="source" id="S03"><summary>S03 · WorkflowExecutionManager.cs · 第1399行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/UI/Services/Workflow/WorkflowExecutionManager.cs</code></p><p>SHA256: <code>FA6E72F2433A822222220419BE8A84A5B30C6F792EF73288ED31FD33E019AD19</code></p><pre>        /// &lt;/summary&gt;
+        private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result, bool isCameraDriven)
+        {
+            if (result.ExecutionIdentity?.IsCurrent == false) return;
+            var lease = result.Resources?.Retain();
+            var queuedAt = Stopwatch.GetTimestamp();
+            var token = _communicationOwner.Value ? _communicationCancellation.Value : CancellationToken.None;
+            void Publish()
+            {</pre></details><details class="source" id="S04"><summary>S04 · MainWindowViewModel.cs · 第4707行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/UI/Shell/Windows/MainWindowViewModel.cs</code></p><p>SHA256: <code>21CC338A506B11DCE73674E85B2AF129094A264A5C95FC34C5AAF3B003C59AE7</code></p><pre>        }
+        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null,
+            ToolParameters? parameters = null)
+        {
+            if(_declaredHistoricalResult)return;
+            if(result?.DeclaredOutput is {IsComplete:true} snapshot)
+            {ShowDeclaredSnapshot(snapshot,nodeName);return;}
+            if(result is ContractToolResults contractResult)
+            {</pre></details><details class="source" id="S05"><summary>S05 · ResultPresentationModel.cs · 第10行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/UI/Services/Monitoring/ResultPresentationModel.cs</code></p><p>SHA256: <code>0AA91557AB033DB4C5399388039B1C0C9796C501C5A305E3024CD0ABAD660744</code></p><pre>/// &lt;summary&gt;A declaration or one explicitly identified run; it never reads a latest-result cache.&lt;/summary&gt;
+public sealed class ResultPresentationModel
+{
+    private ResultPresentationModel(ToolSchema schema, RunIdentity? identity, ResultPresentationState state, int pageSize, InputValues? values = null)
+    {
+        ArgumentNullException.ThrowIfNull(schema);
+        if (pageSize &lt;= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
+        if (!Enum.IsDefined(state)) throw new ArgumentOutOfRangeException(nameof(state));
+        var hasValues=state is ResultPresentationState.Success or ResultPresentationState.PartialSuccess;</pre></details><details class="source" id="S06"><summary>S06 · ResultPresentationPresenter.cs · 第66行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/UI/Services/Monitoring/ResultPresentationPresenter.cs</code></p><p>SHA256: <code>412DF40B6209D60F3C0E3F4B203FAE6B0DA16D7AA6A79D86AA4D5A02295ED4BA</code></p><pre>
+    public void ShowRun(DeclaredOutputSnapshot snapshot, IReadOnlyDictionary&lt;string, string&gt;? displayNames = null,
+        IReadOnlyDictionary&lt;string, ResultBindingInfo&gt;? bindings = null)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (_snapshot is { } previous &amp;&amp; ReferenceEquals(previous,snapshot) &amp;&amp; previous.Identity == snapshot.Identity &amp;&amp;
+            previous.SchemaRevision == snapshot.SchemaRevision &amp;&amp; previous.Schema.Fingerprint == snapshot.Schema.Fingerprint &amp;&amp;
+            previous.Status == snapshot.Status)</pre></details><details class="source" id="S07"><summary>S07 · ToolResultViews.cs · 第12行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/UI/Services/Monitoring/ToolResultViews.cs</code></p><p>SHA256: <code>F4929C246C455FC83273FEC267C87CF60C82B468F0BBB4FED64465C5AFA9C073</code></p><pre>{
+    public static void Update(IToolResultView view,ToolResults? result)
+    {
+        if(result is not {IsSuccess:true}){view.Update(null);return;}
+        using var lease=result.Resources?.Retain();
+        using var reader=result.DeclaredOutput?.AcquireReader();
+        if(reader?.Values is {} values){view.Update(values);return;}
+        // A direct debug result can arrive before workflow publication. Read its
+        // declared output catalog, exactly as the normal publication boundary does.</pre></details><details class="source" id="S08"><summary>S08 · DeclaredResultTable.cs · 第42行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs</code></p><p>SHA256: <code>01BAFD9C711A67C7D166323239C1D012892184C8AB83E0653D8CE074F32CFE58</code></p><pre>
+    public void Update(InputValues? values)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        _rows.Clear();
+        if(values is null)return;
+        var rows=new List&lt;Row&gt;();
+        if(_projection.Rows is {} source)
+        {</pre></details><details class="source" id="S09"><summary>S09 · ImageResultControl.xaml · 第121行</summary><p><code>C:/Users/houzhongjie/.codex/worktrees/87f4/SunEyeVision_V2/src/UI/Shell/Controls/Shell/ImageResultControl.xaml</code></p><p>SHA256: <code>3DC28BD24B6982971EA1B5E2BEF76B9B526A92C8C7337895974D65258E76B8EB</code></p><pre>                        &lt;DataGrid x:Name=&quot;ModuleResultDataGrid&quot;
+                                  ItemsSource=&quot;{Binding FlatResultRows}&quot;
+                                  AutoGenerateColumns=&quot;False&quot;
+                                  GridLinesVisibility=&quot;All&quot;
+                                  VerticalGridLinesBrush=&quot;{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}&quot;
+                                  HorizontalGridLinesBrush=&quot;{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}&quot;
+                                  BorderThickness=&quot;1&quot;
+                                  BorderBrush=&quot;{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}&quot;
+                                  RowHeaderWidth=&quot;0&quot;</pre></details><details class="source" id="V01"><summary>V01 · VmModule.cs · 第3326行</summary><p><code>D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmModule.cs</code></p><p>SHA256: <code>53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE</code></p><pre>
+	protected internal virtual void InitOutputDynamicIO()
+	{
+		try
+		{
+			ImvsSdkDefine.IMVS_MODULE_IO_INFO_LIST moduOutputIOInfo = ServerSDKManager.serverSDKManager.mModuleManager.GetModuOutputIOInfo(ID);
+			if (moduOutputIOInfo != null)
+			{
+				InitDynamicIO(moduOutputIOInfo, _Outputs);</pre></details><details class="source" id="V02"><summary>V02 · VmIO.cs · 第364行</summary><p><code>D:/MyWork/REA逆向测试/analysis/decompiled/VM.Core/VM.Core/VmIO.cs</code></p><p>SHA256: <code>15E1832243422B6BFA2714F300B796D54C365950573639EB1039C5DF58E99CB0</code></p><pre>
+	string IVmIO.DisplayValue
+	{
+		get
+		{
+			MergeIOLoopValue();
+			if (_value != null)
+			{
+				StringBuilder stringBuilder = new StringBuilder();</pre></details><details class="source" id="V03"><summary>V03 · ModuleResultView.xaml · 第238行</summary><p><code>D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml</code></p><p>SHA256: <code>56AC6BBF9B8839311F4F8EAF0DC4407FC3F9527B39F3AD942080C0BB6C2948FF</code></p><pre>                    &lt;/FrameworkElement.Resources&gt;
+                    &lt;TreeView Name=&quot;resultTreeView&quot; Style=&quot;{StaticResource ResultTreeViewStyle}&quot; ItemContainerStyle=&quot;{StaticResource ResultTreeViewItemStyle}&quot; ItemsSource=&quot;{Binding ResultData}&quot; MaxWidth=&quot;{Binding ActualWidth, ElementName=resgrid}&quot; /&gt;
+                  &lt;/Grid&gt;
+                &lt;/ScrollViewer&gt;
+                &lt;Grid Height=&quot;40&quot; Background=&quot;{DynamicResource TreeTabItemBoBaground}&quot; Opacity=&quot;0.5&quot; Row=&quot;3&quot;&gt;
+                  &lt;TextBox Name=&quot;tbPath&quot; IsReadOnly=&quot;True&quot; BorderThickness=&quot;0&quot; Background=&quot;#00FFFFFF&quot; FontSize=&quot;14&quot; Foreground=&quot;{DynamicResource NoCameraForground}&quot; VerticalAlignment=&quot;Center&quot; Margin=&quot;12,0&quot; ToolTip=&quot;{DynamicResource Lang_SelectAgainTip}&quot; Text=&quot;{Binding Path=SelectedItemPath, StringFormat=&#39;VmSolution.Instance[&amp;quot;{0}&amp;quot;]&#39;}&quot; /&gt;
+                  &lt;Button Style=&quot;{StaticResource BaseImage_ButtonStyle}&quot; HorizontalAlignment=&quot;Right&quot; Width=&quot;30&quot; Height=&quot;30&quot; ToolTip=&quot;{DynamicResource Lang_CopySuccessFirstTip}&quot; Command=&quot;{Binding CopyPathCommand}&quot; CommandParameter=&quot;{Binding Text, ElementName=tbPath}&quot;&gt;
+                    &lt;Image Source=&quot;/VMControls.WPF;component/Resources/ic_copy_normal.png&quot; /&gt;
+                    &lt;FrameworkElement.Tag&gt;</pre></details><details class="source" id="V04"><summary>V04 · ModuleResultView.xaml.cs · 第1435行</summary><p><code>D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/ModuleResultView.xaml.cs</code></p><p>SHA256: <code>E165657162322FD6B1CE15758847BED07F8C1E86A637815DF8E87FE19439BB88</code></p><pre>	/// &lt;/summary&gt;
+	public void RefreshResultTree()
+	{
+		if (ResultTab.SelectedItem != treeTabItem || ModuleSource == null)
+		{
+			return;
+		}
+		List&lt;VmIO&gt; list = (ModuleSource.Outputs as VmIOCollection)?.GetAllLeafIO();
+		if (list == null)</pre></details><details class="source" id="V05"><summary>V05 · ModuleDisplayDecorator.cs · 第953行</summary><p><code>D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs</code></p><p>SHA256: <code>CEDA24B7FB93BCD9F02B77B23D42A839B1F737BF70CF3ABC6B7786D11765740E</code></p><pre>	/// &lt;/summary&gt;
+	internal void RefreshCurrentResultList(List&lt;object&gt; curDatas, string[] columeArr, int[] curMaxLens)
+	{
+		tempResultList = null;
+		if (curDatas == null)
+		{
+			ModuleCurrentResultList.Clear();
+			return;
+		}</pre></details></details><footer>2026-10-28 · 根据当前源码与VM本地反编译材料整理 · 图示不是运行截图 · 单文件离线可读</footer></main><script>document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',()=>{const x=document.getElementById(a.getAttribute('href').slice(1));if(x&&x.tagName==='DETAILS')x.open=true}));</script></body></html>

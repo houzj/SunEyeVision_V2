@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-28",
+  "status": "原结果表模板与增量候选已验证，完整结果链路仍实施中",
+  "head": "6ae8639369dcc95b0f4288432ccf369d4f5f3835",
+  "uncommitted": true,
+  "files": [
+    {
+      "path": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs",
+      "sha256": "ac03d904b6bd0e46d2c15c0d4f0bcb91938c62514e7c0762444d231ae50e0d57"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/Results/StandardTable.xaml",
+      "sha256": "8524f3404bbbb562047d651d172894663c4f5f7dcac3df879483e71dadb6b0c7"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "ee18c55d4fc4a81a2fd70fd6435e9a9f3fd0fc88928bb24c4498bafdf8f7e50f"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "d0fb655565b64791284fd79a90b7188a4888930a67728f75ff6953599f5fcc78"
+    }
+  ],
+  "logs": [
+    {
+      "path": "artifacts/c14-ui-build-20261028-002.log",
+      "sha256": "2fa086cbcb23d755d8be7e1598f59522c738b74c07b118721519383087fe68d4"
+    },
+    {
+      "path": "artifacts/c14-release-build-20261028-002.log",
+      "sha256": "c88901e1f0da387fd25e2d68c2fa54f3aff19b049f319288f5f1cb8f5973598a"
+    },
+    {
+      "path": "artifacts/c14-table-validation-20261028-001.log",
+      "sha256": "6a4c7e771fbf716ad5cd305e19ce9999f1df0c7c35f3e634a31bae081a834762"
+    },
+    {
+      "path": "artifacts/c14-design-validation-20261028-001.log",
+      "sha256": "c5989722ecb991980a20d73be677eb28063d708b43cf2b0f710f0c54e4c68df7"
+    },
+    {
+      "path": "artifacts/c14-components-validation-20261028-001.log",
+      "sha256": "ef2d65d8676a15944fb8377f6d5a64ab2cb486a0ac73c0a464fc1e04ff85850f"
+    },
+    {
+      "path": "artifacts/c14-exe-validation-20261028-001.log",
+      "sha256": "f75481090dc718a7ab0f8b36e8d6a8ff9079d1876c98c54280be04b919be2dde"
+    }
+  ],
+  "checks": {
+    "ui": {
+      "errors": 0,
+      "warnings": 6595,
+      "seconds": 116.91
+    },
+    "solution": {
+      "errors": 0,
+      "warnings": 6449,
+      "seconds": 67.63
+    },
+    "nativeTable": {
+      "pass": 1,
+      "fail": 0,
+      "scope": "真实DG_ScrollViewer滚动500→1000→1205；原10列/38高度/只读交互；ValidWhen；旧scroll命令失效；重复identity准备失败不破坏旧表；观察异常清空"
+    },
+    "design": {
+      "pass": 91,
+      "scope": "现真实视图独立组装；不等于新原表独立XAML/真实VS设计器验收"
+    },
+    "components": {
+      "pass": 9,
+      "scope": "有专属Wpf的正式注册/真实HALCON/资源生命周期，不能代无Wpf矩阵或完整新UI"
+    },
+    "exe": {
+      "pid": 69264,
+      "exit": 0,
+      "scope": "正式Release目录及组件加载探针"
+    }
+  },
+  "remaining": [
+    "统一publication上下文公共API与所有生产消费者尚未实施",
+    "工作流完整候选30e05a51尚未主仓合入、restore或正式验收",
+    "历史/失败/Dispatcher过期结果树表一致性仍待修",
+    "物理Frame来源/选择事件/中立图像viewport与旧SDK链退出仍待整批落地",
+    "原结果表独立设计入口/真实VS及VM同态人工验收仍未完成",
+    "C13原完整样式非法输入断言旧失败保留；首次捕获Win32 error5人工环境条件保留",
+    "Blob业务阶段二仍冻结"
+  ]
+}

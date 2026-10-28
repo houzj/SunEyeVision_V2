@@ -1,3 +1,46 @@
+## 2026-10-28 集中合入工作流固定源码快照
+
+- 主线C13/C14本地暂存bb5bab8a，固定工作流快照30e05a51已合入工作区；仅CURRENT_TASK内容冲突，双方完整记录保留。此整合尚未restore/语义构建，旧成绩不套；用户Blob参数页不暂存、不推送。下一集中恢复新Runtime/Wpf/Tests依赖、规定UI/full构建，真实错误交原线增量修。共享结果合同随后实际落码。
+
+## 2026-10-28 原结果表候选落地；整链仍进行中
+
+- 用户确认按VM设计，原方案moduleResultsPlan已更新并统一SDK声明/同一次snapshot/publication，不保旧外观或latest后备设计。本批实际迁原ModuleView/CurResult样式、单元格/原滚条和原ScrollChanged行为，DeclaredResultTable先Prepare全量，再静默安装存储/新代命令，聚合通知及Dispose，500增量、ValidWhen及旧命令门禁已实施。完整公共context/中立图像/物理帧选择API尚未实际替换；当前不称整链完成。
+- 最终UI002 0错6595警告116.91秒，全量002 0错6449警告67.63秒。Window原表定向1过0败，真实DG_ScrollViewer滚动500→1000→1205；Design=91，Components=9（真实HALCON、有Wpf），正式EXE探针PID69264 exit0。详细同源SHA/范围见evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json。第一次001 UI/全量均0错，其后因评审指出Dispose观察异常清理缺口修正重建；非最终成绩不套用。原C13失败/物理鼠标环境边界全部保留，未人工代签。
+- 自有59127/1047构建、56895/3538验证、50828元数据脚本均终态，当前无本线live。用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed不动不暂存。所有新源码仍未提交，不推送粗糙候选。
+- 工作流最新完整候选30e05a51（含3aef1aa1），其源/树/根工具及新增ImageSourceInputView在独立worktree且未主仓集成/语义验收。已通知共享合同方向但明确未可编译消费；下一集中批需封存当前真实源码后整体集成并restore新增工程，不能旧45成绩代本批。根仓共享API/C14仍本线唯一写，工作流线准备实际UI消费者，不双写。
+- 下一：整批落统一publication及SDK适配→PropertyList/表/状态/历史/清理唯一入口；修已核历史只更树、清理漏表、Dispatcher内缺节点/context复核；使用已有结果Region.SourceFrame冻结真实来源，显式GeometrySource逐组物理帧，纯Geometry无proof不高亮。真实中立viewport要连旧SDK ImageControl/DisplayCollector消费者一起退出，不保隐藏实例。三路已交API/真实source/生命周期实现草案，未把草案当源码。阶段一仍未退出，Blob业务冻结。
+
+## 2026-10-28 用户确认按VM设计推进结果树/表完整链路
+
+- 按VM设计；树表共用SDK ToolSchema与同一次DeclaredOutputSnapshot的身份/声明版本/状态/值，不能分别查询latest。主线集中公共context/C14/物理帧合同，工作流线同步PropertyList/ResultShell/UI；三路只读复核已重新分派。原JSON moduleResultsPlan已同步决策和验收条件。当前完整链未完成、无本线live构建，不套旧成绩；Blob业务与用户XAML不动。
+
+## 2026-10-28 模块结果文档、任务归属与统一方案
+
+- 按用户本次三项要求整理：用户给的“模块结果完整链路与VM对照.html”逐字节归档到原O06 references/module-result-chain-20261028，SHA31cfa0706ba7ab1ac06708e07777ada945bbf4b9a51c6c210f1e0adcd0c63261。16条源码证据身份逐项记录，13条与当前源吻合，S04/S06/S09已变化；自研引用来自87f4，8条不等于主仓当前文件，未把旁支参考套为主仓/实机验收。
+- 原JSON新增blobControlPrototypePlan.moduleResultsPlan并由原生成器渲染O06#o06-module-results-plan，719锚点、幂等；references/index.html增加参考原文、manifest及现行方案入口。结果树/PropertyList和ResultShell归“工作流、工具箱与数据流优化”；标准结果表C14、公共展示合同/原图像帧/共享项目与Catalog归本聊天；UI实际消费者由工作流线同步，主仓同源集成由本线统筹。已读工作流最新CURRENT_TASK及聊天记录，树/原shell仅分支候选未正式验收，C14表仅原源/设计草案未完成组件。
+- 已定方案：复用正式输出声明/运行快照/Reader/Lease，统一选节点/调试/正式结果上下文；树正式字段ID/层级128分页，表完整原模板/稳定对象ID/500增量；状态区分成功空、失败、取消等；选择核publication/物理来源帧，不贴当前选图ID冒充；树/表各自正确资源生命周期，旧事件拒绝；历史单列不拿日志代替。精确公共接口与实际消费者待整批替换，不留旧Update(null)重载；本次仅文档整理，不扩大框架重构或提前改Blob业务。
+- 当前无本线live构建/测试：UI008=0错6300警告187.22秒，全量005=0错6619警告65.70秒；serial验证exec14776已终态1。Design054=91过（新增实像宽高/Bounds）；样式定向1过1败（第三绑定观察者新原文负向过，完整样式仍在“非法输入”断言失败待定位）；数值卸载/原between/公开文本配置定向均exit0。独占四形0过4败，四例GetCursorPos=false/Win32 error5、ActiveSource空、fg0；各自窗口关闭隔离残留，不伪称几何错误或放弃首次真实捕获。该交互环境条件不阻其他控件继续实施，阶段一仍未完成。旧失败全部保留。
+- C09/C14/C17三路已交可实施草案与API复核，尚非实际产品完成；受上一轮中断的任务已恢复，当前按主线唯一产品写者继续。工作流02872a5c及其后树/shell候选尚未主仓合入，下一共同窗口评审集成，不能套C13旧成绩。用户BlobParameterEditor.xaml原SHA保持不暂存。
+
+## 2026-10-28 正式源回归窗口已归还；C13完整组合候选开始实施
+
+- 本轮已真实推进并保失败：原StringConfig文本/图形四行/七行/独立NativeDisplayScene与原IText绘字候选、数值协调器、严格显式角色和真实测试已实施；DisplayObjectField类型已删除。UI001缺ShapeItemsPage using、002局部id重名、003原名称域不允新x:Name均失败保留；UI004=0错6300警告132.49秒，全量001=0错1267警告81.27秒；Window176=146过14败，文本新增8组及绘字组过，图形共同失败为原UserControl自身Name覆盖外名，已改Tag显式角色并先完整核叶后订阅；旧字符串fixture重绘补真实布局等待。Design首次夹具fields局部重名未编译，已修，不算设计通过。
+- 修后UI005=0错6583警告190.39秒、全量002=0错6501警告105.45秒；当前唯一live为Window回归exec92879（artifacts/c13-window-validation-20261028-003.log），测试期间不改产品或测试源。尚未重验Design、关联轨、正式EXE或真实VS/VM人工。用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持，不暂存。
+- Catalog新增C13文本/原样式两项、63项文本原源当前SHA及本地依赖核过；4接口当前原档与旧migration-manifest hash分记而非覆盖历史。尚补文本条目Apps.Style/VMControls.RenderInterface程序集身份；最后源改动后再冻结hash。原O06 JSON/HTML统一本次失败与剩余（718锚点幂等）。C09 Assist三方式、C14原10列/500增量、C17原四键固定底栏的精确原切片/资源/消费者已三路回传，继续排队实施，阶段一未完成。
+- 工作流交新候选02872a5c（ImageSource Runtime/Wpf及原源条/发布/测试），尚未合入/构建，不抢当前C13验证窗口；已回告其独立UI/source消费者职责，C14共享IToolResultView尚未改，不新增兼容overload。真实PropertyList与StandardTable/状态/运行schema publication/物理帧/借入投影及选择租约需同批统一。Blob当前SettingsSchema实际来自BlobParameterDefinition.Settings，未调用残留BlobPresentation.Layout；撤回误将残留图形分组当生产参数窗必炸的审查推断，不为此改Blob业务。
+
+- 用户再次指出并行空档，已查真实状态：三路上一轮均completed，原因是主线没有及时续派，不能称持续并行。现已followup实派并再次查得三路均running：blob_input_control_evidence复核文本初值/SourceError修复及真实六组用例，随后模板/隐藏重入；blob_roi_display_control_evidence审新NativeTextViewport原绘字/图像lease/currentness，随后图形旧模板清理；blob_numeric_control_evidence审真实owner单写断言及数值第三binding/pending raw，随后绘字Catalog原源依赖。Root唯一产品写者集中集成，三路只读、不构建；每路均含后续补位项，完成即接下一待验项。
+
+- 本轮七行实际候选已接TextDisplays：集中角色校验及按原参数宿主逐行唯一原件排序，XY组合内部同槽；新增NativeDisplayScene.xaml/NativeDisplaySample真实SettingsView夹具，16字段含七行及两图形组，公开SelectedPageIndex可在VS改索引。O06Window已纳6组真实文本树/失败恢复/隐藏/模板重挂/通知异常测试；S4Design新增无Application双页/16字段/原叶/不写夹具断言，尚未运行。ValidateText贯通初值与Groups准备/整组/历史，常量角色预检Required，图形原精度固定2。空模板退旧parts/代次、raw未就绪拒捕获及文本Attach清Binding后重入检查已修。
+- 当前仍无本线live构建测试；20个C#源静态语法0错和diff --check仅源检查。下一必须迁ColorLifetimeDraft及原DisplayObjectField直接/生命周期用例到完整显式图形角色，移除旧自绘类型，补原IText/PretreatTexts/TextShape实际绘字样例及Catalog依赖/source SHA，再统一规定构建/回归/正式EXE。不能把尚未跑的新tests当通过；图形/文本/数值三路已在审本轮真实新链。用户Blob原XAML和业务未改。
+- 本轮图形整链候选已接：GraphicStyle.xaml原ImageViewConfig切片+NativeGraphicBridge/TemplateData+NativeGraphicStylePresenter，GraphicDisplays经SettingsView→FieldsView显式角色预检后创建唯一state/原叶，图形角色不new普通Editor，FieldAccess直接委托；旧自制DisplayObjectField退出消费但旧类型/旧case仍待统一删除替换。先缓存真实色板Popup/聚合Scope清理；Attach epoch每次外调核身份、非视觉Content避免逻辑树循环、颜色重开回投、冒泡Escape、数字raw按AcceptanceVersion转移已加。三个子路重新审真实图形/数值/文本变更，不能以review结束不补位。当前无构建测试，候选仍未验。
+- 文本进一步补receipt异常隔离/同叶formatter重试清错/suspended setter/重挂旧Binding摘除/Loaded可见性门禁/Dispose独立清自身binding。原O06已统一C13实际进展及并行C09/C14/C17真实缺口；718锚点生成幂等，diff --check过。下一集中七行角色组合、独立真实XAML/原TextShape绘字、迁全部旧两字段样例及旧即时写断言、Catalog来源hash，移除旧DisplayObjectField后再规定构建/关联回归/正式EXE；不先套旧绿测交付局部。用户Blob XAML原SHA与业务保持不动，不提交未验候选。
+- 用户指出评审结束后未及时补位；现已实派并核状态为Root及三个子智能体均running：图形线核原四行及Popup递归后自动接七行/绘字，文本线审现候选后自动接真实样例/旧断言，数值线复核修复后自动接Catalog/来源闭包。主线唯一写者实施完整组合，三线只读不构建，不将已completed任务冒称仍在工作。新NativeColorPaletteScope已从包装器提取，借真实Picker便于后续原样式模板唯一原叶复用，尚未验。
+- 本轮继续成片候选：原StringConfig_sub精确切片到Text/TextField.xaml，NativeTextSession只借唯一state并保raw/当前括号来源树，NativeTextPresenter接原叶/Popup/Enter/失焦/捕获/隐藏卸载；Editor→FieldsView→SettingsView→Options已完整透传TextExpressions。只读审修{}首次填充正例、来源错误所有权、formatter接原快照对象及冻结身份、旧隐藏Enter拒绝；原证据SHA323dca…cfce与路径行号已写O06。数值CurrentInput改纯FindName，重附先存raw，构造失败退TextChanged，各投影/Resume补Current和sync门禁。尚未构建/测试，不是C13完成；下一原四行样式/七行组合、独立设计与实际绘字、Catalog和测试统一补齐后集中验证。
+- 共同产品基线6ae86393：全量Release006终态0错6608警告119.22秒；UI009同产品源。工作流线ImageSources004=45过0败、WorkflowHost006=1过0败及正式EXE toolbox-probe PID48152 exit0/22工具，原receipt已读；工作流已明确无活句柄并归还窗口。真实VS/VM同态/人工未验，不能宣称阶段一完成。工作流另交纯文档e81a6e84，保留后续共同集成，无需为文档重建。
+- C13整体设计已补实际Blob无DialogGroup编辑消费、第二阶段字段/保存缺口，以及TextExpressionSnapshot/Options、按fieldId角色、借原叶数值协调器的精确合同。三路只读核收已完成，本线唯一产品写者恢复实施；不改图像源专用业务、Blob业务或用户XAML。
+- 已开始未验候选：NativeNumberPresenter只拥有唯一原视觉，新NativeNumberCoordinator借state/真实叶/eventRoot及owner，不挂第二Child；NativeNumericCommit可校第三层StartValue桥binding/同叶current，保存raw编辑代次；提交后用AcceptanceVersion区分接纳/观察异常，投影有sync门禁，隐藏先Suspend再关层、Dispose聚合自有资源。只读评审正在审该实际候选。后续原字符串/占位会话、原四行/七行完整组装及独立样例/测试/Catalog仍待实施，不称此局部完成。
+- 当前无本线live构建/测试；产品已变，6ae的验证成绩不能套当前候选。按整批实施完再串行规定构建和相称回归。用户BlobParameterEditor.xaml索引2及SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保留未提交；不推送粗糙候选。
 ﻿## 2026-10-28 用户授权独立worktree并行；仍按完整工具批交付
 
 - 用户明确要求“设计并行 提高效率”“需要每路独立worktree”，并回复“好吧”。三个原worktree状态均干净，保原分支历史后从e81a6e84切本次专用分支：workflow-timing-footer/codex/image-source-native仅Plugin.Wpf专用ImageSources目录；workflow-overview/codex/image-source-editor仅新工具Wpf；workflow-review/codex/image-source-audit只读核验。87f4唯一写者继续Runtime/Workflow/UI主链，不在同一目录多AI写入。
@@ -1177,3 +1220,8 @@
 
 最终删除补线源码063全量Release为0错误/759警告/33.50秒，064为126通过/0失败/0跳过/2秒；UI Release与测试SHA同为BF9D9F003713E2C0554815EC64B12A21033BB3B95E98234AB90C78FB977FB793。063仅去除旧命令无用状态，所有最终验证对应当前未提交源码。
 
+## 2026-10-28 共同基线全量构建通过；正式回归窗口交工作流线
+
+- 已检查并快进6ae8639369dcc95b0f4288432ccf369d4f5f3835，仅测试准备改用现有私有setter，不扩大产品接口。全量Release006/session3804已终止exit0：0错误、6608警告、119.22秒，artifacts/image-source-baseline-release-build-20261028-006.log；UI009对应同产品源。Release005三处fixture私有setter错误保留，不以旧回归成绩覆盖当前未验状态。
+- 已向工作流对话交正式主仓同源产物测试窗口，要求最新ImageSources45项、WorkflowHost及适用EXE；主线产品/测试源码保持冻结，不构建，不覆盖产物。等待其明确回归结果及归还窗口；不是已完成或用户人工通过。用户Blob XAML保持未提交。
+- C13只读核收纠正设计假设：实际Blob没有五组DialogGroup编辑字段，BlobPresentation.Layout无生产调用，BlobDisplay.xml目前静态定义缺正式编辑/保存链。原O06/JSON已记录第一阶段显式角色原组合与第二阶段正式字段/持久化缺口，不提前改Blob。O06生成718唯一锚点、幂等；不是控件实施完成。

@@ -10,6 +10,8 @@ using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Resources;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using SunEyeVision.Plugin.Wpf.Adapters.Text;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
 /// <summary>Finite page/section/conditional composition. No workflow access or publication.</summary>
@@ -20,7 +22,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly Dictionary<string,FrameworkElement> _rows=new(StringComparer.Ordinal);
  private readonly List<NativeRangePresenter> _ranges=new();
  private readonly List<DeclaredFieldState> _fieldStates=new();
- private readonly List<DisplayObjectField> _displayCompositions=new();
+ private readonly List<NativeGraphicStylePresenter> _displayCompositions=new();
  private bool _disposed;
  private readonly Dictionary<string,NativeParameterPage> _groups=new(StringComparer.Ordinal);
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
@@ -113,7 +115,10 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,NativeIntegerRadioOptions>? integerRadios=null,
   Func<FieldGroupCandidate,string?>? validateComposition=null,Func<bool>? isCurrent=null,
   IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? imageSources=null,
-  IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parentConditions=null,IReadOnlySet<string>? inlineConstants=null)
+  IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? parentConditions=null,IReadOnlySet<string>? inlineConstants=null,
+  IReadOnlyDictionary<string,TextExpressionOptions>? textExpressions=null,
+  IReadOnlyList<NativeGraphicDisplayOptions>? graphicDisplays=null,
+  IReadOnlyList<NativeTextDisplayOptions>? textDisplays=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
@@ -154,7 +159,36 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   }
   if(radios.Keys.Any(paired.Contains))throw new ArgumentException("整数单选不能同时作为范围的任一端点。");
   _pairedFields.UnionWith(paired);
-  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired,inlineConstants);
+  var textDisplayOptions=textDisplays?.ToArray()??[];
+  if(textDisplayOptions.Any(option=>option is null))throw new ArgumentException("文本显示组合不能为空。");
+  var textCoordinates=textDisplayOptions.SelectMany(option=>new[]{option.PositionXFieldId,option.PositionYFieldId}).ToHashSet(StringComparer.Ordinal);
+  var imageProviders=ConfigureComposition(declarations,imageSources,parentConditions,radios,paired,inlineConstants,textCoordinates);
+  var textOptions=textExpressions?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
+  foreach(var (id,option) in textOptions)
+  {
+   if(option is null||!declarations.TryGetValue(id,out var field))throw new ArgumentException("文本表达式配置引用未知字段。");
+   option.Validate(field.Port);
+   if(paired.Contains(id)||radios.ContainsKey(id)||imageProviders.ContainsKey(id)||_inlineConstants.Contains(id)
+       ||field.Presentation.Layout?.DialogPrimary==true)throw new ArgumentException("文本表达式与其他字段组合冲突。");
+   if(field.Value is ConstantSetting {Value:string text})
+   {
+    if(!CurrentGroup())throw new InvalidOperationException("文本初值所属范围已失效。");
+    var error=option.ValidateText?.Invoke(text);
+    if(!CurrentGroup())throw new InvalidOperationException("文本初值验证期间范围已改变。");
+    if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
+   }
+  }
+  _textExpressions=textOptions;
+  var graphicOptions=ValidateGraphics(declarations,graphicDisplays,paired,radios,imageProviders,textOptions);
+  var graphicIds=graphicOptions.Values.SelectMany(GraphicIds).ToHashSet(StringComparer.Ordinal);
+  ValidateTextDisplays(declarations,textDisplayOptions,graphicIds,paired,radios,imageProviders,inlineConstants,textOptions);
+  foreach(var option in textDisplayOptions)
+  {
+   var ids=TextIds(option);var own=ids.ToHashSet(StringComparer.Ordinal);
+   var anchor=Array.FindIndex(all,field=>field.Port.Id==option.ContentFieldId);
+   all=all.Take(anchor).Where(field=>!own.Contains(field.Port.Id)).Concat(ids.Select(id=>declarations[id]))
+       .Concat(all.Skip(anchor).Where(field=>!own.Contains(field.Port.Id))).ToArray();
+  }
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
@@ -164,8 +198,22 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
   }
   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);
+  foreach(var option in graphicOptions.Values)
+  {
+   var ids=GraphicIds(option);
+   var graphic=new NativeGraphicStylePresenter(option,ids.ToDictionary(id=>id,id=>states[id],StringComparer.Ordinal),_groupPresentations,CurrentGroup);
+   _displayCompositions.Add(graphic);
+   foreach(var id in ids)
+   {
+    var state=states[id];var fieldId=id;
+    access.Add(id,new(id,graphic,()=>state.Accepted,()=>state.HasInvalidInput,()=>state.Error,()=>graphic.Input(fieldId),
+     value=>graphic.TrySetConstant(fieldId,value),()=>graphic.TryCommitPending(fieldId),handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
+    _rows.Add(id,graphic);
+   }
+  }
   foreach(var field in all)
   {
+   if(graphicIds.Contains(field.Port.Id))continue;
    if(field.Presentation.Layout?.PairWith is {} id)
    {
     var other=declarations[id];var left=states[field.Port.Id];var right=states[id];
@@ -182,9 +230,9 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    else if(!paired.Contains(field.Port.Id))
    {
     var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
-        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id));
+        integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id));
     _editors.Add(field.Port.Id,editor);access.Add(field.Port.Id,new(editor));_rows.Add(field.Port.Id,editor);
-    if(_inlineConstants.Contains(field.Port.Id))editor.UseInlineConstantReference();
+    if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
     if(imageProviders.TryGetValue(field.Port.Id,out var provider))
     {
      editor.UseImageSourceSelector(()=>
@@ -224,13 +272,6 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
      if(rightEnds.Contains(field.Port.Id))continue;
      if(field.Presentation.Layout?.DialogGroup is {} dialog&&!field.Presentation.Layout.DialogPrimary)continue;
      FrameworkElement view=_rows[field.Port.Id];
-     if(field.Presentation.Layout is {DialogGroup:{} dialogGroup,DialogPrimary:true} display)
-     {
-      var style=section.Where(item=>item.Presentation.Layout?.DialogGroup==dialogGroup&&!item.Presentation.Layout.DialogPrimary)
-       .Select(item=>(_editors[item.Port.Id],item.Presentation.DisplayName.Split(" · ")[^1])).ToArray();
-      var composition=new DisplayObjectField(display.DialogTitle!,_editors[field.Port.Id],style);
-      _displayCompositions.Add(composition);view=composition;
-     }
      _rows[field.Port.Id]=view;
      {
       var affected=field.Presentation.Layout?.DialogGroup is {} displayGroup?section.Where(item=>item.Presentation.Layout?.DialogGroup==displayGroup).Select(item=>item.Port.Id).ToArray():
@@ -324,6 +365,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
    _parentConditions.Clear();_rowGateAnchors.Clear();_advancedFields.Clear();_inlineConstants.Clear();
    _groupPresentations=new Dictionary<string,FieldPresentation>();
+   _textExpressions=new Dictionary<string,TextExpressionOptions>();
    PageChanged=null;_tabs?.Items.Clear();Content=null;
   });
   ParameterCleanup.Run(cleanup);

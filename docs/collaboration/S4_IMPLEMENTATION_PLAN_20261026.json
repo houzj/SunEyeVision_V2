@@ -7671,6 +7671,18 @@
       "失败与版本保留": "UI001至004、Release001为早期候选构建均保留而不套最终源码。Window168定向6过、169定向10过；170完整定向15过1败、171菜单定位0过1败、172定向15过1败：发现测试复用卸载宿主与异步Closed未完成，并集中修关闭回调重绑的旧清理风险。测试改取当前真实宿主并有界Dispatcher等待实际Closed，173该组过；174全149过，后补原矩阵定义重建/当前来源历史两出口，175最终全151过。产品不因测试时序而放松接纳和代次门禁。"
     },
     "nextNativeCompositionsDesign": {
+      "C13七行与独立场景实际候选": "已实现七行显式角色/原参数宿主唯一原叶排序、同槽XY、NativeDisplayScene真实SettingsView及16字段独立夹具。新增真实原IText→PretreatTexts→TextShape视口、OK/NG/字号/透明度/XY样例；当前候选仅前批像素组与原文本8组通过，最后增补Actual中间态及修图形原叶身份后待本批复验。真实VS及用户外观仍未验。",
+      "C13本轮统一门禁修正": "图形原Float未指定DecimalDigits且默认2，预检强制声明2而非容许0至9；丢失template parts先退休旧输入/代次并保存raw，新surface未就绪且有同版本raw明确拒捕获，不报告保存旧accepted成功。文本Attach清旧Binding后核独立attach代次；ValidateText已纳FieldsView初值/统一准备/整组/同值/历史回放，每次外调后核Current，不仅在文本叶校验。图形与文本固定常量角色要求Required，防Unset后强转崩溃；XY缺来源中间态单独保留。20个C#源曾静态语法0错，不代语义构建或运行，早期手动加载Roslyn DLL版本冲突后已用PowerShell自带Roslyn重新检查并记录，不把加载失败当构建成绩。",
+      "C13图形角色实际接入候选": "原ImageViewConfig四行模板整体已接显式GraphicDisplays→FieldsView→唯一states/原叶；DisplayObjectField自制类型已删除，所有旧测试改真实原Popup。四个原叶按非视觉Tag角色完整核齐后才挂监听，避免原UserControl自身Name覆盖外部命名。Catalog原源/MVID/依赖逐SHA记录；当前候选未通过完整回归。",
+      "C09C14C17并行核收的实际缺口": "C09当前无活动Assist三方式，5/6分量夹具不等于FIXTURE/两POINT加6float/10float；复用现Root/正式resolver/history，完整FIXTURE声明和原角单位/变换顺序未证，不将十float当Affine2D。C14现两处自制8列，原10列所需Angle/LongAxis/ShortAxis不在BlobSchema，500是增量非分页；库先独立真十列，Blob第二阶段补真实指标，选择要发布身份/物理帧/稳定元素及唯一场景owner，不持资源Record缓存。C17原BottomCommandGroup实为连续/停止/单次/确定四按钮，取消是关闭请求；复用正式Capture/Commit/DebugIdentity，退出SDK窗口UI循环，host需独立可重启run/continuous取消范围，不能用Discard冒充Stop。全部完整消费者及真实验收仍未实现，不用静态核收或旧成绩作完成证据。",
+      "C13实施候选20261028": "已提取NativeNumberCoordinator供普通wrapper及后续原模板借真实数值叶，CurrentInput纯查找不再误用会重设绑定的EnsureTemplateInputs；Attach先Suspend保存raw，初始化/恢复投影有sync门禁；构造投影失败退TextChanged，桥绑定和各UpdateTarget后核Current。新增Adapters/Text的TextExpressionOptions/Snapshot与NativeTextSession、原StringConfig切片TextField.xaml及NativeTextPresenter，Editor/FieldsView/SettingsView完整透传，普通字符串改raw缓冲与统一提交。已按只读评审修来源错误所有权、formatter接原快照候选并校冻结身份、隐藏卸载旧Enter拒绝。仍是未构建未验候选，原四行/七行、独立样例与Catalog及完整回归待统一；不以源回归45+1成绩覆盖当前新源。",
+      "C13空括号原件纠正": "原Apps.XmlParser.ParamTab/StringConfig.cs:143仅拒Text.Length<=1；148–191在caret两侧找到花括号即刷新开树，故{}长度2且caret1是首次填充正例。111–119 Remove(1,0)/Insert正式ModulePathName得到{token}，不要求旧内容非空。来源SHA323dca952ffa87ec774c8546f3949cc5205a1e9860bd70361efe1e5c91f3cfce及O06_TEXT_LIST_FOOTER_STATIC_20261028.json.sources[0]；此前空括号负例表述修正为不成对、括号外、非法嵌套负例，不重复逆向或凭预览猜行为。",
+      "共同基线构建增量20261028": "共同基线6ae86393仅修测试通过现有私有setter准备显示源，不扩大产品接口；全量Release006已终止0错误6608警告119.22秒，日志artifacts/image-source-baseline-release-build-20261028-006.log。UI009与其产品源相同；此前Release005三处私有setter编译失败记录保留。最新45项ImageSources、WorkflowHost与EXE尚待工作流线在主仓同源正式产物集中验证，已交测试窗口，主线产品和测试源冻结；不据构建通过宣称本链或第一阶段完成。",
+      "C13实际生产消费者核对20261028": "实际BlobTool.SettingsSchema经BlobParameterDefinition.BuildBindings只生成BlobParameters.xml参数和判断字段；BlobPresentation.Layout全仓零调用，presentation.graphics.*属未接入残留。BlobDisplay.xml的blobs/centroids/contours/inspection-roi/mask-roi五组仅静态定义，没有编辑Port、稳定fieldId、BlobSettings读写或DialogGroup生产消费者；五组均有CrossSize，不能按名称猜只有质心需要。当前DialogGroup消费者仅公共FieldsView及ColorLifetimeDraft等验证样例，样例两字段不代表Blob完整样式已接入。",
+      "C13显式角色配置与第二阶段缺口": "第一阶段以Wpf显式fieldId角色配置连接Visible、OKColor、NGColor、Opacity及可选Thickness，构造前核类型/唯一性/范围及完整消费，独立样例与全部测试同步迁为完整原组合；不按数组位置、中文标签或后缀猜角色，不隐藏第二编辑器，不保留旧Pencil或更多fallback。第二阶段必须补正式图形和文本编辑字段ID/Port/默认范围/角色、ReadSettings/ApplySettings及持久化，并让显示定义读取accepted值；CrossSize等额外字段须用明确原行消费，不能塞进原四行弹层或静默丢弃。现静态文本Bold/Decimals/Unit也不等于原七行。该缺口属于编辑模型与元数据，不要求算法等待UI；本批不修改Blob业务，不将新增库控件假称已贯通Blob保存。",
+      "C13文本公开合同定案": "仅Wpf增加TextExpressionSnapshot(Candidates,FormatExpression,IsCurrent)及TextExpressionOptions(ReadCandidates,ValidateText)，前者保证候选与formatter同一次快照，后者整串校验不写入。ToolSettingsViewOptions.TextExpressions按Ordinal字段ID配置，DeclaredSettingsView冻结并用Current包装外调，再传FieldsView和Editor；无来源配置仍用原字符串叶。构造先拒未知ID/空委托/非scalar Text或无Constant能力，以及choices/配对/Radio/图像selector/InlineConstants冲突；不得把显示标签持久化。候选复制只读并冻结MemberPath，token不得含花括号；只替换当前合法括号内部。每次外调后复核owner/render/state.AcceptanceVersion/raw/selection/tree代次。TrySet通知异常处于解析catch之外，已接纳不回滚。原Popup焦点恢复单独防重入，旧树节点不能因值相等重新有效。",
+      "C13数值非视觉协调合同定案": "NativeNumberCoordinator借单一state、presentation、eventRoot、模板真实nativeInput、引用options、owner/currentness及可选桥投影；只允许原SliderArrangeBase或NumericControl，不挂Child、不创建另一Arrange。普通wrapper负责唯一原件创建/字体/Child；样式模板slider1/2直接借入。协调器提供TextEditor、TrySetConstant、TryCommitPending、AttachInput、ProjectAccepted、PrepareForVisibility及保raw重附。NativeNumericCommit按需校验第三层Arrange.StartValue到桥的Active普通Binding并UpdateSource，缺失/PathError/MultiBinding未支持明确拒绝；桥setter仅stage。所有层外调后核同叶租约，离屏Capture只在同根有效时用已保存raw，不更新旧视觉。",
+      "C13接纳与关闭顺序定案": "提交冻结AcceptanceVersion与本次raw代次，state.TrySet后无论返回或观察异常，都按版本变化判断已接纳；只在同owner同叶仍有效且没有更新raw时投影，不因观察异常恢复旧accepted或重写。通知异常继续外抛，投影/清理异常聚合。隐藏/关父Popup/卸载先置hidden和失效队列、Suspend保存raw，再关子层，避免Closed/ForceUpdateSource写入；恢复Loaded延迟Resume须核owner/leaf/generation。Dispose先失效再聚合退自有事件/队列/commit/引用租约；借入Arrange、模板Binding/Resources/DataContext及state不属协调器，不能清除。",
       "优先级与独立分工20261028": "按用户主界面及周边独立推进与本次基础层优先级讨论，P0将图像源在途基础链交工作流线集中收口；P1本线Blob必需控件与工作流公共源条/主界面衔接并行，不等主界面整个基础层完成；P2本线控件准入后立即Blob单工具整链，设备线完成已有设备真实闭环；P3更多厂商驱动/周边及无关框架重构按真实缺口后排。多厂商能力边界现在明确，不捏造VM厂商支持事实。原两阶段全部退出要求不变，候选提交不是阶段完成。",
       "图像源交接而非控件阻塞": "新三游标/明确意图合同候选已实施，UI009 0错6538警告103.80秒；新合同全量、测试helper及最终回归/EXE/人工尚未完成，工作流线接收继续。HANDOFF_IMAGE_SOURCE_OWNERSHIP_20261028.md列完整源码/失败/职责和39源SHA。本线停止继续改该业务，恢复C13原数值/文本/图形样式及ROI、C14公共结果合同/唯一ShapeList；Blob输入源选择只订阅上游图像输出，不承担相机管理或取图工具调试。图像源工具/相机管理/主界面共一正式配置和设备服务，由工作流线整链核收，不因界面入口另建配置和连接。",
       "共享文件唯一写者与发布窗口": "工作流在独立87f4分支拥有图像源UI、工具及设备整链；新源条可新增Plugin.Wpf的Controls/Native/Composition/ImageSources、Themes/Native/Composition/ImageSources、Themes/Assets/ImageSources、Adapters/Input/ImageSources、Presenters/Input/ImageSources、Design/ImageSources中立专用目录。既有共享主题/项目/Catalog及公共合同由主线统一，工作流给必要变更和证据，不双写。本线不接管工作流目录，工作流不从旧分支覆盖主仓正式Release；源码并行、正式构建部署窗口互斥。3b88c79c纯设计链（含7b8bb461）共同保留，不为文档重建产品。",
@@ -7701,7 +7713,128 @@
       "C17原视觉与布局": "原Blob三页基本/运行/结果显示，ParamsTabUserControl内容*、扩展auto、固定底栏auto，页内只一滚动宿主；原TabControlFx/TabControlStyle/TopTabItemStyle复用同SelectedPageIndex设计器入口。底栏高32，左Reset margin4,4,0,4仅运行页；右margin0,4,14,4。原按钮高24、MinWidth66、Padding10、Margin2.5，抽原BottomButtonStyle及四DataTemplate/完整主题资源，不继续SDK100×28。原ParamsTabUserControl SHA521817…f8c7、BottomButtonStyle SHA0eb6fb…17fc。",
       "C17宿主执行与关闭": "公共库只借ExecuteOnce/StartContinuous/Stop/Confirm/RequestClose命令和host状态，连续/执行与停止显隐遵原件；不搬原BottomCommand300ms Task循环、同步Wait或旧SDK500ms UI续跑。RunDebugAsync/正式编辑Host正确非视觉链复用，连续与取消尚无完整现成宿主合同，先补实际缺口不伪装按钮状态已停止算法。确定先全pending提交→host校验/原子Commit→成功关闭；X/Escape请求既定放弃草稿，运行中由host停后续/取消在途及回收结果后释放；旧回调不更新重开窗口，库不调度全局工作流。",
       "C17文件及消费者": "拟Themes/Native/Composition/Windows原模板与底栏、Presenters/Windows真实内容组合、Adapters/Windows借用命令/关闭租约及独立Design同链。现RuntimeNodeConfigurationControl/DeclaredToolConfigurationControl和开窗入口、SDK DefaultDebugWindow/ToolEditorCommit/Close的可视消费须整体退出；NodeConfigurationEditHost继续业务所有者。与工作流D1现改文件相交，先等双方完整检查点统一基线再改，不从独立旧基线覆盖Release。",
-      "共用验收门": "原模板资源/来源SHA闭包、独立真实XAML设计和运行同链；C13定点占位/多token/非法花括号/叶拒绝/同名身份/旧树与关闭、七行边界和引用；C14空与失败状态/多run来源/500跨批顺序/分页取消/旧选择/资源释放；C17三页保编辑/固定底栏/五命令状态/提交拒绝/运行关闭/晚到结果。分别记录自动、真实VS、VM同状态和用户验收，未做不代签。"
+      "共用验收门": "原模板资源/来源SHA闭包、独立真实XAML设计和运行同链；C13定点占位/多token/非法花括号/叶拒绝/同名身份/旧树与关闭、七行边界和引用；C14空与失败状态/多run来源/500跨批顺序/分页取消/旧选择/资源释放；C17三页保编辑/固定底栏/五命令状态/提交拒绝/运行关闭/晚到结果。分别记录自动、真实VS、VM同状态和用户验收，未做不代签。",
+      "C13正式构建与失败保留20261028": "本轮原StringConfig/图形四行/文本七行/真实IText绘字及独立NativeDisplayScene已形成候选；已删除DisplayObjectField自制组合。Catalog新增C13两项，原源/本地SHA及绘字依赖登记，仍非全库完成。 规定UI004：0错误6300警告132.49秒；全量Release001：0错误1267警告81.27秒。其后已修原叶Name被自身根覆盖问题，UI005已0错误6583警告190.39秒；全量Release002进行中；不得把前批构建套最后源。 正式WindowPresentation176：146通过14失败，run.log和原case保留。原文本新增8组通过；原绘字像素组通过但中间状态Actual断言随后加强，需复验。图形角色Name共同阻断已改显式Tag唯一原叶、先完整解析再挂监听，未放松元数据；旧字符串重绘测试补真实布局等待。 DesignTime本次先因夹具局部变量重名未编译（非产品错误），已修但未复验；不冒称真实VS设计器通过。首次Windows PowerShell5启动解析失败，pwsh原脚本正常运行。 七个绘制用例在开始CaptureMouse失败，未进入模态；既不宣称环境占用，也不允许无捕获继续。后续定向四形/警告复验并记录Win32前台/捕获时序。 C09三方式Assist、C14原10列500增量、C17原4键固定底栏的原切片/当前消费者/资源和宿主责任已三路核清，按队列继续实施。未迁完、不进入Blob业务；用户Blob XAML保持原SHA。",
+      "C13设计实像而非文本假绿20261028": "Design053正式89组通过，实际PNG仍发现字号/透明度仅短横线。原PcUi默认列0*/100*/0*只有原InitUI初始化；已在InitUI记录实例初始化标志，Ensure仅首次未初始化补原InitUI，避免between混合订阅重附再执行隐藏右端。新增实际宽高/行Bounds断言，最后源待复验；不以Text非空/89绿宣称视觉完成。",
+      "C13原文与捕获失败精确边界20261028": "style002实际writes=2/rootwidth7/raw9.00，证明拒绝没写错但绑定格式化吞原文。TryPrepare现校验前冻结raw/编辑及接纳版本，保_suspended pending；原绑定错误收集后退出同步隔离再通知，避免观察者新raw被覆盖。新增断第三桥+错误监听写8负向，C06仍走原联合准备。UI007因变量重名1错保留已修；UI008→全量005当前串行验证。四形目标先前2过2败但失败原生capture=本hwnd/WPF空、fg0；已补GetCursorPos/error/ActiveSource/实际WPF路径，每例独占Window并Close清其HWND，绝不预SetCapture、重试或无捕获继续。",
+      "C09独立原组合实施收紧": "15稳定字段assist.enabled/mode/fixture/base-point/base-x/base-y/base-angle/base-scale-x/base-scale-y/run-point/run-x/run-y/run-angle/run-scale-x/run-scale-y；原三选用RadioSelecter3五槽前三，13引用用原ButtonSelecter。mode0 fixture、mode1两POINT+六angle/scale、mode2十float；共享六行用FieldCondition(mode,0,Negate:true)，全部叠enabled父条件。FIXTURE仅design record不冒称原ABI/矩阵。ResolveDefinition由普通编辑与history复用，完整成功必须Frame当前且proof非空true；历史只15字段Accepted/backup/mode+scope/frame，TryReplayAccepted installOwner无通知后必须publish，再同代绘原PointShape。",
+      "C14独立原列表实施收紧": "原CurResultDataGridStyle+ModuleViewDataGridStyle+dgCellCenterAlignmentStyle+复用RecScrollBarStyle，完整原10列与500增量；先prepare所有复制scalar/不可变Geometry/ValidWhen/唯一row-id，不缓存reader/资源。Prepared/Rows/Cells为只读副本，500批底层全装后单Reset避免观察异常半批。每次Install重建持generation/publication的原CurResultScrollCommand（原行为直接Execute不调用CanExecute），Scroll内部外调后再核身份。Select要求当前行实例+publication，更新清选择，几何带context身份。正式IToolResultView/context及PropertyList与UI同批统一，不能样例假冒生产接入。",
+      "C17固定底栏与命令生命周期实施收紧": "只抽原Orange_ButtonStyle7-42/BottomButtonStyle79-82、四模板159-167/171-224及ParamsTabUserControl底栏93-142，固定Auto行外于三页滚动。原连续/单次continuous时隐藏、running禁用、RunEnable=false隐藏；Stop仅continuous控制显隐，Stopping/Closing保continuous至真实结束。库仅状态投影/租约命令，无循环Task/CTS；Actions部分构造立即登记各inner订阅，失败/Dispose聚合逐项摘，先失效租约，通知与CanExecute每外调核State版本/生命周期。宿主每run令牌链接编辑scope；Stop仅停止run且context存活，Confirm成功发布才关，X/关闭最终丢弃。Esc原行为未证，不冒称VM。",
+      "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
+    },
+    "moduleResultsPlan": {
+      "summary": "按VM的结果树与结果表设计推进完整链路；两者统一消费SDK正式输出声明与同一次DeclaredOutputSnapshot，使用我们的Contracts/Reader/Lease实现。结果树和ResultShell由工作流线负责，C14结果表与共享合同/图像适配由本线负责，主仓统一集成验收。当前仍未完成生产整链。",
+      "ownership": [
+        [
+          "结果树 / PropertyList",
+          "工作流、工具箱与数据流优化",
+          "原三列树、层级/展开/128项分页、字段导航/复制/绑定、主界面Presenter与状态/主题/卸载；独立分支写Results/PropertyList专用Controls/Themes/Assets/Design子目录。",
+          "已迁原视觉候选并接真实Roots/Children，正在替换宿主旧表状树；尚未主仓集成构建及完整运行验收。"
+        ],
+        [
+          "标准结果表 / StandardTable（C14）",
+          "本聊天：控件库与Blob主线",
+          "原DataGrid完整模板/滚条/主题，10列示例、500行增量、稳定行身份、有效性、选择与复制投影；统一保留在现Plugin.Wpf，当前由主线唯一写。",
+          "原StandardTable模板/滚条/十列夹具、ValidWhen、500增量及每代scroll命令已落源码；真实滚动1205行定向过，最终UI/全量0错。公共运行上下文、物理帧与主界面整链仍待替换，不能称迁完。"
+        ],
+        [
+          "结果区外壳 / ResultShell",
+          "工作流、工具箱与数据流优化",
+          "原双视口header/工具栏/结果面板底部shell，主界面图像与节点切换、局部主题；仅Results/ResultShell专用目录。",
+          "原视觉候选已提交独立分支；完整ResultWorkspaceShell生产组合仍在途。与C17工具参数窗底栏区分。"
+        ],
+        [
+          "共享展示合同 / 图像帧与选择事件",
+          "本聊天统一接口；工作流线改UI消费者",
+          "本线唯一写IToolResultView替换合同、Plugin.Wpf共享适配/场景及Catalog/项目；工作流线同步ToolResultViews、MainWindow、源工具Wpf及其真实测试，先冻结整链签名再各自实施。",
+          "内容与边界已定，精确接口及全部消费者尚未成片落地；不保旧Update(null)重载或两套正式入口。"
+        ],
+        [
+          "集成、正式Release及验收",
+          "本聊天统筹，两线交实际证据",
+          "主仓唯一Release集中构建；合并来源/程序集/发布清单SHA，设计/交互/资源/关联工具及VM同态逐项核。真实VS和用户验收不代签。",
+          "独立分支或原模板文件存在不算正式交付。Blob显示业务仍按第二阶段准入接入。"
+        ]
+      ],
+      "decisions": [
+        [
+          "采用VM设计，复用自研正式合同",
+          "结果树/结果表的结构、完整控件组合和交互按VM设计；SDK正式ToolSchema定义字段/类型/层级，DeclaredOutputSnapshot提供同一次运行实际值、Identity、SchemaRevision、Status与诊断。不是保留旧表外观，也不是照搬VM程序集工程。库只依赖Contracts，SDK快照由宿主在边界转换。"
+        ],
+        [
+          "统一结果入口",
+          "选节点、私有调试、正式执行都投影同一类结果展示上下文：工具/节点/运行与publication身份、schema版本/指纹、状态/诊断、借入值、真实来源帧及current回执。库只依赖Contracts，不引用SDK/UI宿主业务；宿主负责明确转换。"
+        ],
+        [
+          "同一次发布的唯一事实来源",
+          "一次节点/调试/执行选择先固定一个DeclaredOutputSnapshot，再为树与表提供相同publication身份、RunIdentity、声明指纹/版本及状态。树以该快照Reader分页，表在该快照Reader有效期投影不可变行。不得分别查询latest结果、分别拼字段目录，或让调试回退CLR反射形成第二入口。新运行/换节点先使旧publication失效并清选择。"
+        ],
+        [
+          "树与表分工",
+          "树按正式声明展开Record/Sequence及适用图像元信息，维持128项展开分页和同快照Reader的有限生命周期；表按ResultProjectionDescriptor列/行/对象ID投影，不直接读取CLR任意属性或从中文名反建字段。128树分页与500表增量不同，不混用。"
+        ],
+        [
+          "迁完整原组合",
+          "树使用原PropertyList，表使用原CurResultDataGridStyle/ModuleViewDataGridStyle、单元格和原滚条；展开、选择、绑定入口、主题及释放一起迁。表首批500，真实滚动到loaded-100再追加500，直到实际总量；并非500总上限。Blob原10列中缺的真实指标放第二阶段补，不用Bounds冒名。"
+        ],
+        [
+          "状态不再压成null",
+          "明确未执行、运行、成功（含空结果）、部分成功、失败、超时、取消及过期的呈现；失败不复活上轮值，空成功不误判失败。正式替换Update(InputValues?)及裸geometry选择事件，实际消费者同批改，不留兼容旁路。"
+        ],
+        [
+          "图形与实际图像对应",
+          "选择携当前publication、稳定对象身份及几何来源；宿主核当前节点/run/schema/物理ImageFrameAddress及已证明坐标映射后才高亮。未知来源禁止跨图绘制，不把当前选中图Frame贴给仅逻辑坐标帧的几何。多图分别核对。"
+        ],
+        [
+          "资源和旧事件清理",
+          "树持有当前快照必要Reader，换节点/运行/关闭及时释放；表在借入期完整准备后复制scalar和不可变几何，再释放Reader，后续滚动不持图像/Region/InputValues资源或重读最新结果。重绑/换帧/关闭先失效代次，旧行/旧滚动/旧选择回调零影响；准备失败不半清旧接纳结果。"
+        ],
+        [
+          "历史记录独立",
+          "结果树、当前表与历史记录职责分开。当前结果缓存或日志不能冒充历史存储；历史能力缺口单列保留，按原S4要求核收，不因本次文档整理宣称已实现或删减既定目标。"
+        ],
+        [
+          "目录和写权",
+          "公共原件仍放现Plugin.Wpf。工作流线仅Results/PropertyList与Results/ResultShell专用新增目录；StandardTable、共享Presenters/Adapters/API、项目/Catalog由本线统一。不产生第二控件库、SDK可视后备或多写共享文件。"
+        ]
+      ],
+      "delivery": [
+        [
+          "当前集中批",
+          "主线先落实统一context与原C14模板/增量会话，工作流线同步原树/ResultShell及UI消费者；三路只读分别核共享API、SDK快照/树表消费者、物理帧/高亮生命周期。最终同批集成与语义构建，不能只交接口或示例。当前C13未通过项保留独立修复，不冒称已过。"
+        ],
+        [
+          "接口与接入",
+          "本线冻结共享展示上下文和选择合同；工作流线同步所有UI/源工具消费者，本线同步公共组件/注册/适用测试。独立真视图与正式消费分别验，不把示例PASS当生产已接。"
+        ],
+        [
+          "集中核收",
+          "只用主仓正式Release：两规定构建0错，树/表/图状态联动，1205行500→1000→1205、旧事件拒绝、资源释放、成功空/失败/取消、换节点/换帧/关闭以及设计/VM同态核收。保留失败，不以HTML或模板导入代验。"
+        ],
+        [
+          "Blob后续",
+          "原两阶段不变：第一阶段必需控件与完整组合准入后，第二阶段Blob.Wpf显式消费原表/图形文本与运行显示定义，Runtime补真实指标/输出；当前不因整理此文档继续改Blob业务。"
+        ]
+      ],
+      "acceptanceContract": {
+        "authority": "2026-10-28 用户明确采用VM设计并打通整链",
+        "samePublication": [
+          "树表使用同一个已固定SDK输出快照",
+          "RunIdentity、SchemaRevision、SchemaFingerprint一致",
+          "运行状态与诊断一致，空成功不当失败",
+          "普通树选择不直接冒充几何高亮"
+        ],
+        "requiredCases": [
+          "1205行按500/1000/1205显示且完整原滚动链",
+          "新运行/节点/帧切换清旧选中与旧事件",
+          "部分成功/失败/取消/超时/无结果各自呈现",
+          "关闭及重复重绑后reader/lease释放",
+          "选中几何须证明实际物理来源帧，否则不绘制",
+          "设计器与运行时复用真实模板及组合"
+        ],
+        "currentState": "实际原表候选已过本批定向与构建；整链未完成，详细边界见candidateEvidence，不套工作流候选或人工验收。"
+      },
+      "candidateEvidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json"
     }
   },
   "vmFrameworkArchitectureReference": {
@@ -7711,5 +7844,11 @@
     "summary": "2026-10-27按用户要求逐字节整理VM原厂框架层级、源码组织及调用关系逆向文档；仅归档，供后续框架评估查阅。",
     "boundary": "此前本地SunEye项目分析是自研现状，不是VM原厂架构证据。当前材料来自VM程序集及反编译源码，仍不证明厂商原始物理工程树；原文静态/未知/未动态验证边界保留，尚未据此制定或实施重构。"
   },
-  "baselineSyncPreviousCurrent": "2026-10-27第一阶段继续：C07原扩展订阅窗已接引用/原single/between，共同Session及原树双击、焦点source/index/清空、Owner互斥/跟随/释放通过自动验证。最终UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。 C08原ROI栈/同帧图像、完整显示/窗口/命名和真实VS/VM同态用户验收仍缺，第二阶段未准入。"
+  "baselineSyncPreviousCurrent": "2026-10-27第一阶段继续：C07原扩展订阅窗已接引用/原single/between，共同Session及原树双击、焦点source/index/清空、Owner互斥/跟随/释放通过自动验证。最终UI002零错误6641警告82.57秒；全量Release002零错误1286警告49.28秒。WindowPresentation044=26、FieldEditing062=31、RuntimeEditor042=10、DesignTime018=28、FullChain101=7、Components186=9、RuntimeKernel040=17、Algorithm025=9、DocumentEditing049=30；正式EXE exit0/22工具。 C08原ROI栈/同帧图像、完整显示/窗口/命名和真实VS/VM同态用户验收仍缺，第二阶段未准入。",
+  "moduleResultChainReference": {
+    "entry": "references/module-result-chain-20261028/module-result-chain-vm-comparison.html",
+    "manifest": "references/module-result-chain-20261028/reference-manifest.json",
+    "sha256": "31cfa0706ba7ab1ac06708e07777ada945bbf4b9a51c6c210f1e0adcd0c63261",
+    "boundary": "阶段性旁支源码分析；自研部分为87f4工作区，不冒称主仓或实机结论；当前任务不扩大到框架重构。"
+  }
 }

@@ -14,10 +14,8 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 /// Only adapts the selected value; the caller owns the private draft and its transaction.</summary>
 public sealed class NativeColorPresenter : Decorator, IDisposable
 {
-    private UIElement? _paletteContent;
-    private DispatcherOperation? _pendingTextInheritance;
+    private readonly NativeColorPaletteScope _scope;
     private bool _disposed;
-    private long _generation;
     public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register(
         nameof(SelectedColor), typeof(Color), typeof(NativeColorPresenter),
         new FrameworkPropertyMetadata(Colors.Black, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
@@ -47,73 +45,14 @@ public sealed class NativeColorPresenter : Decorator, IDisposable
     public NativeColorPresenter()
     {
         Resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml", UriKind.Relative)
-        });
-        NativeView.SetBinding(NativePicker.CurrentColorProperty, new Binding(nameof(SelectedColor))
-        {
-            Source = this, Mode = BindingMode.TwoWay, Converter = new ColorBrushAdapter()
-        });
-        Child = NativeView;
-        Palette.DropDownOpened += OnOpened;
-        Palette.DropDownClosed += OnClosed;
-        Unloaded += OnUnloaded;
-        IsVisibleChanged += OnVisibilityChanged;
+        {Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml",UriKind.Relative)});
+        NativeView.SetBinding(NativePicker.CurrentColorProperty,new Binding(nameof(SelectedColor))
+        {Source=this,Mode=BindingMode.TwoWay,Converter=new ColorBrushAdapter()});
+        Child=NativeView;
+        try{_scope=new(NativeView,this);}
+        catch{BindingOperations.ClearBinding(NativeView,NativePicker.CurrentColorProperty);Child=null;throw;}
     }
-
-    public void ClosePalette()
-    {
-        InvalidatePendingTextInheritance();
-        Palette.IsDropDownOpen = false;
-        DetachPaletteContent();
-    }
-
-    private void OnOpened(object? sender,EventArgs args)
-    {if(_disposed){ClosePalette();return;}QueueTextInheritance();}
-    private void OnClosed(object? sender,EventArgs args)
-    {InvalidatePendingTextInheritance();DetachPaletteContent();}
-    private void OnUnloaded(object sender,RoutedEventArgs args)=>ClosePalette();
-    private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
-    {if(!IsVisible)ClosePalette();}
-
-    private void InvalidatePendingTextInheritance()
-    {
-        _generation++;
-        _pendingTextInheritance?.Abort();
-        _pendingTextInheritance=null;
-    }
-
-    private void QueueTextInheritance()
-    {
-        if(_disposed)return;
-        InvalidatePendingTextInheritance();
-        var generation=_generation;
-        _pendingTextInheritance=Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-        {
-        if (_disposed || generation!=_generation || !IsLoaded || !Palette.IsDropDownOpen
-            || Palette.Template?.FindName("PART_Popup", Palette) is not Popup { Child: { } content }) return;
-        _pendingTextInheritance=null;
-        if (!ReferenceEquals(_paletteContent, content))
-        {
-            DetachPaletteContent();
-            _paletteContent = content;
-            content.AddHandler(Selector.SelectionChangedEvent, new SelectionChangedEventHandler(OnPalettePageChanged));
-        }
-        NativeTextInheritance.Restore(content);
-        }));
-    }
-
-    private void OnPalettePageChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (e.OriginalSource is TabControl) QueueTextInheritance();
-    }
-
-    private void DetachPaletteContent()
-    {
-        _paletteContent?.RemoveHandler(Selector.SelectionChangedEvent, new SelectionChangedEventHandler(OnPalettePageChanged));
-        _paletteContent = null;
-    }
-
+    public void ClosePalette()=>_scope.ClosePalette();
     private static void OnColorChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
         var presenter=(NativeColorPresenter)sender;
@@ -123,14 +62,8 @@ public sealed class NativeColorPresenter : Decorator, IDisposable
 
     public void Dispose()
     {
-        if(_disposed)return;
-        _disposed=true;
-        ClosePalette();
-        Palette.DropDownOpened-=OnOpened;
-        Palette.DropDownClosed-=OnClosed;
-        Unloaded-=OnUnloaded;
-        IsVisibleChanged-=OnVisibilityChanged;
-        BindingOperations.ClearBinding(NativeView,NativePicker.CurrentColorProperty);
-        Child=null;
+        if(_disposed)return;_disposed=true;
+        ParameterCleanup.Run(new Action[]{_scope.Dispose,
+            ()=>BindingOperations.ClearBinding(NativeView,NativePicker.CurrentColorProperty),()=>Child=null});
     }
 }

@@ -1,0 +1,73 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:PControl="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Apps.PcUI.Controls"
+ xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab"
+ xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView"
+ xmlns:vm_port_2="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView"
+ xmlns:localization="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization">
+ <ResourceDictionary.MergedDictionaries>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/Apps.PcUI/Styles/PcUIStyle.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceControlStyles.xaml"/>
+  <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/AppsColorFun/colorstyle1.xaml"/>
+  <x:StaticExtension Member="localization:LocalizationResourceDictionary.Instance"/>
+ </ResourceDictionary.MergedDictionaries>
+ <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
+ <ControlTemplate x:Key="TextLeft" TargetType="{x:Type Control}">
+  <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource Col_ModuleConfig_List_Foreground}" TextTrimming="CharacterEllipsis" Text="{Binding DisplayNameA}" ToolTip="{Binding DescriptionA}"/>
+ </ControlTemplate>
+  <DataTemplate x:Key="ImageViewConfig_subContent">
+    <Border x:Name="StyleSurface" Margin="0,4,0,0" Width="260" BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="4" Padding="0,6,6,6">
+      <Border.Background>
+        <LinearGradientBrush>
+          <GradientStop Offset="0.0" Color="#FCFCFC" />
+          <GradientStop Offset="0.15" Color="#FCFCFC" />
+          <GradientStop Offset="1" Color="#F7F7F7" />
+        </LinearGradientBrush>
+      </Border.Background>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="102" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="32" />
+          <RowDefinition Height="32" />
+          <RowDefinition Height="32" />
+          <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <TextBlock VerticalAlignment="Center" Text="{DynamicResource OK颜色}" Grid.Row="0" Grid.Column="0" FontSize="14" Foreground="#808080" Margin="10,0,0,0" />
+        <TextBlock VerticalAlignment="Center" Text="{DynamicResource NG颜色}" Grid.Row="1" Grid.Column="0" Foreground="#808080" Margin="10,0,0,0" />
+        <TextBlock VerticalAlignment="Center" Text="{DynamicResource 透明度}" Grid.Row="2" Grid.Column="0" Foreground="#808080" Margin="10,0,0,0" />
+        <TextBlock VerticalAlignment="Center" Text="{DynamicResource 粗细}" Grid.Row="3" Grid.Column="0" Foreground="#808080" Margin="10,0,0,0" Visibility="{Binding BridgeObjA.StrokeThicknessConfigEnable, Converter={StaticResource bool2VisibilityConverter}}" />
+        <vm_port_2:ColorPickerControlView Tag="NativeGraphicOkPicker" Grid.Row="0" Grid.Column="1" CurrentColor="{Binding BridgeObjA.okcolorA, Mode=TwoWay}" />
+        <vm_port_2:ColorPickerControlView Tag="NativeGraphicNgPicker" Grid.Row="1" Grid.Column="1" CurrentColor="{Binding BridgeObjA.ngcolorA, Mode=TwoWay}" />
+        <vm_port_1:SliderArrangeFloat Name="slider1" Tag="NativeGraphicOpacity" Grid.Row="2" Grid.Column="1" SliderTickFrequency="0.01" Minimum="0" Foreground="#808080" Maximum="1" StartValue="{Binding BridgeObjA.opacityA, Mode=TwoWay}" />
+        <vm_port_1:SliderArrangeFloat Name="slider2" Tag="NativeGraphicThickness" Grid.Row="3" Grid.Column="1" SliderTickFrequency="1" Minimum="1" Foreground="#808080" Maximum="10" StartValue="{Binding BridgeObjA.StrokeThicknessA, Mode=TwoWay}" Visibility="{Binding BridgeObjA.StrokeThicknessConfigEnable, Converter={StaticResource bool2VisibilityConverter}}" />
+      </Grid>
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Border}">
+          <Setter Property="Height" Value="120" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding BridgeObjA.StrokeThicknessConfigEnable}">
+              <Setter Property="Height" Value="150" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </Border>
+  </DataTemplate>
+  <DataTemplate x:Key="ImageViewConfig">
+    <localParamTab:LeftRightControl Height="32" HorizontalAlignment="Left">
+      <localParamTab:LeftRightControl.LeftContent>
+        <Control Template="{StaticResource TextLeft}" />
+      </localParamTab:LeftRightControl.LeftContent>
+      <localParamTab:LeftRightControl.RightContent>
+        <UniformGrid Width="100" Columns="2">
+          <ToggleButton Tag="NativeGraphicVisibility" Style="{StaticResource eyeToggleButton}" IsChecked="{Binding BridgeObjA.IsDisplayA, Mode=TwoWay}" />
+          <PControl:PopupButton Tag="NativeGraphicStylePopup" HorizontalOffsetVal="-90" SubContent="{StaticResource ImageViewConfig_subContent}" Visibility="{Binding PanVisibleA, Converter={StaticResource bool2VisibilityConverter}}" />
+        </UniformGrid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+</ResourceDictionary>

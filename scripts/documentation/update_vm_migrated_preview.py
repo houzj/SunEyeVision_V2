@@ -99,7 +99,7 @@ rows = [
     ('数值与范围','NumericControl / SliderArrange / SliderArrangeFloat','src/Plugin.Wpf/Controls/Native/Numeric/numeric-migration-manifest.json','步进、聚焦弹滑条、失焦或Esc收起、双端不交叉'),
     ('眼睛与编辑','eyeToggleButton / NativeDisplayPopupButton','src/Plugin.Wpf/Themes/VmFieldStyles.xaml','原显隐/编辑图标，控制示意叠加层及样式弹窗'),
     ('页签与底部按钮','TopTabItemStyle / Orange_ButtonStyle','src/Plugin.Wpf/Themes/VmFieldStyles.xaml','按原模板对应规则呈现选中、悬停与三按钮布局'),
-    ('ROI及颜色组合','RoiSelectControl / ROIStack / VmColorPicker / ImageViewConfig_subContent','src/Plugin.Wpf/Fields/DisplayObjectField.cs','真实ColorField已接原色板、页签及高级算法，父层已改就地四行主区，现有扩展字段收在“更多”；嵌套弹层、Enter失焦已有代码，完整构建及真实交互尚未通过。复杂ROI图标仍为示意'),
+    ('ROI及颜色组合','NativeRoiScene / ColorPickerControlView / ImageViewConfig_subContent','src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs','公共库使用原四行样式模板及默认/更多色板；文本七行与原IText绘字已有独立真实样例。显式角色及唯一原叶正在正式Release回归，原自制DisplayObjectField已删除。此HTML不替代WPF、VM同态和用户验收'),
 ]
 table = '<table class="migration-table"><thead><tr><th>部件</th><th>对应迁入对象</th><th>本次呈现和边界</th></tr></thead><tbody>'
 for label, kind, path, state in rows:

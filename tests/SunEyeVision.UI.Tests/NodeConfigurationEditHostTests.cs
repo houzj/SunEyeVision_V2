@@ -88,11 +88,11 @@ public sealed class NodeConfigurationEditHostTests
         if(change=="image-input")
         {
             var runtimeModel=Model();var source=ImageSourceTestRuntime.Node();runtimeModel.Workflows[0].Nodes[0]=source;
-            var runtimeHost=new NodeConfigurationEditHost(runtimeModel);var before=runtimeHost.Capture();
+            var runtimeHost=new NodeConfigurationEditHost(runtimeModel);var runtimeBefore=runtimeHost.Capture();
             var old=runtimeHost.BeginEdit("f",source.Id);
             ImageSourceTestRuntime.Edit(old.Node,config=>config.SNInitialValue=19);
             ImageSourceTestRuntime.Edit(source,config=>config.AutoSwitchEnabled=false);
-            runtimeHost.SynchronizeStructure();Assert.True(runtimeHost.Capture().Version>before.Version);
+            runtimeHost.SynchronizeStructure();Assert.True(runtimeHost.Capture().Version>runtimeBefore.Version);
             Assert.Throws<InvalidOperationException>(()=>runtimeHost.Validate(old));
             Assert.Throws<InvalidOperationException>(()=>runtimeHost.Commit(old));
             Assert.False(ImageSourceTestRuntime.Read(source).AutoSwitchEnabled);

@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using SunEyeVision.Plugin.Infrastructure.Infrastructure;
+using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NSubstitute;

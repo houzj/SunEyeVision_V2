@@ -311,7 +311,7 @@ public sealed class OutputContractTreeSelectionTests
             Set(Model, "_flatResultRows", flat); Set(Model, "_imageResult", image); Set(Model, "_openDebugWindow", Window);
             Set(Model,"_workflowContextService",new SunEyeVision.UI.Services.WorkflowContextService());
             Set(Model,"_productionEditors",new HashSet<SunEyeVision.UI.Services.Editing.ProductionEditorContext>());
-            Set(Model,"<CalculationResults>k__BackingField",new ObservableCollection<ResultItem>());
+            Set(Model,"<CalculationResults>k__BackingField",new ObservableCollection<SunEyeVision.UI.Shell.Windows.ResultItem>());
             Select(A); Window.Show(); Drain(); Assert.True(Window.IsLoaded);
             Model.SubscribeOutputContractRefresh(Window, A);
             Assert.Equal(1, Parameters.SubscriberCount);

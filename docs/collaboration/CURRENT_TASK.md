@@ -1,3 +1,10 @@
+## 2026-10-28 D07精确原栅格依赖候选；准备合D06完整批
+
+- 主仓唯一产品写者root新增NativeResultRaster/ImageFrame/Viewport及独立真实Design。复用原AddImageLayer与普通BGRA保alpha，不矩形近似RLE；Domain只改私有alpha，原RGB和format/Frame保留。独立pixel lease和短读pin、跨批完整预算、模板父Panel、逐epoch/attempt清理/最终旧lease释放后复核已入候选。原始证据和当前SHA见evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json。
+- 早期库层001已0错5354警告30.96秒；其后生命周期修复/Design/9组实际Window case未新编验，不套早期成绩。当前无live（69545终态0）。这只是D07必要依赖，不是完整geometry/text/selection/ROI单owner，也非主图生产接入。Blob业务及用户参数页不改。
+- C09/C17及D07三路只读核证已实派；C09缺真正FIXTURE native编码/角单位/顺序，不能拼10float矩阵；C17原四模板及*/Auto/Auto固定底栏已精确核证，尚未实施。本线不将静态证据当原样式全部运行验收。
+- 工作流D06完整候选24615965（50文件）已交，基线c2；其自述只语法检查，未私有构建。下一先封存本线候选（排除用户页），合D06，集中规定UI/full及正式EXE，再优先新GlobalBinding15组/图像源和原结果视口9组，按真实错误回原线修，不套旧173/18矩阵。
+
 ## 2026-10-28 结果树表同源数据链本批核收通过
 
 - 正式产品固定b6f77679，UI006=0错6579警告111.26秒，full006=0错6579警告61.45秒。173图像源/原树、publication9、来源2、原表1、原样式2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1均过；宿主夹具只顺序修正a9cf86b0，单编helper0错21警告6.71秒后Host004=1过0败。src/tools提交差分为空，不冒称产品和测试同一commit。

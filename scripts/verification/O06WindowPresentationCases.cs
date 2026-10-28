@@ -28,6 +28,7 @@ using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Workflow;
 using Native=SunEyeVision.Plugin.Wpf.Native;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Adapters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 internal static class S2DocumentEditingCases
@@ -312,6 +313,99 @@ internal static class S2DocumentEditingCases
    public ReadOnlyMemory<RegionRun> ReadRuns(int offset,int count)=>lease.ReadRuns(offset,count);
    public void Dispose(){if(closed)return;closed=true;try{lease.Dispose();}finally{probe.Active--;probe.Released++;}}
   }
+ }
+ sealed class RasterPixelsProbe(IReadOnlyImage image):IReadOnlyImage
+ {
+  public int Active,Released;public Action? BeforeRow,BeforeDispose;
+  public int Width=>image.Width;public int Height=>image.Height;public ImageLayout Layout=>image.Layout;public ImageFrameAddress Frame=>image.Frame;public IReadOnlyRegion EffectiveDomain=>image.EffectiveDomain;
+  public byte[] CopyPixels()=>image.CopyPixels();
+  public IImagePixelReadLease AcquirePixels(){var lease=image.AcquirePixels();Active++;return new Pixels(this,lease);}
+  sealed class Pixels(RasterPixelsProbe probe,IImagePixelReadLease inner):IImagePixelReadLease
+  {
+   bool closed;public ImageLayout Layout=>inner.Layout;public ImageFrameAddress Frame=>inner.Frame;public IReadOnlyRegion EffectiveDomain=>inner.EffectiveDomain;
+   public IRegionReadLease AcquireDomainReader()=>inner.AcquireDomainReader();
+   public ReadOnlySpan<byte> GetRow(int row){var call=probe.BeforeRow;probe.BeforeRow=null;call?.Invoke();return inner.GetRow(row);}
+   public void Dispose(){if(closed)return;closed=true;probe.Active--;probe.Released++;var call=probe.BeforeDispose;probe.BeforeDispose=null;try{call?.Invoke();}finally{inner.Dispose();}}
+  }
+ }
+ static IReadOnlyImage RasterImage(SunEyeVision.Plugin.Runtime.FrozenOutputResources owner,PixelLayout format,out IReadOnlyRegion domain,out byte[] bytes,int width=8,int height=6)
+ {
+  var frame=new ImageFrameAddress(Guid.NewGuid(),"raster-real-resource");var coordinates=new CoordinateFrame("raster-pixels",CoordinateDomain.Image,CoordinateUnit.Pixel);
+  var runs=height==1?new[]{new RegionRun(0,0,width-1)}:new[]{new RegionRun(0,0,width-1),new RegionRun(1,0,1),new RegionRun(1,4,width-1),new RegionRun(height-1,0,width-1)};
+  domain=owner.CreateRegion(coordinates,frame,runs);var channels=format switch{PixelLayout.Gray8=>1,PixelLayout.Bgr24=>3,_=>4};
+  var layout=new ImageLayout(width,height,width*channels+5,format);bytes=Enumerable.Repeat((byte)233,layout.BufferLength).ToArray();
+  for(var y=0;y<height;y++)for(var x=0;x<width;x++)for(var channel=0;channel<channels;channel++)bytes[y*layout.RowStrideBytes+x*channels+channel]=channel==3?(byte)128:(byte)(x+y*10+channel*30);
+  return owner.CreateImage(layout,frame,domain,bytes);
+ }
+ static void VerifyNativeResultRaster()
+ {
+  foreach(var format in Enum.GetValues<PixelLayout>())Test("原结果视口真实Domain与原像素 "+format,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=RasterImage(resources,format,out var domain,out var bytes);var probe=new RasterPixelsProbe(image);
+   using var viewport=new NativeResultViewport();viewport.View.Height=300;Show(viewport.View);
+   Require(viewport.BindImage(probe,()=>true),"真实图像未接纳");Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   var data=native.ImageDataSource;Require(data.PixelFormat=="Bgra32"&&viewport.CurrentFrame!.Coordinates==domain.Frame,"未用真实Domain坐标或完整BGRA");
+   var alpha=format==PixelLayout.Bgra32?128:255;
+   Require(data.Buffer[3]==alpha&&data.Buffer[(1*8+2)*4+3]==0&&data.Buffer[(1*8+4)*4+3]==alpha,"黑像素/孔洞/有效域alpha错误");
+   var channels=format==PixelLayout.Gray8?1:format==PixelLayout.Bgr24?3:4;var raw=viewport.ReadPixel(2,1)!;
+   Require(raw.SequenceEqual(bytes.AsSpan(image.Layout.RowStrideBytes+2*channels,channels).ToArray()),"原像素读取被Domain或padding改写");
+   native.CallChangePixel(2,1);Require(native.PixelB==12&&native.PixelG==(channels==1?12:42)&&native.PixelR==(channels==1?12:72),"原鼠标底栏读了透明域外零值");
+   Require(native.Source is BitmapSource,"原图像控件没有实际Source");var bitmap=(BitmapSource)native.Source;var rendered=new byte[bitmap.PixelWidth*bitmap.PixelHeight*4];bitmap.CopyPixels(rendered,bitmap.PixelWidth*4,0);
+   Require(bitmap.PixelWidth==8&&bitmap.PixelHeight==6&&rendered[(1*8+2)*4+3]==0&&rendered[3]==alpha,"原普通BGRA显示链丢透明度");
+   resources.Dispose();Require(probe.Active==1&&viewport.ReadPixel(2,1)!.SequenceEqual(raw),"owner释放使独立pixel lease失效");viewport.Dispose();Require(probe.Active==0&&probe.Released==1,"最后pixel lease未恰好释放一次");
+  });
+  Test("原结果视口精确单像素栅格与换模板",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=RasterImage(resources,PixelLayout.Gray8,out var domain,out _);
+   using var viewport=new NativeResultViewport();viewport.View.Height=300;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"图像未接纳");Pump();
+   using var layer=viewport.CreateRegionLayer(3456);var runs=resources.CreateRegion(domain.Frame,image.Frame,new[]{new RegionRun(0,7,7),new RegionRun(1,1,1),new RegionRun(1,4,6)});
+   Require(layer.Present(viewport.CurrentFrame!,1,runs,Colors.Lime,()=>true),"精确Region未接纳");Pump();
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var overlay=Visuals<Image>(native).Single(x=>Panel.GetZIndex(x)==3456);var source=(BitmapSource)overlay.Source;var pixels=new byte[8*6*4];source.CopyPixels(pixels,32,0);
+   Require(pixels[7*4+3]==255&&pixels[(1*8+2)*4+3]==0&&pixels[(1*8+4)*4+1]==255,"边缘/孔洞/连续行程被近似或截断");
+   var at=overlay.TransformToAncestor(owner).Transform(new Point(overlay.ActualWidth*4.5/8,overlay.ActualHeight*1.5/6));var capture=new RenderTargetBitmap((int)Math.Ceiling(owner.ActualWidth),(int)Math.Ceiling(owner.ActualHeight),96,96,PixelFormats.Pbgra32);capture.Render(owner);var sample=new byte[4];capture.CopyPixels(new Int32Rect((int)at.X,(int)at.Y,1,1),sample,4,0);
+   Require(sample[1]>240&&sample[0]<10&&sample[2]<10,"原实际ImageLayer没有在对应像素显示绿色mask");
+   var previousParent=overlay.Parent;var template=native.Template;native.Template=null;native.ApplyTemplate();native.Template=template;native.ApplyTemplate();owner.UpdateLayout();Pump();
+   Require(overlay.Parent is Panel&&!ReferenceEquals(previousParent,overlay.Parent)&&overlay.Source is not null,"换原模板丢栅格或仍挂旧父");
+  });
+  Test("原结果视口原实例独占与绑定拒绝",()=>
+  {
+   var native=new Native.Display.VMBaseControls.ImageViewBox();BindingOperations.SetBinding(native,Native.Display.VMBaseControls.ImageViewBox.ImageDataSourceProperty,new Binding("Tag"){Source=new ContentControl()});
+   PublicationThrows<InvalidOperationException>(()=>NativeResultViewport.Attach(native));BindingOperations.ClearBinding(native,Native.Display.VMBaseControls.ImageViewBox.ImageDataSourceProperty);
+   using(var first=NativeResultViewport.Attach(native)){PublicationThrows<InvalidOperationException>(()=>NativeResultViewport.Attach(native));}
+   using var second=NativeResultViewport.Attach(native);Require(second.View==native,"Attach创建了第二原图像视口");
+  });
+  Test("原结果视口读像素重入换帧短读pin",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=RasterImage(resources,PixelLayout.Gray8,out _,out _);var b=RasterImage(resources,PixelLayout.Gray8,out _,out _);var probe=new RasterPixelsProbe(a);
+   using var viewport=new NativeResultViewport();viewport.View.Height=240;Show(viewport.View);Require(viewport.BindImage(probe,()=>true),"初始图像未接纳");
+   probe.BeforeRow=()=>{Require(viewport.BindImage(b,()=>true),"重入新帧未接纳");Require(probe.Active==1,"GetRow复制完成前提前释放旧pixel lease");};
+   Require(viewport.ReadPixel(0,0) is null&&viewport.CurrentFrame!.Frame==b.Frame&&probe.Active==0&&probe.Released==1,"旧读值返回或短读未最终释放");
+  });
+  Test("原结果视口旧lease释放重入后不误报接纳",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=RasterImage(resources,PixelLayout.Gray8,out _,out _);var b=RasterImage(resources,PixelLayout.Gray8,out _,out _);var c=RasterImage(resources,PixelLayout.Gray8,out _,out _);var probe=new RasterPixelsProbe(a);
+   using var viewport=new NativeResultViewport();viewport.View.Height=240;Show(viewport.View);Require(viewport.BindImage(probe,()=>true),"初始图像未接纳");
+   probe.BeforeDispose=()=>Require(viewport.BindImage(c,()=>true),"释放回调第三帧未接纳");
+   Require(!viewport.BindImage(b,()=>true)&&viewport.CurrentFrame!.Frame==c.Frame&&probe.Released==1,"旧Bind在finally重入后仍返回true或覆盖第三帧");
+  });
+  Test("原结果视口旧清理重入不删新帧双层",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=RasterImage(resources,PixelLayout.Gray8,out var da,out _);var b=RasterImage(resources,PixelLayout.Gray8,out var db,out _);
+   using var viewport=new NativeResultViewport();viewport.View.Height=240;Show(viewport.View);Require(viewport.BindImage(a,()=>true),"A未接纳");Pump();
+   using var first=viewport.CreateRegionLayer(4567);using var second=viewport.CreateRegionLayer(4568);Require(first.Present(viewport.CurrentFrame!,1,da,Colors.Red,()=>true)&&second.Present(viewport.CurrentFrame!,1,da,Colors.Blue,()=>true),"双层未接纳");Pump();
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var original=Visuals<Image>(native).Single(x=>Panel.GetZIndex(x)==4567);var fired=false;
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Image.SourceProperty,typeof(Image))!;EventHandler changed=(_,_)=>{if(fired||original.Source is not null)return;fired=true;Require(viewport.BindImage(b,()=>true),"清理回调B未接纳");Require(first.Present(viewport.CurrentFrame!,1,db,Colors.Lime,()=>true)&&second.Present(viewport.CurrentFrame!,1,db,Colors.Yellow,()=>true),"新双层未接纳");};
+   descriptor.AddValueChanged(original,changed);try{viewport.Clear();}finally{descriptor.RemoveValueChanged(original,changed);}Pump();
+   Require(fired&&viewport.CurrentFrame!.Frame==b.Frame&&Visuals<Image>(native).Count(x=>(Panel.GetZIndex(x) is 4567 or 4568)&&x.Source is not null)==2,"旧清理摘了新帧层");
+  });
+  Test("原结果视口预算整批拒绝并清本层",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=RasterImage(resources,PixelLayout.Gray8,out var domain,out _,4,1);
+   using var viewport=new NativeResultViewport(new(MaximumRasterBytes:16,MaximumRuns:1));viewport.View.Height=240;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"恰好预算拒绝");Pump();
+   using var layer=viewport.CreateRegionLayer(5678);Require(layer.Present(viewport.CurrentFrame!,1,domain,Colors.Red,()=>true),"基准层未接纳");Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;var original=Visuals<Image>(native).Single(x=>Panel.GetZIndex(x)==5678);
+   var over=resources.CreateRegion(domain.Frame,image.Frame,new[]{new RegionRun(0,0,0),new RegionRun(0,2,2)});PublicationThrows<ArgumentException>(()=>layer.Present(viewport.CurrentFrame!,2,over,Colors.Blue,()=>true));
+   Require(original.Source is null&&original.Parent is null&&viewport.CurrentFrame!.Frame==image.Frame,"预算失败保留旧mask冒充新批或清掉背景");
+  });
  }
  static void VerifyPropertyPublication()
  {
@@ -2563,6 +2657,7 @@ internal static class S2DocumentEditingCases
    VerifyNativeParameterHost();
    VerifyResultPublication();
    VerifyPropertyPublication();
+   VerifyNativeResultRaster();
    VerifyResultOrigins();
    VerifyNativeResultTable();
    VerifyBetween();

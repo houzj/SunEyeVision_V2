@@ -17,44 +17,51 @@ namespace SunEyeVision.Plugin.Wpf.Native.Common;
 /// <summary>Synchronous view export. Copies borrowed image buffers; never changes workflow inputs.</summary>
 internal static class NativeImageExport
 {
-    public static void SaveRaw(string path, IImageData image) => Encode(path, CreateBitmap(image));
+    public static BitmapSource PrepareRaw(IImageData image) => CreateBitmap(image);
 
-    public static void SaveRendered(string path, IImageData image, IReadOnlyList<object>? shapes, FrameworkElement owner)
+    public static BitmapSource PrepareRendered(IImageData image, IReadOnlyList<object>? shapes, FrameworkElement owner)
     {
         owner.Dispatcher.VerifyAccess();
         var bitmap = CreateBitmap(image);
         var size = new Size(bitmap.PixelWidth, bitmap.PixelHeight);
         var root = new Grid { Width = size.Width, Height = size.Height, ClipToBounds = true };
-        // Reuse the original shape page and all its exact template dependencies.
-        root.Resources.MergedDictionaries.Add(owner.Resources);
-        root.Resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/themes/generic.xaml", UriKind.Relative)
-        });
-        var page = new ShapeItemsPage
-        {
-            Width = size.Width, Height = size.Height,
-            ImageSourceWidth = bitmap.PixelWidth, ImageSourceHeight = bitmap.PixelHeight,
-            ControlToImageRadio = 1, ThicknessScale = 1,
-            ItemsSource = new ObservableCollection<object>(shapes ?? Array.Empty<object>())
-        };
-        root.Children.Add(new Image { Source = bitmap, Stretch = Stretch.Fill });
-        root.Children.Add(page);
+        ShapeItemsPage? page = null;
+        Exception? failure = null;
         try
         {
+            // Reuse the original shape page and all its exact template dependencies.
+            root.Resources.MergedDictionaries.Add(owner.Resources);
+            root.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/themes/generic.xaml", UriKind.Relative)
+            });
+            page = new ShapeItemsPage
+            {
+                Width = size.Width, Height = size.Height,
+                ImageSourceWidth = bitmap.PixelWidth, ImageSourceHeight = bitmap.PixelHeight,
+                ControlToImageRadio = 1, ThicknessScale = 1,
+                ItemsSource = new ObservableCollection<object>(shapes ?? Array.Empty<object>())
+            };
+            root.Children.Add(new Image { Source = bitmap, Stretch = Stretch.Fill });
+            root.Children.Add(page);
             root.Measure(size);
             root.Arrange(new Rect(size));
             root.UpdateLayout();
             var rendered = new RenderTargetBitmap(bitmap.PixelWidth, bitmap.PixelHeight, 96, 96, PixelFormats.Pbgra32);
             rendered.Render(root);
             rendered.Freeze();
-            Encode(path, rendered);
+            return rendered;
         }
+        catch (Exception error) { failure = error; throw; }
         finally
         {
-            page.ItemsSource = null;
-            root.Children.Clear();
-            root.Resources.MergedDictionaries.Clear();
+            var cleanup = new List<Exception>();
+            void Clean(Action action) { try { action(); } catch (Exception error) { cleanup.Add(error); } }
+            Clean(() => { if (page is not null) page.ItemsSource = null; });
+            Clean(root.Children.Clear);
+            Clean(root.Resources.MergedDictionaries.Clear);
+            if (cleanup.Count != 0)
+                throw new AggregateException("导出临时图形场景清理失败。", failure is null ? cleanup : new[] { failure }.Concat(cleanup));
         }
     }
 
@@ -88,8 +95,10 @@ internal static class NativeImageExport
         finally { converter.Clear(); }
     }
 
-    private static void Encode(string path, BitmapSource bitmap)
+    public static void SavePrepared(string path, BitmapSource bitmap)
     {
+        ArgumentNullException.ThrowIfNull(bitmap);
+        if (!bitmap.IsFrozen) throw new ArgumentException("导出必须使用弹窗前冻结的完整位图。", nameof(bitmap));
         BitmapEncoder encoder = Path.GetExtension(path).ToLowerInvariant() switch
         {
             ".png" => new PngBitmapEncoder(),

@@ -102,26 +102,121 @@ internal static class S2DocumentEditingCases
    if(!view.Resources.Contains(key))view.Resources.Add(key,new DataTemplate{VisualTree=new FrameworkElementFactory(typeof(Grid))});
   }
  }
+ static void SaveExport(string path, BitmapSource prepared)
+ {
+  var exporter=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
+  Require(prepared.IsFrozen,"导出快照未冻结");
+  exporter.GetMethod("SavePrepared")!.Invoke(null,new object[]{path,prepared});
+ }
  static void NativeImageExports()
  {
   var exporter=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
   var folder=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"native-export");Directory.CreateDirectory(folder);
   var bytes=new byte[]{255,0,0,0,0,255};var image=new ExportImage{Width=2,Height=1,Buffer=bytes};
-  var raw=Path.Combine(folder,"rgb.png");exporter.GetMethod("SaveRaw")!.Invoke(null,new object[]{raw,image});
+  var raw=Path.Combine(folder,"rgb.png");SaveExport(raw, (BitmapSource)exporter.GetMethod("PrepareRaw")!.Invoke(null,new object[]{image})!);
   var decoded=BitmapDecoder.Create(new Uri(raw),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
   var rgb=new FormatConvertedBitmap(decoded,PixelFormats.Rgb24,null,0);var actual=new byte[6];rgb.CopyPixels(actual,6,0);
   Require(actual.SequenceEqual(bytes)&&ReferenceEquals(image.Buffer,bytes),"原图导出改变像素、通道或借入缓冲引用");
   var depthBytes=new byte[]{0,0,255,127};var depth=new ExportImage{Width=2,Height=1,PixelFormat="Gray16",Buffer=depthBytes,RangeBuffer=depthBytes,DetailedPixelFormat=17825976u};
-  var gray=Path.Combine(folder,"gray16.png");exporter.GetMethod("SaveRaw")!.Invoke(null,new object[]{gray,depth});
+  var gray=Path.Combine(folder,"gray16.png");SaveExport(gray, (BitmapSource)exporter.GetMethod("PrepareRaw")!.Invoke(null,new object[]{depth})!);
   var grayFrame=BitmapDecoder.Create(new Uri(gray),BitmapCreateOptions.IgnoreImageCache|BitmapCreateOptions.PreservePixelFormat,BitmapCacheOption.OnLoad).Frames[0];
   var stored=new byte[4];grayFrame.CopyPixels(stored,4,0);Require(grayFrame.Format==PixelFormats.Gray16&&stored.SequenceEqual(depthBytes)&&ReferenceEquals(depth.RangeBuffer,depthBytes),"16位原图丢失位深/像素或改变输入");
   var ownerView=new Native.Display.VMBaseControls.ImageViewBox();Show(ownerView);
   var rendered=Path.Combine(folder,"rectangle.png");var black=new ExportImage{Width=8,Height=8,Buffer=new byte[8*8*3]};
-  exporter.GetMethod("SaveRendered")!.Invoke(null,new object[]{rendered,black,new object[]{new ExportRectangle()},ownerView});
+  SaveExport(rendered, (BitmapSource)exporter.GetMethod("PrepareRendered")!.Invoke(null,new object[]{black,new object[]{new ExportRectangle()},ownerView})!);
   var frame=BitmapDecoder.Create(new Uri(rendered),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
   var renderedRgb=new FormatConvertedBitmap(frame,PixelFormats.Rgb24,null,0);var pixels=new byte[8*8*3];renderedRgb.CopyPixels(pixels,24,0);
   Require(frame.PixelWidth==8&&frame.PixelHeight==8&&Enumerable.Range(0,64).Any(i=>pixels[i*3+1]>pixels[i*3]&&pixels[i*3+1]>pixels[i*3+2]),"原ShapeItemsPage未按原图尺寸输出绿色图形");
   Require(black.Buffer.All(value=>value==0),"带图形导出污染了原图缓冲");
+ }
+ static void VerifyNativeExportSnapshots()
+ {
+  BitmapSource Prepare(NativeResultViewport viewport,bool rendered)
+  {
+   var view=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   var prepare=(Func<bool,BitmapSource>)view.GetType().GetProperty("NativePrepareExport",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view)!;
+   return prepare(rendered);
+  }
+  byte[] Pixels(BitmapSource source)
+  {var converted=new FormatConvertedBitmap(source,PixelFormats.Bgra32,null,0);var bytes=new byte[converted.PixelWidth*converted.PixelHeight*4];converted.CopyPixels(bytes,converted.PixelWidth*4,0);return bytes;}
+  BitmapSource Save(BitmapSource prepared,string name)
+  {
+   var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png");SaveExport(path,prepared);
+   return BitmapDecoder.Create(new Uri(path),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
+  }
+  Test("原图导出冻结后换帧及关闭仍保存点击时像素",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();
+   var a=resources.CreateGray8(3,2,Enumerable.Repeat((byte)17,6).ToArray());var b=resources.CreateGray8(2,1,new byte[]{90,91});
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(a,()=>true),"A未接纳");
+   var prepared=Prepare(viewport,false);Require(prepared.IsFrozen,"原图未冻结");
+   Require(viewport.BindImage(b,()=>true),"B未接纳");viewport.Clear();viewport.Dispose();resources.Dispose();
+   var stored=Save(prepared,"export-retired-raw");var pixels=Pixels(stored);
+   Require(stored.PixelWidth==3&&stored.PixelHeight==2&&Enumerable.Range(0,6).All(i=>pixels[i*4]==17&&pixels[i*4+1]==17&&pixels[i*4+2]==17&&pixels[i*4+3]==255),"导出读取了新图或已释放旧adapter");
+  });
+  foreach(var format in Enum.GetValues<PixelLayout>())Test("原图导出保原格式及Domain外规范像素 "+format,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=RasterImage(resources,format,out _,out var original);var probe=new RasterPixelsProbe(image);
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(probe,()=>true),"未接图");
+   var prepared=Prepare(viewport,false);var expected=format switch{PixelLayout.Gray8=>PixelFormats.Gray8,PixelLayout.Bgr24=>PixelFormats.Bgr24,_=>PixelFormats.Bgra32};
+   Require(prepared.IsFrozen&&prepared.Format==expected,"原图导出被强制成显示BGRA");
+   var layout=image.Layout;var channels=format==PixelLayout.Gray8?1:format==PixelLayout.Bgr24?3:4;
+   viewport.Dispose();resources.Dispose();Require(probe.Active==0&&probe.Released==1,"原图导出跨弹窗保留像素reader");
+   var decoded=Save(prepared,"export-original-"+format);var converted=new FormatConvertedBitmap(decoded,expected,null,0);var actual=new byte[layout.RowStrideBytes*layout.Height];converted.CopyPixels(actual,layout.RowStrideBytes,0);
+   for(var row=0;row<layout.Height;row++)Require(actual.AsSpan(row*layout.RowStrideBytes,layout.Width*channels).SequenceEqual(original.AsSpan(row*layout.RowStrideBytes,layout.Width*channels)),"原图通道/alpha/Domain外像素改变 "+format);
+  });
+  Test("图形导出冻结后图层主题尺寸及owner退场不改变结果",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(80,60,new byte[4800]);
+   using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");var receipt=viewport.CurrentFrame!;
+   using var layer=viewport.CreateGeometryLayer();Require(layer.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new CircleGeometry(receipt.Coordinates,new(30,25),10),Colors.Lime,2)},()=>true),"原圆未接纳");Pump();
+   var prepared=Prepare(viewport,true);var original=Pixels(prepared);Require(Enumerable.Range(0,4800).Any(i=>original[i*4+1]>100&&original[i*4+2]<30),"原ShapeItemsPage未画绿色圆");
+   Require(layer.Present(receipt,2,new[]{new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(5,5)),Colors.Red)},()=>true),"新图层未接纳");
+   viewport.View.Width=111;viewport.View.Height=70;viewport.Dispose();viewport.View.Resources.Clear();resources.Dispose();
+   Require(Pixels(Save(prepared,"export-retired-rendered")).SequenceEqual(original),"冻结后仍读取图形/主题/尺寸或owner");
+  });
+  Test("导出准备proof重入换帧拒旧快照且不清新图",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var a=resources.CreateGray8(3,2,new byte[6]);var b=resources.CreateGray8(2,1,new byte[]{80,81});
+   using var viewport=new NativeResultViewport();Show(viewport.View);var armed=false;
+   bool Current(){if(armed){armed=false;Require(viewport.BindImage(b,()=>true),"重入B未接纳");}return true;}
+   Require(viewport.BindImage(a,Current),"A未接纳");armed=true;
+   PublicationThrows<InvalidOperationException>(()=>Prepare(viewport,false));
+   Require(!armed&&viewport.CurrentFrame!.Frame==b.Frame&&viewport.ReadPixel(0,0)![0]==80&&((Native.Display.VMBaseControls.ImageViewBox)viewport.View).ImageDataSource is not null,"旧准备拒绝时清了新B");
+  });
+  Test("图形导出准备同帧proof重入换层拒混合快照",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(80,60,new byte[4800]);using var viewport=new NativeResultViewport();Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");var receipt=viewport.CurrentFrame!;
+   using var layer=viewport.CreateGeometryLayer();var armed=false;
+   bool Current(){if(armed){armed=false;Require(layer.Present(receipt,2,new[]{new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(20,30)),Colors.Blue)},()=>true),"新层未接纳");}return true;}
+   Require(layer.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new PointGeometry(receipt.Coordinates,new(3,4)),Colors.Red)},Current),"旧层未接纳");Pump();armed=true;
+   PublicationThrows<InvalidOperationException>(()=>Prepare(viewport,true));
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   Require(!armed&&viewport.CurrentFrame==receipt&&native.ShapeList!.Count==1&&((Native.Dependencies.VMControls.RenderInterface.IPoint)native.ShapeList[0]).Point==new Point(20,30),"旧准备清新图层或帧");
+  });
+  Test("图形导出交付前消费独立图层来源失效不返回旧图",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(80,60,new byte[4800]);using var viewport=new NativeResultViewport();Show(viewport.View);
+   var armed=false;var calls=0;var layerValid=true;
+   bool ImageCurrent(){if(armed&&++calls==5)layerValid=false;return true;}
+   Require(viewport.BindImage(image,ImageCurrent),"未接图");var receipt=viewport.CurrentFrame!;using var layer=viewport.CreateGeometryLayer();
+   Require(layer.Present(receipt,1,new[]{new NativeGeometryOverlay(image.Frame,new CircleGeometry(receipt.Coordinates,new(30,25),10),Colors.Lime)},()=>layerValid),"图层未接纳");Pump();
+   calls=0;armed=true;PublicationThrows<InvalidOperationException>(()=>Prepare(viewport,true));armed=false;
+   var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   Require(!layerValid&&viewport.CurrentFrame==receipt&&native.ImageDataSource is not null&&native.ShapeList is null,"失效图层未清或越权清健康背景");
+   var retry=Prepare(viewport,true);Require(retry.IsFrozen,"失效层退出后不能重试导出背景");
+  });
+  Test("导出拒绝未冻结位图且取消准备不创建文件",()=>
+  {
+   var exporter=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
+   var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"export-cancelled.png");
+   var mutable=BitmapSource.Create(1,1,96,96,PixelFormats.Bgra32,null,new byte[]{0,0,0,255},4);
+   try {exporter.GetMethod("SavePrepared")!.Invoke(null,new object[]{path,mutable});throw new Exception("未拒绝未冻结快照");}
+   catch(TargetInvocationException error){Require(error.InnerException is ArgumentException&&!File.Exists(path),"未冻结快照创建文件");}
+   var image=new ExportImage{Width=1,Height=1,Buffer=new byte[]{0,0,0}};
+   var prepared=(BitmapSource)exporter.GetMethod("PrepareRaw")!.Invoke(null,new object[]{image})!;
+   Require(prepared.IsFrozen&&!File.Exists(path),"仅准备（取消保存）创建文件");
+  });
  }
  static void NativeSessionLifetime()
  {
@@ -2990,7 +3085,8 @@ internal static class S2DocumentEditingCases
   {
    var type=typeof(Native.Display.VMBaseControls.ImageViewBox).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.NativeImageExport",true)!;
    var path=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name+".png");
-   type.GetMethod("SaveRendered")!.Invoke(null,new object?[]{path,view.NativeView.ImageDataSource,view.NativeView.ShapeList?.Cast<object>().ToArray(),view.NativeView});
+   var prepared=(BitmapSource)type.GetMethod("PrepareRendered")!.Invoke(null,new object?[]{view.NativeView.ImageDataSource,view.NativeView.ShapeList?.Cast<object>().ToArray(),view.NativeView})!;
+   SaveExport(path,prepared);
    return BitmapDecoder.Create(new Uri(path),BitmapCreateOptions.IgnoreImageCache,BitmapCacheOption.OnLoad).Frames[0];
   }
   BitmapSource Actual(NativeTextViewport view)
@@ -3189,6 +3285,7 @@ internal static class S2DocumentEditingCases
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);
+   VerifyNativeExportSnapshots();
    Test("Native视图扩展会话更换卸载释放",NativeSessionLifetime);
    Test("浮点已保存值只聚焦离开保真",()=>
    {var value=.12345;var writes=0;var field=new DeclaredFieldEditor(new("float",DataType.Number,Storage:NumericStorage.Float64),"比例",new ConstantSetting(value),p=>{value=(double)((ConstantSetting)p).Value!;writes++;});Show(field);var text=(TextBox)field.InputElement!;text.Focus();Pump();var button=new Button{Content="离开"};host.Children.Add(button);button.Focus();Pump();Require(value==.12345,"仅焦点变化将0.12345改成"+value.ToString("R")+"；写入"+writes+"次");});

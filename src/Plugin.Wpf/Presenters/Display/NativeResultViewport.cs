@@ -30,6 +30,7 @@ public sealed partial class NativeResultViewport : IDisposable
     private bool _disposed;
     private DispatcherOperation? _refresh;
     private readonly DependencyPropertyDescriptor _templateDescriptor;
+    private readonly Func<bool, BitmapSource> _prepareExport;
     public FrameworkElement View => _view;
     public ImageLayout? Layout => _frame?.OriginalLayout;
     public NativeResultFrameReceipt? CurrentFrame => _frame is {} frame ? new(_ownerId, _epoch, frame.Frame, frame.Coordinates) : null;
@@ -39,17 +40,18 @@ public sealed partial class NativeResultViewport : IDisposable
     private NativeResultViewport(ImageViewBox view, NativeResultRasterLimits limits, NativeResultShapeLimits shapeLimits)
     {
         view.Dispatcher.VerifyAccess(); limits.Validate();
-        if (Owners.TryGetValue(view, out _) || view.ImageDataSource is not null || view.ShapeList is not null || view.ROIList is not null
+        if (Owners.TryGetValue(view, out _) || view.NativePrepareExport is not null || view.ImageDataSource is not null || view.ShapeList is not null || view.ROIList is not null
             || BindingOperations.IsDataBound(view, ImageViewBox.ImageDataSourceProperty)
             || BindingOperations.IsDataBound(view, ImageViewBox.ShapeListProperty)
             || BindingOperations.IsDataBound(view, ImageViewBox.ROIListProperty))
             throw new InvalidOperationException("原图像视口仍有显示所有者或绑定，不能并存第二条图像路径。");
         shapeLimits.Validate(); _shapeLimits = shapeLimits;
-        _view = view; _limits = limits;
+        _view = view; _limits = limits; _prepareExport = PrepareExport;
         _templateDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TemplateProperty, typeof(ImageViewBox));
         Owners.Add(view, this);
         try
         {
+            view.NativePrepareExport = _prepareExport;
             foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml" })
             {
                 var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/" + path, UriKind.Relative) };
@@ -67,6 +69,7 @@ public sealed partial class NativeResultViewport : IDisposable
             cleanup.Add(() => view.Loaded -= Loaded); cleanup.Add(() => view.SizeChanged -= SizeChanged);
             cleanup.Add(() => view.PropertyChanged -= ViewChanged);
             cleanup.Add(() => _templateDescriptor.RemoveValueChanged(view, TemplateChanged)); cleanup.Add(() => Owners.Remove(view));
+            cleanup.Add(() => { if (ReferenceEquals(view.NativePrepareExport, _prepareExport)) view.NativePrepareExport = null!; });
             try { ParameterCleanup.Run(cleanup); } catch (Exception error) { throw new AggregateException(failure, error); }
             throw;
         }
@@ -202,6 +205,7 @@ public sealed partial class NativeResultViewport : IDisposable
         _view.Loaded -= Loaded;
         _view.SizeChanged -= SizeChanged; _view.PropertyChanged -= ViewChanged;
         var actions = new List<Action> { () => _templateDescriptor.RemoveValueChanged(_view, TemplateChanged), Retire };
+        actions.Add(() => { if (ReferenceEquals(_view.NativePrepareExport, _prepareExport)) _view.NativePrepareExport = null!; });
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => layer.Dispose));
         actions.AddRange(_shapeLayers.ToArray().Select<ShapeLayer, Action>(layer => layer.Dispose));
         actions.AddRange(_resources.Select<ResourceDictionary, Action>(resource => () => _view.Resources.MergedDictionaries.Remove(resource)));

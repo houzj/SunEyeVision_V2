@@ -5984,6 +5984,74 @@
         "formalComponentValidated": false,
         "manualAccepted": false
       }
+    },
+    {
+      "id": "C17.image-export-snapshot",
+      "assembly": "VMBaseControls",
+      "assemblyMvid": "47136107-aecc-42c7-bdbd-a8641253cae6",
+      "assemblySha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555",
+      "originalEntry": "VMBaseControls.ImageViewBox.SaveOriginalImage/SaveRenderImage",
+      "sourceAssemblies": [
+        {
+          "name": "VMBaseControls",
+          "mvid": "47136107-aecc-42c7-bdbd-a8641253cae6",
+          "sha256": "d3ed7ce6cca860ac89d671dc0fe4ee239a97063d18bed94d3ad97595d5d52555",
+          "evidence": "Catalog/C09.original-inherited-annulus-display"
+        },
+        {
+          "assembly": "Apps.Data.dll",
+          "sha256": "2ad51c179d4a5cf7e0c0373cd1526de8a75d53a3ea6cbe3ef73c0c5268e1c55c",
+          "mvid": "cb38f3bc-780b-400d-89f5-0ba51ce23489",
+          "type": "Apps.Data.Common.ImageSaveOpenCvHelper",
+          "source": "D:/MyWork/REA逆向测试/docs/architecture-recovery/image-export-entry-audit.resources/Apps.Data.Common.ImageSaveOpenCvHelper.decompiled.cs",
+          "sourceSha256": "954980db0062e35506753b5fd918aab2472f2606e71a28ae5f9a3132b50257ee",
+          "boundary": "仅image+可见ShapeList；原OpenCV线宽/坐标取整/文字/默认JPEG规则有证，与当前WPF保存不同。原helper尚未迁移，不把十组本方测试计为原导出同态。"
+        }
+      ],
+      "sourceFiles": [
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Common/NativeImageExport.cs",
+          "sha256": "549de787e6b11075fe7650d7c2ceb4d478c3245f805fa7cd7bc5f12afd4c053e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+          "sha256": "785cacb483281c229eef50494f8c6247e83e22a97f781a3fedccde51cdd9dd0e"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+          "sha256": "77df19f700d49c5ae67af1efb1fef6ac6cc25a60a58f865aaf177c8bc5d5dab5"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Export.cs",
+          "sha256": "a794f8214c31eaf57b49234b12be25ea13ad30d4b126db917ef0cefe9d5532b5"
+        },
+        {
+          "path": "scripts/verification/O06WindowPresentationCases.cs",
+          "sha256": "821832c7f88828dfa8f8a0021901a8f80ba04f4fe29327a839fe2a5ff0536a45"
+        },
+        {
+          "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+          "sha256": "02fb424b1a9e901ddd5cf847d94398692a2c52e3f1f5283b9418c58c156d209f"
+        }
+      ],
+      "consumers": [
+        "NativeResultViewport",
+        "原ImageViewBox两导出命令"
+      ],
+      "validation": {
+        "status": "CANDIDATE_SNAPSHOT_AND_ORIGINAL_PIXELS_10_PASSED_ORIGINAL_RENDER_ALGORITHM_PENDING",
+        "report": "docs/collaboration/evidence/O06_NATIVE_EXPORT_SNAPSHOT_CANDIDATE_20261028.json",
+        "candidateWindowPassed": 10,
+        "formalReleaseValidated": false
+      },
+      "remaining": [
+        "本批UI/full同源正式构建/EXE/关联回归未执行",
+        "实际文件对话框/物理操作/VS/VM同态和人工未验",
+        "完整C17原CrossConfig及两个CrossData未实施",
+        "完整raster/ROI/背景导出语义仍只读核证，不用该七组代签",
+        "C08 FullDomain和C09完整Unset/真实位姿仍待",
+        "两个独立layer proof可交叉使先验层失效而不通知；来源generation/失效通知合同尚需完善，有限轮询不作原子证明。"
+      ]
     }
   ],
   "currentIntegration": {

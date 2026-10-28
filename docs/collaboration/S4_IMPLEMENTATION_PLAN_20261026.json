@@ -8312,6 +8312,12 @@
       "失败保留": "Window241=4/3为测试访问包装控件/对象身份Equals/非数值精度元数据；Window243=7/1为合法例误用Int32，保持正式类型拒绝，修夹具为long且新增int拒绝。不放宽产品断言。",
       "正式消费者缺口": "FieldsView独立组合已候选；SettingsView/Draft/Host/保存重开完整Reference/Unset权威映射仍未实施，不能只加尾参或用私有_unset/null/default兜底。真实位姿ABI/单位/公式、Frame与图像ROI双向联动/历史owner仍待；本批不接Blob业务。",
       "证据": "docs/collaboration/evidence/O06_NATIVE_ASSIST_CANDIDATE_20261028.json；Catalog新增C09.original-assist-composition及原程序集/MVID/SHA/资源依赖/本地消费者。"
+    },
+    "nativeExportSnapshotCandidate": {
+      "状态": "库003零错5312警告14.68秒；Window247导出十组通过。仅候选，UI/full正式整合待D07完整包。",
+      "实现": "原导出按钮弹窗前冻结，raw沿已有短读pixel lease保真实Gray8/Bgr24/Bgra32/Domain外像素；prepared交付后不持reader。render暂保原ShapeItemsPage并核frame/layer代次，失效/重入不清新图。",
+      "证据": "docs/collaboration/evidence/O06_NATIVE_EXPORT_SNAPSHOT_CANDIDATE_20261028.json",
+      "未完": "原Apps.Data OpenCV导出helper已取证但尚未迁移；WPF线宽/坐标/文字/JPEG不同不称原件等价。两个独立图层交叉proof隐藏失效需明确generation/通知，完整C17/Cross及VS/人工仍待。"
     }
   },
   "vmFrameworkArchitectureReference": {

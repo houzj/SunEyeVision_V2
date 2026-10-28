@@ -2213,6 +2213,9 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		}
 	}
 
+	// The display owner may validate its frame/layer receipt while preparing an immutable export.
+	internal Func<bool, BitmapSource> NativePrepareExport { get; set; }
+
 	public void SaveOriginalImage()
 	{
 		try
@@ -2220,6 +2223,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			if (ImageDataSource != null)
 			{
 				IImageData imageDataSource = ImageDataSource;
+				var prepared = NativePrepareExport is {} prepare ? prepare(false) : NativeImageExport.PrepareRaw(imageDataSource);
 				SaveFileDialog saveFileDialog = new SaveFileDialog
 				{
 					Filter = "JPG|*.jpg|JPEG|*.jpeg|PNG|*.png|BMP|*.bmp",
@@ -2228,7 +2232,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
 				if (saveFileDialog.ShowDialog() == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
 				{
-					NativeImageExport.SaveRaw(saveFileDialog.FileName, imageDataSource);
+					NativeImageExport.SavePrepared(saveFileDialog.FileName, prepared);
 				}
 			}
 		}
@@ -2245,7 +2249,8 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			if (ImageDataSource != null)
 			{
 				IImageData imageDataSource = ImageDataSource;
-				List<object> shapesSource = (ShapeList as IEnumerable<object>)?.Where((object p) => !(p is IIsVisible) || (p is IIsVisible isVisible && isVisible.IsVisible)).ToList();
+				var prepared = NativePrepareExport is {} prepare ? prepare(true) : NativeImageExport.PrepareRendered(imageDataSource,
+					(ShapeList as IEnumerable<object>)?.Where(p => p is not IIsVisible visible || visible.IsVisible).ToList(), this);
 				SaveFileDialog saveFileDialog = new SaveFileDialog
 				{
 					Filter = "JPG|*.jpg|JPEG|*.jpeg|PNG|*.png|BMP|*.bmp",
@@ -2254,7 +2259,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 				saveFileDialog.FileName = DateTime.Now.ToString("yyyyMMddHHmmss");
 				if (saveFileDialog.ShowDialog() == true && !string.IsNullOrEmpty(saveFileDialog.FileName))
 				{
-					NativeImageExport.SaveRendered(saveFileDialog.FileName, imageDataSource, shapesSource, this);
+					NativeImageExport.SavePrepared(saveFileDialog.FileName, prepared);
 				}
 			}
 		}

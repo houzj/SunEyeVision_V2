@@ -34,3 +34,35 @@
 - Cross原源码SHA：CrossData 3cca36302c25dfa4bb09add085989093c59566f37d7d9946e11bbe3b817fbfb1；XAML e0f3d32d94d7bb66745ba06def03f6cea39f37c255ab3ec4a085f71ab201ea1d；CS 5be350a0fd91b5301f0af41b9c91432947d0a8733d3e6a9e0d8e5fd6b251b2f2。原件目录D:/MyWork/REA逆向测试/analysis/decompiled/VMControls.WPF/VMControls.WPF/。
 
 真实VS、实际指针全姿态、VM逐态外观和用户验收继续独立记录。此文件是直接实施准备，不是阶段准入或用户签收。
+
+
+## 2026-10-28 再核原始证据与后续实施约束
+
+### C08 全域组状态（未实施）
+
+- 最终归档HTML SHA df78ec69e42eb8c0585eabcead0f52f046d77168fa476fca0bf6a2774bd0c44a，ROISelection="Box SectorRing Polygon Sector"，FullScreenEnable=true且前插FullScreen，屏蔽组复用；最终五按钮顺序FullDomain→Box→SectorRing→Polygon→Sector。原WPF WrapPanel的Full→Ring→Sector→Box→Polygon仅作差异证据，不覆盖用户确认目标。
+- RoiEditSnapshot增加必填冻结Groups；GroupCoverage=None/FullDomain/Explicit，Explicit当且仅当组内有rows，另两态无rows；所有row组必须已声明，不从空列表猜整图/无屏蔽。
+- SetCoverage组事务：FullDomain清本组rows及已删除选择，其他组不动；画完/粘贴→Explicit，删末项→None，取消/失捕/拒绝不动覆盖。FullDomain是实际图像EffectiveDomain，不造矩形或假对象。
+- NativeRoiSession Capture/Install同版比较和Commands.PrepareCommand取消后复核必须包括Groups；纯Coverage变化Affected可空但须核组差异。SetDrawingGroup转发FullScreen状态，原Toggle不直接改已接纳根。
+- 实际消费者：NativeRoiDesignData、NativeRoiInheritanceSample及History/Components、O06WindowPresentationCases全部自有owner。继承根保LocalItems+LocalCoverage，回本地恢复；fields/rows/groups/selection同历史事务、revision单调。当前UI/Blob没有直接消费本合同，库重建不冒称产品持久化完成。
+
+### C09 三态权威映射（未实施）
+
+- 复用c7b1dea6设计；字段ID→ConstantSetting/ReferenceSetting，缺键=Unset，UnsetSetting仅删除提案。Constant(null)/空序列/零各自独立。typed settings只确定性物化，不另存备份或重填默认。
+- 完整批必须涵盖Contracts Draft/捕获、ToolSettingsEditSession、DeclaredSettingsView/公共工厂、RuntimeToolConfiguration/JSON、Host/历史、编译/执行/私有调试与所有工具包装，不能只WriteGroup支持Unset。初始默认仅新建一次，恢复不补默认。
+- 四个已核漏项：ReferenceSetting必须保原BindingConversion；WorkflowFragmentCopy显式重映射map语义引用；SolutionResourceResolver从typed FileReferences/SelectedReferences改读稳定local.paths/local.selected Constant序列；保存全部声明字段而非仅可视字段（ImageSource11设置/6展示）。
+- RuntimeInputBindings统一枚举输入端口ParamSettings与设置map引用，两域去重；WorkflowBindingContext/源失效/全局生产绑定/根代理/依赖编译都走统一入口，不能复制回旧表作桥。编辑期required Reference是已配置未解析，不能先typed物化而补默认；配置期与执行期边界同批定清。
+
+### C17 导出（生命周期候选，原算法迁移仍待）
+
+- 权威原helper为Apps.Data.Common.ImageSaveOpenCvHelper，归Apps.Data.dll，不是曾由using推测的Apps.UIHelper.Extern。安装件Apps.Data.dll SHA2ad51c179d4a5cf7e0c0373cd1526de8a75d53a3ea6cbe3ef73c0c5268e1c55c，MVID cb38f3bc-780b-400d-89f5-0ba51ce23489。
+- 既有REA完整归档：D:/MyWork/REA逆向测试/docs/architecture-recovery/image-export-entry-audit.resources/Apps.Data.Common.ImageSaveOpenCvHelper.decompiled.cs，SHA954980db0062e35506753b5fd918aab2472f2606e71a28ae5f9a3132b50257ee；CIL SHA3496589e41ca17d3b459cf5e6c451436766fa3aff3c39d04de6a8101b7f05fc0。未执行VM。
+- 原主入口只image+可见ShapeList，不含ROIList编辑层、ImageLayers独立栅格、背景/网格/zoom；不可偷换为整视口截图。原helper为OpenCV，各线宽至少2且坐标截断，Text字号max(图宽1%,声明font)并10..1000限幅，另有换行/中文字体规则；默认JPEG走OpenCV默认，当前WPF95并不等价。原底层PutTextZh/字体实机像素仍未证。
+- 本批先保安全冻结：ShowDialog前完整准备，后只编码；raw从已有独立pixel lease同步短读保原Layout/Domain外像素，render保现原ShapeItemsPage算法，不能把后者算原OpenCV迁移完成。跨模态不持reader。
+- 末次两个独立图层proof可互相改变未通知状态，单靠有限遍历不能证明整场景同一来源代；后续统一来源generation/失效通知合同，不能无限重复读proof冒充事务性证据。当前七组只证明已列生命周期分支，不解除该缺口。
+
+### C17 Cross配置（未实施）
+
+- 正式net9.0-windows已有PresentationFramework.Aero/ListBoxChrome（WindowsDesktop9.0.20参考闭包），不用厂商DLL或Border近似。
+- 激活原CrossConfig.xaml/.cs和CrossData，380×420、两模型/同一非模态窗口；只合OriginalTheme+Localization+BaseWindow style+现SourceScrollBars+原SwitchButton及ListViewStyle1局部切片，四个厂商URI退出。
+- SwitchButton仅swith_on/off.png；ListViewStyle1继续正式ListBoxChrome/RecScrollViewer。原颜色CurrentColor(SolidColorBrush)↔Stroke(string)本来依WPF BrushConverter，先保原TwoWay，验证选择后BindingExpression仍在；必要时保绑定赋值，不造新色板。

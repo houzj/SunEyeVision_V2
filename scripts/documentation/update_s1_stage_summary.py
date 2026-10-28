@@ -391,6 +391,9 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-native-assist-composition">C09 Assist十五角色原组合</h5>'
                + table(['项目','原件、实施与证据边界'], list(plan['nativeAssistCandidate'].items()))
                if plan.get('nativeAssistCandidate') else '')
+            + ('<h5 id="o06-native-export-snapshot">C17图像导出快照与原算法边界</h5>'
+               + table(['项目','实施、验证与剩余'], list(plan['nativeExportSnapshotCandidate'].items()))
+               if plan.get('nativeExportSnapshotCandidate') else '')
             + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
                + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
                if plan.get('nextNativeCompositionsDesign') else '')

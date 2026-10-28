@@ -79,7 +79,7 @@ public sealed class OutputContractTreeSelectionTests
         var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
         var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
         var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
-        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}});
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}},sourceWorkflowId:f.Flow.Id);
         try
         {
             Assert.Throws<InvalidOperationException>(()=>f.Model.UpdateModuleResults(result,"A",nodeId:"a"));

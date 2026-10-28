@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.ImageSource.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.ImageSource</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.ImageSource.Wpf</ToolComponentId>
+    <ToolComponentToolId>ImageLoad</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>ImageLoad</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runtime/SunEyeVision.ImageSource.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

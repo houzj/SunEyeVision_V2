@@ -13,6 +13,7 @@ internal static class S2DocumentEditingCases
         var selected=new Dictionary<string,string[]?>
         {
             ["ImageSourceAcceptanceTests"]=null,
+            ["ImageSourceDebugInvocationTests"]=null,
             ["ImageSourceConfigurationHistoryTests"]=null,
             ["LocalImageConfigurationSnapshotTests"]=null,
             ["ImageSourceSavePersistenceTests"]=null,
@@ -80,7 +81,7 @@ internal static class S2DocumentEditingCases
             }
             if(count==0)throw new Exception("图像源检查组为空："+name);
         }
-        if(theoryCount!=7)throw new Exception("图像源非法候选矩阵应完整覆盖7项，实际"+theoryCount);
+        if(theoryCount!=14)throw new Exception("图像源非法候选7项与调试拒绝7项应完整展开，实际"+theoryCount);
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-source-report.json"),
             JsonSerializer.Serialize(new{scope="正式Release图像源编辑、历史、持久化及实际执行定向回归；不代真实VS/VM或人工验收",count=results.Count,failures,theoryCount,results},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"图像源检查：{results.Count-failures}通过，{failures}失败。");

@@ -1,5 +1,3 @@
-﻿using System.ComponentModel;
-using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Tool.ImageSource.Runtime;
@@ -11,28 +9,31 @@ namespace SunEyeVision.Tool.ImageSource.Wpf.Design;
 /// <summary>Design-only editor state over the real Runtime factory and field operations.</summary>
 public static class ImageSourceDesignData
 {
-    public static readonly DependencyProperty ParameterSampleProperty = DependencyProperty.RegisterAttached(
-        "ParameterSample", typeof(bool), typeof(ImageSourceDesignData), new PropertyMetadata(false, Attach));
-    public static bool GetParameterSample(DependencyObject target) => (bool)target.GetValue(ParameterSampleProperty);
-    public static void SetParameterSample(DependencyObject target, bool value) => target.SetValue(ParameterSampleProperty, value);
-
-    private static void Attach(DependencyObject target, DependencyPropertyChangedEventArgs args)
-    {
-        // The attached property is on the real child, so the XAML designer uses the runtime composition.
-        if (args.NewValue is true && DesignerProperties.GetIsInDesignMode(target) && target is DeclaredSettingsView editor)
-        {
-            var context = CreateParameterContext();
-            editor.Bind(context.Draft, context.Options);
-        }
-    }
-
-    public static (IToolSettingsDraft Draft, ToolSettingsViewOptions Options) CreateParameterContext()
+    public static (IToolSettingsDraft Draft, ToolSettingsViewOptions Options) CreateParameterContext(bool camera=false)
     {
         var draft = new DesignDraft();
-        var strip = new ImageSourceStrip { Session = new ReadOnlySourceSession(draft) };
-        return (draft, new(InputSection: Views.ImageSourceParameterEditor.InputPage, InputContent: strip));
+        if(camera)draft.ApplyFields(new Dictionary<string,object?>{[ImageSourceFields.SourceKind]="camera"},_=>{});
+        return (draft, new(InputSection: Views.ImageSourceParameterEditor.InputPage, InputContent: new DesignSourceContent()));
     }
 
+    private sealed class DesignSourceContent : System.Windows.Controls.UserControl,IImageSourceSettingsContent,IDisposable
+    {
+        private IToolSettingsDraft? _draft;
+        private ImageSourceInputView Input {get;}=new();
+        public event Action? Changed {add{} remove{}}
+        public DesignSourceContent()
+        {
+            Content=Input;
+            Input.CameraPicker.IsEnabled=false;Input.OpenCameraButton.IsEnabled=false;
+            Input.CameraPicker.Items.Add(new System.Windows.Controls.ComboBoxItem{Content="未选择相机"});
+            Input.CameraPicker.SelectedIndex=0;Input.CameraStatus.Text="设计态：未连接设备";
+        }
+        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<object> acceptCandidate)
+        {_draft=draft;RefreshSourceDraft();}
+        public void RefreshSourceDraft()
+        {if(_draft is not null){Input.SourceStrip.Session=new ReadOnlySourceSession(_draft);Input.IsCamera=_draft.ReadFields().Get<string>(ImageSourceFields.SourceKind)=="camera";}}
+        public void Dispose(){Input.SourceStrip.Session=null;_draft=null;}
+    }
     private sealed class ReadOnlySourceSession : IImageSourceStripSession
     {
         private readonly IToolSettingsDraft _draft;

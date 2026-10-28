@@ -28,9 +28,9 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     private bool _preparing;
     private bool _disposed;
     private bool _refreshing;
-    private readonly StackPanel _cameraPanel=new();
-    private readonly ComboBox _cameraPicker=SunEyeVision.Plugin.Wpf.Presenters.Input.NativeInputFactory.Enumeration();
-    private readonly TextBlock _cameraStatus=new(){TextWrapping=TextWrapping.Wrap};
+    private readonly ImageSourceInputView _inputView;
+    private readonly ComboBox _cameraPicker;
+    private readonly TextBlock _cameraStatus;
     private readonly System.Windows.Threading.DispatcherTimer _statusTimer;
     public event Action? Changed;
 
@@ -53,15 +53,12 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         };
         _source.ConfigurationEdited+=SourceEdited;
         _session=new(_source,()=>!_disposed&&_isCurrent(),dispatcher:Dispatcher,dialogOwner:()=>Window.GetWindow(this));
-        _strip=new(){Session=_session};
+        _inputView=new();_strip=_inputView.SourceStrip;_strip.Session=_session;
+        _cameraPicker=_inputView.CameraPicker;_cameraStatus=_inputView.CameraStatus;
         _themeScope=new(_strip);
         _cameraTheme=new(_cameraPicker);
-        _cameraPanel.Children.Add(new TextBlock{Text="关联相机"});
-        _cameraPanel.Children.Add(_cameraPicker);_cameraPanel.Children.Add(_cameraStatus);
         _cameraPicker.SelectionChanged+=CameraSelected;
-        var managerButton=new Button{Content="相机设置 / 预览…",Margin=new Thickness(0,6,0,0)};
-        managerButton.Click+=OpenCameraManager;_cameraPanel.Children.Add(managerButton);
-        var root=new StackPanel();root.Children.Add(_strip);root.Children.Add(_cameraPanel);Content=root;
+        _inputView.OpenCameraButton.Click+=OpenCameraManager;Content=_inputView;
         _statusTimer=new(TimeSpan.FromSeconds(1),System.Windows.Threading.DispatcherPriority.Background,
             (_,_)=>RefreshCameraStatus(),Dispatcher);
         _statusTimer.Stop();
@@ -79,9 +76,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
         if(_draft is null||_preparing)return;
         var policy=ImageSourcePolicy.ReadFields(_nodeId,_draft.ReadFields());
         _source.LoadFromPolicy(policy,_paths);
-        _strip.Visibility=policy.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local
-            ?Visibility.Visible:Visibility.Collapsed;
-        _cameraPanel.Visibility=_strip.Visibility==Visibility.Visible?Visibility.Collapsed:Visibility.Visible;
+        _inputView.IsCamera=policy.SourceKind==SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera;
         _refreshing=true;
         try
         {
@@ -148,6 +143,7 @@ public sealed class ImageSourceDraftContent : UserControl,IImageSourceSettingsCo
     {
         if(_disposed)return;_disposed=true;
         _statusTimer.Stop();_cameraPicker.SelectionChanged-=CameraSelected;
+        _inputView.OpenCameraButton.Click-=OpenCameraManager;
         _source.ConfigurationEdited-=SourceEdited;
         _source.ConfigurationWriter=null;_strip.Session=null;_session.Dispose();
         _themeScope.Dispose();

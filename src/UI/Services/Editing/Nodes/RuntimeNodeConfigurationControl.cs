@@ -54,10 +54,13 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
         Dispatcher.VerifyAccess();
         if(_running)throw new InvalidOperationException("调试正在执行。");
         _running=true;RuntimeToolResults? result=null;var generation=_generation;
+        FrameworkElement? lockedView=null;bool previousEnabled=true;
         try
         {
             if(!TryValidateEditor(out var error))throw new InvalidOperationException(error);
             using var invocation=(_captureDebug??throw new InvalidOperationException("调试宿主尚未就绪。"))(_node);
+            lockedView=_view?.View;
+            if(lockedView is not null){previousEnabled=lockedView.IsEnabled;lockedView.SetCurrentValue(IsEnabledProperty,false);}
             result=await Task.Run(()=>invocation.ExecuteAsync());
             if(_disposed||generation!=_generation)
             {
@@ -71,7 +74,16 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             if(!_disposed)RaiseEvent(new Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs(error.Message,ToolDebugControlBase.ToolExecutionCompletedEvent,this));
             throw;
         }
-        finally{try{result?.Resources?.Dispose();}finally{_running=false;CommandManager.InvalidateRequerySuggested();}}
+        finally
+        {
+            try{result?.Resources?.Dispose();}
+            finally
+            {
+                if(!_disposed&&generation==_generation&&ReferenceEquals(_view?.View,lockedView)&&lockedView is not null)
+                    lockedView.SetCurrentValue(IsEnabledProperty,previousEnabled);
+                _running=false;CommandManager.InvalidateRequerySuggested();
+            }
+        }
     }
     public void BindDraft(WorkflowNodeBase node)
     {
@@ -93,21 +105,29 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             if(_disposed||generation!=_generation)throw new InvalidOperationException("来源目录读取期间参数页已失效。");
             return new(candidates,candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));
         },(target,proposal)=>ValidateProposal(target,proposal,generation));
-        var panel=new DeclaredInputFieldsView(schema,port=>
+        var panel=node.ToolType=="ImageLoad"?null:new DeclaredInputFieldsView(schema,port=>
         {
             var saved=node.ParamSettings.GetSetting(port.Id);
             return saved?.ReferenceExpression is { } expression?new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression)):new UnsetSetting();
         },(port,setting)=>WriteInput(port,setting,generation),referenceOptions with {EditableIndex=true},FormatReference,
             _=>ReadReferenceCandidates(generation));
+        var sourceContext=ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext;
+        var sourceContent=node.ToolType=="ImageLoad"?new ImageSourceDraftContent(node.Id,
+            ()=>!_disposed&&generation==_generation&&ReferenceEquals(_node,node)
+                &&sourceContext is {IsValid:true}&&ReferenceEquals(ToolEditorCommit.GetDraftContext(this),sourceContext),
+            SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(
+                SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution)):null;
+        FrameworkElement inputContent=(FrameworkElement?)sourceContent??panel!;
+        void DisposeInput(){if(sourceContent is not null)sourceContent.Dispose();else panel?.Dispose();}
         IToolSettingsView? candidate=null;
         try
         {
-        if(_disposed||generation!=_generation){panel.Dispose();return;}
+        if(_disposed||generation!=_generation){DisposeInput();return;}
         candidate=ToolRegistry.CreateSettingsView(configuration.ToolId,configuration.CaptureSettings(),
-            new(references,referenceOptions,FormatReference,schema.Presentation.Fields.First().Layout!.Page,panel,
+            new(references,referenceOptions,FormatReference,(sourceContent is null?schema:settings).Presentation!.Fields.First().Layout!.Page,inputContent,
                 (candidate,bindings)=>ValidateSettingsCandidate(candidate,bindings,generation)));
-        if(_disposed||generation!=_generation){candidate.Dispose();panel.Dispose();return;}
-        _inputs.AddRange(panel.Fields);_view=candidate;
+        if(_disposed||generation!=_generation){candidate.Dispose();DisposeInput();return;}
+        if(panel is not null)_inputs.AddRange(panel.Fields);_view=candidate;
         _view.Changed+=Changed;Content=_view.View;
         }
         catch(Exception failure)
@@ -116,7 +136,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl,IToolEditorPen
             {
                 _view=null;_inputs.Clear();if(candidate is not null)candidate.Changed-=Changed;Content=null;
             }
-            try{try{candidate?.Dispose();}finally{panel.Dispose();}}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            try{try{candidate?.Dispose();}finally{DisposeInput();}}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;
         }
     }

@@ -10,7 +10,7 @@ namespace SunEyeVision.UI.Tests;
 /// <summary>
 /// 图像源保存端持久化测试。
 /// 验证：AppendFiles 改为写 ImageInputSource（真相源）后，AddImages 填充 _images，
-/// ToConfig() 能产生非空 FilePaths → 保存进 JSON → 重启后能恢复。
+/// CapturePolicy() 能产生非空 FilePaths → 保存进 JSON → 重启后能恢复。
 /// 覆盖用户"加载图像→保存→重启图像源数量空"的保存端修复。
 /// </summary>
 public class ImageSourceSavePersistenceTests
@@ -36,25 +36,25 @@ public class ImageSourceSavePersistenceTests
         b.IsForRun = true;
         Assert.False(source.TryPresentRuntimeCursor(beforeEdit, b.Id, "assets/b", "b"));
         var beforeReset = source.EditVersion;
-        source.LoadFromConfig(source.ToConfig(),new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
+        source.LoadFromPolicy(source.CapturePolicy(),new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
         Assert.False(source.TryPresentRuntimeCursor(beforeReset, b.Id, "assets/b", "b"));
     }
 
     [Fact]
     public void CheckOnlyEditImmediatelySurvivesNodeSerialization()
     {
-        var node = new WorkflowNode("checks", "图像源", "图像源", "ImageLoad");
+        var node = new WorkflowNode("checks", "图像源", "图像源", "ImageLoad"){RuntimeConfiguration=ImageSourceTestRuntime.Configuration()};
         var input = node.EnsureInputSource();
-        input.ConfigurationWriter = candidate => { node.ImageSourceConfig ??= new(){NodeId=node.Id}; node.ImageSourceConfig.UpdateLocalInput(candidate.Configuration); };
+        input.ConfigurationWriter = candidate => ImageSourceTestRuntime.Edit(node,config=>config.UpdateLocalInput(candidate.Configuration));
         var image = new ImageInfo { FilePath = @"C:\samples\a.bmp", SourceReference = "assets/a.bmp" };
         input.AddImage(image);
         image.IsForRun = true;
 
         var json = System.Text.Json.JsonSerializer.Serialize<WorkflowNodeBase>(node, WorkflowSerializationOptions.Default);
         var restored = System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json, WorkflowSerializationOptions.Default);
-        Assert.Equal(new[] { "assets/a.bmp" }, restored!.ImageSourceConfig!.ForRunPaths);
+        Assert.Equal(new[] { "assets/a.bmp" }, ImageSourceTestRuntime.Read(restored!).ForRunPaths);
         image.IsForRun = false;
-        Assert.Empty(node.ImageSourceConfig!.ForRunPaths);
+        Assert.Empty(ImageSourceTestRuntime.Read(node)!.ForRunPaths);
     }
 
     [Fact]
@@ -64,22 +64,22 @@ public class ImageSourceSavePersistenceTests
         var removed = new ImageInfo { FilePath = @"C:\samples\a.bmp", IsForRun = true };
         var replaced = new ImageInfo { FilePath = @"C:\samples\b.bmp", IsForRun = true };
         source.AddImages(new[] { removed, replaced });
-        source.ToConfig();
+        source.CapturePolicy();
         var writes = 0;
         source.ConfigurationWriter = _ => writes++;
         source.RemoveImage(removed);
-        Assert.DoesNotContain(removed.FilePath, source.ToConfig().ForRunPaths);
+        Assert.DoesNotContain(removed.FilePath, source.CapturePolicy().ForRunPaths);
         var afterRemove = writes;
         removed.IsForRun = false;
         Assert.Equal(afterRemove, writes);
 
         var replacement = new ImageInfo { FilePath = @"C:\samples\c.bmp" };
-        source.LoadFromConfig(new ImageSourceConfig { NodeId="checks",FilePaths=new(){replacement.FilePath},ForRunPaths=new(){replaced.FilePath} },new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
+        source.LoadFromPolicy(new ImageSourcePolicy { NodeId="checks",FilePaths=new(){replacement.FilePath},ForRunPaths=new() },new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
         replacement=Assert.Single(source.Images);
         var afterReset = writes;
         replaced.IsForRun = false;
         Assert.Equal(afterReset, writes);
-        Assert.Equal(new[] { replaced.FilePath }, source.ToConfig().ForRunPaths);
+        Assert.Empty(source.CapturePolicy().ForRunPaths);
         replacement.IsForRun = true;
         Assert.Equal(afterReset + 1, writes);
     }
@@ -87,47 +87,39 @@ public class ImageSourceSavePersistenceTests
     [Fact]
     public void LocalPreviewChangesPreserveCameraSelectionAndSourceMode()
     {
-        var node = new WorkflowNode("node-merge", "图像源", "图像源", "ImageLoad")
-        {
-            ImageSourceConfig = new ImageSourceConfig
-            {
-                NodeId = "node-merge",
-                SourceKind = ImageSourceKind.Camera,
-                CameraDeviceId = "camera-001",
-                CameraTimeoutMs = 4200,
-                OutputFormat = ImageOutputFormat.Rgb24,
-                SNInitialValue = 25,
-                StopAtLastImage = true
-            }
-        };
+        var node = new WorkflowNode("node-merge", "图像源", "图像源", "ImageLoad"){RuntimeConfiguration=ImageSourceTestRuntime.Configuration()};
+        ImageSourceTestRuntime.Edit(node,config=>{
+            config.SourceKind=ImageSourceKind.Camera;config.CameraDeviceId="camera-001";config.CameraTimeoutMs=4200;
+            config.OutputFormat=ImageOutputFormat.Rgb24;config.SNInitialValue=25;config.StopAtLastImage=true;
+        });
         var input = node.EnsureInputSource();
-        input.ConfigurationWriter = candidate => { node.ImageSourceConfig ??= new(){NodeId=node.Id}; node.ImageSourceConfig.UpdateLocalInput(candidate.Configuration); };
+        input.ConfigurationWriter = candidate => ImageSourceTestRuntime.Edit(node,config=>config.UpdateLocalInput(candidate.Configuration));
         input.AddImage(new ImageInfo { FilePath = @"C:\samples\a.bmp", Name = "a" });
         input.CurrentIndex = 0;
 
-        Assert.Equal(ImageSourceKind.Camera, node.ImageSourceConfig.SourceKind);
-        Assert.Equal("camera-001", node.ImageSourceConfig.CameraDeviceId);
-        Assert.Equal(4200, node.ImageSourceConfig.CameraTimeoutMs);
-        Assert.Equal(ImageOutputFormat.Rgb24, node.ImageSourceConfig.OutputFormat);
-        Assert.Equal(25, node.ImageSourceConfig.SNInitialValue);
-        Assert.True(node.ImageSourceConfig.StopAtLastImage);
-        Assert.Single(node.ImageSourceConfig.FilePaths);
-        Assert.Equal(0, node.ImageSourceConfig.CurrentIndex);
+        Assert.Equal(ImageSourceKind.Camera, ImageSourceTestRuntime.Read(node).SourceKind);
+        Assert.Equal("camera-001", ImageSourceTestRuntime.Read(node).CameraDeviceId);
+        Assert.Equal(4200, ImageSourceTestRuntime.Read(node).CameraTimeoutMs);
+        Assert.Equal(ImageOutputFormat.Rgb24, ImageSourceTestRuntime.Read(node).OutputFormat);
+        Assert.Equal(25, ImageSourceTestRuntime.Read(node).SNInitialValue);
+        Assert.True(ImageSourceTestRuntime.Read(node).StopAtLastImage);
+        Assert.Single(ImageSourceTestRuntime.Read(node).FilePaths);
+        Assert.Equal(0, ImageSourceTestRuntime.Read(node).CurrentIndex);
 
         var json = System.Text.Json.JsonSerializer.Serialize<WorkflowNodeBase>(node, WorkflowSerializationOptions.Default);
         var restored = System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json, WorkflowSerializationOptions.Default);
-        Assert.Equal(ImageSourceKind.Camera, restored!.ImageSourceConfig!.SourceKind);
-        Assert.Equal("camera-001", restored.ImageSourceConfig.CameraDeviceId);
-        Assert.Equal(ImageOutputFormat.Rgb24, restored.ImageSourceConfig.OutputFormat);
-        Assert.Equal(25, restored.ImageSourceConfig.SNInitialValue);
-        Assert.True(restored.ImageSourceConfig.StopAtLastImage);
-        Assert.Single(restored.ImageSourceConfig.FilePaths);
+        Assert.Equal(ImageSourceKind.Camera, ImageSourceTestRuntime.Read(restored!).SourceKind);
+        Assert.Equal("camera-001", ImageSourceTestRuntime.Read(restored!).CameraDeviceId);
+        Assert.Equal(ImageOutputFormat.Rgb24, ImageSourceTestRuntime.Read(restored!).OutputFormat);
+        Assert.Equal(25, ImageSourceTestRuntime.Read(restored!).SNInitialValue);
+        Assert.True(ImageSourceTestRuntime.Read(restored!).StopAtLastImage);
+        Assert.Single(ImageSourceTestRuntime.Read(restored!).FilePaths);
     }
 
     [Fact]
-    public void AddImages_PopulatesTruthSource_ToConfig_HasNonEmptyFilePaths()
+    public void AddImages_PopulatesTruthSource_CapturePolicy_HasNonEmptyFilePaths()
     {
-        // 模拟 ImagePreviewControl.AppendFiles 走真相源：ActiveInputSource.AddImages
+        // 模拟 正式宿主导入批接纳 走真相源：ActiveInputSource.AddImages
         var source = new ImageInputSource("img-input-save-1");
         source.AddImages(new List<ImageInfo>
         {
@@ -139,15 +131,15 @@ public class ImageSourceSavePersistenceTests
         // 真相源 _images 已填充
         Assert.Equal(3, source.Count);
 
-        // 保存端：ToConfig 产生非空 FilePaths（这是修复前为空的断点）
-        var config = source.ToConfig();
+        // 保存端：CapturePolicy 产生非空 FilePaths（这是修复前为空的断点）
+        var config = source.CapturePolicy();
         Assert.NotNull(config);
         Assert.Equal(3, config.FilePaths.Count);
         Assert.Equal(@"C:\samples\a.bmp", config.FilePaths[0]);
     }
 
     [Fact]
-    public void AddImages_ToConfig_Serializes_And_Deserializes_FilePaths()
+    public void AddImages_CapturePolicy_Serializes_And_Deserializes_FilePaths()
     {
         var source = new ImageInputSource("img-input-save-2");
         source.AddImages(new List<ImageInfo>
@@ -156,17 +148,15 @@ public class ImageSourceSavePersistenceTests
             new() { FilePath = @"D:\work\2.png", Name = "2" },
         });
 
-        var config = source.ToConfig();
-        var node = new WorkflowNodeBase("node-save-2", "载入", "载入", "图像载入")
-        {
-            ImageSourceConfig = config,
-        };
+        var config = source.CapturePolicy();
+        var node = ImageSourceTestRuntime.Node("node-save-2");
+        config.NodeId=node.Id;config.ApplyTo(node);
 
         var json = System.Text.Json.JsonSerializer.Serialize(node, WorkflowSerializationOptions.Default);
         var back = System.Text.Json.JsonSerializer.Deserialize<WorkflowNodeBase>(json, WorkflowSerializationOptions.Default);
 
-        Assert.NotNull(back!.ImageSourceConfig);
-        Assert.Equal(2, back.ImageSourceConfig!.FilePaths.Count);
-        Assert.Equal(@"D:\work\1.png", back.ImageSourceConfig.FilePaths[0]);
+        Assert.NotNull(ImageSourceTestRuntime.Read(back!));
+        Assert.Equal(2, ImageSourceTestRuntime.Read(back!).FilePaths.Count);
+        Assert.Equal(@"D:\work\1.png", ImageSourceTestRuntime.Read(back!).FilePaths[0]);
     }
 }

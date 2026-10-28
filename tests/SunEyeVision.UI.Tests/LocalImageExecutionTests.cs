@@ -28,17 +28,23 @@ public sealed partial class SolutionManagerUiTests
         public RuntimeInputSnapshotService Snapshots { get; } = new();
         public WorkflowExecutionManager Manager { get; }
         public List<string> Errors { get; } = new();
+        public Action<string>? OnResult {get;set;}
         public LocalImageExecutionFixture()
         {
             _previous = _serviceField.GetValue(null);
             if (_previous == null) _serviceField.SetValue(null, _files.Manager);
-            ToolRegistry.RegisterTool(typeof(PreviewPolicyTool));
+            _ = ImageSourceTestRuntime.Configuration();
             Root = Engine.CreateWorkflow(Guid.NewGuid().ToString(), "运行序列执行测试");
             Tab = new WorkflowTabViewModel { Id = Root.Id, Name = Root.Name };
             Tab.SetNodes(Root.Nodes); Tab.SetConnections(Root.Connections);
             Input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
             Manager = new WorkflowExecutionManager(Input, Engine, Snapshots) { AllowUnhostedRunForTests = true };
             Manager.WorkflowExecutionError += (_, e) => Errors.Add(e.ErrorMessage);
+            Manager.NodeExecutionCompleted += (_, e) =>
+            {
+                if(e.Result is SunEyeVision.Plugin.SDK.Execution.Results.RuntimeToolResults {Output: {} output})
+                    OnResult?.Invoke((string)output.ToValues()["output.file"]!);
+            };
         }
         public ImageInputSource AddSource(string id, int images, SunEyeVision.Workflow.Workflow? owner = null)
         {
@@ -48,25 +54,22 @@ public sealed partial class SolutionManagerUiTests
                 FilePath = _files.CreateImage(id + index + ".png")
             }));
             source.CurrentIndex = images > 0 ? 0 : -1;
-            var node = new WorkflowNodeBase(id, id, id, "PreviewPolicyImageLoad")
-            {
-                Parameters = new PreviewPolicyParameters(), InputSource = source,
-                ImageSourceConfig = source.ToConfig()
-            };
+            var node = new SunEyeVision.UI.Shared.WorkflowNode(id,id,id,"ImageLoad")
+            {RuntimeConfiguration=ImageSourceTestRuntime.Configuration(),InputSource=source};
+            source.CapturePolicy().ApplyTo(node);
             (owner ?? Root).AddNode(node);
             // This unhosted fixture explicitly publishes its configuration before runs.
             // Production uses NodeConfigurationEditHost rather than this fixture callback.
             source.ConfigurationWriter = configuration =>
             {
-                node.ImageSourceConfig!.UpdateLocalInput(configuration.Configuration);
+                ImageSourceTestRuntime.Edit(node,policy=>policy.UpdateLocalInput(configuration.Configuration));
                 if(configuration.SelectStart)Manager.ResetLocalImageCursor((owner ?? Root).Id, id);
             };
             return source;
         }
         public void Dispose()
         {
-            PreviewPolicyTool.OnRun = null;
-            ToolRegistry.UnregisterTool("PreviewPolicyImageLoad");
+            OnResult = null;
             if (ReferenceEquals(_serviceField.GetValue(null), _files.Manager)) _serviceField.SetValue(null, _previous);
             _files.Dispose();
         }
@@ -83,9 +86,9 @@ public sealed partial class SolutionManagerUiTests
             foreach (var image in a.Images) image.IsForRun = true;
             var missing = a.Images[0].FilePath + ".missing";
             a.AddImage(new ImageInfo { FilePath = missing, IsForRun = true });
-            fixture.Root.Nodes[0].ImageSourceConfig!.StopAtLastImage = true;
+            ImageSourceTestRuntime.Edit(fixture.Root.Nodes[0],policy=>policy.StopAtLastImage=true);
             var paths = new System.Collections.Concurrent.ConcurrentQueue<string>();
-            PreviewPolicyTool.OnRun = parameters => paths.Enqueue(parameters.FilePath);
+            fixture.OnResult = path => paths.Enqueue(path);
             var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             fixture.Manager.WorkflowExecutionStopped += (_, _) => stopped.TrySetResult();
             Assert.True(fixture.Manager.StartContinuousRun(fixture.Tab));
@@ -95,7 +98,7 @@ public sealed partial class SolutionManagerUiTests
             Assert.Equal(4, paths.Count);
             Assert.DoesNotContain(missing, paths);
             Assert.Equal(1, a.CurrentIndex); Assert.Equal(1, b.CurrentIndex);
-            Assert.Contains(missing, a.ToConfig().FilePaths);
+            Assert.Contains(missing, a.CapturePolicy().FilePaths);
         });
     }
 
@@ -106,12 +109,12 @@ public sealed partial class SolutionManagerUiTests
         {
             using var fixture=new LocalImageExecutionFixture();
             var a=fixture.AddSource("a",3);var b=fixture.AddSource("b",3);
-            var seen=new List<string>();PreviewPolicyTool.OnRun=parameters=>seen.Add(parameters.FilePath);
+            var seen=new List<string>();fixture.OnResult=path=>seen.Add(path);
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
-            Assert.Equal(1,a.CurrentIndex);Assert.Equal(0,a.ToConfig().CurrentIndex);
+            Assert.Equal(1,a.CurrentIndex);Assert.Equal(0,a.CapturePolicy().CurrentIndex);
             foreach(var image in a.Images)image.IsForRun=true;
             a.AutoSwitchEnabled=false;a.RunMode=ImageRunMode.运行选择;
-            Assert.Equal(1,a.CurrentIndex);Assert.Equal(0,a.ToConfig().CurrentIndex);
+            Assert.Equal(1,a.CurrentIndex);Assert.Equal(0,a.CapturePolicy().CurrentIndex);
             seen.Clear();fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             Assert.Empty(fixture.Errors);Assert.Equal(new[]{a.Images[1].FilePath,b.Images[1].FilePath},seen);
             a.SelectImage(0);
@@ -127,13 +130,13 @@ public sealed partial class SolutionManagerUiTests
         {
             using var fixture=new LocalImageExecutionFixture();
             var a=fixture.AddSource("a",3);var b=fixture.AddSource("b",3);
-            fixture.Root.Nodes[1].ImageSourceConfig!.StopAtLastImage=true;
+            ImageSourceTestRuntime.Edit(fixture.Root.Nodes[1],policy=>policy.StopAtLastImage=true);
             var seen=new System.Collections.Concurrent.ConcurrentQueue<string>();
             var reset=0;
-            PreviewPolicyTool.OnRun=parameters=>
+            fixture.OnResult=path=>
             {
-                seen.Enqueue(parameters.FilePath);
-                if(parameters.FilePath==a.Images[0].FilePath&&Interlocked.Exchange(ref reset,1)==0)
+                seen.Enqueue(path);
+                if(path==a.Images[0].FilePath&&Interlocked.Exchange(ref reset,1)==0)
                     fixture.Manager.ResetLocalImageCursor(fixture.Root.Id,"a");
             };
             var stopped=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -144,7 +147,7 @@ public sealed partial class SolutionManagerUiTests
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[]{a.Images[0].FilePath,b.Images[0].FilePath,a.Images[0].FilePath,b.Images[1].FilePath,
                 a.Images[1].FilePath,b.Images[2].FilePath},seen);
-            Assert.Equal(0,fixture.Root.Nodes[0].ImageSourceConfig!.CurrentIndex);
+            Assert.Equal(0,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex);
             Assert.Equal(1,a.CurrentIndex);Assert.Equal(2,b.CurrentIndex);
         });
     }
@@ -157,14 +160,14 @@ public sealed partial class SolutionManagerUiTests
             using var fixture = new LocalImageExecutionFixture();
             var a = fixture.AddSource("a", 3); var b = fixture.AddSource("b", 3);
             var seen = new List<string>();
-            PreviewPolicyTool.OnRun = parameters => seen.Add(parameters.FilePath);
+            fixture.OnResult = path => seen.Add(path);
             fixture.Root.Nodes[0].InputSource = null;
             fixture.Root.Nodes[1].InputSource = null;
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             Assert.Empty(fixture.Errors);
             Assert.Equal(new[] { a.Images[0].FilePath, b.Images[0].FilePath, a.Images[1].FilePath, b.Images[1].FilePath }, seen);
-            Assert.Equal(0, fixture.Root.Nodes[0].ImageSourceConfig!.CurrentIndex);
+            Assert.Equal(0, ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex);
             fixture.Manager.ResetLocalImageCursor(fixture.Root.Id, "a");
             seen.Clear();
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
@@ -184,7 +187,7 @@ public sealed partial class SolutionManagerUiTests
             stale.AddImages(new[] { new ImageInfo { FilePath = "unpublished.png" } }, selectFirstAdded: true);
             fixture.Root.Nodes[0].InputSource = stale;
             string? seen = null;
-            PreviewPolicyTool.OnRun = parameters => seen = parameters.FilePath;
+            fixture.OnResult = path => seen = path;
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             Assert.Empty(fixture.Errors);
             Assert.Equal(original.Images[0].FilePath, seen);
@@ -194,7 +197,7 @@ public sealed partial class SolutionManagerUiTests
     }
 
     [Fact]
-    public void Cancellation_while_tool_is_in_flight_never_advances_a_source()
+    public void Cancellation_while_frozen_input_is_in_flight_never_advances_a_source()
     {
         Sta(() =>
         {
@@ -203,7 +206,8 @@ public sealed partial class SolutionManagerUiTests
             using var release = new ManualResetEventSlim();
             using var cancellation = new CancellationTokenSource();
             var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            PreviewPolicyTool.OnRun = _ => { entered.TrySetResult(); Assert.True(release.Wait(TimeSpan.FromSeconds(10))); };
+            fixture.Input.GetInputImageAsync().Returns(_ => Task.Run<object?>(() =>
+            { entered.TrySetResult(); Assert.True(release.Wait(TimeSpan.FromSeconds(10))); return null; }));
             var run = fixture.Manager.RunSingleAsync(fixture.Tab, cancellation.Token);
             try
             {
@@ -230,7 +234,7 @@ public sealed partial class SolutionManagerUiTests
             tab.SetNodes(other.Nodes); tab.SetConnections(other.Connections);
             var solution = new Solution(); solution.Workflows.Add(fixture.Root); solution.Workflows.Add(other);
             var paths = new System.Collections.Concurrent.ConcurrentQueue<string>();
-            PreviewPolicyTool.OnRun = parameters => paths.Enqueue(parameters.FilePath);
+            fixture.OnResult = path => paths.Enqueue(path);
             fixture.Snapshots.Publish(other.Id, "wrong-preview.png", 99);
             fixture.Manager.RunSolutionAsync(new[] { fixture.Tab, tab }, solution).GetAwaiter().GetResult();
             Assert.Empty(fixture.Errors);
@@ -254,12 +258,12 @@ public sealed partial class SolutionManagerUiTests
                 return Task.FromResult<object?>(null);
             });
             string? observedPath = null;
-            PreviewPolicyTool.OnRun = parameters => observedPath = parameters.FilePath;
+            fixture.OnResult = path => observedPath = path;
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             Assert.Empty(fixture.Errors);
             Assert.Equal(expectedPath, observedPath);
             Assert.Equal(2, source.CurrentIndex);
-            Assert.Equal(string.Empty, ((PreviewPolicyParameters)fixture.Root.Nodes[0].Parameters).FilePath);
+            Assert.Equal(0,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex); // Frozen invocation never writes display edits back to Runtime start.
         });
     }
 
@@ -271,7 +275,7 @@ public sealed partial class SolutionManagerUiTests
             using var fixture = new LocalImageExecutionFixture();
             var a = fixture.AddSource("a", 2); var b = fixture.AddSource("b", 3);
             var paths = new List<string>();
-            PreviewPolicyTool.OnRun = parameters => paths.Add(parameters.FilePath);
+            fixture.OnResult = path => paths.Add(path);
             fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
             Assert.Empty(fixture.Errors); Assert.Equal(2, paths.Count);
             Assert.Contains(a.Images[0].FilePath, paths); Assert.Contains(b.Images[0].FilePath, paths);

@@ -1,3 +1,7 @@
+## 2026-10-28 集中合入工作流固定源码快照
+
+- 主线C13/C14本地暂存bb5bab8a，固定工作流快照30e05a51已合入工作区；仅CURRENT_TASK内容冲突，双方完整记录保留。此整合尚未restore/语义构建，旧成绩不套；用户Blob参数页不暂存、不推送。下一集中恢复新Runtime/Wpf/Tests依赖、规定UI/full构建，真实错误交原线增量修。共享结果合同随后实际落码。
+
 ## 2026-10-28 原结果表候选落地；整链仍进行中
 
 - 用户确认按VM设计，原方案moduleResultsPlan已更新并统一SDK声明/同一次snapshot/publication，不保旧外观或latest后备设计。本批实际迁原ModuleView/CurResult样式、单元格/原滚条和原ScrollChanged行为，DeclaredResultTable先Prepare全量，再静默安装存储/新代命令，聚合通知及Dispose，500增量、ValidWhen及旧命令门禁已实施。完整公共context/中立图像/物理帧选择API尚未实际替换；当前不称整链完成。
@@ -37,6 +41,55 @@
 - C13整体设计已补实际Blob无DialogGroup编辑消费、第二阶段字段/保存缺口，以及TextExpressionSnapshot/Options、按fieldId角色、借原叶数值协调器的精确合同。三路只读核收已完成，本线唯一产品写者恢复实施；不改图像源专用业务、Blob业务或用户XAML。
 - 已开始未验候选：NativeNumberPresenter只拥有唯一原视觉，新NativeNumberCoordinator借state/真实叶/eventRoot及owner，不挂第二Child；NativeNumericCommit可校第三层StartValue桥binding/同叶current，保存raw编辑代次；提交后用AcceptanceVersion区分接纳/观察异常，投影有sync门禁，隐藏先Suspend再关层、Dispose聚合自有资源。只读评审正在审该实际候选。后续原字符串/占位会话、原四行/七行完整组装及独立样例/测试/Catalog仍待实施，不称此局部完成。
 - 当前无本线live构建/测试；产品已变，6ae的验证成绩不能套当前候选。按整批实施完再串行规定构建和相称回归。用户BlobParameterEditor.xaml索引2及SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保留未提交；不推送粗糙候选。
+﻿## 2026-10-28 用户授权独立worktree并行；仍按完整工具批交付
+
+- 用户明确要求“设计并行 提高效率”“需要每路独立worktree”，并回复“好吧”。三个原worktree状态均干净，保原分支历史后从e81a6e84切本次专用分支：workflow-timing-footer/codex/image-source-native仅Plugin.Wpf专用ImageSources目录；workflow-overview/codex/image-source-editor仅新工具Wpf；workflow-review/codex/image-source-audit只读核验。87f4唯一写者继续Runtime/Workflow/UI主链，不在同一目录多AI写入。
+- 源条已冻结只读视觉session与封闭不可变请求合同；编辑器用既有draft/InputContent/AcceptCandidate，不复制配置。root统一冻结合同、集成各路，整批接通后才交主线集中同源构建。子路不得写共享合同/主题/Catalog/项目入口，不运行私有Release。主线C13及公共合同继续独占。
+- 最新候选02872a5c及四轨63e5b660已交主线。主线确认本轮C13独占Release002/session76020（仅其报告，不由本线判终态），下一窗口才评审/集成源候选，本线不写主仓。C14正式结果context尚未落地，共享合同由主线写；本线继续UI宿主/sourceWpf及原组合闭包，不造兼容overload。
+- 已核到实际PropertyList→DeclaredResultTable不支持的缺口，交接单明确候选不可人工验收。D02旧缓存无调用链由editor独立worktree集中退役，native只读核原ModuleResultView完整组合/模板/资源和PropertyList树入口。root仅修Host验收在历史重绑后重新查当前FieldId编辑器，避免持旧实例误报；未执行回归。
+- D02已合44a67d83为ca605a4b：六类死链、Main构造/统计/清空和无身份图像回填整体退出，真实执行/声明快照/源资产缓存保留。独立审计确认16个结果管理器及168个Main保留方法体未改；不把旧池Prewarm(1)退出混称解码器预热优化。
+- root宿主结果Model/Presenter现分部分成功、超时、取消，成功空输出保状态，资源缺值的失败不显示“资源待接入”；仅同一publication才复用reader/行，身份相同的新发布会更换诊断。已补真实快照状态/成功空/同run不同发布及partial scalar测试；源码与四C#语法检查无错、diff通过，未语义编译或执行。一次检查自动审批超时未启动，原命令允许的一次重试已成功。共享C14合同/原件树/物理帧适配仍未交付，目标不完成。
+- 主线授权本线仅新增Results/PropertyList及Results/ResultShell对应Controls/Themes/Assets/Design子目录；native已从988a34f5独立分支迁原三列树/结果shell，不动StandardTable/C14/context/中立图像适配/C17。纯视觉DP/命令只回传实际投影对象，UI负责正式owner/publication校验，未造旧IToolResultView实现。
+- B09设计链审计确认旧附加样例绕过外层Bind、相机态仍留本地源条；已集中统一ImageSourceParameterEditor.Bind，设计/运行都走source回调及Changed，重绑/关闭以同代次拒旧回调。指定ImageSources新增ImageSourceInputView承接原已有条/Native枚举/状态/管理按钮纯视觉，UI宿主保草稿/设备/计时器/管理动作；设计以同Runtime draft及只读session消费同一视觉，相机管理明确禁用，无第二模型/假帧。新增实际相机态DesignView，未以HTML替代。五C#语法、两XML/diff通过，尚未语义构建、真实VS或运行。
+- 原树Focusable=False并非错误：native沿原moduleviewstyle.xaml:432–436核到漏迁行Grid左键→实际row命令。root专用目录补原普通冒泡事件，重复同一行亦更新路径，右键/子按钮handled/程序恢复不执行，不靠TreeViewItem焦点改变；外调前后核当前视觉row。真实组合回归按RowContent路由输入补重复/右键/handled，三C#语法及两XML过，未运行。
+- 根参数整链057e8365已合cbf98caf：正式Runtime目录、强设置/引用/Unset/移除恢复接原根事务与实际视图；原根资源Fact保取消、接纳、历史、保存重开及sourceInputs真实图像/区域执行，未改Blob业务。原视觉6项真实WPF组合f8a7d2e5已合eeb1a1e4，纳正式ImageSources轨，未运行。
+- source_audit确认选择模式下未勾选Activate会写坏start再执行失败：现Session拒绝并恢复展示，ImageInputSource统一选择守卫，主窗正式选择/执行双核同规则，未自动勾选；补真实session无历史/无执行及合法项仍执行回归。相机仍消费OutputFormat，已移除该共有字段错误local可见限制。12个当前C#纯语法过，未语义构建。
+- SDK图像退出完整依赖已核：Root主图委托→旧Declared区域/RoiViewportEditScope、Loaded注入ResultRenderLayer→结果/高亮、顶栏缩放全屏、两阶段索引Dispatcher及来源持久选择必须随Shell集中替换。新Runtime编辑器不依赖SDK主图，正确查询/Reader/租约基础可复用；不保隐藏ImageControl或静默丢覆盖层。已请求主线集中集成源候选restore及UI/full构建，不等C14全部完成才暴露语义错。
+- native只读整链核出ImageResultHost实际DataContext为ImageResult子VM，而Roots属于Main；已去错误隐式Binding，Initialize显式借同一root Presenter.Roots，Shutdown先摘ItemsSource再清结果，不复制集合。此为源码审计修正，尚未运行WPF绑定验收。
+- 主界面结果树整批候选已提交f68bfd8c，工作树曾干净；新增正式ImageSources轨实际纳ResultPresentationModelTests/PresenterTests，不让状态/分页/Reader清理用例只存在测试项目。原非法候选7项+调试拒绝7项仍独立核14，不与结果Theory混计；仅源码/语法验证，未运行正式轨。
+- 部署探针f4f4c320已合9615bdbe：按BlobAnalysis/角色唯一匹配，全部破坏注入锁同一组件，新增源角色不触发全局Single误判；纯函数夹具过，未正式执行。editor独立worktree继续根参数Runtime整链消费者，复用既有SettingsSchema/BindingTargets/事务/编译/资源租约，不改Blob/共享合同、不skip原根资源回归。主线最新wait确认idle且共享C14仍尚待整批接通，不推断正式构建窗口已授权本线。
+- root新增UI局部ImageSourceThemeScope，主界面与参数页同源条及相机picker接宿主语义画刷，Loaded订阅/Unloaded退订及Dispose移除自有字典，主题切换整字典替换，不改共享主题或全局画刷。Host回归新增实际Strip深浅主题、卸载再载与截图断言，专用内存SolutionSettings不写用户偏好；四C#语法和diff通过，尚未正式运行/主题验收。一次读取自动审批超时后已重试成功。
+- root原树宿主投影在途：现Presenter以同一row对象/同一Reader输出Roots和Children，沿稳定Key及原代次展开分页，不造业务占位子项；原视觉IsGroup负责空Children展开钮。主界面暴露同一Roots，当前行身份核验按实际row对象，BindingInfo更新会通知绑定能力。已补同Reader分页/旧分页迟到/层级重入清理用例，未运行；原DataGrid尚待与native整片候选汇合后替换。另修成功空结果被RefreshRows的outputs>0条件继续滤掉的遗漏，未借此宣称回归已过。
+- 已合原视觉7c94a08c为d84f1b32：授权专用PropertyList/ResultShell目录56文件，39原PNG及来源SHA，原三列树、双视口header/底部shell及真实组合设计视图；只有静态输入，不代生产接入/VS。root已将ImageResultControl模块结果DataGrid完整替换原PropertyListView，绑定同一Roots；变量绑定/复制先核当前实际row，modal返回再核，普通选树仅更新路径不猜几何。新增实例Results主题Scope随Loaded/Unloaded切原Light/Dark字典，未改共享主题。完整ResultWorkspaceShell、工具Factory PropertyList、新context/物理帧仍待接，候选不具人工验收条件。五C#语法/XAML/diff通过，未构建或运行。
+- 本轮唯一设置迁移已接声明字段读取、非持久ImageSourcePolicy、UI编辑/加载与正式接纳，以及历史/复制的Runtime所有权；生产输入字典、保存资源路径、调试、旧类型/测试退出仍在途。此前批量替换脚本被自动审批拒绝且未执行，已改逐文件明确patch；无构建或运行通过主张，旧45项仅原基线成绩。
+- 进一步已将资源Inspect/RebaseCopy切为RuntimeConfiguration.Settings.FileReferences/SelectedReferences；编辑Host移除旧源配置特判，沿Runtime签名/回放/回滚；源单次相机输入补完整ResourceContractRules校验。Runtime SettingsSchema已按原件单“基本参数”页补展示声明；宿主InputContent实际Page定位限制由编辑器路记录，不能伪称原顺序已达标。
+- root本批19个C#候选用已加载Roslyn5.0语法检查0错、项目XML可解析；首次显式加载SDK Roslyn程序集版本冲突后已改核实际解析器并重跑。只是语法，不是语义编译/正式构建。准备中文在途保存点供并行代码整合，未接通的输入/调试/旧工具/测试与新源条适配仍须同批完成，不作为发布或阶段完成。
+
+## 2026-10-28 源正式执行与调试共用取图；并行测试已汇合（仍未构建）
+
+- 已合原菜单闭包45a81f5d为9e96fb59、完整新架构测试e7b87a6a为511eda48；测试保原范围并扩大Runtime/真实StripSession链，只有语法检查，不套旧45项成绩。native路继续在独立worktree完成正式UI会话、原可见窗口缩略图预算及目录导入合同，未交付前不冒称B完成。
+- root在途已把正式WorkflowRunRequest冻结源输入及基目录、单轮本地地址/SN与相机实际设备帧快照、RuntimeDebugInvocation私有设置调试接同ImageSourceInvocationInputs；输入Lease在成功/失败/取消释放。ImageInputSource完整勾选单次Commit，设置投影可直接读同一IToolSettingsDraft声明字段。尚未语义编译；参数页私有draft源条接纳、旧入口退出、项目/部署和结果链仍须同批贯通。
+- 用户询问临时分支/worktree清理，已明确验收、成果集成和未提交/忽略文件核对后再归档可恢复快照，确认已集成才清分支；当前不清理、不自动合并main。Group继续暂停，主线共享目录与正式Release写权边界不变。
+- 后续已合真实Session/viewport候选517e2bb3为79351d6a。root新增专用IImageSourceSettingsContent与UI ImageSourceDraftContent，让源条直接编辑工具视图同一IToolSettingsDraft，经既有宿主ValidateSettingsCandidate接纳；标量改变刷新列表，列表改变重读标量编辑器，避免两套草稿。打开ImageLoad不再走旧SettingsControl override，选节点结果不再错误显示配置控件，Runtime补正式PropertyList结果声明。仍未编译，设备选择组合/主界面旧源条退出/部署与所有旧测试脚本消费者尚在途。
+- source_editor独立路已转补六组实际RuntimeDebugInvocation回归（冻结私有设置/base/SN、非法来源、正式/调试同链、相机身份与快照、失败取消晚帧、单次及关闭清理）及直接引擎sourceInputs；尚无运行证据。主线已获知O06/S3/S4旧ImageLoad脚本接缝需随新工具整批迁移，未申请构建窗口、未写共享目录。
+- 已合调试15项候选85caa1f3为3374989f；native审计发现新组件在宿主根而测试EnsureLoaded硬拼旧plugins路径，root新增明确EnsureComponentLoaded入口并切新Runtime测试，不做猜测回退。Solution/UI构建链加入新Runtime/Wpf与新测试、移出旧ImageLoad构建项；Seal脚本补精确边界检查后的旧SDK源发布目录退役，尚未执行部署。
+- 主界面ImageResultControl已改消费同一公共ImageSourceStrip+真实Session，固定当前源/流程/owner后调用原TrySelectPreviewImage→RunPreviewImageAsync，卸载释放自有session，不以恢复显示触发执行。无消费者的旧ImagePreviewControl三文件和ImageSourceConfig已退出；旧源SettingsControl/部分脚本及设备组合仍在整批迁移。八个本批C#纯Roslyn语法0错、Solution/XAML可解析及diff检查；未语义编译/Release/VS/人工，不能据此报告整批完成。
+- 当前再补相机NativeInputFactory枚举选择、已移除设备明确保留、连接状态、既有CameraManagerDialog管理/预览入口，全部写同一私有设置草稿；源Runtime本地输出强制空相机frame/time，避免旧入参串物理来源。已退出旧ImageSourceSettingsControl及其即时接纳两套helper，正式参数入口唯一。调试运行期间锁实际参数视图，排空后仅恢复同代视图。上述仍源码候选。
+- native补旧9行为缺口的10项声明/真实像素格式/非矩形Domain/元数据测试30c9974a已合c5fb0733；与3374989f的15项调试候选均未执行。三C#新增改动纯Roslyn无语法错、diff通过；未替代语义构建、真实设备、VS及人工验收。下一仍需旧发布源/脚本消费者完整退役、结果组合与官方同源构建。
+- 旧SDK源9个确切产品/测试文件已退役，App.slnx同步新角色，原行为映射到新Runtime/调试与10格式声明测试，未保旧兼容入口。正式ImageSourceCases纳两个Runtime测试类，UI14Theory核与总Theory独立。原主方案39项当前状态已按源码/未验集中更新；历史6ae证据保留不套当前源码。
+- native整链只读审计确认源接纳中Editor.TryCapture会flush pending再次ApplyFields；root已改专用BindSourceDraft分prepare/accept：外层Apply前flush并冻结references，accept只宿主校验，prepare期间不Load源以免Commit重入。仍待运行证据；脚本四消费者由独立editor路迁移中，先核与主线只换行差异、不碰Blob/C13语义。结果显示完整组合与主线同源构建尚未完成。
+
+## 2026-10-28 图像源新架构集中工具批实施中（未接通/未验证）
+
+- 原主方案已补本批完整实现合同：Runtime唯一持久ImageSourceSettings，声明字段供宿主非持久投影，保现三游标/序列，原ImageSourceConfig/旧参数/旧入口消费者同批退出；单次本地地址/SN/标准相机图像和实际设备元数据作为冻结输入，不向Runtime注入宿主服务，也不吸默认图。
+- 在tools/SunEyeVision.ImageSource/Runtime开始5个C#及项目候选：设置深Freeze/结构校验、SettingsFields读写、组件准入声明、单次原图/灰度及元数据输出、HAL实际Domain和子Scope清理。尚未接Solution/发布/宿主/新Wpf，不可达、不部署，不构建另一套Release；候选不单独提交为阶段交付，继续同一工具批。
+- 目录Runtime受已有.gitignore runtime/匹配，已对确切6源码路径使用git add -N -f使候选可review，未改全局忽略规则。下一继续新源条/编辑器/所有正式与调试消费者，成片接通后协调主线同源构建；共享合同/Catalog/主题/项目入口仍归主线。Group不动，未验证项继续保留。
+
+## 2026-10-28 新目标已建；基础候选同源正式回归终态
+
+- 新目标A01–E07完整39项已归原主方案当前权威节，按用户要求合并为完整功能链集中实施，保原历史清单。ImageLoad仍旧SDK单工具，Runtime/Wpf角色及全部消费者是下一集中工具批的核心，不把现有45项通过写作新架构完成。
+- 6ae86393主仓Release006=0错6608警告119.22秒；ImageSources004=45过0败；WorkflowHost006=1过0败；正式EXE48152 exit0且commit一致、22可用工具。两个轨道loaded-product全部正式路径/当前SHA已核一致，归evidence/IMAGE_SOURCE_FOUNDATION_RELEASE_20261028.json。自有进程全终态，正式窗口已通知主线释放；没有私有Release、未复制DLL。
+- 未完成：新工具角色/编辑器/原源条与预览调试、结果身份/帧/租约/高亮/树表、主界面替换及旧视觉退出，真实VS/硬件/人工验收。Group不动，共享目录按交接单互斥。下一先补新工具架构完整接入设计，再集中成片实施，不拆逐控件补丁。
 
 ## 2026-10-28 工作流线接收共同基线；修正正式宿主测试编译
 

@@ -80,6 +80,24 @@ internal static class ToolPluginTestLoader
         EnsureLoaded(toolName);
     }
 
+    /// <summary>Load a role component only from its formal host-root deployment.</summary>
+    internal static Assembly EnsureComponentLoaded(string componentAssemblyName)
+    {
+        EnsureHostResolvingRegistered();
+        if(string.IsNullOrWhiteSpace(componentAssemblyName)||Path.GetFileName(componentAssemblyName)!=componentAssemblyName)
+            throw new ArgumentException("Invalid component assembly name.",nameof(componentAssemblyName));
+        var path=Path.GetFullPath(Path.Combine(HostDebugRoot,componentAssemblyName+".dll"));
+        var loaded=AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a=>a.GetName().Name==componentAssemblyName);
+        if(loaded is not null)
+        {
+            if(!string.Equals(Path.GetFullPath(loaded.Location),path,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("组件不是当前宿主根部署版本："+loaded.Location);
+            return loaded;
+        }
+        if(!File.Exists(path))throw new FileNotFoundException("缺少正式角色组件，请先全量构建。",path);
+        return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+    }
+
     /// <summary>幂等加载 plugins/&lt;toolName&gt;/&lt;toolName&gt;.dll 到默认 ALC；已加载则返回现有实例。</summary>
     internal static Assembly EnsureLoaded(string toolAssemblyName)
     {

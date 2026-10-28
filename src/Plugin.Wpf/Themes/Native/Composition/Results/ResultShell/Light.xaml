@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:sys="clr-namespace:System;assembly=System.Runtime" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <SolidColorBrush x:Key="Results.Shell.Col_ComboBox_Background" Color="#FCFCFC" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ComboBox_BorderBrush" Color="#CCCCCD" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ComboBox_Foreground" Color="#646464" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ComboBox_Popup" Color="#FCFCFC" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ComboBox_Popup_BoderBrush" Color="#CCCCCD" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ComboBox_Popup_Selected_Background" Color="#E6E6E6" />
+  <SolidColorBrush x:Key="Results.Shell.Col_DisplayImage_Background" Color="#E6E6E6" />
+  <SolidColorBrush x:Key="Results.Shell.Col_DisplayImage_BorderBrush" Color="#C6C6C6" />
+  <SolidColorBrush x:Key="Results.Shell.Col_DisplayImage_Control_BorderBrush" Color="#BABABA" />
+  <SolidColorBrush x:Key="Results.Shell.Col_DisplayImage_Foreground" Color="#666666" />
+  <SolidColorBrush x:Key="Results.Shell.Col_DisplayImage_Selected_Background" Color="#1877F2" />
+  <SolidColorBrush x:Key="Results.Shell.Col_DisplayImage_Selected_Foreground" Color="#FFFFFF" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ScrollBar_BorderBrush" Color="#BFBDBD" />
+  <SolidColorBrush x:Key="Results.Shell.Col_ScrollBar_Fill" Color="#D1CFCF" />
+  <SolidColorBrush x:Key="Results.Shell.Col_Theme" Color="#1877F2" />
+  <sys:String x:Key="Results.Shell.切换画面数量">切换画面数量</sys:String>
+  <SolidColorBrush x:Key="Results.Shell.CheckBoxFillNormal" Color="#F4F4F4" />
+  <SolidColorBrush x:Key="Results.Shell.CheckBoxStroke" Color="#8E8F8F" />
+  <SolidColorBrush x:Key="Results.Shell.TextBox.Foreground" Color="#BFBFBF" />
+  <SolidColorBrush x:Key="Results.Shell.btnEditTemplateBorderBG" Color="#E1DEDE" />
+  <sys:String x:Key="Results.Shell.Lang_Unwarp">展开</sys:String>
+  <sys:String x:Key="Results.Shell.收起">收起</sys:String>
+  <SolidColorBrush x:Key="Results.Shell.DashedLineStroke" Color="#FF575858" />
+  <sys:String x:Key="Results.Shell.放大">放大</sys:String>
+  <sys:String x:Key="Results.Shell.缩小">缩小</sys:String>
+  <sys:String x:Key="Results.Shell.辅助线">辅助线</sys:String>
+</ResourceDictionary>

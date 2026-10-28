@@ -22,7 +22,7 @@ internal static class RootWorkflowReadiness
    try
    {
     if(ImageSourceResolver.IsImageSource(node.ToolType))
-     errors.AddRange(EvaluateImageSource(node.Id,node.ImageSourceConfig).Select(message=>label+"："+message));
+     errors.AddRange(EvaluateImageSource(node.Id,ImageSourcePolicy.Read(node)).Select(message=>label+"："+message));
     else
     {
      var result=node.Parameters.Validate();
@@ -43,7 +43,7 @@ internal static class RootWorkflowReadiness
   // 与恢复件一致：空图可以没有配置错误，是否可运行仍由正式运行入口判断。
   return errors.Distinct(StringComparer.Ordinal).ToArray();
  }
- internal static IReadOnlyList<string> EvaluateImageSource(string nodeId,ImageSourceConfig? source)
+ internal static IReadOnlyList<string> EvaluateImageSource(string nodeId,ImageSourcePolicy? source)
  {
   if(source is null)return new[]{"图像源尚未配置。"};
   var errors=new List<string>();

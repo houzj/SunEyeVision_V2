@@ -19,6 +19,19 @@ $oldExpectedEditor=$env:S3_EXPECT_EDITOR
 $oldGlobalLoader=$env:S3_USE_GLOBAL_LOADER
 $oldExpectedRejection=$env:S3_EXPECT_REJECTION
 
+# 此轨验证 Blob 的可选编辑器及故障隔离，不限制全产品组件数量。
+function Get-BlobComponent($payload,[string]$role) {
+    $matches=@(foreach($entry in $payload.entries) {
+        if(-not $entry.ContainsKey('components')){continue}
+        foreach($component in $entry.components) {
+            if($component.toolId -eq 'BlobAnalysis' -and $component.role -eq $role) {
+                [pscustomobject]@{Entry=$entry;Component=$component}
+            }
+        }
+    })
+    if($matches.Count -ne 1){throw ('BlobAnalysis 必须有唯一的 '+$role+' 组件，实际：'+$matches.Count)}
+    return $matches[0]
+}
 function Move-IntoHold([string]$relative) {
     $source=[IO.Path]::GetFullPath((Join-Path $product $relative))
     $target=[IO.Path]::GetFullPath((Join-Path $held ([IO.Path]::GetFileName($relative))))
@@ -66,9 +79,8 @@ try {
     if($LASTEXITCODE -ne 0){throw '全局装载入口的正式工作流失败'}
     $results.Add([ordered]@{name='global-loader-real-workflow';passed=$true})
     $env:S3_USE_GLOBAL_LOADER='0'
-    $editor=@($baseline.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Editor').Count -gt 0})
-    if($editor.Count -ne 1){throw '必须有一个明确的编辑器组件'}
-    $editorId=$editor[0].components[0].componentId
+    $editor=Get-BlobComponent $baseline 'Editor'
+    $editorId=$editor.Component.componentId
     $optional=@($baseline.entries|Where-Object{$_.ContainsKey('optionalComponentId') -and $_.optionalComponentId -eq $editorId})
     if($optional.Count -eq 0){throw '没有可选编辑器文件组'}
     foreach($entry in $optional){Move-IntoHold $entry.path}
@@ -98,9 +110,8 @@ try {
     $results.Add([ordered]@{name='runtime-image-without-editor';passed=$true})
     Restore-Held
 
-    $runtime=@($baseline.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0})
-    if($runtime.Count -ne 1){throw '必须有一个明确的Runtime组件'}
-    Move-IntoHold $runtime[0].path
+    $runtime=Get-BlobComponent $baseline 'Runtime'
+    Move-IntoHold $runtime.Entry.path
     try{
         Invoke-Probe 'missing-runtime' $true 'BlobAnalysis.Runtime|runtime|Runtime'
         $env:S3_USE_GLOBAL_LOADER='1';$env:S3_EXPECT_REJECTION='1'
@@ -110,23 +121,23 @@ try {
     }finally{Restore-Held;$env:S3_USE_GLOBAL_LOADER='0';$env:S3_EXPECT_REJECTION='0'}
     Reject-Metadata 'duplicate-runtime' {
         param($p)
-        $entry=$p.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0}|Select-Object -First 1
-        $copy=$entry.components[0].Clone();$copy.componentId+='-duplicate';$entry.components+=@($copy)
+        $target=Get-BlobComponent $p 'Runtime'
+        $copy=$target.Component.Clone();$copy.componentId+='-duplicate';$target.Entry.components+=@($copy)
     } 'Duplicate tool component role'
     Reject-Metadata 'wrong-contract-major' {
         param($p)
-        $entry=$p.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0}|Select-Object -First 1
-        $entry.components[0].contractMajor=999
+        $target=Get-BlobComponent $p 'Runtime'
+        $target.Component.contractMajor=999
     } 'contract version'
     Reject-Metadata 'orphan-editor' {
         param($p)
-        $entry=$p.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Runtime').Count -gt 0}|Select-Object -First 1
-        $entry.components=@()
+        $target=Get-BlobComponent $p 'Runtime'
+        $target.Entry.components=@($target.Entry.components|Where-Object { $_.componentId -ne $target.Component.componentId })
     } 'companion runtime'
     Reject-Metadata 'wrong-entry-type' {
         param($p)
-        $entry=$p.entries|Where-Object{$_.ContainsKey('components') -and @($_.components|Where-Object role -eq 'Editor').Count -gt 0}|Select-Object -First 1
-        $entry.components[0].entryType='System.String'
+        $target=Get-BlobComponent $p 'Editor'
+        $target.Component.entryType='System.String'
     } 'PE declarations differ'
     $env:S3_EXPECT_EDITOR='1'
     & (Join-Path $PSScriptRoot 'Run-S2ReleaseValidation.ps1') -Stage S3 -Track Components

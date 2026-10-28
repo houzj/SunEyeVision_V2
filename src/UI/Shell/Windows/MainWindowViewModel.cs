@@ -45,7 +45,6 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.UI.Converters.Path;
-using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -152,9 +151,6 @@ namespace SunEyeVision.UI.Shell.Windows
             _pendingCameraPresentations = new();
         private System.Windows.Threading.DispatcherTimer? _cameraPresentationTimer;
         private DateTime _lastCameraPerfWarningUtc;
-
-        // 工作流执行协调器（图像切换优化）
-        private WorkflowExecutionOrchestrator? _executionOrchestrator;
 
         // 已打开的调试窗口（全局单例）
         private Window? _openDebugWindow;
@@ -528,6 +524,9 @@ namespace SunEyeVision.UI.Shell.Windows
         /// 扁平化结果行列表（用于 DataGrid 绑定，与图像结果子 VM 共享同一集合实例）
         /// </summary>
         public ObservableCollection<FlatResultRow> FlatResultRows => _flatResultRows;
+        public ReadOnlyObservableCollection<FlatResultRow> ResultTreeRoots=>DeclaredResultPresenter.Roots;
+        internal bool IsCurrentResultRow(FlatResultRow row)=>_declaredResultActive
+            &&_declaredResultPresenter?.ContainsRow(row)==true;
         private SunEyeVision.UI.Services.Monitoring.ResultPresentationPresenter? _declaredResultPresenter;
         private bool _declaredResultActive;
         private bool _declaredHistoricalResult;
@@ -761,28 +760,6 @@ SplitterPosition = position;
             // TODO: 实现日志清空功能
         }
 
-        /// <summary>
-        /// 获取工作流执行协调器
-        /// </summary>
-        public WorkflowExecutionOrchestrator? ExecutionOrchestrator => _executionOrchestrator;
-
-        /// <summary>
-        /// 获取缓存统计信息
-        /// </summary>
-        public (int Count, long MemoryBytes, double MemoryMB) GetCacheStatistics()
-        {
-            return _executionOrchestrator?.GetCacheStatistics() ?? (0, 0, 0);
-        }
-
-        /// <summary>
-        /// 清空执行缓存
-        /// </summary>
-        public void ClearExecutionCache()
-        {
-            _executionOrchestrator?.ClearCache();
-            AddLog("🗑️ 已清空执行缓存");
-        }
-
         public ICommand NewWorkflowCommand { get; }
         public ICommand OpenWorkflowCommand { get; }
         public ICommand SaveWorkflowCommand { get; }
@@ -886,11 +863,7 @@ SplitterPosition = position;
             // 初始化节点结果管理器
             _nodeResultManager = new Services.Workflow.NodeResultManager(
                 () => CurrentWorkflowContext,
-                this,
-                ResolveFirstImagePropertyName);
-
-            // 初始化工作流执行协调器（图像切换优化）
-            _executionOrchestrator = new WorkflowExecutionOrchestrator(_nodeResultManager, maxCacheSize: 50, maxMemoryMB: 100);
+                this);
 
             // 订阅执行管理器事件
             _executionManager.WorkflowExecutionStarted += OnWorkflowExecutionStarted;
@@ -1542,7 +1515,7 @@ SplitterPosition = position;
             foreach (var pending in pendingPresentations)
                 try { pending.Lease?.Dispose(); }
                 catch (Exception ex) { _logger?.LogError("相机结果租约清理失败", "MainWindowViewModel", ex); }
-            _workflowContextService.Clear(); _executionOrchestrator?.ClearCache(); _nodeResultManager.ClearResultDisplay();
+            _workflowContextService.Clear(); _nodeResultManager.ClearResultDisplay();
             UpdateCurrentSolutionInfo();
 
             // 加载解决方案到工作流标签页
@@ -2640,9 +2613,7 @@ SplitterPosition = position;
                 // UI owns editor creation. Use the formal node so identity and style
                 // overrides are not lost in an incomplete execution-node conversion.
                 var decisionChain = new NodeOpenDecisionChain();
-                var success = decisionChain.Execute(node, context, node.IsImageLoadNode
-                    ? () => new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node, this)
-                    : null);
+                var success = decisionChain.Execute(node, context);
                 if (!success)
                 {
                     AddLog($"❌ 节点打开失败: {node.Name}");
@@ -3408,14 +3379,6 @@ SplitterPosition = position;
                 if (selectedNode == null)
                     return System.Threading.Tasks.Task.CompletedTask;
 
-                if (selectedNode.IsImageLoadNode)
-                {
-                    DataAnalysisControlTitle = $"{selectedNode.Name} - 图像源";
-                    SelectedNodeDataAnalysisControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(selectedNode, this);
-                    HasDataAnalysisControl = true;
-                    return System.Threading.Tasks.Task.CompletedTask;
-                }
-
                 // 获取工具注册信息
                 var toolType = selectedNode.ToolType;
                 if (string.IsNullOrEmpty(toolType))
@@ -3574,20 +3537,6 @@ SplitterPosition = position;
                 AddLog($"❌ 创建数据查询服务失败: {ex.Message}");
                 return null;
             }
-        }
-
-        /// <summary>
-        /// 解析节点第一个图像输出属性名（用于缓存回填时与显示源的 key 对齐）
-        /// </summary>
-        private string? ResolveFirstImagePropertyName(string nodeId)
-        {
-            var node = _workflowEngine.CurrentWorkflow?.Nodes
-                .FirstOrDefault(n => n.Id == nodeId) as SunEyeVision.UI.Shared.WorkflowNode;
-            if (node == null) return null;
-
-            var provider = GetDataProviderForNode(node);
-            return (provider as DataSourceQueryService)?.GetImageDisplaySources(nodeId)
-                .FirstOrDefault(ds => ds.SourceNodeId == nodeId)?.PropertyName;
         }
 
         /// <summary>
@@ -5464,7 +5413,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
 
             // 上方结果画布独立显示；这里仅控制下方本地文件预览器。
-            if (sourceNode.ImageSourceConfig?.SourceKind == SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera)
+            if (ImageSourcePolicy.Read(sourceNode)?.SourceKind == SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera)
             {
                 HideLocalImagePreview();
                 return;
@@ -5475,7 +5424,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             if (source == null)
             {
                 source = new ImageInputSource(sourceNode.Id);
-                if (sourceNode.ImageSourceConfig != null) source.LoadFromConfig(sourceNode.ImageSourceConfig);
+                if (ImageSourcePolicy.Read(sourceNode) is { } policy) source.LoadFromPolicy(policy);
                 sourceNode.InputSource = source;
             }
             BindLocalImageSourceEditor(sourceNode,source);
@@ -5927,6 +5876,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
     /// </summary>
     public class FlatResultRow : ObservableObject
     {
+        private readonly ObservableCollection<FlatResultRow> _children=new();
+        public FlatResultRow()=>Children=new(_children);
+        public ReadOnlyObservableCollection<FlatResultRow> Children {get;}
+        internal ObservableCollection<FlatResultRow> MutableChildren=>_children;
+        public string Key {get;internal set;}=string.Empty;
         private bool _isExpanded = true;
         private string _displayName = string.Empty;
 
@@ -5992,8 +5946,21 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
         public Type? PropertyClrType { get; set; }
-        public ResultBindingInfo? BindingInfo { get; set; }
+        private ResultBindingInfo? _bindingInfo;
+        public ResultBindingInfo? BindingInfo
+        {
+            get=>_bindingInfo;
+            set
+            {
+                if(!SetProperty(ref _bindingInfo,value))return;
+                OnPropertyChanged(nameof(IsBindable));OnPropertyChanged(nameof(CanBindVariable));
+                OnPropertyChanged(nameof(BindingUnavailableReason));
+            }
+        }
         public bool IsBindable => BindingInfo != null;
+        public bool CanBindVariable=>IsBindable;
+        public string? BindingDisplayName {get;internal set;}
+        public string BindingUnavailableReason=>IsBindable?string.Empty:"该项没有正式变量绑定端点";
     }
 
     /// <summary>模块结果可绑定终点的运行时寻址信息。</summary>

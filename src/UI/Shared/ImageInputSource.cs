@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.Thumbnail;
@@ -7,7 +7,7 @@ using SunEyeVision.Workflow;
 namespace SunEyeVision.UI.Shared;
 
 /// <summary>One transient edit request; selection intent is not persisted as configuration.</summary>
-public sealed record ImageSourceEditProposal(ImageSourceConfig Configuration,bool SelectStart);
+public sealed record ImageSourceEditProposal(ImageSourcePolicy Configuration,bool SelectStart);
 
 /// <summary>One source's display projection. Formal edits are accepted before any live view mutation.</summary>
 public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.ObservableObject, INotifyCollectionChanged
@@ -48,7 +48,13 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         get => _currentIndex;
         set { if (value != _currentIndex) SelectImage(value); }
     }
-    public void SelectImage(int index)=>Commit(_entries.ToArray(),index,_runMode,_autoSwitch,_runReferences,selectStart:true);
+    public bool CanSelectImage(int index)=>index>=0&&index<Count&&
+        (_runMode!=ImageRunMode.运行选择||_runReferences.Contains(Reference(_entries[index]),StringComparer.Ordinal));
+    public void SelectImage(int index)
+    {
+        if(index>=0&&!CanSelectImage(index))throw new InvalidOperationException("运行选择模式只能选择已勾选的图像。");
+        Commit(_entries.ToArray(),index,_runMode,_autoSwitch,_runReferences,selectStart:true);
+    }
     public ImageRunMode RunMode
     {
         get => _runMode;
@@ -60,10 +66,10 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         set { if (value != _autoSwitch) Commit(_entries.ToArray(),_configuredIndex,_runMode,value,_runReferences); }
     }
     private static string Reference(ImageInfo image) => image.SourceReference ?? image.FilePath;
-    private ImageSourceConfig Configuration(IReadOnlyList<ImageInfo> rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected)
+    private ImageSourcePolicy Configuration(IReadOnlyList<ImageInfo> rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected)
         => new() { NodeId=NodeId,FilePaths=rows.Select(Reference).ToList(),CurrentIndex=index,
             RunMode=(int)mode,AutoSwitchEnabled=auto,ForRunPaths=selected.ToList() };
-    public ImageSourceConfig ToConfig() => Configuration(_entries,_configuredIndex,_runMode,_autoSwitch,_runReferences);
+    public ImageSourcePolicy CapturePolicy() => Configuration(_entries,_configuredIndex,_runMode,_autoSwitch,_runReferences);
     private int RemapDisplay(IReadOnlyList<ImageInfo> rows,int fallback)
     {
         if(CurrentImage is not {} displayed)return fallback;
@@ -97,7 +103,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
     }
     private void Notify(Action action)
     { try { action(); } catch(Exception error) { LastNotificationError ??= error.Message; } }
-    private void Install(ImageInfo[] rows,ImageSourceConfig config,bool edited,int displayIndex)
+    private void Install(ImageInfo[] rows,ImageSourcePolicy config,bool edited,int displayIndex)
     {
         var nextVersion=checked(EditVersion+1);
         var structureChanged=rows.Length!=_entries.Count||rows.Where((row,index)=>!ReferenceEquals(row,_entries[index])).Any();
@@ -134,6 +140,17 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         references.RemoveAll(item=>item==reference);if(selected)references.Add(reference);
         Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
     }
+    /// <summary>Accept a complete checkbox selection as one formal edit.</summary>
+    public void SetRunSelection(IEnumerable<string> ids)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        var selected=ids.ToHashSet(StringComparer.Ordinal);
+        if(selected.Any(id=>!_indices.ContainsKey(id)))
+            throw new InvalidOperationException("运行勾选包含不属于当前源的图像条目。");
+        var references=_entries.Where(image=>selected.Contains(image.Id)).Select(Reference).Distinct(StringComparer.Ordinal).ToArray();
+        if(_runReferences.ToHashSet(StringComparer.Ordinal).SetEquals(references))return;
+        Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
+    }
     public void AddImage(ImageInfo image)=>AddImages(new[]{image});
     public void AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
     {
@@ -164,7 +181,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>())Notify(()=>((EventHandler<int>)callback)(this,index));
         return true;
     }
-    public void LoadFromConfig(ImageSourceConfig config,IResourcePathResolver? resourcePaths=null)
+    public void LoadFromPolicy(ImageSourcePolicy config,IResourcePathResolver? resourcePaths=null)
     {
         ArgumentNullException.ThrowIfNull(config);
         if(_committing)throw new InvalidOperationException("图像源投影不能在编辑接纳中重入加载。");
@@ -179,7 +196,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
             {
                 resolver??=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(
                     SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
-                address=resolver.Resolve("ImageSourceConfig.FilePaths",reference,ResourcePurpose.FileRead).Address;
+                address=resolver.Resolve("ImageSourceSettings.FileReferences",reference,ResourcePurpose.FileRead).Address;
             }
             catch(Exception ex){address=string.Empty;error=ex.Message;}
             var image=previous.TryGetValue(reference,out var candidates)&&candidates.Count>0?candidates.Dequeue():null;

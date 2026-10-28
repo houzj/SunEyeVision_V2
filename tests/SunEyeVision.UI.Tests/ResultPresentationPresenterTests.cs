@@ -160,6 +160,76 @@ public sealed class ResultPresentationPresenterTests
         Assert.False(rows.Last().IsGroup);
     });
 
+    [Theory]
+    [InlineData(ExecutionStatus.Failed,"失败")]
+    [InlineData(ExecutionStatus.Timeout,"超时")]
+    [InlineData(ExecutionStatus.Cancelled,"已取消")]
+    public void Published_non_success_outcomes_remain_distinct_without_reading_resource_values(ExecutionStatus status,string label) => Sta(() =>
+    {
+        var schema=Schema(new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),new Port("number",DataType.Number));
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),status,new[]{new Diagnostic("test","detail")}));
+        Assert.Equal(3,rows.Count);
+        Assert.All(rows,row=>Assert.Equal(label+": detail",row.DisplayValue));
+    });
+
+    [Fact]
+    public void Successful_empty_output_keeps_its_published_status_visible() => Sta(() =>
+    {
+        var rows=new ObservableCollection<FlatResultRow>();bool has=false;
+        using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
+        presenter.ShowSchema(Schema());Assert.Empty(rows);
+        using var run=Success(Schema(),new());presenter.ShowRun(run.Snapshot);
+        Assert.Equal("成功",Assert.Single(rows).DisplayValue);Assert.True(has);
+    });
+
+    [Fact]
+    public void A_distinct_publication_with_the_same_run_replaces_old_diagnostics() => Sta(() =>
+    {
+        var schema=Schema(new Port("number",DataType.Number));var identity=Identity();
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","first")}));
+        Assert.All(rows,row=>Assert.Equal("超时: first",row.DisplayValue));
+        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","second")}));
+        Assert.All(rows,row=>Assert.Equal("超时: second",row.DisplayValue));
+    });
+
+    [Fact]
+    public void Native_hierarchy_borrows_the_same_rows_and_loads_only_on_expansion() => Sta(() =>
+    {
+        var schema=Schema(new Port("items",DataType.NumberArray));
+        using var run=Success(schema,new(){["items"]=new[]{1d,2d,3d}});
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{},2);
+        presenter.ShowRun(run.Snapshot);run.Dispose();
+        var root=Assert.Single(presenter.Roots);Assert.Same(rows[0],root);
+        var sequence=Assert.Single(root.Children);Assert.Same(rows[1],sequence);
+        Assert.True(sequence.IsGroup);Assert.Empty(sequence.Children);
+        sequence.IsExpanded=true;
+        Assert.Equal(3,sequence.Children.Count);Assert.Same(rows[2],sequence.Children[0]);
+        var first=sequence.Children[0];var more=sequence.Children.Last();
+        Assert.StartsWith("加载下一页",more.DisplayName);more.IsExpanded=true;
+        Assert.Equal(new[]{"1","2","3"},sequence.Children.Select(row=>row.DisplayValue));
+        Assert.Same(first,sequence.Children[0]);Assert.NotEmpty(sequence.Key);
+        presenter.ShowSchema(Schema(new Port("other",DataType.Boolean)));
+        var current=Assert.Single(presenter.Roots);more.IsExpanded=false;more.IsExpanded=true;
+        Assert.False(presenter.ContainsRow(sequence));Assert.True(presenter.ContainsRow(current));
+        Assert.Same(current,Assert.Single(presenter.Roots));Assert.Equal("other",Assert.Single(current.Children).DisplayName);
+    });
+
+    [Fact]
+    public void Reentrant_hierarchy_retirement_cannot_republish_old_rows() => Sta(() =>
+    {
+        var rows=new ObservableCollection<FlatResultRow>();bool has=false;
+        using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
+        ((System.Collections.Specialized.INotifyCollectionChanged)presenter.Roots).CollectionChanged+=(_,args)=>
+        {if(args.NewItems?.Count>0)presenter.Clear();};
+        presenter.ShowSchema(Schema(new Port("number",DataType.Number)));
+        Assert.Empty(presenter.Roots);Assert.Empty(rows);Assert.False(has);
+    });
+
     [Fact]
     public void Immutable_scalar_formatting_uses_invariant_culture_without_unwrapping_sequences() => Sta(() =>
     {

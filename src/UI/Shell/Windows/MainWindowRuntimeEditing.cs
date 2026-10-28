@@ -55,7 +55,9 @@ public partial class MainWindowViewModel
             {
                 if(!context.IsValid||IsRunning)throw new InvalidOperationException("请在当前方案停止工作流后调试此节点。");
                 return SunEyeVision.Workflow.RuntimeDebugInvocation.Capture(flow,draft,context.DebugOwner,host.Capture().Version,
-                    id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner);
+                    id=>query.GetNodeContext(id)?.Result,context.DebugCancellation,publishedOwner:session.Document.ExecutionOwner,
+                    resourcePaths:SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document),
+                    cameraService:SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime);
             });
             SubscribeToolExecutionCompleted(window,node,query,context);
             TrackProductionEditor(_productionEditors,context,window,ClearProductionEditorHost);

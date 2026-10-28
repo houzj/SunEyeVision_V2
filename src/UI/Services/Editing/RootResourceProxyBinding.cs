@@ -1,17 +1,18 @@
-﻿using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Workflow;
 using Setting=SunEyeVision.Plugin.Contracts.ParameterSetting;
 namespace SunEyeVision.UI.Services.Editing;
-/// <summary>Reference identity adapter on a node draft. Never reads, stores or owns an image/region value.</summary>
-internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,bool ImageSource)
+/// <summary>Declared target adapter on a node draft. Runtime literals stay in strong settings; resource references never retain values.</summary>
+internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,bool ImageSource,bool Runtime=false)
 {
  internal ConfigurationFieldAccessor Field(string display)=>new(Port,new(Port.Id,display,"输入订阅",0,FieldEditorKind.Scalar),StoragePath,
   ()=>null,_=>throw new InvalidOperationException("运行资源只能订阅来源，不能写常量。"));
  internal Setting Read(WorkflowNodeBase node,DataSourceQueryService query,string rootId)
  {
+  if(Runtime)return ReadRuntime(node);
   if(ImageSource)
   {
    var value=((MeasureGuideParameters)node.Parameters).ImageSourceRef;
@@ -37,6 +38,7 @@ internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,boo
  }
  internal void Write(WorkflowNodeBase node,Setting setting,DataSourceQueryService query,string rootId)
  {
+  if(Runtime){WriteRuntime(node,setting,query,rootId);return;}
   if(setting is not ReferenceSetting && setting is not UnsetSetting)throw new InvalidOperationException("运行资源仅支持订阅或解除，不接受常量。");
   OutputVariable? output=null;OutputReference? reference=(setting as ReferenceSetting)?.Reference;
   if(reference is not null)
@@ -66,6 +68,7 @@ internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,boo
  internal Action CaptureRestore(WorkflowNodeBase node)
  {
   var setting=node.ParamSettings.GetSetting(StoragePath)?.Clone();
+  if(Runtime){var configuration=node.RuntimeConfiguration!;return ()=>{node.RuntimeConfiguration=configuration;if(setting is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(setting);};}
   var image=ImageSource?((MeasureGuideParameters)node.Parameters).ImageSource:null;
   var imageRef=ImageSource?((MeasureGuideParameters)node.Parameters).ImageSourceRef:null;
   var identity=node.Parameters.BindingSourceIdentities.GetValueOrDefault(StoragePath);
@@ -81,11 +84,44 @@ internal sealed record RootResourceProxyBinding(string StoragePath,Port Port,boo
  }
  internal void RestoreOpening(WorkflowNodeBase node,WorkflowNodeBase opening)
  {
+  if(Runtime)
+  {
+   if(IsSettings(opening))node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{[StoragePath]=Literal(opening)});
+   var prior=opening.ParamSettings.GetSetting(StoragePath)?.Clone();if(prior is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(prior);return;
+  }
   if(ImageSource){var current=(MeasureGuideParameters)node.Parameters;current.ImageSource=null;current.ImageSourceRef=((MeasureGuideParameters)opening.Parameters).ImageSourceRef;}
   var original=opening.ParamSettings.GetSetting(StoragePath)?.Clone();if(original is null)node.ParamSettings.RemoveSetting(StoragePath);else node.ParamSettings.SetSetting(original);
   if(opening.Parameters.BindingSourceIdentities.TryGetValue(StoragePath,out var identity))node.Parameters.BindingSourceIdentities[StoragePath]=identity;else node.Parameters.BindingSourceIdentities.Remove(StoragePath);
   if(opening.Parameters.BindingValidationPending.TryGetValue(StoragePath,out var pending))node.Parameters.BindingValidationPending[StoragePath]=pending;else node.Parameters.BindingValidationPending.Remove(StoragePath);
   if(opening.Parameters.RebindingRequired.TryGetValue(StoragePath,out var rebinding))node.Parameters.RebindingRequired[StoragePath]=rebinding;else node.Parameters.RebindingRequired.Remove(StoragePath);
+ }
+ internal bool IsSettings(WorkflowNodeBase node)=>node.RuntimeConfiguration!.SettingsSchema?.Inputs.Any(field=>field.Id==StoragePath)==true;
+ internal object? Literal(WorkflowNodeBase node)=>IsSettings(node)?node.RuntimeConfiguration!.ReadFieldValues().CopyValues()[StoragePath]:null;
+ private Setting ReadRuntime(WorkflowNodeBase node)
+ {
+  var stored=node.ParamSettings.GetSetting(StoragePath);
+  if(stored is null)return IsSettings(node)?new ConstantSetting(Literal(node)):new UnsetSetting();
+  if(stored.BindingType==BindingType.Binding&&stored.ReferenceExpression is {} expression)return new ReferenceSetting(BindingReferenceSerializer.Deserialize(expression));
+  if(stored.BindingType==BindingType.Constant&&!IsSettings(node))return new ConstantSetting(stored.ConstantValue);
+  throw new InvalidOperationException("Runtime代理设置不符合正式声明。");
+ }
+ private void WriteRuntime(WorkflowNodeBase node,Setting setting,DataSourceQueryService query,string rootId)
+ {
+  if(setting is ConstantSetting constant)
+  {
+   if((Port.EditModes&FieldEditModes.Constant)==0)throw new InvalidOperationException("此声明不允许常量。");
+   if(IsSettings(node)){node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldValues(new Dictionary<string,object?>{[StoragePath]=constant.Value});node.ParamSettings.RemoveSetting(StoragePath);}
+   else {var frozen=ValueRules.Freeze(Port,constant.Value);node.ParamSettings.SetSetting(new(){ParameterName=StoragePath,BindingType=BindingType.Constant,ConstantValue=frozen});}
+   return;
+  }
+  if(setting is UnsetSetting){node.ParamSettings.RemoveSetting(StoragePath);return;}
+  if(setting is not ReferenceSetting reference||(Port.EditModes&FieldEditModes.Reference)==0)throw new InvalidOperationException("此声明不允许订阅。");
+  if(reference.Reference.ScopeId is {} scope&&scope!=rootId)throw new InvalidOperationException("来源跨出当前根流程。");
+  var output=Find(query,reference.Reference.NodeId,null,reference.Reference.PortId,null);
+  // 完整TypeRef、成员选择、存储及依赖合法性由宿主ValidateBatch的正式编译链核验。
+  node.ParamSettings.SetSetting(new(){ParameterName=StoragePath,BindingType=BindingType.Binding,
+   ReferenceExpression=BindingReferenceSerializer.Serialize(reference.Reference),SourceNodeId=reference.Reference.NodeId,
+   SourceWorkflowId=reference.Reference.ScopeId??rootId,SourceFieldId=output.FieldId,SourceProperty=output.Name});
  }
  private static OutputVariable Find(DataSourceQueryService query,string nodeId,Guid? fieldId,string? portId,string? name)
   =>query.FormalOutputContractReader?.Invoke(nodeId)?.SingleOrDefault(o=>o.Kind==OutputVariableKind.Data&&(fieldId.HasValue?o.FieldId==fieldId:portId is not null?BindingClrAdapter.OutputPortId(o)==portId:o.Name==name))

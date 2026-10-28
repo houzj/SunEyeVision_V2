@@ -47,19 +47,18 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
         for (int n = 0; n < nodes.Count; n++)
         {
             var node = nodes[n]!; var path = "$.Workflows[" + w + "].Nodes[" + n + "]";
-            if (node["ImageSourceConfig"] is JsonObject config)
-            foreach (var field in new[] { "FilePaths", "ForRunPaths" })
+            if (node["ToolType"]?.GetValue<string>() == "ImageLoad")
             {
-                if (!config.ContainsKey(field)) continue;
-                if (config[field] is not JsonArray paths) throw new JsonException("Resource list must be an array.", path + ".ImageSourceConfig." + field, null, null);
-                for (int i = 0; i < paths.Count; i++) Check(paths[i], path + ".ImageSourceConfig." + field + "[" + i + "]", ResourcePurpose.FileRead);
+                var config = SourceSettings(node, path);
+                foreach (var field in new[] { "FileReferences", "SelectedReferences" })
+                {
+                    if (!config.ContainsKey(field)) continue;
+                    var fieldPath = path + ".RuntimeConfiguration.Settings." + field;
+                    if (config[field] is not JsonArray paths) throw new JsonException("Resource list must be an array.", fieldPath, null, null);
+                    for (int i = 0; i < paths.Count; i++) Check(paths[i], fieldPath + "[" + i + "]", ResourcePurpose.FileRead);
+                }
             }
             if (node["Parameters"] is not JsonObject parameters) continue;
-            if (node["ToolType"]?.GetValue<string>() == "ImageLoad" && parameters.ContainsKey("FilePath"))
-            {
-                var camera = parameters["SourceKind"]?.ToJsonString() is "1" or "\"Camera\"";
-                if (!camera) Check(parameters["FilePath"], path + ".Parameters.FilePath", ResourcePurpose.FileRead);
-            }
             if (node["ToolType"]?.GetValue<string>() == "NPointCalibration" && parameters.ContainsKey("CalibrationFilePath"))
                 Check(parameters["CalibrationFilePath"], path + ".Parameters.CalibrationFilePath", ResourcePurpose.FileWrite);
         }
@@ -75,15 +74,26 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
         if (workflow?["Nodes"] is JsonArray nodes)
         foreach (var node in nodes)
         {
-            if (node?["ImageSourceConfig"] is JsonObject config)
-            foreach (var field in new[] { "FilePaths", "ForRunPaths" })
-                if (config[field] is JsonArray paths)
-                    for (int i = 0; i < paths.Count; i++) paths[i] = Rebase(paths[i]!.GetValue<string>());
             var tool = node?["ToolType"]?.GetValue<string>();
-            var parameterField = tool == "ImageLoad" ? "FilePath" : tool == "NPointCalibration" ? "CalibrationFilePath" : null;
+            if (tool == "ImageLoad")
+            {
+                var config = SourceSettings(node!, "$.Workflows.Nodes");
+                foreach (var field in new[] { "FileReferences", "SelectedReferences" })
+                    if (config[field] is JsonArray paths)
+                        for (int i = 0; i < paths.Count; i++) paths[i] = Rebase(paths[i]!.GetValue<string>());
+            }
+            var parameterField = tool == "NPointCalibration" ? "CalibrationFilePath" : null;
             if (parameterField != null && node?["Parameters"] is JsonObject parameters && parameters[parameterField] is JsonValue value)
                 parameters[parameterField] = Rebase(value.GetValue<string>());
         }
         return root.ToJsonString();
+    }
+
+    private static JsonObject SourceSettings(JsonNode node, string path)
+    {
+        if (node["RuntimeConfiguration"] is not JsonObject runtime ||
+            runtime["ToolId"]?.GetValue<string>() != "ImageLoad" || runtime["Settings"] is not JsonObject settings)
+            throw new JsonException("Image source requires its declared Runtime settings.", path + ".RuntimeConfiguration", null, null);
+        return settings;
     }
 }

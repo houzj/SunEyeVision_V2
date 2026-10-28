@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>SunEyeVision.ImageSource.Runtime.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NSubstitute" Version="5.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
+    <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <!-- Runtime角色组件唯一部署宿主根，由EnsureComponentLoaded精确加载，不copy-local。 -->
+    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- 共享宿主解析器；本项目专用初始化器显式加载Runtime组件。 -->
+  <ItemGroup>
+    <Compile Include="..\_shared\ToolPluginTestLoader.cs" Link="_shared\ToolPluginTestLoader.cs" />
+  </ItemGroup>
+</Project>

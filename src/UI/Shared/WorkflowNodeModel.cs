@@ -152,7 +152,7 @@ namespace SunEyeVision.UI.Shared
             if (InputSource == null)
             {
                 var source = new ImageInputSource(Id);
-                if (ImageSourceConfig is {} configuration) source.LoadFromConfig(configuration);
+                if (SunEyeVision.Workflow.ImageSourcePolicy.Read(this) is {} policy) source.LoadFromPolicy(policy);
                 InputSource = source;
                 OnPropertyChanged(nameof(InputSource));
             }
@@ -216,12 +216,11 @@ namespace SunEyeVision.UI.Shared
                 // 遗漏此字段会导致方案文件中已有 ParamSettings 在重启加载时丢失。
                 ParamSettings = baseNode.ParamSettings,
                 SelectedDisplaySource = baseNode.SelectedDisplaySource,
-                SubroutineId = baseNode.SubroutineId,    // ★ SSOT
-                ImageSourceConfig = baseNode.ImageSourceConfig   // ★ 输入源持久化
+                SubroutineId = baseNode.SubroutineId    // ★ SSOT
             };
 
-            // 若反序列化了输入源配置，则据此重建运行时 InputSource（ImageInputSource）
-            if (node.ImageSourceConfig != null && node.ImageSourceConfig.FilePaths.Count > 0)
+            // The transient list is reconstructed only from the Runtime's accepted settings.
+            if (SunEyeVision.Workflow.ImageSourcePolicy.Read(node) is {FilePaths.Count: > 0})
             {
                 var input = node.EnsureInputSource();
                 VisionLogger.Instance.Log(LogLevel.Info,

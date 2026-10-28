@@ -1,4 +1,5 @@
-﻿using SunEyeVision.UI.Shared;
+﻿using System.Reflection;
+using SunEyeVision.UI.Shared;
 using Xunit;
 
 namespace SunEyeVision.UI.Tests;
@@ -26,7 +27,7 @@ public sealed class ImageSourceAcceptanceTests
         var source=new ImageInputSource("source");var image=new ImageInfo{FilePath="a"};source.AddImage(image);
         source.ConfigurationWriter=_=>{Assert.False(image.IsForRun);throw new InvalidOperationException("reject");};
         Assert.Throws<InvalidOperationException>(()=>image.IsForRun=true);
-        Assert.False(image.IsForRun);Assert.Empty(source.ToConfig().ForRunPaths);
+        Assert.False(image.IsForRun);Assert.Empty(source.CapturePolicy().ForRunPaths);
         source.ConfigurationWriter=candidate=>Assert.Equal(new[]{"a"},candidate.Configuration.ForRunPaths);
         image.IsForRun=true;Assert.True(image.IsForRun);
     }
@@ -47,7 +48,7 @@ public sealed class ImageSourceAcceptanceTests
         var calls=0;source.ConfigurationWriter=_=>calls++;
         source.RemoveImage(image);var accepted=calls;
         image.IsForRun=true;
-        Assert.Equal(accepted,calls);Assert.Empty(source.Images);Assert.Empty(source.ToConfig().ForRunPaths);
+        Assert.Equal(accepted,calls);Assert.Empty(source.Images);Assert.Empty(source.CapturePolicy().ForRunPaths);
     }
     [Fact]
     public void Runtime_cursor_never_becomes_persisted_selection_through_a_binding_echo()
@@ -57,7 +58,7 @@ public sealed class ImageSourceAcceptanceTests
         var calls=0;source.ConfigurationWriter=_=>calls++;
         Assert.True(source.TryPresentRuntimeCursor(version,b.Id,"b","b"));
         source.CurrentIndex=1; // Two-way display echo, not a new user choice.
-        Assert.Equal(0,calls);Assert.Equal(0,source.ToConfig().CurrentIndex);Assert.Equal(version,source.EditVersion);
+        Assert.Equal(0,calls);Assert.Equal(0,source.CapturePolicy().CurrentIndex);Assert.Equal(version,source.EditVersion);
         source.CurrentIndex=0;Assert.Equal(1,calls);
     }
     [Fact]
@@ -76,7 +77,7 @@ public sealed class ImageSourceAcceptanceTests
         source.AutoSwitchEnabled=false;
         Assert.Equal(4,accepted.Count);Assert.All(accepted,index=>Assert.Equal(0,index));
         Assert.Equal(1,source.CurrentIndex);
-        Assert.Equal(0,source.ToConfig().CurrentIndex);Assert.Equal(0,resets);
+        Assert.Equal(0,source.CapturePolicy().CurrentIndex);Assert.Equal(0,resets);
         source.AddImage(new ImageInfo{FilePath="c"});Assert.Equal(1,resets);
     }
 
@@ -86,6 +87,23 @@ public sealed class ImageSourceAcceptanceTests
         var source=new ImageInputSource("source");
         source.ConfigurationWriter=candidate=>candidate.Configuration.FilePaths.Clear();
         source.AddImage(new ImageInfo{FilePath="a"});
-        Assert.Equal(new[]{"a"},source.ToConfig().FilePaths);
+        Assert.Equal(new[]{"a"},source.CapturePolicy().FilePaths);
     }
+}
+
+// Real deployed Runtime, shared by this source migration matrix; no SDK source-probe substitute.
+internal static class ImageSourceTestRuntime
+{
+    internal static SunEyeVision.Workflow.RuntimeToolConfiguration Configuration()
+    {
+        Assert.True(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.LoadPlugins(
+            System.IO.Path.Combine(typeof(ImageSourceAcceptanceTests).Assembly.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!,"plugins")));
+        return SunEyeVision.Workflow.RuntimeToolConfiguration.Create("ImageLoad");
+    }
+    internal static SunEyeVision.Workflow.WorkflowNodeBase Node(string id="source")
+        =>new(id,id,id,"ImageLoad"){RuntimeConfiguration=Configuration()};
+    internal static SunEyeVision.Workflow.ImageSourcePolicy Read(SunEyeVision.Workflow.WorkflowNodeBase node)
+        =>SunEyeVision.Workflow.ImageSourcePolicy.Read(node)!;
+    internal static void Edit(SunEyeVision.Workflow.WorkflowNodeBase node,Action<SunEyeVision.Workflow.ImageSourcePolicy> change)
+    {var policy=Read(node);change(policy);policy.ApplyTo(node);}
 }

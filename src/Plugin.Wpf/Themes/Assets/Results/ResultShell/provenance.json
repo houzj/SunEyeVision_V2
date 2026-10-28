@@ -1,0 +1,201 @@
+{
+  "sources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\styles\\moduleviewstyle.xaml",
+      "sha256": "2e195d69c45de43c2dca7528705959f4127207722abde533b49f7d3e70305d9b"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\normalbuttonstyle.xaml",
+      "sha256": "0ca27d6dd39d1ac0943b526664af4a07306a6a344833fa15f50e4c3041b33ea8"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+      "sha256": "fb8176835af3518f9b4a50133feb862240ab73ea1820ccb032b2810e41e67f9e"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\bottombuttonstyle.xaml",
+      "sha256": "0eb6fbf313592f15b61cf79a612cadbb4802ff73ea15a2493fcd5280e5b317fc"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\scrollbarstyle\\recscrollbarstyle.xaml",
+      "sha256": "0b6e55a1e66a9fda6e5025b95686885b1d998513ffdede451d3520bab958d53b"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\tabcontrolstyle\\tabcontrolstyle.xaml",
+      "sha256": "643e7e8bf415e696529e3ab7540f1f5e288a6089f3a1824275dd8ed67d6f8d72"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\checkboxstyle\\checkboxstyle.xaml",
+      "sha256": "26174951a0b4ec4a52f2c1b89353ebe0f58375cc1b7dcec579bc765654e9a0b1"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\textboxstyle\\textboxstyle.xaml",
+      "sha256": "36ce1a1deb41dcfef18985b2b8a71d54cc09964a657e116c23ec1b0d10d939f7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\themes\\generic.xaml",
+      "sha256": "1cc02132337c913a055b979373dc783589aa2b167c2c222a74a0ae824889a79d"
+    }
+  ],
+  "assets": [
+    {
+      "target": "overlay-unselected.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_叠加图像_未选择.png",
+      "sha256": "cff0ef46976d63b0af03c720aaf02b6c4b85c338f868fa6d3adac713be4cc9a2"
+    },
+    {
+      "target": "overlay-selected.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_叠加图像_已选择.png",
+      "sha256": "87fea12ce06ee0c6f53c0b3cca1d8ac8f3048ce66c4b56206f7c64cbe572329f"
+    },
+    {
+      "target": "overlay-background.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_叠加图像_背景图.png",
+      "sha256": "356eb052239ef17fee5e24d5c5ed00169e678ba17d8fd823a79e9d67710aed05"
+    },
+    {
+      "target": "check-off.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check2-box_off.png",
+      "sha256": "c0d428ae5edc804f9146f0350b7bbc9b651c3d587f56bd8378d8eac661efacd4"
+    },
+    {
+      "target": "check-half.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check-box_half.png",
+      "sha256": "3b66fd8b9086f6dba9f350a8d09bdebd1eb8f98911bc2bfacac9101aec9093d9"
+    },
+    {
+      "target": "check-on.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\check2-box_on.png",
+      "sha256": "55ffb3d6668938a73075c3c002b225481e43cbda41e6304cf8da473bdf651e1c"
+    },
+    {
+      "target": "selector-arrow-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\frontend\\inputbox_combo_ic_triangle_normal.png",
+      "sha256": "9067f234be6b3be5b179d31f6b3122fe4f36e129a385417b97b9698d9ec29d48"
+    },
+    {
+      "target": "selector-arrow-focus.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\frontend\\inputbox_combo_ic_triangle_focus.png",
+      "sha256": "d2cbc67db45780ad07d3a3464547d3ca80ce77d09b4ee67a1e1d22b38c1eeabe"
+    },
+    {
+      "target": "dual-image-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_双画幅_normal.png",
+      "sha256": "6a5597c3eb6554a07657058c3c2e73c93090b403b1866875bd9076c31fb91eb3"
+    },
+    {
+      "target": "dual-image-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_双画幅_click.png",
+      "sha256": "4d80de30558aee206aa629e23ea76361c74b63d383421bcc9d3b91581f6ff751"
+    },
+    {
+      "target": "single-image-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_单画幅_normal.png",
+      "sha256": "eb1a7d3b8cad328d4ad7cb6ed60c27e5e80300973273abf1fb44e9d7b96172f9"
+    },
+    {
+      "target": "single-image-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_image_单画幅_click.png",
+      "sha256": "3f0e58506eab50b3204d6e52be7351204bb871a67f855189d21bad592a90261e"
+    },
+    {
+      "target": "cross-lines-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_辅助线_normal.png",
+      "sha256": "281330e7c03d64616caf50679aaca1be7c474fc866a94aa6b845451cf151182f"
+    },
+    {
+      "target": "cross-lines-disabled.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_辅助线_disable.png",
+      "sha256": "c299d9fe0bcc06fd0174ccc4be33b2d87976a530361092e78fdc45635517d848"
+    },
+    {
+      "target": "cross-lines-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_辅助线_click.png",
+      "sha256": "1ffa865e761baeed48a8d88953b80608609b3c979bff6ac703e1c72a34394bf0"
+    },
+    {
+      "target": "original-scale-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\11.png",
+      "sha256": "58c1884884e85d007d466bdeb10ac9ee9544ce8ba608d29134e03cfb4fa36132"
+    },
+    {
+      "target": "original-scale-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_1比1_hover.png",
+      "sha256": "f3e8ae1acc325d977f1311f8e1c9dd2f4cf6918c3f89743f828267a5a1579ea3"
+    },
+    {
+      "target": "original-scale-pressed.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_1比1_click.png",
+      "sha256": "f3e8ae1acc325d977f1311f8e1c9dd2f4cf6918c3f89743f828267a5a1579ea3"
+    },
+    {
+      "target": "fullscreen-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\fullscreen.png",
+      "sha256": "dbd0fa83f88a82c7d000871cd4095997d80350da2d6dbe8729cca6c279226641"
+    },
+    {
+      "target": "fullscreen-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_full-screen_hover.png",
+      "sha256": "0194d0aefa3628e5c4f37deef8bf8349be26169fd3daa65ec1ab8e6104340f1c"
+    },
+    {
+      "target": "fullscreen-pressed.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\tool_right_ic_full-screen_click.png",
+      "sha256": "0194d0aefa3628e5c4f37deef8bf8349be26169fd3daa65ec1ab8e6104340f1c"
+    },
+    {
+      "target": "previous-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_normal.png",
+      "sha256": "f933ece36c968eb71dd3843a65d494ebe5051e20fd1c2835988cddcb02d09a26"
+    },
+    {
+      "target": "previous-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_hover.png",
+      "sha256": "eaf35a693eb1f8b697c729d1e4c128ff44de7b02c255f682ea2be65929b3bbab"
+    },
+    {
+      "target": "previous-pressed.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_press.png",
+      "sha256": "29cffa97cb2b617e22dfc1a543d4ed22110e471afc98925b89f3f22fcce5e2db"
+    },
+    {
+      "target": "previous-disabled.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\leftarrow_disabled.png",
+      "sha256": "b6a907d6b2cf8d0a25b781205a6899b572907e2e765812766ccdb743a4292abe"
+    },
+    {
+      "target": "zoom-enlarge-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomout.png",
+      "sha256": "9e5438c3ce75db19802e3805f4d3ce232823902c19f9f55536097dc4fc8ab4c3"
+    },
+    {
+      "target": "zoom-enlarge-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomout_1.png",
+      "sha256": "f6261ca050e2aedc2441ef43c59eba5de0f555238996d46d2218600046426cde"
+    },
+    {
+      "target": "zoom-shrink-normal.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomin.png",
+      "sha256": "1844b7306ecbf882894a5f561bd4e40853d2335c669bed5563ce5fac6bdb6b2c"
+    },
+    {
+      "target": "zoom-shrink-hover.png",
+      "original": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\resources\\zoomin_1.png",
+      "sha256": "48639ac34b64b0f7a75718b68b2f8ee6227e7951f0e3588f912ed419dde0be4a"
+    }
+  ],
+  "paletteSources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\colorstyle.xaml",
+      "sha256": "6b44469cadefd8e0d1c0cc774f937c0aeb49cabdb1d967de339739347014e8af"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\colorstyle1.xaml",
+      "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\colorstyle2.xaml",
+      "sha256": "6999914da1ba8a8527c9dc78e3c3086bc93136633accf20f15420bf3f1cb0f39"
+    }
+  ]
+}

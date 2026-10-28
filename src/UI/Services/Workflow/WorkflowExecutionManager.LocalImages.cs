@@ -34,6 +34,7 @@ public partial class WorkflowExecutionManager
     private static string CursorDefinition(LocalImageSourcePlan plan) => System.Text.Json.JsonSerializer.Serialize(new { plan.Entries, plan.SelectedEntryId });
     private sealed record PreparedLocalImages(IReadOnlyList<LocalImageSourcePlan> Plans,
         Dictionary<string, IReadOnlyDictionary<string, object?>> Overrides,
+        IReadOnlyDictionary<string,SunEyeVision.Workflow.ImageSourcePolicy> Policies,
         Dictionary<string, LocalSourcePresentation> Presentations, string DefinitionSignature,
         SunEyeVision.Workflow.Workflow RootOwner,IReadOnlyDictionary<string,long> ResetVersions);
 
@@ -44,6 +45,7 @@ public partial class WorkflowExecutionManager
         var plans = new List<LocalImageSourcePlan>();
         var presentations = new Dictionary<string, LocalSourcePresentation>();
         var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+        var policies = new Dictionary<string,SunEyeVision.Workflow.ImageSourcePolicy>(StringComparer.Ordinal);
         var visited = new HashSet<string>();
         void Capture(string id)
         {
@@ -54,13 +56,13 @@ public partial class WorkflowExecutionManager
                 if (!node.IsEnabled) continue;
                 if (!string.IsNullOrEmpty(node.SubroutineId)) Capture(node.SubroutineId);
                 if (!ImageSourceResolver.IsImageSource(node.ToolType)) continue;
-                var config = node.ImageSourceConfig;
-                if (config?.SourceKind == ImageSourceKind.Camera)
+                var config = SunEyeVision.Workflow.ImageSourcePolicy.Read(node)
+                    ?? throw new InvalidOperationException("图像源缺少正式Runtime设置。");
+                policies.Add(node.Id,config);
+                if (config.SourceKind == ImageSourceKind.Camera)
                 {
                     overrides[node.Id] = new Dictionary<string, object?> {
-                        ["SourceKind"] = ImageSourceKind.Camera, ["CameraDeviceId"] = config.CameraDeviceId,
-                        ["CameraTimeoutMs"] = config.CameraTimeoutMs, ["OutputFormat"] = config.OutputFormat,
-                        ["SequenceNumber"] = config.SNInitialValue, ["FilePath"] = string.Empty };
+                        ["input.sequence"] = config.SNInitialValue };
                     continue;
                 }
                 var source = formal?.Nodes.FirstOrDefault(n => n.Id == node.Id)?.InputSource as ImageInputSource;
@@ -68,9 +70,8 @@ public partial class WorkflowExecutionManager
                 plans.Add(plan);
                 if (source is not null) presentations.Add(node.Id, new(source, source.EditVersion));
                 overrides[node.Id] = new Dictionary<string, object?> {
-                    ["SourceKind"] = ImageSourceKind.Local, ["OutputFormat"] = config?.OutputFormat ?? ImageOutputFormat.Original,
-                    ["SequenceNumber"] = config?.SNInitialValue ?? 1L,
-                    ["FilePath"] = plan.Entries.FirstOrDefault(entry => entry.EntryId == plan.SelectedEntryId)?.Address ?? string.Empty };
+                    ["input.sequence"] = config.SNInitialValue,
+                    ["input.local-address"] = plan.Entries.FirstOrDefault(entry => entry.EntryId == plan.SelectedEntryId)?.Address ?? string.Empty };
 
             }
         }
@@ -87,11 +88,11 @@ public partial class WorkflowExecutionManager
         var signature = System.Text.Json.JsonSerializer.Serialize(new {
             Plans = plans.Select(p => new { p.SourceNodeId, p.Entries, p.SelectedEntryId, p.AutoAdvance, p.StopAtLast }),
             Resets=resets,
-            Settings = overrides.Select(p => new { p.Key, Values = p.Value.Where(v => v.Key != "FilePath").ToArray() }) });
-        return new(plans, overrides, presentations, signature, owner,resets);
+            Settings = policies.OrderBy(pair=>pair.Key,StringComparer.Ordinal).Select(pair=>new {pair.Key,Policy=pair.Value}) });
+        return new(plans, overrides, new System.Collections.ObjectModel.ReadOnlyDictionary<string,SunEyeVision.Workflow.ImageSourcePolicy>(policies),presentations, signature, owner,resets);
     }
 
-    internal static LocalImageSourcePlan CaptureLocalImagePlan(string nodeId, SunEyeVision.Workflow.ImageSourceConfig? config,
+    internal static LocalImageSourcePlan CaptureLocalImagePlan(string nodeId, SunEyeVision.Workflow.ImageSourcePolicy? config,
         SunEyeVision.Workflow.Persistence.SolutionResourceResolver resourcePaths)
     {
         config ??= new() { NodeId = nodeId };
@@ -103,7 +104,7 @@ public partial class WorkflowExecutionManager
         // Stable within an unchanged frozen list, including repeated references. A view's
         // generated item IDs and runtime cursor never define a run's input or generation.
         var all = config.FilePaths.Select((reference, index) => new LocalImageSequenceEntry(
-            $"{index}:{reference}", reference, resourcePaths.ResolveAddress("ImageSourceConfig.FilePaths", reference), index)).ToArray();
+            $"{index}:{reference}", reference, resourcePaths.ResolveAddress("ImageSourceSettings.FileReferences", reference), index)).ToArray();
         var entries = all.Where(entry => config.RunMode == 0 || selected.Contains(entry.ResourceReference)).ToArray();
         return new(nodeId, Array.AsReadOnly(entries), config.CurrentIndex < 0 ? null : all[config.CurrentIndex].EntryId,
             config.AutoSwitchEnabled, config.StopAtLastImage);
@@ -142,7 +143,7 @@ public partial class WorkflowExecutionManager
             foreach (var input in Consumed)
             {
                 var values = new Dictionary<string, object?>(result[input.SourceNodeId]);
-                values["FilePath"] = input.Entry?.Address ?? string.Empty;
+                values["input.local-address"] = input.Entry?.Address ?? string.Empty;
                 result[input.SourceNodeId] = values;
             }
             return result;

@@ -3,20 +3,16 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Converters;
-using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;
 using SunEyeVision.Workflow;
 using ShapeType = SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType;
@@ -39,27 +35,18 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly Func<WorkflowCore.WorkflowContext?> _getContext;
         private readonly INodeResultSink _viewModel;
 
-        // 节点第一个图像输出属性名解析（缓存回填时与显示源 key 对齐；null = 不写缓存图像）
-        private readonly Func<string, string?>? _getFirstImagePropertyName;
-
         // 结果渲染层引用
         private Plugin.SDK.UI.Controls.ResultRenderLayer? _resultRenderLayer;
-
-        // 图像转换器池
-        private readonly ImageConverterPool _imageConverterPool;
 
         // 位置修正矩阵诊断收集（字典 → 单行摘要日志，减少假阳性日志干扰）
         private readonly ConcurrentDictionary<string, string> _correctionDiagnostics = new();
 
         public NodeResultManager(
             Func<WorkflowCore.WorkflowContext?> getContext,
-            INodeResultSink viewModel,
-            Func<string, string?>? getFirstImagePropertyName = null)
+            INodeResultSink viewModel)
         {
             _getContext = getContext ?? throw new ArgumentNullException(nameof(getContext));
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            _getFirstImagePropertyName = getFirstImagePropertyName;
-            _imageConverterPool = new ImageConverterPool(maxCacheSize: 10);
         }
 
         /// <summary>
@@ -200,58 +187,6 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 从缓存更新节点图像
-        /// </summary>
-        public void UpdateNodeImageFromCache(WorkflowNodeBase node, CachedExecutionResult cachedResult)
-        {
-            if (node == null || cachedResult?.ProcessedImage == null)
-                return;
-
-            try
-            {
-                var executionResult = new NodeExecutionResult
-                {
-                    NodeId = node.Id,
-                    Success = true,
-                    StartTime = DateTime.Now,
-                    EndTime = DateTime.Now
-                };
-
-                if (cachedResult.ProcessedImage != null)
-                {
-                    // ★ key 必须与元数据中的图像属性名一致，否则显示取图按 PropertyName 取不到该图
-                    var imagePropertyName = _getFirstImagePropertyName?.Invoke(node.Id);
-                    if (string.IsNullOrEmpty(imagePropertyName))
-                    {
-                        Plugin.SDK.Logging.VisionLogger.Instance?.Log(
-                            Plugin.SDK.Logging.LogLevel.Warning,
-                            $"缓存图像回填跳过：节点 {node.Name}({node.Id}) 无可解析的图像输出属性名",
-                            "NodeResultManager");
-                        return;
-                    }
-
-                    var bmp = cachedResult.ProcessedImage;
-                    var stride = bmp.PixelWidth * (bmp.Format.BitsPerPixel / 8);
-                    var pixelData = new byte[stride * bmp.PixelHeight];
-                    bmp.CopyPixels(pixelData, stride, 0);
-                    var image = HalImage.FromBitmapSource(bmp);
-                    var genericResults = new GenericToolResults
-                    {
-                        Status = ExecutionStatus.Success
-                    };
-                    genericResults.AddResultItem(imagePropertyName, image);
-                    executionResult.Result = genericResults;
-                }
-
-                _getContext()?.SetNodeResult(node.Id, executionResult);
-            }
-            catch
-            {
-                // 静默处理缓存更新错误
-            }
-        }
-
-        /// <summary>
         /// 获取节点的输出图像
         /// </summary>
         public IVisionImage? GetNodeOutputImage(WorkflowNodeBase node)
@@ -265,24 +200,6 @@ namespace SunEyeVision.UI.Services.Workflow
 
             var images = executionResult.Result.GetDisplayImages();
             return images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
-        }
-
-        /// <summary>
-        /// 快速转换Mat到BitmapSource
-        /// </summary>
-        public BitmapSource? ConvertMatToBitmapSource(Mat? mat)
-        {
-            if (mat == null || mat.Empty())
-                return null;
-
-            try
-            {
-                return _imageConverterPool.ConvertToBitmapSource(mat);
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         /// <summary>

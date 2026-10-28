@@ -80,12 +80,15 @@ internal static class S2DocumentEditingCases
         Case("工具箱实际Drop默认创建Runtime，节点与文档共用定义，未创建SDK Blob参数",()=>
         {
             Require(blob.RuntimeConfiguration?.SettingsType==typeof(BlobSettings)&&downstream.RuntimeConfiguration?.SettingsType==typeof(BlobSettings),"默认UI工厂仍走SDK");
+            Require(input.RuntimeConfiguration?.ToolId=="ImageLoad"&&ImageSourcePolicy.Read(input) is not null,"图像源默认Drop没有创建正式Runtime配置");
             Require(ReferenceEquals(flow.Nodes,tab.WorkflowNodes)&&((BlobSettings)blob.RuntimeConfiguration.CaptureSettings()).Threshold==BlobParameterDefinition.Instance.Default<int>("Threshold"),"节点定义或XML默认值错误");
         });
         var pixels=new byte[64*64];for(var y=5;y<9;y++)for(var x=5;x<9;x++)pixels[y*64+x]=200;for(var y=30;y<35;y++)for(var x=30;x<35;x++)pixels[y*64+x]=200;
         var file=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(64,64,96,96,PixelFormats.Gray8,null,pixels,64)));
         using(var output=File.Create(file))png.Save(output);Select(input);
-        (vm.ActiveInputSource??throw new Exception("未建立实际输入源面板")).AddImage(new SunEyeVision.UI.Shell.Controls.Panels.ImageInfo{Name="Runtime默认链输入",FilePath=file,SourceReference=file,IsForRun=true});
+        (vm.ActiveInputSource??throw new Exception("未建立实际输入源面板")).AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{Name="Runtime默认链输入",FilePath=file,SourceReference=file,IsForRun=true}},selectFirstAdded:true);
+        var sourcePolicy=ImageSourcePolicy.Read(input)??throw new Exception("源条没有接入正式Runtime");
+        Require(sourcePolicy.FilePaths.SequenceEqual(new[]{file})&&sourcePolicy.CurrentIndex==0,"源条导入未正式接纳到Runtime稳定字段");
         Case("实际连线按声明图像端口建立语义引用并记录自动来源所有权",()=>
         {
             vm.AddConnectionToWorkflow(new WorkflowConnection("input-blob",input.Id,blob.Id));vm.AddConnectionToWorkflow(new WorkflowConnection("blob-next",blob.Id,downstream.Id));

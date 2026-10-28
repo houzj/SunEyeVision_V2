@@ -3,7 +3,7 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.UI.Services.Monitoring;
 
-public enum ResultPresentationState { NotRun, Success, Failed }
+public enum ResultPresentationState { NotRun, Running, Success, PartialSuccess, Failed, Timeout, Cancelled }
 public enum ResultPresentationValueState { Unavailable, Missing, Null, Available, ResourcePending }
 
 /// <summary>A declaration or one explicitly identified run; it never reads a latest-result cache.</summary>
@@ -14,7 +14,8 @@ public sealed class ResultPresentationModel
         ArgumentNullException.ThrowIfNull(schema);
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
         if (!Enum.IsDefined(state)) throw new ArgumentOutOfRangeException(nameof(state));
-        if (state == ResultPresentationState.Success) ArgumentNullException.ThrowIfNull(values);
+        var hasValues=state is ResultPresentationState.Success or ResultPresentationState.PartialSuccess;
+        if (hasValues) ArgumentNullException.ThrowIfNull(values);
         Schema = schema;
         Identity = identity;
         State = state;
@@ -24,7 +25,7 @@ public sealed class ResultPresentationModel
         {
             var port = schema.Outputs[index];
             // Do not retain InputValues or readers for aggregates that may contain borrowed resources.
-            var reader = state == ResultPresentationState.Success && !ContainsResource(port.Type)
+            var reader = hasValues && !ContainsResource(port.Type)
                 ? values!.Read(port.Id) : null;
             outputs[index] = new ResultPresentationNode(PortKey(port.Id), port.Type, port, null, pageSize, reader);
         }

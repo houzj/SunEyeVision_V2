@@ -72,7 +72,10 @@ internal static class S2DocumentEditingCases
             var imageFile=Path.Combine(folder,"input.png");var png=new PngBitmapEncoder();
             png.Frames.Add(BitmapFrame.Create(BitmapSource.Create(8,8,96,96,PixelFormats.Gray8,null,Enumerable.Repeat((byte)200,64).ToArray(),8)));
             using(var output=File.Create(imageFile))png.Save(output);
-            source.Parameters.GetType().GetProperty("FilePath")!.SetValue(source.Parameters,imageFile);vm.AddNodeToWorkflow(source);
+            Require(source.RuntimeConfiguration?.ToolId=="ImageLoad","图像源UI工厂未创建实际Runtime配置");
+            var sourcePolicy=ImageSourcePolicy.Read(source)??throw new Exception("图像源没有正式字段投影");
+            sourcePolicy.FilePaths=new(){imageFile};sourcePolicy.CurrentIndex=0;sourcePolicy.ForRunPaths=new(){imageFile};sourcePolicy.SNInitialValue=1;sourcePolicy.ApplyTo(source);
+            vm.AddNodeToWorkflow(source);
 
         var first=Open();
         Case("默认UI工厂创建Runtime节点，真实MainWindow打开中立窗口与58个XML字段",()=>
@@ -111,7 +114,9 @@ internal static class S2DocumentEditingCases
         Case("VM图像输入源下拉从正式声明选择，未确认引用只写私有节点",()=>
         {
             source.IsSelected=true;vm.SelectedNode=source;
-            (vm.ActiveInputSource??throw new Exception("正式输入源面板未建立")).AddImage(new SunEyeVision.UI.Shell.Controls.Panels.ImageInfo{Name="Runtime调试输入",FilePath=imageFile,SourceReference=imageFile,IsForRun=true});
+            var sourcePanel=vm.ActiveInputSource??throw new Exception("正式输入源面板未建立");
+            Require(sourcePanel.CapturePolicy().FilePaths.SequenceEqual(new[]{imageFile})&&sourcePanel.CurrentIndex==0,
+                "真实图像源面板没有恢复Runtime正式列表和起点");
             source.IsSelected=false;node.IsSelected=true;vm.SelectedNode=node;Pump();
             // The preceding rebind recreates the real view with the user's saved page index.
             // Exercise the source on its visible page; hidden widgets must not accept UI events.

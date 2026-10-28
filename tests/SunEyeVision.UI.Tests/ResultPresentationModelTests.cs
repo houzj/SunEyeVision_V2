@@ -28,6 +28,16 @@ public sealed class ResultPresentationModelTests
     }
 
     [Theory]
+    [InlineData(ResultPresentationState.Success)]
+    [InlineData(ResultPresentationState.PartialSuccess)]
+    public void Completed_value_states_preserve_their_published_scalar(ResultPresentationState state)
+    {
+        var schema=Schema(new Port("number",DataType.Integer));
+        var model=ResultPresentationModel.ForRun(schema,Run(),state,Values(schema,("number",42L)));
+        Assert.Equal(state,model.State);Assert.Equal(42L,Assert.Single(model.Outputs).ScalarValue);
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(37)]

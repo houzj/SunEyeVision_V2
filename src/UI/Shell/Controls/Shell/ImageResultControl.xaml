@@ -1,10 +1,12 @@
-﻿<UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl"
+<UserControl x:Class="SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:shell="clr-namespace:SunEyeVision.UI.Shell.Controls.Shell"
+             xmlns:results="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:panels="clr-namespace:SunEyeVision.UI.Shell.Controls.Panels"
+             xmlns:sources="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
              xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
@@ -16,46 +18,6 @@
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <convertersVisibility:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
 
-        <!-- DataGrid 行样式 -->
-        <Style x:Key="DarkDataGridRow" TargetType="DataGridRow">
-            <Setter Property="MinHeight" Value="24"/>
-            <Setter Property="Height" Value="Auto"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- DataGrid 单元格样式 -->
-        <Style x:Key="DarkDataGridCell" TargetType="DataGridCell">
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- DataGrid 表头样式 -->
-        <Style x:Key="DarkDataGridHeader" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
     </UserControl.Resources>
 
     <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
@@ -116,95 +78,9 @@
                 <!-- 第二个TabItem: 模块结果 -->
                 <TabItem Header="模块结果" Padding="12,6">
                     <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
-                        <DataGrid x:Name="ModuleResultDataGrid"
-                                  ItemsSource="{Binding FlatResultRows}"
-                                  AutoGenerateColumns="False"
-                                  GridLinesVisibility="All"
-                                  VerticalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                                  BorderThickness="1"
-                                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                                  RowHeaderWidth="0"
-                                  IsReadOnly="True"
-                                  SelectionMode="Single"
-                                  SelectionUnit="FullRow"
-                                  CanUserAddRows="False"
-                                  CanUserDeleteRows="False"
-                                  CanUserResizeRows="False"
-                                  CanUserReorderColumns="False"
-                                  CanUserSortColumns="False"
-                                  Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
-                                  RowBackground="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
-                                  AlternatingRowBackground="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBackgroundBrush}}"
-                                  HeadersVisibility="Column"
-                                  RowStyle="{StaticResource DarkDataGridRow}"
-                                  CellStyle="{StaticResource DarkDataGridCell}"
-                                  ColumnHeaderStyle="{StaticResource DarkDataGridHeader}"
-                                  Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}">
-
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn Width="Auto" MinWidth="140" Header="结果名称">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal"
-                                                        Margin="{Binding Indent}"
-                                                        Cursor="Hand"
-                                                        MouseLeftButtonDown="ResultExpandIcon_Click">
-                                                <TextBlock Text="{Binding ExpandIcon}"
-                                                           FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <TextBlock Text="{Binding DisplayName}"
-                                                           FontSize="12"
-                                                           FontWeight="{Binding FontWeight}"
-                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
-                                                           VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn Width="*" MinWidth="100" MaxWidth="300"
-                                                    Header="当前值"
-                                                    Binding="{Binding DisplayValue}">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="FontSize" Value="11"/>
-                                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="Padding" Value="8,4"/>
-                                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                            <Setter Property="ToolTip">
-                                                <Setter.Value>
-                                                    <TextBlock Text="{Binding DisplayValue}"
-                                                               TextWrapping="Wrap"
-                                                               MaxWidth="350"
-                                                               FontSize="11"
-                                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTemplateColumn Header="变量管理" Width="78">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="🔗"
-                                                    FontSize="14"
-                                                    Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Padding="4,0"
-                                                    Cursor="Hand"
-                                                    ToolTip="绑定到全局变量"
-                                                    IsEnabled="{Binding EditingAllowed,RelativeSource={RelativeSource AncestorType=shell:ImageResultControl}}"
-                                                    Click="BindResultToGlobalVariable_Click"
-                                                    Visibility="{Binding IsBindable, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <results:PropertyListView x:Name="ModuleResultTreeView"
+                            SelectedItemChanged="OnResultTreeSelectionChanged"
+                            Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                         <!-- 空状态 -->
                         <Grid Visibility="{Binding HasModuleResults, Converter={StaticResource InverseBoolToVisibilityConverter}}">
@@ -230,12 +106,7 @@
                 <TextBlock DockPanel.Dock="Top" Text="{Binding ImagePreviewSourceMessage}"
                            Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                            TextTrimming="CharacterEllipsis"/>
-                <panels:ImagePreviewControl x:Name="ImagePreviewContent"
-                                         ActiveInputSource="{Binding ActiveInputSource}"
-                                         AutoSwitchEnabled="{Binding ActiveInputSource.AutoSwitchEnabled, Mode=TwoWay}"
-                                         CurrentImageIndex="{Binding ActiveInputSource.CurrentIndex, Mode=OneWay}"
-                                         ImageCollection="{Binding ActiveInputSource.Images}"
-                                         ImageRunMode="{Binding ActiveInputSource.RunMode, Mode=TwoWay}"/>
+                <sources:ImageSourceStrip x:Name="ImagePreviewContent"/>
             </DockPanel>
         </Border>
     </Grid>

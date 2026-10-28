@@ -21,7 +21,8 @@ public sealed class WorkflowRunRequest
         IReadOnlyDictionary<string, CameraFrame>? cameraFrames = null,
         IDictionary<string, IReadOnlyDictionary<string, object?>>? nodeBindingOverrides = null,
         SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? communicationInputs = null,
-        SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? communicationOutputs = null)
+        SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? communicationOutputs = null,
+        IReadOnlyDictionary<string,ImageSourceRunInput>? sourceInputs = null)
     {
         if (string.IsNullOrWhiteSpace(workflowId))
             throw new ArgumentException("工作流 ID 不能为空。", nameof(workflowId));
@@ -41,6 +42,13 @@ public sealed class WorkflowRunRequest
         NodeBindingOverrides = (nodeBindingOverrides ?? new Dictionary<string, IReadOnlyDictionary<string, object?>>())
             .ToDictionary(p => p.Key, p => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(p.Value));
         CameraFrames = new Dictionary<string, CameraFrame>(cameraFrames ?? new Dictionary<string, CameraFrame>());
+        var sources=new Dictionary<string,ImageSourceRunInput>(StringComparer.Ordinal);
+        foreach(var pair in sourceInputs??new Dictionary<string,ImageSourceRunInput>())
+        {
+            if(string.IsNullOrWhiteSpace(pair.Key)||pair.Value is null)throw new ArgumentException("图像源运行输入缺少节点身份或值。",nameof(sourceInputs));
+            sources.Add(pair.Key,pair.Value);
+        }
+        SourceInputs=new System.Collections.ObjectModel.ReadOnlyDictionary<string,ImageSourceRunInput>(sources);
     }
 
     public string WorkflowId { get; }
@@ -50,6 +58,8 @@ public sealed class WorkflowRunRequest
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationReceiveService? CommunicationInputs { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.ICommunicationSendService? CommunicationOutputs { get; }
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> NodeBindingOverrides { get; }
+    /// <summary>Immutable source selections, separate from persistent settings and parameter bindings.</summary>
+    public IReadOnlyDictionary<string,ImageSourceRunInput> SourceInputs { get; }
     public IVisionImage? InputImage { get; }
     public IReadOnlyDictionary<string, object?> GlobalVariables { get; }
     public IReadOnlyDictionary<string, object> RuntimeParameters { get; }

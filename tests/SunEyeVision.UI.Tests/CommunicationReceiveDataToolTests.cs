@@ -318,43 +318,36 @@ public class CommunicationReceiveDataToolTests
         Assert.DoesNotContain("MaximumAge", json); Assert.DoesNotContain("CommunicationInputs", json);
     }
     [Fact]
-    public void Editor_reuses_host_selector_groups_devices_filters_targets_and_renders_themes()
+    public void Editor_reuses_host_selector_groups_devices_filters_targets_and_renders_themes() =>
+        ImageThresholdProductionEditorTests.Sta(() =>
     {
-        Exception? failure = null; var thread = new Thread(() =>
+        var service = Store(); service.Configure(new[] { new CommunicationReceiveSource("raw", "", "TCP", "Binary", DeviceName: "TCP"),
+            new CommunicationReceiveSource("plc", "a", "PLC/A", "Binary", DeviceName: "PLC", TargetName: "A", ActiveRead: true),
+            new CommunicationReceiveSource("plc", "b", "PLC/B", "Binary", DeviceName: "PLC", TargetName: "B", ActiveRead: true) });
+        var picked = 0; var provider = new DataSourceQueryService { CommunicationReceiveService = service,
+            SelectReceiveVariable = () => { picked++; return new("v", "code", "group", "Integer"); } };
+        var p = new ReceiveDataParameters { DeviceId = "raw" }; var editor = new ReceiveDataEditor(); editor.SetParameters(p); editor.SetDataProvider(provider);
+        Assert.Equal(new Size(460, 600), editor.PreferredDebugWindowSize); Assert.Equal(2, ((ComboBox)editor.FindName("Devices")).Items.Count);
+        Assert.Equal(Visibility.Collapsed, ((ComboBox)editor.FindName("Targets")).Visibility);
+        var devices = (ComboBox)editor.FindName("Devices"); devices.SelectedIndex = 1;
+        Assert.Equal("plc", p.DeviceId); Assert.Equal("", p.TargetId); Assert.Equal(2, ((ComboBox)editor.FindName("Targets")).Items.Count);
+        p.SourceKind = "Variable";
+        var button = new Button { DataContext = p.Variables[0] };
+        typeof(ReceiveDataEditor).GetMethod("SelectVariable_Click", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(editor, new object[] { button, new RoutedEventArgs() });
+        Assert.Equal(1, picked); Assert.Equal("全局.code", p.Variables[0].VariablePath); Assert.Equal("Integer", p.Variables[0].DataType);
+        Assert.Equal(Visibility.Collapsed, ((Grid)editor.FindName("DeviceRow")).Visibility); Assert.Null(editor.FindName("AgeRow"));
+        ResourceDictionary? previous = null;
+        foreach (var theme in new[] { "Dark", "Light" })
         {
-            try
-            {
-                var service = Store(); service.Configure(new[] { new CommunicationReceiveSource("raw", "", "TCP", "Binary", DeviceName: "TCP"),
-                    new CommunicationReceiveSource("plc", "a", "PLC/A", "Binary", DeviceName: "PLC", TargetName: "A", ActiveRead: true),
-                    new CommunicationReceiveSource("plc", "b", "PLC/B", "Binary", DeviceName: "PLC", TargetName: "B", ActiveRead: true) });
-                var picked = 0; var provider = new DataSourceQueryService { CommunicationReceiveService = service,
-                    SelectReceiveVariable = () => { picked++; return new("v", "code", "group", "Integer"); } };
-                var p = new ReceiveDataParameters { DeviceId = "raw" }; var editor = new ReceiveDataEditor(); editor.SetParameters(p); editor.SetDataProvider(provider);
-                Assert.Equal(new Size(460, 600), editor.PreferredDebugWindowSize); Assert.Equal(2, ((ComboBox)editor.FindName("Devices")).Items.Count);
-                Assert.Equal(Visibility.Collapsed, ((ComboBox)editor.FindName("Targets")).Visibility);
-                var devices = (ComboBox)editor.FindName("Devices"); devices.SelectedIndex = 1;
-                Assert.Equal("plc", p.DeviceId); Assert.Equal("", p.TargetId); Assert.Equal(2, ((ComboBox)editor.FindName("Targets")).Items.Count);
-                p.SourceKind = "Variable";
-                var button = new Button { DataContext = p.Variables[0] };
-                typeof(ReceiveDataEditor).GetMethod("SelectVariable_Click", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(editor, new object[] { button, new RoutedEventArgs() });
-                Assert.Equal(1, picked); Assert.Equal("全局.code", p.Variables[0].VariablePath); Assert.Equal("Integer", p.Variables[0].DataType);
-                Assert.Equal(Visibility.Collapsed, ((Grid)editor.FindName("DeviceRow")).Visibility); Assert.Null(editor.FindName("AgeRow"));
-                ResourceDictionary? previous = null;
-                foreach (var theme in new[] { "Dark", "Light" })
-                {
-                    if (previous != null) editor.Resources.MergedDictionaries.Remove(previous);
-                    previous = new() { Source = new Uri($"/SunEyeVision.UI;component/Themes/{theme}/{theme}Theme.xaml", UriKind.Relative) }; editor.Resources.MergedDictionaries.Add(previous);
-                    editor.Measure(new Size(460, 514)); editor.Arrange(new Rect(0, 0, 460, 514)); editor.UpdateLayout();
-                    var root = AppContext.BaseDirectory; while (!File.Exists(Path.Combine(root, "SunEyeVision.slnx"))) root = Directory.GetParent(root)!.FullName;
-                    var dir = Path.Combine(root, "artifacts", "validation", "receive-current-20261012"); Directory.CreateDirectory(dir);
-                    var bitmap = new RenderTargetBitmap(460, 514, 96, 96, PixelFormats.Pbgra32); bitmap.Render(editor);
-                    var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap)); using var file = File.Create(Path.Combine(dir, $"editor-{theme.ToLowerInvariant()}.png")); encoder.Save(file);
-                }
-            }
-            catch (Exception e) { failure = e; }
-        }); thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = true; thread.Start(); Assert.True(thread.Join(TimeSpan.FromSeconds(25)));
-        if (failure != null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+            if (previous != null) editor.Resources.MergedDictionaries.Remove(previous);
+            previous = new() { Source = new Uri($"/SunEyeVision.UI;component/Themes/{theme}/{theme}Theme.xaml", UriKind.Relative) }; editor.Resources.MergedDictionaries.Add(previous);
+            editor.Measure(new Size(460, 514)); editor.Arrange(new Rect(0, 0, 460, 514)); editor.UpdateLayout();
+            var root = AppContext.BaseDirectory; while (!File.Exists(Path.Combine(root, "SunEyeVision.slnx"))) root = Directory.GetParent(root)!.FullName;
+            var dir = Path.Combine(root, "artifacts", "validation", "receive-current-20261012"); Directory.CreateDirectory(dir);
+            var bitmap = new RenderTargetBitmap(460, 514, 96, 96, PixelFormats.Pbgra32); bitmap.Render(editor);
+            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap)); using var file = File.Create(Path.Combine(dir, $"editor-{theme.ToLowerInvariant()}.png")); encoder.Save(file);
+        }
+    });
     [Fact]
     public async Task Real_tcp_buffered_messages_are_consumed_in_order_across_workflow_runs()
     {

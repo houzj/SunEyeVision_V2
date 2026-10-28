@@ -1,0 +1,68 @@
+{
+  "status": "静态设计输入；未迁移或运行验收",
+  "selectedOriginal": "VMControls.WPF.ModuleResultView → VMControls.WPF.LocalImageListView → ImageListPanel → ImageListPanelBase",
+  "otherOriginal": "ImageSourceModuleControl同名控件为独立原件，不能按名称合并",
+  "sources": [
+    {
+      "component": "VMControls.WPF",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml",
+      "sha256": "d22c8a3f7fce0d94e966a22fce9865c91de629471d4f1ad0f93baa2cf6b19883",
+      "lines": 99
+    },
+    {
+      "component": "VMControls.WPF",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\LocalImageListView.xaml.cs",
+      "sha256": "d887a0c8d363e9c6257977650ab3807b0a58547d91f424c93a369e9566451006",
+      "lines": 315
+    },
+    {
+      "component": "VMControls.WPF",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml",
+      "sha256": "a5ac5a8101e7cccb036a2430e6c1766ec3b4caec18010580db178ec88937c7cf",
+      "lines": 374
+    },
+    {
+      "component": "VMControls.WPF",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanel.xaml.cs",
+      "sha256": "cdc637f57c447e0214a4f2f34ccedab9ade8021c5c49fb0810afd0c132cf58a2",
+      "lines": 32
+    },
+    {
+      "component": "VMControls.WPF",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "lines": 1812
+    },
+    {
+      "component": "ImageSourceModuleControl",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\ImageSourceModuleControl\\ImageSourceModuleControl\\LocalImageListView.xaml",
+      "sha256": "3819b6fcd0a0cbadde6533a7291964a1984d3cf532ae2e19b55dfd9415a013c9",
+      "lines": 77
+    },
+    {
+      "component": "ImageSourceModuleControl",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\ImageSourceModuleControl\\ImageSourceModuleControl\\LocalImageListView.xaml.cs",
+      "sha256": "12f7b31f928c99e2e7f2812fb377d2d9b626854a463cfca9f0755577ddd61e25",
+      "lines": 299
+    },
+    {
+      "component": "ImageSourceModuleControl",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\ImageSourceModuleControl\\ImageSourceModuleControl\\ImageListPanel.xaml",
+      "sha256": "19a86ee5ee0f893a7ff087c86512518b897772f6ed559986a92b418d064457f2",
+      "lines": 353
+    },
+    {
+      "component": "ImageSourceModuleControl",
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\ImageSourceModuleControl\\ImageSourceModuleControl\\ImageListPanel.xaml.cs",
+      "sha256": "809ebf0f1c4375bee229bebeecbd2e4d8bba3acba771ef7df11372af337a7f88",
+      "lines": 17
+    }
+  ],
+  "boundaries": {
+    "layout": "125/40容器高度、负40上边距与主结果父MaxHeight110须整组合验收",
+    "mode": "展示bool对应当前RunMode0/1，原ExecuteType1/2业务字符串不迁入产品存储",
+    "folderSubscription": "原通过模块SDK上报moduleID与nType268439552及刷新线程更新，不能视作已证明OS文件监听",
+    "rp": "原为3D AddRpDir/RpRawDir处理，不冒充普通目录导入",
+    "currentFoundation": "已有正式本地列表/相机和导入编辑链；订阅/Linux/RP当前无正式参数及执行合同，不擅自扩展"
+  }
+}

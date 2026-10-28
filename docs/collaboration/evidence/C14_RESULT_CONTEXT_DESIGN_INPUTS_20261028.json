@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-28",
+  "baseline": "ee086776",
+  "status": "静态设计输入；非产品实施或运行验收",
+  "scope": "C14结果上下文/逐几何来源/显示帧/资源生命周期及原结果区消费闭包",
+  "sources": [
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Presenters\\Results\\IToolResultView.cs",
+      "sha256": "e666541743e0e7c4508d0c5f5eb31441feef0187e9a7862520d6e75dea64e322"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Presenters\\Results\\DeclaredResultTable.cs",
+      "sha256": "01bafd9c711a67c7d166323239c1d012892184c8ab83e0653d8ce074f32cfe58"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Monitoring\\ToolResultViews.cs",
+      "sha256": "f4929c246c455fc83273fec267c87cf60c82b468f0bbb4fed64465c5afa9c073"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Monitoring\\ResultPresentationPresenter.cs",
+      "sha256": "16c8d5b79fe22cbe7898ff1d1ae523dd869577682554dea7f066b1160c767f5f"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Monitoring\\ResultPresentationModel.cs",
+      "sha256": "d081cc7ead59b955998b8f740e1183e091a3e054ae63eff9a594691aebebe8fd"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Services\\Workflow\\NodeResultManager.cs",
+      "sha256": "315acb47cc14517272555116c966f9e65beb3db0aa442b26b14f45dc2dd86707"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\UI\\Shell\\Windows\\MainWindowViewModel.cs",
+      "sha256": "c2184623bfb5180ba181d650152b8b67ba07441f4a6337da7c994baf7ce3c0da"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Contracts\\GeometryValues.cs",
+      "sha256": "77d7406f48059fe6e887127c0c9f3945bfb6f04dbce01d653eb6f7cbee94ffcb"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Contracts\\Resources.cs",
+      "sha256": "30bf9e1f48ebce1735a1d3f81e381b89c26717e291bbe2eb068c8e1cedb07c1a"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Contracts\\Results\\Presentation\\ResultProjectionDescriptor.cs",
+      "sha256": "c0f3b565454b2a26f7fe921162c2a6b2dd84ba4219552d1e20f558fecd86ba9b"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.SDK\\Execution\\Results\\DeclaredOutputSnapshot.cs",
+      "sha256": "46b99e969044d8eb793e7a249b7b0a8718833d1d1c234e2b518b315d06a2512d"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Workflow\\RuntimeToolConfiguration.cs",
+      "sha256": "c4027c19aa985b30976e593c6e285623fcc6475546437a3ec96f73389f943b03"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Workflow\\SolutionSession.cs",
+      "sha256": "d5ecd6159ef5660739b4aa84f4a56e31349c285c53ee9cc1d1e88534cf2b47f2"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Adapters\\Regions\\NativeRoiImageFrame.cs",
+      "sha256": "0e9b4833158fa4b982f15f84678ae4eb42399481cf1fc889d034fdc88de504aa"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Common\\ImageViewHost.cs",
+      "sha256": "08798a8922e45e6f4e300b96f244a5a763a1cce444a7426fdb9f03966ae148ac"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Controls\\Native\\Common\\ImageViewBox.Host.cs",
+      "sha256": "5f037833e9b4bf5bd6c70da20cbfaef225926c9b4eee28a9475f201f40501636"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Runtime\\Results\\BlobSchema.cs",
+      "sha256": "b21deffee14fa1729664529cabc6f7847f293da0d692dbf0ec5a7bdf3c35854c"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Runtime\\Results\\BlobDisplayDefinition.cs",
+      "sha256": "bf80ebc5275ba36eccf7f1341e6c3b5d0505bea993696580f0aa785b66309511"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Wpf\\Views\\BlobResultView.xaml.cs",
+      "sha256": "77bbb4c5a3344126324aeb73fb4910bdfab84cf6917ecd50e9b6831851cd95ee"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\tools\\SunEyeVision.BlobAnalysis\\Wpf\\Presentation\\BlobAnalysisRow.cs",
+      "sha256": "e76832305c0cb999cdaec9c6f058671d8fb2e3655b03f219c981b87bac42dbc6"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml",
+      "sha256": "56ac6bbf9b8839311f4f8eaf0dc4407fc3f9527b39f3ad942080c0bb6c2948ff"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88"
+    },
+    {
+      "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Wpf\\Presenters\\Regions\\NativeRoiViewport.cs",
+      "sha256": "99dbcff92036f3e1d7b73d01abe8078f578dd232def4e775e74d4b31eb19a73e"
+    }
+  ],
+  "findings": [
+    "GeometryValue.Frame是逻辑空间，不能作为物理图像来源；Region.SourceFrame和Image.Frame有物理来源。",
+    "当前表格事件仅裸GeometryValue数组，三个UI更新入口和两个Update(null)异常清理入口须一起迁移。",
+    "DisplayImage最终仅BitmapSource，当前显示帧身份未随图像保留；必须同批更新显示选择。",
+    "RuntimeToolConfiguration无公开SchemaRevision，声明态不允许伪造执行身份或版本。",
+    "DeclaredOutputSnapshot已有Identity/SchemaRevision/Status/Diagnostics及资源Reader，不重复创建执行结果模型。",
+    "原ModuleResultView图像/模块结果、局部源条、当前/历史/帮助及展开层必须按owner整组迁移；系统日志另属主界面。",
+    "NativeRoiViewport已有ShapeList owner与清理，结果/高亮不能创建第二个赋值owner。",
+    "结果Invocation与物理帧ProducerRun独立校验，下游几何可合法对应上游输入帧，旧run复用同物理帧仍须拒绝。"
+  ]
+}

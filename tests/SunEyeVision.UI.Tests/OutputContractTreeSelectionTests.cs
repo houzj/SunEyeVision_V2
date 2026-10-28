@@ -96,7 +96,7 @@ public sealed class OutputContractTreeSelectionTests
         using var f=new Fixture();using var table=new RecordingResultView();
         Set(f.Model,"_activeResultView",table);
         table.OnClear=()=>f.Model.SetSelectedNodeIdentity(null);
-        f.Select(f.B);
+        Assert.False(f.Model.SetSelectedNodeIdentity(f.B));
         Assert.Null(f.Model.SelectedNode);
     });
 

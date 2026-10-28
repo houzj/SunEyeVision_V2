@@ -253,7 +253,7 @@ public sealed partial class SolutionManagerUiTests
             var expectedPath = source.Images[0].FilePath;
             fixture.Input.GetInputImageAsync().Returns(_ =>
             {
-                source.CurrentIndex = 2; // Simulate a UI edit after this run captured its input.
+                source.SelectImage(2); // A new explicit user choice is a formal edit after this run captured its input.
                 fixture.Snapshots.Publish("another-workflow", "unrelated.png", 9);
                 return Task.FromResult<object?>(null);
             });
@@ -263,7 +263,7 @@ public sealed partial class SolutionManagerUiTests
             Assert.Empty(fixture.Errors);
             Assert.Equal(expectedPath, observedPath);
             Assert.Equal(2, source.CurrentIndex);
-            Assert.Equal(0,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex); // Frozen invocation never writes display edits back to Runtime start.
+            Assert.Equal(2,ImageSourceTestRuntime.Read(fixture.Root.Nodes[0]).CurrentIndex); // The frozen old invocation must not overwrite the newer accepted formal choice.
         });
     }
 

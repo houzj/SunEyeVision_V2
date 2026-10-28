@@ -27,6 +27,9 @@ public sealed class RootWorkspaceHostTests
     if(Application.Current==null)_=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
     foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Resources/Styles/MenuStyleResources.xaml","Resources/Styles/ToolTipStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new(){Source=new Uri("/SunEyeVision.UI;component/"+resource,UriKind.Relative)});
     ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"host-solutions"));var viewModel=new MainWindowViewModel();
+    var hostRoot=typeof(RootWorkspaceHostTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!;
+    Assert.True(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.LoadPlugins(Path.Combine(hostRoot,"plugins")));
+    Assert.True(ToolRegistry.HasRuntime("ImageLoad"));
     ToolRegistry.RegisterTool(typeof(RootConfigurationTests.Probe));
     SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginLoader.MarkAsLoaded();
     var shell=new SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl{DataContext=viewModel.WorkflowTabViewModel};shell.Initialize(viewModel);

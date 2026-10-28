@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -37,7 +37,7 @@ public sealed partial class SolutionManagerUiTests
         var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
         timer.Tick += (_, _) => frame.Continue = false;
         timer.Start();
-        _ = task.ContinueWith(_ => control.Dispatcher.BeginInvoke(new Action(() => frame.Continue = false)));
+        _ = task.ContinueWith(_ => control.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle,new Action(() => frame.Continue = false)));
         System.Windows.Threading.Dispatcher.PushFrame(frame);
         timer.Stop();
         Assert.True(task.IsCompleted, "图像导入超时");
@@ -180,17 +180,19 @@ public sealed partial class SolutionManagerUiTests
             using var fixture=new NativeSourceFixture(source,activate:(_,_,_)=>{executions++;return Task.CompletedTask;});
             var list=(ListBox)fixture.Control.FindName("lst");list.SelectedIndex=1;Assert.Equal(0,executions);
             var row=new Border{DataContext=fixture.Session.Items[0]};
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Right));
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Right){RoutedEvent=Mouse.MouseDownEvent});
             Assert.Equal(0,executions);
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left));
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});
             Assert.Equal(1,executions);Assert.Equal(0,source.CurrentIndex);
             using var hwnd=new HwndSource(new HwndSourceParameters("source-key-test"){Width=1,Height=1,WindowStyle=unchecked((int)0x80000000)});
             var key=new KeyEventArgs(Keyboard.PrimaryDevice,hwnd,0,Key.Right){RoutedEvent=Keyboard.PreviewKeyDownEvent};
             PreviewCall(fixture.Control,"ListKeyDown",list,key);Assert.True(key.Handled);Assert.Equal(2,executions);Assert.Equal(1,source.CurrentIndex);
+            source.SetRunSelection(source.Images.Select(image=>image.Id));
             source.RunMode=ImageRunMode.运行选择;
+            PumpPreviewTask(fixture.Control,Task.CompletedTask);
             row.DataContext=fixture.Session.Items[0];
-            // Original plain click activates even in selected-run mode; Ctrl is the run-selection gesture.
-            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left));
+            // An eligible plain click activates; Ctrl is the run-selection gesture.
+            PreviewCall(fixture.Control,"Grid_MouseDown",row,new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=Mouse.MouseDownEvent});
             Assert.Equal(3,executions);
             source.CurrentIndex=1;Assert.Equal(3,executions);
             PreviewCall(fixture.Control,"FirstImage_Click",fixture.Control,new RoutedEventArgs());
@@ -206,10 +208,12 @@ public sealed partial class SolutionManagerUiTests
             var file = Path.GetTempFileName();
             try
             {
-                var source = new ImageInputSource("node"); source.AddImage(new ImageInfo { FilePath = file });
+                var source = new ImageInputSource("node"); source.AddImages(new[]{new ImageInfo { FilePath = file }},selectFirstAdded:true);
+                var selected=source.CurrentImage;var version=source.EditVersion;
                 using var fixture=new NativeSourceFixture(source);
                 PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.ImportFiles,paths:new[]{file,file+".missing"}));
                 Assert.Single(source.Images);Assert.Equal(0,source.CurrentIndex);
+                Assert.Same(selected,source.CurrentImage);Assert.Equal(version,source.EditVersion);
             }
             finally { File.Delete(file); }
         });

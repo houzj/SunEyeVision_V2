@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
@@ -105,7 +105,9 @@ public partial class PropertyListView : UserControl
     }
     private void TreeSelectionChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        if (_restoringSelection) return;
+        // Container regeneration/collapse may temporarily select its parent. The host's
+        // selected row remains authoritative unless real keyboard input initiated this change.
+        if (_restoringSelection || !_userSelecting) return;
         _restoringSelection = true;
         try { SetCurrentValue(SelectedItemProperty, e.NewValue); }
         finally { _restoringSelection = false; }

@@ -1,0 +1,29 @@
+﻿# D07 图像面板与资源借阅子链交接
+
+基线：45661f08；独立分支：codex/d07-result-image-pane；仅本面板、专用测试和本文档。公共合同以218c3228及 HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md 为准。没有修改Shell/Main/公共库/runner，没有构建或写Release。
+
+## 现有链与成片决策
+
+公共NativeResultViewport已经持实际像素/Domain独立reader并给安装回执，ResultPublication已经持冻结输出reader及独立Borrow。宿主此前没有把两者按明确typed来源接起来。本批新增src/UI/Services/Images/ResultImagePane.cs，仅借外部宿主publication，不退休其owner；原ImageViewBox通过Attach唯一占有，不接SDK/Bitmap/latest后备。
+
+正式TryPresent依次核实际workflow文本、显式reference.ScopeId、publication调用NodeId、成功状态/实际revision、schema指纹、根PortId/完整Type/EffectiveStorage，递归核成员声明；再从同一publication.Borrow读取冻结RecordValue/SequenceValue。支持根image、组合image叶和明确AtConstant元素；All必须最终是单image，不隐选首图，AtField明确不支持显示。成员投影不修改索引顺序；常量索引向下推到唯一序列处，不构造全部图片的临时列表。
+
+真实IReadOnlyImage交给同一viewport.BindImage，核实际Frame/Domain回执；不制造坐标、run或来源。代次在外部callback前失效，清理只排空该代次借阅，旧Borrow/原DP通知/owner释放重入不得清新帧；失败和Dispose均清viewport与本borrow。Clear用于无源/退场；RefreshCurrentness仅复核现有closure/publication/固定stamp后清失效者，不查最新、不轮询。
+
+文件预览TryPresentPreview不伪造ResultPublication或Invocation。调用返回后宿主可释放解码scope，viewport持自己的独立像素与Domain reader；preview状态不再读已关闭rootImage。preview与正式互切同代次保护，preview的BorrowCurrentImage始终null，不能充当节点实际冻结输入ROI授权。
+
+## 固定接入签名与所有权
+
+命名空间SunEyeVision.UI.Services.Images，两个类均internal：
+
+- ResultImagePane(FrameworkElement originalView)，Viewport、CurrentFrame；TryPresent(IResultPublication,OutputReference,string actualWorkflowId,Func<bool>,out string error)；TryPresentPreview(IReadOnlyImage,Func<bool>,out string error)；Clear/RefreshCurrentness/Dispose。
+- BorrowCurrentImage()返回ResultViewportImageLease?；每次成功独立pub.Borrow，核同generation/stamp/receipt，失效返回null。退休/切源只令它IsCurrent=false，不偷关编辑scope的borrow。
+- ResultViewportImageLease属性Image(IReadOnlyImage)、Viewport(NativeResultViewport)、Receipt(NativeResultFrameReceipt)、IsCurrent及Dispose。构造仅供pane封装独立IResultValueLease；调用者应经真实pane取得，不伪造租约。Dispose只退该borrow；纯Image引用的有效期随本租约关闭，关闭后属性拒读。
+
+宿主root负责sourcepub owner、真实workflow文本、AvailableDataSource到正式PortId映射、两侧Shell挂点及Geometry/Text/Selection层；不能把Frame.ProducerRun或尺寸当选中输入的证明。ROI线只消费上列借阅合同，真实节点input与选择背景是否同一实例由root证明；preview永远不提供该证明。不得移动source owner生命周期进pane。
+
+## 验收出口与未做范围
+
+ResultImagePaneTests.cs现22个候选用例：真实Loaded原ImageViewBox及唯一owner；真实FrozenOutputResources的Frame/非矩形Domain/stride/像素；pub退休后独立编辑borrow保活至最后释放；组合叶和常量元素（索引1指向不同真实Frame）；scope/node/rootType/port/member/index/All-sequence/AtField/取消/退休拒绝；错误Domain坐标和物理Frame；Borrow与原DP通知重入；旧owner清理抛错后新帧存活；关闭与捕获中途取消排空；文件预览scope关闭后像素存活且不能ROI借阅。
+
+两C# Roslyn纯语法检查0错，git diff --check通过；未语义编译、未执行测试、未正式UI/full、未VS设计器或用户人工验收。主线需将pane与真实Shell/Main/ROI消费者同批收齐，规定构建后在同一正式Release接入现有runner运行本22项；控件模板/通知行为以实际运行证据为准，不以源码或语法检查报告交付完成。本批不实现宿主层Geometry/Text/selection或保存/编辑接受，不触Group，不扩大共享合同。

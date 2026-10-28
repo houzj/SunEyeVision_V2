@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -89,6 +89,22 @@ public sealed class GlobalProducerBindingRulesTests
             f.Producer.ReferenceExpression=BindingReferenceSerializer.Serialize(reference);
             Assert.Equal(BindingCompatibility.Incompatible,GlobalProducerBindingRules.Validate(f.Solution,f.Producer,f.Variable).State);
         }
+    }
+    [Fact]
+    public void Incomplete_dynamic_declaration_remains_pending_without_losing_its_source()
+    {
+        var f=Setup(TypeRef.ScalarOf(ScalarKind.Int64));
+        var original=f.Producer.ReferenceExpression;
+        f.Parameters.Outputs=new[]{new OutputVariable{PortId="output.width",Name="width",DeclaredType=typeof(object),VariableType="",Kind=OutputVariableKind.Data}};
+        Assert.Equal(BindingCompatibility.Unresolved,GlobalProducerBindingRules.Validate(f.Solution,f.Producer,f.Variable).State);
+        var service=new OutputBindingChangeService();service.Reset(f.Solution);service.ReconcileAll();
+        Assert.Same(f.Producer,f.Variable.ProducerBinding);Assert.Equal(original,f.Producer.ReferenceExpression);
+        Assert.NotEmpty(f.Variable.BindingValidationPending);Assert.Empty(f.Variable.RebindingReason);
+        // An explicit semantic declaration is authoritative even when the carrier is object.
+        f.Parameters.Outputs=new[]{new OutputVariable{PortId="output.width",Name="width",DeclaredType=typeof(object),ValueDeclaration=TypeRef.ScalarOf(ScalarKind.Int64),Kind=OutputVariableKind.Data}};
+        Assert.Equal(BindingCompatibility.Compatible,GlobalProducerBindingRules.Validate(f.Solution,f.Producer,f.Variable).State);
+        f.Parameters.Outputs=Array.Empty<OutputVariable>();
+        Assert.Equal(BindingCompatibility.Incompatible,GlobalProducerBindingRules.Validate(f.Solution,f.Producer,f.Variable).State);
     }
     [Fact]
     public void Malformed_reference_and_unsupported_target_fail_without_mutating_configuration()

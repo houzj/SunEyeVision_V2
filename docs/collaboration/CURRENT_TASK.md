@@ -1,3 +1,8 @@
+## 2026-10-28 完整Global回归缺省类型误清绑定修复候选
+
+正式GlobalBinding attempt002暴露动态端口存在但DeclaredType=object且无ValueDeclaration时被误判不兼容。本批保留显式生产引用并标记Unresolved，只有端口删除或已知类型冲突才解除；新增同一服务Reset/ReconcileAll保身份及正式语义声明优先回归。尚未编译运行，交主线同源验证；SDK终态定向22/0只计该组，不计完整Global通过。Group冻结，D07消费者仍整批实施中。
+
+
 ## 2026-10-28 C15原固定底栏与C01三页容器候选已实现
 
 - root提取原Orange/BottomButtonStyle和四BottomCommand模板，保24高/Auto宽Min66、Margin2.5/Padding10、32高右侧固定底栏及*/Auto/Auto。NativeToolEditorFrame借既有DeclaredFieldsView原三页，不造第二tabs/外层滚动；INativeToolCommands只借宿主命令/状态，不复制VM循环/调度/CTS。

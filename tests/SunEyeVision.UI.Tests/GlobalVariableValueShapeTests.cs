@@ -131,7 +131,8 @@ public sealed class GlobalVariableValueShapeTests
         else if (expected is Array array)
             Assert.Equal(array.Cast<object?>(), Assert.IsAssignableFrom<Array>(actual).Cast<object?>());
         else Assert.Equal(expected, actual);
-        if (expected is Array or BinaryPayload) Assert.NotSame(expected, actual);
+        // Empty arrays may share Array.Empty<T>(); they have no mutable elements to alias.
+        if (expected is Array {Length:>0} or BinaryPayload) Assert.NotSame(expected, actual);
     }
     private sealed class Files : IDisposable
     {

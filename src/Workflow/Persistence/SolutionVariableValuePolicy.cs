@@ -39,11 +39,7 @@ internal static class SolutionVariableValuePolicy
         }
         if (wrapper["Value"] is null)
             report("COMPAT_TYPED_NULL", path + ".Value", "Typed null retained as an empty value.");
-        else if (normalized is "Integer" or "Double" or "String" or "Boolean" && wrapper["Value"] is not JsonArray)
-        {
-            if (!legacy) throw new JsonException("Format 2 values require the declared tuple representation.", path + ".Value.Value", null, null);
-            wrapper["Value"] = new JsonArray(wrapper["Value"]!.DeepClone());
-            report("COMPAT_SCALAR", path + ".Value.Value", "V1 scalar promoted to a single-element tuple in candidate only.");
-        }
+        // Cardinality is part of the actual value. The converter validates scalar or
+        // one-dimensional array contents; loading never promotes a scalar to a tuple.
     }
 }

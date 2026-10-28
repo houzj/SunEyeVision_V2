@@ -22,3 +22,4 @@
 - Host002真实根因为Runtime参数上下文未核_openDebugWindow。MainWindowRuntimeEditing增加实际窗口身份，ProductionEditorContext文档Apply路线也先EnsureCurrent，不靠另一个有效窗口授权草稿，不改原拒绝/历史断言。四C#纯语法0错及diff通过，尚未新构建/运行。
 - 用户已对持久合同+正式global赋值具体授权“授权按完整批实施”；两次被自动审批拒绝的脚本此前均未执行。D06仍整批预备，UI/helper候选独立未交付；仅全部消费者/生命周期测试齐后切换，不做破坏性半迁移提交、不保旧桥。当前先把上述既有真实失败交主线同源验证；Group冻结。
 
+- 树恢复窄补：SelectedItem=null实际清已实现容器选择；每次false→true之间复核恢复epoch、host目标、ItemsSource及container真实行。外部Tree.SelectedItemChanged同步换目标/源会退役旧恢复并排新目标，新增真实Loaded reentry→新目标、null→实际Tree.SelectedItem空且无用户命令回归。两C#纯语法0错，未运行。

@@ -28,6 +28,9 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private CancellationTokenSource? _lifetime;
     private bool _refreshing;
     private string? _requestError;
+    private bool _viewportQueued;
+    private string[] _lastViewport = Array.Empty<string>();
+    private string? _lastDisplayedId;
     public event PropertyChangedEventHandler? PropertyChanged;
     public IReadOnlyList<ImageSourceStripItem> Items => Session?.Items ?? Array.Empty<ImageSourceStripItem>();
     public int DisplayIndex => Session?.DisplayIndex ?? -1;
@@ -48,17 +51,27 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     { var view = (ImageSourceStrip)d; view.Detach(); if (view.IsLoaded) view.Attach(); view.Refresh(); }
     private static void ExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     { var view = (ImageSourceStrip)d; view.Height = (bool)e.NewValue ? 125 : 40; view.Refresh(); }
-    private void OnLoaded(object sender, RoutedEventArgs e) { Attach(); Refresh(); }
+    private void OnLoaded(object sender, RoutedEventArgs e) { Attach(); Refresh(); QueueViewport(); }
     private void OnUnloaded(object sender, RoutedEventArgs e) => Detach();
     private void Attach()
     {
         if (_lifetime is not null) return;
         _lifetime = new CancellationTokenSource(); _attached = Session;
         if (_attached is not null) _attached.PropertyChanged += SessionPropertyChanged;
+        lst.LayoutUpdated += ViewportLayoutUpdated;
+        lst.ItemContainerGenerator.StatusChanged += ViewportLayoutUpdated;
+        lst.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ViewportScrolled));
+        QueueViewport();
     }
     private void Detach()
     {
         if (_attached is not null) _attached.PropertyChanged -= SessionPropertyChanged;
+        if (_attached is IImageSourceStripViewportSession viewport) viewport.UpdateVisibleItems(Array.Empty<string>());
+        _lastViewport = Array.Empty<string>();
+        _lastDisplayedId = null;
+        lst.LayoutUpdated -= ViewportLayoutUpdated;
+        lst.ItemContainerGenerator.StatusChanged -= ViewportLayoutUpdated;
+        lst.RemoveHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ViewportScrolled));
         _attached = null;
         var old = _lifetime; _lifetime = null; old?.Cancel(); old?.Dispose();
         if (Pop1 is not null) Pop1.IsOpen = false;
@@ -84,9 +97,12 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             lst.SelectedIndex = DisplayIndex;
             Mode.SelectedIndex = ModeIndex;
             AutoSwitch.IsChecked = AutoSwitchEnabled;
-            if (DisplayIndex >= 0 && DisplayIndex < Items.Count) lst.ScrollIntoView(Items[DisplayIndex]);
+            string? displayedId = DisplayIndex >= 0 && DisplayIndex < Items.Count ? Items[DisplayIndex].Id : null;
+            if (displayedId is not null && displayedId != _lastDisplayedId) lst.ScrollIntoView(Items[DisplayIndex]);
+            _lastDisplayedId = displayedId;
             lst.Visibility = IsExpanded ? Visibility.Visible : Visibility.Collapsed;
             RestoreRunChecks(lst);
+            QueueViewport();
         }
         finally { _refreshing = false; }
     }
@@ -94,6 +110,34 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     {
         if (parent is CheckBox check) check.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateTarget();
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) RestoreRunChecks(VisualTreeHelper.GetChild(parent, i));
+    }
+    private void ViewportLayoutUpdated(object? sender, EventArgs e) => QueueViewport();
+    private void ViewportScrolled(object sender, ScrollChangedEventArgs e) => QueueViewport();
+    private void QueueViewport()
+    {
+        if (!IsLoaded || _lifetime is null || _viewportQueued) return;
+        _viewportQueued = true;
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+        {
+            _viewportQueued = false;
+            if (!IsLoaded || _lifetime is null || Session is not IImageSourceStripViewportSession viewport) return;
+            var ids = new List<string>();
+            if (IsExpanded && lst.IsVisible && lst.ActualWidth > 0 && lst.ActualHeight > 0)
+            {
+                var bounds = new Rect(0, 0, lst.ActualWidth, lst.ActualHeight);
+                for (int i = 0; i < lst.Items.Count && ids.Count < 128; i++)
+                    if (lst.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement container && container.IsVisible
+                        && container.ActualWidth > 0 && container.ActualHeight > 0)
+                    {
+                        var itemBounds = container.TransformToAncestor(lst).TransformBounds(new Rect(container.RenderSize));
+                        if (bounds.IntersectsWith(itemBounds) && lst.Items[i] is ImageSourceStripItem item) ids.Add(item.Id);
+                    }
+            }
+            var snapshot = ids.ToArray();
+            if (_lastViewport.SequenceEqual(snapshot, StringComparer.Ordinal)) return;
+            _lastViewport = snapshot;
+            viewport.UpdateVisibleItems(Array.AsReadOnly(snapshot));
+        }));
     }
     private int FirstEligibleIndex()
     { for (int i = 0; i < Items.Count; i++) if (!IsSelectMode || Items[i].IsForRun) return i; return -1; }

@@ -31,8 +31,8 @@ public sealed class ImageSourceStripRequest
             throw new ArgumentException("Only mode and automatic-switch intents carry Flag.");
         if ((kind == ImageSourceStripRequestKind.SetRunSelection) != (ItemIds is not null))
             throw new ArgumentException("Run selection must carry the complete immutable item ID set.");
-        if (Paths is not null && kind != ImageSourceStripRequestKind.ImportFiles)
-            throw new ArgumentException("Only file import accepts paths.");
+        if (Paths is not null && kind is not (ImageSourceStripRequestKind.ImportFiles or ImageSourceStripRequestKind.ImportDirectory))
+            throw new ArgumentException("Only file and directory import accept paths.");
         bool needsItem = kind is ImageSourceStripRequestKind.Activate or ImageSourceStripRequestKind.SelectStart
             or ImageSourceStripRequestKind.Remove or ImageSourceStripRequestKind.OpenDirectory;
         if (needsItem != !string.IsNullOrEmpty(itemId)) throw new ArgumentException("Invalid item identity for request kind.");
@@ -57,4 +57,10 @@ public interface IImageSourceStripSession : INotifyPropertyChanged
     bool IsImporting { get; }
     string? Status { get; }
     Task RequestAsync(ImageSourceStripRequest request, CancellationToken cancellationToken);
+}
+
+/// <summary>Optional view demand, not an edit intent. Empty means this view no longer displays any thumbnails.</summary>
+public interface IImageSourceStripViewportSession
+{
+    void UpdateVisibleItems(IReadOnlyList<string> itemIds);
 }

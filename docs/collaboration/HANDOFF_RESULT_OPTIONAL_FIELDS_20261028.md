@@ -13,3 +13,7 @@
 - 人工验收结果：真实VS/VM同态与用户人工未代签。
 - 已知风险或禁止改动：用户BlobParameterEditor.xaml不修改、不暂存；Blob业务阶段一仍冻结；不把历史接口定义当真实历史入口、不把独立原表通过当Blob已接。GlobalBinding超时无总计，不编造通过/失败总数。
 - 下一步：固定本批提交，集中UI/full及正式EXE和原表/发布/来源相关新验；工作流原写者交完整UI消费者及失败修复后再集中整链回归。
+
+## 本批正式结果
+
+正式52beb99b UI/full零错误；EXE探针66928 exit0。Window220 publication10/0、221原表1/0、222来源2/0，GlobalBinding003仅SDK组22/0（fullTrack=false）。795发布文件和本轮21加载记录SHA核对，见evidence/O06_RESULT_OPTIONAL_FIELDS_INTEGRATION_20261028.json。完整GlobalBinding002仍失败/超时，生产D07和实际历史入口继续，不关闭阶段目标。当前无live。

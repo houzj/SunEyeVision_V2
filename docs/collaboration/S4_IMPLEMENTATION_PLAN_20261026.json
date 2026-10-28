@@ -7723,7 +7723,7 @@
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计推进：结果树和结果表读取SDK正式输出声明及同一次运行快照，共用唯一publication。最新正式产品9065e86a规定UI/full零错误，ImageSources176/0、publication9/0、实际来源2/0、原表真实500→1000→1205用例1/0。GlobalBinding新attempt-002有组件加载超时、缺失生产者断言失败及整轨超时，无总计，未核收。公共ROI同owner已实施；D07生产图形接入、实际历史入口及Blob专属表迁移仍未完成。",
+      "summary": "按VM设计继续：树表共用SDK输出声明及同次运行快照/唯一publication。最新正式52beb99b UI/full零错误，publication10/0、真实原表分页1/0、实际来源2/0；可选字段省略导致整表异常已真实复现并修复。SDK取消终态定向22/0不代表完整变量绑定轨通过；完整GlobalBinding仍有加载超时和缺失生产者断言失败。9065e86a的ImageSources176/0单列历史。生产D07、跨scope绑定与实际历史入口仍继续实施。",
       "ownership": [
         [
           "结果树 / PropertyList",
@@ -7735,7 +7735,7 @@
           "标准结果表 / StandardTable（C14）",
           "本聊天：控件库与Blob主线",
           "原DataGrid完整模板/滚条/主题，10列示例、500行增量、稳定行身份、有效性、选择与复制投影；统一保留在现Plugin.Wpf，当前由主线唯一写。",
-          "公共原表消费同一publication，最新9065e86a独立真实滚动500→1000→1205、旧命令和失败准备1/0；publication9/0、来源2/0。Blob专属Wpf仍自有DataGrid，属于第二阶段必迁消费者，不能把公共控件通过当Blob已接。"
+          "公共原表同一publication读取，52beb99b最新真实分页500→1000→1205及失败准备1/0；新增合法可选输出/空父记录实际修复后publication10/0，来源2/0。Blob专属Wpf仍自有DataGrid，第二阶段迁，独立通过不冒称已接。"
         ],
         [
           "结果区外壳 / ResultShell",
@@ -7801,7 +7801,7 @@
       "delivery": [
         [
           "当前集中批",
-          "最新9065e86a UI001零错6569警告/full001零错6606警告，正式EXE probe0。ImageSources176/0、publication9/0、来源2/0、原表1/0。GlobalBinding attempt-002整轨超时，已见组件加载超时与MissingProducer断言失败，无整轨计数；原写者修复后再核收。"
+          "正式52beb99b UI/full均0错误、EXE probe66928 exit0；Window220 publication10/0（含optional/空父record）、221原表1/0、222来源2/0；GlobalBinding003仅ToolSideEffectReceiptTests定向22/0，fullTrack=false。完整GlobalBinding002失败/超时仍未核收；原9065图像源176/0保独立基线。"
         ],
         [
           "接口与接入",
@@ -7841,7 +7841,7 @@
           "独立背景epoch/publication/layer revision；异Frame/异Coordinates拒绝，模板替换和预算故障隔离",
           "Apply/Save核ROI IsCurrent和HasPendingGesture，关闭/全屏/切页/旧取消不清新租约"
         ],
-        "currentState": "正式9065e86a UI/full零错误，ImageSources176/0、publication9/0、来源2/0、原表1/0；GlobalBinding新attempt-002失败/超时无总计。生产D07、历史实际调用、Blob专属表迁移及阶段一/人工未完成。"
+        "currentState": "最新52beb99b两规定构建零错误，定向publication10/0+表1/0+来源2/0+SDK终态22/0；完整GlobalBinding失败/超时未核收，生产D07/历史实际入口/Blob专属迁移和人工未完成。"
       },
       "candidateEvidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
       "apiImplementation": {
@@ -7982,6 +7982,17 @@
           "api": "docs/collaboration/HANDOFF_D07_PUBLIC_VIEWPORT_API_20261028.md",
           "candidatePassed": 27,
           "formalProductionAccepted": false
+        },
+        "latestValidation": {
+          "productCommit": "52beb99b4a580c00e9f97eb860a0adf55f522d0e",
+          "evidence": "docs/collaboration/evidence/O06_RESULT_OPTIONAL_FIELDS_INTEGRATION_20261028.json",
+          "uiErrors": 0,
+          "fullErrors": 0,
+          "publication": 10,
+          "table": 1,
+          "origins": 2,
+          "sdkReceiptDirected": 22,
+          "fullGlobalBindingAccepted": false
         }
       }
     }

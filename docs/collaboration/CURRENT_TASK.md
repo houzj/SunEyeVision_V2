@@ -1,3 +1,9 @@
+## 2026-10-28 公共结果表缺值修复正式核验通过，完整生产链仍在推进
+
+- 固定正式产品52beb99b：规定UI001零错6569警告99.32秒，全量001零错6491警告60.36秒；EXE探针PID66928 exit0。Window220 publication10/0、221原表真实500→1000→1205=1/0、222实际来源2/0；GlobalBinding003仅SDK终态组22/0，report明确fullTrack=false，不代完整Global通过。
+- 795正式发布文件与这四receipt21加载记录SHA均核。证据evidence/O06_RESULT_OPTIONAL_FIELDS_INTEGRATION_20261028.json保旧正式9065 Window219真实KeyNotFound optional失败，再记修后10/0。图像源最近176/0属于9065，不套到本批。GlobalBinding002全轨失败及超时未解决，原写者仍在集中修复及D07生产消费者实施。
+- GlobalBindingCases新增S4_GLOBAL_BINDING_GROUP精确组名定向门禁，不指定仍完整全轨，未知组拒绝，report记录fullTrack/selectedGroup。本批只修公共表可选根值和空父记录；几何有值而来源缺失仍拒绝、缺Rows仍拒绝。三路只读审查确认上述边界；跨root同nodeId/准备失败reader清理/真实历史入口交原UI写者，不并发改其文件。
+- 74168/92716均真实终态，当前无live。原方案已统一最新与历史基线，719锚点及生成幂等。用户Blob参数XAML原SHA保持、不暂存；Blob业务冻结、完整两阶段goal仍active；此批不推送远程、不称阶段一/整个生产链已完成。下一集成工作流完整失败修复及D07消费者，再集中同源验收；C09/C17和其他原清单继续保留。
 ## 2026-10-28 结果树表正式复验与可选字段缺值修复候选
 
 - 固定正式9065e86a：规定UI001零错6569警告162.97秒/full001零错6606警告72.55秒，正式EXE探针PID76564 exit0。ImageSources attempt005=176/0、Window216 publication9/0、217实际来源2/0、218原表500→1000→1205=1/0；795发布条目和这四receipt的31加载记录SHA核一致。证据evidence/O06_RESULT_OWNER_INTEGRATION_20261028.json，不套旧142/部署18。

@@ -32,3 +32,26 @@
 - 两条辅助线完整配置、第一次位置/颜色、拖动坐标、居中、锁定、隐藏与右键、关闭配置不回滚、换图保状态、主窗关闭排空。
 - 输入输出独立选择；输出1背景+至多3叠层、替换背景与旧背景转层、选择非背景时隐藏叠层；使用typed端点和当前publication，禁止名称回退。
 - 真实设计器、主题/布局与原件截图、正式同源Release与人工验收均未执行。本次只交静态设计，不把缺口或已有模板当作完整迁移。
+
+
+## 原DLL导航补证核收（2026-10-28）
+
+已读取统筹回件的probe/provenance并重新核对安装目录原DLL SHA256，提取记录及三文件hash见 evidence/D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json。十个成功导航阶段逐项核名称和错误码；缺B阶段确认错误且SN=0，恢复后输出C。确认Next/Last首尾环绕、请求one-shot抑制AutoPlay额外advance、普通AutoPlay读前推进及失败消费游标。静态SetParam/Process证据由统筹交付native-3/native-0，未在本线重新反编译。
+
+探针保留partial-solution-load=-536870093与originalRuntimeEquivalence=false，不扩大为整个宿主运行等价。AutoStop真实procedure分支、输入背景跨列表仍未知；SaveAs重载涉及附件重写，不据此推断参数保存。现行设计应以本层全部源一次瞬态导航+一次执行实现，不改正式配置起点或把缩略图选择路径代替导航。此证据不是本产品功能已实现。
+
+
+## 执行游标整链差异与集中适配设计
+
+已有实现核对：Services/LocalImageSequenceService.Begin以正式选中项初始化；Complete只在success且advance时后移，StopAtLast在后移前判定。WorkflowExecutionManager.LocalImages.BeginLocalImagesAsync先File.Exists过滤，CompleteLocalImagesAsync失败直接返回；RunSingleAsync成功才提交、失败明确不推进，连续链也以execution.Success门控。当前无Last/Next瞬态请求生产入口。这与原DLL已验证读前推进/失败消费不一致，不属于按钮外观问题。
+
+整批边界与决策：
+
+1. 保留现有Root实例弱引用、冻结配置/资源地址、ResetVersions、代号和输入override链；正式配置起点、UI显示、执行游标各自唯一职责。普通取图和导航同一序列服务，不另造导航缓存或逐源编辑事务。
+2. 在完整运行准入时冻结本层全部参与源的导航意图（Previous/Next/普通），运行中拒绝；导航只作用本层，已有递归Group取图捕获行为不借此扩展或修改Group语义。只有真实源节点执行到取图边界才消费游标，不能因开始整个流程就提前消费未到达源。
+3. 普通AutoPlay在实际取图前确定并接纳本轮游标；导航请求先确定相邻项并在本次抑制额外自动推进。端点环绕已证；勾选运行集合仍由原冻结plan提供，空集合明确失败。不得先过滤丢失文件改变序列：保留原冻结项，交实际加载器诊断，失败消费该项。
+4. 需要把当前统一Complete(success)拆分职责为取图接纳与执行完成：取图接纳只推进该来源且具执行代号/迭代/节点身份，实际成功发布才增加SN；下游算法失败不能倒退已取图游标。取消在取图接纳前不消费，接纳后取消不能回滚已观察游标；重复/旧回调不得二次消费。精确取图接纳回执需核现有图像源执行链后冻结，不提前造公共合同或WPF回调。
+5. AutoStop原owner运行态尚未实测，现StopAtLast与连续ShouldStopAfter职责先保留为待核差异，不宣称已同原件；导航与正式参数编辑/Undo历史独立，不以保存当前显示游标覆盖配置起点。
+6. 同批贯通RunSingle、连续、单模块调试、通信触发、切源/换根/删除/取消/异常/关闭、UI真实来源选择及结果帧发布。验收至少覆盖A/B/C手动保持、前后环绕、AutoPlay首次/连续、导航one-shot、缺B失败后C、上游源未执行/多源部分执行/下游失败、重复回执与取消分界、保存重开起点不变和运行不入Undo。硬件与AutoStop未知分列，不改Group。
+
+本节为集中设计与差异，未修改执行产品代码；原180/0不得作为这些新语义已通过。下一冻结真实取图接纳位置和全部调用消费者后，作为一次运行链批次协调批准与正式构建。

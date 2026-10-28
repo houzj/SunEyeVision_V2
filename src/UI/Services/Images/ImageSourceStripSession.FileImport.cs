@@ -117,7 +117,7 @@ public sealed partial class ImageSourceStripSession
             var prepared = await Task.Run(() => existingFiles.Select(path =>
             {
                 cancellation.Token.ThrowIfCancellationRequested();
-                return new ImageInfo { FilePath = path, Name = Path.GetFileNameWithoutExtension(path) };
+                return new ImageInfo { FilePath = path, Name = System.IO.Path.GetFileNameWithoutExtension(path) };
             }).ToArray(), cancellation.Token).ConfigureAwait(false);
             await _dispatcher.InvokeAsync(() =>
             {

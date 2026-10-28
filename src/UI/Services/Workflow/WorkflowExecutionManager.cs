@@ -926,6 +926,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 var sourceInputs=sourceInputValues.ToDictionary(pair=>pair.Key,pair=>new ImageSourceRunInput(
                     pair.Value.TryGetValue("input.local-address",out var address)?address as string:null,
                     (long)pair.Value["input.sequence"]!),StringComparer.Ordinal);
+                // Communication property assignments belong to per-run parameter overrides;
+                // source selections are separately frozen in SourceInputs.
+                var nodeParameterOverrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
                 var bindingOverrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
                 foreach (var group in (_communicationAssignments.Value ?? Array.Empty<CommunicationParameterAssignment>()).GroupBy(a => a.NodeId))
                 {
@@ -947,6 +950,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     runGlobals,
                     runtimeParameters,
                     sourceInputs: sourceInputs,
+                    nodeParameterOverrides: nodeParameterOverrides,
                     nodeBindingOverrides: bindingOverrides,
                     communicationInputs: receiveInputs,
                     communicationOutputs: SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends,

@@ -1,0 +1,75 @@
+{
+  "sourceStyles": [
+    "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\styles\\moduleviewstyle.xaml",
+    "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\togglebuttonstyle.xaml",
+    "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\buttonstyle\\normalbuttonstyle.xaml",
+    "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\scrollbarstyle\\recscrollbarstyle.xaml"
+  ],
+  "assets": [
+    {
+      "product": "variable-link-normal.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_link_dark_normal.png",
+      "sha256": "2eb9f46026ac1d1691e3226ec86c7c079f6d0e159c17a67056e2a5d958af1ace"
+    },
+    {
+      "product": "variable-link-hover.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_link_dark_click.png",
+      "sha256": "87f1dfe4182c12fb1d32bc4eb9ee58e1863968e1ca5b0232e2089a726fffe92c"
+    },
+    {
+      "product": "tree-collapse.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\btn_高级参数_uparrow.png",
+      "sha256": "b6bebba8d02759061fb8bcaadebe1303cd6a9ad169b902e2b1ba8546c790cd81"
+    },
+    {
+      "product": "tree-expand.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\btn_高级参数_downarrow.png",
+      "sha256": "622514b0f4c49f6fc34d37692b371222342bd22fd39bad903d0d83277eeb17f9"
+    },
+    {
+      "product": "variable-unlink-normal.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_delete_normal.png",
+      "sha256": "f0f96b590ec6a4d0387b4487de25e8ae953133af170d401cccf9ead81520118c"
+    },
+    {
+      "product": "variable-unlink-hover.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_delete_click.png",
+      "sha256": "f12b157b95aeceeac875047cd01da3b89dd9f566b9d954daba05cd0f28b4b4c2"
+    },
+    {
+      "product": "variable-unlink-disabled.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.Style\\resources\\ic_delete_disable.png",
+      "sha256": "b9cc8ccde783b82211f0bf399ae036dc00b3997c09249a451b58d7026177b754"
+    },
+    {
+      "product": "result-warning.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_log_告警.png",
+      "sha256": "4f999dcb7432a8b7911cfea9ec7fe9938437fa4126bf1f7d4cffe6bc28da82bf"
+    },
+    {
+      "product": "path-copy-normal.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_copy_normal.png",
+      "sha256": "4413bf16bb4e1082d415d02ef959b2026187f8564f51c2ed5a8ab59985db5fa2"
+    },
+    {
+      "product": "path-copy-hover.png",
+      "source": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\resources\\ic_copy_click.png",
+      "sha256": "cd50c586bf561a52cc9a649e020bb33aefdf43061902b3a360f10e04b4921bce"
+    }
+  ],
+  "status": "静态候选，未编译或运行",
+  "paletteSources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\colorstyle.xaml",
+      "sha256": "6b44469cadefd8e0d1c0cc774f937c0aeb49cabdb1d967de339739347014e8af"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\colorstyle1.xaml",
+      "sha256": "cdb6b591131fab5faf59067c015f8ad66cddec21f266430c932e1233202c2f19"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.ColorFun\\colorstyle2.xaml",
+      "sha256": "6999914da1ba8a8527c9dc78e3c3086bc93136633accf20f15420bf3f1cb0f39"
+    }
+  ]
+}

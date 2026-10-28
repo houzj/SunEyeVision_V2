@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <SolidColorBrush x:Key="Results.PropertyList.Col_DisplayImage_Foreground" Color="#666666" />
+  <SolidColorBrush x:Key="Results.PropertyList.Col_ScrollBar_BorderBrush" Color="#BFBDBD" />
+  <SolidColorBrush x:Key="Results.PropertyList.Col_ScrollBar_Fill" Color="#D1CFCF" />
+  <SolidColorBrush x:Key="Results.PropertyList.Col_ShowResults_ModuleResult_Background" Color="#FAFAFA" />
+  <SolidColorBrush x:Key="Results.PropertyList.Col_ShowResults_ModuleResult_BorderBrush" Color="#999999" />
+  <SolidColorBrush x:Key="Results.PropertyList.Col_ShowResults_ModuleResult_Foreground" Color="#444444" />
+  <SolidColorBrush x:Key="Results.PropertyList.Col_ShowResults_ModuleResult_Title_Background" Color="#D1D1D1" />
+  <SolidColorBrush x:Key="Results.PropertyList.NoCameraForground" Color="#BEBEBE" />
+  <SolidColorBrush x:Key="Results.PropertyList.TextBox.Foreground" Color="#BFBFBF" />
+  <SolidColorBrush x:Key="Results.PropertyList.TreeTabItemBaground" Color="#46494D" />
+  <SolidColorBrush x:Key="Results.PropertyList.TreeTabItemBoBaground" Color="#000000" />
+  <SolidColorBrush x:Key="Results.PropertyList.btnEditTemplateBorderBG" Color="#E1DEDE" />
+</ResourceDictionary>

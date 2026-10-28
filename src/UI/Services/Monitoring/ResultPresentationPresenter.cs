@@ -68,7 +68,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(snapshot);
-        if (_snapshot is { } previous && previous.Identity == snapshot.Identity &&
+        if (_snapshot is { } previous && ReferenceEquals(previous,snapshot) && previous.Identity == snapshot.Identity &&
             previous.SchemaRevision == snapshot.SchemaRevision && previous.Schema.Fingerprint == snapshot.Schema.Fingerprint &&
             previous.Status == snapshot.Status)
         {
@@ -83,9 +83,13 @@ public sealed class ResultPresentationPresenter : IDisposable
         {
             var state = snapshot.Status switch
             {
-                ExecutionStatus.Success or ExecutionStatus.PartialSuccess => ResultPresentationState.Success,
-                ExecutionStatus.Failed or ExecutionStatus.Timeout or ExecutionStatus.Cancelled => ResultPresentationState.Failed,
-                ExecutionStatus.NotExecuted or ExecutionStatus.Running => ResultPresentationState.NotRun,
+                ExecutionStatus.Success => ResultPresentationState.Success,
+                ExecutionStatus.PartialSuccess => ResultPresentationState.PartialSuccess,
+                ExecutionStatus.Failed => ResultPresentationState.Failed,
+                ExecutionStatus.Timeout => ResultPresentationState.Timeout,
+                ExecutionStatus.Cancelled => ResultPresentationState.Cancelled,
+                ExecutionStatus.NotExecuted => ResultPresentationState.NotRun,
+                ExecutionStatus.Running => ResultPresentationState.Running,
                 _ => throw new ArgumentOutOfRangeException(nameof(snapshot), "Unknown execution status.")
             };
             var model = ResultPresentationModel.ForRun(snapshot.Schema, snapshot.Identity, state, reader.Values, _pageSize);
@@ -167,7 +171,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         _root = new FlatResultRow { DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
         Subscribe(_root, () => RefreshRows());
         foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id))) _outputs.Add(GetEntry(node, 1));
-        if(_outputs.Count==0&&model.State!=ResultPresentationState.Failed)_root=null;
+        if(_outputs.Count==0&&model.State==ResultPresentationState.NotRun)_root=null;
         UpdateRootMetadata(names, bindings);
     }
 
@@ -259,19 +263,24 @@ public sealed class ResultPresentationPresenter : IDisposable
         if (entry.More != null) visible.Add(entry.More);
     }
 
-    private string StatusText(ResultPresentationState state) => state switch
+    private string StatusText(ResultPresentationState state)
     {
-        ResultPresentationState.NotRun => _snapshot?.Status == ExecutionStatus.Running ? "运行中" : "未运行",
-        ResultPresentationState.Failed => _snapshot?.Diagnostics.FirstOrDefault() is { } diagnostic ? "失败: " + diagnostic.Message : "失败",
-        _ => _snapshot?.Status == ExecutionStatus.PartialSuccess ? "部分成功" : "成功"
-    };
+        var label=state switch
+        {
+            ResultPresentationState.NotRun=>"未运行",ResultPresentationState.Running=>"运行中",
+            ResultPresentationState.Success=>"成功",ResultPresentationState.PartialSuccess=>"部分成功",
+            ResultPresentationState.Failed=>"失败",ResultPresentationState.Timeout=>"超时",
+            ResultPresentationState.Cancelled=>"已取消",_=>throw new ArgumentOutOfRangeException(nameof(state))
+        };
+        return _snapshot?.Diagnostics.FirstOrDefault() is {} diagnostic?label+": "+diagnostic.Message:label;
+    }
 
     private string ValueText(ResultPresentationNode node) => node.ValueState switch
     {
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",
-        ResultPresentationValueState.ResourcePending => "资源待接入",
-        ResultPresentationValueState.Unavailable => _model!.State == ResultPresentationState.Success ? "值不可用" : StatusText(_model.State),
+        ResultPresentationValueState.ResourcePending => _model!.State is ResultPresentationState.Success or ResultPresentationState.PartialSuccess?"资源待接入":StatusText(_model.State),
+        ResultPresentationValueState.Unavailable => _model!.State is ResultPresentationState.Success or ResultPresentationState.PartialSuccess ? "值不可用" : StatusText(_model.State),
         _ => node.Declaration.Shape switch
         {
             ValueShape.Sequence => node.ChildCount == 0 ? "空序列 (0)" : "[" + node.ChildCount!.Value.ToString(CultureInfo.InvariantCulture) + " 项]",

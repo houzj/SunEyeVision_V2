@@ -2,6 +2,10 @@
 
 - 用户明确要求“设计并行 提高效率”“需要每路独立worktree”，并回复“好吧”。三个原worktree状态均干净，保原分支历史后从e81a6e84切本次专用分支：workflow-timing-footer/codex/image-source-native仅Plugin.Wpf专用ImageSources目录；workflow-overview/codex/image-source-editor仅新工具Wpf；workflow-review/codex/image-source-audit只读核验。87f4唯一写者继续Runtime/Workflow/UI主链，不在同一目录多AI写入。
 - 源条已冻结只读视觉session与封闭不可变请求合同；编辑器用既有draft/InputContent/AcceptCandidate，不复制配置。root统一冻结合同、集成各路，整批接通后才交主线集中同源构建。子路不得写共享合同/主题/Catalog/项目入口，不运行私有Release。主线C13及公共合同继续独占。
+- 最新候选02872a5c及四轨63e5b660已交主线。主线确认本轮C13独占Release002/session76020（仅其报告，不由本线判终态），下一窗口才评审/集成源候选，本线不写主仓。C14正式结果context尚未落地，共享合同由主线写；本线继续UI宿主/sourceWpf及原组合闭包，不造兼容overload。
+- 已核到实际PropertyList→DeclaredResultTable不支持的缺口，交接单明确候选不可人工验收。D02旧缓存无调用链由editor独立worktree集中退役，native只读核原ModuleResultView完整组合/模板/资源和PropertyList树入口。root仅修Host验收在历史重绑后重新查当前FieldId编辑器，避免持旧实例误报；未执行回归。
+- D02已合44a67d83为ca605a4b：六类死链、Main构造/统计/清空和无身份图像回填整体退出，真实执行/声明快照/源资产缓存保留。独立审计确认16个结果管理器及168个Main保留方法体未改；不把旧池Prewarm(1)退出混称解码器预热优化。
+- root宿主结果Model/Presenter现分部分成功、超时、取消，成功空输出保状态，资源缺值的失败不显示“资源待接入”；仅同一publication才复用reader/行，身份相同的新发布会更换诊断。已补真实快照状态/成功空/同run不同发布及partial scalar测试；源码与四C#语法检查无错、diff通过，未语义编译或执行。一次检查自动审批超时未启动，原命令允许的一次重试已成功。共享C14合同/原件树/物理帧适配仍未交付，目标不完成。
 - 本轮唯一设置迁移已接声明字段读取、非持久ImageSourcePolicy、UI编辑/加载与正式接纳，以及历史/复制的Runtime所有权；生产输入字典、保存资源路径、调试、旧类型/测试退出仍在途。此前批量替换脚本被自动审批拒绝且未执行，已改逐文件明确patch；无构建或运行通过主张，旧45项仅原基线成绩。
 - 进一步已将资源Inspect/RebaseCopy切为RuntimeConfiguration.Settings.FileReferences/SelectedReferences；编辑Host移除旧源配置特判，沿Runtime签名/回放/回滚；源单次相机输入补完整ResourceContractRules校验。Runtime SettingsSchema已按原件单“基本参数”页补展示声明；宿主InputContent实际Page定位限制由编辑器路记录，不能伪称原顺序已达标。
 - root本批19个C#候选用已加载Roslyn5.0语法检查0错、项目XML可解析；首次显式加载SDK Roslyn程序集版本冲突后已改核实际解析器并重跑。只是语法，不是语义编译/正式构建。准备中文在途保存点供并行代码整合，未接通的输入/调试/旧工具/测试与新源条适配仍须同批完成，不作为发布或阶段完成。

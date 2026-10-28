@@ -160,6 +160,42 @@ public sealed class ResultPresentationPresenterTests
         Assert.False(rows.Last().IsGroup);
     });
 
+    [Theory]
+    [InlineData(ExecutionStatus.Failed,"失败")]
+    [InlineData(ExecutionStatus.Timeout,"超时")]
+    [InlineData(ExecutionStatus.Cancelled,"已取消")]
+    public void Published_non_success_outcomes_remain_distinct_without_reading_resource_values(ExecutionStatus status,string label) => Sta(() =>
+    {
+        var schema=Schema(new Port("image",TypeRef.ResourceOf(ResourceKind.Image)),new Port("number",DataType.Number));
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),status,new[]{new Diagnostic("test","detail")}));
+        Assert.Equal(3,rows.Count);
+        Assert.All(rows,row=>Assert.Equal(label+": detail",row.DisplayValue));
+    });
+
+    [Fact]
+    public void Successful_empty_output_keeps_its_published_status_visible() => Sta(() =>
+    {
+        var rows=new ObservableCollection<FlatResultRow>();bool has=false;
+        using var presenter=new ResultPresentationPresenter(rows,value=>has=value);
+        presenter.ShowSchema(Schema());Assert.Empty(rows);
+        using var run=Success(Schema(),new());presenter.ShowRun(run.Snapshot);
+        Assert.Equal("成功",Assert.Single(rows).DisplayValue);Assert.True(has);
+    });
+
+    [Fact]
+    public void A_distinct_publication_with_the_same_run_replaces_old_diagnostics() => Sta(() =>
+    {
+        var schema=Schema(new Port("number",DataType.Number));var identity=Identity();
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","first")}));
+        Assert.All(rows,row=>Assert.Equal("超时: first",row.DisplayValue));
+        presenter.ShowRun(DeclaredOutputSnapshot.WithoutValues(schema,1,identity,ExecutionStatus.Timeout,new[]{new Diagnostic("timeout","second")}));
+        Assert.All(rows,row=>Assert.Equal("超时: second",row.DisplayValue));
+    });
+
     [Fact]
     public void Immutable_scalar_formatting_uses_invariant_culture_without_unwrapping_sequences() => Sta(() =>
     {

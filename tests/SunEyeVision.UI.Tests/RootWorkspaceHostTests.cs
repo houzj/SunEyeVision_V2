@@ -331,9 +331,10 @@ public sealed class RootWorkspaceHostTests
   {
    var content=Assert.IsType<ContentControl>(window!.FindName("ContentHost"));
    Assert.Same(page,content.Content);content.Content=null;Pump();content.Content=page;Pump();
-   var picker=SourceDescendants(page!).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>().Single(editor=>editor.FieldId=="source.kind");
+   SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor Picker()=>SourceDescendants(page!)
+    .OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>().Single(editor=>editor.FieldId=="source.kind");
    var before=history.Position;
-   Assert.True(picker.TrySetConstant("camera"));Pump();
+   Assert.True(Picker().TrySetConstant("camera"));Pump();
    Assert.Equal(before,history.Position); // Tool editor is a private draft, never an immediate document writer.
    Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,ImageSourceTestRuntime.Read(node).SourceKind);
    Assert.True(page!.TryCommitEditor(out var error),error);Pump();
@@ -348,12 +349,12 @@ public sealed class RootWorkspaceHostTests
    try
    {
     unrelated.Show();field.SetValue(main,unrelated);
-    Assert.True(picker.TrySetConstant("local"));Pump();
+    Assert.True(Picker().TrySetConstant("local"));Pump();
     Assert.False(page.TryCommitEditor(out _));Assert.Equal(committed,history.Position);
     Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera,ImageSourceTestRuntime.Read(node).SourceKind);
    }
    finally{field.SetValue(main,window);unrelated.Close();}
-   Assert.True(picker.TrySetConstant("camera"));Pump();
+   Assert.True(Picker().TrySetConstant("camera"));Pump();
 
   }
   finally{window!.Close();Pump();}

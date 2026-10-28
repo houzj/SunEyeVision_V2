@@ -11,5 +11,6 @@
 - 已执行构建与测试：本批只静态语法/XML/diff；旧6ae正式45+Host1成绩仅历史基础，不能套新工具。新15项调试、10项格式声明及原UI/Runtime用例已进正式ImageSourceCases，尚未运行。四轨原场景12/10/8/10保留，O06历史SDK Blob链自身有效性需另核，不因源迁移宣称ROI通过。
 - 构建输入：新增Runtime/Wpf及Runtime.Tests项目需要主线更新restore资产后执行规定UI/全量Release --no-restore；宿主UI静态构建依赖新Wpf，角色组件部署宿主根。Seal脚本精确检查后退出旧plugins/SunEyeVision.Tool.ImageLoad。测试组件EnsureComponentLoaded只认正式宿主根；不复制DLL、不构建私有Release。
 - 人工验收结果：未启动新版本、未验收；真实VS和硬件结果单列。
+- 结果消费者明确缺口：ImageSource声明PropertyList，现Wpf工厂仍只构造仅支持StandardTable的DeclaredResultTable，当前选节点结果路径会拒绝此组合，不能人工验收。主线已确认C14上下文尚未落地且共享合同归其写入，下一批沿原三列树接PropertyList，不伪装图像资源或加旧Update兼容重载；此缺口保在构建/验收记录，不用catch/null掩盖。
 - 已知风险或禁止改动：Group、循环语义、Blob业务及主线用户Blob XAML不动；不以设计器替身代实际VS；不能提前删除临时worktree。prepare/accept已分离以防pending标量嵌套Apply；源工具入口须同时核正式ProductionEditorContext身份，失效页不能打开当前设备管理。
 - 下一步：主线协调下一唯一窗口的源码集成和集中语义构建/相称回归；工作流线继续D/E完整结果组合设计与消费者实施，不将本单当最终交付。

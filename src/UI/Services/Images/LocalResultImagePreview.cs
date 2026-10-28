@@ -24,7 +24,7 @@ internal sealed class LocalResultImagePreview : IDisposable
     public static Task<LocalResultImagePreview> LoadAsync(string path, CancellationToken token = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var absolute = Path.GetFullPath(path);
+        var absolute = System.IO.Path.GetFullPath(path);
         return Task.Run(() => Decode(absolute, token), token);
     }
     private static LocalResultImagePreview Decode(string path, CancellationToken token)

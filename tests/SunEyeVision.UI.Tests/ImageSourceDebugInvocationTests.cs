@@ -134,8 +134,18 @@ public sealed class ImageSourceDebugInvocationTests
         using(var missing=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,fallback)))
             Assert.False(missing.Success);
         var overrides=new Dictionary<string,IReadOnlyDictionary<string,object?>>{{f.Node.Id,new Dictionary<string,object?>{{"input.local-address",path},{"input.sequence",7L}}}};
-        using var bypass=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,fallback,nodeParameterOverrides:overrides));
-        Assert.False(bypass.Success);Assert.Equal(7,ImageSourceTestRuntime.Read(f.Node).SNInitialValue);
+        var rejected=await Assert.ThrowsAsync<ArgumentException>(async()=>
+            await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,fallback,nodeParameterOverrides:overrides)));
+        Assert.Contains("Unknown Runtime setting override: input.local-address",rejected.Message);
+        Assert.Equal(7,ImageSourceTestRuntime.Read(f.Node).SNInitialValue);
+        Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
+        // Rejection must drain the same engine root slot; only an explicit frozen scheduler input may run.
+        using var admitted=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(f.Flow.Id,sourceInputs:
+            new Dictionary<string,ImageSourceRunInput>{{f.Node.Id,new(path,7)}}));
+        Assert.True(admitted.Success,string.Join(";",admitted.Errors));
+        var output=Assert.IsType<RuntimeToolResults>(admitted.NodeResults[f.Node.Id].Result);
+        Assert.Equal(7L,output.Values["output.sequence"]);
+        Assert.Equal(new byte[]{50,50},Image(output).CopyPixels());
     }
 
     private sealed class TrackedFrame : IDisposable
@@ -258,8 +268,15 @@ public sealed class ImageSourceDebugInvocationTests
         var abandoned=f.Capture();abandoned.Dispose();abandoned.Dispose();
         await Assert.ThrowsAsync<ObjectDisposedException>(async()=>{await abandoned.ExecuteAsync();});
         using var invocation=f.Capture();var result=await invocation.ExecuteAsync();
-        var image=Image(result);using var pixels=image.AcquirePixels();using var domain=pixels.AcquireDomainReader();
-        Release(result);Assert.Equal(new byte[]{60,60},pixels.GetRow(0).ToArray());Assert.Equal(image.Frame,domain.SourceFrame);
+        var image=Image(result);var publishedFrame=image.Frame;
+        using var pixels=image.AcquirePixels();using var domain=pixels.AcquireDomainReader();
+        var expectedRuns=domain.ReadRuns(0,4096).ToArray();
+        Release(result);Assert.Throws<ObjectDisposedException>(()=>image.Frame);
+        Assert.Equal(new byte[]{60,60},pixels.GetRow(0).ToArray());
+        Assert.Equal(publishedFrame,pixels.Frame);Assert.Equal(publishedFrame,domain.SourceFrame);
+        pixels.Dispose();Assert.Throws<ObjectDisposedException>(()=>pixels.GetRow(0).ToArray());
+        Assert.Equal(expectedRuns,domain.ReadRuns(0,4096).ToArray());
+        domain.Dispose();Assert.Throws<ObjectDisposedException>(()=>domain.SourceFrame);
         await Assert.ThrowsAnyAsync<Exception>(async()=>{await invocation.ExecuteAsync();});
         invocation.Dispose();Assert.Equal(0,invocation.Identity.Owner.ActiveRuns);Assert.Null(f.Node.LastResult);Assert.Null(f.Node.OutputCache);
     }

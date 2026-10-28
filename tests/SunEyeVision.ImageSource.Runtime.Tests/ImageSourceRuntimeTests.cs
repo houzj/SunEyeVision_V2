@@ -132,10 +132,16 @@ public sealed class ImageSourceRuntimeTests
         Assert.Equal(context.Identity,image.Frame.ProducerRun);Assert.Equal(ImageSourceOutput.Image,image.Frame.SourcePortId);
         Assert.Equal(image.Frame,image.EffectiveDomain.SourceFrame);Assert.Equal(7L,values[ImageSourceOutput.Sequence]);
         Assert.Equal("frame-7",values[ImageSourceOutput.FrameId]);Assert.Equal("time-7",values[ImageSourceOutput.Timestamp]);
+        var publishedFrame=image.Frame;
         using var pixels=image.AcquirePixels();using var runs=pixels.AcquireDomainReader();
         Assert.Equal(new[]{new RegionRun(0,1,1)},runs.ReadRuns(0,4096).ToArray());
         output.Dispose();output.Dispose();Assert.Throws<ObjectDisposedException>(()=>output.ToValues());
-        Assert.Equal(new byte[]{10,30},pixels.GetRow(0).ToArray());Assert.Equal(image.Frame,runs.SourceFrame);
+        Assert.Throws<ObjectDisposedException>(()=>image.Frame);
+        Assert.Equal(new byte[]{10,30},pixels.GetRow(0).ToArray());
+        Assert.Equal(publishedFrame,pixels.Frame);Assert.Equal(publishedFrame,runs.SourceFrame);
+        pixels.Dispose();Assert.Throws<ObjectDisposedException>(()=>pixels.GetRow(0).ToArray());
+        Assert.Equal(new[]{new RegionRun(0,1,1)},runs.ReadRuns(0,4096).ToArray());
+        runs.Dispose();Assert.Throws<ObjectDisposedException>(()=>runs.SourceFrame);
         Assert.Equal(new byte[]{10,30},inputImage.CopyPixels());
     }
 

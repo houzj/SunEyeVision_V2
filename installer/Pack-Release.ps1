@@ -91,17 +91,19 @@ try {
         '-p:ContinuousIntegrationBuild=true','-p:UseSharedCompilation=false','-p:PackagingRuntimeIdentifier=win-x64','-p:SelfContained=true')
     Invoke-ReleaseNative dotnet (@('restore',"$root/SunEyeVision.slnx",'--locked-mode')+$buildArgs)
     Invoke-ReleaseNative dotnet (@('build',"$root/SunEyeVision.slnx",'-c','Release','--no-restore','-m:1','-v:minimal')+$buildArgs)
-    $filter='FullyQualifiedName~Communication|FullyQualifiedName~OpcUa|FullyQualifiedName~CameraCategory|FullyQualifiedName~ImageSourceSavePersistence|FullyQualifiedName~NumericUpDownBinding|FullyQualifiedName~TcpServerBroadcast|FullyQualifiedName~AboutWindowTests|FullyQualifiedName~ApplicationLifetimeGateTests|FullyQualifiedName~SolutionManagementTests|FullyQualifiedName~SolutionManagerUiTests|FullyQualifiedName~SolutionTransitionTests|FullyQualifiedName~ContinuousRunStopNotificationTests|FullyQualifiedName~BaselineIntegrationTests|FullyQualifiedName~SingleInstanceCoordinatorTests|FullyQualifiedName~BrandingLogoTests'
-    Invoke-ReleaseNative dotnet (@('test',"$root/tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj",'-c','Release','--no-build','--no-restore',
-        '--filter',$filter,'--logger','trx','--results-directory',"$stage/tests")+$buildArgs)
+    foreach($testProject in @('tests/SunEyeVision.ImageSource.Runtime.Tests/SunEyeVision.ImageSource.Runtime.Tests.csproj','tests/SunEyeVision.Tool.BlobAnalysis.Tests/SunEyeVision.Tool.BlobAnalysis.Tests.csproj')) {
+        Invoke-ReleaseNative dotnet (@('test',(Join-Path $root $testProject),'-c','Release','--no-build','--no-restore',
+            '--logger','trx','--results-directory',"$stage/tests")+$buildArgs)
+    }
     $tests=Get-ReleaseTestSummary "$stage/tests"
     $uiProject=$projects | Where-Object {$_.Name -eq 'SunEyeVision.UI.csproj'} | Select-Object -First 1
     $frameworkOriginPath="$stage/release-framework-origin.tsv"
     Invoke-ReleaseNative dotnet (@('publish',$uiProject.FullName,'-c','Release','-r','win-x64','--self-contained','true','--no-build','--no-restore',
         '-p:PublishSingleFile=false',"-p:PublishDir=$stage/app/","-p:ReleaseFrameworkOriginPath=$frameworkOriginPath")+$buildArgs)
     $app="$stage/app"
-    $tools=@($projects | Where-Object {(Get-Content $_.FullName -Raw) -match '<IsToolPlugin>true</IsToolPlugin>'})
-    Assert-ReleasePayload $app $releaseVersion $tools.BaseName -IconSourceRoot "$root/src/UI/Icons"
+    $components=@(Get-ProductToolComponents)
+    Remove-RetiredProductToolOutputs -AppPath $app
+    Assert-ReleasePayload $app $releaseVersion $components -IconSourceRoot "$root/src/UI/Icons"
     Get-ChildItem $app -Recurse -File | Where-Object {$_.Extension -in '.pdb','.log' -or
         ($_.Extension -eq '.xml' -and (Test-Path (Join-Path $_.DirectoryName ($_.BaseName+'.dll')))) -or $_.Name -eq '.halcon-native-deployed'} | Remove-Item -Force
     if ($signed) {
@@ -110,7 +112,7 @@ try {
             Invoke-ReleaseNative $SignToolPath @('verify','/pa',$file.FullName)
         }
     }
-    $payload=New-ReleasePayload -AppPath $app -BuildId $buildId -SourceCommit $head -ArtifactVersion $artifactVersion -ExpectedPluginAssemblies $tools.BaseName -FrameworkOriginPath $frameworkOriginPath
+    $payload=New-ReleasePayload -AppPath $app -BuildId $buildId -SourceCommit $head -ArtifactVersion $artifactVersion -ProductComponents $components -FrameworkOriginPath $frameworkOriginPath
     $payloadSha256=Write-ReleasePayload -AppPath $app -Payload $payload
     $probePath="$stage/probe.json"
     $probe=Start-Process "$app/SunEyeVision.UI.exe" -ArgumentList @('--toolbox-probe',"`"$probePath`"") -PassThru -WindowStyle Hidden
@@ -146,7 +148,7 @@ try {
         dirtyFiles=$dirty;sourceSnapshot=$snapshot;versionSourceBeforeSha256=$sourceHash;buildId=$buildId;schemaVersion=$identity.SchemaVersion;
         toolContractVersion=$runtime.toolContract;runtime='win-x64';selfContained=$true;signed=$signed;installationVerified=$installationVerified;
         defaultTheme=$runtime.defaultTheme;displayName=$branding.DisplayName;defaultInstallDirectory="{autopf}\$($branding.DefaultDir)";
-        installerAppId=$branding.AppId;associationId=$branding.AssociationId;installer="$setupName.exe";sha256='';plugins=@($tools.BaseName);tests=$tests;
+        installerAppId=$branding.AppId;associationId=$branding.AssociationId;installer="$setupName.exe";sha256='';toolComponents=@($components);tests=$tests;
         icons=@{application='Icons/suneyevision.ico';shortcut='Icons/suneyevision.ico';solution='Icons/solution.ico';sourceHashesVerified=$true};
         externalPrerequisites=@('HALCON runtime license','Camera vendor SDK where required');
         payload=$payload;payloadFileSha256=$payloadSha256}

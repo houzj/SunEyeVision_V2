@@ -6,6 +6,8 @@
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutDir>$(WorktreeBasePath)tests/bin/ProductRuntime/$(MSBuildProjectName)/$(Configuration)/</OutDir>
+    <OutputPath>$(OutDir)</OutputPath>
     <AssemblyName>SunEyeVision.BlobAnalysis.Runtime.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
@@ -32,6 +34,11 @@
   </ItemGroup>
   <!-- 工具插件测试共享加载器：ModuleInitializer 从 plugins/<Tool>/ 加载最新工具 dll -->
   <ItemGroup>
-    <Compile Include="..\_shared\ToolPluginTestLoader.cs" Link="_shared\ToolPluginTestLoader.cs" />
+    <Compile Include="..\_shared\ProductRuntimeTestHost.cs" Link="_shared\ProductRuntimeTestHost.cs" />
   </ItemGroup>
+  <Target Name="UseFormalProductAssemblies" BeforeTargets="_CopyFilesMarkedCopyLocal">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').StartsWith('SunEyeVision.'))" />
+    </ItemGroup>
+  </Target>
 </Project>

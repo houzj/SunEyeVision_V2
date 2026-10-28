@@ -21,7 +21,7 @@ internal static class S2DocumentEditingCases
     [STAThread] private static int Main()
     {
         var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-        var plugins=new PluginManager();plugins.LoadPlugins(Path.Combine(product,"plugins"));PluginLoader.MarkAsLoaded();
+        var plugins=new PluginManager();plugins.LoadPlugins();PluginLoader.MarkAsLoaded();
         plugins.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(t=>t.Id));
         Check("真实四工具run/declared/pixel三级所有权与输入保留",()=>WorkflowOwners(plugins));
         foreach(var id in new[]{"ImageFilter","ImageThreshold","Morphology"})Check(id+"失败部分输出释放且输入不释放",()=>PartialFailure(id));

@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','DesignTime','Components','FieldEditing','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2')
 $ErrorActionPreference='Stop'
@@ -12,7 +12,6 @@ $attempt=1;while(Test-Path -LiteralPath (Join-Path $dir ('attempt-{0:d3}' -f $at
 $logDir=Join-Path $dir ('attempt-{0:d3}' -f $attempt)
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $references=@(Get-ChildItem -LiteralPath $product -File -Filter 'SunEyeVision*.dll')
-$references+=Get-Item (Join-Path $product 'plugins/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.dll')
 $references+=Get-Item (Join-Path $product 'halcondotnetxl.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Json.dll')
 $references+=Get-Item (Join-Path $product 'System.Text.Encodings.Web.dll')

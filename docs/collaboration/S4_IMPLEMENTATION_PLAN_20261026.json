@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "最新决定：隔离旧体系，按正确新架构逐个迁移；当前先以图像源ImageLoad和BlobAnalysis贯通完整新链，未迁移工具保留源码与证据、退出产品注册/工具箱/加载/构建部署/发布。正在整体依赖与消费者设计，尚未实施隔离。当前b87ed9ea两构建零错、EXE正常；新生产回归249项228过21败，未验收，失败按新链归属集中处理。",
+  "current": "产品隔离候选已集中落地：唯一四组件清单、默认25工程零旧工具、schema2精确组件准入、正式工具箱两工具；规定UI/full零错误，最终载荷准入8/0，设计101/0及真实编辑10/0同源SHA核，Runtime图像源21/0及Blob9/0。旧失败保留；结果旧包装、ImageSources21失败、其余控件及VS/用户验收仍未完，Blob业务未进入第二阶段。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -8337,7 +8337,7 @@
   "architectureIsolationPlan": {
     "decision": "采用隔离旧体系、按正确新架构逐个迁移。当前产品先以ImageLoad图像源与BlobAnalysis贯通完整原型；未迁移工具退出产品主链，保留源码及历史证据。公共职责与新链依赖现在整理，不等全部工具迁完。",
     "authority": "侧边对话2026-10-28转达用户原话“我的意思就是要隔离优化，用最正确的架构，一个一个迁移，没迁移的先隔离出去”；本聊天用户要求处理新消息并明确总监决定。",
-    "status": "已作实施方向决定并纳入原方案；当前仅盘点/整体设计，尚未执行旧工具隔离，不把已接入的两个工具称为验收通过。",
+    "status": "I1产品边界代码已集中切换并经正式Release准入验证；默认25工程、零旧工具及旧工具反向引用。Runtime旧结果包装仍在，完整架构迁移与两阶段目标均未完成。",
     "baseline": {
       "sourceCommit": "b87ed9ea",
       "ui": "UI003 0错误6561警告143.34秒",
@@ -8479,6 +8479,79 @@
         "全部完成后才删除剩余旧工程/旧路径。公共框架设计与职责整理在I0/I1完成，不推迟到此。"
       ]
     ],
-    "nextAction": "先补全I0真实引用与构建/注册/结果包装消费者清单再实施；不继续独立扩张C17局部功能、历史新功能或为旧工具逐点修桥。已验证成果/失败全部保留，两阶段总目标不据此缩减。"
+    "nextAction": "在已隔离产品边界上，先固定新Runtime结果权威合同及正式/调试/输入绑定/树表/图像/生命周期全部消费者的整链替换设计，再集中去旧结果包装、承接21项失败；Blob业务仍按第一阶段门禁冻结，C01—C17和原两阶段最终清单不删。",
+    "sourceAudit": {
+      "evidence": "docs/collaboration/evidence/PRODUCT_ISOLATION_INVENTORY_20261028.json",
+      "reproduce": "scripts/documentation/audit_product_isolation.py",
+      "findings": [
+        [
+          "默认解决方案",
+          "63个工程，其中20个为IsToolPlugin旧工具，4个为新Runtime/Wpf组件。"
+        ],
+        [
+          "测试反向依赖",
+          "17个默认测试工程可经ProjectReference带入旧工具；其中UI.Tests直接引用5个旧工具。仅从解决方案删除旧工具仍不能隔离。"
+        ],
+        [
+          "UI构建隐式扩张",
+          "Release.Payload.targets解析解决方案并额外构建所有IsToolPlugin工具；Seal与Pack又使用同一旧工具集合封装发布，必须整批切换。"
+        ],
+        [
+          "工具箱来源",
+          "ToolboxViewModel除部署条目外还注入VM目录占位；产品工具目录必须只展示当前实际准入工具，参考目录留在证据。"
+        ],
+        [
+          "基线与当前分开",
+          "上表为隔离前63工程的原始盘点，证据保留；本批当前25工程及正式产物结果见下表，不覆盖旧源码SHA与失败记录。"
+        ]
+      ],
+      "limitation": "本清单保留条件引用，属于源码引用上界，不等于MSBuild求值、运行时加载闭包或Release隔离验收；共享层用途及动态结果消费者仍需一并核收。"
+    },
+    "i1ImplementationDesign": {
+      "componentAuthority": "product/ToolComponents.props只声明当前准入工程/组件/工具/角色/入口/伴随关系；UI引用与封包同源，封包逐一比较工程和PE声明；运行时仅消费封包内productComponents与entries的精确一致集合。",
+      "payload": "仅支持schema2；不保留expectedPluginAssemblies、ToolAttribute生产者、ToolItemInfo扫描和SDK插件目录装载分支。Runtime必需，Editor在封包后缺席允许，实际存在仍校验SHA/身份。",
+      "solutionAndTests": "默认解决方案退出20旧工具及其17个直接/间接引用测试；旧Infrastructure测试依赖已退出的SDK加载合同，同入SunEyeVision.Legacy.slnx源码索引。仍适用的新行为断言及249项21失败全部保留，后续迁到新入口，不算删除失败通过。",
+      "buildAndPackage": "UI按清单引用四组件；发布targets不再按IsToolPlugin枚举解决方案；Pack直接验证新Runtime测试及Blob测试，不使用已隔离UI.Tests。旧SDK工程主动构建明确拒绝，不再能污染正式输出。",
+      "loaderAndDirectory": "ToolDirectoryCatalog只接纳已准入Runtime元数据，分类保留共享分类资源，工具箱仅显示含实际工具的分类；删除目录SDK加载与桥接入口。",
+      "ownership": "不改算法/ROI/新模型或用户Blob XAML；共享非视觉SDK消费者与RuntimeToolResults退出属I2，当前不盲删。既有资源lease语义保持。",
+      "verification": "先静态清单/工程图/MSBuild求值及脚本语法，再串行规定UI/full，正式EXE探针核只含两工具、四组件SHA。缺Runtime/可选Wpf和新链行为仍需正式回归，不套旧产物成绩。"
+    },
+    "currentBatch": {
+      "evidence": "docs/collaboration/evidence/PRODUCT_ISOLATION_RELEASE_20261028.json",
+      "results": [
+        [
+          "组件清单",
+          "新增product/ToolComponents.props，四组件统一用于UI工程引用、封包工程/PE校验和schema2载荷；运行时只准入封包中的精确组件集合。"
+        ],
+        [
+          "源码/构建隔离",
+          "默认63→25工程；20旧工具及18个旧依赖/加载合同测试留在SunEyeVision.Legacy.slnx源码索引；默认引用图无旧工具。旧SDK工程主动构建明确拒绝，源码保留。"
+        ],
+        [
+          "发现/工具箱/发布",
+          "退出旧SDK目录加载、ALC桥接、ToolItemInfo扫描及VM目录占位；正式工具箱仅ImageLoad/BlobAnalysis两工具两有效分类。569载荷文件，不再有plugins目录。"
+        ],
+        [
+          "规定构建",
+          "UI001：0错误6474警告85.87秒；全量003：0错误731警告23.26秒。全量001两旧签名编译错误原日志保留，消费者直接迁新入口。"
+        ],
+        [
+          "正式同源准入",
+          "最终全量003后8项通过：两工具四组件、两Wpf同时缺席、逐个Runtime缺席拒绝、旧schema/未批准入口/SDK生产者字段拒绝、原SHA还原。正式程序实际启动退出。"
+        ],
+        [
+          "设计与编辑",
+          "独立设计101项及真实参数窗口10项通过；全量003后逐一比对19条已加载产品记录SHA未变，保同源证明；不替代VS实际设计器或用户验收。"
+        ],
+        [
+          "测试宿主修正",
+          "新Runtime测试不再使用旧ToolPluginTestLoader；独立测试输出不复制产品程序集，从正式载荷预绑定并核SHA/Location。图像源21/0、Blob9/0；旧共享目录Blob2过7败原日志保留，仅改宿主未改算法/断言。"
+        ],
+        [
+          "未完成边界",
+          "既有ImageSources249项21失败保留、本批未重跑；新执行链仍需退出RuntimeToolResults/ToolResults包装，公共SDK非视觉合同尚未整链收敛；干净安装发布、第一阶段其余控件/组合、VM同态及真实人工验收仍未完。"
+        ]
+      ]
+    }
   }
 }

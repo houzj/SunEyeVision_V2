@@ -30,7 +30,7 @@ internal static class S2DocumentEditingCases
         Directory.CreateDirectory(Root);
         try
         {
-            Plugins=new PluginManager();Plugins.LoadPlugins(Path.Combine(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!,"plugins"));PluginLoader.MarkAsLoaded();
+            Plugins=new PluginManager();Plugins.LoadPlugins();PluginLoader.MarkAsLoaded();
             ImagePath=Path.Combine(Root,"roi-source.bmp");
             using(var image=HalImage.CreateFromBytes(Enumerable.Repeat((byte)200,64*48).ToArray(),64,48,1))
                 HOperatorSet.WriteImage(image.Unwrap(),"bmp",0,ImagePath);

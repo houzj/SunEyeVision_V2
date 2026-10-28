@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Reflection;
 using System.IO;
 using SunEyeVision.Core.Services.Serialization;
@@ -33,7 +33,7 @@ internal static class S2DocumentEditingCases
         try
         {
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            var plugins=new PluginManager();plugins.LoadPlugins(Path.Combine(product,"plugins"));PluginLoader.MarkAsLoaded();
+            var plugins=new PluginManager();plugins.LoadPlugins();PluginLoader.MarkAsLoaded();
             Case("单/双阈值闭区间端点、等阈值、反向和实际值",()=>{
                 using var resources=new FrozenOutputResources();using var input=Gray(new byte[]{0,99,100,101,199,200,201,255});
                 using var single=new BlobSession().Execute(Basic with{Threshold=100},input,resources);

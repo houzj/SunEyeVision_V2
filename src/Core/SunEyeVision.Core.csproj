@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services/PluginManager.cs" />
     <!-- 依赖反转：Core依赖Plugin.Abstractions（契约层） -->
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
   </ItemGroup>

@@ -15,9 +15,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     /// </summary>
     /// <remarks>
     /// 简化后的设计：
-    /// - 扫描带有 [Tool] 特性的类
-    /// - 直接注册到 ToolRegistry
-    /// - 不再需要中间的 Plugin 包装类
+    /// - 只加载正式载荷声明的Runtime及可选Wpf组件
+    /// - 产品目录、工具箱与组件声明使用同一准入集合
     /// </remarks>
     public class PluginManager : IPluginManager
     {
@@ -69,177 +68,42 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
         }
 
-        /// <summary>
-        /// 加载所有插件
-        /// </summary>
+        /// <summary>只加载当前宿主正式载荷声明的Runtime与可选编辑器。</summary>
         public void LoadPlugins()
         {
-            _logger.LogInfo("开始加载插件...");
-            // 插件加载逻辑由 PluginLoader 处理
-            _logger.LogInfo("插件加载完成");
-        }
-
-        /// <summary>
-        /// 从指定目录加载所有插件
-        /// </summary>
-        /// <param name="pluginDirectory">插件目录路径</param>
-        public void LoadPlugins(string pluginDirectory)
-        {
-            _logger.LogInfo($"开始从目录加载插件: {pluginDirectory}");
             LastAdmissionError=null;_lastRejectedCount=0;_releaseAuthority=null;_admissionFailures.Clear();
             try
             {
-                _releaseAuthority=new ReleasePayloadAuthority(AppContext.BaseDirectory);
-                var components=_releaseAuthority.LoadToolComponents();
-                var registration=_toolCatalog.PrepareRegistration(Array.Empty<Type>(),components);
-                using var commit=registration.EnterCommit();commit.Publish();
-            }
-            catch(Exception ex)
-            {
-                LastAdmissionError=ex.GetType().Name+": "+ex.Message;
-                _logger.LogError("[发布准入] "+LastAdmissionError);
-                return;
-            }
-
-            if (!Directory.Exists(pluginDirectory))
-            {
-                LastAdmissionError="Plugin directory does not exist: "+pluginDirectory;
-                _logger.LogInfo($"插件目录不存在: {pluginDirectory}");
-                return;
-            }
-
-            // Runtime组件已完成正式准入；SDK目录声明仍按需加载。
-            try
-            {
-                var directory=new ToolDirectoryCatalog(pluginDirectory,Path.Combine(AppContext.BaseDirectory,"ToolGroups.xml"),ToolRegistry.GetRuntimeDirectoryTools(),_releaseAuthority.VerifyApprovedFile);
-
-                ToolRegistry.ConfigureDirectory(directory,EnsureToolLoaded);
-                _logger.LogInfo($"目录发现完成：{directory.Groups.Count}个分类、{directory.ToolIds.Count}个工具；Runtime已准入，SDK组件按需加载。");
-            }
-            catch(Exception ex) { LastAdmissionError=ex.Message; _logger.LogError("工具目录读取失败："+ex.Message); }
-        }
-
-        private readonly object _loadGate=new();
-        private readonly HashSet<string> _loadedPaths=new(StringComparer.OrdinalIgnoreCase);
-        private readonly HashSet<string> _loadingPaths=new(StringComparer.OrdinalIgnoreCase);
-        private void EnsureToolLoaded(string toolId)
-        {
-            lock(_loadGate)
-            {
-                var tool=ToolRegistry.DirectoryCatalog?.Find(toolId);
-                if(tool is null)return;
-                if(tool.Kind==DirectoryToolKind.Runtime)
+                var authority = new ReleasePayloadAuthority(AppContext.BaseDirectory);
+                var components = authority.LoadToolComponents();
+                var registration = _toolCatalog.PrepareRegistration(Array.Empty<Type>(), components);
+                var declarations = components.Where(c => c.Metadata.Role == SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).Select(c =>
                 {
-                    if(!ToolRegistry.HasRuntime(toolId))throw new InvalidOperationException("Runtime目录缺少已准入组件："+toolId);
-                    return;
-                }
-                if(_loadedPaths.Contains(tool.AssemblyPath))return;
-                if(!_loadingPaths.Add(tool.AssemblyPath))throw new InvalidOperationException("工具加载发生递归："+toolId);
-                try
+                    var catalog = ((SunEyeVision.Plugin.Contracts.IToolCatalogProvider)Activator.CreateInstance(c.EntryType)!).Catalog;
+                    return new DirectoryTool(c.Metadata.ToolId, catalog.DisplayName, catalog.Category, catalog.Order,
+                        catalog.IconKey, catalog.Description, c.EntryType.FullName!, c.EntryType.Assembly.Location, true);
+                }).ToArray();
+                var directory = new ToolDirectoryCatalog(Path.Combine(AppContext.BaseDirectory, "ToolGroups.xml"), declarations, authority.VerifyApprovedFile);
+                // 分类、组件和所有校验先完成，之后才发布注册和目录。
+                using (var commit = registration.EnterCommit())
                 {
-                    if(LoadPlugin(tool.AssemblyPath)!=PluginLoadOutcome.Loaded)
-                        throw new InvalidOperationException("工具组件创建准备失败："+toolId+"；"+_admissionFailures.LastOrDefault());
-                    _loadedPaths.Add(tool.AssemblyPath);
+                    commit.Publish();
+                    ToolRegistry.ConfigureDirectory(directory, EnsureToolLoaded);
                 }
-                finally { _loadingPaths.Remove(tool.AssemblyPath); }
-            }
-        }
-        /// <summary>单个插件的加载结果（用于汇总"成功 / 未加载"计数）。</summary>
-        private enum PluginLoadOutcome
-        {
-            /// <summary>已加载并至少注册了一个工具。</summary>
-            Loaded,
-
-            /// <summary>被拒绝（契约不兼容 / 依赖缺失 / 无工具类型）—— 只跳过它自己。</summary>
-            Rejected,
-        }
-
-        /// <summary>
-        /// 在**独立隔间**中加载单个插件DLL。
-        /// </summary>
-        /// <remarks>
-        /// 关键顺序与理由：
-        /// <list type="number">
-        /// <item><b>先隔间、后加载</b>：契约 / 框架模块走宿主回落，保证 <c>IToolPlugin</c> 类型身份唯一；</item>
-        /// <item><b>先核对证件、后扫描类型</b>：契约版本不符时给出**可自助修复**的原因；
-        ///   若反过来先 <c>GetTypes()</c>，会因新版本依赖缺失而抛出"找不到程序集"的误导性异常；</item>
-        /// <item><b>失败只跳过该插件</b>（Fail-Forward）：坏插件不影响其它插件与宿主启动。</item>
-        /// </list>
-        /// </remarks>
-        private PluginLoadOutcome LoadPlugin(string dllPath)
-        {
-            var pluginFileName = Path.GetFileName(dllPath);
-
-            try
-            {
-                var context = new PluginLoadContext(dllPath,_releaseAuthority??throw new InvalidOperationException("Release authority is unavailable."));
-                var assembly = context.LoadFromAssemblyPath(dllPath);
-
-                // 证件核对（ToolContract）：判定依据是插件程序集显式契约元数据，
-                // 与 CLR AssemblyVersion 分离。
-                var pluginContractVersion = ToolContract.GetPluginContractVersion(assembly);
-                if (!ToolContract.IsCompatible(pluginContractVersion))
-                {
-                    _admissionFailures.Add(pluginFileName+": "+ToolContract.Describe(pluginContractVersion));
-                    _logger.LogError($"[插件契约] 拒绝加载 {pluginFileName}：{ToolContract.Describe(pluginContractVersion)}");
-                    return PluginLoadOutcome.Rejected;
-                }
-
-                Type[] types;
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    // 依赖不全时把**每个**加载异常都列出来，否则只有一句"类型加载失败"，无从下手
-                    var details = string.Join("; ",
-                        ex.LoaderExceptions.Where(e => e != null).Select(e => e!.Message).Distinct());
-                    _admissionFailures.Add(pluginFileName+": type scan failed: "+details);
-                    _logger.LogError($"[插件] {pluginFileName} 类型扫描失败（依赖缺失？）: {details}");
-                    return PluginLoadOutcome.Rejected;
-                }
-
-                var toolTypes = types
-                    .Where(t => t.GetCustomAttribute<ToolAttribute>() != null && !t.IsAbstract)
-                    .ToArray();
-
-                if (toolTypes.Length == 0)
-                {
-                    _admissionFailures.Add(pluginFileName+": no declared tool types.");
-                    _logger.LogWarning($"[插件] {pluginFileName} 未发现带 [Tool] 的工具类型"
-                        + "（约定：主程序集须与所在目录同名，请确认拷入的是工具主程序集）");
-                    return PluginLoadOutcome.Rejected;
-                }
-
-                _releaseAuthority.VerifyToolSet(dllPath,toolTypes);
-                var components=_releaseAuthority.LoadToolComponents(toolTypes.Select(t=>t.GetCustomAttribute<ToolAttribute>()!.Id).ToHashSet(StringComparer.Ordinal));
-
-                // Prepare the whole assembly before any tool, serializer or WPF bridge becomes visible.
-                var registration=_toolCatalog.PrepareRegistration(toolTypes,components);
-                var bridge=context.PrepareBridge();
-                using(var catalogCommit=registration.EnterCommit())
-                using(var bridgeCommit=bridge.EnterCommit())
-                {
-                    catalogCommit.Publish();
-                    bridgeCommit.Publish();
-                }
-                foreach(var toolType in toolTypes)_logger.LogInfo($"已加载工具: {toolType.Name}");
-                // 可诊断输出（本次事故的盲区）：把"目录里带了什么"与"实际在隔间里解析了什么"分开记。
-                // 否则"工具自带了某库、却被宿主共享"这类情况完全不可见 —— 而这正是
-                // 「[JsonDerivedType] 特性读不到 ⇒ 判别符未注册」那类问题的第一现场。
-                _logger.LogInfo($"[插件] {pluginFileName}：隔间内解析依赖 {context.LocallyResolvedDependencies.Count} 个"
-                    + "（其余同名副本由宿主提供/未被使用）");
-
-                return PluginLoadOutcome.Loaded;
+                _releaseAuthority = authority;
+                _logger.LogInfo($"产品组件准入完成：{directory.ToolIds.Count}个工具。");
             }
             catch (Exception ex)
             {
-                _admissionFailures.Add(pluginFileName+": "+ex.GetType().Name+": "+ex.Message);
-                // 报错优先（rule-008）：绝不静默吞掉加载失败
-                _logger.LogError($"[插件] 加载失败: {pluginFileName} - {ex.GetType().Name}: {ex.Message}");
-                return PluginLoadOutcome.Rejected;
+                LastAdmissionError = ex.GetType().Name + ": " + ex.Message;
+                _logger.LogError("[发布准入] " + LastAdmissionError);
             }
+        }
+
+        private void EnsureToolLoaded(string toolId)
+        {
+            if (ToolRegistry.DirectoryCatalog?.Find(toolId) is not null && !ToolRegistry.HasRuntime(toolId))
+                throw new InvalidOperationException("产品目录缺少已准入Runtime组件：" + toolId);
         }
 
         /// <summary>
@@ -248,7 +112,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         public void UnloadPlugins()
         {
             _logger.LogInfo("开始卸载插件...");
-            lock(_loadGate) { _loadedPaths.Clear(); _loadingPaths.Clear(); }
             _plugins.Clear();
             _toolCatalog.Clear();
             _logger.LogInfo("插件卸载完成");

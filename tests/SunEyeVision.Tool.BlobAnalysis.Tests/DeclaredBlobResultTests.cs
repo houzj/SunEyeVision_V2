@@ -17,7 +17,8 @@ public sealed class DeclaredBlobResultTests
 {
     private static WorkflowExecutionEngine Engine(BlobSettings settings,out SunEyeVision.Workflow.Workflow flow,out WorkflowNodeBase node)
     {
-        Assert.True(PluginLoader.LoadPlugins(System.IO.Path.Combine(SunEyeVision.TestShared.ToolPluginTestLoader.HostDebugRoot,"plugins")));
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot);
+        Assert.True(PluginLoader.LoadPlugins());
         var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger);
         flow=workflows.CreateWorkflow("blob-"+Guid.NewGuid().ToString("N"),"blob");
         node=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(settings)};

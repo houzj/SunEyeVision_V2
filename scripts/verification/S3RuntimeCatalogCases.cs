@@ -17,7 +17,7 @@ internal static class S2DocumentEditingCases
         try
         {
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            var manager=new PluginManager();manager.LoadPlugins(Path.Combine(product,"plugins"));
+            var manager=new PluginManager();manager.LoadPlugins();
             manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(m=>m.Id));PluginLoader.MarkAsLoaded();
             var definition=ToolRegistry.CreateRuntime(BlobTool.Id);
             var metadata=ToolRegistry.GetToolMetadata(BlobTool.Id)??throw new Exception("Runtime没有工具目录");

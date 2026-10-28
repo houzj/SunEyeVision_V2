@@ -44,10 +44,10 @@
     <PackageReference Include="Msagl.WpfGraphControl" Version="1.2.1" />
   </ItemGroup>
 
+  <Import Project="../../product/ToolComponents.props" />
   <ItemGroup>
+    <ProjectReference Include="@(ProductToolComponent->'../../%(Identity)')" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Core\SunEyeVision.Core.csproj" />
-    <ProjectReference Include="..\..\tools\SunEyeVision.BlobAnalysis\Wpf\SunEyeVision.BlobAnalysis.Wpf.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\tools\SunEyeVision.ImageSource\Wpf\SunEyeVision.ImageSource.Wpf.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Wpf\SunEyeVision.Plugin.Wpf.csproj" />
@@ -93,7 +93,6 @@
   <ItemGroup>
     <Resource Include="Resources\Toolbox\*.png" />
     <Resource Include="Resources\Workflow\*.png" />
-    <EmbeddedResource Include="Resources\Toolbox\VmToolCatalog.json" LogicalName="SunEyeVision.UI.VmToolCatalog.json" />
     <Resource Include="..\Plugin.SDK\Metadata\ToolGroups.xml" Link="Resources\Toolbox\ToolGroups.xml" />
     <Content Include="..\Plugin.SDK\Metadata\ToolGroups.xml" Link="ToolGroups.xml" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

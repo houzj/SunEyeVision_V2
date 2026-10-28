@@ -50,7 +50,7 @@ internal static class S2DocumentEditingCases
             var manager=new PluginManager();
             if(Environment.GetEnvironmentVariable("S3_USE_GLOBAL_LOADER")=="1")
             {
-                var admitted=PluginLoader.LoadPlugins(Path.Combine(product,"plugins"));
+                var admitted=PluginLoader.LoadPlugins();
                 if(Environment.GetEnvironmentVariable("S3_EXPECT_REJECTION")=="1")
                 {
                     Require(!admitted&&!PluginLoader.IsLoaded,"全局装载器将失败标为已完成");
@@ -60,7 +60,7 @@ internal static class S2DocumentEditingCases
             }
             else
             {
-                manager.LoadPlugins(Path.Combine(product,"plugins"));
+                manager.LoadPlugins();
                 manager.AssertCompleteReleaseToolSet(ToolRegistry.GetAllToolMetadata().Select(x=>x.Id));
                 // Match App.OnStartup: publish readiness only after the actual
                 // manager admitted and checked the complete formal tool set.

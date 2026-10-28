@@ -117,7 +117,7 @@ public partial class App : Application
                 var inspectToolbox = e.Args[0] == "--toolbox-probe";
                 var probePluginManager=inspectToolbox?new PluginManager():null;
                 if (inspectToolbox)
-                    probePluginManager!.LoadPlugins(Path.Combine(AppContext.BaseDirectory, "plugins"));
+                    probePluginManager!.LoadPlugins();
                 var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel() : null;
                 if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
                 var info = new
@@ -227,9 +227,8 @@ public partial class App : Application
         // 1. 初始化插件管理器（在任何其他初始化之前）
         _splashScreen?.UpdateStage("正在加载模块", 10, "校验发布文件并读取工具目录");
         var pluginManager = new PluginManager(VisionLogger.Instance);
-        string pluginsPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
-        LogStartupStage("Plugin.Load begin", $"path={pluginsPath}");
-        pluginManager.LoadPlugins(pluginsPath);
+        LogStartupStage("Plugin.Load begin", "source=release-payload.productComponents");
+        pluginManager.LoadPlugins();
         try
         {
             pluginManager.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());

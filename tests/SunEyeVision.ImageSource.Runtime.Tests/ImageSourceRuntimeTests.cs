@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using NSubstitute;
 using SunEyeVision.Plugin.Contracts;
@@ -23,7 +23,8 @@ public sealed class ImageSourceRuntimeTests
     [Fact]
     public void Settings_defaults_and_full_payload_round_trip_only_through_runtime_configuration()
     {
-        Assert.True(PluginLoader.LoadPlugins(Path.Combine(SunEyeVision.TestShared.ToolPluginTestLoader.HostDebugRoot,"plugins")));
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot);
+        Assert.True(PluginLoader.LoadPlugins());
         var files=new List<string>{"assets/a.png","assets/b.png"};
         var settings=new ImageSourceSettings{FileReferences=files,StartIndex=1,SelectedReferences=new[]{"assets/b.png"},RunMode="selected",
             AutoSwitch=false,StopAtLast=true,SourceKind="camera",CameraDeviceId="device",CameraTimeoutMs=4200,OutputFormat="rgb24",InitialSequence=25};
@@ -177,11 +178,4 @@ public sealed class ImageSourceRuntimeTests
         await Assert.ThrowsAsync<ObjectDisposedException>(async()=>await session.ExecuteAsync(new(new ImageSourceSettings(),
             Input(new Dictionary<string,object?>{{ImageSourceTool.Sequence,1L}}),Context(resources))));
     }
-}
-
-internal static class ImageSourceRuntimeTestModule
-{
-    [System.Runtime.CompilerServices.ModuleInitializer]
-    internal static void LoadActualComponent()
-        =>SunEyeVision.TestShared.ToolPluginTestLoader.EnsureComponentLoaded("SunEyeVision.Tool.ImageSource.Runtime");
 }

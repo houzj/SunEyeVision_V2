@@ -17,7 +17,7 @@ internal static class S2DocumentEditingCases
     {
         try
         {
-            Require(PluginLoader.LoadPlugins(Path.Combine(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!,"plugins")),"插件加载失败");
+            Require(PluginLoader.LoadPlugins(),"插件加载失败");
             var manager=new PluginManager();var engine=new WorkflowEngine(new Logger());var flow=engine.CreateWorkflow("debug-runtime","调试快照");
             var configuration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings{Threshold=73,IsAreaFilterEnabled=false,OutputGrayImage=true});
             var source=new WorkflowNodeBase("source","source","生产者",BlobTool.Id){RuntimeConfiguration=configuration};flow.Nodes.Add(source);

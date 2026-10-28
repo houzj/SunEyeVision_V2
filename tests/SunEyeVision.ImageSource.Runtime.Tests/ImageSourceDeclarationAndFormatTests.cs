@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -169,7 +169,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
     [InlineData(true)]
     public async Task Local_output_declares_empty_device_fields_even_if_unrelated_camera_metadata_is_present(bool staleMetadata)
     {
-        var directory = Path.Combine(SunEyeVision.TestShared.ToolPluginTestLoader.HostDebugRoot, "test-data", "image-source", "declaration-" + Guid.NewGuid().ToString("N"));
+        var directory = Path.Combine(SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot, "test-data", "image-source", "declaration-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try
         {

@@ -23,7 +23,7 @@ internal static class S2DocumentEditingCases
         try
         {
             var product=Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!;
-            Require(PluginLoader.LoadPlugins(Path.Combine(product,"plugins")),"正式插件加载失败");
+            Require(PluginLoader.LoadPlugins(),"正式插件加载失败");
             var manager=new PluginManager();
             var engine=new WorkflowEngine(new CheckLogger());
             var flow=engine.CreateWorkflow("runtime-scheduled","Runtime调度");

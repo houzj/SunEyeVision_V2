@@ -24,7 +24,7 @@ internal static class S2DocumentEditingCases
     }
     private static int Run()
     {
-        Require(PluginLoader.LoadPlugins(Path.Combine(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!,"plugins")),"正式插件加载失败");
+        Require(PluginLoader.LoadPlugins(),"正式插件加载失败");
         var manager=new PluginManager();var engine=new WorkflowEngine(new Logger());var executor=new WorkflowExecutionEngine(engine,manager,new Logger());
         var flow=engine.CreateWorkflow("runtime-sdk-image","Runtime图像消费");
         var configuration=RuntimeToolConfiguration.Create(BlobTool.Id).WithSettings(new BlobSettings{Threshold=73,IsAreaFilterEnabled=false,OutputGrayImage=false});

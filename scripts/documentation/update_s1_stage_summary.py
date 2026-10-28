@@ -443,6 +443,12 @@ def render_s4_stage(page):
              + ('<section id="o06-architecture-isolation-plan"><h4>最新决定：隔离旧体系，逐工具迁入新架构</h4>'
                 + '<p><b>' + escape(s4['architectureIsolationPlan']['decision']) + '</b></p>'
                 + '<p>' + escape(s4['architectureIsolationPlan']['status']) + '</p>'
+                + (table(['隔离前源码盘点项','实际结果与实施约束'], s4['architectureIsolationPlan']['sourceAudit']['findings'])
+                   + '<p>可重跑证据：<a href="' + escape(os.path.relpath(ROOT / s4['architectureIsolationPlan']['sourceAudit']['evidence'], PAGE.parent).replace('\\', '/'), quote=True) + '">工程引用及产品准入路径完整清单</a>。'
+                   + escape(s4['architectureIsolationPlan']['sourceAudit']['limitation']) + '</p>'
+                   if s4['architectureIsolationPlan'].get('sourceAudit') else '')
+                + (table(['本批落地项','实际结果及范围'], s4['architectureIsolationPlan']['currentBatch']['results'])
+                   if s4['architectureIsolationPlan'].get('currentBatch') else '')
                 + table(['现有能力','源码位置','归属','调整决定','全部消费者/影响','验收出口'], s4['architectureIsolationPlan']['inventory'])
                 + table(['实施批','整链要求'], s4['architectureIsolationPlan']['batches'])
                 + '<p><b>下一步：</b>' + escape(s4['architectureIsolationPlan']['nextAction']) + '</p></section>'

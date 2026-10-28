@@ -1,3 +1,19 @@
+## 2026-10-28 I1产品边界集中切换并正式准入验证，完整新结果链仍待迁移
+
+- 本轮在I0源码图和整体设计上成片落实隔离：product/ToolComponents.props唯一准入四组件；UI显式引用、Release封包校验工程/PE、schema2产品清单同源。默认63→25工程，20旧工具+18旧依赖/加载合同测试留SunEyeVision.Legacy.slnx源码索引；旧SDK主动构建拒绝。退出SDK目录/ALC桥/ToolItemInfo扫描及工具箱VM占位，Core未用旧扫描器退出编译。正确共享非视觉能力保留，不称旧SDK/结果模型已全部退出。
+- 规定UI001=0错6474警告85.87秒；全量001漏迁两测试加载签名=2编译错，直接迁消费者后002=0错850警告23.15秒。测试宿主后续隔离修正后最终full003=0错731警告23.26秒。UI源在这些测试修正间未变化。未运行安装包实装或假称全量用例通过。
+- 正式Toolbox探针77368 exit0：2工具2有效分类；最终full003载荷B98BF0918A72F5EE3763987852803424FF9E32107AA19861E9CE2A1E7472E927，569文件。ProductIsolation attempt002八项通过，双Wpf缺席可运行、分别缺Runtime拒绝、旧schema/错误入口/旧SDK字段拒绝，全部文件SHA原身份还原；无产品/算法库副本。
+- DesignTime101/0、RuntimeEditor10/0；最终全量003后逐一核其19条实际加载程序集SHA/正式位置未变化，证据PRODUCT_ISOLATION_RELEASE_20261028.json。非真实VS/人工验收。旧共享测试目录导致Blob9项2过7败MissingMethod，保原日志，只改新Runtime测试宿主不改算法/断言；独立输出仅测试程序集，产品全部从正式payload核SHA/Location预绑定，Blob9/0、图像源21/0。
+- 原ImageSources013=249项228过21败仍保留、本批未重跑；隔离旧UI.Tests不等于其失败已修。下一整批替换RuntimeToolResults/ToolResults旧包装和正式/调试/绑定/树表/图像/生命周期消费者，承接失败；Blob业务仍冻结、C01—C17未完和原两阶段目标不缩减。原O06已同步本批结果与未完。
+- 41165/63742/67077/81435构建、31999/79081准入、69921/15327设计编辑及所有测试进程均已终态，无live。主仓唯一写，不恢复子智能体；用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。目标active，不推送。
+
+## 2026-10-28 I0源码工程图盘点已落盘，尚未切换产品隔离
+
+- 上一目标轮仅说明方案，属无实施进展；本轮新增scripts/documentation/audit_product_isolation.py及evidence/PRODUCT_ISOLATION_INVENTORY_20261028.json，可从实际csproj重跑，记录源码SHA、条件ProjectReference、默认解决方案成员、全部旧工具反向路径与构建/Seal/Pack/工具箱准入代码行。
+- 实际默认63工程，20个IsToolPlugin旧工具、4新组件；17个默认测试工程引用旧工具，UI.Tests直接引用5个。UI没有旧工具ProjectReference不代表隔离：Release.Payload.targets仍枚举解决方案额外构建20旧工具，Seal/Pack继续据此发布。I1必须同时处理测试与自动构建，不仅隐藏工具箱。
+- 原S4 architectureIsolationPlan新增sourceAudit结果与限制并同步原O06，722锚点幂等。此清单仅源码引用上界，保留条件边，不能代MSBuild求值/运行时加载/发布验收。默认解决方案、产品源码、Release产物均未切换，也未做新构建；249项21失败及既有证据仍保留。
+- 下一固定单一组件清单及校验合同，再成片修改解决方案/测试归属/自动构建/Seal-Pack/运行时准入/工具箱和旧输出清理。I2仍必须退出旧RuntimeToolResults包装；控件库与Blob两阶段完整范围不缩减。主仓唯一写者，不恢复子智能体；用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持；无live构建测试，目标active，不推送。
+
 ## 2026-10-28 最新优先决定：隔离旧体系，先以图像源与Blob贯通新链
 
 - 用户要求处理侧边新决定并明确总监决策。本线已决定采用“隔离旧体系，按正确新架构逐个迁移”；原S4主方案新增architectureIsolationPlan：实际归属/共享依赖/全部消费者/构建发布/验收矩阵及I0—I4顺序。当前I0整体设计；尚未切换隔离，不冒称已只发布两工具。

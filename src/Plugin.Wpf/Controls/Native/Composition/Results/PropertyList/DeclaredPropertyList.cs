@@ -63,6 +63,7 @@ public sealed class DeclaredPropertyList : IToolResultView
             {
                 if (!Current(generation)) return;
                 var entry = EntryFor(node, 1, generation);
+                if(entry is null||!Current(generation))return;
                 if (publication.DisplayNames.TryGetValue(node.DeclaredPort!.Id, out var name)) entry.Row.DisplayName = name;
                 root.MutableChildren.Add(entry.Row);
             }
@@ -71,6 +72,7 @@ public sealed class DeclaredPropertyList : IToolResultView
             {
                 if (value is not Row row || !Owns(row, generation)) return;
                 _view.SelectedItemPath = row.NodeKey;
+                if(!Owns(row,generation))return;
                 // Original row input selects a path. Without physical-frame proof it must not invent geometry highlights.
                 SelectionHighlightChanged?.Invoke(this, new ResultSelection(stamp, row.NodeKey, Array.Empty<ResultHighlightTarget>()));
             }, value => value is Row row && Owns(row, generation));
@@ -101,16 +103,24 @@ public sealed class DeclaredPropertyList : IToolResultView
     }
     private bool Owns(Row row, long generation) => Current(generation) && _entries.TryGetValue(row.Key, out var entry) && ReferenceEquals(entry.Row, row);
 
-    private Entry EntryFor(ResultPresentationNode node, int level, long generation)
+    private Entry? EntryFor(ResultPresentationNode node, int level, long generation)
     {
+        if(!Current(generation))return null;
         if (_entries.TryGetValue(node.Key, out var existing)) return existing;
+        var model=_model;
+        if(model is null)return null;
+        var text=ValueText(node,model);
+        if(!Current(generation))return null;
+        var count=node.ChildCount;
+        if(!Current(generation))return null;
         var row = new Row(node.Key, node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
-            ValueText(node), level, node.ChildCount is > 0) { IsExpanded = node.IsExpanded, NodeKey = node.Key };
+            text, level, count is > 0) { IsExpanded = node.IsExpanded, NodeKey = node.Key };
         var entry = new Entry(node, row); _entries.Add(node.Key, entry);
         PropertyChangedEventHandler handler = (_, args) =>
         {
             if (args.PropertyName != nameof(Row.IsExpanded) || !Owns(row, generation)) return;
             node.IsExpanded = row.IsExpanded;
+            if(!Owns(row,generation))return;
             if (row.IsExpanded && entry.Children.Count == 0) LoadPage(entry, generation);
         };
         row.PropertyChanged += handler; _subscriptions.Add((row, handler));
@@ -129,14 +139,18 @@ public sealed class DeclaredPropertyList : IToolResultView
         foreach (var node in page)
         {
             if (!Current(generation)) return;
-            prepared.Add(EntryFor(node, entry.Row.Level + 1, generation));
+            var child=EntryFor(node, entry.Row.Level + 1, generation);
+            if(child is null||!Current(generation))return;
+            prepared.Add(child);
         }
         foreach (var child in prepared)
         {
             if (!Current(generation)) return;
             entry.Children.Add(child); entry.Row.MutableChildren.Add(child.Row);
         }
-        if (!Current(generation) || entry.Node.ChildCount is not int count || entry.Children.Count >= count) return;
+        if (!Current(generation))return;
+        var childCount=entry.Node.ChildCount;
+        if(!Current(generation)||childCount is not int count||entry.Children.Count>=count)return;
         offset = entry.Children.Count;
         var last = Math.Min((long)count - 1, (long)offset + PageSize - 1);
         var more = new Row(entry.Node.Key + ":page:" + offset.ToString(CultureInfo.InvariantCulture),
@@ -178,33 +192,31 @@ public sealed class DeclaredPropertyList : IToolResultView
             entry.More = null; entry.MoreHandler = null;
         }
         _entries.Clear();
-        try
-        {
-            if (generation == _generation) _view.SelectedCommand = null;
-            if (generation == _generation) _view.CopyPathCommand = null;
-            if (generation == _generation) _view.SelectedItem = null;
-            if (generation == _generation) _view.SelectedItemPath = null;
-            if (generation == _generation) _view.ErrorInfo = null;
-            if (generation == _generation) _roots.Clear();
-        }
-        finally
-        {
-            try { lease?.Dispose(); }
-            finally { if (generation == _generation && stamp is not null) SelectionHighlightChanged?.Invoke(this, new ResultSelection(stamp, null, Array.Empty<ResultHighlightTarget>())); }
-        }
+        var errors=new List<Exception>();
+        void Clean(Action action,bool ownView=true)
+        {if(ownView&&generation!=_generation)return;try{action();}catch(Exception error){errors.Add(error);}}
+        Clean(()=>_view.SelectedCommand=null);
+        Clean(()=>_view.CopyPathCommand=null);
+        Clean(()=>_view.SelectedItem=null);
+        Clean(()=>_view.SelectedItemPath=null);
+        Clean(()=>_view.ErrorInfo=null);
+        Clean(()=>_roots.Clear());
+        Clean(()=>lease?.Dispose(),false);
+        Clean(()=>{if(stamp is not null)SelectionHighlightChanged?.Invoke(this,new(stamp,null,Array.Empty<ResultHighlightTarget>()));});
+        if(errors.Count!=0)throw new AggregateException("Property result retired; cleanup observers failed.",errors);
         return generation;
     }
 
-    private string ValueText(ResultPresentationNode node) => node.ValueState switch
+    private static string ValueText(ResultPresentationNode node,ResultPresentationModel model) => node.ValueState switch
     {
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",
-        ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
-        ResultPresentationValueState.ResourcePending => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "资源显示未提供" : StatusText(_model.State),
+        ResultPresentationValueState.Unavailable => model.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(model.State),
+        ResultPresentationValueState.ResourcePending => model.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "资源显示未提供" : StatusText(model.State),
         _ => node.Declaration.Shape switch
         {
             ValueShape.Record => "记录",
-            ValueShape.Sequence => node.ChildCount == 0 ? "空序列 (0)" : "[" + node.ChildCount!.Value.ToString(CultureInfo.InvariantCulture) + " 项]",
+            ValueShape.Sequence => node.ChildCount is {} count ? count==0?"空序列 (0)":"["+count.ToString(CultureInfo.InvariantCulture)+" 项]":"值不可用",
             ValueShape.Geometry => node.GeometryValue is { } geometry ? GeometryText(geometry) : "几何值不可用",
             _ => node.ScalarValue switch
             {

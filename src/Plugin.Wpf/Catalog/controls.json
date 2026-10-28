@@ -4872,11 +4872,23 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs",
-          "sha256": "ac03d904b6bd0e46d2c15c0d4f0bcb91938c62514e7c0762444d231ae50e0d57"
+          "sha256": "2e1424458808edc0982bfd296063501678c0f9cce8936c493313af6095dc654d"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/IToolResultView.cs",
-          "sha256": "1553681a89fde68880398b5bcee3ec70c040039d5c949258959d61ece76e3c19"
+          "sha256": "6531d7c648e0f666e8697d2a3fbc1a5b01e67e90758bf8c27e196c0581b13b34"
+        },
+        {
+          "path": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
+          "sha256": "c182868fe151774d5d13b6f645d22d58d93af07f0117a051103d94cbf0bc6342"
+        },
+        {
+          "path": "src/Plugin.Contracts/Results/Presentation/ResultProjectionDescriptor.cs",
+          "sha256": "ffa5bb1043abf341b982b96ad79022774f422e664958358231d16586bcc57ca7"
+        },
+        {
+          "path": "src/Plugin.Contracts/Values.cs",
+          "sha256": "522fe2c73384bc48bdab57857faa56ab0fab0eef4eb0ac828a7832b704ecff10"
         }
       ],
       "composition": "原完整ModuleView/CurResultDataGridStyle、单元格、原滚动条及ParamsEventCommand；原500增量行为重接正式SDK输出声明投影。",
@@ -4885,9 +4897,9 @@
         "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs"
       ],
       "validation": {
-        "status": "原表候选最终构建/真实滚动已过；完整context/物理帧生产接入未完",
-        "evidence": "docs/collaboration/evidence/O06_C14_NATIVE_TABLE_CANDIDATE_20261028.json",
-        "manual": "真实VS及VM同态未验"
+        "status": "共享publication API及真实物理来源已落源码，库层与Blob Wpf层语义编译通过；本批新回归及UI消费者整批在途，先前原表证据不套新产物",
+        "apiCheckpoint": "3cf10837",
+        "manual": "真实VS/VM同态未验"
       }
     }
   ]

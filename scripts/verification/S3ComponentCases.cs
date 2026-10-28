@@ -1,4 +1,5 @@
-﻿using System.IO;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using System.IO;
 using System.Windows;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,6 +15,25 @@ using DataSourceQueryService=SunEyeVision.Plugin.SDK.Execution.Parameters.DataSo
 
 internal static class S2DocumentEditingCases
 {
+    private static ResultPublication CreatePublication(DeclaredOutputSnapshot snapshot)
+    {
+        var reader=snapshot.AcquireReader();
+        try
+        {
+            var state=snapshot.Status switch
+            {
+                ExecutionStatus.NotExecuted=>ResultViewState.NotExecuted,ExecutionStatus.Running=>ResultViewState.Running,
+                ExecutionStatus.Success=>ResultViewState.Success,ExecutionStatus.PartialSuccess=>ResultViewState.PartialSuccess,
+                ExecutionStatus.Failed=>ResultViewState.Failed,ExecutionStatus.Timeout=>ResultViewState.Timeout,
+                ExecutionStatus.Cancelled=>ResultViewState.Cancelled,_=>throw new ArgumentOutOfRangeException()
+            };
+            return new(snapshot.Schema,new(Guid.NewGuid(),snapshot.Identity,snapshot.SchemaRevision,snapshot.Schema.Fingerprint),
+                state,reader.Values,reader,()=>true,snapshot.Diagnostics,
+                snapshot.Fields.ToDictionary(item=>item.Key,item=>item.Value.DisplayName,StringComparer.Ordinal),
+                snapshot.Fields.Where(item=>item.Value.DisplayInResultPanel).Select(item=>item.Key).ToHashSet(StringComparer.Ordinal));
+        }
+        catch{reader.Dispose();throw;}
+    }
     [STAThread] private static int Main()
     {
         try
@@ -101,24 +121,35 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：正式节点与WorkflowExecutionEngine真实HALCON执行、声明结果发布，Blob面积64");
             {
                 var grid=Find<System.Windows.Controls.DataGrid>(resultView.View).Single();
-                IReadOnlyList<GeometryValue>? selectedGeometry=null;
-                resultView.SelectionHighlightChanged+=(_,geometry)=>selectedGeometry=geometry;
-                using(var published=result.DeclaredOutput?.AcquireReader()??throw new Exception("真实运行没有发布声明值"))
-                    resultView.Update(published.Values??throw new Exception("真实运行没有发布值"));
+                var snapshot=result.DeclaredOutput??throw new Exception("真实运行没有发布声明值");
+                var record=(RecordValue)resultRows[0]!;
+                var region=record.Get<IReadOnlyRegion>("region");
+                ImageFrameAddress expectedFrame;CoordinateFrame expectedCoordinates;
+                using(var origin=region.AcquireReader()){expectedFrame=origin.SourceFrame;expectedCoordinates=origin.Frame;}
+                using var publication=CreatePublication(snapshot);
+                ResultSelection? selected=null;var events=0;
+                resultView.SelectionHighlightChanged+=(_,selection)=>{selected=selection;events++;};
+                resultView.Present(publication);
                 execution.Dispose();
                 var resultWindow=new Window{Content=resultView.View,Width=700,Height=350,Left=-10000,ShowActivated=false,ShowInTaskbar=false};
                 resultWindow.Show();resultWindow.UpdateLayout();
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 Require(grid.Items.Count==1&&grid.Columns.Count==8,$"中立结果视图未显示声明行和列：Rows={grid.Items.Count},Columns={grid.Columns.Count}");
                 grid.SelectedItem=grid.Items[0];
-                Require(selectedGeometry is {Count:1}&&selectedGeometry[0] is PolygonGeometry polygon&&polygon.Vertices.Count==4,
-                    "结果资源释放后视图未保留独立的不可变选中几何");
-                resultView.Update(null);Require(grid.Items.Count==0&&selectedGeometry is null,"失败清空后行或高亮残留");
-                resultView.Dispose();
-                resultWindow.Close();
-                var rejected=false;try{resultView.Update(null);}catch(ObjectDisposedException){rejected=true;}
+                Require(selected is not null&&selected.Publication==publication.Stamp&&Equals(selected.ElementIdentity,record.Get<long>("element-id"))&&selected.Targets.Count==1,
+                    "结果选择缺少真实publication或稳定元素身份");
+                var target=selected!.Targets[0];
+                Require(target.ImageFrame==expectedFrame&&target.Coordinates==expectedCoordinates&&target.Geometry.Count==1
+                    &&target.Geometry[0] is PolygonGeometry polygon&&polygon.Frame==expectedCoordinates&&polygon.Vertices.Count==4,
+                    "高亮物理来源/坐标/不可变几何不符");
+                resultView.Clear();Require(grid.Items.Count==0&&selected is {ElementIdentity:null,Targets.Count:0}&&selected.Publication==publication.Stamp,"清空后行或同publication高亮残留");
+                resultView.Present(publication);publication.Dispose();
+                var before=events;grid.SelectedItem=null;grid.SelectedItem=grid.Items[0];
+                Require(events==before,"退休publication仍发送选择高亮");
+                resultView.Dispose();resultWindow.Close();
+                var rejected=false;try{resultView.Present(publication);}catch(ObjectDisposedException){rejected=true;}
                 Require(rejected,"已释放结果视图继续更新");
-                Console.WriteLine("通过：中立视图只复制显示值/几何，资源scope关闭后仍可选择；空更新清空行和高亮，释放后拒绝更新");
+                Console.WriteLine("通过：执行owner释放后publication唯一reader仍支持展示；选择含真实物理帧/稳定元素身份，清理及退休拒旧事件");
             }
             Require(executor.CurrentState==WorkflowExecutionState.Idle&&executor.CurrentContext is null,"运行请求返回后会话未清理");
             foreach(var start in new Func<Task<ExecutionResult>>[]{()=>executor.ExecuteWorkflowAsync(flow.Id,image),()=>executor.ExecuteWorkflow(flow.Id,image)})

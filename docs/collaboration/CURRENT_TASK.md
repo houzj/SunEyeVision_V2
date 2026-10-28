@@ -1,3 +1,13 @@
+﻿## 2026-10-28 固定结果消费者9f197fbe集中集成
+
+- Root共享惰性/测试检查点72d1e9db，工作流固定9f197fbe（含ba45ea96/a920cd9f）已合工作区，仅CURRENT_TASK冲突，双方记录保留。下一按projection.Kind补缺Wpf fallback，然后使用本地cache源restore、规定UI/full构建及新轨；当前尚未本批构建回归，不套旧成绩。无live句柄，用户参数页保持。
+
+## 2026-10-28 共享发布惰性借阅修正与正式用例准备
+
+- 3cf10837后修正InputValues公开只读Declarations、Publication只核冻结声明而借同InputValues，避免CopyValues触发Poison资源/数组复制；原表比实际image Domain/reader Domain并聚合当前性异常通知。PluginWpf层003=0错5352警告35.25秒。脚本已同步Present/Clear与真实SourceFrame/stamp/owner退休；新增六组共享publication、真实来源双组及保留原1205实际滚动。当前仅源审未跑本批新回归。
+- 工作流已交ba45ea96消费者及a920cd9f等fixture收尾最新候选，待固定HEAD整批合入；无本线live，95785终态0。下一先本地保存本批（排除用户参数页），合UI消费者/后续设计tests与依赖固定，再恢复依赖/规定UI全量及正式关联新轨。原C13非法输入case补显式Enter后重开/聚焦再输入并增强诊断，尚待验证，不能直接称修复。
+﻿## 2026-10-28 结果发布消费者整批候选（待正式验证）
+
 ﻿## 2026-10-28 正式构建均过；首批发布/来源/树表回归已核日志
 
 - 主线UI003=0错误；全量004日志末尾0错误/6606警告84.64秒（10bdab41测试接缝修正已由主线合入）。本线只读主仓实际日志，不重复构建，不把未提交产品修正套成本分支已验证。

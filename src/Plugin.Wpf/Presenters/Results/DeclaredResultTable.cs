@@ -137,7 +137,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         // No callbacks until the complete storage and command are installed.
         _rows.Install(rows.Take(500).ToArray());
         var errors=new List<Exception>();
-        void Notify(Action notify){if(!Current())return;try{notify();}catch(Exception error){errors.Add(error);}}
+        void Notify(Action notify){try{if(Current())notify();}catch(Exception error){errors.Add(error);}}
         _publishing++;
         try
         {
@@ -200,11 +200,13 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         if(value is IReadOnlyImage image)
         {
             ResourceContractRules.ValidateImage(image);
+            var expectedDomain=image.EffectiveDomain;
             using var lease=image.AcquirePixels();
             if(lease.Frame!=image.Frame||lease.Layout!=image.Layout)throw new ArgumentException("Image origin lease is inconsistent.");
             using var domain=lease.AcquireDomainReader();
             if(domain.SourceFrame!=lease.Frame||domain.SourceFrame!=lease.EffectiveDomain.SourceFrame
-                ||domain.Frame!=lease.EffectiveDomain.Frame)throw new ArgumentException("Image domain origin lease is inconsistent.");
+                ||domain.Frame!=lease.EffectiveDomain.Frame||domain.SourceFrame!=expectedDomain.SourceFrame
+                ||domain.Frame!=expectedDomain.Frame)throw new ArgumentException("Image domain origin lease is inconsistent.");
             return(lease.Frame,domain.Frame);
         }
         throw new ArgumentException("Declared geometry origin is missing.");
@@ -276,7 +278,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         internal void Publish(Func<bool> current)
         {
             var errors=new List<Exception>();
-            void Notify(Action notify){if(!current())return;try{notify();}catch(Exception error){errors.Add(error);}}
+            void Notify(Action notify){try{if(current())notify();}catch(Exception error){errors.Add(error);}}
             Notify(()=>OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count))));
             Notify(()=>OnPropertyChanged(new PropertyChangedEventArgs("Item[]")));
             Notify(()=>OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset)));

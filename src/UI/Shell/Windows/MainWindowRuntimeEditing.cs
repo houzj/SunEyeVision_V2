@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,7 +42,8 @@ public partial class MainWindowViewModel
         var host=GetProductionEditorHost(session);var query=CreateDataSourceQueryService(flow.Id);
         control.SetDataProvider(query);
         var context=new ProductionEditorContext(host,flow.Id,node,
-            ()=>ReferenceEquals(DocumentManager.Session,session)&&session.Document.Workflows.Any(w=>ReferenceEquals(w,flow)&&w.Nodes.Any(n=>ReferenceEquals(n,node))),
+            ()=>ReferenceEquals(_openDebugWindow,window)&&ReferenceEquals(DocumentManager.Session,session)
+                &&session.Document.Workflows.Any(w=>ReferenceEquals(w,flow)&&w.Nodes.Any(n=>ReferenceEquals(n,node))),
             draft=>control.BindDraft(draft),publication=>RefreshProductionPublication(session,publication,query),session.Editing);
         context.PrepareView=()=>control.TryCapture(out var error)?null:error;
         context.HasPendingViewEdits=()=>control.HasPendingEdits;

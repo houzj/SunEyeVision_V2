@@ -2,8 +2,9 @@
 
 - 基线4f8efb06；历史只读文档已合e8c541fc。原A01–E07目标active；不缩范围，Group/循环/Blob业务及未授权显示合同扩展冻结。
 - 已只读核对主线09f9739a归档工作区产物（原基线f591a40c含当时ROI未提交增量，逐SHA见O06_RESULT_CHAIN_UNIFIED）：UI/full零错，ImageSources008=180/0，publication10/0、真实表1/0，探针28596 exit0。不套ROI专项/VS/人工。Global上次283/1仍保，4f转换器/21项形状回归未主线新验。
-- D07未应用审核包19拟议文件+13完整依赖；未连接3候选撤默认橙色全Region绘制，明确正式显示合同缺口；补选择/每侧图像代号、异常后合并刷新、退休pub显式清空、唯一scope/node和上游admission校验。17C#语法/XML/只读复审不代构建；approvalReady=false，拒绝脚本未重放。五项生产测试只附review数据，原错误区域样式断言需修订后整批接入，不直接进当前编译。
+- D07未应用审核包19拟议文件+13完整依赖；未连接3候选撤默认橙色全Region绘制，明确正式显示合同缺口；补选择/每侧图像代号、异常后合并刷新、退休pub显式清空、唯一scope/node和上游admission校验。17C#语法/XML/只读复审不代构建；approvalReady=false，拒绝脚本未重放。八项生产测试候选35259200只附review数据，已撤错误区域样式断言并补实际DP选择重入/失效清空/异常新run，未编译运行，不直接进当前编译。
 - 历史核证把已有Run/Reader、同会话有界历史尚未接线、跨会话存储缺基础三层分列；现ShowDeclaredRun无真实调用者，原Tab禁用。Manager完成处尚活run/await UI是未来采集点，保既有using/finally；不新增数据库、长期owner或打开Tab。完整方案/矩阵见HANDOFF_D07_RESULT_HISTORY_AUDIT_20261028.md，原主方案当前前缀已集中同步。
+- 原Shell模板另核缺独立背景IsBackgroundImage通知及Previous/Next/CrossLines三个命令，这些属已有基础待实施，不占位；已同步原方案和主线。
 - 下一主线先验证Global完整批，本线收齐D07完整制品及具体批准后才切换；仍无本worktree私有构建/Release/交付启动，不改主仓用户参数XAML、不推远程。源码、构建、自动、VS与人工分列。
 
 ## 2026-10-28 原底栏整批核验与D07原Shell唯一视口合同固定

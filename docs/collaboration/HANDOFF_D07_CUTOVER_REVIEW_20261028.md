@@ -72,3 +72,6 @@
 
 
 本次新增十三项测试依赖已只读核原十例保留，补Refresh跨侧选择、Restore显式null、原图像呈现DP异常同时Publish新run；语法通过，未编译运行。原件导航补证及当前产品执行差异已归档，见D07_ORIGINAL_IMAGE_NAVIGATION_20261028.json和原导航交接整链适配设计；未改执行产品链。
+
+
+主线正式归档后续：3b286623已合2e84998a，产品仍f33f7f6f；UI006/full002零错、EXE52660 exit0，ImageSources011=187/0、publication7/0、原表1/0、真HALCON8/0，详O06_RESULT_TREE_TABLE_ADMISSION。含Assist未提交候选/用户参数页并固定SHA，不称纯提交。只新增归档和真实执行身份夹具，不改变审核包涉及19文件基线内容，现包base21b仍匹配；本线未应用生产提案。D07十三测试仍未运行，Global283/1仍保。

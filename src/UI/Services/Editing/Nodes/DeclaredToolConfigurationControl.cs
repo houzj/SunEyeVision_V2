@@ -208,6 +208,10 @@ public sealed partial class DeclaredToolConfigurationControl : ToolDebugControlB
             if(!Current()||!ReferenceEquals(node.Parameters,original)||!ReferenceEquals(node.ParamSettings,priorBindings))
                 throw new InvalidOperationException("接纳参数时编辑范围已改变。");
             node.Parameters=candidate;node.ParamSettings=nextBindings;
+            // Model installation is accepted. Its synchronous notification may have rebound the view;
+            // an old acceptance must never overwrite the new page's parameter owner.
+            if(!SameBinding()||!context.IsValid||!ReferenceEquals(context.DraftNode,node)||
+                !ReferenceEquals(node.Parameters,candidate)||!ReferenceEquals(node.ParamSettings,nextBindings))return;
             _parameters=candidate;_accessors=nextAccessors;ReplacePreviewParameterOwner(candidate);
             _refreshAcceptedFields=true;
         }

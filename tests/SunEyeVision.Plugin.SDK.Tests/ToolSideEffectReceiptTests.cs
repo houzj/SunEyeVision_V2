@@ -77,6 +77,10 @@ public sealed class ToolSideEffectReceiptTests
     [InlineData(true, 2)]
     [InlineData(false, 3)]
     [InlineData(true, 3)]
+    [InlineData(false, 4)]
+    [InlineData(true, 4)]
+    [InlineData(false, 5)]
+    [InlineData(true, 5)]
     public async Task Terminal_constructor_resources_and_inspection_are_rejected_without_reentry(bool asynchronous, int mode)
     {
         using var cancellation = new CancellationTokenSource();
@@ -99,6 +103,7 @@ public sealed class ToolSideEffectReceiptTests
             Assert.Empty(terminal.GetOutputVariables()); Assert.False(terminal.Display.HasItems);
             Assert.Equal(0, owner.ActiveRuns);
             Assert.All(state.Leases, lease => Assert.Equal(1, lease.Count));
+            if (mode is 4 or 5) Assert.Single(state.Leases);
             if (mode == 1) Assert.Contains("inspection failed", terminal.ErrorStackTrace);
             if (mode == 2) Assert.Contains("cleanup failed", terminal.ErrorStackTrace);
         }
@@ -124,9 +129,23 @@ public sealed class ToolSideEffectReceiptTests
             if (state.Mode == 0) Tag = new object();
         }
         public ToolSideEffectReceipt CaptureSideEffectReceipt() => new(1, 0, 0, new[] { "sent" }, Array.Empty<BinaryPayload>());
+        private void MutateDuringInspection()
+        {
+            var state = ConstructorState.Current.Value!;
+            var lease = new Lease(); state.Leases.Add(lease);
+            RegisterOutputResource(lease); Tag = new object();
+        }
+        public override Dictionary<string, SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage?> GetDisplayImages()
+        {
+            if (ConstructorState.Current.Value!.Mode == 4) MutateDuringInspection();
+            return new();
+        }
         public override IReadOnlyList<OutputVariable> GetOutputVariables()
         {
-            if (ConstructorState.Current.Value!.Mode == 1) throw new InvalidOperationException("inspection failed");
+            var mode = ConstructorState.Current.Value!.Mode;
+            if (mode == 1) throw new InvalidOperationException("inspection failed");
+            if (mode == 5) MutateDuringInspection();
+            if (mode is 4 or 5) return Array.Empty<OutputVariable>();
             return new[] { new OutputVariable { Name = "unexpected", RuntimeValue = "default-output" } };
         }
     }

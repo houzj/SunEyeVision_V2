@@ -102,12 +102,15 @@ public partial class ToolExecutor
         try
         {
             candidate = CreateTerminalResult(resultType, ExecutionStatus.Cancelled, "运行已取消或身份失效；已发生的发送不能撤回。");
-            // Constructors are plugin code too. Never deliver a newly created runtime resource/output.
+            // Both inspectors and their enumerators are plugin code. Materialize them before
+            // the final non-virtual ownership check; a successful inspector may still mutate this result.
+            var images = candidate.GetDisplayImages().ToArray();
+            var outputs = candidate.GetOutputVariables().ToArray();
             if (candidate.Resources is null && candidate is not IDisposable && candidate.Tag is null
                 && !candidate.Display.HasItems && candidate.InspectionGeometries.Length == 0
                 && candidate.MaskGeometries.Length == 0 && candidate.DeclaredOutput is null
-                && !candidate.GetDisplayImages().Values.Any(image => image is not null)
-                && candidate.GetOutputVariables().All(output => output.RuntimeValue is null))
+                && images.All(image => image.Value is null)
+                && outputs.All(output => output.RuntimeValue is null))
             {
                 candidate.SideEffectReceipt = receipt;
                 request.AttachResultMetadata(candidate);

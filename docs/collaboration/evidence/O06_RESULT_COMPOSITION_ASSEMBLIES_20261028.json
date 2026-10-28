@@ -1,0 +1,19 @@
+{
+  "scope": "原结果树/工作区调色及图标依赖程序集身份；只读元数据，不代表运行或人工验收",
+  "sources": [
+    {
+      "name": "Apps.ColorFun",
+      "path": "D:/Program Files/VisionMaster4.4.0/Applications/myLibs/Apps.ColorFun.dll",
+      "mvid": "5817dbce-52cc-4171-9b83-73568791682f",
+      "sha256": "22c277c4e2d384593265ee0d40830252f8317c60a7ebe782d31aee426c5d8688",
+      "method": "只读PEReader/GetMetadataReader核程序集与MVID；SHA逐字节核，未Load执行"
+    },
+    {
+      "name": "VM.PcUI",
+      "mvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+      "sha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
+      "evidence": "artifacts/analysis/vm-control-library-inventory-20261024/VM.PcUI.bounded-metadata.json",
+      "evidenceSha256": "8ddeaa657c87cae8d51f21aefae86a06d14bb2c7173de17b179f8d1a97cac6e0"
+    }
+  ]
+}

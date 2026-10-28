@@ -1,4 +1,10 @@
-﻿## 2026-10-28 源轨171过1败后的恢复与窗口身份修复候选
+## 2026-10-28 最后两项真实失败修复已合；下一集中核收
+
+- 主线已合工作流199688aa为38122b70，以及7b38cf17为55b7a8d8。原树真实Loaded/Expanded恢复、null清选和同步换目标门禁及实际窗口实例授权/Apply前复核已落；原断言保留并加重入/重挂用例。下一统一UI006/full006及正式EXE先probe后新回归，尚未验收这批源。
+- 上批d5e产物UI005=0错6552警告168.38秒，full005=0错6591警告74.84秒；Toolbox002正式EXE探针0，publication9/origins2/table1/style2、Design91、Components9、RuntimeEditor10、FullChain8、Resources、Theme1、RootResource1、完整部署轨均通过。ImageSources002=171过1败（tree中央恢复），WorkflowHost002=1败（错误窗口授权）；均保日志，不能套到最新修复当已绿。
+- 当前所有26721/99337/40020/59265终态，无live。仅文档/Catalog补来源身份与hash，不改嵌入provenance；用户参数页SHA不变且排除。D06独立整批在途，D07真实Domain/layer/RLE缺口已入交接第7节；完整阶段及人工仍未完成。
+
+## 2026-10-28 源轨171过1败后的恢复与窗口身份修复候选
 
 - 树恢复窄补：SelectedItem=null实际清已实现容器选择；每次false→true之间复核恢复epoch、host目标、ItemsSource及container真实行。外部Tree.SelectedItemChanged同步换目标/源会退役旧恢复并排新目标，新增真实Loaded reentry→新目标、null→实际Tree.SelectedItem空且无用户命令回归。两C#纯语法0错，未运行。
 - 主线固定d5e75461：UI005=0错6552警告168.38秒/full005=0错6591警告74.84秒；serial99337全部终态，正式Toolbox probe0、publication9/0（300分页异常）、Design91过，ImageSources002=171过1败（树视觉恢复line85），WorkflowHost002参数窗口身份拒绝仍失败；origins2/table1/style2复验过。以上分范围，目标未完成。

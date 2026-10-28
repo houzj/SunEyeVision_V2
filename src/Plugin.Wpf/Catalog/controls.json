@@ -4916,6 +4916,12 @@
           "name": "Apps.PcUI",
           "mvid": "380598ff-2817-448e-bad2-2350035a99a0",
           "sha256": "bc47626c5064cf4a28e0cfa8344c07c4d186c5a9efd321988de9482dfb10fd74"
+        },
+        {
+          "name": "Apps.ColorFun",
+          "mvid": "5817dbce-52cc-4171-9b83-73568791682f",
+          "sha256": "22c277c4e2d384593265ee0d40830252f8317c60a7ebe782d31aee426c5d8688",
+          "evidence": "docs/collaboration/evidence/O06_RESULT_COMPOSITION_ASSEMBLIES_20261028.json"
         }
       ],
       "provenance": "src/Plugin.Wpf/Themes/Assets/Results/PropertyList/provenance.json",
@@ -4960,7 +4966,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/PropertyListView.xaml.cs",
-          "sha256": "7d343581bd849d02ded99b8c687158d79416a0bfe7b40c6bd111b92a12e11ab8"
+          "sha256": "71e3a4ecbd86211fc556cd62e3348fd22cccb93f97519d537ebff7dd19a4ff7d"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
@@ -5076,7 +5082,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/PropertyListView.xaml.cs",
-          "sha256": "7d343581bd849d02ded99b8c687158d79416a0bfe7b40c6bd111b92a12e11ab8"
+          "sha256": "71e3a4ecbd86211fc556cd62e3348fd22cccb93f97519d537ebff7dd19a4ff7d"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
@@ -5119,6 +5125,18 @@
           "name": "Apps.PcUI",
           "mvid": "380598ff-2817-448e-bad2-2350035a99a0",
           "sha256": "bc47626c5064cf4a28e0cfa8344c07c4d186c5a9efd321988de9482dfb10fd74"
+        },
+        {
+          "name": "Apps.ColorFun",
+          "mvid": "5817dbce-52cc-4171-9b83-73568791682f",
+          "sha256": "22c277c4e2d384593265ee0d40830252f8317c60a7ebe782d31aee426c5d8688",
+          "evidence": "docs/collaboration/evidence/O06_RESULT_COMPOSITION_ASSEMBLIES_20261028.json"
+        },
+        {
+          "name": "VM.PcUI",
+          "mvid": "1393e856-5b85-4d5e-b730-304cf95a7766",
+          "sha256": "87d21004fd3807213247623212f93c5f15a784da78c4bc2c890a7906c3c92b42",
+          "evidence": "docs/collaboration/evidence/O06_RESULT_COMPOSITION_ASSEMBLIES_20261028.json"
         }
       ],
       "provenance": "src/Plugin.Wpf/Themes/Assets/Results/ResultShell/provenance.json",

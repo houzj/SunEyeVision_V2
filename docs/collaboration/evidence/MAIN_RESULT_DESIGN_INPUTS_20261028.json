@@ -1,4 +1,4 @@
-﻿{
+{
   "status": "DESIGN_INPUT_STATIC_NOT_RUNTIME_ACCEPTANCE",
   "baseline": "85e56834",
   "target": "VM 4.4 本地反编译原件及恢复工程；不将恢复适配等同原件",
@@ -536,5 +536,133 @@
     "SHA为本次读取文件身份，不等于原程序集MVID；原程序集来源沿Catalog核收",
     "静态已定位入口不代表分支行为及资源递归闭包全部完成",
     "未执行构建、原机运行、VS设计器或用户验收"
-  ]
+  ],
+  "productionCoordinateReview": {
+    "observedAt": "2026-10-28T18:06:49.143646+08:00",
+    "status": "STATIC_PRODUCTION_CONTRACT_REVIEW_NOT_BUILD_OR_RUNTIME_ACCEPTANCE",
+    "hostBaseline": "275be4f4",
+    "records": [
+      {
+        "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\tools\\SunEyeVision.ImageSource\\Runtime\\ImageSourceSession.cs",
+        "sha256": "3e2c122f367f70603054d1a3c8440c3ad34e234c7becb1e7451d536edb903fde",
+        "status": "SOURCE_FIXED_6e5cfc40",
+        "anchors": [
+          {
+            "line": 50,
+            "text": "ImageFrameAddress Frame(string port)=>new(Guid.NewGuid(),\"image-source:\"+invocation.Context.Identity.NodeId,"
+          }
+        ]
+      },
+      {
+        "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\SunEyeVision.HalAdapter\\Runtime\\HalImageSnapshotSource.cs",
+        "sha256": "924cf333a5ccb475c3233750d3f0a754381aa855943db9983e3e35adba69ec1c",
+        "status": "SOURCE_FIXED_6e5cfc40",
+        "anchors": [
+          {
+            "line": 59,
+            "text": "var coordinates=new CoordinateFrame(\"image:\"+frame.SourceId,CoordinateDomain.Image,CoordinateUnit.Pixel);"
+          }
+        ]
+      },
+      {
+        "path": "C:\\Users\\houzhongjie\\.codex\\worktrees\\87f4\\SunEyeVision_V2\\src\\Plugin.Contracts\\RoiDeclarations.cs",
+        "sha256": "c65868fee3072db3f07e3b0302734d80095c0e943ae7ba8d673b77f2cd1a4ea8",
+        "status": "SOURCE_FIXED_6e5cfc40",
+        "anchors": [
+          {
+            "line": 6,
+            "text": "public static CoordinateFrame ImageFrame{get;}=new(\"image:input\",CoordinateDomain.Image,CoordinateUnit.Pixel);"
+          }
+        ]
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Adapters\\Regions\\NativeRoiSession.cs",
+        "sha256": "14363a219f7f9e0fa1ce06640a7173dcf4d2e70d986e549526436a7f64bf792b",
+        "status": "MAIN_UNCOMMITTED_CANDIDATE_NOT_RUNTIME_ACCEPTED",
+        "anchors": [
+          {
+            "line": 87,
+            "text": "IsAvoid=isAvoid;Image=image;Frame=image.Frame;Coordinates=image.EffectiveDomain.Frame;ImageWidth=image.Width;ImageHeight=image.Height;"
+          },
+          {
+            "line": 106,
+            "text": "ArgumentNullException.ThrowIfNull(snapshot);var stamp=snapshot.Stamp;ArgumentNullException.ThrowIfNull(stamp);"
+          },
+          {
+            "line": 107,
+            "text": "if(stamp.ScopeId==Guid.Empty||stamp.Revision<0||stamp.Frame!=Frame||"
+          },
+          {
+            "line": 151,
+            "text": "var changedVersion=_stamp!=snapshot.Stamp;"
+          },
+          {
+            "line": 167,
+            "text": "_items=next;_stamp=snapshot.Stamp;"
+          },
+          {
+            "line": 263,
+            "text": "if(snapshot.Stamp!=stamp){Error=\"区域根已改变，请在当前范围重新绘制。\";Install(snapshot);return null;}"
+          },
+          {
+            "line": 335,
+            "text": "if(snapshot.Stamp.ScopeId!=current.Stamp.ScopeId||snapshot.Stamp.Frame!=current.Stamp.Frame||snapshot.Stamp.Revision<current.Stamp.Revision)"
+          },
+          {
+            "line": 337,
+            "text": "if(snapshot.Stamp.Revision==current.Stamp.Revision&&!SameItems(snapshot.Items,current.Items))"
+          },
+          {
+            "line": 347,
+            "text": "if(snapshot.Stamp.Revision<=current.Stamp.Revision)throw new InvalidOperationException(\"宿主接纳必须递增版本。\");"
+          }
+        ]
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Adapters\\Regions\\NativeRoiProjection.cs",
+        "sha256": "1ff43f33c56557466f7b1756c059eeb5571daa721940b6cca62f2842d0c9ce79",
+        "status": "MAIN_UNCOMMITTED_CANDIDATE_NOT_RUNTIME_ACCEPTED",
+        "anchors": [
+          {
+            "line": 60,
+            "text": "public double CenterX {get=>Value(\"x\")/ImageWidth;set=>Stage(\"x\",value*ImageWidth);}"
+          },
+          {
+            "line": 61,
+            "text": "public double CenterY {get=>Value(\"y\")/ImageHeight;set=>Stage(\"y\",value*ImageHeight);}"
+          }
+        ]
+      },
+      {
+        "path": "D:\\MyWork\\SunEyeVision_V2\\src\\Plugin.Wpf\\Presenters\\Display\\NativeResultViewport.RoiEditing.cs",
+        "sha256": "d88e64902671e4b3ee21a331913215bdd947dd58aee998b785beedfae39d9d48",
+        "status": "MAIN_UNCOMMITTED_CANDIDATE_NOT_RUNTIME_ACCEPTED",
+        "anchors": [
+          {
+            "line": 12,
+            "text": "public interface INativeRoiEditLease : IDisposable"
+          },
+          {
+            "line": 27,
+            "text": "public INativeRoiEditLease BeginRoiEditing(NativeResultFrameReceipt receipt, NativeRoiSession session, Func<bool> isCurrent)"
+          },
+          {
+            "line": 33,
+            "text": "|| session.Coordinates != receipt.Coordinates || session.Stamp.Frame != receipt.Frame"
+          }
+        ]
+      }
+    ],
+    "confirmed": [
+      "实际图像源按SourceId定义Domain坐标；不得改名为ROI通用输入槽位来使测试通过。",
+      "RoiDeclarations.image:input是固定ROI参数的逻辑输入槽位。NativeRoiSession绑定宿主明确提供的真实输入图像实例、Stamp.Frame、实际Coordinates和尺寸；原Projection按同一实例宽高归一化并由原视口绘制。",
+      "attachment必须逐次验证同session的真实Frame/Coordinates/尺寸/stamp/epoch/current；不能只比较逻辑输入槽位字符串，不能按尺寸猜物理Frame。",
+      "只读GeometryLayer仍严格核Geometry.Frame；ROI已声明输入角色的实例绑定不推广成任意GeometryValue跨坐标变换。",
+      "主线候选新增INativeRoiEditLease.IsCurrent/HasPendingGesture/CancelGesture，以供实际Apply/Save/关闭消费；尚非冻结或运行验收。"
+    ],
+    "pending": [
+      "宿主从节点实际输入构造session并保持borrow至attachment退出；任意输出背景不得冒充输入。",
+      "公共最终检查点和整批同源Release验证；真实VS及人工仍待验。"
+    ]
+  }
 }

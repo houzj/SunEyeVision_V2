@@ -12,6 +12,8 @@
 
 ## 2026-10-28 D07生产消费者准备与完整清单同步
 
+本轮补核真实源Domain与ROI逻辑输入槽位并非同一ID；已与主线沿Session的实际Frame/Coordinates/尺寸/stamp绑定核清，不重命名源域、不泛化坐标变换。主线候选补实际手势租约能力以拒绝未完成手势期间Apply/Save；源码证据和未验状态已统一原D07交接/证据，未消费未提交API。
+
 - 固定源码6e5cfc40干净；27文件集中批已交主线，当前不新增产品修改。主线公共owner/ROI attachment仍在重入/真实控件验证，未给最终生产API；本线不拷半签名或写私有产物。
 - 已沿实际入口补D07原交接第8节：Shell/双侧typed源与borrow、旧Bitmap/渲染层/主窗注入退出、ROI草稿与原session/全屏同view、Group及旧工具主图禁用。混合ROI保完整数据，ImageSourceReference不误改执行/修正用途。完整39项矩阵同步已存在的正式证据及未完出口，不以设计宣称实施。
 - 精确报告纠正：最新图像源176项174过2败在ImageSources/attempt-004（pid65464/exit1），attempt-001是旧172项15败；GlobalBinding/attempt-001才是257项237过20败。两轨的失败均有固定源码修复，但尚未新跑，不覆盖历史记录。

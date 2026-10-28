@@ -116,3 +116,10 @@ Arc的只读显示与编辑手势也须分开：原page有IAnnularSector路径�
 实施顺序仍为一个集成批：主线冻结公共最终API及Shell图像DP退役点→本线固定双pane身份/借阅、ROI草稿接缝和上述全部消费者→集中源码替换→同一正式Release验证。准备阶段不改共享SDK/UI合同、不挂第二viewport，不按单按钮/形状交付。
 
 必要联合负测：同pub多借阅和上下游不同pub、同Frame不同Coordinates、声明无值、源borrow退休与viewport最终lease、双侧source独立、旧queued选择/清理/ROI取消不覆新代、候选读取/Bind失败全部清理、混合支持/不支持ROI数据不丢、全屏实际同view移动、Group与旧工具禁用信息。真实VS和WPF主题/宽窄/DPI/原件同态人工证据仍单列；未获得即未完成。
+
+
+### 坐标与手势接缝核清（本轮静态生产链结论）
+
+实际图像源`ImageSourceSession`的Frame.SourceId为`image-source:<node>`，HALCON资源桥据此生成真实Domain坐标；`RoiDeclarations.image:input`则是ROI参数逻辑输入槽位，两者不能简单要求字符串相等。原NativeRoiSession已经通过宿主给定的实际输入图像、严格Stamp.Frame、固定宽高及原Projection归一化建立这一输入实例绑定；attachment仍须核完整实际Frame/Coordinates/尺寸/stamp/owner/epoch/current，不重命名Domain，也不把任意背景或输出当节点输入。此绑定仅用于已知ROI参数声明，不推广成只读GeometryValue的跨坐标转换。
+
+当前主线候选已移除错误的逻辑槽位与实际Domain字符串等同限制，并新增窄`INativeRoiEditLease`供HasPendingGesture/CancelGesture/IsCurrent消费。宿主不自捕鼠标复制原手势；实际原柄已按下但尚未改变字段时也须拒Apply/Save，关闭/切页/Esc只取消本lease。该公开接缝尚待主线固定及同源验证，本线不消费未提交签名。源码/候选SHA及锚点保存在既有MAIN_RESULT_DESIGN_INPUTS证据中，静态结论不计构建或运行通过。

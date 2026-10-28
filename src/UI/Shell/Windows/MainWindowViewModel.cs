@@ -524,6 +524,9 @@ namespace SunEyeVision.UI.Shell.Windows
         /// 扁平化结果行列表（用于 DataGrid 绑定，与图像结果子 VM 共享同一集合实例）
         /// </summary>
         public ObservableCollection<FlatResultRow> FlatResultRows => _flatResultRows;
+        public ReadOnlyObservableCollection<FlatResultRow> ResultTreeRoots=>DeclaredResultPresenter.Roots;
+        internal bool IsCurrentResultRow(FlatResultRow row)=>_declaredResultActive
+            &&_declaredResultPresenter?.ContainsRow(row)==true;
         private SunEyeVision.UI.Services.Monitoring.ResultPresentationPresenter? _declaredResultPresenter;
         private bool _declaredResultActive;
         private bool _declaredHistoricalResult;
@@ -5873,6 +5876,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
     /// </summary>
     public class FlatResultRow : ObservableObject
     {
+        private readonly ObservableCollection<FlatResultRow> _children=new();
+        public FlatResultRow()=>Children=new(_children);
+        public ReadOnlyObservableCollection<FlatResultRow> Children {get;}
+        internal ObservableCollection<FlatResultRow> MutableChildren=>_children;
+        public string Key {get;internal set;}=string.Empty;
         private bool _isExpanded = true;
         private string _displayName = string.Empty;
 
@@ -5938,8 +5946,21 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
         public Type? PropertyClrType { get; set; }
-        public ResultBindingInfo? BindingInfo { get; set; }
+        private ResultBindingInfo? _bindingInfo;
+        public ResultBindingInfo? BindingInfo
+        {
+            get=>_bindingInfo;
+            set
+            {
+                if(!SetProperty(ref _bindingInfo,value))return;
+                OnPropertyChanged(nameof(IsBindable));OnPropertyChanged(nameof(CanBindVariable));
+                OnPropertyChanged(nameof(BindingUnavailableReason));
+            }
+        }
         public bool IsBindable => BindingInfo != null;
+        public bool CanBindVariable=>IsBindable;
+        public string? BindingDisplayName {get;internal set;}
+        public string BindingUnavailableReason=>IsBindable?string.Empty:"该项没有正式变量绑定端点";
     }
 
     /// <summary>模块结果可绑定终点的运行时寻址信息。</summary>

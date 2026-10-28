@@ -29,6 +29,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
         private WorkflowTabViewModel? _sourceWorkflow;
         private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
+        private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
         private void ReleaseSourceSession()
         {ImagePreviewContent.Session=null;_sourceSession?.Dispose();_sourceSession=null;_sourceWorkflow=null;}
         private void RefreshSourceSession()
@@ -58,6 +59,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
             ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
+            ModuleResultTreeView.IsReadOnly=!allowed;
             RefreshSourceSession();
         }
 
@@ -65,6 +67,16 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             InitializeComponent();
             _sourceTheme=new(ImagePreviewContent);
+            _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
+            ModuleResultTreeView.BindVariableCommand=new RelayCommand(
+                value=>{if(value is FlatResultRow row)BindResultToGlobalVariable(row);},
+                value=>EditingAllowed&&value is FlatResultRow {BindingInfo:not null} row&&_viewModel?.IsCurrentResultRow(row)==true);
+            ModuleResultTreeView.CopyPathCommand=new RelayCommand(value=>
+            {
+                if(ModuleResultTreeView.SelectedItem is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
+                    &&value is string path&&!string.IsNullOrWhiteSpace(path))Clipboard.SetText(path);
+            },value=>value is string {Length:>0}&&ModuleResultTreeView.SelectedItem is FlatResultRow row
+                &&_viewModel?.IsCurrentResultRow(row)==true);
             Loaded+=(_,_)=>RefreshSourceSession();
             Unloaded+=(_,_)=>ReleaseSourceSession();
         }
@@ -98,6 +110,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _viewModel?.CloseResultPresentation();
             ReleaseSourceSession();
             _sourceTheme.Dispose();
+            _resultTheme.Dispose();
         }
 
         /// <summary>
@@ -122,10 +135,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 从真实模块结果直接绑定全局变量。该入口与“全局变量管理器 → 输入来源”写入同一 ProducerBinding，
         /// 因而不会产生两套依赖配置。
         /// </summary>
-        private void BindResultToGlobalVariable_Click(object sender, RoutedEventArgs e)
+        private void BindResultToGlobalVariable(FlatResultRow row)
         {
-            if (sender is not Button { DataContext: FlatResultRow row } ||
-                row.BindingInfo == null)
+            if (!EditingAllowed||_viewModel?.IsCurrentResultRow(row)!=true||row.BindingInfo == null)
             {
                 return;
             }
@@ -143,6 +155,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             };
             var variable=GlobalVariableSelectDialog.ShowSelect(solutionManager,row.BindingInfo.ValueVocabulary);
             if(variable is null)return;
+            if(!EditingAllowed||!_viewModel.IsCurrentResultRow(row))return;
             if(!_viewModel.TryBindResultVariable(expected,binding,variable.Id,out var error))
                 ThemeMessageDialog.Show(error,"结果绑定未接纳",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
 
@@ -175,13 +188,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// DataGrid 结果行展开/折叠点击事件
         /// </summary>
-        private void ResultExpandIcon_Click(object sender, MouseButtonEventArgs e)
+        private void OnResultTreeSelectionChanged(object sender,RoutedPropertyChangedEventArgs<object> e)
         {
-            if (sender is FrameworkElement element && element.DataContext is FlatResultRow row && row.IsGroup)
-            {
-                row.IsExpanded = !row.IsExpanded;
-                e.Handled = true;
-            }
+            ModuleResultTreeView.SelectedItemPath=e.NewValue is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
+                ?row.BindingInfo?.ResultPath??row.Key:string.Empty;
+            CommandManager.InvalidateRequerySuggested();
         }
 
         /// <summary>

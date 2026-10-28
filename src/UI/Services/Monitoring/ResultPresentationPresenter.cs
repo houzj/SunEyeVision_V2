@@ -24,6 +24,10 @@ public sealed class ResultPresentationPresenter : IDisposable
     }
 
     private readonly ObservableCollection<FlatResultRow> _rows;
+    private readonly ObservableCollection<FlatResultRow> _roots=new();
+    public ReadOnlyObservableCollection<FlatResultRow> Roots {get;}
+    public bool ContainsRow(FlatResultRow row)=>!_disposed&&(ReferenceEquals(row,_root)
+        ||_entries.TryGetValue(row.Key,out var entry)&&ReferenceEquals(entry.Row,row));
     private readonly Action<bool> _setHasResults;
     private readonly int _pageSize;
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
@@ -39,6 +43,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     public ResultPresentationPresenter(ObservableCollection<FlatResultRow> rows, Action<bool> setHasResults, int pageSize = 128)
     {
         _rows = rows ?? throw new ArgumentNullException(nameof(rows));
+        Roots=new(_roots);
         _setHasResults = setHasResults ?? throw new ArgumentNullException(nameof(setHasResults));
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
         _pageSize = pageSize;
@@ -113,8 +118,18 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var generation = _generation;
+        // Both surfaces borrow these exact row objects and the same retained reader.
+        // Hierarchy projection never reads another value page.
+        foreach(var entry in _entries.Values.ToArray())
+        {
+            var children=entry.Children.Select(child=>child.Row)
+                .Concat(entry.More is {} more?new[]{more}:Array.Empty<FlatResultRow>()).ToArray();
+            if(!Synchronize(entry.Row.MutableChildren,children,generation))return;
+        }
+        if(_root is {} root&&!Synchronize(root.MutableChildren,_outputs.Select(entry=>entry.Row).ToArray(),generation))return;
+        if(!Synchronize(_roots,_root is {} current?new[]{current}:Array.Empty<FlatResultRow>(),generation))return;
         var visible = new List<FlatResultRow>();
-        if (_root != null && _outputs.Count > 0)
+        if (_root != null)
         {
             visible.Add(_root);
             if (_root.IsExpanded)
@@ -127,6 +142,19 @@ public sealed class ResultPresentationPresenter : IDisposable
             _rows.Add(row);
         }
         if (generation == _generation && !_disposed) _setHasResults(visible.Count > 0);
+    }
+
+    private bool Synchronize(ObservableCollection<FlatResultRow> destination,IReadOnlyList<FlatResultRow> rows,int generation)
+    {
+        if(_disposed||generation!=_generation)return false;
+        if(destination.Count==rows.Count&&destination.Where((row,index)=>!ReferenceEquals(row,rows[index])).Any()==false)return true;
+        destination.Clear();
+        foreach(var row in rows)
+        {
+            if(_disposed||generation!=_generation)return false;
+            destination.Add(row);
+        }
+        return !_disposed&&generation==_generation;
     }
 
     public void Clear()
@@ -155,7 +183,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         _root = null;
         _snapshot = null;
         _model = null;
-        try { _rows.Clear(); }
+        try { try{_roots.Clear();}finally{_rows.Clear();} }
         finally
         {
             try { reader?.Dispose(); }
@@ -168,9 +196,10 @@ public sealed class ResultPresentationPresenter : IDisposable
         IReadOnlyDictionary<string, ResultBindingInfo>? bindings,IReadOnlySet<string>? displayedPorts=null)
     {
         _model = model;
-        _root = new FlatResultRow { DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
+        _root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
         Subscribe(_root, () => RefreshRows());
         foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id))) _outputs.Add(GetEntry(node, 1));
+        _root.IsGroup=_outputs.Count>0;
         if(_outputs.Count==0&&model.State==ResultPresentationState.NotRun)_root=null;
         UpdateRootMetadata(names, bindings);
     }
@@ -194,6 +223,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         if (_entries.TryGetValue(node.Key, out var existing)) return existing;
         var row = new FlatResultRow
         {
+            Key=node.Key,
             DisplayName = node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
             DisplayValue = ValueText(node), Level = level,
             IsGroup = node.ChildCount is > 0, IsExpanded = node.IsExpanded
@@ -230,6 +260,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         var last = Math.Min((long)count - 1, (long)offset + _pageSize - 1);
         var more = new FlatResultRow
         {
+            Key=entry.Node.Key+":page:"+offset.ToString(CultureInfo.InvariantCulture),
             DisplayName = $"加载下一页 [{offset.ToString(CultureInfo.InvariantCulture)}…{last.ToString(CultureInfo.InvariantCulture)}]",
             DisplayValue = "按需读取", IsGroup = true, IsExpanded = false, Level = entry.Row.Level + 1
         };

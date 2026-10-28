@@ -371,6 +371,17 @@ def render_blob_control_plan(plan):
             + ('<h5 id="o06-roi-menu-history-design">C09原菜单与同根宿主历史：完整批设计</h5>'
                + table(['项目','确定的合同、实施链与验收门'], list(plan['roiMenuHistoryDesign'].items()))
                if plan.get('roiMenuHistoryDesign') else '')
+            + ('<h4 id="o06-module-results-plan">模块结果：任务归属与统一优化方案</h4>'
+               + '<p>' + escape(plan['moduleResultsPlan']['summary']) + '</p>'
+               + '<h5>谁负责</h5>'
+               + table(['对象','唯一负责方','范围','当前状态'], plan['moduleResultsPlan']['ownership'])
+               + '<h5>已确定的方案</h5>'
+               + table(['事项','实施决定'], plan['moduleResultsPlan']['decisions'])
+               + '<h5>顺序与验收</h5>'
+               + table(['阶段','交付要求'], plan['moduleResultsPlan']['delivery'])
+               + '<p><a href="references/module-result-chain-20261028/module-result-chain-vm-comparison.html">模块结果完整链路与VM对照原文</a> · '
+               + '<a href="references/module-result-chain-20261028/reference-manifest.json">16条源码身份及证据边界</a></p>'
+               if plan.get('moduleResultsPlan') else '')
             + ('<h5 id="o06-next-native-compositions">C13文本、C14结果列表与C17窗口：后续完整批设计</h5>'
                + table(['对象','原件、职责、消费链与验收边界'], list(plan['nextNativeCompositionsDesign'].items()))
                if plan.get('nextNativeCompositionsDesign') else '')

@@ -76,6 +76,31 @@ internal static class S2DocumentEditingCases
                 Check(Application.Current is null&&Descendants<RadioButton>(entry).Count()==9,
                     "原整数单选真实XAML入口独立实例化并显示全部槽位");
             }
+            using(var entry=new SunEyeVision.Plugin.Wpf.Design.NativeDisplayPreview())
+            {
+                Render(entry,"native-display-text-xaml-entry.png",1100,640);
+                var sample=(SunEyeVision.Plugin.Wpf.Design.NativeDisplaySample)entry.Content;
+                var displayFields=sample.Fields;
+                Check(Application.Current is null&&displayFields.Fields.Count==16
+                    &&displayFields.Fields.Single(field=>field.FieldId=="text.content").InputElement is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.DeleteTextBox,
+                    "完整原文本和图形真实XAML入口脱离Application实例化且无预览替身");
+                Check(displayFields.Fields.Single(field=>field.FieldId=="text.size").InputElement is TextBox {Text.Length:>0}
+                    &&displayFields.Fields.Single(field=>field.FieldId=="text.x").InputElement is not null,
+                    "原七行数值和同槽坐标有实际输入和文字");
+                foreach(var id in new[]{"text.size","text.opacity"})
+                {
+                    var text=(TextBox)displayFields.Fields.Single(field=>field.FieldId==id).InputElement!;
+                    var bounds=text.TransformToAncestor(entry).TransformBounds(new Rect(text.RenderSize));
+                    Check(text.ActualWidth>100&&text.ActualHeight>=12&&text.Visibility==Visibility.Visible
+                        &&bounds.X>=120&&bounds.Right<=600&&bounds.Y>150&&bounds.Bottom<270,
+                        "原数值实际完整显示而非零宽文字："+id+" "+bounds);
+                }
+                sample.SelectedPageIndex=1;
+                Render(entry,"native-display-graphics-xaml-entry.png",1100,640);
+                Check(displayFields.SelectedPageIndex==1&&sample.SettingsView.SelectedPageIndex==1&&!Descendants<Expander>(entry).Any(),
+                    "同一真实设计入口可切到图形页且不使用更多Expander");
+                Check(sample.Writes==0,"设计器创建测量和切页不得写参数");
+            }
             using(var radio=new SunEyeVision.Plugin.Wpf.Design.NativeIntegerRadioSample())
             {
                 Render(radio,"native-integer-radio-design.png",600,300);

@@ -3,6 +3,7 @@ using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
+using SunEyeVision.Plugin.Wpf.Adapters.Text;
 using System.Globalization;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
@@ -17,6 +18,7 @@ public sealed partial class DeclaredFieldsView
     private readonly HashSet<string> _pairedFields=new(StringComparer.Ordinal);
     private IReadOnlyDictionary<string,FieldPresentation> _groupPresentations=new Dictionary<string,FieldPresentation>();
     private bool _submitting;
+    private IReadOnlyDictionary<string,TextExpressionOptions> _textExpressions=new Dictionary<string,TextExpressionOptions>();
     private bool CurrentGroup()
     {
         if(_disposed)return false;
@@ -111,6 +113,13 @@ public sealed partial class DeclaredFieldsView
         {
             foreach(var change in changes)
             {
+                if(change.Value is ConstantSetting {Value:string text}&&_textExpressions.TryGetValue(change.Key,out var expression))
+                {
+                    if(!CurrentGroup())throw new InvalidOperationException("文本字段所属编辑范围已失效。");
+                    var error=expression.ValidateText?.Invoke(text);
+                    if(!CurrentGroup())throw new InvalidOperationException("文本验证期间编辑范围已改变。");
+                    if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
+                }
                 var state=_fieldStates.Single(x=>x.Port.Id==change.Key);
                 if(_inlineConstants.Contains(change.Key))InlineConstantRules.Validate(state.Port,_groupPresentations[change.Key],change.Value);
                 if(change.Value is ConstantSetting number&&state.Port.Type.Shape==ValueShape.Scalar

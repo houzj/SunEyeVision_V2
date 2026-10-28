@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Adapters.Text;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
@@ -70,6 +71,25 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
         var references=options.References?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal);
         var images=options.ImageSources?.ToDictionary(pair=>pair.Key,pair=>pair.Value??throw new ArgumentException("图像来源函数不能为空。"),StringComparer.Ordinal);
+        T Observe<T>(Func<T> callback)
+        {
+            if(!Current())throw new InvalidOperationException("文本编辑视图已重绑或释放。");
+            var result=callback();
+            if(!Current())throw new InvalidOperationException("文本回调期间视图已重绑或释放。");
+            return result;
+        }
+        var texts=options.TextExpressions?.ToDictionary(pair=>pair.Key,pair=>
+        {
+            var option=pair.Value??throw new ArgumentException("文本表达式配置不能为空。");
+            ArgumentNullException.ThrowIfNull(option.ReadCandidates);
+            return new TextExpressionOptions(()=>
+            {
+                var snapshot=Observe(option.ReadCandidates)??throw new ArgumentException("文本来源快照不能为空。");
+                ArgumentNullException.ThrowIfNull(snapshot.FormatExpression);ArgumentNullException.ThrowIfNull(snapshot.IsCurrent);
+                return snapshot with {FormatExpression=candidate=>Observe(()=>snapshot.FormatExpression(candidate)),
+                    IsCurrent=()=>Current()&&snapshot.IsCurrent()&&Current()};
+            },option.ValidateText is null?null:text=>Observe(()=>option.ValidateText(text)));
+        },StringComparer.Ordinal);
         foreach(var reference in references)
             if(!schema.Inputs.Any(p=>p.Id==reference.Key&&(p.EditModes&FieldEditModes.Reference)!=0))
                 throw new ArgumentException("Unknown or non-reference settings field: "+reference.Key);
@@ -90,7 +110,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 var result=pair.Value();
                 if(!Current())throw new InvalidOperationException("图像来源读取期间视图已重绑或释放。");
                 return result;
-            }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants);
+            }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants,texts,options.GraphicDisplays?.ToArray(),options.TextDisplays?.ToArray());
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)

@@ -1,3 +1,9 @@
+## 2026-10-28 结果树表正式复验与可选字段缺值修复候选
+
+- 固定正式9065e86a：规定UI001零错6569警告162.97秒/full001零错6606警告72.55秒，正式EXE探针PID76564 exit0。ImageSources attempt005=176/0、Window216 publication9/0、217实际来源2/0、218原表500→1000→1205=1/0；795发布条目和这四receipt的31加载记录SHA核一致。证据evidence/O06_RESULT_OWNER_INTEGRATION_20261028.json，不套旧142/部署18。
+- GlobalBinding attempt002有组件加载超时、MissingProducer空断言失败，90秒整轨超时且自有进程已停止，无汇总/receipt，不统计局部通过为总数；原写者集中修复在途。另已交其跨root合法同nodeId的DeclaredBindings定位和准备异常reader归还缺口；ShowDeclaredRun仅定义无实际历史入口调用，明确未完成。
+- 新真实Window219复现SDK合法省略optional字段导致原表KeyNotFoundException。Root已修可选根读取和空父记录短路，保几何来源缺失仍拒绝；新增真实窗口用例保必填值与空单元格，尚未本批编验。独立SDK终态虚查询副作用修复d3eaf4e0已cherry-pick为96433a86，后续同批编验。
+- 原O06 moduleResultsPlan同步最新正式成绩与历史范围、公共ROI已实施/生产未接区别、实际历史/Blob专属旧表待迁。本批仅修公共控件，不改Blob业务；用户BlobParameterEditor.xaml原SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed不改不暂存。当前30323/45235均终态，无live；接下来固定源码并集中UI/full和新定向验证。完整两阶段目标仍active。
 ## 2026-10-28 原ROI attachment与公共接入API候选固定，待合D06整批
 
 - root移动实际原NativeRoiViewport绘制/选择/菜单/四类手柄到内部NativeRoiAttachment，两个独立ROI/文字viewport均薄包装同NativeResultViewport；删除旧NativeRoiImageFrame及旧Commands平行实现。ROI借同一像素lease，同一Session投影，不Dispose借用Session，不清其他层。

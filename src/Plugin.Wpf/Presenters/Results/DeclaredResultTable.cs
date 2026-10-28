@@ -84,9 +84,12 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         var values=lease.Values;
         var rows=new List<Row>();
         if(values is null){if(Current())Install(rows,expected,publication);return;}
+        // A valid publication may omit optional ports. Missing cells are empty;
+        // required ports and value types were already checked by InputValues.
+        object? RootValue(string id)=>values.Contains(id)?values.Get<object?>(id):null;
         if(_projection.Rows is {} source)
         {
-            var sequence=Read(values.Get<object?>(source.PortId),source.MemberFieldPath) as SequenceValue
+            var sequence=Read(RootValue(source.PortId),source.MemberFieldPath) as SequenceValue
                 ??throw new ArgumentException("The declared result rows are missing.");
             var identities=new HashSet<object>();
             foreach(var value in sequence)
@@ -96,13 +99,13 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
                 if(!identities.Add(identity))throw new ArgumentException("Duplicate result element identity.");
                 object? Cell(ResultFieldPath path)=>Read(record,path.MemberFieldPath.Skip(source.MemberFieldPath.Count));
                 object? Origin(ResultFieldPath path)=>path.PortId==source.PortId&&path.MemberFieldPath.Take(source.MemberFieldPath.Count).SequenceEqual(source.MemberFieldPath)
-                    ?Cell(path):Read(values.Get<object?>(path.PortId),path.MemberFieldPath);
+                    ?Cell(path):Read(RootValue(path.PortId),path.MemberFieldPath);
                 rows.Add(Project(identity,Cell,Origin));
                 if(!Current())return;
             }
         }
-        else rows.Add(Project("single",path=>Read(values.Get<object?>(path.PortId),path.MemberFieldPath),
-            path=>Read(values.Get<object?>(path.PortId),path.MemberFieldPath)));
+        else rows.Add(Project("single",path=>Read(RootValue(path.PortId),path.MemberFieldPath),
+            path=>Read(RootValue(path.PortId),path.MemberFieldPath)));
         if(Current())Install(rows.AsReadOnly(),expected,publication);
     }
 
@@ -215,6 +218,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
     {
         foreach(var member in members)
         {
+            if(value is null)return null;
             if(value is not RecordValue record)throw new ArgumentException("Result field traversal requires a declared record.");
             value=record.Contains(member)?record.Get<object?>(member):null;
         }

@@ -224,6 +224,28 @@ internal static class S2DocumentEditingCases
   var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"result-fixture",Guid.NewGuid());
   InputValues Values(long value)=>new(schema.Outputs,new Dictionary<string,object?>{{"value",value}});
   ResultPublicationStamp Stamp()=>new(Guid.NewGuid(),run,7,schema.Fingerprint);
+  Test("结果publication可选输出省略及空父记录保留真实表行",()=>
+  {
+   var recordType=TypeRef.RecordOf("result.optional-parent",new[]{new Port("count",DataType.Integer)});
+   var declaration=new ToolSchema(Array.Empty<Port>(),new[]{new Port("value",DataType.Integer),
+    new Port("optional",DataType.Text,Required:false),new Port("missing",recordType,Required:false),new Port("nullable",recordType,Nullable:true)});
+   var values=new InputValues(declaration.Outputs,new Dictionary<string,object?>{{"value",21L},{"nullable",null}});
+   using var publication=new ResultPublication(declaration,new(Guid.NewGuid(),run,7,declaration.Fingerprint),ResultViewState.Success,values,null,()=>true);
+   var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,new[]{
+    new ResultColumnDescriptor("value","值",new("value")),new ResultColumnDescriptor("optional","可选",new("optional")),
+    new ResultColumnDescriptor("missing","省略父记录",new("missing",new[]{"count"})),
+    new ResultColumnDescriptor("nullable","空父记录",new("nullable",new[]{"count"}))});
+   using var view=new DeclaredResultTable(declaration,projection);host.Children.Add(view);
+   try
+   {
+    view.Present(publication);owner.UpdateLayout();Pump();var grid=(DataGrid)view.Content;
+    Require(grid.Items.Count==1,"合法省略字段导致整行消失");var row=grid.Items[0];
+    object? Cell(string key)=>row.GetType().GetProperty("Item")!.GetValue(row,new object[]{key});
+    Require(Equals(Cell("value"),21L)&&Cell("optional") is null&&Cell("missing") is null&&Cell("nullable") is null,
+     "可选/空父记录未显示空单元格或破坏必填值");
+   }
+   finally{host.Children.Remove(view);}
+  });
   Test("结果publication共享借阅与owner退休最后释放",()=>
   {
    var release=new ResultOwnerProbe();var values=Values(11);var publication=new ResultPublication(schema,Stamp(),ResultViewState.Success,values,release,()=>true);

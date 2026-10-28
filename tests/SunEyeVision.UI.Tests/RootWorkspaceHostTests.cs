@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,9 +35,9 @@ public sealed class RootWorkspaceHostTests
     owner=new Window{Content=workspace,Width=1100,Height=800,Left=-10000,ShowActivated=false};
     owner.Show();Pump();
     Assert.Equal(new Rect(0,0,6,6),Assert.IsType<DrawingBrush>(Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WorkflowCanvasGridBrush)).Viewport);
-    VerifyMiniMap(shell,owner,"Dark");SaveConfiguration(owner,"Canvas-Dark");
+    VerifyWorkflowButtonThemes(shell,"Dark");VerifyMiniMap(shell,owner,"Dark");SaveConfiguration(owner,"Canvas-Dark");
     var canvasLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
-    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();VerifyMiniMap(shell,owner,"Light");SaveConfiguration(owner,"Canvas-Light");
+    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();VerifyWorkflowButtonThemes(shell,"Light");VerifyMiniMap(shell,owner,"Light");SaveConfiguration(owner,"Canvas-Light");
     Application.Current.Resources.MergedDictionaries.Remove(canvasLight);Pump();
     var manager=ServiceInitializer.SolutionManager;var document=manager.CurrentSolution!;
     var source=Assert.Single(document.Workflows.Where(w=>!w.IsSubroutine));var sourceTab=Assert.Single(viewModel.WorkflowTabViewModel.Tabs);
@@ -232,6 +232,35 @@ public sealed class RootWorkspaceHostTests
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
  }
+ private static void VerifyWorkflowButtonThemes(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,string theme)
+ {
+  var hoverKey=(DependencyPropertyKey)typeof(UIElement).GetField("IsMouseOverPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var focusKey=(DependencyPropertyKey)typeof(UIElement).GetField("IsKeyboardFocusedPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var pressedKey=(DependencyPropertyKey)typeof(System.Windows.Controls.Primitives.ButtonBase).GetField("IsPressedPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var panel=new StackPanel{Orientation=Orientation.Horizontal,Background=(Brush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.TabStripBackgroundBrush)};
+  var window=new Window{Content=panel,Width=300,Height=90,Left=-10000,ShowActivated=false};
+  try
+  {
+   foreach(var template in new[]{"WorkflowSingleTemplate","WorkflowContinuousTemplate","WorkflowStopTemplate","WorkflowAddTemplate","RootConfigurationTemplate","RootVariablesTemplate"})
+    panel.Children.Add(new Button{Style=(Style)shell.FindResource("WorkflowImageButton"),Template=(ControlTemplate)shell.FindResource(template),IsEnabled=true});
+   panel.Children.Add(new Button{Style=(Style)shell.FindResource("WorkflowImageButton"),Content="切换",IsEnabled=true});
+   window.Show();Pump();
+   void Verify(Brush actual,string key)=>Assert.Equal(((SolidColorBrush)Application.Current.FindResource(key)).Color,Assert.IsType<SolidColorBrush>(actual).Color);
+   foreach(Button button in panel.Children)
+   {
+    button.ApplyTemplate();var border=Assert.IsType<Border>(System.Windows.Media.VisualTreeHelper.GetChild(button,0));
+    Assert.Equal(Colors.Transparent,Assert.IsType<SolidColorBrush>(border.Background).Color);
+    button.SetValue(hoverKey,true);Pump();Verify(border.Background,SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush);
+    button.SetValue(hoverKey,false);button.SetValue(focusKey,true);Pump();Verify(border.Background,SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush);
+    button.SetValue(pressedKey,true);Pump();Verify(border.Background,SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonPressedBackgroundBrush);
+    button.IsEnabled=false;Pump();Assert.Equal(Colors.Transparent,Assert.IsType<SolidColorBrush>(border.Background).Color);
+    button.SetValue(pressedKey,false);button.SetValue(focusKey,false);button.SetValue(hoverKey,false);button.IsEnabled=true;
+   }
+   foreach(Button button in panel.Children)button.SetValue(hoverKey,true);
+   Pump();SaveMenuVisual(panel,"workflow-buttons-"+theme+"-hover");
+  }
+  finally{window.Close();}
+ }
  private static void VerifyMiniMap(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,Window owner,string theme)
  {
   var host=(FrameworkElement)shell.FindName("MiniMapHost");var map=(Border)shell.FindName("MiniMapBorder");
@@ -256,6 +285,7 @@ public sealed class RootWorkspaceHostTests
   Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush)).Color,Assert.IsType<SolidColorBrush>(chrome.Background).Color);
   SaveMenuVisual(host,"minimap-"+theme+"-hover");
   retract.SetValue(pressedKey,true);Pump();Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonPressedBackgroundBrush)).Color,Assert.IsType<SolidColorBrush>(chrome.Background).Color);SaveMenuVisual(host,"minimap-"+theme+"-pressed");
+  retract.IsEnabled=false;Pump();Assert.Equal(Colors.Transparent,Assert.IsType<SolidColorBrush>(chrome.Background).Color);retract.IsEnabled=true;Pump();
   retract.SetValue(pressedKey,false);retract.SetValue(hoverKey,false);retract.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
   Assert.Equal(Visibility.Collapsed,map.Visibility);Assert.Equal(Visibility.Visible,expand.Visibility);CheckButton(expand);
   expand.SetValue(hoverKey,true);Pump();SaveMenuVisual(host,"minimap-"+theme+"-collapsed-hover");expand.SetValue(hoverKey,false);

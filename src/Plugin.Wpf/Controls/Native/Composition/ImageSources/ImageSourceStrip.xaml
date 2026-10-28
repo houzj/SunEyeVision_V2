@@ -1,0 +1,459 @@
+﻿<UserControl x:Class="SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources.ImageSourceStrip" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources" x:Name="ImagePanel" Loaded="OnLoaded" Unloaded="OnUnloaded" Focusable="False" ClipToBounds="True" ToolTip="{Binding Status, ElementName=ImagePanel}" Height="125" Background="{DynamicResource ImageSources.Background}">
+<UserControl.Resources>
+    <ResourceDictionary>
+<ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml" /><ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml" /></ResourceDictionary.MergedDictionaries>
+
+  <Style x:Key="SmallCheckBoxStyle" TargetType="{x:Type CheckBox}">
+    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type CheckBox}">
+          <BulletDecorator Background="#00FFFFFF" SnapsToDevicePixels="True">
+            <BulletDecorator.Bullet>
+              <Image Name="im" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/run-unchecked.png" Stretch="None" VerticalAlignment="Center" />
+            </BulletDecorator.Bullet>
+            <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+          </BulletDecorator>
+          <ControlTemplate.Triggers>
+            <Trigger Property="HasContent" Value="True">
+          
+              <Setter Property="Padding" Value="4,0,0,0" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="true">
+              <Setter TargetName="im" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/run-checked.png" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="DisplayHideBtnStyle" TargetType="{x:Type ToggleButton}">
+    <Setter Property="Height" Value="30" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Margin" Value="0,0,10,0" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ToggleButton}">
+          <Grid Background="#00FFFFFF">
+            <Image Name="icon" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/collapse-normal.png" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="True" />
+                <Condition Property="UIElement.IsMouseOver" Value="True" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/collapse-hover.png" />
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="True" />
+                <Condition Property="IsEnabled" Value="False" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/collapse-disabled.png" />
+            </MultiTrigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="False">
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/expand-normal.png" />
+            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="False" />
+                <Condition Property="UIElement.IsMouseOver" Value="True" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/expand-hover.png" />
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="ToggleButton.IsChecked" Value="False" />
+                <Condition Property="IsEnabled" Value="False" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/expand-disabled.png" />
+            </MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="FrameworkElement.ToolTip" Value="收起" />
+    <Style.Triggers>
+      <Trigger Property="ToggleButton.IsChecked" Value="False">
+        <Setter Property="FrameworkElement.ToolTip" Value="展开" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+<Style x:Key="ImageSources.AutoSwitchStyle" TargetType="ToggleButton"><Setter Property="Margin" Value="2"/><Setter Property="Padding" Value="0"/><Setter Property="BorderThickness" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton"><Image x:Name="shape" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/auto-off.png"/><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="shape" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/auto-on.png"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+      <local:ImageCountVisibilityConverter x:Key="IntToVisibilityConverter" />
+
+      <Style x:Key="VerticalScrollBarPageButton" TargetType="{x:Type RepeatButton}">
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type RepeatButton}">
+              <Rectangle Fill="{TemplateBinding Control.Background}" Height="{TemplateBinding FrameworkElement.Height}" Width="{TemplateBinding FrameworkElement.Width}" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="MyButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ImageSources.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource ImageSources.Foreground}" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="Back" Background="#00FFFFFF" Height="24" Margin="2,0,2,0" Focusable="False">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <ContentPresenter Grid.Column="1" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                  <Rectangle Name="rect" Grid.ColumnSpan="2" Fill="{DynamicResource ImageSources.Accent}" Height="1" StrokeThickness="0" Visibility="Collapsed" VerticalAlignment="Bottom" />
+                </Grid>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="Back" Value="{DynamicResource ImageSources.Hover}" Property="Border.Background" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="Back" Value="{DynamicResource ImageSources.Hover}" Property="Border.Background" />
+                  <Setter TargetName="rect" Property="Visibility" Value="Visible" />
+                  <Setter Value="{DynamicResource ImageSources.Foreground}" Property="Foreground" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ScrollBarThumb" TargetType="{x:Type Thumb}">
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Thumb}">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="11" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Rectangle Grid.Row="0" Grid.RowSpan="3" Canvas.Left="0" Canvas.Top="0" Width="{TemplateBinding FrameworkElement.Width}" Height="10" RadiusX="1" RadiusY="1" Stroke="{DynamicResource ImageSources.Border}" Fill="{DynamicResource ImageSources.Scroll}" />
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="for_scrollbar" TargetType="{x:Type ScrollBar}">
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="Background" Value="{DynamicResource ImageSources.Scroll}" />
+        <Setter Property="Height" Value="10" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ScrollBar}">
+              <Grid Name="Bg" SnapsToDevicePixels="True" Width="{TemplateBinding FrameworkElement.Width}">
+                <Border Height="10" VerticalAlignment="Center" CornerRadius="1" Background="#00FFFFFF" />
+                <Track Name="PART_Track" IsEnabled="{TemplateBinding UIElement.IsMouseOver}" IsDirectionReversed="False">
+                  <Track.DecreaseRepeatButton>
+                    <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Style="{StaticResource VerticalScrollBarPageButton}" />
+                  </Track.DecreaseRepeatButton>
+                  <Track.IncreaseRepeatButton>
+                    <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Style="{StaticResource VerticalScrollBarPageButton}" />
+                  </Track.IncreaseRepeatButton>
+                  <Track.Thumb>
+                    <Thumb Style="{StaticResource ScrollBarThumb}" />
+                  </Track.Thumb>
+                </Track>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ListBoxStyle1" TargetType="{x:Type ListBox}">
+        <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.WindowBrushKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ImageSources.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.ControlTextBrushKey}}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListBox}">
+              <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="1,0,1,1" SnapsToDevicePixels="True">
+                <ScrollViewer Focusable="False" Padding="{TemplateBinding Control.Padding}" Template="{DynamicResource ScrollViewerControlTemplate1}">
+                  <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </ScrollViewer>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Bd" Property="Border.Background" Value="{StaticResource {x:Static SystemColors.ControlBrushKey}}" />
+                </Trigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="ItemsControl.IsGrouping" Value="True" />
+                    <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+                  </MultiTrigger.Conditions>
+                  <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                </MultiTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <ControlTemplate x:Key="ScrollViewerControlTemplate1" TargetType="{x:Type ScrollViewer}">
+        <Grid Name="Grid" Background="{TemplateBinding Control.Background}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="20" />
+          </Grid.RowDefinitions>
+          <Rectangle Name="Corner" Grid.Column="1" Grid.Row="1" Fill="{StaticResource {x:Static SystemColors.ControlBrushKey}}" />
+          <ScrollContentPresenter Name="PART_ScrollContentPresenter" CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" Content="{TemplateBinding ContentControl.Content}" Grid.Column="0" Margin="{TemplateBinding Control.Padding}" Grid.Row="0" />
+          <ScrollBar Name="PART_VerticalScrollBar" AutomationProperties.AutomationId="VerticalScrollBar" Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" Minimum="0" Grid.Row="0" Visibility="Collapsed" ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
+          <ScrollBar Name="PART_HorizontalScrollBar" Margin="0,-3,0,0" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Minimum="0" Height="10" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Style="{StaticResource for_scrollbar}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Grid>
+      </ControlTemplate>
+    </ResourceDictionary>
+  </UserControl.Resources>
+<StackPanel><Grid Height="40" Background="{DynamicResource ImageSources.Background}"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="130"/><ColumnDefinition Width="36"/></Grid.ColumnDefinitions>
+<StackPanel Grid.Column="1" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Orientation="Horizontal" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"><TextBlock Text="自动切换" Foreground="{DynamicResource ImageSources.Foreground}" FontSize="14" VerticalAlignment="Center" Margin="5,1,15,0"/><ToggleButton Style="{StaticResource ImageSources.AutoSwitchStyle}" x:Name="AutoSwitch" IsChecked="{Binding AutoSwitchEnabled, ElementName=ImagePanel, Mode=OneWay}" Click="AutoSwitchClick" VerticalAlignment="Center" ToolTip="自动切换"/></StackPanel>
+<ComboBox Style="{StaticResource ListViewComboBoxGrayStyle}" x:Name="Mode" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Grid.Column="2" Width="90" Margin="20,5" SelectedIndex="{Binding ModeIndex, ElementName=ImagePanel, Mode=OneWay}" SelectionChanged="ModeChanged" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"><ComboBoxItem Content="运行全部"/><ComboBoxItem Content="运行选中"/></ComboBox>
+<DockPanel Grid.Column="0" Height="28" Margin="100,5,0,5" LastChildFill="True"><DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsImporting, ElementName=ImagePanel}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style><Button DockPanel.Dock="Right" Content="取消导入" Click="CancelImportClick"/><TextBlock Foreground="{DynamicResource ImageSources.Foreground}" Text="{Binding Status, ElementName=ImagePanel}" TextTrimming="CharacterEllipsis"/></DockPanel><ToggleButton Grid.Column="4" Style="{StaticResource DisplayHideBtnStyle}" IsChecked="{Binding IsExpanded, ElementName=ImagePanel, Mode=TwoWay}"/>
+</Grid><Grid Margin="5,-40,5,5" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}">  <Grid Name="imageListGrid">
+    <Button Height="54" Width="18" Margin="1,41,1,1" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="从头执行" Visibility="{Binding FirstVisibility, ElementName=ImagePanel}" Click="FirstImage_Click">
+      <Control.Template>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border Name="bd" BorderThickness="1" Background="{DynamicResource ImageSources.Background}" BorderBrush="{DynamicResource ImageSources.Border}">
+            <Image Name="ImageBackground" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-normal.png" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-selected.png" />
+              <Setter Value="{DynamicResource ImageSources.Accent}" TargetName="bd" Property="Border.BorderBrush" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" Value="True">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-selected.png" />
+              <Setter Value="{DynamicResource ImageSources.Accent}" TargetName="bd" Property="Border.BorderBrush" />
+            </Trigger>
+            <DataTrigger Value="True" Binding="{Binding IsFirstConfigured, ElementName=ImagePanel}">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-selected.png" />
+              <Setter Value="{DynamicResource ImageSources.Accent}" TargetName="bd" Property="Border.BorderBrush" />
+            </DataTrigger>
+            <Trigger Property="UIElement.IsEnabled" Value="False">
+              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/restart-disabled.png" />
+              <Setter TargetName="bd" Property="UIElement.Opacity" Value="0.5" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Control.Template>
+    </Button>
+    <ListBox Name="lst" AllowDrop="True" Margin="20,39,1,-1" Background="#00FFFFFF" BorderBrush="#00FFFFFF" VerticalAlignment="Top" ScrollViewer.VerticalScrollBarVisibility="Disabled" Style="{DynamicResource ListBoxStyle1}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Item" VirtualizingPanel.CacheLength="5" ItemsSource="{Binding Items, ElementName=ImagePanel}" SelectedIndex="{Binding DisplayIndex, ElementName=ImagePanel, Mode=OneWay}" DragEnter="ListDragOver" DragOver="ListDragOver" Drop="ListDrop" PreviewKeyDown="ListKeyDown">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid Background="#FF000000" Width="72" Height="52" Margin="2" Tag="{Binding ElementName=BtnDelete}" MouseEnter="Grid_MouseEnter" MouseLeave="Grid_MouseLeave" MouseDown="Grid_MouseDown"><Grid.ToolTip><TextBlock><TextBlock.Text><MultiBinding StringFormat="{}{0} {1}"><Binding Path="Name"/><Binding Path="ResourceError"/></MultiBinding></TextBlock.Text></TextBlock></Grid.ToolTip>
+            <local:ImageSourceThumbnail Source="{Binding Thumbnail}"><local:ImageSourceThumbnail.ContextMenu><ContextMenu><MenuItem Header="打开所在目录" Click="MenuItem_Click" /></ContextMenu></local:ImageSourceThumbnail.ContextMenu></local:ImageSourceThumbnail>
+            <Button Name="BtnDelete" Margin="0,1,1,0" VerticalAlignment="Top" HorizontalAlignment="Right" Content="×" Height="16" Width="16" Visibility="Collapsed" Tag="{Binding}" Click="BtnDelete_Click">
+              <Control.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Image Name="ImageBackground" Width="16" Height="16" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/item-delete-normal.png" />
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/item-delete-hover.png" />
+                    </Trigger>
+                    <Trigger Property="ButtonBase.IsPressed" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/item-delete-hover.png" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsEnabled" Value="False">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/item-delete-normal.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Control.Template>
+            </Button>
+            <CheckBox Margin="6,2.5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Style="{StaticResource SmallCheckBoxStyle}" Tag="{Binding}" IsChecked="{Binding IsForRun, Mode=OneWay}" Visibility="{Binding IsSelectMode, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type local:ImageSourceStrip}}}" Click="CheckBox_Click" />
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+      <ItemsControl.ItemContainerStyle>
+        <Style TargetType="{x:Type ListBoxItem}">
+          <Setter Property="Padding" Value="1" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                <Grid SnapsToDevicePixels="True">
+                  <Border Name="Border" Background="#00FFFFFF" />
+                  <ContentPresenter />
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                    <Setter TargetName="Border" Value="{DynamicResource ImageSources.Accent}" Property="Border.BorderBrush" />
+                    <Setter TargetName="Border" Property="Border.BorderThickness" Value="1" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </ItemsControl.ItemContainerStyle>
+    </ListBox>
+    <StackPanel Orientation="Horizontal" Height="21" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,11,1,1" IsHitTestVisible="False">
+      <TextBlock Text="图像源" Background="#00FFFFFF" Foreground="{DynamicResource ImageSources.Foreground}" FontWeight="Bold" FontSize="14" TextAlignment="Center" />
+      <TextBlock Background="#00FFFFFF" Foreground="{DynamicResource ImageSources.Foreground}" FontWeight="Bold" FontSize="14" TextAlignment="Center">
+        <TextBlock.Text>
+          <MultiBinding StringFormat=" ({0}/{1})">
+            <Binding Path="DisplayNumber" ElementName="ImagePanel" />
+            <Binding Path="Items.Count" ElementName="lst" />
+          </MultiBinding>
+        </TextBlock.Text>
+      </TextBlock>
+    </StackPanel>
+    <Grid Height="40" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="1,1,20,1">
+      <Button Name="BtnImageAdd" ToolTip="添加图像" Content="添加图片" HorizontalAlignment="Left" Height="34" Width="34" Margin="5,0,0,0" Click="BtnImageAdd_Click">
+        <Control.Template>
+          <ControlTemplate TargetType="{x:Type Button}">
+            <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-files-normal.png" />
+            <ControlTemplate.Triggers>
+              <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-files-hover.png" />
+              </Trigger>
+              <Trigger Property="ButtonBase.IsPressed" Value="True">
+                <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-files-hover.png" />
+              </Trigger>
+              <Trigger Property="UIElement.IsEnabled" Value="False">
+                <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-files-normal.png" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Control.Template>
+      </Button>
+      <Popup Name="Pop1" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnImageAdd}">
+        <Grid MinHeight="60" MinWidth="80" HorizontalAlignment="Left" Background="{DynamicResource ImageSources.Background}">
+          <Border BorderBrush="{DynamicResource ImageSources.Border}" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource ImageSources.MenuBackground}">
+            <UIElement.Effect>
+              <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+            </UIElement.Effect>
+            <StackPanel>
+              <Button Content="本地" Style="{StaticResource MyButtonStyle}" Click="LocalImage_Click" />
+              <Button IsEnabled="False" ToolTip="远程/Linux：缺少正式来源合同" Content="远程（未接入）" Style="{StaticResource MyButtonStyle}" Click="LinuxImage_Click" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Popup>
+      <Button Name="BtnImageAddFolder" ToolTip="添加图像文件夹" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="添加目录" HorizontalAlignment="Left" Height="34" Width="34" Margin="44,0,0,0" Click="BtnImageAddFolder_Click">
+        <Control.Template>
+          <ControlTemplate TargetType="{x:Type Button}">
+            <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-normal.png" />
+            <ControlTemplate.Triggers>
+              <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-hover.png" />
+              </Trigger>
+              <Trigger Property="ButtonBase.IsPressed" Value="True">
+                <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-hover.png" />
+              </Trigger>
+              <Trigger Property="UIElement.IsEnabled" Value="False">
+                <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-normal.png" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Control.Template>
+      </Button>
+      <Popup Name="Pop2" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnImageAddFolder}">
+        <Grid MinHeight="60" MinWidth="80" HorizontalAlignment="Left" Background="{DynamicResource ImageSources.Background}">
+          <Border BorderBrush="{DynamicResource ImageSources.Border}" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource ImageSources.MenuBackground}">
+            <UIElement.Effect>
+              <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+            </UIElement.Effect>
+            <StackPanel>
+              <Button Content="本地" Style="{StaticResource MyButtonStyle}" Click="LocalImageFolder_Click" />
+              <Button IsEnabled="False" ToolTip="远程/Linux：缺少正式来源合同" Content="远程（未接入）" Style="{StaticResource MyButtonStyle}" Click="LinuxImageFolder_Click" /><Button IsEnabled="False" Content="订阅目录（未接入）" ToolTip="缺少正式订阅合同" Style="{StaticResource MyButtonStyle}"/><Button IsEnabled="False" Content="RP/3D（未接入）" ToolTip="缺少3D资源合同" Style="{StaticResource MyButtonStyle}"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Popup>
+      <StackPanel Orientation="Horizontal" Margin="83,0,0,0">
+        <Button Name="BtnImageAddRpFolder" IsEnabled="False" ToolTip="RP/3D：当前未接入" Margin="0,0,10,0" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="添加目录" HorizontalAlignment="Left" Height="34" Width="34" Visibility="Collapsed" Click="BtnImageAddRpFolder_Click">
+          <Control.Template>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-normal.png" />
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-hover.png" />
+                </Trigger>
+                <Trigger Property="ButtonBase.IsPressed" Value="True">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-hover.png" />
+                </Trigger>
+                <Trigger Property="UIElement.IsEnabled" Value="False">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/add-directory-normal.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Control.Template>
+        </Button>
+        <Button Name="BtnImageClear" ToolTip="清空图像" Foreground="{DynamicResource ImageSources.Foreground}" Background="{DynamicResource ImageSources.Background}" Content="清空图片" HorizontalAlignment="Left" Height="34" Width="34" Click="BtnImageClear_Click">
+          <Control.Template>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Image Name="ImageBackground" Width="34" Height="34" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/clear-normal.png" />
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/clear-hover.png" />
+                </Trigger>
+                <Trigger Property="ButtonBase.IsPressed" Value="True">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/clear-hover.png" />
+                </Trigger>
+                <Trigger Property="UIElement.IsEnabled" Value="False">
+                  <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/clear-normal.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Control.Template>
+        </Button>
+      </StackPanel>
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Grid}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="False" Binding="{Binding IsReadOnly, ElementName=ImagePanel}" />
+                <Condition Value="True" Binding="{Binding IsExpanded, ElementName=ImagePanel}" />
+                <Condition Value="False" Binding="{Binding IsImporting, ElementName=ImagePanel}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </Grid>
+
+  </Grid>
+</Grid></StackPanel></UserControl>

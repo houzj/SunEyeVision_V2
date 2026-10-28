@@ -29,11 +29,11 @@ public sealed class OutputContractTreeSelectionTests
         var schema = new SunEyeVision.Plugin.Contracts.ToolSchema(Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),
             new[] { new SunEyeVision.Plugin.Contracts.Port("items", SunEyeVision.Plugin.Contracts.DataType.NumberArray) });
         var request = new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
-            { NodeId = "a", BindingOutputSchema = schema };
+            { NodeId = "a", BindingOutputSchema = schema, ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id };
         int released = 0;
         var result = new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(() => released++), request);
         DeclaredOutputSnapshot.Publish(result, request.GetInvocationIdentity(),
-            new Dictionary<string, object?> { ["items"] = new double[2_000_000] });
+            new Dictionary<string, object?> { ["items"] = new double[2_000_000] },sourceWorkflowId:f.Flow.Id);
         var before = GC.GetAllocatedBytesForCurrentThread();
         f.Model.UpdateModuleResults(result, "A", nodeId: "a");
         Assert.True(f.Model.HasModuleResults); Assert.Empty(f.Model.ModuleResultTree);
@@ -54,9 +54,9 @@ public sealed class OutputContractTreeSelectionTests
     {
         using var f=new Fixture();using var table=new RecordingResultView();Set(f.Model,"_activeResultView",table);
         var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
-        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema};
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
         var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
-        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d,2d}});
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d,2d}},sourceWorkflowId:f.Flow.Id);
         try
         {
             f.Model.UpdateModuleResults(result,"A",nodeId:"a");
@@ -77,7 +77,7 @@ public sealed class OutputContractTreeSelectionTests
     {
         using var f=new Fixture();using var table=new RecordingResultView{Fail=true};Set(f.Model,"_activeResultView",table);
         var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
-        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema};
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters()){NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
         var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
         DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}});
         try
@@ -88,6 +88,48 @@ public sealed class OutputContractTreeSelectionTests
             result.Resources!.Dispose();Assert.Equal(1,releases);
         }
         finally{result.Resources!.Dispose();}
+    });
+
+    [Theory]
+    [InlineData("document")] [InlineData("workflow")] [InlineData("instance")]
+    public void Snapshot_from_another_owner_scope_or_recreated_node_is_not_borrowed(string mismatch)=>Sta(()=>
+    {
+        using var f=new Fixture();
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        var owner=mismatch=="document"?new SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner():f.Document.ExecutionOwner;
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
+            {NodeId="a",BindingOutputSchema=schema,ExecutionOwner=owner,WorkflowId=f.Flow.Id};
+        var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}},
+            sourceWorkflowId:mismatch=="workflow"?"other":f.Flow.Id);
+        if(mismatch=="instance")
+        {
+            f.Flow.Nodes.Remove(f.A);
+            f.Flow.Nodes.Add(new SunEyeVision.UI.Shared.WorkflowNode("a","替代节点","替代节点",""));
+        }
+        try{f.Model.UpdateModuleResults(result,"A",nodeId:"a");Assert.Null(f.Model.CurrentResultPublication);}
+        finally{result.Resources!.Dispose();}
+        Assert.Equal(1,releases);
+    });
+
+    [Fact]
+    public void Binding_preparation_failure_releases_the_snapshot_reader_before_presentation()=>Sta(()=>
+    {
+        using var f=new Fixture();
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("items",DataType.NumberArray)});
+        var request=new SunEyeVision.Plugin.SDK.Core.ToolExecutionRequest(new ProbeParameters())
+            {NodeId="a",BindingOutputSchema=schema,ExecutionOwner=f.Document.ExecutionOwner,WorkflowId=f.Flow.Id};
+        var releases=0;var result=new SunEyeVision.Plugin.SDK.Core.ToolExecutor(new ParameterResolver()).Run(new FrozenProbe(()=>releases++),request);
+        DeclaredOutputSnapshot.Publish(result,request.GetInvocationIdentity(),new Dictionary<string,object?>{["items"]=new[]{1d}},sourceWorkflowId:f.Flow.Id);
+        // Fault injection in the actual binding preparation, after FromSnapshot acquired its reader.
+        f.Document.GlobalVariables.Add(null!);
+        try
+        {
+            Assert.Throws<NullReferenceException>(()=>f.Model.UpdateModuleResults(result,"A",nodeId:"a"));
+            Assert.Null(f.Model.CurrentResultPublication);
+        }
+        finally{f.Document.GlobalVariables.Clear();result.Resources!.Dispose();}
+        Assert.Equal(1,releases);
     });
 
     [Fact]
@@ -303,7 +345,7 @@ public sealed class OutputContractTreeSelectionTests
             Manager.SetCurrentSolution(Document, registerInCatalog: false);
             A.Parameters = Parameters; // The probe is not a registered persisted tool subtype; persistence is outside this fixture.
             _previousManager = _managerField.GetValue(null); _managerField.SetValue(null, Manager);
-            var tabs = new WorkflowTabControlViewModel(); Tab = tabs.SelectedTab!; Tab.WorkflowNodes = Flow.Nodes;
+            var tabs = new WorkflowTabControlViewModel(); Tab = tabs.SelectedTab!; Tab.Id=Flow.Id; Tab.WorkflowNodes = Flow.Nodes;
             var flat = new ObservableCollection<FlatResultRow>();
             var image = new ImageResultViewModel(Model); image.AttachCollections(new ObservableCollection<AvailableDataSource>(), flat);
             Set(Model, "<WorkflowTabViewModel>k__BackingField", tabs);

@@ -36,11 +36,14 @@ public sealed class OutputContractTreeSelectionTests
             new Dictionary<string, object?> { ["items"] = new double[2_000_000] },sourceWorkflowId:f.Flow.Id);
         var before = GC.GetAllocatedBytesForCurrentThread();
         f.Model.UpdateModuleResults(result, "A", nodeId: "a");
+        var afterPresent = GC.GetAllocatedBytesForCurrentThread();
         Assert.True(f.Model.HasModuleResults); Assert.Empty(f.Model.ModuleResultTree);
         Assert.Equal(2, f.Model.FlatResultRows.Count);
         f.Model.FlatResultRows[1].IsExpanded = true;
         Assert.InRange(f.Model.FlatResultRows.Count, 3, 131);
-        Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 1024 * 1024);
+        var afterPage = GC.GetAllocatedBytesForCurrentThread();
+        Assert.True(afterPage - before < 1024 * 1024,
+            $"实际分配：present={afterPresent-before} B，page={afterPage-afterPresent} B，total={afterPage-before} B（上限1048576 B）。");
         result.Resources!.Dispose(); Assert.Equal(0, released);
         var retired = f.Model.FlatResultRows[1];
         f.Select(f.B); Assert.Equal(1, released); Assert.Empty(f.Model.FlatResultRows);

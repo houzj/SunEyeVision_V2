@@ -1,3 +1,9 @@
+## 2026-10-28 C15正式6过；完整Global与图像源各剩1真实失败
+
+- 固定正式dfb7b053：UI001零错6569警告91.66秒/full001零错6504警告77.76秒，EXE探针74284 exit0。Global005完整284项283过1败（SendData保存重开DESIGN与["DESIGN"]形态），ImageSources007完整180项179过1败（2百万项惰性展开分配量门禁）；均原断言保留交原写者，不套前批源轨180/0。C15新Window226=6/0、Design061=96/0、RuntimeEditor10/0、FullChain8/0；795发布条目/95加载记录SHA核，证据evidence/O06_FOOTER_GLOBAL_REPAIR_INTEGRATION_20261028.json。
+- 原Shell唯一view接口已编入本批并与01ce独立设计消费通过构建；查Main目前未消费Shell，删除旧DP未造成现UI编译调用者破坏。生产D07仍旧SDK路径，不能当接通；自动审批两次拒绝独立线核心改写，已生成未应用17file补丁b5e7732a…只读审阅，实际缺依赖/重复reader/旧清新/资源异常/正式图文/整场景预算/ROI草稿/历史/全屏取消等，详HANDOFF_D07_PATCH_REVIEW_20261028.md。先修完整制品，不重放被拒写或请用户批准未闭合补丁。
+- 四路已分别核Circle/Rect/Sector/Polygon确定手势缺口，完整接点/必要负测见HANDOFF_ROI_GESTURE_TOKEN_20261028.md；主线下一成片补共享瞬态token与本地代次、受门禁两段通知，再继续普通CircleMes/C09。未开始Blob业务，不放弃原全清单。
+- 54678/88708均真实终态，当前无live。用户Blob参数页SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不改不暂存。两阶段完整goal active；本轮是源码/正式证据实际进展，不标阶段/目标完成，也不推送。
 ## 2026-10-28 原底栏整批核验与D07原Shell唯一视口合同固定
 
 - 正式产品67ce328d：规定UI001零错6569警告121.43秒/full001零错6606警告77.23秒；EXE探针PID45604 exit0。完整Global004不再超时，284项277过7败，完整失败JSON交原写者继续；ImageSources180/0、C15 Window225=5/0、Design060=96/0、RuntimeEditor10/0、FullChain8/0。795发布条目/95加载记录SHA核，证据evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json。实际查看设计自动渲染，非真实VS/VM/人工代签。

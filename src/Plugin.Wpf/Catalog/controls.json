@@ -5750,12 +5750,15 @@
         "Production tool host pending; Blob business frozen"
       ],
       "validation": {
-        "status": "CANDIDATE_FORMAL_AND_MANUAL_PENDING",
+        "status": "FORMAL_COMPONENT_AUTOMATION_PASSED_PRODUCTION_HOST_AND_MANUAL_PENDING",
         "evidence": "docs/collaboration/evidence/O06_NATIVE_TOOL_EDITOR_CANDIDATE_20261028.json",
         "candidateWindowPassed": 5,
         "formalAccepted": false,
         "formalIntegrationEvidence": "docs/collaboration/evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json",
-        "pendingIncrement": "后续订阅双异常/设计清理增量和新增第6窗口用例待新编验，不套67ce328d成绩"
+        "latestEvidence": "docs/collaboration/evidence/O06_FOOTER_GLOBAL_REPAIR_INTEGRATION_20261028.json",
+        "windowPassed": 6,
+        "designPassed": 96,
+        "formalComponentValidated": true
       }
     }
   ],

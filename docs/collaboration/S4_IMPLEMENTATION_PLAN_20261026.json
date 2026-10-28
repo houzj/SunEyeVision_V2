@@ -7722,10 +7722,10 @@
       "C17固定底栏与命令生命周期实施收紧": "只抽原Orange_ButtonStyle7-42/BottomButtonStyle79-82、四模板159-167/171-224及ParamsTabUserControl底栏93-142，固定Auto行外于三页滚动。原连续/单次continuous时隐藏、running禁用、RunEnable=false隐藏；Stop仅continuous控制显隐，Stopping/Closing保continuous至真实结束。库仅状态投影/租约命令，无循环Task/CTS；Actions部分构造立即登记各inner订阅，失败/Dispose聚合逐项摘，先失效租约，通知与CanExecute每外调核State版本/生命周期。宿主每run令牌链接编辑scope；Stop仅停止run且context存活，Confirm成功发布才关，X/关闭最终丢弃。Esc原行为未证，不冒称VM。",
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。",
       "C15原固定底栏与C01三页组合实际候选": "原Orange/BottomButtonStyle和连续/停止/执行/确定四模板已提取，Height24/WidthAuto/Min66、原Margin/Padding、32高固定底栏；NativeToolEditorFrame借现真实三页字段，不套第二tabs/外层Scroll。宿主ICommand及状态借用、旧回调/命令拒绝、替换命令订阅、异常聚合、内容归还与独立XAML已实施，候选Window5/0。规定UI/full及设计、实际工具宿主和人工尚未验；C17仍图像承载，不重编号。",
-      "C15原固定底栏与C01三页组合正式核验": "67ce328d两规定构建0错误、原固定底栏5/0、独立真实设计总96/0（含原三页/32底栏入口），RuntimeEditor10/0、FullChain8/0；控件库实际模板及借用命令已验证，正式工具窗口消费/停止取消与关闭仍须宿主对接，异常诊断小增量及人工未验。全局绑定284中7项失败独立保留，不算阶段一完成。"
+      "C15原固定底栏与C01三页组合正式核验": "最新dfb7b053两规定构建0错误、原底栏6/0（含订阅/归还双异常聚合及样例异常清理）、Design96/0、RuntimeEditor10/0、FullChain8/0。库组件正式新验已过，实际Blob工具窗口宿主消费与人工仍待；Global剩1失败、源轨剩分配量1失败分别保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计，树表共用SDK声明与同次运行快照/唯一publication。最新67ce328d UI/full零错误、EXE探针0；完整GlobalBinding不再总超时，284项277过7败，继续修复。ImageSources180/0（含新的文档/流程/节点身份及释放用例）、原底栏5/0、Design96/0、RuntimeEditor10/0、FullChain8/0。生产D07、实际历史入口及Blob专属迁移仍未完成。",
+      "summary": "按VM设计共用SDK声明、同次运行快照与唯一publication。正式dfb7b053 UI/full零错误、EXE0，完整Global284=283过1败，ImageSources180=179过1败，保最后字符串形态/大数组分配量失败；底栏6/0、设计96/0、RuntimeEditor10/0、FullChain8/0。原Shell已公开唯一view并退出双图DP，但生产D07切换仍待完整补丁审核与自动审批处理，未闭链。",
       "ownership": [
         [
           "结果树 / PropertyList",
@@ -7803,7 +7803,7 @@
       "delivery": [
         [
           "当前集中批",
-          "正式67ce328d UI零错6569警告121.43秒/full零错6606警告77.23秒、EXE45604 exit0；完整Global004=277过7败/284，已消除总超时，保7失败。ImageSources180/0、C15窗口5/0、Design96/0、RuntimeEditor10/0、FullChain8/0；795发布文件及本批加载记录SHA核。"
+          "最新dfb7b053 UI零错6569警告91.66秒/full零错6504警告77.76秒，EXE74284 exit0；Global005=283过1败/284，ImageSources007=179过1败/180；原固定底栏6/0、Design96/0、RuntimeEditor10/0、FullChain8/0。795发布条目及本轮加载记录SHA核；前批180/0不套本批失败。"
         ],
         [
           "接口与接入",
@@ -7843,7 +7843,7 @@
           "独立背景epoch/publication/layer revision；异Frame/异Coordinates拒绝，模板替换和预算故障隔离",
           "Apply/Save核ROI IsCurrent和HasPendingGesture，关闭/全屏/切页/旧取消不清新租约"
         ],
-        "currentState": "正式67ce328d两构建0错误，ImageSources180/0、底栏5/0、设计96/0、RuntimeEditor10/0、FullChain8/0；完整Global284=277过7败，非完整链核收。D07生产与历史/Blob/人工未完成。"
+        "currentState": "最新两构建0错误；Global283/1、ImageSources179/1仍失败，底栏6/0/Design96/0/RuntimeEditor10/0/FullChain8/0不代表生产D07、整个控件库或Blob闭环。"
       },
       "candidateEvidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
       "apiImplementation": {
@@ -7986,19 +7986,22 @@
           "formalProductionAccepted": false
         },
         "latestValidation": {
-          "productCommit": "67ce328de6e730c0a7d2ee0c034b72810fb2c4ca",
-          "evidence": "docs/collaboration/evidence/O06_NATIVE_FOOTER_BINDING_INTEGRATION_20261028.json",
+          "productCommit": "dfb7b053ca3d4b990b589bb469926ef9fcf85ccc",
+          "evidence": "docs/collaboration/evidence/O06_FOOTER_GLOBAL_REPAIR_INTEGRATION_20261028.json",
           "uiErrors": 0,
           "fullErrors": 0,
           "GlobalBinding": {
-            "passed": 277,
-            "failed": 7,
+            "passed": 283,
+            "failed": 1,
             "count": 284,
-            "fullTrack": true,
-            "completed": true
+            "fullTrack": true
           },
-          "ImageSources": 180,
-          "footer": 5,
+          "ImageSources": {
+            "passed": 179,
+            "failed": 1,
+            "count": 180
+          },
+          "footer": 6,
           "design": 96,
           "runtimeEditor": 10,
           "fullChain": 8,
@@ -8031,6 +8034,16 @@
         "designPassed": 96,
         "runtimeEditorPassed": 10,
         "fullChainPassed": 8,
+        "manualAccepted": false
+      },
+      "latestFormalValidation": {
+        "productCommit": "dfb7b053ca3d4b990b589bb469926ef9fcf85ccc",
+        "evidence": "docs/collaboration/evidence/O06_FOOTER_GLOBAL_REPAIR_INTEGRATION_20261028.json",
+        "uiErrors": 0,
+        "fullErrors": 0,
+        "windowPassed": 6,
+        "designPassed": 96,
+        "productionHostAccepted": false,
         "manualAccepted": false
       }
     }

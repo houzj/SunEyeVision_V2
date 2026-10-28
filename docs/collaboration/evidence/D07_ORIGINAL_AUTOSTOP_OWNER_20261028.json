@@ -1,0 +1,335 @@
+{
+  "kind": "真实原件VmProcedure连续运行AutoPlay/AutoStop四场景两次复测核收；不是本产品验收",
+  "runs": [
+    {
+      "run": "run-3252cd6a99e74caaba910152c56230a4",
+      "files": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\probe.json",
+          "sha256": "84a50e53378de33f3417e3a4f942fd9631c3626d3826769bf69b94dfe9a8e6f7"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\provenance.json",
+          "sha256": "939acec82e54c14df8a05a660a7de71a3f44703673b7d33b68c3a732faf19e3f"
+        }
+      ],
+      "provenance": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        {
+          "path": "D:\\Temp\\vision-image-probe-3252cd6a99e74caaba910152c56230a4\\workspace\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\OriginalImageSourceProbe.exe",
+          "sha256": "19ae5a979e7167986563bb1c5e5b9f4c68068e62687a0c362188a7e2762c06aa"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\OriginalImageSourceProbe.cs",
+          "sha256": "1c766b11a20ffbaf91ca3882296fd6c626cfcd83399d259bdb27d1eed3d6156d"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\ImageSourceCodecFixtures.cs",
+          "sha256": "b9b982939fe909d124a1e82ac87fba6a0c2ab20bc4abb79486e0976247540ef5"
+        }
+      ],
+      "observations": [
+        {
+          "phase": "owner-autostop-true-success-observation",
+          "elapsedMs": 150,
+          "timeoutMs": 7000,
+          "frames": 2,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": false,
+          "sawFinalFailure": false,
+          "firstFinalMs": 134,
+          "stoppedMs": 150,
+          "procedureContinuousBeforeCleanup": false,
+          "procedureRunningBeforeCleanup": true,
+          "finalFrame": {
+            "procedureContinuous": false,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\owner-autostop-true-success-fixtures\\c.bmp",
+            "nativeErrorCode": 0,
+            "procedureExecuteCount": 2,
+            "moduleExecuteCount": 2,
+            "sn": 19,
+            "procedureId": 10000,
+            "procedureRunning": true,
+            "name": "c.bmp"
+          }
+        },
+        {
+          "phase": "owner-autostop-false-wrap-observation",
+          "elapsedMs": 235,
+          "timeoutMs": 7000,
+          "frames": 3,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": true,
+          "sawFinalFailure": false,
+          "firstFinalMs": 140,
+          "stoppedMs": -1,
+          "procedureContinuousBeforeCleanup": true,
+          "procedureRunningBeforeCleanup": true,
+          "finalFrame": {
+            "procedureContinuous": true,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\owner-autostop-false-wrap-fixtures\\a.bmp",
+            "nativeErrorCode": 0,
+            "procedureExecuteCount": 5,
+            "moduleExecuteCount": 5,
+            "sn": 22,
+            "procedureId": 10000,
+            "procedureRunning": true,
+            "name": "a.bmp"
+          }
+        },
+        {
+          "phase": "owner-autostop-true-final-read-failure-observation",
+          "elapsedMs": 632,
+          "timeoutMs": 7000,
+          "frames": 3,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": false,
+          "sawFinalFailure": true,
+          "firstFinalMs": 125,
+          "stoppedMs": 632,
+          "procedureContinuousBeforeCleanup": false,
+          "procedureRunningBeforeCleanup": false,
+          "finalFrame": {
+            "procedureContinuous": false,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\owner-autostop-true-final-read-failure-fixtures\\c.bmp",
+            "nativeErrorCode": 2148532230,
+            "procedureExecuteCount": 7,
+            "moduleExecuteCount": 7,
+            "sn": 0,
+            "procedureId": 10000,
+            "procedureRunning": false,
+            "name": "c.bmp"
+          }
+        },
+        {
+          "phase": "owner-autostop-false-final-read-failure-observation",
+          "elapsedMs": 635,
+          "timeoutMs": 7000,
+          "frames": 3,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": false,
+          "sawFinalFailure": true,
+          "firstFinalMs": 123,
+          "stoppedMs": -1,
+          "procedureContinuousBeforeCleanup": true,
+          "procedureRunningBeforeCleanup": true,
+          "finalFrame": {
+            "procedureContinuous": true,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-3252cd6a99e74caaba910152c56230a4\\owner-autostop-false-final-read-failure-fixtures\\a.bmp",
+            "nativeErrorCode": 0,
+            "procedureExecuteCount": 13,
+            "moduleExecuteCount": 13,
+            "sn": 27,
+            "procedureId": 10000,
+            "procedureRunning": true,
+            "name": "a.bmp"
+          }
+        }
+      ],
+      "cleanup": [
+        {
+          "phase": "owner-autostop-true-success-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 13
+        },
+        {
+          "phase": "owner-autostop-false-wrap-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 15
+        },
+        {
+          "phase": "owner-autostop-true-final-read-failure-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 0
+        },
+        {
+          "phase": "owner-autostop-false-final-read-failure-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 15
+        }
+      ]
+    },
+    {
+      "run": "run-4d27d8c85a334bc58590523b49dbc42a",
+      "files": [
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\probe.json",
+          "sha256": "d51dc97c3a395b5b65ad0dd8bc2f3b035950d11dd313fe3b61f2986b2a4232a6"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\provenance.json",
+          "sha256": "ede2a96512f347e81c60da66df1ac35f314a205aa060cc0fff4caa4ee1b95daa"
+        }
+      ],
+      "provenance": [
+        {
+          "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        {
+          "path": "D:\\Temp\\vision-image-probe-4d27d8c85a334bc58590523b49dbc42a\\workspace\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\OriginalImageSourceProbe.exe",
+          "sha256": "b4b3acf79d51adbabf33cddfe544af30f213f0af9e2a2629e2529316f2480c0d"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\OriginalImageSourceProbe.cs",
+          "sha256": "1c766b11a20ffbaf91ca3882296fd6c626cfcd83399d259bdb27d1eed3d6156d"
+        },
+        {
+          "path": "D:\\MyWork\\REA逆向测试\\tests\\NativeEvidence\\ImageSourceCodecFixtures.cs",
+          "sha256": "b9b982939fe909d124a1e82ac87fba6a0c2ab20bc4abb79486e0976247540ef5"
+        }
+      ],
+      "observations": [
+        {
+          "phase": "owner-autostop-true-success-observation",
+          "elapsedMs": 150,
+          "timeoutMs": 7000,
+          "frames": 2,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": false,
+          "sawFinalFailure": false,
+          "firstFinalMs": 135,
+          "stoppedMs": 150,
+          "procedureContinuousBeforeCleanup": false,
+          "procedureRunningBeforeCleanup": true,
+          "finalFrame": {
+            "procedureContinuous": false,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\owner-autostop-true-success-fixtures\\c.bmp",
+            "nativeErrorCode": 0,
+            "procedureExecuteCount": 2,
+            "moduleExecuteCount": 2,
+            "sn": 19,
+            "procedureId": 10000,
+            "procedureRunning": true,
+            "name": "c.bmp"
+          }
+        },
+        {
+          "phase": "owner-autostop-false-wrap-observation",
+          "elapsedMs": 255,
+          "timeoutMs": 7000,
+          "frames": 3,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": true,
+          "sawFinalFailure": false,
+          "firstFinalMs": 145,
+          "stoppedMs": -1,
+          "procedureContinuousBeforeCleanup": true,
+          "procedureRunningBeforeCleanup": true,
+          "finalFrame": {
+            "procedureContinuous": true,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\owner-autostop-false-wrap-fixtures\\a.bmp",
+            "nativeErrorCode": 0,
+            "procedureExecuteCount": 5,
+            "moduleExecuteCount": 5,
+            "sn": 22,
+            "procedureId": 10000,
+            "procedureRunning": true,
+            "name": "a.bmp"
+          }
+        },
+        {
+          "phase": "owner-autostop-true-final-read-failure-observation",
+          "elapsedMs": 630,
+          "timeoutMs": 7000,
+          "frames": 3,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": false,
+          "sawFinalFailure": true,
+          "firstFinalMs": 123,
+          "stoppedMs": 630,
+          "procedureContinuousBeforeCleanup": false,
+          "procedureRunningBeforeCleanup": false,
+          "finalFrame": {
+            "procedureContinuous": false,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\owner-autostop-true-final-read-failure-fixtures\\c.bmp",
+            "nativeErrorCode": 2148532230,
+            "procedureExecuteCount": 7,
+            "moduleExecuteCount": 7,
+            "sn": 0,
+            "procedureId": 10000,
+            "procedureRunning": false,
+            "name": "c.bmp"
+          }
+        },
+        {
+          "phase": "owner-autostop-false-final-read-failure-observation",
+          "elapsedMs": 625,
+          "timeoutMs": 7000,
+          "frames": 3,
+          "sawRunning": true,
+          "sawFinal": true,
+          "sawWrap": false,
+          "sawFinalFailure": true,
+          "firstFinalMs": 121,
+          "stoppedMs": -1,
+          "procedureContinuousBeforeCleanup": true,
+          "procedureRunningBeforeCleanup": true,
+          "finalFrame": {
+            "procedureContinuous": true,
+            "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-runtime\\run-4d27d8c85a334bc58590523b49dbc42a\\owner-autostop-false-final-read-failure-fixtures\\a.bmp",
+            "nativeErrorCode": 0,
+            "procedureExecuteCount": 13,
+            "moduleExecuteCount": 13,
+            "sn": 27,
+            "procedureId": 10000,
+            "procedureRunning": true,
+            "name": "a.bmp"
+          }
+        }
+      ],
+      "cleanup": [
+        {
+          "phase": "owner-autostop-true-success-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 13
+        },
+        {
+          "phase": "owner-autostop-false-wrap-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 0
+        },
+        {
+          "phase": "owner-autostop-true-final-read-failure-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 0
+        },
+        {
+          "phase": "owner-autostop-false-final-read-failure-cleanup",
+          "procedureContinuous": false,
+          "procedureRunning": false,
+          "cleanupWaitMs": 15
+        }
+      ]
+    }
+  ],
+  "confirmed": [
+    "AutoStop在末项进入处理时请求停止，末帧仍处理并可成功输出",
+    "末图读取失败仍停止，不以整轮或读图成功为条件",
+    "关闭AutoStop则成功末项后环绕；缺失末项失败后也继续至A",
+    "停止异步，Continuous=false不代表IsRunning已排空，复用前两者均须false"
+  ],
+  "limits": [
+    "仅现有可运行Flow1链，方案部分模块加载错误-536870093保留",
+    "finished.originalRuntimeEquivalence=false是探针模板标记，不作测试失败也不宣称宿主等价",
+    "第一次run-d4d2场景间未排空而被保护拒绝的失败保留；两次复测补等待，不覆盖原失败",
+    "本轮四场景均使用AutoPlay；不额外声称全部手动/勾选模式已验证"
+  ]
+}

@@ -55,3 +55,21 @@
 6. 同批贯通RunSingle、连续、单模块调试、通信触发、切源/换根/删除/取消/异常/关闭、UI真实来源选择及结果帧发布。验收至少覆盖A/B/C手动保持、前后环绕、AutoPlay首次/连续、导航one-shot、缺B失败后C、上游源未执行/多源部分执行/下游失败、重复回执与取消分界、保存重开起点不变和运行不入Undo。硬件与AutoStop未知分列，不改Group。
 
 本节为集中设计与差异，未修改执行产品代码；原180/0不得作为这些新语义已通过。下一冻结真实取图接纳位置和全部调用消费者后，作为一次运行链批次协调批准与正式构建。
+
+
+### 真实取图接纳位置核实
+
+正式链为WorkflowExecutionEngine安装SourceRunInput→AlgorithmNode.Runtime.ExecuteRuntimeNodeAsync取得真实AdmittedIdentity/EnterRun并解析绑定→ImageSourceInvocationInputs.CaptureAsync→ImageSourceSession.Execute。调试链RuntimeDebugInvocation同样调用CaptureAsync及同一工具Session。CaptureAsync本地分支只检查取消、复制冻结地址，无IO；Session先校验设置、SN和来源一致性，再File.Exists和HImage读取。因此“节点开始通知”太早，整体完成太晚；缺文件也是一次已进入源的尝试，须保原失败语义。现SourceRunInput仅地址/SN，没有接纳回执或纯值尝试记录；不能伪装已有。
+
+Manager完成后SN循环已按各source NodeResults.Success递增，而非所有SN随整流程成功递增，应保留，不因为旧注释误重写。当前Source游标却由整体CompleteLocalImagesAsync(success)门控，二者需在设计中区分。不能简单删除success条件：未执行源、绑定前失败源、取消前未进入的源都不应消费。接纳必须带真实Run/Scope/Node及代号，在共有CaptureAsync本地冻结输入校验后、实际读图前定义一次性纯值回执，或等价的运行内尝试记录；主流程只消费与本轮匹配的事实，不借WPF事件推断，不在插件里引用UI。真正接口须先核合同唯一写边界与准入失败语义，再整批实施。当前仅设计，不新增回调服务或公开类型。
+
+现有ImageSourceDebugInvocationTests已覆盖缺调度输入、持久常量绕过及相机错设备/取消释放，应继续使用。LocalImageSequence相关成功后推进断言属于待替换行为证据，不能为了旧测试保错逻辑；新增源未执行/下游失败/缺文件消费/取消接纳前后回归必须同批落地。
+
+
+## AutoStop真实owner补证核收及设计修正
+
+最新结论以 evidence/D07_ORIGINAL_AUTOSTOP_OWNER_20261028.json 为准，替代上文“AutoStop运行态未知”的当前状态（旧缺口记录保留）。亲读两次probe/provenance，逐核每次四场景及清理状态，原DLL SHA相同。真实VmProcedure Flow1(ID10000)经ContinuousRunEnable调用原厂ContinousRunStart，非module.Run。AutoPlay开启，AutoStop=true时B→C末项进入处理请求停，C结果仍成功输出；C缺失时错误2148532230/SN0也停且不回A。AutoStop=false成功C后回A，缺C错误后也继续至A。Continuous=false早于IsRunning=false，排空必须等待两者均false。
+
+静态由统筹回件定位VmModule.Root、VmProcedure连续setter与native-0:1223–1236/1345–1358：先确定CurImagePath，满足owner运行态和末项predicate请求StopOwnerProcedure，之后继续当前路径结果处理。因此集中实现应在真实来源取图接纳时记录“本轮后停止”决策，禁止立即取消本轮令牌截断末帧，禁止依success才停止或在失败时继续环绕。停止调度仍属Workflow层，插件不引用UI。未执行来源不触发停止。实际停止/取消/关闭沿既有排空和资源释放链。
+
+第一次补测场景间IsRunning尚未归零被保护拒绝的日志保留，后补排空等待后两次复测一致。partial方案加载错误仍保；模板originalRuntimeEquivalence=false既不当本次失败，也不当全方案等价。四场景均AutoPlay，不擅自扩为所有手动/勾选模式。足以冻结本轮自动连续停止设计，不再重复取证；输入背景跨列表仍独立未知。本产品尚未按此修改或验证。

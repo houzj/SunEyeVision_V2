@@ -1,3 +1,11 @@
+## 2026-10-28 AutoStop真实流程补证核收
+
+亲读两次四场景probe/provenance，归档D07_ORIGINAL_AUTOSTOP_OWNER_20261028.json：真实Flow1连续入口，末项进入处理请求停止、末帧仍处理，末图失败也停；关闭AutoStop则成功/失败后继续至A。Continuous=false与IsRunning=false异步，排空须双状态。保首次未排空拒跑及partial-load日志，限定AutoPlay样本，不宣称本产品已迁移。原主方案与导航整链设计已更新，不再重复取证。D07应用批准仍待用户明确答复，不重放被拒操作。
+
+## 2026-10-28 取图接纳真实链与批准请求
+
+已核正式AlgorithmNode.Runtime和RuntimeDebugInvocation共用ImageSourceInvocationInputs.CaptureAsync→ImageSourceSession；本地Capture无IO，工具内File.Exists失败也属已进入取图。现SourceRunInput没有接纳记录，不以节点事件或整体成功代替；SN现按source各NodeResult.Success递增应复用，游标整体success门控才是差异。已追加原导航设计，不先造公共回调。D07审核包具备具体19文件/13测试候选，已向用户请求整批应用并验证的明确批准，理由为此前自动审批拒核心链大范围改写；未获回复前不应用。原显示合同/Group/主仓产物不变，目标active。
+
 ## 2026-10-28 生产DP回归候选核收
 
 已读独立线d592454e，保原10例并新增Refresh跨侧选择、Restore null清空、原ImageDataSource呈现异常同时Publish新run三例，完整13例仅同步审核依赖、语法通过，未编译运行；不cherry半批测试进当前工程。原主方案当前说明集中同步导航证据、执行真实差异及候选状态，39项范围不变。下一需真实取图接纳合同设计核实与D07切换完整缺口收齐，不私有Release、不改Group。

@@ -111,12 +111,10 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void RoundTrip_IntScalar_NormalizedToLongArray()
+    public void RoundTrip_IntScalar_NormalizedToLongScalar()
     {
-        // 强制 T[]（步骤7）：标量 int 序列化为 "Integer" 后重新加载为 long[]（长度 1 数组）。
         var result = RoundTrip(42);
-        Assert.IsType<long[]>(result);
-        Assert.Equal(new long[] { 42 }, (long[])result!);
+        Assert.Equal(42L, Assert.IsType<long>(result));
     }
 
     [Fact]
@@ -129,21 +127,17 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void RoundTrip_LongScalar_PreservesValueAsArray()
+    public void RoundTrip_LongScalar_PreservesScalar()
     {
-        // 强制 T[]：标量 long 重开为 long[]（长度 1）。
         var result = RoundTrip(12345678901L);
-        Assert.IsType<long[]>(result);
-        Assert.Equal(new long[] { 12345678901L }, (long[])result!);
+        Assert.Equal(12345678901L, Assert.IsType<long>(result));
     }
 
     [Fact]
-    public void RoundTrip_DoubleScalar_PreservesValueAsArray()
+    public void RoundTrip_DoubleScalar_PreservesScalar()
     {
-        // 强制 T[]：标量 double 重开为 double[]（长度 1），即 填 3.14 → [3.14]。
         var result = RoundTrip(3.14);
-        Assert.IsType<double[]>(result);
-        Assert.Equal(new double[] { 3.14 }, (double[])result!);
+        Assert.Equal(3.14, Assert.IsType<double>(result));
     }
 
     [Fact]
@@ -157,12 +151,10 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void RoundTrip_FloatScalar_NormalizedToDoubleArray()
+    public void RoundTrip_FloatScalar_NormalizedToDoubleScalar()
     {
-        // 强制 T[]：标量 float 重开为 double[]（长度 1）。
         var result = RoundTrip(2.5f);
-        Assert.IsType<double[]>(result);
-        Assert.Equal(new double[] { 2.5 }, (double[])result!);
+        Assert.Equal(2.5, Assert.IsType<double>(result));
     }
 
     [Fact]
@@ -189,21 +181,18 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void SerializeValue_ScalarDouble_StoredAsArrayJson()
+    public void SerializeValue_ScalarDouble_StoredAsScalarJson()
     {
-        // 数据一致性验收 #3：标量 3.14 落盘为 [3.14]（强制 T[]）。
         var json = JsonSerializer.Serialize(new ValueHolder { Value = 3.14 });
-        Assert.Contains("\"Value\":[3.14]", json);
+        Assert.Contains("\"Value\":3.14", json);
     }
 
     [Fact]
-    public void ParseLegacyScalarJson_IsRejectedInsteadOfSilentlyLosingValue()
+    public void Declared_scalar_json_preserves_its_value_and_shape()
     {
-        // The current reader rejects scalar payloads explicitly; loading must not succeed with a lost value.
-        const string legacyScalarJson = "{\"Value\":{\"Type\":\"Double\",\"Value\":3.14}}";
-        var error=Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<ValueHolder>(legacyScalarJson));
-        Assert.IsType<NotSupportedException>(error.InnerException);
-        Assert.Contains("Double",error.Message);
+        const string scalarJson = "{\"Value\":{\"Type\":\"Double\",\"Value\":3.14}}";
+        var restored=JsonSerializer.Deserialize<ValueHolder>(scalarJson)!;
+        Assert.Equal(3.14,Assert.IsType<double>(restored.Value));
     }
 
     #endregion

@@ -81,7 +81,7 @@ public sealed class CommunicationBinaryPayloadTests
         var json = JsonSerializer.Serialize(new Holder { Value = new BinaryPayload(data) });
         Assert.Contains("\"Type\":\"Binary\"", json);
         var loaded = JsonSerializer.Deserialize<Holder>(json)!;
-        Assert.Equal(data, Assert.Single(Assert.IsType<BinaryPayload[]>(loaded.Value)).ToArray());
+        Assert.Equal(data, Assert.IsType<BinaryPayload>(loaded.Value).ToArray());
     }
 
     [Fact]

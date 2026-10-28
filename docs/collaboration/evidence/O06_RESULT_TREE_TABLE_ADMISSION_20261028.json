@@ -1,0 +1,104 @@
+{
+  "productCommit": "f33f7f6fc66f83cd1120c29db92fed1637f71595",
+  "scope": "SDK实际执行/快照→宿主唯一publication→结果树与原表同源；包含新旧运行、原代失效和故障统一清理，不等同历史/D07/完整阶段验收。",
+  "sourceFiles": {
+    "src/UI/Services/Monitoring/ResultPresentationPresenter.cs": "ab7be365f67aab13af3e97bd842fbab81d5321f6f6ddc9367ff0c731d9fab46b",
+    "src/UI/Shell/Windows/MainWindowResultPublication.cs": "ec169ac43002ef6357e5b282afad462e2e0ab21cfc15223be03aeda8702bd7c1",
+    "src/UI/Shell/Windows/MainWindowViewModel.cs": "3a5f9b1905776443ba016e085a86ba9fe5fef4f53f98aad536de5b6631064d91",
+    "tests/SunEyeVision.UI.Tests/OutputContractTreeSelectionTests.cs": "fb018442912a6ef5891794306fa887438530032712238d774675657a68d1b5b3",
+    "tests/SunEyeVision.UI.Tests/ResultPresentationPresenterTests.cs": "9cd6c31f766558ba664a1e94bff480a4435b514105b6d4387f8b7351c246d9b2"
+  },
+  "sourceState": "产品提交f33f7f6f；构建同时包含此前未提交Assist候选及用户参数页，逐文件SHA列明。测试夹具随后仅修真实SDK退休key并加强双异常断言，BuildProjectReferences=false单编0错，不改正式产品。",
+  "preexistingCandidateSources": {
+    "src/Plugin.Wpf/Design/NativeAssistSample.cs": "50b3eff2a4ccbcf221c1eaa4ff07feab67e9977819b88afa251376a93823193f",
+    "src/Plugin.Wpf/Design/NativeAssistScene.xaml": "150c17a2b78ba73e3e25741c4af1805f6d263bb9fa4acec9a46e878fefa23f73",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.Assist.cs": "4cf7ccc51aa243722cf3f2e2e090fa79f19cb60215103950bfa4485c2df446ae",
+    "src/Plugin.Wpf/Presenters/Parameters/NativeAssistOptions.cs": "b67927bc6b4f96895369e609369373e7c404e50695009bb0fd0fbb5acd64112a",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs": "472335be2d0ca0fbc62542bfac48c7dbeeb408eef1347dc5cda88f43edfc4549",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs": "fa8a37d90a9c8852c09195960d0b8ac0fdd002c606d5c8865d7a59febe4b6e2a",
+    "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs": "46493da58f263e6103462bc8f742e0f5d383ecddec22ba7c35629eeb012de1c2"
+  },
+  "preexistingUserFile": {
+    "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+    "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+    "modifiedByThisBatch": false
+  },
+  "builds": {
+    "ui": {
+      "log": "artifacts/result-tree-table-admission-ui-20261028-006.log",
+      "errors": 0,
+      "warnings": 6551,
+      "seconds": 90.64
+    },
+    "full": {
+      "log": "artifacts/result-tree-table-admission-full-20261028-002.log",
+      "errors": 0,
+      "warnings": 3818,
+      "seconds": 63.46
+    },
+    "fixture": {
+      "log": "artifacts/result-tree-table-joint-tests-build-20261028-002.log",
+      "errors": 0,
+      "warnings": 31,
+      "seconds": 5.67,
+      "buildProjectReferences": false
+    }
+  },
+  "probe": {
+    "log": "artifacts/result-tree-table-admission-probe-20261028.log",
+    "pid": 52660,
+    "exit": 0
+  },
+  "tracks": {
+    "ImageSources": {
+      "attempt": 11,
+      "passed": 187,
+      "failed": 0
+    },
+    "publication": {
+      "attempt": 239,
+      "passed": 7,
+      "failed": 0
+    },
+    "originalTable": {
+      "attempt": 240,
+      "passed": 1,
+      "failed": 0,
+      "rows": [
+        500,
+        1000,
+        1205
+      ]
+    },
+    "realHalconFullChain": {
+      "attempt": 135,
+      "passed": 8,
+      "failed": 0
+    }
+  },
+  "verifiedPayloadEntries": 795,
+  "verifiedLoadedRecords": 62,
+  "payloadSha256": "273540716eeeada5a71de16b2cf01a1d6c747d20fe057c586bf91194c96728de",
+  "failedHistory": [
+    {
+      "attempt": "ImageSources/attempt-009",
+      "passed": 182,
+      "failed": 3,
+      "cause": "旧publication清新树真实缺口；两例分页夹具提前执行B使A失效。原日志和断言保留。"
+    },
+    {
+      "attempt": "ImageSources/attempt-010",
+      "passed": 186,
+      "failed": 1,
+      "cause": "夹具RetireNode使用a而非实际flow/a执行身份；修真实key并立即Assert.False(IsCurrent)，未放宽产品断言。"
+    }
+  ],
+  "notAccepted": [
+    "实际历史列表/命令入口及历史资源生命周期",
+    "生产D07图像/图形/文本/ROI联动和SDK主图退出",
+    "真实Visual Studio/VM同态及用户人工验收",
+    "GlobalBinding本批未重跑，原283/1保留",
+    "Assist/完整阶段一与Blob第二阶段未验收"
+  ],
+  "fixtureAssemblySha256": "bde44ecf77835602a3fe428cc563d39593e42be954499df578f277f5283754fc"
+}

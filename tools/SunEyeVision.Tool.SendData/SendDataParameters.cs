@@ -82,15 +82,19 @@ public sealed class SendDataRow : ObservableObject
     public IReadOnlyList<CommunicationSendTarget> TargetChoices { get => _choices; set { if (SetProperty(ref _choices, value)) OnPropertyChanged(nameof(AllowedDataTypes)); } }
 }
 
-public sealed class SendDataResults : CommunicationToolResults
+public sealed class SendDataResults : CommunicationToolResults, IToolSideEffectReceiptSource
 {
     public SendDataResults() { }
     public SendDataResults(IEnumerable<CommunicationOutputField> fields) : base(fields) { }
-    public long Submitted { get; set; }
-    public long Skipped { get; set; }
-    public long Failed { get; set; }
-    public List<BinaryPayload> Payloads { get; } = new();
-    public List<string> SentData { get; } = new();
+    private long _submitted, _skipped, _failed;
+    private readonly List<BinaryPayload> _payloads = new();
+    private readonly List<string> _sentData = new();
+    public long Submitted { get => SideEffectReceipt?.Submitted ?? _submitted; set => _submitted = value; }
+    public long Skipped { get => SideEffectReceipt?.Skipped ?? _skipped; set => _skipped = value; }
+    public long Failed { get => SideEffectReceipt?.Failed ?? _failed; set => _failed = value; }
+    public List<BinaryPayload> Payloads => SideEffectReceipt is { } receipt ? receipt.Payloads.Select(value => new BinaryPayload(value.ToArray())).ToList() : _payloads;
+    public List<string> SentData => SideEffectReceipt is { } receipt ? receipt.SentData.ToList() : _sentData;
+    public ToolSideEffectReceipt CaptureSideEffectReceipt() => new(Submitted, Skipped, Failed, SentData, Payloads);
     public static readonly CommunicationOutputField SentDataField = new(new("f3b044b5-1a5d-4440-8d1b-eac95f3ca39b"), "已发送数据", "String");
     public static readonly CommunicationOutputField SubmittedField = new(new("9fc8aac5-0353-4462-9524-f0fe4d5dc113"), "成功数量", "Integer");
     public static readonly CommunicationOutputField SkippedField = new(new("53c34d99-1f75-40ab-90c5-20c6ff47e67e"), "跳过数量", "Integer");

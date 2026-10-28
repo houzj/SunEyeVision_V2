@@ -84,6 +84,23 @@ public partial class ToolExecutor
         try{(result as IDisposable)?.Dispose();}catch(Exception error){failures.Add(error);}
         if(failures.Count>0)throw new AggregateException("Rejected tool result cleanup failed.",failures);
     }
+    // Capture independent facts first; always drain the rejected result, including capture failure.
+    // A new terminal result carries no original output/resources/Tag/display/ROI state.
+    private static ToolResults RejectResult(Type resultType, ToolResults rejected, ToolExecutionRequest request)
+    {
+        ToolSideEffectReceipt? receipt = null;
+        var failures = new List<Exception>();
+        try { receipt = (rejected as IToolSideEffectReceiptSource)?.CaptureSideEffectReceipt(); }
+        catch (Exception error) { failures.Add(error); }
+        try { ReleaseRejectedResult(rejected); }
+        catch (Exception error) { failures.Add(error); }
+        if (failures.Count > 0) throw new AggregateException("Rejected tool receipt capture or cleanup failed.", failures);
+        var terminal = CreateTerminalResult(resultType, ExecutionStatus.Cancelled, receipt is null
+            ? "运行已取消或身份失效。" : "运行已取消或身份失效；已发生的发送不能撤回。");
+        terminal.SideEffectReceipt = receipt;
+        request.AttachResultMetadata(terminal);
+        return terminal;
+    }
     private ToolResults RunSynchronousCore(IToolPlugin tool,ToolExecutionRequest request)
     {
         var parameters=request.Parameters;var watch=Stopwatch.StartNew();
@@ -97,8 +114,7 @@ public partial class ToolExecutor
             var result=tool.Run(parameters);request.AttachResultMetadata(result);
             if(request.CancellationToken.IsCancellationRequested||request.ExecutionIdentity?.IsCurrent==false)
             {
-                ReleaseRejectedResult(result);
-                return Terminal(ExecutionStatus.Cancelled,"Execution was cancelled or admission expired.");
+                return RejectResult(tool.ResultType, result, request);
             }
             ImageFrameProvenance.RecordResult(result,input,(tool as IImageFramePolicyProvider)?.ImageFramePolicy??ImageFramePolicy.Unknown,
                 inputAddress);

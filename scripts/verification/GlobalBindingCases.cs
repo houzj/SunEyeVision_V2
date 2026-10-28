@@ -28,6 +28,8 @@ internal static class S2DocumentEditingCases
             ["CommunicationSendDataToolTests"]=null,
             ["CommunicationAutomationTests"]=null,
             ["SolutionExecutionDependencyGraphTests"]=null,
+            ["ToolSideEffectReceiptTests"]=null,
+            ["SendDataProductionEditorTests"]=null,
         };
         var results=new List<object>();var failures=0;var theoryCount=0;var uiTheoryCount=0;
         foreach(var (name,filter) in selected)

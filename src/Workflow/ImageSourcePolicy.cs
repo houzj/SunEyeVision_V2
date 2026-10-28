@@ -27,13 +27,20 @@ public sealed class ImageSourcePolicy
         ArgumentNullException.ThrowIfNull(node);
         if (node.ToolType != "ImageLoad" || node.RuntimeConfiguration is not { } runtime) return null;
         if (runtime.ToolId != node.ToolType) throw new InvalidOperationException("图像源Runtime身份不匹配。");
-        var values = runtime.ReadFieldValues();
+        return ReadFields(node.Id,runtime.ReadFieldValues());
+    }
+
+    /// <summary>Read the same declared settings from an editor-owned draft.</summary>
+    public static ImageSourcePolicy ReadFields(string nodeId,InputValues values)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(nodeId);
+        ArgumentNullException.ThrowIfNull(values);
         List<string> References(string field) => values.Get<SequenceValue>(field)
             .Select(value => value as string ?? throw new InvalidOperationException("图像源引用必须是文本。"))
             .ToList();
         return new()
         {
-            NodeId = node.Id,
+            NodeId = nodeId,
             SourceKind = values.Get<string>("source.kind") switch
             {
                 "local" => ImageSourceKind.Local, "camera" => ImageSourceKind.Camera,
@@ -64,10 +71,15 @@ public sealed class ImageSourcePolicy
         ArgumentNullException.ThrowIfNull(draft);
         if (NodeId != draft.Id || draft.ToolType != "ImageLoad" || draft.RuntimeConfiguration is not { } runtime)
             throw new InvalidOperationException("图像源投影与正式Runtime节点不匹配。");
-        var fields = runtime.SettingsSchema?.Inputs.ToDictionary(field => field.Id, StringComparer.Ordinal)
-            ?? throw new InvalidOperationException("图像源缺少设置声明。");
+        draft.RuntimeConfiguration=runtime.WithFieldValues(ToFieldValues(runtime.SettingsSchema
+            ??throw new InvalidOperationException("图像源缺少设置声明。")));
+    }
+
+    public IReadOnlyDictionary<string,object?> ToFieldValues(ToolSchema schema)
+    {
+        var fields = schema.Inputs.ToDictionary(field => field.Id, StringComparer.Ordinal);
         SequenceValue References(string field, IEnumerable<string> references) => new(fields[field].Type, references);
-        draft.RuntimeConfiguration = runtime.WithFieldValues(new Dictionary<string, object?>
+        return new Dictionary<string, object?>
         {
             ["source.kind"] = SourceKind switch
             {
@@ -89,7 +101,7 @@ public sealed class ImageSourcePolicy
                 ImageOutputFormat.Rgb24 => "rgb24", _ => throw new InvalidOperationException("输出格式无效。")
             },
             ["sequence.initial"] = SNInitialValue
-        });
+        };
     }
 
     public void UpdateLocalInput(ImageSourcePolicy local)

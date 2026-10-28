@@ -8,11 +8,14 @@ internal static class S2DocumentEditingCases
     [STAThread] static int Main()
     {
         var assembly=AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(Environment.GetEnvironmentVariable("S2_TEST_HELPERS")!,"SunEyeVision.UI.Tests.dll"));
+        var runtimeTests=AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(Environment.GetEnvironmentVariable("S2_TEST_HELPERS")!,"SunEyeVision.ImageSource.Runtime.Tests.dll"));
         SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeServices();
         SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeSolutionManager(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"solutions"));
         var selected=new Dictionary<string,string[]?>
         {
             ["ImageSourceAcceptanceTests"]=null,
+            ["ImageSourceRuntimeTests"]=null,
+            ["ImageSourceDeclarationAndFormatTests"]=null,
             ["ImageSourceDebugInvocationTests"]=null,
             ["ImageSourceConfigurationHistoryTests"]=null,
             ["LocalImageConfigurationSnapshotTests"]=null,
@@ -42,10 +45,11 @@ internal static class S2DocumentEditingCases
                 "Frozen_execution_ignores_other_preview_and_does_not_overwrite_a_new_user_selection",
                 "Success_advances_each_source_and_missing_or_empty_selection_is_rejected_before_dispatch"}
         };
-        var results=new List<object>();var failures=0;var theoryCount=0;
+        var results=new List<object>();var failures=0;var theoryCount=0;var uiTheoryCount=0;
         foreach(var (name,filter) in selected)
         {
-            var type=assembly.GetType("SunEyeVision.UI.Tests."+name,true)!;
+            var type=assembly.GetType("SunEyeVision.UI.Tests."+name)
+                ??runtimeTests.GetType("SunEyeVision.ImageSource.Runtime.Tests."+name,true)!;
             var methods=type.GetMethods(BindingFlags.Public|BindingFlags.Instance|BindingFlags.DeclaredOnly)
                 .Where(method=>filter is null||filter.Contains(method.Name)).OrderBy(method=>method.Name).ToArray();
             if(filter is not null&&methods.Length!=filter.Length)throw new Exception("指定图像源用例缺失："+name);
@@ -59,6 +63,7 @@ internal static class S2DocumentEditingCases
                 {
                     var values=(IReadOnlyCollection<CustomAttributeTypedArgument>)inline.ConstructorArguments[0].Value!;
                     arguments.Add(values.Select(value=>value.Value).ToArray());theoryCount++;
+                    if(type.Assembly==assembly)uiTheoryCount++;
                 }
                 if(attributes.Any(attribute=>attribute.AttributeType.FullName=="Xunit.TheoryAttribute")&&arguments.Count==0)
                     throw new Exception("图像源Theory未被展开："+method.Name);
@@ -81,9 +86,9 @@ internal static class S2DocumentEditingCases
             }
             if(count==0)throw new Exception("图像源检查组为空："+name);
         }
-        if(theoryCount!=14)throw new Exception("图像源非法候选7项与调试拒绝7项应完整展开，实际"+theoryCount);
+        if(uiTheoryCount!=14)throw new Exception("图像源非法候选7项与调试拒绝7项应完整展开，实际"+uiTheoryCount);
         File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-source-report.json"),
-            JsonSerializer.Serialize(new{scope="正式Release图像源编辑、历史、持久化及实际执行定向回归；不代真实VS/VM或人工验收",count=results.Count,failures,theoryCount,results},new JsonSerializerOptions{WriteIndented=true}));
+            JsonSerializer.Serialize(new{scope="正式Release图像源编辑、历史、持久化、Runtime像素资源与正式调试实际执行定向回归；不代真实VS/VM或人工验收",count=results.Count,failures,theoryCount,uiTheoryCount,results},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"图像源检查：{results.Count-failures}通过，{failures}失败。");
         return failures==0?0:1;
     }

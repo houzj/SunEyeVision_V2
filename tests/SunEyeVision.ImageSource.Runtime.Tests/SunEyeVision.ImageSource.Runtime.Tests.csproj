@@ -24,13 +24,12 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
-    <!-- 工具插件真实部署在 plugins/<Tool>/，测试运行时从该目录显式加载（共享 Loader），
-         不 copy-local 到测试输出目录，避免 dev/Debug 根产生第二份工具 dll。 -->
+    <!-- Runtime角色组件唯一部署宿主根，由EnsureComponentLoaded精确加载，不copy-local。 -->
     <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
-  <!-- 工具插件测试共享加载器：ModuleInitializer 从 plugins/<Tool>/ 加载最新工具 dll -->
+  <!-- 共享宿主解析器；本项目专用初始化器显式加载Runtime组件。 -->
   <ItemGroup>
     <Compile Include="..\_shared\ToolPluginTestLoader.cs" Link="_shared\ToolPluginTestLoader.cs" />
   </ItemGroup>

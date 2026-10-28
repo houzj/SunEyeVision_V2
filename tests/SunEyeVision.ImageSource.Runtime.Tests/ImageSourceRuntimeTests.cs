@@ -176,5 +176,5 @@ internal static class ImageSourceRuntimeTestModule
 {
     [System.Runtime.CompilerServices.ModuleInitializer]
     internal static void LoadActualComponent()
-        =>SunEyeVision.TestShared.ToolPluginTestLoader.EnsureLoaded("SunEyeVision.Tool.ImageSource.Runtime");
+        =>SunEyeVision.TestShared.ToolPluginTestLoader.EnsureComponentLoaded("SunEyeVision.Tool.ImageSource.Runtime");
 }

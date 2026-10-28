@@ -134,6 +134,17 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.Observable
         references.RemoveAll(item=>item==reference);if(selected)references.Add(reference);
         Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
     }
+    /// <summary>Accept a complete checkbox selection as one formal edit.</summary>
+    public void SetRunSelection(IEnumerable<string> ids)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        var selected=ids.ToHashSet(StringComparer.Ordinal);
+        if(selected.Any(id=>!_indices.ContainsKey(id)))
+            throw new InvalidOperationException("运行勾选包含不属于当前源的图像条目。");
+        var references=_entries.Where(image=>selected.Contains(image.Id)).Select(Reference).Distinct(StringComparer.Ordinal).ToArray();
+        if(_runReferences.ToHashSet(StringComparer.Ordinal).SetEquals(references))return;
+        Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
+    }
     public void AddImage(ImageInfo image)=>AddImages(new[]{image});
     public void AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
     {

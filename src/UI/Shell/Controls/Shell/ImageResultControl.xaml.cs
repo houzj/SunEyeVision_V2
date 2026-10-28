@@ -26,6 +26,23 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     public partial class ImageResultControl : UserControl
     {
         private MainWindowViewModel _viewModel = null!;
+        private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
+        private WorkflowTabViewModel? _sourceWorkflow;
+        private void ReleaseSourceSession()
+        {ImagePreviewContent.Session=null;_sourceSession?.Dispose();_sourceSession=null;_sourceWorkflow=null;}
+        private void RefreshSourceSession()
+        {
+            if(!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
+            var main=_viewModel;var source=main.ActiveInputSource;var workflow=main.WorkflowTabViewModel.SelectedTab;
+            if(ReferenceEquals(_sourceSession?.Source,source)&&ReferenceEquals(_sourceWorkflow,workflow))return;
+            ReleaseSourceSession();
+            if(source is null||workflow is null)return;
+            _sourceWorkflow=workflow;
+            _sourceSession=new(source,()=>IsLoaded&&ReferenceEquals(_viewModel,main)
+                &&ReferenceEquals(main.ActiveInputSource,source)&&ReferenceEquals(main.WorkflowTabViewModel.SelectedTab,workflow),
+                (image,index,version)=>RunWorkflowWithImage(workflow,source,version,image,index),Dispatcher,()=>Window.GetWindow(this));
+            ImagePreviewContent.Session=_sourceSession;
+        }
 
         /// <summary>
         /// 当前选中图像用于本轮；成功完成后才推进到下一张。
@@ -40,11 +57,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
             ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
+            RefreshSourceSession();
         }
 
         public ImageResultControl()
         {
             InitializeComponent();
+            Loaded+=(_,_)=>RefreshSourceSession();
+            Unloaded+=(_,_)=>ReleaseSourceSession();
         }
 
         /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
@@ -64,10 +84,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _viewModel = viewModel;
             _viewModel.PropertyChanged+=OnHostEditingStateChanged;
             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
-            if (ImagePreviewContent != null)
-            {
-                ImagePreviewContent.WorkflowExecutionRequested += OnImagePreviewExecutionRequested;
-            }
+            RefreshSourceSession();
         }
 
         /// <summary>
@@ -77,10 +94,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel?.CloseResultPresentation();
-            if (ImagePreviewContent != null)
-            {
-                ImagePreviewContent.WorkflowExecutionRequested -= OnImagePreviewExecutionRequested;
-            }
+            ReleaseSourceSession();
         }
 
         /// <summary>
@@ -100,32 +114,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 图像预览请求执行工作流（原 MainWindow.OnWorkflowExecutionRequested）
         /// </summary>
-        private async void OnImagePreviewExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
-        {
-            try
-            {
-            if(!ReferenceEquals(sender,ImagePreviewContent)||!ReferenceEquals(e.Source,ImagePreviewContent.ActiveInputSource)||
-                e.Source.EditVersion!=e.EditVersion)return;
-            if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
-            {
-                _viewModel?.AddLog(LogLevel.Error, "没有选中的工作流，无法执行", LogSource.UIOperation);
-                return;
-            }
-            if (_viewModel.IsRunning)
-            {
-                // Reject overlapping explicit choices; restore the accepted display in finally.
-                _viewModel.AddLog(LogLevel.Info, $"[REJECTED] 工作流正在运行，已拒绝重复执行请求: {e.ImageInfo.Name}", LogSource.UIOperation);
-                return;
-            }
-            var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
-            // 手动在预览器选中图片（点击/方向键）：以该图为下一轮 run 起点（首轮不自动推进）
-            await RunWorkflowWithImage(workflow,e.Source,e.EditVersion,e.ImageInfo,e.Index);
-            }
-            finally
-            {
-                ImagePreviewContent.CurrentImageIndex=ImagePreviewContent.ActiveInputSource?.CurrentIndex??-1;
-            }
-        }
 
         /// <summary>
         /// 从真实模块结果直接绑定全局变量。该入口与“全局变量管理器 → 输入来源”写入同一 ProducerBinding，
@@ -161,14 +149,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
         {
             var main=_viewModel;
-            if(main is null||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(ImagePreviewContent.ActiveInputSource,source))return;
+            if(main is null||main.IsRunning||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(_sourceSession?.Source,source))return;
             try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
             catch(Exception error)
             {
                 _viewModel.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
                 return;
             }
-            if(!ReferenceEquals(_viewModel,main)||!ReferenceEquals(ImagePreviewContent.ActiveInputSource,source))return;
+            if(!ReferenceEquals(_viewModel,main)||!ReferenceEquals(_sourceSession?.Source,source))return;
             var acceptedVersion=source.EditVersion;
             var workflowName = workflow.Name ?? "未知工作流";
             _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));

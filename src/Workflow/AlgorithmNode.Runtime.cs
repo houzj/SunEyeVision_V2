@@ -15,6 +15,7 @@ public partial class AlgorithmNode
 {
     internal IReadOnlyImage? FrozenWorkflowImage { get; set; }
     internal string? RuntimeInputError { get; set; }
+    internal ImageSourceRunInput? SourceRunInput { get; set; }
 
     private async Task<ToolResults> ExecuteRuntimeNodeAsync(IDictionary<string,ToolResults>? results,CancellationToken cancellation)
     {
@@ -67,6 +68,15 @@ public partial class AlgorithmNode
                     .SetEquals(configuration.Capabilities.ResourceKeys))
                     throw new InvalidOperationException("Bound settings changed the admitted Runtime schema or resource capabilities.");
                 configuration=effective;
+            }
+            if(ToolType=="ImageLoad")
+            {
+                var sourceInputs=await ImageSourceInvocationInputs.CaptureAsync(this,
+                    SourceRunInput??throw new InvalidOperationException("图像源缺少本轮冻结输入。"),
+                    identity.ToInvocationIdentity(Id),CameraCaptureService,CameraFrame,cancellation).ConfigureAwait(false);
+                leases.Add(sourceInputs);
+                foreach(var value in sourceInputs.Values)
+                    if(!values.TryAdd(value.Key,value.Value))throw new InvalidOperationException("图像源冻结输入与持久绑定冲突："+value.Key);
             }
             if(schema.WorkflowImageInputId is { } imagePort&&!values.ContainsKey(imagePort)&&FrozenWorkflowImage is { } image)
                 values.Add(imagePort,image);

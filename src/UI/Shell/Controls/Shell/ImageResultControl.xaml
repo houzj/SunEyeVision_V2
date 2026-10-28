@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:panels="clr-namespace:SunEyeVision.UI.Shell.Controls.Panels"
+             xmlns:sources="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
              xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
@@ -230,12 +231,7 @@
                 <TextBlock DockPanel.Dock="Top" Text="{Binding ImagePreviewSourceMessage}"
                            Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                            TextTrimming="CharacterEllipsis"/>
-                <panels:ImagePreviewControl x:Name="ImagePreviewContent"
-                                         ActiveInputSource="{Binding ActiveInputSource}"
-                                         AutoSwitchEnabled="{Binding ActiveInputSource.AutoSwitchEnabled, Mode=TwoWay}"
-                                         CurrentImageIndex="{Binding ActiveInputSource.CurrentIndex, Mode=OneWay}"
-                                         ImageCollection="{Binding ActiveInputSource.Images}"
-                                         ImageRunMode="{Binding ActiveInputSource.RunMode, Mode=TwoWay}"/>
+                <sources:ImageSourceStrip x:Name="ImagePreviewContent"/>
             </DockPanel>
         </Border>
     </Grid>

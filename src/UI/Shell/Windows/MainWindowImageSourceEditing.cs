@@ -7,12 +7,6 @@ namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
     private bool _acceptingImageSource;
-    internal SolutionSession? CaptureImageSourceSession(WorkflowNodeBase node)
-    {
-        var session=DocumentManager.Session;
-        return session?.Document.Workflows.Any(flow=>!flow.IsSubroutine&&flow.Nodes.Any(item=>ReferenceEquals(item,node)))==true
-            ?session:null;
-    }
     internal bool TrySelectPreviewImage(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab,
         ImageInputSource source,ImageInfo image,int index,long editVersion)
     {
@@ -76,51 +70,6 @@ public partial class MainWindowViewModel
             }
             finally { _acceptingImageSource=false; }
         };
-    }
-    internal bool CanEditImageSourceSettings(SolutionSession? session, WorkflowNodeBase node,
-        SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl owner)
-    {
-        if (session is null || !ReferenceEquals(DocumentManager.Session, session) ||
-            !CanEditRootWorkspaceState || !owner.IsLoaded ||
-            !session.Document.Workflows.Any(flow => !flow.IsSubroutine && flow.Nodes.Any(item => ReferenceEquals(item, node))))
-            return false;
-        if (!IsDebugWindowOpen)
-            return ReferenceEquals(SelectedNodeDataAnalysisControl, owner);
-        // An immediate source-settings page may edit in its own window only. An
-        // unrelated debug/parameter window never grants permission to this page.
-        return _auxiliaryParameterWindows.Count == 0 && _openDebugWindow is { IsLoaded: true } window &&
-            ReferenceEquals(System.Windows.Window.GetWindow(owner), window);
-    }
-    internal bool TryEditImageSourceSettings(SolutionSession? session, WorkflowNodeBase node,
-        SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl owner,
-        Action<ImageSourcePolicy> change, out string error)
-    {
-        try
-        {
-            if (_acceptingImageSource || !CanEditImageSourceSettings(session, node, owner))
-                throw new InvalidOperationException("图像源设置所属方案、节点或编辑状态已失效，修改未接纳。");
-            var root = session!.Document.Workflows.Single(flow => !flow.IsSubroutine && flow.Nodes.Any(item => ReferenceEquals(item, node)));
-            var host = GetProductionEditorHost(session);
-            var draft = host.BeginEdit(root.Id, node.Id);
-            var policy=ImageSourcePolicy.Read(draft.Node)??throw new InvalidOperationException("图像源缺少正式Runtime设置。");
-            change(policy);
-            policy.ApplyTo(draft.Node);
-            _acceptingImageSource = true;
-            try
-            {
-                var publication = host.Commit(draft);
-                try { RefreshProductionPublication(session, publication); }
-                catch (Exception refreshError) { try { _logger?.LogError("图像源设置已接纳，显示刷新失败", "MainWindowViewModel", refreshError); } catch { } }
-            }
-            finally { _acceptingImageSource = false; }
-        }
-        catch (Exception failure) { error = failure.Message; return false; }
-        // Acceptance already succeeded. A view-refresh failure must not be reported
-        // as a rejected edit or trigger a retry of the same command.
-        try { RefreshAcceptedImageSourceViews(); ForceRefreshImagePreview(); }
-        catch (Exception failure) { try { _logger?.LogError("图像源设置已接纳，预览刷新失败", "MainWindowViewModel", failure); } catch { } }
-        error = string.Empty;
-        return true;
     }
     private void RefreshAcceptedImageSourceViews()
     {

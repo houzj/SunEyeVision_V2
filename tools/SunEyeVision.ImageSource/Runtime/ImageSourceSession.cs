@@ -20,6 +20,8 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
         var settings=invocation.Settings;
         var errors=settings.Validate();
         if(errors.Count!=0)return new(false,null,BusinessJudgment.NotEvaluated,errors);
+        if(!invocation.Inputs.Contains(ImageSourceTool.Sequence))
+            return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_SEQUENCE","缺少本轮冻结的SN输入。");
         var sequence=invocation.Inputs.Get<long>(ImageSourceTool.Sequence);
         if(sequence<0)return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_SEQUENCE","本轮SN不能为负数。");
         var hasFile=invocation.Inputs.Contains(ImageSourceTool.LocalAddress);
@@ -62,8 +64,8 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
                 [ImageSourceOutput.PixelFormat]=image.Layout.Format.ToString(),[ImageSourceOutput.SourceKind]=settings.SourceKind,
                 [ImageSourceOutput.DeviceId]=settings.SourceKind=="camera"?settings.CameraDeviceId:string.Empty,
                 [ImageSourceOutput.FileReference]=address,[ImageSourceOutput.Sequence]=sequence,
-                [ImageSourceOutput.FrameId]=invocation.Inputs.Contains(ImageSourceTool.DeviceFrameId)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceFrameId):string.Empty,
-                [ImageSourceOutput.Timestamp]=invocation.Inputs.Contains(ImageSourceTool.DeviceTimestamp)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceTimestamp):string.Empty
+                [ImageSourceOutput.FrameId]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceFrameId)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceFrameId):string.Empty,
+                [ImageSourceOutput.Timestamp]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceTimestamp)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceTimestamp):string.Empty
             };
             var output=new ImageSourceOutput(values,resources);resources=null;
             return ToolOutcome<ImageSourceOutput>.Completed(output);

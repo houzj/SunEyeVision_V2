@@ -78,6 +78,7 @@ public sealed partial class SolutionManagerUiTests
                 var source=new ImageInputSource("node");foreach(var file in files)source.AddImage(new ImageInfo{FilePath=file});
                 using var fixture=new NativeSourceFixture(source);
                 source.SelectImage(2);
+                PumpPreviewTask(fixture.Control,Task.CompletedTask);
                 var list=(ListBox)fixture.Control.FindName("lst");
                 Assert.Equal(2,list.SelectedIndex);var selected=source.CurrentImage;
                 PumpPreviewTask(fixture.Control,fixture.Request(ImageSourceStripRequestKind.Remove,source.Images[0].Id));

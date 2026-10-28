@@ -171,7 +171,8 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             _globalVariables = globalVariables;
         }
-        private sealed record PublishedRunInputs(WorkflowRunConfiguration Configuration, IDictionary<string, object?> Globals, PreparedLocalImages LocalImages, IReadOnlyList<GlobalVariable> GlobalDefinitions, IReadOnlyDictionary<string, object> RuntimeParameters);
+        private sealed record PublishedRunInputs(WorkflowRunConfiguration Configuration, IDictionary<string, object?> Globals, PreparedLocalImages LocalImages, IReadOnlyList<GlobalVariable> GlobalDefinitions, IReadOnlyDictionary<string, object> RuntimeParameters,
+            SunEyeVision.Workflow.Persistence.SolutionResourceResolver ResourcePaths);
         private readonly Dictionary<string, PublishedRunInputs> _preparedRunInputs = new(StringComparer.Ordinal);
         internal Action? CapturePublishedConfiguration { get; set; }
         internal bool AllowUnhostedRunForTests { get; set; }
@@ -909,21 +910,22 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 // Every entry comes from this run's published configuration. Copy the
                 // fallback as well: sequence numbers/communication assignments are per-run.
-                var nodeParameterOverrides = frozenImageOverrides ?? runInputs.LocalImages.Overrides.ToDictionary(
+                var sourceInputValues = frozenImageOverrides ?? runInputs.LocalImages.Overrides.ToDictionary(
                     pair => pair.Key, pair => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(pair.Value));
                 if (sequenceNumbers is not null)
                 {
-                    foreach (var pair in nodeParameterOverrides)
+                    foreach (var pair in sourceInputValues)
                     {
-                        var configured = (long)pair.Value["SequenceNumber"]!;
+                        var configured = (long)pair.Value["input.sequence"]!;
                         if (!sequenceNumbers.TryGetValue(pair.Key, out var current))
                             sequenceNumbers[pair.Key] = current = configured;
-                        ((Dictionary<string, object?>)pair.Value)["SequenceNumber"] = current;
+                        ((Dictionary<string, object?>)pair.Value)["input.sequence"] = current;
                     }
                 }
-                var hasCameraSource = nodeParameterOverrides.Values.Any(values =>
-                    values.TryGetValue("SourceKind", out var kind)
-                    && kind is SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera);
+                var hasCameraSource = runInputs.LocalImages.Policies.Values.Any(policy=>policy.SourceKind==ImageSourceKind.Camera);
+                var sourceInputs=sourceInputValues.ToDictionary(pair=>pair.Key,pair=>new ImageSourceRunInput(
+                    pair.Value.TryGetValue("input.local-address",out var address)?address as string:null,
+                    (long)pair.Value["input.sequence"]!),StringComparer.Ordinal);
                 var bindingOverrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
                 foreach (var group in (_communicationAssignments.Value ?? Array.Empty<CommunicationParameterAssignment>()).GroupBy(a => a.NodeId))
                 {
@@ -944,7 +946,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     inputImage as IVisionImage,
                     runGlobals,
                     runtimeParameters,
-                    nodeParameterOverrides: nodeParameterOverrides,
+                    sourceInputs: sourceInputs,
                     nodeBindingOverrides: bindingOverrides,
                     communicationInputs: receiveInputs,
                     communicationOutputs: SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.Sends,
@@ -953,14 +955,14 @@ namespace SunEyeVision.UI.Services.Workflow
                         : null,
                     cameraFrames: cameraFrame is not null && cameraNodeId is not null
                         ? new Dictionary<string, CameraFrame> { [cameraNodeId] = cameraFrame }
-                        : null) { Configuration = runConfiguration, ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution),
+                        : null) { Configuration = runConfiguration, ResourcePaths = runInputs.ResourcePaths,
                             ExecutionOwner = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution?.ExecutionOwner };
                 var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
                 if (sequenceNumbers is not null)
                 {
                     foreach (var pair in result.NodeResults)
                     {
-                        if (nodeParameterOverrides.ContainsKey(pair.Key) && pair.Value.Success)
+                        if (sourceInputValues.ContainsKey(pair.Key) && pair.Value.Success)
                             sequenceNumbers[pair.Key] = checked(sequenceNumbers[pair.Key] + 1);
                     }
                 }
@@ -1254,7 +1256,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             var resourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(definitionSource);
             var captured = (workflowId is null ? flows.Select(f => f.Id) : new[] { workflowId }).ToDictionary(
-                id => id, id => new PublishedRunInputs(configuration, globals, CaptureLocalImageInputs(id, configuration, resourcePaths), definitions, runtime), StringComparer.Ordinal);
+                id => id, id => new PublishedRunInputs(configuration, globals, CaptureLocalImageInputs(id, configuration, resourcePaths), definitions, runtime,resourcePaths), StringComparer.Ordinal);
             lock (_lock)
             {
                 if (workflowId is null) _preparedRunInputs.Clear();
@@ -1304,18 +1306,15 @@ namespace SunEyeVision.UI.Services.Workflow
             lock (_lock) _preparedRunInputs.TryGetValue(workflow.RootWorkflowId, out inputs);
             if (inputs is null) return null;
             var overrides = frozenOverrides ?? inputs.LocalImages.Overrides;
-            var sources = overrides
-                .Where(pair => pair.Value.TryGetValue("SourceKind", out var kind)
-                    && kind is ImageSourceKind.Camera)
+            var sources = inputs.LocalImages.Policies
+                .Where(pair => overrides.ContainsKey(pair.Key)&&pair.Value.SourceKind==ImageSourceKind.Camera)
                 .ToArray();
             if (sources.Length != 1)
                 return null;
 
             var source = sources[0];
-            var cameraId = source.Value.TryGetValue("CameraDeviceId", out var id)
-                ? id as string : null;
-            var timeout = source.Value.TryGetValue("CameraTimeoutMs", out var timeoutValue)
-                && timeoutValue is int value ? value : 3000;
+            var cameraId = source.Value.CameraDeviceId;
+            var timeout = source.Value.CameraTimeoutMs;
             if (string.IsNullOrWhiteSpace(cameraId) || timeout <= 0)
                 return null;
             return new CameraSourceBinding(source.Key, cameraId, timeout);

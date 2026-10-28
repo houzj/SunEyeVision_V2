@@ -2640,9 +2640,7 @@ SplitterPosition = position;
                 // UI owns editor creation. Use the formal node so identity and style
                 // overrides are not lost in an incomplete execution-node conversion.
                 var decisionChain = new NodeOpenDecisionChain();
-                var success = decisionChain.Execute(node, context, node.IsImageLoadNode
-                    ? () => new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node, this)
-                    : null);
+                var success = decisionChain.Execute(node, context);
                 if (!success)
                 {
                     AddLog($"❌ 节点打开失败: {node.Name}");
@@ -3407,14 +3405,6 @@ SplitterPosition = position;
 
                 if (selectedNode == null)
                     return System.Threading.Tasks.Task.CompletedTask;
-
-                if (selectedNode.IsImageLoadNode)
-                {
-                    DataAnalysisControlTitle = $"{selectedNode.Name} - 图像源";
-                    SelectedNodeDataAnalysisControl = new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(selectedNode, this);
-                    HasDataAnalysisControl = true;
-                    return System.Threading.Tasks.Task.CompletedTask;
-                }
 
                 // 获取工具注册信息
                 var toolType = selectedNode.ToolType;

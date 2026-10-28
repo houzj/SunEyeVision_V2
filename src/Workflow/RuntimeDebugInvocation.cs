@@ -10,6 +10,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Devices.Camera;
 
 namespace SunEyeVision.Workflow;
 
@@ -21,6 +22,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
     private readonly string _workflowId;
     private readonly InputValues _inputs;
     private readonly List<IDisposable> _readers;
+    private ImageSourceRunInput? _sourceInput;
+    private ICameraCaptureService? _cameraService;
     private int _started;
     private bool _disposed;
     public ToolExecutionIdentity Identity {get;}
@@ -31,7 +34,8 @@ public sealed class RuntimeDebugInvocation : IDisposable
     /// <summary>Call on the document owner before dispatching execution. The double
     /// read rejects replacement during capture; retained readers survive later replacement.</summary>
     public static RuntimeDebugInvocation Capture(Workflow workflow,WorkflowNodeBase draft,ToolExecutionOwner owner,long revision,
-        Func<string,ToolResults?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null)
+        Func<string,ToolResults?> readPublished,CancellationToken cancellation,IVisionImage? defaultImage=null,ToolExecutionOwner? publishedOwner=null,
+        IResourcePathResolver? resourcePaths=null,ICameraCaptureService? cameraService=null)
     {
         ArgumentNullException.ThrowIfNull(workflow);ArgumentNullException.ThrowIfNull(draft);ArgumentNullException.ThrowIfNull(owner);
         if(!workflow.Nodes.Any(n=>n.Id==draft.Id&&n.ToolType==draft.ToolType))throw new InvalidOperationException("调试节点不属于当前工作流。");
@@ -109,7 +113,13 @@ public sealed class RuntimeDebugInvocation : IDisposable
             }
             if(configuration.Schema.WorkflowImageInputId is { } requiredImage&&!inputs.ContainsKey(requiredImage))
                 throw new InvalidOperationException("请选择已发布的图像输入源后再调试。");
-            return new(workflow.Id,node,new InputValues(configuration.Schema.Inputs,inputs),identity,readers,values.Select(v=>v.Identity));
+            var invocation=new RuntimeDebugInvocation(workflow.Id,node,new InputValues(configuration.Schema.Inputs,inputs),identity,readers,values.Select(v=>v.Identity));
+            if(node.ToolType=="ImageLoad")
+            {
+                invocation._sourceInput=ImageSourceInvocationInputs.PrepareDebug(node,resourcePaths);
+                invocation._cameraService=cameraService;
+            }
+            return invocation;
         }
         catch(Exception failure)
         {
@@ -122,12 +132,23 @@ public sealed class RuntimeDebugInvocation : IDisposable
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(Interlocked.Exchange(ref _started,1)!=0)throw new InvalidOperationException("调试输入快照只能执行一次。");
         IDisposable? admission=null;
+        ImageSourceInvocationInputs? sourceLease=null;
         var resources=new FrozenOutputResources();ToolOutcome? outcome=null;RuntimeToolResults? result=null;bool transferred=false;Exception? failure=null;
         var timer=Stopwatch.StartNew();
         try
         {
             admission=Identity.Owner.EnterRun(Identity);
-            outcome=await _node.ExecuteRuntimeAsync(_inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources)).ConfigureAwait(false);
+            var inputs=_inputs;
+            if(_sourceInput is not null)
+            {
+                sourceLease=await ImageSourceInvocationInputs.CaptureAsync(_node,_sourceInput,Identity.ToInvocationIdentity(_node.Id),
+                    _cameraService,null,Identity.CancellationToken).ConfigureAwait(false);
+                var values=_inputs.CopyValues().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+                foreach(var pair in sourceLease.Values)
+                    if(!values.TryAdd(pair.Key,pair.Value))throw new InvalidOperationException("图像源冻结输入与节点绑定冲突："+pair.Key);
+                inputs=new InputValues(_node.RuntimeConfiguration!.Schema.Inputs,values);
+            }
+            outcome=await _node.ExecuteRuntimeAsync(inputs,new Context(Identity.ToInvocationIdentity(_node.Id),Identity.CancellationToken,resources)).ConfigureAwait(false);
             transferred=true;result=new(_node.ToolType,_node.RuntimeConfiguration!.Schema,Identity,outcome,resources,timer.Elapsed.TotalMilliseconds);
             DeclaredOutputSnapshot.Publish(result,Identity.ToInvocationIdentity(_node.Id),result.Values,sourceWorkflowId:_workflowId);
             return result;
@@ -136,6 +157,7 @@ public sealed class RuntimeDebugInvocation : IDisposable
         finally
         {
             Identity.CompleteCallbacks();_disposed=true;var cleanup=Release(_readers);
+            try{sourceLease?.Dispose();}catch(Exception error){cleanup.Add(error);}
             try{admission?.Dispose();}catch(Exception error){cleanup.Add(error);}
             if(!transferred){try{(outcome?.Output as IDisposable)?.Dispose();}catch(Exception error){cleanup.Add(error);}try{resources.Dispose();}catch(Exception error){cleanup.Add(error);}}
             if((failure is not null||cleanup.Count>0)&&result is not null)try{result.Resources?.Dispose();}catch(Exception error){cleanup.Add(error);}

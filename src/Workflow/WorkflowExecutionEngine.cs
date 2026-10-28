@@ -1008,6 +1008,12 @@ namespace SunEyeVision.Workflow
                 executionNode.CameraFrame = request != null && request.CameraFrames.TryGetValue(node.Id, out var cameraFrame)
                     ? cameraFrame
                     : null;
+                if(request?.SourceInputs.TryGetValue(node.Id,out var sourceInput)==true)
+                {
+                    if(node.ToolType!="ImageLoad"||node.RuntimeConfiguration is null)
+                        throw new InvalidOperationException("冻结的图像源输入不属于Runtime图像源节点。");
+                    executionNode.SourceRunInput=sourceInput;
+                }
 
                 // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
                 if (executionParameters is ISubWorkflowExecutor executor)

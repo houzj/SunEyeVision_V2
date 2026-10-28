@@ -4,6 +4,10 @@
     <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
     <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
   </Folder>
+  <Folder Name="/Tools/ImageSourceComponents/">
+    <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Src/CommonControl/">
     <Project Path="Src/CommonControl/CommonControl.csproj" />
   </Folder>
@@ -50,7 +54,6 @@
   <Folder Name="/Tools/">
     <Project Path="tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
-    <Project Path="tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj" />
@@ -92,8 +95,8 @@
   <Folder Name="/Tests/SunEyeVision.Tool.ImageFilter.Tests/">
     <Project Path="tests/SunEyeVision.Tool.ImageFilter.Tests/SunEyeVision.Tool.ImageFilter.Tests.csproj" />
   </Folder>
-  <Folder Name="/Tests/SunEyeVision.Tool.ImageLoad.Tests/">
-    <Project Path="tests/SunEyeVision.Tool.ImageLoad.Tests/SunEyeVision.Tool.ImageLoad.Tests.csproj" />
+  <Folder Name="/Tests/SunEyeVision.ImageSource.Runtime.Tests/">
+    <Project Path="tests/SunEyeVision.ImageSource.Runtime.Tests/SunEyeVision.ImageSource.Runtime.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tool.ImageThreshold.Tests/">
     <Project Path="tests/SunEyeVision.Tool.ImageThreshold.Tests/SunEyeVision.Tool.ImageThreshold.Tests.csproj" />

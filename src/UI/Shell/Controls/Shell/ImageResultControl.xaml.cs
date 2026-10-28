@@ -1,4 +1,4 @@
-﻿using SunEyeVision.UI.Features.Dialogs;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shared;
 using System;
 using System.Windows;
@@ -96,6 +96,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel = viewModel;
+            // The visual DataContext is ImageResultViewModel; borrow the root presenter collection explicitly.
+            ModuleResultTreeView.ItemsSource=viewModel.ResultTreeRoots;
             _viewModel.PropertyChanged+=OnHostEditingStateChanged;
             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
             RefreshSourceSession();
@@ -107,6 +109,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public void Shutdown()
         {
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
+            ModuleResultTreeView.ItemsSource=null;
             _viewModel?.CloseResultPresentation();
             ReleaseSourceSession();
             _sourceTheme.Dispose();

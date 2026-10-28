@@ -79,7 +79,6 @@
                 <TabItem Header="模块结果" Padding="12,6">
                     <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
                         <results:PropertyListView x:Name="ModuleResultTreeView"
-                            ItemsSource="{Binding ResultTreeRoots}"
                             SelectedItemChanged="OnResultTreeSelectionChanged"
                             Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}"/>
 

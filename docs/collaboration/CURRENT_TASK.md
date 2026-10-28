@@ -7,6 +7,7 @@
 - D02已合44a67d83为ca605a4b：六类死链、Main构造/统计/清空和无身份图像回填整体退出，真实执行/声明快照/源资产缓存保留。独立审计确认16个结果管理器及168个Main保留方法体未改；不把旧池Prewarm(1)退出混称解码器预热优化。
 - root宿主结果Model/Presenter现分部分成功、超时、取消，成功空输出保状态，资源缺值的失败不显示“资源待接入”；仅同一publication才复用reader/行，身份相同的新发布会更换诊断。已补真实快照状态/成功空/同run不同发布及partial scalar测试；源码与四C#语法检查无错、diff通过，未语义编译或执行。一次检查自动审批超时未启动，原命令允许的一次重试已成功。共享C14合同/原件树/物理帧适配仍未交付，目标不完成。
 - 主线授权本线仅新增Results/PropertyList及Results/ResultShell对应Controls/Themes/Assets/Design子目录；native已从988a34f5独立分支迁原三列树/结果shell，不动StandardTable/C14/context/中立图像适配/C17。纯视觉DP/命令只回传实际投影对象，UI负责正式owner/publication校验，未造旧IToolResultView实现。
+- native只读整链核出ImageResultHost实际DataContext为ImageResult子VM，而Roots属于Main；已去错误隐式Binding，Initialize显式借同一root Presenter.Roots，Shutdown先摘ItemsSource再清结果，不复制集合。此为源码审计修正，尚未运行WPF绑定验收。
 - 主界面结果树整批候选已提交f68bfd8c，工作树曾干净；新增正式ImageSources轨实际纳ResultPresentationModelTests/PresenterTests，不让状态/分页/Reader清理用例只存在测试项目。原非法候选7项+调试拒绝7项仍独立核14，不与结果Theory混计；仅源码/语法验证，未运行正式轨。
 - 部署探针f4f4c320已合9615bdbe：按BlobAnalysis/角色唯一匹配，全部破坏注入锁同一组件，新增源角色不触发全局Single误判；纯函数夹具过，未正式执行。editor独立worktree继续根参数Runtime整链消费者，复用既有SettingsSchema/BindingTargets/事务/编译/资源租约，不改Blob/共享合同、不skip原根资源回归。主线最新wait确认idle且共享C14仍尚待整批接通，不推断正式构建窗口已授权本线。
 - root新增UI局部ImageSourceThemeScope，主界面与参数页同源条及相机picker接宿主语义画刷，Loaded订阅/Unloaded退订及Dispose移除自有字典，主题切换整字典替换，不改共享主题或全局画刷。Host回归新增实际Strip深浅主题、卸载再载与截图断言，专用内存SolutionSettings不写用户偏好；四C#语法和diff通过，尚未正式运行/主题验收。一次读取自动审批超时后已重试成功。

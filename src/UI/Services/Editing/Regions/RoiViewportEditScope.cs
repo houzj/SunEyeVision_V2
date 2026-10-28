@@ -1,234 +1,170 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Regions;
-using WpfCanvas = System.Windows.Controls.Canvas;
+using SunEyeVision.UI.Services.Images;
 
 namespace SunEyeVision.UI.Services.Editing.Regions;
 
-/// <summary>One host-owned interaction lease and one child layer. Never owns or clears the shared result layer.</summary>
-public sealed class RoiViewportEditScope : IRoiEditViewport,IDisposable
+/// <summary>One borrowed, proven input frame and the original ROI session. No mouse or drawing implementation.</summary>
+public sealed class RoiViewportEditScope : IRoiEditViewport, IDisposable
 {
-    private sealed class Slot {public RoiViewportEditScope? Active;}
-    private static readonly ConditionalWeakTable<ImageControl,Slot> Slots=new();
-    private readonly ImageControl _image;
-    private readonly Func<bool> _isCurrent;
-    private readonly Slot _slot;
-    private readonly RoiLayer _layer;
-    private readonly WpfCanvas _surface;
-    private readonly MouseButtonEventHandler _down,_up;
-    private readonly MouseEventHandler _move;
-    private IReadOnlyList<RoiEditItem> _items=Array.Empty<RoiEditItem>();
-    private string _group="inspection";
-    private Guid? _selected;
-    private string? _drawing;
-    private Point2? _anchor;
-    private readonly List<Point2> _points=new();
-    private RecordValue? _original,_candidate;
-    private Matrix _pose=Matrix.Identity;
-    private object? _gestureImage;
-    private Guid? _gestureFrame;
-    private bool _disposed;
-    private bool _poseReady=true;
-    private string _poseError="";
-    private RoiEditAction _action;
-    private HashSet<string> _editableGroups=new(StringComparer.Ordinal){"inspection","mask"};
-    public bool IsActive=>!_disposed&&ReferenceEquals(_slot.Active,this);
-    public bool HasPendingGesture=>_anchor.HasValue||_points.Count>0;
-    public event Action<RoiGeometryChange>? GeometryChanged;
-    public event Action<string,Guid?>? SelectionChanged;
+    private readonly Func<ResultViewportImageLease?> _input;
+    private readonly Func<bool> _current;
+    private readonly Func<IReadOnlyList<RoiEditItem>> _read;
+    private readonly Func<RoiEditProposal, (RoiEditSelection Selection, IReadOnlyList<RoiEditItem> Items)> _accept;
+    private readonly Action _publish;
+    private readonly Guid _scope = Guid.NewGuid();
+    private ResultViewportImageLease? _image;
+    private INativeRoiEditLease? _interaction;
+    private NativeRoiSession? _session;
+    private IReadOnlyList<RoiEditItem> _scene = Array.Empty<RoiEditItem>();
+    private HashSet<string> _groups = new(StringComparer.Ordinal);
+    private long _revision;
+    private bool _disposed, _accepting;
+    private string _group = "inspection";
+    public bool IsActive => !_disposed && _current() && _image?.IsCurrent == true && _interaction?.IsCurrent == true;
+    public bool HasPendingGesture => IsActive && _interaction!.HasPendingGesture;
+    // Kept only as the existing restricted numeric editor's notification contract. Native proposals never use it for writes.
+    public event Action<RoiGeometryChange>? GeometryChanged { add { } remove { } }
+    public event Action<string, Guid?>? SelectionChanged;
     public event Action<string>? StatusChanged;
-
-    public RoiViewportEditScope(ImageControl image,Func<bool> isCurrent)
+    internal RoiViewportEditScope(Func<ResultViewportImageLease?> input, Func<bool> current,
+        Func<IReadOnlyList<RoiEditItem>> read, Func<RoiEditProposal, (RoiEditSelection Selection, IReadOnlyList<RoiEditItem> Items)> accept, Action publish)
+    { _input = input; _current = current; _read = read; _accept = accept; _publish = publish; }
+    private bool Current(ResultViewportImageLease image) => !_disposed && _current() && ReferenceEquals(_image, image) && image.IsCurrent;
+    internal static bool Supported(RoiEditItem row)
     {
-        _image=image;_isCurrent=isCurrent;_slot=Slots.GetValue(image,_=>new());
-        _surface=(WpfCanvas)(image.FindName("MainCanvas")??throw new InvalidOperationException("图像视口未就绪。"));
-        _layer=new(this){IsHitTestVisible=false,Visibility=Visibility.Hidden};image.InteractionOverlayCanvasControl.Children.Add(_layer);
-        _down=(_,e)=>{if(IsActive&&_poseReady&&OnSurface(e.OriginalSource)&&PointerDown(ToReference(e),e.ClickCount)){if(HasPendingGesture)_surface.CaptureMouse();e.Handled=true;}};
-        _move=(_,e)=>{if(IsActive&&_poseReady&&OnSurface(e.OriginalSource)&&PointerMove(ToReference(e)))e.Handled=true;};
-        _up=(_,e)=>{if(IsActive&&_poseReady&&PointerUp(ToReference(e))){if(ReferenceEquals(Mouse.Captured,_surface))_surface.ReleaseMouseCapture();e.Handled=true;}};
-        _image.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent,_down,true);
-        _image.AddHandler(UIElement.PreviewMouseMoveEvent,_move,true);
-        _image.AddHandler(UIElement.PreviewMouseLeftButtonUpEvent,_up,true);
-        _image.ViewTransformed+=OnView;_image.ImageLoaded+=OnImage;
-        _image.PreviewKeyDown+=OnKey;
-        Redraw();
+        var kind = row.Geometry.Get<string>("kind");
+        return kind == "rectangle" || kind == "polygon" && (!row.Geometry.Contains("closed") || row.Geometry.Get<bool>("closed")) || kind == "annulus" &&
+            Math.Abs(Math.Abs(row.Geometry.Get<double>("end-radians") - row.Geometry.Get<double>("start-radians")) - 2 * Math.PI) <= 1e-9;
     }
-    public void Activate()
+    private bool Attach(out string error)
     {
-        EnsureCurrent();if(ReferenceEquals(_slot.Active,this))return;
-        _slot.Active?.Suspend();_slot.Active=this;_layer.Visibility=Visibility.Visible;Redraw();
+        error = "";
+        ResultViewportImageLease? candidate = null;
+        try
+        {
+            if (_disposed || !_current()) throw new InvalidOperationException("当前区域编辑范围已失效。");
+            candidate = _input() ?? throw new InvalidOperationException("当前节点没有已证明的实际输入图像，区域手势不可用。");
+            var image = candidate;
+            if (!image.IsCurrent) throw new InvalidOperationException("实际输入图像借阅已失效。");
+            if (_image is not null && _interaction?.IsCurrent == true && _image.IsCurrent && image.Receipt == _image.Receipt)
+            { if (ReferenceEquals(image, _image)) candidate = null; return true; }
+            RetireFrame(); _image = image; candidate = null; ++_revision;
+            var session = new NativeRoiSession(image.Image, ReadSnapshot, Accept, () => Current(image),
+                () => new(false, false), _group, canDraw: group => _groups.Contains(group));
+            _session = session;
+            session.Changed += OnChanged; session.DrawRequested += OnDraw;
+            _interaction = image.Viewport.BeginRoiEditing(image.Receipt, session, () => Current(image));
+            StatusChanged?.Invoke("使用原件中心、边缘及旋转手柄；私有区域专属撤销重做尚未接入，接纳后使用方案历史。");
+            return IsActive;
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or NotSupportedException)
+        { error = exception.Message; RetireFrame(); StatusChanged?.Invoke(error); return false; }
+        finally { candidate?.Dispose(); }
     }
-    private void Suspend(){CancelGesture();_layer.Visibility=Visibility.Hidden;}
+    private void OnDraw(RoiDrawRequest request)
+    {
+        if (request.Kind is "rectangle" or "annulus" or "polygon") return;
+        _session?.CancelDraw(); StatusChanged?.Invoke("该形状没有可无损回写的正式参数模型；当前不开放绘制。");
+    }
+    private RoiEditSnapshot ReadSnapshot()
+    {
+        if (_image is null || !Current(_image)) throw new InvalidOperationException("区域输入帧或编辑草稿已失效。");
+        UpdateScene(_read());
+        return new(new(_scope, _revision, _image.Image.Frame), Array.AsReadOnly(_scene.Where(Supported).ToArray()));
+    }
+    private RoiEditAcceptance Accept(RoiEditStamp expected, RoiEditProposal proposal)
+    {
+        var before = ReadSnapshot();
+        if (_accepting || expected != before.Stamp) return RoiEditAcceptance.Reject(before, "区域版本已变化，请重新操作。");
+        if (proposal is RoiEditProposal.Undo or RoiEditProposal.Redo)
+            return RoiEditAcceptance.Reject(before, "私有区域草稿尚未具备原件专属撤销重做；接纳后的历史由方案统一管理。");
+        _accepting = true;
+        try
+        {
+            var accepted = _accept(proposal);
+            UpdateScene(accepted.Items); ++_revision;
+            var after = new RoiEditSnapshot(new(_scope, _revision, before.Stamp.Frame), Array.AsReadOnly(_scene.Where(Supported).ToArray()));
+            IReadOnlyList<RoiEditTarget> targets = proposal switch
+            {
+                RoiEditProposal.Create when accepted.Selection is RoiEditSelection.Select select => new[] { select.Target },
+                RoiEditProposal.Replace replace => new[] { replace.Target },
+                RoiEditProposal.Delete delete => delete.Targets,
+                _ => Array.Empty<RoiEditTarget>()
+            };
+            return new(true, after, targets, accepted.Selection, Publish: () => { if (!_disposed && _current()) _publish(); });
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException or NotSupportedException)
+        { return RoiEditAcceptance.Reject(before, error.Message); }
+        finally { _accepting = false; }
+    }
+    private static bool SameValue(object? left, object? right) => (left, right) switch
+    {
+        (RecordValue a, RecordValue b) => SameFields(a.CopyFields(), b.CopyFields()),
+        (SequenceValue a, SequenceValue b) => a.Count == b.Count && a.Zip(b).All(pair => SameValue(pair.First, pair.Second)),
+        _ => Equals(left, right)
+    };
+    private static bool SameFields(IReadOnlyDictionary<string, object?> a, IReadOnlyDictionary<string, object?> b)
+        => a.Count == b.Count && a.All(pair => b.TryGetValue(pair.Key, out var value) && SameValue(pair.Value, value));
+    private static bool SameRows(IReadOnlyList<RoiEditItem> a, IReadOnlyList<RoiEditItem> b)
+        => a.Count == b.Count && a.Zip(b).All(pair => pair.First.Group == pair.Second.Group && pair.First.Id == pair.Second.Id
+            && pair.First.Name == pair.Second.Name && pair.First.Enabled == pair.Second.Enabled && pair.First.Visible == pair.Second.Visible
+            && SameValue(pair.First.Geometry, pair.Second.Geometry));
+    private void UpdateScene(IReadOnlyList<RoiEditItem> rows)
+    { if (!SameRows(_scene, rows)) { _scene = Array.AsReadOnly(rows.ToArray()); ++_revision; } }
     public void SetScene(IEnumerable<RoiEditItem> items)
-    {_image.Dispatcher.VerifyAccess();if(HasPendingGesture){CancelGesture();StatusChanged?.Invoke("区域配置已变化，本次绘制已取消。");}_items=items.ToArray();if(_selected.HasValue&&!_items.Any(item=>item.Group==_group&&item.Id==_selected))_selected=null;Redraw();}
+    {
+        UpdateScene(items.ToArray());
+        if (_image is not null && !Current(_image)) RetireFrame();
+        else if (!_accepting) _session?.Refresh();
+        var omitted = _scene.Count(row => !Supported(row));
+        if (omitted > 0) StatusChanged?.Invoke($"{omitted}项区域保留在完整参数草稿；原件尚无对应编辑入口，未投影到手势层。");
+    }
     public void SetEditableGroups(IEnumerable<string> groups)
-    {_editableGroups=groups.ToHashSet(StringComparer.Ordinal);if(!_editableGroups.Contains(_group))CancelGesture();}
-    public void SetPose(Matrix? pose,bool ready,string error="")
+    { _groups = groups.ToHashSet(StringComparer.Ordinal); if (!_groups.Contains(_group)) CancelGesture(); }
+    public bool BeginDraw(string group, string kind, out string error)
     {
-        var next=pose??Matrix.Identity;if(_pose!=next||_poseReady!=ready)CancelGesture();
-        _pose=next;_poseReady=ready&&_pose.HasInverse&&new[]{next.M11,next.M12,next.M21,next.M22,next.OffsetX,next.OffsetY}.All(double.IsFinite)
-            &&Math.Abs(next.M11*next.M22-next.M12*next.M21)>1e-10;_poseError=error;Redraw();
+        error = "";
+        if (!_groups.Contains(group)) { error = "继承来源不能写入本地区域。"; return false; }
+        if (kind is not ("rectangle" or "annulus" or "polygon"))
+        { error = "原件当前仅接入矩形、完整圆环及多边形的无损参数编辑。"; StatusChanged?.Invoke(error); return false; }
+        _group = group;
+        if (!Attach(out error)) return false;
+        _session!.SetDrawingGroup(group);
+        if (_session.BeginDraw(kind) is null) { error = _session.Error; return false; }
+        return true;
     }
-    public bool BeginDraw(string group,string kind,out string error)
+    public void Select(string group, Guid? id)
     {
-        error="";try
-        {
-            Activate();CheckDrawable();if(!_editableGroups.Contains(group))throw new InvalidOperationException("当前区域采用继承来源，不能写入本地几何。");if(!RoiGeometryEditing.Kinds.Contains(kind))throw new ArgumentException("未知区域形状。");
-            CancelGesture();_group=group;_drawing=kind;_selected=null;SelectionChanged?.Invoke(group,null);
-            StatusChanged?.Invoke(kind is "arc" or "annulus"?"依次点击圆心、外缘和结束点；Esc取消。":kind=="polygon"?"依次点击顶点，双击或Enter完成；Esc取消。":"在图像上绘制；Esc取消。");return true;
-        }
-        catch(InvalidOperationException exception){error=exception.Message;return false;}
+        _group = group; if (!Attach(out _)) return;
+        _session!.SetDrawingGroup(group);
+        if (id.HasValue && !_scene.Any(row => row.Group == group && row.Id == id && Supported(row)))
+        { StatusChanged?.Invoke("所选区域保留数值模型，当前原件手势未接入该形状。"); return; }
+        _session.Select(group, id);
     }
-    public void Select(string group,Guid? id){Activate();CancelGesture();_group=group;_selected=id;SelectionChanged?.Invoke(group,id);Redraw();}
-    public void SetAction(RoiEditAction action){Activate();CancelGesture();_drawing=null;_action=action;}
-    public void CancelGesture()
+    public void SetAction(RoiEditAction action)
     {
-        _drawing=null;_anchor=null;_original=null;_candidate=null;_points.Clear();_gestureImage=null;_gestureFrame=null;
-        if(ReferenceEquals(Mouse.Captured,_surface)&&IsActive)_surface.ReleaseMouseCapture();Redraw();
+        if (!Attach(out _)) return;
+        CancelGesture();
+        StatusChanged?.Invoke(action switch { RoiEditAction.Move => "拖动原件中心手柄移动区域。", RoiEditAction.Resize => "拖动原件边缘手柄调整区域。", RoiEditAction.Rotate => "拖动原件旋转手柄调整角度。", _ => "使用原件区域选择及手柄。" });
     }
-    public bool PointerDown(Point2 point,int clickCount=1)
+    private void OnChanged()
+    { if (_session?.CurROIData is { } item) SelectionChanged?.Invoke(item.Group, item.Id); else SelectionChanged?.Invoke(_group, null); }
+    internal void Activate() => Attach(out _);
+    internal void RefreshCurrentness() { if (_image is not null && !Current(_image)) RetireFrame(); }
+    public void CancelGesture() => _interaction?.CancelGesture();
+    private void RetireFrame()
     {
-        if(!IsActive)return false;
-        try
-        {
-            CheckDrawable();if(!HasPendingGesture){_gestureImage=_image.SourceImage;_gestureFrame=PreviewFrameProvenance.Read(_image.SourceImage);}
-            if(_drawing is { } kind)
-            {
-                if(kind=="point"){Commit(null,RoiGeometryEditing.Create(kind,point,point));return true;}
-                if(kind is "polygon" or "arc" or "annulus")
-                {
-                    if(clickCount>1&&kind=="polygon"){FinishPolygon();return true;}
-                    if(_points.Count==0||_points[^1]!=point)_points.Add(point);
-                    if(kind!="polygon"&&_points.Count==3)
-                    {
-                        var values=RoiGeometryEditing.Values(RoiGeometryEditing.Create(kind,_points[0],_points[1]));
-                        var center=_points[0];var angle=Math.Atan2(_points[1].Y-center.Y,_points[1].X-center.X);
-                        if(kind=="arc")
-                        {var end=Math.Atan2(point.Y-center.Y,point.X-center.X);if(end<=angle)end+=2*Math.PI;values["start-radians"]=angle;values["end-radians"]=end;values["major-arc"]=end-angle>Math.PI;}
-                        else values["inner-radius"]=Math.Sqrt(Math.Pow(point.X-center.X,2)+Math.Pow(point.Y-center.Y,2));
-                        Commit(null,RoiGeometryEditing.Checked(values));
-                    }
-                    Redraw();return true;
-                }
-                _anchor=point;return true;
-            }
-            var hit=_action is RoiEditAction.Resize or RoiEditAction.Rotate?_items.SingleOrDefault(item=>item.Group==_group&&item.Id==_selected)??Hit(point):Hit(point);
-            _selected=hit?.Id;_group=hit?.Group??_group;SelectionChanged?.Invoke(_group,_selected);
-            if(hit is null){Redraw();return false;}
-            _original=hit.Geometry;_anchor=point;_candidate=hit.Geometry;Redraw();return true;
-        }
-        catch(Exception exception) when(exception is ArgumentException or InvalidOperationException)
-        {if(_drawing is "arc" or "annulus"&&_points.Count>2)_points.RemoveAt(_points.Count-1);StatusChanged?.Invoke(exception.Message);return true;}
+        var interaction = _interaction; _interaction = null;
+        var session = _session; _session = null;
+        var image = _image; _image = null;
+        try { interaction?.Dispose(); }
+        finally { try { if (session is not null) { session.Changed -= OnChanged; session.DrawRequested -= OnDraw; session.Dispose(); } } finally { image?.Dispose(); } }
     }
-    public bool PointerMove(Point2 point)
-    {
-        if(!IsActive)return false;
-        if(!_isCurrent()){CancelGesture();return false;}
-        if(_gestureImage is not null&&(!ReferenceEquals(_gestureImage,_image.SourceImage)||_gestureFrame!=PreviewFrameProvenance.Read(_image.SourceImage))){CancelGesture();return false;}
-        try
-        {
-            if(_anchor is { } anchor)_candidate=_drawing is { } kind?RoiGeometryEditing.Create(kind,anchor,point)
-                :_original is { } original?RoiGeometryEditing.Manipulate(original,_action,anchor,point):null;
-            else if(_drawing is { } multi&&_points.Count>0)
-                _candidate=multi=="polygon"?_points.Count>=2?RoiGeometryEditing.Create(multi,_points[0],point,_points.Append(point).ToArray()):null
-                    :RoiGeometryEditing.Create(multi,_points[0],_points.Count>1?_points[1]:point);
-            else return false;
-            Redraw();return true;
-        }
-        catch(ArgumentException){_candidate=null;Redraw();return true;}
-    }
-    public bool PointerUp(Point2 point)
-    {
-        if(!IsActive||!_anchor.HasValue)return false;if(!_isCurrent()){CancelGesture();return false;}PointerMove(point);
-        if(_candidate is { } shape)Commit(_drawing is null?_selected:null,shape);else CancelGesture();return true;
-    }
-    public void FinishPolygon()
-    {
-        if(_drawing!="polygon"||_points.Count<3){StatusChanged?.Invoke("多边形至少需要三个顶点。");return;}
-        Commit(null,RoiGeometryEditing.Create("polygon",_points[0],_points[^1],_points));
-    }
-    private void Commit(Guid? id,RecordValue geometry)
-    {
-        RoiGeometryEditing.Validate(geometry);var group=_group;_drawing=null;CancelGesture();
-        GeometryChanged?.Invoke(new(group,id,geometry));StatusChanged?.Invoke("区域已写入当前草稿，确定后生效。");
-    }
-    private RoiEditItem? Hit(Point2 point)
-    {
-        var tolerance=6/Math.Max(.001,_image.Zoom);
-        return _items.Reverse().Where(item=>item.Enabled&&item.Visible).FirstOrDefault(item=>
-        {
-            try
-            {
-                var center=RoiGeometryEditing.Center(item.Geometry);if(Math.Abs(point.X-center.X)<tolerance&&Math.Abs(point.Y-center.Y)<tolerance)return true;
-                foreach(var path in RoiGeometryEditing.Outlines(item.Geometry))
-                {
-                    var points=path.Points;
-                    for(var i=1;i<points.Length;i++)if(Distance(point,points[i-1],points[i])<=tolerance)return true;
-                    if(path.Closed&&Inside(point,points))return true;
-                }
-            }catch(Exception exception) when(exception is ArgumentException or KeyNotFoundException){ }
-            return false;
-        });
-    }
-    private static double Distance(Point2 p,Point2 a,Point2 b)
-    {var dx=b.X-a.X;var dy=b.Y-a.Y;var length=dx*dx+dy*dy;var t=length==0?0:Math.Clamp(((p.X-a.X)*dx+(p.Y-a.Y)*dy)/length,0,1);return Math.Sqrt(Math.Pow(p.X-a.X-t*dx,2)+Math.Pow(p.Y-a.Y-t*dy,2));}
-    private static bool Inside(Point2 p,Point2[] points)
-    {var inside=false;for(int i=0,j=points.Length-1;i<points.Length;j=i++)if((points[i].Y>p.Y)!=(points[j].Y>p.Y)&&p.X<(points[j].X-points[i].X)*(p.Y-points[i].Y)/(points[j].Y-points[i].Y)+points[i].X)inside=!inside;return inside;}
-    private bool OnSurface(object source)=>source is DependencyObject item&&(ReferenceEquals(item,_surface)||IsDescendant(item,_surface));
-    private static bool IsDescendant(DependencyObject item,DependencyObject ancestor)
-    {for(var current=item;current is not null;current=current is Visual?VisualTreeHelper.GetParent(current):null)if(ReferenceEquals(current,ancestor))return true;return false;}
-    private Point2 ToReference(MouseEventArgs args)
-    {var point=args.GetPosition(_image.InteractionOverlayCanvasControl);return ImageToReference(new(point.X,point.Y));}
-    public Point2 ImageToReference(Point2 point)
-    {if(!_poseReady)throw new InvalidOperationException("位置修正未就绪。");var inverse=_pose;inverse.Invert();var result=inverse.Transform(new Point(point.X,point.Y));return new(result.X,result.Y);}
-    private void CheckDrawable()
-    {EnsureCurrent();if(_image.SourceImage is null)throw new InvalidOperationException("请先在图像视口加载或选择输入图像。");if(!_poseReady)throw new InvalidOperationException(_poseError.Length==0?"位置修正与当前预览未确认同帧，不能绘制。":_poseError);}
-    private void EnsureCurrent(){_image.Dispatcher.VerifyAccess();if(_disposed||!_isCurrent())throw new InvalidOperationException("当前区域编辑范围已失效。");}
-    private void OnView(object? sender,ViewTransformEventArgs args)=>Redraw();
-    private void OnImage(object? sender,ImageLoadedEventArgs args){CancelGesture();Redraw();}
-    private void OnKey(object sender,KeyEventArgs args)
-    {if(!IsActive)return;if(args.Key==Key.Escape){_drawing=null;CancelGesture();args.Handled=true;}else if(args.Key==Key.Enter&&_drawing=="polygon"){FinishPolygon();args.Handled=true;}}
-    private void Redraw(){_layer.Width=_image.SourceImage?.PixelWidth??0;_layer.Height=_image.SourceImage?.PixelHeight??0;_layer.InvalidateVisual();}
-    public void Dispose()
-    {
-        if(_disposed)return;CancelGesture();_disposed=true;
-        _image.RemoveHandler(UIElement.PreviewMouseLeftButtonDownEvent,_down);_image.RemoveHandler(UIElement.PreviewMouseMoveEvent,_move);_image.RemoveHandler(UIElement.PreviewMouseLeftButtonUpEvent,_up);
-        _image.ViewTransformed-=OnView;_image.ImageLoaded-=OnImage;_image.PreviewKeyDown-=OnKey;
-        _image.InteractionOverlayCanvasControl.Children.Remove(_layer);if(ReferenceEquals(_slot.Active,this))_slot.Active=null;
-        GeometryChanged=null;SelectionChanged=null;StatusChanged=null;_items=Array.Empty<RoiEditItem>();
-    }
-    private sealed class RoiLayer(RoiViewportEditScope owner):FrameworkElement
-    {
-        protected override void OnRender(DrawingContext context)
-        {
-            base.OnRender(context);if(!owner._poseReady)return;
-            context.PushTransform(new MatrixTransform(owner._pose));
-            foreach(var item in owner._items.Where(item=>item.Enabled&&item.Visible))
-                Draw(context,item.Id==owner._selected&&owner._candidate is not null?owner._candidate:item.Geometry,item.Group=="mask"?Brushes.Orange:Brushes.DeepSkyBlue,item.Id==owner._selected);
-            if(owner._candidate is not null&&owner._drawing is not null)Draw(context,owner._candidate,Brushes.LimeGreen,true);
-            context.Pop();
-        }
-        private void Draw(DrawingContext context,RecordValue shape,Brush color,bool selected)
-        {
-            try
-            {
-                var pen=new Pen(selected?Brushes.LimeGreen:color,(selected?2:1.5)/Math.Max(.001,owner._image.Zoom));
-                foreach(var path in RoiGeometryEditing.Outlines(shape,Math.Max(Width,Height)*2))
-                {
-                    if(path.Points.Length<2)continue;var geometry=new StreamGeometry();
-                    using(var stream=geometry.Open()){stream.BeginFigure(new(path.Points[0].X,path.Points[0].Y),false,path.Closed);stream.PolyLineTo(path.Points.Skip(1).Select(p=>new Point(p.X,p.Y)).ToArray(),true,false);}
-                    context.DrawGeometry(null,pen,geometry);
-                }
-                if(selected){var center=RoiGeometryEditing.Center(shape);context.DrawEllipse(Brushes.White,pen,new(center.X,center.Y),3/owner._image.Zoom,3/owner._image.Zoom);}
-            }catch(Exception exception) when(exception is ArgumentException or KeyNotFoundException){ }
-        }
-    }
+    public void Dispose() { if (_disposed) return; _disposed = true; RetireFrame(); }
 }

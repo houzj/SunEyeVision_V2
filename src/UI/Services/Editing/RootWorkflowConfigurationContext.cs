@@ -18,6 +18,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  private bool _active=true;private int _undoCount,_redoCount;private long _historyVersion;
  private readonly Dictionary<string,WorkflowNodeBase> _formalNodes=new(StringComparer.Ordinal);
  internal Flow Root {get;}
+ internal SunEyeVision.Plugin.SDK.Core.ToolExecutionOwner ExecutionOwner {get;}
  internal DataSourceQueryService Query {get;}
  internal Func<string?>? PrepareView {get;set;}
  internal Func<bool>? HasPendingView {get;set;}
@@ -30,7 +31,7 @@ internal sealed class RootWorkflowConfigurationContext:IDocumentEditParticipant,
  internal RootWorkflowConfigurationContext(SolutionSession session,Flow root,DataSourceQueryService query,Func<bool> isCurrent,Func<bool> canEdit,Action<BindingConfigurationPublication> published)
  {
   if(root.IsSubroutine)throw new InvalidOperationException("Group不属于根配置编辑范围。");
-  _edits=session.Editing;_host=_edits.Host;Root=root;Query=query;_isCurrent=isCurrent;_canEdit=canEdit;_published=published;
+  ExecutionOwner=session.Document.ExecutionOwner;_edits=session.Editing;_host=_edits.Host;Root=root;Query=query;_isCurrent=isCurrent;_canEdit=canEdit;_published=published;
   _root=_host.BeginRootEdit(root.Id);_historyVersion=_host.Capture().Version;_edits.Register(this);
  }
  private void Ensure(bool edit=false){if(!IsValid||edit&&!_canEdit())throw new InvalidOperationException("根配置所属方案、流程或编辑状态已经变化。");}

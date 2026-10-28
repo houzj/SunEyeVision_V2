@@ -57,7 +57,7 @@ public sealed class ResultVariableBindingProductionTests
             Assert.Same(source,main.WorkflowTabViewModel.SelectedTab.WorkflowNodes.Single());
             Stage("选择真实图像源节点");main.SelectedNode=source;
             view=new ImageResultControl{DataContext=main.ImageResult};view.Initialize(main);
-            ((TabControl)view.FindName("ImageDisplayTabControl")).SelectedIndex=1;
+            ((SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell)view.FindName("Workspace")).SelectedResultTabIndex=1;
             Stage("加载真实结果工作区窗口");owner=new Window{Content=view,Width=900,Height=700,Left=-10000,ShowActivated=false};owner.Show();Pump();
             var tree=Assert.IsType<PropertyListView>(view.FindName("ModuleResultTreeView"));
             var session=manager.Session!;var initial=session.History.Position;

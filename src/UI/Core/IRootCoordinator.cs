@@ -75,6 +75,8 @@ namespace SunEyeVision.UI.Core
 
         /// <summary>Retires the shared tree/table publication and releases its leases.</summary>
         void ClearResultDisplay();
+        void ClearResultGraphics();
+        void ClearResultHighlight();
 
         /// <summary>
         /// 保存当前解决方案命令

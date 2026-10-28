@@ -1,4 +1,3 @@
-using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -18,10 +17,8 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
 
-        /// <summary>
-        /// 当前显示图像（null 表示无图像）
-        /// </summary>
-        BitmapSource? DisplayImage { get; set; }
+        void ClearResultGraphics();
+        void ClearResultHighlight();
 
         /// <summary>
         /// 按当前选中的图像源刷新显示（可用性回退 + 下拉跟随）。

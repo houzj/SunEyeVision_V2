@@ -34,6 +34,7 @@ public partial class MainWindowViewModel
         if(epoch==_resultPublicationEpoch)Cleanup(()=>_activeResultView?.Clear());
         if(epoch==_resultPublicationEpoch)Cleanup(()=>ModuleResultTree.Clear());
         if(epoch==_resultPublicationEpoch)Cleanup(()=>_nodeResultManager?.ClearHighlight());
+        if(epoch==_resultPublicationEpoch)Cleanup(ClearNativeImagePresentation);
         if(failures.Count>0)throw new AggregateException("结果视图清理失败，所有可执行清理均已尝试。",failures);
         return epoch;
     }
@@ -53,6 +54,7 @@ public partial class MainWindowViewModel
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
             if(!EnsureCurrent())return;
             _activeResultView?.Present(publication);
+            if(EnsureCurrent())RefreshNativeResultImages();
             EnsureCurrent();
         }
         catch
@@ -83,7 +85,8 @@ public partial class MainWindowViewModel
                 ||!ReferenceEquals(SelectedNode,node)||node?.Id!=snapshot.Identity.NodeId||!ExecutionOwnerMatches()
                 ||string.IsNullOrEmpty(workflowId)||snapshot.SourceWorkflowId!=workflowId
                 ||WorkflowTabViewModel?.SelectedTab?.CurrentWorkflowId!=workflowId)return false;
-            // 分页逐项复核真实归属，避免捕获谓词分配，也不缓存过期授权。
+            // This proof runs for each lazy page entry. Re-check membership without
+            // allocating nested captured predicates or caching an earlier authorization.
             var flows=session.Document.Workflows;var scopeCount=0;var ownsNode=false;
             for(var i=0;i<flows.Count;i++)
             {

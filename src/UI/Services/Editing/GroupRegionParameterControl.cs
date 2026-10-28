@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Text.Json;
@@ -43,6 +43,11 @@ internal sealed class GroupRegionParameterControl : UserControl, IToolEditorPend
     {
         if(_disposed||!IsVisible||!IsEnabled){_manager.ClearMainOverlay();return;}
         var image=_image?.Invoke();
+        if(image is null)
+        {
+            _contextError="未实现：Group区域主图编辑等待新控件和实际输入合同稳定，本阶段保留数值与配置。";
+            _status.Text=_contextError;_manager.ToolTip=_contextError;_manager.IsEnabled=false;_manager.ClearMainOverlay();return;
+        }
         try
         {
             var context=_session.RegionContext(_item);

@@ -144,7 +144,12 @@
  using SunEyeVision.Plugin.SDK.Logging;
  using SunEyeVision.UI.Core;
  using SunEyeVision.UI.Shell.Controls.Panels;
-@@ -30,8 +29,13 @@
+@@ -26,15 +25,21 @@
+     public partial class ImageResultControl : UserControl
+     {
+         private MainWindowViewModel _viewModel = null!;
++        private bool _shutdown;
+         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
          private WorkflowTabViewModel? _sourceWorkflow;
          private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
          private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
@@ -158,8 +163,12 @@
 +        }
          private void RefreshSourceSession()
          {
-             if(!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
-@@ -68,6 +72,7 @@
+-            if(!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
++            if(_shutdown||!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
+             var main=_viewModel;var source=main.ActiveInputSource;var workflow=main.WorkflowTabViewModel.SelectedTab;
+             if(ReferenceEquals(_sourceSession?.Source,source)&&ReferenceEquals(_sourceWorkflow,workflow))return;
+             ReleaseSourceSession();
+@@ -68,6 +73,7 @@
              InitializeComponent();
              _sourceTheme=new(ImagePreviewContent);
              _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
@@ -167,20 +176,22 @@
              ModuleResultTreeView.BindVariableCommand=new RelayCommand(
                  value=>{if(value is FlatResultRow row)BindResultToGlobalVariable(row);},
                  value=>EditingAllowed&&value is FlatResultRow {IsBindable:true} row&&_viewModel?.IsCurrentResultRow(row)==true);
-@@ -80,8 +85,8 @@
+@@ -80,8 +86,8 @@
                      &&value is string path&&!string.IsNullOrWhiteSpace(path))Clipboard.SetText(path);
              },value=>value is string {Length:>0}&&ModuleResultTreeView.SelectedItem is FlatResultRow row
                  &&_viewModel?.IsCurrentResultRow(row)==true);
 -            Loaded+=(_,_)=>RefreshSourceSession();
 -            Unloaded+=(_,_)=>ReleaseSourceSession();
 +            Loaded+=(_,_)=>{RefreshSourceSession();AttachWorkspace();};
-+            Unloaded+=(_,_)=>{ReleaseSourceSession();ReleaseWorkspace();};
++            Unloaded+=(_,_)=>Cleanup(new Action[]{ReleaseSourceSession,ReleaseWorkspace});
          }
  
          /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
-@@ -98,39 +103,51 @@
+@@ -97,40 +103,58 @@
+         /// </summary>
          public void Initialize(MainWindowViewModel viewModel)
          {
++            ObjectDisposedException.ThrowIf(_shutdown,this);
              if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
 +            ReleaseWorkspace();
              _viewModel = viewModel;
@@ -225,16 +236,21 @@
 -        /// <summary>
 -        /// 切换图像显示全屏
 -        /// </summary>
++            if(_shutdown)return;_shutdown=true;
++            var main=_viewModel;_viewModel=null!;
 +            Cleanup(new Action[]{
-+                ()=>{if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;},
++                ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
 +                ()=>ModuleResultTreeView.ItemsSource=null,
-+                ()=>_viewModel?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
++                ()=>main?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
++                ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
++                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
++                ()=>System.Windows.Data.BindingOperations.ClearBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty),
 +                _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
 +        }
 +
 +        private void AttachWorkspace()
 +        {
-+            if(!IsLoaded||_viewModel is null||_workspacePresenter is not null)return;
++            if(_shutdown||!IsLoaded||_viewModel is null||_workspacePresenter is not null)return;
 +            _workspacePresenter=new(_viewModel,Workspace);
 +        }
 +        private void ReleaseWorkspace()
@@ -249,7 +265,7 @@
          }
  
          /// <summary>
-@@ -197,7 +214,7 @@
+@@ -197,7 +221,7 @@
          }
  
  
@@ -258,7 +274,7 @@
  
          /// <summary>
          /// DataGrid 结果行展开/折叠点击事件
-@@ -209,33 +226,6 @@
+@@ -209,33 +233,6 @@
              CommandManager.InvalidateRequerySuggested();
          }
  
@@ -1492,16 +1508,28 @@
          context.PrepareView=()=>!groupEditor.TryPrepare(out var error)?error:!ToolEditorCommit.TryPrepare(control,out error)?error:page.TryPrepare(out error)?null:error;
 --- a/src/UI/Services/Editing/Nodes/NodeOpenContext.cs
 +++ b/src/UI/Services/Editing/Nodes/NodeOpenContext.cs
-@@ -76,7 +76,7 @@
-         /// <summary>
-         /// 主窗口的 ImageControl（用于区域编辑器绑定）
+@@ -12,7 +12,7 @@
+     /// 上下文贯穿整个决策链，包含：
+     /// 1. 输入数据：节点、工具实例、元数据
+     /// 2. 决策结果：窗口类型、调试控件
+-    /// 3. 运行时信息：主窗口引用、ImageControl
++    /// 3. 运行时信息：主窗口所有者引用
+     /// 
+     /// 决策链各步骤通过读取和修改上下文来协同工作。
+     /// </remarks>
+@@ -73,11 +73,6 @@
          /// </summary>
--        public FrameworkElement? MainImageControl { get; set; }
-+
+         public Window? MainWindow { get; set; }
  
+-        /// <summary>
+-        /// 主窗口的 ImageControl（用于区域编辑器绑定）
+-        /// </summary>
+-        public FrameworkElement? MainImageControl { get; set; }
+-
          #endregion
  
-@@ -90,10 +90,9 @@
+         /// <summary>
+@@ -90,10 +85,9 @@
          /// <summary>
          /// 创建节点打开上下文（带主窗口引用）
          /// </summary>

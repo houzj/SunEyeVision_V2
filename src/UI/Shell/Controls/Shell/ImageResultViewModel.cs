@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.UI.Shared;
@@ -20,11 +19,9 @@ namespace SunEyeVision.UI.Shell.Controls
     {
         private readonly IRootCoordinator _coordinator;
 
-        private BitmapSource? _displayImage;
         private int _selectedDisplayImageSourceIndex = -1;
         private bool _hasModuleResults;
         private bool _showImagePreview;
-        private double _imageScale = 1.0;
         private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource;
         private ObservableCollection<AvailableDataSource> _displayImageSources = new();
         private ObservableCollection<FlatResultRow> _flatResultRows = new();
@@ -43,15 +40,6 @@ namespace SunEyeVision.UI.Shell.Controls
         {
             _displayImageSources = displayImageSources;
             _flatResultRows = flatResultRows;
-        }
-
-        /// <summary>
-        /// 当前显示图像
-        /// </summary>
-        public BitmapSource? DisplayImage
-        {
-            get => _displayImage;
-            set => SetProperty(ref _displayImage, value);
         }
 
         /// <summary>
@@ -120,20 +108,6 @@ namespace SunEyeVision.UI.Shell.Controls
             set => SetProperty(ref _activeInputSource, value);
         }
 
-        /// <summary>
-        /// 图像缩放比例
-        /// </summary>
-        public double ImageScale
-        {
-            get => _imageScale;
-            set
-            {
-                if (SetProperty(ref _imageScale, value))
-                {
-                    OnPropertyChanged(nameof(DisplayImage));
-                }
-            }
-        }
 
         #region INodeResultSink 实现
 
@@ -149,6 +123,9 @@ namespace SunEyeVision.UI.Shell.Controls
         {
             _coordinator.RefreshDisplayImageFromCurrentSource();
         }
+
+        public void ClearResultGraphics()=>_coordinator.ClearResultGraphics();
+        public void ClearResultHighlight()=>_coordinator.ClearResultHighlight();
 
         public void ClearResultDisplay()
         {

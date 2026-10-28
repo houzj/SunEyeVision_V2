@@ -4,7 +4,6 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Controls.Panels;
@@ -26,15 +25,21 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
     public partial class ImageResultControl : UserControl
     {
         private MainWindowViewModel _viewModel = null!;
+        private bool _shutdown;
         private SunEyeVision.UI.Services.Images.ImageSourceStripSession? _sourceSession;
         private WorkflowTabViewModel? _sourceWorkflow;
         private readonly SunEyeVision.UI.Services.Images.ImageSourceThemeScope _sourceTheme;
         private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _resultTheme;
+        private readonly SunEyeVision.UI.Services.Monitoring.ResultViewThemeScope _shellTheme;
+        private SunEyeVision.UI.Services.Images.ResultWorkspacePresenter? _workspacePresenter;
         private void ReleaseSourceSession()
-        {ImagePreviewContent.Session=null;_sourceSession?.Dispose();_sourceSession=null;_sourceWorkflow=null;}
+        {
+            var session=_sourceSession;_sourceSession=null;_sourceWorkflow=null;
+            Cleanup(new Action[]{()=>ImagePreviewContent.Session=null,()=>session?.Dispose()});
+        }
         private void RefreshSourceSession()
         {
-            if(!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
+            if(_shutdown||!IsLoaded||_viewModel is null){ReleaseSourceSession();return;}
             var main=_viewModel;var source=main.ActiveInputSource;var workflow=main.WorkflowTabViewModel.SelectedTab;
             if(ReferenceEquals(_sourceSession?.Source,source)&&ReferenceEquals(_sourceWorkflow,workflow))return;
             ReleaseSourceSession();
@@ -68,6 +73,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             InitializeComponent();
             _sourceTheme=new(ImagePreviewContent);
             _resultTheme=new(ModuleResultTreeView,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.PropertyList);
+            _shellTheme=new(Workspace,SunEyeVision.UI.Services.Monitoring.ResultViewThemeFamily.ResultShell);
             ModuleResultTreeView.BindVariableCommand=new RelayCommand(
                 value=>{if(value is FlatResultRow row)BindResultToGlobalVariable(row);},
                 value=>EditingAllowed&&value is FlatResultRow {IsBindable:true} row&&_viewModel?.IsCurrentResultRow(row)==true);
@@ -80,8 +86,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                     &&value is string path&&!string.IsNullOrWhiteSpace(path))Clipboard.SetText(path);
             },value=>value is string {Length:>0}&&ModuleResultTreeView.SelectedItem is FlatResultRow row
                 &&_viewModel?.IsCurrentResultRow(row)==true);
-            Loaded+=(_,_)=>RefreshSourceSession();
-            Unloaded+=(_,_)=>ReleaseSourceSession();
+            Loaded+=(_,_)=>{RefreshSourceSession();AttachWorkspace();};
+            Unloaded+=(_,_)=>Cleanup(new Action[]{ReleaseSourceSession,ReleaseWorkspace});
         }
 
         /// <summary>将焦点移到现有本地图片预览器，不创建第二份图像列表。</summary>
@@ -97,40 +103,58 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public void Initialize(MainWindowViewModel viewModel)
         {
+            ObjectDisposedException.ThrowIf(_shutdown,this);
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
+            ReleaseWorkspace();
             _viewModel = viewModel;
+            System.Windows.Data.BindingOperations.SetBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty,
+                new System.Windows.Data.Binding(nameof(MainWindowViewModel.ImagePreviewSourceMessage)){Source=viewModel});
+            System.Windows.Data.BindingOperations.SetBinding(Workspace,
+                SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty,
+                new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
             // The visual DataContext is ImageResultViewModel; borrow the root presenter collection explicitly.
             ModuleResultTreeView.ItemsSource=viewModel.ResultTreeRoots;
             _viewModel.PropertyChanged+=OnHostEditingStateChanged;
             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
-            RefreshSourceSession();
+            RefreshSourceSession();AttachWorkspace();
         }
 
         /// <summary>
         /// 退出时退订图像预览事件
         /// </summary>
+        private static void Cleanup(IEnumerable<Action> actions)
+        {
+            var failures=new List<Exception>();
+            foreach(var action in actions)try{action();}catch(Exception error){failures.Add(error);}
+            if(failures.Count>0)throw new AggregateException("结果宿主关闭失败，所有清理均已尝试。",failures);
+        }
         public void Shutdown()
         {
-            if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
-            ModuleResultTreeView.ItemsSource=null;
-            _viewModel?.CloseResultPresentation();
-            ReleaseSourceSession();
-            _sourceTheme.Dispose();
-            _resultTheme.Dispose();
+            if(_shutdown)return;_shutdown=true;
+            var main=_viewModel;_viewModel=null!;
+            Cleanup(new Action[]{
+                ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
+                ()=>ModuleResultTreeView.ItemsSource=null,
+                ()=>main?.CloseResultPresentation(),ReleaseSourceSession,ReleaseWorkspace,
+                ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
+                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
+                ()=>System.Windows.Data.BindingOperations.ClearBinding(SourceStatusMessage,System.Windows.Controls.TextBlock.TextProperty),
+                _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
         }
 
-        /// <summary>
-        /// 获取主图像显示控件（供 ViewModel GetMainImageControl 委托注入）
-        /// </summary>
-        public ImageControl? GetImageDisplayControl() => ImageDisplayContent;
-
-
-        /// <summary>
-        /// 切换图像显示全屏
-        /// </summary>
+        private void AttachWorkspace()
+        {
+            if(_shutdown||!IsLoaded||_viewModel is null||_workspacePresenter is not null)return;
+            _workspacePresenter=new(_viewModel,Workspace);
+        }
+        private void ReleaseWorkspace()
+        {
+            var presenter=_workspacePresenter;_workspacePresenter=null;presenter?.Dispose();
+        }
         public void ToggleFullscreen()
         {
-            ImageDisplayContent?.ToggleFullscreen();
+            if(Workspace.FullscreenCommand?.CanExecute(Workspace.OutputViewport)==true)
+                Workspace.FullscreenCommand.Execute(Workspace.OutputViewport);
         }
 
         /// <summary>
@@ -197,7 +221,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
 
-        #region SDK ImageControl 事件处理
+        #region 结果树交互
 
         /// <summary>
         /// DataGrid 结果行展开/折叠点击事件
@@ -207,33 +231,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             ModuleResultTreeView.SelectedItemPath=e.NewValue is FlatResultRow row&&_viewModel?.IsCurrentResultRow(row)==true
                 ?row.BindingInfo?.ResultPath??row.Key:string.Empty;
             CommandManager.InvalidateRequerySuggested();
-        }
-
-        /// <summary>
-        /// 图像加载完成事件
-        /// </summary>
-        private void OnImageLoaded(object sender, ImageLoadedEventArgs e)
-        {
-            if (_viewModel != null && e.Image != null)
-            {
-                _viewModel.StatusText = $"图像加载完成: {e.Width}x{e.Height}";
-            }
-        }
-
-        /// <summary>
-        /// 缩放变化事件
-        /// </summary>
-        private void OnZoomChanged(object sender, ZoomChangedEventArgs e)
-        {
-            if (_viewModel != null)
-            {
-                _viewModel.ImageScale = e.Zoom;
-            }
-            // 同步视口缩放到结果渲染层（幂律公式：线宽 / 缩放 = 视觉恒定）
-            if (ImageDisplayContent?.ResultRenderLayerControl != null)
-            {
-                ImageDisplayContent.ResultRenderLayerControl.SetViewportScale(e.Zoom);
-            }
         }
 
         #endregion

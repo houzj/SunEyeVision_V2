@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Workflow;
@@ -52,7 +52,7 @@ public partial class MainWindowViewModel
                 query.SetSootReader(id=>ReferenceEquals(DocumentManager.Session,session)
                     ?_workflowContextService.GetOrCreate(flow.Id,flow.Name).GetNodeResult(id)?.Result:null);
                 return query;
-            }),()=>GetMainImageControl?.Invoke());
+            }));
         groupEditor.SetRunParameterEditor(page);
         ToolEditorCommit.AttachDraftContext(control,context);
         context.PrepareView=()=>!groupEditor.TryPrepare(out var error)?error:!ToolEditorCommit.TryPrepare(control,out error)?error:page.TryPrepare(out error)?null:error;

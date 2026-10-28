@@ -53,6 +53,7 @@ public partial class MainWindowViewModel
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
             if(!EnsureCurrent())return;
             _activeResultView?.Present(publication);
+            if(EnsureCurrent())RefreshNativeResultImages();
             EnsureCurrent();
         }
         catch

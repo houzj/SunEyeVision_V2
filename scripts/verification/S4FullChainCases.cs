@@ -45,13 +45,12 @@ internal static class S2DocumentEditingCases
         var solutions=ServiceInitializer.SolutionManager;var vm=new MainWindowViewModel();var document=solutions.CreateUntitledSolution();
         if(vm.WorkflowTabViewModel.SelectedTab is null)vm.NewWorkflowCommand.Execute(null);
         var tab=vm.WorkflowTabViewModel.SelectedTab!;var canvasControl=new WorkflowCanvasControl{DataContext=tab,Width=600,Height=400};
-        var canvas=(Canvas)canvasControl.FindName("WorkflowCanvas");var resultHost=new ContentControl{Width=620};
-        resultHost.SetBinding(ContentControl.ContentProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=vm});
-        var image=new ImageControl{Width=400,Height=400};vm.GetMainImageControl=()=>image;
-        image.SetBinding(ImageControl.SourceImageProperty,new System.Windows.Data.Binding(nameof(MainWindowViewModel.DisplayImage)){Source=vm.ImageResult});
-        var resultManager=(SunEyeVision.UI.Services.Workflow.NodeResultManager)typeof(MainWindowViewModel).GetField("_nodeResultManager",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(vm)!;
-        resultManager.SetResultRenderLayer(image.ResultRenderLayerControl);
-        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(image);panel.Children.Add(resultHost);
+        var canvas=(Canvas)canvasControl.FindName("WorkflowCanvas");
+        var imageHost=new SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl{DataContext=vm.ImageResult,Width=780};
+        imageHost.Initialize(vm);
+        var workspace=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell)imageHost.FindName("Workspace");
+        var image=(SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)workspace.OutputViewport;
+        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(imageHost);
         var shell=new Window{DataContext=vm,Content=panel,Width=1640,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var drop=new WorkflowDragDropHandler(canvasControl){TabViewModel=vm.WorkflowTabViewModel};
         SunEyeVision.UI.Shared.WorkflowNode Drop(string tool)
@@ -113,7 +112,7 @@ internal static class S2DocumentEditingCases
             Select(blob);Execute();Require(Count(blob.Id)==2&&Count(downstream.Id)==2,"默认入口真实HALCON结果不符");
             var output=(BlobOutput)Result(blob.Id).Output!;using var region=output.Region.AcquireReader();Require(output.GrayImage is not null&&output.GrayImage.Frame==region.SourceFrame,"物理帧丢失");
             Require(Logical(vm.SelectedNodeDataAnalysisControl!).OfType<DataGrid>().Single().Items.Count==2,"正式结果未进入实际表");
-            Require(image.SourceImage?.PixelWidth==64&&vm.CreateDataSourceQueryService(flow.Id).GetImageDisplaySources(blob.Id).Any(s=>s.SourceNodeId==blob.Id&&s.PropertyName==BlobSchema.Field(5)),"Runtime主图像或自身图像来源未进入真实显示链");
+            Require(image.ImageDataSource?.Width==64&&vm.CreateDataSourceQueryService(flow.Id).GetImageDisplaySources(blob.Id).Any(s=>s.SourceNodeId==blob.Id&&s.PropertyName==BlobSchema.Field(5)),"Runtime主图像或自身图像来源未进入真实显示链");
         });
         Case("Runtime窗口编辑数量上限确认发布，下游实际来源弹窗订阅最终Region",()=>
         {
@@ -182,7 +181,7 @@ internal static class S2DocumentEditingCases
         var view=vm.SelectedNodeDataAnalysisControl;vm.SelectedNode=null;Pump();Require(vm.SelectedNodeDataAnalysisControl is null,"选择退出仍保留结果页");
         if(!File.Exists(Path.Combine(product,"plugins/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.dll")))
             Require(!AppDomain.CurrentDomain.GetAssemblies().Any(a=>a.GetName().Name=="SunEyeVision.Tool.BlobAnalysis"),"缺少SDK入口时仍加载旧Blob");
-        shell.Close();dialogs.Stop();Console.WriteLine($"S4真实Runtime宿主连续链：{_passed}组通过；默认工具箱/真实Drop/连线/运行/ROI引用/私有调试/保存重开；未验证本地ROI、全部VM视觉或人工验收。");return 0;
+        imageHost.Shutdown();shell.Close();dialogs.Stop();Console.WriteLine($"S4真实Runtime宿主连续链：{_passed}组通过；默认工具箱/真实Drop/连线/运行/ROI引用/私有调试/保存重开；未验证本地ROI、全部VM视觉或人工验收。");return 0;
     }
     private static IEnumerable<DependencyObject> Logical(DependencyObject root){
         var seen=new HashSet<DependencyObject>();var pending=new Stack<DependencyObject>();pending.Push(root);

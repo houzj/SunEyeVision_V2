@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -147,7 +147,6 @@ namespace SunEyeVision.UI.Shell.Windows
             // ★ 顶部栏请求全屏 → 图像结果区全屏（跨区域事件转发）
             TopBarHost.FullscreenRequested += (s, e) => ImageResultHost.ToggleFullscreen();
             // ★ 设置获取主窗口 ImageControl 的委托（经图像结果区获取）
-            _viewModel.GetMainImageControl = () => ImageResultHost.GetImageDisplayControl();
             // 初始化画布引擎管理器 - 设置默认引擎
             CanvasEngineManager.SetDataContext(_viewModel.WorkflowTabViewModel?.SelectedTab);
             RegisterHotkeys();
@@ -355,20 +354,6 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             try
             {
-                // ★ 设置 ResultRenderLayer 引用到 NodeResultManager（经图像结果区获取 ImageDisplayContent）
-                var imageDisplay = ImageResultHost.GetImageDisplayControl();
-                if (imageDisplay != null)
-                {
-                    var resultRenderLayer = imageDisplay.ResultRenderLayerControl;
-                    if (resultRenderLayer != null)
-                    {
-                        // 通过 ViewModel 获取 NodeResultManager 并设置 ResultRenderLayer
-                        var nodeResultManager = GetNodeResultManager(_viewModel);
-                        nodeResultManager?.SetResultRenderLayer(resultRenderLayer);
-                        // ★ 同步视口缩放（幂律公式：线宽 / 缩放 = 视觉恒定）
-                        resultRenderLayer.SetViewportScale(_viewModel.ImageScale);
-                    }
-                }
                 // 工具插件现在通过ToolboxViewModel自动加载
                 var toolCount = ToolRegistry.GetToolCount();
                 _viewModel.StatusText = $"已加载 {toolCount} 个工具插件";

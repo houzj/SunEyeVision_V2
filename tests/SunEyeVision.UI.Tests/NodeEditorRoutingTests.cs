@@ -68,7 +68,7 @@ public sealed class NodeEditorRoutingTests
         try
         {
             var node=new WorkflowNodeBase("node", "node", "node", "Editor.Open.Custom");
-            var context=new NodeOpenContext(owner,null);
+            var context=new NodeOpenContext(owner);
             Assert.True(new NodeOpenDecisionChain().Execute(node,context,()=>supplied));
             Assert.Equal(DebugWindowStyle.Custom,context.WindowStyle);
             Assert.Same(supplied,context.CreatedWindow); Assert.Same(owner,supplied.Owner);

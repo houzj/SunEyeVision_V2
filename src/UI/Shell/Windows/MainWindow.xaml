@@ -143,15 +143,7 @@
                                 </Style>
                             </TabControl.Resources>
                             <!-- 第一个TabItem: 数据分析（动态显示） -->
-                            <TabItem Header="{Binding DataAnalysisControlTitle}" Padding="12,6"
-                                     Visibility="{Binding HasDataAnalysisControl, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Grid Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
-                                    <!-- 数据分析用户控件容器 -->
-                                    <ContentControl Content="{Binding SelectedNodeDataAnalysisControl}"
-                                                   HorizontalAlignment="Stretch"
-                                                   VerticalAlignment="Stretch"/>
-                                </Grid>
-                            </TabItem>
+
 
                             <!-- 第二个TabItem: 日志 -->
                             <TabItem Header="日志" Padding="12,6">

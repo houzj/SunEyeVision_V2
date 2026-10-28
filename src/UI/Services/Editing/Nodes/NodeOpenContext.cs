@@ -12,7 +12,7 @@ namespace SunEyeVision.UI.Services.Editing
     /// 上下文贯穿整个决策链，包含：
     /// 1. 输入数据：节点、工具实例、元数据
     /// 2. 决策结果：窗口类型、调试控件
-    /// 3. 运行时信息：主窗口引用、ImageControl
+    /// 3. 运行时信息：主窗口所有者引用
     /// 
     /// 决策链各步骤通过读取和修改上下文来协同工作。
     /// </remarks>
@@ -73,11 +73,6 @@ namespace SunEyeVision.UI.Services.Editing
         /// </summary>
         public Window? MainWindow { get; set; }
 
-        /// <summary>
-        /// 主窗口的 ImageControl（用于区域编辑器绑定）
-        /// </summary>
-        public FrameworkElement? MainImageControl { get; set; }
-
         #endregion
 
         /// <summary>
@@ -90,10 +85,9 @@ namespace SunEyeVision.UI.Services.Editing
         /// <summary>
         /// 创建节点打开上下文（带主窗口引用）
         /// </summary>
-        public NodeOpenContext(Window? mainWindow, FrameworkElement? mainImageControl)
+        public NodeOpenContext(Window? mainWindow)
         {
             MainWindow = mainWindow;
-            MainImageControl = mainImageControl;
         }
     }
 }

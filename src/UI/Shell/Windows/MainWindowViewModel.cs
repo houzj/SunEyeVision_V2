@@ -87,7 +87,6 @@ namespace SunEyeVision.UI.Shell.Windows
         private string _currentCanvasTypeText = "原 Diagram (测试)";
 
         // 图像显示
-        private BitmapSource? _displayImage;
         private double _imageScale = 1.0;
 
         private bool _showImagePreview = false;
@@ -483,17 +482,6 @@ namespace SunEyeVision.UI.Shell.Windows
         public string CameraStatus => "相机(2台)";
 
         // 图像显示相关
-        public BitmapSource? DisplayImage
-        {
-            get => _imageResult.DisplayImage;
-            set => _imageResult.DisplayImage = value;
-        }
-
-        public double ImageScale
-        {
-            get => _imageResult.ImageScale;
-            set => _imageResult.ImageScale = value;
-        }
 
 
         /// <summary>
@@ -790,11 +778,6 @@ SplitterPosition = position;
         public ICommand ToggleContinuousAllCommand { get; }
 
         // 图像视图
-        public ICommand ZoomInCommand { get; }
-        public ICommand ZoomOutCommand { get; }
-        public ICommand FitToWindowCommand { get; }
-        public ICommand ResetViewCommand { get; }
-        public ICommand ToggleFullScreenCommand { get; }
 
         // 图像操作
         public ICommand ClearImageCommand { get; }
@@ -807,15 +790,6 @@ SplitterPosition = position;
         public ICommand ShowGlobalVariableManagerCommand { get; }
         public ICommand ShowCameraManagerCommand { get; }
         public ICommand ShowCommunicationManagerCommand { get; }
-
-        // 主窗口 ImageControl 获取委托 - 用于区域编辑器绑定
-        /// <summary>
-        /// 获取主窗口 ImageControl 的委托 - 用于区域编辑器绑定
-        /// </summary>
-        /// <remarks>
-        /// 由 MainWindow 在初始化时设置，用于在调试窗口创建时传递 ImageControl 引用
-        /// </remarks>
-        public Func<ImageControl?>? GetMainImageControl { get; set; }
 
         public MainWindowViewModel()
         {
@@ -943,11 +917,6 @@ SplitterPosition = position;
             ToggleContinuousAllCommand = new RelayCommand(ExecuteToggleContinuousAll, () => true);
 
             // 图像视图
-            ZoomInCommand = new RelayCommand(ExecuteZoomIn);
-            ZoomOutCommand = new RelayCommand(ExecuteZoomOut);
-            FitToWindowCommand = new RelayCommand(ExecuteFitToWindow);
-            ResetViewCommand = new RelayCommand(ExecuteResetView);
-            ToggleFullScreenCommand = new RelayCommand(ExecuteToggleFullScreen);
 
             // 图像操作
             ClearImageCommand = new RelayCommand(ExecuteClearImage);
@@ -2615,8 +2584,7 @@ SplitterPosition = position;
             try
             {
                 LogNodeStorageIdentity(node, "打开调试窗口");
-                var mainImageControl = GetMainImageControl?.Invoke();
-                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
+                var context = new NodeOpenContext(Application.Current.MainWindow);
                 // UI owns editor creation. Use the formal node so identity and style
                 // overrides are not lost in an incomplete execution-node conversion.
                 var decisionChain = new NodeOpenDecisionChain();
@@ -2663,8 +2631,6 @@ SplitterPosition = position;
                     _openDebugWindow = null;
                     if (node.IsImageLoadNode && ReferenceEquals(SelectedNode, node))
                         _ = UpdateDataAnalysisControl(node);
-                    var imgCtrl = GetMainImageControl?.Invoke();
-                    if (imgCtrl != null) imgCtrl.OverlayHitTestVisible = false;
                     if (SelectedNode?.IsSelected == true)
                     {
                         // 设计态：重新评估输出契约（脚本/子程序输出变更后刷新结果树）
@@ -2835,7 +2801,7 @@ SplitterPosition = position;
                 // ★ Bug修复：当 selectedNode==null 时 UpdateDisplayImageFromCurrentSource
                 //   会因为 _selectedNode==null 而直接返回（第2616行），导致 DisplayImage
                 //   永远不会被清除。必须在 return 前直接清除，不能依赖延迟回调。
-                DisplayImage = null;
+                ClearNativeImagePresentation();
                 _nodeResultManager.ClearResultGraphics();
                 SetSelectedDisplayImageSourceIndexDeferred(-1);
                 return;
@@ -2904,11 +2870,7 @@ SplitterPosition = position;
             // 节点已选中但无可显示图像源 → 清除残留图像和图形覆盖
             if (DisplayImageSources.Count == 0)
             {
-                if (DisplayImage != null)
-                {
-                    LogInfo($"图像源|节点 {selectedNode.Name} 无输出图像, 清除残留显示", "ImageSourceSelector");
-                    DisplayImage = null;
-                }
+                ClearNativeImagePresentation();
                 _nodeResultManager.ClearResultGraphics();
             }
         }
@@ -3204,33 +3166,20 @@ SplitterPosition = position;
         ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
         /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
         /// </summary>
+        private long _displaySourceSelectionGeneration;
         private void SetSelectedDisplayImageSourceIndexDeferred(int index)
         {
-            LogInfo($"图像源|Deferred排队: index={index}, 当前集合Count={DisplayImageSources.Count}", "ImageSourceSelector");
-            Application.Current.Dispatcher.BeginInvoke(
-                System.Windows.Threading.DispatcherPriority.Loaded,
-                new Action(() =>
-                {
-                    var currentProperty = SelectedDisplayImageSourceIndex;
-                    var currentField = _selectedDisplayImageSourceIndex;
-                    var comboMayAutoSelect = (currentField != -1 || currentProperty != -1);
-                    LogInfo($"图像源|Deferred执行[阶段1]: 清除选中, 当前 Field={currentField}, Property={currentProperty}, " +
-                            $"可能已被ComboBox自动选中={comboMayAutoSelect}", "ImageSourceSelector");
-
-                    // 阶段1: 真正改变属性值为 -1，确保 WPF 绑定传播到 ImageControl 的 DP
-                    // 此时 DP 回调检查 newIndex >= 0 → 不满足，仅记录日志
-                    SelectedDisplayImageSourceIndex = -1;
-                }));
-
-            Application.Current.Dispatcher.BeginInvoke(
-                System.Windows.Threading.DispatcherPriority.Loaded,
-                new Action(() =>
-                {
-                    _selectedDisplayImageSourceIndex = -1;
-                    SelectedDisplayImageSourceIndex = index;
-                    LogInfo($"图像源|Deferred执行[阶段2]: 设置选中 index={index}, " +
-                            $"_selectedField={_selectedDisplayImageSourceIndex}", "ImageSourceSelector");
-                }));
+            var generation=++_displaySourceSelectionGeneration;
+            var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
+            var dispatcher=Application.Current?.Dispatcher??System.Windows.Threading.Dispatcher.CurrentDispatcher;
+            dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,new Action(()=>
+            {
+                if(generation!=_displaySourceSelectionGeneration||!ReferenceEquals(SelectedNode,node)
+                    ||!ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab))return;
+                _selectedDisplayImageSourceIndex=-1;SelectedDisplayImageSourceIndex=-1;
+                SelectedDisplayImageSourceIndex=index;
+                if(index<0)RefreshNativeResultImages();
+            }));
         }
 
         /// <summary>
@@ -3269,69 +3218,7 @@ SplitterPosition = position;
         /// 若选中源不可用（源节点未执行 / 该属性无图），按数据源列表顺延到第一个可用源显示，
         /// 并同步下拉选中项（下拉即真相）；全部不可用才清空（如实反映无可用图像）。
         /// </summary>
-        private void SetDisplayImageFromSource(AvailableDataSource source)
-        {
-            int preferredIndex = DisplayImageSources.IndexOf(source);
-
-            if (TryResolveDisplaySource(preferredIndex, out var resolved, out int resolvedIndex, out var bitmap))
-            {
-                // 下拉跟随实际显示源，避免"下拉选中 A、实际显示 B"的不一致。
-                // 注意：设置选中项为延迟执行（Dispatcher），会再次进入本方法；
-                //      届时 preferredIndex 已可用，TryResolve 直接命中且不再变更选中项 → 天然收敛。
-                if (resolvedIndex != preferredIndex)
-                {
-                    LogInfo($"图像源|选中源不可用, 回退显示: {resolved!.SourceNodeName}.{resolved.DisplayName}", "ImageSourceSelector");
-                    SetSelectedDisplayImageSourceIndexDeferred(resolvedIndex);
-                }
-
-                DisplayImage = bitmap;
-                return;
-            }
-
-            // 整链均无可用图像 → 如实清空（输入图像有问题时的正确表现）
-            LogInfo("图像源|当前工作流无任何可用图像, 清空显示", "ImageSourceSelector");
-            DisplayImage = null;
-        }
-
-        /// <summary>
-        /// 按数据源列表顺序解析"实际可显示的图像源"。
-        /// 候选顺序：preferredIndex 优先，其余按列表顺序（本节点 → 上游 近→远）。
-        /// 命中条件：源节点有执行结果，且该属性对应的图像非空。
-        /// </summary>
-        private bool TryResolveDisplaySource(int preferredIndex, out AvailableDataSource? source,
-            out int resolvedIndex, out BitmapSource? bitmap)
-        {
-            source = null;
-            resolvedIndex = -1;
-            bitmap = null;
-
-            int count = DisplayImageSources.Count;
-            if (count == 0) return false;
-
-            var order = preferredIndex >= 0 && preferredIndex < count
-                ? new[] { preferredIndex }.Concat(Enumerable.Range(0, count).Where(i => i != preferredIndex))
-                : Enumerable.Range(0, count);
-
-            var context = CurrentWorkflowContext;
-            using var sourceSnapshot = context?.CaptureNodeResults();
-            foreach (var idx in order)
-            {
-                var candidate = DisplayImageSources[idx];
-                NodeExecutionResult? executionResult = null;
-                sourceSnapshot?.Results.TryGetValue(candidate.SourceNodeId, out executionResult);
-                if (executionResult?.Result == null) continue;
-
-                var candidateBitmap = _nodeResultManager.GetDisplayImageFromSource(
-                    executionResult.Result, candidate.PropertyName);
-                if (candidateBitmap == null) continue;
-
-                source = candidate;
-                resolvedIndex = idx;
-                bitmap = candidateBitmap;
-                return true;
-            }
-            return false;
-        }
+        private void SetDisplayImageFromSource(AvailableDataSource source)=>RefreshNativeResultImages();
 
         /// <summary>
         /// 按当前选中的图像源刷新显示（实现 INodeResultSink，供 NodeResultManager 统一调用）
@@ -3351,7 +3238,7 @@ SplitterPosition = position;
             CalculationResults.Clear();
             if(epoch!=_resultPublicationEpoch)return;
             ModuleResultTree.Clear();
-            if(epoch==_resultPublicationEpoch)HasModuleResults=false;
+            if(epoch==_resultPublicationEpoch){HasModuleResults=false;ClearNativeImagePresentation();}
         }
 
         /// <summary>
@@ -3406,20 +3293,12 @@ SplitterPosition = position;
         /// <summary>
         /// 数据分析控件选中高亮联动 → 将高亮元素设置到图像渲染层
         /// </summary>
-        private Guid? _unavailableViewportHighlight;
         private void OnDeclaredSelectionHighlightChanged(object? sender,ResultSelection selection)
         {
             var publication=_resultPublication;
             if(!ReferenceEquals(sender,_activeResultView)||publication is null||selection.Publication!=publication.Stamp
-                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
-            _nodeResultManager.ClearHighlight();
-            if(!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView)
-                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication)||!ReferenceEquals(sender,_activeResultView))return;
-            if(selection.Targets.Count>0&&_unavailableViewportHighlight!=publication.Stamp.PublicationId)
-            {
-                _unavailableViewportHighlight=publication.Stamp.PublicationId;
-                AddLog("结果选择包含物理来源，但当前图像视口尚未提供同帧校验，已禁用跨图高亮。");
-            }
+                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication))return;
+            ResultWorkspaceSelectionChanged?.Invoke(selection);
         }
 
         /// <summary>
@@ -3721,32 +3600,13 @@ SplitterPosition = position;
                     // 缓存调试窗口（用于工作流执行完成后通知刷新）
                     _nodeDebugWindows[node.Id] = debugWindow;
 
-                    // 🔍 日志监控：窗口已显示，准备获取 ImageControl
-                    AddLog($"🔍 [监控] 窗口已调用 Show()，开始获取 ImageControl");
-
-                    // ④ 设置主窗口 ImageControl（窗口显示后再设置，确保 OverlayCanvas 已准备就绪）
-                    var mainImageControl = GetMainImageControl?.Invoke();
-                    AddLog($"🔍 [监控] 获取到 ImageControl: {mainImageControl?.GetType().Name ?? "null"}");
-
-                    // 🔍 日志监控：准备调用 SetMainImageControl
-                    AddLog($"🔍 [监控] 准备调用 initializer.SetMainImageControl()");
-
-                    initializer.SetMainImageControl(mainImageControl);
-
-                    AddLog($"✅ 已设置主窗口 ImageControl");
+                    AddLog("原主视口不再接受旧SDK绘制；区域编辑仅由具备实际输入证明的原会话接入。");
 
                     // 窗口关闭清理
                     debugWindow.Closed += (s, e) =>
                     {
                         // 1. 移除调试窗口缓存（DSQS 仍在 _workflowDsqsCache 中缓存，工作流删除时统一清理）
                         _nodeDebugWindows.Remove(node.Id);
-
-                        // 3. 恢复主窗口 ImageControl 的只读模式
-                        var mainImageControl = GetMainImageControl?.Invoke();
-                        if (mainImageControl != null)
-                        {
-                            mainImageControl.OverlayHitTestVisible = false;
-                        }
 
                         // 4. 刷新当前选中节点的结果显示（如果有）
                         if (SelectedNode != null && SelectedNode.IsSelected)
@@ -3854,7 +3714,7 @@ SplitterPosition = position;
                                 if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false})
                                 {
                                     editorContext?.DebugResults.RemoveNodeResult(node.Id);
-                                    if(DisplayCurrent()){ClearResultDisplay();DisplayImage=null;}
+                                    if(DisplayCurrent()){ClearResultDisplay();ClearNativeImagePresentation();}
                                 }
                                 return;
                             }
@@ -3894,7 +3754,7 @@ SplitterPosition = position;
                         else
                         {
                             _nodeResultManager?.ClearResultDisplay();
-                            DisplayImage = null;
+                            ClearNativeImagePresentation();
                         }
                         // Recreate the analysis view from the formal context. Passing null to a
                         // legacy analysis control can leave the previous preview rows visible.
@@ -4378,55 +4238,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             return null;
         }
 
-        #region 图像视图
 
-        /// <summary>
-        /// 放大图像
-        /// </summary>
-        private void ExecuteZoomIn()
-        {
-            ImageScale = Math.Min(ImageScale * 1.2, 5.0);
-            AddLog($"🔍 图像放大: {ImageScale:P0}");
-        }
-
-        /// <summary>
-        /// 缩小图像
-        /// </summary>
-        private void ExecuteZoomOut()
-        {
-            ImageScale = Math.Max(ImageScale / 1.2, 0.1);
-            AddLog($"🔍 图像缩小: {ImageScale:P0}");
-        }
-
-        /// <summary>
-        /// 适应窗口
-        /// </summary>
-        private void ExecuteFitToWindow()
-        {
-            // TODO: 根据窗口大小计算缩放
-            ImageScale = 1.0;
-            AddLog($"🔍 适应窗口: {ImageScale:P0}");
-        }
-
-        /// <summary>
-        /// 重置视图
-        /// </summary>
-        private void ExecuteResetView()
-        {
-            ImageScale = 1.0;
-            AddLog($"🔄 重置视图: {ImageScale:P0}");
-        }
-
-        /// <summary>
-        /// 切换全屏显示
-        /// </summary>
-        private void ExecuteToggleFullScreen()
-        {
-            // TODO: 实现图像全屏显示
-            AddLog("🖥️ 切换全屏显示");
-        }
-
-        #endregion
 
         #region 图像操作
 
@@ -4437,9 +4249,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             try
             {
-                _legacyImageDisplayCancellation?.Cancel();
-                DisplayImage = null;
-                ImageScale = 1.0;
+                ClearNativeImagePresentation();
                 AddLog("已清除图像");
             }
             catch (Exception ex)
@@ -4455,47 +4265,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// 更新当前图像显示
         /// </summary>
-        private static readonly System.Threading.SemaphoreSlim s_legacyImageDecodeSlot = new(1, 1);
-        private System.Threading.CancellationTokenSource? _legacyImageDisplayCancellation;
-        private async void UpdateCurrentImageDisplay()
+        private void UpdateCurrentImageDisplay()
         {
-            _legacyImageDisplayCancellation?.Cancel();
-            if (CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count)
-            {
-                DisplayImage = null;
-                return;
-            }
-
-            var imageInfo = ImageCollection[CurrentImageIndex];
-            var path = imageInfo.FilePath;
-            var tab = WorkflowTabViewModel?.SelectedTab;
-            var node = _selectedNode;
-            var priorDisplay = DisplayImage;
-            using var cancellation = new System.Threading.CancellationTokenSource();
-            _legacyImageDisplayCancellation = cancellation;
-            try
-            {
-                var token = cancellation.Token;
-                var fullImage = await System.Threading.Tasks.Task.Run(async () =>
-                {
-                    await s_legacyImageDecodeSlot.WaitAsync(token).ConfigureAwait(false);
-                    try { token.ThrowIfCancellationRequested(); return LocalImageAssetCache.LoadImageOptimized(path); }
-                    finally { s_legacyImageDecodeSlot.Release(); }
-                }, token);
-                if (token.IsCancellationRequested || imageInfo.FilePath != path
-                    || CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count
-                    || !ReferenceEquals(ImageCollection[CurrentImageIndex], imageInfo)
-                    || !ReferenceEquals(WorkflowTabViewModel?.SelectedTab, tab) || !ReferenceEquals(_selectedNode, node)
-                    || !ReferenceEquals(DisplayImage, priorDisplay)) return;
-                if (fullImage != null)
-                {
-                    DisplayImage = fullImage;
-                    AddLog($"📷 显示图像: {imageInfo.Name}");
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex) { AddLog($"显示图像失败: {ex.Message}"); }
-            finally { if (ReferenceEquals(_legacyImageDisplayCancellation, cancellation)) _legacyImageDisplayCancellation = null; }
+            if(CurrentImageIndex<0||CurrentImageIndex>=ImageCollection.Count){ClearNativeImagePresentation();return;}
+            _nativePreviewPath=ImageCollection[CurrentImageIndex].FilePath;_nativeImagesSuppressed=false;
+            ResultWorkspaceChanged?.Invoke();
         }
 
         #endregion

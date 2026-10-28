@@ -55,12 +55,10 @@ internal sealed class ResultWorkspacePresenter:IDisposable
                 _fullscreen?.Dispose();_fullscreen=ResultViewportFullscreenScope.Open(view,owner);
             }
         },value=>!_disposed&&value is FrameworkElement view&&(ReferenceEquals(view,shell.InputViewport)||ReferenceEquals(view,shell.OutputViewport)));
-        shell.SelectBackgroundCommand=new SunEyeVision.UI.Core.RelayCommand(value=>
-        {
-            if(value is not ResultWorkspaceImageSource source||_plan?.Sources.Contains(source)!=true)return;
-            if(source.IsUpstream&&ReferenceEquals(shell.SelectedInputItem,source))Present(_input,source);
-            else shell.SelectedOutputItem=source;
-        },value=>!_disposed&&value is ResultWorkspaceImageSource source&&_plan?.Sources.Contains(source)==true);
+        // The original background command exchanges an established output background
+        // with a checked overlay. It is not an alias of ordinary source selection.
+        // Keep it unavailable until the one-owner multi-image layer chain is present.
+        shell.SelectBackgroundCommand=null;
         Refresh();
         }
         catch(Exception failure)
@@ -184,7 +182,7 @@ internal sealed class ResultWorkspacePresenter:IDisposable
         _displayDefinitionNotice=publication;
         // Resource values are not display declarations. Do not invent visible regions,
         // colors, text or frame provenance while the formal display contract is absent.
-        _main.AddLog("结果图形/文字显示尚未接入正式显示声明，当前不绘制推测图层；图像、树表及有同帧证明的选择高亮可用。");
+        _main.AddLog("结果图形/文字显示尚未接入正式声明；图像叠层与背景替换尚未接入唯一owner，不绘制推测图层。普通来源选择、树表及有同帧证明的高亮可用。");
     }
     private void Highlight(ResultSelection? selection)
     {

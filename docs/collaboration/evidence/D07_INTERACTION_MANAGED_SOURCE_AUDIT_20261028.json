@@ -1,0 +1,50 @@
+{
+  "kind": "existing recovered managed source, not original runtime verification",
+  "sourceRoot": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF",
+  "claims": [
+    "Current-level all-source LastImage/NextImage command followed by one Run",
+    "Output background exchange is not ordinary source selection",
+    "CrossConfig owns two fully configurable CrossData instances"
+  ],
+  "unconfirmed": [
+    "native navigation boundary/AutoPlay/StopAtLast/failed run semantics and persistent CurrentImagePath side effect",
+    "input-selector background button runtime behavior"
+  ],
+  "files": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ModuleResultView.xaml.cs",
+      "sha256": "e165657162322fd6b1ce15758847bed07f8c1e86a637815df8e87fe19439bb88",
+      "bytes": 74790
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\ImageListPanelBase.cs",
+      "sha256": "df02faa325babeccdac3f44d3ed1d750b59874da466bc0fdf033f997898d4b79",
+      "bytes": 52013
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\CrossData.cs",
+      "sha256": "3cca36302c25dfa4bb09add085989093c59566f37d7d9946e11bbe3b817fbfb1",
+      "bytes": 6526
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF\\CrossConfig.xaml",
+      "sha256": "e0f3d32d94d7bb66745ba06def03f6cea39f37c255ab3ec4a085f71ab201ea1d",
+      "bytes": 7805
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\ModuleDisplayDecorator.cs",
+      "sha256": "ceda24b7fb93bcd9f02b77b23d42a839b1f737bf70cf3abc6b7786d11765740e",
+      "bytes": 61764
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\VMControls.WPF.DataForUI\\ImageViewItem.cs",
+      "sha256": "b216bf3b6a5e99659645ff28a304ce40bd144b1337cb05cd3cb632320bbecfd0",
+      "bytes": 2836
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMControls.WPF\\styles\\moduleviewstyle.xaml",
+      "sha256": "2e195d69c45de43c2dca7528705959f4127207722abde533b49f7d3e70305d9b",
+      "bytes": 42450
+    }
+  ]
+}

@@ -10,6 +10,7 @@ internal sealed record ResultWorkspaceImageSource(string DisplayName,OutputRefer
     public string Key=>BindingReferenceSerializer.Serialize(Reference);
     public bool CanOverlay=>false;
     public bool IsCheck=>false;
+    public bool IsBackgroundImage=>false;
     public override string ToString()=>DisplayName;
 }
 internal sealed class ResultWorkspaceImagePlan:IDisposable

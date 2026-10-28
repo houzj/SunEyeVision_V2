@@ -440,6 +440,13 @@ def render_s4_stage(page):
     page = re.sub(r'<!-- S4-CURRENT-STATUS:BEGIN -->.*?<!-- S4-CURRENT-STATUS:END -->', '', page, flags=re.S)
     block = ('<!-- S4-CURRENT-STATUS:BEGIN --><section id="s4-implementation-status"><h3>S4实施和试用状态</h3>'
              + '<p><b>' + state + '</b></p>'
+             + ('<section id="o06-architecture-isolation-plan"><h4>最新决定：隔离旧体系，逐工具迁入新架构</h4>'
+                + '<p><b>' + escape(s4['architectureIsolationPlan']['decision']) + '</b></p>'
+                + '<p>' + escape(s4['architectureIsolationPlan']['status']) + '</p>'
+                + table(['现有能力','源码位置','归属','调整决定','全部消费者/影响','验收出口'], s4['architectureIsolationPlan']['inventory'])
+                + table(['实施批','整链要求'], s4['architectureIsolationPlan']['batches'])
+                + '<p><b>下一步：</b>' + escape(s4['architectureIsolationPlan']['nextAction']) + '</p></section>'
+                if s4.get('architectureIsolationPlan') else '')
              + ('<p><a href="optimization-o06-ui-preview.html" style="display:inline-block;padding:9px 16px;border:1px solid #d9a36a;border-radius:4px;color:#edc494">打开HTML方案预览 ↗</a>　HTML仅供方案对照，WPF实际实施与验证见下表；可切换三页、分割模式和明暗主题，下方有参数/输出及完整组装链。HTML自动渲染受本机file协议策略限制，不能当作产品视觉验收。</p>' if 'preview' in s4.get('uiReview', {}) else '')
              + ('<p><a href="#o06-blob-control-prototype-plan"><b>审核Blob所需控件、组合与接入条件</b></a> · 原31类仅作历史功能追踪；不要求先迁完整个VM控件库。</p>' if s4.get('blobControlPrototypePlan') else '')
              + render_blob_control_plan(s4.get('blobControlPrototypePlan'))

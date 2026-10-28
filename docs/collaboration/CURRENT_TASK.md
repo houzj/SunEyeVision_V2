@@ -1,3 +1,18 @@
+## 2026-10-28 最新优先决定：隔离旧体系，先以图像源与Blob贯通新链
+
+- 用户要求处理侧边新决定并明确总监决策。本线已决定采用“隔离旧体系，按正确新架构逐个迁移”；原S4主方案新增architectureIsolationPlan：实际归属/共享依赖/全部消费者/构建发布/验收矩阵及I0—I4顺序。当前I0整体设计；尚未切换隔离，不冒称已只发布两工具。
+- 当前新链候选ImageLoad/Blob两个Runtime必需/Wpf可选工具；未迁移20工具源码/历史保留，后续整批退出注册、工具箱、扫描加载、构建部署与发布。共享基础层现在划职责，不等所有迁完；正确共享能力复用，旧工具专属依赖隔离；AlgorithmNode.Runtime→RuntimeToolResults:ToolResults现旧包装必须纳入替换，不只隐藏工具箱。
+- 本线唯一产品实施，停止继续扩张旧链或独立局部功能，既有只读成果全部已回收，暂不重新派子智能体。Group/显示插件合同暂停不由本决定自动解禁。先补全I0真实依赖/消费者后按完整批实施。
+- 固定b87ed9ea规定UI003零错6561警告143.34秒/full001零错6601警告92.78秒，EXE69928 exit0；首次新ImageSources013=249项228过21败（报告image-source-report.json）。失败归真实选择回声/preview/身份与部分错误夹具及13个跨Dispatcher。原断言和日志保留；不为凑绿删失败，不把旧187套本批。工作流线仅只读给集中建议，尚无本轮修复源，后续按新链归属处理。
+- 82086/90502/53522全部真实终态，当前无live构建/测试。0fbebb7b导出候选与1cf856a6D0739源接线保留，原OpenCV/GDI已取证与未迁项归档；用户BlobParameterEditor.xaml原SHA保持不暂存。不推送，目标active，最新决定调整实施顺序而不删原交付范围。
+
+## 2026-10-28 C17导出候选与完整D0739路径已集成，集中编验在途
+
+- 前轮d01b3b05是依赖正式核收实际进展；本轮0fbebb7b补弹窗前冻结及已有pixel lease短读原格式，库003零错5312警告14.68秒，候选Window247导出10/0。原OpenCV helper已找齐，其WPF渲染/中文/JPEG差异及交叉layer proof缺口明确保留，不能称完整C17/原算法等价。具体源SHA与边界evidence/O06_NATIVE_EXPORT_SNAPSHOT_CANDIDATE_20261028.json，后续三态/全域/Cross精确核证已归HANDOFF_NEXT_BLOB_LIBRARY_CONTROLS_20261028.md。
+- 工作流最终fb582121的39路径按规范SHA逐一核后完整取齐为1cf856a6（含原Pane/Preview/Fullscreen、主Shell/根窗口、实际runner和16 Workspace/3 Root场景），不取旧公共库或用户Blob。UI001真实MC3093子名字域冲突、002真实Services.Path遮蔽GetFullPath均保日志；主线修为b87ed9ea，去子x:Name、同实际原控件建立字段/RegisterName，保真实FindName测试；全名System.IO.Path。未降功能断言。
+- 当前UI003自有构建session82086仍live，须轮询同句柄到终态；不得改产品/测试或重启构建。通过后串行全量Release及正式EXE，优先ImageSources新五组全部实际注册/根窗口/全屏/物理图退役，然后原树表/导出/设计/编辑/真实HALCON/Global关联回归。当前正式目录已被库候选改写，不套7828旧成绩。
+- 主仓唯一写者；三只读线轮转C08全域、C17 Cross手势/原中文native导出与合同审查，实际结果归档后自动下项。Blob业务冻结；用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持不暂存。不推送，阶段一与整个目标active。
+
 ## 2026-10-28 按VM同源树表继续整链，依赖正式核收与D07闭包在途
 
 - 用户明确树表统一SDK输出声明与指定同次运行结果；原方案moduleResultsPlan新增currentExecution并渲染原O06。已有f33树表数据链不重复做；完整D07生产接线cb3fe8cc必须取齐19源码+13依赖及两个runner，不能只提提交差分。

@@ -2,7 +2,7 @@
   "stage": "S4",
   "status": "ACTIVE_IMPLEMENTATION",
   "title": "S4：完整窗口、绑定与ROI编辑链",
-  "current": "第一阶段继续：Assist十五角色原组合候选八组窗口/无Application设计101项通过，来源和清十二订阅证据已核；SettingsView完整Unset、真实位姿/图像联动与人工门禁仍未完成。D06全局变量纯值形状五文件已整合，下一集中正式UI/full及完整Global回归，不套原283/1或树表旧成绩。",
+  "current": "最新决定：隔离旧体系，按正确新架构逐个迁移；当前先以图像源ImageLoad和BlobAnalysis贯通完整新链，未迁移工具保留源码与证据、退出产品注册/工具箱/加载/构建部署/发布。正在整体依赖与消费者设计，尚未实施隔离。当前b87ed9ea两构建零错、EXE正常；新生产回归249项228过21败，未验收，失败按新链归属集中处理。",
   "summaryStatus": "第一阶段执行中；第二阶段未准入。四路包含主线：三路逐控件只读核证、完成即补位，主线唯一产品写者，统一实施与验证。",
   "rows": [
     [
@@ -8115,13 +8115,13 @@
         "authority": "用户2026-10-28再次明确：按VM设计，结果树和结果表统一读取SDK输出声明和同一次运行结果，完整链路做通并同步原方案。",
         "dataPath": "SDK输出声明 → 指定同次DeclaredOutputSnapshot → 唯一ResultPublication/Reader → PropertyList及StandardTable分别借阅；不扫描磁盘输出目录，不由两面分别查询latest。",
         "existingAcceptance": "f33f7f6f同源树表数据链已核收，历史证据与本次待验生产接线分开。",
-        "productionCandidate": "工作流独立线cb3fe8cc已应用完整D07接线。集成必须取齐review清单files与dependencies、ImageSourceCases和S4FullChainCases，不只提取该提交差分；根配置窗口旧OutputCache取图消费者由该线补齐后集中集成。",
+        "productionCandidate": "工作流fb582121完整39路径已核规范SHA整体取齐为主仓1cf856a6；主线b87ed9ea修真实子名字域MC3093及System.IO.Path冲突。公共库导出候选0fbebb7b保留，未取旧公共库或用户Blob页。",
         "owner": "本聊天唯一主仓集成、公共控件及正式Release写者；工作流聊天仅在独立worktree补齐UI消费者与真实测试，固定完整提交后交接。",
         "acceptance": "同次身份/声明版本/状态/诊断一致；换节点/运行/方案/关闭统一退休；旧回调不能清新结果；真实分页与运行/调试入口、两侧独立借阅、失效释放及已注册四组生产测试必须实际通过。",
         "remaining": "指定RunIdentity的真实历史入口、正式图形/文本显示声明及图像联动、根配置消费者、VS设计时及人工验收逐项记录；未实施或未验证不记完成。",
-        "latestDependencyBuild": "7828d01d：UI 0错误/6551警告174.76秒，全量0错误/6588警告80.17秒；正式EXE探针80092退出0。这些不代替尚未集成D07的验证。",
+        "latestDependencyBuild": "b87ed9ea：UI003零错6561警告143.34秒，全量001零错6601警告92.78秒；正式EXE69928退出0。旧UI001/002各1错日志保留，ImageSources新增生产五组正在正式验证，不套7828旧187。",
         "globalRegression": "7828d01d正式产品的GlobalBinding attempt-009完整368项全过(fullTrack=true)。仅测试夹具比较SDK稳定field:端口ID后单编测试0错误31警告8.49秒，不重编或替换产品；attempt-007/008各367过1败及此前006=349/12保留。",
-        "retirementAudit": "cb3fe8cc只读审核发现树分页projectionFailed退休Main publication后可能未主动清两侧物理图像源/像素lease；已交工作流线随根配置窗口闭包修复并加真实原视图回归。只清失效侧，仍有效上游/文件预览保留，旧退休回调不得清同步新发布。",
+        "retirementAudit": "整批已补RetireResultPublication同epoch清双原视口物理源及借阅、suppression防旧Context复活；Workspace分页异常/同步新run理论分支已注册，必须以新正式轨结果核收，尚未以候选源码宣称完成。",
         "formalEvidence": "docs/collaboration/evidence/O06_ASSIST_GLOBAL_FORMAL_20261028.json：7828d01d的Global368/0、Assist8/0、Design101/0、Editor10/0、真实HALCON FullChain8/0、ImageSources187/0；795发布文件/95加载记录SHA全核。不是D07新生产包或历史验收。"
       }
     },
@@ -8333,5 +8333,152 @@
     "manifest": "references/module-result-chain-20261028/reference-manifest.json",
     "sha256": "31cfa0706ba7ab1ac06708e07777ada945bbf4b9a51c6c210f1e0adcd0c63261",
     "boundary": "阶段性旁支源码分析；自研部分为87f4工作区，不冒称主仓或实机结论；当前任务不扩大到框架重构。"
+  },
+  "architectureIsolationPlan": {
+    "decision": "采用隔离旧体系、按正确新架构逐个迁移。当前产品先以ImageLoad图像源与BlobAnalysis贯通完整原型；未迁移工具退出产品主链，保留源码及历史证据。公共职责与新链依赖现在整理，不等全部工具迁完。",
+    "authority": "侧边对话2026-10-28转达用户原话“我的意思就是要隔离优化，用最正确的架构，一个一个迁移，没迁移的先隔离出去”；本聊天用户要求处理新消息并明确总监决定。",
+    "status": "已作实施方向决定并纳入原方案；当前仅盘点/整体设计，尚未执行旧工具隔离，不把已接入的两个工具称为验收通过。",
+    "baseline": {
+      "sourceCommit": "b87ed9ea",
+      "ui": "UI003 0错误6561警告143.34秒",
+      "full": "full001 0错误6601警告92.78秒",
+      "exe": "正式EXE69928 exit0",
+      "actualRegression": "ImageSources013共249项：228通过21失败。新Workspace/Root/Pane/Preview/Fullscreen已注册；失败原日志/断言保留，不能称新链通过。"
+    },
+    "legacyToolsInCurrentSolution": [
+      "tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj",
+      "tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj",
+      "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj",
+      "tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj",
+      "tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj",
+      "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj",
+      "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj",
+      "tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj",
+      "tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj",
+      "tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj",
+      "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+      "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj",
+      "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj",
+      "tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj",
+      "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj",
+      "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj",
+      "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj",
+      "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj",
+      "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj",
+      "tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj"
+    ],
+    "inventory": [
+      [
+        "图像源与Blob Runtime/Wpf",
+        "tools/SunEyeVision.ImageSource/{Runtime,Wpf}；tools/SunEyeVision.BlobAnalysis/{Runtime,Wpf}",
+        "新架构候选",
+        "保留当前新链；Runtime必需/Wpf可选，不保留旧工具入口后备。已接入不代表完成验收。",
+        "ToolRegistry/配置草稿/执行/图像/树表/保存重开及资源所有者",
+        "新建→发现→配置/设计时→执行取消→同次输出→显示→持久化/复制历史→释放逐项验收"
+      ],
+      [
+        "未迁移旧工具",
+        "当前SunEyeVision.slnx中的20个tools/SunEyeVision.Tool.*工程，详逐项路径清单",
+        "隔离对象",
+        "源码和历史保留；退出当前产品注册、工具箱、扫描/自动加载、构建部署、发布。物理目录组织先核依赖，不机械全移。",
+        "解决方案、ProjectReference、构建targets、发现器、元数据、部署清单和现有输出残留",
+        "正式产品不可发现/加载/发布这些工具，源码与证据仍在；逐个完整迁入后才重新准入"
+      ],
+      [
+        "发现与注册",
+        "Plugin.Infrastructure/Managers/Tool/ToolRegistry.Components.cs；Managers/Plugin/ToolDirectoryCatalog.cs",
+        "新旧混合入口",
+        "按实际新组件声明准入；SDK/Runtime双producer冲突处理不能变兼容桥。整体收敛加载与工具箱来源。",
+        "组件扫描/ToolRegistry/ToolDirectoryCatalog/工具箱/测试",
+        "同一ToolId唯一Runtime生产者；Wpf缺席仍正常；Runtime缺失明确拒绝；旧工具无扫描后门"
+      ],
+      [
+        "构建部署与发布",
+        "SunEyeVision.slnx；Directory.Build.props/targets；src/UI/SunEyeVision.UI.csproj",
+        "混合构建待隔离",
+        "新产品有唯一显式组件集合，构建/部署/产物清单同一来源；已有旧产物退出不能仅停止新增复制。",
+        "所有project refs/自动工具构建/原生库及发布依赖/Release payload",
+        "干净与增量构建都仅有新链必需产物；不误删共享能力或用户成果"
+      ],
+      [
+        "Runtime执行与结果",
+        "src/Workflow/AlgorithmNode.Runtime.cs；Plugin.SDK/Execution/Results/RuntimeToolResults.cs",
+        "当前新Runtime仍进旧结果包装",
+        "纳入替换设计：新Runtime输出声明、同次结果、身份与资源一次权威传递；不能隔离工具箱后继续依赖旧ToolResults外壳。",
+        "RuntimeInputBindings/RuntimeDebugInvocation/WorkflowExecutionEngine/NodeResultManager/树表与图像",
+        "正式/调试同合同，无双套结果、旧包装或释放后回填，取消/异常都释放"
+      ],
+      [
+        "公共合同与基础能力",
+        "Plugin.Contracts/Plugin.Runtime/Workflow/Infrastructure/Core及各算法适配层",
+        "逐职责评估共享",
+        "按当前需求和真实平台边界确定；正确配置事务、身份、快照、资源lease等复用；旧工具专属逻辑隔离，不按代码年代全部重写。",
+        "实际项目引用、配置历史、源解析、执行和生命周期消费者",
+        "明确每项实际复用位置/差异/所有消费者，不为旧工具保留接口、默认或格式兼容"
+      ],
+      [
+        "公共控件与新工具UI",
+        "src/Plugin.Wpf及新工具Wpf",
+        "新链公共展示",
+        "继续仅Blob实际所需原件/完整组合；SDK可视控件退出；新工具Wpf只组装业务。既有C01—C17来源/差异和未完不删。",
+        "DeclaredSettingsView/配置Host/新工具参数页/结果视图/Design/Catalog",
+        "真实设计与运行同控件同资源；原件交互/外观和人工验收分列"
+      ],
+      [
+        "本批D07结果工作区",
+        "1cf856a6+主线b87ed9ea完整39路径接线；树表publication",
+        "待验新链共享候选",
+        "保同一SDK声明/同次快照与资源证明的正确部分；当前21失败先区分产品/夹具/隔离影响，按新链整批收口，不退回旧图缓存。",
+        "主Shell、Root配置窗口、Pane/Preview/全屏、图像选择与树表",
+        "两侧独立来源、同次数据、不串scope/旧事件、失效物理清图及reader释放；真实新生产轨通过"
+      ],
+      [
+        "旧工具专属宿主依赖",
+        "例如UI.csproj中的Script/AvalonEdit/Roslyn/CommonControl说明及其它工具业务",
+        "待逐项核定",
+        "先找真实共享消费者再隔离，不因旧工具隔离盲删仍被新链使用的表达式/编辑能力；也不因宿主恰好带包而保留旧专属部署。",
+        "包引用/项目引用/公共编辑器/脚本工具/表达式/发布",
+        "全部留下的依赖均能定位新链用途；其余离开产品闭包"
+      ],
+      [
+        "Group与显示/插件合同",
+        "既有暂停边界",
+        "暂停要求保留",
+        "本决定不自动批准Group新增或显示/插件公共合同扩展；若新链真有缺口，提出具体API/字段/生命周期缺项及关系后处理。",
+        "Group业务/共享合同/缺定义占位入口",
+        "未实现入口清楚禁用，不猜图形/背景/历史，不把占位算完成"
+      ],
+      [
+        "历史代码与测试",
+        "Git、原源码及原证据目录",
+        "保留但不强制产品兼容",
+        "旧测试不倒逼新架构；仍适用的新链行为断言保留并迁入对应新入口，隔离后的旧工具测试单独归属，不能删失败来凑全绿。",
+        "测试选择器/产品测试项目/回归runner/证据/原方案",
+        "每项失败有原因和承接决定；通过范围与未验范围可审计"
+      ]
+    ],
+    "batches": [
+      [
+        "I0 整体依赖与归属设计",
+        "逐项现有实现→新旧归属→共享依赖→调整决定→全部消费者→构建发布影响→验收；冻结产品组件集合及源/结果/持久化权威合同。当前正在此步。"
+      ],
+      [
+        "I1 完整产品隔离",
+        "注册/工具箱/扫描加载/解决方案/自动构建/部署及既有Release残留同批切换；保留旧源码与证据，不只隐藏入口。"
+      ],
+      [
+        "I2 两工具完整新链",
+        "图像源+Blob发现、配置与来源、UI及设计时、执行取消、同次输出、图像树表、保存重开/复制删除/撤销重做与释放贯通；去旧Runtime结果包装及其它错误桥接。"
+      ],
+      [
+        "I3 集中核收后逐工具迁移",
+        "主仓唯一正式Release规定构建和真实生产回归/VM同态/VS与用户验收；每工具达到完整准入才加入当前产品。"
+      ],
+      [
+        "I4 最终清理",
+        "全部完成后才删除剩余旧工程/旧路径。公共框架设计与职责整理在I0/I1完成，不推迟到此。"
+      ]
+    ],
+    "nextAction": "先补全I0真实引用与构建/注册/结果包装消费者清单再实施；不继续独立扩张C17局部功能、历史新功能或为旧工具逐点修桥。已验证成果/失败全部保留，两阶段总目标不据此缩减。"
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -62,7 +62,13 @@ public static class GlobalProducerBindingRules
             var outputs=contract.Where(output=>output.Kind==SunEyeVision.Plugin.SDK.Execution.Results.OutputVariableKind.Data).ToArray();
             var selected=outputs.Where(output=>BindingClrAdapter.OutputPortId(output)==reference.PortId).ToArray();
             if(selected.Length!=1)return Reject("全局变量原输出身份已删除或不唯一，请重新绑定。");
-            var port=BindingClrAdapter.DescribeOutput(selected[0]);
+            var output=selected[0];
+            // A dynamic output may exist before its type declaration is complete. Keep the
+            // explicit source pending; only a removed port or a known conflict breaks a binding.
+            var declared=output.DeclaredType??SdkTypeVocabulary.ToSystemType(output.VariableType);
+            if(output.ValueDeclaration is null&&(declared is null||declared==typeof(object)))
+                return new(BindingCompatibility.Unresolved,"生产字段的正式类型声明尚不完整，等待校验。");
+            var port=BindingClrAdapter.DescribeOutput(output);
             // Only the selected formal output is needed for this declaration-only operation.
             // Other unsupported output carriers do not justify guessing or rejecting this port.
             var sourceSchema=new ToolSchema(Array.Empty<Port>(),new[]{port});

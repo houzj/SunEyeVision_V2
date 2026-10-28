@@ -1,3 +1,11 @@
+## 2026-10-28 D07同owner形状候选：库编译过，候选窗口18/0
+
+- Root已实现NativeShapeProjection及NativeResultViewport.Shapes，原六类几何/整圆Arc、原文字opacity分组、独立选择层共用同owner与ShapeList；独立NativeTextViewport复用同非视觉helper。未支持非整圆Arc明确拒绝，不Bounds/折线/薄圆环近似。
+- 真实评审发现安装后prooffalse残留、失效层占预算及最后一次Current重入误清新帧层，已修并补实际负测。库001两处命名歧义原失败保留；库002=0错5346警告23.73秒，候选Window18/0。证据evidence/O06_NATIVE_SHAPE_LAYER_CANDIDATE_20261028.json；尚非集中UI/full同源Release核收。正式目录已被库层候选更新，5780正式证据是历史，不套当前未完整产物。
+- 下一继续原ROI attachment：移动原绘制/菜单/选择/四种手柄逻辑到借用唯一owner的内部attachment；旧NativeRoiViewport改薄包装，不能保双分支/第二像素lease。owner唯一合成ShapeList/ROIList，ROI退场不清背景/结果/文字/选择；原Shell删除第二图像绑定入口，消费者整批接入后才能称D07完成。
+- 工作流线22项集中修复在途：旧SendData页接同Host节点+变量联合编辑/历史；SDK两Executor统一拒绝结果，独立复制纯发送终态事实且无论复制/清理失败均释放拒绝结果，不复活输出/资源。已有夹具固定候选，待完整提交再合，不做私有构建。
+- 当前41480/8843/43741均终态，无live。主仓唯一产品写者，用户BlobParameterEditor.xaml不改不暂存；Blob业务仍冻结，两阶段完整目标active。
+
 ## 2026-10-28 结果绑定与原栅格集中批：两构建过，22真实失败待修
 
 - 固定正式产品5780c062：规定UI002=0错6581警告96.54秒/full001=0错6621警告64.58秒；正式EXE probe PID57888 exit0。795发布文件/113加载记录SHA全部一致，证据evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json。

@@ -7,6 +7,7 @@ using System.ComponentModel;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Adapters.Display;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
 using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
@@ -140,17 +141,7 @@ public sealed class NativeTextViewport : Decorator,IDisposable
         var generation=_generation;
         if(revision<0)throw new ArgumentOutOfRangeException(nameof(revision));
         if(!Current(generation)||_frame!.Frame!=frame||revision<=_revision)return false;
-        var projected=new List<object>();
-        foreach(var text in texts.ToArray())
-        {
-            if(text is null||text.Content is null||!double.IsFinite(text.Position.X)||!double.IsFinite(text.Position.Y)
-                ||text.FontSize is <1 or >1000||!double.IsFinite(text.Opacity)||text.Opacity is <0 or >1)
-                throw new ArgumentException("文字绘制需要有效文本、像素位置、字号和透明度。");
-            projected.Add(new TextProjection(text.Content,text.Position,text.FontSize,text.Color.ToString(),text.Opacity));
-        }
-        // The original PretreatTexts assigns one opacity to a batch; do not merge different opacities.
-        var shapes=new ObservableCollection<object>(projected.Cast<TextProjection>().GroupBy(text=>text.Opacity)
-            .Select(group=>DrawShapeHelper.PretreatTexts(group.Cast<object>().ToList())));
+        var shapes=new ObservableCollection<object>(NativeShapeProjection.Texts(texts,GlobalRenderVariable.ShapeRenderingMaxNumber).Items);
         var current=isCurrent();
         if(!current||!Current(generation)||_frame!.Frame!=frame||revision<=_revision)return false;
         _revision=revision;_projectionCurrent=isCurrent;_shapes=shapes;
@@ -191,5 +182,4 @@ public sealed class NativeTextViewport : Decorator,IDisposable
     }
     public void Dispose()
     {if(_disposed)return;_disposed=true;Loaded-=OnLoaded;NativeView.SizeChanged-=OnSizeChanged;NativeView.PropertyChanged-=OnNativeChanged;try{Release();}finally{Child=null;}}
-    private sealed record TextProjection(string Content,Point Position,int FontSize,string Stroke,double Opacity) : IText;
 }

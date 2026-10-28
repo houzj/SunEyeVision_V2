@@ -16,7 +16,7 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 public sealed record NativeResultFrameReceipt(Guid OwnerId, long Epoch, ImageFrameAddress Frame, CoordinateFrame Coordinates);
 
 /// <summary>Single owner of an original image view. Regions use its real raster-layer entry, not approximated shapes.</summary>
-public sealed class NativeResultViewport : IDisposable
+public sealed partial class NativeResultViewport : IDisposable
 {
     private static readonly ConditionalWeakTable<FrameworkElement, NativeResultViewport> Owners = new();
     private readonly ImageViewBox _view;
@@ -34,8 +34,9 @@ public sealed class NativeResultViewport : IDisposable
     public ImageLayout? Layout => _frame?.OriginalLayout;
     public NativeResultFrameReceipt? CurrentFrame => _frame is {} frame ? new(_ownerId, _epoch, frame.Frame, frame.Coordinates) : null;
 
-    public NativeResultViewport(NativeResultRasterLimits? limits = null) : this(new ImageViewBox(), limits ?? new()) { }
-    private NativeResultViewport(ImageViewBox view, NativeResultRasterLimits limits)
+    public NativeResultViewport(NativeResultRasterLimits? limits = null, NativeResultShapeLimits? shapeLimits = null)
+        : this(new ImageViewBox(), limits ?? new(), shapeLimits ?? new()) { }
+    private NativeResultViewport(ImageViewBox view, NativeResultRasterLimits limits, NativeResultShapeLimits shapeLimits)
     {
         view.Dispatcher.VerifyAccess(); limits.Validate();
         if (Owners.TryGetValue(view, out _) || view.ImageDataSource is not null || view.ShapeList is not null || view.ROIList is not null
@@ -43,6 +44,7 @@ public sealed class NativeResultViewport : IDisposable
             || BindingOperations.IsDataBound(view, ImageViewBox.ShapeListProperty)
             || BindingOperations.IsDataBound(view, ImageViewBox.ROIListProperty))
             throw new InvalidOperationException("原图像视口仍有显示所有者或绑定，不能并存第二条图像路径。");
+        shapeLimits.Validate(); _shapeLimits = shapeLimits;
         _view = view; _limits = limits;
         _templateDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TemplateProperty, typeof(ImageViewBox));
         Owners.Add(view, this);
@@ -54,20 +56,25 @@ public sealed class NativeResultViewport : IDisposable
                 _resources.Add(resource); view.Resources.MergedDictionaries.Add(resource);
             }
             view.Loaded += Loaded;
+            view.SizeChanged += SizeChanged;
+            view.PropertyChanged += ViewChanged;
             _templateDescriptor.AddValueChanged(view, TemplateChanged);
         }
         catch (Exception failure)
         {
             _disposed = true;
             var cleanup = _resources.Select<ResourceDictionary, Action>(resource => () => view.Resources.MergedDictionaries.Remove(resource)).ToList();
-            cleanup.Add(() => view.Loaded -= Loaded); cleanup.Add(() => _templateDescriptor.RemoveValueChanged(view, TemplateChanged)); cleanup.Add(() => Owners.Remove(view));
+            cleanup.Add(() => view.Loaded -= Loaded); cleanup.Add(() => view.SizeChanged -= SizeChanged);
+            cleanup.Add(() => view.PropertyChanged -= ViewChanged);
+            cleanup.Add(() => _templateDescriptor.RemoveValueChanged(view, TemplateChanged)); cleanup.Add(() => Owners.Remove(view));
             try { ParameterCleanup.Run(cleanup); } catch (Exception error) { throw new AggregateException(failure, error); }
             throw;
         }
     }
 
-    public static NativeResultViewport Attach(FrameworkElement originalView, NativeResultRasterLimits? limits = null)
-        => new(originalView as ImageViewBox ?? throw new ArgumentException("必须借原ImageViewBox实例。", nameof(originalView)), limits ?? new());
+    public static NativeResultViewport Attach(FrameworkElement originalView, NativeResultRasterLimits? limits = null,
+        NativeResultShapeLimits? shapeLimits = null)
+        => new(originalView as ImageViewBox ?? throw new ArgumentException("必须借原ImageViewBox实例。", nameof(originalView)), limits ?? new(), shapeLimits ?? new());
 
     private bool Owns(long epoch, NativeResultImageFrame? frame)
         => !_disposed && epoch == _epoch && ReferenceEquals(frame, _frame) && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this);
@@ -101,6 +108,7 @@ public sealed class NativeResultViewport : IDisposable
                 previous = _frame; epoch = ++_epoch; _frame = candidate; _imageCurrent = isCurrent; attached = true;
                 foreach (var layer in _layers.ToArray())
                 { if (!Owns(epoch, candidate)) break; layer.RetireFrame(); }
+                if (Owns(epoch, candidate)) RetireShapes(() => Owns(epoch, candidate));
                 if (Owns(epoch, candidate)) _view.ImageDataSource = candidate;
             }
         }
@@ -157,6 +165,7 @@ public sealed class NativeResultViewport : IDisposable
                 if (!Current(receipt)) break;
                 try { layer.Install(); } catch (Exception failure) { failures.Add(failure); }
             }
+            if (Current(receipt)) try { InstallShapes(true); } catch (Exception failure) { failures.Add(failure); }
             if (failures.Count != 0) throw new AggregateException("结果图层重装失败。", failures);
         }));
         _refresh = operation;
@@ -167,6 +176,7 @@ public sealed class NativeResultViewport : IDisposable
         var receipt = CurrentFrame;
         if (receipt is not null && !Current(receipt)) { if (receipt == CurrentFrame) Clear(); return; }
         foreach (var layer in _layers.ToArray()) layer.RefreshCurrentness();
+        RefreshShapes();
     }
     public void Clear()
     {
@@ -178,6 +188,7 @@ public sealed class NativeResultViewport : IDisposable
         var refresh = _refresh; _refresh = null;
         var actions = new List<Action> { () => refresh?.Abort() };
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => () => { if (epoch == _epoch) layer.RetireFrame(); }));
+        actions.Add(() => { if (epoch == _epoch) RetireShapes(() => epoch == _epoch); });
         actions.Add(() => { if (epoch == _epoch && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this)) _view.ImageDataSource = null; });
         actions.Add(() => frame?.Dispose()); ParameterCleanup.Run(actions);
     }
@@ -185,8 +196,10 @@ public sealed class NativeResultViewport : IDisposable
     {
         _view.Dispatcher.VerifyAccess(); if (_disposed) return; _disposed = true;
         _view.Loaded -= Loaded;
+        _view.SizeChanged -= SizeChanged; _view.PropertyChanged -= ViewChanged;
         var actions = new List<Action> { () => _templateDescriptor.RemoveValueChanged(_view, TemplateChanged), Retire };
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => layer.Dispose));
+        actions.AddRange(_shapeLayers.ToArray().Select<ShapeLayer, Action>(layer => layer.Dispose));
         actions.AddRange(_resources.Select<ResourceDictionary, Action>(resource => () => _view.Resources.MergedDictionaries.Remove(resource)));
         actions.Add(() => Owners.Remove(_view)); ParameterCleanup.Run(actions);
     }

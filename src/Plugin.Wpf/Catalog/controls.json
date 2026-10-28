@@ -5461,6 +5461,39 @@
         "validationEvidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
         "passed": "真实Window199原结果视口10/0；UI002/full001零错误；实际单像素/孔洞mask渲染、Domainalpha、原像素、模板故障隔离/独占/重入/释放/预算",
         "remaining": "Geometry/Text/Selection/ROI同owner完整层、原Shell生产接入、旧SDK主图退出及真实VS/VM人工尚未完成"
+      },
+      "shapeDependencyCandidate": {
+        "files": [
+          {
+            "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
+            "sha256": "0656bf44e2124c85703207b39e529f0f2c558b2df8fbb74472c3920780d5486b"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+            "sha256": "f35e11b54e79f7815f3f935e71554dabd7b4fc642c5aa6dc192540546e79bf90"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+            "sha256": "e39f1809e44ab2ff5b57ab51e3f48d514a599bf28d5646fb5fec730cd7be7b38"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+            "sha256": "ebedec469979f21e9657796df79f0eabc818548c82fa5c27b71e289330348f8a"
+          },
+          {
+            "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
+            "sha256": "4e3ba83cbcfd932adab00b1d90d85c249261a24079242c67accaa257f02c9876"
+          }
+        ],
+        "evidence": "docs/collaboration/evidence/O06_NATIVE_SHAPE_LAYER_CANDIDATE_20261028.json",
+        "validation": "库002零错误；候选窗口200=18/0，未规定UI/full同源正式核收",
+        "remaining": [
+          "非整圆Arc暂无精确原入口，明确拒绝，不能当完整七类已实现",
+          "ROI attachment仍待从原NativeRoiViewport移动交互逻辑，使其薄wrapper复用owner，不叠双图/第二像素lease",
+          "原Shell双ImageDataSource入口及SDK主图生产消费者尚未退出",
+          "D06完整绑定22项失败修复待工作流固定批，不能套前批通过",
+          "规定UI/full、同源正式产物新验证及真实VS/VM人工待完成"
+        ]
       }
     }
   ],

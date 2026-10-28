@@ -7747,7 +7747,7 @@
           "共享展示合同 / 图像帧与选择事件",
           "本聊天统一接口；工作流线改UI消费者",
           "本线唯一写IToolResultView替换合同、Plugin.Wpf共享适配/场景及Catalog/项目；工作流线同步ToolResultViews、MainWindow、源工具Wpf及其真实测试，先冻结整链签名再各自实施。",
-          "公共publication/lease/stamp及UI唯一入口已合主仓并过规定构建；唯一SDK reader归publication，树表独立借阅；真实物理来源正负向已过。没有同帧视口proof时明确禁止高亮；D07仍待。 D07必要依赖70a6036f复用原ImageLayers，精确RLE/Domain透明度/原像素及模板生命周期已入候选，新增真实Window用例待验。"
+          "公共publication/lease/stamp及UI唯一入口已合主仓并过规定构建；唯一SDK reader归publication，树表独立借阅；真实物理来源正负向已过。没有同帧视口proof时明确禁止高亮；D07仍待。 D07必要依赖70a6036f复用原ImageLayers，精确RLE/Domain透明度/原像素及模板生命周期已入候选，新增真实Window用例待验。 新增同owner ShapeLayer候选（六类几何/整圆Arc、原文字/选择）：库002零错误，候选Window200=18/0；未规定UI/full，不能算正式产物验收。ROI attachment和生产接入仍待，非整圆Arc精确入口缺证。"
         ],
         [
           "集成、正式Release及验收",
@@ -7924,6 +7924,14 @@
           "RuntimeEditor": 10,
           "FullChain": 8,
           "WorkflowHost": 1
+        },
+        "shapeDependencyCandidate": {
+          "evidence": "docs/collaboration/evidence/O06_NATIVE_SHAPE_LAYER_CANDIDATE_20261028.json",
+          "libraryErrors": 0,
+          "candidateWindowPassed": 18,
+          "candidateWindowFailed": 0,
+          "formalReleaseValidated": false,
+          "remaining": "ROI attachment/生产SDK主图退出、非整圆Arc及集中正式验收"
         }
       }
     }

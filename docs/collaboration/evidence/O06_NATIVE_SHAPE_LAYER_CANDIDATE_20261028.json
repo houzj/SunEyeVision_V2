@@ -1,0 +1,90 @@
+{
+  "generatedUtc": "2026-10-28T09:34:10.702995+00:00",
+  "scope": "D07同owner几何/文字/选择必要依赖候选；仅库层编译及候选缺陷发现，不作正式Release整链验收",
+  "baseHead": "094c217dc8c8fa2cbfc52ea869790a724c45b50f",
+  "previousCoherentProduct": "5780c062",
+  "coherentReleaseValidated": false,
+  "localFiles": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Display/NativeShapeProjection.cs",
+      "sha256": "0656bf44e2124c85703207b39e529f0f2c558b2df8fbb74472c3920780d5486b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Shapes.cs",
+      "sha256": "f35e11b54e79f7815f3f935e71554dabd7b4fc642c5aa6dc192540546e79bf90"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "sha256": "e39f1809e44ab2ff5b57ab51e3f48d514a599bf28d5646fb5fec730cd7be7b38"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeTextViewport.cs",
+      "sha256": "ebedec469979f21e9657796df79f0eabc818548c82fa5c27b71e289330348f8a"
+    },
+    {
+      "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
+      "sha256": "4e3ba83cbcfd932adab00b1d90d85c249261a24079242c67accaa257f02c9876"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "eb89ea61bf13d0338e95049b8486356eaadd182df5e57c4b6ac866b21ca240bb"
+    }
+  ],
+  "libraryBuild": {
+    "path": "artifacts/native-result-shapes-library-build-20261028-002.log",
+    "errors": 0,
+    "warnings": 5346,
+    "elapsed": "00:00:23.73"
+  },
+  "failedBuildHistory": [
+    "artifacts/native-result-shapes-library-build-20261028-001.log"
+  ],
+  "window": {
+    "receipt": {
+      "stage": "S4",
+      "attempt": 200,
+      "pid": 72460,
+      "exit": 0,
+      "productRoot": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "caseSource": "O06WindowPresentationCases.cs",
+      "caseSourceSha256": "EB89EA61BF13D0338E95049B8486356EAADD182DF5E57C4B6AC866B21CA240BB",
+      "scope": "当前实施者针对正式Release的定向检查，不是完整UI、阶段整体或独立验收",
+      "logDir": "D:\\MyWork\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-200"
+    },
+    "passed": 18,
+    "failed": 0,
+    "caseFilter": "原结果视口",
+    "scope": "基于主仓正式目录的本地库候选；须合完整批后规定UI/full及新同源回归才能作为正式证据",
+    "files": [
+      {
+        "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-200/run.log",
+        "sha256": "7e1a37b8de980067b22a818909fa5305f0961f300bb9fe915b00f89dfb344a20"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-200/run-error.log",
+        "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-200/cases.cs.txt",
+        "sha256": "eb89ea61bf13d0338e95049b8486356eaadd182df5e57c4b6ac866b21ca240bb"
+      },
+      {
+        "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-200/loaded-product.tsv",
+        "sha256": "3f1a2f0be6bc850ffa09f781a3a530562fe462dc53fee5e9e85f7c1aa51fe5b5"
+      }
+    ]
+  },
+  "implementation": [
+    "唯一owner组合原六类几何及整圆Arc、原文字opacity分组和独立选择层，ShapeList只由owner写",
+    "NativeTextViewport与结果owner共用非视觉原接口投影helper；不复制业务默认或模型",
+    "完整合成shape/顶点预算，先退休失效层，整批拒绝不依赖原页10000静默截断",
+    "实际ImageLayers/ShapeList同view，模板和非整数布局刷新，以及末次proof/准备重入同代次检查"
+  ],
+  "remaining": [
+    "非整圆Arc暂无精确原入口，明确拒绝，不能当完整七类已实现",
+    "ROI attachment仍待从原NativeRoiViewport移动交互逻辑，使其薄wrapper复用owner，不叠双图/第二像素lease",
+    "原Shell双ImageDataSource入口及SDK主图生产消费者尚未退出",
+    "D06完整绑定22项失败修复待工作流固定批，不能套前批通过",
+    "规定UI/full、同源正式产物新验证及真实VS/VM人工待完成"
+  ]
+}

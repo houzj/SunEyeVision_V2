@@ -28,6 +28,13 @@ public sealed class NativeResultRasterSample : Decorator, IDisposable
             if (!_viewport.BindImage(_image, () => !_disposed)) throw new InvalidOperationException("独立视口样例未接纳。");
             if (!_layer.Present(_viewport.CurrentFrame!, 0, new DesignMask(_image.Frame), Color.FromArgb(150, 102, 255, 0), () => !_disposed))
                 throw new InvalidOperationException("独立精确区域样例未接纳。");
+            var receipt = _viewport.CurrentFrame!;
+            if (!_viewport.CreateGeometryLayer().Present(receipt, 0,
+                    new[] { new NativeGeometryOverlay(_image.Frame,
+                        new OrientedRectangleGeometry(receipt.Coordinates, new(320, 160), 380, 160, 0), Colors.Orange, 2) }, () => !_disposed)
+                || !_viewport.CreateTextLayer().Present(receipt, 0,
+                    new[] { new NativeTextOverlay("Result", new(130, 55), 18, Colors.Lime, 1) }, () => !_disposed))
+                throw new InvalidOperationException("独立几何和文字样例未接纳。");
         }
         catch { Dispose(); throw; }
     }

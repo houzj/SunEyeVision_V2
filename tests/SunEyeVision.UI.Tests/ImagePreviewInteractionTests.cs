@@ -195,7 +195,28 @@ public sealed partial class SolutionManagerUiTests
     }
 
     [Fact]
-    public void Import_cancel_after_first_batch_keeps_committed_references_and_stops_late_appends()
+    public void Import_cancel_before_acceptance_does_not_publish_or_change_selection()
+    {
+        Sta(() =>
+        {
+            var source = new ImageInputSource("source");
+            source.AddImages(new[] { new ImageInfo { FilePath = "existing.png" } }, selectFirstAdded: true);
+            var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
+            var files = new TaskCompletionSource<string[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writes = 0; source.ConfigurationWriter = _ => writes++;
+            var method = typeof(ImagePreviewControl).GetMethod("ImportAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
+            var task = (Task)method.Invoke(control, new object[] { (Func<System.Threading.CancellationToken, Task<string[]>>)(_ => files.Task) })!;
+            control.CancelImportCommand.Execute(null);
+            files.SetResult(new[] { "late.png" });
+            PumpPreviewTask(control, task);
+            Assert.Equal(0, writes); Assert.Single(source.Images);
+            Assert.Equal("existing.png", source.CurrentImage!.FilePath);
+            Assert.False(control.IsImporting);
+        });
+    }
+
+    [Fact]
+    public void Import_cancel_after_atomic_acceptance_keeps_the_complete_committed_batch()
     {
         Sta(() =>
         {
@@ -207,9 +228,9 @@ public sealed partial class SolutionManagerUiTests
                 foreach (var path in paths) File.WriteAllBytes(path, new byte[] { 1 });
                 var source = new ImageInputSource("import");
                 var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images };
-                source.CollectionChanged += (_, _) => { if (source.Count >= 256) control.CancelImportCommand.Execute(null); };
+                source.CollectionChanged += (_, _) => control.CancelImportCommand.Execute(null);
                 PumpPreviewTask(control, control.ImportDirectoryAsync(directory));
-                Assert.Equal(256, source.Count); Assert.Equal(256, source.ToConfig().FilePaths.Count);
+                Assert.Equal(600, source.Count); Assert.Equal(600, source.ToConfig().FilePaths.Count);
                 Assert.False(control.IsImporting); Assert.Contains("取消", control.ImportStatus);
                 Assert.All(paths, path => Assert.True(File.Exists(path)));
             }
@@ -233,11 +254,10 @@ public sealed partial class SolutionManagerUiTests
                 var control = new ImagePreviewControl { ActiveInputSource = old, ImageCollection = old.Images };
                 old.CollectionChanged += (_, _) =>
                 {
-                    if (old.Count < 256) return;
                     control.ActiveInputSource = next; control.ImageCollection = next.Images; control.CurrentImageIndex = 1;
                 };
                 PumpPreviewTask(control, control.ImportFilePathsAsync(paths));
-                Assert.Equal(256, old.Count); Assert.Equal(2, next.Count);
+                Assert.Equal(600, old.Count); Assert.Equal(2, next.Count);
                 Assert.Equal(1, control.CurrentImageIndex); Assert.Equal(1, next.CurrentIndex);
                 Assert.False(control.IsImporting);
             }
@@ -268,6 +288,7 @@ public sealed partial class SolutionManagerUiTests
                 new ImageInfo { FilePath = fixture.CreateImage("two.png") } });
             source.CurrentIndex = 0;
             root.Nodes[0].InputSource = source;
+            root.Nodes[0].ImageSourceConfig = source.ToConfig();
             var snapshots = new RuntimeInputSnapshotService();
             var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
             var manager = new WorkflowExecutionManager(input, engine, snapshots) { AllowUnhostedRunForTests = true };

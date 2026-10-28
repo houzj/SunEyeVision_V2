@@ -1,3 +1,5 @@
+﻿using SunEyeVision.UI.Features.Dialogs;
+using SunEyeVision.UI.Shared;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,6 +31,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 当前选中图像用于本轮；成功完成后才推进到下一张。
         /// </summary>
 
+        public static readonly DependencyProperty EditingAllowedProperty = DependencyProperty.Register(
+            nameof(EditingAllowed),typeof(bool),typeof(ImageResultControl),new PropertyMetadata(true));
+        public bool EditingAllowed => (bool)GetValue(EditingAllowedProperty);
+        private void OnHostEditingStateChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if(_viewModel is null)return;
+            var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
+            SetCurrentValue(EditingAllowedProperty,allowed);
+            ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
+        }
+
         public ImageResultControl()
         {
             InitializeComponent();
@@ -47,7 +60,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public void Initialize(MainWindowViewModel viewModel)
         {
+            if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel = viewModel;
+            _viewModel.PropertyChanged+=OnHostEditingStateChanged;
+            OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
             if (ImagePreviewContent != null)
             {
                 ImagePreviewContent.WorkflowExecutionRequested += OnImagePreviewExecutionRequested;
@@ -59,6 +75,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public void Shutdown()
         {
+            if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel?.CloseResultPresentation();
             if (ImagePreviewContent != null)
             {
@@ -114,35 +131,22 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 return;
             }
 
-            var variableType = row.BindingInfo.ValueVocabulary;
-
-            var solutionManager = ServiceInitializer.SolutionManager;
-            var solution = solutionManager?.CurrentSolution;
-            var tab = _viewModel.WorkflowTabViewModel?.SelectedTab;
-            if (solution == null || tab == null)
-                return;
-
-            var variable = GlobalVariableSelectDialog.ShowSelect(solutionManager, variableType);
-            if (variable == null)
-                return;
-
-            var sourceNode = tab.WorkflowNodes.FirstOrDefault(node => node.Id == row.BindingInfo.SourceNodeId);
-            variable.ProducerBinding = new ProducerBinding
+            var solutionManager=ServiceInitializer.SolutionManager;
+            var expected=solutionManager.Session;
+            var tab=_viewModel.WorkflowTabViewModel.SelectedTab;
+            if(expected is null||tab is null)return;
+            // Freeze schema identity before the modal picker. A switched document cannot reuse this row.
+            var binding=new ProducerBinding
             {
-                WorkflowId = tab.RootWorkflowId,
-                WorkflowName = tab.Name,
-                NodeId = row.BindingInfo.SourceNodeId,
-                NodeName = sourceNode?.DispName ?? row.SourceNodeName ?? row.BindingInfo.SourceNodeId,
-                ResultName = row.BindingInfo.ResultPath,
-                SourceFieldId=row.BindingInfo.SourceFieldId,
-                ResultDisplayName = row.DisplayName
+                WorkflowId=tab.RootWorkflowId,NodeId=row.BindingInfo.SourceNodeId,
+                ResultName=row.BindingInfo.ResultPath,SourceFieldId=row.BindingInfo.SourceFieldId,
+                ResultDisplayName=row.DisplayName
             };
-            variable.NotifyInputSourceDisplayChanged();
-            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
-            _viewModel.AddLog(LogLevel.Info,
-                $"全局变量“{variable.Name}”的输入来源已绑定为 {variable.ProducerBinding.DisplayPath}",
-                LogSource.UIOperation);
+            var variable=GlobalVariableSelectDialog.ShowSelect(solutionManager,row.BindingInfo.ValueVocabulary);
+            if(variable is null)return;
+            if(!_viewModel.TryBindResultVariable(expected,binding,variable.Id,out var error))
+                ThemeMessageDialog.Show(error,"结果绑定未接纳",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
+
         }
 
         /// <summary>以指定图片作为当前输入执行一次工作流（注入运行时参数后触发执行）</summary>

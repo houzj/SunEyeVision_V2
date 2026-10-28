@@ -1,430 +1,190 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows.Media.Imaging;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.UI.Shell.Controls.Panels;
-using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Workflow;
 
-using SunEyeVision.UI.Features.WorkflowUI;
+namespace SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Shared
+/// <summary>One source's display projection. Formal edits are accepted before any live view mutation.</summary>
+public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.ObservableObject, INotifyCollectionChanged
 {
-    /// <summary>
-    /// 图像输入源 - 存储用户选择的图像文件（只读语义）
-    /// </summary>
-    /// <remarks>
-    /// 设计原则：
-    /// 1. 输入源是用户选择的原始数据，执行流程不应修改
-    /// 2. 提供只读语义，保护用户输入不被意外修改
-    /// 3. 支持运行模式选择（运行全部/运行选择）
-    ///
-    /// 与 NodeOutputCache 的区别：
-    /// - ImageInputSource: 输入数据，用户选择，只读
-    /// - NodeOutputCache: 输出数据，执行结果，可变
-    /// </remarks>
-    public class ImageInputSource : ObservableObject, INotifyCollectionChanged
+    private sealed class Entries : ObservableCollection<ImageInfo>
     {
-        private readonly BatchObservableCollection<ImageInfo> _images;
-        private readonly HashSet<ImageInfo> _observedImages = new();
-        private readonly Dictionary<string, int> _entryIndices = new(StringComparer.Ordinal);
-        private int _currentIndex = -1;
-        private ImageRunMode _runMode = ImageRunMode.运行全部;
-        private bool _autoSwitchEnabled = true;
-        private bool _isReadOnly = false;
-        private bool _presentingRuntimeCursor;
-        public long EditVersion { get; private set; }
-
-        /// <summary>
-        /// 关联的节点ID
-        /// </summary>
-        public string NodeId { get; }
-
-        /// <summary>
-        /// 图像集合（只读访问）
-        /// </summary>
-        public BatchObservableCollection<ImageInfo> Images => _images;
-
-        /// <summary>
-        /// 当前选中图像索引
-        /// </summary>
-        public int CurrentIndex
+        internal void Install(IReadOnlyList<ImageInfo> rows) { Items.Clear(); foreach (var row in rows) Items.Add(row); }
+        internal void Publish() { OnCollectionChanged(new(NotifyCollectionChangedAction.Reset)); OnPropertyChanged(new(nameof(Count))); }
+    }
+    private readonly Entries _entries = new();
+    private readonly Dictionary<string,int> _indices = new(StringComparer.Ordinal);
+    private int _currentIndex = -1, _configuredIndex = -1;
+    private ImageRunMode _runMode;
+    private bool _autoSwitch = true, _readOnly, _committing, _requiresWriter;
+    private List<string> _runReferences = new();
+    public string NodeId { get; }
+    public long EditVersion { get; private set; }
+    public string? LastNotificationError { get; private set; }
+    public ReadOnlyObservableCollection<ImageInfo> Images { get; }
+    /// <summary>Owner-thread acceptance gateway. Throw before acceptance to reject; never write after notification.</summary>
+    public Action<ImageSourceConfig>? ConfigurationWriter { get; set; }
+    public event EventHandler<int>? CurrentImageChanged;
+    public event EventHandler? ConfigurationEdited;
+    public event NotifyCollectionChangedEventHandler? CollectionChanged
+    { add => _entries.CollectionChanged += value; remove => _entries.CollectionChanged -= value; }
+    public ImageInputSource(string nodeId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(nodeId); NodeId = nodeId; Images = new(_entries);
+    }
+    internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
+    internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
+    public int Count => _entries.Count;
+    public bool HasImages => Count != 0;
+    public ImageInfo? CurrentImage => _currentIndex >= 0 && _currentIndex < Count ? _entries[_currentIndex] : null;
+    public bool IsReadOnly { get => _readOnly; set => SetProperty(ref _readOnly,value); }
+    public int CurrentIndex
+    {
+        get => _currentIndex;
+        set { if (value != _currentIndex) Commit(_entries.ToArray(),value,_runMode,_autoSwitch,_runReferences); }
+    }
+    public ImageRunMode RunMode
+    {
+        get => _runMode;
+        set { if (value != _runMode) Commit(_entries.ToArray(),_currentIndex,value,_autoSwitch,_runReferences); }
+    }
+    public bool AutoSwitchEnabled
+    {
+        get => _autoSwitch;
+        set { if (value != _autoSwitch) Commit(_entries.ToArray(),_currentIndex,_runMode,value,_runReferences); }
+    }
+    private static string Reference(ImageInfo image) => image.SourceReference ?? image.FilePath;
+    private ImageSourceConfig Configuration(IReadOnlyList<ImageInfo> rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected)
+        => new() { NodeId=NodeId,FilePaths=rows.Select(Reference).ToList(),CurrentIndex=index,
+            RunMode=(int)mode,AutoSwitchEnabled=auto,ForRunPaths=selected.ToList() };
+    public ImageSourceConfig ToConfig() => Configuration(_entries,_configuredIndex,_runMode,_autoSwitch,_runReferences);
+    private void Commit(ImageInfo[] rows,int index,ImageRunMode mode,bool auto,IEnumerable<string> selected)
+    {
+        if (_committing) throw new InvalidOperationException("图像源编辑不能重入。");
+        if (_readOnly) throw new InvalidOperationException("图像输入源已锁定。");
+        if (_requiresWriter && ConfigurationWriter is null) throw new InvalidOperationException("图像源尚未连接当前方案的正式编辑会话。");
+        if (index < -1 || index >= rows.Length || !Enum.IsDefined(mode) || rows.Any(row=>row is null||string.IsNullOrWhiteSpace(row.Id)) || rows.Select(row=>row.Id).Distinct(StringComparer.Ordinal).Count()!=rows.Length)
+            throw new InvalidOperationException("图像源条目身份、选择或模式无效。");
+        var configuration=Configuration(rows,index,mode,auto,selected);
+        var version=EditVersion;
+        _=checked(version+1);
+        _committing=true;
+        try
         {
-            get => _currentIndex;
-            set
-            {
-                if (_currentIndex != value)
-                {
-                    _currentIndex = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(CurrentImage));
-                    CurrentImageChanged?.Invoke(this, value);
-                    NotifyConfigChanged();
-                }
-            }
+            // The writer may reject. Nothing visible or owned has changed yet.
+            ConfigurationWriter?.Invoke(Configuration(rows,index,mode,auto,configuration.ForRunPaths));
+            // An accepted publication may synchronously replace this projection. Do not revive it.
+            if (version!=EditVersion) return;
+            Install(rows,configuration,true);
         }
-
-        /// <summary>
-        /// 当前选中的图像
-        /// </summary>
-        public ImageInfo? CurrentImage => 
-            _currentIndex >= 0 && _currentIndex < _images.Count 
-                ? _images[_currentIndex] 
-                : null;
-
-        /// <summary>
-        /// 图像总数
-        /// </summary>
-        public int Count => _images.Count;
-
-        /// <summary>
-        /// 是否有图像
-        /// </summary>
-        public bool HasImages => _images.Count > 0;
-
-        /// <summary>
-        /// 图像运行模式
-        /// </summary>
-        public ImageRunMode RunMode
+        finally { _committing=false; }
+    }
+    private void Notify(Action action)
+    { try { action(); } catch(Exception error) { LastNotificationError ??= error.Message; } }
+    private void Install(ImageInfo[] rows,ImageSourceConfig config,bool edited)
+    {
+        var nextVersion=checked(EditVersion+1);
+        var removed=_entries.Where(image=>!rows.Contains(image)).ToArray();
+        foreach(var image in removed) image.RequestRunSelection=null;
+        _configuredIndex=config.CurrentIndex; _currentIndex=config.CurrentIndex;
+        _runMode=(ImageRunMode)config.RunMode; _autoSwitch=config.AutoSwitchEnabled;
+        _runReferences=new(config.ForRunPaths); _indices.Clear();
+        for(var i=0;i<rows.Length;i++)
         {
-            get => _runMode;
-            set
-            {
-                if (_runMode != value)
-                {
-                    _runMode = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(GetSelectedImages));
-                    NotifyConfigChanged();
-                }
-            }
+            var image=rows[i]; _indices.Add(image.Id,i);
+            image.SetRunSelectionRaw(_runReferences.Contains(Reference(image),StringComparer.Ordinal));
+            image.RequestRunSelection=value=>SetRunSelection(image,value);
         }
-
-        /// <summary>
-        /// 是否启用自动切换
-        /// </summary>
-        public bool AutoSwitchEnabled
+        _entries.Install(rows); EditVersion=nextVersion; LastNotificationError=null;
+        // All state is installed before any fallible consumer sees it.
+        Notify(_entries.Publish);
+        foreach(var row in rows) Notify(row.NotifyRunSelection);
+        foreach(var name in new[]{nameof(Count),nameof(HasImages),nameof(CurrentIndex),nameof(CurrentImage),nameof(RunMode),nameof(AutoSwitchEnabled),nameof(GetSelectedImages)})
+            Notify(()=>OnPropertyChanged(name));
+        foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>()) Notify(()=>((EventHandler<int>)callback)(this,_currentIndex));
+        if(edited) foreach(var callback in ConfigurationEdited?.GetInvocationList()??Array.Empty<Delegate>()) Notify(()=>((EventHandler)callback)(this,EventArgs.Empty));
+        foreach(var image in removed)
         {
-            get => _autoSwitchEnabled;
-            set
-            {
-                if (SetProperty(ref _autoSwitchEnabled, value))
-                {
-                    NotifyConfigChanged();
-                }
-            }
+            Notify(image.CancelThumbnail); Notify(image.ReleaseFullImage);
+            Notify(()=>LocalImageAssetCache.InvalidateImageCache(image.FilePath));
         }
-
-        /// <summary>
-        /// 是否设置为只读模式（防止执行流程修改）
-        /// </summary>
-        public bool IsReadOnly
+    }
+    private void SetRunSelection(ImageInfo image,bool selected)
+    {
+        if(!_indices.TryGetValue(image.Id,out var index)||!ReferenceEquals(_entries[index],image)) throw new InvalidOperationException("图像条目不再属于当前源。");
+        var references=new List<string>(_runReferences);var reference=Reference(image);
+        references.RemoveAll(item=>item==reference);if(selected)references.Add(reference);
+        Commit(_entries.ToArray(),_currentIndex,_runMode,_autoSwitch,references);
+    }
+    public void AddImage(ImageInfo image)=>AddImages(new[]{image});
+    public void AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
+    {
+        var additions=images.ToArray();if(additions.Length==0)return;
+        Commit(_entries.Concat(additions).ToArray(),selectFirstAdded?Count:_currentIndex,_runMode,_autoSwitch,
+            _runReferences.Concat(additions.Where(image=>image.IsForRun).Select(Reference)).Distinct(StringComparer.Ordinal));
+    }
+    public void RemoveImage(ImageInfo image)
+    {
+        var index=_entries.IndexOf(image);if(index<0)return;
+        var rows=_entries.Where(row=>!ReferenceEquals(row,image)).ToArray();
+        var current=_currentIndex>index?_currentIndex-1:_currentIndex;
+        current=Math.Min(current,rows.Length-1);
+        var selected=_runReferences.Where(reference=>reference!=Reference(image)||rows.Any(row=>Reference(row)==reference));
+        Commit(rows,current,_runMode,_autoSwitch,selected);
+    }
+    public void ClearImages()=>Commit(Array.Empty<ImageInfo>(),-1,_runMode,_autoSwitch,Array.Empty<string>());
+    public void Reset()=>Commit(Array.Empty<ImageInfo>(),-1,ImageRunMode.运行全部,true,Array.Empty<string>());
+    public IEnumerable<ImageInfo> GetSelectedImages()=>_runMode==ImageRunMode.运行全部?_entries:_entries.Where(image=>image.IsForRun);
+    public string[] GetFilePaths()=>_entries.Select(image=>image.FilePath).ToArray();
+    public int PrepareForDisplay()=>Count;
+    public bool TryPresentRuntimeCursor(long expectedEditVersion,string entryId,string reference,string address)
+    {
+        if(_committing||EditVersion!=expectedEditVersion||!_indices.TryGetValue(entryId,out var index))return false;
+        var image=_entries[index];if(Reference(image)!=reference||image.FilePath!=address)return false;
+        _currentIndex=index;LastNotificationError=null;
+        Notify(()=>OnPropertyChanged(nameof(CurrentIndex)));Notify(()=>OnPropertyChanged(nameof(CurrentImage)));
+        foreach(var callback in CurrentImageChanged?.GetInvocationList()??Array.Empty<Delegate>())Notify(()=>((EventHandler<int>)callback)(this,index));
+        return true;
+    }
+    public void LoadFromConfig(ImageSourceConfig config,IResourcePathResolver? resourcePaths=null)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        if(_committing)throw new InvalidOperationException("图像源投影不能在编辑接纳中重入加载。");
+        var resolver=resourcePaths;
+        var rows=new List<ImageInfo>();
+        // Matching by occurrence preserves identities within the projection without confusing duplicate references.
+        var previous=_entries.GroupBy(Reference).ToDictionary(group=>group.Key,group=>new Queue<ImageInfo>(group));
+        foreach(var reference in config.FilePaths)
         {
-            get => _isReadOnly;
-            set => SetProperty(ref _isReadOnly, value);
-        }
-
-        /// <summary>
-        /// 当前图像变化事件
-        /// </summary>
-        public event EventHandler<int>? CurrentImageChanged;
-
-        /// <summary>
-        /// 配置同步回调：每次状态变更（加/删/清/切图、模式切换）时把最新配置写回父节点。
-        /// 内存实时同步：父节点据此更新 ImageSourceConfig（Solution 共享对象），保存时自动带出，
-        /// 避免"保存入口各自转换"导致的漂移（与全局变量/参数实时同步模式对齐）。
-        /// </summary>
-        public Action<ImageSourceConfig>? ConfigChanged { get; set; }
-        public event EventHandler? ConfigurationEdited;
-
-        /// <summary>
-        /// 触发配置同步：把当前状态转成可序列化配置并通知父节点。
-        /// </summary>
-        private bool _loadingConfiguration;
-        private void NotifyConfigChanged()
-        {
-            if (_loadingConfiguration || _presentingRuntimeCursor) return;
-            EditVersion++;
-            ConfigChanged?.Invoke(ToConfig());
-            ConfigurationEdited?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>Present a frozen run cursor only while the user's source is unchanged.</summary>
-        public bool TryPresentRuntimeCursor(long expectedEditVersion, string entryId, string reference, string address)
-        {
-            if (EditVersion != expectedEditVersion) return false;
-            if (!_entryIndices.TryGetValue(entryId, out var index)) return false;
-            var image = _images[index];
-            if (image.Id != entryId || (image.SourceReference ?? image.FilePath) != reference || image.FilePath != address) return false;
-            _presentingRuntimeCursor = true;
-            try { CurrentIndex = index; }
-            finally { _presentingRuntimeCursor = false; }
-            return true;
-        }
-
-        /// <summary>
-        /// 图像集合变化事件
-        /// </summary>
-        public event NotifyCollectionChangedEventHandler? CollectionChanged
-        {
-            add => _images.CollectionChanged += value;
-            remove => _images.CollectionChanged -= value;
-        }
-
-        /// <summary>
-        /// 创建图像输入源
-        /// </summary>
-        /// <param name="nodeId">关联的节点ID</param>
-        public ImageInputSource(string nodeId)
-        {
-            NodeId = nodeId ?? throw new ArgumentNullException(nameof(nodeId));
-            _images = new BatchObservableCollection<ImageInfo>();
-            _images.CollectionChanged += OnImagesChanged;
-        }
-
-        private void OnImagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            // Reset and direct collection edits also invalidate pending cursor presentation.
-            EditVersion++;
-            _entryIndices.Clear();
-            for (var index = 0; index < _images.Count; index++) _entryIndices.TryAdd(_images[index].Id, index);
-            // Batch collections can publish Reset without the removed items. Reconcile
-            // subscriptions on structural edits so removed entries cannot edit this source.
-            var current = new HashSet<ImageInfo>(_images);
-            foreach (var image in _observedImages.Where(image => !current.Contains(image)).ToArray())
-            {
-                image.PropertyChanged -= OnImagePropertyChanged;
-                _observedImages.Remove(image);
-            }
-            foreach (var image in current)
-            {
-                if (_observedImages.Add(image)) image.PropertyChanged += OnImagePropertyChanged;
-            }
-        }
-
-        private void OnImagePropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName != nameof(ImageInfo.IsForRun)) return;
-            OnPropertyChanged(nameof(GetSelectedImages));
-            NotifyConfigChanged();
-        }
-
-        /// <summary>
-        /// 添加图像（用户操作）
-        /// </summary>
-        public void AddImage(ImageInfo image)
-        {
-            if (_isReadOnly)
-                throw new InvalidOperationException("输入源已锁定为只读，无法添加图像");
-
-            _images.Add(image);
-            OnPropertyChanged(nameof(Count));
-            OnPropertyChanged(nameof(HasImages));
-            OnPropertyChanged(nameof(GetSelectedImages));
-            NotifyConfigChanged();
-        }
-
-        /// <summary>
-        /// 批量添加图像（用户操作）
-        /// </summary>
-        public void AddImages(IEnumerable<ImageInfo> images)
-        {
-            if (_isReadOnly)
-                throw new InvalidOperationException("输入源已锁定为只读，无法添加图像");
-
-            _images.AddRange(images);
-            OnPropertyChanged(nameof(Count));
-            OnPropertyChanged(nameof(HasImages));
-            OnPropertyChanged(nameof(GetSelectedImages));
-            NotifyConfigChanged();
-        }
-
-        /// <summary>
-        /// 移除图像（用户操作）
-        /// </summary>
-        public void RemoveImage(ImageInfo image)
-        {
-            if (_isReadOnly)
-                throw new InvalidOperationException("输入源已锁定为只读，无法移除图像");
-
-            image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null;
-            ImagePreviewControl.InvalidateImageCache(image.FilePath);
-            var removedIndex = _images.IndexOf(image);
-            _images.Remove(image);
-            if (removedIndex >= 0) RemoveRunReferenceIfUnused(image);
-            if (removedIndex >= 0 && removedIndex < CurrentIndex) CurrentIndex--;
-            if (CurrentIndex >= _images.Count)
-            {
-                CurrentIndex = _images.Count - 1;
-            }
-            OnPropertyChanged(nameof(Count));
-            OnPropertyChanged(nameof(HasImages));
-            OnPropertyChanged(nameof(GetSelectedImages));
-            NotifyConfigChanged();
-        }
-
-        /// <summary>
-        /// 清空所有图像（仅用于用户手动清空，非执行流程）
-        /// </summary>
-        public void ClearImages()
-        {
-            if (_isReadOnly)
-                throw new InvalidOperationException("输入源已锁定为只读，无法清空图像");
-
-            foreach (var image in _images) { image.CancelThumbnail(); image.ReleaseFullImage(); image.Thumbnail = null; ImagePreviewControl.InvalidateImageCache(image.FilePath); }
-            _images.Clear();
-            _runReferences.Clear();
-            CurrentIndex = -1;
-            CurrentImageChanged?.Invoke(this, -1);
-            OnPropertyChanged(nameof(Count));
-            OnPropertyChanged(nameof(HasImages));
-            OnPropertyChanged(nameof(GetSelectedImages));
-            NotifyConfigChanged();
-        }
-
-        /// <summary>
-        /// 获取选中用于运行的图像
-        /// </summary>
-        public IEnumerable<ImageInfo> GetSelectedImages()
-        {
-            if (RunMode == ImageRunMode.运行全部)
-            {
-                return _images;
-            }
-            return _images.Where(img => img.IsForRun);
-        }
-
-        /// <summary>
-        /// 获取所有图像的文件路径
-        /// </summary>
-        public string[] GetFilePaths()
-        {
-            return _images.Select(img => img.FilePath).ToArray();
-        }
-
-        /// <summary>
-        /// 重置状态
-        /// </summary>
-        public void Reset()
-        {
-            ClearImages();
-            RunMode = ImageRunMode.运行全部;
-            AutoSwitchEnabled = true;
-            IsReadOnly = false;
-        }
-
-        /// <summary>
-        /// 准备显示（延迟渲染优化）
-        /// </summary>
-        public int PrepareForDisplay()
-        {
-            int count = _images.Count;
-            foreach (var image in _images)
-            {
-                image.Thumbnail = null;
-            }
-            return count;
-        }
-
-        /// <summary>
-        /// 转为可序列化配置（保存方案时调用）
-        /// </summary>
-        /// <remarks>
-        /// 保留本软件原始资源引用与选择状态；不把运行解析地址写入方案。
-        /// </remarks>
-        private List<string> _runReferences = new();
-        public ImageSourceConfig ToConfig()
-        {
-            // Preserve unresolved references and existing order on unrelated edits.
-            // Only explicit removal commands prune references, never a view Reset.
-            foreach (var group in _images.GroupBy(img => img.SourceReference ?? img.FilePath))
-            {
-                if (!group.Any(img => img.IsForRun)) _runReferences.RemoveAll(value => value == group.Key);
-                else if (!_runReferences.Contains(group.Key)) _runReferences.Add(group.Key);
-            }
-            return new ImageSourceConfig
-            {
-                NodeId = NodeId,
-                FilePaths = _images.Select(img => img.SourceReference ?? img.FilePath).ToList(),
-                CurrentIndex = CurrentIndex,
-                AutoSwitchEnabled = AutoSwitchEnabled,
-                RunMode = (int)RunMode,
-                ForRunPaths = new List<string>(_runReferences)
-            };
-        }
-
-        /// <summary>
-        /// 从配置恢复输入源（打开方案时调用）
-        /// </summary>
-        /// <remarks>
-        /// 依据 FilePaths 重建 ImageInfo（保留勾选路径），并恢复当前索引/运行模式/自动切换状态。
-        /// </remarks>
-        public void LoadFromConfig(ImageSourceConfig config, SunEyeVision.Plugin.SDK.Execution.Parameters.IResourcePathResolver? resourcePaths = null)
-        {
-            if (config == null) throw new ArgumentNullException(nameof(config));
-            EditVersion++;
-
-            _runReferences = new List<string>(config.ForRunPaths ?? new List<string>());
-            _loadingConfiguration = true;
+            string address;string? error=null;
             try
             {
-            var resolver = resourcePaths ?? SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
-            var infos = config.FilePaths.Select(p =>
-            {
-                string address; string? resourceError = null;
-                try { address = resolver.Resolve("ImageSourceConfig.FilePaths", p, SunEyeVision.Plugin.SDK.Execution.Parameters.ResourcePurpose.FileRead).Address; }
-                catch (Exception ex) { address = string.Empty; resourceError = ex.Message; } // Never fall back to process CWD.
-                return new ImageInfo { SourceReference = p, ResourceError = resourceError, FilePath = address, Name = System.IO.Path.GetFileName(p), IsForRun = config.ForRunPaths?.Contains(p) == true };
-            }).ToList();
-
-            foreach (var oldImage in _images) { oldImage.CancelThumbnail(); oldImage.ReleaseFullImage(); }
-            _images.Clear();
-            if (infos.Count > 0)
-            {
-                _images.AddRange(infos);
+                resolver??=SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(
+                    SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution);
+                address=resolver.Resolve("ImageSourceConfig.FilePaths",reference,ResourcePurpose.FileRead).Address;
             }
-
-            CurrentIndex = config.CurrentIndex;
-            AutoSwitchEnabled = config.AutoSwitchEnabled;
-            RunMode = config.RunMode == 1 ? ImageRunMode.运行选择 : ImageRunMode.运行全部;
-
-            // 缩略图由虚拟化容器 Loaded 事件按需解码（OnItemLoaded），恢复路径无需全量触发，
-            // 避免海量图片同时排队解码导致首屏/远端延迟。
-
-            OnPropertyChanged(nameof(Count));
-            OnPropertyChanged(nameof(HasImages));
-            OnPropertyChanged(nameof(GetSelectedImages));
-            // Loading is not an edit; never rewrite the persisted list.
-            }
-            finally { _loadingConfiguration = false; }
+            catch(Exception ex){address=string.Empty;error=ex.Message;}
+            var image=previous.TryGetValue(reference,out var candidates)&&candidates.Count>0?candidates.Dequeue():null;
+            if(image is null||image.FilePath!=address)image=new(){SourceReference=reference,FilePath=address,Name=System.IO.Path.GetFileName(reference),ResourceError=error};
+            rows.Add(image);
         }
-
-        public void RemoveMissingImages()
-        {
-            foreach (var image in _images.Where(image => !System.IO.File.Exists(image.FilePath)).ToArray()) RemoveImage(image);
-        }
-
-        public void ReplaceImage(ImageInfo image, string path)
-        {
-            if (_isReadOnly) throw new InvalidOperationException("输入源已锁定。");
-            var index = _images.IndexOf(image);
-            if (index < 0) return;
-            image.CancelThumbnail(); image.ReleaseFullImage(); ImagePreviewControl.InvalidateImageCache(image.FilePath);
-            _images[index] = new ImageInfo { FilePath = path, Name = System.IO.Path.GetFileName(path), IsForRun = image.IsForRun };
-            RemoveRunReferenceIfUnused(image);
-            OnPropertyChanged(nameof(CurrentImage));
-            CurrentImageChanged?.Invoke(this, CurrentIndex);
-            NotifyConfigChanged();
-        }
-
-        private void RemoveRunReferenceIfUnused(ImageInfo removed)
-        {
-            var reference = removed.SourceReference ?? removed.FilePath;
-            if (!_images.Any(image => (image.SourceReference ?? image.FilePath) == reference))
-                _runReferences.RemoveAll(value => value == reference);
-        }
+        Install(rows.ToArray(),config,false);
+    }
+    public void RemoveMissingImages()
+    {
+        var rows=_entries.Where(image=>System.IO.File.Exists(image.FilePath)).ToArray();
+        if(rows.Length==Count)return;
+        var current=CurrentImage;var index=current is null?-1:Array.IndexOf(rows,current);
+        Commit(rows,index,_runMode,_autoSwitch,_runReferences.Where(reference=>rows.Any(row=>Reference(row)==reference)));
+    }
+    public void ReplaceImage(ImageInfo image,string path)
+    {
+        var index=_entries.IndexOf(image);if(index<0)return;
+        var rows=_entries.ToArray();rows[index]=new(){FilePath=path,Name=System.IO.Path.GetFileName(path),IsForRun=image.IsForRun};
+        var selected=_runReferences.Where(reference=>reference!=Reference(image)||rows.Any(row=>Reference(row)==reference)).ToList();
+        if(image.IsForRun&&!selected.Contains(path))selected.Add(path);
+        Commit(rows,_currentIndex,_runMode,_autoSwitch,selected);
     }
 }

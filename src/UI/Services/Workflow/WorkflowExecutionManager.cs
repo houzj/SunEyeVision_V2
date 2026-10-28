@@ -907,12 +907,10 @@ namespace SunEyeVision.UI.Services.Workflow
                     logger.LogInfo($"运行时参数: {param.Key} = {param.Value}");
                 }
 
-                // 从各节点 InputSource 提取本轮路径快照。路径只覆盖深拷贝后的执行参数，
-                // 不再写回方案节点的 Parameters.FilePath，避免切图或执行污染设计数据。
-                var nodeParameterOverrides = frozenImageOverrides ?? CreateImageLoadParameterOverrides(
-                    rootEngineWorkflow,
-                    logger,
-                    new HashSet<string>());
+                // Every entry comes from this run's published configuration. Copy the
+                // fallback as well: sequence numbers/communication assignments are per-run.
+                var nodeParameterOverrides = frozenImageOverrides ?? runInputs.LocalImages.Overrides.ToDictionary(
+                    pair => pair.Key, pair => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>(pair.Value));
                 if (sequenceNumbers is not null)
                 {
                     foreach (var pair in nodeParameterOverrides)
@@ -1053,7 +1051,7 @@ namespace SunEyeVision.UI.Services.Workflow
             lock(_lock)
             {
                 if(_activeWorkflowIds.Contains(workflowId))throw new InvalidOperationException("运行中的流程不能移除工作区快照。");
-                _executionSnapshots.Remove(workflowId);_preparedRunInputs.Remove(workflowId);
+                _executionSnapshots.Remove(workflowId);_preparedRunInputs.Remove(workflowId);_localImageCursors.Remove(workflowId);
             }
         }
 
@@ -1221,24 +1219,6 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         // 已删除：工作流不再提供默认输入图像，缺少输入图像的节点将直接报错
 
-        /// <summary>
-        /// 递归遍历工作流（含子工作流），从每个 ImageLoad 节点的 InputSource
-        /// 读取当前选中的图像路径，生成本轮参数覆盖快照。
-        /// </summary>
-        /// <remarks>
-        /// 使用 WorkflowNodeBase 基类而非 SunEyeVision.UI.Shared.WorkflowNode，确保子程序工作流中的节点
-        /// （类型为 WorkflowNodeBase）也能正确注入路径。
-        /// IsImageLoadNode 通过 ToolType 字符串判断（在基类上可访问）。
-        /// InputSource 在 WorkflowNodeBase 上为 object?，通过 as 转换访问。
-        /// </remarks>
-        private Dictionary<string, IReadOnlyDictionary<string, object?>> CreateImageLoadParameterOverrides(
-            SunEyeVision.Workflow.Workflow workflow, ILogger logger, HashSet<string> visitedIds)
-        {
-            var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
-            CollectImageLoadParameterOverrides(workflow, logger, visitedIds, overrides);
-            return overrides;
-        }
-
         private readonly record struct CameraSourceBinding(string NodeId, string CameraId, int TimeoutMs);
 
         private void PreparePublishedRun(string? workflowId, Solution? solutionDefinition = null)
@@ -1257,8 +1237,20 @@ namespace SunEyeVision.UI.Services.Workflow
                 p => p.Value is Array array ? array.Clone() : p.Value, StringComparer.Ordinal);
             var definitionSource = solutionDefinition ?? SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
             var definitions = definitionSource is null ? Array.Empty<GlobalVariable>() : GlobalVariable.CaptureDefinitions(definitionSource.GlobalVariables);
+            lock (_lock)
+            {
+                var owners = flows.ToDictionary(flow => flow.Id, StringComparer.Ordinal);
+                var sourceIds = flows.SelectMany(flow => flow.Nodes).Where(node => ImageSourceResolver.IsImageSource(node.ToolType)).Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
+                foreach (var pair in _localImageCursors.ToArray())
+                {
+                    if (!pair.Value.Root.TryGetTarget(out var owner) || !owners.TryGetValue(pair.Key, out var current) || !ReferenceEquals(owner, current))
+                        _localImageCursors.Remove(pair.Key);
+                    else foreach (var sourceId in pair.Value.Sources.Keys.Where(id => !sourceIds.Contains(id)).ToArray()) pair.Value.Sources.Remove(sourceId);
+                }
+            }
+            var resourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(definitionSource);
             var captured = (workflowId is null ? flows.Select(f => f.Id) : new[] { workflowId }).ToDictionary(
-                id => id, id => new PublishedRunInputs(configuration, globals, CaptureLocalImageInputs(id, configuration), definitions, runtime), StringComparer.Ordinal);
+                id => id, id => new PublishedRunInputs(configuration, globals, CaptureLocalImageInputs(id, configuration, resourcePaths), definitions, runtime), StringComparer.Ordinal);
             lock (_lock)
             {
                 if (workflowId is null) _preparedRunInputs.Clear();
@@ -1323,88 +1315,6 @@ namespace SunEyeVision.UI.Services.Workflow
             if (string.IsNullOrWhiteSpace(cameraId) || timeout <= 0)
                 return null;
             return new CameraSourceBinding(source.Key, cameraId, timeout);
-        }
-
-        private void CollectImageLoadParameterOverrides(
-            SunEyeVision.Workflow.Workflow workflow,
-            ILogger logger,
-            HashSet<string> visitedIds,
-            Dictionary<string, IReadOnlyDictionary<string, object?>> overrides)
-        {
-            if (workflow == null || !visitedIds.Add(workflow.Id)) return;
-
-            foreach (var wn in workflow.Nodes)
-            {
-                if (wn == null) continue;
-
-                // ★ 递归优先：子工作流遍历必须在 IsImageLoadToolType 判断之前，
-                //   确保 Subroutine 节点（非 ImageLoad 类型）也能触发子工作流递归
-                if (!string.IsNullOrEmpty(wn.SubroutineId))
-                {
-                    var subWorkflow = _workflowEngine.GetWorkflow(wn.SubroutineId);
-                    if (subWorkflow != null)
-                        CollectImageLoadParameterOverrides(subWorkflow, logger, visitedIds, overrides);
-                }
-
-                // 通过 ToolType 判断是否为图像载入节点（基类属性，无需强制转换为 SunEyeVision.UI.Shared.WorkflowNode）
-                if (!IsImageLoadToolType(wn.ToolType))
-                    continue;
-
-                var config = wn.ImageSourceConfig;
-                if (config?.SourceKind == SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera)
-                {
-                    overrides[wn.Id] = new Dictionary<string, object?>
-                    {
-                        ["SourceKind"] = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera,
-                        ["CameraDeviceId"] = config.CameraDeviceId,
-                        ["CameraTimeoutMs"] = config.CameraTimeoutMs,
-                        ["OutputFormat"] = config.OutputFormat,
-                        ["SequenceNumber"] = config.SNInitialValue,
-                        ["FilePath"] = string.Empty
-                    };
-                    continue;
-                }
-
-                var inputSource = wn.InputSource as ImageInputSource;
-                var currentImage = inputSource?.CurrentImage;
-
-                // InputSource 有当前图 → 在执行参数快照中覆盖路径。
-                if (currentImage != null && !string.IsNullOrEmpty(currentImage.FilePath))
-                {
-                    overrides[wn.Id] = new Dictionary<string, object?>
-                    {
-                        ["SourceKind"] = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,
-                        ["OutputFormat"] = config?.OutputFormat ?? SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat.Original,
-                        ["SequenceNumber"] = config?.SNInitialValue ?? 1L,
-                        ["FilePath"] = currentImage.FilePath
-                    };
-                    logger.LogInfo($"从 InputSource 创建路径快照: '{wn.Name}' -> '{currentImage.FilePath}'");
-                }
-                else
-                {
-                    // 显式覆盖为空，防止执行快照使用设计期残留路径。
-                    overrides[wn.Id] = new Dictionary<string, object?>
-                    {
-                        ["SourceKind"] = SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,
-                        ["OutputFormat"] = config?.OutputFormat ?? SunEyeVision.Plugin.SDK.Vision.Contracts.ImageOutputFormat.Original,
-                        ["SequenceNumber"] = config?.SNInitialValue ?? 1L,
-                        ["FilePath"] = string.Empty
-                    };
-                    logger.LogWarning($"InputSource 无有效图像，已在运行快照清空 '{wn.Name}' 的 FilePath");
-                }
-            }
-        }
-
-        /// <summary>
-        /// 判断工具类型是否为图像载入节点（基于 ToolType 字符串匹配）
-        /// 用于 WorkflowNodeBase 基类，无需强制转换为 SunEyeVision.UI.Shared.WorkflowNode
-        /// </summary>
-        private static bool IsImageLoadToolType(string toolType)
-        {
-            return toolType != null && (
-                toolType.Contains("ImageLoad", StringComparison.OrdinalIgnoreCase) ||
-                toolType.Contains("图片载入", StringComparison.OrdinalIgnoreCase) ||
-                toolType.Contains("ImageSource", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -1603,6 +1513,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
                 _cancellationTokens.Clear();
                 _preparedRunInputs.Clear();
+                _localImageCursors.Clear();
             }
         }
     }

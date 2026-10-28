@@ -1,3 +1,4 @@
+﻿using SunEyeVision.UI.Shared;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -26,7 +27,7 @@ public partial class ImagePreviewControl
 
     private void CancelFileImport()
     {
-        if (IsImporting) ImportStatus = "导入已取消，已添加的引用保留";
+        if (IsImporting) ImportStatus = "导入已取消；已正式接纳的引用不回滚";
         _fileImportGeneration++;
         _fileImportCancellation?.Cancel();
         _fileImportCancellation = null;
@@ -49,33 +50,26 @@ public partial class ImagePreviewControl
         try
         {
             var files = await enumerate(cancellation.Token).ConfigureAwait(false);
-            var imported = 0;
-            if (files.Length == 0)
-                await Dispatcher.InvokeAsync(() => { if (generation == _fileImportGeneration) ImportStatus = "没有找到可导入的图像文件"; });
-            HashSet<string>? existing = null;
-            var selectedNew = false;
-            for (var offset = 0; offset < files.Length; offset += 256)
+            cancellation.Token.ThrowIfCancellationRequested();
+            // Build file references off the dispatcher; no image decode or live collection mutation.
+            var prepared=await Task.Run(()=>files.Select(path=>
             {
                 cancellation.Token.ThrowIfCancellationRequested();
-                var batch = files.Skip(offset).Take(256).Select(path => new ImageInfo
-                    { FilePath = path, Name = Path.GetFileNameWithoutExtension(path) }).ToArray();
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    if (cancellation.IsCancellationRequested || generation != _fileImportGeneration
-                        || !ReferenceEquals(ActiveInputSource, source) || source.IsReadOnly) return;
-                    existing ??= source.Images.Select(image => image.FilePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                    var additions = batch.Where(image => existing.Add(image.FilePath)).ToArray();
-                    if (additions.Length == 0) return;
-                    var first = source.Count;
-                    source.AddImages(additions);
-                    // Collection observers can cancel, clear, or switch source during the commit.
-                    if (cancellation.IsCancellationRequested || generation != _fileImportGeneration
-                        || !ReferenceEquals(ActiveInputSource, source)) return;
-                    imported += additions.Length;
-                    ImportStatus = $"已导入 {imported} 个图像引用";
-                    if (!selectedNew) { CurrentImageIndex = first; selectedNew = true; }
-                }, DispatcherPriority.Background, cancellation.Token);
-            }
+                return new ImageInfo{FilePath=path,Name=Path.GetFileNameWithoutExtension(path)};
+            }).ToArray(),cancellation.Token).ConfigureAwait(false);
+            await Dispatcher.InvokeAsync(()=>
+            {
+                if(cancellation.IsCancellationRequested||generation!=_fileImportGeneration||
+                    !ReferenceEquals(ActiveInputSource,source)||source.IsReadOnly)return;
+                var existing=source.Images.Select(image=>image.FilePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var additions=prepared.Where(image=>existing.Add(image.FilePath)).ToArray();
+                if(additions.Length==0){ImportStatus="没有找到新的可导入图像文件";return;}
+                // One user action, one formal acceptance; initial selection belongs to that same edit.
+                source.AddImages(additions,selectFirstAdded:true);
+                if(cancellation.IsCancellationRequested||generation!=_fileImportGeneration||
+                    !ReferenceEquals(ActiveInputSource,source))return;
+                ImportStatus=$"已导入 {additions.Length} 个图像引用";
+            },DispatcherPriority.Background,cancellation.Token);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         finally

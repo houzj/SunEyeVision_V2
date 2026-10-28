@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -48,24 +48,10 @@ namespace SunEyeVision.UI.Shared
             get => base.InputSource as ImageInputSource;
             set
             {
-                // 解除旧输入源的回调，避免切换节点后残留旧引用
-                if (base.InputSource is ImageInputSource oldSource)
-                {
-                    oldSource.ConfigChanged = null;
-                }
-
-                base.InputSource = value;
-
-                // ★ 内存实时同步：InputSource 任何变更（加/删/清/切图、模式）立即写回 ImageSourceConfig，
-                // 与全局变量/参数实时同步模式对齐；保存时序列化 ImageSourceConfig 即得最新状态。
-                if (value != null)
-                {
-                    value.ConfigChanged = cfg =>
-                    {
-                        ImageSourceConfig ??= new ImageSourceConfig { NodeId = Id };
-                        ImageSourceConfig.UpdateLocalInput(cfg);
-                    };
-                }
+                if (ReferenceEquals(base.InputSource,value)) return;
+                if (base.InputSource is ImageInputSource oldSource) oldSource.DetachFormalOwner();
+                base.InputSource=value;
+                value?.AttachFormalOwner();
             }
         }
 
@@ -165,7 +151,9 @@ namespace SunEyeVision.UI.Shared
         {
             if (InputSource == null)
             {
-                InputSource = new ImageInputSource(Id);
+                var source = new ImageInputSource(Id);
+                if (ImageSourceConfig is {} configuration) source.LoadFromConfig(configuration);
+                InputSource = source;
                 OnPropertyChanged(nameof(InputSource));
             }
             return InputSource;
@@ -236,7 +224,6 @@ namespace SunEyeVision.UI.Shared
             if (node.ImageSourceConfig != null && node.ImageSourceConfig.FilePaths.Count > 0)
             {
                 var input = node.EnsureInputSource();
-                input.LoadFromConfig(node.ImageSourceConfig);
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[FromBase] 已从Config恢复图像源 | Node={node.Name} | 恢复后Count={input.Count}",
                     "WorkflowNodeModel");

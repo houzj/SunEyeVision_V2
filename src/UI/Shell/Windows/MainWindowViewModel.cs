@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -248,6 +248,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 if (_imageResult.ActiveInputSource is { } old) old.ConfigurationEdited -= OnImageInputConfigurationEdited;
                 _imageResult.ActiveInputSource = value;
                 if (value != null) value.ConfigurationEdited += OnImageInputConfigurationEdited;
+                OnPropertyChanged(nameof(ActiveInputSource));
             }
         }
 
@@ -4626,7 +4627,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 var fullImage = await System.Threading.Tasks.Task.Run(async () =>
                 {
                     await s_legacyImageDecodeSlot.WaitAsync(token).ConfigureAwait(false);
-                    try { token.ThrowIfCancellationRequested(); return ImagePreviewControl.LoadImageOptimized(path); }
+                    try { token.ThrowIfCancellationRequested(); return LocalImageAssetCache.LoadImageOptimized(path); }
                     finally { s_legacyImageDecodeSlot.Release(); }
                 }, token);
                 if (token.IsCancellationRequested || imageInfo.FilePath != path
@@ -5460,13 +5461,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 source = new ImageInputSource(sourceNode.Id);
                 if (sourceNode.ImageSourceConfig != null) source.LoadFromConfig(sourceNode.ImageSourceConfig);
-                source.ConfigChanged = config =>
-                {
-                    sourceNode.ImageSourceConfig ??= new ImageSourceConfig { NodeId = sourceNode.Id };
-                    sourceNode.ImageSourceConfig.UpdateLocalInput(config);
-                };
                 sourceNode.InputSource = source;
             }
+            BindLocalImageSourceEditor(sourceNode,source);
             ImagePreviewSourceMessage = source.Count == 0 ? "请添加本地图像" : string.Empty;
             if (_currentDisplayNodeId != sourceNode.Id || !ReferenceEquals(ActiveInputSource, source))
             {

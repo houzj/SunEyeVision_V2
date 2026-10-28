@@ -2,7 +2,6 @@
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Shell.Controls.Panels;
 
 namespace SunEyeVision.UI.Services.Workflow;
 
@@ -10,12 +9,23 @@ public partial class WorkflowExecutionManager
 {
     private readonly LocalImageSequenceService _localImageSequences = new();
     private sealed record LocalSourcePresentation(ImageInputSource Source, long EditVersion);
+    private sealed record LocalCursor(string Definition, string? EntryId);
+    private sealed record LocalCursorOwner(WeakReference<SunEyeVision.Workflow.Workflow> Root, Dictionary<string, LocalCursor> Sources);
+    private readonly Dictionary<string, LocalCursorOwner> _localImageCursors = new(StringComparer.Ordinal);
+    internal void ResetLocalImageCursor(string rootId, string sourceId)
+    {
+        lock (_lock)
+            if (_localImageCursors.TryGetValue(rootId, out var owner)) owner.Sources.Remove(sourceId);
+    }
+    private static string CursorDefinition(LocalImageSourcePlan plan) => System.Text.Json.JsonSerializer.Serialize(new { plan.Entries, plan.SelectedEntryId });
     private sealed record PreparedLocalImages(IReadOnlyList<LocalImageSourcePlan> Plans,
         Dictionary<string, IReadOnlyDictionary<string, object?>> Overrides,
-        Dictionary<string, LocalSourcePresentation> Presentations, string DefinitionSignature);
+        Dictionary<string, LocalSourcePresentation> Presentations, string DefinitionSignature,
+        SunEyeVision.Workflow.Workflow RootOwner);
 
     // Called only at the UI-owned complete-run boundary. No file IO and no publishing.
-    private PreparedLocalImages CaptureLocalImageInputs(string rootId, SunEyeVision.Workflow.WorkflowRunConfiguration configuration)
+    private PreparedLocalImages CaptureLocalImageInputs(string rootId, SunEyeVision.Workflow.WorkflowRunConfiguration configuration,
+        SunEyeVision.Workflow.Persistence.SolutionResourceResolver resourcePaths)
     {
         var plans = new List<LocalImageSourcePlan>();
         var presentations = new Dictionary<string, LocalSourcePresentation>();
@@ -40,30 +50,42 @@ public partial class WorkflowExecutionManager
                     continue;
                 }
                 var source = formal?.Nodes.FirstOrDefault(n => n.Id == node.Id)?.InputSource as ImageInputSource;
-                if (source is null)
-                {
-                    source = new ImageInputSource(node.Id);
-                    if (config is not null) source.LoadFromConfig(config);
-                }
-                var entries = source.Images.Select((image, index) => (image, index))
-                    .Where(item => source.RunMode != ImageRunMode.运行选择 || item.image.IsForRun)
-                    .Select(item => new LocalImageSequenceEntry(item.image.Id,
-                        item.image.SourceReference ?? item.image.FilePath, item.image.FilePath, item.index)).ToArray();
-                plans.Add(new(node.Id, entries, source.CurrentImage?.Id, source.AutoSwitchEnabled, config?.StopAtLastImage == true));
-                presentations.Add(node.Id, new(source, source.EditVersion));
+                var plan = CaptureLocalImagePlan(node.Id, config, resourcePaths);
+                plans.Add(plan);
+                if (source is not null) presentations.Add(node.Id, new(source, source.EditVersion));
                 overrides[node.Id] = new Dictionary<string, object?> {
                     ["SourceKind"] = ImageSourceKind.Local, ["OutputFormat"] = config?.OutputFormat ?? ImageOutputFormat.Original,
-                    ["SequenceNumber"] = config?.SNInitialValue ?? 1L, ["FilePath"] = source.CurrentImage?.FilePath ?? string.Empty };
+                    ["SequenceNumber"] = config?.SNInitialValue ?? 1L,
+                    ["FilePath"] = plan.Entries.FirstOrDefault(entry => entry.EntryId == plan.SelectedEntryId)?.Address ?? string.Empty };
+
             }
         }
         Capture(rootId);
         // Runtime cursor advancement is not a configuration edit. Reuse its sequence until
         // a real source/configuration change, then install the new definition next whole round.
         var signature = System.Text.Json.JsonSerializer.Serialize(new {
-            Plans = plans.Select(p => new { p.SourceNodeId, p.Entries, p.AutoAdvance, p.StopAtLast }),
-            Settings = overrides.Select(p => new { p.Key, Values = p.Value.Where(v => v.Key != "FilePath").ToArray() }),
-            Views = presentations.Select(p => new { p.Key, p.Value.EditVersion }) });
-        return new(plans, overrides, presentations, signature);
+            Plans = plans.Select(p => new { p.SourceNodeId, p.Entries, p.SelectedEntryId, p.AutoAdvance, p.StopAtLast }),
+            Settings = overrides.Select(p => new { p.Key, Values = p.Value.Where(v => v.Key != "FilePath").ToArray() }) });
+        var owner = _workflowEngine.GetWorkflow(rootId) ?? throw new InvalidOperationException("图像源所属根流程已移除。");
+        return new(plans, overrides, presentations, signature, owner);
+    }
+
+    internal static LocalImageSourcePlan CaptureLocalImagePlan(string nodeId, SunEyeVision.Workflow.ImageSourceConfig? config,
+        SunEyeVision.Workflow.Persistence.SolutionResourceResolver resourcePaths)
+    {
+        config ??= new() { NodeId = nodeId };
+        if (config.NodeId != nodeId || config.FilePaths is null || config.ForRunPaths is null ||
+            config.RunMode is not (0 or 1) || config.CurrentIndex < -1 || config.CurrentIndex >= config.FilePaths.Count ||
+            !Enum.IsDefined(config.SourceKind) || !Enum.IsDefined(config.OutputFormat) || config.CameraTimeoutMs <= 0 || config.SNInitialValue < 0)
+            throw new InvalidOperationException("正式图像源身份、运行模式或选择无效。");
+        var selected = config.ForRunPaths.ToHashSet(StringComparer.Ordinal);
+        // Stable within an unchanged frozen list, including repeated references. A view's
+        // generated item IDs and runtime cursor never define a run's input or generation.
+        var all = config.FilePaths.Select((reference, index) => new LocalImageSequenceEntry(
+            $"{index}:{reference}", reference, resourcePaths.ResolveAddress("ImageSourceConfig.FilePaths", reference), index)).ToArray();
+        var entries = all.Where(entry => config.RunMode == 0 || selected.Contains(entry.ResourceReference)).ToArray();
+        return new(nodeId, Array.AsReadOnly(entries), config.CurrentIndex < 0 ? null : all[config.CurrentIndex].EntryId,
+            config.AutoSwitchEnabled, config.StopAtLastImage);
     }
 
 
@@ -73,16 +95,20 @@ public partial class WorkflowExecutionManager
         public string WorkflowId { get; }
         public long Generation { get; }
         public string DefinitionSignature { get; }
+        public SunEyeVision.Workflow.Workflow RootOwner { get; }
+        public IReadOnlyDictionary<string, string> CursorDefinitions { get; }
         public Dictionary<string, IReadOnlyDictionary<string, object?>> BaseOverrides { get; }
         public Dictionary<string, LocalSourcePresentation> Presentations { get; }
         public IReadOnlyList<LocalImageRunInput> Consumed { get; private set; } = Array.Empty<LocalImageRunInput>();
 
         public LocalImageExecution(LocalImageSequenceService sequences, string workflowId, long generation,
             Dictionary<string, IReadOnlyDictionary<string, object?>> overrides,
-            Dictionary<string, LocalSourcePresentation> presentations, string definitionSignature)
+            Dictionary<string, LocalSourcePresentation> presentations, string definitionSignature,
+            SunEyeVision.Workflow.Workflow rootOwner, IReadOnlyDictionary<string, string> cursorDefinitions)
         {
             _sequences = sequences; WorkflowId = workflowId; Generation = generation;
             BaseOverrides = overrides; Presentations = presentations; DefinitionSignature = definitionSignature;
+            RootOwner = rootOwner; CursorDefinitions = cursorDefinitions;
         }
 
         public Dictionary<string, IReadOnlyDictionary<string, object?>> CaptureIteration()
@@ -119,8 +145,17 @@ public partial class WorkflowExecutionManager
         var empty = validPlans.FirstOrDefault(plan => plan.Entries.Count == 0 && plan.SelectedEntryId == null);
         if (empty != null)
             throw new InvalidOperationException($"图像来源 {empty.SourceNodeId} 没有可运行的有效图片，请检查勾选和文件状态。");
+        var definitions = plans.ToDictionary(plan => plan.SourceNodeId, CursorDefinition, StringComparer.Ordinal);
+        lock (_lock)
+        {
+            if (_localImageCursors.TryGetValue(workflow.RootWorkflowId, out var cursors) &&
+                cursors.Root.TryGetTarget(out var owner) && ReferenceEquals(owner, captured.RootOwner))
+                validPlans = validPlans.Select(plan => cursors.Sources.TryGetValue(plan.SourceNodeId, out var cursor) &&
+                    cursor.Definition == definitions[plan.SourceNodeId] ? plan with { SelectedEntryId = cursor.EntryId } : plan).ToArray();
+        }
         var generation = _localImageSequences.Begin(workflow.RootWorkflowId, validPlans);
-        return new(_localImageSequences, workflow.RootWorkflowId, generation, captured.Overrides, captured.Presentations, captured.DefinitionSignature);
+        return new(_localImageSequences, workflow.RootWorkflowId, generation, captured.Overrides, captured.Presentations,
+            captured.DefinitionSignature, captured.RootOwner, definitions);
     }
 
     private async Task<LocalImageCompletion> CompleteLocalImagesAsync(LocalImageExecution images,
@@ -131,6 +166,18 @@ public partial class WorkflowExecutionManager
         if (completion is LocalImageCompletion.Stale) throw new InvalidOperationException("图像运行序列已失效，未推进。");
         if (!success) return completion;
         var next = _localImageSequences.GetInputs(images.WorkflowId, images.Generation);
+        lock (_lock)
+        {
+            token.ThrowIfCancellationRequested();
+            if (ReferenceEquals(_workflowEngine.GetWorkflow(images.WorkflowId), images.RootOwner))
+            {
+                if (!_localImageCursors.TryGetValue(images.WorkflowId, out var cursors) ||
+                    !cursors.Root.TryGetTarget(out var owner) || !ReferenceEquals(owner, images.RootOwner))
+                    _localImageCursors[images.WorkflowId] = cursors = new(new(images.RootOwner), new(StringComparer.Ordinal));
+                foreach (var input in next)
+                    cursors.Sources[input.SourceNodeId] = new(images.CursorDefinitions[input.SourceNodeId], input.Entry?.EntryId);
+            }
+        }
         await InvokeOnUIAsync(() =>
         {
             if (token.IsCancellationRequested) return;
@@ -144,8 +191,10 @@ public partial class WorkflowExecutionManager
                 {
                     var node = FindNodeRecursive(root, input.SourceNodeId);
                     if (!ReferenceEquals(node?.InputSource, presentation.Source)) continue;
+                    if (entry.OriginalIndex < 0 || entry.OriginalIndex >= presentation.Source.Count) continue;
+                    var displayed = presentation.Source.Images[entry.OriginalIndex];
                     presentation.Source.TryPresentRuntimeCursor(presentation.EditVersion,
-                        entry.EntryId, entry.ResourceReference, entry.Address);
+                        displayed.Id, entry.ResourceReference, entry.Address);
                 }
         });
         return completion;

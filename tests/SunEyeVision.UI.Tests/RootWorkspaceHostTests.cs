@@ -41,6 +41,7 @@ public sealed class RootWorkspaceHostTests
     Application.Current.Resources.MergedDictionaries.Remove(canvasLight);Pump();
     var manager=ServiceInitializer.SolutionManager;var document=manager.CurrentSolution!;
     var source=Assert.Single(document.Workflows.Where(w=>!w.IsSubroutine));var sourceTab=Assert.Single(viewModel.WorkflowTabViewModel.Tabs);
+    VerifySourceEditing(viewModel,source,sourceTab);
     source.WorkspaceSettings=new(){RunIntervalMs=41};
     var first=new SunEyeVision.UI.Shared.WorkflowNode("first","7 自定义入口","自定义入口","RootConfigurationProbe"){GlobalIndex=7,LocalIndex=3,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(100,100)};
     var second=new SunEyeVision.UI.Shared.WorkflowNode("second","8 终点","终点","RootConfigurationProbe"){GlobalIndex=8,LocalIndex=5,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(200,220)};
@@ -231,6 +232,65 @@ public sealed class RootWorkspaceHostTests
    finally{owner?.Close();}
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+ }
+ private static void VerifySourceEditing(MainWindowViewModel main,SunEyeVision.Workflow.Workflow root,SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab)
+ {
+  var manager=ServiceInitializer.SolutionManager;var history=manager.Session!.History;var opening=history.Position;
+  var node=new SunEyeVision.UI.Shared.WorkflowNode("image-source-admission","图像来源","图像来源","RootConfigurationProbe")
+   {Parameters=new RootConfigurationTests.Parameters()};
+  tab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.AddNodeCommand(root.Nodes,node));
+  var source=node.EnsureInputSource();
+  typeof(MainWindowViewModel).GetMethod("BindLocalImageSourceEditor",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(main,new object[]{node,source});
+  var before=history.Position;
+  source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"missing-a.png")},
+   new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"missing-b.png")}},selectFirstAdded:true);
+  Assert.Equal(before+1,history.Position);Assert.Equal(2,node.ImageSourceConfig!.FilePaths.Count);Assert.Equal(0,node.ImageSourceConfig.CurrentIndex);
+  history.Undo();Assert.Null(node.ImageSourceConfig);Assert.Empty(source.Images);
+  history.Redo();Assert.Equal(2,source.Count);Assert.Equal(0,source.CurrentIndex);
+  source.Images[1].IsForRun=true;Assert.Single(node.ImageSourceConfig!.ForRunPaths);
+  history.Undo();Assert.Empty(node.ImageSourceConfig!.ForRunPaths);Assert.False(source.Images[1].IsForRun);
+  history.Redo();Assert.True(source.Images[1].IsForRun);
+  VerifySourceSettings(main,node,history);
+  while(history.Position>opening)history.Undo();
+  Assert.DoesNotContain(node,root.Nodes);
+  Assert.Throws<InvalidOperationException>(()=>source.AddImage(new SunEyeVision.UI.Shared.ImageInfo{FilePath="stale.png"}));
+  Assert.Empty(source.Images);
+ }
+ private static void VerifySourceSettings(MainWindowViewModel main,SunEyeVision.UI.Shared.WorkflowNode node,DocumentHistoryCoordinator history)
+ {
+  var previous=main.SelectedNodeDataAnalysisControl;
+  var page=new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node,main);
+  main.SelectedNodeDataAnalysisControl=page;
+  var window=new Window{Content=page,Width=440,Height=600,Left=-10000,ShowActivated=false};
+  try
+  {
+   window.Show();Pump();
+   var tabs=(TabControl)page.Content;
+   var root=(StackPanel)((ScrollViewer)((TabItem)tabs.Items[0]).Content).Content;
+   var picker=root.Children.OfType<ComboBox>().Single();
+   var before=history.Position;
+   picker.SelectedIndex=1;Pump();
+   Assert.Equal(before+1,history.Position);
+   Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera,node.ImageSourceConfig!.SourceKind);
+   Assert.Equal(2,node.ImageSourceConfig.FilePaths.Count);
+   history.Undo();Pump();Assert.Equal(0,picker.SelectedIndex);
+   history.Redo();Pump();Assert.Equal(1,picker.SelectedIndex);
+   // Detached/reloaded pages reattach exactly once and use the same formal history.
+   window.Content=null;Pump();window.Content=page;Pump();
+   before=history.Position;picker.SelectedIndex=0;Pump();Assert.Equal(before+1,history.Position);
+   // An unrelated parameter window cannot authorize edits from this page.
+   var unrelated=new Window{Width=100,Height=100,Left=-10000,ShowActivated=false};
+   var field=typeof(MainWindowViewModel).GetField("_openDebugWindow",BindingFlags.Instance|BindingFlags.NonPublic)!;
+   try
+   {
+    unrelated.Show();field.SetValue(main,unrelated);before=history.Position;
+    picker.SelectedIndex=1;Pump();
+    Assert.Equal(before,history.Position);Assert.Equal(0,picker.SelectedIndex);
+    Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,node.ImageSourceConfig.SourceKind);
+   }
+   finally{field.SetValue(main,null);unrelated.Close();}
+  }
+  finally{window.Close();main.SelectedNodeDataAnalysisControl=previous;}
  }
  private static void VerifyWorkflowButtonThemes(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,string theme)
  {

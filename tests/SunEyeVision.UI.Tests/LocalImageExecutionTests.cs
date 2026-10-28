@@ -45,14 +45,22 @@ public sealed partial class SolutionManagerUiTests
             var source = new ImageInputSource(id);
             source.AddImages(Enumerable.Range(0, images).Select(index => new ImageInfo
             {
-                FilePath = _files.CreateImage(id + index + ".png"), SourceReference = "assets/" + id + index
+                FilePath = _files.CreateImage(id + index + ".png")
             }));
             source.CurrentIndex = images > 0 ? 0 : -1;
-            (owner ?? Root).AddNode(new WorkflowNodeBase(id, id, id, "PreviewPolicyImageLoad")
+            var node = new WorkflowNodeBase(id, id, id, "PreviewPolicyImageLoad")
             {
                 Parameters = new PreviewPolicyParameters(), InputSource = source,
-                ImageSourceConfig = new ImageSourceConfig { NodeId = id }
-            });
+                ImageSourceConfig = source.ToConfig()
+            };
+            (owner ?? Root).AddNode(node);
+            // This unhosted fixture explicitly publishes its configuration before runs.
+            // Production uses NodeConfigurationEditHost rather than this fixture callback.
+            source.ConfigurationWriter = configuration =>
+            {
+                node.ImageSourceConfig!.UpdateLocalInput(configuration);
+                Manager.ResetLocalImageCursor((owner ?? Root).Id, id);
+            };
             return source;
         }
         public void Dispose()
@@ -88,6 +96,50 @@ public sealed partial class SolutionManagerUiTests
             Assert.DoesNotContain(missing, paths);
             Assert.Equal(1, a.CurrentIndex); Assert.Equal(1, b.CurrentIndex);
             Assert.Contains(missing, a.ToConfig().FilePaths);
+        });
+    }
+
+    [Fact]
+    public void Repeated_single_runs_keep_execution_cursor_without_a_preview_and_explicit_choice_resets_only_its_source()
+    {
+        Sta(() =>
+        {
+            using var fixture = new LocalImageExecutionFixture();
+            var a = fixture.AddSource("a", 3); var b = fixture.AddSource("b", 3);
+            var seen = new List<string>();
+            PreviewPolicyTool.OnRun = parameters => seen.Add(parameters.FilePath);
+            fixture.Root.Nodes[0].InputSource = null;
+            fixture.Root.Nodes[1].InputSource = null;
+            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            Assert.Empty(fixture.Errors);
+            Assert.Equal(new[] { a.Images[0].FilePath, b.Images[0].FilePath, a.Images[1].FilePath, b.Images[1].FilePath }, seen);
+            Assert.Equal(0, fixture.Root.Nodes[0].ImageSourceConfig!.CurrentIndex);
+            fixture.Manager.ResetLocalImageCursor(fixture.Root.Id, "a");
+            seen.Clear();
+            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            Assert.Empty(fixture.Errors);
+            Assert.Equal(new[] { a.Images[0].FilePath, b.Images[2].FilePath }, seen);
+        });
+    }
+
+    [Fact]
+    public void Stale_preview_list_cannot_replace_a_published_source_or_receive_its_cursor()
+    {
+        Sta(() =>
+        {
+            using var fixture = new LocalImageExecutionFixture();
+            var original = fixture.AddSource("source", 2);
+            var stale = new ImageInputSource("source");
+            stale.AddImages(new[] { new ImageInfo { FilePath = "unpublished.png" } }, selectFirstAdded: true);
+            fixture.Root.Nodes[0].InputSource = stale;
+            string? seen = null;
+            PreviewPolicyTool.OnRun = parameters => seen = parameters.FilePath;
+            fixture.Manager.RunSingleAsync(fixture.Tab).GetAwaiter().GetResult();
+            Assert.Empty(fixture.Errors);
+            Assert.Equal(original.Images[0].FilePath, seen);
+            Assert.Equal(0, stale.CurrentIndex);
+            Assert.Equal("unpublished.png", stale.CurrentImage!.FilePath);
         });
     }
 

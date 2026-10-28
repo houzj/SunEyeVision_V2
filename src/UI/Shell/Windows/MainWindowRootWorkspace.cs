@@ -12,7 +12,8 @@ public partial class MainWindowViewModel
  {foreach(var tab in WorkflowTabViewModel.Tabs)tab.RefreshRootReadiness();}
  private Solution? _rootHistoryDocument;
  private RootWorkflowCollectionHistory? _rootHistory;
- public bool CanEditRootWorkspace => DocumentManager.CurrentSolution!=null&&!IsRunning&&!IsDebugWindowOpen
+ public bool CanEditRootWorkspace => CanEditRootWorkspaceState&&!IsDebugWindowOpen;
+ private bool CanEditRootWorkspaceState => DocumentManager.CurrentSolution!=null&&!IsRunning
   &&_solutionTransitionLease==null&&!_transitionPreparationInProgress&&!_executionManager.IsAnyRunning()
   &&DocumentManager.Session?.Editing.HasPendingChanges!=true;
  private RootWorkflowCollectionHistory RootHistory

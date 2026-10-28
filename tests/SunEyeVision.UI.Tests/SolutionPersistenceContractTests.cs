@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -143,7 +143,7 @@ public sealed class SolutionPersistenceContractTests
     public void Loading_missing_duplicate_images_is_not_an_edit_and_preserves_check_list()
     {
         var input = new SunEyeVision.UI.Shared.ImageInputSource("node");
-        var changes = 0; input.ConfigChanged = _ => changes++;
+        var changes = 0; input.ConfigurationWriter = _ => changes++;
         var config = new ImageSourceConfig { NodeId = "node", FilePaths = new() { "missing.png", "missing.png", "other.png" },
             ForRunPaths = new() { "other.png", "absent.png", "missing.png", "other.png" }, CurrentIndex = 1, AutoSwitchEnabled = false, RunMode = 1 };
         input.LoadFromConfig(config, new SolutionResourceResolver(Path.GetTempPath()));

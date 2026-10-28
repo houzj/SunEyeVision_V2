@@ -1,3 +1,10 @@
+## 2026-10-28 结果绑定与原栅格集中批：两构建过，22真实失败待修
+
+- 固定正式产品5780c062：规定UI002=0错6581警告96.54秒/full001=0错6621警告64.58秒；正式EXE probe PID57888 exit0。795发布文件/113加载记录SHA全部一致，证据evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json。
+- 原结果视口10/0，实际三格式Domain/原像素、精确孔洞与单像素真实渲染、模板重建故障隔离、独占、短读pin、旧释放/清理重入、预算清层；Design91/0、RuntimeEditor10/0、FullChain8/0、WorkflowHost1/0。实际VS/VM与人工未代签；本批未全部署轨，不套旧18。
+- GlobalBinding257项=237过20败，ImageSources176项=174过2败，原日志/receipt保留，已发工作流聊天原写者集中修复。其新增发现旧SendData参数页可能直写live GlobalVariables而绕Host快照，需跟真实Window链补齐，不能以服务单测假闭环。工作流独立worktree可写自身候选，不私有构建。主仓唯一正式产品窗口、当前78292/83904/1876/77416等全部终态，无live。
+- 原方案已同步本批实际状态，用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。D07下一提取既有Text投影和ROI attachment，由NativeResultViewport唯一写ShapeList/ROIList，不叠两个独立wrapper；整生产接入及SDK主图退出未完成。C09/C17等原清单、两阶段目标不缩减，Blob业务仍冻结。
+
 ## 2026-10-28 D07精确原栅格依赖候选；准备合D06完整批
 
 - 主仓唯一产品写者root新增NativeResultRaster/ImageFrame/Viewport及独立真实Design。复用原AddImageLayer与普通BGRA保alpha，不矩形近似RLE；Domain只改私有alpha，原RGB和format/Frame保留。独立pixel lease和短读pin、跨批完整预算、模板父Panel、逐epoch/attempt清理/最终旧lease释放后复核已入候选。原始证据和当前SHA见evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json。

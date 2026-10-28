@@ -4971,7 +4971,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
-          "sha256": "1f24311335147e354747cffddf4f3d58c084ffe4fe319f8f8cd4c560bc314095"
+          "sha256": "66011886b5d1ee28f24e74b8265ab18f26bb095fbe73df55ceb1581f18cbd3ed"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Results/PropertyList/Dark.xaml",
@@ -5066,7 +5066,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
-          "sha256": "1f24311335147e354747cffddf4f3d58c084ffe4fe319f8f8cd4c560bc314095",
+          "sha256": "66011886b5d1ee28f24e74b8265ab18f26bb095fbe73df55ceb1581f18cbd3ed",
           "origin": "自研声明/生命周期适配"
         },
         {
@@ -5088,7 +5088,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
-          "sha256": "1f24311335147e354747cffddf4f3d58c084ffe4fe319f8f8cd4c560bc314095"
+          "sha256": "66011886b5d1ee28f24e74b8265ab18f26bb095fbe73df55ceb1581f18cbd3ed"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Results/PropertyList/Dark.xaml",
@@ -5430,7 +5430,43 @@
           "path": "src/Plugin.Wpf/Design/Results/ResultShell/ResultWorkspaceDesignView.xaml.cs",
           "sha256": "878f1be49f4cefe4a08fd50721fab63357cefe4979ff8560fe3e22d6585fe152"
         }
-      ]
+      ],
+      "rasterDependency": {
+        "scope": "D07必要依赖；非完整生产viewport",
+        "productCommit": "5780c062",
+        "originalEntry": "ImageViewBox.ImageLayers/AddImageLayer；ModuleResultView.AddCheckImage",
+        "files": [
+          {
+            "path": "src/Plugin.Wpf/Adapters/Display/NativeResultRaster.cs",
+            "sha256": "d92383c3823073886b81b46ce26f7a9d5137e7466d88653547c522b49ca535fb"
+          },
+          {
+            "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
+            "sha256": "35ec05a084a0a7fdf5d5816222c954f3c2ad293eef30c0770bdcfbbe10d8bb72"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+            "sha256": "466c23231799f60fe1c66bcdd2a47733533f7937fbc17c9f1115d57e8bdad93d"
+          },
+          {
+            "path": "src/Plugin.Wpf/Design/NativeResultRasterScene.xaml",
+            "sha256": "6c65941390e33eb40889bda85167a02222a904adcdf64e578bbbbb0ef8b4db42"
+          },
+          {
+            "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
+            "sha256": "292c84a59e0568465233e962bb7ca56921b09fc56baa4f753911608ffe86c6f7"
+          }
+        ],
+        "sourceEvidence": "docs/collaboration/evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json",
+        "validationEvidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
+        "passed": "真实Window199原结果视口10/0；UI002/full001零错误；实际单像素/孔洞mask渲染、Domainalpha、原像素、模板故障隔离/独占/重入/释放/预算",
+        "remaining": "Geometry/Text/Selection/ROI同owner完整层、原Shell生产接入、旧SDK主图退出及真实VS/VM人工尚未完成"
+      }
     }
-  ]
+  ],
+  "currentIntegration": {
+    "productCommit": "5780c062",
+    "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
+    "status": "规定构建与原栅格10组过；GlobalBinding20及ImageSources2失败，不套旧链成绩；依赖hash为当前源，历史validation保原基线"
+  }
 }

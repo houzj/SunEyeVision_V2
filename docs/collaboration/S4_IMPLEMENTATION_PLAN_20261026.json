@@ -7723,13 +7723,13 @@
       "C14模块结果完整链路参考": "已逐字节归档用户提供的模块结果完整链路与VM对照（references/module-result-chain-20261028/，16条源码身份逐项复核）。结果树按正式输出字段ID，当前表按显示列/稳定对象；历史记录另有存储边界，不拿日志或当前结果冒充历史。复用正确的DeclaredOutputSnapshot/reader/lease；选择节点、私有调试及工作流结果使用同一身份/状态入口，完整原PropertyList/StandardTable分别迁入。物理图像帧/current及清理必须接完整，不只换皮；页面中未验/静态边界保留。"
     },
     "moduleResultsPlan": {
-      "summary": "按VM设计推进：结果树和结果表统一读取SDK输出声明及同一次运行快照，共用唯一publication。上一批同源数据链已核收；D06完整变量绑定源码已合主仓，正在集中验收。D07已补精确栅格必要依赖候选，完整图形/文本/选择/ROI同owner及生产主图接入仍未完成。",
+      "summary": "按VM设计推进：结果树和结果表统一读取SDK输出声明及同一次运行快照，共用唯一publication。上一批同源数据链已核收；新D06完整绑定和D07原栅格依赖已集成并通过规定UI/full构建。新GlobalBinding237过20败、ImageSources174过2败正在集中修复；原栅格10组通过。完整图形/文本/选择/ROI同owner及主图生产接入仍未完成。",
       "ownership": [
         [
           "结果树 / PropertyList",
           "工作流、工具箱与数据流优化",
           "原三列树、层级/展开/128项分页、字段导航/复制/绑定、主界面Presenter与状态/主题/卸载；独立分支写Results/PropertyList专用Controls/Themes/Assets/Design子目录。",
-          "原树已接主仓同一publication；层级/128分页、真实行身份、原选择/复制及清理接入。分页通知异常仍可继续、重挂视觉恢复/null清选/恢复通知重入均过；ImageSources173过0败。D06完整批24615965已合为e258a862，生产/历史/通信关联验收待终态。"
+          "原树已接同一publication；D06完整批已合主仓5780c062。新ImageSources174过2败，目录重入刷新断言失败交原线修复；新GlobalBinding237过20败，不能套旧173/0当本批通过。"
         ],
         [
           "标准结果表 / StandardTable（C14）",
@@ -7801,7 +7801,7 @@
       "delivery": [
         [
           "当前集中批",
-          "本批统一数据链与真实失败修复已完成集中自动验证。正式产品b6f77679，测试夹具单独a9cf86b0；原历史失败保留，不再把实现候选或旧成绩混为本批通过。D06/D07及阶段一其他未完项继续按完整范围推进。"
+          "上一批publication核收证据保留；当前5780c062 UI002/full001均0错误，正式程序probe0。原栅格10/0、Design91/0、RuntimeEditor10/0、FullChain8/0、Host1/0。GlobalBinding20失败及ImageSources2失败保原日志交工作流线集中修复，整链不判通过。"
         ],
         [
           "接口与接入",
@@ -7836,7 +7836,7 @@
           "选中几何须证明实际物理来源帧，否则不绘制",
           "设计器与运行时复用真实模板及组合"
         ],
-        "currentState": "上一批publication数据链已核收；新D06完整批及D07栅格候选集中验证中，不套旧173/91等成绩。完整图形、控件库阶段一与人工验收仍未完成。"
+        "currentState": "本批规定构建与原栅格10/0通过，GlobalBinding237/20及ImageSources174/2仍失败；图形/文本/选择/ROI生产整链、控件库阶段一及人工验收未完成。"
       },
       "candidateEvidence": "docs/collaboration/evidence/O06_RESULT_PUBLICATION_INTEGRATION_20261028.json",
       "apiImplementation": {
@@ -7898,11 +7898,33 @@
         "baseline": "e258a862",
         "bindingCandidate": "24615965",
         "rasterCandidate": "70a6036f",
-        "status": "集中构建与正式产物验证中；不计作已核收",
+        "status": "规定构建通过；变量绑定与源轨22项真实失败待修，不作整链验收",
         "references": [
           "docs/collaboration/HANDOFF_D06_ATOMIC_IMPLEMENTATION_20261028.md",
           "docs/collaboration/evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json"
-        ]
+        ],
+        "productCommit": "5780c062",
+        "evidence": "docs/collaboration/evidence/O06_RESULT_BINDING_RASTER_INTEGRATION_20261028.json",
+        "results": {
+          "uiErrors": 0,
+          "fullErrors": 0,
+          "GlobalBinding": {
+            "passed": 237,
+            "failed": 20
+          },
+          "ImageSources": {
+            "passed": 174,
+            "failed": 2
+          },
+          "raster": {
+            "passed": 10,
+            "failed": 0
+          },
+          "DesignTime": 91,
+          "RuntimeEditor": 10,
+          "FullChain": 8,
+          "WorkflowHost": 1
+        }
       }
     }
   },

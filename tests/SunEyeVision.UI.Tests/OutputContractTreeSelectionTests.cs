@@ -40,12 +40,14 @@ public sealed class OutputContractTreeSelectionTests
             if(initialFailure)
             {
                 f.Model.FlatResultRows.CollectionChanged+=observer;
-                Assert.ThrowsAny<Exception>(()=>f.Model.UpdateModuleResults(result,"A",nodeId:"a"));Assert.True(fired);
+                var failure=Assert.ThrowsAny<Exception>(()=>f.Model.UpdateModuleResults(result,"A",nodeId:"a"));
+                Assert.Contains("initial-projection-failed",failure.ToString());Assert.True(fired);
             }
             else
             {
                 f.Model.UpdateModuleResults(result,"A",nodeId:"a");Assert.Same(f.Model.CurrentResultPublication,table.Publication);
-                f.Document.ExecutionOwner.RetireNode("a");
+                f.Document.ExecutionOwner.RetireNode(result.ExecutionIdentity!.NodeId);
+                Assert.False(result.ExecutionIdentity.IsCurrent);
                 f.Model.FlatResultRows[1].IsExpanded=true;
             }
             Assert.Null(f.Model.CurrentResultPublication);Assert.Null(table.Publication);
@@ -74,16 +76,23 @@ public sealed class OutputContractTreeSelectionTests
         try
         {
             f.Model.UpdateModuleResults(a,"A",nodeId:"a");var old=f.Model.CurrentResultPublication;
-            var fired=false;
+            var fired=false;var cleanupFailed=false;
             Assert.NotNull(old);
             observer=(_,_)=>
             {
-                if(fired)return;fired=true;
+                if(fired)
+                {
+                    if(!replace&&!cleanupFailed){cleanupFailed=true;throw new InvalidOperationException("paging-cleanup-failed");}
+                    return;
+                }
+                fired=true;
                 if(replace){b=Run(2);f.Model.UpdateModuleResults(b,"B",nodeId:"a");}
                 throw new InvalidOperationException("paging-observer-failed");
             };
             f.Model.FlatResultRows.CollectionChanged+=observer;
-            Assert.ThrowsAny<Exception>(()=>f.Model.FlatResultRows[1].IsExpanded=true);
+            var failure=Assert.ThrowsAny<Exception>(()=>f.Model.FlatResultRows[1].IsExpanded=true);
+            Assert.Contains("paging-observer-failed",failure.ToString());
+            if(!replace)Assert.Contains("paging-cleanup-failed",failure.ToString());
             if(replace)
             {
                 Assert.NotSame(old,f.Model.CurrentResultPublication);Assert.Same(f.Model.CurrentResultPublication,table.Publication);

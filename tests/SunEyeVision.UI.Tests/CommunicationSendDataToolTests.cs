@@ -256,16 +256,19 @@ public sealed class CommunicationSendDataToolTests
         service.ConfigureVariablePublications(sender.Id, new[] { new SendVariablePublication(variable.Id, p.VariableFields()[0].BindingKey, "String") });
         Assert.Equal(sender.Id, variable.ProducerBinding!.SourceReference.NodeId);
         ToolRegistry.RegisterTool(typeof(SendDataTool)); ToolRegistry.RegisterTool(typeof(ReceiveDataTool));
+        var capture = new NodeConfigurationEditHost(solution).Capture();
+        var published = capture.CopyConfiguration();
+        var publishedVariable = published.GlobalVariables.Single(value => value.Id == variable.Id);
         using var values=new WorkflowGlobalRunValues(Array.Empty<KeyValuePair<string,object?>>());
-        var definitions=GlobalVariable.CaptureDefinitions(solution.GlobalVariables);
+        var definitions=GlobalVariable.CaptureDefinitions(published.GlobalVariables);
         var reader=new WorkflowGlobalVariableReceiveService(new CommunicationReceiveService(),values,definitions);
-        Assert.True(GlobalProducerBindingRules.TryDescribeTarget(variable.Type,out var target,out var clr,out var reason),reason);
-        var validation=GlobalProducerBindingRules.Validate(solution,variable.ProducerBinding!,variable);
+        Assert.True(GlobalProducerBindingRules.TryDescribeTarget(publishedVariable.Type,out var target,out var clr,out var reason),reason);
+        var validation=GlobalProducerBindingRules.Validate(published,publishedVariable.ProducerBinding!,publishedVariable);
         Assert.True(validation.State is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional,validation.Reason);
-        var operation=new WorkflowGlobalProducerOperation(variable.Id,variable.Name,variable.ProducerBinding!.SourceReference!,target,clr);
+        var operation=new WorkflowGlobalProducerOperation(publishedVariable.Id,publishedVariable.Name,publishedVariable.ProducerBinding!.SourceReference!,target,clr);
         var runner = new WorkflowExecutionEngine(engine, new PluginManager(VisionLogger.Instance), VisionLogger.Instance);
         using var result = await runner.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id, communicationInputs: reader, communicationOutputs: service)
-            {Configuration=WorkflowRunConfiguration.Capture(solution.Workflows),ExecutionOwner=solution.ExecutionOwner,GlobalProducers=new[]{operation},ProducedGlobals=values});
+            {Configuration=WorkflowRunConfiguration.Capture(published.Workflows,capture.Version),ExecutionOwner=solution.ExecutionOwner,GlobalProducers=new[]{operation},ProducedGlobals=values});
         Assert.True(result.Success, string.Join(";", result.Errors)); Assert.Equal("DESIGN", variable.Value);
         Assert.Equal("CURRENT",values.Capture()[variable.Name]);
         var output = result.NodeResults[receiver.Id].Result!.GetOutputVariables().Single(v => v.Name == receive.Variables[0].Definition().BindingKey);

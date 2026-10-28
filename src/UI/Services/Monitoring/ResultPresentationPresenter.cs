@@ -2,7 +2,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
 using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Services.Monitoring;
@@ -26,7 +27,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     private readonly ObservableCollection<FlatResultRow> _rows;
     private readonly ObservableCollection<FlatResultRow> _roots=new();
     public ReadOnlyObservableCollection<FlatResultRow> Roots {get;}
-    public bool ContainsRow(FlatResultRow row)=>!_disposed&&(ReferenceEquals(row,_root)
+    public bool ContainsRow(FlatResultRow row)=>Current(_generation)&&(ReferenceEquals(row,_root)
         ||_entries.TryGetValue(row.Key,out var entry)&&ReferenceEquals(entry.Row,row));
     private readonly Action<bool> _setHasResults;
     private readonly int _pageSize;
@@ -34,8 +35,10 @@ public sealed class ResultPresentationPresenter : IDisposable
     private readonly List<(FlatResultRow Row, PropertyChangedEventHandler Handler)> _subscriptions = new();
     private readonly List<Entry> _outputs = new();
     private ResultPresentationModel? _model;
-    private DeclaredOutputSnapshot? _snapshot;
-    private DeclaredOutputReader? _reader;
+    private IResultPublication? _publication;
+    private ResultPublicationStamp? _stamp;
+    private IResultValueLease? _reader;
+    private IReadOnlyList<Diagnostic> _diagnostics=Array.Empty<Diagnostic>();
     private FlatResultRow? _root;
     private int _generation;
     private bool _disposed;
@@ -49,75 +52,60 @@ public sealed class ResultPresentationPresenter : IDisposable
         _pageSize = pageSize;
     }
 
-    public void ShowSchema(ToolSchema schema, IReadOnlyDictionary<string, string>? displayNames = null,
-        IReadOnlyDictionary<string, ResultBindingInfo>? bindings = null,IReadOnlySet<string>? displayedPorts=null)
+    public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(schema);
-        if (_snapshot == null && _model?.Schema.Fingerprint == schema.Fingerprint &&
-            _outputs.Select(entry=>entry.Node.DeclaredPort!.Id).SequenceEqual(
-                schema.Outputs.Where(port=>displayedPorts is null||displayedPorts.Contains(port.Id)).Select(port=>port.Id)))
+        ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(publication);
+        var entryGeneration=_generation;
+        var stamp=publication.Stamp;
+        if(entryGeneration!=_generation||_disposed)return;
+        if(ReferenceEquals(publication,_publication)&&_stamp==stamp&&Current(_generation))
         {
-            UpdateRootMetadata(displayNames, bindings);
-            RefreshRows();
-            return;
+            var names=publication.DisplayNames;if(!Current(entryGeneration)){Abandon(entryGeneration);return;}
+            UpdateRootMetadata(names,bindings,entryGeneration);if(Current(entryGeneration))RefreshRows();return;
         }
-        var generation = Retire();
-        if (generation != _generation || _disposed) return;
-        Install(ResultPresentationModel.ForSchema(schema, _pageSize), displayNames, bindings,displayedPorts);
-        RefreshRows();
-    }
-
-    public void ShowRun(DeclaredOutputSnapshot snapshot, IReadOnlyDictionary<string, string>? displayNames = null,
-        IReadOnlyDictionary<string, ResultBindingInfo>? bindings = null)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(snapshot);
-        if (_snapshot is { } previous && ReferenceEquals(previous,snapshot) && previous.Identity == snapshot.Identity &&
-            previous.SchemaRevision == snapshot.SchemaRevision && previous.Schema.Fingerprint == snapshot.Schema.Fingerprint &&
-            previous.Status == snapshot.Status)
-        {
-            UpdateRootMetadata(displayNames, bindings);
-            RefreshRows();
-            return;
-        }
-        var generation = Retire();
-        if (generation != _generation || _disposed) return;
-        var reader = snapshot.AcquireReader();
+        if(entryGeneration!=_generation||_disposed)return;
+        var generation=Retire();
+        if(generation!=_generation||_disposed)return;
+        IResultValueLease? lease=null;
         try
         {
-            var state = snapshot.Status switch
-            {
-                ExecutionStatus.Success => ResultPresentationState.Success,
-                ExecutionStatus.PartialSuccess => ResultPresentationState.PartialSuccess,
-                ExecutionStatus.Failed => ResultPresentationState.Failed,
-                ExecutionStatus.Timeout => ResultPresentationState.Timeout,
-                ExecutionStatus.Cancelled => ResultPresentationState.Cancelled,
-                ExecutionStatus.NotExecuted => ResultPresentationState.NotRun,
-                ExecutionStatus.Running => ResultPresentationState.Running,
-                _ => throw new ArgumentOutOfRangeException(nameof(snapshot), "Unknown execution status.")
-            };
-            var model = ResultPresentationModel.ForRun(snapshot.Schema, snapshot.Identity, state, reader.Values, _pageSize);
-            if (generation != _generation || _disposed) return;
-            _reader = reader;
-            reader = null;
-            _snapshot = snapshot;
-            Install(model, displayNames, bindings,snapshot.Fields.Where(field=>field.Value.DisplayInResultPanel).Select(field=>field.Key).ToHashSet(StringComparer.Ordinal));
-            RefreshRows();
+            _publication=publication;_stamp=stamp;
+            if(!Current(generation)){if(generation==_generation)Retire();return;}
+            lease=publication.Borrow();
+            if(!Current(generation)||lease.Stamp!=stamp){if(generation==_generation)Retire();return;}
+            var model=ResultPresentationModel.ForPublication(publication,lease,_pageSize,()=>Current(generation));
+            if(!Current(generation)){if(generation==_generation)Retire();return;}
+            _reader=lease;lease=null;
+            var names=publication.DisplayNames;if(!Current(generation)){if(generation==_generation)Retire();return;}
+            var displayed=publication.DisplayedPorts;if(!Current(generation)){if(generation==_generation)Retire();return;}
+            var diagnostics=publication.Diagnostics;if(!Current(generation)){if(generation==_generation)Retire();return;}_diagnostics=diagnostics;
+            Install(model,names,bindings,displayed,generation);
+            if(Current(generation))RefreshRows();else if(generation==_generation)Retire();
         }
         catch
         {
-            if (generation == _generation) Retire();
-            throw;
+            var stale=!Current(generation);
+            if(generation==_generation)Retire();
+            if(!stale)throw;
         }
-        finally { reader?.Dispose(); }
+        finally{lease?.Dispose();}
     }
+
+    private bool Current(int generation)
+    {
+        if(_disposed||generation!=_generation||_publication is not {} publication||_stamp is not {} stamp)return false;
+        var current=publication.IsCurrent();var actualStamp=publication.Stamp;
+        return current&&actualStamp==stamp&&!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication)&&_stamp==stamp;
+    }
+
+    private void Abandon(int generation){if(!_disposed&&generation==_generation)Retire();}
 
     /// <summary>Rebuilds only the visible, already requested rows; it never loads another page.</summary>
     public void RefreshRows()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var generation = _generation;
+        if(!Current(generation)){if(generation==_generation)Retire();return;}
         // Both surfaces borrow these exact row objects and the same retained reader.
         // Hierarchy projection never reads another value page.
         foreach(var entry in _entries.Values.ToArray())
@@ -135,26 +123,27 @@ public sealed class ResultPresentationPresenter : IDisposable
             if (_root.IsExpanded)
                 foreach (var output in _outputs) AppendVisible(output, visible);
         }
+        if(!Current(generation)){Abandon(generation);return;}
         _rows.Clear();
         foreach (var row in visible)
         {
-            if (generation != _generation || _disposed) return;
+            if (!Current(generation)){Abandon(generation);return;}
             _rows.Add(row);
         }
-        if (generation == _generation && !_disposed) _setHasResults(visible.Count > 0);
+        if (Current(generation)) _setHasResults(visible.Count > 0);
     }
 
     private bool Synchronize(ObservableCollection<FlatResultRow> destination,IReadOnlyList<FlatResultRow> rows,int generation)
     {
-        if(_disposed||generation!=_generation)return false;
+        if(!Current(generation)){Abandon(generation);return false;}
         if(destination.Count==rows.Count&&destination.Where((row,index)=>!ReferenceEquals(row,rows[index])).Any()==false)return true;
         destination.Clear();
         foreach(var row in rows)
         {
-            if(_disposed||generation!=_generation)return false;
+            if(!Current(generation)){Abandon(generation);return false;}
             destination.Add(row);
         }
-        return !_disposed&&generation==_generation;
+        if(!Current(generation)){Abandon(generation);return false;}return true;
     }
 
     public void Clear()
@@ -181,9 +170,9 @@ public sealed class ResultPresentationPresenter : IDisposable
         _entries.Clear();
         _outputs.Clear();
         _root = null;
-        _snapshot = null;
+        _publication = null;_stamp=null;_diagnostics=Array.Empty<Diagnostic>();
         _model = null;
-        try { try{_roots.Clear();}finally{_rows.Clear();} }
+        try { try{_roots.Clear();}finally{if(generation==_generation)_rows.Clear();} }
         finally
         {
             try { reader?.Dispose(); }
@@ -193,40 +182,52 @@ public sealed class ResultPresentationPresenter : IDisposable
     }
 
     private void Install(ResultPresentationModel model, IReadOnlyDictionary<string, string>? names,
-        IReadOnlyDictionary<string, ResultBindingInfo>? bindings,IReadOnlySet<string>? displayedPorts=null)
+        IReadOnlyDictionary<string, ResultBindingInfo>? bindings,IReadOnlySet<string>? displayedPorts,int generation)
     {
+        if(!Current(generation)){Abandon(generation);return;}
         _model = model;
-        _root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
-        Subscribe(_root, () => RefreshRows());
-        foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id))) _outputs.Add(GetEntry(node, 1));
+        var root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
+        if(!Current(generation)){Abandon(generation);return;}_root=root;
+        Subscribe(root, () => RefreshRows());
+        foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id)))
+        {if(!Current(generation)){Abandon(generation);return;}var entry=GetEntry(node,1);if(entry is null||!Current(generation))return;_outputs.Add(entry);}
         _root.IsGroup=_outputs.Count>0;
-        if(_outputs.Count==0&&model.State==ResultPresentationState.NotRun)_root=null;
-        UpdateRootMetadata(names, bindings);
+        if(_outputs.Count==0&&model.State is ResultViewState.Declaration or ResultViewState.NotExecuted)_root=null;
+        UpdateRootMetadata(names, bindings,generation);
     }
 
-    private void UpdateRootMetadata(IReadOnlyDictionary<string, string>? names, IReadOnlyDictionary<string, ResultBindingInfo>? bindings)
+    private void UpdateRootMetadata(IReadOnlyDictionary<string, string>? names, IReadOnlyDictionary<string, ResultBindingInfo>? bindings,int generation)
     {
-        foreach (var entry in _outputs)
+        foreach (var entry in _outputs.ToArray())
         {
+            if(!Current(generation)){Abandon(generation);return;}
             var id = entry.Node.DeclaredPort!.Id;
             entry.Row.DisplayName = names != null && names.TryGetValue(id, out var name) ? name : id;
+            if(!Current(generation)){Abandon(generation);return;}
             var binding = bindings != null && bindings.TryGetValue(id, out var supplied) ? supplied : null;
             entry.Row.BindingInfo = binding;
+            if(!Current(generation)){Abandon(generation);return;}
             entry.Row.SourceNodeId = binding?.SourceNodeId;
+            if(!Current(generation)){Abandon(generation);return;}
             entry.Row.SourcePropertyName = binding?.ResultPath;
+            if(!Current(generation)){Abandon(generation);return;}
             entry.Row.PropertyClrType = binding?.ValueType;
         }
     }
 
-    private Entry GetEntry(ResultPresentationNode node, int level)
+    private Entry? GetEntry(ResultPresentationNode node, int level)
     {
+        var generation=_generation;
+        if(!Current(generation)){Abandon(generation);return null;}
         if (_entries.TryGetValue(node.Key, out var existing)) return existing;
+        var value=ValueText(node);var childCount=node.ChildCount;
+        if(!Current(generation)){Abandon(generation);return null;}
         var row = new FlatResultRow
         {
             Key=node.Key,
             DisplayName = node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
-            DisplayValue = ValueText(node), Level = level,
-            IsGroup = node.ChildCount is > 0, IsExpanded = node.IsExpanded
+            DisplayValue = value, Level = level,
+            IsGroup = childCount is > 0, IsExpanded = node.IsExpanded
         };
         var entry = new Entry(node, row);
         _entries.Add(node.Key, entry);
@@ -244,7 +245,8 @@ public sealed class ResultPresentationPresenter : IDisposable
         var generation = _generation;
         PropertyChangedEventHandler handler = (_, args) =>
         {
-            if (!_disposed && generation == _generation && args.PropertyName == nameof(FlatResultRow.IsExpanded)) changed();
+            if(args.PropertyName!=nameof(FlatResultRow.IsExpanded))return;
+            if(!Current(generation)){Abandon(generation);return;}changed();
         };
         row.PropertyChanged += handler;
         _subscriptions.Add((row, handler));
@@ -252,9 +254,12 @@ public sealed class ResultPresentationPresenter : IDisposable
 
     private void LoadPage(Entry entry)
     {
+        var generation=_generation;
+        if(!Current(generation)){Abandon(generation);return;}
         DetachMore(entry);
         var page = entry.Node.GetChildrenPage(entry.Children.Count, _pageSize);
-        foreach (var child in page) entry.Children.Add(GetEntry(child, entry.Row.Level + 1));
+        if(!Current(generation)){Abandon(generation);return;}
+        foreach (var child in page){if(!Current(generation)){Abandon(generation);return;}var childEntry=GetEntry(child,entry.Row.Level+1);if(childEntry is null||!Current(generation))return;entry.Children.Add(childEntry);}
         if (entry.Node.ChildCount is not int count || entry.Children.Count >= count) return;
         var offset = entry.Children.Count;
         var last = Math.Min((long)count - 1, (long)offset + _pageSize - 1);
@@ -264,11 +269,10 @@ public sealed class ResultPresentationPresenter : IDisposable
             DisplayName = $"加载下一页 [{offset.ToString(CultureInfo.InvariantCulture)}…{last.ToString(CultureInfo.InvariantCulture)}]",
             DisplayValue = "按需读取", IsGroup = true, IsExpanded = false, Level = entry.Row.Level + 1
         };
-        var generation = _generation;
         PropertyChangedEventHandler handler = (_, args) =>
         {
-            if (!_disposed && generation == _generation && ReferenceEquals(entry.More, more) &&
-                args.PropertyName == nameof(FlatResultRow.IsExpanded) && more.IsExpanded)
+            if(!Current(generation)){Abandon(generation);return;}
+            if (ReferenceEquals(entry.More, more) && args.PropertyName == nameof(FlatResultRow.IsExpanded) && more.IsExpanded)
             {
                 LoadPage(entry);
                 RefreshRows();
@@ -294,29 +298,29 @@ public sealed class ResultPresentationPresenter : IDisposable
         if (entry.More != null) visible.Add(entry.More);
     }
 
-    private string StatusText(ResultPresentationState state)
+    private string StatusText(ResultViewState state)
     {
         var label=state switch
         {
-            ResultPresentationState.NotRun=>"未运行",ResultPresentationState.Running=>"运行中",
-            ResultPresentationState.Success=>"成功",ResultPresentationState.PartialSuccess=>"部分成功",
-            ResultPresentationState.Failed=>"失败",ResultPresentationState.Timeout=>"超时",
-            ResultPresentationState.Cancelled=>"已取消",_=>throw new ArgumentOutOfRangeException(nameof(state))
+            ResultViewState.Declaration=>"未运行",ResultViewState.NotExecuted=>"未运行",ResultViewState.Running=>"运行中",
+            ResultViewState.Success=>"成功",ResultViewState.PartialSuccess=>"部分成功",
+            ResultViewState.Failed=>"失败",ResultViewState.Timeout=>"超时",
+            ResultViewState.Cancelled=>"已取消",_=>throw new ArgumentOutOfRangeException(nameof(state))
         };
-        return _snapshot?.Diagnostics.FirstOrDefault() is {} diagnostic?label+": "+diagnostic.Message:label;
+        return _diagnostics.FirstOrDefault() is {} diagnostic?label+": "+diagnostic.Message:label;
     }
 
     private string ValueText(ResultPresentationNode node) => node.ValueState switch
     {
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",
-        ResultPresentationValueState.ResourcePending => _model!.State is ResultPresentationState.Success or ResultPresentationState.PartialSuccess?"资源待接入":StatusText(_model.State),
-        ResultPresentationValueState.Unavailable => _model!.State is ResultPresentationState.Success or ResultPresentationState.PartialSuccess ? "值不可用" : StatusText(_model.State),
+        ResultPresentationValueState.ResourcePending => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess?"资源待接入":StatusText(_model.State),
+        ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
         _ => node.Declaration.Shape switch
         {
-            ValueShape.Sequence => node.ChildCount == 0 ? "空序列 (0)" : "[" + node.ChildCount!.Value.ToString(CultureInfo.InvariantCulture) + " 项]",
+            ValueShape.Sequence => SequenceText(node.ChildCount),
             ValueShape.Record => "记录",
-            ValueShape.Geometry => GeometryText(node.GeometryValue!),
+            ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
             _ => node.ScalarValue switch
             {
                 string text => text.Length == 0 ? "empty" : text,
@@ -327,6 +331,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             }
         }
     };
+    private static string SequenceText(int? count)=>count is null?"值不可用":count==0?"空序列 (0)":"["+count.Value.ToString(CultureInfo.InvariantCulture)+" 项]";
     private static string GeometryText(GeometryValue geometry)
     {
         static string N(double value)=>value.ToString("R",CultureInfo.InvariantCulture);

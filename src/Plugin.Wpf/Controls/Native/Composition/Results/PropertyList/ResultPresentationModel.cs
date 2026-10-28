@@ -1,23 +1,24 @@
 using System.Globalization;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
 
-namespace SunEyeVision.UI.Services.Monitoring;
+namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyList;
 
-public enum ResultPresentationState { NotRun, Running, Success, PartialSuccess, Failed, Timeout, Cancelled }
 public enum ResultPresentationValueState { Unavailable, Missing, Null, Available, ResourcePending }
 
 /// <summary>A declaration or one explicitly identified run; it never reads a latest-result cache.</summary>
 public sealed class ResultPresentationModel
 {
-    private ResultPresentationModel(ToolSchema schema, RunIdentity? identity, ResultPresentationState state, int pageSize, InputValues? values = null)
+    private ResultPresentationModel(ToolSchema schema, ResultPublicationStamp stamp, ResultViewState state, int pageSize, InputValues? values, Func<bool>? isCurrent)
     {
         ArgumentNullException.ThrowIfNull(schema);
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
         if (!Enum.IsDefined(state)) throw new ArgumentOutOfRangeException(nameof(state));
-        var hasValues=state is ResultPresentationState.Success or ResultPresentationState.PartialSuccess;
+        var hasValues=state is ResultViewState.Success or ResultViewState.PartialSuccess;
         if (hasValues) ArgumentNullException.ThrowIfNull(values);
         Schema = schema;
-        Identity = identity;
+        Stamp=stamp;
+        Identity = stamp.Invocation;
         State = state;
         PageSize = pageSize;
         var outputs = new ResultPresentationNode[schema.Outputs.Count];
@@ -27,23 +28,29 @@ public sealed class ResultPresentationModel
             // Do not retain InputValues or readers for aggregates that may contain borrowed resources.
             var reader = hasValues && !ContainsResource(port.Type)
                 ? values!.Read(port.Id) : null;
-            outputs[index] = new ResultPresentationNode(PortKey(port.Id), port.Type, port, null, pageSize, reader);
+            outputs[index] = new ResultPresentationNode(PortKey(port.Id), port.Type, port, null, pageSize, reader,isCurrent:isCurrent);
         }
         Outputs = Array.AsReadOnly(outputs);
     }
 
+    public ResultPublicationStamp Stamp { get; }
     public ToolSchema Schema { get; }
     public RunIdentity? Identity { get; }
-    public ResultPresentationState State { get; }
+    public ResultViewState State { get; }
     public int PageSize { get; }
     public IReadOnlyList<ResultPresentationNode> Outputs { get; }
 
-    public static ResultPresentationModel ForSchema(ToolSchema schema, int pageSize = 128) =>
-        new(schema, null, ResultPresentationState.NotRun, pageSize);
-
-    public static ResultPresentationModel ForRun(ToolSchema schema, RunIdentity identity,
-        ResultPresentationState state, InputValues? values, int pageSize = 128) =>
-        new(schema, identity, state, pageSize, values);
+    public static ResultPresentationModel ForPublication(IResultPublication publication,IResultValueLease lease,int pageSize=128,Func<bool>? isCurrent=null)
+    {
+        ArgumentNullException.ThrowIfNull(publication);ArgumentNullException.ThrowIfNull(lease);
+        var stamp=publication.Stamp;
+        if(!publication.IsCurrent()||stamp!=lease.Stamp||stamp.SchemaFingerprint!=publication.Schema.Fingerprint)
+            throw new InvalidOperationException("Result publication lease is stale or has a different identity.");
+        var model=new ResultPresentationModel(publication.Schema,stamp,publication.State,pageSize,lease.Values,isCurrent);
+        if(!publication.IsCurrent()||publication.Stamp!=stamp||lease.Stamp!=stamp||isCurrent?.Invoke()==false)
+            throw new InvalidOperationException("Result publication changed while reading declared values.");
+        return model;
+    }
 
     internal static string PortKey(string id) => "p" + id.Length.ToString(CultureInfo.InvariantCulture) + ":" + id;
     internal static bool ContainsResource(TypeRef type) => type.Shape switch
@@ -58,13 +65,16 @@ public sealed class ResultPresentationModel
 /// <summary>Children are materialized only for requested pages; cached nodes retain expansion state.</summary>
 public sealed class ResultPresentationNode
 {
+    private readonly Func<bool>? _isCurrent;
+    private bool Current=>_isCurrent?.Invoke()!=false;
     private readonly int _pageSize;
     private readonly DeclaredValueReader? _reader;
     private readonly GeometryValue? _geometry;
     private readonly Dictionary<int, ResultPresentationNode> _children = new();
 
-    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null)
+    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null)
     {
+        _isCurrent=isCurrent;
         Key = key;
         Declaration = declaration;
         DeclaredPort = port;
@@ -88,7 +98,7 @@ public sealed class ResultPresentationNode
     public bool IsExpanded { get; set; }
     public ResultPresentationValueState ValueState { get; }
     /// <summary>Only immutable canonical scalars escape; containers and resource payloads never do.</summary>
-    public object? ScalarValue => _reader != null && Declaration.Shape == ValueShape.Scalar
+    public object? ScalarValue => Current && _reader != null && Declaration.Shape == ValueShape.Scalar
         ? Declaration.Scalar switch
         {
             ScalarKind.Boolean => _reader.GetScalar<bool>(),
@@ -97,9 +107,9 @@ public sealed class ResultPresentationNode
             ScalarKind.Text => _reader.GetScalar<string>(),
             _ => null
         } : null;
-    public GeometryValue? GeometryValue => _geometry;
+    public GeometryValue? GeometryValue => Current?_geometry:null;
     // A declared count range is not an observed element count, including Exactly(0/1/N).
-    public int? ChildCount => Declaration.Shape switch
+    public int? ChildCount => !Current?null:Declaration.Shape switch
     {
         ValueShape.Record => Declaration.Fields.Count,
         ValueShape.Sequence => _reader?.Count,
@@ -109,6 +119,7 @@ public sealed class ResultPresentationNode
 
     public IReadOnlyList<ResultPresentationNode> GetChildrenPage(int offset, int count)
     {
+        if(!Current)return Array.Empty<ResultPresentationNode>();
         if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
         if (count < 0 || count > _pageSize) throw new ArgumentOutOfRangeException(nameof(count));
         if (count == 0 || ChildCount is not int total || offset >= total)
@@ -117,6 +128,7 @@ public sealed class ResultPresentationNode
         var page = new ResultPresentationNode[length];
         for (var position = 0; position < length; position++)
         {
+            if(!Current)return Array.Empty<ResultPresentationNode>();
             var index = offset + position;
             if (!_children.TryGetValue(index, out var child))
             {
@@ -124,18 +136,18 @@ public sealed class ResultPresentationNode
                 {
                     var key=Key+"/vertex"+index.ToString(CultureInfo.InvariantCulture);
                     child=new ResultPresentationNode(key,TypeRef.GeometryOf(GeometryKind.Point,polygon.Frame),null,index,_pageSize,
-                        geometry:new PointGeometry(polygon.Frame,polygon.Vertices[index]));
+                        geometry:new PointGeometry(polygon.Frame,polygon.Vertices[index]),isCurrent:_isCurrent);
                 }
                 else if (Declaration.Shape == ValueShape.Record)
                 {
                     var field = Declaration.Fields[index];
                     var key = Key + "/f" + field.Id.Length.ToString(CultureInfo.InvariantCulture) + ":" + field.Id;
-                    child = new ResultPresentationNode(key, field.Type, field, null, _pageSize, _reader?.GetField(field.Id));
+                    child = new ResultPresentationNode(key, field.Type, field, null, _pageSize, _reader?.GetField(field.Id),isCurrent:_isCurrent);
                 }
                 else
                 {
                     var key = Key + "/i" + index.ToString(CultureInfo.InvariantCulture);
-                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, _reader!.GetElement(index));
+                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, _reader!.GetElement(index),isCurrent:_isCurrent);
                 }
                 _children.Add(index, child);
             }

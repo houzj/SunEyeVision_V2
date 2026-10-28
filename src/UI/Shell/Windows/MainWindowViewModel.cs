@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -248,6 +248,7 @@ namespace SunEyeVision.UI.Shell.Windows
                 if (_imageResult.ActiveInputSource is { } old) old.ConfigurationEdited -= OnImageInputConfigurationEdited;
                 _imageResult.ActiveInputSource = value;
                 if (value != null) value.ConfigurationEdited += OnImageInputConfigurationEdited;
+                OnPropertyChanged(nameof(ActiveInputSource));
             }
         }
 
@@ -986,6 +987,11 @@ SplitterPosition = position;
             {
                 foreach (var cached in _workflowDsqsCache.Values)
                     cached.ResourcePaths = SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(document);
+                if(ReferenceEquals(DocumentManager.CurrentSolution,document))
+                {
+                    RefreshAcceptedImageSourceViews();
+                    ForceRefreshImagePreview();
+                }
                 UpdateCurrentSolutionInfo();
             };
         }
@@ -2013,8 +2019,14 @@ SplitterPosition = position;
 
         public System.Threading.Tasks.Task RunSelectedImageAsync() => ExecuteRunWorkflow(advanceLocalImage: false);
 
-        private async System.Threading.Tasks.Task ExecuteRunWorkflow(bool advanceLocalImage = true)
+        private async System.Threading.Tasks.Task ExecuteRunWorkflow(bool advanceLocalImage = true,
+            WorkflowTabViewModel? expectedTab=null,Func<bool>? isCurrent=null)
         {
+            var selectedTab=expectedTab??WorkflowTabViewModel?.SelectedTab;
+            var session=DocumentManager.Session;
+            bool Current()=>ReferenceEquals(DocumentManager.Session,session)&&
+                ReferenceEquals(WorkflowTabViewModel?.SelectedTab,selectedTab)&&(isCurrent?.Invoke()??true);
+            if(!Current())return;
             // 防抖：上一次工作流仍在执行时忽略重复执行请求（执行按钮/预览连点过快）
             if (_isRunning)
             {
@@ -2038,7 +2050,8 @@ SplitterPosition = position;
             }
 
             AddLog($"📋 当前工作流: {WorkflowTabViewModel.SelectedTab.Name}");
-            var executionRoot = ResolveRootExecutionDefinition(WorkflowTabViewModel.SelectedTab, _workflowEngine.GetWorkflowById);
+            if(!Current())return;
+            var executionRoot = ResolveRootExecutionDefinition(selectedTab, _workflowEngine.GetWorkflowById);
             if (executionRoot == null)
             {
                 AddLog("正式根流程不存在，已拒绝执行。");
@@ -2054,11 +2067,13 @@ SplitterPosition = position;
                 return;
             }
 
+            if(!Current()||!ReferenceEquals(executionRoot,ResolveRootExecutionDefinition(selectedTab,_workflowEngine.GetWorkflowById)))return;
             IsRunning = true;
-            AddLog("🚀 开始执行工作流...");
 
             try
             {
+                AddLog("🚀 开始执行工作流...");
+                if(!Current())return;
                 // ★ 传递运行时参数到执行管理器
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
 
@@ -2068,7 +2083,8 @@ SplitterPosition = position;
                     ? CaptureGlobalVariables(globalsDocument) : null;
                 _executionManager.SetGlobalVariables(globalVars);
 
-                await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab, advanceLocalImage: advanceLocalImage);
+                if(!Current())return;
+                await _executionManager.RunSingleAsync(selectedTab, advanceLocalImage: advanceLocalImage);
                 // 成功/失败由执行管理器事件报告；等待相机帧失败不能误报成功。
             }
             catch (Exception ex)
@@ -4626,7 +4642,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 var fullImage = await System.Threading.Tasks.Task.Run(async () =>
                 {
                     await s_legacyImageDecodeSlot.WaitAsync(token).ConfigureAwait(false);
-                    try { token.ThrowIfCancellationRequested(); return ImagePreviewControl.LoadImageOptimized(path); }
+                    try { token.ThrowIfCancellationRequested(); return LocalImageAssetCache.LoadImageOptimized(path); }
                     finally { s_legacyImageDecodeSlot.Release(); }
                 }, token);
                 if (token.IsCancellationRequested || imageInfo.FilePath != path
@@ -5460,13 +5476,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 source = new ImageInputSource(sourceNode.Id);
                 if (sourceNode.ImageSourceConfig != null) source.LoadFromConfig(sourceNode.ImageSourceConfig);
-                source.ConfigChanged = config =>
-                {
-                    sourceNode.ImageSourceConfig ??= new ImageSourceConfig { NodeId = sourceNode.Id };
-                    sourceNode.ImageSourceConfig.UpdateLocalInput(config);
-                };
                 sourceNode.InputSource = source;
             }
+            BindLocalImageSourceEditor(sourceNode,source);
             ImagePreviewSourceMessage = source.Count == 0 ? "请添加本地图像" : string.Empty;
             if (_currentDisplayNodeId != sourceNode.Id || !ReferenceEquals(ActiveInputSource, source))
             {

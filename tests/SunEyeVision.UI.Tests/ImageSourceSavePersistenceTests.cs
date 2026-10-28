@@ -23,7 +23,7 @@ public class ImageSourceSavePersistenceTests
         var b = new ImageInfo { FilePath = "b", SourceReference = "assets/b" };
         source.AddImages(new[] { a, b });
         source.CurrentIndex = 0;
-        var writes = 0; source.ConfigChanged = _ => writes++;
+        var writes = 0; source.ConfigurationWriter = _ => writes++;
         var captured = source.EditVersion;
         Assert.True(source.TryPresentRuntimeCursor(captured, b.Id, "assets/b", "b"));
         Assert.Equal(1, source.CurrentIndex);
@@ -36,7 +36,7 @@ public class ImageSourceSavePersistenceTests
         b.IsForRun = true;
         Assert.False(source.TryPresentRuntimeCursor(beforeEdit, b.Id, "assets/b", "b"));
         var beforeReset = source.EditVersion;
-        source.Images.Refresh();
+        source.LoadFromConfig(source.ToConfig(),new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
         Assert.False(source.TryPresentRuntimeCursor(beforeReset, b.Id, "assets/b", "b"));
     }
 
@@ -45,6 +45,7 @@ public class ImageSourceSavePersistenceTests
     {
         var node = new WorkflowNode("checks", "图像源", "图像源", "ImageLoad");
         var input = node.EnsureInputSource();
+        input.ConfigurationWriter = candidate => { node.ImageSourceConfig ??= new(){NodeId=node.Id}; node.ImageSourceConfig.UpdateLocalInput(candidate.Configuration); };
         var image = new ImageInfo { FilePath = @"C:\samples\a.bmp", SourceReference = "assets/a.bmp" };
         input.AddImage(image);
         image.IsForRun = true;
@@ -65,7 +66,7 @@ public class ImageSourceSavePersistenceTests
         source.AddImages(new[] { removed, replaced });
         source.ToConfig();
         var writes = 0;
-        source.ConfigChanged = _ => writes++;
+        source.ConfigurationWriter = _ => writes++;
         source.RemoveImage(removed);
         Assert.DoesNotContain(removed.FilePath, source.ToConfig().ForRunPaths);
         var afterRemove = writes;
@@ -73,7 +74,8 @@ public class ImageSourceSavePersistenceTests
         Assert.Equal(afterRemove, writes);
 
         var replacement = new ImageInfo { FilePath = @"C:\samples\c.bmp" };
-        source.Images.ReplaceRange(new[] { replacement });
+        source.LoadFromConfig(new ImageSourceConfig { NodeId="checks",FilePaths=new(){replacement.FilePath},ForRunPaths=new(){replaced.FilePath} },new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
+        replacement=Assert.Single(source.Images);
         var afterReset = writes;
         replaced.IsForRun = false;
         Assert.Equal(afterReset, writes);
@@ -99,6 +101,7 @@ public class ImageSourceSavePersistenceTests
             }
         };
         var input = node.EnsureInputSource();
+        input.ConfigurationWriter = candidate => { node.ImageSourceConfig ??= new(){NodeId=node.Id}; node.ImageSourceConfig.UpdateLocalInput(candidate.Configuration); };
         input.AddImage(new ImageInfo { FilePath = @"C:\samples\a.bmp", Name = "a" });
         input.CurrentIndex = 0;
 

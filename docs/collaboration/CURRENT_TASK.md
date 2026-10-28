@@ -1,3 +1,30 @@
+## 2026-10-28 在途图像源候选交工作流线；本线恢复C13
+
+- 用户再次讨论主界面基础层优先级，按原独立分工落实：图像源工具/相机/源条/主界面预览由工作流线集中；本线控件库与Blob原两阶段保持active，不等全部主界面基础层完成。已写原O06/JSON优先级、目录和共享文件写权；HANDOFF_IMAGE_SOURCE_OWNERSHIP_20261028.md为完整候选交接单，不代表产品验收通过。
+- 本轮已实施ImageSourceEditProposal(Configuration,SelectStart)并同步所有writer/fixture；明确选择才reset，非选择保display，Load按ref重复序号重映射；预览OneWay，Source/EditVersion/Item/Index不可变事件，正式来源/会话/root/tab/node/item前后验，拒绝还原展示，expected tab/session/source/version贯通日志/状态/IsRunning外调后的最终RunSingle，既有通用执行不再最后重读另一SelectedTab。同值源配置不伪造工具路径且真实参数变更仍校验。新对照测试已写未运行。
+- **当前无自有live进程**：UI008/session16293终止0错6540警告143.89秒；最终UI009/session20796终止0错6538警告103.80秒。当前产品源之后未改；原全量004及42/43组成绩不是本新合同成绩，未全量/重编helper/回归/EXE/人工。本轮源审计39项（含用户XAML）见evidence/O06_IMAGE_SOURCE_HANDOFF_SOURCE_20261028.json，仅候选源码证明。
+- 共同候选将中文本地提交并保留ee086776合并父；工作流最新纯文档3b88c79c（父7b8bb461→ee086776）随后整合为可快进共同基线。工作流当前产品仍冻结待交接提交；主仓本线停止扩展D1。Root独占既有Plugin.Wpf共享合同/主题/Catalog，工作流只新增专用ImageSources目录及其UI/工具/设备业务。正式Release唯一窗口由Root协调，工作流不得写主仓产物。
+- 用户BlobParameterEditor.xaml页索引2/SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed仍原样不暂存；Blob业务冻结。下一本线C13非视觉数值协调器/原StringConfig独立会话/四行样式与七行文本完整组合，按已定设计集中实施，不再接着零散修主界面源业务。
+
+## 2026-10-28 图像源集成：三游标与明确选择整链待收口
+
+- 本轮实际进展：UI003终止0错918警告113.42秒；修每源reset epoch（captured signature/Begin/Complete/UI呈现逐源核，保B）、正式Session.History/结构Rebase回归、保存A/B基目录投影及实际保存测试、标量编辑保同一集合/不把运行cursor写成formal。Blob业务和用户XAML未改；目标active、阶段一未准入。
+- 构建均已终止：UI004 0错744警告64.96秒、Release001 0错6609警告83.65秒；保存补丁后UI005 0错6476警告96.59秒、Release002 0错6481警告73.16秒；集合补丁后UI006 0错6564警告97.38秒、Release003 0错6586警告80.56秒；替换当前项明确选择修复后UI007 0错6465警告121.08秒、Release004 0错6499警告70.63秒。均中间候选，不套最后未知新实现。
+- ImageSources新正式轨：001=40过2败（Probe未注册/遍历勾选重建集合），注册类型后002=42全过；后继续修生产集合而非仅测试ToArray，恢复原遍历并加非结构/持久起点回归，003=42过1败（Replace当前显示项改用了formal0而未选所替换项）；产品已修Replace选择当前项，但未再跑。全部失败保留。测试helper001=0错，002因诊断TabPanel缺namespace失败，003改FrameworkElement后0错；产品未因此改动。
+- WorkflowHost诊断：本批001（实际轨attempt按目录）失败在RootWorkspaceHostTests:218页签固定新增按钮，而新增图像源/设置/真实保存A-B检查此前已走过；002实测owner540/header701.67/viewer418/overview=false/fixed Visible，全1组过。测试现增加有界DispatcherTimer等待原生尺寸和Arrange，再做原显示断言，不凭此改Tab产品逻辑；实际VS/VM/人工未验。
+- **当前无本线自有live进程**：96956（串行UI007/full004）terminal0，7377（最终回归串行）terminal1，仅跑ImageSources003便停止，后续九轨未跑；47347/40925/15722/68124/11742/17059/25512/88500/22940等均terminal。不等这些、不从观察超时推重启；最终完整回归和EXE尚未做。
+- **下一可实施整批已写原方案nextNativeCompositionsDesign**：source目前仍无明确编辑意图，Install无条件display=formal且gateway每次Reset，Auto/勾选会跳图/误复位；ImageResult预览CurrentIndex TwoWay又混恢复/用户选择，手动执行仅PublishRuntimeInput不保证正式plan选择。下一以ImageSourceEditProposal(Configuration,SelectStart)替换旧单配置writer（所有消费者同步、不保兼容），Commit/Load独立映射formal/display，gateway仅明确选择reset，ImageResult展示OneWay并在明确左键/键盘入口正式SelectImage后执行；补真实三游标对照后再最终规定构建/完整关联回归。尚未实施此合同，不要直接跑旧测试求绿后提交。
+- 共同HEAD72d29d1b，merge ee086776未提交；只有CURRENT_TASK文本冲突已保双方内容并解，用户BlobParameterEditor.xaml SHA仍118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed，不暂存。工作流另交纯设计7b8bb461（4文档，父ee086776，worktree干净），保留其文档，待共同验证封存再同步；产品仍主线单写，87f4只读设计。
+- C13只读补充已统一原O06：唯一真实模板叶借state，提取非视觉NativeNumberCoordinator供普通数值与原四行内已有Float共享，校验第三层binding；角色按明确字段ID，别隐藏第二Editor。设计718唯一锚点/幂等；C13产品仍未实施，先本批基础链收口，C14/C17公共消费者随后协调。
+
+## 2026-10-28 图像源完整候选集成验证中
+
+- 本线完整C13设计已中文提交72d29d1b（非产品完成/未推送），随后合并ee086776进入工作区，合并尚未提交。UI001终止1错/5760警告/63.99秒，修Host局部opening重名；UI002终止1错/452警告/38.37秒，修设置页访问私有DocumentManager，改窄CaptureImageSourceSession核当前根正式节点。
+- 两处配置历史缺口已集中修：ImageSourceConfig移出StructureSignature但保配置签名，BindingConfigurationStore.RebaseStructure.Transform深复制保留节点的历史源；新增无关结构同步后源Undo/Redo保新增节点测试，尚未执行。
+- **唯一确认live构建**：UI003 exec session=41505，日志artifacts/image-source-baseline-ui-build-20261028-003.log；最后观察仍在构建正式工具发布项，无terminal结果。下一轮先poll同句柄/日志，禁止重启或存活时改产品/测试源。UI001 session67901和UI002 session82013均终止，别再等待。尚未全量Release、回归、启动或人工验收。
+- **已确认待修而非阻塞取证**：ResetLocalImageCursor只删除跨次缓存，连续活动序列DefinitionSignature未含复位代次；同配置显式重选持久起点不能复位，Complete还会写回旧游标。应按root/source保存复位epoch，纳入下一完整轮边界并拒旧Complete写回，保其他来源位置；补真实连续多源复位回归后再最终规定构建。不将现UI003当最终成绩。工作流已通知只读不双写。
+- 已合入ee086776候选至72d29d1b工作区；仅CURRENT_TASK冲突，双方记录完整保留。产品无文本冲突不代表语义已过。下一串行UI和全量Release及生产回归；合并未提交，用户XAML未暂存。C13只有完整设计，尚未实施。
+
 ## 2026-10-28 C13整批实施设计及图像源集成准备
 
 - 本轮实际进展为设计与源审计，未修改产品/测试源码、未启动构建。原两阶段目标active，第一阶段未准入，Blob业务冻结。上一轮仅确认分工不算实施进展，本轮已统一原方案nextNativeCompositionsDesign及O06正文。
@@ -82,6 +109,52 @@
 - 最终UI005零错6396警告85.26秒；全量Release002零错6602警告65.86秒。Window162=129、Design048=85、Field083=31、RuntimeEditor065=10、FullChain123=8、Components205=9、ThemeStartup008=1、Resources017=22共295组；正式EXE016 exit0/22工具15分类。26源增量含用户XAML、796发布项、107加载记录、160唯一原来源SHA核对。权威O06_INLINE_REFERENCE_CHECKPOINT_20261028.json、SOURCE_AUDIT及HANDOFF_INLINE_REFERENCE_20261028.md。
 - 所有早期失败保留：窗口001编译局部重名，002校验器对象传错及旧混合目录测试；004全128过1败和005—007定向锁定自动文字资源边界，008定向过、009最终完整129过。最终两构建之后无产品源更改，仅Catalog非编译证据与文档。用户Blob页索引2/SHA保持且不提交，不推送；自有验证进程已全部终止。
 - 阶段一/完整C09未达标，Blob冻结、目标active。下一来源序列All/固定/动态索引走正式BindingService同快照，Wpf不得加Runtime依赖或近似resolver；现样例Float32标量和空索引，通用索引Int64不能称VM Int32全复刻。再ROI菜单历史、位姿三方式、原文本/10列表格/底栏；native单位公式仍未证，真实VS/VM同态/物理指针/用户本批未签。
+﻿## 2026-10-28 图像源整链候选准备交接统一基线（未构建未验）
+
+- 当前基线d749f38e，独立分支codex/workflow-toolbox-dataflow；主线ROI已封存ad951eb1，双方约定先封存本候选再由主线集中统一基线/构建，不从旧分支覆盖Release。主线317组/EXE成绩不属于本候选。
+- 正式源编辑/即时设置/历史/运行输入权威来源已形成整链候选；复核补跨次单步运行游标归执行器、每源显式重选只复位本源、根实例/配置签名约束和清理。保现序列推进算法，非新增Group/循环语义。无预览跨次运行、旧预览隔离及导入接纳前取消用例已补。
+- 31个C#文件Roslyn语法0错，XML/diff检查过；未语义编译、未执行测试、未部署启动、未推送。按原主方案继续区分候选与验收。HANDOFF_IMAGE_SOURCE_FOUNDATION_20261028.md列本批文件/验证/剩余，所在中文提交为本批检查点。
+- 下一：主线集中合并本候选与ad951eb1、处理共享目录冲突、正式同源UI/全量Release与图像源生产回归；结果Run/Schema/Status及逐投影物理来源公共合同再与主线冻结后整批实施。完整图像结果/树表/缩略图/历史帮助/主界面组合仍未交付，Group不动，目标持续。
+
+## 2026-10-28 运行输入权威来源候选已统一（未构建未验）
+
+- CaptureLocalImageInputs从冻结ImageSourceConfig生成计划，资源基目录同次捕获；条目按索引+原引用稳定标识，重复引用独立。纯ResolveAddress不做文件I/O，后台可用性检查和现序列调度复用。UI仅受版本保护展示游标，无预览不改变输入。
+- ExecuteWorkflowInternal旧CreateImageLoadParameterOverrides确有后备消费者，已改同轮正式Overrides副本并删除旧递归UI读取器；序号/通信覆盖不回写冻结输入。根就绪状态同步按正式源配置判断，空源仍未就绪，不再把未注入FilePath误报为参数失败。
+- 新增LocalImageConfigurationSnapshotTests四条案例，原LocalImageExecutionTests明确发布正式配置，实际ImageLoad参数注册和拒绝测试已补。31个C#候选语法0错，尚未语义构建或跑测试。原主方案已统一更新。
+- 下一步集中复核新快照对实际执行/保存重开/取消和重复引用的消费者，封存有意义中文检查点，再协调主线统一基线。Plugin.Wpf结果上下文合同仍等ROI封存后集中实施；正式Release不覆盖，Group不动，目标未完成。
+
+## 2026-10-28 源设置与编辑接纳集中候选（静态通过，未构建）
+
+- 实际ImageSourceSettingsControl已去除所有正式配置直接写入，统一Host候选；即时接纳、同一方案历史、当前嵌入页/自有窗口权限、跨方案/无关窗口拒绝及Loaded/Unloaded订阅清理均已接候选。不是VM新视觉交付。
+- Host从正式基线比较工具配置签名推导纯源编辑，允许空列表/未选相机继续编辑；同时改坏实际ImageLoad参数仍拒绝。补真实ImageLoad参数测试引用及两条案例，源结构再加超时/SN/枚举边界。根宿主补真实选择事件/Undo/Redo/重载/无关窗口拒绝，均未执行。
+- 26个C#文件Roslyn语法零错误，2个XAML与测试项目XML可解析，diff --check过；非语义编译、非运行验收。原主方案已统一实现状态与剩余生产链，旧段落保历史。
+- 下一整链缺口：CaptureLocalImageInputs须从冻结源配置生成列表/模式/起点，现仍读formal.InputSource；保现序列代次和运行游标门禁，重复引用稳定ID与资源基目录一起设计验证。RootWorkflowReadiness直接Validate未注入参数的状态误判需同步处理。结果公共合同待主线ROI封存后协同接入，正式Release仍不覆盖。
+
+## 2026-10-28 图像源真实消费者复核（继续实施，未验）
+
+- 预接纳回调、正式历史刷新及结果变量绑定已有源码候选；不能再记作尚未接UI。但实际ImageSourceSettingsControl仍直接改正式配置，必须统一改造后才算源编辑链贯通。
+- 实际ImageLoad参数要求FilePath，而执行入口才从源配置/本地序列注入路径；当前Host直接Validate会误拒源列表编辑。需整体明确编辑结构有效性和运行就绪边界，不以通用Probe测试代替实际工具验证。
+- 本次补源配置超时正数、SN非负及枚举边界接纳校验，扩充拒绝候选测试；尚未编译运行。正式Release仍由主线协调，不构建部署覆盖。
+- 已核启动所谓图像预热仅线程池空任务，默认Off，不实际解码；当前未修改启动链。
+
+## 2026-10-28 D1基础源码候选实施中（未贯通未验）
+
+- 主线已同意本分支独立实现Host+UI图像源接纳链，其公共库ROI批不改这些文件。当前Host补源配置复制/签名/候选验证/投影/回滚；六场景测试已写未跑，尚缺预接纳UI/历史投影/保存消费，不能称D1完成。
+- 原自研ImagePreviewControl中的非视觉ImageInfo/枚举及ImageCache/解码缓存已归Shared/Services.Thumbnail，源模型/执行预览/控件及测试直接改新入口，无旧控件静态转发。当前旧控件作为待替换消费者仍存在，未冒称VM组合已迁。
+- 用户追加确认整图像结果组合、三列模块结果树、历史结果/帮助+底部日志是重点。原ModuleDisplayDecorator的datarecord声明/执行去重/500显示窗口和native清空已取证，区别于C14结果表500增量；本方最近一轮WorkflowExecutionSnapshot不能替代。原主方案已集中更新。
+- 当前只静态检查，正式Release仍由主线协调；未构建、未部署、未启动、未推送，产品候选尚未封存交接。Group/Plugin.Wpf共享接口未动。
+
+## 2026-10-28 主界面结果体系目标已创建：先基础后组合
+
+- 用户确认本对话独立开发；主线不接管87f4。active目标已创建：先对照/优化图像与结果业务基础，再由Plugin.Wpf原公共控件接入，最后重组主界面和人工验收；Group暂停。
+- 已确认控件路线：复用已迁原ImageViewBox，迁原ModuleResultView组合及LocalImageListView→ImageListPanel，不改造旧自研外观、不重新全面逆向；缺口定向取证。旧SDK可视消费替换后删除，正确非视觉业务核验复用。
+- 原主界面方案已新增当前权威章节、32项B/C/H/X清单、身份/资源/编辑执行职责及D0–D4出口；来源SHA/锚点见evidence/MAIN_RESULT_DESIGN_INPUTS_20261028.json。当前是静态设计输入，D0未完成，不宣称全链已核。
+- 主线维护公共库/共享合同，本方负责业务与宿主消费；IToolResultView状态/RunIdentity/物理帧上下文待协商，不直接增共享API。正式Release仍协调，不覆盖候选、不构建部署启动、不推送。85e56834按钮主题待验保留。
+
+## 2026-10-28 工作流按钮主题收尾待集成验证
+
+- ee0c7fc4共同基线后，仅补小地图禁用清除悬停背景，扩展原RootWorkspaceHostTests覆盖六原图标模板/通用内容模板深浅主题五状态和截图；原画布主方案已集中记录设计、范围、验收和未验项。未碰共享API/三个消费者、Group及主界面整体迁移。
+- 主线确认UI002仍构建，正式窗口未释放。本分支不构建、不部署、不启动、不推送，先封存中文检查点交主线集成到当前基线。git diff --check通过，新增验证未编译执行；等待主线统一同源Release验证后启动用户人工验收，实际VS设计器另列未验。
 
 ## 2026-10-28 工作流与控件库双向统一开发基线
 

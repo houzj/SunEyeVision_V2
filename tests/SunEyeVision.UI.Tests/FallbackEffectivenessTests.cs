@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using SunEyeVision.UI.Services.Thumbnail;
+using System.IO;
 using System.Threading;
 using Xunit;
 using SunEyeVision.UI.Shell.Controls.Panels;
@@ -33,7 +34,7 @@ public class FallbackEffectivenessTests
             throttle.Wait();
             try
             {
-                var bmp = ImagePreviewControl.LoadThumbnail(path, CancellationToken.None);
+                var bmp = LocalImageAssetCache.LoadThumbnail(path, CancellationToken.None);
                 results[path] = bmp != null;
             }
             finally

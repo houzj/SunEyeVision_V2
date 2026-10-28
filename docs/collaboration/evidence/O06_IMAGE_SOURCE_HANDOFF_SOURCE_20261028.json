@@ -1,0 +1,204 @@
+{
+  "kind": "未完整验收图像源候选交接源码审计",
+  "baseline": "72d29d1b",
+  "mergeCandidate": "ee0867767b1c8675aa8445430b24f6a4221dda9a",
+  "pendingDesign": "3b88c79cb5472dd1cebf58175c4e3dc24cde47bd",
+  "compiledStatus": "当前源UI009 0错误6538警告103.80秒；未全量/新合同回归/EXE/人工，不套旧成绩",
+  "files": [
+    {
+      "path": "scripts/verification/ImageSourceCases.cs",
+      "sha256": "08905d37925a1db4bb94a794bc234b6517fe09d5369a4ad2b44dcaf72481b74e",
+      "userOwned": false
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "4f1093ce957bf07b42679bf6b06779661eb7d3b2f4ef24a79cde66e69e264470",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Features/WorkflowUI/ImageSourceSettingsControl.cs",
+      "sha256": "fd47334352b57cc5075bf48cdafc60a9cc7bd16bcc8555d9d19b984a9e3b5d8c",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Services/Thumbnail/ImageCache.cs",
+      "sha256": "e7bc056e4e12f5d1e1852b2d9c921f4d060001b8a9399acb13f95ee681d10bfb",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Services/Thumbnail/LocalImageAssetCache.cs",
+      "sha256": "28cdf8846d6e17d631236926beebb5274557f50c992e845f18c0af76d84caa7a",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Services/Workflow/RootWorkflowReadiness.cs",
+      "sha256": "2bb4055dc5630544c0b7cf6a4c5b3b9a44d5c4aa1bc6f5ceed662e5d48c84bb3",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.cs",
+      "sha256": "bb5d195c664d895017be20e8e7577176223f09fc871b54b73f2899cef4125e37",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Services/Workflow/WorkflowExecutionManager.LocalImages.cs",
+      "sha256": "7b026104fa01f805695f762f5e31cddda1172e6ef5f6207901c7a18612a97ef1",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shared/ImageInfo.cs",
+      "sha256": "4feb71c28d3766639adca06b180cb7e3ac894308d3245dcdd0d38ed461ab2961",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shared/ImageInputSource.cs",
+      "sha256": "0622bb3ac5be050754383d5960a87aa71bb0d854aa49012794e2fb1b91db0be9",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shared/WorkflowNodeModel.cs",
+      "sha256": "01b3d3226ee4c3ca259a8f1469eec865f0c66da9b0a3e79269a45a6b49036309",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Controls/Panels/ImagePreviewControl.FileImport.cs",
+      "sha256": "d467f5c009e52aba22a5686377d031dacec9590a5f17e7d71ead60a382af0ae5",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml",
+      "sha256": "3198bbe42e4fd02ca7642ced732ebb53a642b5bc3e0f5324a5835bff5155dffc",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml.cs",
+      "sha256": "0e0b92ea6919465da31d42c098445cbe09ee8e1a98a318d932c40732a9bc5e7a",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+      "sha256": "ee7fc18c342cb1f5090f657c1dd850b8e0707647dcbb482f59d259893a5ac27a",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "sha256": "3020f031304c82dbcb9f0c8140387082c61db64274e9efe8d36369bcc672e776",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+      "sha256": "8cde1b5027d89319cb36879c0e83218cc8033ab154f0d31a1b6d95b9c1cef67d",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowDocumentHistory.cs",
+      "sha256": "915ba2014bd4a7aabe1cc01d9a8e3f54fcac3fd0a67b706097810c8ff0246631",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs",
+      "sha256": "c23953332977f10d4b6d50d5a839e725abe741ed885f39fe52da5af67a2a6d56",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowResultBindingEditing.cs",
+      "sha256": "2a20a973a6a3d3363887c0222aaf89707816fdcad9dfcaa8c044b1b1ea5d9034",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowRootWorkspace.cs",
+      "sha256": "90f66b59112020985ad0db4c3da1c07e8455f27cec349ff7d71c1b501b62ca4d",
+      "userOwned": false
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "sha256": "1fcca0b6d93cb58011948c3883e6be1a29be7247134d584ec4b15771d432c99f",
+      "userOwned": false
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "a7dca252f6c0e9abac97f163200adccd2a94c87cb5f7fdae49e4f5f8e482b9eb",
+      "userOwned": false
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "sha256": "c315254fb600d8d932abc20e041de494ee5fd6cd8e3b84741f5603364d995620",
+      "userOwned": false
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionResourceResolver.cs",
+      "sha256": "2bdbdbcbb39d1a85f1fec01a55d0db5a79a62738183b4ccff9a9cf430817e3ef",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/FallbackEffectivenessTests.cs",
+      "sha256": "78afce6a64721dbd76ebc689d3e93c9cafc1452b2618188d6a21a839eed11e76",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImagePreviewGeneratedDecodeTests.cs",
+      "sha256": "b8a53de903083e61d3d460dcf05e14fb5bcf76064a9094dce330c6049f32f5fd",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImagePreviewInteractionTests.cs",
+      "sha256": "e2947701ea865636c0e0968dc036af2895605351e63be1ce077bea8ace684f7f",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImagePreviewLoadTests.cs",
+      "sha256": "e54ea4340f1f0ad8d28c2350027609a4697d6e1a667624bbfc743cf30eb338ff",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImageSourceAcceptanceTests.cs",
+      "sha256": "bb66ecaff69279d3aa354ab616f88afd1fd1f86300a6762f4150cc0ccac8af1c",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImageSourceConfigurationHistoryTests.cs",
+      "sha256": "9f1c7d838c9daff1cf5182a5ea007998d912cc0b02fcc3731343aee0a4fac32f",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/ImageSourceSavePersistenceTests.cs",
+      "sha256": "c84dac0ef1bd59611cc2547ac720f5b937285736cd0acbf285a78f8628afd892",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/LocalImageConfigurationSnapshotTests.cs",
+      "sha256": "fbcbf1b9128f287487c04641978f6cfcd3237d159024eb6aaaf0634846d654ea",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/LocalImageExecutionTests.cs",
+      "sha256": "42c7b7dc3c1124874b7616057843a01b5d56bd5272c2a98f94b191b64b710f8c",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/RootWorkspaceHostTests.cs",
+      "sha256": "833458846bcffd1abcc1878c3e0c3a579498bc5b018e6768e154cbb87f5b3481",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/SolutionManagerUiTests.cs",
+      "sha256": "db77521618fb6a1ab1d942d2372f6ef07074a973e380886745f04cbdbe754e87",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/SolutionPersistenceContractTests.cs",
+      "sha256": "568880583c452f10aae40712f59db6dd7780ca01d7ae34a0d5f536a7a2929ebe",
+      "userOwned": false
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj",
+      "sha256": "b3f09de3dfdbc147efb0607c355f6976248fa92996c3ae5b176bbf3a6ad238b8",
+      "userOwned": false
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sha256": "118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed",
+      "userOwned": true
+    }
+  ]
+}

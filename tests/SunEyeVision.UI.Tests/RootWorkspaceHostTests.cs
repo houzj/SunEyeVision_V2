@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,12 +35,13 @@ public sealed class RootWorkspaceHostTests
     owner=new Window{Content=workspace,Width=1100,Height=800,Left=-10000,ShowActivated=false};
     owner.Show();Pump();
     Assert.Equal(new Rect(0,0,6,6),Assert.IsType<DrawingBrush>(Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WorkflowCanvasGridBrush)).Viewport);
-    VerifyMiniMap(shell,owner,"Dark");SaveConfiguration(owner,"Canvas-Dark");
+    VerifyWorkflowButtonThemes(shell,"Dark");VerifyMiniMap(shell,owner,"Dark");SaveConfiguration(owner,"Canvas-Dark");
     var canvasLight=new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml",UriKind.Relative)};
-    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();VerifyMiniMap(shell,owner,"Light");SaveConfiguration(owner,"Canvas-Light");
+    Application.Current.Resources.MergedDictionaries.Add(canvasLight);Pump();VerifyWorkflowButtonThemes(shell,"Light");VerifyMiniMap(shell,owner,"Light");SaveConfiguration(owner,"Canvas-Light");
     Application.Current.Resources.MergedDictionaries.Remove(canvasLight);Pump();
     var manager=ServiceInitializer.SolutionManager;var document=manager.CurrentSolution!;
     var source=Assert.Single(document.Workflows.Where(w=>!w.IsSubroutine));var sourceTab=Assert.Single(viewModel.WorkflowTabViewModel.Tabs);
+    VerifySourceEditing(viewModel,source,sourceTab);
     source.WorkspaceSettings=new(){RunIntervalMs=41};
     var first=new SunEyeVision.UI.Shared.WorkflowNode("first","7 自定义入口","自定义入口","RootConfigurationProbe"){GlobalIndex=7,LocalIndex=3,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(100,100)};
     var second=new SunEyeVision.UI.Shared.WorkflowNode("second","8 终点","终点","RootConfigurationProbe"){GlobalIndex=8,LocalIndex=5,Parameters=new RootConfigurationTests.Parameters(),Position=new Point(200,220)};
@@ -214,6 +215,9 @@ public sealed class RootWorkspaceHostTests
     owner.Width=540;Pump();owner.UpdateLayout();Pump();
     var viewer=(ScrollViewer)tabs.Template.FindName("TabPanelScrollViewer",tabs);
     var fixedAdd=(Border)tabs.Template.FindName("FixedAddButtonBorder",tabs);
+    WaitForLayout(()=>Math.Abs(owner.ActualWidth-owner.Width)<1&&viewer.ViewportWidth>0&&
+      ((FrameworkElement)tabs.Template.FindName("HeaderPanel",tabs)).IsArrangeValid);
+    Console.WriteLine($"Tab overflow diagnostic: owner={owner.Width}/{owner.ActualWidth}; shell={shell.ActualWidth}; tabs={tabs.ActualWidth}; viewer={viewer.ActualWidth}/{viewer.ViewportWidth}/{viewer.ExtentWidth}; headers={((FrameworkElement)tabs.Template.FindName("HeaderPanel",tabs)).ActualWidth}; overview={shell.IsRootOverviewVisible}; fixed={fixedAdd.Visibility}");
     Assert.Equal(Visibility.Visible,fixedAdd.Visibility);
     var resizedSelected=(TabItem)tabs.ItemContainerGenerator.ContainerFromItem(viewModel.WorkflowTabViewModel.SelectedTab);
     var resizedLeft=resizedSelected.TransformToAncestor(viewer).Transform(new Point()).X;
@@ -231,6 +235,140 @@ public sealed class RootWorkspaceHostTests
    finally{owner?.Close();}
   }){IsBackground=true};thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(40)),"真实根工作区宿主验证超时");
   if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+ }
+ private static void VerifySourceEditing(MainWindowViewModel main,SunEyeVision.Workflow.Workflow root,SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab)
+ {
+  var manager=ServiceInitializer.SolutionManager;var history=manager.Session!.History;var opening=history.Position;
+  var node=new SunEyeVision.UI.Shared.WorkflowNode("image-source-admission","图像来源","图像来源","RootConfigurationProbe")
+   {Parameters=new RootConfigurationTests.Parameters()};
+  tab.CommandManager.Execute(new SunEyeVision.UI.Features.WorkflowUI.Commands.AddNodeCommand(root.Nodes,node));
+  var source=node.EnsureInputSource();
+  typeof(MainWindowViewModel).GetMethod("BindLocalImageSourceEditor",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(main,new object[]{node,source});
+  var before=history.Position;
+  source.AddImages(new[]{new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"missing-a.png")},
+   new SunEyeVision.UI.Shared.ImageInfo{FilePath=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"missing-b.png")}},selectFirstAdded:true);
+  Assert.Equal(before+1,history.Position);Assert.Equal(2,node.ImageSourceConfig!.FilePaths.Count);Assert.Equal(0,node.ImageSourceConfig.CurrentIndex);
+  history.Undo();Assert.Null(node.ImageSourceConfig);Assert.Empty(source.Images);
+  history.Redo();Assert.Equal(2,source.Count);Assert.Equal(0,source.CurrentIndex);
+  source.Images[1].IsForRun=true;Assert.Single(node.ImageSourceConfig!.ForRunPaths);
+  history.Undo();Assert.Empty(node.ImageSourceConfig!.ForRunPaths);Assert.False(source.Images[1].IsForRun);
+  history.Redo();Assert.True(source.Images[1].IsForRun);
+  var previousSource=main.ActiveInputSource;main.ActiveInputSource=source;
+  try
+  {
+   Assert.True(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));
+   var position=history.Position;
+   Assert.True(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));
+   Assert.Equal(position,history.Position); // Explicit same-value selection resets execution, without another history entry.
+   EventHandler switchSource=(_,_)=>main.ActiveInputSource=previousSource;
+   source.ConfigurationEdited+=switchSource;
+   try{Assert.False(main.TrySelectPreviewImage(tab,source,source.Images[0],0,source.EditVersion));}
+   finally{source.ConfigurationEdited-=switchSource;}
+  }
+  finally{main.ActiveInputSource=previousSource;}
+  VerifySourceSettings(main,node,history);
+  VerifySourceBaseAfterSave(main,node,root.Id,source);
+  while(history.Position>opening)history.Undo();
+  Assert.DoesNotContain(node,root.Nodes);
+  Assert.Throws<InvalidOperationException>(()=>source.AddImage(new SunEyeVision.UI.Shared.ImageInfo{FilePath="stale.png"}));
+  Assert.Empty(source.Images);
+ }
+ private static void VerifySourceBaseAfterSave(MainWindowViewModel main,SunEyeVision.UI.Shared.WorkflowNode node,string rootId,
+  SunEyeVision.UI.Shared.ImageInputSource source)
+ {
+  var manager=ServiceInitializer.SolutionManager;var session=manager.Session!;
+  var data=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"source-save-base");
+  var a=Path.Combine(data,"a");var b=Path.Combine(data,"b");Directory.CreateDirectory(a);Directory.CreateDirectory(b);
+  void WritePixel(string directory,byte pixel)
+  {
+   var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(1,1,96,96,PixelFormats.Gray8,null,new[]{pixel},1)));
+   using var file=File.Create(Path.Combine(directory,"pixel.png"));encoder.Save(file);
+  }
+  WritePixel(a,30);WritePixel(b,220);
+  session.Document.ResourceBaseDirectory=a;
+  var edit=session.Editing.Host.BeginEdit(rootId,node.Id);
+  edit.Node.ImageSourceConfig!.FilePaths=new(){"pixel.png"};edit.Node.ImageSourceConfig.ForRunPaths.Clear();edit.Node.ImageSourceConfig.CurrentIndex=0;
+  session.Editing.Host.Commit(edit);
+  typeof(MainWindowViewModel).GetMethod("RefreshAcceptedImageSourceViews",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(main,null);
+  var old=Assert.Single(source.Images);var version=source.EditVersion;
+  Assert.Equal(Path.Combine(a,"pixel.png"),old.FilePath);
+  var frozen=SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager.CaptureLocalImagePlan(node.Id,node.ImageSourceConfig,
+   SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document));
+  var position=session.History.Position;
+  var saved=manager.SaveCurrentDocument(Path.Combine(b,"source-base.json"));Assert.True(saved.FileWritten,saved.Error);
+  Assert.Equal(position,session.History.Position);
+  var current=Assert.Single(source.Images);Assert.NotSame(old,current);Assert.Equal(Path.Combine(b,"pixel.png"),current.FilePath);
+  Assert.Equal(new[]{"pixel.png"},node.ImageSourceConfig!.FilePaths);
+  Assert.False(source.TryPresentRuntimeCursor(version,old.Id,"pixel.png",old.FilePath));
+  Assert.Equal(Path.Combine(a,"pixel.png"),Assert.Single(frozen.Entries).Address);
+  var latest=SunEyeVision.UI.Services.Workflow.WorkflowExecutionManager.CaptureLocalImagePlan(node.Id,node.ImageSourceConfig,
+   SunEyeVision.Workflow.Persistence.SolutionResourceResolver.For(session.Document));
+  Assert.Equal(current.FilePath,Assert.Single(latest.Entries).Address);
+ }
+ private static void VerifySourceSettings(MainWindowViewModel main,SunEyeVision.UI.Shared.WorkflowNode node,DocumentHistoryCoordinator history)
+ {
+  var previous=main.SelectedNodeDataAnalysisControl;
+  var page=new SunEyeVision.UI.Features.WorkflowUI.ImageSourceSettingsControl(node,main);
+  main.SelectedNodeDataAnalysisControl=page;
+  var window=new Window{Content=page,Width=440,Height=600,Left=-10000,ShowActivated=false};
+  try
+  {
+   window.Show();Pump();
+   var tabs=(TabControl)page.Content;
+   var root=(StackPanel)((ScrollViewer)((TabItem)tabs.Items[0]).Content).Content;
+   var picker=root.Children.OfType<ComboBox>().Single();
+   var before=history.Position;
+   picker.SelectedIndex=1;Pump();
+   Assert.Equal(before+1,history.Position);
+   Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Camera,node.ImageSourceConfig!.SourceKind);
+   Assert.Equal(2,node.ImageSourceConfig.FilePaths.Count);
+   history.Undo();Pump();Assert.Equal(0,picker.SelectedIndex);
+   history.Redo();Pump();Assert.Equal(1,picker.SelectedIndex);
+   // Detached/reloaded pages reattach exactly once and use the same formal history.
+   window.Content=null;Pump();window.Content=page;Pump();
+   before=history.Position;picker.SelectedIndex=0;Pump();Assert.Equal(before+1,history.Position);
+   // An unrelated parameter window cannot authorize edits from this page.
+   var unrelated=new Window{Width=100,Height=100,Left=-10000,ShowActivated=false};
+   var field=typeof(MainWindowViewModel).GetField("_openDebugWindow",BindingFlags.Instance|BindingFlags.NonPublic)!;
+   try
+   {
+    unrelated.Show();field.SetValue(main,unrelated);before=history.Position;
+    picker.SelectedIndex=1;Pump();
+    Assert.Equal(before,history.Position);Assert.Equal(0,picker.SelectedIndex);
+    Assert.Equal(SunEyeVision.Plugin.SDK.Vision.Contracts.ImageSourceKind.Local,node.ImageSourceConfig.SourceKind);
+   }
+   finally{field.SetValue(main,null);unrelated.Close();}
+  }
+  finally{window.Close();main.SelectedNodeDataAnalysisControl=previous;}
+ }
+ private static void VerifyWorkflowButtonThemes(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,string theme)
+ {
+  var hoverKey=(DependencyPropertyKey)typeof(UIElement).GetField("IsMouseOverPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var focusKey=(DependencyPropertyKey)typeof(UIElement).GetField("IsKeyboardFocusedPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var pressedKey=(DependencyPropertyKey)typeof(System.Windows.Controls.Primitives.ButtonBase).GetField("IsPressedPropertyKey",BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic)!.GetValue(null)!;
+  var panel=new StackPanel{Orientation=Orientation.Horizontal,Background=(Brush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.TabStripBackgroundBrush)};
+  var window=new Window{Content=panel,Width=300,Height=90,Left=-10000,ShowActivated=false};
+  try
+  {
+   foreach(var template in new[]{"WorkflowSingleTemplate","WorkflowContinuousTemplate","WorkflowStopTemplate","WorkflowAddTemplate","RootConfigurationTemplate","RootVariablesTemplate"})
+    panel.Children.Add(new Button{Style=(Style)shell.FindResource("WorkflowImageButton"),Template=(ControlTemplate)shell.FindResource(template),IsEnabled=true});
+   panel.Children.Add(new Button{Style=(Style)shell.FindResource("WorkflowImageButton"),Content="切换",IsEnabled=true});
+   window.Show();Pump();
+   void Verify(Brush actual,string key)=>Assert.Equal(((SolidColorBrush)Application.Current.FindResource(key)).Color,Assert.IsType<SolidColorBrush>(actual).Color);
+   foreach(Button button in panel.Children)
+   {
+    button.ApplyTemplate();var border=Assert.IsType<Border>(System.Windows.Media.VisualTreeHelper.GetChild(button,0));
+    Assert.Equal(Colors.Transparent,Assert.IsType<SolidColorBrush>(border.Background).Color);
+    button.SetValue(hoverKey,true);Pump();Verify(border.Background,SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush);
+    button.SetValue(hoverKey,false);button.SetValue(focusKey,true);Pump();Verify(border.Background,SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush);
+    button.SetValue(pressedKey,true);Pump();Verify(border.Background,SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonPressedBackgroundBrush);
+    button.IsEnabled=false;Pump();Assert.Equal(Colors.Transparent,Assert.IsType<SolidColorBrush>(border.Background).Color);
+    button.SetValue(pressedKey,false);button.SetValue(focusKey,false);button.SetValue(hoverKey,false);button.IsEnabled=true;
+   }
+   foreach(Button button in panel.Children)button.SetValue(hoverKey,true);
+   Pump();SaveMenuVisual(panel,"workflow-buttons-"+theme+"-hover");
+  }
+  finally{window.Close();}
  }
  private static void VerifyMiniMap(SunEyeVision.UI.Shell.Controls.Shell.ShellWorkspaceControl shell,Window owner,string theme)
  {
@@ -256,6 +394,7 @@ public sealed class RootWorkspaceHostTests
   Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonHoverBackgroundBrush)).Color,Assert.IsType<SolidColorBrush>(chrome.Background).Color);
   SaveMenuVisual(host,"minimap-"+theme+"-hover");
   retract.SetValue(pressedKey,true);Pump();Assert.Equal(((SolidColorBrush)Application.Current.FindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.ButtonPressedBackgroundBrush)).Color,Assert.IsType<SolidColorBrush>(chrome.Background).Color);SaveMenuVisual(host,"minimap-"+theme+"-pressed");
+  retract.IsEnabled=false;Pump();Assert.Equal(Colors.Transparent,Assert.IsType<SolidColorBrush>(chrome.Background).Color);retract.IsEnabled=true;Pump();
   retract.SetValue(pressedKey,false);retract.SetValue(hoverKey,false);retract.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
   Assert.Equal(Visibility.Collapsed,map.Visibility);Assert.Equal(Visibility.Visible,expand.Visibility);CheckButton(expand);
   expand.SetValue(hoverKey,true);Pump();SaveMenuVisual(host,"minimap-"+theme+"-collapsed-hover");expand.SetValue(hoverKey,false);
@@ -291,6 +430,15 @@ public sealed class RootWorkspaceHostTests
   var bar=(FrameworkElement)tabs.Template.FindName("TabHeaderBar",tabs);bar.UpdateLayout();
   var image=new RenderTargetBitmap((int)Math.Ceiling(bar.ActualWidth),(int)Math.Ceiling(bar.ActualHeight),96,96,PixelFormats.Pbgra32);image.Render(bar);
   var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(image));using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"root-tabs-"+theme+".png"));encoder.Save(file);
+ }
+ private static void WaitForLayout(Func<bool> ready)
+ {
+  var frame=new System.Windows.Threading.DispatcherFrame();var timeout=System.Diagnostics.Stopwatch.StartNew();
+  var timer=new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Background)
+   {Interval=TimeSpan.FromMilliseconds(15)};
+  timer.Tick+=(_,_)=>{if(ready()||timeout.Elapsed>TimeSpan.FromSeconds(3)){timer.Stop();frame.Continue=false;}};
+  timer.Start();try{System.Windows.Threading.Dispatcher.PushFrame(frame);}finally{timer.Stop();}
+  Assert.True(ready(),"原生窗口缩放后的布局未在时限内完成");
  }
  private static void Pump()
  {

@@ -74,7 +74,7 @@ public sealed partial class SolutionManagerUiTests
             var source = new ImageInputSource("missing");
             source.LoadFromConfig(new ImageSourceConfig { NodeId = "missing", FilePaths = new() { @"Z:\unavailable\one.png", @"Z:\unavailable\two.png" }, CurrentIndex = 0 }, new SunEyeVision.Workflow.Persistence.SolutionResourceResolver(null));
             ImageSourceConfig? saved = null;
-            source.ConfigChanged = value => saved = value;
+            source.ConfigurationWriter = value => saved = value.Configuration;
             var control = new ImagePreviewControl { ActiveInputSource = source, ImageCollection = source.Images, CurrentImageIndex = source.CurrentIndex };
             Assert.Equal(2, source.Images.Count); Assert.Equal(0, source.CurrentIndex);
             Assert.All(source.Images, image => Assert.False(File.Exists(image.FilePath)));

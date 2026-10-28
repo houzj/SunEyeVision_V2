@@ -1,3 +1,4 @@
+﻿using SunEyeVision.UI.Services.Thumbnail;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -27,11 +28,11 @@ public sealed class ImagePreviewGeneratedDecodeTests : IDisposable
     public void Real_wic_stream_decodes_thumbnails_and_full_images_without_uri_cache_key(int width, int height, string name)
     {
         var path = Write(name, width, height, 20);
-        var thumbnail = ImagePreviewControl.LoadThumbnail(path);
+        var thumbnail = LocalImageAssetCache.LoadThumbnail(path);
         Assert.NotNull(thumbnail); Assert.True(thumbnail!.IsFrozen);
         Assert.InRange(thumbnail.PixelWidth, 1, 100); Assert.InRange(thumbnail.PixelHeight, 1, 100);
-        Assert.Same(thumbnail, ImagePreviewControl.LoadThumbnail(path));
-        var full = ImagePreviewControl.LoadImageOptimized(path);
+        Assert.Same(thumbnail, LocalImageAssetCache.LoadThumbnail(path));
+        var full = LocalImageAssetCache.LoadImageOptimized(path);
         Assert.NotNull(full); Assert.Equal(width, full!.PixelWidth); Assert.Equal(height, full.PixelHeight); Assert.True(full.IsFrozen);
     }
 
@@ -40,11 +41,11 @@ public sealed class ImagePreviewGeneratedDecodeTests : IDisposable
     {
         var path = Write("overwrite.bmp", 64, 32, 10);
         var length = new FileInfo(path).Length; var timestamp = File.GetLastWriteTimeUtc(path);
-        var oldThumbnail = ImagePreviewControl.LoadThumbnail(path); var oldFull = ImagePreviewControl.LoadImageOptimized(path);
+        var oldThumbnail = LocalImageAssetCache.LoadThumbnail(path); var oldFull = LocalImageAssetCache.LoadImageOptimized(path);
         Assert.NotNull(oldThumbnail); Assert.NotNull(oldFull);
         Write("overwrite.bmp", 64, 32, 220); File.SetLastWriteTimeUtc(path, timestamp);
         Assert.Equal(length, new FileInfo(path).Length);
-        var thumbnail = ImagePreviewControl.LoadThumbnail(path); var full = ImagePreviewControl.LoadImageOptimized(path);
+        var thumbnail = LocalImageAssetCache.LoadThumbnail(path); var full = LocalImageAssetCache.LoadImageOptimized(path);
         Assert.NotNull(thumbnail); Assert.NotNull(full); Assert.NotSame(oldThumbnail, thumbnail); Assert.NotSame(oldFull, full);
         static byte FirstBlue(BitmapSource bitmap)
         {
@@ -59,12 +60,12 @@ public sealed class ImagePreviewGeneratedDecodeTests : IDisposable
     [Fact]
     public void Empty_thumbnail_reference_remains_a_visible_failure_value()
     {
-        Assert.Null(ImagePreviewControl.LoadThumbnail(string.Empty));
-        Assert.Null(ImagePreviewControl.LoadThumbnail(Path.Combine(_root, "missing.png")));
+        Assert.Null(LocalImageAssetCache.LoadThumbnail(string.Empty));
+        Assert.Null(LocalImageAssetCache.LoadThumbnail(Path.Combine(_root, "missing.png")));
     }
     public void Dispose()
     {
-        foreach (var path in Directory.EnumerateFiles(_root)) ImagePreviewControl.InvalidateImageCache(path);
+        foreach (var path in Directory.EnumerateFiles(_root)) LocalImageAssetCache.InvalidateImageCache(path);
         Directory.Delete(_root, true);
     }
 }

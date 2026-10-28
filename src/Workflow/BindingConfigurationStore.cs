@@ -148,6 +148,7 @@ public sealed class BindingConfigurationStore
                             node.Parameters = saved.RuntimeConfiguration is null ? ToolParameterSnapshot.Create(saved.Parameters)
                                 : new SunEyeVision.Plugin.SDK.Execution.Parameters.GenericToolParameters();
                             node.ParamSettings = CopySettings(saved.ParamSettings);
+                            node.ImageSourceConfig = JsonCopy(saved.ImageSourceConfig);
                         }
                 foreach(var flow in projected.Workflows.Where(w=>!w.IsSubroutine))
                     if(old.Workflows.FirstOrDefault(w=>w.Id==flow.Id&&!w.IsSubroutine) is {} oldRoot)flow.RootConfiguration=oldRoot.RootConfiguration;

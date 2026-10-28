@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Collections.Generic;
@@ -13,13 +13,18 @@ public sealed class SolutionResourceResolver : IResourcePathResolver
     public SolutionResourceResolver(string? directory) => BaseDirectory = directory == null ? null : Path.GetFullPath(directory);
     public static SolutionResourceResolver For(Solution? solution) => new(solution?.ResourceBaseDirectory ?? (solution?.FilePath is { Length: > 0 } path
         ? Path.GetDirectoryName(Path.GetFullPath(path)) : null));
-    public ResourcePath Resolve(string fieldName, string reference, ResourcePurpose purpose)
+    /// <summary>Resolve a frozen reference without file-system access; availability is checked by the I/O consumer.</summary>
+    public string ResolveAddress(string fieldName, string reference)
     {
         if (string.IsNullOrWhiteSpace(reference)) throw new InvalidDataException(fieldName + ": resource reference is empty.");
         if (reference.Contains('{')) throw new InvalidDataException(fieldName + ": unresolved expression cannot be used for file I/O.");
         if (!Path.IsPathRooted(reference) && BaseDirectory == null)
             throw new InvalidDataException(fieldName + ": save the solution or select an absolute path before accessing relative resources.");
-        var address = Path.IsPathRooted(reference) ? Path.GetFullPath(reference) : Path.GetFullPath(reference, BaseDirectory!);
+        return Path.IsPathRooted(reference) ? Path.GetFullPath(reference) : Path.GetFullPath(reference, BaseDirectory!);
+    }
+    public ResourcePath Resolve(string fieldName, string reference, ResourcePurpose purpose)
+    {
+        var address = ResolveAddress(fieldName, reference);
         return new(reference, address, purpose == ResourcePurpose.DirectoryRead ? Directory.Exists(address) : File.Exists(address));
     }
 

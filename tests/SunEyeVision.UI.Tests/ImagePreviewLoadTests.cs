@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using SunEyeVision.UI.Services.Thumbnail;
+using System.IO;
 using System.Threading;
 using Xunit;
 using SunEyeVision.UI.Shell.Controls.Panels;
@@ -6,7 +7,7 @@ using SunEyeVision.UI.Shell.Controls.Panels;
 namespace SunEyeVision.UI.Tests;
 
 /// <summary>
-/// ImagePreviewControl.LoadThumbnail 行为测试。
+/// LocalImageAssetCache.LoadThumbnail 行为测试。
 /// 覆盖：正常解码 / 取消 / 缓存命中 / 文件不存在。
 /// 注：降级(System.Drawing)路径因真实样本均为标准 BMP、WIC 可直接解，且构造的 RLE4 样本 GDI+ 亦解不了，
 /// 故"降级成功"无真实样本可测，由 RealSampleConcurrencyTests 的并发诊断 + 日志追溯补充。
@@ -21,7 +22,7 @@ public class ImagePreviewLoadTests
     {
         if (!Directory.Exists(SampleDir)) return;   // 无真实样本，跳过
         var file = Directory.EnumerateFiles(SampleDir, "*.bmp").First();
-        var bmp = ImagePreviewControl.LoadThumbnail(file, CancellationToken.None);
+        var bmp = LocalImageAssetCache.LoadThumbnail(file, CancellationToken.None);
 
         Assert.NotNull(bmp);
         Assert.True(bmp.PixelWidth > 0);
@@ -37,7 +38,7 @@ public class ImagePreviewLoadTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var bmp = ImagePreviewControl.LoadThumbnail(file, cts.Token);
+        var bmp = LocalImageAssetCache.LoadThumbnail(file, cts.Token);
 
         Assert.Null(bmp);
     }
@@ -45,7 +46,7 @@ public class ImagePreviewLoadTests
     [Fact]
     public void LoadThumbnail_nonexistent_file_returns_null()
     {
-        var bmp = ImagePreviewControl.LoadThumbnail(@"D:\nonexistent\file.bmp", CancellationToken.None);
+        var bmp = LocalImageAssetCache.LoadThumbnail(@"D:\nonexistent\file.bmp", CancellationToken.None);
         Assert.Null(bmp);
     }
 
@@ -55,8 +56,8 @@ public class ImagePreviewLoadTests
         if (!Directory.Exists(SampleDir)) return;   // 无真实样本，跳过
         var file = Directory.EnumerateFiles(SampleDir, "*.bmp").First();
 
-        var first = ImagePreviewControl.LoadThumbnail(file, CancellationToken.None);
-        var second = ImagePreviewControl.LoadThumbnail(file, CancellationToken.None);
+        var first = LocalImageAssetCache.LoadThumbnail(file, CancellationToken.None);
+        var second = LocalImageAssetCache.LoadThumbnail(file, CancellationToken.None);
 
         Assert.NotNull(first);
         Assert.Same(first, second);   // 缓存命中，同一实例

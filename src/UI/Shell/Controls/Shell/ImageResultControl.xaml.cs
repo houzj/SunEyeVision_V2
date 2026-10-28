@@ -1,3 +1,5 @@
+﻿using SunEyeVision.UI.Features.Dialogs;
+using SunEyeVision.UI.Shared;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,6 +31,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 当前选中图像用于本轮；成功完成后才推进到下一张。
         /// </summary>
 
+        public static readonly DependencyProperty EditingAllowedProperty = DependencyProperty.Register(
+            nameof(EditingAllowed),typeof(bool),typeof(ImageResultControl),new PropertyMetadata(true));
+        public bool EditingAllowed => (bool)GetValue(EditingAllowedProperty);
+        private void OnHostEditingStateChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if(_viewModel is null)return;
+            var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
+            SetCurrentValue(EditingAllowedProperty,allowed);
+            ImagePreviewContent.SetCurrentValue(IsEnabledProperty,allowed);
+        }
+
         public ImageResultControl()
         {
             InitializeComponent();
@@ -47,7 +60,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public void Initialize(MainWindowViewModel viewModel)
         {
+            if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel = viewModel;
+            _viewModel.PropertyChanged+=OnHostEditingStateChanged;
+            OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
             if (ImagePreviewContent != null)
             {
                 ImagePreviewContent.WorkflowExecutionRequested += OnImagePreviewExecutionRequested;
@@ -59,6 +75,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         public void Shutdown()
         {
+            if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
             _viewModel?.CloseResultPresentation();
             if (ImagePreviewContent != null)
             {
@@ -85,6 +102,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private async void OnImagePreviewExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
         {
+            try
+            {
+            if(!ReferenceEquals(sender,ImagePreviewContent)||!ReferenceEquals(e.Source,ImagePreviewContent.ActiveInputSource)||
+                e.Source.EditVersion!=e.EditVersion)return;
             if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
             {
                 _viewModel?.AddLog(LogLevel.Error, "没有选中的工作流，无法执行", LogSource.UIOperation);
@@ -92,14 +113,18 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             if (_viewModel.IsRunning)
             {
-                // 上一次工作流仍在执行（点图 / 方向键切换过快）：仅同步当前图，不并发执行；
-                // 当前 run 结束后的下一次执行会从最新索引开始推进。
+                // Reject overlapping explicit choices; restore the accepted display in finally.
                 _viewModel.AddLog(LogLevel.Info, $"[REJECTED] 工作流正在运行，已拒绝重复执行请求: {e.ImageInfo.Name}", LogSource.UIOperation);
                 return;
             }
             var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
             // 手动在预览器选中图片（点击/方向键）：以该图为下一轮 run 起点（首轮不自动推进）
-            await RunWorkflowWithImage(workflow, e.ImageInfo, e.Index);
+            await RunWorkflowWithImage(workflow,e.Source,e.EditVersion,e.ImageInfo,e.Index);
+            }
+            finally
+            {
+                ImagePreviewContent.CurrentImageIndex=ImagePreviewContent.ActiveInputSource?.CurrentIndex??-1;
+            }
         }
 
         /// <summary>
@@ -114,48 +139,43 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 return;
             }
 
-            var variableType = row.BindingInfo.ValueVocabulary;
-
-            var solutionManager = ServiceInitializer.SolutionManager;
-            var solution = solutionManager?.CurrentSolution;
-            var tab = _viewModel.WorkflowTabViewModel?.SelectedTab;
-            if (solution == null || tab == null)
-                return;
-
-            var variable = GlobalVariableSelectDialog.ShowSelect(solutionManager, variableType);
-            if (variable == null)
-                return;
-
-            var sourceNode = tab.WorkflowNodes.FirstOrDefault(node => node.Id == row.BindingInfo.SourceNodeId);
-            variable.ProducerBinding = new ProducerBinding
+            var solutionManager=ServiceInitializer.SolutionManager;
+            var expected=solutionManager.Session;
+            var tab=_viewModel.WorkflowTabViewModel.SelectedTab;
+            if(expected is null||tab is null)return;
+            // Freeze schema identity before the modal picker. A switched document cannot reuse this row.
+            var binding=new ProducerBinding
             {
-                WorkflowId = tab.RootWorkflowId,
-                WorkflowName = tab.Name,
-                NodeId = row.BindingInfo.SourceNodeId,
-                NodeName = sourceNode?.DispName ?? row.SourceNodeName ?? row.BindingInfo.SourceNodeId,
-                ResultName = row.BindingInfo.ResultPath,
-                SourceFieldId=row.BindingInfo.SourceFieldId,
-                ResultDisplayName = row.DisplayName
+                WorkflowId=tab.RootWorkflowId,NodeId=row.BindingInfo.SourceNodeId,
+                ResultName=row.BindingInfo.ResultPath,SourceFieldId=row.BindingInfo.SourceFieldId,
+                ResultDisplayName=row.DisplayName
             };
-            variable.NotifyInputSourceDisplayChanged();
-            SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CommunicationService.OutputBindings.ReconcileAll();
-            SunEyeVision.Plugin.SDK.UI.Controls.ToolEditorCommit.RefreshCommittedBindings();
-            _viewModel.AddLog(LogLevel.Info,
-                $"全局变量“{variable.Name}”的输入来源已绑定为 {variable.ProducerBinding.DisplayPath}",
-                LogSource.UIOperation);
+            var variable=GlobalVariableSelectDialog.ShowSelect(solutionManager,row.BindingInfo.ValueVocabulary);
+            if(variable is null)return;
+            if(!_viewModel.TryBindResultVariable(expected,binding,variable.Id,out var error))
+                ThemeMessageDialog.Show(error,"结果绑定未接纳",MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Warning);
+
         }
 
-        /// <summary>以指定图片作为当前输入执行一次工作流（注入运行时参数后触发执行）</summary>
-        private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow, ImageInfo image, int index)
+        /// <summary>先正式接纳明确选择，再由本轮配置快照执行。</summary>
+        private async System.Threading.Tasks.Task RunWorkflowWithImage(WorkflowTabViewModel workflow,ImageInputSource source,long editVersion,ImageInfo image,int index)
         {
-            // 注入当前图像路径到运行时参数（不设置 ViewModel.CurrentImageIndex）
-            _viewModel.PublishRuntimeInput(image.FilePath, index);
+            var main=_viewModel;
+            if(main is null||!ReferenceEquals(main.ActiveInputSource,source)||!ReferenceEquals(ImagePreviewContent.ActiveInputSource,source))return;
+            try{if(!main.TrySelectPreviewImage(workflow,source,image,index,editVersion))return;}
+            catch(Exception error)
+            {
+                _viewModel.AddLog(LogLevel.Error,"图像选择未接纳："+error.Message,LogSource.UIOperation);
+                return;
+            }
+            if(!ReferenceEquals(_viewModel,main)||!ReferenceEquals(ImagePreviewContent.ActiveInputSource,source))return;
+            var acceptedVersion=source.EditVersion;
             var workflowName = workflow.Name ?? "未知工作流";
             _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
             _viewModel.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
             // 触发工作流执行（DisplayImage 由工作流结果驱动更新）
             _viewModel.StatusText = $"运行工作流: {workflow.Name} - {image.Name}";
-            await _viewModel.RunSelectedImageAsync();
+            await main.RunPreviewImageAsync(workflow,source,image,index,acceptedVersion);
         }
 
 

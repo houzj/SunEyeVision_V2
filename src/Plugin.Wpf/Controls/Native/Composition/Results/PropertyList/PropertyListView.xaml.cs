@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,7 +10,7 @@ namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyLi
 /// <summary>The recovered three-column result tree. Its row objects and commands belong to the host projection.</summary>
 public partial class PropertyListView : UserControl
 {
-    public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(PropertyListView));
+    public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(PropertyListView),new PropertyMetadata(null,ItemsChanged));
     public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(nameof(SelectedItem), typeof(object), typeof(PropertyListView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, SelectionRestored));
     public static readonly DependencyProperty ErrorInfoProperty = DependencyProperty.Register(nameof(ErrorInfo), typeof(string), typeof(PropertyListView));
     public static readonly DependencyProperty SelectedItemPathProperty = DependencyProperty.Register(nameof(SelectedItemPath), typeof(string), typeof(PropertyListView));
@@ -91,32 +92,47 @@ public partial class PropertyListView : UserControl
             RestoreRealizedSelection(selected);
         }));
     }
+    private static void ItemsChanged(DependencyObject sender,DependencyPropertyChangedEventArgs args)
+    {
+        var view=(PropertyListView)sender;view._selectionRestoreEpoch++;
+        if(view.IsLoaded)view.QueueSelectionRestore();
+    }
     private void RestoreRealizedSelection(object? selected)
     {
-        _restoringSelection=true;
-        try{SelectRealized(resultTreeView,selected,!ReferenceEquals(resultTreeView.SelectedItem,selected));}
-        finally{_restoringSelection=false;}
+        var epoch=_selectionRestoreEpoch;var source=ItemsSource;
+        bool Current()=>epoch==_selectionRestoreEpoch&&ReferenceEquals(selected,SelectedItem)&&ReferenceEquals(source,ItemsSource);
+        var previous=_restoringSelection;_restoringSelection=true;
+        try{SelectRealized(resultTreeView,selected,!ReferenceEquals(resultTreeView.SelectedItem,selected),Current);}
+        finally{_restoringSelection=previous;}
     }
     private static void SelectionRestored(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
-        var view = (PropertyListView)sender;
-        if (view.resultTreeView is null || view._restoringSelection) return;
-        view.RestoreRealizedSelection(e.NewValue);
+        var view=(PropertyListView)sender;view._selectionRestoreEpoch++;
+        if(view.resultTreeView is null)return;
+        if(!view._restoringSelection)view.RestoreRealizedSelection(e.NewValue);
         if(view.IsLoaded)view.QueueSelectionRestore();
     }
-    private static bool SelectRealized(ItemsControl parent, object? item,bool refreshTreeSelection)
+    private static bool SelectRealized(ItemsControl parent,object? item,bool refreshTreeSelection,Func<bool> current)
     {
-        foreach (var child in parent.Items)
+        foreach(var child in parent.Items.Cast<object>().ToArray())
         {
-            if (parent.ItemContainerGenerator.ContainerFromItem(child) is not TreeViewItem container) continue;
-            if (ReferenceEquals(child, item))
+            if(!current())return false;
+            if(parent.ItemContainerGenerator.ContainerFromItem(child) is not TreeViewItem container)continue;
+            if(item is null)
             {
-                // A reloaded container may still be selected while TreeView retained its parent.
-                // Reassert through a real transition without publishing a user selection command.
-                if(refreshTreeSelection&&container.IsSelected)container.IsSelected=false;
-                container.IsSelected=true;return true;
+                if(container.IsSelected)container.IsSelected=false;
+                if(!current())return false;
+                SelectRealized(container,null,false,current);
+                continue;
             }
-            if (SelectRealized(container,item,refreshTreeSelection)) return true;
+            if(ReferenceEquals(child,item))
+            {
+                if(refreshTreeSelection&&container.IsSelected)container.IsSelected=false;
+                // Tree selection observers may replace the publication or target synchronously.
+                if(!current()||!ReferenceEquals(container.DataContext,item))return false;
+                container.IsSelected=true;return current();
+            }
+            if(SelectRealized(container,item,refreshTreeSelection,current))return true;
         }
         return false;
     }

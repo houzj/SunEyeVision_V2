@@ -94,6 +94,24 @@ public sealed class NativeResultCompositionTests
     });
 
     [Fact]
+    public void Restoring_selection_reentry_keeps_new_target_and_null_clears_actual_tree_selection()=>Sta(()=>
+    {
+        var rows=PropertyListDesignView.CreateRows();var calls=new RecordingCommand();
+        var view=new PropertyListView{ItemsSource=rows,SelectedCommand=calls};using var host=new LoadedHost(view);
+        var tree=Assert.IsType<TreeView>(view.FindName("resultTreeView"));
+        var first=rows[0].Children[0];var next=rows[0].Children[1];var replaced=false;
+        tree.SelectedItemChanged+=(_,args)=>
+        {
+            if(replaced||!ReferenceEquals(args.NewValue,first))return;
+            replaced=true;view.SelectedItem=next;
+        };
+        view.SelectedItem=first;Drain();
+        Assert.True(replaced);Assert.Same(next,view.SelectedItem);Assert.Same(next,tree.SelectedItem);
+        view.SelectedItem=null;Drain();
+        Assert.Null(view.SelectedItem);Assert.Null(tree.SelectedItem);Assert.Empty(calls.Arguments);
+    });
+
+    [Fact]
     public void Routed_user_selection_passes_actual_row_once_but_programmatic_selection_does_not() => Sta(() =>
     {
         var rows = PropertyListDesignView.CreateRows();

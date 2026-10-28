@@ -1,3 +1,11 @@
+﻿## 2026-10-28 源轨171过1败后的恢复与窗口身份修复候选
+
+- 主线固定d5e75461：UI005=0错6552警告168.38秒/full005=0错6591警告74.84秒；serial99337全部终态，正式Toolbox probe0、publication9/0（300分页异常）、Design91过，ImageSources002=171过1败（树视觉恢复line85），WorkflowHost002参数窗口身份拒绝仍失败；origins2/table1/style2复验过。以上分范围，目标未完成。
+- 本线原树修复补齐：Loaded是Direct事件，原父TreeView.AddHandler没有观察到子容器；改实际view Loaded/Expanded后排队恢复，Unloaded/代次/目标引用防旧恢复，必要时仅恢复期间让真实IsSelected false→true，同步TreeView central selection且不发用户命令。原child/视觉child/无命令断言保留，新增卸载期间换目标后重载只恢复新目标。
+- Host002真实根因为Runtime参数上下文未核_openDebugWindow。MainWindowRuntimeEditing增加实际窗口身份，ProductionEditorContext文档Apply路线也先EnsureCurrent，不靠另一个有效窗口授权草稿，不改原拒绝/历史断言。四C#纯语法0错及diff通过，尚未新构建/运行。
+- 用户已对持久合同+正式global赋值具体授权“授权按完整批实施”；两次被自动审批拒绝的脚本此前均未执行。D06仍整批预备，UI/helper候选独立未交付；仅全部消费者/生命周期测试齐后切换，不做破坏性半迁移提交、不保旧桥。当前先把上述既有真实失败交主线同源验证；Group冻结。
+
+## 2026-10-28 图像源真实回归失败集中修复候选
 ## 2026-10-28 同源结果发布已接入；真实关联失败集中修复
 
 - 固定产品基线d8cca20e，用户BlobParameterEditor.xaml SHA118128fb08ea3163b353620a91359b08b4d5cb1d36a58e37eaa9bf5c83da67ed保持、不暂存。UI003=0错6579警告147.40秒，全量004=0错6606警告84.64秒；publication8/origins2/table1/style2均过，真实表500→1000→1205。Design91、Components9（真HALCON+owner）、RuntimeEditor10、FullChain8、Resources、Theme1及RootResource真实Fact1过。

@@ -76,30 +76,47 @@ public partial class PropertyListView : UserControl
     public PropertyListView()
     {
         InitializeComponent();
-        resultTreeView.AddHandler(LoadedEvent, new RoutedEventHandler(ContainerLoaded), true);
+        Loaded += (_,args)=>{if(ReferenceEquals(args.OriginalSource,this))QueueSelectionRestore();};
+        Unloaded += (_,args)=>{if(ReferenceEquals(args.OriginalSource,this))_selectionRestoreEpoch++;};
+        resultTreeView.AddHandler(TreeViewItem.ExpandedEvent,new RoutedEventHandler((_,_)=>QueueSelectionRestore()),true);
     }
-    private void ContainerLoaded(object sender, RoutedEventArgs e)
+    private long _selectionRestoreEpoch;
+    private void QueueSelectionRestore()
     {
-        if (e.OriginalSource is not TreeViewItem container || !ReferenceEquals(container.DataContext, SelectedItem)) return;
-        _restoringSelection = true;
-        try { container.IsSelected = true; }
-        finally { _restoringSelection = false; }
+        var epoch=++_selectionRestoreEpoch;
+        var selected=SelectedItem;
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,new Action(()=>
+        {
+            if(!IsLoaded||epoch!=_selectionRestoreEpoch||!ReferenceEquals(selected,SelectedItem))return;
+            RestoreRealizedSelection(selected);
+        }));
+    }
+    private void RestoreRealizedSelection(object? selected)
+    {
+        _restoringSelection=true;
+        try{SelectRealized(resultTreeView,selected,!ReferenceEquals(resultTreeView.SelectedItem,selected));}
+        finally{_restoringSelection=false;}
     }
     private static void SelectionRestored(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
         var view = (PropertyListView)sender;
         if (view.resultTreeView is null || view._restoringSelection) return;
-        view._restoringSelection = true;
-        try { SelectRealized(view.resultTreeView, e.NewValue); }
-        finally { view._restoringSelection = false; }
+        view.RestoreRealizedSelection(e.NewValue);
+        if(view.IsLoaded)view.QueueSelectionRestore();
     }
-    private static bool SelectRealized(ItemsControl parent, object? item)
+    private static bool SelectRealized(ItemsControl parent, object? item,bool refreshTreeSelection)
     {
         foreach (var child in parent.Items)
         {
             if (parent.ItemContainerGenerator.ContainerFromItem(child) is not TreeViewItem container) continue;
-            if (ReferenceEquals(child, item)) { container.IsSelected = true; return true; }
-            if (SelectRealized(container, item)) return true;
+            if (ReferenceEquals(child, item))
+            {
+                // A reloaded container may still be selected while TreeView retained its parent.
+                // Reassert through a real transition without publishing a user selection command.
+                if(refreshTreeSelection&&container.IsSelected)container.IsSelected=false;
+                container.IsSelected=true;return true;
+            }
+            if (SelectRealized(container,item,refreshTreeSelection)) return true;
         }
         return false;
     }

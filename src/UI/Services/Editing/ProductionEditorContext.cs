@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
@@ -199,7 +199,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         if (_committing) { error = "编辑提交不能重入。"; return false; }
         if (_documentEdits is not null)
         {
-            try { _documentEdits.Apply(ScopeId); error = ""; return true; }
+            try { EnsureCurrent(); _documentEdits.Apply(ScopeId); error = ""; return true; }
             catch (Exception ex) { error = ex.Message; return false; }
         }
         if (!TryValidateEditor(out error)) return false;

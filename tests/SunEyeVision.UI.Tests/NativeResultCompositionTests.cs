@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -83,6 +83,13 @@ public sealed class NativeResultCompositionTests
         tree.UpdateLayout();
         Assert.Same(child, view.SelectedItem);
         Assert.Same(child, tree.SelectedItem);
+        Assert.Empty(calls.Arguments);
+        host.Detach();
+        var replacement=rows[0].Children[0];
+        view.SelectedItem=replacement;
+        host.Attach(view);tree.UpdateLayout();Drain();
+        Assert.Same(replacement,view.SelectedItem);
+        Assert.Same(replacement,tree.SelectedItem);
         Assert.Empty(calls.Arguments);
     });
 

@@ -1,10 +1,9 @@
-using SunEyeVision.Plugin.Wpf;
+﻿using SunEyeVision.Plugin.Wpf;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -30,9 +29,9 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
   _context.PrepareView=()=>_fields.FirstOrDefault(f=>f.HasInvalidText)?.Error;
   _context.HasPendingView=()=>_fields.Any(f=>f.HasInvalidText);_context.Changed+=Rebuild;
   _refresh.Tick+=RefreshTick;Loaded+=(_,_)=>{Rebuild();ImageNodes.ItemsSource=_context.Root.Nodes;ImageNodes.SelectedIndex=_context.Root.Nodes.Count>0?0:-1;RefreshPublishedResults();_refresh.Start();};
-  Closed+=(_,_)=>{_refresh.Stop();_refresh.Tick-=RefreshTick;_context.Changed-=Rebuild;_context.PrepareView=null;_context.HasPendingView=null;_context.Dispose();Preview.Source=null;Results.ItemsSource=null;ImageNodes.ItemsSource=null;foreach(var field in _fields)field.Dispose();_fields.Clear();Parameters.Children.Clear();};
+  Closed+=(_,_)=>RunImageCleanup(new Action[]{()=>{_refresh.Stop();_refresh.Tick-=RefreshTick;},()=>{_context.Changed-=Rebuild;_context.PrepareView=null;_context.HasPendingView=null;},DisposeImagePreview,_context.Dispose,()=>Results.ItemsSource=null,()=>ImageNodes.ItemsSource=null,()=>{foreach(var field in _fields)field.Dispose();_fields.Clear();Parameters.Children.Clear();}});
  }
- private void RefreshTick(object? sender,EventArgs e){if(!_context.IsValid){Close();return;}try{RefreshState();RefreshPublishedResults();}catch(Exception error){Error.Text="已发布结果暂不可读取："+error.Message;Preview.Source=null;}}
+ private void RefreshTick(object? sender,EventArgs e){if(!_context.IsValid){Close();return;}try{RefreshState();RefreshPublishedResults();}catch(Exception error){Error.Text="已发布结果暂不可读取："+error.Message;ClearImagePreview();}}
  private void RefreshState()
  {
   bool running=_running();bool editable=_context.CanEdit;ConfigurationTabs.IsEnabled=editable;ApplyButton.IsEnabled=AcceptButton.IsEnabled=editable;
@@ -118,10 +117,8 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
     rows.Add(new(node.DispName+" · "+(output.DisplayName??output.Name),text));
    }
   }
-  Results.ItemsSource=rows;Preview.Source=null;
-  if(ImageNodes.SelectedItem is WorkflowNode nodeView&&nodeView.OutputCache is {} cache&&ReferenceEquals(cache.LastResult,_readResult(nodeView.Id))&&cache.CurrentOutputImage?.Image is BitmapSource image)
-  {var copy=image.IsFrozen?image:image.CloneCurrentValue();if(!copy.IsFrozen&&copy.CanFreeze)copy.Freeze();Preview.Source=copy;}
-  NoImage.Visibility=Preview.Source==null?Visibility.Visible:Visibility.Collapsed;
+  Results.ItemsSource=rows;RefreshImagePreview();
  }
+
  private sealed record ResultRow(string Name,string Value);
 }

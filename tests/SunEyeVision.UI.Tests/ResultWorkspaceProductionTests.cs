@@ -62,7 +62,7 @@ public sealed class ResultWorkspaceProductionTests
             : port.Type == TypeRef.ResourceOf(ResourceKind.Region) ? typeof(IReadOnlyRegion) : port.Type.Shape == ValueShape.Geometry ? typeof(GeometryValue) : typeof(long),
         VariableType = port.Type == TypeRef.ResourceOf(ResourceKind.Image) ? "Image" : port.Type.Shape == ValueShape.Scalar ? "Integer" : "", Kind = OutputVariableKind.Data
     }).ToArray();
-    private sealed class Fixture : IDisposable
+    internal sealed class Fixture : IDisposable
     {
         internal readonly string Directory;
         internal readonly Solution Document;

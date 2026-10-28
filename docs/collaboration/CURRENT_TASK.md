@@ -1,4 +1,10 @@
-﻿## 2026-10-28 工作流线接收共同基线；修正正式宿主测试编译
+﻿## 2026-10-28 新目标已建；基础候选同源正式回归终态
+
+- 新目标A01–E07完整39项已归原主方案当前权威节，按用户要求合并为完整功能链集中实施，保原历史清单。ImageLoad仍旧SDK单工具，Runtime/Wpf角色及全部消费者是下一集中工具批的核心，不把现有45项通过写作新架构完成。
+- 6ae86393主仓Release006=0错6608警告119.22秒；ImageSources004=45过0败；WorkflowHost006=1过0败；正式EXE48152 exit0且commit一致、22可用工具。两个轨道loaded-product全部正式路径/当前SHA已核一致，归evidence/IMAGE_SOURCE_FOUNDATION_RELEASE_20261028.json。自有进程全终态，正式窗口已通知主线释放；没有私有Release、未复制DLL。
+- 未完成：新工具角色/编辑器/原源条与预览调试、结果身份/帧/租约/高亮/树表、主界面替换及旧视觉退出，真实VS/硬件/人工验收。Group不动，共享目录按交接单互斥。下一先补新工具架构完整接入设计，再集中成片实施，不拆逐控件补丁。
+
+## 2026-10-28 工作流线接收共同基线；修正正式宿主测试编译
 
 - 87f4已从3b88c79c快进到bcb111777d1a397651b8c4a0ef23cf0c5b088d98，接收HANDOFF_IMAGE_SOURCE_OWNERSHIP_20261028.md所列图像源/工具/执行及独立ImageSources目录；既有共享主题、项目、Catalog、C13/C14公共合同仍归主线。主仓产品文件及Release不由本线写入，不在worktree默认构建另一套Release。
 - 主仓全量005已终止失败：6609警告、3错误、68.93秒。错误均RootWorkspaceHostTests直接赋私有setter的ActiveInputSource，最新helper没有编出，不能执行旧helper冒称通过。本批仅修正式宿主fixture，通过真实私有setter反射准备/恢复显示源，保留接纳、同值选择不增历史、通知切源拒绝断言；不扩大产品可写接口、不改变业务实现。

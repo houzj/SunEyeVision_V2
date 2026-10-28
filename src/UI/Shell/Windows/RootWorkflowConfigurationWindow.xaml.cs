@@ -72,7 +72,8 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  {
   var editor=new DeclaredFieldEditor(candidate.Resource!.Port,candidate.Node.DispName+"."+proxy.DisplayName,
    _context.Read(proxy),setting=>_context.Write(proxy,setting),RootWorkflowReferencePicker.Options(_context,proxy),
-   formatReference:FormatReference,allowUnboundReference:true);
+   constantBackup:(candidate.Resource.Runtime&&candidate.Resource.IsSettings(candidate.Node)&&(candidate.Resource.Port.EditModes&FieldEditModes.Constant)!=0?new ConstantSetting(candidate.Resource.Literal(candidate.Node)):null),
+   formatReference:FormatReference,choiceLabels:candidate.Field!.Presentation.ChoiceLabels,presentation:candidate.Field.Presentation,allowUnboundReference:true);
   editor.Changed+=RefreshState;_fields.Add(editor);return editor;
  }
  private string FormatReference(OutputReference reference)

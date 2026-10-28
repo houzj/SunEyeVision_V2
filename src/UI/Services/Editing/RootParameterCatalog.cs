@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Workflow;
@@ -10,6 +10,7 @@ internal static class RootParameterCatalog
 {
  internal static IReadOnlyList<RootParameterCandidate> Describe(WorkflowNodeBase node)
  {
+  if(node.RuntimeConfiguration is {} runtime)return DescribeRuntime(node,runtime);
   if(node.ToolType=="Subroutine"||node.Parameters==null)return Array.Empty<RootParameterCandidate>();
   var fields=new List<RootParameterCandidate>();
   if(node.Parameters is IConfigurationFieldProvider provider)
@@ -51,6 +52,21 @@ internal static class RootParameterCatalog
    fields.Add(new(node,port.Id,accessor.StoragePath,descriptor.DisplayName,accessor));
   }
   return fields;
+ }
+ private static IReadOnlyList<RootParameterCandidate> DescribeRuntime(WorkflowNodeBase node,RuntimeToolConfiguration runtime)
+ {
+  return runtime.BindingTargets.Where(port=>port.EditModes!=FieldEditModes.None).Select(port=>
+  {
+   var schema=runtime.SettingsSchema?.Inputs.Any(field=>field.Id==port.Id)==true?runtime.SettingsSchema:runtime.Schema;
+   var presentation=schema?.Presentation?.Fields.SingleOrDefault(field=>field.FieldId==port.Id)
+    ??new FieldPresentation(port.Id,port.Id,"运行参数",0,FieldEditorKind.Scalar);
+   var adapter=new RootResourceProxyBinding(port.Id,port,false,Runtime:true);
+   // Structured constants need their dedicated composer; references still use the declared type.
+   var unavailable=!Supports(port.Type)&&(port.EditModes&FieldEditModes.Reference)==0?"需要专用集合或资源编辑器":null;
+   return new RootParameterCandidate(node,port.Id,port.Id,presentation.DisplayName,
+    new ConfigurationFieldAccessor(port,presentation,port.Id,()=>adapter.Literal(node),value=>adapter.Write(node,new ConstantSetting(value),null!,"")),
+    unavailable,adapter);
+  }).ToArray();
  }
  private static bool Supports(TypeRef type)=>type.Shape==ValueShape.Scalar||type.Shape==ValueShape.Record&&type.Fields.All(field=>Supports(field.Type));
  internal static RootParameterCandidate Resolve(WorkflowNodeBase node,RootParameterProxy proxy)

@@ -31,7 +31,7 @@ internal static class RootWorkflowReferencePicker
    foreach(var field in type.Fields){var next=path.Append(field.Id).ToArray();var caption=label+" / "+field.Id;candidates.Add(new(caption,nodeId,query.WorkflowId,root,next));Members(field.Type,next,caption,nodeId,root);}
   }
   _=context.Resolve(proxy);
-  return new(candidates.Where(candidate=>resource is null||candidate.SelectedType==resource.Port.Type),
+  return new(candidates.Where(candidate=>resource is null||resource.Runtime||candidate.SelectedType==resource.Port.Type),
    candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));
  }
 }

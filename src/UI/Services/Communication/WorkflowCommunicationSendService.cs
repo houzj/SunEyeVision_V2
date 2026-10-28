@@ -21,6 +21,29 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
 {
     private readonly CommunicationSendEventService _events = new(runtime);
     private Solution Solution => solutionReader() ?? throw new InvalidOperationException("当前通信方案不可用。");
+    /// <summary>Configuration and variable debug use a private candidate. Physical I/O retains its live lifetime guards.</summary>
+    public ICommunicationSendService CreateConfigurationView(Func<Solution?> candidate)
+        => new ConfigurationView(this, new WorkflowCommunicationSendService(candidate, runtime));
+    private sealed class ConfigurationView(WorkflowCommunicationSendService live, WorkflowCommunicationSendService candidate) : ICommunicationSendService
+    {
+        public IReadOnlyList<CommunicationSendTarget> GetTargets() => candidate.GetTargets();
+        public void ConfigureVariablePublications(string nodeId, IReadOnlyList<SendVariablePublication> mappings)
+            => candidate.ConfigureVariablePublications(nodeId, mappings);
+        public void ConfigureVariablePublications(string workflowId, string nodeId, IReadOnlyList<SendVariablePublication> mappings)
+            => candidate.ConfigureVariablePublications(workflowId, nodeId, mappings);
+        public async Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default)
+        {
+            var configuration = candidate.Solution;
+            var plan = await (request.Kind == "Variable" ? candidate.PrepareAsync(request, token) : live.PrepareAsync(request, token)).ConfigureAwait(false);
+            return new(plan.Name, plan.Value, ct =>
+            {
+                ct.ThrowIfCancellationRequested();
+                if (!ReferenceEquals(configuration, candidate.Solution))
+                    throw new InvalidOperationException("发送编辑范围已经接纳、关闭或被替换，旧准备项不能提交。");
+                return plan.SubmitAsync(ct);
+            });
+        }
+    }
     public IReadOnlyList<CommunicationSendTarget> GetTargets()
     {
         var solution = Solution; var targets = new List<CommunicationSendTarget>();

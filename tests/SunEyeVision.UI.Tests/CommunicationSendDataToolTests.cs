@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -124,7 +124,18 @@ public sealed class CommunicationSendDataToolTests
         Assert.Equal(ExecutionStatus.Cancelled, result.Status); Assert.Equal(new[] { "one" }, service.Submitted);
         Assert.Equal(1, result.Submitted); Assert.Single(result.Payloads);
         Assert.Single(result.SentData);
-        Assert.NotNull(result.GetOutputVariables().Single(v => v.DisplayName == "已发送数据").RuntimeValue);
+        Assert.All(result.GetOutputVariables(), field => Assert.Null(field.RuntimeValue));
+        Assert.Null(result.DeclaredOutput); Assert.Null(result.Resources);
+        var receipt = Assert.IsType<ToolSideEffectReceipt>(result.SideEffectReceipt);
+        Assert.Equal(1, receipt.Submitted); Assert.Single(receipt.SentData);
+        Assert.Equal(Encoding.UTF8.GetBytes("one"), Assert.Single(receipt.Payloads).ToArray());
+        var changed = receipt.Payloads[0].ToArray(); changed[0] = 0;
+        result.Payloads.Clear(); result.SentData.Clear();
+        Assert.Equal(1, result.Submitted); Assert.Single(result.Payloads); Assert.Single(result.SentData);
+        Assert.Equal(Encoding.UTF8.GetBytes("one"), receipt.Payloads[0].ToArray());
+        var binding = ParamSetting.CreateBinding("cancelled-input", "cancelled-send", nameof(SendDataResults.Submitted));
+        var resolved = new ParameterResolver().Resolve(binding, new Dictionary<string, ToolResults> { ["cancelled-send"] = result });
+        Assert.False(resolved.IsSuccess); Assert.Contains("未成功", resolved.ErrorMessage);
     }
     [Fact]
     public async Task Each_execution_sends_again_but_each_prepared_plan_only_commits_once()

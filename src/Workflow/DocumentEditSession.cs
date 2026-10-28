@@ -43,6 +43,12 @@ public sealed class DocumentEditProposal
             throw new ArgumentException("组合编辑必须包含互不重复的正式节点身份。", nameof(nodes));
         return new(Array.AsReadOnly(nodes.Select(host.Freeze).ToArray()), null, token);
     }
+    public static DocumentEditProposal ForNodesAndVariables(NodeConfigurationEditHost host,
+        IReadOnlyList<NodeConfigurationEditDraft> nodes, GlobalVariableConfigurationEditDraft variables, object? token = null)
+    {
+        var nodesOnly = ForNodes(host, nodes, token);
+        return new(nodesOnly.Nodes, host.Freeze(variables), token);
+    }
     public static DocumentEditProposal ForRootConfiguration(NodeConfigurationEditHost host,RootWorkflowConfigurationEditDraft root,IReadOnlyList<NodeConfigurationEditDraft> nodes,object? token=null)
         =>new(Array.AsReadOnly(nodes.Select(host.Freeze).ToArray()),null,token,new[]{host.Freeze(root)});
     public static DocumentEditProposal ForVariables(NodeConfigurationEditHost host, GlobalVariableConfigurationEditDraft variables, object? token = null)

@@ -1,4 +1,4 @@
-# D07 / E 图像结果视口与工作区整体迁移设计交接（2026-10-28）
+﻿# D07 / E 图像结果视口与工作区整体迁移设计交接（2026-10-28）
 
 - 审计基线：9f197fbe，独立分支快进到46cce5cc42a6b39af92a4f78e73368a599a4ae65（后者只校正宿主测试）。
 - 当前分支：codex/d07-viewport-design；执行者：source_editor。
@@ -74,3 +74,12 @@ Group保持暂停：MainWindowGroupEditing/GroupRegionParameterControl目前也�
 - 编辑：已支持Native形状完整草稿→手势→接纳/拒绝→undo/redo→保存重开；换帧/pose失效/关闭取消不写正式值；旧scope不清新owner。缺入口形状及Group占位列依赖，不删原总清单。
 - 视觉：同一正式Shell和原ImageViewBox独立设计数据/实际VS两态、运行深浅主题/高DPI/resize；自动功能测试或HTML均不能代原WPF外观及人工验收。
 - 规定UI和全量Release同源构建、相关结果/ROI/源条回归与人工程序验收由主线唯一窗口集中执行。本交接未构建、未运行、未VS、未实际设备/人工验收；只给设计与现有实现证据，D07/E未宣称完成。
+## 显示闭包补核：坐标、有效域及数量上限
+
+原只读显示链是ImageViewBox.ShapeList→ShapeItemsPage，而非ROI绘制手势。PointShape、LineShape、CircleShape（含GetEllipseGeometry）、RectShape、PolygonShape及PolylineShape均有完整原绘制入口。GeometryValue到这些原接口需做非视觉投影适配：先验证完整ImageFrameAddress及EffectiveDomain.Frame，图像像素坐标直接使用；有正式标定变换才做模型坐标投影。角度由弧度转原件度数。不把ShapeConvertMatrix当通用映射：原page先求逆，部分类型不消费，圆只变中心不变半径，直接套矩阵会产生错图形。
+
+当前NativeRoiImageFrame仅复制原buffer，没有Domain显示；IImageData不含Domain，ClipToBounds是矩形裁剪。下一实际显示适配必须在保留真实Frame/像素租约下处理AcquireDomainReader的RLE：可将私有显示buffer按真实Domain生成BGRA透明域外像素，逐页ReadRuns（每页最多4096）并核SourceFrame/坐标；原图像/Domain资源保持不变，不用全图Domain替代。空Domain应显示空有效域而非全部图像；灰度/彩色/stride及失败中断、换图关闭必须统一释放独立读者。具体显示实现仍需同原ImageViewBox像素探针/状态消费者一起验证，不能把方案当完成。
+
+RegionRun显示与Domain蒙版不同职责：前者是结果覆盖，需原绘制原语和唯一layer owner；后者决定背景有效像素。ShapeItemsPage.AddShape在GlobalRenderVariable.ShapeRenderingMaxNumber（默认10000）达到后直接返回，不能静默截断长区域或让区域挤掉后续高亮/文字。实施前统一预算全部投影，超过能力时明确诊断，不改全局上限或近似区域冒充完整显示；完整扫描行渲染/裁剪未验时仍列未完成。
+
+Arc的只读显示与编辑手势也须分开：原page有IAnnularSector路径，其GetAnnularGeometry允许等内外半径，负向/整圈与原360角特殊处理仍须核几何等价后复用，不能因没有ROI Arc手势便宣称只读弧线完全缺失。

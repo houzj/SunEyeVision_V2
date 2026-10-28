@@ -534,7 +534,8 @@ namespace SunEyeVision.UI.Shell.Windows
         private bool _declaredResultActive;
         private bool _declaredHistoricalResult;
         private SunEyeVision.UI.Services.Monitoring.ResultPresentationPresenter DeclaredResultPresenter
-            =>_declaredResultPresenter??=new(FlatResultRows,value=>HasModuleResults=value);
+            =>_declaredResultPresenter??=new(FlatResultRows,value=>HasModuleResults=value,
+                projectionFailed:publication=>{if(ReferenceEquals(_resultPublication,publication))RetireResultPublication();});
 
         /// <summary>
         /// 是否有模块结果（用于空状态显示）

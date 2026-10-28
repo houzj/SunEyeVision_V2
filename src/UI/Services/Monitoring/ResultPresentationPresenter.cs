@@ -31,6 +31,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     public bool ContainsRow(FlatResultRow row)=>Current(_generation)&&(ReferenceEquals(row,_root)
         ||_entries.TryGetValue(row.Key,out var entry)&&ReferenceEquals(entry.Row,row));
     private readonly Action<bool> _setHasResults;
+    private readonly Action<IResultPublication>? _projectionFailed;
     private readonly int _pageSize;
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
     private readonly List<(FlatResultRow Row, PropertyChangedEventHandler Handler)> _subscriptions = new();
@@ -45,25 +46,32 @@ public sealed class ResultPresentationPresenter : IDisposable
     private int _generation;
     private bool _disposed;
 
-    public ResultPresentationPresenter(ObservableCollection<FlatResultRow> rows, Action<bool> setHasResults, int pageSize = 128)
+    public ResultPresentationPresenter(ObservableCollection<FlatResultRow> rows, Action<bool> setHasResults, int pageSize = 128,
+        Action<IResultPublication>? projectionFailed=null)
     {
         _rows = rows ?? throw new ArgumentNullException(nameof(rows));
         Roots=new(_roots);
         _setHasResults = setHasResults ?? throw new ArgumentNullException(nameof(setHasResults));
+        _projectionFailed=projectionFailed;
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
         _pageSize = pageSize;
     }
 
     public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null)
+        =>RunProjection(()=>PresentCore(publication,bindings));
+
+    private void PresentCore(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(publication);
         var entryGeneration=_generation;
         var stamp=publication.Stamp;
+        if(!publication.IsCurrent())
+        {if(ReferenceEquals(publication,_publication))Abandon(entryGeneration);return;}
         if(entryGeneration!=_generation||_disposed)return;
         if(ReferenceEquals(publication,_publication)&&_stamp==stamp&&Current(_generation))
         {
             var names=publication.DisplayNames;if(!Current(entryGeneration)){Abandon(entryGeneration);return;}
-            UpdateRootMetadata(names,bindings,entryGeneration);if(Current(entryGeneration))RefreshRows();return;
+            UpdateRootMetadata(names,bindings,entryGeneration);if(Current(entryGeneration))RefreshRows();else Abandon(entryGeneration);return;
         }
         if(entryGeneration!=_generation||_disposed)return;
         var generation=Retire();
@@ -72,23 +80,22 @@ public sealed class ResultPresentationPresenter : IDisposable
         try
         {
             _publication=publication;_stamp=stamp;
-            if(!Current(generation)){if(generation==_generation)Retire();return;}
+            if(!Current(generation)){Abandon(generation);return;}
             lease=publication.Borrow();
-            if(!Current(generation)||lease.Stamp!=stamp){if(generation==_generation)Retire();return;}
+            if(!Current(generation)||lease.Stamp!=stamp){Abandon(generation);return;}
             var model=ResultPresentationModel.ForPublication(publication,lease,_pageSize,()=>Current(generation));
-            if(!Current(generation)){if(generation==_generation)Retire();return;}
+            if(!Current(generation)){Abandon(generation);return;}
             _reader=lease;lease=null;
-            var names=publication.DisplayNames;if(!Current(generation)){if(generation==_generation)Retire();return;}
-            var displayed=publication.DisplayedPorts;if(!Current(generation)){if(generation==_generation)Retire();return;}
-            var diagnostics=publication.Diagnostics;if(!Current(generation)){if(generation==_generation)Retire();return;}_diagnostics=diagnostics;
+            var names=publication.DisplayNames;if(!Current(generation)){Abandon(generation);return;}
+            var displayed=publication.DisplayedPorts;if(!Current(generation)){Abandon(generation);return;}
+            var diagnostics=publication.Diagnostics;if(!Current(generation)){Abandon(generation);return;}_diagnostics=diagnostics;
             Install(model,names,bindings,displayed,generation);
-            if(Current(generation))RefreshRows();else if(generation==_generation)Retire();
+            if(Current(generation))RefreshRows();else Abandon(generation);
         }
-        catch
+        catch(Exception error)
         {
-            var stale=!Current(generation);
-            if(generation==_generation)Retire();
-            if(!stale)throw;
+            try{Abandon(generation);}catch(Exception cleanup){throw new AggregateException("结果准备及统一清理失败。",error,cleanup);}
+            throw;
         }
         finally{lease?.Dispose();}
     }
@@ -100,14 +107,41 @@ public sealed class ResultPresentationPresenter : IDisposable
         return current&&actualStamp==stamp&&!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication)&&_stamp==stamp;
     }
 
-    private void Abandon(int generation){if(!_disposed&&generation==_generation)Retire();}
+    private void Abandon(int generation)
+    {
+        if(_disposed||generation!=_generation)return;
+        var publication=_publication;var failures=new List<Exception>();
+        try{Retire();}catch(Exception error){failures.Add(error);}
+        if(_generation==generation+1&&_publication is null&&publication is not null)
+            try{_projectionFailed?.Invoke(publication);}catch(Exception error){failures.Add(error);}
+        if(failures.Count!=0)throw new AggregateException("结果投影退休失败。",failures);
+    }
 
     /// <summary>Rebuilds only the visible, already requested rows; it never loads another page.</summary>
     public void RefreshRows()
+        =>RunProjection(RefreshRowsCore);
+
+    private void RunProjection(Action action)
+    {
+        var generation=_generation;var publication=_publication;var stamp=_stamp;
+        try{action();}
+        catch(Exception error)
+        {
+            var failures=new List<Exception>{error};
+            if(publication is not null&&generation==_generation&&ReferenceEquals(_publication,publication)&&_stamp==stamp)
+            {
+                try{Abandon(generation);}catch(Exception cleanup){failures.Add(cleanup);}
+            }
+            if(failures.Count==1)throw;
+            throw new AggregateException("结果树投影及统一清理失败。",failures);
+        }
+    }
+
+    private void RefreshRowsCore()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var generation = _generation;
-        if(!Current(generation)){if(generation==_generation)Retire();return;}
+        if(!Current(generation)){Abandon(generation);return;}
         // Both surfaces borrow these exact row objects and the same retained reader.
         // Hierarchy projection never reads another value page.
         foreach(var entry in _entries.Values.ToArray())
@@ -132,7 +166,9 @@ public sealed class ResultPresentationPresenter : IDisposable
             if (!Current(generation)){Abandon(generation);return;}
             _rows.Add(row);
         }
-        if (Current(generation)) _setHasResults(visible.Count > 0);
+        if(!Current(generation)){Abandon(generation);return;}
+        _setHasResults(visible.Count > 0);
+        if(!Current(generation))Abandon(generation);
     }
 
     private bool Synchronize(ObservableCollection<FlatResultRow> destination,IReadOnlyList<FlatResultRow> rows,int generation)
@@ -174,12 +210,13 @@ public sealed class ResultPresentationPresenter : IDisposable
         _root = null;
         _publication = null;_stamp=null;_diagnostics=Array.Empty<Diagnostic>();
         _model = null;_bindingRoots=null;
-        try { try{_roots.Clear();}finally{if(generation==_generation)_rows.Clear();} }
-        finally
-        {
-            try { reader?.Dispose(); }
-            finally { if (generation == _generation) _setHasResults(false); }
-        }
+        var failures=new List<Exception>();
+        void Cleanup(Action action){try{action();}catch(Exception error){failures.Add(error);}}
+        Cleanup(()=>_roots.Clear());
+        if(generation==_generation)Cleanup(()=>_rows.Clear());
+        Cleanup(()=>reader?.Dispose());
+        if(generation==_generation)Cleanup(()=>_setHasResults(false));
+        if(failures.Count!=0)throw new AggregateException("结果树清理失败，所有拥有的清理均已尝试。",failures);
         return generation;
     }
 
@@ -277,6 +314,9 @@ public sealed class ResultPresentationPresenter : IDisposable
     }
 
     private void LoadPage(Entry entry)
+        =>RunProjection(()=>LoadPageCore(entry));
+
+    private void LoadPageCore(Entry entry)
     {
         var generation=_generation;
         if(!Current(generation)){Abandon(generation);return;}

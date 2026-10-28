@@ -1039,7 +1039,7 @@
  
  
          /// <summary>
-@@ -789,11 +777,6 @@
+@@ -790,11 +778,6 @@
          public ICommand ToggleContinuousAllCommand { get; }
  
          // 图像视图
@@ -1051,7 +1051,7 @@
  
          // 图像操作
          public ICommand ClearImageCommand { get; }
-@@ -806,15 +789,6 @@
+@@ -807,15 +790,6 @@
          public ICommand ShowGlobalVariableManagerCommand { get; }
          public ICommand ShowCameraManagerCommand { get; }
          public ICommand ShowCommunicationManagerCommand { get; }
@@ -1067,7 +1067,7 @@
  
          public MainWindowViewModel()
          {
-@@ -942,11 +916,6 @@
+@@ -943,11 +917,6 @@
              ToggleContinuousAllCommand = new RelayCommand(ExecuteToggleContinuousAll, () => true);
  
              // 图像视图
@@ -1079,7 +1079,7 @@
  
              // 图像操作
              ClearImageCommand = new RelayCommand(ExecuteClearImage);
-@@ -2614,8 +2583,7 @@
+@@ -2615,8 +2584,7 @@
              try
              {
                  LogNodeStorageIdentity(node, "打开调试窗口");
@@ -1089,7 +1089,7 @@
                  // UI owns editor creation. Use the formal node so identity and style
                  // overrides are not lost in an incomplete execution-node conversion.
                  var decisionChain = new NodeOpenDecisionChain();
-@@ -2662,8 +2630,6 @@
+@@ -2663,8 +2631,6 @@
                      _openDebugWindow = null;
                      if (node.IsImageLoadNode && ReferenceEquals(SelectedNode, node))
                          _ = UpdateDataAnalysisControl(node);
@@ -1098,7 +1098,7 @@
                      if (SelectedNode?.IsSelected == true)
                      {
                          // 设计态：重新评估输出契约（脚本/子程序输出变更后刷新结果树）
-@@ -2834,7 +2800,7 @@
+@@ -2835,7 +2801,7 @@
                  // ★ Bug修复：当 selectedNode==null 时 UpdateDisplayImageFromCurrentSource
                  //   会因为 _selectedNode==null 而直接返回（第2616行），导致 DisplayImage
                  //   永远不会被清除。必须在 return 前直接清除，不能依赖延迟回调。
@@ -1107,7 +1107,7 @@
                  _nodeResultManager.ClearResultGraphics();
                  SetSelectedDisplayImageSourceIndexDeferred(-1);
                  return;
-@@ -2903,11 +2869,7 @@
+@@ -2904,11 +2870,7 @@
              // 节点已选中但无可显示图像源 → 清除残留图像和图形覆盖
              if (DisplayImageSources.Count == 0)
              {
@@ -1120,7 +1120,7 @@
                  _nodeResultManager.ClearResultGraphics();
              }
          }
-@@ -3203,33 +3165,20 @@
+@@ -3204,33 +3166,20 @@
          ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
          /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
          /// </summary>
@@ -1166,7 +1166,7 @@
          }
  
          /// <summary>
-@@ -3268,69 +3217,7 @@
+@@ -3269,69 +3218,7 @@
          /// 若选中源不可用（源节点未执行 / 该属性无图），按数据源列表顺延到第一个可用源显示，
          /// 并同步下拉选中项（下拉即真相）；全部不可用才清空（如实反映无可用图像）。
          /// </summary>
@@ -1237,7 +1237,7 @@
  
          /// <summary>
          /// 按当前选中的图像源刷新显示（实现 INodeResultSink，供 NodeResultManager 统一调用）
-@@ -3350,7 +3237,7 @@
+@@ -3351,7 +3238,7 @@
              CalculationResults.Clear();
              if(epoch!=_resultPublicationEpoch)return;
              ModuleResultTree.Clear();
@@ -1246,7 +1246,7 @@
          }
  
          /// <summary>
-@@ -3405,20 +3292,12 @@
+@@ -3406,20 +3293,12 @@
          /// <summary>
          /// 数据分析控件选中高亮联动 → 将高亮元素设置到图像渲染层
          /// </summary>
@@ -1269,7 +1269,7 @@
          }
  
          /// <summary>
-@@ -3720,32 +3599,13 @@
+@@ -3721,32 +3600,13 @@
                      // 缓存调试窗口（用于工作流执行完成后通知刷新）
                      _nodeDebugWindows[node.Id] = debugWindow;
  
@@ -1303,7 +1303,7 @@
  
                          // 4. 刷新当前选中节点的结果显示（如果有）
                          if (SelectedNode != null && SelectedNode.IsSelected)
-@@ -3853,7 +3713,7 @@
+@@ -3854,7 +3714,7 @@
                                  if(result is Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs {IsSuccess:false})
                                  {
                                      editorContext?.DebugResults.RemoveNodeResult(node.Id);
@@ -1312,7 +1312,7 @@
                                  }
                                  return;
                              }
-@@ -3893,7 +3753,7 @@
+@@ -3894,7 +3754,7 @@
                          else
                          {
                              _nodeResultManager?.ClearResultDisplay();
@@ -1321,7 +1321,7 @@
                          }
                          // Recreate the analysis view from the formal context. Passing null to a
                          // legacy analysis control can leave the previous preview rows visible.
-@@ -4377,124 +4237,38 @@
+@@ -4378,124 +4238,38 @@
              return null;
          }
  
@@ -1471,14 +1471,14 @@
          #endregion
 --- a/src/UI/Shell/Windows/MainWindowResultPublication.cs
 +++ b/src/UI/Shell/Windows/MainWindowResultPublication.cs
-@@ -50,6 +50,7 @@
+@@ -53,6 +53,7 @@
              if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
-             if(!Current())return;
+             if(!EnsureCurrent())return;
              _activeResultView?.Present(publication);
-+            if(Current())RefreshNativeResultImages();
++            if(EnsureCurrent())RefreshNativeResultImages();
+             EnsureCurrent();
          }
          catch
-         {
 --- a/src/UI/Shell/Windows/MainWindowGroupEditing.cs
 +++ b/src/UI/Shell/Windows/MainWindowGroupEditing.cs
 @@ -52,7 +52,7 @@
@@ -1538,491 +1538,6 @@
              Stage("加载真实结果工作区窗口");owner=new Window{Content=view,Width=900,Height=700,Left=-10000,ShowActivated=false};owner.Show();Pump();
              var tree=Assert.IsType<PropertyListView>(view.FindName("ModuleResultTreeView"));
              var session=manager.Session!;var initial=session.History.Position;
---- /dev/null
-+++ b/src/UI/Services/Images/ResultWorkspaceImagePlan.cs
-@@ -0,0 +1,31 @@
-+using SunEyeVision.Plugin.Contracts;
-+using SunEyeVision.Plugin.Runtime;
-+using SunEyeVision.Plugin.Wpf.Presenters.Results;
-+
-+namespace SunEyeVision.UI.Services.Images;
-+
-+internal sealed record ResultWorkspaceImageSource(string DisplayName,OutputReference Reference,
-+    IResultPublication? Publication,Func<bool> Current,int NavigationIndex,bool IsUpstream)
-+{
-+    public string Key=>BindingReferenceSerializer.Serialize(Reference);
-+    public bool CanOverlay=>false;
-+    public bool IsCheck=>false;
-+    public bool IsBackgroundImage=>false;
-+    public override string ToString()=>DisplayName;
-+}
-+internal sealed class ResultWorkspaceImagePlan:IDisposable
-+{
-+    internal readonly List<ResultWorkspaceImageSource> Sources=new();
-+    internal readonly List<string> Diagnostics=new();
-+    private readonly List<IResultPublication> _publications=new();
-+    internal bool IsDisposed {get;private set;}
-+    internal void Own(IResultPublication publication)=>_publications.Add(publication);
-+    public void Dispose()
-+    {
-+        if(IsDisposed)return;IsDisposed=true;
-+        var failures=new List<Exception>();
-+        foreach(var publication in _publications)try{publication.Dispose();}catch(Exception error){failures.Add(error);}
-+        _publications.Clear();
-+        if(failures.Count>0)throw new AggregateException("图像来源发布释放失败。",failures);
-+    }
-+}
---- /dev/null
-+++ b/src/UI/Services/Images/ResultWorkspacePresenter.cs
-@@ -0,0 +1,295 @@
-+using System.ComponentModel;
-+using System.Windows;
-+using System.Windows.Media;
-+using SunEyeVision.Plugin.Contracts;
-+using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
-+using SunEyeVision.Plugin.Wpf.Presenters.Display;
-+using SunEyeVision.Plugin.Wpf.Presenters.Results;
-+using SunEyeVision.UI.Shell.Windows;
-+
-+namespace SunEyeVision.UI.Services.Images;
-+
-+/// <summary>Owns the two original Shell image views; result tables retain their independent publication.</summary>
-+internal sealed class ResultWorkspacePresenter:IDisposable
-+{
-+    private sealed class Pane:IDisposable
-+    {
-+        internal long Generation;
-+        internal readonly ResultImagePane Image;
-+        internal readonly NativeResultViewport.GeometryLayer Selection;
-+        internal Pane(FrameworkElement view){Image=new(view);Selection=Image.Viewport.CreateSelectionLayer();}
-+        internal void ClearGraphics()=>Selection.Clear();
-+        public void Dispose()=>Run(new Action[]{ClearGraphics,Selection.Dispose,Image.Dispose});
-+    }
-+    private readonly MainWindowViewModel _main;
-+    private readonly ResultWorkspaceShell _shell;
-+    private readonly Pane _input,_output;
-+    private readonly DependencyPropertyDescriptor _inputSelection,_outputSelection;
-+    private ResultWorkspaceImagePlan? _plan;
-+    private CancellationTokenSource? _previewCancellation;
-+    private ResultViewportFullscreenScope? _fullscreen;
-+    private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
-+    private int _navigationIndex=int.MinValue;
-+    private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
-+    private string? _inputKey,_outputKey;
-+    private ResultWorkspaceImageSource? _inputSource,_outputSource;
-+    private object? _selectionOwner;
-+    private IResultPublication? _displayDefinitionNotice;
-+    internal ResultImagePane InputPane=>_input.Image;
-+    internal ResultImagePane OutputPane=>_output.Image;
-+    internal ResultWorkspacePresenter(MainWindowViewModel main,ResultWorkspaceShell shell)
-+    {
-+        _main=main;_shell=shell;
-+        _input=new(shell.InputViewport);
-+        try{_output=new(shell.OutputViewport);}catch{_input.Dispose();throw;}
-+        _inputSelection=DependencyPropertyDescriptor.FromProperty(ResultWorkspaceShell.SelectedInputItemProperty,typeof(ResultWorkspaceShell));
-+        _outputSelection=DependencyPropertyDescriptor.FromProperty(ResultWorkspaceShell.SelectedOutputItemProperty,typeof(ResultWorkspaceShell));
-+        try
-+        {
-+        _inputSelection.AddValueChanged(shell,InputSelected);_outputSelection.AddValueChanged(shell,OutputSelected);
-+        main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
-+        main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
-+        shell.FullscreenCommand=new SunEyeVision.UI.Core.RelayCommand(value=>
-+        {
-+            if(value is FrameworkElement view&&Window.GetWindow(shell) is {} owner)
-+            {
-+                _fullscreen?.Dispose();_fullscreen=ResultViewportFullscreenScope.Open(view,owner);
-+            }
-+        },value=>!_disposed&&value is FrameworkElement view&&(ReferenceEquals(view,shell.InputViewport)||ReferenceEquals(view,shell.OutputViewport)));
-+        // The original background command exchanges an established output background
-+        // with a checked overlay. It is not an alias of ordinary source selection.
-+        // Keep it unavailable until the one-owner multi-image layer chain is present.
-+        shell.SelectBackgroundCommand=null;
-+        Refresh();
-+        }
-+        catch(Exception failure)
-+        {
-+            try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
-+            throw;
-+        }
-+    }
-+    private void InputSelected(object? sender,EventArgs args)
-+    {
-+        if(_disposed||_restoringInput)return;
-+        if(_refreshing&&_plan is null)return;
-+        var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
-+        if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
-+        {RestoreChoice(true);return;}
-+        _inputSource=source;_inputKey=source?.Key;
-+        if(_refreshing)return;
-+        Present(_input,source);ReportDisplayDefinitionGap();
-+    }
-+    private void OutputSelected(object? sender,EventArgs args)
-+    {
-+        if(_disposed||_restoringOutput)return;
-+        if(_refreshing&&_plan is null)return;
-+        var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
-+        if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
-+        {RestoreChoice(false);return;}
-+        _outputSource=source;_outputKey=source?.Key;++_outputChoiceRevision;
-+        if(_refreshing)return;
-+        _previewCancellation?.Cancel();
-+        if(source is {NavigationIndex:>=0}&&_main.SelectedDisplayImageSourceIndex!=source.NavigationIndex)
-+        {_main.SelectedDisplayImageSourceIndex=source.NavigationIndex;return;}
-+        Present(_output,source);ReportDisplayDefinitionGap();
-+    }
-+    private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
-+    {
-+        if(_disposed||_plan is null||_plan.IsDisposed||input&&!source.IsUpstream)return false;
-+        foreach(var candidate in _plan.Sources)if(ReferenceEquals(candidate,source))return true;
-+        return false;
-+    }
-+    private void RestoreChoice(bool input)
-+    {
-+        var epoch=_epoch;var plan=_plan;
-+        var accepted=input?_inputSource:_outputSource;
-+        if(input)_restoringInput=true;else _restoringOutput=true;
-+        try
-+        {
-+            _shell.SetCurrentValue(input?ResultWorkspaceShell.SelectedInputItemProperty:ResultWorkspaceShell.SelectedOutputItemProperty,accepted);
-+        }
-+        finally{if(input)_restoringInput=false;else _restoringOutput=false;}
-+        if(_disposed||epoch!=_epoch||!ReferenceEquals(plan,_plan))return;
-+        // A synchronous observer can select a genuinely new current item while the
-+        // obsolete value is restored. Honour that intent, never replay the old item.
-+        var current=input?_shell.SelectedInputItem:_shell.SelectedOutputItem;
-+        if(!ReferenceEquals(current,accepted)&&(current is null||current is ResultWorkspaceImageSource source&&OwnsChoice(source,input)))
-+        {if(input)InputSelected(null,EventArgs.Empty);else OutputSelected(null,EventArgs.Empty);}
-+    }
-+    private void Present(Pane pane,ResultWorkspaceImageSource? source)
-+    {
-+        var plan=_plan;var epoch=_epoch;var paneGeneration=++pane.Generation;
-+        ++_selectionGeneration;
-+        bool Current()=>!_disposed&&epoch==_epoch&&ReferenceEquals(_plan,plan)&&pane.Generation==paneGeneration;
-+        if(!Current())return;
-+        pane.ClearGraphics();
-+        if(!Current())return;
-+        if(source?.Publication is not {} publication){pane.Image.Clear();return;}
-+        if(!pane.Image.TryPresent(publication,source.Reference,source.Reference.ScopeId!,
-+            ()=>Current()&&source.Current()&&Current(),out var error))
-+            _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
-+    }
-+    internal void Refresh()
-+    {
-+        if(_disposed)return;
-+        if(_refreshing){_refreshAgain=true;return;}
-+        _refreshing=true;
-+        try
-+        {
-+            do
-+            {
-+                _refreshAgain=false;var epoch=++_epoch;
-+                ++_input.Generation;++_output.Generation;++_selectionGeneration;
-+                _previewCancellation?.Cancel();
-+                var old=_plan;_plan=null;_inputSource=null;_outputSource=null;
-+                Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
-+                if(_disposed)return;
-+                if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
-+                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=null;}
-+                var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
-+                if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
-+                _plan=plan;
-+                var inputs=plan.Sources.Where(source=>source.IsUpstream).ToArray();
-+                _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
-+                var input=inputs.FirstOrDefault(source=>source.Key==_inputKey)??inputs.FirstOrDefault();
-+                var navigation=_main.SelectedDisplayImageSourceIndex;
-+                var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
-+                var byNavigation=plan.Sources.FirstOrDefault(source=>source.NavigationIndex==navigation);
-+                var output=(_navigationIndex!=navigation?byNavigation??byKey:byKey??byNavigation)??plan.Sources.FirstOrDefault();
-+                _navigationIndex=navigation;
-+                _inputSource=input;_outputSource=output;
-+                var outputChoiceRevision=_outputChoiceRevision;
-+                _shell.SelectedInputItem=input;
-+                // An input observer may already have accepted a newer output choice.
-+                if(outputChoiceRevision==_outputChoiceRevision)_shell.SelectedOutputItem=output;
-+                // Setters can synchronously replace a choice. Reconcile the actual
-+                // values rather than replaying the pre-setter local candidates.
-+                InputSelected(null,EventArgs.Empty);OutputSelected(null,EventArgs.Empty);
-+                if(plan.Diagnostics.Count>0)_main.AddLog(string.Join("；",plan.Diagnostics));
-+            }while(_refreshAgain&&!_disposed);
-+        }
-+        catch(Exception error){_main.AddLog("结果工作区刷新失败："+error.Message);}
-+        finally
-+        {
-+            _refreshing=false;
-+            try
-+            {
-+            if(!_disposed&&!_refreshAgain&&_plan is not null)
-+            {
-+                var epoch=_epoch;var plan=_plan;
-+                InputSelected(null,EventArgs.Empty);
-+                if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan))
-+                {
-+                    OutputSelected(null,EventArgs.Empty);
-+                    if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan)
-+                        &&_main.NativePreviewPath is {} path)_=PresentPreview(path,epoch);
-+                }
-+            }
-+            }
-+            catch(Exception error){_main.AddLog("结果工作区选择刷新失败："+error.Message);}
-+            finally
-+            {
-+            // An exception must not discard a newer notification received while the
-+            // previous plan was clearing/capturing. Retry only a genuinely queued intent.
-+            if(_refreshAgain&&!_disposed&&!_refreshQueued)
-+            {
-+                _refreshQueued=true;
-+                _shell.Dispatcher.BeginInvoke(new Action(()=>
-+                {
-+                    _refreshQueued=false;
-+                    if(!_disposed)Refresh();
-+                }));
-+            }
-+            }
-+        }
-+    }
-+    private async Task PresentPreview(string path,long epoch)
-+    {
-+        var cancellation=new CancellationTokenSource();var token=cancellation.Token;_previewCancellation=cancellation;
-+        var paneGeneration=++_output.Generation;++_selectionGeneration;
-+        try
-+        {
-+            using var decoded=await LocalResultImagePreview.LoadAsync(path,token);
-+            bool Current()=>!_disposed&&!token.IsCancellationRequested&&epoch==_epoch&&_output.Generation==paneGeneration&&_main.NativePreviewPath==path;
-+            if(!Current())return;
-+            if(!_output.Image.TryPresentPreview(decoded.Image,Current,out var error))_main.AddLog("文件预览未显示："+error);
-+            else _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;
-+        }
-+        catch(OperationCanceledException){}
-+        catch(Exception error){if(!_disposed&&epoch==_epoch)_main.AddLog("文件预览失败："+error.Message);}
-+        finally
-+        {
-+            if(ReferenceEquals(_previewCancellation,cancellation))_previewCancellation=null;
-+            cancellation.Dispose();
-+        }
-+    }
-+    internal void ClearGraphics()
-+    {
-+        var generation=++_selectionGeneration;var epoch=_epoch;
-+        bool Current()=>!_disposed&&generation==_selectionGeneration&&epoch==_epoch;
-+        Run(new Action[]{()=>{if(Current())_input.ClearGraphics();},()=>{if(Current())_output.ClearGraphics();}});
-+    }
-+    private void ReportDisplayDefinitionGap()
-+    {
-+        var publication=_main.CurrentResultPublication;
-+        if(publication is null||!publication.IsCurrent()||ReferenceEquals(publication,_displayDefinitionNotice))return;
-+        _displayDefinitionNotice=publication;
-+        // Resource values are not display declarations. Do not invent visible regions,
-+        // colors, text or frame provenance while the formal display contract is absent.
-+        _main.AddLog("结果图形/文字显示尚未接入正式声明；图像叠层与背景替换尚未接入唯一owner，不绘制推测图层。普通来源选择、树表及有同帧证明的高亮可用。");
-+    }
-+    private void Highlight(ResultSelection? selection)
-+    {
-+        var publication=_main.CurrentResultPublication;var epoch=_epoch;
-+        if(selection is not null&&(publication is null||selection.Publication!=publication.Stamp||!publication.IsCurrent()))return;
-+        var generation=++_selectionGeneration;
-+        bool LocalCurrent()=>!_disposed&&epoch==_epoch&&generation==_selectionGeneration
-+            &&ReferenceEquals(_main.CurrentResultPublication,publication);
-+        bool Current()=>LocalCurrent()&&(publication?.IsCurrent()!=false)&&LocalCurrent();
-+        bool ClearCurrent()=>selection is null?LocalCurrent():Current();
-+        Run(new Action[]{()=>{if(ClearCurrent())_input.Selection.Clear();},()=>{if(ClearCurrent())_output.Selection.Clear();}});
-+        if(selection is null||publication is null||!Current())return;
-+        var displayed=false;
-+        foreach(var pane in new[]{_input,_output})
-+        {
-+            if(!Current())return;
-+            if(pane.Image.CurrentFrame is not {} receipt)continue;
-+            if(!Current())return;
-+            var paneGeneration=pane.Generation;
-+            bool LayerCurrent()=>Current()&&pane.Generation==paneGeneration;
-+            var values=selection.Targets.Where(target=>target.ImageFrame==receipt.Frame&&target.Coordinates==receipt.Coordinates)
-+                .SelectMany(target=>target.Geometry.Select(geometry=>new NativeGeometryOverlay(target.ImageFrame,geometry,Colors.Orange,2))).ToArray();
-+            if(values.Length==0)continue;
-+            if(!LayerCurrent())return;
-+            try
-+            {
-+                displayed|=pane.Selection.Present(receipt,++_layerRevision,values,LayerCurrent);
-+                if(!LayerCurrent())return;
-+            }
-+            catch(Exception error){if(Current())_main.AddLog("选择高亮未显示："+error.Message);}
-+        }
-+        if(Current()&&selection.Targets.Count>0&&!displayed)_main.AddLog("选择来源与当前双图物理Frame/坐标不一致，已拒绝高亮。");
-+    }
-+    private static void Run(IEnumerable<Action> actions)
-+    {
-+        var errors=new List<Exception>();foreach(var action in actions)try{action();}catch(Exception error){errors.Add(error);}
-+        if(errors.Count>0)throw new AggregateException("结果工作区清理失败。",errors);
-+    }
-+    public void Dispose()
-+    {
-+        if(_disposed)return;_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
-+        var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;var fullscreen=_fullscreen;_fullscreen=null;
-+        var cancellation=_previewCancellation;_previewCancellation=null;
-+        Run(new Action[]{
-+            ()=>_main.ResultWorkspaceChanged-=Refresh,
-+            ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
-+            ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
-+            ()=>_inputSelection.RemoveValueChanged(_shell,InputSelected),
-+            ()=>_outputSelection.RemoveValueChanged(_shell,OutputSelected),
-+            ()=>_shell.FullscreenCommand=null,()=>_shell.SelectBackgroundCommand=null,
-+            ()=>_shell.SelectedInputItem=null,()=>_shell.SelectedOutputItem=null,
-+            ()=>_shell.InputItems=null,()=>_shell.OutputItems=null,
-+            ()=>cancellation?.Cancel(),()=>cancellation?.Dispose(),
-+            ()=>fullscreen?.Dispose(),_input.Dispose,_output.Dispose,()=>plan?.Dispose()});
-+    }
-+}
---- /dev/null
-+++ b/src/UI/Shell/Windows/MainWindowViewModel.NativeResults.cs
-@@ -0,0 +1,150 @@
-+using SunEyeVision.Plugin.Contracts;
-+using SunEyeVision.Plugin.Runtime;
-+using SunEyeVision.Plugin.SDK.Execution.Parameters;
-+using SunEyeVision.Plugin.SDK.Execution.Results;
-+using SunEyeVision.Plugin.Wpf.Presenters.Results;
-+using SunEyeVision.UI.Services.Images;
-+using SunEyeVision.UI.Services.Monitoring;
-+using SunEyeVision.Workflow;
-+
-+namespace SunEyeVision.UI.Shell.Windows;
-+
-+public partial class MainWindowViewModel
-+{
-+    internal event Action? ResultWorkspaceChanged;
-+    internal event Action<ResultSelection?>? ResultWorkspaceSelectionChanged;
-+    internal event Action? ResultWorkspaceGraphicsCleared;
-+    private string? _nativePreviewPath;
-+    private bool _nativeImagesSuppressed;
-+    internal string? NativePreviewPath=>_nativePreviewPath;
-+    internal void RefreshNativeResultImages()
-+    {
-+        _nativePreviewPath=null;_nativeImagesSuppressed=false;
-+        ResultWorkspaceChanged?.Invoke();
-+    }
-+    private void ClearNativeImagePresentation()
-+    {
-+        _nativePreviewPath=null;_nativeImagesSuppressed=true;
-+        ResultWorkspaceChanged?.Invoke();
-+    }
-+    public void ClearResultGraphics()=>ResultWorkspaceGraphicsCleared?.Invoke();
-+    public void ClearResultHighlight()=>ResultWorkspaceSelectionChanged?.Invoke(null);
-+
-+    internal ResultWorkspaceImagePlan CaptureNativeImageSources(Func<bool> consumerCurrent)
-+    {
-+        var plan=new ResultWorkspaceImagePlan();
-+        var session=DocumentManager.Session;var selected=SelectedNode;
-+        var tab=WorkflowTabViewModel?.SelectedTab;var context=CurrentWorkflowContext;
-+        var historical=_declaredHistoricalResult;
-+        var scope=tab?.CurrentWorkflowId;
-+        if(session is null||selected is null||scope is null)return plan;
-+        var flows=session.Document.Workflows.Where(flow=>flow.Id==scope).ToArray();
-+        if(flows.Length!=1||!flows[0].Nodes.Contains(selected))return plan;
-+        var flow=flows[0];
-+        bool OwnsUniqueNode(WorkflowNodeBase node)
-+        {
-+            var count=0;var owns=false;
-+            foreach(var item in flow.Nodes)
-+                if(item.Id==node.Id){count++;owns=ReferenceEquals(item,node);}
-+            return count==1&&owns;
-+        }
-+        bool Owner()
-+        {
-+            if(plan.IsDisposed||!consumerCurrent()||!ReferenceEquals(DocumentManager.Session,session)
-+                ||!ReferenceEquals(SelectedNode,selected)||!ReferenceEquals(WorkflowTabViewModel?.SelectedTab,tab)
-+                ||tab.CurrentWorkflowId!=scope||!ReferenceEquals(CurrentWorkflowContext,context)
-+                ||_declaredHistoricalResult!=historical)return false;
-+            var count=0;var owns=false;
-+            foreach(var item in session.Document.Workflows)
-+                if(item.Id==scope){count++;owns=ReferenceEquals(item,flow);}
-+            return count==1&&owns&&OwnsUniqueNode(selected);
-+        }
-+        // Only the selected node and its actual dependency ancestors are image candidates.
-+        var dependencies=WorkflowExecutionDependencyGraph.Compile(flow);
-+        var ids=new HashSet<string>(StringComparer.Ordinal){selected.Id};var queue=new Queue<string>();queue.Enqueue(selected.Id);
-+        while(queue.TryDequeue(out var id))
-+            foreach(var predecessor in dependencies.GetPredecessors(id))
-+                if(ids.Add(predecessor))queue.Enqueue(predecessor);
-+        using var captured=context?.CaptureNodeResults();
-+        try
-+        {
-+            foreach(var node in flow.Nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Id==selected.Id?0:1))
-+            {
-+                if(historical&&node.Id!=selected.Id)continue;
-+                DeclaredOutputSnapshot? snapshot=null;
-+                if(node.Id==selected.Id&&_resultPublicationSnapshot is {} shown&&_resultPublication?.IsCurrent()==true)
-+                    snapshot=shown;
-+                else if(!historical&&captured?.Results.TryGetValue(node.Id,out var execution)==true)snapshot=execution.Result?.DeclaredOutput;
-+                bool SnapshotCurrent()
-+                {
-+                    if(!Owner()||!OwnsUniqueNode(node)||snapshot is null||snapshot.SourceWorkflowId!=scope
-+                        ||snapshot.Identity.NodeId!=node.Id)return false;
-+                    var owner=snapshot.Identity.DocumentSessionId;
-+                    if(owner!=session.Document.ExecutionOwner.Id&&_productionEditors?.Any(editor=>editor.DebugOwner.Id==owner
-+                        &&editor.IsValid&&editor.Identity.WorkflowId==scope&&editor.Identity.NodeId==node.Id)!=true)return false;
-+                    if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)return Owner();
-+                    var live=context?.GetNodeResult(node.Id)?.Result;
-+                    return !historical&&ReferenceEquals(live?.DeclaredOutput,snapshot)
-+                        &&live?.ExecutionIdentity?.IsCurrent==true&&Owner();
-+                }
-+                ToolSchema schema;
-+                try
-+                {
-+                    schema=snapshot?.Schema??node.RuntimeConfiguration?.Schema??new ToolSchema(Array.Empty<Port>(),
-+                        (node.Parameters is IOutputContractProvider provider?provider.GetOutputContract():Array.Empty<OutputVariable>())
-+                        .Where(output=>output.Kind==OutputVariableKind.Data).Select(BindingClrAdapter.DescribeOutput));
-+                }
-+                catch(Exception error)when(error is ArgumentException or InvalidOperationException)
-+                {plan.Diagnostics.Add(node.Name+"：输出声明尚未就绪，"+error.Message);continue;}
-+                IResultPublication? publication=null;
-+                if(!_nativeImagesSuppressed&&snapshot is {IsComplete:true}&&SnapshotCurrent())
-+                {
-+                    if(ReferenceEquals(_resultPublicationSnapshot,snapshot)&&_resultPublication?.IsCurrent()==true)
-+                        publication=_resultPublication;
-+                    else
-+                    {publication=ToolResultViews.FromSnapshot(snapshot,SnapshotCurrent);plan.Own(publication);}
-+                }
-+                using var values=publication?.Borrow();
-+                foreach(var port in schema.Outputs)
-+                {
-+                    var label=snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id;
-+                    Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
-+                    void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
-+                    {
-+                        if(plan.Sources.Count>=4096)throw new InvalidOperationException("图像来源超过4096项，拒绝整批而非截断列表。");
-+                        if(type==TypeRef.ResourceOf(ResourceKind.Image))
-+                        {
-+                            var reference=new OutputReference(node.Id,port.Id,port.Type,path,
-+                                selection:index is {} item?new BindingSelection.AtConstant(item):null,scopeId:scope,storage:port.Storage);
-+                            var available=DisplayImageSources.FirstOrDefault(source=>source.SourceNodeId==node.Id
-+                                &&(snapshot?.Fields.TryGetValue(port.Id,out var field)==true
-+                                    ?source.SourceFieldId is {} fieldId?field.FieldId==fieldId:field.Name==source.PropertyName
-+                                    :BindingClrAdapter.OutputPortId(new OutputVariable{Name=source.PropertyName,FieldId=source.SourceFieldId})==port.Id));
-+                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,DisplayImageSources.IndexOf(available!),node.Id!=selected.Id));
-+                            return;
-+                        }
-+                        if(type.Shape==ValueShape.Record)
-+                            foreach(var field in type.Fields)
-+                                Walk(field.Type,value is {IsMissing:false,IsNull:false}?value.GetField(field.Id):null,
-+                                    path.Append(field.Id).ToArray(),index,name+" / "+field.Id);
-+                        else if(type.Shape==ValueShape.Sequence&&ContainsImage(type.Element!))
-+                        {
-+                            if(index is not null||path.Length>0){plan.Diagnostics.Add(name+"：组合内或嵌套序列不具备正式索引合同，当前不可显示。");return;}
-+                            if(value is null||value.IsMissing||value.IsNull)
-+                            {plan.Diagnostics.Add(name+"：序列尚无实际元素，不能推断首项图像。");return;}
-+                            if(value.Count>4096)throw new InvalidOperationException(name+"图像序列超过来源预算。");
-+                            for(var i=0;i<value.Count;i++)Walk(type.Element!,value.GetElement(i),path,i,name+" ["+i+"]");
-+                        }
-+                    }
-+                }
-+                if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
-+            }
-+            if(historical)plan.Diagnostics.Add("历史结果尚无冻结的整次运行来源上下文，未混用当前上游图像。");
-+            return plan;
-+        }
-+        catch{plan.Dispose();throw;}
-+    }
-+    private static bool ContainsImage(TypeRef type)=>type==TypeRef.ResourceOf(ResourceKind.Image)
-+        ||type.Shape==ValueShape.Sequence&&ContainsImage(type.Element!)
-+        ||type.Shape==ValueShape.Record&&type.Fields.Any(field=>ContainsImage(field.Type));
-+}
 --- a/tests/SunEyeVision.UI.Tests/NodeEditorRoutingTests.cs
 +++ b/tests/SunEyeVision.UI.Tests/NodeEditorRoutingTests.cs
 @@ -68,7 +68,7 @@

@@ -16,6 +16,8 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Results;
 public sealed class DeclaredResultTable : UserControl, IToolResultView
 {
     private readonly ResultProjectionDescriptor _projection;
+    private readonly string _schemaFingerprint;
+    private IResultPublication? _publication;
     private readonly PublishedRows _rows=new();
     private IReadOnlyList<Row> _prepared=Array.Empty<Row>();
     private long _generation;
@@ -24,7 +26,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
     private bool _disposed;
     public FrameworkElement View=>this;
     public IReadOnlyList<Port> Sources { get; }
-    public event EventHandler<IReadOnlyList<GeometryValue>?>? SelectionHighlightChanged;
+    public event EventHandler<ResultSelection>? SelectionHighlightChanged;
 
     public DeclaredResultTable(ToolSchema schema,ResultProjectionDescriptor projection)
     {
@@ -32,7 +34,15 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
         if(projection.Kind!=ResultProjectionKind.StandardTable)throw new NotSupportedException("A standard table result projection is required.");
         _projection=projection;
-        var sourceIds=projection.Columns.SelectMany(column=>new[]{column.Value,column.ValidWhen,column.Geometry}).Where(path=>path is not null)
+        foreach(var column in projection.Columns.Where(column=>column.GeometrySource is not null))
+        {
+            var type=Resolve(schema.Outputs.Single(port=>port.Id==column.Geometry!.PortId).Type,column.Geometry!.MemberFieldPath);
+            if(projection.Rows is not null)type=type.Element!;
+            if(type.Shape!=ValueShape.Geometry&&!(type.Shape==ValueShape.Sequence&&type.Element!.Shape==ValueShape.Geometry&&type.Element.Geometry==GeometryKind.Point))
+                throw new NotSupportedException("The standard table requires immutable geometry or a declared point sequence; use an explicit renderer for region/record geometry.");
+        }
+        _schemaFingerprint=new ToolSchema(Array.Empty<Port>(),schema.Outputs).Fingerprint;
+        var sourceIds=projection.Columns.SelectMany(column=>new[]{column.Value,column.ValidWhen,column.Geometry,column.GeometrySource}).Where(path=>path is not null)
             .Select(path=>path!.PortId).Concat(projection.Rows is {} rows?new[]{rows.PortId}:Array.Empty<string>()).ToHashSet(StringComparer.Ordinal);
         Sources=Array.AsReadOnly(schema.Outputs.Where(port=>sourceIds.Contains(port.Id)).ToArray());
         Resources.MergedDictionaries.Add(new ResourceDictionary
@@ -49,13 +59,31 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         _table.SelectionChanged+=OnSelectionChanged;
         Content=_table;
     }
+    private static TypeRef Resolve(TypeRef type,IEnumerable<string> members)
+    {
+        foreach(var member in members)
+        {
+            if(type.Shape==ValueShape.Sequence)
+                type=TypeRef.SequenceOf(Resolve(type.Element!,new[]{member}),type.Count);
+            else type=type.Fields.Single(field=>field.Id==member).Type;
+        }
+        return type;
+    }
 
-    public void Update(InputValues? values)
+    public void Present(IResultPublication publication)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
+        ArgumentNullException.ThrowIfNull(publication);
         var expected=_generation;
+        if(publication.Schema.Fingerprint!=_schemaFingerprint||publication.Stamp.SchemaFingerprint!=_schemaFingerprint)
+            throw new ArgumentException("Result publication differs from this view's frozen declaration.");
+        bool Current()=>!_disposed&&expected==_generation&&publication.IsCurrent()&&!_disposed&&expected==_generation;
+        if(!Current())return;
+        using var lease=publication.Borrow();
+        if(lease.Stamp!=publication.Stamp)throw new ArgumentException("Result lease belongs to another publication.");
+        var values=lease.Values;
         var rows=new List<Row>();
-        if(values is null){Install(rows,expected);return;}
+        if(values is null){if(Current())Install(rows,expected,publication);return;}
         if(_projection.Rows is {} source)
         {
             var sequence=Read(values.Get<object?>(source.PortId),source.MemberFieldPath) as SequenceValue
@@ -67,34 +95,48 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
                 var identity=record.Get<object>(_projection.ElementIdentityFieldId!);
                 if(!identities.Add(identity))throw new ArgumentException("Duplicate result element identity.");
                 object? Cell(ResultFieldPath path)=>Read(record,path.MemberFieldPath.Skip(source.MemberFieldPath.Count));
-                rows.Add(Project(identity,Cell));
+                object? Origin(ResultFieldPath path)=>path.PortId==source.PortId&&path.MemberFieldPath.Take(source.MemberFieldPath.Count).SequenceEqual(source.MemberFieldPath)
+                    ?Cell(path):Read(values.Get<object?>(path.PortId),path.MemberFieldPath);
+                rows.Add(Project(identity,Cell,Origin));
+                if(!Current())return;
             }
         }
-        else rows.Add(Project("single",path=>Read(values.Get<object?>(path.PortId),path.MemberFieldPath)));
-        Install(rows.AsReadOnly(),expected);
+        else rows.Add(Project("single",path=>Read(values.Get<object?>(path.PortId),path.MemberFieldPath),
+            path=>Read(values.Get<object?>(path.PortId),path.MemberFieldPath)));
+        if(Current())Install(rows.AsReadOnly(),expected,publication);
+    }
+
+    public void Clear()
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        Install(Array.Empty<Row>(),_generation,null);
     }
 
     // The original template executes this command directly. Each command belongs
     // to one installed publication; an old ScrollChanged must not page new rows.
     public ICommand CurResultScrollCommand {get;private set;}=new ScrollCommand(_=>{});
-    private void Install(IReadOnlyList<Row> rows,long expected)
+    private void Install(IReadOnlyList<Row> rows,long expected,IResultPublication? publication)
     {
         if(_disposed||expected!=_generation)return;
         var generation=++_generation;
+        var previous=_publication;
+        _publication=publication;
         _prepared=rows;
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication)
+            &&(publication is null||publication.IsCurrent())&&!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication);
         CurResultScrollCommand=new ScrollCommand(value=>
         {
             if(_disposed||_publishing!=0||generation!=_generation||value is not double offset||!double.IsFinite(offset)
                 ||offset<=_rows.Count-100||_rows.Count>=_prepared.Count)return;
+            if(!Current())return;
             _rows.Install(_prepared.Take(Math.Min(_prepared.Count,_rows.Count+500)).ToArray());
             _publishing++;
-            try{_rows.Publish(()=>!_disposed&&generation==_generation);}
+            try{_rows.Publish(Current);}
             finally{_publishing--;}
         });
         // No callbacks until the complete storage and command are installed.
         _rows.Install(rows.Take(500).ToArray());
         var errors=new List<Exception>();
-        bool Current()=>!_disposed&&generation==_generation;
         void Notify(Action notify){if(!Current())return;try{notify();}catch(Exception error){errors.Add(error);}}
         _publishing++;
         try
@@ -103,25 +145,28 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
             Notify(()=>_table.DataContext=null);
             Notify(()=>_table.DataContext=this);
             Notify(()=>_rows.Publish(Current));
-            Notify(()=>SelectionHighlightChanged?.Invoke(this,null));
+            Notify(()=>{if((publication??previous) is {} owner)SelectionHighlightChanged?.Invoke(this,new(owner.Stamp,null,Array.Empty<ResultHighlightTarget>()));});
         }
         finally{_publishing--;}
         if(errors.Count!=0)throw new AggregateException("Result storage installed; publication observers failed.",errors);
     }
 
-    private Row Project(object identity,Func<ResultFieldPath,object?> read)
+    private Row Project(object identity,Func<ResultFieldPath,object?> read,Func<ResultFieldPath,object?> readOrigin)
     {
         var cells=new Dictionary<string,object?>(StringComparer.Ordinal);
-        var geometry=new List<GeometryValue>();
+        var targets=new Dictionary<(ImageFrameAddress,CoordinateFrame),List<GeometryValue>>();
         var geometryPaths=new HashSet<string>(StringComparer.Ordinal);
         foreach(var column in _projection.Columns)
         {
             var valid=column.ValidWhen is null||read(column.ValidWhen) is true;
             cells.Add(column.Key,valid?DisplayCell(read(column.Value)):null);
             if(!valid)continue;
-            if(column.Geometry is {} path&&geometryPaths.Add(path.PortId+"/"+string.Join("/",path.MemberFieldPath)))
+            if(column.Geometry is {} path&&column.GeometrySource is {} origin&&geometryPaths.Add(Key(path)+Key(origin)))
             {
                 var value=read(path);
+                var geometry=new List<GeometryValue>();
+                if(value is null)continue;
+                if(value is SequenceValue {Count:0})continue;
                 if(value is GeometryValue single)geometry.Add(single);
                 else if(value is SequenceValue sequence&&sequence.Count>=3&&sequence.All(point=>point is PointGeometry))
                 {
@@ -129,9 +174,40 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
                     if(points.Any(point=>point.Frame!=points[0].Frame))throw new ArgumentException("Mixed coordinate frames in result geometry.");
                     geometry.Add(new PolygonGeometry(points[0].Frame,points.Select(point=>point.Point)));
                 }
+                else throw new NotSupportedException("This result geometry requires an explicit supported renderer.");
+                var (frame,coordinates)=ReadOrigin(readOrigin(origin));
+                foreach(var item in geometry)
+                {
+                    if(item.Frame!=coordinates)throw new ArgumentException("Geometry and physical origin use different coordinate frames.");
+                    if(!targets.TryGetValue((frame,coordinates),out var group))targets.Add((frame,coordinates),group=new());
+                    group.Add(item);
+                }
             }
         }
-        return new(identity,cells,geometry.AsReadOnly());
+        return new(identity,new System.Collections.ObjectModel.ReadOnlyDictionary<string,object?>(cells),
+            Array.AsReadOnly(targets.Select(item=>new ResultHighlightTarget(item.Key.Item1,item.Key.Item2,item.Value)).ToArray()));
+    }
+    private static string Key(ResultFieldPath path)=>path.PortId.Length+":"+path.PortId
+        +string.Concat(path.MemberFieldPath.Select(member=>member.Length+":"+member))+";";
+    private static (ImageFrameAddress,CoordinateFrame) ReadOrigin(object? value)
+    {
+        if(value is IReadOnlyRegion region)
+        {
+            using var lease=region.AcquireReader();
+            if(lease.Frame!=region.Frame||lease.SourceFrame!=region.SourceFrame)throw new ArgumentException("Region origin lease is inconsistent.");
+            return (lease.SourceFrame,lease.Frame);
+        }
+        if(value is IReadOnlyImage image)
+        {
+            ResourceContractRules.ValidateImage(image);
+            using var lease=image.AcquirePixels();
+            if(lease.Frame!=image.Frame||lease.Layout!=image.Layout)throw new ArgumentException("Image origin lease is inconsistent.");
+            using var domain=lease.AcquireDomainReader();
+            if(domain.SourceFrame!=lease.Frame||domain.SourceFrame!=lease.EffectiveDomain.SourceFrame
+                ||domain.Frame!=lease.EffectiveDomain.Frame)throw new ArgumentException("Image domain origin lease is inconsistent.");
+            return(lease.Frame,domain.Frame);
+        }
+        throw new ArgumentException("Declared geometry origin is missing.");
     }
     private static object? Read(object? value,IEnumerable<string> members)
     {
@@ -155,13 +231,18 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
     private void OnSelectionChanged(object sender,SelectionChangedEventArgs args)
     {
         if(_disposed||_publishing!=0)return;
+        var generation=_generation;var publication=_publication;
+        if(publication is null||!publication.IsCurrent()||_disposed||generation!=_generation||!ReferenceEquals(publication,_publication))return;
         var row=_table.SelectedItem as Row;
-        SelectionHighlightChanged?.Invoke(this,row is not null&&_rows.Any(current=>ReferenceEquals(current,row))?row.Geometry:null);
+        var valid=row is not null&&_rows.Any(current=>ReferenceEquals(current,row));
+        SelectionHighlightChanged?.Invoke(this,new(publication.Stamp,valid?row!.ElementIdentity:null,
+            valid?row!.Targets:Array.Empty<ResultHighlightTarget>()));
     }
     public void Dispose()
     {
         if(_disposed)return;
-        _disposed=true;++_generation;_prepared=Array.Empty<Row>();
+        var stamp=_publication?.Stamp;
+        _disposed=true;++_generation;_prepared=Array.Empty<Row>();_publication=null;
         CurResultScrollCommand=new ScrollCommand(_=>{});
         _rows.Install(Array.Empty<Row>());
         var errors=new List<Exception>();
@@ -171,11 +252,12 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         Clean(()=>_table.ItemsSource=null);
         Clean(()=>_table.DataContext=null);
         Clean(()=>_rows.Publish(()=>true));
+        if(stamp is not null)Clean(()=>SelectionHighlightChanged?.Invoke(this,new(stamp,null,Array.Empty<ResultHighlightTarget>())));
         SelectionHighlightChanged=null;
         Clean(()=>Content=null);
         if(errors.Count!=0)throw new AggregateException("Result view retired; cleanup observers failed.",errors);
     }
-    private sealed record Row(object ElementIdentity,IReadOnlyDictionary<string,object?> Cells,IReadOnlyList<GeometryValue> Geometry)
+    private sealed record Row(object ElementIdentity,IReadOnlyDictionary<string,object?> Cells,IReadOnlyList<ResultHighlightTarget> Targets)
     {public object? this[string key]=>Cells[key];}
     private sealed class ScrollCommand(Action<object?> execute):ICommand
     {

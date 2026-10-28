@@ -1,3 +1,8 @@
+## 2026-10-28 结果公共publication真实API候选
+
+- 共同基线35a7960b已合固定30e；离线restore001失败，临时本地cache源restore002成功（不改NuGet.config）。集成UI002报原shell CanOverlayd MC4109；恢复原IsEnabled11处后PluginWpf层001报4处名称字段，改原ImageViewBox外层x:Name后002=0错5340警告27.39秒。新API/Borrow/多帧选择、原表及Blob必要机械同步已落；BlobWpf001=0错5352警告43.05秒。完整UI/full因消费者待同步仍未通过，不能套先前C14成绩。
+- 具体交接HANDOFF_RESULT_PUBLICATION_API_20261028.md；工作流线已并行实施UI唯一入口/专属PropertyList适配（不是Root也写一套）。Root同步正式脚本，下一合UI消费者再集中restore/UI/full及所有关联新轨。当前所有83749/4731/12654/3186/52689构建均终态，无live。用户参数XAML不动不暂存，阶段一未完，goal active。
+
 ## 2026-10-28 集中合入工作流固定源码快照
 
 - 主线C13/C14本地暂存bb5bab8a，固定工作流快照30e05a51已合入工作区；仅CURRENT_TASK内容冲突，双方完整记录保留。此整合尚未restore/语义构建，旧成绩不套；用户Blob参数页不暂存、不推送。下一集中恢复新Runtime/Wpf/Tests依赖、规定UI/full构建，真实错误交原线增量修。共享结果合同随后实际落码。

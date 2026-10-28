@@ -39,7 +39,7 @@
               <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource Results.Shell.CheckRadioFocusVisual}" />
               <Setter Property="Padding" Value="4,0,0,0" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
             </Trigger>
             <Trigger Property="ToggleButton.IsChecked" Value="{x:Null}">
@@ -83,7 +83,7 @@
             <ScrollViewer Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
           </ns2:ListBoxChrome>
           <ControlTemplate.Triggers>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Background" />
               <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
             </Trigger>
@@ -316,7 +316,7 @@
             <Image Name="icon" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/cross-lines-normal.png" />
           </Grid>
           <ControlTemplate.Triggers>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/cross-lines-disabled.png" />
             </Trigger>
             <Trigger Property="UIElement.IsMouseOver" Value="True">
@@ -339,7 +339,7 @@
             <Trigger Property="IsPressed" Value="True">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/original-scale-pressed.png" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/original-scale-normal.png" />
             </Trigger>
           </ControlTemplate.Triggers>
@@ -360,7 +360,7 @@
             <Trigger Property="IsPressed" Value="True">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/fullscreen-pressed.png" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/fullscreen-normal.png" />
             </Trigger>
           </ControlTemplate.Triggers>
@@ -381,7 +381,7 @@
             <Trigger Property="IsPressed" Value="True">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/previous-pressed.png" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/previous-disabled.png" />
             </Trigger>
           </ControlTemplate.Triggers>
@@ -461,7 +461,7 @@
               <Setter TargetName="RowDefinition1" Property="RowDefinition.Height" Value="0" />
               <Setter TargetName="HeaderPanel" Property="Margin" Value="0,2,2,2" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
             </Trigger>
           </ControlTemplate.Triggers>
@@ -491,7 +491,7 @@
             <MultiTrigger>
               <MultiTrigger.Conditions>
                 <Condition Property="ToggleButton.IsChecked" Value="True" />
-                <Condition Property="CanOverlayd" Value="False" />
+                <Condition Property="IsEnabled" Value="False" />
               </MultiTrigger.Conditions>
               <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_image fold_disable.png" />
             </MultiTrigger>
@@ -508,7 +508,7 @@
             <MultiTrigger>
               <MultiTrigger.Conditions>
                 <Condition Property="ToggleButton.IsChecked" Value="False" />
-                <Condition Property="CanOverlayd" Value="False" />
+                <Condition Property="IsEnabled" Value="False" />
               </MultiTrigger.Conditions>
               <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_image unfold_disable.png" />
             </MultiTrigger>
@@ -727,7 +727,7 @@
             <Trigger Property="IsPressed" Value="True">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/zoom-enlarge-hover.png" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/zoom-enlarge-normal.png" />
             </Trigger>
           </ControlTemplate.Triggers>
@@ -748,7 +748,7 @@
             <Trigger Property="IsPressed" Value="True">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/zoom-shrink-hover.png" />
             </Trigger>
-            <Trigger Property="CanOverlayd" Value="False">
+            <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="ImageBackground" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/ResultShell/zoom-shrink-normal.png" />
             </Trigger>
           </ControlTemplate.Triggers>

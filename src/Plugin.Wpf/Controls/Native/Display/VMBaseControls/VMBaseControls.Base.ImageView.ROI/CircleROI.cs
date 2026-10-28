@@ -28,8 +28,7 @@ public class CircleROI : ROIControlBase
 	public static readonly DependencyProperty CircleCenterPointProperty;
 
 	private Grid move;
-    private FrameworkElement? _interactionHandle;
-    internal FrameworkElement? InteractionHandle=>_interactionHandle;
+    internal FrameworkElement? InteractionHandle=>RoiInteractionHandle;
 
 	private Rectangle SizeRect;
 
@@ -204,10 +203,14 @@ public class CircleROI : ROIControlBase
 
 	public override void OnApplyTemplate()
 	{
-        CancelInteraction();
+        var templateVersion=BeginRoiTemplate();
+        try
+        {
+        if(!CurrentRoiTemplate(templateVersion))return;
         foreach(var element in new FrameworkElement?[]{move,SizeRect,InnerRect})
             if(element is not null)element.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
         base.OnApplyTemplate();
+        if(!CurrentRoiTemplate(templateVersion))return;
 		move = Template.FindName("move", this) as Grid;
 		move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
 		SizeRect = Template.FindName("SizeRect", this) as Rectangle;
@@ -215,26 +218,33 @@ public class CircleROI : ROIControlBase
 		InnerRect = Template.FindName("InnerRect", this) as Rectangle;
 		InnerRect.MouseLeftButtonDown += Move_MouseLeftButtonDown;
 		parent = this.GetParent<ImageViewItemsPage>();
-	}
+
+        }
+        finally{EndRoiTemplate(templateVersion);}
+    }
 
 	private void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 	{
-        CancelInteraction();
-        FrameworkElement frameworkElement = sender as FrameworkElement;
-        _interactionHandle=frameworkElement;
+        if(sender is not FrameworkElement frameworkElement)return;
+        var gesture=PrepareRoiGesture(frameworkElement,()=>_isMove=false);
+        if(gesture is null)return;
+		try
+		{
 		clickPoint = e.GetPosition(parent);
 		curRadius = CircleRadius;
 		curMinRadius = MinRadius;
-		this.GetParent<ListViewItem>().RaiseEvent(e);
-        if(!frameworkElement.CaptureMouse()||!ReferenceEquals(Mouse.Captured,frameworkElement)||!ReferenceEquals(_interactionHandle,frameworkElement)){CancelInteraction();return;}
-		this.GetParent<ImageViewBox>().IsDragROI = true;
-		frameworkElement.MouseMove += Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
+		this.GetParent<ListViewItem>()?.RaiseEvent(e);
+        if(!gesture.IsCurrent||!gesture.Capture()){CancelRoiGesture(gesture);return;}
+        if(!gesture.Attach((s,args)=>{if(gesture.IsActive)Move_MouseMove(s,args);},(s,args)=>{if(gesture.IsActive)Move_MouseLeftButtonUp(s,args);})){CancelRoiGesture(gesture);return;}
 		e.Handled = true;
+		}
+		catch(Exception error){try{CancelRoiGesture(gesture);}catch(Exception cleanup){throw new AggregateException(error,cleanup);}throw;}
 	}
 
 	private void Move_MouseMove(object sender, MouseEventArgs e)
 	{
+		var gesture=ActiveRoiGesture;
+		if(gesture?.IsActive!=true||!ReferenceEquals(sender,gesture.Handle))return;
 		if (e.LeftButton != MouseButtonState.Pressed)
 		{
 			return;
@@ -252,6 +262,7 @@ public class CircleROI : ROIControlBase
 		{
 		case "move":
 			CircleCenterPoint += vector;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		case "SizeRect":
@@ -273,6 +284,7 @@ public class CircleROI : ROIControlBase
 				curRadius = MinRadius;
 			}
 			CircleRadius = curRadius;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		}
@@ -291,6 +303,7 @@ public class CircleROI : ROIControlBase
 				curMinRadius = CircleRadius;
 			}
 			MinRadius = curMinRadius;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		}
@@ -299,13 +312,8 @@ public class CircleROI : ROIControlBase
 
 	private void Move_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
-		frameworkElement.MouseMove -= Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-        _interactionHandle=null;
-        frameworkElement.ReleaseMouseCapture();
-        try{if(_isMove)NotifyROIParamChanged();}
-        finally{_isMove=false;AfterMouseUp();}
+        var gesture=ActiveRoiGesture;
+        if(gesture?.IsActive==true&&ReferenceEquals(sender,gesture.Handle))FinishRoiGesture(gesture,_isMove);
 	}
 
     internal void RefreshGeometryLayout()
@@ -315,13 +323,7 @@ public class CircleROI : ROIControlBase
     }
     internal void CancelInteraction()
     {
-        var handle=_interactionHandle;_interactionHandle=null;
-        if(handle is not null)
-        {
-            handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;
-            if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();
-        }
-        _isMove=false;AfterMouseUp();
+        CancelRoiGesture();
     }
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{

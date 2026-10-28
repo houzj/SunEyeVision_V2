@@ -1551,6 +1551,19 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		RoiParamChangedEvent?.Invoke(this, new RoiEventArgs(obj));
 	}
 
+    internal void NotifyROIParamChanged(object obj,Func<bool> current)
+    {
+        var handlers=RoiParamChangedEvent?.GetInvocationList();
+        if(handlers is null)return;
+        var args=new RoiEventArgs(obj);
+        foreach(EventHandler<RoiEventArgs> handler in handlers)
+        {
+            if(!current())return;
+            handler(this,args);
+            if(!current())return;
+        }
+    }
+
 	private bool DoImageSourceChanged()
 	{
 		bool returnValue = false;
@@ -2037,6 +2050,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
     internal Func<object,bool>? NativeDrawComplete {get;set;}
     internal Action? NativeDrawCancel {get;set;}
     internal Action<object?>? NativeDrawCaptureLost {get;set;}
+    internal Func<object?,Action>? NativeRoiCaptureCancelEdit {get;set;}
     public static readonly DependencyProperty RoiDrawingCaptureEnabledProperty=DependencyProperty.Register(nameof(RoiDrawingCaptureEnabled),typeof(bool),typeof(ImageViewBox),new PropertyMetadata(false));
     public bool RoiDrawingCaptureEnabled {get=>(bool)GetValue(RoiDrawingCaptureEnabledProperty);internal set=>SetValue(RoiDrawingCaptureEnabledProperty,value);}
     internal void PrepareNativeRoi(Type type,Func<bool> current)

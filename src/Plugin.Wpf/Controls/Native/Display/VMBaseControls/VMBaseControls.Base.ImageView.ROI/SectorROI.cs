@@ -67,8 +67,8 @@ public class SectorROI : ROIControlBase
 	public static readonly DependencyProperty CircleCenterPointProperty;
 
 	private Grid move;
-    private FrameworkElement? _interactionHandle;
-    internal FrameworkElement? InteractionHandle=>_interactionHandle;
+
+    internal FrameworkElement? InteractionHandle=>RoiInteractionHandle;
 
 	private Area minMiddlePoint;
 
@@ -419,10 +419,16 @@ public class SectorROI : ROIControlBase
 
 	private void Init()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		CalPoints();
+		if(!current())return;
 		ChangeStartAngleCursor();
+		if(!current())return;
 		ChangeEndAngleCursor();
-	}
+		if(!current())return;
+
+}
 
 	public static void Draw(FrameworkElement parent, Type roiDataType)
 	{
@@ -493,29 +499,48 @@ public class SectorROI : ROIControlBase
 	private static void OnCircleRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		SectorROI sectorROI = d as SectorROI;
+        var current=sectorROI.CaptureRoiUpdateProof();
+        if(!current())return;
 		sectorROI.ChangeContainerSize();
+		if(!current())return;
 		sectorROI.ChangeContainerPosition();
+		if(!current())return;
 		sectorROI.CalPoints();
+		if(!current())return;
 	}
 
 	private void CalPoints()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (IsFresh)
 		{
 			MaxSize = new Size(ContainerWidth / 2.0, ContainerWidth / 2.0);
+			if(!current())return;
 			tlt.CenterX = ContainerWidth / 2.0;
+			if(!current())return;
 			tlt.CenterY = ContainerHeight / 2.0;
+			if(!current())return;
 			tlt.Angle = StartAngle;
+			if(!current())return;
 			Point point = new Point(ContainerWidth, ContainerHeight / 2.0);
 			StartPoint = tlt.Transform(point);
+			if(!current())return;
 			tlt.Angle = EndAngle;
+			if(!current())return;
 			EndPoint = tlt.Transform(point);
+			if(!current())return;
 			tlt.Angle = AngleForUI;
+			if(!current())return;
 			MiddlePoint = tlt.Transform(point);
+			if(!current())return;
 			SetArc();
+			if(!current())return;
 			CalMinPoints();
+			if(!current())return;
 		}
-	}
+
+}
 
 	private static void OnMinRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
@@ -525,82 +550,134 @@ public class SectorROI : ROIControlBase
 
 	private void CalMinPoints()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (IsFresh)
 		{
 			MinSize = new Size(InnerCircleSize / 2.0, InnerCircleSize / 2.0);
+			if(!current())return;
 			tlt.CenterX = ContainerWidth / 2.0;
+			if(!current())return;
 			tlt.CenterY = ContainerHeight / 2.0;
+			if(!current())return;
 			tlt.Angle = StartAngle;
+			if(!current())return;
 			Point point = new Point(ContainerWidth / 2.0 + InnerCircleSize / 2.0, ContainerHeight / 2.0);
 			MinStartPoint = tlt.Transform(point);
+			if(!current())return;
 			tlt.Angle = EndAngle;
+			if(!current())return;
 			MinEndPoint = tlt.Transform(point);
+			if(!current())return;
 			tlt.Angle = AngleForUI;
+			if(!current())return;
 			MinMiddlePoint = tlt.Transform(point);
+			if(!current())return;
 			point = new Point((3.0 * ContainerWidth + InnerCircleSize) / 4.0, ContainerHeight / 2.0);
+			if(!current())return;
 			tlt.Angle = StartAngle;
+			if(!current())return;
 			MiddleStartPoint = tlt.Transform(point);
+			if(!current())return;
 			tlt.Angle = EndAngle;
+			if(!current())return;
 			MiddleEndPoint = tlt.Transform(point);
+			if(!current())return;
 			SetArrow();
+			if(!current())return;
 		}
-	}
+
+}
 
 	private static void OnStartAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		SectorROI sectorROI = d as SectorROI;
+        var current=sectorROI.CaptureRoiUpdateProof();
+        if(!current())return;
 		sectorROI.CalPoints();
+		if(!current())return;
 		sectorROI.SetIsLargeArc();
+		if(!current())return;
 		sectorROI.ChangeStartAngleCursor();
+		if(!current())return;
 	}
 
 	private static void OnEndAngleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		SectorROI sectorROI = d as SectorROI;
+        var current=sectorROI.CaptureRoiUpdateProof();
+        if(!current())return;
 		sectorROI.CalPoints();
+		if(!current())return;
 		sectorROI.SetIsLargeArc();
+		if(!current())return;
 		sectorROI.ChangeEndAngleCursor();
+		if(!current())return;
 	}
 
 	private void ChangeEndAngleCursor()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (middleEndPoint != null)
 		{
 			Vector vector = new Vector(EndPoint.X - ContainerWidth / 2.0, EndPoint.Y - ContainerHeight / 2.0);
 			Vector vector2 = new Vector(1.0, 0.0);
 			MiddleEndAngle = Vector.AngleBetween(vector2, vector);
+			if(!current())return;
 			middleEndPoint.RenderTransformOrigin = new Point(0.5, 0.5);
+			if(!current())return;
 			middleEndPoint.RenderTransform = new RotateTransform(MiddleEndAngle);
+			if(!current())return;
 			ChangeRadiusCursor();
+			if(!current())return;
 		}
-	}
+
+}
 
 	private void ChangeStartAngleCursor()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (middleStartPoint != null)
 		{
 			Vector vector = new Vector(StartPoint.X - ContainerWidth / 2.0, StartPoint.Y - ContainerHeight / 2.0);
 			Vector vector2 = new Vector(1.0, 0.0);
 			MiddleStartAngle = Vector.AngleBetween(vector2, vector);
+			if(!current())return;
 			middleStartPoint.RenderTransformOrigin = new Point(0.5, 0.5);
+			if(!current())return;
 			middleStartPoint.RenderTransform = new RotateTransform(MiddleStartAngle);
+			if(!current())return;
 			ChangeRadiusCursor();
+			if(!current())return;
 		}
-	}
+
+}
 
 	private void ChangeRadiusCursor()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		Vector vector = new Vector(MiddlePoint.X - ContainerWidth / 2.0, MiddlePoint.Y - ContainerHeight / 2.0);
 		Vector vector2 = new Vector(1.0, 0.0);
 		MinMiddleAngle = Vector.AngleBetween(vector2, vector);
+		if(!current())return;
 		minMiddlePoint.RenderTransformOrigin = new Point(0.5, 0.5);
+		if(!current())return;
 		minMiddlePoint.RenderTransform = new RotateTransform(MinMiddleAngle);
+		if(!current())return;
 		middlePoint.RenderTransformOrigin = new Point(0.5, 0.5);
+		if(!current())return;
 		middlePoint.RenderTransform = new RotateTransform(MinMiddleAngle);
-	}
+		if(!current())return;
+
+}
 
 	private void SetIsLargeArc()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (IsFresh)
 		{
 			double num = ((EndAngle <= 0.0) ? (0.0 - EndAngle) : (360.0 - EndAngle));
@@ -608,13 +685,16 @@ public class SectorROI : ROIControlBase
 			if ((num2 + num) % 360.0 > 180.0)
 			{
 				IsLargeArc = false;
+				if(!current())return;
 			}
 			else
 			{
 				IsLargeArc = true;
+				if(!current())return;
 			}
 		}
-	}
+
+}
 
 	private static void OnCircleCenterPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
@@ -624,10 +704,14 @@ public class SectorROI : ROIControlBase
 
 	public override void OnApplyTemplate()
 	{
-		CancelInteraction();
+        var templateVersion=BeginRoiTemplate();
+        try
+        {
+		if(!CurrentRoiTemplate(templateVersion))return;
         foreach(var element in new FrameworkElement?[]{move,minMiddlePoint,middlePoint,middleStartPoint,middleEndPoint,arcPoint,arcArrow,startArrow,endArrow,startPoint,endPoint})
             if(element is not null)element.MouseLeftButtonDown-=Move_MouseLeftButtonDown;
         base.OnApplyTemplate();
+        if(!CurrentRoiTemplate(templateVersion))return;
 		move = Template.FindName("move", this) as Grid;
 		move.MouseLeftButtonDown += Move_MouseLeftButtonDown;
 		minMiddlePoint = Template.FindName("minMiddlePoint", this) as Area;
@@ -652,26 +736,32 @@ public class SectorROI : ROIControlBase
 		endPoint.MouseLeftButtonDown += Move_MouseLeftButtonDown;
 		parent = this.GetParent<ImageViewItemsPage>();
 		Init();
-	}
+
+        }
+        finally{EndRoiTemplate(templateVersion);}
+    }
 
 	private void Move_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-	{
-		CancelInteraction();
-        FrameworkElement frameworkElement = sender as FrameworkElement;
-        _interactionHandle=frameworkElement;
-		clickPoint = e.GetPosition(parent);
-		curRadius = CircleRadius;
-		curMinRadius = MinRadius;
-		this.GetParent<ListViewItem>().RaiseEvent(e);
-		if(!frameworkElement.CaptureMouse()||!ReferenceEquals(Mouse.Captured,frameworkElement)||!ReferenceEquals(_interactionHandle,frameworkElement)){CancelInteraction();return;}
-		this.GetParent<ImageViewBox>().IsDragROI = true;
-		frameworkElement.MouseMove += Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp += Move_MouseLeftButtonUp;
-		e.Handled = true;
-	}
+    {
+        if(sender is not FrameworkElement frameworkElement)return;
+        var gesture=PrepareRoiGesture(frameworkElement,()=>{_isMove=false;IsFresh=true;});
+        if(gesture is null)return;
+        try
+        {
+            clickPoint=e.GetPosition(parent);curRadius=CircleRadius;curMinRadius=MinRadius;
+            this.GetParent<ListViewItem>()?.RaiseEvent(e);
+            if(!gesture.IsCurrent||!gesture.Capture()){CancelRoiGesture(gesture);return;}
+            if(!gesture.Attach((s,args)=>{if(gesture.IsActive)Move_MouseMove(s,args);},
+                (s,args)=>{if(gesture.IsActive)Move_MouseLeftButtonUp(s,args);}, null)){CancelRoiGesture(gesture);return;}
+            e.Handled=true;
+        }
+        catch(Exception error){try{CancelRoiGesture(gesture);}catch(Exception cleanup){throw new AggregateException(error,cleanup);}throw;}
+    }
 
 	private void Move_MouseMove(object sender, MouseEventArgs e)
 	{
+        var gesture=ActiveRoiGesture;
+        if(gesture?.IsActive!=true||!ReferenceEquals(sender,gesture.Handle))return;
 		if (e.LeftButton != MouseButtonState.Pressed)
 		{
 			return;
@@ -690,6 +780,7 @@ public class SectorROI : ROIControlBase
 		{
 		case "move":
 			CircleCenterPoint += vector;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		case "minMiddlePoint":
@@ -700,6 +791,7 @@ public class SectorROI : ROIControlBase
 				curMinRadius = CircleRadius;
 			}
 			MinRadius = curMinRadius;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		case "middlePoint":
@@ -710,6 +802,7 @@ public class SectorROI : ROIControlBase
 				curRadius = MinRadius;
 			}
 			CircleRadius = curRadius;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		case "middleStartPoint":
@@ -717,6 +810,7 @@ public class SectorROI : ROIControlBase
 			double num5 = Math.Atan2(clickPoint.Y - (ContainerPosition.Y + ContainerHeight / 2.0), clickPoint.X - (ContainerPosition.X + ContainerWidth / 2.0)) * 180.0 / Math.PI;
 			double num6 = Math.Atan2(position.Y - (ContainerPosition.Y + ContainerHeight / 2.0), position.X - (ContainerPosition.X + ContainerWidth / 2.0)) * 180.0 / Math.PI;
 			StartAngle += num6 - num5;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		}
@@ -725,6 +819,7 @@ public class SectorROI : ROIControlBase
 			double num12 = Math.Atan2(clickPoint.Y - (ContainerPosition.Y + ContainerHeight / 2.0), clickPoint.X - (ContainerPosition.X + ContainerWidth / 2.0)) * 180.0 / Math.PI;
 			double num13 = Math.Atan2(position.Y - (ContainerPosition.Y + ContainerHeight / 2.0), position.X - (ContainerPosition.X + ContainerWidth / 2.0)) * 180.0 / Math.PI;
 			EndAngle += num13 - num12;
+            if(!gesture.IsActive)return;
 			clickPoint = position;
 			break;
 		}
@@ -798,13 +893,22 @@ public class SectorROI : ROIControlBase
 				double startAngle2 = Math.Atan2(point14.Y - p.Y, point14.X - p.X) * 180.0 / Math.PI;
 				double endAngle2 = Math.Atan2(point15.Y - p.Y, point15.X - p.X) * 180.0 / Math.PI;
 				IsFresh = false;
+            try
+            {
 				CircleCenterPoint = GetImagePoint(p);
+            if(!gesture.IsActive)return;
 				CircleRadius = num10;
+            if(!gesture.IsActive)return;
 				MinRadius = minRadius2;
+            if(!gesture.IsActive)return;
 				StartAngle = startAngle2;
+            if(!gesture.IsActive)return;
 				EndAngle = endAngle2;
-				IsFresh = true;
-				SetNewShape();
+            if(!gesture.IsActive)return;
+
+            }
+            finally{if(gesture.IsActive)IsFresh=true;}
+            if(gesture.IsActive)SetNewShape();
 			}
 			break;
 		}
@@ -860,13 +964,22 @@ public class SectorROI : ROIControlBase
 			double startAngle3 = Math.Atan2(point21.Y - point25.Y, point21.X - point25.X) * 180.0 / Math.PI;
 			double endAngle3 = Math.Atan2(point24.Y - point25.Y, point24.X - point25.X) * 180.0 / Math.PI;
 			IsFresh = false;
+            try
+            {
 			CircleCenterPoint = GetImagePoint(point25);
+            if(!gesture.IsActive)return;
 			CircleRadius = num16;
+            if(!gesture.IsActive)return;
 			MinRadius = minRadius3;
+            if(!gesture.IsActive)return;
 			StartAngle = startAngle3;
+            if(!gesture.IsActive)return;
 			EndAngle = endAngle3;
-			IsFresh = true;
-			SetNewShape();
+            if(!gesture.IsActive)return;
+
+            }
+            finally{if(gesture.IsActive)IsFresh=true;}
+            if(gesture.IsActive)SetNewShape();
 			break;
 		}
 		case "startPoint":
@@ -921,13 +1034,22 @@ public class SectorROI : ROIControlBase
 			double startAngle = Math.Atan2(point7.Y - point8.Y, point7.X - point8.X) * 180.0 / Math.PI;
 			double endAngle = Math.Atan2(point5.Y - point8.Y, point5.X - point8.X) * 180.0 / Math.PI;
 			IsFresh = false;
+            try
+            {
 			CircleCenterPoint = GetImagePoint(point8);
+            if(!gesture.IsActive)return;
 			CircleRadius = num3;
+            if(!gesture.IsActive)return;
 			MinRadius = minRadius;
+            if(!gesture.IsActive)return;
 			StartAngle = startAngle;
+            if(!gesture.IsActive)return;
 			EndAngle = endAngle;
-			IsFresh = true;
-			SetNewShape();
+            if(!gesture.IsActive)return;
+
+            }
+            finally{if(gesture.IsActive)IsFresh=true;}
+            if(gesture.IsActive)SetNewShape();
 			break;
 		}
 		}
@@ -935,11 +1057,18 @@ public class SectorROI : ROIControlBase
 
 	private void SetNewShape()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		ChangeContainerPosition();
+		if(!current())return;
 		ChangeContainerSize();
+		if(!current())return;
 		SetIsLargeArc();
+		if(!current())return;
 		CalPoints();
-	}
+		if(!current())return;
+
+}
 
 	private double GetY(Point a, Point b, double x)
 	{
@@ -956,30 +1085,19 @@ public class SectorROI : ROIControlBase
 	}
 
 	private void Move_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-	{
-		FrameworkElement frameworkElement = sender as FrameworkElement;
-		frameworkElement.MouseMove -= Move_MouseMove;
-		frameworkElement.MouseLeftButtonUp -= Move_MouseLeftButtonUp;
-		_interactionHandle=null;
-        frameworkElement.ReleaseMouseCapture();
-        try{if(_isMove)NotifyROIParamChanged();}
-        finally{_isMove=false;AfterMouseUp();}
-	}
+    {
+        var gesture=ActiveRoiGesture;
+        if(gesture?.IsActive==true&&ReferenceEquals(sender,gesture.Handle))FinishRoiGesture(gesture,_isMove);
+    }
 
     internal void RefreshGeometryLayout()=>SetNewShape();
-    internal void CancelInteraction()
-    {
-        var handle=_interactionHandle;_interactionHandle=null;
-        if(handle is not null)
-        {
-            handle.MouseMove-=Move_MouseMove;handle.MouseLeftButtonUp-=Move_MouseLeftButtonUp;
-            if(handle.IsMouseCaptured)handle.ReleaseMouseCapture();
-        }
-        _isMove=false;AfterMouseUp();
-    }
+    internal void CancelInteraction()=>CancelRoiGesture();
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
+        var current=CaptureRoiUpdateProof();
+
 		base.OnPropertyChanged(e);
+		if(!current())return;
 		string name = e.Property.Name;
 		if(name is "ContainerWidth" or "ContainerHeight" or "MaxSize" or "MinSize")OnPropertyChanged(nameof(FullCircleGeometry));
 		if (!(name == "ControlToImageRadio"))
@@ -987,72 +1105,113 @@ public class SectorROI : ROIControlBase
 			if (name == "StrokeThickness")
 			{
 				SetArc();
+				if(!current())return;
 				SetArrow();
+				if(!current())return;
 			}
 		}
 		else
 		{
 			ChangeContainerSize();
+			if(!current())return;
 			ChangeContainerPosition();
+			if(!current())return;
 			OnPropertyChanged("InnerCircleSize");
+            if(!current())return;
 			Init();
 		}
-	}
+
+}
 
 	private void SetArc()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (arcPoint != null)
 		{
 			arcPoint.Width = 6.0 * StrokeThickness;
+			if(!current())return;
 			arcPoint.Height = 6.0 * StrokeThickness;
+			if(!current())return;
 			Canvas.SetLeft(arcPoint, ContainerWidth);
+			if(!current())return;
 			Canvas.SetTop(arcPoint, 0.5 * ContainerHeight - arcPoint.Height / 2.0);
+			if(!current())return;
 			arcPoint.RenderTransform = new RotateTransform(AngleForUI, (0.0 - ContainerWidth) / 2.0, arcPoint.Height / 2.0);
+			if(!current())return;
 		}
-	}
+
+}
 
 	private void SetArrow()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (startArrow != null && endArrow != null && arcArrow != null)
 		{
 			Point point = new Point(ContainerWidth / 2.0 + InnerCircleSize / 2.0 + 0.375 * ContainerWidth - 0.75 * InnerCircleSize / 2.0, ContainerHeight / 2.0);
 			startArrow.Width = ArrowWidth;
+			if(!current())return;
 			startArrow.Height = 2.0 * startArrow.Width;
+			if(!current())return;
 			Canvas.SetLeft(startArrow, point.X);
+			if(!current())return;
 			Canvas.SetTop(startArrow, point.Y - startArrow.Height / 2.0);
+			if(!current())return;
 			startArrow.RenderTransform = new RotateTransform(StartAngle, ContainerWidth / 2.0 - point.X, startArrow.Height / 2.0);
+			if(!current())return;
 			endArrow.Width = ArrowWidth;
+			if(!current())return;
 			endArrow.Height = 2.0 * endArrow.Width;
+			if(!current())return;
 			Canvas.SetLeft(endArrow, point.X);
+			if(!current())return;
 			Canvas.SetTop(endArrow, point.Y - endArrow.Height / 2.0);
+			if(!current())return;
 			endArrow.RenderTransform = new RotateTransform(EndAngle, ContainerWidth / 2.0 - point.X, endArrow.Height / 2.0);
+			if(!current())return;
 			arcArrow.Width = 2.0 * ArrowWidth;
+			if(!current())return;
 			arcArrow.Height = 0.5 * arcArrow.Width;
+			if(!current())return;
 			Canvas.SetLeft(arcArrow, ContainerWidth - arcArrow.Width / 2.0);
+			if(!current())return;
 			Canvas.SetTop(arcArrow, ContainerHeight * 0.5);
+			if(!current())return;
 			double angle = AngleForUI + (AngleForUI - StartAngle) / 2.0;
 			arcArrow.RenderTransform = new RotateTransform(angle, arcArrow.Width / 2.0 - ContainerWidth / 2.0, 0.0);
+			if(!current())return;
 		}
-	}
+
+}
 
 	private void ChangeContainerSize()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (IsFresh)
 		{
 			ContainerWidth = CircleRadius * ControlToImageRadio * 2.0;
+			if(!current())return;
 			ContainerHeight = ContainerWidth;
+			if(!current())return;
 		}
-	}
+
+}
 
 	private void ChangeContainerPosition()
 	{
+        var current=CaptureRoiUpdateProof();
+
 		if (IsFresh)
 		{
 			double x = (CircleCenterPoint.X - CircleRadius + 0.0) * ControlToImageRadio;
 			double y = (CircleCenterPoint.Y - CircleRadius + 0.0) * ControlToImageRadio;
 			ContainerPosition = new Point(x, y);
+			if(!current())return;
 		}
-	}
+
+}
 
 	protected override bool Move(ROIMoveDirection rOIMoveDirection)
 	{

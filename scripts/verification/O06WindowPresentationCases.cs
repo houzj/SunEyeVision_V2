@@ -1753,6 +1753,86 @@ internal static class S2DocumentEditingCases
   Require(BindingOperations.GetBinding(leaf,Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl.TextProperty)?.Source==field,"产品未初始化真实Point绑定");
   return (TextBox)leaf.FindName("ValueText");
  }
+ sealed class RoiGestureActionCommand(Action<object?> action):ICommand
+ {
+  public bool CanExecute(object? parameter)=>true;public void Execute(object? parameter)=>action(parameter);
+  public event EventHandler? CanExecuteChanged{add{}remove{}}
+ }
+ static void RoiHandleDown(FrameworkElement part)=>part.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonDownEvent});
+ static void RoiHandleUp(FrameworkElement part)=>part.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.MouseLeftButtonUpEvent});
+ static void RoiHandleWheel(FrameworkElement part)=>part.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice,Environment.TickCount,120){RoutedEvent=Mouse.MouseWheelEvent});
+ static void VerifyRoiGestureTransactions()
+ {
+  foreach(var mode in new[]{"滚轮单次接纳","释放重入保新手势","观察异常退休","接纳后新版本暂存保留"})
+  Test("原ROI手势矩形"+mode,()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(320,240,new byte[76800]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"框",RoiGeometryEditing.Create("rectangle",new(20,20),new(100,100))));
+   using var session=model.Open();using var viewport=new NativeResultViewport();viewport.View.Width=420;viewport.View.Height=300;Show(viewport.View);Require(viewport.BindImage(image,()=>true),"未接图");using var lease=viewport.BeginRoiEditing(viewport.CurrentFrame!,session,()=>true);session.Select("detect",model.Rows[0].Id);Pump();var native=(Native.Display.VMBaseControls.ImageViewBox)viewport.View;
+   var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedRectROI>(viewport.View).Single();var part=(FrameworkElement)roi.Template.FindName("move",roi);
+   var angle=roi.RectAngle;MouseEventHandler? lost=null;System.ComponentModel.DependencyPropertyDescriptor? descriptor=null;EventHandler? observer=null;
+   try
+   {
+    RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"环境未取得真实WPF capture，不能计为手势通过；foreground="+GetForegroundWindow()+";capture="+GetCapture());
+    Require(native.IsDragROI,"真实手势未置drag");
+    if(mode=="观察异常退休")
+    {
+     descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.Base.ImageView.ROI.RectROI.RectAngleProperty,roi.GetType());
+     var sentinel=new InvalidOperationException("ROI观察异常");observer=(_,_)=>throw sentinel;descriptor.AddValueChanged(roi,observer);
+     var threw=false;try{RoiHandleWheel(part);}catch(Exception error){threw=error.ToString().Contains("ROI观察异常",StringComparison.Ordinal);}
+     Require(threw&&!ReferenceEquals(Mouse.Captured,part)&&!native.IsDragROI,"观察异常未传播或未退休捕获");
+     Require(!lease.HasPendingGesture&&!session.Items.Any(item=>item.HasPending),"异常取消残留投影暂存");descriptor.RemoveValueChanged(roi,observer);observer=null;var after=roi.RectAngle;RoiHandleWheel(part);Require(roi.RectAngle==after&&model.Writes==0,"旧wheel监听残留或异常仍提交");return;
+    }
+    RoiHandleWheel(part);Require(model.Writes==0&&Math.Abs(roi.RectAngle-angle-.5)<1e-8,"纯滚轮未暂存原角度或提前提交");
+    if(mode=="接纳后新版本暂存保留")
+    {
+     var original=roi.DataChangedCommand;var projection=(NativeBoxRoiProjection)session.CurROIData!;
+     roi.DataChangedCommand=new RoiGestureActionCommand(context=>{original.Execute(context);projection.Angle+=5;throw new InvalidOperationException("接纳后观察异常");});
+     var threw=false;try{RoiHandleUp(part);}catch(Exception error){threw=error.ToString().Contains("接纳后观察异常",StringComparison.Ordinal);}
+     Require(threw&&model.Writes==1&&projection.HasPending&&Math.Abs(projection.Angle-angle-5.5)<1e-8,"旧异常取消误清新版本暂存或回滚接纳");
+     Require(!ReferenceEquals(Mouse.Captured,part)&&!native.IsDragROI&&lease.HasPendingGesture,"异常后真实手势未退或新暂存被忽略");return;
+    }
+    var reentered=false;
+    if(mode=="释放重入保新手势")
+    {lost=(_,_)=>{if(reentered)return;reentered=true;RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"新手势未真实捕获");};part.AddHandler(Mouse.LostMouseCaptureEvent,lost,true);}
+    RoiHandleUp(part);
+    if(mode=="释放重入保新手势")Require(reentered&&ReferenceEquals(Mouse.Captured,part)&&native.IsDragROI&&model.Writes==0,"旧Release清新手势或旧提交仍被接纳");
+    else Require(model.Writes==1&&!ReferenceEquals(Mouse.Captured,part)&&!native.IsDragROI,"纯wheel结束未一次提交/释放");
+    if(reentered){RoiHandleUp(part);Pump();Require(!lease.HasPendingGesture&&!session.Items.Any(item=>item.HasPending)&&Math.Abs(roi.RectAngle-angle)<1e-8&&model.Writes==0,"重入新手势空结束后残留旧投影暂存");}
+   }
+   finally{if(lost is not null)part.RemoveHandler(Mouse.LostMouseCaptureEvent,lost);if(observer is not null)descriptor!.RemoveValueChanged(roi,observer);Mouse.Capture(null);}
+  });
+  Test("原ROI手势多边形首点通知重入停止旧循环",()=>
+  {
+   using var resources=new SunEyeVision.Plugin.Runtime.FrozenOutputResources();var image=resources.CreateGray8(640,320,new byte[204800]);
+   var model=new RoiHost(image,new RoiEditItem("detect",Guid.NewGuid(),"多边形",PolygonShape()));using var session=model.Open();using var viewport=new NativeRoiViewport();
+   viewport.Bind(session);viewport.Width=500;viewport.Height=300;Show(viewport);session.Select("detect",model.Rows[0].Id);Pump();
+   var roi=Visuals<Native.Display.VMBaseControls.Base.ImageView.ROI.NormalizedPolygonROI>(viewport).Single();var part=(FrameworkElement)roi.Template.FindName("move",roi);
+   var points=roi.PolygonPoints;var before=points.ToArray();var replacedIndices=new List<int>();var reentered=false;
+   System.Collections.Specialized.NotifyCollectionChangedEventHandler observer=(_,args)=>
+   {
+    if(args.Action!=System.Collections.Specialized.NotifyCollectionChangedAction.Replace)return;replacedIndices.Add(args.NewStartingIndex);
+    if(reentered)return;reentered=true;roi.CancelInteraction();RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"首点重入未真实捕获");
+   };
+   try
+   {
+    RoiHandleDown(part);Require(ReferenceEquals(Mouse.Captured,part),"环境未取得真实多边形capture，不能计为通过");points.CollectionChanged+=observer;
+    roi.MoveCommand.Execute(Native.Display.VMBaseControls.Base.ImageView.ROIMoveDirection.Right);
+    Require(reentered&&replacedIndices.Count is >=1 and <=2&&replacedIndices.All(index=>index==0)&&points.Skip(1).SequenceEqual(before.Skip(1))&&model.Writes==0,"旧循环继续改后续顶点或仍提交");
+    Require(ReferenceEquals(Mouse.Captured,part)&&viewport.NativeView.IsDragROI,"旧循环尾部清新多边形手势");
+   }
+   finally{points.CollectionChanged-=observer;Mouse.Capture(null);}
+  });
+  Test("原ROI手势扇环布局观察重入不写旧尾部",()=>
+  {
+   var roi=new Native.Display.VMBaseControls.Base.ImageView.ROI.SectorROI{DataContext=new object()};Show(roi);
+   var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(Native.Display.VMBaseControls.Base.ImageView.ROI.SectorROI.ContainerWidthProperty,roi.GetType());
+   var replaced=false;EventHandler observer=(_,_)=>{if(replaced)return;replaced=true;roi.DataContext=new object();roi.ContainerHeight=777;};
+   descriptor.AddValueChanged(roi,observer);
+   try{roi.CircleRadius+=17;Require(replaced&&roi.ContainerHeight==777,"旧布局继续写入新上下文高度");}
+   finally{descriptor.RemoveValueChanged(roi,observer);}
+  });
+ }
  static void VerifyNativePolygon()
  {
   Test("原Polygon有序重复点、真实参数栈与同帧图像双向一次接纳",()=>
@@ -2943,6 +3023,7 @@ internal static class S2DocumentEditingCases
    VerifyNativeSector();
    VerifyNativeRing();
    VerifyNativePolygon();
+   VerifyRoiGestureTransactions();
    Test("原位图辅助真实绘制",NativeBitmapHelpers);
    Test("原PCUI浮点模板加载、数值步进与订阅显隐",NativeScalarTemplate);
    Test("Native原图与原ShapeItemsPage导出保真",NativeImageExports);

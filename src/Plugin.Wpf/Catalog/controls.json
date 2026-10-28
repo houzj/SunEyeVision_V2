@@ -2045,14 +2045,14 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\ROIControlBase.cs",
           "originalSha256": "3542ea201074b6c98c45c02b726a9dc1259944023f46f8ff6337548bf15cca1e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs",
-          "localSha256": "b2e8f3e72b37098cf998219b0e680bf792a0def59148e4da0b74b24a56183d62"
+          "localSha256": "b40f67935c38a795f90c7f4b927864afb5111fb717d1b0c011b3195d3677a026"
         },
         {
           "originalType": "VMBaseControls.RectROI",
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\RectROI.cs",
           "originalSha256": "416d2dd6c68913eaa269a47797d82e63454366e215d87061260c5674a5a71a14",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs",
-          "localSha256": "82c91d84bbc5f9a39e7dee0d099b609b64ec6baa761e98269a9f7c6a011c8e86"
+          "localSha256": "30ffdf5a06873d3869d8000dcf9bf58a4dff82e1cb9c2d04088f76d160d40bd8"
         },
         {
           "originalType": "VMBaseControls.NormalizedRectROI",
@@ -2073,7 +2073,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "929c38ba1d98670465a34e85515c973434114902c5002bd9a7711163e2cba062"
+          "localSha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
         },
         {
           "originalType": "VMBaseControls original ROI style",
@@ -2125,7 +2125,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\SectorROI.cs",
           "originalSha256": "7bf7f440f782bca7592c209244148ec57b5f1d9450b2d0f36b306b3149760eff",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROI.cs",
-          "localSha256": "94d89897b3aa14b2ac5918c0ce990f3689b305116bd69a4e8dd0ccb3a64c0bee"
+          "localSha256": "3b67d3203d9501b591d8b1ad9f6c41a6e87c9583efb44c853cb037a4f0d22586"
         },
         {
           "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedSectorROI",
@@ -2167,7 +2167,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\CircleROI.cs",
           "originalSha256": "49f12a80b360c495b1c3e7d1e835265179bd21982944c8cb6af8d47f04bcd18f",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROI.cs",
-          "localSha256": "fcb8a42a5e8e5f38c77a1649cce93f18b306e2c48be95832bc351b5b43123bfb"
+          "localSha256": "dea53e61c08b783d75420e893064bd8efc5719f549fcfff8e0de7a5f9cee5735"
         },
         {
           "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedCircleROI",
@@ -2230,7 +2230,7 @@
           "originalPath": "D:\\MyWork\\SunEyeVision_V2\\artifacts\\analysis\\vm-visual-dependencies-20261026\\Apps.BaseData\\PointListRightFixdMultiplicationConverter.cs",
           "originalSha256": "19b1411787887e582bdea3ba7d3dec939b896f4b84925b2609d8886d292e447f",
           "localPath": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs",
-          "localSha256": "23dd430e83375b1d7438ec36905253011b3ef7e5741386b05b1b7463b67b3c4f",
+          "localSha256": "ef870ab29fb9bad9173e0e2cfbfaca33c324889d9ee633628833abcd593bdee8",
           "evidenceNote": "Recovered source CRLF SHA; LF-normalized 84dda1ea17e4fd452dd256be6235258bb5b8fe85f5a29c0e858b91d4663a5caf matches original migration manifest. Actual bytes and normalized identity distinguished."
         },
         {
@@ -2259,7 +2259,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls.Base.ImageView.ROI\\PolygonROI.cs",
           "originalSha256": "b40603dbec7355829739a55225c0c470b83bb2e9d072c13a4f2a2f13a0d894c5",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
-          "localSha256": "56e7f83a61eb52c4a365edb62eef8dead8a3899ef143b2ff1f764ffccb64cd94"
+          "localSha256": "7655a283fd8f5225db93996b63d06bf80cc140c594bf737cb84f95b63a2c1e51"
         },
         {
           "originalType": "VMBaseControls.Base.ImageView.ROI.NormalizedPolygonROI.cs",
@@ -2595,7 +2595,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -2614,6 +2614,62 @@
           "原Shell/双来源/结果调试历史/全屏及SDK主图生产消费者整体接入",
           "圆/点/线/非整圆Arc编辑与非整圆Arc只读等原范围尚未完成，不恢复SDK后备",
           "C09/C17等阶段一剩余、实际VS/VM/用户外观与物理指针验收"
+        ]
+      },
+      "roiGestureCandidate": {
+        "status": "候选6组真实WPF捕获测试通过，规定UI/full与正式关联复验待执行；非人工验收。",
+        "scope": "原矩形/圆环/扇环/多边形共享手势令牌、独立模板及局部代次、唯一事件wrapper、原投影stamp取消；原几何公式与模板保留。",
+        "localFiles": [
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Dependencies/Apps.BaseData/PointListRightFixdMultiplicationConverter.cs",
+            "sha256": "ef870ab29fb9bad9173e0e2cfbfaca33c324889d9ee633628833abcd593bdee8"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/CircleROI.cs",
+            "sha256": "dea53e61c08b783d75420e893064bd8efc5719f549fcfff8e0de7a5f9cee5735"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/PolygonROI.cs",
+            "sha256": "7655a283fd8f5225db93996b63d06bf80cc140c594bf737cb84f95b63a2c1e51"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.Gestures.cs",
+            "sha256": "5a21860b0bfbaeaf0436bc4bfb6c67479e8fadcc31fb6e2646866f6328abc0c5"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/ROIControlBase.cs",
+            "sha256": "b40f67935c38a795f90c7f4b927864afb5111fb717d1b0c011b3195d3677a026"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/RectROI.cs",
+            "sha256": "30ffdf5a06873d3869d8000dcf9bf58a4dff82e1cb9c2d04088f76d160d40bd8"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls.Base.ImageView.ROI/SectorROI.cs",
+            "sha256": "3b67d3203d9501b591d8b1ad9f6c41a6e87c9583efb44c853cb037a4f0d22586"
+          },
+          {
+            "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+            "sha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
+          },
+          {
+            "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
+            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
+          }
+        ],
+        "positiveCases": [
+          "原wheel单次接纳",
+          "旧Release重入新Down后空Up无残留暂存",
+          "DP观察异常退休",
+          "接纳后新版本暂存保留",
+          "多边形首点通知重入停止旧循环",
+          "扇环布局重入不写旧尾部"
+        ],
+        "failurePreserved": "artifacts/roi-gesture-window-20261028-002.log",
+        "remaining": [
+          "真实指针Move/缩放/旋转全姿态与VM逐态外观",
+          "普通CircleMes三参数栈及其完整场景",
+          "完整第一阶段与人工验收"
         ]
       }
     },
@@ -3388,7 +3444,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -3878,7 +3934,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VMBaseControls\\VMBaseControls\\ImageViewBox.xaml.cs",
           "originalSha256": "2092bab5093c476c124d317f425c5ea5a2105fb55b5e6e64eb31d68621c43b4e",
           "localPath": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "localSha256": "929c38ba1d98670465a34e85515c973434114902c5002bd9a7711163e2cba062"
+          "localSha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
         },
         {
           "originalType": "VMBaseControls.ImageViewBox",
@@ -4066,7 +4122,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ImageViewBox.xaml.cs",
-          "sha256": "929c38ba1d98670465a34e85515c973434114902c5002bd9a7711163e2cba062"
+          "sha256": "440dc93734f8c34ed6d70e078c1e9762468b0e893c5feafc7c12daaa17f50145"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Display/VMBaseControls/VMBaseControls/ShapeAndRoiMarginCvt.cs",
@@ -4367,7 +4423,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",
@@ -5638,7 +5694,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.cs",
-            "sha256": "989094e66b808e2e328ac13babca254ce5e64041bee25a44fad5633c16c9fe2f"
+            "sha256": "ea4f2a82973ad18d6222502504e8738bc3a4fac8bd1c80ac86f50b33adc310b2"
           },
           {
             "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiAttachment.Commands.cs",

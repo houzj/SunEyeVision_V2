@@ -1,3 +1,11 @@
+## 2026-10-28 原ROI手势候选六组真实捕获通过，下一集中正式核收
+
+- 前轮09f9739a结果树表修复/180项回归属于实际进展；本轮继续阶段一C08，没有进入Blob业务。主线写产品，三只读线分别核数值ROI、Sector/取消生命周期、真实测试。
+- 四类原ROI统一每view瞬态token/每控件request-template代次与实际捕获；匿名监听唯一退订，Move/Up/Wheel异常同token取消并聚合。Polygon首次顶点通知开启新编辑后停止旧循环，保键盘移动；Sector逐DP派生布局及外层更新核同一proof，保原公式。
+- 新中立取消factory冻结实际projection/session/stamp，逐外调后核共享手势代次，只撤原暂存；旧Release重入新Down前撤旧pending，接纳后新revision pending不可被旧异常清理。原点集converter在集合通知退出后再同步，修真实Cannot change ObservableCollection during a CollectionChanged event失败，不放宽断言。
+- 库005零错5312警告15.85秒；实际require_escalated自有WPF窗口候选004=6/0（wheel单写、释放重入空Up无pending、观察异常、接纳后新暂存保留、Polygon首点重入、Sector布局重入）。候选002真实失败日志保留；不是规定UI/full、真实指针全姿态、VS或人工验收。
+- 84525/42185/79039/35254/63381/19921/90522/6677/64357均终态，无live。下一先保存本批源码，再集中规定UI/full/正式EXE/ROI与Design/Editor/FullChain；用户Blob参数页原SHA保持排除，不推送。普通CircleMes/C09等完整未完保留，阶段与目标active。
+
 ## 2026-10-28 VM同源树表继续推进：本轮180/0与真实分页通过
 
 - 用户明确继续VM设计，树表只能共用SDK声明和指定同次运行快照。仅提取4f8efb06结果发布SourceMatches的实时无捕获循环，保session/正式或调试owner/workflow/真实node实例，额外拒同scope重复nodeId；不合其余Global变量形状批，不改Blob业务及用户XAML。
